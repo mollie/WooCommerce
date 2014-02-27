@@ -36,7 +36,7 @@ class MPM_Settings extends WC_Settings_API
 	public $hide_return_page = true;
 	public $return_page_titles = array();
 
-	public $plugin_version = 'v1.0.0';
+	public $plugin_version = '1.0.0';
 
 	public function __construct()
 	{

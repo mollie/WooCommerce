@@ -52,7 +52,7 @@ Contact: [www.mollie.nl](https://www.mollie.nl) — info@mollie.nl — +31 20-61
 + [Meer informatie over iDEAL via Mollie](https://www.mollie.nl/betaaldiensten/ideal/)
 + [Meer informatie over Creditcard via Mollie](https://www.mollie.nl/betaaldiensten/creditcard/)
 + [Meer informatie over Mister Cash via Mollie](https://www.mollie.nl/betaaldiensten/mistercash/)
++ [Meer informatie over PayPal via Mollie](https://www.mollie.nl/betaaldiensten/paypal/)
 + [Meer informatie over paysafecard via Mollie](https://www.mollie.nl/betaaldiensten/paysafecard/)
-+ [Meer informatie over paypal via Mollie](https://www.mollie.nl/betaaldiensten/paypal/)
 
 ![Powered By Mollie](https://www.mollie.nl/images/badge-betaling-medium.png)

@@ -1,8 +1,8 @@
 ![Mollie](https://www.mollie.nl/files/Mollie-Logo-Style-Small.png)
 
-# Magento plugin voor [betalingen via Mollie](https://www.mollie.nl/betaaldiensten/). #
+# WooCommerce plugin voor [betalingen via Mollie](https://www.mollie.nl/betaaldiensten/). #
 
-## Installatie [![Build Status](https://travis-ci.org/mollie/Woocommerce.png)](https://travis-ci.org/mollie/Woocommerce) ##
+## Installatie ##
 * Download de laatste versie van de module via de [Releases-pagina](https://github.com/mollie/Woocommerce/releases).
 * Kopieer de map `MPM` naar de `wp-content/plugins` map van uw WordPress installatie.
 * Ga naar de tab `Plugins` in uw WordPress administratiepaneel en activeer de Mollie Payment Module.

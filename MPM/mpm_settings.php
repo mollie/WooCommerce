@@ -76,9 +76,9 @@ class MPM_Settings extends WC_Settings_API
 				global $wp_version;
 				$this->api = new Mollie_API_Client;
 				$this->api->setApiKey($this->get_option('api_key'));
-				$this->api->addVersionString('WordPress', isset($wp_version) ? $wp_version : 'Unknown');
-				$this->api->addVersionString('WooCommerce', get_option('woocommerce_version', 'Unknown'));
-				$this->api->addVersionString('MollieWoo', $this->plugin_version);
+				$this->api->addVersionString('WordPress/' . (isset($wp_version) ? $wp_version : 'Unknown'));
+				$this->api->addVersionString('WooCommerce/' . get_option('woocommerce_version', 'Unknown'));
+				$this->api->addVersionString('MollieWoo/' . $this->plugin_version);
 				$this->methods = $this->api->methods->all();
 			}
 			catch (Mollie_API_Exception $e)

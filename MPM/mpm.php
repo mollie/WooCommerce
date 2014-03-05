@@ -50,9 +50,9 @@ function mpm_init()
 	load_plugin_textdomain('MPM', FALSE, plugin_basename(dirname(__FILE__)) . '/languages');
 
 	// Define includes
-	require_once(__DIR__ . '/mpm_gateway.php');
-	require_once(__DIR__ . '/lib/src/Mollie/API/Autoloader.php');
-	require_once(__DIR__ . '/mpm_settings.php');
+	require_once(dirname(__FILE__) . '/mpm_gateway.php');
+	require_once(dirname(__FILE__) . '/lib/src/Mollie/API/Autoloader.php');
+	require_once(dirname(__FILE__) . '/mpm_settings.php');
 
 	// Instantiate
 	new MPM_Settings();

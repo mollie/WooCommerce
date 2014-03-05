@@ -282,25 +282,29 @@ class MPM_Settings extends WC_Settings_API
 	}
 
 	/**
-	 * Alters the return page title
+	 * Alters the return page title.
+	 * 
 	 * @param string $title
-	 * @param int $id
+	 * @param int $id (Optional) Default NULL.
 	 * @return string
 	 */
-	public function return_page_title($title, $id)
+	public function return_page_title ($title, $id = NULL)
 	{
 		if (!$this->is_return_page($id))
 		{
 			return $title;
 		}
+
 		if (!$order = $this->order_get($_GET['order'], $_GET['key']))
 		{
 			return $this->return_page_titles['invalid'];
 		}
+
 		if (!in_array($order->status, array_keys($this->return_page_titles)))
 		{
 			return $this->return_page_titles['invalid'];
 		}
+
 		return $this->return_page_titles[$order->status];
 	}
 

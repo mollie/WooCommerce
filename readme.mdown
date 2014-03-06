@@ -21,11 +21,14 @@ Creditcard is vrijwel de bekendste methode voor het ontvangen van betalingen met
 ### Mister Cash ###
 Mister Cash maakt gebruik van een fysieke kaart die gekoppeld is aan tegoed op een Belgische bankrekening. Betalingen via Mister Cash zijn gegarandeerd en lijkt daarmee sterk op iDEAL in Nederland. Daarom is het uitermate geschikt voor uw webwinkel.
 
-### paysafecard ###
-Paysafecard is de populairste prepaidcard voor online betalingen die veel door ouders voor hun kinderen wordt gekocht.
+### Overboeking ###
+Overboekingen binnen de SEPA zone ontvangen via Mollie. Hiermee kun je betalingen ontvangen van zowel particulieren als zakelijke klanten in meer dan 35 Europese landen.
 
 ### PayPal ###
 PayPal is wereldwijd een zeer populaire betaalmethode.
+
+### paysafecard ###
+Paysafecard is de populairste prepaidcard voor online betalingen die veel door ouders voor hun kinderen wordt gekocht.
 
 # Veel gestelde vragen #
 
@@ -52,6 +55,7 @@ Contact: [www.mollie.nl](https://www.mollie.nl) — info@mollie.nl — +31 20-61
 + [Meer informatie over iDEAL via Mollie](https://www.mollie.nl/betaaldiensten/ideal/)
 + [Meer informatie over Creditcard via Mollie](https://www.mollie.nl/betaaldiensten/creditcard/)
 + [Meer informatie over Mister Cash via Mollie](https://www.mollie.nl/betaaldiensten/mistercash/)
++ [Meer informatie over Overboeking via Mollie](https://www.mollie.nl/betaaldiensten/overboeking/)
 + [Meer informatie over PayPal via Mollie](https://www.mollie.nl/betaaldiensten/paypal/)
 + [Meer informatie over paysafecard via Mollie](https://www.mollie.nl/betaaldiensten/paysafecard/)
 

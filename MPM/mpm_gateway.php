@@ -102,6 +102,16 @@ class MPM_Gateway extends WC_Payment_Gateway
 	}
 
 	/**
+	 * Fix for the subscription plugin
+	 * @see https://github.com/mollie/WooCommerce/issues/1
+	 * @param $feature
+	 * @return bool
+	 */
+	public function supports( $feature ) {
+		return apply_filters( 'woocommerce_payment_gateway_supports', in_array( $feature, $this->supports ) ? true : false, $feature, $this );
+	}
+
+	/**
 	 * Sends a payment request to Mollie, redirects the user to the payscreen.
 	 * @param int $order_id
 	 * @return array|void
@@ -121,17 +131,41 @@ class MPM_Gateway extends WC_Payment_Gateway
 			"metadata"			=> array(
 				"order_id"		=> $order_id,
 			),
-
-			"billingCity"		=> $order->billing_city,
-			"billingRegion"		=> $order->billing_state,
-			"billingPostal"		=> $order->billing_postcode,
-			"billingCountry"	=> $order->billing_country,
-
-			"shippingCity"		=> $order->shipping_city,
-			"shippingRegion"	=> $order->shipping_state,
-			"shippingPostal"	=> $order->shipping_postcode,
-			"shippingCountry"	=> $order->shipping_country,
 		);
+
+		if (isset($order->billing_city))
+		{
+			$data['billingCity']    = $order->billing_city;
+		}
+		if (isset($order->billing_state))
+		{
+			$data['billingRegion']  = $order->billing_state;
+		}
+		if (isset($order->billing_postcode))
+		{
+			$data['billingPostal']  = $order->billing_postcode;
+		}
+		if (isset($order->billing_country))
+		{
+			$data['billingCountry'] = $order->billing_country;
+		}
+
+		if (isset($order->shipping_city))
+		{
+			$data['shippingCity']    = $order->shipping_city;
+		}
+		if (isset($order->shipping_state))
+		{
+			$data['shippingRegion']  = $order->shipping_state;
+		}
+		if (isset($order->shipping_postcode))
+		{
+			$data['shippingPostal']  = $order->shipping_postcode;
+		}
+		if (isset($order->shipping_country))
+		{
+			$data['shippingCountry'] = $order->shipping_country;
+		}
 
 		$payment = $mpm->api->payments->create($data);
 

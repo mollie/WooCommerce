@@ -41,6 +41,7 @@ add_action('plugins_loaded', 'mpm_init');
 add_action('wp_ajax_nopriv_mollie_webhook', 'mpm_webhook');
 add_action('wp_ajax_mollie_webhook', 'mpm_webhook');
 add_action('wp_ajax_mollie_refund', 'mpm_refund');
+add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'mpm_action_links');
 
 register_uninstall_hook(__FILE__, 'mpm_uninstall');
 
@@ -66,6 +67,16 @@ function mpm_init()
 		// Instantiate
 		new MPM_Settings();
 	}
+}
+
+function mpm_action_links($links)
+{
+	return array_merge(
+		array(
+			'<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=mpm_settings') . '">' . __( 'Settings', 'MPM' ) . '</a>'
+		),
+		$links
+	);
 }
 
 /**

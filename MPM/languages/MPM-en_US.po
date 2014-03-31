@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Mollie Payment Module\n"
-"POT-Creation-Date: 2014-03-31 10:29+0100\n"
-"PO-Revision-Date: 2014-03-31 10:32+0100\n"
+"POT-Creation-Date: 2014-03-31 11:53+0100\n"
+"PO-Revision-Date: 2014-03-31 11:56+0100\n"
 "Last-Translator: \n"
 "Language-Team: Mollie <info@mollie.nl>\n"
 "Language: en_US\n"
@@ -14,6 +14,10 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-KeywordsList: __\n"
 "X-Poedit-SearchPath-0: .\n"
+
+#: MPM/mpm.php:76
+msgid "Settings"
+msgstr "Settings"
 
 #: MPM/mpm_gateway.php:96
 msgid "Select your bank:"
@@ -214,9 +218,8 @@ msgstr ""
 "Are you sure you want to refund this transaction? This cannot be undone!"
 
 #: MPM/mpm_settings.php:332
-#, fuzzy
 msgid "Mollie refund"
-msgstr "Mollie Return Page"
+msgstr "Mollie refund"
 
 #: MPM/mpm_settings.php:348
 msgid ""
@@ -257,24 +260,3 @@ msgstr "PayPal"
 #: strings.php:7
 msgid "paysafecard"
 msgstr "paysafecard"
-
-#~ msgid "Your webhook URL is:"
-#~ msgstr "Your webhook URL is:"
-
-#~ msgid ""
-#~ "Copy this webhook into your <a href=\"https://www.mollie.nl/beheer/"
-#~ "account/profielen/\">Mollie website profile</a>."
-#~ msgstr ""
-#~ "Copy this webhook into your <a href=\"https://www.mollie.nl/beheer/"
-#~ "account/profielen/\">Mollie website profile</a>."
-
-#~ msgid ""
-#~ "Warning: It seems you haven't configured your webhook in your Mollie "
-#~ "Profile. Without webhook, orders will stay in pending status.<br />To "
-#~ "configure your webhook, copy the above URL into your <a href=\"https://"
-#~ "www.mollie.nl/beheer/account/profielen/\">Mollie Profile</a>."
-#~ msgstr ""
-#~ "Warning: It seems you haven't configured your webhook in your Mollie "
-#~ "Profile. Without webhook, orders will stay in pending status.<br />To "
-#~ "configure your webhook, copy the above URL into your <a href=\"https://"
-#~ "www.mollie.nl/beheer/account/profielen/\">Mollie Profile</a>."

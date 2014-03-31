@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Mollie Payment Module\n"
-"POT-Creation-Date: 2014-03-31 10:29+0100\n"
-"PO-Revision-Date: 2014-03-31 10:30+0100\n"
+"POT-Creation-Date: 2014-03-31 11:53+0100\n"
+"PO-Revision-Date: 2014-03-31 11:54+0100\n"
 "Last-Translator: \n"
 "Language-Team: Mollie <info@mollie.nl>\n"
 "Language: nl\n"
@@ -12,6 +12,10 @@ msgstr ""
 "X-Generator: Poedit 1.6.4\n"
 "X-Poedit-Basepath: .\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: MPM/mpm.php:76
+msgid "Settings"
+msgstr "Instellingen"
 
 #: MPM/mpm_gateway.php:96
 msgid "Select your bank:"
@@ -258,33 +262,3 @@ msgstr "PayPal"
 #: strings.php:7
 msgid "paysafecard"
 msgstr "paysafecard"
-
-#~ msgid "Overboeking"
-#~ msgstr "Overboeking"
-
-#~ msgid "Your webhook URL is:"
-#~ msgstr "Uw webhook URL is:"
-
-#~ msgid ""
-#~ "Copy this webhook into your <a href=\"https://www.mollie.nl/beheer/"
-#~ "account/profielen/\">Mollie website profile</a>."
-#~ msgstr ""
-#~ "Kopieer de webhook naar uw <a href=\"https://www.mollie.nl/beheer/account/"
-#~ "profielen/\">Mollie websiteprofiel</a>."
-
-#~ msgid ""
-#~ "Warning: It seems you haven't configured your webhook in your Mollie "
-#~ "Profile. Without webhook, orders will stay in pending status.<br />To "
-#~ "configure your webhook, copy the above URL into your <a href=\"https://"
-#~ "www.mollie.nl/beheer/account/profielen/\">Mollie Profile</a>."
-#~ msgstr ""
-#~ "Waarschuwing: Uw webhook lijkt nog niet in uw Mollie Profiel te staan. "
-#~ "Zonder webhook blijven alle bestellingen in afwachting.<br />Om uw "
-#~ "webhook te configureren, kopieert u de bovenstaande URL naar uw <a href="
-#~ "\"https://www.mollie.nl/beheer/account/profielen/\">Mollie Profiel</a>."
-
-#~ msgid "This connects your Mollie Profile to the Woocommerce shop."
-#~ msgstr "Dit koppelt uw Mollie Profiel aan uw WooCommerce winkel."
-
-#~ msgid "Invalid Order"
-#~ msgstr "Ongeldige bestelling"

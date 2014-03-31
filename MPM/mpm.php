@@ -2,10 +2,12 @@
 /**
  * Plugin Name: MPM - Mollie Payment Module
  * Plugin URI: https://github.com/Mollie/WooCommerce/releases
+ * Version: 1.1.0
  * Description: Integration of the Mollie API for WooCommerce
- * Version: 1.0.2
  * Author: Mollie
  * Author URI: https://www.mollie.nl
+ * Text Domain: MPM
+ * Domain Path: MPM
  * License: http://www.opensource.org/licenses/bsd-license.php  Berkeley Software Distribution License (BSD-License 2)
  */
 /**
@@ -38,6 +40,7 @@
 add_action('plugins_loaded', 'mpm_init');
 add_action('wp_ajax_nopriv_mollie_webhook', 'mpm_webhook');
 add_action('wp_ajax_mollie_webhook', 'mpm_webhook');
+add_action('wp_ajax_mollie_refund', 'mpm_refund');
 
 register_uninstall_hook(__FILE__, 'mpm_uninstall');
 
@@ -50,12 +53,19 @@ function mpm_init()
 	load_plugin_textdomain('MPM', FALSE, plugin_basename(dirname(__FILE__)) . '/languages');
 
 	// Define includes
-	require_once(dirname(__FILE__) . '/mpm_gateway.php');
 	require_once(dirname(__FILE__) . '/lib/src/Mollie/API/Autoloader.php');
-	require_once(dirname(__FILE__) . '/mpm_settings.php');
+	if (class_exists('WC_Payment_Gateway', FALSE))
+	{
+		require_once(dirname(__FILE__) . '/mpm_gateway.php');
+	}
+	if (class_exists('WC_Settings_API', FALSE))
+	{
+		require_once(dirname(__FILE__) . '/mpm_settings.php');
+		require_once(dirname(__FILE__) . '/mpm_return.php');
 
-	// Instantiate
-	new MPM_Settings();
+		// Instantiate
+		new MPM_Settings();
+	}
 }
 
 /**
@@ -95,6 +105,56 @@ function mpm_webhook()
 		update_option('woocommerce_mpm_webhook_tested', 'yes');
 	}
 	die('OK');
+}
+
+/**
+ * Refund a transaction
+ * @return void
+ */
+function mpm_refund()
+{
+	$error = 'Incomplete request';
+	$order_id = null;
+	$msg = get_option('woocommerce_mpm_message_start', 11);
+	if (isset($_REQUEST['id'], $_REQUEST['key']))
+	{
+		global $mpm;
+		require_once(dirname(__FILE__) . '/mpm_settings.php');
+		new MPM_Settings();
+
+		$order_id = intval($_REQUEST['id']);
+		$key = $_REQUEST['key'];
+
+		if (!isset($_REQUEST['nonce']) || !wp_verify_nonce($_REQUEST['nonce'], 'mollie_refund') || $order = $mpm->order_get($order_id, $key) === FALSE)
+		{
+			// invalid nonce or order key
+			$error = 'Invalid input';
+		}
+		else
+		{
+			// valid refund attempt
+			try
+			{
+				$transaction_id = get_post_meta($order_id, '_mollie_transaction_id', TRUE);
+				$transaction = $mpm->api->payments->get($transaction_id);
+				// Actual refund
+				$mpm->api->payments->refund($transaction);
+				$order->update_status('refunded');
+				$error = '';
+			}
+			catch (Exception $e)
+			{
+				$error = $e->getMessage();
+			}
+		}
+	}
+	if (!empty($error))
+	{
+		$error = '&error=' . urlencode($error);
+		$msg++;
+	}
+
+	wp_redirect(admin_url('post.php') . '?post=' . $order_id . '&action=edit&message=' . $msg . $error);
 }
 
 /**

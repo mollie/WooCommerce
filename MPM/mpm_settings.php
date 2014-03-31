@@ -31,12 +31,14 @@ class MPM_Settings extends WC_Settings_API
 	public $count = 0;
 	public $methods = array();
 
+	/** @var $api Mollie_API_Client|null */
 	public $api = null;
-	public $return_page = null;
-	public $hide_return_page = true;
-	public $return_page_titles = array();
 
-	public $plugin_version = '1.0.2';
+	/** @var $return MPM_return|null */
+	public $return = null;
+
+	public $plugin_version = '1.1.0';
+	public $update_url = 'https://github.com/mollie/WooCommerce';
 
 	public function __construct()
 	{
@@ -48,27 +50,31 @@ class MPM_Settings extends WC_Settings_API
 		}
 		$first = ($mpm === $this);
 
-		// Setup settings
+		// Settings
 		$this->method_title = 'Mollie Payment Module';
 		$this->id = 'mpm';
 		$this->init_form_fields();
 		$this->init_settings();
-
-		// Actions
 		add_action('woocommerce_update_options_payment_gateways_' . $this->id, array(&$this, 'process_admin_options'));
-		add_action('template_redirect', array(&$this, 'return_page_redirect'));
 
 		// Things to do in controller mode only:
 		if ($first)
 		{
-			// Filters
+			// Get return handler
+			$this->return = new MPM_return();
+
+			// Filters & Actions
+			add_action('woocommerce_admin_order_data_after_order_details', array(&$this, 'show_refund_button')); // adds a refund button to the admin order view
 			add_filter('woocommerce_payment_gateways', array(&$this, 'gateways_add_dynamic')); // this includes the settings page
 			add_filter('woocommerce_available_payment_gateways', array(&$this, 'gateways_add_static')); // this does not include the settings page
-			add_filter('get_pages', array(&$this, 'return_page_hide')); // unset return page menu entry
-			add_filter('the_title', array(&$this, 'return_page_title'), 10, 2); // set return page title manually
+			add_filter('post_updated_messages', array(&$this, 'add_custom_messages'), 99); // add return messages for refunds
+			add_action('template_redirect', array(&$this->return, 'return_page_redirect')); // throw unwelcome visitors out of return page
+			add_filter('get_pages', array(&$this->return, 'return_page_hide')); // unset return page menu entry
+			add_filter('the_title', array(&$this->return, 'return_page_title'), 10, 2); // set return page title manually
+			add_filter('option_woocommerce_default_gateway', array(&$this, 'set_default_gateway')); // alter default gateway name
 
 			// Shortcodes
-			add_shortcode('mollie_return_page', array(&$this, 'return_page_render'));
+			add_shortcode('mollie_return_page', array(&$this->return, 'return_page_render'));
 
 			// Load available methods from API
 			try
@@ -86,39 +92,6 @@ class MPM_Settings extends WC_Settings_API
 				$this->errors[] = __('Payment error:', 'MPM') . $e->getMessage();
 				$this->display_errors();
 			}
-
-			// Get return page
-			$this->return_page = $this->get_return_page();
-
-			// Create return page if not exists
-			if ($this->return_page === null)
-			{
-				$page_data = array(
-					'post_status' 		=> 'publish',
-					'post_type' 		=> 'page',
-					'post_author' 		=> 1,
-					'post_name' 		=> 'welcome_back',
-					'post_title' 		=> __('Welcome Back', 'MPM'),
-					'post_content' 		=> '[mollie_return_page]',
-					'post_parent' 		=> 0,
-					'comment_status' 	=> 'closed'
-				);
-				if (!$this->is_return_page(wp_insert_post($page_data)))
-				{
-					$this->errors[] = __('Error: Could not find nor generate return page!', 'MPM');
-					$this->display_errors();
-				}
-			}
-
-			// Set return titles
-			$this->return_page_titles = array(
-				'pending'		=> __('Payment Pending', 'MPM'),
-				'failed'		=> __('Payment Failed', 'MPM'),
-				'cancelled'		=> __('Payment Cancelled', 'MPM'),
-				'processing'	=> __('Processing Order', 'MPM'),
-				'completed'		=> __('Order Complete', 'MPM'),
-				'invalid'		=> __('Mollie Return Page', 'MPM'),
-			);
 		}
 
 		return $mpm;
@@ -161,6 +134,10 @@ class MPM_Settings extends WC_Settings_API
 				'description'	=> __('Show or hide the payment method logos.', 'MPM'),
 				'desc_tip'		=> true,
 			),
+			'use_profile_webhook' => array(
+				'default'		=> 'no',
+				'type'			=> 'hidden',
+			),
 		);
 	}
 
@@ -176,24 +153,57 @@ class MPM_Settings extends WC_Settings_API
 		{
 			echo '<div class="error">' . __('Your Api Key should start with test or live.', 'MPM') . '</div>';
 		}
-		// Add webhook
-		echo '<div class="admin_webhook">'.__('Your webhook URL is:', 'MPM').'<br />
-					<input id="mollie_webhook" value="'.admin_url('admin-ajax.php').'?action=mollie_webhook" readonly onclick="this.select();" /><br />
-					<script type="text/javascript">
-						var el = document.getElementById("mollie_webhook");
-						el.size = el.value.length + 20;
-					</script>
-					<br />'.__('Copy this webhook into your <a href="https://www.mollie.nl/beheer/account/profielen/">Mollie website profile</a>.', 'MPM').'
-				</div>';
-		// Add warnings
-		if (get_option('woocommerce_mpm_webhook_tested', 'no') !== 'yes')
-		{
-			echo '<div class="error">' . __('Warning: It seems you haven\'t configured your webhook in your Mollie Profile. Without webhook, orders will stay in pending status.<br />To configure your webhook, copy the above URL into your <a href="https://www.mollie.nl/beheer/account/profielen/">Mollie Profile</a>.', 'MPM') . '</div>';
-		}
 		if (get_option('woocommerce_currency', 'unknown') !== 'EUR')
 		{
 			echo '<div class="error">' . __('Warning: Mollie Payment methods are only available for payments in Euros.', 'MPM') . '</div>';
 		}
+		echo $this->get_update_message();
+	}
+
+	/**
+	 * Extracts update information from a github releases.atom file and returns a message
+	 * @return string
+	 */
+	public function get_update_message()
+	{
+		$update_message = '';
+		$update_xml = $this->get_update_xml($this->update_url);
+		if ($update_xml === FALSE)
+		{
+			$update_message = __('Warning: Could not retrieve update xml file from GitHub.');
+		}
+		else
+		{
+			/** @var SimpleXMLElement $tags */
+			$tags = new SimpleXMLElement($update_xml);
+			if (!empty($tags) && isset($tags->entry, $tags->entry[0], $tags->entry[0]->id))
+			{
+				$title = $tags->entry[0]->id;
+				$latest_version = preg_replace("/[^0-9,.]/", "", substr($title, strrpos($title, '/')));
+				if (!version_compare($this->plugin_version, $latest_version, '>='))
+				{
+					$update_message = sprintf(
+						'<a href="%s/releases">' . __('You are currently using version %s. We strongly recommend you to upgrade to the new version %s!') . '</a>',
+						$this->update_url, $this->plugin_version, $latest_version
+					);
+				}
+			}
+			else
+			{
+				$update_message = __('Warning: Update xml file from GitHub follows an unexpected format.');
+			}
+		}
+
+		return $update_message;
+	}
+
+	/**
+	 * Retrieves releases.atom file from github
+	 * @return string
+	 */
+	public function get_update_xml()
+	{
+		return @file_get_contents($this->update_url . '/releases.atom');
 	}
 
 	/**
@@ -212,7 +222,7 @@ class MPM_Settings extends WC_Settings_API
 	 */
 	public function get_title()
 	{
-		return 'Mollie Payment Methods';
+		return 'Mollie Payment Module';
 	}
 
 	// Payment Gateway Filters
@@ -251,195 +261,43 @@ class MPM_Settings extends WC_Settings_API
 	 */
 	public function gateways_add_static($gateways)
 	{
+		// Retrieve correct gateway position (tougher than it sounds)
+		$pos_list = (array) get_option('woocommerce_gateway_order');
+		$pos_orig = $pos_list['mpm'];
+		$pos = $pos_orig;
+		$wc = WC_Payment_Gateways::instance();
+		$all_gateways = $wc->payment_gateways();
+		for ($i = 0; $i < $pos_orig; $i++)
+		{
+			// Decrease position by one for every unavailable gateway
+			if (!current($all_gateways)->is_available())
+			{
+				$pos--;
+			}
+			next($all_gateways);
+		}
+
+		$mollie_gateways = array();
 		if ($this->get_option('enabled') === 'yes' && get_option('woocommerce_currency', 'unknown') === 'EUR')
 		{
 			// Add as much gateways as we have payment methods (they will claim their own indices)
 			for ($i = 0; $i < count($this->methods); $i++)
 			{
-				$gateways[$this->methods[$i]->id] = new MPM_Gateway();
+				$mollie_gateways[$this->methods[$i]->id] = new MPM_Gateway();
 			}
 		}
-		return $gateways;
+
+		$head = array_slice($gateways, 0, $pos);
+		$tail = array_slice($gateways, $pos);
+		return array_merge($head, $mollie_gateways, $tail);
 	}
 
-	// Custom return page functions
 
 	/**
-	 * Makes the return page not show up in the menu
-	 * @param $pages
-	 * @return mixed
-	 */
-	public function return_page_hide($pages)
-	{
-		foreach ($pages as $i => $page)
-		{
-			if ($this->is_return_page($page) && $this->hide_return_page)
-			{
-				unset($pages[$i]);
-			}
-		}
-		return $pages;
-	}
-
-	/**
-	 * Alters the return page title.
-	 * 
-	 * @param string $title
-	 * @param int $id (Optional) Default NULL.
-	 * @return string
-	 */
-	public function return_page_title ($title, $id = NULL)
-	{
-		if (!$this->is_return_page($id))
-		{
-			return $title;
-		}
-
-		if (!isset($_GET['order']) || !isset($_GET['key']))
-		{
-			return $this->return_page_titles['invalid'];
-		}
-
-		if (!$order = $this->order_get($_GET['order'], $_GET['key']))
-		{
-			return $this->return_page_titles['invalid'];
-		}
-
-		if (!in_array($order->status, array_keys($this->return_page_titles)))
-		{
-			return $this->return_page_titles['invalid'];
-		}
-
-		return $this->return_page_titles[$order->status];
-	}
-
-	/**
-	 * Renders the return page
-	 * @return string
-	 */
-	public function return_page_render()
-	{
-		$order = $this->order_get($_GET['order'], $_GET['key']);
-		if (!$order || !in_array($order->status, array_keys($this->return_page_titles)))
-		{
-			$html = '		<p>' . __('Your order was not recognised as being a valid order from this shop.', 'MPM') . '</p>
-							<p>' . __('If you did buy something in this shop, something apparently went wrong, and you should contact us as soon as possible.', 'MPM') . '</p>';
-			return $html;
-		}
-		$html = '<h2>'. __('Order status:', 'MPM') . ' ' . __($order->status, 'woocommerce') . '</h2>';
-
-		switch ($order->status)
-		{
-			case 'pending':
-			case 'on-hold':
-				$html .= '	<p>' . __('We have not received a definite payment status. You will receive an email as soon as we receive a confirmation of the bank/merchant.', 'MPM') . '</p>';
-				break;
-			case 'failed':
-				$html .= '	<p>' . __('Unfortunately your order cannot be processed as the originating bank/merchant has declined your transaction.', 'MPM') . '</p>
-								<p><a href="' . esc_url($order->get_checkout_payment_url()) . '">' . __('Please attempt your purchase again', 'MPM') . '</a></p>';
-				break;
-			case 'cancelled':
-				$html .= '	<p>' . __('You have cancelled your order.', 'MPM') . '</p>';
-				break;
-			case 'processing':
-			case 'completed':
-				$html .= '	<p>' . __('Thank you. Your order has been received.', 'MPM') . '</p>
-								<ul class="order_details">
-									<li class="order">' . __('Order:', 'MPM') . ' <strong>' . $order->get_order_number() . '</strong></li>
-									<li class="date">' . __('Date:', 'MPM') . ' <strong>' . date_i18n(get_option('date_format'), strtotime( $order->order_date)) . '</strong></li>
-									<li class="total">' . __('Total:', 'MPM') . ' <strong>' . $order->get_formatted_order_total() . '</strong></li>';
-				if (isset($order->payment_method_title))
-				{
-					$html .= '<li class="method">' . __('Payment method:', 'MPM') . ' <strong>' . __($order->payment_method_title, 'MPM') . '</strong></li>';
-				}
-				$html .= '	</ul>
-								<div class="clear"></div>';
-				break;
-		}
-
-		ob_start();
-		do_action( 'woocommerce_thankyou_' . $order->payment_method, $order->id );
-		do_action( 'woocommerce_thankyou', $order->id );
-		$html .= ob_get_contents();
-		ob_end_clean();
-
-		return $html;
-	}
-
-	/**
-	 * Determines if a certain page contains the [mollie_return_page] shorttag
-	 * @param int|WP_Post $page
-	 * @return bool
-	 */
-	public function is_return_page($page)
-	{
-		if (!is_a($page, 'WP_Post'))
-		{
-			$page = get_post($page);
-		}
-		if (is_null($page))
-		{
-			return FALSE;
-		}
-		return strpos($page->post_content, '[mollie_return_page]') !== FALSE;
-	}
-
-	/**
-	 * Locates the return page
-	 * @return int|null
-	 */
-	public function get_return_page()
-	{
-		global $wpdb;
-		$q = $wpdb->get_row("SELECT `ID` FROM `$wpdb->posts` WHERE `post_status` = 'publish' AND `post_content` LIKE '%[mollie_return_page]%'", 'ARRAY_A');
-		if (is_null($q) || !array_key_exists('ID', $q))
-		{
-			return NULL;
-		}
-		return $q['ID'];
-	}
-
-	/**
-	 * Makes a permalink of the return page, but always uses page id (no matter the permalink format) because we're changing the return page title
-	 * @return string|null
-	 */
-	public function get_return_link()
-	{
-		if (!$this->return_page)
-		{
-			$this->return_page = $this->get_return_page();
-		}
-		$post_id = $this->return_page;
-		if (is_null($post_id))
-		{
-			$this->errors[] = __('Error: Return page not found!', 'MPM');
-			$this->display_errors();
-			return 'error';
-		}
-		return apply_filters('post_link', get_home_url(null, '?p=' . $post_id, null), $post_id, false);
-	}
-
-	/**
-	 * When on return page with no query string, redirect to checkout
-	 * @return void
-	 */
-	public function return_page_redirect()
-	{
-		global $mpm;
-		if (is_page($mpm->return_page))
-		{
-			$order_id = (int) $_GET['order'];
-			$key = $_GET['key'];
-			if (!$order_id || !$order = $this->order_get($order_id, $key))
-			{
-				wp_redirect(get_permalink(woocommerce_get_page_id('checkout')));
-				exit;
-			}
-		}
-	}
-
-	/**
-	 * Get the order
+	 * Retrieves and returns an order by id or false if its key is valid
+	 * @param $id
+	 * @param $key
+	 * @return bool|WC_Order
 	 */
 	public function order_get($id, $key)
 	{
@@ -455,5 +313,58 @@ class MPM_Settings extends WC_Settings_API
 			return FALSE;
 		}
 		return $order;
+	}
+
+
+	/**
+	 * Adds a refund button to the admin order overview page
+	 * @param $order
+	 */
+	public function show_refund_button($order)
+	{
+		if (get_post_meta($order->id, '_is_mollie_payment', TRUE) || !empty($_GET['force_mollie_refund']))
+		{
+			$url = admin_url('admin-ajax.php') . '?action=mollie_refund&id=' . $order->id . '&key=' . $order->order_key . '&nonce=' . wp_create_nonce('mollie_refund');
+			echo
+				'<p class="form-field form-field-wide">' .
+					sprintf(__('Refund order %d online'), $order->id) . ' <br/>'  .
+					'<a class="button" href="' . $url . '" onclick="return confirm(\'' . __('Are you sure you want to refund this transaction? This cannot be undone!') . '\')">' .
+						__('Mollie refund') .
+					'</a>' .
+				'</p>';
+		}
+	}
+
+	/**
+	 * Adds custom messages to the end of the $messages array and store the start-index
+	 * @param $messages
+	 * @return array
+	 */
+	public function add_custom_messages($messages)
+	{
+		$start = sizeof($messages['shop_order']);
+		update_option('woocommerce_mpm_message_start', $start);
+
+		$messages['shop_order'][$start + 0] = __('Order refunded. The customer will receive the refunded money on the next workday.');
+		$messages['shop_order'][$start + 1] = __('Refund failed!');
+		if (!empty($_GET['error']))
+		{
+			$messages['shop_order'][$start + 1] .= __(' Reason: ') . htmlspecialchars($_GET['error']);
+		}
+		return $messages;
+	}
+
+	/**
+	 * If default option is the Mollie Payment Module, refine it to the first available method
+	 * @param string $code
+	 * @return string
+	 */
+	public function set_default_gateway($code = '')
+	{
+		if ($code === 'mpm' && !empty($this->methods))
+		{
+			return current($this->methods)->id;
+		}
+		return $code;
 	}
 }

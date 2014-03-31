@@ -44,7 +44,7 @@ class MPM_Gateway extends WC_Payment_Gateway
 		$this->id = $this->_data->id;
 		$this->method_description = $this->_data->description;
 		$this->method_title = $this->_data->description;
-		$this->title = $this->_data->description;
+		$this->title = __($this->_data->description); // translate visual title
 
 		// Define issuers (if any)
 		$issuers = $mpm->api->issuers->all();
@@ -122,10 +122,12 @@ class MPM_Gateway extends WC_Payment_Gateway
 		$order = new WC_Order($order_id);
 		$order->update_status('pending', __('Awaiting payment confirmation', 'MPM'));
 
+		$webhook = admin_url('admin-ajax.php') . '?action=mollie_webhook';
+
 		$data = array(
 			"amount"			=> $order->get_total(),
-			"description"		=> str_replace('%', $order_id,$mpm->get_option('description', 'Order %')),
-			"redirectUrl"		=> $mpm->get_return_link() . '&order='.$order_id.'&key='.$order->order_key,
+			"description"		=> str_replace('%', $order_id, $mpm->get_option('description', 'Order %')),
+			"redirectUrl"		=> $mpm->return->get_return_link() . '&order='.$order_id.'&key='.$order->order_key,
 			"method"			=> $this->id,
 			"issuer"			=> empty($_POST["mpm_issuer_" . $this->id]) ? null : $_POST["mpm_issuer_" . $this->id],
 			"metadata"			=> array(
@@ -133,41 +135,67 @@ class MPM_Gateway extends WC_Payment_Gateway
 			),
 		);
 
+		if (filter_var($webhook, FILTER_VALIDATE_URL) && $mpm->get_option('use_profile_webhook', 'no') === 'no')
+		{
+			$data['webhookUrl'] = $webhook;
+		}
+
+
 		if (isset($order->billing_city))
 		{
-			$data['billingCity']    = $order->billing_city;
+			$data['billingCity'] = $order->billing_city;
 		}
 		if (isset($order->billing_state))
 		{
-			$data['billingRegion']  = $order->billing_state;
+			$data['billingRegion'] = $order->billing_state;
 		}
 		if (isset($order->billing_postcode))
 		{
-			$data['billingPostal']  = $order->billing_postcode;
+			$data['billingPostal'] = $order->billing_postcode;
 		}
 		if (isset($order->billing_country))
 		{
 			$data['billingCountry'] = $order->billing_country;
 		}
 
+
 		if (isset($order->shipping_city))
 		{
-			$data['shippingCity']    = $order->shipping_city;
+			$data['shippingCity'] = $order->shipping_city;
 		}
 		if (isset($order->shipping_state))
 		{
-			$data['shippingRegion']  = $order->shipping_state;
+			$data['shippingRegion'] = $order->shipping_state;
 		}
 		if (isset($order->shipping_postcode))
 		{
-			$data['shippingPostal']  = $order->shipping_postcode;
+			$data['shippingPostal'] = $order->shipping_postcode;
 		}
 		if (isset($order->shipping_country))
 		{
 			$data['shippingCountry'] = $order->shipping_country;
 		}
 
-		$payment = $mpm->api->payments->create($data);
+		try
+		{
+			$payment = $mpm->api->payments->create($data);
+		}
+		catch (Mollie_API_Exception $e)
+		{
+			if (defined('WB_DEBUG') && WP_DEBUG)
+			{
+				$woocommerce->add_error(__('Could not create payment.', 'MPM') . ' Reason: ' . $e->getMessage());
+			}
+			else
+			{
+				$woocommerce->add_error(__('Could not create payment.', 'MPM'));
+			}
+
+			return array('result' => 'failure');
+		}
+
+		add_post_meta($order_id, '_is_mollie_payment', TRUE, TRUE);
+		add_post_meta($order_id, '_mollie_transaction_id', $payment->id, TRUE);
 
 		$woocommerce->cart->empty_cart();
 

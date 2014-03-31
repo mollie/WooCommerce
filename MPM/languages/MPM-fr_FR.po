@@ -1,10 +1,11 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Mollie Payment Module\n"
-"POT-Creation-Date: 2014-02-27 13:01+0100\n"
-"PO-Revision-Date: 2014-02-27 14:01+0100\n"
+"POT-Creation-Date: 2014-03-31 10:29+0100\n"
+"PO-Revision-Date: 2014-03-31 10:30+0100\n"
 "Last-Translator: \n"
 "Language-Team: Mollie <info@mollie.nl>\n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -12,71 +13,139 @@ msgstr ""
 "X-Poedit-Basepath: ../\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Poedit-KeywordsList: __\n"
-"Language: fr\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: mpm_gateway.php:96
+#: MPM/mpm_gateway.php:96
 msgid "Select your bank:"
 msgstr "Sélectionnez votre banque:"
 
-#: mpm_gateway.php:113
+#: MPM/mpm_gateway.php:123
 msgid "Awaiting payment confirmation"
 msgstr "En attente d'une confirmation du paiement"
 
-#: mpm_settings.php:86
-msgid "Payment error:"
-msgstr "Erreur:"
+#: MPM/mpm_gateway.php:187 MPM/mpm_gateway.php:191
+msgid "Could not create payment."
+msgstr "Création du paiement échoué."
 
-#: mpm_settings.php:101
+#: MPM/mpm_return.php:21
 msgid "Welcome Back"
 msgstr "Merci pour votre achat"
 
-#: mpm_settings.php:108
+#: MPM/mpm_return.php:28
 msgid "Error: Could not find nor generate return page!"
 msgstr ""
 "Erreur: Page du retour n'existe pas! (Et creation automatique n'a pas marché)"
 
-#: mpm_settings.php:115
+#: MPM/mpm_return.php:35
 msgid "Payment Pending"
 msgstr "En attente de paiement"
 
-#: mpm_settings.php:116
+#: MPM/mpm_return.php:36
 msgid "Payment Failed"
 msgstr "Paiement échoué"
 
-#: mpm_settings.php:117
+#: MPM/mpm_return.php:37
 msgid "Payment Cancelled"
 msgstr "Paiement annulé"
 
-#: mpm_settings.php:118
+#: MPM/mpm_return.php:38
 msgid "Processing Order"
 msgstr "Traitement de la commande"
 
-#: mpm_settings.php:119
+#: MPM/mpm_return.php:39
 msgid "Order Complete"
 msgstr "Commande réussi"
 
-#: mpm_settings.php:120
+#: MPM/mpm_return.php:40
 msgid "Mollie Return Page"
 msgstr "Page retour de Mollie"
 
-#: mpm_settings.php:135
+#: MPM/mpm_return.php:102
+msgid "Your order was not recognised as being a valid order from this shop."
+msgstr ""
+"Votre commande n'a pas été reconnu comme commande valide de cette boutique."
+
+#: MPM/mpm_return.php:103
+msgid ""
+"If you did buy something in this shop, something apparently went wrong, and "
+"you should contact us as soon as possible."
+msgstr ""
+"Si vous avez achetée quelque chose dans ce magasin, il y a eu un erreur et "
+"on vous prie de nous contacter le plus vite possible."
+
+#: MPM/mpm_return.php:106
+msgid "Order status:"
+msgstr "État de la commande:"
+
+#: MPM/mpm_return.php:112
+msgid ""
+"We have not received a definite payment status. You will receive an email as "
+"soon as we receive a confirmation of the bank/merchant."
+msgstr ""
+"Nous n'avons pas reçu une status de paiement definitive. Vous recevez une e-"
+"mail dés qu'on reçois une confirmation de la banque/commerçant."
+
+#: MPM/mpm_return.php:115
+msgid ""
+"Unfortunately your order cannot be processed as the originating bank/"
+"merchant has declined your transaction."
+msgstr ""
+"Malheureusement votre commande ne peut pas être traitée, car la banque/"
+"commerçant a refusé la transaction."
+
+#: MPM/mpm_return.php:116
+msgid "Please attempt your purchase again"
+msgstr "Vous êtes priée de recommencer votre achat."
+
+#: MPM/mpm_return.php:119
+msgid "You have cancelled your order."
+msgstr "Vous avez annulé votre transaction."
+
+#: MPM/mpm_return.php:123
+msgid "Thank you. Your order has been received."
+msgstr "Merci. Votre commande a été reçu."
+
+#: MPM/mpm_return.php:125
+msgid "Order:"
+msgstr "Commande:"
+
+#: MPM/mpm_return.php:126
+msgid "Date:"
+msgstr "Date:"
+
+#: MPM/mpm_return.php:127
+msgid "Total:"
+msgstr "Total:"
+
+#: MPM/mpm_return.php:130
+msgid "Payment method:"
+msgstr "Méthode de paiement:"
+
+#: MPM/mpm_return.php:192
+msgid "Error: Return page not found!"
+msgstr "Erreur: Page de retour introuvable!"
+
+#: MPM/mpm_settings.php:92
+msgid "Payment error:"
+msgstr "Erreur:"
+
+#: MPM/mpm_settings.php:108
 msgid "Enable/Disable"
 msgstr "Activer / Désactiver"
 
-#: mpm_settings.php:136
+#: MPM/mpm_settings.php:109
 msgid "Enable Mollie Payment Module"
 msgstr "Activer la Module Paiement Mollie"
 
-#: mpm_settings.php:139
+#: MPM/mpm_settings.php:112
 msgid "Enable or disable the Mollie Payment Module."
 msgstr "Activer ou désactiver la Module Paiement Mollie."
 
-#: mpm_settings.php:143
+#: MPM/mpm_settings.php:116
 msgid "Api Key"
 msgstr "Clef Api"
 
-#: mpm_settings.php:146
+#: MPM/mpm_settings.php:119
 msgid ""
 "You can find your API key in your Mollie website profile. It starts with "
 "test or live. This key connects your Mollie Profile to the Woocommerce shop."
@@ -85,11 +154,11 @@ msgstr ""
 "commence par test ou live. Cette clef connectera votre Profile Mollie a "
 "votre boutique-en-ligne."
 
-#: mpm_settings.php:150
+#: MPM/mpm_settings.php:123
 msgid "Description"
 msgstr "Description"
 
-#: mpm_settings.php:153
+#: MPM/mpm_settings.php:126
 msgid ""
 "Enter a description here. Use \"%\" for the order id. Payment methods may "
 "have a character limit: best keep the description under 29 characters."
@@ -98,115 +167,125 @@ msgstr ""
 "Methodes de paiement peuvent avoir une limite de caractères, vous êtes "
 "conseillez de garder la description sous les 29 caractères."
 
-#: mpm_settings.php:157
+#: MPM/mpm_settings.php:130
 msgid "Show Images"
 msgstr "Montrer les images"
 
-#: mpm_settings.php:158
+#: MPM/mpm_settings.php:131
 msgid "Display payment method logos"
 msgstr "Montrer les logos des methodes de paiement"
 
-#: mpm_settings.php:161
+#: MPM/mpm_settings.php:134
 msgid "Show or hide the payment method logos."
 msgstr "Montrer ou cacher les logos des methodes de paiement."
 
-#: mpm_settings.php:177
+#: MPM/mpm_settings.php:154
 msgid "Your Api Key should start with test or live."
 msgstr "Votre Clef Api devrais commencer par test ou live."
 
-#: mpm_settings.php:180
-msgid "Your webhook URL is:"
-msgstr "L'URL de votre webhook est:"
-
-#: mpm_settings.php:186
-msgid ""
-"Copy this webhook into your <a href=\"https://www.mollie.nl/beheer/account/"
-"profielen/\">Mollie website profile</a>."
-msgstr ""
-"Copiez cette webhook dans votre <a href=\"https://www.mollie.nl/beheer/"
-"account/profielen/\">Profile site-web de Mollie</a>."
-
-#: mpm_settings.php:191
-msgid ""
-"Warning: It seems you haven't configured your webhook in your Mollie "
-"Profile. Without webhook, orders will stay in pending status.<br />To "
-"configure your webhook, copy the above URL into your <a href=\"https://www."
-"mollie.nl/beheer/account/profielen/\">Mollie Profile</a>."
-msgstr ""
-"Alerte: Il semble que voir n'avez pas configuré votre webhook dans votre "
-"Profile chez Mollie. Sans webhook, les commandes resteraient en attente.<br /"
-">Pour configurer votre webhook, copiez l'URL au dessus dans votre <a href="
-"\"https://www.mollie.nl/beheer/account/profielen/\">Profile site-web de "
-"Mollie</a>."
-
-#: mpm_settings.php:195
+#: MPM/mpm_settings.php:158
 msgid ""
 "Warning: Mollie Payment methods are only available for payments in Euros."
 msgstr ""
 "Alerte: Les methodes de paiement de Mollie ne sont disponibles seulement "
 "pour payements en Euros."
 
-#: mpm_settings.php:316
-msgid "Your order was not recognised as being a valid order from this shop."
+#: MPM/mpm_settings.php:173
+msgid "Warning: Could not retrieve update xml file from GitHub."
 msgstr ""
-"Votre commande n'a pas été reconnu comme commande valide de cette boutique."
+"Avertissement: Le fichier d'actualisation de GitHub n'a pas été trouvé."
 
-#: mpm_settings.php:317
+#: MPM/mpm_settings.php:186
+#, php-format
 msgid ""
-"If you did buy something in this shop, something apparently went wrong, and "
-"you should contact us as soon as possible."
+"You are currently using version %s. We strongly recommend you to upgrade to "
+"the new version %s!"
 msgstr ""
-"Si vous avez achetée quelque chose dans ce magasin, il y a eu un erreur et "
-"on vous prie de nous contacter le plus vite possible."
+"Vous utilisez actuellement la version %s. Nous vous conseillons d'installer "
+"la nouvelle version %s!"
 
-#: mpm_settings.php:320
-msgid "Order status:"
-msgstr "État de la commande:"
+#: MPM/mpm_settings.php:193
+msgid "Warning: Update xml file from GitHub follows an unexpected format."
+msgstr ""
+"Avertissement: Le fichier d'actualisation de GitHub suit un format inattendu."
 
-#: mpm_settings.php:326
+#: MPM/mpm_settings.php:330
+#, php-format
+msgid "Refund order %d online"
+msgstr "Rembourser la commande %d en-ligne"
+
+#: MPM/mpm_settings.php:331
 msgid ""
-"We have not received a definite payment status. You will receive an email as "
-"soon as we receive a confirmation of the bank/merchant."
+"Are you sure you want to refund this transaction? This cannot be undone!"
 msgstr ""
-"Nous n'avons pas reçu une status de paiement definitive. Vous recevez une e-"
-"mail dés qu'on reçois une confirmation de la banque/commerçant."
+"Êtes-vous sur de vouloir rembourser cette transaction? Ce ne peut pas être "
+"annulé!"
 
-#: mpm_settings.php:329
+#: MPM/mpm_settings.php:332
+msgid "Mollie refund"
+msgstr "Remboursement Mollie"
+
+#: MPM/mpm_settings.php:348
 msgid ""
-"Unfortunately your order cannot be processed as the originating bank/"
-"merchant has declined your transaction."
+"Order refunded. The customer will receive the refunded money on the next "
+"workday."
 msgstr ""
-"Malheureusement votre commande ne peut pas être traitée, car la banque/"
-"commerçant a refusé la transaction."
+"Paiement remboursé. Votre client recevra l'argent la journée de travail "
+"suivant."
 
-#: mpm_settings.php:330
-msgid "Please attempt your purchase again"
-msgstr "Vous êtes priée de recommencer votre achat."
+#: MPM/mpm_settings.php:349
+msgid "Refund failed!"
+msgstr "Remboursement échoué"
 
-#: mpm_settings.php:333
-msgid "You have cancelled your order."
-msgstr "Vous avez annulé votre transaction."
+#: MPM/mpm_settings.php:352
+msgid " Reason: "
+msgstr " Raison:"
 
-#: mpm_settings.php:337
-msgid "Thank you. Your order has been received."
-msgstr "Merci. Votre commande a été reçu."
+#: strings.php:2
+msgid "iDEAL"
+msgstr "iDEAL"
 
-#: mpm_settings.php:339
-msgid "Order:"
-msgstr "Commande:"
+#: strings.php:3
+msgid "Mister Cash"
+msgstr "Mister Cash"
 
-#: mpm_settings.php:340
-msgid "Date:"
-msgstr "Date:"
+#: strings.php:4
+msgid "Creditcard"
+msgstr "Carte de crédit"
 
-#: mpm_settings.php:341
-msgid "Total:"
-msgstr "Total:"
+#: strings.php:5
+msgid "Bank transfer"
+msgstr "Virement girale"
 
-#: mpm_settings.php:344
-msgid "Payment method:"
-msgstr "Méthode de paiement:"
+#: strings.php:6
+msgid "PayPal"
+msgstr "PayPal"
 
-#: mpm_settings.php:406
-msgid "Error: Return page not found!"
-msgstr "Erreur: Page de retour introuvable!"
+#: strings.php:7
+msgid "paysafecard"
+msgstr "paysafecard"
+
+#~ msgid "Overboeking"
+#~ msgstr "Virement"
+
+#~ msgid "Your webhook URL is:"
+#~ msgstr "L'URL de votre webhook est:"
+
+#~ msgid ""
+#~ "Copy this webhook into your <a href=\"https://www.mollie.nl/beheer/"
+#~ "account/profielen/\">Mollie website profile</a>."
+#~ msgstr ""
+#~ "Copiez cette webhook dans votre <a href=\"https://www.mollie.nl/beheer/"
+#~ "account/profielen/\">Profile site-web de Mollie</a>."
+
+#~ msgid ""
+#~ "Warning: It seems you haven't configured your webhook in your Mollie "
+#~ "Profile. Without webhook, orders will stay in pending status.<br />To "
+#~ "configure your webhook, copy the above URL into your <a href=\"https://"
+#~ "www.mollie.nl/beheer/account/profielen/\">Mollie Profile</a>."
+#~ msgstr ""
+#~ "Alerte: Il semble que voir n'avez pas configuré votre webhook dans votre "
+#~ "Profile chez Mollie. Sans webhook, les commandes resteraient en attente."
+#~ "<br />Pour configurer votre webhook, copiez l'URL au dessus dans votre <a "
+#~ "href=\"https://www.mollie.nl/beheer/account/profielen/\">Profile site-web "
+#~ "de Mollie</a>."

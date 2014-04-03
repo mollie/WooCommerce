@@ -37,7 +37,7 @@ class MPM_Settings extends WC_Settings_API
 	/** @var $return MPM_return|null */
 	public $return = null;
 
-	public $plugin_version = '1.1.0';
+	public $plugin_version = '1.1.1';
 	public $update_url = 'https://github.com/mollie/WooCommerce';
 
 	public function __construct()

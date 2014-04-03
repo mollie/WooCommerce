@@ -216,6 +216,16 @@ class MPM_Settings extends WC_Settings_API
 	}
 
 	/**
+	 * Fix for the subscription plugin
+	 * @see https://github.com/mollie/WooCommerce/issues/1
+	 * @param $feature
+	 * @return bool
+	 */
+	public function supports( $feature ) {
+		return apply_filters( 'woocommerce_payment_gateway_supports', in_array( $feature, $this->supports ) ? true : false, $feature, $this );
+	}
+
+	/**
 	 * We need a get_title method to prevent the settings page from breaking.
 	 * This title is used in the method sorting order, it encompasses all Mollie methods
 	 * @return string
@@ -358,13 +368,21 @@ class MPM_Settings extends WC_Settings_API
 	 * If default option is the Mollie Payment Module, refine it to the first available method
 	 * @param string $code
 	 * @return string
+	 * @see https://github.com/mollie/WooCommerce/issues/2
 	 */
 	public function set_default_gateway($code = '')
 	{
+		// If on admin page, return the original value
+		if (strpos($_SERVER['PHP_SELF'], 'wp-admin/admin.php') !== FALSE)
+		{
+			return $code;
+		}
+		// If on payment page and 'mpm' is selected, return correct gateway
 		if ($code === 'mpm' && !empty($this->methods))
 		{
 			return current($this->methods)->id;
 		}
+		// Return default value
 		return $code;
 	}
 }

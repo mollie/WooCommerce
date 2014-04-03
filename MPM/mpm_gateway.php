@@ -102,16 +102,6 @@ class MPM_Gateway extends WC_Payment_Gateway
 	}
 
 	/**
-	 * Fix for the subscription plugin
-	 * @see https://github.com/mollie/WooCommerce/issues/1
-	 * @param $feature
-	 * @return bool
-	 */
-	public function supports( $feature ) {
-		return apply_filters( 'woocommerce_payment_gateway_supports', in_array( $feature, $this->supports ) ? true : false, $feature, $this );
-	}
-
-	/**
 	 * Sends a payment request to Mollie, redirects the user to the payscreen.
 	 * @param int $order_id
 	 * @return array|void

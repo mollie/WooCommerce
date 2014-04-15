@@ -37,7 +37,7 @@ class MPM_Settings extends WC_Settings_API
 	/** @var $return MPM_return|null */
 	public $return = null;
 
-	public $plugin_version = '1.1.1';
+	public $plugin_version = '1.1.2';
 	public $update_url = 'https://github.com/mollie/WooCommerce';
 
 	public function __construct()
@@ -75,23 +75,6 @@ class MPM_Settings extends WC_Settings_API
 
 			// Shortcodes
 			add_shortcode('mollie_return_page', array(&$this->return, 'return_page_render'));
-
-			// Load available methods from API
-			try
-			{
-				global $wp_version;
-				$this->api = new Mollie_API_Client;
-				$this->api->setApiKey($this->get_option('api_key'));
-				$this->api->addVersionString('WordPress/' . (isset($wp_version) ? $wp_version : 'Unknown'));
-				$this->api->addVersionString('WooCommerce/' . get_option('woocommerce_version', 'Unknown'));
-				$this->api->addVersionString('MollieWoo/' . $this->plugin_version);
-				$this->methods = $this->api->methods->all();
-			}
-			catch (Mollie_API_Exception $e)
-			{
-				$this->errors[] = __('Payment error:', 'MPM') . $e->getMessage();
-				$this->display_errors();
-			}
 		}
 
 		return $mpm;
@@ -384,5 +367,63 @@ class MPM_Settings extends WC_Settings_API
 		}
 		// Return default value
 		return $code;
+	}
+
+	/**
+	 * Retrieve the api client
+	 * @return Mollie_API_Client|null
+	 */
+	public function get_api()
+	{
+		// Only load it if not already there
+		if (is_null($this->api))
+		{
+			try
+			{
+				global $wp_version;
+				$this->api = new Mollie_API_Client;
+				$this->api->setApiKey($this->get_option('api_key'));
+				$this->api->addVersionString('WordPress/' . (isset($wp_version) ? $wp_version : 'Unknown'));
+				$this->api->addVersionString('WooCommerce/' . get_option('woocommerce_version', 'Unknown'));
+				$this->api->addVersionString('MollieWoo/' . $this->plugin_version);
+			}
+			catch (Mollie_API_Exception $e)
+			{
+				$this->errors[] = __('Payment error:', 'MPM') . $e->getMessage();
+				$this->display_errors();
+			}
+		}
+		return $this->api;
+	}
+
+	/**
+	 * Retrieve the Mollie methods
+	 * @return array|Mollie_API_Object_List|Mollie_API_Object_Method[]
+	 */
+	public function get_methods()
+	{
+		// If we have them, give them
+		if (!empty($this->methods))
+		{
+			return $this->methods;
+		}
+		// If we don't even have the api yet, get it
+		if (is_null($this->api))
+		{
+			$this->api = $this->get_api();
+		}
+
+		// Retrieve the methods or fail with error
+		try
+		{
+			$this->methods = $this->api->methods->all();
+			return $this->methods;
+		}
+		catch (Mollie_API_Exception $e)
+		{
+			$this->errors[] = __('Payment error:', 'MPM') . $e->getMessage();
+			$this->display_errors();
+			return array();
+		}
 	}
 }

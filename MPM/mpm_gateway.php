@@ -33,12 +33,13 @@ class MPM_Gateway extends WC_Payment_Gateway
 	{
 		// Register this method with MPM_Settings
 		global $mpm;
-		if ($mpm->count >= count($mpm->methods))
+		$methods = $mpm->get_methods();
+		if ($mpm->count >= count($methods))
 		{
 			$mpm->count = 0;
 		}
 		$this->method_index = $mpm->count++;
-		$this->_data = $mpm->methods[$this->method_index];
+		$this->_data = $methods[$this->method_index];
 
 		// Assign ids and titles
 		$this->id = $this->_data->id;
@@ -47,7 +48,7 @@ class MPM_Gateway extends WC_Payment_Gateway
 		$this->title = __($this->_data->description); // translate visual title
 
 		// Define issuers (if any)
-		$issuers = $mpm->api->issuers->all();
+		$issuers = $mpm->get_api()->issuers->all();
 		$this->has_fields = FALSE;
 		$this->issuers = array();
 		foreach ($issuers as $issuer)
@@ -168,7 +169,7 @@ class MPM_Gateway extends WC_Payment_Gateway
 
 		try
 		{
-			$payment = $mpm->api->payments->create($data);
+			$payment = $mpm->get_api()->payments->create($data);
 		}
 		catch (Mollie_API_Exception $e)
 		{

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MPM - Mollie Payment Module
  * Plugin URI: https://github.com/Mollie/WooCommerce/releases
- * Version: 1.1.1
+ * Version: 1.1.2
  * Description: Integration of the Mollie API for WooCommerce
  * Author: Mollie
  * Author URI: https://www.mollie.nl
@@ -92,7 +92,7 @@ function mpm_webhook()
 	elseif (isset($_REQUEST['id']))
 	{
 		global $mpm;
-		$payment	= $mpm->api->payments->get($_REQUEST['id']);
+		$payment	= $mpm->get_api()->payments->get($_REQUEST['id']);
 		$order_id	= $payment->metadata->order_id;
 		$order		= new WC_Order( $order_id );
 
@@ -147,9 +147,9 @@ function mpm_refund()
 			try
 			{
 				$transaction_id = get_post_meta($order_id, '_mollie_transaction_id', TRUE);
-				$transaction = $mpm->api->payments->get($transaction_id);
+				$transaction = $mpm->get_api()->payments->get($transaction_id);
 				// Actual refund
-				$mpm->api->payments->refund($transaction);
+				$mpm->get_api()->payments->refund($transaction);
 				$order->update_status('refunded');
 				$error = '';
 			}

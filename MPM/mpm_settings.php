@@ -29,15 +29,15 @@ class MPM_Settings extends WC_Settings_API
 {
 	// Keep track of payment methods
 	public $count = 0;
-	public $methods = array();
+	protected $methods = array();
 
 	/** @var $api Mollie_API_Client|null */
-	public $api = null;
+	protected $api = null;
 
 	/** @var $return MPM_return|null */
 	public $return = null;
 
-	public $plugin_version = '1.1.2';
+	public $plugin_version = '1.1.3';
 	public $update_url = 'https://github.com/mollie/WooCommerce';
 
 	public function __construct()
@@ -233,7 +233,7 @@ class MPM_Settings extends WC_Settings_API
 			if ($this->get_option('enabled') === 'yes' && get_option('woocommerce_currency', 'unknown') === 'EUR')
 			{
 				// Add as much gateways as we have payment methods (they will claim their own indices)
-				for ($i = count($this->methods); $i > 0; $i--)
+				for ($i = count($this->get_methods()); $i > 0; $i--)
 				{
 					$gateways[] = 'MPM_Gateway';
 				}
@@ -256,7 +256,11 @@ class MPM_Settings extends WC_Settings_API
 	{
 		// Retrieve correct gateway position (tougher than it sounds)
 		$pos_list = (array) get_option('woocommerce_gateway_order');
-		$pos_orig = $pos_list['mpm'];
+		$pos_orig = 0;
+		if (array_key_exists('mpm', $pos_list))
+		{
+			$pos_orig = $pos_list['mpm'];
+		}
 		$pos = $pos_orig;
 		$wc = WC_Payment_Gateways::instance();
 		$all_gateways = $wc->payment_gateways();
@@ -274,15 +278,17 @@ class MPM_Settings extends WC_Settings_API
 		if ($this->get_option('enabled') === 'yes' && get_option('woocommerce_currency', 'unknown') === 'EUR')
 		{
 			// Add as much gateways as we have payment methods (they will claim their own indices)
-			for ($i = 0; $i < count($this->methods); $i++)
+			$methods = $this->get_methods();
+			for ($i = 0; $i < count($methods); $i++)
 			{
-				$mollie_gateways[$this->methods[$i]->id] = new MPM_Gateway();
+				$mollie_gateways[$methods[$i]->id] = new MPM_Gateway();
 			}
 		}
 
 		$head = array_slice($gateways, 0, $pos);
 		$tail = array_slice($gateways, $pos);
-		return array_merge($head, $mollie_gateways, $tail);
+		$gateways = array_merge($head, $mollie_gateways, $tail);
+		return $gateways;
 	}
 
 
@@ -290,9 +296,10 @@ class MPM_Settings extends WC_Settings_API
 	 * Retrieves and returns an order by id or false if its key is valid
 	 * @param $id
 	 * @param $key
+	 * @param $ignore_key
 	 * @return bool|WC_Order
 	 */
-	public function order_get($id, $key)
+	public function order_get($id, $key, $ignore_key = FALSE)
 	{
 		global $wpdb;
 		$q = $wpdb->get_row("SELECT * FROM `$wpdb->posts` WHERE `post_type` = 'shop_order' AND `id` = '" . (int) $id . "'", 'ARRAY_A');
@@ -301,7 +308,7 @@ class MPM_Settings extends WC_Settings_API
 			return FALSE;
 		}
 		$order = new WC_Order($id);
-		if (!$order->key_is_valid($key))
+		if (!$ignore_key && !$order->key_is_valid($key))
 		{
 			return FALSE;
 		}
@@ -361,9 +368,10 @@ class MPM_Settings extends WC_Settings_API
 			return $code;
 		}
 		// If on payment page and 'mpm' is selected, return correct gateway
-		if ($code === 'mpm' && !empty($this->methods))
+		$methods = $this->get_methods();
+		if ($code === 'mpm' && !empty($methods))
 		{
-			return current($this->methods)->id;
+			return current($methods)->id;
 		}
 		// Return default value
 		return $code;

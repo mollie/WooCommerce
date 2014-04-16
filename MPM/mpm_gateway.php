@@ -110,7 +110,20 @@ class MPM_Gateway extends WC_Payment_Gateway
 	public function process_payment($order_id)
 	{
 		global $mpm, $woocommerce;
-		$order = new WC_Order($order_id);
+		$order = $mpm->order_get($order_id, null, true);
+		if ($order === FALSE)
+		{
+			if (defined('WB_DEBUG') && WP_DEBUG)
+			{
+				$woocommerce->add_error(__('Could not create payment.', 'MPM') . ' Reason: invalid order ID');
+			}
+			else
+			{
+				$woocommerce->add_error(__('Could not create payment.', 'MPM'));
+			}
+			return array('result' => 'failure');
+		}
+
 		$order->update_status('pending', __('Awaiting payment confirmation', 'MPM'));
 
 		$webhook = admin_url('admin-ajax.php') . '?action=mollie_webhook';

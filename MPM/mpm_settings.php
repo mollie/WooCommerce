@@ -34,6 +34,11 @@ class MPM_Settings extends WC_Settings_API
 	/** @var $api Mollie_API_Client|null */
 	protected $api = null;
 
+	/**
+	 * @var array
+	 */
+	public $supports = array();
+
 	/** @var $return MPM_return|null */
 	public $return = null;
 
@@ -205,7 +210,7 @@ class MPM_Settings extends WC_Settings_API
 	 * @return bool
 	 */
 	public function supports( $feature ) {
-		return apply_filters( 'woocommerce_payment_gateway_supports', in_array( $feature, $this->supports ) ? true : false, $feature, $this );
+		return apply_filters( 'woocommerce_payment_gateway_supports', in_array( $feature, $this->supports ), $feature, $this );
 	}
 
 	/**

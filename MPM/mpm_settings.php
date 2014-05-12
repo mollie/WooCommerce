@@ -116,7 +116,7 @@ class MPM_Settings extends WC_Settings_API
 			),
 			'show_images' => array(
 				'title'			=> __('Show Images', 'MPM'),
-				'label'			=> __('Display payment method logos'),
+				'label'			=> __('Display payment method logos', 'MPM'),
 				'default'		=> 'yes',
 				'type'			=> 'checkbox',
 				'description'	=> __('Show or hide the payment method logos.', 'MPM'),

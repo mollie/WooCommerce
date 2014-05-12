@@ -45,7 +45,7 @@ class MPM_Gateway extends WC_Payment_Gateway
 		$this->id = $this->_data->id;
 		$this->method_description = $this->_data->description;
 		$this->method_title = $this->_data->description;
-		$this->title = __($this->_data->description); // translate visual title
+		$this->title = __($this->_data->description, 'MPM'); // translate visual title
 
 		// Define issuers (if any)
 		$issuers = $mpm->get_api()->issuers->all();

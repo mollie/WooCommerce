@@ -130,7 +130,7 @@ class MPM_Gateway extends WC_Payment_Gateway
 
 		$data = array(
 			"amount"			=> $order->get_total(),
-			"description"		=> str_replace('%', $order_id, $mpm->get_option('description', 'Order %')),
+			"description"		=> str_replace('%', $order->get_order_number(), $mpm->get_option('description', 'Order %')),
 			"redirectUrl"		=> $mpm->return->get_return_link() . '&order='.$order_id.'&key='.$order->order_key,
 			"method"			=> $this->id,
 			"issuer"			=> empty($_POST["mpm_issuer_" . $this->id]) ? null : $_POST["mpm_issuer_" . $this->id],

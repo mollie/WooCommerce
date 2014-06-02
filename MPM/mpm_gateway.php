@@ -109,6 +109,7 @@ class MPM_Gateway extends WC_Payment_Gateway
 	 */
 	public function process_payment($order_id)
 	{
+		/** @var MPM_Settings $mpm */
 		global $mpm, $woocommerce;
 		$order = $mpm->order_get($order_id, null, true);
 		if ($order === FALSE)
@@ -200,8 +201,6 @@ class MPM_Gateway extends WC_Payment_Gateway
 
 		add_post_meta($order_id, '_is_mollie_payment', TRUE, TRUE);
 		add_post_meta($order_id, '_mollie_transaction_id', $payment->id, TRUE);
-
-		$woocommerce->cart->empty_cart();
 
 		return array(
 			'result' => 'success',

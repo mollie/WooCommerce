@@ -193,7 +193,7 @@ class MPM_return extends MPM_Settings
 			$this->display_errors();
 			return 'error';
 		}
-		return apply_filters('post_link', get_home_url(null, '?p=' . $post_id, null), $post_id, false);
+		return get_permalink($post_id);
 	}
 
 	/**

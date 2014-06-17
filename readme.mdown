@@ -38,6 +38,9 @@ Via [Mollie](https://www.mollie.nl/) is iDEAL gemakkelijk aan te sluiten zonder 
 
 Controleert u alstublieft of de module ingeschakeld is, of WooCommerce ingeschakeld is en of uw webshop Euro's accepteert. U kunt dit aanpassen via de admin. Via Mollie kunnen alleen orders in Euro's afgerekend worden.
 
+**Ik krijg een foutmelding tijdens het installeren**
+Heeft u de module via de [Releases-pagina](https://github.com/mollie/Woocommerce/releases) gedownload? Als uw gedownloade bestand `Woocommerce-master.zip` heeft, moet u het bestand nogmaals downloaden via de [Releases-pagina](https://github.com/mollie/Woocommerce/releases). Deze versie van de module kunt u direct installeren in WooCommerce.
+
 **Moet ik ook een return- en / of webhook-URL instellen?**
 
 Het is niet nodig een redirect URL of webhook in te stellen. Dat doet de module zelf automatisch bij elke order.

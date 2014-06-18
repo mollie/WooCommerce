@@ -27,11 +27,24 @@
 
 class MPM_Gateway extends WC_Payment_Gateway
 {
+	/**
+	 * Does this payment method have any extra fields? Only iDEAL has extra fields.
+	 *
+	 * @var bool
+	 */
+	public $has_fields = FALSE;
+
 	protected $_data = null;
+
+	/**
+	 * @var Mollie_API_Object_Issuer[]
+	 */
+	protected $issuers = array();
 
 	public function __construct()
 	{
 		// Register this method with MPM_Settings
+		/** @var MPM_Settings $mpm */
 		global $mpm;
 		$methods = $mpm->get_methods();
 		if ($mpm->count >= count($methods))
@@ -48,15 +61,11 @@ class MPM_Gateway extends WC_Payment_Gateway
 		$this->title = __($this->_data->description, 'MPM'); // translate visual title
 
 		// Define issuers (if any)
-		$issuers = $mpm->get_api()->issuers->all();
-		$this->has_fields = FALSE;
-		$this->issuers = array();
-		foreach ($issuers as $issuer)
+		$this->issuers = $mpm->get_issuers($this->id);
+
+		if (!empty($this->issuers))
 		{
-			if ($issuer->method === $this->id) {
-				$this->has_fields = TRUE;
-				$this->issuers[] = $issuer;
-			}
+			$this->has_fields = TRUE;
 		}
 
 		// Assign image

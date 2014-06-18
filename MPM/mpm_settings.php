@@ -29,7 +29,6 @@ class MPM_Settings extends WC_Settings_API
 {
 	// Keep track of payment methods
 	public $count = 0;
-	protected $methods = array();
 
 	/** @var $api Mollie_API_Client|null */
 	protected $api = null;
@@ -410,27 +409,93 @@ class MPM_Settings extends WC_Settings_API
 	}
 
 	/**
-	 * Retrieve the Mollie methods
+	 * @var NULL|Mollie_API_Object_Method[]
+	 */
+	private static $_methods;
+
+	/**
+	 * Retrieve the enabled payment methods from the Mollie API. Caches these for about a minute.
+	 *
 	 * @return array|Mollie_API_Object_List|Mollie_API_Object_Method[]
 	 */
 	public function get_methods()
 	{
-		// If we have them, give them
-		if (!empty($this->methods))
-		{
-			return $this->methods;
-		}
-		// If we don't even have the api yet, get it
-		if (is_null($this->api))
-		{
-			$this->api = $this->get_api();
-		}
-
 		// Retrieve the methods or fail with error
 		try
 		{
-			$this->methods = $this->api->methods->all();
-			return $this->methods;
+			if (empty(self::$_methods))
+			{
+				$cached = @unserialize(get_transient('mpm_api_methods'));
+
+				if ($cached instanceof Mollie_API_Object_List)
+				{
+					self::$_methods = $cached;
+				}
+				else
+				{
+					self::$_methods = $this->get_api()->methods->all();
+					set_transient('mpm_api_methods', self::$_methods, MINUTE_IN_SECONDS);
+				}
+			}
+
+			return self::$_methods;
+		}
+		catch (Mollie_API_Exception $e)
+		{
+			$this->errors[] = __('Payment error:', 'MPM') . $e->getMessage();
+			$this->display_errors();
+			return array();
+		}
+	}
+
+	/**
+	 * @var NULL|Mollie_API_Object_Issuer[]
+	 */
+	private static $_issuers;
+
+	/**
+	 * Get the issuers from the Mollie API. Caches these in Wordpress cache for about a day.
+	 *
+	 * @param string|NULL $method Filter issuers by method
+	 * @return Mollie_API_Object_Issuer[]
+	 */
+	public function get_issuers ($method = NULL)
+	{
+		// Retrieve the issuers or fail with error
+		try
+		{
+			if (empty(self::$_issuers))
+			{
+				$cached = @unserialize(get_transient('mpm_api_issuers'));
+
+				if ($cached instanceof Mollie_API_Object_List)
+				{
+					self::$_issuers = $cached;
+				}
+				else
+				{
+					self::$_issuers = $this->get_api()->issuers->all();
+					set_transient('mpm_api_issuers', self::$_issuers, DAY_IN_SECONDS);
+				}
+			}
+
+			// Filter issuers by method
+			if ($method !== NULL)
+			{
+				$issuers = array();
+
+				foreach(self::$_issuers AS $issuer)
+				{
+					if ($issuer->method === $method)
+					{
+						$issuers[] = $issuer;
+					}
+				}
+
+				return $issuers;
+			}
+
+			return self::$_issuers;
 		}
 		catch (Mollie_API_Exception $e)
 		{

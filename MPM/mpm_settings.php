@@ -136,10 +136,17 @@ class MPM_Settings extends WC_Settings_API
 	{
 		parent::admin_options();
 		$key = $this->get_option('api_key', '');
+
 		if ($key != '' && strpos($key, 'live') !== 0 && strpos($key, 'test') !== 0)
 		{
 			echo '<div class="error">' . __('Your Api Key should start with test or live.', 'MPM') . '</div>';
 		}
+		else
+		{
+			delete_transient('mpm_api_methods');
+			delete_transient('mpm_api_issuers');
+		}
+
 		if (get_option('woocommerce_currency', 'unknown') !== 'EUR')
 		{
 			echo '<div class="error">' . __('Warning: Mollie Payment methods are only available for payments in Euros.', 'MPM') . '</div>';

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MPM - Mollie Payment Module
  * Plugin URI: https://github.com/Mollie/WooCommerce/releases
- * Version: 1.2.2
+ * Version: 1.2.3
  * Description: Integration of the Mollie API for WooCommerce
  * Author: Mollie
  * Author URI: https://www.mollie.nl

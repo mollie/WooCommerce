@@ -49,7 +49,11 @@ Heeft u de module via de [Releases-pagina](https://github.com/mollie/Woocommerce
 
 Het is niet nodig een redirect URL of webhook in te stellen. Dat doet de module zelf automatisch bij elke order.
 
-**Ik heb een probleem met deze module.**
+**Bestellingen die gedaan worden via Overboeking verlopen na 60 minuten al. Hoe los ik dit op?**
+
+Pas onder WooCommerce > Producten | Voorraad het aantal minuten aan naar 14400 (10 dagen) zodat de bestelling niet vroegtijdig verloopt. Standaard is dit door WooCommerce ingesteld op 60 minuten.
+
+**Ik heb een ander probleem met deze module.**
 
 Neemt u alstublieft contact op met info@mollie.nl voor ondersteuning.
 

@@ -136,7 +136,7 @@ function mpm_refund()
 		$order_id = intval($_REQUEST['id']);
 		$key = $_REQUEST['key'];
 
-		if (!isset($_REQUEST['nonce']) || !wp_verify_nonce($_REQUEST['nonce'], 'mollie_refund') || $order = $mpm->order_get($order_id, $key) === FALSE)
+		if (!isset($_REQUEST['nonce']) || !wp_verify_nonce($_REQUEST['nonce'], 'mollie_refund') || !($order = $mpm->order_get($order_id, $key)))
 		{
 			// invalid nonce or order key
 			$error = 'Invalid input';

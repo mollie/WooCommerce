@@ -123,7 +123,7 @@ class MPM_Gateway extends WC_Payment_Gateway
 		$order = $mpm->order_get($order_id, null, true);
 		if ($order === FALSE)
 		{
-			if (defined('WB_DEBUG') && WP_DEBUG)
+			if (defined('WP_DEBUG') && WP_DEBUG)
 			{
 				$woocommerce->add_error(__('Could not create payment.', 'MPM') . ' Reason: invalid order ID');
 			}
@@ -198,7 +198,7 @@ class MPM_Gateway extends WC_Payment_Gateway
 		}
 		catch (Mollie_API_Exception $e)
 		{
-			if (defined('WB_DEBUG') && WP_DEBUG)
+			if (defined('WP_DEBUG') && WP_DEBUG)
 			{
 				$woocommerce->add_error(__('Could not create payment.', 'MPM') . ' Reason: ' . $e->getMessage());
 			}

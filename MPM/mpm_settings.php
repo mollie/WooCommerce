@@ -232,18 +232,21 @@ class MPM_Settings extends WC_Settings_API
 	// Payment Gateway Filters
 
 	/**
-	 * Adds either a number of MPM_Gateways classes or one MPM_Settings class to the gateway list (depending on context)
+	 * Adds either a number of MPM_Gateways classes or one MPM_Settings class to the gateway list.
+	 *
 	 * @param array $gateways
 	 * @return array
 	 */
-	public function gateways_add_dynamic($gateways)
+	public function gateways_add_dynamic ($gateways)
 	{
-		// This is a settings menu and we'll use the settings class instead
-		if (is_admin()) {
+		// This is in the WooCommerce admin settings, so we'll use the Settings class instead.
+		if (is_admin())
+		{
 			$screen = get_current_screen();
-			
-			// Add the settings object as gateway to make it appear in the gateway settings menu
-			if($screen->id == "woocommerce_page_wc-settings") {
+
+			// Add the Settings class as gateway to make it appear in the gateway settings menu.
+			if (stripos($screen->id, 'wc-settings') !== FALSE)
+			{
 				$gateways[] = 'MPM_Settings';
 
 				return $gateways;
@@ -251,10 +254,11 @@ class MPM_Settings extends WC_Settings_API
 		}
 
 		// Otherwise ... add payment gateways
-		if ($this->get_option('enabled') === 'yes' && get_option('woocommerce_currency', 'unknown') === 'EUR')
+		if ($this->get_option('enabled') === 'yes' &&
+			get_option('woocommerce_currency', 'unknown') === 'EUR')
 		{
-			// Add as much gateways as we have payment methods (they will claim their own indices)
-			for ($i = count($this->get_methods()); $i > 0; $i--)
+			// Add as much gateways as we have payment methods (they will claim their own indices).
+			foreach ($this->get_methods() as $method)
 			{
 				$gateways[] = 'MPM_Gateway';
 			}

@@ -96,6 +96,12 @@ function mpm_webhook()
 		$order_id	= $payment->metadata->order_id;
 		$order		= new WC_Order( $order_id );
 
+		// Don't update an already paid order
+		if (!$order->needs_payment())
+		{
+			die('OK');
+		}
+
 		if ($payment->isPaid())
 		{
 			$order->payment_complete();

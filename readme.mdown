@@ -18,8 +18,8 @@ Via [Mollie](https://www.mollie.nl/) is iDEAL gemakkelijk aan te sluiten zonder 
 ### Creditcard ###
 [Creditcard](https://www.mollie.nl/betaaldiensten/creditcard/) is vrijwel de bekendste methode voor het ontvangen van betalingen met wereldwijde dekking. Doordat we onder andere de bekende merken Mastercard en Visa ondersteunen, zorgt dit direct voor veel potentiële kopers.
 
-### Mister Cash ###
-[Mister Cash](https://www.mollie.nl/betaaldiensten/mistercash/) maakt gebruik van een fysieke kaart die gekoppeld is aan tegoed op een Belgische bankrekening. Betalingen via Mister Cash zijn gegarandeerd en lijkt daarmee sterk op iDEAL in Nederland. Daarom is het uitermate geschikt voor uw webwinkel.
+### Bancontact/Mister Cash ###
+[Bancontact/Mister Cash](https://www.mollie.nl/betaaldiensten/mistercash/) maakt gebruik van een fysieke kaart die gekoppeld is aan tegoed op een Belgische bankrekening. Betalingen via Bancontact/Mister Cash zijn gegarandeerd en lijkt daarmee sterk op iDEAL in Nederland. Daarom is het uitermate geschikt voor uw webwinkel.
 
 ### SOFORT Banking ###
 [SOFORT Banking](https://www.mollie.nl/betaaldiensten/sofort/) is één van de populairste betaalmethodes in Duitsland en actief in 11 landen. Betalingen zijn direct en niet storneerbaar, waarmee het sterk op het Nederlandse iDEAL lijkt. Daarom is het uitermate geschikt voor uw webwinkel.
@@ -69,7 +69,7 @@ Contact: [www.mollie.nl](https://www.mollie.nl) — info@mollie.nl — +31 20-61
 
 + [Meer informatie over iDEAL via Mollie](https://www.mollie.nl/betaaldiensten/ideal/)
 + [Meer informatie over Creditcard via Mollie](https://www.mollie.nl/betaaldiensten/creditcard/)
-+ [Meer informatie over Mister Cash via Mollie](https://www.mollie.nl/betaaldiensten/mistercash/)
++ [Meer informatie over Bancontact/Mister Cash via Mollie](https://www.mollie.nl/betaaldiensten/mistercash/)
 + [Meer informatie over SOFORT Banking via Mollie](https://www.mollie.nl/betaaldiensten/sofort/)
 + [Meer informatie over Overboeking via Mollie](https://www.mollie.nl/betaaldiensten/overboeking/)
 + [Meer informatie over PayPal via Mollie](https://www.mollie.nl/betaaldiensten/paypal/)

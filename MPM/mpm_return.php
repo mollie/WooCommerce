@@ -5,31 +5,11 @@ class MPM_return extends MPM_Settings
 	public $return_page = null;
 	public $hide_return_page = true;
 	public $return_page_titles = array();
+        
+        public $wc_order_received_page = null;
 
 	public function __construct()
 	{
-		$this->return_page = $this->get_return_page();
-
-		// Create return page if not exists
-		if ($this->return_page === null)
-		{
-			$page_data = array(
-				'post_status' 		=> 'publish',
-				'post_type' 		=> 'page',
-				'post_author' 		=> 1,
-				'post_name' 		=> 'welcome_back',
-				'post_title' 		=> __('Welcome Back', 'MPM'),
-				'post_content' 		=> '[mollie_return_page]',
-				'post_parent' 		=> 0,
-				'comment_status' 	=> 'closed'
-			);
-			if (!$this->is_return_page(wp_insert_post($page_data)))
-			{
-				$this->errors[] = __('Error: Could not find nor generate return page!', 'MPM');
-				$this->display_errors();
-			}
-		}
-
 		// Set return titles
 		$this->return_page_titles = array(
 			'pending'		=> __('Payment Pending', 'MPM'),
@@ -41,67 +21,21 @@ class MPM_return extends MPM_Settings
 		);
 	}
 
-	/**
-	 * Makes the return page not show up in the menu
-	 * @param $pages
-	 * @return mixed
-	 */
-	public function return_page_hide($pages)
-	{
-		foreach ($pages as $i => $page)
-		{
-			if ($this->is_return_page($page) && $this->hide_return_page)
-			{
-				unset($pages[$i]);
-			}
-		}
-		return $pages;
-	}
-
-	/**
-	 * Alters the return page title.
-	 *
-	 * @param string $title
-	 * @param int $id (Optional) Default NULL.
-	 * @return string
-	 */
-	public function return_page_title ($title, $id = NULL)
-	{
-		if (!$this->is_return_page($id))
-		{
-			return $title;
-		}
-
-		if (!isset($_GET['order']) || !isset($_GET['key']))
-		{
-			return $this->return_page_titles['invalid'];
-		}
-
-		if (!$order = $this->order_get($_GET['order'], $_GET['key']))
-		{
-			return $this->return_page_titles['invalid'];
-		}
-
-		if (!in_array($order->status, array_keys($this->return_page_titles)))
-		{
-			return $this->return_page_titles['invalid'];
-		}
-
-		return $this->return_page_titles[$order->status];
-	}
-
-	/**
-	 * Renders the return page
-	 * @return string
-	 */
-	public function return_page_render()
-	{
-		$order = $this->order_get($_GET['order'], $_GET['key']);
+        /**
+         * Text displayed on order-receive page from WC.
+         * @param string $text
+         * @param WC_Order|null $order
+         * @return string
+         */
+        public function return_page_order_received_text($text, WC_Order $order = null)
+        {
+            // Do we know that the key is checked by WC? check it for sure.
+            $order = $this->order_get(($order != null) ? $order->id : 0, $_GET['key']);
 		if (!$order || !in_array($order->status, array_keys($this->return_page_titles)))
 		{
 			$html = '		<p>' . __('Your order was not recognised as being a valid order from this shop.', 'MPM') . '</p>
 							<p>' . __('If you did buy something in this shop, something apparently went wrong, and you should contact us as soon as possible.', 'MPM') . '</p>';
-			return $html;
+                        return $html;
 		}
 		$html = '<h2>'. __('Order status:', 'MPM') . ' ' . __($order->status, 'woocommerce') . '</h2>';
 
@@ -121,96 +55,143 @@ class MPM_return extends MPM_Settings
 			case 'processing':
 			case 'completed':
 				$html .= '	<p>' . __('Thank you. Your order has been received.', 'MPM') . '</p>
-								<ul class="order_details">
-									<li class="order">' . __('Order:', 'MPM') . ' <strong>' . $order->get_order_number() . '</strong></li>
-									<li class="date">' . __('Date:', 'MPM') . ' <strong>' . date_i18n(get_option('date_format'), strtotime( $order->order_date)) . '</strong></li>
-									<li class="total">' . __('Total:', 'MPM') . ' <strong>' . $order->get_formatted_order_total() . '</strong></li>';
-				if (isset($order->payment_method_title))
-				{
-					$html .= '<li class="method">' . __('Payment method:', 'MPM') . ' <strong>' . __($order->payment_method_title, 'MPM') . '</strong></li>';
-				}
-				$html .= '	</ul>
 								<div class="clear"></div>';
 				break;
 		}
 
-		ob_start();
-		do_action( 'woocommerce_thankyou_' . $order->payment_method, $order->id );
-		do_action( 'woocommerce_thankyou', $order->id );
-		$html .= ob_get_contents();
-		ob_end_clean();
+                return $html;
+        }
+        
+	/**
+	 * Alters the return page title.
+	 *
+	 * @param string $title
+	 * @param int $id (Optional) Default NULL.
+	 * @return string
+	 */
+	public function return_page_title ($title, $id = NULL)
+	{
+            // so if not on the checkout/order-receive page. return title.
+                if (!$this->is_return_page($id))
+		{
+                    return $title;
+		}
 
-		return $html;
+                // if no key isset than we have an invalid request
+		if (!isset($_GET['key']))
+		{
+			return $this->return_page_titles['invalid'];
+		}
+
+                // try retrieve order or we have an invalid request. (invalid id or key)
+		if (!$order = $this->order_get($this->get_order_id_from_request(), $_GET['key']))
+		{
+			return $this->return_page_titles['invalid'];
+		}
+
+		if (!in_array($order->status, array_keys($this->return_page_titles)))
+		{
+			return $this->return_page_titles['invalid'];
+		}
+
+		return $this->return_page_titles[$order->status];
 	}
 
 	/**
-	 * Determines if a certain page contains the [mollie_return_page] shorttag
+	 * Determines if we are on the checkout AND the order-receive endpoint
 	 * @param int|WP_Post $page
 	 * @return bool
 	 */
 	public function is_return_page($page)
 	{
-		if (!is_a($page, 'WP_Post'))
-		{
-			$page = get_post($page);
-		}
-		if (is_null($page))
-		{
-			return FALSE;
-		}
-		return strpos($page->post_content, '[mollie_return_page]') !== FALSE;
+            $receive_page = $this->get_wc_order_received_page();
+            
+            // are we on the checkout endpoint?
+            if (woocommerce_get_page_id('checkout') == $page)
+            {
+                // we are on the checkout and the receive-order isset. so yes
+                if (isset($_GET[$receive_page]))
+                {
+                    return true;
+                }
+                else
+                {
+                    // we are on the checkout endoint but no receive-order isset
+                    // check if we have SEO url and retrieve it from the URI
+                    $current_url = $_SERVER['REQUEST_URI'];
+                    $pos = strpos($current_url, $receive_page);
+                    if ($pos !== FALSE)
+                    {
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
 	}
 
-	/**
-	 * Locates the return page
-	 * @return int|null
-	 */
-	public function get_return_page()
-	{
-		global $wpdb;
-		$q = $wpdb->get_row("SELECT `ID` FROM `$wpdb->posts` WHERE `post_status` = 'publish' AND `post_content` LIKE '%[mollie_return_page]%'", 'ARRAY_A');
-		if (is_null($q) || !array_key_exists('ID', $q))
-		{
-			return NULL;
-		}
-		return $q['ID'];
-	}
-
-	/**
-	 * Makes a permalink of the return page, but always uses page id (no matter the permalink format) because we're changing the return page title
-	 * @return string|null
-	 */
-	public function get_return_link()
-	{
-		if (!$this->return_page)
-		{
-			$this->return_page = $this->get_return_page();
-		}
-		$post_id = $this->return_page;
-		if (is_null($post_id))
-		{
-			$this->errors[] = __('Error: Return page not found!', 'MPM');
-			$this->display_errors();
-			return 'error';
-		}
-		return get_permalink($post_id);
-	}
-
-	/**
+        /**
 	 * When on return page with no query string, redirect to checkout
 	 * @return void
 	 */
 	public function return_page_redirect()
 	{
-		if (is_page($this->return_page))
+            // is_return_page also checks for order-receive endpoint. 
+            // so we force this with the checkout page id.
+		if ($this->is_return_page(woocommerce_get_page_id('checkout')))
 		{
-			$order_id = (int) $_GET['order'];
-			$key = $_GET['key'];
-			if (!$order_id || !$order = $this->order_get($order_id, $key))
+			$order_id = $this->get_order_id_from_request();
+			$key = (isset($_GET['key'])) ? $_GET['key'] : null;
+                        // only when we dont have id or key we redirect..
+			if ($order_id == null || $key == null)
 			{
 				wp_redirect(get_permalink(woocommerce_get_page_id('checkout')));
 				exit;
 			}
 		}
 	}
+        
+        /**
+         * returns the woocommerce order received endpoint. this can be set in 
+         * the woocommerce admin -> settings -> checkout
+         * @return string
+         */
+        public function get_wc_order_received_page()
+        {
+            if ($this->wc_order_received_page == null)
+            {
+                $this->wc_order_received_page = get_option('woocommerce_checkout_order_received_endpoint', 'order-received' );
+            }
+            return $this->wc_order_received_page;
+        }
+        
+        /**
+         * Gets the order id from the request url. 
+         * If not permalink it's in the GET array
+         * If it is a permalink. then parse the id.
+         * @return string|null
+         */
+        public function get_order_id_from_request()
+        {
+            $receive_page = $this->get_wc_order_received_page();
+            if (isset($_GET[$receive_page]))
+            {
+                // no permalink and we have an id.
+                return $_GET[$receive_page];
+            }
+            else
+            {
+                // no order-receive id in _GET array. check for id in the SEO url.
+                $current_url = $_SERVER['REQUEST_URI'];
+                $pos = strpos($current_url, $receive_page);
+                if ($pos !== FALSE)
+                {
+                    $length = strlen($receive_page);
+                    $char = $pos + $length + 1;
+                    $char_end = strpos(substr($current_url, $char), '/');
+                    return substr($current_url, $char,$char_end);
+                }
+            }
+            return null;
+        }
 }

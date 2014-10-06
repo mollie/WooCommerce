@@ -137,13 +137,13 @@ class MPM_Gateway extends WC_Payment_Gateway
 		$order->update_status('pending', __('Awaiting payment confirmation', 'MPM'));
 
 		$webhook = admin_url('admin-ajax.php') . '?action=mollie_webhook';
-
-		$return_url = $mpm->return->get_return_link();
-
+                
+                $return_url = $order->get_checkout_order_received_url();
+                
 		$data = array(
 			"amount"			=> $order->get_total(),
 			"description"		=> str_replace('%', $order->get_order_number(), $mpm->get_option('description', 'Order %')),
-			"redirectUrl"		=> $return_url . (strpos($return_url, '?') !== FALSE ? '&' : '?') . 'order='.$order_id.'&key='.$order->order_key,
+			"redirectUrl"		=> $return_url,
 			"method"			=> $this->id,
 			"issuer"			=> empty($_POST["mpm_issuer_" . $this->id]) ? null : $_POST["mpm_issuer_" . $this->id],
 			"metadata"			=> array(

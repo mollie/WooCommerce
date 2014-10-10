@@ -37,7 +37,7 @@ class MPM_return extends MPM_Settings
 							<p>' . __('If you did buy something in this shop, something apparently went wrong, and you should contact us as soon as possible.', 'MPM') . '</p>';
                         return $html;
 		}
-		$html = '<h2>'. __('Order status:', 'MPM') . ' ' . __($order->status, 'woocommerce') . '</h2>';
+		$html = '<h2>'. __('Order status:', 'MPM') . ' ' . $this->return_page_titles[$order->status] . '</h2>';
 
 		switch ($order->status)
 		{

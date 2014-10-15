@@ -112,6 +112,40 @@ class MPM_Gateway extends WC_Payment_Gateway
 	}
 
 	/**
+	 * Gets the return url. If any spaces within the order-received endpoint, it will be replaced within WOO.
+	 * @param WC_Order $order
+	 * @return string
+	 */
+	private function get_return_url_with_fix_endpoint_spaces($order)
+	{
+		$endpoint = get_option('woocommerce_checkout_order_received_endpoint');
+		if (strpos($endpoint,' ') !== FALSE)
+		{
+			// we have an invalid endpoint for mollie.
+			// adjust endpoint in woocommerce.
+			update_option('woocommerce_checkout_order_received_endpoint',str_replace(' ','-',$endpoint));
+			if ( get_option('permalink_structure') != '' )
+			{
+				// for permalinks active.
+				$return_url = str_replace(' ','-',$order->get_checkout_order_received_url());
+			}
+			else
+			{
+				// for permalinks not enabled.
+				$woo_non_perma_output = str_replace(' ','_',$endpoint);
+				$updated_endpoint = str_replace(' ','-',$endpoint);
+				$return_url = str_replace($woo_non_perma_output,$updated_endpoint,$order->get_checkout_order_received_url());
+			}
+		}
+		else
+		{
+			$return_url = $order->get_checkout_order_received_url();
+		}
+		
+		return $return_url;
+	}
+	
+	/**
 	 * Sends a payment request to Mollie, redirects the user to the payscreen.
 	 * @param int $order_id
 	 * @return array|void
@@ -138,7 +172,7 @@ class MPM_Gateway extends WC_Payment_Gateway
 
 		$webhook = admin_url('admin-ajax.php') . '?action=mollie_webhook';
                 
-                $return_url = $order->get_checkout_order_received_url();
+        $return_url = $this->get_return_url_with_fix_endpoint_spaces($order);
                 
 		$data = array(
 			"amount"			=> $order->get_total(),

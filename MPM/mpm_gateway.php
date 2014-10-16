@@ -112,29 +112,32 @@ class MPM_Gateway extends WC_Payment_Gateway
 	}
 
 	/**
-	 * Gets the return url. If any spaces within the order-received endpoint, it will be replaced within WOO.
+	 * Gets the return url. If there are any spaces within the order-received endpoint, it will be fixed and update in WooCommerce
+	 *
 	 * @param WC_Order $order
 	 * @return string
 	 */
-	private function get_return_url_with_fix_endpoint_spaces($order)
+	private function get_return_url_with_fix_endpoint_spaces(WC_Order $order)
 	{
 		$endpoint = get_option('woocommerce_checkout_order_received_endpoint');
-		if (strpos($endpoint,' ') !== FALSE)
+
+		if ($endpoint && strpos($endpoint, ' ') !== FALSE)
 		{
-			// we have an invalid endpoint for mollie.
-			// adjust endpoint in woocommerce.
-			update_option('woocommerce_checkout_order_received_endpoint',str_replace(' ','-',$endpoint));
-			if ( get_option('permalink_structure') != '' )
+			// We have an invalid endpoint for mollie
+			// Adjust endpoint in woocommerce
+			update_option('woocommerce_checkout_order_received_endpoint', str_replace(' ', '-', $endpoint));
+
+			if (get_option('permalink_structure') != '')
 			{
 				// for permalinks active.
-				$return_url = str_replace(' ','-',$order->get_checkout_order_received_url());
+				$return_url = str_replace(' ', '-', $order->get_checkout_order_received_url());
 			}
 			else
 			{
-				// for permalinks not enabled.
-				$woo_non_perma_output = str_replace(' ','_',$endpoint);
-				$updated_endpoint = str_replace(' ','-',$endpoint);
-				$return_url = str_replace($woo_non_perma_output,$updated_endpoint,$order->get_checkout_order_received_url());
+				// For permalinks not enabled
+				$woo_non_perma_output = str_replace(' ', '_', $endpoint);
+				$updated_endpoint     = str_replace(' ', '-', $endpoint);
+				$return_url           = str_replace($woo_non_perma_output, $updated_endpoint, $order->get_checkout_order_received_url());
 			}
 		}
 		else
@@ -155,6 +158,7 @@ class MPM_Gateway extends WC_Payment_Gateway
 		/** @var MPM_Settings $mpm */
 		global $mpm, $woocommerce;
 		$order = $mpm->order_get($order_id, null, true);
+
 		if ($order === FALSE)
 		{
 			if (defined('WP_DEBUG') && WP_DEBUG)
@@ -170,10 +174,9 @@ class MPM_Gateway extends WC_Payment_Gateway
 
 		$order->update_status('pending', __('Awaiting payment confirmation', 'MPM'));
 
-		$webhook = admin_url('admin-ajax.php') . '?action=mollie_webhook';
-                
-        $return_url = $this->get_return_url_with_fix_endpoint_spaces($order);
-                
+		$webhook    = admin_url('admin-ajax.php') . '?action=mollie_webhook';
+		$return_url = $this->get_return_url_with_fix_endpoint_spaces($order);
+
 		$data = array(
 			"amount"			=> $order->get_total(),
 			"description"		=> str_replace('%', $order->get_order_number(), $mpm->get_option('description', 'Order %')),
@@ -189,7 +192,6 @@ class MPM_Gateway extends WC_Payment_Gateway
 		{
 			$data['webhookUrl'] = $webhook;
 		}
-
 
 		if (isset($order->billing_city))
 		{
@@ -207,7 +209,6 @@ class MPM_Gateway extends WC_Payment_Gateway
 		{
 			$data['billingCountry'] = $order->billing_country;
 		}
-
 
 		if (isset($order->shipping_city))
 		{

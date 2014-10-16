@@ -104,16 +104,16 @@ function mpm_webhook()
 
 		if ($payment->isPaid())
 		{
-                    // Woocommerce 2.2.0 has the option to store the Payment transaction id.
-                    $woo_version = get_option('woocommerce_version', 'Unknown');
-                    if (version_compare($woo_version, '2.2.0', '>='))
-                    {
-                        $order->payment_complete($_REQUEST['id']);
-                    }
-                    else
-                    {
-                        $order->payment_complete();
-                    }
+			// Woocommerce 2.2.0 has the option to store the Payment transaction id.
+			$woo_version = get_option('woocommerce_version', 'Unknown');
+			if (version_compare($woo_version, '2.2.0', '>='))
+			{
+				$order->payment_complete($_REQUEST['id']);
+			}
+			else
+			{
+				$order->payment_complete();
+			}
 		}
 		elseif ($payment->isOpen() === FALSE)
 		{

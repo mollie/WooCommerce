@@ -76,9 +76,8 @@ class MPM_Settings extends WC_Settings_API
 			add_filter('the_title', array(&$this->return, 'return_page_title'), 10, 2); // set return page title manually
 			add_filter('option_woocommerce_default_gateway', array(&$this, 'set_default_gateway')); // alter default gateway name
 
-                        // we don't need to render the tankyou page ourselves. We just pass a text to the thankyou page.
-                        add_filter('woocommerce_thankyou_order_received_text', array(&$this->return, 'return_page_order_received_text'),10,2);
-                        
+			// we don't need to render the tankyou page ourselves. We just pass a text to the thankyou page.
+			add_filter('woocommerce_thankyou_order_received_text', array(&$this->return, 'return_page_order_received_text'),10,2);
 		}
 
 		return $mpm;
@@ -245,8 +244,8 @@ class MPM_Settings extends WC_Settings_API
 			$page = $this->get_current_admin_page_if_existing();
 
 			// Add the Settings class as gateway to make it appear in the gateway settings menu.
-                        // is_admin returns true if logged in as an Admin user  on the checkout page.
-                        // And so the $screen will return null.
+			// is_admin returns true if logged in as an Admin user  on the checkout page.
+			// And so the $screen will return null.
 			if ($page && stripos($page, 'wc-settings') !== FALSE)
 			{
 				$gateways[] = 'MPM_Settings';
@@ -268,21 +267,21 @@ class MPM_Settings extends WC_Settings_API
 
 		return $gateways;
 	}
-        
-        /**
-         * Returns get value of the admin page visiting if existing or null
-         * @return string|null
-         */
-        public function get_current_admin_page_if_existing()
-        {
-            $page_ident = 'page';
-            if (isset($_GET[$page_ident]))
-            {
-                return $_GET[$page_ident];
-            }
-            
-            return null;
-        }
+
+	/**
+	 * Returns get value of the admin page visiting if existing or null
+	 * @return string|null
+	 */
+	public function get_current_admin_page_if_existing()
+	{
+		$page_ident = 'page';
+		if (isset($_GET[$page_ident]))
+		{
+			return $_GET[$page_ident];
+		}
+
+		return null;
+	}
 
 	/**
 	 * Adds a number of MPM_Gateways classes to the gateway list

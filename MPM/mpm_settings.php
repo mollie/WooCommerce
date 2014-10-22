@@ -239,7 +239,7 @@ class MPM_Settings extends WC_Settings_API
 	public function gateways_add_dynamic ($gateways)
 	{
 		// This is in the WooCommerce admin settings, so we'll use the Settings class instead.
-		if (is_admin())
+		if (is_admin() && !defined('DOING_AJAX'))
 		{
 			$page = $this->get_current_admin_page_if_existing();
 

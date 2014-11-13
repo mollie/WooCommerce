@@ -28,6 +28,13 @@ class MPM_return extends MPM_Settings
 	 */
 	public function return_page_order_received_text($text, WC_Order $order = null)
 	{
+		// first of all, did we use mollie as a payment method?
+		$isMolliePayment = get_post_meta($order->id,'_is_mollie_payment');
+		if (!$isMolliePayment || !is_array($isMolliePayment) || count($isMolliePayment) == 0 || !$isMolliePayment[0])
+		{
+			return $text;
+		}
+
 		// Do we know that the key is checked by WC? check it for sure.
 		$order = $this->order_get(($order != null) ? $order->id : 0, $_GET['key']);
 
@@ -71,6 +78,13 @@ class MPM_return extends MPM_Settings
 	 */
 	public function return_page_title ($title, $id = NULL)
 	{
+		// first of all, did we use mollie as a payment method?
+		$isMolliePayment = get_post_meta($this->get_order_id_from_request(),'_is_mollie_payment');
+		if (!$isMolliePayment || !is_array($isMolliePayment) || count($isMolliePayment) == 0 || !$isMolliePayment[0])
+		{
+			return $title;
+		}
+
 		// so if not on the checkout/order-receive page. return title.
 		if (!$this->is_return_page($id))
 		{

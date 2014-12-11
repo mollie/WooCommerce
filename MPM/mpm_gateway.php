@@ -188,7 +188,8 @@ class MPM_Gateway extends WC_Payment_Gateway
 			),
 		);
 
-		if (filter_var($webhook, FILTER_VALIDATE_URL) && $mpm->get_option('use_profile_webhook', 'no') === 'no')
+		$fixed_webhook = str_replace("-", "", $webhook);
+		if (filter_var($fixed_webhook, FILTER_VALIDATE_URL) && $mpm->get_option('use_profile_webhook', 'no') === 'no')
 		{
 			$data['webhookUrl'] = $webhook;
 		}

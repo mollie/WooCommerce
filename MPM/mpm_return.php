@@ -203,6 +203,10 @@ class MPM_return extends MPM_Settings
 				$length = strlen($receive_page);
 				$char = $pos + $length + 1;
 				$char_end = strpos(substr($current_url, $char), '/');
+				if (!$char_end)
+				{
+					$char_end = strpos(substr($current_url, $char), '?');
+				}
 				return substr($current_url, $char,$char_end);
 			}
 		}

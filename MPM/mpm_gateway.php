@@ -145,7 +145,7 @@ class MPM_Gateway extends WC_Payment_Gateway
 			$return_url = $order->get_checkout_order_received_url();
 		}
 		
-		return $return_url;
+		return add_query_arg("utm_nooverride", 1, $return_url);
 	}
 	
 	/**

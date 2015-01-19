@@ -46,9 +46,21 @@ class MPM_return extends MPM_Settings
 		}
 		$html = '<h2>'. __('Order status:', 'MPM') . ' ' . $this->return_page_titles[$order->status] . '</h2>';
 
+		$isCancelled = get_post_meta($order->id, '_is_mollie_cancelled');
+
 		switch ($order->status)
 		{
 			case 'pending':
+				if ($isCancelled)
+				{
+					$html .= '	<p>' . __('You have cancelled your order.', 'MPM') . '</p>
+					<p><a href="' . esc_url($order->get_checkout_payment_url()) . '">' . __('Please attempt your purchase again', 'MPM') . '</a></p>';
+				}
+				else
+				{
+					$html .= '	<p>' . __('We have not received a definite payment status. You will receive an email as soon as we receive a confirmation of the bank/merchant.', 'MPM') . '</p>';
+				}
+				break;
 			case 'on-hold':
 				$html .= '	<p>' . __('We have not received a definite payment status. You will receive an email as soon as we receive a confirmation of the bank/merchant.', 'MPM') . '</p>';
 				break;

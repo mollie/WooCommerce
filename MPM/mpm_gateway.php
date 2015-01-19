@@ -174,6 +174,12 @@ class MPM_Gateway extends WC_Payment_Gateway
 
 		$order->update_status('pending', __('Awaiting payment confirmation', 'MPM'));
 
+		$isCancelled = get_post_meta($order->id, '_is_mollie_cancelled');
+		if ($isCancelled)
+		{
+			update_post_meta($order_id, '_is_mollie_cancelled', 0, 1);
+		}
+
 		$webhook    = admin_url('admin-ajax.php') . '?action=mollie_webhook';
 		$return_url = $this->get_return_url_with_fix_endpoint_spaces($order);
 

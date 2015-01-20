@@ -53,6 +53,7 @@ class MPM_return extends MPM_Settings
 			case 'pending':
 				if ($isCancelled)
 				{
+					wp_redirect($order->get_checkout_payment_url());
 					$html .= '	<p>' . __('You have cancelled your order.', 'MPM') . '</p>
 					<p><a href="' . esc_url($order->get_checkout_payment_url()) . '">' . __('Please attempt your purchase again', 'MPM') . '</a></p>';
 				}

@@ -177,7 +177,8 @@ class MPM_Gateway extends WC_Payment_Gateway
 		$isCancelled = get_post_meta($order->id, '_is_mollie_cancelled');
 		if ($isCancelled)
 		{
-			update_post_meta($order_id, '_is_mollie_cancelled', 0, 1);
+			update_post_meta($order_id, '_is_mollie_cancelled', 0, $isCancelled);
+			$order->add_order_note("User retried payment");
 		}
 
 		$webhook    = admin_url('admin-ajax.php') . '?action=mollie_webhook';

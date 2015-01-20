@@ -124,7 +124,7 @@ function mpm_webhook()
 				$isCancelled = get_post_meta($order->id, '_is_mollie_cancelled');
 				if (!$isCancelled)
 				{
-					update_post_meta($order_id, '_is_mollie_cancelled', 1, 1);
+					update_post_meta($order_id, '_is_mollie_cancelled', 1, $isCancelled);
 				}
 			}
 			else

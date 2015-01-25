@@ -174,6 +174,7 @@ class MPM_Gateway extends WC_Payment_Gateway
 
 		$order->update_status('pending', __('Awaiting payment confirmation', 'MPM'));
 
+		// check if user cancelled previous payment. if so add a retry note and set cancelled to false.
 		$isCancelled = get_post_meta($order->id, '_is_mollie_cancelled');
 		if ($isCancelled)
 		{
@@ -182,7 +183,21 @@ class MPM_Gateway extends WC_Payment_Gateway
 		}
 
 		$webhook    = admin_url('admin-ajax.php') . '?action=mollie_webhook';
-		$return_url = $this->get_return_url_with_fix_endpoint_spaces($order);
+
+		$woo_version = get_option('woocommerce_version', 'Unknown');
+		if (version_compare($woo_version, '2.2.0', '>='))
+		{
+			// use woocommerce endpoints
+			$return_url = $this->get_return_url_with_fix_endpoint_spaces($order);
+		}
+		else
+		{
+			// only use the mollie return page
+			$return_url = $mpm->return->get_return_link();
+			$return_url = $return_url . (strpos($return_url, '?') !== FALSE ? '&' : '?') . 'order='.$order_id.'&key='.$order->order_key;
+			$return_url .= "&utm_nooverride=1";
+		}
+		
 
 		$data = array(
 			"amount"			=> $order->get_total(),

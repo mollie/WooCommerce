@@ -119,7 +119,7 @@ function mpm_webhook()
 		{
 			if ($payment->status === Mollie_API_Object_Payment::STATUS_CANCELLED)
 			{
-				//$order->cancel_order();
+				//User cancelled payment on mollie or issuer page, add a cancel note.. do not cancel order.
 				$order->add_order_note("User cancelled payment");
 				$isCancelled = get_post_meta($order->id, '_is_mollie_cancelled');
 				if (!$isCancelled)

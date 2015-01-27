@@ -71,13 +71,17 @@ class MPM_return extends MPM_Settings
 		// Do we know that the key is checked by WC? check it for sure.
 		$order = $this->order_get(($order != null) ? $order->id : 0, $_GET['key']);
 
-		if (!$order || !in_array($order->status, array_keys($this->return_page_titles)))
+		if (!$order)
 		{
 			$html = '		<p>' . __('Your order was not recognised as being a valid order from this shop.', 'MPM') . '</p>
 							<p>' . __('If you did buy something in this shop, something apparently went wrong, and you should contact us as soon as possible.', 'MPM') . '</p>';
 			return $html;
 		}
-		$html = '<h2>'. __('Order status:', 'MPM') . ' ' . $this->return_page_titles[$order->status] . '</h2>';
+
+		$order_status = in_array($order->status, array_keys($this->return_page_titles))
+			? $this->return_page_titles[$order->status]
+			: wc_get_order_status_name($order->status);
+		$html = '<h2>'. __('Order status:', 'MPM') . ' ' . $order_status . '</h2>';
 
 		// if user cancelled at mollie or issuer, webhook will render post_meta: _is_mollie_cancelled true.
 		$isCancelled = get_post_meta($order->id, '_is_mollie_cancelled');

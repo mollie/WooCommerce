@@ -76,8 +76,17 @@ class MPM_Settings extends WC_Settings_API
 			add_filter('the_title', array(&$this->return, 'return_page_title'), 10, 2); // set return page title manually
 			add_filter('option_woocommerce_default_gateway', array(&$this, 'set_default_gateway')); // alter default gateway name
 
-			// we don't need to render the tankyou page ourselves. We just pass a text to the thankyou page.
-			add_filter('woocommerce_thankyou_order_received_text', array(&$this->return, 'return_page_order_received_text'),10,2);
+			$woo_version = get_option('woocommerce_version', 'Unknown');
+			if (version_compare($woo_version, '2.2.0', '>='))
+			{
+				// Only after 2.2 we don't need to render the tankyou page ourselves. We just pass a text to the thankyou page.
+				add_filter('woocommerce_thankyou_order_received_text', array(&$this->return, 'return_page_order_received_text'),10,2);
+			}
+			else
+			{
+				// On woo <= 2.1 we use the mollie return page.
+				add_shortcode('mollie_return_page', array(&$this->return, 'return_page_render'));
+			}
 		}
 
 		return $mpm;

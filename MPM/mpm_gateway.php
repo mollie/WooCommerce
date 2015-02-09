@@ -216,6 +216,10 @@ class MPM_Gateway extends WC_Payment_Gateway
 			$data['webhookUrl'] = $webhook;
 		}
 
+		if (isset($order->billing_address_1))
+		{
+			$data['billingAddress'] = $order->billing_address_1;
+		}
 		if (isset($order->billing_city))
 		{
 			$data['billingCity'] = $order->billing_city;
@@ -233,6 +237,10 @@ class MPM_Gateway extends WC_Payment_Gateway
 			$data['billingCountry'] = $order->billing_country;
 		}
 
+		if (isset($order->shipping_address_1))
+		{
+			$data['shippingAddress'] = $order->shipping_address_1;
+		}
 		if (isset($order->shipping_city))
 		{
 			$data['shippingCity'] = $order->shipping_city;

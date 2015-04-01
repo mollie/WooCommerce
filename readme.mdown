@@ -5,6 +5,8 @@
 ## Installatie ##
 * Download de laatste versie van de module via de [Releases-pagina](https://github.com/mollie/Woocommerce/releases).
 * Kopieer de map `MPM` naar de `wp-content/plugins` map van uw WordPress installatie.
+* Download vervolgens de laatste versie van de [PHP API](https://github.com/mollie/mollie-api-php).
+* Kopieer de map `src` naar de `wp-content/plugins/MPM/lib` map van uw WordPress installatie.
 * Ga naar de tab `Plugins` in uw WordPress administratiepaneel en activeer de Mollie Payment Module.
 * Ga naar WooCommerce -> Settings, kies het tabje `Checkout` (of `Payment Gateways`) en klik op `Mollie Payment Module`
 * Vul uw Api Sleutel in en sla de gegevens vervolgens op.

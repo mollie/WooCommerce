@@ -96,8 +96,8 @@ function mpm_webhook()
 		$order_id	= $payment->metadata->order_id;
 		$order		= new WC_Order( $order_id );
 
-		// Don't update an already paid order
-		if (!$order->needs_payment())
+		// Don't update an already paid order, needs_payment() searches by valid_statusses, but does not include on-hold status, so we add it here.
+		if (!$order->needs_payment() && $order->post->post_status != 'wc-on-hold')
 		{
 			die('OK');
 		}
@@ -115,7 +115,7 @@ function mpm_webhook()
 				$order->payment_complete();
 			}
 		}
-		elseif ($payment->isOpen() === FALSE)
+		elseif ($payment->isOpen() === FALSE || $order->post->post_status == 'wc-on-hold')
 		{
 			if ($payment->status === Mollie_API_Object_Payment::STATUS_CANCELLED)
 			{
@@ -129,6 +129,16 @@ function mpm_webhook()
 			}
 			else
 			{
+				// If order has failed And method is banktransfer we should restock the orderdered products
+				// we assume the order hasn't been cancelled, because the order is on-hold.
+				if ($payment->method == Mollie_API_Object_Method::BANKTRANSFER)
+				{
+					if ( 'yes' == get_post_meta( $order_id, '_recorded_sales', true ) ) 
+					{
+						$mpm->restock_order($order);
+					}
+				}
+
 				unset(WC()->session->order_awaiting_payment);
 				$order->update_status('failed');
 				$order->decrease_coupon_usage_counts();

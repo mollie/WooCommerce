@@ -576,33 +576,4 @@ class MPM_Settings extends WC_Settings_API
 			}
 		}
 	}
-
-	/**
-	 * Restocks an order, a failed or cancelled order for example
-	 *
-	 * @param WC_Order $order
-	 */
-	public function restock_order(WC_Order $order)
-	{
-		if ( ! get_option('woocommerce_manage_stock') == 'yes' && ! sizeof( $order->get_items() ) > 0 ) 
-		{
-			return;
-		}
-
-		foreach ( $order->get_items() as $item ) 
-		{
-			if ( $item['product_id'] > 0 )
-			{
-				$_product = $order->get_product_from_item( $item );
-
-				if ( $_product && $_product->exists() && $_product->managing_stock() )
-				{
-					$old_stock = $_product->stock;
-					$qty = apply_filters( 'woocommerce_order_item_quantity', $item['qty'], $this, $item );
-					$new_quantity = $_product->increase_stock( $qty );
-					$order->add_order_note( sprintf( __( 'Item #%s stock incremented from %s to %s.', 'MPM' ), $item['product_id'], $old_stock, $new_quantity) );
-				}
-			}
-		}
-	}
 }

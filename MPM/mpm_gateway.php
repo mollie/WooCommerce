@@ -176,8 +176,7 @@ class MPM_Gateway extends WC_Payment_Gateway
 		// We put a banktransfer order 'on-hold'. Woo will deduct stock and won't cancel the order after # minutes.
 		if ($this->id == Mollie_API_Object_Method::BANKTRANSFER)
 		{
-			$order->update_status('on-hold', __('Awaiting payment confirmation', 'MPM'));
-			$order->reduce_order_stock();			
+			$order->update_status('on-hold', __('Awaiting payment confirmation', 'MPM'));		
 		}
 		else
 		{

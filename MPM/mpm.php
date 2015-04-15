@@ -96,8 +96,10 @@ function mpm_webhook()
 		$order_id	= $payment->metadata->order_id;
 		$order		= new WC_Order( $order_id );
 
-		// Don't update an already paid order
-		if (!$order->needs_payment())
+		$onHold = $order->get_status() == 'on-hold';
+
+		// Don't update an already paid order, needs_payment() searches by valid_statusses, but does not include on-hold status, so we add it here.
+		if (!$order->needs_payment() && !$onHold)
 		{
 			die('OK');
 		}
@@ -115,7 +117,7 @@ function mpm_webhook()
 				$order->payment_complete();
 			}
 		}
-		elseif ($payment->isOpen() === FALSE)
+		elseif ($payment->isOpen() === FALSE || $onHold)
 		{
 			if ($payment->status === Mollie_API_Object_Payment::STATUS_CANCELLED)
 			{

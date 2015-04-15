@@ -34,6 +34,7 @@ class MPM_return extends MPM_Settings
 		// Set return titles
 		$this->return_page_titles = array(
 			'pending'		=> __('Payment Pending', 'MPM'),
+			'on-hold'		=> __('Payment On-hold', 'MPM'),
 			'failed'		=> __('Payment Failed', 'MPM'),
 			'cancelled'		=> __('Payment Cancelled', 'MPM'),
 			'processing'	=> __('Processing Order', 'MPM'),

@@ -117,7 +117,7 @@ function mpm_webhook()
 				$order->payment_complete();
 			}
 		}
-		elseif ($payment->isOpen() === FALSE || $onHold)
+		elseif ($payment->isOpen() === FALSE)
 		{
 			if ($payment->status === Mollie_API_Object_Payment::STATUS_CANCELLED)
 			{

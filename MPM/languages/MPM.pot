@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Mollie Payment Module\n"
-"POT-Creation-Date: 2014-03-31 11:53+0100\n"
-"PO-Revision-Date: 2014-03-31 11:53+0100\n"
-"Last-Translator: \n"
+"POT-Creation-Date: 2015-04-17 15:32+0100\n"
+"PO-Revision-Date: 2015-04-17 15:32+0100\n"
+"Last-Translator: Lennard van Gunst <lennard@mollie.nl>\n"
 "Language-Team: Mollie <info@mollie.nl>\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.4\n"
+"X-Generator: Poedit 1.7.5\n"
 "X-Poedit-Basepath: ../../\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-KeywordsList: __\n"
@@ -19,206 +19,195 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
-#: MPM/mpm_gateway.php:96
+#: MPM/mpm_gateway.php:106
 msgid "Select your bank:"
 msgstr ""
 
-#: MPM/mpm_gateway.php:123
-msgid "Awaiting payment confirmation"
-msgstr ""
-
-#: MPM/mpm_gateway.php:187 MPM/mpm_gateway.php:191
+#: MPM/mpm_gateway.php:166 MPM/mpm_gateway.php:170 MPM/mpm_gateway.php:278
+#: MPM/mpm_gateway.php:282
 msgid "Could not create payment."
 msgstr ""
 
-#: MPM/mpm_return.php:21
+#: MPM/mpm_gateway.php:179 MPM/mpm_gateway.php:183
+msgid "Awaiting payment confirmation"
+msgstr ""
+
+#: MPM/mpm_return.php:22
 msgid "Welcome Back"
 msgstr ""
 
-#: MPM/mpm_return.php:28
+#: MPM/mpm_return.php:29
 msgid "Error: Could not find nor generate return page!"
 msgstr ""
 
-#: MPM/mpm_return.php:35
+#: MPM/mpm_return.php:36
 msgid "Payment Pending"
 msgstr ""
 
-#: MPM/mpm_return.php:36
-msgid "Payment Failed"
-msgstr ""
-
 #: MPM/mpm_return.php:37
-msgid "Payment Cancelled"
+msgid "Payment On-hold"
 msgstr ""
 
 #: MPM/mpm_return.php:38
-msgid "Processing Order"
+msgid "Payment Failed"
 msgstr ""
 
 #: MPM/mpm_return.php:39
-msgid "Order Complete"
+msgid "Payment Cancelled"
 msgstr ""
 
 #: MPM/mpm_return.php:40
+msgid "Processing Order"
+msgstr ""
+
+#: MPM/mpm_return.php:41
+msgid "Order Complete"
+msgstr ""
+
+#: MPM/mpm_return.php:42
 msgid "Mollie Return Page"
 msgstr ""
 
-#: MPM/mpm_return.php:102
+#: MPM/mpm_return.php:77
 msgid "Your order was not recognised as being a valid order from this shop."
 msgstr ""
 
-#: MPM/mpm_return.php:103
+#: MPM/mpm_return.php:78
 msgid ""
 "If you did buy something in this shop, something apparently went wrong, and "
 "you should contact us as soon as possible."
 msgstr ""
 
-#: MPM/mpm_return.php:106
+#: MPM/mpm_return.php:85
 msgid "Order status:"
 msgstr ""
 
-#: MPM/mpm_return.php:112
+#: MPM/mpm_return.php:100 MPM/mpm_return.php:116
+msgid "You have cancelled your order."
+msgstr ""
+
+#: MPM/mpm_return.php:101 MPM/mpm_return.php:113
+msgid "Please attempt your purchase again"
+msgstr ""
+
+#: MPM/mpm_return.php:105 MPM/mpm_return.php:109
 msgid ""
 "We have not received a definite payment status. You will receive an email as "
 "soon as we receive a confirmation of the bank/merchant."
 msgstr ""
 
-#: MPM/mpm_return.php:115
+#: MPM/mpm_return.php:112
 msgid ""
 "Unfortunately your order cannot be processed as the originating bank/"
 "merchant has declined your transaction."
 msgstr ""
 
-#: MPM/mpm_return.php:116
-msgid "Please attempt your purchase again"
-msgstr ""
-
-#: MPM/mpm_return.php:119
-msgid "You have cancelled your order."
-msgstr ""
-
-#: MPM/mpm_return.php:123
+#: MPM/mpm_return.php:120
 msgid "Thank you. Your order has been received."
 msgstr ""
 
-#: MPM/mpm_return.php:125
-msgid "Order:"
-msgstr ""
-
-#: MPM/mpm_return.php:126
-msgid "Date:"
-msgstr ""
-
-#: MPM/mpm_return.php:127
-msgid "Total:"
-msgstr ""
-
-#: MPM/mpm_return.php:130
-msgid "Payment method:"
-msgstr ""
-
-#: MPM/mpm_return.php:192
+#: MPM/mpm_return.php:344
 msgid "Error: Return page not found!"
 msgstr ""
 
-#: MPM/mpm_settings.php:92
-msgid "Payment error:"
-msgstr ""
-
-#: MPM/mpm_settings.php:108
+#: MPM/mpm_settings.php:103
 msgid "Enable/Disable"
 msgstr ""
 
-#: MPM/mpm_settings.php:109
+#: MPM/mpm_settings.php:104
 msgid "Enable Mollie Payment Module"
 msgstr ""
 
-#: MPM/mpm_settings.php:112
+#: MPM/mpm_settings.php:107
 msgid "Enable or disable the Mollie Payment Module."
 msgstr ""
 
-#: MPM/mpm_settings.php:116
+#: MPM/mpm_settings.php:111
 msgid "Api Key"
 msgstr ""
 
-#: MPM/mpm_settings.php:119
+#: MPM/mpm_settings.php:114
 msgid ""
 "You can find your API key in your Mollie website profile. It starts with "
 "test or live. This key connects your Mollie Profile to the Woocommerce shop."
 msgstr ""
 
-#: MPM/mpm_settings.php:123
+#: MPM/mpm_settings.php:118
 msgid "Description"
 msgstr ""
 
-#: MPM/mpm_settings.php:126
+#: MPM/mpm_settings.php:121
 msgid ""
 "Enter a description here. Use \"%\" for the order id. Payment methods may "
 "have a character limit: best keep the description under 29 characters."
 msgstr ""
 
-#: MPM/mpm_settings.php:130
+#: MPM/mpm_settings.php:125
 msgid "Show Images"
 msgstr ""
 
-#: MPM/mpm_settings.php:131
+#: MPM/mpm_settings.php:126
 msgid "Display payment method logos"
 msgstr ""
 
-#: MPM/mpm_settings.php:134
+#: MPM/mpm_settings.php:129
 msgid "Show or hide the payment method logos."
 msgstr ""
 
-#: MPM/mpm_settings.php:154
+#: MPM/mpm_settings.php:150
 msgid "Your Api Key should start with test or live."
 msgstr ""
 
-#: MPM/mpm_settings.php:158
+#: MPM/mpm_settings.php:160
 msgid ""
 "Warning: Mollie Payment methods are only available for payments in Euros."
 msgstr ""
 
-#: MPM/mpm_settings.php:173
+#: MPM/mpm_settings.php:175
 msgid "Warning: Could not retrieve update xml file from GitHub."
 msgstr ""
 
-#: MPM/mpm_settings.php:186
+#: MPM/mpm_settings.php:188
 #, php-format
 msgid ""
 "You are currently using version %s. We strongly recommend you to upgrade to "
 "the new version %s!"
 msgstr ""
 
-#: MPM/mpm_settings.php:193
+#: MPM/mpm_settings.php:195
 msgid "Warning: Update xml file from GitHub follows an unexpected format."
 msgstr ""
 
-#: MPM/mpm_settings.php:330
+#: MPM/mpm_settings.php:375
 #, php-format
 msgid "Refund order %d online"
 msgstr ""
 
-#: MPM/mpm_settings.php:331
+#: MPM/mpm_settings.php:376
 msgid ""
 "Are you sure you want to refund this transaction? This cannot be undone!"
 msgstr ""
 
-#: MPM/mpm_settings.php:332
+#: MPM/mpm_settings.php:377
 msgid "Mollie refund"
 msgstr ""
 
-#: MPM/mpm_settings.php:348
+#: MPM/mpm_settings.php:393
 msgid ""
 "Order refunded. The customer will receive the refunded money on the next "
 "workday."
 msgstr ""
 
-#: MPM/mpm_settings.php:349
+#: MPM/mpm_settings.php:394
 msgid "Refund failed!"
 msgstr ""
 
-#: MPM/mpm_settings.php:352
+#: MPM/mpm_settings.php:397
 msgid " Reason: "
+msgstr ""
+
+#: MPM/mpm_settings.php:445 MPM/mpm_settings.php:486 MPM/mpm_settings.php:543
+msgid "Payment error:"
 msgstr ""
 
 #: strings.php:2

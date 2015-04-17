@@ -173,7 +173,15 @@ class MPM_Gateway extends WC_Payment_Gateway
 			return array('result' => 'failure');
 		}
 
-		$order->update_status('pending', __('Awaiting payment confirmation', 'MPM'));
+		// We put a banktransfer order 'on-hold'. Woo will deduct stock and won't cancel the order after # minutes.
+		if ($this->id == Mollie_API_Object_Method::BANKTRANSFER)
+		{
+			$order->update_status('on-hold', __('Awaiting payment confirmation', 'MPM'));		
+		}
+		else
+		{
+			$order->update_status('pending', __('Awaiting payment confirmation', 'MPM'));
+		}
 
 		// check if user cancelled previous payment. if so add a retry note and set cancelled to false.
 		$isCancelled = get_post_meta($order->id, '_is_mollie_cancelled');

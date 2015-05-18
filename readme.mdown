@@ -3,6 +3,8 @@
 # WooCommerce plugin voor [betalingen via Mollie](https://www.mollie.nl/betaaldiensten/). #
 
 ## Installatie ##
+**Let op:** voor de installatie van deze module is FTP-toegang tot je webserver benodigd. Heb je hier geen ervaring mee? Laat de installatie van deze module dan over aan je websitebouwer of serverbeheerder.
+
 * Download de laatste versie van de module via de [Releases-pagina](https://github.com/mollie/Woocommerce/releases).
 * Kopieer de map `MPM` naar de `wp-content/plugins` map van uw WordPress installatie.
 * Ga naar de tab `Plugins` in uw WordPress administratiepaneel en activeer de Mollie Payment Module.

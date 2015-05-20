@@ -466,7 +466,8 @@ class MPM_Settings extends WC_Settings_API
 		{
 			if (empty(self::$_methods))
 			{
-				$cached = @unserialize(get_transient('mpm_api_methods'));
+				$locale = (string) get_locale();
+				$cached = @unserialize(get_transient('mpm_api_methods_' . $locale));
 
 				if ($cached instanceof Mollie_API_Object_List)
 				{
@@ -474,8 +475,11 @@ class MPM_Settings extends WC_Settings_API
 				}
 				else
 				{
-					self::$_methods = $this->get_api()->methods->all();
-					set_transient('mpm_api_methods', self::$_methods, MINUTE_IN_SECONDS);
+					self::$_methods = $this->get_api()->methods->all(0, 0, array(
+						"locale" => $locale,
+					));
+
+					set_transient('mpm_api_methods_' . $locale, self::$_methods, MINUTE_IN_SECONDS);
 				}
 			}
 

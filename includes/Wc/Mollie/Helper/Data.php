@@ -171,13 +171,15 @@ class WC_Mollie_Helper_Data
     /**
      * Save active Mollie payment id for order
      *
-     * @param int    $order_id
-     * @param string $mollie_payment_id
+     * @param int $order_id
+     * @param Mollie_API_Object_Payment $payment
      * @return $this
      */
-    public function setActiveMolliePaymentId ($order_id, $mollie_payment_id)
+    public function setActiveMolliePayment ($order_id, Mollie_API_Object_Payment $payment)
     {
-        add_post_meta($order_id, '_mollie_transaction_id', $mollie_payment_id, $single = true);
+        add_post_meta($order_id, '_mollie_transaction_id', $payment->id, $single = true);
+        add_post_meta($order_id, '_mollie_payment_mode', $payment->mode, $single = true);
+
         delete_post_meta($order_id, '_mollie_cancelled_payment_id');
 
         return $this;
@@ -188,9 +190,10 @@ class WC_Mollie_Helper_Data
      * @param int $order_id
      * @return $this
      */
-    public function unsetActiveMolliePaymentId ($order_id)
+    public function unsetActiveMolliePayment ($order_id)
     {
         delete_post_meta($order_id, '_mollie_transaction_id');
+        delete_post_meta($order_id, '_mollie_payment_mode');
 
         return $this;
     }
@@ -204,6 +207,17 @@ class WC_Mollie_Helper_Data
     public function getActiveMolliePaymentId ($order_id)
     {
         return get_post_meta($order_id, '_mollie_transaction_id', $single = true);
+    }
+
+    /**
+     * Get active Mollie payment mode for order
+     *
+     * @param int $order_id
+     * @return string test or live
+     */
+    public function getActiveMolliePaymentMode ($order_id)
+    {
+        return get_post_meta($order_id, '_mollie_payment_mode', $single = true);
     }
 
     /**

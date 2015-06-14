@@ -192,8 +192,8 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
             // Create Mollie payment
             $payment = WC_Mollie::getApiHelper()->getApiClient()->payments->create($data);
 
-            // Set active Mollie payment id
-            WC_Mollie::getDataHelper()->setActiveMolliePaymentId($order->id, $payment->id);
+            // Set active Mollie payment
+            WC_Mollie::getDataHelper()->setActiveMolliePayment($order->id, $payment);
 
             do_action(WC_Mollie::PLUGIN_ID . '_payment_created', $payment, $order);
 
@@ -357,7 +357,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
 
         // Unset active Mollie payment id
         WC_Mollie::getDataHelper()
-            ->unsetActiveMolliePaymentId($order->id)
+            ->unsetActiveMolliePayment($order->id)
             ->setCancelledMolliePaymentId($order->id, $payment->id);
 
         // Reset state

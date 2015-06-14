@@ -485,6 +485,16 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
     }
 
     /**
+     * Echo order details
+     *
+     * @param WC_Order $order
+     */
+    public function displayOrderDetails (WC_Order $order)
+    {
+        $this->email_instructions($order, $admin_instructions = false);
+    }
+
+    /**
      * Add content to the WC emails.
      *
      * @param WC_Order $order
@@ -492,7 +502,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
      * @param bool     $plain_text
      * @return void
      */
-    public function email_instructions($order, $admin_instructions, $plain_text = false)
+    public function email_instructions(WC_Order $order, $admin_instructions, $plain_text = false)
     {
         // Invalid gateway
         if ($this->id !== $order->payment_method)

@@ -54,6 +54,8 @@ class WC_Mollie
         add_filter('plugin_action_links_' . $plugin_basename, array(__CLASS__, 'addPluginActionLinks'));
         // Listen to return URL call
         add_action('woocommerce_api_mollie_return',           array(__CLASS__, 'onMollieReturn'));
+        // On order details
+        add_action('woocommerce_order_details_after_order_table', array(__CLASS__, 'onOrderDetails'), 10, 1);
 
         // Mark plugin initiated
         self::$initiated = true;
@@ -106,6 +108,23 @@ class WC_Mollie
         self::debug(__METHOD__ . ": Redirect url on return order " . $gateway->id . ", order $order_id.");
 
         wp_redirect($redirect_url);
+    }
+
+    /**
+     * @param WC_Order $order
+     */
+    public static function onOrderDetails (WC_Order $order)
+    {
+        $gateway = wc_get_payment_gateway_by_order($order);
+
+        if (!$gateway || !($gateway instanceof WC_Mollie_Gateway_Abstract))
+        {
+            return;
+        }
+
+        /** @var WC_Mollie_Gateway_Abstract $gateway */
+
+        $gateway->displayOrderDetails($order);
     }
 
     /**

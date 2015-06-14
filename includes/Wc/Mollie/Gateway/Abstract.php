@@ -446,9 +446,9 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
                 return false;
             }
 
-            WC_Mollie::debug('process_refund - creating refund - payment: ' . $payment->id . ', order: ' . $order_id . ', amount: ' . $amount . (!empty($reason) ? ', reason: ' . $reason : ''));
+            WC_Mollie::debug('process_refund - create refund - payment: ' . $payment->id . ', order: ' . $order_id . ', amount: ' . $amount . (!empty($reason) ? ', reason: ' . $reason : ''));
 
-            do_action(WC_Mollie::PLUGIN_ID . '_create_payment', $payment, $order);
+            do_action(WC_Mollie::PLUGIN_ID . '_create_refund', $payment, $order);
 
             // Send refund to Mollie
             $refund = WC_Mollie::getApiHelper()->getApiClient()->payments->refund($payment, $amount);

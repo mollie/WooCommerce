@@ -1,0 +1,65 @@
+<?php
+class WC_Mollie_Gateway_Sofort extends WC_Mollie_Gateway_Abstract
+{
+    /**
+     *
+     */
+    public function __construct ()
+    {
+        $this->id       = 'mollie_sofort';
+        $this->supports = array(
+            'products',
+            'refunds',
+        );
+
+        parent::__construct();
+    }
+
+    /**
+     * @return string
+     */
+    public function getMollieMethodId ()
+    {
+        return Mollie_API_Object_Method::SOFORT;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getDefaultTitle ()
+    {
+        return __('SOFORT Banking', 'woocommerce-mollie-payments');
+    }
+
+    /**
+     * @return string
+     */
+    protected function getDefaultDescription ()
+    {
+        return '';
+    }
+
+    /**
+     * @param WC_Order                  $order
+     * @param Mollie_API_Object_Payment $payment
+     * @param bool                      $admin_instructions
+     * @param bool                      $plain_text
+     * @return string|null
+     */
+    protected function getInstructions (WC_Order $order, Mollie_API_Object_Payment $payment, $admin_instructions, $plain_text)
+    {
+        $instructions = '';
+
+        if ($payment->isPaid() && $payment->details)
+        {
+            $instructions .= sprintf(
+                __('Payment completed by <strong>%s</strong> (IBAN: %s, BIC: %s)'),
+                $payment->details->consumerName,
+                implode(' ', str_split($payment->details->consumerAccount, 4)),
+                $payment->details->consumerBic
+            );
+        }
+
+        return $instructions;
+    }
+}

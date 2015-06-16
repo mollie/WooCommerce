@@ -26,7 +26,9 @@ class WC_Mollie_Helper_Api
      */
     public function getApiClient ()
     {
-        $api_key = trim($this->settings_helper->getApiKey());
+        global $wp_version;
+
+        $api_key = $this->settings_helper->getApiKey();
 
         if (empty($api_key))
         {
@@ -41,7 +43,7 @@ class WC_Mollie_Helper_Api
         {
             $client = new Mollie_API_Client();
             $client->setApiKey($api_key);
-            $client->setApiEndpoint(apply_filters(WC_Mollie::PLUGIN_ID . '_api_endpoint', Mollie_API_Client::API_ENDPOINT));
+            $client->setApiEndpoint(self::getApiEndpoint());
             $client->addVersionString('WordPress/'   . (isset($wp_version) ? $wp_version : 'Unknown'));
             $client->addVersionString('WooCommerce/' . get_option('woocommerce_version', 'Unknown'));
             $client->addVersionString('MollieWoo/'   . WC_Mollie::PLUGIN_VERSION);
@@ -51,4 +53,14 @@ class WC_Mollie_Helper_Api
 
         return self::$api_client;
     }
+
+    /**
+     * Get API endpoint. Override using filter.
+     * @return string
+     */
+    public static function getApiEndpoint ()
+    {
+        return apply_filters(WC_Mollie::PLUGIN_ID . '_api_endpoint', Mollie_API_Client::API_ENDPOINT);
+    }
+
 }

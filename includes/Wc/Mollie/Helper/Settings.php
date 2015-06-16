@@ -6,7 +6,7 @@ class WC_Mollie_Helper_Settings
      */
     public function getApiKey ()
     {
-        return get_option($this->getSettingId('api_key'));
+        return trim(get_option($this->getSettingId('api_key')));
     }
 
     /**
@@ -16,7 +16,7 @@ class WC_Mollie_Helper_Settings
      */
     public function getPaymentDescription ()
     {
-        return get_option($this->getSettingId('payment_description'));
+        return trim(get_option($this->getSettingId('payment_description')));
     }
 
     /**

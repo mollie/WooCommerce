@@ -1,19 +1,17 @@
-- [ ] Add is_available() Check enabled, max amount, supportsCurrency (see PayPal gateway), checkCompatibility, mollieMethodEnabled
-- [ ] Add getAdminNotices() to action admin_notices: echo gateway compatibility
-- [ ] Clear transients in settings (maybe by clearing WooCommerce transients?)
-- [ ] Add refund option (implement 'supports', can_refund_order(), process_refund())
-- [ ] Option to enable/disable for virtual orders (PayPal)
-- [ ] Add get_transaction_url() link to new Mollie dashboard payment permalink
-- [ ] Add admin notices when active plugin: check system requirements, check if woocommerce is active
-- [ ] Implement fixes from MPM 1.x.x
-- [ ] In payment method overview (global settings) add link to settings page for individual gateways
-- [ ] Check license (headers?)
-- [ ] Document available actions & filters in readme
-- [ ] Add translations
-- [ ] Use '<order_id> - <gateway_id>' prefix in log messages
-- [ ] Add banktransfer option to set expiryDate
-- [ ] Add expiry date in payment add_order_note
-- [ ] Use filter woocommerce_settings_api_form_fields_<gateway-id> to add form fields or implement get_form_fields()
-- [ ] Add payment details to admin order details: http://stackoverflow.com/questions/22563693/woocommerce-custom-field-on-custom-order-details-page
-- [ ] Bitcoin Gateway: Add method addWebhookInProgress - set order on-hold with message that Bitcoin confirmation is pending
-- [ ] Add test and live API keys. Use correct key for each payment
+- Clear transients in settings (maybe by clearing WooCommerce transients?)
+- Option to enable/disable for virtual orders (PayPal)
+- Add get_transaction_url() link to new Mollie dashboard payment permalink
+- Implement fixes from MPM 1.x.x
+- In payment method overview (global settings) add link to settings page for individual gateways
+- Check license (headers?)
+- Document available actions & filters in readme
+- Add translations
+- Use '<order_id> - <gateway_id>' prefix in log messages
+- Add banktransfer option to set expiryDate
+- Add expiry date in payment add_order_note
+- Use filter woocommerce_settings_api_form_fields_<gateway-id> to add form fields or implement get_form_fields()
+- Add payment details to admin order details: http://stackoverflow.com/questions/22563693/woocommerce-custom-field-on-custom-order-details-page
+- Bitcoin Gateway: Add method addWebhookInProgress - set order on-hold with message that Bitcoin confirmation is pending
+- Add test and live API keys. Use correct key for each payment
+- Display order not when test mode is used to create payment
+- Add filter plugin_row_meta - see WooCommerce

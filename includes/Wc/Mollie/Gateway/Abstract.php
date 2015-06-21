@@ -257,7 +257,11 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
 
             WC_Mollie::debug($this->id . ': Payment ' . $payment->id . ' created for order ' . $order->id);
 
-            $order->add_order_note(sprintf(__('%s payment started (%s).', 'woocommerce-mollie-payments'), $this->method_title, $payment->id));
+            $order->add_order_note(sprintf(
+                __('%s payment started (%s).', 'woocommerce-mollie-payments'),
+                $this->method_title,
+                $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'woocommerce-mollie-payments')) : '')
+            ));
 
             return array(
                 'result' => 'success',

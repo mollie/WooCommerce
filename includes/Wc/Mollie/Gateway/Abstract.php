@@ -101,24 +101,82 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
         $this->description = $description;
     }
 
-    /**
-     * @return array
-     */
-    protected function getSupportedCurrencies ()
+    public function admin_options ()
     {
-        $default = array('EUR');
+        if (!$this->isValidForUse())
+        {
+            echo '<div class="inline error"><p><strong>' . __( 'Gateway Disabled', 'woocommerce-mollie-payments' ) . '</strong>: '
+                . implode('<br/>', $this->errors)
+                . '</p></div>';
 
-        return apply_filters('woocommerce_' . $this->id . '_supported_currencies', $default);
+            return;
+        }
+
+        parent::admin_options();
     }
 
     /**
-     * Check if this gateway is enabled and available in the user's country
+     * This method will check if this gateway can be used
+     * @return bool
+     */
+    public function is_available()
+    {
+        if (!parent::is_available())
+        {
+            return false;
+        }
+
+        if (!$this->isValidForUse())
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if this gateway can be used
      *
      * @return bool
      */
     public function isValidForUse()
     {
-        return in_array(get_woocommerce_currency(), $this->getSupportedCurrencies());
+        $settings = WC_Mollie::getSettingsHelper();
+
+        if (!$this->isValidApiKeyProvided())
+        {
+            $this->errors[] = sprintf(
+                __('No API key provided. Please %sset you Mollie API key%s first.', 'woocommerce-mollie-payments'),
+                '<a href="' . $settings->getGlobalSettingsUrl() . '">',
+                '</a>'
+            );
+
+            return false;
+        }
+
+        if (null === $this->getMollieMethod())
+        {
+            $this->errors[] = sprintf(
+                __('%s not enabled in your Mollie profile. You can enabled it by editing your %sMollie profile settings%s.', 'woocommerce-mollie-payments'),
+                $this->getDefaultTitle(),
+                '<a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">',
+                '</a>'
+            );
+
+            return false;
+        }
+
+        if (!$this->isCurrencySupported())
+        {
+            $this->errors[] = sprintf(
+                __('Shop currency %s not supported by Mollie.', 'woocommerce-mollie-payments'),
+                get_woocommerce_currency()
+            );
+
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -579,9 +637,17 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function getMollieMethod ()
     {
-        return WC_Mollie::getDataHelper()->getPaymentMethod(
-            $this->getMollieMethodId()
-        );
+        try
+        {
+            return WC_Mollie::getDataHelper()->getPaymentMethod(
+                $this->getMollieMethodId()
+            );
+        }
+        catch (WC_Mollie_Exception_InvalidApiKey $e)
+        {
+        }
+
+        return null;
     }
 
     /**
@@ -627,6 +693,35 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
         $issuer_id = WC_Mollie::PLUGIN_ID . '_issuer_' . $this->id;
 
         return !empty($_POST[$issuer_id]) ? $_POST[$issuer_id] : NULL;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getSupportedCurrencies ()
+    {
+        $default = array('EUR');
+
+        return apply_filters('woocommerce_' . $this->id . '_supported_currencies', $default);
+    }
+
+    /**
+     * @return bool
+     */
+    protected function isCurrencySupported ()
+    {
+        return in_array(get_woocommerce_currency(), $this->getSupportedCurrencies());
+    }
+
+    /**
+     * @return bool
+     */
+    protected function isValidApiKeyProvided ()
+    {
+        $settings = WC_Mollie::getSettingsHelper();
+        $api_key  = $settings->getApiKey();
+
+        return !empty($api_key) && preg_match('/^(live|test)_\w+$/', $api_key);
     }
 
     /**

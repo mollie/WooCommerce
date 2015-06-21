@@ -60,16 +60,87 @@ class WC_Mollie_Helper_Settings
     }
 
     /**
-     * @param array $settings
-     * @return array
+     * Get plugin status
+     *
+     * - Check compatibility
+     * - Check Mollie API connectivity
+     *
+     * @return string
      */
-    public function addGlobalSettingsFields (array $settings)
+    protected function getPluginStatus ()
     {
-        $data_helper = WC_Mollie::getDataHelper();
-        $content     = '';
+        $status = new WC_Mollie_Helper_Status();
 
         try
         {
+            // First check if the platform is compatible
+            $status->checkCompatibility();
+        }
+        catch (WC_Mollie_Exception_IncompatiblePlatform $e)
+        {
+            switch ($e->getCode()) {
+                case WC_Mollie_Exception_IncompatiblePlatform::API_CLIENT_NOT_INSTALLED:
+                    $error = __('Mollie API client not installed. Please make sure the plugin is installed correctly.', 'woocommerce-mollie-payments');
+                    break;
+
+                default:
+                    $error = esc_html($e->getMessage());
+                    break;
+            }
+
+            // Just stop here!
+            return ''
+                . '<div id="message" class="error fade">'
+                . ' <strong>' . __('Error', 'woocommerce-mollie-payments') . ':</strong> ' . $error
+                . '</div>';
+        }
+
+        try
+        {
+            // Check compatibility
+            $status->getMollieApiStatus();
+
+            $api_status       = ''
+                . '<p>' . __('Mollie status:', 'woocommerce-mollie-payments')
+                . ' <span style="color:green; font-weight:bold;">' . __('Connected', 'woocommerce-mollie-payments') . '</span>'
+                . '</p>';
+            $api_status_type = 'updated';
+        }
+        catch (WC_Mollie_Exception_CouldNotConnectToMollie $e)
+        {
+            $api_status = ''
+                . '<p style="font-weight:bold;"><span style="color:red;">Communicating with Mollie failed:</span> ' . esc_html($e->getMessage()) . '</p>'
+                . '<p>Please check the following conditions. You can ask your system administrator to help with this.</p>'
+
+                . '<ul style="color: #2D60B0;">'
+                . ' <li>Make sure outside connections to <strong>' . esc_html(WC_Mollie_Helper_Api::getApiEndpoint()) . '</strong> are not blocked.</li>'
+                . ' <li>Make sure SSL v3 is disabled on your server. Mollie does not support SSL v3.</li>'
+                . ' <li>Make sure your server is up-to-date and the latest security patches have been installed.</li>'
+                . '</ul><br/>'
+
+                . '<p>Please contact <a href="mailto:info@mollie.com">info@mollie.com</a> if this still does not fix your problem.</p>';
+
+            $api_status_type = 'error';
+        }
+        catch (WC_Mollie_Exception_InvalidApiKey $e)
+        {
+            $api_status      = '<p style="color:red; font-weight:bold;">' . esc_html($e->getMessage()) . '</p>';
+            $api_status_type = 'error';
+        }
+
+        return ''
+            . '<div id="message" class="' . $api_status_type . ' fade">'
+            . $api_status
+            . '</div>';
+    }
+
+    protected function getMollieMethods ()
+    {
+        $content = '';
+
+        try
+        {
+            $data_helper     = WC_Mollie::getDataHelper();
             $mollie_methods  = $data_helper->getPaymentMethods();
             $mollie_gateways = array();
 
@@ -109,8 +180,21 @@ class WC_Mollie_Helper_Settings
         }
         catch (WC_Mollie_Exception_InvalidApiKey $e)
         {
-            $content = '<span style="color:red; font-weight:bold;">Error: ' . esc_html($e->getMessage()) . '</span>';
+            // Ignore
         }
+
+        return $content;
+    }
+
+    /**
+     * @param array $settings
+     * @return array
+     */
+    public function addGlobalSettingsFields (array $settings)
+    {
+        $content = ''
+            . $this->getPluginStatus()
+            . $this->getMollieMethods();
 
         $default_payment_description = __('Order %', 'woocommerce-mollie-payments');
 

@@ -42,8 +42,6 @@ class WC_Mollie
         $plugin_basename = self::PLUGIN_ID . '/' . self::PLUGIN_ID . '.php';
         $settings_helper = self::getSettingsHelper();
 
-        load_plugin_textdomain('woocommerce-mollie-payments', FALSE, self::PLUGIN_ID . '/i18n/languages');
-
         // Add global Mollie settings to 'WooCommerce -> Checkout -> Checkout Options'
         add_filter('woocommerce_payment_gateways_settings',   array($settings_helper, 'addGlobalSettingsFields'));
         // When page 'WooCommerce -> Checkout -> Checkout Options' is saved

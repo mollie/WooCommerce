@@ -255,7 +255,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
 
             do_action(WC_Mollie::PLUGIN_ID . '_payment_created', $payment, $order);
 
-            WC_Mollie::debug($this->id . ': Payment ' . $payment->id . ' created for order ' . $order->id);
+            WC_Mollie::debug($this->id . ': Payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $order->id);
 
             $order->add_order_note(sprintf(
                 __('%s payment started (%s).', 'woocommerce-mollie-payments'),
@@ -370,7 +370,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
             return;
         }
 
-        WC_Mollie::debug($this->id . ": Mollie payment {$payment->id} webhook call for order {$order->id}.", true);
+        WC_Mollie::debug($this->id . ": Mollie payment {$payment->id} (" . $payment->mode . ") webhook call for order {$order->id}.", true);
 
         $method_name = 'onWebhook' . ucfirst($payment->status);
 
@@ -380,7 +380,12 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
         }
         else
         {
-            $order->add_order_note(sprintf(__('%s payment %s (%s).', 'woocommerce-mollie-payments'), $this->method_title, $payment->status, $payment->id));
+            $order->add_order_note(sprintf(
+                __('%s payment %s (%s).', 'woocommerce-mollie-payments'),
+                $this->method_title,
+                $payment->status,
+                $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'woocommerce-mollie-payments')) : '')
+            ));
         }
 
         // Status 200
@@ -406,7 +411,11 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
             $order->payment_complete();
         }
 
-        $order->add_order_note(sprintf(__('Order completed using %s payment (%s).', 'woocommerce-mollie-payments'), $this->method_title, $payment->id));
+        $order->add_order_note(sprintf(
+            __('Order completed using %s payment (%s).', 'woocommerce-mollie-payments'),
+            $this->method_title,
+            $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'woocommerce-mollie-payments')) : '')
+        ));
     }
 
     /**
@@ -426,7 +435,11 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
         $order->update_status('pending');
 
         // User cancelled payment on Mollie or issuer page, add a cancel note.. do not cancel order.
-        $order->add_order_note(sprintf(__('%s payment cancelled (%s).', 'woocommerce-mollie-payments'), $this->method_title, $payment->id));
+        $order->add_order_note(sprintf(
+            __('%s payment cancelled (%s).', 'woocommerce-mollie-payments'),
+            $this->method_title,
+            $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'woocommerce-mollie-payments')) : '')
+        ));
     }
 
     /**
@@ -440,7 +453,11 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
         // Reset state
         $order->update_status('pending');
 
-        $order->add_order_note(sprintf(__('%s payment expired (%s).', 'woocommerce-mollie-payments'), $this->method_title, $payment->id));
+        $order->add_order_note(sprintf(
+            __('%s payment expired (%s).', 'woocommerce-mollie-payments'),
+            $this->method_title,
+            $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'woocommerce-mollie-payments')) : '')
+        ));
     }
 
     /**

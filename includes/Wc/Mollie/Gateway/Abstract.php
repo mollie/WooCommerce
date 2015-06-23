@@ -157,7 +157,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
         if (null === $this->getMollieMethod())
         {
             $this->errors[] = sprintf(
-                __('%s not enabled in your Mollie profile. You can enabled it by editing your %sMollie profile settings%s.', 'woocommerce-mollie-payments'),
+                __('%s not enabled in your Mollie profile. You can enabled it by editing your %sMollie profile%s.', 'woocommerce-mollie-payments'),
                 $this->getDefaultTitle(),
                 '<a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">',
                 '</a>'

@@ -134,6 +134,15 @@ class WC_Mollie_Helper_Settings
             . '</div>';
     }
 
+    /**
+     * @param string $gateway_class_name
+     * @return string
+     */
+    protected function getGatewaySettingsUrl ($gateway_class_name)
+    {
+        return admin_url('admin.php?page=wc-settings&tab=checkout&section=' . sanitize_title(strtolower($gateway_class_name)));
+    }
+
     protected function getMollieMethods ()
     {
         $content = '';
@@ -155,7 +164,9 @@ class WC_Mollie_Helper_Settings
                 }
             }
 
-            $icon_not_supported = '<span style="color:red; font-weight:bold; cursor:help;" title="' . __("This payment method is not supported by this plugin. Please check if there is a update available."). '">' . __("Not supported") . '</span>';
+            $icon_available     = ' <span style="color: green; cursor: help;" title="' . __('Gateway enabled', 'woocommerce-mollie-payments'). '">' . strtolower(__('Enabled', 'woocommerce-mollie-payments')) . '</span>';
+            $icon_no_available  = ' <span style="color: orange; cursor: help;" title="' . __('Gateway not enabled', 'woocommerce-mollie-payments'). '">' . strtolower(__('Disabled', 'woocommerce-mollie-payments')) . '</span>';
+            $icon_not_supported = ' <span style="color: red; cursor: help;" title="' . __('This payment method is not supported by this plugin. Please check if there is an update available.', 'woocommerce-mollie-payments'). '">' . strtolower(__('Not supported', 'woocommerce-mollie-payments')) . '</span>';
 
             $content .= '<br /><br />' . __('The following payment methods are activated in your Mollie profile:', 'woocommerce-mollie-payments');
 
@@ -166,10 +177,27 @@ class WC_Mollie_Helper_Settings
                 $content .= '<img src="' . esc_attr($payment_method->image->normal) . '" alt="' . esc_attr($payment_method->description) . '" title="' . esc_attr($payment_method->description) . '" style="width: 25px; vertical-align: bottom;" />';
                 $content .= ' ' . esc_html($payment_method->description);
 
-                // No plugin gateway found with support for this payment method
-                if (!isset($mollie_gateways[$payment_method->id]))
+                // Gateway found for Mollie payment method
+                if (isset($mollie_gateways[$payment_method->id]))
                 {
-                    $content .= ' ' . $icon_not_supported;
+                    /** @var WC_Mollie_Gateway_Abstract $gateway */
+                    $gateway = $mollie_gateways[$payment_method->id];
+
+                    if ($gateway->is_available())
+                    {
+                        $content .= $icon_available;
+                    }
+                    else
+                    {
+                        $content .= $icon_no_available;
+                    }
+
+                    $content .= ' <a href="' . $this->getGatewaySettingsUrl(get_class($gateway)) . '">' . strtolower(__('Edit')) . '</a>';
+                }
+                // No plugin gateway found with support for this payment method
+                else
+                {
+                    $content .= $icon_not_supported;
                 }
 
                 $content .= '</li>';

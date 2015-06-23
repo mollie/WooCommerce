@@ -113,6 +113,17 @@ class WC_Mollie
      */
     public static function onOrderDetails (WC_Order $order)
     {
+        if (is_order_received_page())
+        {
+            /**
+             * Do not show instruction again below details on order received page
+             * Instructions already displayed on top of order received page by $gateway->thankyou_page()
+             *
+             * @see WC_Mollie_Gateway_Abstract::thankyou_page
+             */
+            return;
+        }
+
         $gateway = wc_get_payment_gateway_by_order($order);
 
         if (!$gateway || !($gateway instanceof WC_Mollie_Gateway_Abstract))

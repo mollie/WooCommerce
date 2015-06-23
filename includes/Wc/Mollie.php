@@ -133,7 +133,7 @@ class WC_Mollie
 
         /** @var WC_Mollie_Gateway_Abstract $gateway */
 
-        $gateway->displayOrderDetails($order);
+        $gateway->displayInstructions($order);
     }
 
     /**

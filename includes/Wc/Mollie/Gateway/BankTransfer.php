@@ -88,7 +88,6 @@ class WC_Mollie_Gateway_BankTransfer extends WC_Mollie_Gateway_Abstract
         {
             if (!$admin_instructions)
             {
-                $instructions .= '<h2>' . __('Instructions') . "</h2>\n\n";
                 $instructions .= __('Please complete your payment by transferring the total amount to the following bank account:', 'woocommerce-mollie-payments') . "\n\n\n";
             }
 

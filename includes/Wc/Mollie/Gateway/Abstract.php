@@ -36,7 +36,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
         add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'webhookAction'));
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
         add_action('woocommerce_thankyou_' . $this->id, array($this, 'thankyou_page'));
-        add_action('woocommerce_email_before_order_table', array($this, 'email_instructions'), 10, 3);
+        add_action('woocommerce_email_after_order_table', array($this, 'displayInstructions'), 10, 3);
     }
 
     /**
@@ -543,28 +543,18 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
         }
 
         // Same as email instructions, just run that
-        $this->email_instructions($order, $admin_instructions = false, $plain_text = false);
-    }
-
-    /**
-     * Echo order details
-     *
-     * @param WC_Order $order
-     */
-    public function displayOrderDetails (WC_Order $order)
-    {
-        $this->email_instructions($order, $admin_instructions = false);
+        $this->displayInstructions($order, $admin_instructions = false, $plain_text = false);
     }
 
     /**
      * Add content to the WC emails.
      *
      * @param WC_Order $order
-     * @param bool     $admin_instructions
-     * @param bool     $plain_text
+     * @param bool     $admin_instructions (default: false)
+     * @param bool     $plain_text (default: false)
      * @return void
      */
-    public function email_instructions(WC_Order $order, $admin_instructions, $plain_text = false)
+    public function displayInstructions(WC_Order $order, $admin_instructions = false, $plain_text = false)
     {
         // Invalid gateway
         if ($this->id !== $order->payment_method)
@@ -595,6 +585,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
             }
             else
             {
+                echo '<h2>' . __('Payment', 'woocommerce-mollie-payments') . '</h2>';
                 echo wpautop($instructions) . PHP_EOL;
             }
         }

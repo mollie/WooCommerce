@@ -20,15 +20,15 @@ class WC_Mollie_Helper_Api
     }
 
     /**
+     * @param bool $test_mode
      * @return Mollie_API_Client
-     * @throws Mollie_API_Exception
      * @throws WC_Mollie_Exception_InvalidApiKey
      */
-    public function getApiClient ()
+    public function getApiClient ($test_mode = false)
     {
         global $wp_version;
 
-        $api_key = $this->settings_helper->getApiKey();
+        $api_key = $this->settings_helper->getApiKey($test_mode);
 
         if (empty($api_key))
         {

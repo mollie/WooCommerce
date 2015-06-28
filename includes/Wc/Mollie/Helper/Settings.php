@@ -2,11 +2,22 @@
 class WC_Mollie_Helper_Settings
 {
     /**
-     * @return string|null
+     * @return bool
      */
-    public function getApiKey ()
+    public function isTestModeEnabled ()
     {
-        return trim(get_option($this->getSettingId('api_key')));
+        return trim(get_option($this->getSettingId('test_mode_enabled'))) === 'yes';
+    }
+
+    /**
+     * @param bool $test_mode
+     * @return null|string
+     */
+    public function getApiKey ($test_mode = false)
+    {
+        $setting_id = $test_mode ? 'test_api_key' : 'live_api_key';
+
+        return trim(get_option($this->getSettingId($setting_id)));
     }
 
     /**
@@ -17,22 +28,6 @@ class WC_Mollie_Helper_Settings
     public function getPaymentDescription ()
     {
         return trim(get_option($this->getSettingId('payment_description')));
-    }
-
-    /**
-     * Return true if the test API key is used
-     * @return bool
-     */
-    public function isTestMode ()
-    {
-        $api_key = $this->getApiKey();
-
-        if (!empty($api_key) && preg_match('/^(test)_\w+$/', $api_key))
-        {
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -150,7 +145,12 @@ class WC_Mollie_Helper_Settings
         try
         {
             $data_helper     = WC_Mollie::getDataHelper();
-            $mollie_methods  = $data_helper->getPaymentMethods();
+            $settings_helper = WC_Mollie::getSettingsHelper();
+
+            // Is Test mode enabled?
+            $test_mode       = $settings_helper->isTestModeEnabled();
+
+            $mollie_methods  = $data_helper->getPaymentMethods($test_mode);
             $mollie_gateways = array();
 
             // Find all payment methods supported by plugin' gateways
@@ -168,7 +168,14 @@ class WC_Mollie_Helper_Settings
             $icon_no_available  = ' <span style="color: orange; cursor: help;" title="' . __('Gateway not enabled', 'woocommerce-mollie-payments'). '">' . strtolower(__('Disabled', 'woocommerce-mollie-payments')) . '</span>';
             $icon_not_supported = ' <span style="color: red; cursor: help;" title="' . __('This payment method is not supported by this plugin. Please check if there is an update available.', 'woocommerce-mollie-payments'). '">' . strtolower(__('Not supported', 'woocommerce-mollie-payments')) . '</span>';
 
-            $content .= '<br /><br />' . __('The following payment methods are activated in your Mollie profile:', 'woocommerce-mollie-payments');
+            $content .= '<br /><br />';
+
+            if (WC_Mollie::getSettingsHelper()->isTestModeEnabled())
+            {
+                $content .= '<strong>' . __('Test mode enabled.', 'woocommerce-mollie-payments') . '</strong> ';
+            }
+
+            $content .= __('The following payment methods are activated in your Mollie profile:', 'woocommerce-mollie-payments');
 
             $content .= '<ul style="width: 900px">';
             foreach ($mollie_methods as $payment_method)
@@ -220,6 +227,9 @@ class WC_Mollie_Helper_Settings
      */
     public function addGlobalSettingsFields (array $settings)
     {
+        wp_register_script('mollie_settings', plugin_dir_url('woocommerce-mollie-payments/woocommerce-mollie-payments.php')  . '/assets/js/settings.js', array('jquery'), WC_Mollie::PLUGIN_VERSION);
+        wp_enqueue_script('mollie_settings');
+
         $content = ''
             . $this->getPluginStatus()
             . $this->getMollieMethods();
@@ -236,14 +246,33 @@ class WC_Mollie_Helper_Settings
                          . '<p>' . __('The following options are required to use the Mollie payments and are used by all Mollie payment methods', 'woocommerce-mollie-payments') . '</p>',
             ),
             array(
-                'id'                => $this->getSettingId('api_key'),
-                'title'             => __('Mollie API key', 'woocommerce-mollie-payments'),
+                'id'                => $this->getSettingId('live_api_key'),
+                'title'             => __('Live API key', 'woocommerce-mollie-payments'),
                 'type'              => 'text',
                 'desc'              => __('The API key is used to connect to Mollie. You can find your API key in your <a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">website profile</a>', 'woocommerce-mollie-payments'),
-                'placeholder'       => __('API key should start with live_ or test_'),
+                'placeholder'       => sprintf(__('API key should start with %s'), 'live_'),
                 'css'               => 'width: 350px',
                 'custom_attributes' => array(
-                    'pattern' => '^(live|test)_\w+$',
+                    'pattern' => '^live_\w+$',
+                ),
+            ),
+            array(
+                'id'                => $this->getSettingId('test_mode_enabled'),
+                'title'             => __('Enable test mode', 'woocommerce-mollie-payments'),
+                'default'           => 'no',
+                'type'              => 'checkbox',
+                'desc_tip'          => __('Enable test mode if you wan\'t to test the plugin without using real payments.', 'woocommerce-mollie-payments'),
+            ),
+            array(
+                'id'                => $this->getSettingId('test_api_key'),
+                'title'             => __('Test API key', 'woocommerce-mollie-payments'),
+                'placeholder'       => sprintf(__('API key should start with %s'), 'test_'),
+                'default'           => '',
+                'type'              => 'text',
+                'css'               => 'width: 350px',
+                'desc'              => __('The API key is used to connect to Mollie. You can find your API key in your <a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">website profile</a>', 'woocommerce-mollie-payments'),
+                'custom_attributes' => array(
+                    'pattern' => '^test_\w+$',
                 ),
             ),
             array(

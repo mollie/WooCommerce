@@ -29,10 +29,11 @@ class WC_Mollie_Helper_Data
      * Skip cache by setting $use_cache to false
      *
      * @param string $payment_id
-     * @param bool   $use_cache (default true)
+     * @param bool   $test_mode (default: false)
+     * @param bool   $use_cache (default: true)
      * @return Mollie_API_Object_Payment|null
      */
-    public function getPayment ($payment_id, $use_cache = true)
+    public function getPayment ($payment_id, $test_mode = false, $use_cache = true)
     {
         try
         {
@@ -48,7 +49,7 @@ class WC_Mollie_Helper_Data
                 }
             }
 
-            $payment = $this->api_helper->getApiClient()->payments->get($payment_id);
+            $payment = $this->api_helper->getApiClient($test_mode)->payments->get($payment_id);
 
             set_transient($transient_id, $payment, MINUTE_IN_SECONDS * 5);
 
@@ -56,21 +57,21 @@ class WC_Mollie_Helper_Data
         }
         catch (Exception $e)
         {
-            WC_Mollie::debug(__METHOD__ . ": Could not load payment $payment_id: " . $e->getMessage() . ' (' . get_class($e) . ')');
+            WC_Mollie::debug(__METHOD__ . ": Could not load payment $payment_id (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
 
         return NULL;
     }
 
     /**
-     * @return Mollie_API_Object_Method[]|Mollie_API_Object_List|array
-     * @throws WC_Mollie_Exception_InvalidApiKey
+     * @param bool $test_mode (default: false)
+     * @return array|Mollie_API_Object_List|Mollie_API_Object_Method[]
      */
-    public function getPaymentMethods ()
+    public function getPaymentMethods ($test_mode = false)
     {
         try
         {
-            $transient_id = WC_Mollie::PLUGIN_ID . '_api_methods';
+            $transient_id = WC_Mollie::PLUGIN_ID . '_api_methods_' . ($test_mode ? 'test' : 'live');
 
             if (empty(self::$api_methods))
             {
@@ -82,7 +83,7 @@ class WC_Mollie_Helper_Data
                 }
                 else
                 {
-                    self::$api_methods = $this->api_helper->getApiClient()->methods->all();
+                    self::$api_methods = $this->api_helper->getApiClient($test_mode)->methods->all();
 
                     set_transient($transient_id, self::$api_methods, MINUTE_IN_SECONDS * 5);
                 }
@@ -98,12 +99,13 @@ class WC_Mollie_Helper_Data
     }
 
     /**
+     * @param bool   $test_mode (default: false)
      * @param string $method
      * @return Mollie_API_Object_Method|null
      */
-    public function getPaymentMethod ($method)
+    public function getPaymentMethod ($test_mode = false, $method)
     {
-        $payment_methods = $this->getPaymentMethods();
+        $payment_methods = $this->getPaymentMethods($test_mode);
 
         foreach ($payment_methods as $payment_method)
         {
@@ -117,14 +119,15 @@ class WC_Mollie_Helper_Data
     }
 
     /**
+     * @param bool        $test_mode (default: false)
      * @param string|null $method
-     * @return Mollie_API_Object_Issuer[]|Mollie_API_Object_List|array
+     * @return array|Mollie_API_Object_Issuer[]|Mollie_API_Object_List
      */
-    public function getIssuers ($method = NULL)
+    public function getIssuers ($test_mode = false, $method = NULL)
     {
         try
         {
-            $transient_id = WC_Mollie::PLUGIN_ID . '_api_issuers';
+            $transient_id = WC_Mollie::PLUGIN_ID . '_api_issuers_' . ($test_mode ? 'test' : 'live');
 
             if (empty(self::$api_issuers))
             {
@@ -136,7 +139,7 @@ class WC_Mollie_Helper_Data
                 }
                 else
                 {
-                    self::$api_issuers = $this->api_helper->getApiClient()->issuers->all();
+                    self::$api_issuers = $this->api_helper->getApiClient($test_mode)->issuers->all();
 
                     set_transient($transient_id, self::$api_issuers, MINUTE_IN_SECONDS * 5);
                 }
@@ -171,13 +174,13 @@ class WC_Mollie_Helper_Data
     /**
      * Save active Mollie payment id for order
      *
-     * @param int $order_id
+     * @param int                       $order_id
      * @param Mollie_API_Object_Payment $payment
      * @return $this
      */
     public function setActiveMolliePayment ($order_id, Mollie_API_Object_Payment $payment)
     {
-        add_post_meta($order_id, '_mollie_transaction_id', $payment->id, $single = true);
+        add_post_meta($order_id, '_mollie_payment_id', $payment->id, $single = true);
         add_post_meta($order_id, '_mollie_payment_mode', $payment->mode, $single = true);
 
         delete_post_meta($order_id, '_mollie_cancelled_payment_id');
@@ -187,12 +190,13 @@ class WC_Mollie_Helper_Data
 
     /**
      * Delete active Mollie payment id for order
+     *
      * @param int $order_id
      * @return $this
      */
     public function unsetActiveMolliePayment ($order_id)
     {
-        delete_post_meta($order_id, '_mollie_transaction_id');
+        delete_post_meta($order_id, '_mollie_payment_id');
         delete_post_meta($order_id, '_mollie_payment_mode');
 
         return $this;
@@ -206,7 +210,7 @@ class WC_Mollie_Helper_Data
      */
     public function getActiveMolliePaymentId ($order_id)
     {
-        return get_post_meta($order_id, '_mollie_transaction_id', $single = true);
+        return get_post_meta($order_id, '_mollie_payment_id', $single = true);
     }
 
     /**
@@ -231,6 +235,7 @@ class WC_Mollie_Helper_Data
         {
             return $this->getPayment(
                 $this->getActiveMolliePaymentId($order_id),
+                $this->getActiveMolliePaymentMode($order_id) == 'test',
                 $use_cache
             );
         }

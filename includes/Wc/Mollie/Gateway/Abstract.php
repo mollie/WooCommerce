@@ -91,7 +91,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
     {
         $description = '';
 
-        if (WC_Mollie::getSettingsHelper()->isTestMode())
+        if (WC_Mollie::getSettingsHelper()->isTestModeEnabled())
         {
             $description .= '<strong>' . __('Test mode enabled.', 'woocommerce-mollie-payments') . '</strong><br/>';
         }
@@ -145,7 +145,9 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
 
         if (!$this->isValidApiKeyProvided())
         {
-            $this->errors[] = sprintf(
+            $test_mode = $settings->isTestModeEnabled();
+
+            $this->errors[] = ($test_mode ? __('Test mode enabled.', 'woocommerce-mollie-payments') . ' ' : '') . sprintf(
                 __('No API key provided. Please %sset you Mollie API key%s first.', 'woocommerce-mollie-payments'),
                 '<a href="' . $settings->getGlobalSettingsUrl() . '">',
                 '</a>'
@@ -247,8 +249,11 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
 
             do_action(WC_Mollie::PLUGIN_ID . '_create_payment', $data, $order);
 
+            // Is test mode enabled?
+            $test_mode = WC_Mollie::getSettingsHelper()->isTestModeEnabled();
+
             // Create Mollie payment
-            $payment = WC_Mollie::getApiHelper()->getApiClient()->payments->create($data);
+            $payment   = WC_Mollie::getApiHelper()->getApiClient($test_mode)->payments->create($data);
 
             // Set active Mollie payment
             WC_Mollie::getDataHelper()->setActiveMolliePayment($order->id, $payment);
@@ -294,6 +299,34 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
             return;
         }
 
+        if (empty($_GET['order_id']) || empty($_GET['key']))
+        {
+            // Invalid parameters
+            header('Status: 400 Bad Request');
+
+            WC_Mollie::debug(__METHOD__ . ":  No order ID or order key provided.");
+            return;
+        }
+
+        $order_id = $_GET['order_id'];
+        $key      = $_GET['key'];
+
+        $order    = wc_get_order($order_id);
+
+        if (!$order)
+        {
+            header("Status: 404 Not Found");
+            WC_Mollie::debug(__METHOD__ . ":  Could not find order $order_id.");
+            return;
+        }
+
+        if (!$order->key_is_valid($key))
+        {
+            header('Status: 401 Unauthorized');
+            WC_Mollie::debug(__METHOD__ . ":  Invalid key $key for order $order_id.");
+            return;
+        }
+
         // No Mollie payment id provided
         if (empty($_REQUEST['id']))
         {
@@ -307,8 +340,10 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
         $payment_id  = $_REQUEST['id'];
         $data_helper = WC_Mollie::getDataHelper();
 
+        $test_mode = $data_helper->getActiveMolliePaymentMode($order_id) == 'test';
+
         // Load the payment from Mollie, do not use cache
-        $payment = $data_helper->getPayment($payment_id, $use_cache = false);
+        $payment = $data_helper->getPayment($payment_id, $test_mode, $use_cache = false);
 
         // Payment not found
         if (!$payment)
@@ -322,16 +357,11 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
         // TODO: remove!
         WC_Mollie::debug(__METHOD__ . ": Payment on webhook: " . print_r($payment, true));
 
-        // Order ID
-        $order_id = $payment->metadata->order_id;
-
-        $order = wc_get_order($order_id);
-
-        if (!$order)
+        if ($order_id != $payment->metadata->order_id)
         {
-            header('Status: 404 Not Found');
+            header('Status: 400 Bad Request');
 
-            WC_Mollie::debug($this->id . ": order $order_id not found for payment $payment_id.", true);
+            WC_Mollie::debug(__METHOD__ . ": Order ID does not match order_id in payment metadata. Payment ID {$payment->id}, order ID $order_id");
             return;
         }
 
@@ -514,8 +544,11 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
 
             do_action(WC_Mollie::PLUGIN_ID . '_create_refund', $payment, $order);
 
+            // Is test mode enabled?
+            $test_mode = WC_Mollie::getSettingsHelper()->isTestModeEnabled();
+
             // Send refund to Mollie
-            $refund = WC_Mollie::getApiHelper()->getApiClient()->payments->refund($payment, $amount);
+            $refund = WC_Mollie::getApiHelper()->getApiClient($test_mode)->payments->refund($payment, $amount);
 
             WC_Mollie::debug('process_refund - refund created - refund: ' . $refund->id . ', payment: ' . $payment->id . ', order: ' . $order_id . ', amount: ' . $amount . (!empty($reason) ? ', reason: ' . $reason : ''));
 
@@ -636,7 +669,10 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
     {
         try
         {
+            $test_mode = WC_Mollie::getSettingsHelper()->isTestModeEnabled();
+
             return WC_Mollie::getDataHelper()->getPaymentMethod(
+                $test_mode,
                 $this->getMollieMethodId()
             );
         }
@@ -678,6 +714,10 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
     protected function getWebhookUrl (WC_Order $order)
     {
         $webhook_url = WC()->api_request_url(strtolower(get_class($this)));
+        $webhook_url = add_query_arg(array(
+            'order_id' => $order->id,
+            'key'      => $order->order_key,
+        ), $webhook_url);
 
         return apply_filters(WC_Mollie::PLUGIN_ID . '_webhook_url', $webhook_url, $order);
     }
@@ -715,8 +755,9 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function isValidApiKeyProvided ()
     {
-        $settings = WC_Mollie::getSettingsHelper();
-        $api_key  = $settings->getApiKey();
+        $settings  = WC_Mollie::getSettingsHelper();
+        $test_mode = $settings->isTestModeEnabled();
+        $api_key   = $settings->getApiKey($test_mode);
 
         return !empty($api_key) && preg_match('/^(live|test)_\w+$/', $api_key);
     }

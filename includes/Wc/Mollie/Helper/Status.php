@@ -145,8 +145,11 @@ class WC_Mollie_Helper_Status
     {
         try
         {
+            // Is test mode enabled?
+            $test_mode  = WC_Mollie::getSettingsHelper()->isTestModeEnabled();
+
             $api_helper = WC_Mollie::getApiHelper();
-            $api_client = $api_helper->getApiClient();
+            $api_client = $api_helper->getApiClient($test_mode);
 
             // Try to load Mollie issuers
             $api_client->issuers->all();

@@ -48,7 +48,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
             'enabled' => array(
                 'title'       => __('Enable/Disable', 'woocommerce'),
                 'type'        => 'checkbox',
-                'label'       => sprintf(__('Enable %s Payment', 'woocommerce-mollie-payments'), $this->title),
+                'label'       => sprintf(__('Enable %s', 'woocommerce-mollie-payments'), $this->getDefaultTitle()),
                 'default'     => 'yes'
             ),
             'title' => array(
@@ -332,21 +332,6 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
             header('Status: 404 Not Found');
 
             WC_Mollie::debug($this->id . ": order $order_id not found for payment $payment_id.", true);
-            return;
-        }
-
-        // Webhook call delayed? Active payment changed
-        if (($active_mollie_payment_id = $data_helper->getActiveMolliePaymentId($order_id)) != $payment->id)
-        {
-            $message = "Webhook payment {$payment_id} called. Payment not active on order {$order_id} anymore. Current payment method: {$order->payment_method_title} ({$order->payment_method}).";
-
-            if (!empty($active_mollie_payment_id))
-            {
-                $message .= " New Mollie payment ID: $active_mollie_payment_id.";
-            }
-
-            header('Status: 204 No Content');
-            WC_Mollie::debug($message, true);
             return;
         }
 

@@ -31,6 +31,36 @@ class WC_Mollie_Helper_Settings
     }
 
     /**
+     * @return string
+     */
+    protected function getPaymentLocaleSetting ()
+    {
+        return trim(get_option($this->getSettingId('payment_locale')));
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPaymentLocale ()
+    {
+        $setting = $this->getPaymentLocaleSetting();
+
+        if (!empty($setting))
+        {
+            if ($setting == 'wp_locale')
+            {
+                return get_locale();
+            }
+            else
+            {
+                return $setting;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * @return bool
      */
     public function isDebugEnabled ()
@@ -282,6 +312,23 @@ class WC_Mollie_Helper_Settings
                 'desc'    => sprintf(__('Payment description send to Mollie. Use <code>%%</code> as a placeholder for the order number. Default <code>%s</code>', 'woocommerce-mollie-payments'), $default_payment_description),
                 'default' => $default_payment_description,
                 'css'     => 'width: 350px',
+            ),
+            array(
+                'id'      => $this->getSettingId('payment_locale'),
+                'title'   => __('Payment screen language', 'woocommerce-mollie-payments'),
+                'type'    => 'select',
+                'options' => array(
+                    ''          => __('Detect using browser language (default)', 'woocommerce-mollie-payments'),
+                    'wp_locale' => sprintf(__('Send WordPress language (%s)', 'woocommerce-mollie-payments'), get_locale()),
+                    'nl_NL'     => __('Dutch', 'woocommerce-mollie-payments'),
+                    'nl_BE'     => __('Flemish (Belgium)', 'woocommerce-mollie-payments'),
+                    'en'        => __('English', 'woocommerce-mollie-payments'),
+                    'de'        => __('German', 'woocommerce-mollie-payments'),
+                    'es'        => __('Spanish', 'woocommerce-mollie-payments'),
+                    'fr_FR'     => __('French', 'woocommerce-mollie-payments'),
+                    'fr_BE'     => __('French (Belgium)', 'woocommerce-mollie-payments'),
+                ),
+                'default' => '',
             ),
             array(
                 'id'      => $this->getSettingId('debug'),

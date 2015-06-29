@@ -214,7 +214,10 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
             __('Awaiting payment confirmation.', 'woocommerce-mollie-payments') . "\n"
         );
 
-        $payment_description = WC_Mollie::getSettingsHelper()->getPaymentDescription();
+        $settings_helper     = WC_Mollie::getSettingsHelper();
+
+        $payment_description = $settings_helper->getPaymentDescription();
+        $payment_locale      = $settings_helper->getPaymentLocale();
         $mollie_method       = $this->getMollieMethodId();
         $selected_issuer     = $this->getSelectedIssuer();
         $return_url          = $this->getReturnUrl($order);
@@ -227,6 +230,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
             'webhookUrl'      => $webhook_url,
             'method'          => $mollie_method,
             'issuer'          => $selected_issuer,
+            'locale'          => $payment_locale,
             'billingAddress'  => $order->billing_address_1,
             'billingCity'     => $order->billing_city,
             'billingRegion'   => $order->billing_state,

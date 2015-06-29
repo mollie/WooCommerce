@@ -50,7 +50,10 @@ class WC_Mollie_Gateway_Ideal extends WC_Mollie_Gateway_Abstract
         // Display description above issuers
         parent::payment_fields();
 
+        $test_mode = WC_Mollie::getSettingsHelper()->isTestModeEnabled();
+
         $ideal_issuers = WC_Mollie::getDataHelper()->getIssuers(
+            $test_mode,
             $this->getMollieMethodId()
         );
 

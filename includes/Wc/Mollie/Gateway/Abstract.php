@@ -171,8 +171,9 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
         if (!$this->isCurrencySupported())
         {
             $this->errors[] = sprintf(
-                __('Shop currency %s not supported by Mollie.', 'woocommerce-mollie-payments'),
-                get_woocommerce_currency()
+                __('Shop currency %s not supported by Mollie. Mollie only supports: %s.', 'woocommerce-mollie-payments'),
+                get_woocommerce_currency(),
+                implode(', ', $this->getSupportedCurrencies())
             );
 
             return false;

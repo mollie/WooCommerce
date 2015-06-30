@@ -1,0 +1,472 @@
+# Copyright (C) 2015 WooCommerce Mollie Payments
+# This file is distributed under the same license as the WooCommerce Mollie Payments package.
+msgid ""
+msgstr ""
+"Project-Id-Version: WooCommerce Mollie Payments 2.0\n"
+"Report-Msgid-Bugs-To: http://wordpress.org/support/plugin/woocommerce-mollie-"
+"payments\n"
+"POT-Creation-Date: 2015-06-30 13:31:59+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2015-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:49
+msgid "Enable/Disable"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:51
+msgid "Enable %s"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:55
+msgid "Title"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:57
+msgid ""
+"This controls the title which the user sees during checkout. Default <code>"
+"%s</code>"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:62
+msgid "Display logo"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:64
+msgid "Display logo on checkout page. Default <code>enabled</code>"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:68
+#: includes/Wc/Mollie/Helper/Settings.php:310
+msgid "Description"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:70
+msgid ""
+"Payment method description that the customer will see on your checkout. "
+"Default <code>%s</code>"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:96
+#: includes/Wc/Mollie/Gateway/Abstract.php:150
+#: includes/Wc/Mollie/Helper/Settings.php:205
+msgid "Test mode enabled."
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:108
+msgid "Gateway Disabled"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:151
+msgid "No API key provided. Please %sset you Mollie API key%s first."
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:162
+msgid ""
+"%s not enabled in your Mollie profile. You can enabled it by editing your "
+"%sMollie profile%s."
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:174
+msgid "Shop currency %s not supported by Mollie. Mollie only supports: %s."
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:197
+msgid "Could not load order %s"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:214
+msgid "Awaiting payment confirmation."
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:271
+msgid "%s payment started (%s)."
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:273
+#: includes/Wc/Mollie/Gateway/Abstract.php:398
+#: includes/Wc/Mollie/Gateway/Abstract.php:428
+#: includes/Wc/Mollie/Gateway/Abstract.php:452
+#: includes/Wc/Mollie/Gateway/Abstract.php:470
+msgid "test mode"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:285
+msgid "Could not create %s payment."
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:395
+msgid "%s payment %s (%s)."
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:426
+msgid "Order completed using %s payment (%s)."
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:450
+msgid "%s payment cancelled (%s)."
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:468
+msgid "%s payment expired (%s)."
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:487
+msgid ""
+"You have cancelled your payment. Please complete your order with a different "
+"payment method."
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:553
+msgid "Refunded %s%s (reason: %s) - Payment ID: %s, Refund %s"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:619
+msgid "Payment"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:640
+msgid "We have not received a definite payment status."
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Abstract.php:645
+msgid ""
+"We have not received a definite payment status. You will receive an email as "
+"soon as we receive a confirmation of the bank/merchant."
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/BankTransfer.php:33
+msgid "Expiry date"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/BankTransfer.php:35
+msgid ""
+"Number of days after the payment will expire. Default <code>%d</code> days"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/BankTransfer.php:44
+msgid "Mail payment instructions"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/BankTransfer.php:45
+msgid ""
+"Should Mollie automatically mail the payment instructions to the customer? "
+"Default <code>enabled</code>"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/BankTransfer.php:48
+msgid ""
+"If you disable this option the customer still has an option to send the "
+"payment instructions to an email address on the Mollie payment screen."
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/BankTransfer.php:93
+msgid "Bank Transfer"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/BankTransfer.php:143
+#: includes/Wc/Mollie/Gateway/Ideal.php:85
+#: includes/Wc/Mollie/Gateway/Sofort.php:56
+msgid "Payment completed by <strong>%s</strong> (IBAN: %s, BIC: %s)"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/BankTransfer.php:153
+msgid ""
+"Please complete your payment by transferring the total amount to the "
+"following bank account:"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/BankTransfer.php:156
+msgid "Beneficiary: %s"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/BankTransfer.php:157
+msgid "IBAN: <strong>%s</strong>"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/BankTransfer.php:158
+msgid "BIC: %s"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/BankTransfer.php:162
+msgid "Payment reference: %s"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/BankTransfer.php:166
+msgid "Please provide the payment reference <strong>%s</strong>"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/BankTransfer.php:179
+msgid "The payment will expire on <strong>%s</strong>."
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/BankTransfer.php:186
+msgid ""
+"The payment will expire on <strong>%s</strong>. Please make sure you "
+"transfer the total amount before this date."
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Belfius.php:31
+msgid "Belfius Direct Net"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Bitcoin.php:27
+msgid "Bitcoin"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Creditcard.php:31
+msgid "Credit card"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Creditcard.php:56
+msgid "Payment completed by <strong>%s</strong>"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Ideal.php:34
+msgid "iDEAL"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Ideal.php:42
+msgid "Select your bank"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/MisterCash.php:31
+msgid "Bancontact / Mister Cash"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Paypal.php:31
+msgid "PayPal"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Paypal.php:56
+msgid "Payment completed by <strong>%s</strong> (%s)"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Paysafecard.php:27
+msgid "paysafecard"
+msgstr ""
+
+#: includes/Wc/Mollie/Gateway/Sofort.php:31
+msgid "SOFORT Banking"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Api.php:35
+msgid "No API key provided."
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Api.php:39
+msgid ""
+"Invalid API key. The API key must start with 'test_' or 'live_' and can't "
+"further contain any special characters."
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:108
+#: includes/Wc/Mollie/Helper/Status.php:43
+msgid ""
+"Mollie API client not installed. Please make sure the plugin is installed "
+"correctly."
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:119
+msgid "Error"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:129
+msgid "Mollie status:"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:130
+msgid "Connected"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:197
+msgid "Gateway enabled"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:197
+msgid "Enabled"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:198
+msgid "Gateway not enabled"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:198
+msgid "Disabled"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:199
+msgid ""
+"This payment method is not supported by this plugin. Please check if there "
+"is an update available."
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:199
+msgid "Not supported"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:208
+msgid "The following payment methods are activated in your Mollie profile:"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:232
+msgid "Edit"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:267
+msgid "Order %"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:273 includes/Wc/Mollie.php:247
+msgid "Mollie settings"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:276
+msgid ""
+"The following options are required to use the Mollie payments and are used "
+"by all Mollie payment methods"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:280
+msgid "Live API key"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:282
+#: includes/Wc/Mollie/Helper/Settings.php:303
+msgid ""
+"The API key is used to connect to Mollie. You can find your <strong>%s</"
+"strong> API key in your <a href=\"https://www.mollie.com/beheer/account/"
+"profielen/\" target=\"_blank\">website profile</a>"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:283
+msgid "Live API key should start with live_"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:291
+msgid "Enable test mode"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:294
+msgid ""
+"Enable test mode if you want to test the plugin without using real payments."
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:298
+msgid "Test API key"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:299
+msgid "Test API key should start with test_"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:312
+msgid ""
+"Payment description send to Mollie. Use <code>%%</code> as a placeholder for "
+"the order number. Default <code>%s</code>"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:318
+msgid "Payment screen language"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:321
+msgid "Detect using browser language (default)"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:322
+msgid "Send WordPress language (%s)"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:323
+msgid "Dutch"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:324
+msgid "Flemish (Belgium)"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:325
+msgid "English"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:326
+msgid "German"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:327
+msgid "Spanish"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:328
+msgid "French"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:329
+msgid "French (Belgium)"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:335
+msgid "Debug Log"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Settings.php:337
+msgid "Log plugin events. <a href=\"%s\">View logs</a>"
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Status.php:60
+msgid "The client requires PHP version >= %s, you have %s."
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Status.php:67
+msgid ""
+"The Mollie API client requires the PHP extension json to be enabled. Please "
+"enable the 'json' extension in your PHP configuration."
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Status.php:71
+msgid ""
+"The Mollie API client requires the PHP extension cURL to be enabled. Please "
+"enable the 'curl' extension in your PHP configuration."
+msgstr ""
+
+#: includes/Wc/Mollie/Helper/Status.php:76
+msgid ""
+"The Mollie API client requires the following PHP cURL functions to be "
+"available: %s. Please make sure all of these functions are available."
+msgstr ""
+
+#: includes/Wc/Mollie.php:249
+msgid "Logs"
+msgstr ""
+
+#: woocommerce-mollie-payments.php:40
+msgid "Could not activate plugin %s"
+msgstr ""
+
+#: woocommerce-mollie-payments.php:84
+msgid "%s deactivated because it depends on WooCommerce."
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+msgid "WooCommerce Mollie Payments"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "https://www.mollie.com/"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid "Mollie payments for WooCommerce"
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "Mollie"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "https://www.mollie.com"
+msgstr ""

@@ -14,7 +14,7 @@
  */
 require_once 'includes/WC/Mollie/Autoload.php';
 
-load_plugin_textdomain('woocommerce-mollie-payments', false,  'woocommerce-mollie-payments/i18n/languages');
+load_plugin_textdomain('woocommerce-mollie-payments', false, 'woocommerce-mollie-payments/i18n/languages');
 
 /**
  * Called when plugin is loaded

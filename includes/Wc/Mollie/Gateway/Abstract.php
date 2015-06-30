@@ -46,28 +46,28 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
     {
         $this->form_fields = array(
             'enabled' => array(
-                'title'       => __('Enable/Disable', 'woocommerce'),
+                'title'       => __('Enable/Disable', 'woocommerce-mollie-payments'),
                 'type'        => 'checkbox',
                 'label'       => sprintf(__('Enable %s', 'woocommerce-mollie-payments'), $this->getDefaultTitle()),
                 'default'     => 'yes'
             ),
             'title' => array(
-                'title'       => __('Title', 'woocommerce'),
+                'title'       => __('Title', 'woocommerce-mollie-payments'),
                 'type'        => 'text',
-                'description' => sprintf(__('This controls the title which the user sees during checkout. Default <code>%s</code>', 'woocommerce'), $this->getDefaultTitle()),
+                'description' => sprintf(__('This controls the title which the user sees during checkout. Default <code>%s</code>', 'woocommerce-mollie-payments'), $this->getDefaultTitle()),
                 'default'     => $this->getDefaultTitle(),
                 'desc_tip'    => true,
             ),
             'display_logo' => array(
-                'title'       => __('Display logo', 'woocommerce'),
+                'title'       => __('Display logo', 'woocommerce-mollie-payments'),
                 'type'        => 'checkbox',
-                'label'       => __('Display logo on checkout page. Default <code>enabled</code>', 'woocommerce'),
+                'label'       => __('Display logo on checkout page. Default <code>enabled</code>', 'woocommerce-mollie-payments'),
                 'default'     => 'yes'
             ),
             'description' => array(
-                'title'       => __( 'Description', 'woocommerce' ),
+                'title'       => __('Description', 'woocommerce-mollie-payments'),
                 'type'        => 'textarea',
-                'description' => sprintf(__('Payment method description that the customer will see on your checkout. Default <code>%s</code>', 'woocommerce'), $this->getDefaultDescription()),
+                'description' => sprintf(__('Payment method description that the customer will see on your checkout. Default <code>%s</code>', 'woocommerce-mollie-payments'), $this->getDefaultDescription()),
                 'default'     => $this->getDefaultDescription(),
                 'desc_tip'    => true,
             ),
@@ -105,7 +105,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
     {
         if (!$this->isValidForUse())
         {
-            echo '<div class="inline error"><p><strong>' . __( 'Gateway Disabled', 'woocommerce-mollie-payments' ) . '</strong>: '
+            echo '<div class="inline error"><p><strong>' . __('Gateway Disabled', 'woocommerce-mollie-payments') . '</strong>: '
                 . implode('<br/>', $this->errors)
                 . '</p></div>';
 
@@ -268,6 +268,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
             WC_Mollie::debug($this->id . ': Payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $order->id);
 
             $order->add_order_note(sprintf(
+                /* translators: The first placeholder will be replaced by the method title, the second placeholder will be replace by the payment ID */
                 __('%s payment started (%s).', 'woocommerce-mollie-payments'),
                 $this->method_title,
                 $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'woocommerce-mollie-payments')) : '')
@@ -550,7 +551,14 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
 
             do_action(WC_Mollie::PLUGIN_ID . '_refund_created', $refund, $order);
 
-            $order->add_order_note(sprintf(__('Refunded %s%s (reason: %s) - Payment ID: %s, Refund %s', 'woocommerce-mollie-payments'), get_woocommerce_currency_symbol(), $amount, $reason, $refund->payment->id, $refund->id));
+            $order->add_order_note(sprintf(
+                __('Refunded %s%s (reason: %s) - Payment ID: %s, Refund: %s', 'woocommerce-mollie-payments'),
+                get_woocommerce_currency_symbol(),
+                $amount,
+                $reason,
+                $refund->payment->id,
+                $refund->id
+            ));
 
             return true;
         }

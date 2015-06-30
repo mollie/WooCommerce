@@ -205,7 +205,11 @@ class WC_Mollie_Helper_Settings
                 $content .= '<strong>' . __('Test mode enabled.', 'woocommerce-mollie-payments') . '</strong> ';
             }
 
-            $content .= __('The following payment methods are activated in your Mollie profile:', 'woocommerce-mollie-payments');
+            $content .= sprintf(
+                __('The following payment methods are activated in your %sMollie profile%s:', 'woocommerce-mollie-payments'),
+                '<a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">',
+                '</a>'
+            );
 
             $content .= '<ul style="width: 900px">';
             foreach ($mollie_methods as $payment_method)
@@ -279,7 +283,12 @@ class WC_Mollie_Helper_Settings
                 'id'                => $this->getSettingId('live_api_key'),
                 'title'             => __('Live API key', 'woocommerce-mollie-payments'),
                 'type'              => 'text',
-                'desc'              => sprintf(__('The API key is used to connect to Mollie. You can find your <strong>%s</strong> API key in your <a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">website profile</a>', 'woocommerce-mollie-payments'), 'live'),
+                'desc'              => sprintf(
+                    __('The API key is used to connect to Mollie. You can find your <strong>%s</strong> API key in your %sMollie profile%s', 'woocommerce-mollie-payments'),
+                    'live',
+                    '<a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">',
+                    '</a>'
+                ),
                 'placeholder'       => __('Live API key should start with live_'),
                 'css'               => 'width: 350px',
                 'custom_attributes' => array(
@@ -300,16 +309,21 @@ class WC_Mollie_Helper_Settings
                 'default'           => '',
                 'type'              => 'text',
                 'css'               => 'width: 350px',
-                'desc'              => sprintf(__('The API key is used to connect to Mollie. You can find your <strong>%s</strong> API key in your <a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">website profile</a>', 'woocommerce-mollie-payments'), 'test'),
+                'desc'              => sprintf(
+                    __('The API key is used to connect to Mollie. You can find your <strong>%s</strong> API key in your %sMollie profile%s', 'woocommerce-mollie-payments'),
+                    'test',
+                    '<a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">',
+                    '</a>'
+                ),
                 'custom_attributes' => array(
                     'pattern' => '^test_\w+$',
                 ),
             ),
             array(
                 'id'      => $this->getSettingId('payment_description'),
-                'title'   => __('Description', 'woocommerce'),
+                'title'   => __('Description', 'woocommerce-mollie-payments'),
                 'type'    => 'text',
-                'desc'    => sprintf(__('Payment description send to Mollie. Use <code>%%</code> as a placeholder for the order number. Default <code>%s</code>', 'woocommerce-mollie-payments'), $default_payment_description),
+                'desc'    => sprintf(__('Payment description send to Mollie. <code>%%</code> will be replaced by the order number. Default <code>%s</code>', 'woocommerce-mollie-payments'), $default_payment_description),
                 'default' => $default_payment_description,
                 'css'     => 'width: 350px',
             ),
@@ -318,7 +332,7 @@ class WC_Mollie_Helper_Settings
                 'title'   => __('Payment screen language', 'woocommerce-mollie-payments'),
                 'type'    => 'select',
                 'options' => array(
-                    ''          => __('Detect using browser language (default)', 'woocommerce-mollie-payments'),
+                    ''          => __('Detect using browser language', 'woocommerce-mollie-payments') . ' (' . __('default', 'woocommerce-mollie-payments') . ')',
                     'wp_locale' => sprintf(__('Send WordPress language (%s)', 'woocommerce-mollie-payments'), get_locale()),
                     'nl_NL'     => __('Dutch', 'woocommerce-mollie-payments'),
                     'nl_BE'     => __('Flemish (Belgium)', 'woocommerce-mollie-payments'),
@@ -332,7 +346,7 @@ class WC_Mollie_Helper_Settings
             ),
             array(
                 'id'      => $this->getSettingId('debug'),
-                'title'   => __('Debug Log', 'woocommerce'),
+                'title'   => __('Debug Log', 'woocommerce-mollie-payments'),
                 'type'    => 'checkbox',
                 'desc'    => sprintf(__('Log plugin events. <a href="%s">View logs</a>', 'woocommerce-mollie-payments'), $this->getLogsUrl()),
                 'default' => 'yes',

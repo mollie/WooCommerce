@@ -54,20 +54,20 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
             'title' => array(
                 'title'       => __('Title', 'woocommerce'),
                 'type'        => 'text',
-                'description' => sprintf(__('This controls the title which the user sees during checkout. Default <code>%s</code>.', 'woocommerce'), $this->getDefaultTitle()),
+                'description' => sprintf(__('This controls the title which the user sees during checkout. Default <code>%s</code>', 'woocommerce'), $this->getDefaultTitle()),
                 'default'     => $this->getDefaultTitle(),
                 'desc_tip'    => true,
             ),
             'display_logo' => array(
                 'title'       => __('Display logo', 'woocommerce'),
                 'type'        => 'checkbox',
-                'label'       => __('Display logo on checkout page. Default <code>enabled</code>.', 'woocommerce'),
+                'label'       => __('Display logo on checkout page. Default <code>enabled</code>', 'woocommerce'),
                 'default'     => 'yes'
             ),
             'description' => array(
                 'title'       => __( 'Description', 'woocommerce' ),
                 'type'        => 'textarea',
-                'description' => sprintf(__( 'Payment method description that the customer will see on your checkout. Default <code>%s</code>.', 'woocommerce' ), $this->getDefaultDescription()),
+                'description' => sprintf(__('Payment method description that the customer will see on your checkout. Default <code>%s</code>', 'woocommerce'), $this->getDefaultDescription()),
                 'default'     => $this->getDefaultDescription(),
                 'desc_tip'    => true,
             ),

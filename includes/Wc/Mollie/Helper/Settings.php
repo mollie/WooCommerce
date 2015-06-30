@@ -279,7 +279,7 @@ class WC_Mollie_Helper_Settings
                 'id'                => $this->getSettingId('live_api_key'),
                 'title'             => __('Live API key', 'woocommerce-mollie-payments'),
                 'type'              => 'text',
-                'desc'              => __('The API key is used to connect to Mollie. You can find your API key in your <a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">website profile</a>', 'woocommerce-mollie-payments'),
+                'desc'              => sprintf(__('The API key is used to connect to Mollie. You can find your <strong>%s</strong> API key in your <a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">website profile</a>', 'woocommerce-mollie-payments'), 'live'),
                 'placeholder'       => __('Live API key should start with live_'),
                 'css'               => 'width: 350px',
                 'custom_attributes' => array(
@@ -291,7 +291,7 @@ class WC_Mollie_Helper_Settings
                 'title'             => __('Enable test mode', 'woocommerce-mollie-payments'),
                 'default'           => 'no',
                 'type'              => 'checkbox',
-                'desc_tip'          => __('Enable test mode if you wan\'t to test the plugin without using real payments.', 'woocommerce-mollie-payments'),
+                'desc_tip'          => __('Enable test mode if you want to test the plugin without using real payments.', 'woocommerce-mollie-payments'),
             ),
             array(
                 'id'                => $this->getSettingId('test_api_key'),
@@ -300,7 +300,7 @@ class WC_Mollie_Helper_Settings
                 'default'           => '',
                 'type'              => 'text',
                 'css'               => 'width: 350px',
-                'desc'              => __('The API key is used to connect to Mollie. You can find your API key in your <a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">website profile</a>', 'woocommerce-mollie-payments'),
+                'desc'              => sprintf(__('The API key is used to connect to Mollie. You can find your <strong>%s</strong> API key in your <a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">website profile</a>', 'woocommerce-mollie-payments'), 'test'),
                 'custom_attributes' => array(
                     'pattern' => '^test_\w+$',
                 ),

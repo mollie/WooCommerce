@@ -32,7 +32,7 @@ class WC_Mollie_Gateway_BankTransfer extends WC_Mollie_Gateway_Abstract
             'expiry_days' => array(
                 'title'             => __('Expiry date', 'woocommerce-mollie-payments'),
                 'type'              => 'number',
-                'description'       => sprintf(__('Number of days after the payment will expire. Default <code>%d</code> days.', 'woocommerce-mollie-payments'), self::EXPIRY_DEFAULT_DAYS),
+                'description'       => sprintf(__('Number of days after the payment will expire. Default <code>%d</code> days', 'woocommerce-mollie-payments'), self::EXPIRY_DEFAULT_DAYS),
                 'default'           => self::EXPIRY_DEFAULT_DAYS,
                 'custom_attributes' => array(
                     'min'  => self::EXPIRY_MIN_DAYS,
@@ -42,7 +42,7 @@ class WC_Mollie_Gateway_BankTransfer extends WC_Mollie_Gateway_Abstract
             ),
             'send_payment_details' => array(
                 'title'             => __('Send payment instructions', 'woocommerce-mollie-payments'),
-                'label'             => __('Mail the payment instructions to the customer. Default <code>enabled</code>.', 'woocommerce-mollie-payments'),
+                'label'             => __('Mail the payment instructions to the customer. Default <code>enabled</code>', 'woocommerce-mollie-payments'),
                 'type'              => 'checkbox',
                 'default'           => 'yes',
                 'description'       => __('If you disable this option the customer still has an option to send the payment instructions to an e-mailadress on the Mollie payment screen.', 'woocommerce-mollie-payments'),

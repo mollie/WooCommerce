@@ -18,7 +18,7 @@ class WC_Mollie_Gateway_BankTransfer extends WC_Mollie_Gateway_Abstract
 
         parent::__construct();
 
-        add_filter('woocommerce_' . $this->id . '_args', array($this, 'addPaymentArguments'));
+        add_filter('woocommerce_' . $this->id . '_args', array($this, 'addPaymentArguments'), 10, 2);
     }
 
     /**
@@ -40,19 +40,39 @@ class WC_Mollie_Gateway_BankTransfer extends WC_Mollie_Gateway_Abstract
                     'step' => 1,
                 ),
             ),
+            'send_payment_details' => array(
+                'title'             => __('Send payment instructions', 'woocommerce-mollie-payments'),
+                'label'             => __('Mail the payment instructions to the customer. Default <code>enabled</code>.', 'woocommerce-mollie-payments'),
+                'type'              => 'checkbox',
+                'default'           => 'yes',
+                'description'       => __('If you disable this option the customer still has an option to send the payment instructions to an e-mailadress on the Mollie payment screen.', 'woocommerce-mollie-payments'),
+                'desc_tip'          => true,
+            ),
         ));
     }
 
     /**
-     * @param array $args
+     * @param array    $args
+     * @param WC_Order $order
      * @return array
      */
-    public function addPaymentArguments (array $args)
+    public function addPaymentArguments (array $args, WC_Order $order)
     {
+        // Expiry date
         $expiry_days = (int) $this->get_option('expiry_days', self::EXPIRY_DEFAULT_DAYS);
-        $expiry_date = date("Y-m-d", strtotime("+$expiry_days days"));
 
-        $args['dueDate'] = $expiry_date;
+        if ($expiry_days >= self::EXPIRY_MIN_DAYS && $expiry_days <= self::EXPIRY_MAX_DAYS)
+        {
+            $expiry_date = date("Y-m-d", strtotime("+$expiry_days days"));
+
+            $args['dueDate'] = $expiry_date;
+        }
+
+        // Send payment details
+        if ($this->get_option('send_payment_details') === 'yes' && !empty($order->billing_email))
+        {
+            $args['billingEmail'] = trim($order->billing_email);
+        }
 
         return $args;
     }

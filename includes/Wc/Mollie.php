@@ -71,14 +71,14 @@ class WC_Mollie
 
         if (!$order)
         {
-            header("Status: 404 Not Found");
+            self::setHttpResponseCode(404);
             self::debug(__METHOD__ . ":  Could not find order $order_id.");
             return;
         }
 
         if (!$order->key_is_valid($key))
         {
-            header('Status: 401 Unauthorized');
+            self::setHttpResponseCode(401);
             self::debug(__METHOD__ . ":  Invalid key $key for order $order_id.");
             return;
         }
@@ -87,14 +87,14 @@ class WC_Mollie
 
         if (!$gateway)
         {
-            header("Status: 404 Not Found");
+            self::setHttpResponseCode(404);
             self::debug(__METHOD__ . ":  Could not find gateway for order $order_id.");
             return;
         }
 
         if (!($gateway instanceof WC_Mollie_Gateway_Abstract))
         {
-            header('Status: 400 Bad Request');
+            self::setHttpResponseCode(400);
             self::debug(__METHOD__ . ": Invalid gateway " . get_class($gateway) . " for this plugin. Order $order_id.");
             return;
         }
@@ -134,6 +134,26 @@ class WC_Mollie
         /** @var WC_Mollie_Gateway_Abstract $gateway */
 
         $gateway->displayInstructions($order);
+    }
+
+    /**
+     * Set HTTP status code
+     *
+     * @param int $status_code
+     */
+    public static function setHttpResponseCode ($status_code)
+    {
+        if (PHP_SAPI !== 'cli' && !headers_sent())
+        {
+            if (function_exists("http_response_code"))
+            {
+                http_response_code($status_code);
+            }
+            else
+            {
+                header(" ", TRUE, $status_code);
+            }
+        }
     }
 
     /**

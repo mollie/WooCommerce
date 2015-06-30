@@ -306,9 +306,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
 
         if (empty($_GET['order_id']) || empty($_GET['key']))
         {
-            // Invalid parameters
-            header('Status: 400 Bad Request');
-
+            WC_Mollie::setHttpResponseCode(400);
             WC_Mollie::debug(__METHOD__ . ":  No order ID or order key provided.");
             return;
         }
@@ -320,14 +318,14 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
 
         if (!$order)
         {
-            header("Status: 404 Not Found");
+            WC_Mollie::setHttpResponseCode(404);
             WC_Mollie::debug(__METHOD__ . ":  Could not find order $order_id.");
             return;
         }
 
         if (!$order->key_is_valid($key))
         {
-            header('Status: 401 Unauthorized');
+            WC_Mollie::setHttpResponseCode(401);
             WC_Mollie::debug(__METHOD__ . ":  Invalid key $key for order $order_id.");
             return;
         }
@@ -335,9 +333,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
         // No Mollie payment id provided
         if (empty($_REQUEST['id']))
         {
-            // Invalid parameters
-            header('Status: 400 Bad Request');
-
+            WC_Mollie::setHttpResponseCode(400);
             WC_Mollie::debug(__METHOD__ . ': No payment ID provided.', true);
             return;
         }
@@ -353,8 +349,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
         // Payment not found
         if (!$payment)
         {
-            header('Status: 404 Not Found');
-
+            WC_Mollie::setHttpResponseCode(404);
             WC_Mollie::debug(__METHOD__ . ": payment $payment_id not found.", true);
             return;
         }
@@ -364,8 +359,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
 
         if ($order_id != $payment->metadata->order_id)
         {
-            header('Status: 400 Bad Request');
-
+            WC_Mollie::setHttpResponseCode(400);
             WC_Mollie::debug(__METHOD__ . ": Order ID does not match order_id in payment metadata. Payment ID {$payment->id}, order ID $order_id");
             return;
         }
@@ -373,9 +367,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
         // Payment requires different gateway, payment method changed on Mollie platform?
         if ($payment->method != $this->getMollieMethodId())
         {
-            // TODO: return 200 to ignore?
-            header('Status: 400 Bad Request');
-
+            WC_Mollie::setHttpResponseCode(400);
             WC_Mollie::debug($this->id . ": Invalid gateway. This gateways can process Mollie " . $this->getMollieMethodId() . " payments. This payment has payment method " . $payment->method, true);
             return;
         }
@@ -384,8 +376,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
         if (!$this->orderNeedsPayment($order))
         {
             // Duplicate webhook call
-            header('Status: 204 No Content');
-
+            WC_Mollie::setHttpResponseCode(204);
             WC_Mollie::debug($this->id . ": Order $order_id does not need a payment (payment webhook {$payment->id}).", true);
             return;
         }

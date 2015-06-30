@@ -153,8 +153,8 @@ class WC_Mollie_Gateway_BankTransfer extends WC_Mollie_Gateway_Abstract
                 $instructions .= __('Please complete your payment by transferring the total amount to the following bank account:', 'woocommerce-mollie-payments') . "\n\n\n";
             }
 
-            $instructions .= sprintf(__('IBAN: %s', 'woocommerce-mollie-payments'), implode(' ', str_split($payment->details->bankAccount, 4))) . "\n";
-            $instructions .= sprintf(__('Bank account: %s', 'woocommerce-mollie-payments'), $payment->details->bankName) . "\n";
+            $instructions .= sprintf(__('Beneficiary: %s', 'woocommerce-mollie-payments'), $payment->details->bankName) . "\n";
+            $instructions .= sprintf(__('IBAN: <strong>%s</strong>', 'woocommerce-mollie-payments'), implode(' ', str_split($payment->details->bankAccount, 4))) . "\n";
             $instructions .= sprintf(__('BIC: %s', 'woocommerce-mollie-payments'), $payment->details->bankBic) . "\n";
 
             if ($admin_instructions)
@@ -164,6 +164,29 @@ class WC_Mollie_Gateway_BankTransfer extends WC_Mollie_Gateway_Abstract
             else
             {
                 $instructions .= sprintf(__('Please provide the payment reference <strong>%s</strong>', 'woocommerce-mollie-payments'), $payment->details->transferReference) . "\n";
+            }
+
+            if (!empty($payment->expiryPeriod)
+                && class_exists('DateTime')
+                && class_exists('DateInterval'))
+            {
+                $expiry_date = DateTime::createFromFormat('U', time());
+                $expiry_date->add(new DateInterval($payment->expiryPeriod));
+
+                if ($admin_instructions)
+                {
+                    $instructions .= "\n" . sprintf(
+                        __('The payment will expire on <strong>%s</strong>.', 'woocommerce-mollie-payments'),
+                        $expiry_date->format(get_option('date_format'))
+                    ) . "\n";
+                }
+                else
+                {
+                    $instructions .= "\n" . sprintf(
+                        __('The payment will expire on <strong>%s</strong>. Please make sure you transfer the total amount before this date.', 'woocommerce-mollie-payments'),
+                        $expiry_date->format(get_option('date_format'))
+                    ) . "\n";
+                }
             }
         }
 

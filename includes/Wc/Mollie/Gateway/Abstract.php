@@ -359,9 +359,6 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
             return;
         }
 
-        // TODO: remove!
-        WC_Mollie::debug(__METHOD__ . ": Payment on webhook: " . print_r($payment, true));
-
         if ($order_id != $payment->metadata->order_id)
         {
             WC_Mollie::setHttpResponseCode(400);
@@ -499,14 +496,6 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
             return $woocommerce->cart->get_checkout_url();
         }
 
-        $payment = $data_helper->getActiveMolliePayment($order->id, $use_cache = false);
-
-        if ($payment)
-        {
-            // TODO: remove!
-            WC_Mollie::debug(__METHOD__ . ": Payment on return: " . print_r($payment, true));
-        }
-
         return $this->get_return_url($order);
     }
 
@@ -619,9 +608,6 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
         }
 
         $instructions = $this->getInstructions($order, $payment, $admin_instructions, $plain_text);
-
-        // TODO: remove!
-        WC_Mollie::debug($order->id . ' - instructions: ' . $instructions);
 
         if (!empty($instructions))
         {

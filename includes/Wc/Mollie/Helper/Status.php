@@ -96,8 +96,6 @@ class WC_Mollie_Helper_Status
     /**
      * @throws WC_Mollie_Exception_IncompatiblePlatform
      * @return void
-     *
-     * TODO: Remove
      */
     public function checkCompatibility ()
     {

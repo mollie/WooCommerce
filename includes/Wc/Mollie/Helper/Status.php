@@ -2,6 +2,14 @@
 class WC_Mollie_Helper_Status
 {
     /**
+     * Minimal required WooCommerce version
+     *
+     * @todo: test plugin with older WooCommerce versions
+     * @var string
+     */
+    const MIN_WOOCOMMERCE_VERSION = '2.3.11';
+
+    /**
      * @var string[]
      */
     protected $errors = array();
@@ -25,8 +33,6 @@ class WC_Mollie_Helper_Status
     /**
      * Check if this plugin is compatible
      *
-     * - Check if Mollie API client is found
-     * -
      * @return bool
      */
     public function isCompatible ()
@@ -36,6 +42,21 @@ class WC_Mollie_Helper_Status
         if ($is_compatible !== null)
         {
             return $is_compatible;
+        }
+
+        // Default
+        $is_compatible = true;
+
+        if (!$this->hasCompatibleWooCommerceVersion())
+        {
+            $this->errors[] = sprintf(
+                /* translators: Placeholder 1: required WooCommerce version, placeholder 2: used WooCommerce version */
+                __('The WooCommerce Mollie Payments plugin requires at least WooCommerce version %s, you are using version %s. Please update your WooCommerce plugin.', 'woocommerce-mollie-payments'),
+                self::MIN_WOOCOMMERCE_VERSION,
+                $this->getWooCommerceVersion()
+            );
+
+            return $is_compatible = false;
         }
 
         if (!$this->isApiClientInstalled())
@@ -90,42 +111,23 @@ class WC_Mollie_Helper_Status
             return $is_compatible = false;
         }
 
-        return $is_compatible = true;
+        return $is_compatible;
     }
 
     /**
-     * @throws WC_Mollie_Exception_IncompatiblePlatform
-     * @return void
+     * @return string
      */
-    public function checkCompatibility ()
+    protected function getWooCommerceVersion ()
     {
-        // Make sure autoloader is registered
-        require_once dirname(dirname(__FILE__)) . '/Autoload.php';
+        return WooCommerce::instance()->version;
+    }
 
-        WC_Mollie_Autoload::register();
-
-        if (!$this->isApiClientInstalled())
-        {
-            throw new WC_Mollie_Exception_IncompatiblePlatform(
-                "Mollie API client not found. Plugin not installed correctly.",
-                WC_Mollie_Exception_IncompatiblePlatform::API_CLIENT_NOT_INSTALLED
-            );
-        }
-
-        try
-        {
-            $checker = $this->getApiClientCompatibilityChecker();
-
-            $checker->checkCompatibility();
-        }
-        catch (Mollie_API_Exception_IncompatiblePlatform $e)
-        {
-            throw new WC_Mollie_Exception_IncompatiblePlatform(
-                $e->getMessage(),
-                WC_Mollie_Exception_IncompatiblePlatform::API_CLIENT_NOT_COMPATIBLE,
-                $e
-            );
-        }
+    /**
+     * @return bool
+     */
+    public function hasCompatibleWooCommerceVersion ()
+    {
+        return (bool) version_compare($this->getWooCommerceVersion(), self::MIN_WOOCOMMERCE_VERSION, ">=");
     }
 
     /**

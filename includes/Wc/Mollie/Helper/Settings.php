@@ -96,27 +96,12 @@ class WC_Mollie_Helper_Settings
     {
         $status = new WC_Mollie_Helper_Status();
 
-        try
+        if (!$status->isCompatible())
         {
-            // First check if the platform is compatible
-            $status->checkCompatibility();
-        }
-        catch (WC_Mollie_Exception_IncompatiblePlatform $e)
-        {
-            switch ($e->getCode()) {
-                case WC_Mollie_Exception_IncompatiblePlatform::API_CLIENT_NOT_INSTALLED:
-                    $error = __('Mollie API client not installed. Please make sure the plugin is installed correctly.', 'woocommerce-mollie-payments');
-                    break;
-
-                default:
-                    $error = esc_html($e->getMessage());
-                    break;
-            }
-
             // Just stop here!
             return ''
                 . '<div id="message" class="error fade">'
-                . ' <strong>' . __('Error', 'woocommerce-mollie-payments') . ':</strong> ' . $error
+                . ' <strong>' . __('Error', 'woocommerce-mollie-payments') . ':</strong> ' . implode('<br/>', $status->getErrors())
                 . '</div>';
         }
 

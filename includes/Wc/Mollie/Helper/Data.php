@@ -57,7 +57,7 @@ class WC_Mollie_Helper_Data
         }
         catch (Exception $e)
         {
-            WC_Mollie::debug(__METHOD__ . ": Could not load payment $payment_id (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            WC_Mollie::debug(__FUNCTION__ . ": Could not load payment $payment_id (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
 
         return NULL;
@@ -93,9 +93,10 @@ class WC_Mollie_Helper_Data
         }
         catch (Mollie_API_Exception $e)
         {
-            // add log message
-            return array();
+            WC_Mollie::debug(__FUNCTION__ . ": Could not load Mollie methods (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
+
+        return array();
     }
 
     /**
@@ -165,7 +166,7 @@ class WC_Mollie_Helper_Data
         }
         catch (Mollie_API_Exception $e)
         {
-            WC_Mollie::debug(__METHOD__ . ': Failed to retrieve issuers: ' . $e->getMessage());
+            WC_Mollie::debug(__FUNCTION__ . ": Could not load Mollie issuers (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
 
         return array();

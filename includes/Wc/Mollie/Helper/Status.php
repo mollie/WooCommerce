@@ -57,6 +57,7 @@ class WC_Mollie_Helper_Status
             {
                 case Mollie_API_Exception_IncompatiblePlatform::INCOMPATIBLE_PHP_VERSION:
                     $error = sprintf(
+                        /* translators: Placeholder 1: Required PHP version, placeholder 2: current PHP version */
                         __('The client requires PHP version >= %s, you have %s.', 'woocommerce-mollie-payments'),
                         Mollie_API_CompatibilityChecker::$MIN_PHP_VERSION,
                         PHP_VERSION
@@ -64,7 +65,7 @@ class WC_Mollie_Helper_Status
                     break;
 
                 case Mollie_API_Exception_IncompatiblePlatform::INCOMPATIBLE_JSON_EXTENSION:
-                    $error = __('The Mollie API client requires the PHP extension json to be enabled. Please enable the \'json\' extension in your PHP configuration.', 'woocommerce-mollie-payments');
+                    $error = __('The Mollie API client requires the PHP extension JSON to be enabled. Please enable the \'json\' extension in your PHP configuration.', 'woocommerce-mollie-payments');
                     break;
 
                 case Mollie_API_Exception_IncompatiblePlatform::INCOMPATIBLE_CURL_EXTENSION:
@@ -73,6 +74,7 @@ class WC_Mollie_Helper_Status
 
                 case Mollie_API_Exception_IncompatiblePlatform::INCOMPATIBLE_CURL_FUNCTION:
                     $error = sprintf(
+                        /* translators: Placeholder 1: The required cURL function names */
                         __('The Mollie API client requires the following PHP cURL functions to be available: %s. Please make sure all of these functions are available.', 'woocommerce-mollie-payments'),
                         implode(', ', Mollie_API_CompatibilityChecker::$REQUIRED_CURL_FUNCTIONS)
                     );

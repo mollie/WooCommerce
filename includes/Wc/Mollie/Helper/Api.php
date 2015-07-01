@@ -36,7 +36,7 @@ class WC_Mollie_Helper_Api
         }
         elseif (!preg_match('/^(live|test)_\w+$/', $api_key))
         {
-            throw new WC_Mollie_Exception_InvalidApiKey(__('Invalid API key. The API key must start with \'test_\' or \'live_\' and can\'t further contain any special characters.', 'woocommerce-mollie-payments'));
+            throw new WC_Mollie_Exception_InvalidApiKey(__('Invalid API key. The API key must start with \'live_\' or \'test_\' and can\'t further contain any special characters.', 'woocommerce-mollie-payments'));
         }
 
         if (empty(self::$api_client))

@@ -53,7 +53,8 @@ class WC_Mollie_Gateway_Creditcard extends WC_Mollie_Gateway_Abstract
         if ($payment->isPaid() && $payment->details)
         {
             $instructions .= sprintf(
-                __('Payment completed by <strong>%s</strong>'),
+                /* translators: Placeholder 1: card holder */
+                __('Payment completed by <strong>%s</strong>', 'woocommerce-mollie-payments'),
                 $payment->details->cardHolder
             );
         }

@@ -53,7 +53,8 @@ class WC_Mollie_Gateway_Sofort extends WC_Mollie_Gateway_Abstract
         if ($payment->isPaid() && $payment->details)
         {
             $instructions .= sprintf(
-                __('Payment completed by <strong>%s</strong> (IBAN: %s, BIC: %s)'),
+                /* translators: Placeholder 1: consumer name, placeholder 2: consumer IBAN, placeholder 3: consumer BIC */
+                __('Payment completed by <strong>%s</strong> (IBAN: %s, BIC: %s)', 'woocommerce-mollie-payments'),
                 $payment->details->consumerName,
                 implode(' ', str_split($payment->details->consumerAccount, 4)),
                 $payment->details->consumerBic

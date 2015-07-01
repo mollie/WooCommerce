@@ -53,9 +53,11 @@ class WC_Mollie_Gateway_PayPal extends WC_Mollie_Gateway_Abstract
         if ($payment->isPaid() && $payment->details)
         {
             $instructions .= sprintf(
-                __("Payment completed by <strong>%s</strong> (%s)"),
+                /* translators: Placeholder 1: PayPal consumer name, placeholder 2: PayPal email, placeholder 3: PayPal transaction ID */
+                __("Payment completed by <strong>%s</strong> - %s (PayPal transaction ID: %s)", 'woocommerce-mollie-payments'),
                 $payment->details->consumerName,
-                $payment->details->consumerAccount
+                $payment->details->consumerAccount,
+                $payment->details->paypalReference
             );
         }
 

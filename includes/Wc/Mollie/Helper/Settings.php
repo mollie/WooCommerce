@@ -195,7 +195,7 @@ class WC_Mollie_Helper_Settings
             }
 
             $icon_available     = ' <span style="color: green; cursor: help;" title="' . __('Gateway enabled', 'woocommerce-mollie-payments'). '">' . strtolower(__('Enabled', 'woocommerce-mollie-payments')) . '</span>';
-            $icon_no_available  = ' <span style="color: orange; cursor: help;" title="' . __('Gateway not enabled', 'woocommerce-mollie-payments'). '">' . strtolower(__('Disabled', 'woocommerce-mollie-payments')) . '</span>';
+            $icon_no_available  = ' <span style="color: orange; cursor: help;" title="' . __('Gateway disabled', 'woocommerce-mollie-payments'). '">' . strtolower(__('Disabled', 'woocommerce-mollie-payments')) . '</span>';
             $icon_not_supported = ' <span style="color: red; cursor: help;" title="' . __('This payment method is not supported by this plugin. Please check if there is an update available.', 'woocommerce-mollie-payments'). '">' . strtolower(__('Not supported', 'woocommerce-mollie-payments')) . '</span>';
 
             $content .= '<br /><br />';
@@ -206,12 +206,13 @@ class WC_Mollie_Helper_Settings
             }
 
             $content .= sprintf(
+                /* translators: The surrounding %s's Will be replaced by a link to the Mollie profile */
                 __('The following payment methods are activated in your %sMollie profile%s:', 'woocommerce-mollie-payments'),
                 '<a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">',
                 '</a>'
             );
 
-            $content .= '<ul style="width: 900px">';
+            $content .= '<ul style="width: 1000px">';
             foreach ($mollie_methods as $payment_method)
             {
                 $content .= '<li style="float: left; width: 33%;">';
@@ -233,7 +234,7 @@ class WC_Mollie_Helper_Settings
                         $content .= $icon_no_available;
                     }
 
-                    $content .= ' <a href="' . $this->getGatewaySettingsUrl(get_class($gateway)) . '">' . strtolower(__('Edit')) . '</a>';
+                    $content .= ' <a href="' . $this->getGatewaySettingsUrl(get_class($gateway)) . '">' . strtolower(__('Edit', 'woocommerce-mollie-payments')) . '</a>';
                 }
                 // No plugin gateway found with support for this payment method
                 else
@@ -268,6 +269,7 @@ class WC_Mollie_Helper_Settings
             . $this->getPluginStatus()
             . $this->getMollieMethods();
 
+        /* translators: Default payment description. '%' is a placeholder the user can use and will be replaced by the order number */
         $default_payment_description = __('Order %', 'woocommerce-mollie-payments');
 
         // Global Mollie settings
@@ -284,12 +286,13 @@ class WC_Mollie_Helper_Settings
                 'title'             => __('Live API key', 'woocommerce-mollie-payments'),
                 'type'              => 'text',
                 'desc'              => sprintf(
+                    /* translators: Placeholder 1: API key mode (live or test). The surrounding %s's Will be replaced by a link to the Mollie profile */
                     __('The API key is used to connect to Mollie. You can find your <strong>%s</strong> API key in your %sMollie profile%s', 'woocommerce-mollie-payments'),
                     'live',
                     '<a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">',
                     '</a>'
                 ),
-                'placeholder'       => __('Live API key should start with live_'),
+                'placeholder'       => __('Live API key should start with live_', 'woocommerce-mollie-payments'),
                 'css'               => 'width: 350px',
                 'custom_attributes' => array(
                     'pattern' => '^live_\w+$',
@@ -305,11 +308,12 @@ class WC_Mollie_Helper_Settings
             array(
                 'id'                => $this->getSettingId('test_api_key'),
                 'title'             => __('Test API key', 'woocommerce-mollie-payments'),
-                'placeholder'       => __('Test API key should start with test_'),
+                'placeholder'       => __('Test API key should start with test_', 'woocommerce-mollie-payments'),
                 'default'           => '',
                 'type'              => 'text',
                 'css'               => 'width: 350px',
                 'desc'              => sprintf(
+                    /* translators: Placeholder 1: API key mode (live or test). The surrounding %s's Will be replaced by a link to the Mollie profile */
                     __('The API key is used to connect to Mollie. You can find your <strong>%s</strong> API key in your %sMollie profile%s', 'woocommerce-mollie-payments'),
                     'test',
                     '<a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">',
@@ -333,6 +337,7 @@ class WC_Mollie_Helper_Settings
                 'type'    => 'select',
                 'options' => array(
                     ''          => __('Detect using browser language', 'woocommerce-mollie-payments') . ' (' . __('default', 'woocommerce-mollie-payments') . ')',
+                    /* translators: Placeholder 1: Current WordPress locale */
                     'wp_locale' => sprintf(__('Send WordPress language (%s)', 'woocommerce-mollie-payments'), get_locale()),
                     'nl_NL'     => __('Dutch', 'woocommerce-mollie-payments'),
                     'nl_BE'     => __('Flemish (Belgium)', 'woocommerce-mollie-payments'),
@@ -348,6 +353,7 @@ class WC_Mollie_Helper_Settings
                 'id'      => $this->getSettingId('debug'),
                 'title'   => __('Debug Log', 'woocommerce-mollie-payments'),
                 'type'    => 'checkbox',
+                /* translators: Placeholder 1: A link to the debug logs */
                 'desc'    => sprintf(__('Log plugin events. <a href="%s">View logs</a>', 'woocommerce-mollie-payments'), $this->getLogsUrl()),
                 'default' => 'yes',
             ),

@@ -140,7 +140,8 @@ class WC_Mollie_Gateway_BankTransfer extends WC_Mollie_Gateway_Abstract
         if ($payment->isPaid())
         {
             $instructions .= sprintf(
-                __('Payment completed by <strong>%s</strong> (IBAN: %s, BIC: %s)'),
+                /* translators: Placeholder 1: consumer name, placeholder 2: consumer IBAN, placeholder 3: consumer BIC */
+                __('Payment completed by <strong>%s</strong> (IBAN: %s, BIC: %s)', 'woocommerce-mollie-payments'),
                 $payment->details->consumerName,
                 implode(' ', str_split($payment->details->consumerAccount, 4)),
                 $payment->details->consumerBic
@@ -153,16 +154,19 @@ class WC_Mollie_Gateway_BankTransfer extends WC_Mollie_Gateway_Abstract
                 $instructions .= __('Please complete your payment by transferring the total amount to the following bank account:', 'woocommerce-mollie-payments') . "\n\n\n";
             }
 
+            /* translators: Placeholder 1: 'Stichting Mollie Payments' */
             $instructions .= sprintf(__('Beneficiary: %s', 'woocommerce-mollie-payments'), $payment->details->bankName) . "\n";
             $instructions .= sprintf(__('IBAN: <strong>%s</strong>', 'woocommerce-mollie-payments'), implode(' ', str_split($payment->details->bankAccount, 4))) . "\n";
             $instructions .= sprintf(__('BIC: %s', 'woocommerce-mollie-payments'), $payment->details->bankBic) . "\n";
 
             if ($admin_instructions)
             {
+                /* translators: Placeholder 1: Payment reference e.g. RF49-0000-4716-6216 (SEPA) or +++513/7587/59959+++ (Belgium) */
                 $instructions .= sprintf(__('Payment reference: %s', 'woocommerce-mollie-payments'), $payment->details->transferReference) . "\n";
             }
             else
             {
+                /* translators: Placeholder 1: Payment reference e.g. RF49-0000-4716-6216 (SEPA) or +++513/7587/59959+++ (Belgium) */
                 $instructions .= sprintf(__('Please provide the payment reference <strong>%s</strong>', 'woocommerce-mollie-payments'), $payment->details->transferReference) . "\n";
             }
 

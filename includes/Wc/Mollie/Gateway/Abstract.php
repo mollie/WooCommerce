@@ -148,6 +148,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
             $test_mode = $settings->isTestModeEnabled();
 
             $this->errors[] = ($test_mode ? __('Test mode enabled.', 'woocommerce-mollie-payments') . ' ' : '') . sprintf(
+                /* translators: The surrounding %s's Will be replaced by a link to the global setting page */
                 __('No API key provided. Please %sset you Mollie API key%s first.', 'woocommerce-mollie-payments'),
                 '<a href="' . $settings->getGlobalSettingsUrl() . '">',
                 '</a>'
@@ -159,6 +160,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
         if (null === $this->getMollieMethod())
         {
             $this->errors[] = sprintf(
+                /* translators: Placeholder 1: payment method title. The surrounding %s's Will be replaced by a link to the Mollie profile */
                 __('%s not enabled in your Mollie profile. You can enabled it by editing your %sMollie profile%s.', 'woocommerce-mollie-payments'),
                 $this->getDefaultTitle(),
                 '<a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">',
@@ -171,6 +173,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
         if (!$this->isCurrencySupported())
         {
             $this->errors[] = sprintf(
+                /* translators: Placeholder 1: WooCommerce currency, placeholder 2: Supported Mollie currencies */
                 __('Shop currency %s not supported by Mollie. Mollie only supports: %s.', 'woocommerce-mollie-payments'),
                 get_woocommerce_currency(),
                 implode(', ', $this->getSupportedCurrencies())
@@ -268,7 +271,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
             WC_Mollie::debug($this->id . ': Payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $order->id);
 
             $order->add_order_note(sprintf(
-                /* translators: The first placeholder will be replaced by the method title, the second placeholder will be replace by the payment ID */
+                /* translators: Placeholder 1: Payment method title, placeholder 2: payment ID */
                 __('%s payment started (%s).', 'woocommerce-mollie-payments'),
                 $this->method_title,
                 $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'woocommerce-mollie-payments')) : '')
@@ -283,6 +286,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
         {
             WC_Mollie::debug($this->id . ': Failed to create payment for order ' . $order->id . ': ' . $e->getMessage());
 
+            /* translators: Placeholder 1: Payment method title */
             $message = sprintf(__('Could not create %s payment.', 'woocommerce-mollie-payments'), $this->title);
 
             if (defined('WP_DEBUG') && WP_DEBUG)
@@ -393,6 +397,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
         else
         {
             $order->add_order_note(sprintf(
+                /* translators: Placeholder 1: payment method title, placeholder 2: payment status, placeholder 3: payment ID */
                 __('%s payment %s (%s).', 'woocommerce-mollie-payments'),
                 $this->method_title,
                 $payment->status,
@@ -424,6 +429,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
         }
 
         $order->add_order_note(sprintf(
+            /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
             __('Order completed using %s payment (%s).', 'woocommerce-mollie-payments'),
             $this->method_title,
             $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'woocommerce-mollie-payments')) : '')
@@ -448,6 +454,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
 
         // User cancelled payment on Mollie or issuer page, add a cancel note.. do not cancel order.
         $order->add_order_note(sprintf(
+            /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
             __('%s payment cancelled (%s).', 'woocommerce-mollie-payments'),
             $this->method_title,
             $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'woocommerce-mollie-payments')) : '')
@@ -466,6 +473,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
         $order->update_status('pending');
 
         $order->add_order_note(sprintf(
+            /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
             __('%s payment expired (%s).', 'woocommerce-mollie-payments'),
             $this->method_title,
             $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'woocommerce-mollie-payments')) : '')
@@ -552,6 +560,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
             do_action(WC_Mollie::PLUGIN_ID . '_refund_created', $refund, $order);
 
             $order->add_order_note(sprintf(
+                /* translators: Placeholder 1: currency, placeholder 2: refunded amount, placeholder 3: optional refund reason, placeholder 4: payment ID, placeholder 5: refund ID */
                 __('Refunded %s%s (reason: %s) - Payment ID: %s, Refund: %s', 'woocommerce-mollie-payments'),
                 get_woocommerce_currency_symbol(),
                 $amount,

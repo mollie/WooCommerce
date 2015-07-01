@@ -39,6 +39,7 @@ class WC_Mollie_Gateway_Ideal extends WC_Mollie_Gateway_Abstract
      */
     protected function getDefaultDescription ()
     {
+        /* translators: Default iDEAL description, displayed above issuer drop down */
         return __('Select your bank', 'woocommerce-mollie-payments');
     }
 
@@ -82,6 +83,7 @@ class WC_Mollie_Gateway_Ideal extends WC_Mollie_Gateway_Abstract
         if ($payment->isPaid() && $payment->details)
         {
             return sprintf(
+                /* translators: Placeholder 1: consumer name, placeholder 2: consumer IBAN, placeholder 3: consumer BIC */
                 __('Payment completed by <strong>%s</strong> (IBAN: %s, BIC: %s)', 'woocommerce-mollie-payments'),
                 $payment->details->consumerName,
                 implode(' ', str_split($payment->details->consumerAccount, 4)),

@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: WooCommerce Mollie Payments 2.0\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/support/plugin/woocommerce-mollie-payments\n"
 "POT-Creation-Date: 2015-07-01 17:10+0200\n"
-"PO-Revision-Date: 2015-07-01 17:11+0200\n"
+"PO-Revision-Date: 2015-07-13 16:32+0200\n"
 "Last-Translator: Lennard van Gunst <lennard@mollie.nl>\n"
 "Language-Team: Mollie <info@mollie.nl>\n"
 "Language: nl\n"
@@ -226,7 +226,7 @@ msgstr "Betalingskenmerk: %s"
 #. (SEPA) or +++513/7587/59959+++ (Belgium)
 #: includes/Wc/Mollie/Gateway/BankTransfer.php:170
 msgid "Please provide the payment reference <strong>%s</strong>"
-msgstr "Gelieve het betalingskenmerk <strong>%s</ strong> op te geven bij de overboeking"
+msgstr "Gelieve het betalingskenmerk <strong>%s</strong> op te geven bij de overboeking"
 
 #: includes/Wc/Mollie/Gateway/BankTransfer.php:183
 msgid "The payment will expire on <strong>%s</strong>."
@@ -491,7 +491,7 @@ msgstr ""
 #. version
 #: includes/Wc/Mollie/Helper/Status.php:82
 msgid "The client requires PHP version >= %s, you have %s."
-msgstr "De API client heeft PHP versie >+ %s nodig, jij gebruikt versie %s."
+msgstr "De API client heeft PHP versie >= %s nodig, jij gebruikt versie %s."
 
 #: includes/Wc/Mollie/Helper/Status.php:89
 msgid ""

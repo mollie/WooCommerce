@@ -25,6 +25,30 @@ class WC_Mollie_Helper_Data
     }
 
     /**
+     * @param int $order_id Order ID
+     * @return WC_Order|bool
+     */
+    public function getWcOrder ($order_id)
+    {
+        if (function_exists('wc_get_order'))
+        {
+            /**
+             * @since WooCommerce 2.2
+             */
+            return wc_get_order($order_id);
+        }
+
+        $order = new WC_Order();
+
+        if ($order = $order->get_order($order_id))
+        {
+            return $order;
+        }
+
+        return false;
+    }
+
+    /**
      * Get Mollie payment from cache or load from Mollie
      * Skip cache by setting $use_cache to false
      *

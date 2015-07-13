@@ -67,7 +67,7 @@ class WC_Mollie
         $order_id = !empty($_GET['order_id']) ? $_GET['order_id'] : NULL;
         $key      = !empty($_GET['key']) ? $_GET['key'] : NULL;
 
-        $order = wc_get_order($order_id);
+        $order    = self::getDataHelper()->getWcOrder($order_id);
 
         if (!$order)
         {

@@ -191,7 +191,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function process_payment ($order_id)
     {
-        $order = wc_get_order($order_id);
+        $order = WC_Mollie::getDataHelper()->getWcOrder($order_id);
 
         if (!$order)
         {
@@ -316,10 +316,11 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
             return;
         }
 
-        $order_id = $_GET['order_id'];
-        $key      = $_GET['key'];
+        $order_id    = $_GET['order_id'];
+        $key         = $_GET['key'];
 
-        $order    = wc_get_order($order_id);
+        $data_helper = WC_Mollie::getDataHelper();
+        $order       = $data_helper->getWcOrder($order_id);
 
         if (!$order)
         {
@@ -343,10 +344,8 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
             return;
         }
 
-        $payment_id  = $_REQUEST['id'];
-        $data_helper = WC_Mollie::getDataHelper();
-
-        $test_mode = $data_helper->getActiveMolliePaymentMode($order_id) == 'test';
+        $payment_id = $_REQUEST['id'];
+        $test_mode  = $data_helper->getActiveMolliePaymentMode($order_id) == 'test';
 
         // Load the payment from Mollie, do not use cache
         $payment = $data_helper->getPayment($payment_id, $test_mode, $use_cache = false);
@@ -508,7 +507,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function process_refund($order_id, $amount = null, $reason = '')
     {
-        $order = wc_get_order($order_id);
+        $order = WC_Mollie::getDataHelper()->getWcOrder($order_id);
 
         if (!$order)
         {
@@ -571,7 +570,7 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function thankyou_page ($order_id)
     {
-        $order = wc_get_order($order_id);
+        $order = WC_Mollie::getDataHelper()->getWcOrder($order_id);
 
         // Order not found
         if (!$order)

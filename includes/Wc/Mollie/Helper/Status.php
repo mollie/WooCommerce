@@ -7,7 +7,7 @@ class WC_Mollie_Helper_Status
      * @todo: test plugin with older WooCommerce versions
      * @var string
      */
-    const MIN_WOOCOMMERCE_VERSION = '2.3.11';
+    const MIN_WOOCOMMERCE_VERSION = '2.1.0';
 
     /**
      * @var string[]

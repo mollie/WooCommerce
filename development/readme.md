@@ -41,6 +41,19 @@ php ./wordpress-develop/tools/i18n/makepot.php wp-plugin ./woocommerce-mollie-pa
 
 After the `.pot` file is updated you can update the translation files using [Poedit](https://poedit.net/). You can use the "Update from POT file..." to get the update translation keys.
 
+## Available gateway ID's
+
+A gateway ID is used by WooCommerce to identify the payment gateway.
+
+* mollie_banktransfer
+* mollie_belfius
+* mollie_bitcoin
+* mollie_creditcard
+* mollie_ideal
+* mollie_mistercash
+* mollie_paypal
+* mollie_paysafecard
+* mollie_sofort
 
 ## Filters
 

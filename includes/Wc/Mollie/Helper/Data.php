@@ -25,6 +25,8 @@ class WC_Mollie_Helper_Data
     }
 
     /**
+     * Get WooCommerce order
+     *
      * @param int $order_id Order ID
      * @return WC_Order|bool
      */
@@ -46,6 +48,46 @@ class WC_Mollie_Helper_Data
         }
 
         return false;
+    }
+
+    /**
+     * Get payment gateway class by order data.
+     *
+     * @param int|WC_Order $order
+     * @return WC_Payment_Gateway|bool
+     */
+    public function getWcPaymentGatewayByOrder ($order)
+    {
+        if (function_exists('wc_get_payment_gateway_by_order'))
+        {
+            /**
+             * @since WooCommerce 2.2
+             */
+            return wc_get_payment_gateway_by_order($order);
+        }
+
+        if (WC()->payment_gateways())
+        {
+            $payment_gateways = WC()
+                ->payment_gateways()
+                ->payment_gateways();
+        }
+        else
+        {
+            $payment_gateways = array();
+        }
+
+        if (!($order instanceof WC_Order))
+        {
+            $order = $this->getWcOrder($order);
+
+            if (!$order)
+            {
+                return false;
+            }
+        }
+
+        return isset($payment_gateways[$order->payment_method]) ? $payment_gateways[$order->payment_method] : false;
     }
 
     /**

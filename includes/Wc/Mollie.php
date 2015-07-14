@@ -64,10 +64,12 @@ class WC_Mollie
      */
     public static function onMollieReturn ()
     {
+        $data_helper = self::getDataHelper();
+
         $order_id = !empty($_GET['order_id']) ? $_GET['order_id'] : NULL;
         $key      = !empty($_GET['key']) ? $_GET['key'] : NULL;
 
-        $order    = self::getDataHelper()->getWcOrder($order_id);
+        $order    = $data_helper->getWcOrder($order_id);
 
         if (!$order)
         {
@@ -83,7 +85,7 @@ class WC_Mollie
             return;
         }
 
-        $gateway = wc_get_payment_gateway_by_order($order);
+        $gateway = $data_helper->getWcPaymentGatewayByOrder($order);
 
         if (!$gateway)
         {
@@ -124,7 +126,7 @@ class WC_Mollie
             return;
         }
 
-        $gateway = wc_get_payment_gateway_by_order($order);
+        $gateway = WC_Mollie::getDataHelper()->getWcPaymentGatewayByOrder($order);
 
         if (!$gateway || !($gateway instanceof WC_Mollie_Gateway_Abstract))
         {

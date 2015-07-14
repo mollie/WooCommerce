@@ -66,7 +66,7 @@ add_filter('woocommerce-mollie-payments_api_endpoint', function($api_endpoint) {
 });
 ```
 
-### woocommerce\_<gateway_id>\_args
+### woocommerce\_\<gateway_id\>\_args
 Use this filter if you need to overwrite or add specific Mollie payment parameters for creating a new payment. The `banktransfer` gateway implements this filter to add `dueDate` and `billingEmail` arguments.
 
 ```

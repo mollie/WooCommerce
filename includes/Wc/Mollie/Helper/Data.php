@@ -51,6 +51,47 @@ class WC_Mollie_Helper_Data
     }
 
     /**
+     * @param WC_Order $order
+     * @return string
+     */
+    public function getOrderStatus (WC_Order $order)
+    {
+        if (method_exists($order, 'get_status'))
+        {
+            /**
+             * @since WooCommerce 2.2
+             */
+            return $order->get_status();
+        }
+
+        return $order->status;
+    }
+
+    /**
+     * Check if a order has a status
+     *
+     * @param string|string[] $status
+     * @return bool
+     */
+    public function hasOrderStatus (WC_Order $order, $status)
+    {
+        if (method_exists($order, 'has_status'))
+        {
+            /**
+             * @since WooCommerce 2.2
+             */
+            return $order->has_status($status);
+        }
+
+        if (!is_array($status))
+        {
+            $status = array($status);
+        }
+
+        return in_array($this->getOrderStatus($order), $status);
+    }
+
+    /**
      * Get payment gateway class by order data.
      *
      * @param int|WC_Order $order

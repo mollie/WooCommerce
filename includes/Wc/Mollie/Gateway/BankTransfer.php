@@ -115,10 +115,8 @@ class WC_Mollie_Gateway_BankTransfer extends WC_Mollie_Gateway_Abstract
      */
     protected function orderNeedsPayment (WC_Order $order)
     {
-        $onHold = method_exists($order, 'get_status') ? $order->get_status() == 'on-hold' : $order->status == 'on-hold';
-
         // needs_payment() searches using valid_statusses, but does not include on-hold status, so we add it here.
-        return parent::orderNeedsPayment($order) || $onHold;
+        return parent::orderNeedsPayment($order) || WC_Mollie::getDataHelper()->hasOrderStatus($order, 'on-hold');
     }
 
     /**
@@ -137,6 +135,8 @@ class WC_Mollie_Gateway_BankTransfer extends WC_Mollie_Gateway_Abstract
             return null;
         }
 
+        $data_helper = WC_Mollie::getDataHelper();
+
         if ($payment->isPaid())
         {
             $instructions .= sprintf(
@@ -147,7 +147,7 @@ class WC_Mollie_Gateway_BankTransfer extends WC_Mollie_Gateway_Abstract
                 $payment->details->consumerBic
             );
         }
-        elseif ($order->has_status('on-hold'))
+        elseif ($data_helper->hasOrderStatus($order, 'on-hold'))
         {
             if (!$admin_instructions)
             {

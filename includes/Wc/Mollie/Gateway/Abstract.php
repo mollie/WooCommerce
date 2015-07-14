@@ -482,17 +482,13 @@ abstract class WC_Mollie_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function getReturnRedirectUrlForOrder (WC_Order $order)
     {
-        /** @var WooCommerce $woocommerce */
-        global $woocommerce;
-
         $data_helper = WC_Mollie::getDataHelper();
 
         if ($data_helper->hasCancelledMolliePayment($order->id))
         {
             WC_Mollie::addNotice(__('You have cancelled your payment. Please complete your order with a different payment method.', 'woocommerce-mollie-payments'));
 
-            //return $order->get_checkout_payment_url();
-            return $woocommerce->cart->get_checkout_url();
+            return WC()->cart->get_checkout_url();
         }
 
         return $this->get_return_url($order);

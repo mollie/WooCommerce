@@ -1,13 +1,13 @@
 <?php
 /**
  * Plugin Name: WooCommerce Mollie Payments
- * Plugin URI: https://www.mollie.com/
+ * Plugin URI: https://github.com/mollie/WooCommerce
  * Description: Mollie payments for WooCommerce
  * Version: 2.0
  * Author: Mollie
  * Author URI: https://www.mollie.com
- * Requires at least: 3.0.1
- * Tested up to: 4.3
+ * Requires at least: 3.8
+ * Tested up to: 3.8
  * Text Domain: woocommerce-mollie-payments
  * Domain Path: /i18n/languages/
  * License: http://www.opensource.org/licenses/bsd-license.php  Berkeley Software Distribution License (BSD-License 2)

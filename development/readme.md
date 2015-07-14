@@ -44,7 +44,7 @@ After the `.pot` file is updated you can update the translation files using [Poe
 
 ## Filters
 
-### woocommerce-mollie-payments_webhook_url
+### `woocommerce-mollie-payments_webhook_url`
 This filter can be added if you want to overwrite the payment webhook. This can be usefull if your development environment is on a local machine and your machine is not publicly accessable by the Mollie platform. Mollie can not deliver the webhook request to your website. You can use a tool like [ngrok](https://ngrok.com/) to create a public endpoint that proxies request to your local machine.
 
 ```
@@ -56,7 +56,7 @@ add_filter('woocommerce-mollie-payments_webhook_url', function($webhook_url) {
 });
 ```
 
-### woocommerce-mollie-payments_api_endpoint
+### `woocommerce-mollie-payments_api_endpoint`
 You can use this filter to overwrite the Mollie API endpoint. This is only usefull for Mollie employess who have a local development version of Mollie on their own machine.
 
 ```
@@ -66,7 +66,7 @@ add_filter('woocommerce-mollie-payments_api_endpoint', function($api_endpoint) {
 });
 ```
 
-### woocommerce\_\<gateway_id\>\_args
+### `woocommerce_<gateway_id>_args`
 Use this filter if you need to overwrite or add specific Mollie payment parameters for creating a new payment. The `banktransfer` gateway implements this filter to add `dueDate` and `billingEmail` arguments.
 
 ```
@@ -79,7 +79,7 @@ add_filter('woocommerce_' . $this->id . '_args', function(array $arguments, WC_O
 
 ## Actions
 
-### woocommerce-mollie-payments_create_payment
+### `woocommerce-mollie-payments_create_payment`
 Add this action if you want to receive the arguments that are used for creating a new payment. This can be usefull if you want to log this during development.
 
 ```
@@ -88,7 +88,7 @@ add_action('woocommerce-mollie-payments_create_payment', function(array $payment
 }, $priority = 10, $accepted_args = 2);
 ```
 
-### woocommerce-mollie-payments_payment_created
+### `woocommerce-mollie-payments_payment_created`
 Add this action if you want to receive the arguments that are used for creating a new payment. This can be usefull if you want to log this during development.
 
 ```
@@ -97,7 +97,7 @@ add_action('woocommerce-mollie-payments_payment_created', function(Mollie_API_Ob
 }, $priority = 10, $accepted_args = 2);
 ```
 
-### woocommerce-mollie-payments_create_refund
+### `woocommerce-mollie-payments_create_refund`
 Add this action if you want to receive the payment that is being refunded. This can be usefull if you want to log this during development.
 
 ```
@@ -106,7 +106,7 @@ add_action('woocommerce-mollie-payments_create_refund', function(Mollie_API_Obje
 }, $priority = 10, $accepted_args = 2);
 ```
 
-### woocommerce-mollie-payments_refund_created
+### `woocommerce-mollie-payments_refund_created`
 Add this action if you want to receive the payment that is being refunded. This can be usefull if you want to log this during development.
 
 ```

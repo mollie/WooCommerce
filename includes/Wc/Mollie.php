@@ -1,4 +1,7 @@
 <?php
+// Require WooCommerce fallback functions
+require_once dirname(dirname(__FILE__)) . '/woocommerce_functions.php';
+
 class WC_Mollie
 {
     const PLUGIN_ID      = 'woocommerce-mollie-payments';

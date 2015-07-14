@@ -42,7 +42,7 @@ class WC_Mollie_Helper_Data
 
         $order = new WC_Order();
 
-        if ($order = $order->get_order($order_id))
+        if ($order->get_order($order_id))
         {
             return $order;
         }
@@ -69,7 +69,7 @@ class WC_Mollie_Helper_Data
         if (WC()->payment_gateways())
         {
             $payment_gateways = WC()
-                ->payment_gateways()
+                ->payment_gateways
                 ->payment_gateways();
         }
         else

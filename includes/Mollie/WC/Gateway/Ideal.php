@@ -6,8 +6,7 @@ class Mollie_WC_Gateway_Ideal extends Mollie_WC_Gateway_Abstract
      */
     public function __construct ()
     {
-        $this->id         = 'mollie_ideal';
-        $this->supports   = array(
+        $this->supports = array(
             'products',
             'refunds',
         );

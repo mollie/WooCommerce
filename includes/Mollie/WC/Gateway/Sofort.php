@@ -6,7 +6,6 @@ class Mollie_WC_Gateway_Sofort extends Mollie_WC_Gateway_Abstract
      */
     public function __construct ()
     {
-        $this->id       = 'mollie_sofort';
         $this->supports = array(
             'products',
             'refunds',

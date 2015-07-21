@@ -21,6 +21,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function __construct ()
     {
+        // No plugin id, gateway id is unique enough
+        $this->plugin_id    = '';
+        // Use gateway class name as gateway id
+        $this->id           = strtolower(get_class($this));
+        // Set gateway title (visible in admin)
         $this->method_title = 'Mollie - ' . $this->getDefaultTitle();
 
         // Load the settings.

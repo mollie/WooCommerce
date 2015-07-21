@@ -45,15 +45,15 @@ After the `.pot` file is updated you can update the translation files using [Poe
 
 A gateway ID is used by WooCommerce to identify the payment gateway.
 
-* mollie_banktransfer
-* mollie_belfius
-* mollie_bitcoin
-* mollie_creditcard
-* mollie_ideal
-* mollie_mistercash
-* mollie_paypal
-* mollie_paysafecard
-* mollie_sofort
+* mollie_wc_gateway_banktransfer
+* mollie_wc_gateway_belfius
+* mollie_wc_gateway_bitcoin
+* mollie_wc_gateway_creditcard
+* mollie_wc_gateway_ideal
+* mollie_wc_gateway_mistercash
+* mollie_wc_gateway_paypal
+* mollie_wc_gateway_paysafecard
+* mollie_wc_gateway_sofort
 
 ## Filters
 

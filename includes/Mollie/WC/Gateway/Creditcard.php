@@ -6,7 +6,6 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_Abstract
      */
     public function __construct ()
     {
-        $this->id       = 'mollie_creditcard';
         $this->supports = array(
             'products',
             'refunds',

@@ -2,16 +2,6 @@
 class Mollie_WC_Gateway_Paysafecard extends Mollie_WC_Gateway_Abstract
 {
     /**
-     *
-     */
-    public function __construct ()
-    {
-        $this->id = 'mollie_paysafecard';
-
-        parent::__construct();
-    }
-
-    /**
      * @return string
      */
     public function getMollieMethodId ()

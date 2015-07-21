@@ -10,7 +10,6 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
      */
     public function __construct ()
     {
-        $this->id       = 'mollie_banktransfer';
         $this->supports = array(
             'products',
             'refunds',

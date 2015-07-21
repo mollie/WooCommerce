@@ -6,7 +6,6 @@ class Mollie_WC_Gateway_Belfius extends Mollie_WC_Gateway_Abstract
      */
     public function __construct ()
     {
-        $this->id       = 'mollie_belfius';
         $this->supports = array(
             'products',
             'refunds',

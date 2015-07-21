@@ -1,12 +1,16 @@
 <?php
-class WC_Mollie_Gateway_Bitcoin extends WC_Mollie_Gateway_Abstract
+class Mollie_WC_Gateway_Belfius extends Mollie_WC_Gateway_Abstract
 {
     /**
      *
      */
     public function __construct ()
     {
-        $this->id = 'mollie_bitcoin';
+        $this->id       = 'mollie_belfius';
+        $this->supports = array(
+            'products',
+            'refunds',
+        );
 
         parent::__construct();
     }
@@ -16,7 +20,7 @@ class WC_Mollie_Gateway_Bitcoin extends WC_Mollie_Gateway_Abstract
      */
     public function getMollieMethodId ()
     {
-        return Mollie_API_Object_Method::BITCOIN;
+        return Mollie_API_Object_Method::BELFIUS;
     }
 
     /**
@@ -24,7 +28,7 @@ class WC_Mollie_Gateway_Bitcoin extends WC_Mollie_Gateway_Abstract
      */
     protected function getDefaultTitle ()
     {
-        return __('Bitcoin', 'woocommerce-mollie-payments');
+        return __('Belfius Direct Net', 'woocommerce-mollie-payments');
     }
 
     /**

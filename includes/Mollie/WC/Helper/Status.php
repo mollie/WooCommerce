@@ -1,5 +1,5 @@
 <?php
-class WC_Mollie_Helper_Status
+class Mollie_WC_Helper_Status
 {
     /**
      * Minimal required WooCommerce version
@@ -141,16 +141,16 @@ class WC_Mollie_Helper_Status
     }
 
     /**
-     * @throws WC_Mollie_Exception_CouldNotConnectToMollie
+     * @throws Mollie_WC_Exception_CouldNotConnectToMollie
      */
     public function getMollieApiStatus ()
     {
         try
         {
             // Is test mode enabled?
-            $test_mode  = WC_Mollie::getSettingsHelper()->isTestModeEnabled();
+            $test_mode  = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
 
-            $api_helper = WC_Mollie::getApiHelper();
+            $api_helper = Mollie_WC_Plugin::getApiHelper();
             $api_client = $api_helper->getApiClient($test_mode);
 
             // Try to load Mollie issuers
@@ -158,7 +158,7 @@ class WC_Mollie_Helper_Status
         }
         catch (Mollie_API_Exception $e)
         {
-            throw new WC_Mollie_Exception_CouldNotConnectToMollie(
+            throw new Mollie_WC_Exception_CouldNotConnectToMollie(
                 $e->getMessage(),
                 0,
                 $e

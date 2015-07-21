@@ -1,5 +1,5 @@
 <?php
-class WC_Mollie_Helper_Api
+class Mollie_WC_Helper_Api
 {
     /**
      * @var Mollie_API_Client
@@ -7,14 +7,14 @@ class WC_Mollie_Helper_Api
     protected static $api_client;
 
     /**
-     * @var WC_Mollie_Helper_Settings
+     * @var Mollie_WC_Helper_Settings
      */
     protected $settings_helper;
 
     /**
-     * @param WC_Mollie_Helper_Settings $settings_helper
+     * @param Mollie_WC_Helper_Settings $settings_helper
      */
-    public function __construct (WC_Mollie_Helper_Settings $settings_helper)
+    public function __construct (Mollie_WC_Helper_Settings $settings_helper)
     {
         $this->settings_helper = $settings_helper;
     }
@@ -22,7 +22,7 @@ class WC_Mollie_Helper_Api
     /**
      * @param bool $test_mode
      * @return Mollie_API_Client
-     * @throws WC_Mollie_Exception_InvalidApiKey
+     * @throws Mollie_WC_Exception_InvalidApiKey
      */
     public function getApiClient ($test_mode = false)
     {
@@ -32,11 +32,11 @@ class WC_Mollie_Helper_Api
 
         if (empty($api_key))
         {
-            throw new WC_Mollie_Exception_InvalidApiKey(__('No API key provided.', 'woocommerce-mollie-payments'));
+            throw new Mollie_WC_Exception_InvalidApiKey(__('No API key provided.', 'woocommerce-mollie-payments'));
         }
         elseif (!preg_match('/^(live|test)_\w+$/', $api_key))
         {
-            throw new WC_Mollie_Exception_InvalidApiKey(__('Invalid API key. The API key must start with \'live_\' or \'test_\' and can\'t further contain any special characters.', 'woocommerce-mollie-payments'));
+            throw new Mollie_WC_Exception_InvalidApiKey(__('Invalid API key. The API key must start with \'live_\' or \'test_\' and can\'t further contain any special characters.', 'woocommerce-mollie-payments'));
         }
 
         if (empty(self::$api_client))
@@ -46,7 +46,7 @@ class WC_Mollie_Helper_Api
             $client->setApiEndpoint(self::getApiEndpoint());
             $client->addVersionString('WordPress/'   . (isset($wp_version) ? $wp_version : 'Unknown'));
             $client->addVersionString('WooCommerce/' . get_option('woocommerce_version', 'Unknown'));
-            $client->addVersionString('MollieWoo/'   . WC_Mollie::PLUGIN_VERSION);
+            $client->addVersionString('MollieWoo/'   . Mollie_WC_Plugin::PLUGIN_VERSION);
 
             self::$api_client = $client;
         }
@@ -60,7 +60,7 @@ class WC_Mollie_Helper_Api
      */
     public static function getApiEndpoint ()
     {
-        return apply_filters(WC_Mollie::PLUGIN_ID . '_api_endpoint', Mollie_API_Client::API_ENDPOINT);
+        return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_api_endpoint', Mollie_API_Client::API_ENDPOINT);
     }
 
 }

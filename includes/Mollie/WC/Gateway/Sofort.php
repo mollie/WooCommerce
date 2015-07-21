@@ -1,12 +1,12 @@
 <?php
-class WC_Mollie_Gateway_Creditcard extends WC_Mollie_Gateway_Abstract
+class Mollie_WC_Gateway_Sofort extends Mollie_WC_Gateway_Abstract
 {
     /**
      *
      */
     public function __construct ()
     {
-        $this->id       = 'mollie_creditcard';
+        $this->id       = 'mollie_sofort';
         $this->supports = array(
             'products',
             'refunds',
@@ -20,7 +20,7 @@ class WC_Mollie_Gateway_Creditcard extends WC_Mollie_Gateway_Abstract
      */
     public function getMollieMethodId ()
     {
-        return Mollie_API_Object_Method::CREDITCARD;
+        return Mollie_API_Object_Method::SOFORT;
     }
 
     /**
@@ -28,7 +28,7 @@ class WC_Mollie_Gateway_Creditcard extends WC_Mollie_Gateway_Abstract
      */
     protected function getDefaultTitle ()
     {
-        return __('Credit card', 'woocommerce-mollie-payments');
+        return __('SOFORT Banking', 'woocommerce-mollie-payments');
     }
 
     /**
@@ -53,9 +53,11 @@ class WC_Mollie_Gateway_Creditcard extends WC_Mollie_Gateway_Abstract
         if ($payment->isPaid() && $payment->details)
         {
             $instructions .= sprintf(
-                /* translators: Placeholder 1: card holder */
-                __('Payment completed by <strong>%s</strong>', 'woocommerce-mollie-payments'),
-                $payment->details->cardHolder
+                /* translators: Placeholder 1: consumer name, placeholder 2: consumer IBAN, placeholder 3: consumer BIC */
+                __('Payment completed by <strong>%s</strong> (IBAN: %s, BIC: %s)', 'woocommerce-mollie-payments'),
+                $payment->details->consumerName,
+                implode(' ', str_split($payment->details->consumerAccount, 4)),
+                $payment->details->consumerBic
             );
         }
 

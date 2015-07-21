@@ -12,26 +12,26 @@
  * Domain Path: /i18n/languages/
  * License: http://www.opensource.org/licenses/bsd-license.php  Berkeley Software Distribution License (BSD-License 2)
  */
-require_once 'includes/WC/Mollie/Autoload.php';
+require_once 'includes/Mollie/WC/Autoload.php';
 
 load_plugin_textdomain('woocommerce-mollie-payments', false, 'woocommerce-mollie-payments/i18n/languages');
 
 /**
  * Called when plugin is loaded
  */
-function wc_mollie_init ()
+function mollie_wc_plugin_init ()
 {
     // Register Mollie autoloader
-    WC_Mollie_Autoload::register();
+    Mollie_WC_Autoload::register();
 
     // Setup and start plugin
-    WC_Mollie::init();
+    Mollie_WC_Plugin::init();
 }
 
 /**
  * Called when plugin is activated
  */
-function wc_mollie_activation_hook ()
+function mollie_wc_plugin_activation_hook ()
 {
     // WooCommerce plugin not activated
     if (!is_plugin_active('woocommerce/woocommerce.php'))
@@ -49,9 +49,9 @@ function wc_mollie_activation_hook ()
     }
 
     // Register Mollie autoloader
-    WC_Mollie_Autoload::register();
+    Mollie_WC_Autoload::register();
 
-    $plugin_status = new WC_Mollie_Helper_Status();
+    $plugin_status = new Mollie_WC_Helper_Status();
 
     if (!$plugin_status->isCompatible())
     {
@@ -67,7 +67,7 @@ function wc_mollie_activation_hook ()
 /**
  * Called when admin is initialised
  */
-function wc_mollie_admin_init ()
+function mollie_wc_plugin_admin_init ()
 {
     // WooCommerce plugin not activated
     if (!is_plugin_active('woocommerce/woocommerce.php'))
@@ -75,19 +75,19 @@ function wc_mollie_admin_init ()
         // Deactivate myself
         deactivate_plugins(plugin_basename(__FILE__));
 
-        add_action('admin_notices', 'wc_mollie_deactivated');
+        add_action('admin_notices', 'mollie_wc_plugin_deactivated');
     }
 }
 
-function wc_mollie_deactivated ()
+function mollie_wc_plugin_deactivated ()
 {
     echo '<div class="error"><p>' . sprintf(__('%s deactivated because it depends on WooCommerce.', 'woocommerce-mollie-payments'), 'WooCommerce Mollie Payments') . '</p></div>';
 }
 
-register_activation_hook(__FILE__, 'wc_mollie_activation_hook');
+register_activation_hook(__FILE__, 'mollie_wc_plugin_activation_hook');
 
-add_action('admin_init', 'wc_mollie_admin_init');
-add_action('init', 'wc_mollie_init');
+add_action('admin_init', 'mollie_wc_plugin_admin_init');
+add_action('init', 'mollie_wc_plugin_init');
 
 /*
  * Info link

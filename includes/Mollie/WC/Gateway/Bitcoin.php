@@ -1,16 +1,12 @@
 <?php
-class WC_Mollie_Gateway_MisterCash extends WC_Mollie_Gateway_Abstract
+class Mollie_WC_Gateway_Bitcoin extends Mollie_WC_Gateway_Abstract
 {
     /**
      *
      */
     public function __construct ()
     {
-        $this->id       = 'mollie_mistercash';
-        $this->supports = array(
-            'products',
-            'refunds',
-        );
+        $this->id = 'mollie_bitcoin';
 
         parent::__construct();
     }
@@ -20,7 +16,7 @@ class WC_Mollie_Gateway_MisterCash extends WC_Mollie_Gateway_Abstract
      */
     public function getMollieMethodId ()
     {
-        return Mollie_API_Object_Method::MISTERCASH;
+        return Mollie_API_Object_Method::BITCOIN;
     }
 
     /**
@@ -28,7 +24,7 @@ class WC_Mollie_Gateway_MisterCash extends WC_Mollie_Gateway_Abstract
      */
     protected function getDefaultTitle ()
     {
-        return __('Bancontact / Mister Cash', 'woocommerce-mollie-payments');
+        return __('Bitcoin', 'woocommerce-mollie-payments');
     }
 
     /**

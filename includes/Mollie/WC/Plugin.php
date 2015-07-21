@@ -1,8 +1,8 @@
 <?php
 // Require WooCommerce fallback functions
-require_once dirname(dirname(__FILE__)) . '/woocommerce_functions.php';
+require_once dirname(dirname(dirname(__FILE__))) . '/woocommerce_functions.php';
 
-class WC_Mollie
+class Mollie_WC_Plugin
 {
     const PLUGIN_ID      = 'woocommerce-mollie-payments';
     const PLUGIN_VERSION = '2.0.0-alpha';
@@ -16,15 +16,15 @@ class WC_Mollie
      * @var array
      */
     public static $GATEWAYS = array(
-        'WC_Mollie_Gateway_BankTransfer',
-        'WC_Mollie_Gateway_Belfius',
-        'WC_Mollie_Gateway_Bitcoin',
-        'WC_Mollie_Gateway_Creditcard',
-        'WC_Mollie_Gateway_Ideal',
-        'WC_Mollie_Gateway_MisterCash',
-        'WC_Mollie_Gateway_PayPal',
-        'WC_Mollie_Gateway_Paysafecard',
-        'WC_Mollie_Gateway_Sofort',
+        'Mollie_WC_Gateway_BankTransfer',
+        'Mollie_WC_Gateway_Belfius',
+        'Mollie_WC_Gateway_Bitcoin',
+        'Mollie_WC_Gateway_Creditcard',
+        'Mollie_WC_Gateway_Ideal',
+        'Mollie_WC_Gateway_MisterCash',
+        'Mollie_WC_Gateway_PayPal',
+        'Mollie_WC_Gateway_Paysafecard',
+        'Mollie_WC_Gateway_Sofort',
     );
 
     private function __construct () {}
@@ -97,14 +97,14 @@ class WC_Mollie
             return;
         }
 
-        if (!($gateway instanceof WC_Mollie_Gateway_Abstract))
+        if (!($gateway instanceof Mollie_WC_Gateway_Abstract))
         {
             self::setHttpResponseCode(400);
             self::debug(__METHOD__ . ": Invalid gateway " . get_class($gateway) . " for this plugin. Order $order_id.");
             return;
         }
 
-        /** @var WC_Mollie_Gateway_Abstract $gateway */
+        /** @var Mollie_WC_Gateway_Abstract $gateway */
 
         $redirect_url = $gateway->getReturnRedirectUrlForOrder($order);
 
@@ -124,19 +124,19 @@ class WC_Mollie
              * Do not show instruction again below details on order received page
              * Instructions already displayed on top of order received page by $gateway->thankyou_page()
              *
-             * @see WC_Mollie_Gateway_Abstract::thankyou_page
+             * @see Mollie_WC_Gateway_Abstract::thankyou_page
              */
             return;
         }
 
-        $gateway = WC_Mollie::getDataHelper()->getWcPaymentGatewayByOrder($order);
+        $gateway = Mollie_WC_Plugin::getDataHelper()->getWcPaymentGatewayByOrder($order);
 
-        if (!$gateway || !($gateway instanceof WC_Mollie_Gateway_Abstract))
+        if (!$gateway || !($gateway instanceof Mollie_WC_Gateway_Abstract))
         {
             return;
         }
 
-        /** @var WC_Mollie_Gateway_Abstract $gateway */
+        /** @var Mollie_WC_Gateway_Abstract $gateway */
 
         $gateway->displayInstructions($order);
     }
@@ -258,7 +258,7 @@ class WC_Mollie
     }
 
     /**
-     * @return WC_Mollie_Helper_Settings
+     * @return Mollie_WC_Helper_Settings
      */
     public static function getSettingsHelper ()
     {
@@ -266,14 +266,14 @@ class WC_Mollie
 
         if (!$settings_helper)
         {
-            $settings_helper = new WC_Mollie_Helper_Settings();
+            $settings_helper = new Mollie_WC_Helper_Settings();
         }
 
         return $settings_helper;
     }
 
     /**
-     * @return WC_Mollie_Helper_Api
+     * @return Mollie_WC_Helper_Api
      */
     public static function getApiHelper ()
     {
@@ -281,14 +281,14 @@ class WC_Mollie
 
         if (!$api_helper)
         {
-            $api_helper = new WC_Mollie_Helper_Api(self::getSettingsHelper());
+            $api_helper = new Mollie_WC_Helper_Api(self::getSettingsHelper());
         }
 
         return $api_helper;
     }
 
     /**
-     * @return WC_Mollie_Helper_Data
+     * @return Mollie_WC_Helper_Data
      */
     public static function getDataHelper ()
     {
@@ -296,7 +296,7 @@ class WC_Mollie
 
         if (!$data_helper)
         {
-            $data_helper = new WC_Mollie_Helper_Data(self::getApiHelper());
+            $data_helper = new Mollie_WC_Helper_Data(self::getApiHelper());
         }
 
         return $data_helper;

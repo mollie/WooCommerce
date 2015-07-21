@@ -1,5 +1,5 @@
 <?php
-class WC_Mollie_Helper_Data
+class Mollie_WC_Helper_Data
 {
     /**
      * @var Mollie_API_Object_Method[]|Mollie_API_Object_List|array
@@ -12,14 +12,14 @@ class WC_Mollie_Helper_Data
     protected static $api_issuers;
 
     /**
-     * @var WC_Mollie_Helper_Api
+     * @var Mollie_WC_Helper_Api
      */
     protected $api_helper;
 
     /**
-     * @param WC_Mollie_Helper_Api $api_helper
+     * @param Mollie_WC_Helper_Api $api_helper
      */
-    public function __construct (WC_Mollie_Helper_Api $api_helper)
+    public function __construct (Mollie_WC_Helper_Api $api_helper)
     {
         $this->api_helper = $api_helper;
     }
@@ -144,7 +144,7 @@ class WC_Mollie_Helper_Data
     {
         try
         {
-            $transient_id = WC_Mollie::PLUGIN_ID . '_payment_' . $payment_id;
+            $transient_id = Mollie_WC_Plugin::PLUGIN_ID . '_payment_' . $payment_id;
 
             if ($use_cache)
             {
@@ -164,7 +164,7 @@ class WC_Mollie_Helper_Data
         }
         catch (Exception $e)
         {
-            WC_Mollie::debug(__FUNCTION__ . ": Could not load payment $payment_id (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            Mollie_WC_Plugin::debug(__FUNCTION__ . ": Could not load payment $payment_id (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
 
         return NULL;
@@ -178,7 +178,7 @@ class WC_Mollie_Helper_Data
     {
         try
         {
-            $transient_id = WC_Mollie::PLUGIN_ID . '_api_methods_' . ($test_mode ? 'test' : 'live');
+            $transient_id = Mollie_WC_Plugin::PLUGIN_ID . '_api_methods_' . ($test_mode ? 'test' : 'live');
 
             if (empty(self::$api_methods))
             {
@@ -200,7 +200,7 @@ class WC_Mollie_Helper_Data
         }
         catch (Mollie_API_Exception $e)
         {
-            WC_Mollie::debug(__FUNCTION__ . ": Could not load Mollie methods (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            Mollie_WC_Plugin::debug(__FUNCTION__ . ": Could not load Mollie methods (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
 
         return array();
@@ -235,7 +235,7 @@ class WC_Mollie_Helper_Data
     {
         try
         {
-            $transient_id = WC_Mollie::PLUGIN_ID . '_api_issuers_' . ($test_mode ? 'test' : 'live');
+            $transient_id = Mollie_WC_Plugin::PLUGIN_ID . '_api_issuers_' . ($test_mode ? 'test' : 'live');
 
             if (empty(self::$api_issuers))
             {
@@ -273,7 +273,7 @@ class WC_Mollie_Helper_Data
         }
         catch (Mollie_API_Exception $e)
         {
-            WC_Mollie::debug(__FUNCTION__ . ": Could not load Mollie issuers (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            Mollie_WC_Plugin::debug(__FUNCTION__ . ": Could not load Mollie issuers (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
 
         return array();

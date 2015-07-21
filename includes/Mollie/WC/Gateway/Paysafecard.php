@@ -1,5 +1,5 @@
 <?php
-class WC_Mollie_Gateway_Paysafecard extends WC_Mollie_Gateway_Abstract
+class Mollie_WC_Gateway_Paysafecard extends Mollie_WC_Gateway_Abstract
 {
     /**
      *

@@ -1,12 +1,12 @@
 <?php
-class WC_Mollie_Gateway_PayPal extends WC_Mollie_Gateway_Abstract
+class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_Abstract
 {
     /**
      *
      */
     public function __construct ()
     {
-        $this->id       = 'mollie_paypal';
+        $this->id       = 'mollie_creditcard';
         $this->supports = array(
             'products',
             'refunds',
@@ -20,7 +20,7 @@ class WC_Mollie_Gateway_PayPal extends WC_Mollie_Gateway_Abstract
      */
     public function getMollieMethodId ()
     {
-        return Mollie_API_Object_Method::PAYPAL;
+        return Mollie_API_Object_Method::CREDITCARD;
     }
 
     /**
@@ -28,7 +28,7 @@ class WC_Mollie_Gateway_PayPal extends WC_Mollie_Gateway_Abstract
      */
     protected function getDefaultTitle ()
     {
-        return __('PayPal', 'woocommerce-mollie-payments');
+        return __('Credit card', 'woocommerce-mollie-payments');
     }
 
     /**
@@ -53,11 +53,9 @@ class WC_Mollie_Gateway_PayPal extends WC_Mollie_Gateway_Abstract
         if ($payment->isPaid() && $payment->details)
         {
             $instructions .= sprintf(
-                /* translators: Placeholder 1: PayPal consumer name, placeholder 2: PayPal email, placeholder 3: PayPal transaction ID */
-                __("Payment completed by <strong>%s</strong> - %s (PayPal transaction ID: %s)", 'woocommerce-mollie-payments'),
-                $payment->details->consumerName,
-                $payment->details->consumerAccount,
-                $payment->details->paypalReference
+                /* translators: Placeholder 1: card holder */
+                __('Payment completed by <strong>%s</strong>', 'woocommerce-mollie-payments'),
+                $payment->details->cardHolder
             );
         }
 

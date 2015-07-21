@@ -1,12 +1,12 @@
 <?php
-class WC_Mollie_Gateway_Belfius extends WC_Mollie_Gateway_Abstract
+class Mollie_WC_Gateway_MisterCash extends Mollie_WC_Gateway_Abstract
 {
     /**
      *
      */
     public function __construct ()
     {
-        $this->id       = 'mollie_belfius';
+        $this->id       = 'mollie_mistercash';
         $this->supports = array(
             'products',
             'refunds',
@@ -20,7 +20,7 @@ class WC_Mollie_Gateway_Belfius extends WC_Mollie_Gateway_Abstract
      */
     public function getMollieMethodId ()
     {
-        return Mollie_API_Object_Method::BELFIUS;
+        return Mollie_API_Object_Method::MISTERCASH;
     }
 
     /**
@@ -28,7 +28,7 @@ class WC_Mollie_Gateway_Belfius extends WC_Mollie_Gateway_Abstract
      */
     protected function getDefaultTitle ()
     {
-        return __('Belfius Direct Net', 'woocommerce-mollie-payments');
+        return __('Bancontact / Mister Cash', 'woocommerce-mollie-payments');
     }
 
     /**

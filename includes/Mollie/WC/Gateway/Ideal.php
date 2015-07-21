@@ -1,5 +1,5 @@
 <?php
-class WC_Mollie_Gateway_Ideal extends WC_Mollie_Gateway_Abstract
+class Mollie_WC_Gateway_Ideal extends Mollie_WC_Gateway_Abstract
 {
     /**
      *
@@ -51,16 +51,16 @@ class WC_Mollie_Gateway_Ideal extends WC_Mollie_Gateway_Abstract
         // Display description above issuers
         parent::payment_fields();
 
-        $test_mode = WC_Mollie::getSettingsHelper()->isTestModeEnabled();
+        $test_mode = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
 
-        $ideal_issuers = WC_Mollie::getDataHelper()->getIssuers(
+        $ideal_issuers = Mollie_WC_Plugin::getDataHelper()->getIssuers(
             $test_mode,
             $this->getMollieMethodId()
         );
 
         $selected_issuer = $this->getSelectedIssuer();
 
-        $html  = '<select name="' . WC_Mollie::PLUGIN_ID . '_issuer_' . $this->id . '">';
+        $html  = '<select name="' . Mollie_WC_Plugin::PLUGIN_ID . '_issuer_' . $this->id . '">';
         $html .= '<option value=""></option>';
         foreach ($ideal_issuers as $issuer)
         {

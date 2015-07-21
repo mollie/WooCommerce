@@ -1,12 +1,12 @@
 <?php
-class WC_Mollie_Gateway_Sofort extends WC_Mollie_Gateway_Abstract
+class Mollie_WC_Gateway_PayPal extends Mollie_WC_Gateway_Abstract
 {
     /**
      *
      */
     public function __construct ()
     {
-        $this->id       = 'mollie_sofort';
+        $this->id       = 'mollie_paypal';
         $this->supports = array(
             'products',
             'refunds',
@@ -20,7 +20,7 @@ class WC_Mollie_Gateway_Sofort extends WC_Mollie_Gateway_Abstract
      */
     public function getMollieMethodId ()
     {
-        return Mollie_API_Object_Method::SOFORT;
+        return Mollie_API_Object_Method::PAYPAL;
     }
 
     /**
@@ -28,7 +28,7 @@ class WC_Mollie_Gateway_Sofort extends WC_Mollie_Gateway_Abstract
      */
     protected function getDefaultTitle ()
     {
-        return __('SOFORT Banking', 'woocommerce-mollie-payments');
+        return __('PayPal', 'woocommerce-mollie-payments');
     }
 
     /**
@@ -53,11 +53,11 @@ class WC_Mollie_Gateway_Sofort extends WC_Mollie_Gateway_Abstract
         if ($payment->isPaid() && $payment->details)
         {
             $instructions .= sprintf(
-                /* translators: Placeholder 1: consumer name, placeholder 2: consumer IBAN, placeholder 3: consumer BIC */
-                __('Payment completed by <strong>%s</strong> (IBAN: %s, BIC: %s)', 'woocommerce-mollie-payments'),
+                /* translators: Placeholder 1: PayPal consumer name, placeholder 2: PayPal email, placeholder 3: PayPal transaction ID */
+                __("Payment completed by <strong>%s</strong> - %s (PayPal transaction ID: %s)", 'woocommerce-mollie-payments'),
                 $payment->details->consumerName,
-                implode(' ', str_split($payment->details->consumerAccount, 4)),
-                $payment->details->consumerBic
+                $payment->details->consumerAccount,
+                $payment->details->paypalReference
             );
         }
 

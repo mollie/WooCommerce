@@ -1,5 +1,5 @@
 <?php
-class WC_Mollie_Gateway_BankTransfer extends WC_Mollie_Gateway_Abstract
+class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
 {
     const EXPIRY_DEFAULT_DAYS = 12;
     const EXPIRY_MIN_DAYS     = 5;
@@ -116,7 +116,7 @@ class WC_Mollie_Gateway_BankTransfer extends WC_Mollie_Gateway_Abstract
     protected function orderNeedsPayment (WC_Order $order)
     {
         // needs_payment() searches using valid_statusses, but does not include on-hold status, so we add it here.
-        return parent::orderNeedsPayment($order) || WC_Mollie::getDataHelper()->hasOrderStatus($order, 'on-hold');
+        return parent::orderNeedsPayment($order) || Mollie_WC_Plugin::getDataHelper()->hasOrderStatus($order, 'on-hold');
     }
 
     /**
@@ -135,7 +135,7 @@ class WC_Mollie_Gateway_BankTransfer extends WC_Mollie_Gateway_Abstract
             return null;
         }
 
-        $data_helper = WC_Mollie::getDataHelper();
+        $data_helper = Mollie_WC_Plugin::getDataHelper();
 
         if ($payment->isPaid())
         {

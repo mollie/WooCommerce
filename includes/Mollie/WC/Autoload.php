@@ -1,5 +1,5 @@
 <?php
-class WC_Mollie_Autoload
+class Mollie_WC_Autoload
 {
     /**
      * @var bool
@@ -49,7 +49,7 @@ class WC_Mollie_Autoload
         // Path to includes directory
         $base_path = dirname(dirname(dirname(__FILE__)));
 
-        if (stripos($class_name, "WC_Mollie") === 0)
+        if (stripos($class_name, "Mollie_WC_") === 0)
         {
             $class_path = $base_path . '/' . str_replace('_', '/', $class_name) . '.php';
 

@@ -1,5 +1,5 @@
 <?php
-class WC_Mollie_Helper_Settings
+class Mollie_WC_Helper_Settings
 {
     /**
      * @return bool
@@ -73,7 +73,7 @@ class WC_Mollie_Helper_Settings
      */
     public function getGlobalSettingsUrl ()
     {
-        return admin_url('admin.php?page=wc-settings&tab=checkout#' . WC_Mollie::PLUGIN_ID);
+        return admin_url('admin.php?page=wc-settings&tab=checkout#' . Mollie_WC_Plugin::PLUGIN_ID);
     }
 
     /**
@@ -94,7 +94,7 @@ class WC_Mollie_Helper_Settings
      */
     protected function getPluginStatus ()
     {
-        $status = new WC_Mollie_Helper_Status();
+        $status = new Mollie_WC_Helper_Status();
 
         if (!$status->isCompatible())
         {
@@ -116,7 +116,7 @@ class WC_Mollie_Helper_Settings
                 . '</p>';
             $api_status_type = 'updated';
         }
-        catch (WC_Mollie_Exception_CouldNotConnectToMollie $e)
+        catch (Mollie_WC_Exception_CouldNotConnectToMollie $e)
         {
             $api_status = ''
                 . '<p style="font-weight:bold;"><span style="color:red;">Communicating with Mollie failed:</span> ' . esc_html($e->getMessage()) . '</p>'
@@ -124,7 +124,7 @@ class WC_Mollie_Helper_Settings
 
                 . '<ul style="color: #2D60B0;">'
                 . ' <li>Please check if you\'ve inserted your API key correctly.</li>'
-                . ' <li>Make sure outside connections to <strong>' . esc_html(WC_Mollie_Helper_Api::getApiEndpoint()) . '</strong> are not blocked.</li>'
+                . ' <li>Make sure outside connections to <strong>' . esc_html(Mollie_WC_Helper_Api::getApiEndpoint()) . '</strong> are not blocked.</li>'
                 . ' <li>Make sure SSL v3 is disabled on your server. Mollie does not support SSL v3.</li>'
                 . ' <li>Make sure your server is up-to-date and the latest security patches have been installed.</li>'
                 . '</ul><br/>'
@@ -133,7 +133,7 @@ class WC_Mollie_Helper_Settings
 
             $api_status_type = 'error';
         }
-        catch (WC_Mollie_Exception_InvalidApiKey $e)
+        catch (Mollie_WC_Exception_InvalidApiKey $e)
         {
             $api_status      = '<p style="color:red; font-weight:bold;">' . esc_html($e->getMessage()) . '</p>';
             $api_status_type = 'error';
@@ -160,8 +160,8 @@ class WC_Mollie_Helper_Settings
 
         try
         {
-            $data_helper     = WC_Mollie::getDataHelper();
-            $settings_helper = WC_Mollie::getSettingsHelper();
+            $data_helper     = Mollie_WC_Plugin::getDataHelper();
+            $settings_helper = Mollie_WC_Plugin::getSettingsHelper();
 
             // Is Test mode enabled?
             $test_mode       = $settings_helper->isTestModeEnabled();
@@ -170,11 +170,11 @@ class WC_Mollie_Helper_Settings
             $mollie_gateways = array();
 
             // Find all payment methods supported by plugin' gateways
-            foreach (WC_Mollie::$GATEWAYS as $gateway_classname)
+            foreach (Mollie_WC_Plugin::$GATEWAYS as $gateway_classname)
             {
                 $gateway = new $gateway_classname;
 
-                if ($gateway instanceof WC_Mollie_Gateway_Abstract)
+                if ($gateway instanceof Mollie_WC_Gateway_Abstract)
                 {
                     $mollie_gateways[$gateway->getMollieMethodId()] = $gateway;
                 }
@@ -186,7 +186,7 @@ class WC_Mollie_Helper_Settings
 
             $content .= '<br /><br />';
 
-            if (WC_Mollie::getSettingsHelper()->isTestModeEnabled())
+            if (Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled())
             {
                 $content .= '<strong>' . __('Test mode enabled.', 'woocommerce-mollie-payments') . '</strong> ';
             }
@@ -210,7 +210,7 @@ class WC_Mollie_Helper_Settings
                     // Gateway found for Mollie payment method
                     if (isset($mollie_gateways[$payment_method->id]))
                     {
-                        /** @var WC_Mollie_Gateway_Abstract $gateway */
+                        /** @var Mollie_WC_Gateway_Abstract $gateway */
                         $gateway = $mollie_gateways[$payment_method->id];
 
                         if ($gateway->is_available())
@@ -241,7 +241,7 @@ class WC_Mollie_Helper_Settings
             }
             $content .= '<div class="clear"></div>';
         }
-        catch (WC_Mollie_Exception_InvalidApiKey $e)
+        catch (Mollie_WC_Exception_InvalidApiKey $e)
         {
             // Ignore
         }
@@ -255,8 +255,8 @@ class WC_Mollie_Helper_Settings
      */
     public function addGlobalSettingsFields (array $settings)
     {
-        wp_register_script('mollie_settings', plugin_dir_url('woocommerce-mollie-payments/woocommerce-mollie-payments.php')  . '/assets/js/settings.js', array('jquery'), WC_Mollie::PLUGIN_VERSION);
-        wp_enqueue_script('mollie_settings');
+        wp_register_script('mollie_wc_admin_settings', plugin_dir_url('woocommerce-mollie-payments/woocommerce-mollie-payments.php')  . '/assets/js/settings.js', array('jquery'), Mollie_WC_Plugin::PLUGIN_VERSION);
+        wp_enqueue_script('mollie_wc_admin_settings');
 
         $content = ''
             . $this->getPluginStatus()
@@ -271,7 +271,7 @@ class WC_Mollie_Helper_Settings
                 'id'    => $this->getSettingId('title'),
                 'title' => __('Mollie settings', 'woocommerce-mollie-payments'),
                 'type'  => 'title',
-                'desc'  => '<p id="' . WC_Mollie::PLUGIN_ID . '">' . $content . '</p>'
+                'desc'  => '<p id="' . Mollie_WC_Plugin::PLUGIN_ID . '">' . $content . '</p>'
                          . '<p>' . __('The following options are required to use the Mollie payments and are used by all Mollie payment methods', 'woocommerce-mollie-payments') . '</p>',
             ),
             array(
@@ -364,12 +364,12 @@ class WC_Mollie_Helper_Settings
      */
     public function onGlobalSettingsSaved ()
     {
-        WC_Mollie::debug(__METHOD__ . ': Mollie settings saved, delete transients');
+        Mollie_WC_Plugin::debug(__METHOD__ . ': Mollie settings saved, delete transients');
 
-        delete_transient(WC_Mollie::PLUGIN_ID . '_api_methods_test');
-        delete_transient(WC_Mollie::PLUGIN_ID . '_api_methods_live');
-        delete_transient(WC_Mollie::PLUGIN_ID . '_api_issuers_test');
-        delete_transient(WC_Mollie::PLUGIN_ID . '_api_issuers_live');
+        delete_transient(Mollie_WC_Plugin::PLUGIN_ID . '_api_methods_test');
+        delete_transient(Mollie_WC_Plugin::PLUGIN_ID . '_api_methods_live');
+        delete_transient(Mollie_WC_Plugin::PLUGIN_ID . '_api_issuers_test');
+        delete_transient(Mollie_WC_Plugin::PLUGIN_ID . '_api_issuers_live');
     }
 
     /**
@@ -378,7 +378,7 @@ class WC_Mollie_Helper_Settings
      */
     protected function getSettingId ($setting)
     {
-        return WC_Mollie::PLUGIN_ID . '_' . trim($setting);
+        return Mollie_WC_Plugin::PLUGIN_ID . '_' . trim($setting);
     }
 
     /**

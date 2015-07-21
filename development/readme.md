@@ -57,6 +57,20 @@ A gateway ID is used by WooCommerce to identify the payment gateway.
 
 ## Filters
 
+### `<gateway_id>_icon_url`
+Implement this filter if you want to overwrite the default gateway icon URL.
+
+```
+$gateway_id = 'mollie_wc_gateway_creditcard';
+
+add_filter($gateway_id . '_icon_url', function($icon_url) {
+    // Overwrite gateway icon URL
+    $icon_url = 'http://my-website.com/path/to/icons/creditcard.png';
+
+    return $icon_url;
+});
+```
+
 ### `woocommerce-mollie-payments_webhook_url`
 This filter can be added if you want to overwrite the payment webhook. This can be usefull if your development environment is on a local machine and your machine is not publicly accessable by the Mollie platform. Mollie can not deliver the webhook request to your website. You can use a tool like [ngrok](https://ngrok.com/) to create a public endpoint that proxies request to your local machine.
 

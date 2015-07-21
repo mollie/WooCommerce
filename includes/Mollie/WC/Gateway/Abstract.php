@@ -84,11 +84,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         if ($this->display_logo)
         {
             $payment_method = $this->getMollieMethod();
+            $default_icon   = $payment_method ? $payment_method->image->normal : null;
 
-            if ($payment_method)
-            {
-                $this->icon = $payment_method->image->normal;
-            }
+            $this->icon     = apply_filters($this->id . '_icon_url', $default_icon);
         }
     }
 

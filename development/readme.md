@@ -14,7 +14,7 @@ I have checkout the Mollie plugin in my vagrant `www` directory so it is accesib
 
 ```
 cd <path-to-vagrant-local>/wwww
-git git@github.com:mollie/WooCommerce.git wooocommerce-mollie-payments
+git git@github.com:mollie/WooCommerce.git
 ```
 
 ## Keep the plugin sourcecode in sync with the plugin in your WordPress website
@@ -23,7 +23,7 @@ I use [fswatch](https://github.com/emcrisostomo/fswatch) to watch the plugin dir
 
 ```
 cd <path-to-vagrant-local>/wwww
-fswatch-sync.sh ./woocommerce-mollie-payments/ ./wordpress-default/wp-content/plugins/woocommerce-mollie-payments/
+fswatch-sync.sh ./WooCommerce/woocommerce-mollie-payments/ ./wordpress-default/wp-content/plugins/woocommerce-mollie-payments/
 ```
 
 It will notify you that the target directory will be overwritten. Changes made in the target directory will be overwritten when you make a change to the source directory.
@@ -36,7 +36,7 @@ On your vagrant machine:
 
 ```
 cd /srv/www
-php ./wordpress-develop/tools/i18n/makepot.php wp-plugin ./woocommerce-mollie-payments/ ./woocommerce-mollie-payments/i18n/languages/woocommerce-mollie-payments.pot
+php ./wordpress-develop/tools/i18n/makepot.php wp-plugin ./WooCommerce/woocommerce-mollie-payments/ ./WooCommerce/woocommerce-mollie-payments/i18n/languages/woocommerce-mollie-payments.pot
 ```
 
 After the `.pot` file is updated you can update the translation files using [Poedit](https://poedit.net/). You can use the "Update from POT file..." to get the update translation keys.

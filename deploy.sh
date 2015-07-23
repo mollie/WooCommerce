@@ -2,56 +2,25 @@
 # See https://github.com/GaryJones/wordpress-plugin-git-flow-svn-deploy for instructions and credits.
 
 echo
-echo "WordPress Plugin Git-Flow SVN Deploy v2.0.0-dev"
-echo
-echo "Step 1. Let's collect some information first."
-echo
-echo "Default values are in brackets - just hit enter to accept them."
-echo
-
-# Get some user input
-# Can't use the -i flag for read, since that doesn't work for bash 3
-printf "1a) WordPress Repo Plugin Slug e.g. my-awesome-plugin: "
-read -e PLUGINSLUG
+echo "Deploy woocommerce-mollie-payment WordPress Plugin"
 echo
 
 # Set up some default values. Feel free to change these in your own script
 CURRENTDIR=`pwd`
-default_svnpath="/tmp/$PLUGINSLUG"
-default_svnurl="http://plugins.svn.wordpress.org/$PLUGINSLUG"
-default_svnuser="GaryJ"
-default_plugindir="$CURRENTDIR/$PLUGINSLUG"
-default_mainfile="$PLUGINSLUG.php"
+PLUGINSLUG="woocommerce-mollie-payments"
+PLUGINDIR="$CURRENTDIR/$PLUGINSLUG"
+SVNPATH="/tmp/$PLUGINSLUG"
+SVNURL="http://plugins.svn.wordpress.org/$PLUGINSLUG"
+MAINFILE="$PLUGINSLUG.php"
 
-echo "1b) Path to a local directory where a temporary SVN checkout can be made."
-printf "No trailing slash and don't add trunk ($default_svnpath): "
-read -e input
-input="${input%/}" # Strip trailing slash
-SVNPATH="${input:-$default_svnpath}" # Populate with default if empty
-echo
+default_svnuser="mollie"
 
-echo "1c) Remote SVN repo on WordPress.org. No trailing slash."
-printf "($default_svnurl): "
-read -e input
-input="${input%/}" # Strip trailing slash
-SVNURL="${input:-$default_svnurl}" # Populate with default if empty
-echo
+# Get some user input
+# Can't use the -i flag for read, since that doesn't work for bash 3
 
-printf "1d) Your WordPress repo SVN username ($default_svnuser): "
+printf "Your WordPress repo SVN username ($default_svnuser): "
 read -e input
 SVNUSER="${input:-$default_svnuser}" # Populate with default if empty
-echo
-
-echo "1e) Your local plugin root directory, the Git repo. No trailing slash."
-printf "($default_plugindir): "
-read -e  input
-input="${input%/}" # Strip trailing slash
-PLUGINDIR="${input:-$default_plugindir}" # Populate with default if empty
-echo
-
-printf "1f) Name of the main plugin file ($default_mainfile): "
-read -e input
-MAINFILE="${input:-$default_mainfile}" # Populate with default if empty
 echo
 
 echo "That's all of the data collected."
@@ -84,9 +53,9 @@ echo ".........................................."
 echo
 
 # Check version in readme.txt is the same as plugin file after translating both to unix line breaks to work around grep's failure to identify mac line breaks
-PLUGINVERSION=`grep "Version:" $GITPATH/$MAINFILE | awk -F' ' '{print $NF}' | tr -d '\r'`
+PLUGINVERSION=`grep "Version:" $PLUGINDIR/$MAINFILE | awk -F' ' '{print $NF}' | tr -d '\r'`
 echo "$MAINFILE version: $PLUGINVERSION"
-READMEVERSION=`grep "^Stable tag:" $GITPATH/readme.txt | awk -F' ' '{print $NF}' | tr -d '\r'`
+READMEVERSION=`grep "^Stable tag:" $PLUGINDIR/readme.txt | awk -F' ' '{print $NF}' | tr -d '\r'`
 echo "readme.txt version: $READMEVERSION"
 
 if [ "$READMEVERSION" = "trunk" ]; then
@@ -98,26 +67,26 @@ elif [ "$PLUGINVERSION" = "$READMEVERSION" ]; then
 	echo "Versions match in readme.txt and $MAINFILE. Let's proceed..."
 fi
 
-# GaryJ: Ignore check for git tag, as git flow release finish creates this.
-#if git show-ref --tags --quiet --verify -- "refs/tags/$PLUGINVERSION"
-#	then
-#		echo "Version $PLUGINVERSION already exists as git tag. Exiting....";
-#		exit 1;
-#	else
-#		echo "Git version does not exist. Let's proceed..."
-#fi
+if git show-ref --tags --quiet --verify -- "refs/tags/$PLUGINVERSION"
+	then
+		echo "Version $PLUGINVERSION already exists as git tag. Exiting....";
+		exit 1;
+	else
+		echo "Git version does not exist. Let's proceed..."
+fi
 
-echo "Changing to $GITPATH"
-cd $GITPATH
-# GaryJ: Commit message variable not needed . Hard coded for SVN trunk commit for consistency.
-#echo -e "Enter a commit message for this new version: \c"
-#read COMMITMSG
-# GaryJ: git flow release finish already covers this commit.
-#git commit -am "$COMMITMSG"
+#echo "Changing to $GITPATH"
+#cd $GITPATH
 
-# GaryJ: git flow release finish already covers this tag creation.
-#echo "Tagging new version in git"
-#git tag -a "$PLUGINVERSION" -m "Tagging version $PLUGINVERSION"
+default_commitmsg="Release $PLUGINVERSION"
+
+printf "Enter a commit message for this new version ($default_commitmsg): "
+read -e input
+COMMITMSG="${input:-$default_commitmsg}" # Populate with default if empty
+git commit -am "$COMMITMSG"
+
+echo "Tagging new version in git"
+git tag -a "$PLUGINVERSION" -m "Tagging version $PLUGINVERSION"
 
 echo "Pushing git master to origin, with tags"
 git push origin master
@@ -196,4 +165,4 @@ cd $SVNPATH
 cd ..
 rm -fr $SVNPATH/
 
-echo "*** FIN ***"
+echo "*** FINISHED ***"

@@ -117,7 +117,7 @@ class Mollie_WC_Helper_Status
     /**
      * @return string
      */
-    protected function getWooCommerceVersion ()
+    public function getWooCommerceVersion ()
     {
         return WooCommerce::instance()->version;
     }

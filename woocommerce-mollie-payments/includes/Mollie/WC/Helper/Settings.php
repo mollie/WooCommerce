@@ -94,7 +94,7 @@ class Mollie_WC_Helper_Settings
      */
     protected function getPluginStatus ()
     {
-        $status = new Mollie_WC_Helper_Status();
+        $status = Mollie_WC_Plugin::getStatusHelper();
 
         if (!$status->isCompatible())
         {

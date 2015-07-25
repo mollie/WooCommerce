@@ -246,15 +246,19 @@ class Mollie_WC_Plugin
      */
     public static function addPluginActionLinks (array $links)
     {
-        return array_merge(
-            array(
-                // Add link to global Mollie settings
-                '<a href="' . self::getSettingsHelper()->getGlobalSettingsUrl() . '">' . __('Mollie settings', 'woocommerce-mollie-payments') . '</a>',
-                // Add link to WooCommerce logs
-                '<a href="' . self::getSettingsHelper()->getLogsUrl() . '">' . __('Logs', 'woocommerce-mollie-payments') . '</a>'
-            ),
-            $links
+        $action_links = array(
+            // Add link to global Mollie settings
+            '<a href="' . self::getSettingsHelper()->getGlobalSettingsUrl() . '">' . __('Mollie settings', 'woocommerce-mollie-payments') . '</a>',
         );
+
+        // Add link to log files viewer for WooCommerce >= 2.2.0
+        if (version_compare(self::getStatusHelper()->getWooCommerceVersion(), '2.2.0', ">="))
+        {
+            // Add link to WooCommerce logs
+            $action_links[] = '<a href="' . self::getSettingsHelper()->getLogsUrl() . '">' . __('Logs', 'woocommerce-mollie-payments') . '</a>';
+        }
+
+        return array_merge($action_links, $links);
     }
 
     /**
@@ -300,5 +304,20 @@ class Mollie_WC_Plugin
         }
 
         return $data_helper;
+    }
+
+    /**
+     * @return Mollie_WC_Helper_Status
+     */
+    public static function getStatusHelper ()
+    {
+        static $status_helper;
+
+        if (!$status_helper)
+        {
+            $status_helper = new Mollie_WC_Helper_Status();
+        }
+
+        return $status_helper;
     }
 }

@@ -51,13 +51,13 @@ function mollie_wc_plugin_activation_hook ()
     // Register Mollie autoloader
     Mollie_WC_Autoload::register();
 
-    $plugin_status = new Mollie_WC_Helper_Status();
+    $status_helper = Mollie_WC_Plugin::getStatusHelper();
 
-    if (!$plugin_status->isCompatible())
+    if (!$status_helper->isCompatible())
     {
         $title   = 'Could not activate WooCommerce Mollie Payments plugin';
         $message = '<h1><strong>Could not activate WooCommerce Mollie Payments plugin</strong></h1><br/>'
-                 . implode('<br/>', $plugin_status->getErrors());
+                 . implode('<br/>', $status_helper->getErrors());
 
         wp_die($message, $title, array('back_link' => true));
         return;

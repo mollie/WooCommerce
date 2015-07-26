@@ -1,5 +1,5 @@
 #! /bin/bash
-# See https://github.com/GaryJones/wordpress-plugin-git-flow-svn-deploy for instructions and credits.
+# Original by https://github.com/GaryJones/wordpress-plugin-git-flow-svn-deploy
 
 echo
 echo "Deploy woocommerce-mollie-payment WordPress Plugin"
@@ -75,10 +75,7 @@ if git show-ref --tags --quiet --verify -- "refs/tags/$PLUGINVERSION"
 		echo "Git version does not exist. Let's proceed..."
 fi
 
-#echo "Changing to $GITPATH"
-#cd $GITPATH
-
-default_commitmsg="Release $PLUGINVERSION"
+default_commitmsg="Release $PLUGINVERSION, see readme.txt for changelog."
 
 printf "Enter a commit message for this new version ($default_commitmsg): "
 read -e input
@@ -93,6 +90,15 @@ git push origin master
 git push origin master --tags
 
 echo
+echo "Clear $SVNPATH"
+rm -fr $SVNPATH/
+
+echo
+echo "Update GIT submodules
+git submodule init
+git submodule update
+
+echo
 echo "Creating local copy of SVN repo trunk ..."
 svn checkout $SVNURL $SVNPATH --depth immediates
 svn update --quiet $SVNPATH/trunk --set-depth infinity
@@ -103,35 +109,15 @@ Thumbs.db
 .git
 .gitignore" "$SVNPATH/trunk/"
 
-echo "Exporting the HEAD of master from git to the trunk of SVN"
-git checkout-index -a -f --prefix=$SVNPATH/trunk/
-
-# If submodule exist, recursively check out their indexes
-if [ -f ".gitmodules" ]
-	then
-		echo "Exporting the HEAD of each submodule from git to the trunk of SVN"
-		git submodule init
-		git submodule update
-		git config -f .gitmodules --get-regexp '^submodule\..*\.path$' |
-			while read path_key path
-			do
-				#url_key=$(echo $path_key | sed 's/\.path/.url/')
-				#url=$(git config -f .gitmodules --get "$url_key")
-				#git submodule add $url $path
-				echo "This is the submodule path: $path"
-				echo "The following line is the command to checkout the submodule."
-				echo "git submodule foreach --recursive 'git checkout-index -a -f --prefix=$SVNPATH/trunk/$path/'"
-				git submodule foreach --recursive 'git checkout-index -a -f --prefix=$SVNPATH/trunk/$path/'
-			done
-fi
+echo "Copying plugin files to the trunk of SVN"
+rsync $PLUGINSLUG/* -ri --del -m --exclude ".*" $SVNPATH/trunk/ | grep sT
 
 # Support for the /assets folder on the .org repo.
 echo "Moving assets"
 # Make the directory if it doesn't already exist
 mkdir -p $SVNPATH/assets/
-mv $SVNPATH/trunk/assets/* $SVNPATH/assets/
+rsync $CURRENTDIR/assets/* -ri --del -m --exclude ".*" $SVNPATH/assets/ | grep sT
 svn add --force $SVNPATH/assets/
-svn delete --force $SVNPATH/trunk/assets
 
 echo "Changing directory to SVN and committing to trunk"
 cd $SVNPATH/trunk/
@@ -148,15 +134,15 @@ svn status | grep -v "^.[ \t]*\..*" | grep "^\!" | awk '{print $2}' | xargs svn 
 # Add all new files that are not set to be ignored
 svn status | grep -v "^.[ \t]*\..*" | grep "^?" | awk '{print $2}' | xargs svn add
 svn update --accept mine-full $SVNPATH/assets/*
-svn commit --username=$SVNUSER -m "Updating assets"
+svn commit --username=$SVNUSER -m "Updating assets for $PLUGINVERSION release"
 
 echo "Creating new SVN tag and committing it"
 cd $SVNPATH
 svn update --quiet $SVNPATH/tags/$PLUGINVERSION
 svn copy --quiet trunk/ tags/$PLUGINVERSION/
 # Remove assets and trunk directories from tag directory
-svn delete --force --quiet $SVNPATH/tags/$PLUGINVERSION/assets
-svn delete --force --quiet $SVNPATH/tags/$PLUGINVERSION/trunk
+# svn delete --force --quiet $SVNPATH/tags/$PLUGINVERSION/assets
+# svn delete --force --quiet $SVNPATH/tags/$PLUGINVERSION/trunk
 cd $SVNPATH/tags/$PLUGINVERSION
 svn commit --username=$SVNUSER -m "Tagging version $PLUGINVERSION"
 

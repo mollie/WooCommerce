@@ -166,7 +166,16 @@ class Mollie_WC_Helper_Settings
             // Is Test mode enabled?
             $test_mode       = $settings_helper->isTestModeEnabled();
 
-            $mollie_methods  = $data_helper->getPaymentMethods($test_mode);
+            // Use cache on default
+            $use_cache       = true;
+
+            if (isset($_GET['refresh-methods']) && check_admin_referer('refresh-methods'))
+            {
+                // Disable using cache
+                $use_cache = false;
+            }
+
+            $mollie_methods  = $data_helper->getPaymentMethods($test_mode, $use_cache);
             $mollie_gateways = array();
 
             // Find all payment methods supported by plugin' gateways
@@ -197,6 +206,13 @@ class Mollie_WC_Helper_Settings
                 '<a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">',
                 '</a>'
             );
+
+            $refresh_methods_url = wp_nonce_url(
+                add_query_arg(array('refresh-methods' => 1)),
+                'refresh-methods'
+            );
+
+            $content .= ' (<a href="' . esc_attr($refresh_methods_url) . '">' . strtolower(__('Refresh', 'woocommerce-mollie-payments')) . '</a>)';
 
             if (count($mollie_methods))
             {

@@ -172,29 +172,34 @@ class Mollie_WC_Helper_Data
 
     /**
      * @param bool $test_mode (default: false)
+     * @param bool $use_cache (default: true)
      * @return array|Mollie_API_Object_List|Mollie_API_Object_Method[]
      */
-    public function getPaymentMethods ($test_mode = false)
+    public function getPaymentMethods ($test_mode = false, $use_cache = true)
     {
+        // Already initialized
+        if (!empty(self::$api_methods))
+        {
+            return self::$api_methods;
+        }
+
         try
         {
             $transient_id = Mollie_WC_Plugin::PLUGIN_ID . '_api_methods_' . ($test_mode ? 'test' : 'live');
 
-            if (empty(self::$api_methods))
+            if ($use_cache)
             {
                 $cached = @unserialize(get_transient($transient_id));
 
                 if ($cached && $cached instanceof Mollie_API_Object_List)
                 {
-                    self::$api_methods = $cached;
-                }
-                else
-                {
-                    self::$api_methods = $this->api_helper->getApiClient($test_mode)->methods->all();
-
-                    set_transient($transient_id, self::$api_methods, MINUTE_IN_SECONDS * 5);
+                    return (self::$api_methods = $cached);
                 }
             }
+
+            self::$api_methods = $this->api_helper->getApiClient($test_mode)->methods->all();
+
+            set_transient($transient_id, self::$api_methods, MINUTE_IN_SECONDS * 5);
 
             return self::$api_methods;
         }

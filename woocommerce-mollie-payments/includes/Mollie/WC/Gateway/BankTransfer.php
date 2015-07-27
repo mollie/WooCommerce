@@ -180,14 +180,14 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
                 {
                     $instructions .= "\n" . sprintf(
                         __('The payment will expire on <strong>%s</strong>.', 'woocommerce-mollie-payments'),
-                        $expiry_date->format(get_option('date_format'))
+                        $expiry_date->format(wc_date_format())
                     ) . "\n";
                 }
                 else
                 {
                     $instructions .= "\n" . sprintf(
                         __('The payment will expire on <strong>%s</strong>. Please make sure you transfer the total amount before this date.', 'woocommerce-mollie-payments'),
-                        $expiry_date->format(get_option('date_format'))
+                        $expiry_date->format(wc_date_format())
                     ) . "\n";
                 }
             }

@@ -279,7 +279,8 @@ class Mollie_WC_Helper_Settings
             . $this->getMollieMethods();
 
         /* translators: Default payment description. '%' is a placeholder the user can use and will be replaced by the order number */
-        $default_payment_description = __('Order %', 'woocommerce-mollie-payments');
+        $default_payment_description = __('Order {order_number}', 'woocommerce-mollie-payments');
+        $payment_description_tags    = '<code>{order_number}</code>, <code>{order_date}</code>';
 
         // Global Mollie settings
         $mollie_settings = array(
@@ -288,7 +289,7 @@ class Mollie_WC_Helper_Settings
                 'title' => __('Mollie settings', 'woocommerce-mollie-payments'),
                 'type'  => 'title',
                 'desc'  => '<p id="' . Mollie_WC_Plugin::PLUGIN_ID . '">' . $content . '</p>'
-                         . '<p>' . __('The following options are required to use the Mollie payments and are used by all Mollie payment methods', 'woocommerce-mollie-payments') . '</p>',
+                         . '<p>' . __('The following options are required to use the plugin and are used by all Mollie payment methods', 'woocommerce-mollie-payments') . '</p>',
             ),
             array(
                 'id'                => $this->getSettingId('live_api_key'),
@@ -336,7 +337,7 @@ class Mollie_WC_Helper_Settings
                 'id'      => $this->getSettingId('payment_description'),
                 'title'   => __('Description', 'woocommerce-mollie-payments'),
                 'type'    => 'text',
-                'desc'    => sprintf(__('Payment description send to Mollie. <code>%%</code> will be replaced by the order number. Default <code>%s</code>', 'woocommerce-mollie-payments'), $default_payment_description),
+                'desc'    => sprintf(__('Payment description send to Mollie. Default <code>%s</code><br/>You can use the following tags: %s', 'woocommerce-mollie-payments'), $default_payment_description, $payment_description_tags),
                 'default' => $default_payment_description,
                 'css'     => 'width: 350px',
             ),

@@ -171,7 +171,7 @@ class Mollie_WC_Helper_Settings
 
             if (isset($_GET['refresh-methods']) && check_admin_referer('refresh-methods'))
             {
-                // Disable using cache
+                // Disable cache
                 $use_cache = false;
             }
 

@@ -178,7 +178,7 @@ class Mollie_WC_Helper_Data
     public function getPaymentMethods ($test_mode = false, $use_cache = true)
     {
         // Already initialized
-        if (!empty(self::$api_methods))
+        if ($use_cache && !empty(self::$api_methods))
         {
             return self::$api_methods;
         }

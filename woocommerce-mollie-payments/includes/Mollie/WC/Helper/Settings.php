@@ -210,7 +210,7 @@ class Mollie_WC_Helper_Settings
             $refresh_methods_url = wp_nonce_url(
                 add_query_arg(array('refresh-methods' => 1)),
                 'refresh-methods'
-            );
+            ) . '#' . Mollie_WC_Plugin::PLUGIN_ID;
 
             $content .= ' (<a href="' . esc_attr($refresh_methods_url) . '">' . strtolower(__('Refresh', 'woocommerce-mollie-payments')) . '</a>)';
 

@@ -704,7 +704,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $return_url = add_query_arg(array(
             'order_id'       => $order->id,
             'key'            => $order->order_key,
-            'utm_nooverride' => 1,
         ), $return_url);
 
         return $return_url;

@@ -108,7 +108,12 @@ class Mollie_WC_Plugin
 
         $redirect_url = $gateway->getReturnRedirectUrlForOrder($order);
 
-        self::debug(__METHOD__ . ": Redirect url on return order " . $gateway->id . ", order $order_id.");
+        // Add utm_nooverride query string
+        $redirect_url = add_query_arg(array(
+            'utm_nooverride' => 1,
+        ), $redirect_url);
+
+        self::debug(__METHOD__ . ": Redirect url on return order " . $gateway->id . ", order $order_id: $redirect_url");
 
         wp_redirect($redirect_url);
     }

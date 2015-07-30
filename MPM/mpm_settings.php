@@ -333,70 +333,8 @@ class MPM_Settings extends WC_Settings_API
 		$head = array_slice($gateways, 0, $pos);
 		$tail = array_slice($gateways, $pos);
 		$gateways = array_merge($head, $mollie_gateways, $tail);
-		return $this->reorderGateways($gateways);
-	}
-
-	/**
-	 * Reorders the method listing on the front-end.
-	 * For special countries, such as Belgium should order MisterCash as first method
-	 * @param array $gateways
-	 * @return array $gateways
-	 */
-	public function reorderGateways($gateways)
-	{
-		$ordering = array(
-			Mollie_API_Object_Method::MISTERCASH => 0,
-			Mollie_API_Object_Method::CREDITCARD => 1,
-			Mollie_API_Object_Method::PAYPAL => 2,
-			Mollie_API_Object_Method::IDEAL => 3,
-			Mollie_API_Object_Method::BANKTRANSFER => 4
-		);
-
-		$sortedGateways = array();
-		$r = 0;
-		foreach($gateways as $method => $class)
-		{
-			if (array_key_exists($method, $ordering))
-			{
-				$sortedGateways[$ordering[$method]] = array($method => $class);
-			}			
-			else
-			{
-				$sortedGateways[count($ordering)+$r] = array($method => $class);
-				$r++;
-			}
-		}
-		ksort($sortedGateways);
-
-		$Ngateways = array();
-
-		foreach($sortedGateways as $key => $array)
-		{
-			$Ngateways[key($array)] = $array[key($array)];
-		}
-
-		$new_gateway_list = array();
-		$other_gateways = array();
-		// reorder
-		foreach($Ngateways as $method => $class)
-		{
-			if (array_key_exists($method, $ordering))
-			{
-				$class->method_index = $ordering[$method];
-				$new_gateway_list[$method] = $class;
-			}
-			else
-			{
-				$class->method_index = count($new_gateway_list) + count($other_gateways);
-				$other_gateways[$method] = $class;
-			}
-		}
-
-		$gateways = array_merge($new_gateway_list,$other_gateways);
-
 		return $gateways;
 	}
-
 
 	/**
 	 * Retrieves and returns an order by id or false if its key is valid

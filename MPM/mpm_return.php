@@ -9,25 +9,29 @@ class MPM_return extends MPM_Settings
 
 	public function __construct()
 	{
-		$this->return_page = $this->get_return_page();
-
-		// Create return page if not exists
-		if ($this->return_page === null)
+		$woo_version = get_option('woocommerce_version', 'Unknown');
+		if (version_compare($woo_version, '2.2.0', '<'))
 		{
-			$page_data = array(
-				'post_status' 		=> 'publish',
-				'post_type' 		=> 'page',
-				'post_author' 		=> 1,
-				'post_name' 		=> 'welcome_back',
-				'post_title' 		=> __('Welcome Back', 'MPM'),
-				'post_content' 		=> '[mollie_return_page]',
-				'post_parent' 		=> 0,
-				'comment_status' 	=> 'closed'
-			);
-			if (!$this->is_return_page_2_1(wp_insert_post($page_data)))
+			$this->return_page = $this->get_return_page();
+
+			// Create return page if not exists
+			if ($this->return_page === null)
 			{
-				$this->errors[] = __('Error: Could not find nor generate return page!', 'MPM');
-				$this->display_errors();
+				$page_data = array(
+					'post_status' 		=> 'publish',
+					'post_type' 		=> 'page',
+					'post_author' 		=> 1,
+					'post_name' 		=> 'welcome_back',
+					'post_title' 		=> __('Welcome Back', 'MPM'),
+					'post_content' 		=> '[mollie_return_page]',
+					'post_parent' 		=> 0,
+					'comment_status' 	=> 'closed'
+				);
+				if (!$this->is_return_page_2_1(wp_insert_post($page_data)))
+				{
+					$this->errors[] = __('Error: Could not find nor generate return page!', 'MPM');
+					$this->display_errors();
+				}
 			}
 		}
 
@@ -222,25 +226,30 @@ class MPM_return extends MPM_Settings
 
 		// When on the mollie return page .. and order == pending && cancelled.. 
 		// redirect here because headers are allready sent on shortcode.
-		if (is_page($this->return_page))
+		// Only when woo version is lower than 2.2
+		$woo_version = get_option('woocommerce_version', 'Unknown');
+		if (version_compare($woo_version, '2.2.0', '<'))
 		{
-			$order_id = (int) $_GET['order'];
-			$key = $_GET['key'];
-			if (!$order_id || !$order = $this->order_get($order_id, $key))
+			if (is_page($this->return_page))
 			{
-				wp_redirect(get_permalink(woocommerce_get_page_id('checkout')));
-				exit;
-			}
-
-			if ($order->status == 'pending')
-			{
-				// check if cancelled..
-				$isCancelled = get_post_meta($order->id, '_is_mollie_cancelled');
-				if ($isCancelled)
+				$order_id = (int) $_GET['order'];
+				$key = $_GET['key'];
+				if (!$order_id || !$order = $this->order_get($order_id, $key))
 				{
-					// on mollie return page, has order, order is pending, and meta cancelled is true.
-					wp_redirect($order->get_checkout_payment_url());
+					wp_redirect(get_permalink(woocommerce_get_page_id('checkout')));
 					exit;
+				}
+
+				if ($order->status == 'pending')
+				{
+					// check if cancelled..
+					$isCancelled = get_post_meta($order->id, '_is_mollie_cancelled');
+					if ($isCancelled)
+					{
+						// on mollie return page, has order, order is pending, and meta cancelled is true.
+						wp_redirect($order->get_checkout_payment_url());
+						exit;
+					}
 				}
 			}
 		}

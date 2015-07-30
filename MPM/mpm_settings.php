@@ -336,7 +336,6 @@ class MPM_Settings extends WC_Settings_API
 		return $gateways;
 	}
 
-
 	/**
 	 * Retrieves and returns an order by id or false if its key is valid
 	 * @param $id

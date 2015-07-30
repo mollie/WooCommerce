@@ -2,6 +2,9 @@
 
 # Changelog #
 
+## Changes in release 1.4.3 ##
++ Fix compatibility with WooCommerce 2.1 Mollie return page
+
 ## Changes in release 1.4.2 ##
 + Update submodule mollie/mollie-api-php to version 1.2.5. Fixes some issues with PHP 5.3 and mbstring extension
 

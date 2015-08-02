@@ -51,7 +51,7 @@ class Mollie_WC_Autoload
 
         if (stripos($class_name, "Mollie_WC_") === 0)
         {
-            $class_path = $base_path . '/' . str_replace('_', '/', $class_name) . '.php';
+            $class_path = $base_path . '/' . str_replace('_', '/', strtolower($class_name)) . '.php';
 
             if (file_exists($class_path))
             {

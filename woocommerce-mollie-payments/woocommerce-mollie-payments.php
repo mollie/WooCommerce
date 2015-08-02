@@ -12,7 +12,7 @@
  * Domain Path: /i18n/languages/
  * License: http://www.opensource.org/licenses/bsd-license.php  Berkeley Software Distribution License (BSD-License 2)
  */
-require_once 'includes/Mollie/WC/Autoload.php';
+require_once 'includes/mollie/wc/autoload.php';
 
 load_plugin_textdomain('woocommerce-mollie-payments', false, 'woocommerce-mollie-payments/i18n/languages');
 

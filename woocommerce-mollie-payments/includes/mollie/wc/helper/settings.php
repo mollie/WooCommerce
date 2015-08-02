@@ -282,6 +282,20 @@ class Mollie_WC_Helper_Settings
         $default_payment_description = __('Order {order_number}', 'woocommerce-mollie-payments');
         $payment_description_tags    = '<code>{order_number}</code>, <code>{order_date}</code>';
 
+        /* translators: Placeholder 1: A link to the debug logs */
+        $debug_desc = __('Log plugin events.', 'woocommerce-mollie-payments');
+
+        // For WooCommerce 2.2.0+ display view logs link
+        if (version_compare(Mollie_WC_Plugin::getStatusHelper()->getWooCommerceVersion(), '2.2.0', ">="))
+        {
+            $debug_desc .= ' <a href="' . $this->getLogsUrl() . '">' . __('View logs', 'woocommerce-mollie-payments') . '</a>';
+        }
+        // Display location of log files
+        else
+        {
+            $debug_desc .= ' ' . sprintf(__('Logs files are saved to <code>%s</code>', 'woocommerce-mollie-payments'), defined('WC_LOG_DIR') ? WC_LOG_DIR : '');
+        }
+
         // Global Mollie settings
         $mollie_settings = array(
             array(
@@ -363,8 +377,7 @@ class Mollie_WC_Helper_Settings
                 'id'      => $this->getSettingId('debug'),
                 'title'   => __('Debug Log', 'woocommerce-mollie-payments'),
                 'type'    => 'checkbox',
-                /* translators: Placeholder 1: A link to the debug logs */
-                'desc'    => sprintf(__('Log plugin events. <a href="%s">View logs</a>', 'woocommerce-mollie-payments'), $this->getLogsUrl()),
+                'desc'    => $debug_desc,
                 'default' => 'yes',
             ),
             array(

@@ -57,8 +57,8 @@ Het is niet nodig een redirect URL of webhook in te stellen. Dat doet de module 
 Neemt u alstublieft contact op met info@mollie.com voor ondersteuning.
 
 # Licentie
-[BSD (Berkeley Software Distribution) License](http://www.opensource.org/licenses/bsd-license.php).
-Copyright (c) 2013, Mollie B.V.
+[GPLv2 (GNU General Public License, version 2) License](http://www.gnu.org/licenses/gpl-2.0.html).
+Copyright (c) 2015, Mollie B.V.
 
 # Benodigdheden
 De module draait op WooCommerce versie 2.1.0 en nieuwer, bij voorkeur de meest recente stabiele versie.

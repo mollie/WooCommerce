@@ -4,8 +4,8 @@ Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, betalingen, ideal
 Requires at least: 3.8
 Tested up to: 4.2.2
 Stable tag: 2.0
-License: BSD
-License URI: http://www.opensource.org/licenses/bsd-license.php
+License: GPLv2
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Mollie payment methods for WooCommerce 2.1+
 

@@ -278,11 +278,10 @@ class Mollie_WC_Helper_Settings
             . $this->getPluginStatus()
             . $this->getMollieMethods();
 
-        /* translators: Default payment description. '%' is a placeholder the user can use and will be replaced by the order number */
+        /* translators: Default payment description. {order_number} and {order_date} are available tags. */
         $default_payment_description = __('Order {order_number}', 'woocommerce-mollie-payments');
         $payment_description_tags    = '<code>{order_number}</code>, <code>{order_date}</code>';
 
-        /* translators: Placeholder 1: A link to the debug logs */
         $debug_desc = __('Log plugin events.', 'woocommerce-mollie-payments');
 
         // For WooCommerce 2.2.0+ display view logs link
@@ -293,7 +292,10 @@ class Mollie_WC_Helper_Settings
         // Display location of log files
         else
         {
-            $debug_desc .= ' ' . sprintf(__('Logs files are saved to <code>%s</code>', 'woocommerce-mollie-payments'), defined('WC_LOG_DIR') ? WC_LOG_DIR : '');
+            $upload_dir = wp_upload_dir();
+
+            /* translators: Placeholder 1: Location of the log files */
+            $debug_desc .= ' ' . sprintf(__('Log files are saved to <code>%s</code>', 'woocommerce-mollie-payments'), defined('WC_LOG_DIR') ? WC_LOG_DIR : $upload_dir['basedir'] . '/wc-logs/');
         }
 
         // Global Mollie settings
@@ -351,6 +353,7 @@ class Mollie_WC_Helper_Settings
                 'id'      => $this->getSettingId('payment_description'),
                 'title'   => __('Description', 'woocommerce-mollie-payments'),
                 'type'    => 'text',
+                /* translators: Placeholder 1: Default payment description, placeholder 2: list of available tags */
                 'desc'    => sprintf(__('Payment description send to Mollie. Default <code>%s</code><br/>You can use the following tags: %s', 'woocommerce-mollie-payments'), $default_payment_description, $payment_description_tags),
                 'default' => $default_payment_description,
                 'css'     => 'width: 350px',

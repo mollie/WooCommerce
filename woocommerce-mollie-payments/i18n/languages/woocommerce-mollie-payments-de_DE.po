@@ -3,49 +3,49 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WooCommerce Mollie Payments 2.0\n"
-"Report-Msgid-Bugs-To: http://wordpress.org/support/plugin/woocommerce-mollie-payments\n"
-"POT-Creation-Date: 2015-07-14 13:39+0200\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/woocommerce-mollie-payments\n"
+"POT-Creation-Date: 2015-08-10 13:39+0200\n"
+"PO-Revision-Date: 2015-08-10 13:41+0200\n"
+"Last-Translator: Lennard van Gunst <lennard@mollie.com>\n"
+"Language-Team: Mollie <info@mollie.com>\n"
+"Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2015-07-15 16:16+0200\n"
-"Language-Team: Mollie <info@mollie.com>\n"
-"X-Generator: Poedit 1.8.2\n"
+"X-Generator: Poedit 1.8.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"Language: de\n"
-"Last-Translator: Lennard van Gunst <lennard@mollie.nl>\n"
 
-#: includes/Wc/Mollie/Gateway/Abstract.php:49
+#: includes/mollie/wc/gateway/abstract.php:54
 msgid "Enable/Disable"
 msgstr "Einschalten/Ausschalten"
 
-#: includes/Wc/Mollie/Gateway/Abstract.php:51
+#: includes/mollie/wc/gateway/abstract.php:56
 msgid "Enable %s"
 msgstr "Einschalten %s"
 
-#: includes/Wc/Mollie/Gateway/Abstract.php:55
+#: includes/mollie/wc/gateway/abstract.php:60
 msgid "Title"
 msgstr "Titel"
 
-#: includes/Wc/Mollie/Gateway/Abstract.php:57
+#: includes/mollie/wc/gateway/abstract.php:62
 msgid "This controls the title which the user sees during checkout. Default <code>%s</code>"
 msgstr ""
 "Hiermit zeigen Sie den Titel an die Ihre Kunde sehen während der checkout. Standard <code>"
 "%s</code>"
 
-#: includes/Wc/Mollie/Gateway/Abstract.php:62
+#: includes/mollie/wc/gateway/abstract.php:67
 msgid "Display logo"
 msgstr "Logo anzeigen"
 
-#: includes/Wc/Mollie/Gateway/Abstract.php:64
+#: includes/mollie/wc/gateway/abstract.php:69
 msgid "Display logo on checkout page. Default <code>enabled</code>"
 msgstr "Logo anzeigen auf checkout Seite. Standard <code>aktiviert</code>"
 
-#: includes/Wc/Mollie/Gateway/Abstract.php:68 includes/Wc/Mollie/Helper/Settings.php:321
+#: includes/mollie/wc/gateway/abstract.php:73 includes/mollie/wc/helper/settings.php:352
 msgid "Description"
 msgstr "Umschreibung"
 
-#: includes/Wc/Mollie/Gateway/Abstract.php:70
+#: includes/mollie/wc/gateway/abstract.php:75
 msgid ""
 "Payment method description that the customer will see on your checkout. Default <code>%s</"
 "code>"
@@ -53,24 +53,24 @@ msgstr ""
 "Umschreibung Zahlungsmethode die Ihre Kunde sehen in Ihren checkout. Standard <code>%s</"
 "code>"
 
-#: includes/Wc/Mollie/Gateway/Abstract.php:96 includes/Wc/Mollie/Gateway/Abstract.php:150
-#: includes/Wc/Mollie/Helper/Settings.php:191
+#: includes/mollie/wc/gateway/abstract.php:99 includes/mollie/wc/gateway/abstract.php:153
+#: includes/mollie/wc/helper/settings.php:200
 msgid "Test mode enabled."
 msgstr "Test Modus eingeschaltet"
 
-#: includes/Wc/Mollie/Gateway/Abstract.php:108
+#: includes/mollie/wc/gateway/abstract.php:111
 msgid "Gateway Disabled"
 msgstr "Eingangstor ausgeschaltet"
 
 #. translators: The surrounding %s's Will be replaced by a link to the global
 #. setting page
-#: includes/Wc/Mollie/Gateway/Abstract.php:152
+#: includes/mollie/wc/gateway/abstract.php:155
 msgid "No API key provided. Please %sset you Mollie API key%s first."
 msgstr "Kein API key eingetragen. Bitte %sfüllen Sie erst der Mollie API key%s aus."
 
 #. translators: Placeholder 1: payment method title. The surrounding %s's Will
 #. be replaced by a link to the Mollie profile
-#: includes/Wc/Mollie/Gateway/Abstract.php:164
+#: includes/mollie/wc/gateway/abstract.php:167
 msgid ""
 "%s not enabled in your Mollie profile. You can enabled it by editing your %sMollie profile"
 "%s."
@@ -80,56 +80,56 @@ msgstr ""
 
 #. translators: Placeholder 1: WooCommerce currency, placeholder 2: Supported
 #. Mollie currencies
-#: includes/Wc/Mollie/Gateway/Abstract.php:177
+#: includes/mollie/wc/gateway/abstract.php:180
 msgid "Shop currency %s not supported by Mollie. Mollie only supports: %s."
 msgstr "Geschäft Valuta %s nicht unterstützt durch Mollie. Mollie understützt nur: %s."
 
-#: includes/Wc/Mollie/Gateway/Abstract.php:200
+#: includes/mollie/wc/gateway/abstract.php:203
 msgid "Could not load order %s"
 msgstr "Kann Bestellung nicht einladen %s"
 
-#: includes/Wc/Mollie/Gateway/Abstract.php:217
+#: includes/mollie/wc/gateway/abstract.php:220
 msgid "Awaiting payment confirmation."
 msgstr "Warten auf Zahlungsbestätigung"
 
 #. translators: Placeholder 1: Payment method title, placeholder 2: payment ID
-#: includes/Wc/Mollie/Gateway/Abstract.php:275
+#: includes/mollie/wc/gateway/abstract.php:283
 msgid "%s payment started (%s)."
 msgstr "%s anfang Zahlung (%s)."
 
-#: includes/Wc/Mollie/Gateway/Abstract.php:277 includes/Wc/Mollie/Gateway/Abstract.php:401
-#: includes/Wc/Mollie/Gateway/Abstract.php:432 includes/Wc/Mollie/Gateway/Abstract.php:457
-#: includes/Wc/Mollie/Gateway/Abstract.php:476
+#: includes/mollie/wc/gateway/abstract.php:285 includes/mollie/wc/gateway/abstract.php:408
+#: includes/mollie/wc/gateway/abstract.php:439 includes/mollie/wc/gateway/abstract.php:464
+#: includes/mollie/wc/gateway/abstract.php:483
 msgid "test mode"
 msgstr "test Modus"
 
 #. translators: Placeholder 1: Payment method title
-#: includes/Wc/Mollie/Gateway/Abstract.php:290
+#: includes/mollie/wc/gateway/abstract.php:298
 msgid "Could not create %s payment."
 msgstr "Kann Zahlung %s nicht anmachen."
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment
 #. status, placeholder 3: payment ID
-#: includes/Wc/Mollie/Gateway/Abstract.php:398
+#: includes/mollie/wc/gateway/abstract.php:405
 msgid "%s payment %s (%s)."
 msgstr "%s Zahlung %s (%s)."
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: includes/Wc/Mollie/Gateway/Abstract.php:430
+#: includes/mollie/wc/gateway/abstract.php:437
 msgid "Order completed using %s payment (%s)."
 msgstr "Bestellung abgerundet mit %s Zahlung (%s)."
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: includes/Wc/Mollie/Gateway/Abstract.php:455
+#: includes/mollie/wc/gateway/abstract.php:462
 msgid "%s payment cancelled (%s)."
 msgstr "%s Zahlung annulliert (%s)."
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: includes/Wc/Mollie/Gateway/Abstract.php:474
+#: includes/mollie/wc/gateway/abstract.php:481
 msgid "%s payment expired (%s)."
 msgstr "%s Zahlung verstrichen (%s)."
 
-#: includes/Wc/Mollie/Gateway/Abstract.php:493
+#: includes/mollie/wc/gateway/abstract.php:497
 msgid ""
 "You have cancelled your payment. Please complete your order with a different payment "
 "method."
@@ -140,19 +140,19 @@ msgstr ""
 #. translators: Placeholder 1: currency, placeholder 2: refunded amount,
 #. placeholder 3: optional refund reason, placeholder 4: payment ID,
 #. placeholder 5: refund ID
-#: includes/Wc/Mollie/Gateway/Abstract.php:553
+#: includes/mollie/wc/gateway/abstract.php:557
 msgid "Refunded %s%s (reason: %s) - Payment ID: %s, Refund: %s"
 msgstr "Rückgezahlt %s%s (Grund: %s) - Zahlung ID: %s, Rückzahlung: %s"
 
-#: includes/Wc/Mollie/Gateway/Abstract.php:622
+#: includes/mollie/wc/gateway/abstract.php:626
 msgid "Payment"
 msgstr "Zahlung"
 
-#: includes/Wc/Mollie/Gateway/Abstract.php:643
+#: includes/mollie/wc/gateway/abstract.php:647
 msgid "We have not received a definite payment status."
 msgstr "Wir haben nicht einen definitiven Zahlungsstatus empfangen."
 
-#: includes/Wc/Mollie/Gateway/Abstract.php:648
+#: includes/mollie/wc/gateway/abstract.php:652
 msgid ""
 "We have not received a definite payment status. You will receive an email as soon as we "
 "receive a confirmation of the bank/merchant."
@@ -160,19 +160,19 @@ msgstr ""
 "Wir haben nicht einen definitiven Zahlungsstatus empfangen. Sie empfangen eine E-mail wenn "
 "wir die Bestätigung der Bank/des Vertreter empfangen haben."
 
-#: includes/Wc/Mollie/Gateway/BankTransfer.php:33
+#: includes/mollie/wc/gateway/banktransfer.php:32
 msgid "Expiry date"
 msgstr "Ablaufdatum"
 
-#: includes/Wc/Mollie/Gateway/BankTransfer.php:35
+#: includes/mollie/wc/gateway/banktransfer.php:34
 msgid "Number of days after the payment will expire. Default <code>%d</code> days"
 msgstr "Anzahl Tage wann die Zahlung verstreiche. Standard <code>%d</code> Tage"
 
-#: includes/Wc/Mollie/Gateway/BankTransfer.php:44
+#: includes/mollie/wc/gateway/banktransfer.php:43
 msgid "Mail payment instructions"
 msgstr "E-mail Zahlung Gebrauchsanleitung"
 
-#: includes/Wc/Mollie/Gateway/BankTransfer.php:45
+#: includes/mollie/wc/gateway/banktransfer.php:44
 msgid ""
 "Should Mollie automatically mail the payment instructions to the customer? Default "
 "<code>enabled</code>"
@@ -180,7 +180,7 @@ msgstr ""
 "Sollte Mollie automatisch eine E-mail schicken mit einer Zahlung Gebrauchsanleitung an "
 "Ihren Kunde? Standard <code>aktiviert</code>"
 
-#: includes/Wc/Mollie/Gateway/BankTransfer.php:48
+#: includes/mollie/wc/gateway/banktransfer.php:47
 msgid ""
 "If you disable this option the customer still has an option to send the payment "
 "instructions to an email address on the Mollie payment screen."
@@ -188,18 +188,18 @@ msgstr ""
 "Wenn Sie diese Alternative ausschaltet ist es noch möglich vor Ihrem Kunde um die Zahlung "
 "Gebrauchsanleitung zu schicken per E-mail in den Mollie Zahlungsschirm."
 
-#: includes/Wc/Mollie/Gateway/BankTransfer.php:93
+#: includes/mollie/wc/gateway/banktransfer.php:92
 msgid "Bank Transfer"
 msgstr "Banküberweisung"
 
 #. translators: Placeholder 1: consumer name, placeholder 2: consumer IBAN,
 #. placeholder 3: consumer BIC
-#: includes/Wc/Mollie/Gateway/BankTransfer.php:144 includes/Wc/Mollie/Gateway/Ideal.php:87
-#: includes/Wc/Mollie/Gateway/Sofort.php:57
+#: includes/mollie/wc/gateway/banktransfer.php:143 includes/mollie/wc/gateway/ideal.php:86
+#: includes/mollie/wc/gateway/sofort.php:56
 msgid "Payment completed by <strong>%s</strong> (IBAN: %s, BIC: %s)"
 msgstr "Zahlung abgerundet durch <strong>%s</strong> (IBAN: %s, BIC: %s)"
 
-#: includes/Wc/Mollie/Gateway/BankTransfer.php:154
+#: includes/mollie/wc/gateway/banktransfer.php:153
 msgid ""
 "Please complete your payment by transferring the total amount to the following bank "
 "account:"
@@ -207,35 +207,35 @@ msgstr ""
 "Bitte runden Sie die Zahlung ab um das ganze Betrag zu überweisen zu dem folgenden Konto:"
 
 #. translators: Placeholder 1: 'Stichting Mollie Payments'
-#: includes/Wc/Mollie/Gateway/BankTransfer.php:158
+#: includes/mollie/wc/gateway/banktransfer.php:157
 msgid "Beneficiary: %s"
 msgstr "Bevorzugte: %s"
 
-#: includes/Wc/Mollie/Gateway/BankTransfer.php:159
+#: includes/mollie/wc/gateway/banktransfer.php:158
 msgid "IBAN: <strong>%s</strong>"
 msgstr "IBAN: <strong>%s</strong>"
 
-#: includes/Wc/Mollie/Gateway/BankTransfer.php:160
+#: includes/mollie/wc/gateway/banktransfer.php:159
 msgid "BIC: %s"
 msgstr "BIC: %s"
 
 #. translators: Placeholder 1: Payment reference e.g. RF49-0000-4716-6216
 #. (SEPA) or +++513/7587/59959+++ (Belgium)
-#: includes/Wc/Mollie/Gateway/BankTransfer.php:165
+#: includes/mollie/wc/gateway/banktransfer.php:164
 msgid "Payment reference: %s"
 msgstr "Zahlungs Referenznummer: %s"
 
 #. translators: Placeholder 1: Payment reference e.g. RF49-0000-4716-6216
 #. (SEPA) or +++513/7587/59959+++ (Belgium)
-#: includes/Wc/Mollie/Gateway/BankTransfer.php:170
+#: includes/mollie/wc/gateway/banktransfer.php:169
 msgid "Please provide the payment reference <strong>%s</strong>"
 msgstr "Bitte benutzen Sie die Zahlungs Refenznummer <strong>%s</strong>"
 
-#: includes/Wc/Mollie/Gateway/BankTransfer.php:183
+#: includes/mollie/wc/gateway/banktransfer.php:182
 msgid "The payment will expire on <strong>%s</strong>."
 msgstr "Die Zahlung verstreiche am <strong>%s</strong>."
 
-#: includes/Wc/Mollie/Gateway/BankTransfer.php:190
+#: includes/mollie/wc/gateway/banktransfer.php:189
 msgid ""
 "The payment will expire on <strong>%s</strong>. Please make sure you transfer the total "
 "amount before this date."
@@ -243,59 +243,59 @@ msgstr ""
 "Die Zahlung verstreiche am <strong>%s</strong>. Bitte überweisen Sie den ganzen Betrag vor "
 "diesem Datum."
 
-#: includes/Wc/Mollie/Gateway/Belfius.php:31
+#: includes/mollie/wc/gateway/belfius.php:30
 msgid "Belfius Direct Net"
 msgstr "Belfius Direct Net"
 
-#: includes/Wc/Mollie/Gateway/Bitcoin.php:27
+#: includes/mollie/wc/gateway/bitcoin.php:17
 msgid "Bitcoin"
 msgstr "Bitcoin"
 
-#: includes/Wc/Mollie/Gateway/Creditcard.php:31
+#: includes/mollie/wc/gateway/creditcard.php:30
 msgid "Credit card"
 msgstr "Credit card"
 
 #. translators: Placeholder 1: card holder
-#: includes/Wc/Mollie/Gateway/Creditcard.php:57
+#: includes/mollie/wc/gateway/creditcard.php:56
 msgid "Payment completed by <strong>%s</strong>"
 msgstr "Zahlung abgerundet durch <strong>%s</strong>"
 
-#: includes/Wc/Mollie/Gateway/Ideal.php:34
+#: includes/mollie/wc/gateway/ideal.php:33
 msgid "iDEAL"
 msgstr "iDEAL"
 
 #. translators: Default iDEAL description, displayed above issuer drop down
-#: includes/Wc/Mollie/Gateway/Ideal.php:43
+#: includes/mollie/wc/gateway/ideal.php:42
 msgid "Select your bank"
 msgstr "Wähl Ihre Bank"
 
-#: includes/Wc/Mollie/Gateway/MisterCash.php:31
+#: includes/mollie/wc/gateway/mistercash.php:30
 msgid "Bancontact / Mister Cash"
 msgstr "Bancontact / Mister Cash"
 
-#: includes/Wc/Mollie/Gateway/Paypal.php:31
+#: includes/mollie/wc/gateway/paypal.php:30
 msgid "PayPal"
 msgstr "PayPal"
 
 #. translators: Placeholder 1: PayPal consumer name, placeholder 2: PayPal
 #. email, placeholder 3: PayPal transaction ID
-#: includes/Wc/Mollie/Gateway/Paypal.php:57
+#: includes/mollie/wc/gateway/paypal.php:56
 msgid "Payment completed by <strong>%s</strong> - %s (PayPal transaction ID: %s)"
 msgstr "Zahlung abgerundet durch <strong>%s</strong> - %s (PayPal transaktion ID: %s)"
 
-#: includes/Wc/Mollie/Gateway/Paysafecard.php:27
+#: includes/mollie/wc/gateway/paysafecard.php:17
 msgid "paysafecard"
 msgstr "paysafecard"
 
-#: includes/Wc/Mollie/Gateway/Sofort.php:31
+#: includes/mollie/wc/gateway/sofort.php:30
 msgid "SOFORT Banking"
 msgstr "SOFORT Banking"
 
-#: includes/Wc/Mollie/Helper/Api.php:35
+#: includes/mollie/wc/helper/api.php:35
 msgid "No API key provided."
 msgstr "Kein API key eingegeben."
 
-#: includes/Wc/Mollie/Helper/Api.php:39
+#: includes/mollie/wc/helper/api.php:39
 msgid ""
 "Invalid API key. The API key must start with 'live_' or 'test_' and can't further contain "
 "any special characters."
@@ -303,35 +303,35 @@ msgstr ""
 "API key ist ungültig. Der API key muss anfangen mit ‘live_’ oder ‘test_’ und kann nicht "
 "anderes speziales Zeichen enthalten."
 
-#: includes/Wc/Mollie/Helper/Settings.php:104
+#: includes/mollie/wc/helper/settings.php:104
 msgid "Error"
 msgstr "Fehler"
 
-#: includes/Wc/Mollie/Helper/Settings.php:114
+#: includes/mollie/wc/helper/settings.php:114
 msgid "Mollie status:"
 msgstr "Mollie Status:"
 
-#: includes/Wc/Mollie/Helper/Settings.php:115
+#: includes/mollie/wc/helper/settings.php:115
 msgid "Connected"
 msgstr "Angeheftet"
 
-#: includes/Wc/Mollie/Helper/Settings.php:183
+#: includes/mollie/wc/helper/settings.php:192
 msgid "Gateway enabled"
 msgstr "Eingangstor eingeschaltet"
 
-#: includes/Wc/Mollie/Helper/Settings.php:183
+#: includes/mollie/wc/helper/settings.php:192
 msgid "Enabled"
 msgstr "Eingeschaltet"
 
-#: includes/Wc/Mollie/Helper/Settings.php:184
+#: includes/mollie/wc/helper/settings.php:193
 msgid "Gateway disabled"
 msgstr "Eingangstor ausgeschaltet"
 
-#: includes/Wc/Mollie/Helper/Settings.php:184
+#: includes/mollie/wc/helper/settings.php:193
 msgid "Disabled"
 msgstr "Ausgeschaltet"
 
-#: includes/Wc/Mollie/Helper/Settings.php:185
+#: includes/mollie/wc/helper/settings.php:194
 msgid ""
 "This payment method is not supported by this plugin. Please check if there is an update "
 "available."
@@ -339,21 +339,25 @@ msgstr ""
 "Diese Zahlungsmethode wird nicht unterstützt durch diese Plug-in. Bitte kontrolliere Sie "
 "ob eine Auffüllung verfügbar ist."
 
-#: includes/Wc/Mollie/Helper/Settings.php:185
+#: includes/mollie/wc/helper/settings.php:194
 msgid "Not supported"
 msgstr "Nicht unterstützt"
 
 #. translators: The surrounding %s's Will be replaced by a link to the Mollie
 #. profile
-#: includes/Wc/Mollie/Helper/Settings.php:196
+#: includes/mollie/wc/helper/settings.php:205
 msgid "The following payment methods are activated in your %sMollie profile%s:"
 msgstr "Folgende Zahlungsmethode sind aktiviert in Ihres %sMollie Profil%s:"
 
-#: includes/Wc/Mollie/Helper/Settings.php:225
+#: includes/mollie/wc/helper/settings.php:215
+msgid "Refresh"
+msgstr "Erfrischen"
+
+#: includes/mollie/wc/helper/settings.php:241
 msgid "Edit"
 msgstr "Anpassen"
 
-#: includes/Wc/Mollie/Helper/Settings.php:240
+#: includes/mollie/wc/helper/settings.php:256
 msgid ""
 "No active Mollie payment methods found. Please check your Mollie profile which payment "
 "methods are activated."
@@ -361,121 +365,131 @@ msgstr ""
 "Keine aktiven Mollie Zahlungsmethode gefunden. Bitte kontrolliere Sie Ihres Mollie Profil "
 "welche Zahlungsmethode aktiviert sind."
 
-#. translators: Default payment description. '%' is a placeholder the user can
-#. use and will be replaced by the order number
-#: includes/Wc/Mollie/Helper/Settings.php:266
-msgid "Order %"
-msgstr "Bestellung %"
+#. translators: Default payment description. {order_number} and {order_date}
+#. are available tags.
+#: includes/mollie/wc/helper/settings.php:282
+msgid "Order {order_number}"
+msgstr "Bestellung {order_number}"
 
-#: includes/Wc/Mollie/Helper/Settings.php:272 includes/Wc/Mollie.php:247
+#: includes/mollie/wc/helper/settings.php:285
+msgid "Log plugin events."
+msgstr "Wiedergeben der Fehler in den Plug-in."
+
+#: includes/mollie/wc/helper/settings.php:290
+msgid "View logs"
+msgstr "Sehen Logbuch"
+
+#. translators: Placeholder 1: Location of the log files
+#: includes/mollie/wc/helper/settings.php:296
+msgid "Log files are saved to <code>%s</code>"
+msgstr "Protokolldateien werden gespeichert zu <code>%s</code>"
+
+#: includes/mollie/wc/helper/settings.php:303 includes/mollie/wc/plugin.php:256
 msgid "Mollie settings"
 msgstr "Mollie Einstellungen"
 
-#: includes/Wc/Mollie/Helper/Settings.php:275
+#: includes/mollie/wc/helper/settings.php:306
 msgid ""
-"The following options are required to use the Mollie payments and are used by all Mollie "
-"payment methods"
+"The following options are required to use the plugin and are used by all Mollie payment "
+"methods"
 msgstr ""
 "Folgende Alternative sind verpflichtet um Mollie Payments zu verwenden und werden "
 "verwendet durch alle Mollie Zahlungsmethode"
 
-#: includes/Wc/Mollie/Helper/Settings.php:279
+#: includes/mollie/wc/helper/settings.php:310
 msgid "Live API key"
 msgstr "Live API key"
 
 #. translators: Placeholder 1: API key mode (live or test). The surrounding
 #. %s's Will be replaced by a link to the Mollie profile
-#: includes/Wc/Mollie/Helper/Settings.php:283 includes/Wc/Mollie/Helper/Settings.php:310
+#: includes/mollie/wc/helper/settings.php:314 includes/mollie/wc/helper/settings.php:341
 msgid ""
 "The API key is used to connect to Mollie. You can find your <strong>%s</strong> API key in "
 "your %sMollie profile%s"
 msgstr "Der API key wird benutzt um "
 
-#: includes/Wc/Mollie/Helper/Settings.php:288
+#: includes/mollie/wc/helper/settings.php:319
 msgid "Live API key should start with live_"
 msgstr "Live API key muss anfangen mit live_"
 
-#: includes/Wc/Mollie/Helper/Settings.php:296
+#: includes/mollie/wc/helper/settings.php:327
 msgid "Enable test mode"
 msgstr "test Modus einschalten"
 
-#: includes/Wc/Mollie/Helper/Settings.php:299
+#: includes/mollie/wc/helper/settings.php:330
 msgid "Enable test mode if you want to test the plugin without using real payments."
 msgstr "Schalten test Modus ein wenn Sie testen möchten ohne wirkliche Zahlungen"
 
-#: includes/Wc/Mollie/Helper/Settings.php:303
+#: includes/mollie/wc/helper/settings.php:334
 msgid "Test API key"
 msgstr "Test API key"
 
-#: includes/Wc/Mollie/Helper/Settings.php:304
+#: includes/mollie/wc/helper/settings.php:335
 msgid "Test API key should start with test_"
 msgstr "Test API key muss anfangen mit test_"
 
-#: includes/Wc/Mollie/Helper/Settings.php:323
+#. translators: Placeholder 1: Default payment description, placeholder 2: list
+#. of available tags
+#: includes/mollie/wc/helper/settings.php:355
 msgid ""
-"Payment description send to Mollie. <code>%%</code> will be replaced by the order number. "
-"Default <code>%s</code>"
+"Payment description send to Mollie. Default <code>%s</code><br/>You can use the following "
+"tags: %s"
 msgstr ""
-"Zahlungsumschreibung gesendet an Mollie. <code>%%</code> werden ersetzt durch "
-"Bestellungsnummer. Standard <code>%s</code>"
+"Zahlungsumschreibung gesendet an Mollie. Standard <code>%s</code><br/>Sie können die "
+"folgenden Tags verwenden: %s"
 
-#: includes/Wc/Mollie/Helper/Settings.php:329
+#: includes/mollie/wc/helper/settings.php:361
 msgid "Payment screen language"
 msgstr "Zahlungsschirm Sprache"
 
-#: includes/Wc/Mollie/Helper/Settings.php:332
+#: includes/mollie/wc/helper/settings.php:364
 msgid "Detect using browser language"
 msgstr "Benutzte Sprache entdecken des Webbrowsers"
 
-#: includes/Wc/Mollie/Helper/Settings.php:332
+#: includes/mollie/wc/helper/settings.php:364
 msgid "default"
 msgstr "Standard"
 
 #. translators: Placeholder 1: Current WordPress locale
-#: includes/Wc/Mollie/Helper/Settings.php:334
+#: includes/mollie/wc/helper/settings.php:366
 msgid "Send WordPress language (%s)"
 msgstr "Schicke WordPress Sprache (%s)"
 
-#: includes/Wc/Mollie/Helper/Settings.php:335
+#: includes/mollie/wc/helper/settings.php:367
 msgid "Dutch"
 msgstr "Niederländisch"
 
-#: includes/Wc/Mollie/Helper/Settings.php:336
+#: includes/mollie/wc/helper/settings.php:368
 msgid "Flemish (Belgium)"
 msgstr "Flämisch (Belgien)"
 
-#: includes/Wc/Mollie/Helper/Settings.php:337
+#: includes/mollie/wc/helper/settings.php:369
 msgid "English"
 msgstr "Englisch"
 
-#: includes/Wc/Mollie/Helper/Settings.php:338
+#: includes/mollie/wc/helper/settings.php:370
 msgid "German"
 msgstr "Deutsch"
 
-#: includes/Wc/Mollie/Helper/Settings.php:339
+#: includes/mollie/wc/helper/settings.php:371
 msgid "Spanish"
 msgstr "Spanisch"
 
-#: includes/Wc/Mollie/Helper/Settings.php:340
+#: includes/mollie/wc/helper/settings.php:372
 msgid "French"
 msgstr "Französisch"
 
-#: includes/Wc/Mollie/Helper/Settings.php:341
+#: includes/mollie/wc/helper/settings.php:373
 msgid "French (Belgium)"
 msgstr "Französisch (Belgien)"
 
-#: includes/Wc/Mollie/Helper/Settings.php:347
+#: includes/mollie/wc/helper/settings.php:379
 msgid "Debug Log"
 msgstr "Debug Logbuch"
 
-#. translators: Placeholder 1: A link to the debug logs
-#: includes/Wc/Mollie/Helper/Settings.php:350
-msgid "Log plugin events. <a href=\"%s\">View logs</a>"
-msgstr "Wiedergeben der Fehler in den Plug-in. <a href=\"%s\">Sehen Logbuch</a>"
-
 #. translators: Placeholder 1: required WooCommerce version, placeholder 2:
 #. used WooCommerce version
-#: includes/Wc/Mollie/Helper/Status.php:54
+#: includes/mollie/wc/helper/status.php:54
 msgid ""
 "The WooCommerce Mollie Payments plugin requires at least WooCommerce version %s, you are "
 "using version %s. Please update your WooCommerce plugin."
@@ -484,7 +498,7 @@ msgstr ""
 "Version %s nötig, Sie benutzen die Version %s. Sie müssen die letzte Version von "
 "WooCommerce Plug-in herunterladen."
 
-#: includes/Wc/Mollie/Helper/Status.php:64
+#: includes/mollie/wc/helper/status.php:64
 msgid "Mollie API client not installed. Please make sure the plugin is installed correctly."
 msgstr ""
 "Mollie API client ist nicht installiert. Bitte kontrolliere Sie ob der Plug-in gut "
@@ -492,11 +506,11 @@ msgstr ""
 
 #. translators: Placeholder 1: Required PHP version, placeholder 2: current PHP
 #. version
-#: includes/Wc/Mollie/Helper/Status.php:82
+#: includes/mollie/wc/helper/status.php:82
 msgid "The client requires PHP version >= %s, you have %s."
 msgstr "Der Client erfordert PHP Version >= %s, Sie haben %s."
 
-#: includes/Wc/Mollie/Helper/Status.php:89
+#: includes/mollie/wc/helper/status.php:89
 msgid ""
 "The Mollie API client requires the PHP extension JSON to be enabled. Please enable the "
 "'json' extension in your PHP configuration."
@@ -504,7 +518,7 @@ msgstr ""
 "Mollie API client erfordert das die PHP Erweiterung JSON ist eingeschaltet. Bitte schalten "
 "Sie die Erweiterung ’json’ ein in Ihre PHP Konfiguration."
 
-#: includes/Wc/Mollie/Helper/Status.php:93
+#: includes/mollie/wc/helper/status.php:93
 msgid ""
 "The Mollie API client requires the PHP extension cURL to be enabled. Please enable the "
 "'curl' extension in your PHP configuration."
@@ -513,7 +527,7 @@ msgstr ""
 "Sie die Erweiterung ’curl’ ein in Ihre PHP Konfiguration."
 
 #. translators: Placeholder 1: The required cURL function names
-#: includes/Wc/Mollie/Helper/Status.php:99
+#: includes/mollie/wc/helper/status.php:99
 msgid ""
 "The Mollie API client requires the following PHP cURL functions to be available: %s. "
 "Please make sure all of these functions are available."
@@ -521,7 +535,7 @@ msgstr ""
 "Mollie API client erfordert das die folgende PHP cURL Funktionen verfügbar sind: %s. Bitte "
 "kontrolliere ob alle genannte Funktionen verfügbar sind."
 
-#: includes/Wc/Mollie.php:249
+#: includes/mollie/wc/plugin.php:263
 msgid "Logs"
 msgstr "Logbuch"
 
@@ -538,8 +552,8 @@ msgid "WooCommerce Mollie Payments"
 msgstr "WooCommerce Mollie Payments"
 
 #. Plugin URI of the plugin/theme
-msgid "https://www.mollie.com/"
-msgstr "https://www.mollie.com/"
+msgid "https://github.com/mollie/WooCommerce"
+msgstr "https://github.com/mollie/WooCommerce"
 
 #. Description of the plugin/theme
 msgid "Mollie payments for WooCommerce"
@@ -552,3 +566,12 @@ msgstr "Mollie"
 #. Author URI of the plugin/theme
 msgid "https://www.mollie.com"
 msgstr "https://www.mollie.com"
+
+#~ msgid "Order %"
+#~ msgstr "Bestellung %"
+
+#~ msgid "Log plugin events. <a href=\"%s\">View logs</a>"
+#~ msgstr "Wiedergeben der Fehler in den Plug-in. <a href=\"%s\">Sehen Logbuch</a>"
+
+#~ msgid "https://www.mollie.com/"
+#~ msgstr "https://www.mollie.com/"

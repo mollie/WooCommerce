@@ -115,7 +115,7 @@ class Mollie_WC_Plugin
 
         self::debug(__METHOD__ . ": Redirect url on return order " . $gateway->id . ", order $order_id: $redirect_url");
 
-        wp_redirect($redirect_url);
+        wp_safe_redirect($redirect_url);
     }
 
     /**

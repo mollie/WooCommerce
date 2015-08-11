@@ -333,9 +333,9 @@ class Mollie_WC_Helper_Settings
                 'title'   => __('Payment screen language', 'woocommerce-mollie-payments'),
                 'type'    => 'select',
                 'options' => array(
-                    ''          => __('Detect using browser language', 'woocommerce-mollie-payments') . ' (' . __('default', 'woocommerce-mollie-payments') . ')',
+                    ''          => __('Detect using browser language', 'woocommerce-mollie-payments'),
                     /* translators: Placeholder 1: Current WordPress locale */
-                    'wp_locale' => sprintf(__('Send WordPress language (%s)', 'woocommerce-mollie-payments'), get_locale()),
+                    'wp_locale' => sprintf(__('Send WordPress language (%s)', 'woocommerce-mollie-payments'), get_locale()) . ' (' . __('default', 'woocommerce-mollie-payments') . ')',
                     'nl_NL'     => __('Dutch', 'woocommerce-mollie-payments'),
                     'nl_BE'     => __('Flemish (Belgium)', 'woocommerce-mollie-payments'),
                     'en'        => __('English', 'woocommerce-mollie-payments'),
@@ -344,7 +344,7 @@ class Mollie_WC_Helper_Settings
                     'fr_FR'     => __('French', 'woocommerce-mollie-payments'),
                     'fr_BE'     => __('French (Belgium)', 'woocommerce-mollie-payments'),
                 ),
-                'default' => '',
+                'default' => 'wp_locale',
             ),
             array(
                 'id'      => $this->getSettingId('debug'),

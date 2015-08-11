@@ -42,6 +42,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
         add_action('woocommerce_thankyou_' . $this->id, array($this, 'thankyou_page'));
         add_action('woocommerce_email_after_order_table', array($this, 'displayInstructions'), 10, 3);
+
+        if (!$this->isValidForUse())
+        {
+            // Disable gateway if it's not valid for use
+            $this->enabled = false;
+        }
     }
 
     /**
@@ -112,7 +118,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
     public function admin_options ()
     {
-        if (!$this->isValidForUse())
+        if (!$this->enabled && count($this->errors))
         {
             echo '<div class="inline error"><p><strong>' . __('Gateway Disabled', 'woocommerce-mollie-payments') . '</strong>: '
                 . implode('<br/>', $this->errors)
@@ -125,30 +131,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     }
 
     /**
-     * This method will check if this gateway can be used
-     * @return bool
-     */
-    public function is_available()
-    {
-        if (!parent::is_available())
-        {
-            return false;
-        }
-
-        if (!$this->isValidForUse())
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
      * Check if this gateway can be used
      *
      * @return bool
      */
-    public function isValidForUse()
+    protected function isValidForUse()
     {
         $settings = Mollie_WC_Plugin::getSettingsHelper();
 

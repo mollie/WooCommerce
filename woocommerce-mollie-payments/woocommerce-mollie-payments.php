@@ -10,7 +10,7 @@
  * Tested up to: 3.8
  * Text Domain: woocommerce-mollie-payments
  * Domain Path: /i18n/languages/
- * License: http://www.opensource.org/licenses/bsd-license.php  Berkeley Software Distribution License (BSD-License 2)
+ * License: GPLv2 or later
  */
 require_once 'includes/mollie/wc/autoload.php';
 

@@ -2,9 +2,9 @@
 Contributors: l.vangunst
 Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, betalingen, ideal, sofort, creditcard, visa, mastercard, mistercash, bitcoin, paysafecard, banktransfer, overboeking
 Requires at least: 3.8
-Tested up to: 4.2.2
+Tested up to: 4.2.4
 Stable tag: 2.0
-License: GPLv2
+License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Mollie payment methods for WooCommerce 2.1+

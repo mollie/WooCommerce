@@ -12,7 +12,7 @@ class Mollie_WC_Gateway_Paysafecard extends Mollie_WC_Gateway_Abstract
     /**
      * @return string
      */
-    protected function getDefaultTitle ()
+    public function getDefaultTitle ()
     {
         return __('paysafecard', 'woocommerce-mollie-payments');
     }

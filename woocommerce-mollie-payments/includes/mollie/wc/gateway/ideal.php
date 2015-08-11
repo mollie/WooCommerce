@@ -28,7 +28,7 @@ class Mollie_WC_Gateway_Ideal extends Mollie_WC_Gateway_Abstract
     /**
      * @return string
      */
-    protected function getDefaultTitle ()
+    public function getDefaultTitle ()
     {
         return __('iDEAL', 'woocommerce-mollie-payments');
     }

@@ -25,7 +25,7 @@ class Mollie_WC_Gateway_Sofort extends Mollie_WC_Gateway_Abstract
     /**
      * @return string
      */
-    protected function getDefaultTitle ()
+    public function getDefaultTitle ()
     {
         return __('SOFORT Banking', 'woocommerce-mollie-payments');
     }

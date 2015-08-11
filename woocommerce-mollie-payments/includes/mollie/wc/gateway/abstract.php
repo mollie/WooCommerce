@@ -674,7 +674,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     /**
      * @return Mollie_API_Object_Method|null
      */
-    protected function getMollieMethod ()
+    public function getMollieMethod ()
     {
         try
         {
@@ -778,7 +778,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     /**
      * @return string
      */
-    abstract protected function getDefaultTitle ();
+    abstract public function getDefaultTitle ();
 
     /**
      * @return string

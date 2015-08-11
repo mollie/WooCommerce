@@ -25,7 +25,7 @@ class Mollie_WC_Gateway_Belfius extends Mollie_WC_Gateway_Abstract
     /**
      * @return string
      */
-    protected function getDefaultTitle ()
+    public function getDefaultTitle ()
     {
         return __('Belfius Direct Net', 'woocommerce-mollie-payments');
     }

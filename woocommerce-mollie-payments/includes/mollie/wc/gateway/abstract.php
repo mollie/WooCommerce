@@ -79,14 +79,20 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         );
     }
 
+    /**
+     * @return string
+     */
+    public function getIconUrl ()
+    {
+        return Mollie_WC_Plugin::getPluginUrl('/assets/images/' . $this->getMollieMethodId() . '.png');
+    }
+
     protected function _initIcon ()
     {
         if ($this->display_logo)
         {
-            $payment_method = $this->getMollieMethod();
-            $default_icon   = $payment_method ? $payment_method->image->normal : null;
-
-            $this->icon     = apply_filters($this->id . '_icon_url', $default_icon);
+            $default_icon = $this->getIconUrl();
+            $this->icon   = apply_filters($this->id . '_icon_url', $default_icon);
         }
     }
 

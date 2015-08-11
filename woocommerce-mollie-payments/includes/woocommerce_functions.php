@@ -23,3 +23,16 @@ if (!function_exists('wc_date_format'))
         return apply_filters('woocommerce_date_format', get_option('date_format'));
     }
 }
+
+if (!function_exists('untrailingslashit'))
+{
+    /**
+     * @since WooCommerce 2.2.0
+     * @param string $string
+     * @return string
+     */
+    function untrailingslashit ($string)
+    {
+        return rtrim($string, '/');
+    }
+}

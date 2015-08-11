@@ -245,6 +245,27 @@ class Mollie_WC_Plugin
     }
 
     /**
+     * Get location of main plugin file
+     *
+     * @return string
+     */
+    public static function getPluginFile ()
+    {
+        return plugin_basename(self::PLUGIN_ID . '/' . self::PLUGIN_ID . '.php');
+    }
+
+    /**
+     * Get plugin URL
+     *
+     * @param string $path
+     * @return string
+     */
+    public static function getPluginUrl ($path = '')
+    {
+        return untrailingslashit(plugins_url($path, self::getPluginFile()));
+    }
+
+    /**
      * Add plugin action links
      * @param array $links
      * @return array

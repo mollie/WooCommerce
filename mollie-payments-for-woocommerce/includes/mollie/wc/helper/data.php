@@ -2,6 +2,14 @@
 class Mollie_WC_Helper_Data
 {
     /**
+     * Transient prefix. We can not use plugin slug because this
+     * will generate to long keys for the wp_options table.
+     *
+     * @var string
+     */
+    const TRANSIENT_PREFIX = 'mollie-woocommerce-';
+
+    /**
      * @var Mollie_API_Object_Method[]|Mollie_API_Object_List|array
      */
     protected static $api_methods;
@@ -144,7 +152,7 @@ class Mollie_WC_Helper_Data
     {
         try
         {
-            $transient_id = Mollie_WC_Plugin::PLUGIN_ID . '_payment_' . $payment_id;
+            $transient_id = self::TRANSIENT_PREFIX . 'payment_' . $payment_id;
 
             if ($use_cache)
             {
@@ -185,7 +193,7 @@ class Mollie_WC_Helper_Data
 
         try
         {
-            $transient_id = Mollie_WC_Plugin::PLUGIN_ID . '_api_methods_' . ($test_mode ? 'test' : 'live');
+            $transient_id = self::TRANSIENT_PREFIX . 'api_methods_' . ($test_mode ? 'test' : 'live');
 
             if ($use_cache)
             {
@@ -240,7 +248,7 @@ class Mollie_WC_Helper_Data
     {
         try
         {
-            $transient_id = Mollie_WC_Plugin::PLUGIN_ID . '_api_issuers_' . ($test_mode ? 'test' : 'live');
+            $transient_id = self::TRANSIENT_PREFIX . 'api_issuers_' . ($test_mode ? 'test' : 'live');
 
             if (empty(self::$api_issuers))
             {

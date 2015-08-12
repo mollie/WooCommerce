@@ -4,7 +4,6 @@ class Mollie_WC_Helper_Status
     /**
      * Minimal required WooCommerce version
      *
-     * @todo: test plugin with older WooCommerce versions
      * @var string
      */
     const MIN_WOOCOMMERCE_VERSION = '2.1.0';

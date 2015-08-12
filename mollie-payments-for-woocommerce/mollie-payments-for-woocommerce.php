@@ -21,6 +21,15 @@ load_plugin_textdomain('mollie-payments-for-woocommerce', false, 'mollie-payment
  */
 function mollie_wc_plugin_init ()
 {
+    if (!class_exists('WooCommerce'))
+    {
+        /*
+         * Plugin depends on WooCommerce
+         * is_plugin_active() is not available yet :(
+         */
+        return;
+    }
+
     // Register Mollie autoloader
     Mollie_WC_Autoload::register();
 
@@ -38,7 +47,7 @@ function mollie_wc_plugin_activation_hook ()
     {
         $title = sprintf(
             __('Could not activate plugin %s', 'mollie-payments-for-woocommerce'),
-            Mollie_WC_Plugin::PLUGIN_TITLE
+            'Mollie Payments for WooCommerce'
         );
         $message = ''
             . '<h1><strong>' . $title . '</strong></h1><br/>'

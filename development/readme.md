@@ -36,7 +36,7 @@ On your vagrant machine:
 
 ```
 cd /srv/www
-php ./wordpress-develop/tools/i18n/makepot.php wp-plugin ./WooCommerce/mollie-payments-for-woocommerce/ ./WooCommerce/mollie-payments-for-woocommerce/i18n/languages/mollie-payments-for-woocommerce.pot
+makepot wp-plugin ./WooCommerce/mollie-payments-for-woocommerce/ ./WooCommerce/mollie-payments-for-woocommerce/i18n/languages/mollie-payments-for-woocommerce.pot
 ```
 
 After the `.pot` file is updated you can update the translation files using [Poedit](https://poedit.net/). You can use the "Update from POT file..." to get the update translation keys.

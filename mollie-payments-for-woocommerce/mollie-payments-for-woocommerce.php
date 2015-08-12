@@ -88,9 +88,3 @@ register_activation_hook(__FILE__, 'mollie_wc_plugin_activation_hook');
 
 add_action('admin_init', 'mollie_wc_plugin_admin_init');
 add_action('init', 'mollie_wc_plugin_init');
-
-/*
- * Info link
- * - WooCommerce hooks: http://docs.woothemes.com/wc-apidocs/hook-docs.html
- * - The WordPress / WooCommerce Hook/API Index: http://hookr.io/
- */

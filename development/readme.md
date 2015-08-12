@@ -71,11 +71,11 @@ add_filter($gateway_id . '_icon_url', function($icon_url) {
 });
 ```
 
-### `woocommerce-mollie-payments_webhook_url`
+### `mollie-payments-for-woocommerce_webhook_url`
 This filter can be added if you want to overwrite the payment webhook. This can be usefull if your development environment is on a local machine and your machine is not publicly accessable by the Mollie platform. Mollie can not deliver the webhook request to your website. You can use a tool like [ngrok](https://ngrok.com/) to create a public endpoint that proxies request to your local machine.
 
 ```
-add_filter('woocommerce-mollie-payments_webhook_url', function($webhook_url) {
+add_filter('mollie-payments-for-woocommerce_webhook_url', function($webhook_url) {
     // Overwrite plugin webhook URL (I use ngrok.io)
     $new_webhook_url = str_replace($_SERVER['HTTP_HOST'], '63950d2f.ngrok.io', $webhook_url);
 
@@ -83,12 +83,12 @@ add_filter('woocommerce-mollie-payments_webhook_url', function($webhook_url) {
 });
 ```
 
-### `woocommerce-mollie-payments_api_endpoint`
+### `mollie-payments-for-woocommerce_api_endpoint`
 You can use this filter to overwrite the Mollie API endpoint. This is only usefull for Mollie employess who have a local development version of Mollie on their own machine.
 
 ```
 // Overwrite Mollie API endpoint for local Mollie installation (Mollie employees only)
-add_filter('woocommerce-mollie-payments_api_endpoint', function($api_endpoint) {
+add_filter('mollie-payments-for-woocommerce_api_endpoint', function($api_endpoint) {
     return 'http://api.mollie.dev';
 });
 ```

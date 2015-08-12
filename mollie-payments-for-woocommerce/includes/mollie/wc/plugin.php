@@ -42,7 +42,7 @@ class Mollie_WC_Plugin
             return;
         }
 
-        $plugin_basename = self::PLUGIN_ID . '/' . self::PLUGIN_ID . '.php';
+        $plugin_basename = self::getPluginFile();
         $settings_helper = self::getSettingsHelper();
 
         // Add global Mollie settings to 'WooCommerce -> Checkout -> Checkout Options'

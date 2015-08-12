@@ -8,13 +8,13 @@
  * Author URI: https://www.mollie.com
  * Requires at least: 3.8
  * Tested up to: 3.8
- * Text Domain: woocommerce-mollie-payments
+ * Text Domain: mollie-payments-for-woocommerce
  * Domain Path: /i18n/languages/
  * License: GPLv2 or later
  */
 require_once 'includes/mollie/wc/autoload.php';
 
-load_plugin_textdomain('woocommerce-mollie-payments', false, 'woocommerce-mollie-payments/i18n/languages');
+load_plugin_textdomain('mollie-payments-for-woocommerce', false, 'mollie-payments-for-woocommerce/i18n/languages');
 
 /**
  * Called when plugin is loaded
@@ -37,7 +37,7 @@ function mollie_wc_plugin_activation_hook ()
     if (!is_plugin_active('woocommerce/woocommerce.php'))
     {
         $title = sprintf(
-            __('Could not activate plugin %s', 'woocommerce-mollie-payments'),
+            __('Could not activate plugin %s', 'mollie-payments-for-woocommerce'),
             'WooCommerce Mollie Payments'
         );
         $message = ''
@@ -81,7 +81,7 @@ function mollie_wc_plugin_admin_init ()
 
 function mollie_wc_plugin_deactivated ()
 {
-    echo '<div class="error"><p>' . sprintf(__('%s deactivated because it depends on WooCommerce.', 'woocommerce-mollie-payments'), 'WooCommerce Mollie Payments') . '</p></div>';
+    echo '<div class="error"><p>' . sprintf(__('%s deactivated because it depends on WooCommerce.', 'mollie-payments-for-woocommerce'), 'WooCommerce Mollie Payments') . '</p></div>';
 }
 
 register_activation_hook(__FILE__, 'mollie_wc_plugin_activation_hook');

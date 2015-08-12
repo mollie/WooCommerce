@@ -30,7 +30,7 @@ class Mollie_WC_Gateway_Ideal extends Mollie_WC_Gateway_Abstract
      */
     public function getDefaultTitle ()
     {
-        return __('iDEAL', 'woocommerce-mollie-payments');
+        return __('iDEAL', 'mollie-payments-for-woocommerce');
     }
 
     /**
@@ -39,7 +39,7 @@ class Mollie_WC_Gateway_Ideal extends Mollie_WC_Gateway_Abstract
     protected function getDefaultDescription ()
     {
         /* translators: Default iDEAL description, displayed above issuer drop down */
-        return __('Select your bank', 'woocommerce-mollie-payments');
+        return __('Select your bank', 'mollie-payments-for-woocommerce');
     }
 
     /**
@@ -83,7 +83,7 @@ class Mollie_WC_Gateway_Ideal extends Mollie_WC_Gateway_Abstract
         {
             return sprintf(
                 /* translators: Placeholder 1: consumer name, placeholder 2: consumer IBAN, placeholder 3: consumer BIC */
-                __('Payment completed by <strong>%s</strong> (IBAN: %s, BIC: %s)', 'woocommerce-mollie-payments'),
+                __('Payment completed by <strong>%s</strong> (IBAN: %s, BIC: %s)', 'mollie-payments-for-woocommerce'),
                 $payment->details->consumerName,
                 implode(' ', str_split($payment->details->consumerAccount, 4)),
                 $payment->details->consumerBic

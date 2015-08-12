@@ -14,7 +14,7 @@ class Mollie_WC_Gateway_Bitcoin extends Mollie_WC_Gateway_Abstract
      */
     public function getDefaultTitle ()
     {
-        return __('Bitcoin', 'woocommerce-mollie-payments');
+        return __('Bitcoin', 'mollie-payments-for-woocommerce');
     }
 
     /**

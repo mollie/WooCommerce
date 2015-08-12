@@ -29,9 +29,9 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
 
         $this->form_fields = array_merge($this->form_fields, array(
             'expiry_days' => array(
-                'title'             => __('Expiry date', 'woocommerce-mollie-payments'),
+                'title'             => __('Expiry date', 'mollie-payments-for-woocommerce'),
                 'type'              => 'number',
-                'description'       => sprintf(__('Number of days after the payment will expire. Default <code>%d</code> days', 'woocommerce-mollie-payments'), self::EXPIRY_DEFAULT_DAYS),
+                'description'       => sprintf(__('Number of days after the payment will expire. Default <code>%d</code> days', 'mollie-payments-for-woocommerce'), self::EXPIRY_DEFAULT_DAYS),
                 'default'           => self::EXPIRY_DEFAULT_DAYS,
                 'custom_attributes' => array(
                     'min'  => self::EXPIRY_MIN_DAYS,
@@ -40,11 +40,11 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
                 ),
             ),
             'mail_payment_instructions' => array(
-                'title'             => __('Mail payment instructions', 'woocommerce-mollie-payments'),
-                'label'             => __('Should Mollie automatically mail the payment instructions to the customer? Default <code>enabled</code>', 'woocommerce-mollie-payments'),
+                'title'             => __('Mail payment instructions', 'mollie-payments-for-woocommerce'),
+                'label'             => __('Should Mollie automatically mail the payment instructions to the customer? Default <code>enabled</code>', 'mollie-payments-for-woocommerce'),
                 'type'              => 'checkbox',
                 'default'           => 'yes',
-                'description'       => __('If you disable this option the customer still has an option to send the payment instructions to an email address on the Mollie payment screen.', 'woocommerce-mollie-payments'),
+                'description'       => __('If you disable this option the customer still has an option to send the payment instructions to an email address on the Mollie payment screen.', 'mollie-payments-for-woocommerce'),
                 'desc_tip'          => true,
             ),
         ));
@@ -89,7 +89,7 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
      */
     public function getDefaultTitle ()
     {
-        return __('Bank Transfer', 'woocommerce-mollie-payments');
+        return __('Bank Transfer', 'mollie-payments-for-woocommerce');
     }
 
     /**
@@ -140,7 +140,7 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
         {
             $instructions .= sprintf(
                 /* translators: Placeholder 1: consumer name, placeholder 2: consumer IBAN, placeholder 3: consumer BIC */
-                __('Payment completed by <strong>%s</strong> (IBAN: %s, BIC: %s)', 'woocommerce-mollie-payments'),
+                __('Payment completed by <strong>%s</strong> (IBAN: %s, BIC: %s)', 'mollie-payments-for-woocommerce'),
                 $payment->details->consumerName,
                 implode(' ', str_split($payment->details->consumerAccount, 4)),
                 $payment->details->consumerBic
@@ -150,23 +150,23 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
         {
             if (!$admin_instructions)
             {
-                $instructions .= __('Please complete your payment by transferring the total amount to the following bank account:', 'woocommerce-mollie-payments') . "\n\n\n";
+                $instructions .= __('Please complete your payment by transferring the total amount to the following bank account:', 'mollie-payments-for-woocommerce') . "\n\n\n";
             }
 
             /* translators: Placeholder 1: 'Stichting Mollie Payments' */
-            $instructions .= sprintf(__('Beneficiary: %s', 'woocommerce-mollie-payments'), $payment->details->bankName) . "\n";
-            $instructions .= sprintf(__('IBAN: <strong>%s</strong>', 'woocommerce-mollie-payments'), implode(' ', str_split($payment->details->bankAccount, 4))) . "\n";
-            $instructions .= sprintf(__('BIC: %s', 'woocommerce-mollie-payments'), $payment->details->bankBic) . "\n";
+            $instructions .= sprintf(__('Beneficiary: %s', 'mollie-payments-for-woocommerce'), $payment->details->bankName) . "\n";
+            $instructions .= sprintf(__('IBAN: <strong>%s</strong>', 'mollie-payments-for-woocommerce'), implode(' ', str_split($payment->details->bankAccount, 4))) . "\n";
+            $instructions .= sprintf(__('BIC: %s', 'mollie-payments-for-woocommerce'), $payment->details->bankBic) . "\n";
 
             if ($admin_instructions)
             {
                 /* translators: Placeholder 1: Payment reference e.g. RF49-0000-4716-6216 (SEPA) or +++513/7587/59959+++ (Belgium) */
-                $instructions .= sprintf(__('Payment reference: %s', 'woocommerce-mollie-payments'), $payment->details->transferReference) . "\n";
+                $instructions .= sprintf(__('Payment reference: %s', 'mollie-payments-for-woocommerce'), $payment->details->transferReference) . "\n";
             }
             else
             {
                 /* translators: Placeholder 1: Payment reference e.g. RF49-0000-4716-6216 (SEPA) or +++513/7587/59959+++ (Belgium) */
-                $instructions .= sprintf(__('Please provide the payment reference <strong>%s</strong>', 'woocommerce-mollie-payments'), $payment->details->transferReference) . "\n";
+                $instructions .= sprintf(__('Please provide the payment reference <strong>%s</strong>', 'mollie-payments-for-woocommerce'), $payment->details->transferReference) . "\n";
             }
 
             if (!empty($payment->expiryPeriod)
@@ -179,14 +179,14 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
                 if ($admin_instructions)
                 {
                     $instructions .= "\n" . sprintf(
-                        __('The payment will expire on <strong>%s</strong>.', 'woocommerce-mollie-payments'),
+                        __('The payment will expire on <strong>%s</strong>.', 'mollie-payments-for-woocommerce'),
                         $expiry_date->format(wc_date_format())
                     ) . "\n";
                 }
                 else
                 {
                     $instructions .= "\n" . sprintf(
-                        __('The payment will expire on <strong>%s</strong>. Please make sure you transfer the total amount before this date.', 'woocommerce-mollie-payments'),
+                        __('The payment will expire on <strong>%s</strong>. Please make sure you transfer the total amount before this date.', 'mollie-payments-for-woocommerce'),
                         $expiry_date->format(wc_date_format())
                     ) . "\n";
                 }

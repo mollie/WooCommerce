@@ -5,11 +5,11 @@
 ## Installatie
 **Let op:** voor de installatie van deze module is FTP-toegang tot je webserver benodigd. Heb je hier geen ervaring mee? Laat de installatie van deze module dan over aan je websitebouwer of serverbeheerder.
 
-* Download de zip (woocommerce-mollie-payments-x.x.x.zip) met de laatste versie van de module via de [Releases-pagina](https://github.com/mollie/Woocommerce/releases).
-* Pak de zip-file uit en hernoem de aangemaakte map naar `woocommerce-mollie-payments`.
-* Kopieer de map `woocommerce-mollie-payments` naar de `wp-content/plugins` map van uw WordPress installatie.
-* Ga naar de tab `Plugins` in uw WordPress administratiepaneel en activeer de Mollie Payment Module.
-* Klik bij de WooCommerce Mollie Payments plugin op de link 'Mollie settings'.
+* Download de zip (mollie-payments-for-woocommerce-x.x.x.zip) met de laatste versie van de module via de [Releases-pagina](https://github.com/mollie/Woocommerce/releases).
+* Pak de zip-file uit en hernoem de aangemaakte map naar `mollie-payments-for-woocommerce`.
+* Kopieer de map `mollie-payments-for-woocommerce` naar de `wp-content/plugins` map van uw WordPress installatie.
+* Ga naar de tab `Plugins` in uw WordPress administratiepaneel en activeer de plugin Mollie Payments for WooCommerce.
+* Klik bij de Mollie Payments for WooCommerce plugin op de link 'Mollie settings'.
 * Vul uw Api Sleutel(s) in en sla de gegevens vervolgens op.
 
 # Ondersteunde betaalmethodes

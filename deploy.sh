@@ -2,12 +2,12 @@
 # Original by https://github.com/GaryJones/wordpress-plugin-git-flow-svn-deploy
 
 echo
-echo "Deploy woocommerce-mollie-payment WordPress Plugin"
+echo "Deploy mollie-payments-for-woocommerce WordPress Plugin"
 echo
 
 # Set up some default values. Feel free to change these in your own script
 CURRENTDIR=`pwd`
-PLUGINSLUG="woocommerce-mollie-payments"
+PLUGINSLUG="mollie-payments-for-woocommerce"
 PLUGINDIR="$CURRENTDIR/$PLUGINSLUG"
 SVNPATH="/tmp/$PLUGINSLUG"
 SVNURL="http://plugins.svn.wordpress.org/$PLUGINSLUG"

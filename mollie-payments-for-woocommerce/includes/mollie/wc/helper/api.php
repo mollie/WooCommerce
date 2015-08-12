@@ -32,11 +32,11 @@ class Mollie_WC_Helper_Api
 
         if (empty($api_key))
         {
-            throw new Mollie_WC_Exception_InvalidApiKey(__('No API key provided.', 'woocommerce-mollie-payments'));
+            throw new Mollie_WC_Exception_InvalidApiKey(__('No API key provided.', 'mollie-payments-for-woocommerce'));
         }
         elseif (!preg_match('/^(live|test)_\w+$/', $api_key))
         {
-            throw new Mollie_WC_Exception_InvalidApiKey(__('Invalid API key. The API key must start with \'live_\' or \'test_\' and can\'t further contain any special characters.', 'woocommerce-mollie-payments'));
+            throw new Mollie_WC_Exception_InvalidApiKey(__('Invalid API key. The API key must start with \'live_\' or \'test_\' and can\'t further contain any special characters.', 'mollie-payments-for-woocommerce'));
         }
 
         if (empty(self::$api_client))

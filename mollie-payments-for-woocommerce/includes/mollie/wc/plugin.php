@@ -4,7 +4,7 @@ require_once dirname(dirname(dirname(__FILE__))) . '/woocommerce_functions.php';
 
 class Mollie_WC_Plugin
 {
-    const PLUGIN_ID      = 'woocommerce-mollie-payments';
+    const PLUGIN_ID      = 'mollie-payments-for-woocommerce';
     const PLUGIN_VERSION = '2.0.0-beta1';
 
     /**
@@ -274,14 +274,14 @@ class Mollie_WC_Plugin
     {
         $action_links = array(
             // Add link to global Mollie settings
-            '<a href="' . self::getSettingsHelper()->getGlobalSettingsUrl() . '">' . __('Mollie settings', 'woocommerce-mollie-payments') . '</a>',
+            '<a href="' . self::getSettingsHelper()->getGlobalSettingsUrl() . '">' . __('Mollie settings', 'mollie-payments-for-woocommerce') . '</a>',
         );
 
         // Add link to log files viewer for WooCommerce >= 2.2.0
         if (version_compare(self::getStatusHelper()->getWooCommerceVersion(), '2.2.0', ">="))
         {
             // Add link to WooCommerce logs
-            $action_links[] = '<a href="' . self::getSettingsHelper()->getLogsUrl() . '">' . __('Logs', 'woocommerce-mollie-payments') . '</a>';
+            $action_links[] = '<a href="' . self::getSettingsHelper()->getLogsUrl() . '">' . __('Logs', 'mollie-payments-for-woocommerce') . '</a>';
         }
 
         return array_merge($action_links, $links);

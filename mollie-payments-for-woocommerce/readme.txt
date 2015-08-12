@@ -1,4 +1,4 @@
-=== WooCommerce Mollie Payments ===
+=== Mollie Payments for WooCommerce ===
 Contributors: l.vangunst
 Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, betalingen, ideal, sofort, creditcard, visa, mastercard, mistercash, bitcoin, paysafecard, banktransfer, overboeking
 Requires at least: 3.8
@@ -7,7 +7,7 @@ Stable tag: 2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Mollie payment methods for WooCommerce 2.1+
+Mollie Payments for WooCommerce 2.1 and newer
 
 == Description ==
 
@@ -50,7 +50,7 @@ the WordPress debug mode by setting the two contants `WP_DEBUG` and `WP_DEBUG_LO
 = I have a different question about this plugin =
 
 Please contact info@mollie.com with your Mollie partner ID, please describe your problem as detailed as possible. Include screenshots where appropriate.
-Where possible, also include the Mollie log file. You can find the Mollie log files in `wp-content/uploads/wc-logs/woocommerce-mollie-payments-*.log`.
+Where possible, also include the Mollie log file. You can find the Mollie log files in `wp-content/uploads/wc-logs/mollie-payments-for-woocommerce-*.log`.
 
 == Screenshots ==
 

@@ -14,7 +14,7 @@ class Mollie_WC_Gateway_Paysafecard extends Mollie_WC_Gateway_Abstract
      */
     public function getDefaultTitle ()
     {
-        return __('paysafecard', 'woocommerce-mollie-payments');
+        return __('paysafecard', 'mollie-payments-for-woocommerce');
     }
 
     /**

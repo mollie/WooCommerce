@@ -1,5 +1,5 @@
 <?php
-class Mollie_WC_Gateway_MisterCash extends Mollie_WC_Gateway_Abstract
+class Mollie_WC_Gateway_Belfius extends Mollie_WC_Gateway_Abstract
 {
     /**
      *
@@ -19,7 +19,7 @@ class Mollie_WC_Gateway_MisterCash extends Mollie_WC_Gateway_Abstract
      */
     public function getMollieMethodId ()
     {
-        return Mollie_API_Object_Method::MISTERCASH;
+        return Mollie_API_Object_Method::BELFIUS;
     }
 
     /**
@@ -27,7 +27,7 @@ class Mollie_WC_Gateway_MisterCash extends Mollie_WC_Gateway_Abstract
      */
     public function getDefaultTitle ()
     {
-        return __('Bancontact / Mister Cash', 'woocommerce-mollie-payments');
+        return __('Belfius Direct Net', 'mollie-payments-for-woocommerce');
     }
 
     /**

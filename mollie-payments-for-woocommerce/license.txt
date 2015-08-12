@@ -1,4 +1,4 @@
-Mollie WooCommerce payments plugin
+Mollie Payments for WooCommerce plugin
 Copyright (C) 2015, Mollie B.V. <info@mollie.com>
 
 This program is free software; you can redistribute it and/or modify

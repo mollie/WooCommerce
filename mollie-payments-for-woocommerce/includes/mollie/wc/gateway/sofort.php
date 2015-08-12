@@ -27,7 +27,7 @@ class Mollie_WC_Gateway_Sofort extends Mollie_WC_Gateway_Abstract
      */
     public function getDefaultTitle ()
     {
-        return __('SOFORT Banking', 'woocommerce-mollie-payments');
+        return __('SOFORT Banking', 'mollie-payments-for-woocommerce');
     }
 
     /**
@@ -53,7 +53,7 @@ class Mollie_WC_Gateway_Sofort extends Mollie_WC_Gateway_Abstract
         {
             $instructions .= sprintf(
                 /* translators: Placeholder 1: consumer name, placeholder 2: consumer IBAN, placeholder 3: consumer BIC */
-                __('Payment completed by <strong>%s</strong> (IBAN: %s, BIC: %s)', 'woocommerce-mollie-payments'),
+                __('Payment completed by <strong>%s</strong> (IBAN: %s, BIC: %s)', 'mollie-payments-for-woocommerce'),
                 $payment->details->consumerName,
                 implode(' ', str_split($payment->details->consumerAccount, 4)),
                 $payment->details->consumerBic

@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WooCommerce Mollie Payments 2.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/woocommerce-mollie-payments\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/mollie-payments-for-woocommerce\n"
 "POT-Creation-Date: 2015-08-10 13:39+0200\n"
 "PO-Revision-Date: 2015-08-10 13:41+0200\n"
 "Last-Translator: Lennard van Gunst <lennard@mollie.com>\n"

@@ -23,7 +23,7 @@ I use [fswatch](https://github.com/emcrisostomo/fswatch) to watch the plugin dir
 
 ```
 cd <path-to-vagrant-local>/wwww
-fswatch-sync.sh ./WooCommerce/woocommerce-mollie-payments/ ./wordpress-default/wp-content/plugins/woocommerce-mollie-payments/
+fswatch-sync.sh ./WooCommerce/mollie-payments-for-woocommerce/ ./wordpress-default/wp-content/plugins/mollie-payments-for-woocommerce/
 ```
 
 It will notify you that the target directory will be overwritten. Changes made in the target directory will be overwritten when you make a change to the source directory.
@@ -36,7 +36,7 @@ On your vagrant machine:
 
 ```
 cd /srv/www
-php ./wordpress-develop/tools/i18n/makepot.php wp-plugin ./WooCommerce/woocommerce-mollie-payments/ ./WooCommerce/woocommerce-mollie-payments/i18n/languages/woocommerce-mollie-payments.pot
+php ./wordpress-develop/tools/i18n/makepot.php wp-plugin ./WooCommerce/mollie-payments-for-woocommerce/ ./WooCommerce/mollie-payments-for-woocommerce/i18n/languages/mollie-payments-for-woocommerce.pot
 ```
 
 After the `.pot` file is updated you can update the translation files using [Poedit](https://poedit.net/). You can use the "Update from POT file..." to get the update translation keys.
@@ -106,38 +106,38 @@ add_filter('woocommerce_' . $this->id . '_args', function(array $arguments, WC_O
 
 ## Actions
 
-### `woocommerce-mollie-payments_create_payment`
+### `mollie-payments-for-woocommerce_create_payment`
 Add this action if you want to receive the arguments that are used for creating a new payment. This can be usefull if you want to log this during development.
 
 ```
-add_action('woocommerce-mollie-payments_create_payment', function(array $payment_arguments, WC_Order $order) {
+add_action('mollie-payments-for-woocommerce_create_payment', function(array $payment_arguments, WC_Order $order) {
 	log("Order {$order->id} create payment parameters: " . print_r($payment_arguments, TRUE));
 }, $priority = 10, $accepted_args = 2);
 ```
 
-### `woocommerce-mollie-payments_payment_created`
+### `mollie-payments-for-woocommerce_payment_created`
 Add this action if you want to receive the arguments that are used for creating a new payment. This can be usefull if you want to log this during development.
 
 ```
-add_action('woocommerce-mollie-payments_payment_created', function(Mollie_API_Object_Payment $payment, WC_Order $order) {
+add_action('mollie-payments-for-woocommerce_payment_created', function(Mollie_API_Object_Payment $payment, WC_Order $order) {
     log("Order {$order->id} payment created: " . print_r($payment, TRUE));
 }, $priority = 10, $accepted_args = 2);
 ```
 
-### `woocommerce-mollie-payments_create_refund`
+### `mollie-payments-for-woocommerce_create_refund`
 Add this action if you want to receive the payment that is being refunded. This can be usefull if you want to log this during development.
 
 ```
-add_action('woocommerce-mollie-payments_create_refund', function(Mollie_API_Object_Payment $payment, WC_Order $order) {
+add_action('mollie-payments-for-woocommerce_create_refund', function(Mollie_API_Object_Payment $payment, WC_Order $order) {
 	log("Refund order {$order->id}, payment: {$payment->id}");
 }, $priority = 10, $accepted_args = 2);
 ```
 
-### `woocommerce-mollie-payments_refund_created`
+### `mollie-payments-for-woocommerce_refund_created`
 Add this action if you want to receive the payment that is being refunded. This can be usefull if you want to log this during development.
 
 ```
-add_action('woocommerce-mollie-payments_create_refund', function(Mollie_API_Object_Payment_Refund $refund, WC_Order $order) {
+add_action('mollie-payments-for-woocommerce_create_refund', function(Mollie_API_Object_Payment_Refund $refund, WC_Order $order) {
 	log("Order {$order->id} refunded, refund: {$refund->id}");
 }, $priority = 10, $accepted_args = 2);
 ```

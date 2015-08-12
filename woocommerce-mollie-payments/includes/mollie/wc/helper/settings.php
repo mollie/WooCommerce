@@ -267,10 +267,8 @@ class Mollie_WC_Helper_Settings
         // Display location of log files
         else
         {
-            $upload_dir = wp_upload_dir();
-
             /* translators: Placeholder 1: Location of the log files */
-            $debug_desc .= ' ' . sprintf(__('Log files are saved to <code>%s</code>', 'woocommerce-mollie-payments'), defined('WC_LOG_DIR') ? WC_LOG_DIR : $upload_dir['basedir'] . '/wc-logs/');
+            $debug_desc .= ' ' . sprintf(__('Log files are saved to <code>%s</code>', 'woocommerce-mollie-payments'), defined('WC_LOG_DIR') ? WC_LOG_DIR : WC()->plugin_path() . '/logs/');
         }
 
         // Global Mollie settings

@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: Mollie Payments for WooCommerce 2.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/mollie-payments-"
 "for-woocommerce\n"
-"POT-Creation-Date: 2015-08-12 12:36:51+00:00\n"
+"POT-Creation-Date: 2015-08-12 13:02:40+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -505,15 +505,18 @@ msgstr ""
 msgid "%s deactivated because it depends on WooCommerce."
 msgstr ""
 
-#. #-#-#-#-#  mollie-payments-for-woocommerce.pot (Mollie Payments for WooCommerce 2.0)  #-#-#-#-#
 #. Plugin Name of the plugin/theme
-#. #-#-#-#-#  mollie-payments-for-woocommerce.pot (Mollie Payments for WooCommerce 2.0)  #-#-#-#-#
-#. Description of the plugin/theme
 msgid "Mollie Payments for WooCommerce"
 msgstr ""
 
 #. Plugin URI of the plugin/theme
 msgid "https://github.com/mollie/WooCommerce"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid ""
+"Accept payments in WooCommerce with Mollie iDEAL, Credit Card, Bancontact/"
+"Mister Cash, Bank Transfer, PayPal, Bitcoin, paysafecard and SOFORT Banking"
 msgstr ""
 
 #. Author of the plugin/theme

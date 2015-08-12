@@ -1,8 +1,8 @@
-# Copyright (C) 2015 WooCommerce Mollie Payments
-# This file is distributed under the same license as the WooCommerce Mollie Payments package.
+# Copyright (C) 2015 Mollie Payments for WooCommerce
+# This file is distributed under the same license as the Mollie Payments for WooCommerce package.
 msgid ""
 msgstr ""
-"Project-Id-Version: WooCommerce Mollie Payments 2.0\n"
+"Project-Id-Version: Mollie Payments for WooCommerce 2.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/woocommerce-mollie-payments\n"
 "POT-Creation-Date: 2015-08-10 13:42+0200\n"
 "PO-Revision-Date: 2015-08-10 13:46+0200\n"
@@ -490,10 +490,10 @@ msgstr "Debug Log"
 #. used WooCommerce version
 #: includes/mollie/wc/helper/status.php:54
 msgid ""
-"The WooCommerce Mollie Payments plugin requires at least WooCommerce version %s, you are "
+"The Mollie Payments for WooCommerce plugin requires at least WooCommerce version %s, you are "
 "using version %s. Please update your WooCommerce plugin."
 msgstr ""
-"De WooCommerce Mollie Payments plugin heeft minimaal WooCommerce versie %s nodig, jij "
+"De Mollie Payments for WooCommerce plugin heeft minimaal WooCommerce versie %s nodig, jij "
 "gebruikt versie %s. Update de WooCommerce plugin."
 
 #: includes/mollie/wc/helper/status.php:64
@@ -545,8 +545,8 @@ msgid "%s deactivated because it depends on WooCommerce."
 msgstr "%s gedeactiveerd omdat het afhankelijk is van de plugin WooCommerce."
 
 #. Plugin Name of the plugin/theme
-msgid "WooCommerce Mollie Payments"
-msgstr "WooCommerce Mollie Payments"
+msgid "Mollie Payments for WooCommerce"
+msgstr "Mollie Payments for WooCommerce"
 
 #. Plugin URI of the plugin/theme
 msgid "https://github.com/mollie/WooCommerce"

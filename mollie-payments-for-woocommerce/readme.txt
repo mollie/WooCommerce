@@ -70,7 +70,7 @@ Where possible, also include the Mollie log file. You can find the Mollie log fi
 * WooCommerce 2.1.0 or greater
 
 1. Install the plugin via Plugins -> New plugin
-2. Activate the WooCommerce Mollie Payments plugin
+2. Activate the 'Mollie Payments for WooCommerce' plugin
 3. Set you Mollie API key at WooCommerce -> Settings -> Checkout (or use the *Mollie Settings* link in the Plugins overview)
 4. Your done, the active payment methods should be visible in the checkout of your webshop.
 

@@ -50,8 +50,9 @@ class Mollie_WC_Helper_Status
         if (!$this->hasCompatibleWooCommerceVersion())
         {
             $this->errors[] = sprintf(
-                /* translators: Placeholder 1: required WooCommerce version, placeholder 2: used WooCommerce version */
-                __('The WooCommerce Mollie Payments plugin requires at least WooCommerce version %s, you are using version %s. Please update your WooCommerce plugin.', 'mollie-payments-for-woocommerce'),
+                /* translators: Placeholder 1: Plugin name, placeholder 2: required WooCommerce version, placeholder 3: used WooCommerce version */
+                __('The %s plugin requires at least WooCommerce version %s, you are using version %s. Please update your WooCommerce plugin.', 'mollie-payments-for-woocommerce'),
+                Mollie_WC_Plugin::PLUGIN_TITLE,
                 self::MIN_WOOCOMMERCE_VERSION,
                 $this->getWooCommerceVersion()
             );

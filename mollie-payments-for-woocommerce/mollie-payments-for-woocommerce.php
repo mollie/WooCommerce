@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: WooCommerce Mollie Payments
+ * Plugin Name: Mollie Payments for WooCommerce
  * Plugin URI: https://github.com/mollie/WooCommerce
- * Description: Mollie payments for WooCommerce
+ * Description: Mollie Payments for WooCommerce
  * Version: 2.0
  * Author: Mollie
  * Author URI: https://www.mollie.com
@@ -38,7 +38,7 @@ function mollie_wc_plugin_activation_hook ()
     {
         $title = sprintf(
             __('Could not activate plugin %s', 'mollie-payments-for-woocommerce'),
-            'WooCommerce Mollie Payments'
+            Mollie_WC_Plugin::PLUGIN_TITLE
         );
         $message = ''
             . '<h1><strong>' . $title . '</strong></h1><br/>'
@@ -55,8 +55,8 @@ function mollie_wc_plugin_activation_hook ()
 
     if (!$status_helper->isCompatible())
     {
-        $title   = 'Could not activate WooCommerce Mollie Payments plugin';
-        $message = '<h1><strong>Could not activate WooCommerce Mollie Payments plugin</strong></h1><br/>'
+        $title   = 'Could not activate plugin ' . Mollie_WC_Plugin::PLUGIN_TITLE;
+        $message = '<h1><strong>Could not activate plugin ' . Mollie_WC_Plugin::PLUGIN_TITLE . '</strong></h1><br/>'
                  . implode('<br/>', $status_helper->getErrors());
 
         wp_die($message, $title, array('back_link' => true));
@@ -81,7 +81,7 @@ function mollie_wc_plugin_admin_init ()
 
 function mollie_wc_plugin_deactivated ()
 {
-    echo '<div class="error"><p>' . sprintf(__('%s deactivated because it depends on WooCommerce.', 'mollie-payments-for-woocommerce'), 'WooCommerce Mollie Payments') . '</p></div>';
+    echo '<div class="error"><p>' . sprintf(__('%s deactivated because it depends on WooCommerce.', 'mollie-payments-for-woocommerce'), Mollie_WC_Plugin::PLUGIN_TITLE) . '</p></div>';
 }
 
 register_activation_hook(__FILE__, 'mollie_wc_plugin_activation_hook');

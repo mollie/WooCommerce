@@ -5,6 +5,7 @@ require_once dirname(dirname(dirname(__FILE__))) . '/woocommerce_functions.php';
 class Mollie_WC_Plugin
 {
     const PLUGIN_ID      = 'mollie-payments-for-woocommerce';
+    const PLUGIN_TITLE   = 'Mollie Payments for WooCommerce';
     const PLUGIN_VERSION = '2.0.0-beta1';
 
     /**

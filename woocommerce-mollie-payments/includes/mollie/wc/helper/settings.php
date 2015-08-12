@@ -35,7 +35,9 @@ class Mollie_WC_Helper_Settings
      */
     protected function getPaymentLocaleSetting ()
     {
-        return trim(get_option($this->getSettingId('payment_locale')));
+        $default_value = 'wp_locale';
+
+        return trim(get_option($this->getSettingId('payment_locale'), $default_value));
     }
 
     /**
@@ -49,14 +51,17 @@ class Mollie_WC_Helper_Settings
         {
             if ($setting == 'wp_locale')
             {
+                // Send current locale to Mollie
                 return get_locale();
             }
             else
             {
+                // Send specific locale to Mollie
                 return $setting;
             }
         }
 
+        // Do not send locale to Mollie, use browser language
         return null;
     }
 

@@ -369,19 +369,6 @@ class Mollie_WC_Helper_Settings
     }
 
     /**
-     * Called when page 'WooCommerce -> Checkout -> Checkout Options' is saved
-     */
-    public function onGlobalSettingsSaved ()
-    {
-        Mollie_WC_Plugin::debug(__METHOD__ . ': Mollie settings saved, delete transients');
-
-        delete_transient(Mollie_WC_Helper_Data::TRANSIENT_PREFIX . 'api_methods_test');
-        delete_transient(Mollie_WC_Helper_Data::TRANSIENT_PREFIX . 'api_methods_live');
-        delete_transient(Mollie_WC_Helper_Data::TRANSIENT_PREFIX . 'api_issuers_test');
-        delete_transient(Mollie_WC_Helper_Data::TRANSIENT_PREFIX . 'api_issuers_live');
-    }
-
-    /**
      * @param string $setting
      * @return string
      */

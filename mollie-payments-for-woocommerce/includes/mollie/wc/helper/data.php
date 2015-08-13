@@ -33,6 +33,29 @@ class Mollie_WC_Helper_Data
     }
 
     /**
+     * @param string $transient
+     * @return string
+     */
+    protected function getTransientId ($transient)
+    {
+        /*
+         * WordPress will save two options to wp_options table:
+         * 1. _transient_<transient_id>
+         * 2. _transient_timeout_<transient_id>
+         */
+        $transient_id       = self::TRANSIENT_PREFIX . $transient;
+        $option_name        = '_transient_timeout_' . $transient_id;
+        $option_name_length = strlen($option_name);
+
+        if ($option_name_length > 64)
+        {
+            trigger_error("Transient id $transient_id is to long. Option name $option_name ($option_name_length) will be to long for database column wp_options.option_name which is varchar(64).", E_USER_WARNING);
+        }
+
+        return $transient_id;
+    }
+
+    /**
      * Get WooCommerce order
      *
      * @param int $order_id Order ID
@@ -140,6 +163,28 @@ class Mollie_WC_Helper_Data
     }
 
     /**
+     * Called when page 'WooCommerce -> Checkout -> Checkout Options' is saved
+     *
+     * @see \Mollie_WC_Plugin::init
+     */
+    public function deleteTransients ()
+    {
+        Mollie_WC_Plugin::debug(__METHOD__ . ': Mollie settings saved, delete transients');
+
+        $transient_names = array(
+            'api_methods_test',
+            'api_methods_live',
+            'api_issuers_test',
+            'api_issuers_live',
+        );
+
+        foreach ($transient_names as $transient_name)
+        {
+            delete_transient($this->getTransientId($transient_name));
+        }
+    }
+
+    /**
      * Get Mollie payment from cache or load from Mollie
      * Skip cache by setting $use_cache to false
      *
@@ -152,7 +197,7 @@ class Mollie_WC_Helper_Data
     {
         try
         {
-            $transient_id = self::TRANSIENT_PREFIX . 'payment_' . $payment_id;
+            $transient_id = $this->getTransientId('payment_' . $payment_id);
 
             if ($use_cache)
             {
@@ -193,7 +238,7 @@ class Mollie_WC_Helper_Data
 
         try
         {
-            $transient_id = self::TRANSIENT_PREFIX . 'api_methods_' . ($test_mode ? 'test' : 'live');
+            $transient_id = $this->getTransientId('api_methods_' . ($test_mode ? 'test' : 'live'));
 
             if ($use_cache)
             {
@@ -248,7 +293,7 @@ class Mollie_WC_Helper_Data
     {
         try
         {
-            $transient_id = self::TRANSIENT_PREFIX . 'api_issuers_' . ($test_mode ? 'test' : 'live');
+            $transient_id = $this->getTransientId('api_issuers_' . ($test_mode ? 'test' : 'live'));
 
             if (empty(self::$api_issuers))
             {

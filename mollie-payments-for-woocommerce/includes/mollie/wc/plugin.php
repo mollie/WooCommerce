@@ -45,11 +45,12 @@ class Mollie_WC_Plugin
 
         $plugin_basename = self::getPluginFile();
         $settings_helper = self::getSettingsHelper();
+        $data_helper     = self::getDataHelper();
 
         // Add global Mollie settings to 'WooCommerce -> Checkout -> Checkout Options'
         add_filter('woocommerce_payment_gateways_settings',   array($settings_helper, 'addGlobalSettingsFields'));
         // When page 'WooCommerce -> Checkout -> Checkout Options' is saved
-        add_action('woocommerce_settings_save_checkout',      array($settings_helper, 'onGlobalSettingsSaved'));
+        add_action('woocommerce_settings_save_checkout',      array($data_helper, 'deleteTransients'));
         // Add Mollie gateways
         add_filter('woocommerce_payment_gateways',            array(__CLASS__, 'addGateways'));
         // Add settings link to plugins page

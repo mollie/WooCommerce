@@ -387,7 +387,15 @@ class Mollie_WC_Helper_Settings
      */
     protected function getSettingId ($setting)
     {
-        return Mollie_WC_Plugin::PLUGIN_ID . '_' . trim($setting);
+        $setting_id        = Mollie_WC_Plugin::PLUGIN_ID . '_' . trim($setting);
+        $setting_id_length = strlen($setting_id);
+
+        if ($setting_id_length > 64)
+        {
+            trigger_error("Setting id $setting_id ($setting_id_length) to long for database column wp_options.option_name which is varchar(64).", E_USER_WARNING);
+        }
+
+        return $setting_id;
     }
 
     /**

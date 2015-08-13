@@ -32,6 +32,7 @@ Please go to the [signup page](https://www.mollie.com/nl/signup) to create a new
 * Refunds (WooCommerce 2.2+)
 * Multiple translations: English, Dutch, German and French
 * Event log for debugging purposes
+* WordPress Multisite support
 
 == Frequently Asked Questions ==
 

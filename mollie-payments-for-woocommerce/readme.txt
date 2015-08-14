@@ -42,16 +42,23 @@ Please temporary enable the [WordPress debug option](https://codex.wordpress.org
 it again. When the plugin triggers an error, WordPress will log the error to the log file `/wp-content/debug.log`. Please check this file for errors. When done, don't forget to turn off
 the WordPress debug mode by setting the two contants `WP_DEBUG` and `WP_DEBUG_LOG` back to `false`.
 
+= The Mollie payment gateways aren't displayed in my checkout =
+
+* Please go to WooCommerce -> Settings -> Checkout in your WordPress admin and scroll down to the Mollie settings section.
+* Check which payment gateways are disabled.
+* Go to the specific payment gateway settings page to find out why the payment gateway is disabled.
+
 = The order status is not getting updated after successfully completing the payment =
 
-* Please check the Mollie log file located in `wp-content/uploads/wc-logs/` for debug info. Please search for the correct order number and check if Mollie has called the shop Webhook to report the payment status.
+* Please check the Mollie log file located in `/wp-content/uploads/wc-logs/` or `/wp-content/plugin/woocommerce/logs` for debug info. Please search for the correct order number and check if Mollie has called the shop Webhook to report the payment status.
+* Do you have maintenance mode enabled? Please make sure to whitelist the 'wc-api' endpoint otherwise Mollie can't report the payment status to your website.
 * Please check your Mollie dashboard to check if there are failed webhook reports. Mollie tried to report the payment status to your website but something went wrong.
 * Contact info@mollie.com with your Mollie partner ID and the order number. We can investigate the specific payment and check whether Mollie successfully reported the payment state to your webshop.
 
 = I have a different question about this plugin =
 
 Please contact info@mollie.com with your Mollie partner ID, please describe your problem as detailed as possible. Include screenshots where appropriate.
-Where possible, also include the Mollie log file. You can find the Mollie log files in `wp-content/uploads/wc-logs/mollie-payments-for-woocommerce-*.log`.
+Where possible, also include the Mollie log file. You can find the Mollie log files in `/wp-content/uploads/wc-logs/` or `/wp-content/plugin/woocommerce/logs`.
 
 == Screenshots ==
 
@@ -70,12 +77,22 @@ Where possible, also include the Mollie log file. You can find the Mollie log fi
 * WordPress 3.8 or greater
 * WooCommerce 2.1.0 or greater
 
-1. Install the plugin via Plugins -> New plugin
-2. Activate the 'Mollie Payments for WooCommerce' plugin
+= Automatic installation =
+
+1. Install the plugin via Plugins -> New plugin. Search for 'Mollie Payments for WooCommerce'.
+2. Activate the 'Mollie Payments for WooCommerce' plugin through the 'Plugins' menu in WordPress
 3. Set you Mollie API key at WooCommerce -> Settings -> Checkout (or use the *Mollie Settings* link in the Plugins overview)
 4. Your done, the active payment methods should be visible in the checkout of your webshop.
 
-Please contact info@mollie.com if you need help installing the Mollie WooCommerce plugin. Please provide you Mollie partner ID and website URL.
+= Manual installation =
+
+1. Unpack the download package
+2. Upload the directory 'mollie-payments-for-woocommerce' to the `/wp-content/plugins/` directory
+3. Activate the 'Mollie Payments for WooCommerce' plugin through the 'Plugins' menu in WordPress
+4. Set you Mollie API key at WooCommerce -> Settings -> Checkout (or use the *Mollie Settings* link in the Plugins overview)
+5. Your done, the active payment methods should be visible in the checkout of your webshop.
+
+Please contact info@mollie.com if you need help installing the Mollie WooCommerce plugin. Please provide your Mollie partner ID and website URL.
 
 = Updating =
 
@@ -84,9 +101,10 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 == Changelog ==
 
 = 2.0.0 =
-Complete rewrite of our WooCommerce plugin to better follow WordPress and WooCommerce standards and add better support for other plugins.
+* Complete rewrite of our WooCommerce plugin to better follow WordPress and WooCommerce standards and add better support for other plugins.
 
 == Upgrade Notice ==
 
 = 2.0.0 =
-The 2.x version of the plugin uses a different plugin name. You can still run version 1.x of our plugin if you want to temporary keep support for payments created using version 1.x
+* The 2.x version of the plugin uses a different plugin name. You can still run version 1.x of our plugin if you want to temporary
+keep support for payments created using version 1.x. Hide the old payment gateways by disabling the old 'Mollie Payment Module' payment gateway in WooCommerce -> Settings -> Checkout.

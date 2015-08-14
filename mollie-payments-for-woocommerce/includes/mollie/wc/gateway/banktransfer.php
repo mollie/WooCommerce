@@ -41,9 +41,10 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
             ),
             'mail_payment_instructions' => array(
                 'title'             => __('Mail payment instructions', 'mollie-payments-for-woocommerce'),
-                'label'             => __('Should Mollie automatically mail the payment instructions to the customer? Default <code>enabled</code>', 'mollie-payments-for-woocommerce'),
+                /* translators: Placeholder 1: enabled or disabled */
+                'label'             => sprintf(__('Should Mollie automatically mail the payment instructions to the customer? Default <code>%s</code>', 'mollie-payments-for-woocommerce'), strtolower(__('Disabled', 'mollie-payments-for-woocommerce'))),
                 'type'              => 'checkbox',
-                'default'           => 'yes',
+                'default'           => 'no',
                 'description'       => __('If you disable this option the customer still has an option to send the payment instructions to an email address on the Mollie payment screen.', 'mollie-payments-for-woocommerce'),
                 'desc_tip'          => true,
             ),

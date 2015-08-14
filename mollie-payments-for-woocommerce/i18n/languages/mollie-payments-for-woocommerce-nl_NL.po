@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mollie Payments for WooCommerce 2.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/mollie-payments-for-woocommerce\n"
-"POT-Creation-Date: 2015-08-12 15:20+0200\n"
-"PO-Revision-Date: 2015-08-12 15:20+0200\n"
+"POT-Creation-Date: 2015-08-14 13:07+0200\n"
+"PO-Revision-Date: 2015-08-14 13:07+0200\n"
 "Last-Translator: Lennard van Gunst <lennard@mollie.com>\n"
 "Language-Team: Mollie <info@mollie.nl>\n"
 "Language: nl\n"
@@ -166,15 +166,19 @@ msgstr "Aantal dagen waarna de betaling zal verlopen. Standaard <code>%d</code> 
 msgid "Mail payment instructions"
 msgstr "Mail betalingsinstructies"
 
-#: includes/mollie/wc/gateway/banktransfer.php:44
+#. translators: Placeholder 1: enabled or disabled
+#: includes/mollie/wc/gateway/banktransfer.php:45
 msgid ""
-"Should Mollie automatically mail the payment instructions to the customer? Default "
-"<code>enabled</code>"
+"Should Mollie automatically mail the payment instructions to the customer? Default <code>%s</"
+"code>"
 msgstr ""
-"Laat Mollie automatisch de betaalinstructies mailen naar de klant. Standaard "
-"<code>ingeschakeld</code>"
+"Laat Mollie automatisch de betaalinstructies mailen naar de klant. Standaard <code>%s</code>"
 
-#: includes/mollie/wc/gateway/banktransfer.php:47
+#: includes/mollie/wc/gateway/banktransfer.php:45 includes/mollie/wc/helper/settings.php:181
+msgid "Disabled"
+msgstr "Uitgeschakeld"
+
+#: includes/mollie/wc/gateway/banktransfer.php:48
 msgid ""
 "If you disable this option the customer still has an option to send the payment instructions "
 "to an email address on the Mollie payment screen."
@@ -182,52 +186,52 @@ msgstr ""
 "Als je deze instelling uitschakelt kan de klant op het Mollie betaalscherm er zelf nog voor "
 "kiezen om de betaalinstructies te versturen naar een e-mailadres."
 
-#: includes/mollie/wc/gateway/banktransfer.php:92
+#: includes/mollie/wc/gateway/banktransfer.php:93
 msgid "Bank Transfer"
 msgstr "Overboeking"
 
 #. translators: Placeholder 1: consumer name, placeholder 2: consumer IBAN,
 #. placeholder 3: consumer BIC
-#: includes/mollie/wc/gateway/banktransfer.php:143 includes/mollie/wc/gateway/ideal.php:86
+#: includes/mollie/wc/gateway/banktransfer.php:144 includes/mollie/wc/gateway/ideal.php:86
 #: includes/mollie/wc/gateway/sofort.php:56
 msgid "Payment completed by <strong>%s</strong> (IBAN: %s, BIC: %s)"
 msgstr "Betaling afgerond door <strong>%s</strong> (IBAN: %s, BIC: %s)"
 
-#: includes/mollie/wc/gateway/banktransfer.php:153
+#: includes/mollie/wc/gateway/banktransfer.php:154
 msgid ""
 "Please complete your payment by transferring the total amount to the following bank account:"
 msgstr "Rond de betaling af door het totale bedrag over te boeken naar de volgende rekening:"
 
 #. translators: Placeholder 1: 'Stichting Mollie Payments'
-#: includes/mollie/wc/gateway/banktransfer.php:157
+#: includes/mollie/wc/gateway/banktransfer.php:158
 msgid "Beneficiary: %s"
 msgstr "Begunstigde: %s"
 
-#: includes/mollie/wc/gateway/banktransfer.php:158
+#: includes/mollie/wc/gateway/banktransfer.php:159
 msgid "IBAN: <strong>%s</strong>"
 msgstr "IBAN: <strong>%s</strong>"
 
-#: includes/mollie/wc/gateway/banktransfer.php:159
+#: includes/mollie/wc/gateway/banktransfer.php:160
 msgid "BIC: %s"
 msgstr "BIC: %s"
 
 #. translators: Placeholder 1: Payment reference e.g. RF49-0000-4716-6216
 #. (SEPA) or +++513/7587/59959+++ (Belgium)
-#: includes/mollie/wc/gateway/banktransfer.php:164
+#: includes/mollie/wc/gateway/banktransfer.php:165
 msgid "Payment reference: %s"
 msgstr "Betalingskenmerk: %s"
 
 #. translators: Placeholder 1: Payment reference e.g. RF49-0000-4716-6216
 #. (SEPA) or +++513/7587/59959+++ (Belgium)
-#: includes/mollie/wc/gateway/banktransfer.php:169
+#: includes/mollie/wc/gateway/banktransfer.php:170
 msgid "Please provide the payment reference <strong>%s</strong>"
 msgstr "Gelieve het betalingskenmerk <strong>%s</strong> op te geven bij de overboeking"
 
-#: includes/mollie/wc/gateway/banktransfer.php:182
+#: includes/mollie/wc/gateway/banktransfer.php:183
 msgid "The payment will expire on <strong>%s</strong>."
 msgstr "De betaling zal op <strong>%s</strong> verlopen."
 
-#: includes/mollie/wc/gateway/banktransfer.php:189
+#: includes/mollie/wc/gateway/banktransfer.php:190
 msgid ""
 "The payment will expire on <strong>%s</strong>. Please make sure you transfer the total amount "
 "before this date."
@@ -319,10 +323,6 @@ msgstr "Ingeschakeld"
 msgid "Gateway disabled"
 msgstr "Gateway uitgeschakeld"
 
-#: includes/mollie/wc/helper/settings.php:181
-msgid "Disabled"
-msgstr "Uitgeschakeld"
-
 #. translators: The surrounding %s's Will be replaced by a link to the Mollie
 #. profile
 #: includes/mollie/wc/helper/settings.php:192
@@ -356,7 +356,7 @@ msgstr "Bekijk logboeken"
 msgid "Log files are saved to <code>%s</code>"
 msgstr "Logboeken worden opgeslagen in <code>%s</code>"
 
-#: includes/mollie/wc/helper/settings.php:278 includes/mollie/wc/plugin.php:278
+#: includes/mollie/wc/helper/settings.php:278 includes/mollie/wc/plugin.php:279
 msgid "Mollie settings"
 msgstr "Mollie instellingen"
 
@@ -505,7 +505,7 @@ msgstr ""
 "De Mollie API client heeft de volgende PHP cURL functies nodig: %s. Zorg dat al deze functies "
 "beschikbaar zijn."
 
-#: includes/mollie/wc/plugin.php:285
+#: includes/mollie/wc/plugin.php:286
 msgid "Logs"
 msgstr "Logboeken"
 

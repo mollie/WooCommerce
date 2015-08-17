@@ -1,16 +1,8 @@
 ![Mollie](https://www.mollie.com/files/Mollie-Logo-Style-Small.png)
 
-# WooCommerce plugin voor [betalingen via Mollie](https://www.mollie.com/nl/pricing).
+# WooCommerce extensie voor [betalingen via Mollie](https://www.mollie.com/nl/pricing).
 
-## Installatie
-**Let op:** voor de installatie van deze module is FTP-toegang tot je webserver benodigd. Heb je hier geen ervaring mee? Laat de installatie van deze module dan over aan je websitebouwer of serverbeheerder.
-
-* Download de zip (mollie-payments-for-woocommerce-x.x.x.zip) met de laatste versie van de module via de [Releases-pagina](https://github.com/mollie/Woocommerce/releases).
-* Pak de zip-file uit en hernoem de aangemaakte map naar `mollie-payments-for-woocommerce`.
-* Kopieer de map `mollie-payments-for-woocommerce` naar de `wp-content/plugins` map van uw WordPress installatie.
-* Ga naar de tab `Plugins` in uw WordPress administratiepaneel en activeer de plugin Mollie Payments for WooCommerce.
-* Klik bij de Mollie Payments for WooCommerce plugin op de link 'Mollie settings'.
-* Vul uw Api Sleutel(s) in en sla de gegevens vervolgens op.
+Ga naar [**Mollie Payments for WooCommerce**](https://wordpress.org/plugins/mollie-payments-for-woocommerce/) voor meer informatie over deze plugin.
 
 # Ondersteunde betaalmethodes
 
@@ -39,29 +31,9 @@ Via [Mollie](https://www.mollie.com/) is iDEAL gemakkelijk aan te sluiten zonder
 ### paysafecard
 [paysafecard](https://www.mollie.com/paysafecard/) is de populairste prepaidcard voor online betalingen die veel door ouders voor hun kinderen wordt gekocht.
 
-# Veel gestelde vragen
-
-**Ik heb alles ingesteld, maar de betaalmethodes verschijnen niet bij het afrekenen.**
-
-Controleer bij de payment gateway of er errors worden weergegeven. Staat de gateway ingeschakeld? Ga naar WooCommerce -> Settings -> Checkout
-
-**Ik krijg een foutmelding tijdens het installeren**
-Heeft u de module via de [Releases-pagina](https://github.com/mollie/Woocommerce/releases) gedownload? Als uw gedownloade bestand `Woocommerce-master.zip` heeft, moet u het bestand nogmaals downloaden via de [Releases-pagina](https://github.com/mollie/Woocommerce/releases). Deze versie van de module kunt u direct installeren in WooCommerce.
-
-**Moet ik ook een return- en / of webhook-URL instellen?**
-
-Het is niet nodig een redirect URL of webhook in te stellen. Dat doet de module zelf automatisch bij elke order.
-
-**Ik heb een ander probleem met deze module.**
-
-Neemt u alstublieft contact op met info@mollie.com voor ondersteuning.
-
 # Licentie
 [GPLv2 (GNU General Public License, version 2) License](http://www.gnu.org/licenses/gpl-2.0.html).
 Copyright (c) 2015, Mollie B.V.
-
-# Benodigdheden
-De module draait op WooCommerce versie 2.1.0 en nieuwer, bij voorkeur de meest recente stabiele versie.
 
 # Ondersteuning
 Contact: [www.mollie.com](https://www.mollie.com) — info@mollie.com — +31 20-612 88 55
@@ -71,8 +43,9 @@ Contact: [www.mollie.com](https://www.mollie.com) — info@mollie.com — +31 20
 + [Meer informatie over Bancontact/Mister Cash via Mollie](https://www.mollie.com/mistercash/)
 + [Meer informatie over SOFORT Banking via Mollie](https://www.mollie.com/sofort/)
 + [Meer informatie over Overboeking via Mollie](https://www.mollie.com/overboeking/)
-+ [Meer informatie over PayPal via Mollie](https://www.mollie.com/paypal/)
 + [Meer informatie over Bitcoin via Mollie](https://www.mollie.com/bitcoin/)
++ [Meer informatie over PayPal via Mollie](https://www.mollie.com/paypal/)
++ [Meer informatie over Belfius Direct Net via Mollie](https://www.mollie.com/belfiusdirectnet/)
 + [Meer informatie over paysafecard via Mollie](https://www.mollie.com/paysafecard/)
 
 ![Powered By Mollie](https://www.mollie.com/images/badge-betaling-medium.png)

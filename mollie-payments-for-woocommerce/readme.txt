@@ -38,9 +38,13 @@ Please go to the [signup page](https://www.mollie.com/nl/signup) to create a new
 
 = I can't install the plugin, the plugin is displayed incorrectly =
 
-Please temporary enable the [WordPress debug option](https://codex.wordpress.org/Debugging_in_WordPress). Set the contants `WP_DEBUG` and `WP_DEBUG_LOG` to `true` and try
+Please temporary enable the [WordPress Debug Mode](https://codex.wordpress.org/Debugging_in_WordPress). Edit your `wp-config.php` and set the contants `WP_DEBUG` and `WP_DEBUG_LOG` to `true` and try
 it again. When the plugin triggers an error, WordPress will log the error to the log file `/wp-content/debug.log`. Please check this file for errors. When done, don't forget to turn off
 the WordPress debug mode by setting the two contants `WP_DEBUG` and `WP_DEBUG_LOG` back to `false`.
+
+= I get a white screen when opening ... =
+
+Most of the time a white screen means a PHP error. Because PHP won't show error messages on default for security reasons, the page is white. Please turn on the WordPress Debug Mode to turn on PHP error messages (see previous answer).
 
 = The Mollie payment gateways aren't displayed in my checkout =
 

@@ -94,11 +94,6 @@ echo "Clear $SVNPATH"
 rm -fr $SVNPATH/
 
 echo
-echo "Update GIT submodules
-git submodule init
-git submodule update
-
-echo
 echo "Creating local copy of SVN repo trunk ..."
 svn checkout $SVNURL $SVNPATH --depth immediates
 svn update --quiet $SVNPATH/trunk --set-depth infinity

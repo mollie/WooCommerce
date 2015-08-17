@@ -10,11 +10,16 @@ This can be used to test the Mollie WooCommerce plugin in a specific WordPress +
 
 ## GIT checkout plugin code
 
-I have checkout the Mollie plugin in my vagrant `www` directory so it is accesible by the vagrant machine and makes it easier to later update the translation files.
+I have checkout the Mollie plugin in my vagrant `www` directory so it is accessible by the vagrant machine and makes it easier to later update the translation files.
 
 ```
 cd <path-to-vagrant-local>/wwww
-git git@github.com:mollie/WooCommerce.git
+git clone git@github.com:mollie/WooCommerce.git
+cd WooCommerce/
+
+# Load submodule
+git submodule init
+git submodule update
 ```
 
 ## Keep the plugin sourcecode in sync with the plugin in your WordPress website

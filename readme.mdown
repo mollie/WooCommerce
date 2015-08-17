@@ -1,48 +1,49 @@
-![Mollie](https://www.mollie.nl/files/Mollie-Logo-Style-Small.png)
+![Mollie](https://www.mollie.com/files/Mollie-Logo-Style-Small.png)
 
-# WooCommerce plugin voor [betalingen via Mollie](https://www.mollie.nl/betaaldiensten/). #
+# WooCommerce plugin voor [betalingen via Mollie](https://www.mollie.com/nl/pricing).
 
-## Installatie ##
+## Installatie
 **Let op:** voor de installatie van deze module is FTP-toegang tot je webserver benodigd. Heb je hier geen ervaring mee? Laat de installatie van deze module dan over aan je websitebouwer of serverbeheerder.
 
-* Download de laatste versie van de module via de [Releases-pagina](https://github.com/mollie/Woocommerce/releases).
-* Kopieer de map `MPM` naar de `wp-content/plugins` map van uw WordPress installatie.
-* Ga naar de tab `Plugins` in uw WordPress administratiepaneel en activeer de Mollie Payment Module.
-* Ga naar WooCommerce -> Settings, kies het tabje `Checkout` (of `Payment Gateways`) en klik op `Mollie Payment Module`
-* Vul uw Api Sleutel in en sla de gegevens vervolgens op.
+* Download de zip (mollie-payments-for-woocommerce-x.x.x.zip) met de laatste versie van de module via de [Releases-pagina](https://github.com/mollie/Woocommerce/releases).
+* Pak de zip-file uit en hernoem de aangemaakte map naar `mollie-payments-for-woocommerce`.
+* Kopieer de map `mollie-payments-for-woocommerce` naar de `wp-content/plugins` map van uw WordPress installatie.
+* Ga naar de tab `Plugins` in uw WordPress administratiepaneel en activeer de plugin Mollie Payments for WooCommerce.
+* Klik bij de Mollie Payments for WooCommerce plugin op de link 'Mollie settings'.
+* Vul uw Api Sleutel(s) in en sla de gegevens vervolgens op.
 
-# Ondersteunde betaalmethodes #
+# Ondersteunde betaalmethodes
 
-### iDEAL ###
+### iDEAL
 Met iDEAL kunt u vertrouwd, veilig en gemakkelijk uw online aankopen afrekenen. iDEAL is het systeem dat u direct koppelt aan uw internetbankierprogramma bij een online aankoop.
-Via [Mollie](https://www.mollie.nl/) is iDEAL gemakkelijk aan te sluiten zonder de gebruikelijke technische en administratieve rompslomp. Mollie geeft u op ieder moment toegang tot uw transactieoverzichten en andere statistieken. Tevens is het mogelijk per e-mail of SMS een notificatie te ontvangen bij elke gelukte betaling. [Mollie](https://www.mollie.nl/) is hierdoor dus een perfecte partner op het gebied van iDEAL en is het dan ook niet verbazingwekkend dat [Mollie](https://www.mollie.nl/) ondertussen op meer dan 20.000 websites iDEAL-betalingen mag verzorgen.
+Via [Mollie](https://www.mollie.com/) is iDEAL gemakkelijk aan te sluiten zonder de gebruikelijke technische en administratieve rompslomp. Mollie geeft u op ieder moment toegang tot uw transactieoverzichten en andere statistieken. Tevens is het mogelijk per e-mail of SMS een notificatie te ontvangen bij elke gelukte betaling. [Mollie](https://www.mollie.com/) is hierdoor dus een perfecte partner op het gebied van iDEAL en is het dan ook niet verbazingwekkend dat [Mollie](https://www.mollie.com/) ondertussen op meer dan 20.000 websites iDEAL-betalingen mag verzorgen.
 
-### Creditcard ###
-[Creditcard](https://www.mollie.nl/betaaldiensten/creditcard/) is vrijwel de bekendste methode voor het ontvangen van betalingen met wereldwijde dekking. Doordat we onder andere de bekende merken Mastercard en Visa ondersteunen, zorgt dit direct voor veel potentiële kopers.
+### Creditcard
+[Creditcard](https://www.mollie.com/creditcard/) is vrijwel de bekendste methode voor het ontvangen van betalingen met wereldwijde dekking. Doordat we onder andere de bekende merken Mastercard en Visa ondersteunen, zorgt dit direct voor veel potentiële kopers.
 
-### Bancontact/Mister Cash ###
-[Bancontact/Mister Cash](https://www.mollie.nl/betaaldiensten/mistercash/) maakt gebruik van een fysieke kaart die gekoppeld is aan tegoed op een Belgische bankrekening. Betalingen via Bancontact/Mister Cash zijn gegarandeerd en lijkt daarmee sterk op iDEAL in Nederland. Daarom is het uitermate geschikt voor uw webwinkel.
+### Bancontact/Mister Cash
+[Bancontact/Mister Cash](https://www.mollie.com/mistercash/) maakt gebruik van een fysieke kaart die gekoppeld is aan tegoed op een Belgische bankrekening. Betalingen via Bancontact/Mister Cash zijn gegarandeerd en lijkt daarmee sterk op iDEAL in Nederland. Daarom is het uitermate geschikt voor uw webwinkel.
 
-### SOFORT Banking ###
-[SOFORT Banking](https://www.mollie.nl/betaaldiensten/sofort/) is één van de populairste betaalmethodes in Duitsland en actief in 11 landen. Betalingen zijn direct en niet storneerbaar, waarmee het sterk op het Nederlandse iDEAL lijkt. Daarom is het uitermate geschikt voor uw webwinkel.
+### SOFORT Banking
+[SOFORT Banking](https://www.mollie.com/sofort/) is één van de populairste betaalmethodes in Duitsland en actief in 11 landen. Betalingen zijn direct en niet storneerbaar, waarmee het sterk op het Nederlandse iDEAL lijkt. Daarom is het uitermate geschikt voor uw webwinkel.
 
-### Overboekingen ###
-[Overboekingen](https://www.mollie.nl/betaaldiensten/overboeking/) binnen de SEPA zone ontvangen via Mollie. Hiermee kun je betalingen ontvangen van zowel particulieren als zakelijke klanten in meer dan 35 Europese landen.
+### Overboekingen
+[Overboekingen](https://www.mollie.com/overboeking/) binnen de SEPA zone ontvangen via Mollie. Hiermee kun je betalingen ontvangen van zowel particulieren als zakelijke klanten in meer dan 35 Europese landen.
 
-### PayPal ###
-[PayPal](https://www.mollie.nl/betaaldiensten/paypal/) is wereldwijd een zeer populaire betaalmethode. In enkele klikken kunt u betalingen ontvangen via een bankoverschrijving, creditcard of het PayPal-saldo.
+### PayPal
+[PayPal](https://www.mollie.com/paypal/) is wereldwijd een zeer populaire betaalmethode. In enkele klikken kunt u betalingen ontvangen via een bankoverschrijving, creditcard of het PayPal-saldo.
 
-### Bitcoin ###
-[Bitcoin](https://www.mollie.nl/betaaldiensten/bitcoin/) is een vorm van elektronisch geld. De bitcoin-euro wisselkoers wordt vastgesteld op het moment van de transactie waardoor het bedrag en de uitbetaling zijn gegarandeerd.
+### Bitcoin
+[Bitcoin](https://www.mollie.com/bitcoin/) is een vorm van elektronisch geld. De bitcoin-euro wisselkoers wordt vastgesteld op het moment van de transactie waardoor het bedrag en de uitbetaling zijn gegarandeerd.
 
-### paysafecard ###
-[paysafecard](https://www.mollie.nl/betaaldiensten/paysafecard/) is de populairste prepaidcard voor online betalingen die veel door ouders voor hun kinderen wordt gekocht.
+### paysafecard
+[paysafecard](https://www.mollie.com/paysafecard/) is de populairste prepaidcard voor online betalingen die veel door ouders voor hun kinderen wordt gekocht.
 
-# Veel gestelde vragen #
+# Veel gestelde vragen
 
-**Ik heb alles ingesteld, maar de module verschijnt niet bij het afrekenen.**
+**Ik heb alles ingesteld, maar de betaalmethodes verschijnen niet bij het afrekenen.**
 
-Controleert u alstublieft of de module ingeschakeld is, of WooCommerce ingeschakeld is en of uw webshop Euro's accepteert. U kunt dit aanpassen via de admin. Via Mollie kunnen alleen orders in Euro's afgerekend worden.
+Controleer bij de payment gateway of er errors worden weergegeven. Staat de gateway ingeschakeld? Ga naar WooCommerce -> Settings -> Checkout
 
 **Ik krijg een foutmelding tijdens het installeren**
 Heeft u de module via de [Releases-pagina](https://github.com/mollie/Woocommerce/releases) gedownload? Als uw gedownloade bestand `Woocommerce-master.zip` heeft, moet u het bestand nogmaals downloaden via de [Releases-pagina](https://github.com/mollie/Woocommerce/releases). Deze versie van de module kunt u direct installeren in WooCommerce.
@@ -51,31 +52,27 @@ Heeft u de module via de [Releases-pagina](https://github.com/mollie/Woocommerce
 
 Het is niet nodig een redirect URL of webhook in te stellen. Dat doet de module zelf automatisch bij elke order.
 
-**Bestellingen die gedaan worden via Overboeking verlopen na 60 minuten al. Hoe los ik dit op?**
-
-Pas onder WooCommerce > Producten | Voorraad het aantal minuten aan naar 14400 (10 dagen) zodat de bestelling niet vroegtijdig verloopt. Standaard is dit door WooCommerce ingesteld op 60 minuten.
-
 **Ik heb een ander probleem met deze module.**
 
-Neemt u alstublieft contact op met info@mollie.nl voor ondersteuning.
+Neemt u alstublieft contact op met info@mollie.com voor ondersteuning.
 
-# Licentie #
-[BSD (Berkeley Software Distribution) License](http://www.opensource.org/licenses/bsd-license.php).
-Copyright (c) 2013, Mollie B.V.
+# Licentie
+[GPLv2 (GNU General Public License, version 2) License](http://www.gnu.org/licenses/gpl-2.0.html).
+Copyright (c) 2015, Mollie B.V.
 
-# Benodigdheden #
+# Benodigdheden
 De module draait op WooCommerce versie 2.1.0 en nieuwer, bij voorkeur de meest recente stabiele versie.
 
-# Ondersteuning #
-Contact: [www.mollie.nl](https://www.mollie.nl) — info@mollie.nl — +31 20-612 88 55
+# Ondersteuning
+Contact: [www.mollie.com](https://www.mollie.com) — info@mollie.com — +31 20-612 88 55
 
-+ [Meer informatie over iDEAL via Mollie](https://www.mollie.nl/betaaldiensten/ideal/)
-+ [Meer informatie over Creditcard via Mollie](https://www.mollie.nl/betaaldiensten/creditcard/)
-+ [Meer informatie over Bancontact/Mister Cash via Mollie](https://www.mollie.nl/betaaldiensten/mistercash/)
-+ [Meer informatie over SOFORT Banking via Mollie](https://www.mollie.nl/betaaldiensten/sofort/)
-+ [Meer informatie over Overboeking via Mollie](https://www.mollie.nl/betaaldiensten/overboeking/)
-+ [Meer informatie over PayPal via Mollie](https://www.mollie.nl/betaaldiensten/paypal/)
-+ [Meer informatie over Bitcoin via Mollie](https://www.mollie.nl/betaaldiensten/bitcoin/)
-+ [Meer informatie over paysafecard via Mollie](https://www.mollie.nl/betaaldiensten/paysafecard/)
++ [Meer informatie over iDEAL via Mollie](https://www.mollie.com/ideal/)
++ [Meer informatie over Creditcard via Mollie](https://www.mollie.com/creditcard/)
++ [Meer informatie over Bancontact/Mister Cash via Mollie](https://www.mollie.com/mistercash/)
++ [Meer informatie over SOFORT Banking via Mollie](https://www.mollie.com/sofort/)
++ [Meer informatie over Overboeking via Mollie](https://www.mollie.com/overboeking/)
++ [Meer informatie over PayPal via Mollie](https://www.mollie.com/paypal/)
++ [Meer informatie over Bitcoin via Mollie](https://www.mollie.com/bitcoin/)
++ [Meer informatie over paysafecard via Mollie](https://www.mollie.com/paysafecard/)
 
-![Powered By Mollie](https://www.mollie.nl/images/badge-betaling-medium.png)
+![Powered By Mollie](https://www.mollie.com/images/badge-betaling-medium.png)

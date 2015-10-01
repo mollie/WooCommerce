@@ -22,6 +22,9 @@ Via [Mollie](https://www.mollie.com/) is iDEAL gemakkelijk aan te sluiten zonder
 ### Overboekingen
 [Overboekingen](https://www.mollie.com/overboeking/) binnen de SEPA zone ontvangen via Mollie. Hiermee kun je betalingen ontvangen van zowel particulieren als zakelijke klanten in meer dan 35 Europese landen.
 
+### Eenmalige incasso ###
+[Eenmalige incasso](https://www.mollie.com/directdebit/) binnen de SEPA zone ontvangen via Mollie. Een eenvoudige betaalmethode waarbij het bedrag achteraf van de rekening van de consument wordt afgeschreven.
+
 ### PayPal
 [PayPal](https://www.mollie.com/paypal/) is wereldwijd een zeer populaire betaalmethode. In enkele klikken kunt u betalingen ontvangen via een bankoverschrijving, creditcard of het PayPal-saldo.
 
@@ -43,6 +46,7 @@ Contact: [www.mollie.com](https://www.mollie.com) — info@mollie.com — +31 20
 + [Meer informatie over Bancontact/Mister Cash via Mollie](https://www.mollie.com/mistercash/)
 + [Meer informatie over SOFORT Banking via Mollie](https://www.mollie.com/sofort/)
 + [Meer informatie over Overboeking via Mollie](https://www.mollie.com/overboeking/)
++ [Meer informatie over SEPA-incasso via Mollie](https://www.mollie.com/directdebit/)
 + [Meer informatie over Bitcoin via Mollie](https://www.mollie.com/bitcoin/)
 + [Meer informatie over PayPal via Mollie](https://www.mollie.com/paypal/)
 + [Meer informatie over Belfius Direct Net via Mollie](https://www.mollie.com/belfiusdirectnet/)

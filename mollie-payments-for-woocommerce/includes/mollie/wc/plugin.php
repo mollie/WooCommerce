@@ -21,6 +21,7 @@ class Mollie_WC_Plugin
         'Mollie_WC_Gateway_Belfius',
         'Mollie_WC_Gateway_Bitcoin',
         'Mollie_WC_Gateway_Creditcard',
+        'Mollie_WC_Gateway_DirectDebit',
         'Mollie_WC_Gateway_Ideal',
         'Mollie_WC_Gateway_MisterCash',
         'Mollie_WC_Gateway_PayPal',

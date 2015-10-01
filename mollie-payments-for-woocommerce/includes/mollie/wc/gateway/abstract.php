@@ -645,6 +645,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 return __('We have not received a definite payment status. You will receive an email as soon as we receive a confirmation of the bank/merchant.', 'mollie-payments-for-woocommerce');
             }
         }
+        elseif ($payment->isPaid())
+        {
+            return sprintf(
+                /* translators: Placeholder 1: payment method */
+                __('Payment completed with <strong>%s</strong>', 'mollie-payments-for-woocommerce'),
+                $this->get_title()
+            );
+        }
 
         return null;
     }

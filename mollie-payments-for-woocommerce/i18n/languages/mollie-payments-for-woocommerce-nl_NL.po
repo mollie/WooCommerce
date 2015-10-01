@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mollie Payments for WooCommerce 2.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/mollie-payments-for-woocommerce\n"
-"POT-Creation-Date: 2015-10-01 16:35+0200\n"
-"PO-Revision-Date: 2015-10-01 16:35+0200\n"
+"POT-Creation-Date: 2015-10-01 17:00+0200\n"
+"PO-Revision-Date: 2015-10-01 17:00+0200\n"
 "Last-Translator: Lennard van Gunst <lennard@mollie.com>\n"
 "Language-Team: Mollie <info@mollie.nl>\n"
 "Language: nl\n"
@@ -153,6 +153,12 @@ msgid ""
 msgstr ""
 "We hebben nog geen definitieve status van de betaling ontvangen. U ontvangt een e-mail zodra "
 "wij een bevestiging van de bank ontvangen."
+
+#. translators: Placeholder 1: payment method
+#: includes/mollie/wc/gateway/abstract.php:652
+#, fuzzy
+msgid "Payment completed with <strong>%s</strong>"
+msgstr "Betaling afgerond met <strong>%s</strong>"
 
 #: includes/mollie/wc/gateway/banktransfer.php:32
 msgid "Expiry date"

@@ -71,6 +71,7 @@ Where possible, also include the Mollie log file. You can find the Mollie log fi
 3. The available payment gateways in the checkout.
 4. The order received page will display the payment status and customer details if available.
 5. The order received page for the gateway banktransfer will display payment instructions.
+6. Some payment methods support refunds. The 'Refund' button will be available when the payment method supports refunds.
 
 == Installation ==
 

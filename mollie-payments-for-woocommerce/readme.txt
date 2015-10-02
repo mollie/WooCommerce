@@ -1,6 +1,6 @@
 === Mollie Payments for WooCommerce ===
-Contributors: l.vangunst
-Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, ideal, sofort, credit card, creditcard, visa, mastercard, mistercash, bancontact, bitcoin, paysafecard, banktransfer, overboeking, betalingen
+Contributors: l.vangunst, daanvm
+Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, ideal, sofort, credit card, creditcard, visa, mastercard, mistercash, bancontact, bitcoin, paysafecard, direct debit, incasso, sepa, banktransfer, overboeking, betalingen
 Requires at least: 3.8
 Tested up to: 4.3.1
 Stable tag: 2.0.1
@@ -17,6 +17,7 @@ This plugin will add support for the following Mollie payments methods to your W
 * Banktransfer
 * Credit card
 * Bancontact / Mister Cash
+* SEPA Direct Debit
 * PayPal
 * SOFORT banking
 * Belfius Direct Net

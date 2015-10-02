@@ -6,7 +6,7 @@ class Mollie_WC_Plugin
 {
     const PLUGIN_ID      = 'mollie-payments-for-woocommerce';
     const PLUGIN_TITLE   = 'Mollie Payments for WooCommerce';
-    const PLUGIN_VERSION = '2.0.0-beta1';
+    const PLUGIN_VERSION = '2.0.1';
 
     /**
      * @var bool

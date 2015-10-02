@@ -3,7 +3,7 @@ Contributors: l.vangunst
 Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, ideal, sofort, credit card, creditcard, visa, mastercard, mistercash, bancontact, bitcoin, paysafecard, banktransfer, overboeking, betalingen
 Requires at least: 3.8
 Tested up to: 4.3.1
-Stable tag: 2.0
+Stable tag: 2.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -105,8 +105,13 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 2.0.0 =
+= 2.0.0 - 17/08/2015 =
 * Complete rewrite of our WooCommerce plugin to better follow WordPress and WooCommerce standards and add better support for other plugins.
+
+= 2.0.1 - 02/10/2015 =
+* Add support for SEPA Direct Debit.
+* Add message for Belfius, Bitcoin, Bancontact/Mister Cash and paysafecard when the payment is paid successfully.
+
 
 == Upgrade Notice ==
 

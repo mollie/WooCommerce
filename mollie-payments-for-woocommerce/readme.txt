@@ -2,7 +2,7 @@
 Contributors: l.vangunst
 Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, ideal, sofort, credit card, creditcard, visa, mastercard, mistercash, bancontact, bitcoin, paysafecard, banktransfer, overboeking, betalingen
 Requires at least: 3.8
-Tested up to: 4.2.4
+Tested up to: 4.3.1
 Stable tag: 2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html

@@ -81,11 +81,20 @@ add_filter($gateway_id . '_icon_url', function($icon_url) {
 This filter can be added if you want to overwrite the payment webhook. This can be usefull if your development environment is on a local machine and your machine is not publicly accessable by the Mollie platform. Mollie can not deliver the webhook request to your website. You can use a tool like [ngrok](https://ngrok.com/) to create a public endpoint that proxies request to your local machine.
 
 ```
-add_filter('mollie-payments-for-woocommerce_webhook_url', function($webhook_url) {
+add_filter('mollie-payments-for-woocommerce_webhook_url', function($webhook_url, WC_Order $order) {
     // Overwrite plugin webhook URL (I use ngrok.io)
     $new_webhook_url = str_replace($_SERVER['HTTP_HOST'], '63950d2f.ngrok.io', $webhook_url);
 
     return $new_webhook_url;
+});
+```
+
+### `mollie-payments-for-woocommerce_return_url`
+This filter can be added if you want to overwrite the payment return URL. The user is redirected to this return URL after he or she completes the payment.
+
+```
+add_filter('mollie-payments-for-woocommerce_return_url', function($return_url, WC_Order $order) {
+    return $return_url;
 });
 ```
 
@@ -105,7 +114,7 @@ Use this filter if you need to overwrite or add specific Mollie payment paramete
 ```
 add_filter('woocommerce_' . $this->id . '_args', function(array $arguments, WC_Order $order) {
 	/* Here you can overwrite or add new arguments to the $arguments array */
-	
+
 	return $arguments;
 });
 ```

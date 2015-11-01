@@ -707,7 +707,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             'key'            => $order->order_key,
         ), $return_url);
 
-        return $return_url;
+        return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_return_url', $return_url, $order);
     }
 
     /**

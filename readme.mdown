@@ -34,6 +34,12 @@ Via [Mollie](https://www.mollie.com/) is iDEAL gemakkelijk aan te sluiten zonder
 ### paysafecard
 [paysafecard](https://www.mollie.com/paysafecard/) is de populairste prepaidcard voor online betalingen die veel door ouders voor hun kinderen wordt gekocht.
 
+# Wil je meewerken aan deze module? #
+
+Wil je helpen om onze plugin voor WooCommerce nog beter te maken? Wij staan open voor [pull requests](https://github.com/mollie/WooCommerce/pulls?utf8=%E2%9C%93&q=is%3Apr) voor onze module. 
+
+Maar wat denk je er over om bij een [technology driven organisatie](https://www.mollie.com/nl/blog/post/werken-bij-mollie-sfeer-kansen-en-mogelijkheden/) aan de slag te gaan? Mollie is altijd op zoek naar developers en system engineers. [Check onze vacatures](https://www.mollie.com/nl/jobs) of [neem contact met ons op](mailto:personeel@mollie.com).
+
 # Licentie
 [GPLv2 (GNU General Public License, version 2) License](http://www.gnu.org/licenses/gpl-2.0.html).
 Copyright (c) 2015, Mollie B.V.

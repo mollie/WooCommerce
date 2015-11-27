@@ -33,6 +33,16 @@ class Mollie_WC_Helper_Data
     }
 
     /**
+     * Get current locale
+     *
+     * @return string
+     */
+    protected function getCurrentLocale ()
+    {
+        return apply_filters('wpml_current_language', get_locale());
+    }
+
+    /**
      * @param string $transient
      * @return string
      */
@@ -178,9 +188,15 @@ class Mollie_WC_Helper_Data
             'api_issuers_live',
         );
 
+        $languages   = array_keys(apply_filters('wpml_active_languages', array()));
+        $languages[] = $this->getCurrentLocale();
+
         foreach ($transient_names as $transient_name)
         {
-            delete_transient($this->getTransientId($transient_name));
+            foreach ($languages as $language)
+            {
+                delete_transient($this->getTransientId($transient_name . "_$language"));
+            }
         }
     }
 
@@ -236,9 +252,11 @@ class Mollie_WC_Helper_Data
             return self::$api_methods;
         }
 
+        $locale = $this->getCurrentLocale();
+
         try
         {
-            $transient_id = $this->getTransientId('api_methods_' . ($test_mode ? 'test' : 'live'));
+            $transient_id = $this->getTransientId('api_methods_' . ($test_mode ? 'test' : 'live') . "_$locale");
 
             if ($use_cache)
             {
@@ -291,9 +309,11 @@ class Mollie_WC_Helper_Data
      */
     public function getIssuers ($test_mode = false, $method = NULL)
     {
+        $locale = $this->getCurrentLocale();
+
         try
         {
-            $transient_id = $this->getTransientId('api_issuers_' . ($test_mode ? 'test' : 'live'));
+            $transient_id = $this->getTransientId('api_issuers_' . ($test_mode ? 'test' : 'live')  . "_$locale");
 
             if (empty(self::$api_issuers))
             {

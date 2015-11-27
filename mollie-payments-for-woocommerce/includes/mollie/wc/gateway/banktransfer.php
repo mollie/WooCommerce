@@ -28,17 +28,6 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
         parent::init_form_fields();
 
         $this->form_fields = array_merge($this->form_fields, array(
-            'initial_status' => array(
-                'title'             => __('Initial status', 'mollie-payments-for-woocommerce'),
-                'type'              => 'select',
-                'options'           => array(
-                    self::STATUS_ON_HOLD => wc_get_order_status_name(self::STATUS_ON_HOLD) . ' (' . __('default', 'mollie-payments-for-woocommerce') . ')',
-                    self::STATUS_PENDING => wc_get_order_status_name(self::STATUS_PENDING),
-                ),
-                'default'           => self::STATUS_ON_HOLD,
-                'description'       => __('Initial order status when a payment is created', 'mollie-payments-for-woocommerce'),
-                'desc_tip'          => true,
-            ),
             'expiry_days' => array(
                 'title'             => __('Expiry date', 'mollie-payments-for-woocommerce'),
                 'type'              => 'number',
@@ -113,21 +102,13 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
     }
 
     /**
-     * @return string
-     */
-    protected function getInitialStatus ()
-    {
-        return $this->get_option('initial_status');
-    }
-
-    /**
-     * @param WC_Order $order
+     * {@inheritdoc}
+     *
      * @return bool
      */
-    protected function orderNeedsPayment (WC_Order $order)
+    protected function paymentConfirmationAfterCoupleOfDays ()
     {
-        // needs_payment() searches using valid_statusses, but does not include on-hold status, so we add it here.
-        return parent::orderNeedsPayment($order) || Mollie_WC_Plugin::getDataHelper()->hasOrderStatus($order, 'on-hold');
+        return true;
     }
 
     /**

@@ -25,6 +25,20 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     protected $display_logo;
 
     /**
+     * Minimum transaction amount, zero does not define a minimum
+     *
+     * @var int
+     */
+    public $min_amount = 0;
+
+    /**
+     * Maximum transaction amount, zero does not define a maximum
+     *
+     * @var int
+     */
+    public $max_amount = 0;
+
+    /**
      *
      */
     public function __construct ()
@@ -45,6 +59,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         $this->_initDescription();
         $this->_initIcon();
+        $this->_initMinMaxAmount();
 
         add_action('woocommerce_api_' . $this->id, array($this, 'webhookAction'));
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
@@ -143,6 +158,15 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $this->description = $description;
     }
 
+    protected function _initMinMaxAmount ()
+    {
+        if ($mollie_method = $this->getMollieMethod())
+        {
+            $this->min_amount = $mollie_method->getMinimumAmount() ? : 0;
+            $this->max_amount = $mollie_method->getMaximumAmount() ? : 0;
+        }
+    }
+
     public function admin_options ()
     {
         if (!$this->enabled && count($this->errors))
@@ -203,6 +227,36 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             );
 
             return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if the gateway is available for use
+     *
+     * @return bool
+     */
+    public function is_available()
+    {
+        if (!parent::is_available())
+        {
+            return false;
+        }
+
+        if (WC()->cart && $this->get_order_total() > 0)
+        {
+            // Validate min amount
+            if (0 < $this->min_amount && $this->min_amount > $this->get_order_total())
+            {
+                return false;
+            }
+
+            // Validate max amount
+            if (0 < $this->max_amount && $this->max_amount < $this->get_order_total())
+            {
+                return false;
+            }
         }
 
         return true;
@@ -578,7 +632,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 /*
                  * Return to order payment page
                  */
-                return $order->get_checkout_payment_url();
+                return $order->get_checkout_payment_url(false);
             }
 
             /*

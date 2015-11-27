@@ -320,6 +320,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
             ));
 
+            // Empty cart
+            WC()->cart->empty_cart();
+
+            Mollie_WC_Plugin::debug("Cart emptied, redirect user to payment URL: {$payment->getPaymentUrl()}");
+
             return array(
                 'result'   => 'success',
                 'redirect' => $payment->getPaymentUrl(),
@@ -555,9 +560,23 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         {
             Mollie_WC_Plugin::addNotice(__('You have cancelled your payment. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'));
 
+            if (method_exists($order, 'get_checkout_payment_url'))
+            {
+                /*
+                 * Return to order payment page
+                 */
+                return $order->get_checkout_payment_url();
+            }
+
+            /*
+             * Return to cart
+             */
             return WC()->cart->get_checkout_url();
         }
 
+        /*
+         * Return to order received page
+         */
         return $this->get_return_url($order);
     }
 

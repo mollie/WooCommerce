@@ -307,7 +307,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
             // Set initial status
             // Status is only updated if the new status is not the same as the default order status (pending)
-            $order->update_status(
+            $this->updateOrderStatus(
+                $order,
                 $initial_order_status,
                 __('Awaiting payment confirmation.', 'mollie-payments-for-woocommerce') . "\n"
             );
@@ -340,6 +341,30 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         }
 
         return array('result' => 'failure');
+    }
+
+    /**
+     * @param WC_Order $order
+     * @param string $new_status
+     * @param string $note
+     */
+    public function updateOrderStatus (WC_Order $order, $new_status, $note = '')
+    {
+        $order->update_status($new_status, $note);
+
+        switch ($new_status)
+        {
+            case self::STATUS_ON_HOLD:
+                if (!get_post_meta($order->id, '_order_stock_reduced', $single = true))
+                {
+                    // Reduce order stock
+                    $order->reduce_order_stock();
+
+                    Mollie_WC_Plugin::debug(__METHOD__ . ":  Stock for order {$order->id} reduced.");
+                }
+
+                break;
+        }
     }
 
     public function webhookAction ()
@@ -488,7 +513,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             ->setCancelledMolliePaymentId($order->id, $payment->id);
 
         // Reset state
-        $order->update_status('pending');
+        $this->updateOrderStatus($order, self::STATUS_PENDING);
 
         // User cancelled payment on Mollie or issuer page, add a cancel note.. do not cancel order.
         $order->add_order_note(sprintf(
@@ -507,8 +532,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         Mollie_WC_Plugin::debug(__METHOD__ . ' called.');
 
-        // Reset state
-        $order->update_status('pending');
+        // Cancel order
+        $this->updateOrderStatus($order, self::STATUS_CANCELLED);
 
         $order->add_order_note(sprintf(
             /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */

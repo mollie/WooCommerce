@@ -6,7 +6,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: http://wordpress.org/support/plugin/mollie-payments-"
 "for-woocommerce\n"
 "POT-Creation-Date: 2015-11-27 14:54+0100\n"
-"PO-Revision-Date: 2015-11-27 14:58+0100\n"
+"PO-Revision-Date: 2015-11-27 18:12+0100\n"
 "Last-Translator: Lennard van Gunst <lennard@mollie.com>\n"
 "Language-Team: Mollie <info@mollie.nl>\n"
 "Language: nl\n"
@@ -60,7 +60,7 @@ msgstr ""
 
 #: includes/mollie/wc/gateway/abstract.php:98
 msgid "Initial order status"
-msgstr "Standaard bestelling status"
+msgstr "Standaard bestelstatus"
 
 #: includes/mollie/wc/gateway/abstract.php:101
 #: includes/mollie/wc/helper/settings.php:354

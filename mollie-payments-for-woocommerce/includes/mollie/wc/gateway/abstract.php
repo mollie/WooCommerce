@@ -369,6 +369,19 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 }
 
                 break;
+
+            case self::STATUS_PENDING:
+            case self::STATUS_FAILED:
+            case self::STATUS_CANCELLED:
+                if (get_post_meta($order->id, '_order_stock_reduced', $single = true))
+                {
+                    // Restore order stock
+                    Mollie_WC_Plugin::getDataHelper()->restoreOrderStock($order);
+
+                    Mollie_WC_Plugin::debug(__METHOD__ . " Stock for order {$order->id} restored.");
+                }
+
+                break;
         }
     }
 

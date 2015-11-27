@@ -475,4 +475,41 @@ class Mollie_WC_Helper_Data
 
         return !empty($cancelled_payment_id);
     }
+
+    /**
+     * @param WC_Order $order
+     */
+    public function restoreOrderStock (WC_Order $order)
+    {
+        foreach ($order->get_items() as $item)
+        {
+            if ($item['product_id'] > 0)
+            {
+                $product = $order->get_product_from_item($item);
+
+                if ($product && $product->exists() && $product->managing_stock())
+                {
+                    $old_stock = $product->stock;
+
+                    $qty = apply_filters( 'woocommerce_order_item_quantity', $item['qty'], $order, $item);
+
+                    $new_quantity = $product->increase_stock( $qty );
+
+                    do_action('woocommerce_auto_stock_restored', $product, $item);
+
+                    $order->add_order_note(sprintf(
+                        __('Item #%s stock incremented from %s to %s.', 'woocommerce'),
+                        $item['product_id'],
+                        $old_stock,
+                        $new_quantity
+                    ));
+
+                    $order->send_stock_notifications($product, $new_quantity, $item['qty']);
+                }
+            }
+        }
+
+        // Mark order stock as not-reduced
+        delete_post_meta($order->id, '_order_stock_reduced');
+    }
 }

@@ -3,7 +3,7 @@ Contributors: l.vangunst, daanvm
 Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, ideal, sofort, credit card, creditcard, visa, mastercard, mistercash, bancontact, bitcoin, paysafecard, direct debit, incasso, sepa, banktransfer, overboeking, betalingen
 Requires at least: 3.8
 Tested up to: 4.3.1
-Stable tag: 2.0.1
+Stable tag: 2.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,6 +34,7 @@ Please go to the [signup page](https://www.mollie.com/nl/signup) to create a new
 * Multiple translations: English, Dutch, German and French
 * Event log for debugging purposes
 * WordPress Multisite support
+* WPML support
 
 == Frequently Asked Questions ==
 
@@ -59,6 +60,11 @@ Most of the time a white screen means a PHP error. Because PHP won't show error 
 * Do you have maintenance mode enabled? Please make sure to whitelist the 'wc-api' endpoint otherwise Mollie can't report the payment status to your website.
 * Please check your Mollie dashboard to check if there are failed webhook reports. Mollie tried to report the payment status to your website but something went wrong.
 * Contact info@mollie.com with your Mollie partner ID and the order number. We can investigate the specific payment and check whether Mollie successfully reported the payment state to your webshop.
+
+= Why do orders with payment method BankTransfer and Direct Debit get the status 'on-hold'? =
+
+These payment methods take longer than a few hours to complete. The order status is set to 'on-hold' to prevent the WooCommerce setting 'Hold stock (minutes)' (https://docs.woothemes.com/document/configuring-woocommerce-settings/#inventory-options) will 
+cancel the order. The order stock is also reduced to reserve stock for these orders. The stock is restored if the payment fails or is cancelled. You can change the initial order status for these payment methods on there setting page.
 
 = I have a different question about this plugin =
 
@@ -113,6 +119,14 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 * Add support for SEPA Direct Debit.
 * Add message for Belfius, Bitcoin, Bancontact/Mister Cash and paysafecard when the payment is paid successfully.
 
+= 2.1.0 - 01/12/2015 =
+* For payment methods where the payment status will be delivered after a couple of days you can set the initial order status. Choose between `on-hold` or `pending`.
+* Get the correct current locale (with support for [WPML](https://wpml.org)).
+* Cache payment methods and issuers by locale.
+* Cancel order when payment is expired.
+* Reduce order when initial order status is `on-hold`. Restore order stock when payment fails.
+* Hide payment gateway when cart exceeds method min / max amount. Method min / max amount is returned by Mollie API.
+* Add filter to change the return URL.
 
 == Upgrade Notice ==
 

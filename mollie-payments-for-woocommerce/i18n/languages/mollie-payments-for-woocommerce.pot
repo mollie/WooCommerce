@@ -3,9 +3,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Mollie Payments for WooCommerce 2.0.1\n"
-"Report-Msgid-Bugs-To: http://wordpress.org/support/plugin/mollie-payments-"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/mollie-payments-"
 "for-woocommerce\n"
-"POT-Creation-Date: 2015-11-27 13:51:03+00:00\n"
+"POT-Creation-Date: 2015-12-01 10:29:23+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -13,84 +13,84 @@ msgstr ""
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 
-#: includes/mollie/wc/gateway/abstract.php:68
+#: includes/mollie/wc/gateway/abstract.php:83
 msgid "Enable/Disable"
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:70
+#: includes/mollie/wc/gateway/abstract.php:85
 msgid "Enable %s"
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:74
+#: includes/mollie/wc/gateway/abstract.php:89
 msgid "Title"
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:76
+#: includes/mollie/wc/gateway/abstract.php:91
 msgid ""
 "This controls the title which the user sees during checkout. Default <code>"
 "%s</code>"
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:81
+#: includes/mollie/wc/gateway/abstract.php:96
 msgid "Display logo"
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:83
+#: includes/mollie/wc/gateway/abstract.php:98
 msgid "Display logo on checkout page. Default <code>enabled</code>"
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:87
+#: includes/mollie/wc/gateway/abstract.php:102
 #: includes/mollie/wc/helper/settings.php:340
 msgid "Description"
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:89
+#: includes/mollie/wc/gateway/abstract.php:104
 msgid ""
 "Payment method description that the customer will see on your checkout. "
 "Default <code>%s</code>"
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:98
+#: includes/mollie/wc/gateway/abstract.php:113
 msgid "Initial order status"
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:101
+#: includes/mollie/wc/gateway/abstract.php:116
 #: includes/mollie/wc/helper/settings.php:354
 msgid "default"
 msgstr ""
 
 #. translators: Placeholder 1: Default order status, placeholder 2: Link to
 #. 'Hold Stock' setting
-#: includes/mollie/wc/gateway/abstract.php:107
+#: includes/mollie/wc/gateway/abstract.php:122
 msgid ""
-"For payment methods where the payment status will be delivered after a "
-"couple of days the initial order state is set to '%s' to make sure the order "
-"won't get cancelled when the setting %s is used."
+"Some payment methods take longer than a few hours to complete. The initial "
+"order state is then set to '%s'. This ensures the order is not cancelled "
+"when the setting %s is used."
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:109
+#: includes/mollie/wc/gateway/abstract.php:124
 msgid "Hold Stock (minutes)"
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:138
-#: includes/mollie/wc/gateway/abstract.php:173
+#: includes/mollie/wc/gateway/abstract.php:153
+#: includes/mollie/wc/gateway/abstract.php:197
 #: includes/mollie/wc/helper/settings.php:197
 msgid "Test mode enabled."
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:150
+#: includes/mollie/wc/gateway/abstract.php:174
 msgid "Gateway Disabled"
 msgstr ""
 
 #. translators: The surrounding %s's Will be replaced by a link to the global
 #. setting page
-#: includes/mollie/wc/gateway/abstract.php:175
+#: includes/mollie/wc/gateway/abstract.php:199
 msgid "No API key provided. Please %sset you Mollie API key%s first."
 msgstr ""
 
 #. translators: Placeholder 1: payment method title. The surrounding %s's Will
 #. be replaced by a link to the Mollie profile
-#: includes/mollie/wc/gateway/abstract.php:187
+#: includes/mollie/wc/gateway/abstract.php:211
 msgid ""
 "%s not enabled in your Mollie profile. You can enabled it by editing your "
 "%sMollie profile%s."
@@ -98,58 +98,58 @@ msgstr ""
 
 #. translators: Placeholder 1: WooCommerce currency, placeholder 2: Supported
 #. Mollie currencies
-#: includes/mollie/wc/gateway/abstract.php:200
+#: includes/mollie/wc/gateway/abstract.php:224
 msgid "Shop currency %s not supported by Mollie. Mollie only supports: %s."
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:237
+#: includes/mollie/wc/gateway/abstract.php:291
 msgid "Could not load order %s"
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:312
+#: includes/mollie/wc/gateway/abstract.php:367
 msgid "Awaiting payment confirmation."
 msgstr ""
 
 #. translators: Placeholder 1: Payment method title, placeholder 2: payment ID
-#: includes/mollie/wc/gateway/abstract.php:317
+#: includes/mollie/wc/gateway/abstract.php:372
 msgid "%s payment started (%s)."
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:319
-#: includes/mollie/wc/gateway/abstract.php:452
-#: includes/mollie/wc/gateway/abstract.php:483
-#: includes/mollie/wc/gateway/abstract.php:508
-#: includes/mollie/wc/gateway/abstract.php:527
+#: includes/mollie/wc/gateway/abstract.php:374
+#: includes/mollie/wc/gateway/abstract.php:539
+#: includes/mollie/wc/gateway/abstract.php:570
+#: includes/mollie/wc/gateway/abstract.php:595
+#: includes/mollie/wc/gateway/abstract.php:614
 msgid "test mode"
 msgstr ""
 
 #. translators: Placeholder 1: Payment method title
-#: includes/mollie/wc/gateway/abstract.php:342
+#: includes/mollie/wc/gateway/abstract.php:392
 msgid "Could not create %s payment."
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment
 #. status, placeholder 3: payment ID
-#: includes/mollie/wc/gateway/abstract.php:449
+#: includes/mollie/wc/gateway/abstract.php:536
 msgid "%s payment %s (%s)."
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: includes/mollie/wc/gateway/abstract.php:481
+#: includes/mollie/wc/gateway/abstract.php:568
 msgid "Order completed using %s payment (%s)."
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: includes/mollie/wc/gateway/abstract.php:506
+#: includes/mollie/wc/gateway/abstract.php:593
 msgid "%s payment cancelled (%s)."
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: includes/mollie/wc/gateway/abstract.php:525
+#: includes/mollie/wc/gateway/abstract.php:612
 msgid "%s payment expired (%s)."
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:541
+#: includes/mollie/wc/gateway/abstract.php:628
 msgid ""
 "You have cancelled your payment. Please complete your order with a different "
 "payment method."
@@ -158,26 +158,26 @@ msgstr ""
 #. translators: Placeholder 1: currency, placeholder 2: refunded amount,
 #. placeholder 3: optional refund reason, placeholder 4: payment ID,
 #. placeholder 5: refund ID
-#: includes/mollie/wc/gateway/abstract.php:601
+#: includes/mollie/wc/gateway/abstract.php:702
 msgid "Refunded %s%s (reason: %s) - Payment ID: %s, Refund: %s"
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:670
+#: includes/mollie/wc/gateway/abstract.php:771
 msgid "Payment"
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:691
+#: includes/mollie/wc/gateway/abstract.php:792
 msgid "We have not received a definite payment status."
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:696
+#: includes/mollie/wc/gateway/abstract.php:797
 msgid ""
 "We have not received a definite payment status. You will receive an email as "
 "soon as we receive a confirmation of the bank/merchant."
 msgstr ""
 
 #. translators: Placeholder 1: payment method
-#: includes/mollie/wc/gateway/abstract.php:703
+#: includes/mollie/wc/gateway/abstract.php:804
 msgid "Payment completed with <strong>%s</strong>"
 msgstr ""
 
@@ -327,6 +327,10 @@ msgstr ""
 msgid ""
 "Invalid API key. The API key must start with 'live_' or 'test_' and can't "
 "further contain any special characters."
+msgstr ""
+
+#: includes/mollie/wc/helper/data.php:501
+msgid "Item #%s stock incremented from %s to %s."
 msgstr ""
 
 #: includes/mollie/wc/helper/settings.php:119

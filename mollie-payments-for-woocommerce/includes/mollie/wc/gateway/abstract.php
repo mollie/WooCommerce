@@ -119,7 +119,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 'default'     => self::STATUS_ON_HOLD,
                 /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
                 'description' => sprintf(
-                    __('For payment methods where the payment status will be delivered after a couple of days the initial order state is set to \'%s\' to make sure the order won\'t get cancelled when the setting %s is used.', 'mollie-payments-for-woocommerce'),
+                    __('Some payment methods take longer than a few hours to complete. The initial order state is then set to \'%s\'. This ensures the order is not cancelled when the setting %s is used.', 'mollie-payments-for-woocommerce'),
                     wc_get_order_status_name(self::STATUS_ON_HOLD),
                     '<a href="' . admin_url( 'admin.php?page=wc-settings&tab=products&section=inventory') . '" target="_blank">' . __('Hold Stock (minutes)', 'woocommerce') . '</a>'
                 ),

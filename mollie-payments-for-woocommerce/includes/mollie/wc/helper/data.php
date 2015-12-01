@@ -33,6 +33,16 @@ class Mollie_WC_Helper_Data
     }
 
     /**
+     * Get current locale
+     *
+     * @return string
+     */
+    protected function getCurrentLocale ()
+    {
+        return apply_filters('wpml_current_language', get_locale());
+    }
+
+    /**
      * @param string $transient
      * @return string
      */
@@ -178,9 +188,15 @@ class Mollie_WC_Helper_Data
             'api_issuers_live',
         );
 
+        $languages   = array_keys(apply_filters('wpml_active_languages', array()));
+        $languages[] = $this->getCurrentLocale();
+
         foreach ($transient_names as $transient_name)
         {
-            delete_transient($this->getTransientId($transient_name));
+            foreach ($languages as $language)
+            {
+                delete_transient($this->getTransientId($transient_name . "_$language"));
+            }
         }
     }
 
@@ -236,9 +252,11 @@ class Mollie_WC_Helper_Data
             return self::$api_methods;
         }
 
+        $locale = $this->getCurrentLocale();
+
         try
         {
-            $transient_id = $this->getTransientId('api_methods_' . ($test_mode ? 'test' : 'live'));
+            $transient_id = $this->getTransientId('api_methods_' . ($test_mode ? 'test' : 'live') . "_$locale");
 
             if ($use_cache)
             {
@@ -291,9 +309,11 @@ class Mollie_WC_Helper_Data
      */
     public function getIssuers ($test_mode = false, $method = NULL)
     {
+        $locale = $this->getCurrentLocale();
+
         try
         {
-            $transient_id = $this->getTransientId('api_issuers_' . ($test_mode ? 'test' : 'live'));
+            $transient_id = $this->getTransientId('api_issuers_' . ($test_mode ? 'test' : 'live')  . "_$locale");
 
             if (empty(self::$api_issuers))
             {
@@ -454,5 +474,42 @@ class Mollie_WC_Helper_Data
         $cancelled_payment_id = $this->getCancelledMolliePaymentId($order_id);
 
         return !empty($cancelled_payment_id);
+    }
+
+    /**
+     * @param WC_Order $order
+     */
+    public function restoreOrderStock (WC_Order $order)
+    {
+        foreach ($order->get_items() as $item)
+        {
+            if ($item['product_id'] > 0)
+            {
+                $product = $order->get_product_from_item($item);
+
+                if ($product && $product->exists() && $product->managing_stock())
+                {
+                    $old_stock = $product->stock;
+
+                    $qty = apply_filters( 'woocommerce_order_item_quantity', $item['qty'], $order, $item);
+
+                    $new_quantity = $product->increase_stock( $qty );
+
+                    do_action('woocommerce_auto_stock_restored', $product, $item);
+
+                    $order->add_order_note(sprintf(
+                        __('Item #%s stock incremented from %s to %s.', 'woocommerce'),
+                        $item['product_id'],
+                        $old_stock,
+                        $new_quantity
+                    ));
+
+                    $order->send_stock_notifications($product, $new_quantity, $item['qty']);
+                }
+            }
+        }
+
+        // Mark order stock as not-reduced
+        delete_post_meta($order->id, '_order_stock_reduced');
     }
 }

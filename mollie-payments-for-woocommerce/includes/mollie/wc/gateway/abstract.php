@@ -1,6 +1,14 @@
 <?php
 abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 {
+    const STATUS_PENDING    = 'pending';
+    const STATUS_PROCESSING = 'processing';
+    const STATUS_ON_HOLD    = 'on-hold';
+    const STATUS_COMPLETED  = 'completed';
+    const STATUS_CANCELLED  = 'cancelled';
+    const STATUS_REFUNDED   = 'refunded';
+    const STATUS_FAILED     = 'failed';
+
     /**
      * @var string
      */
@@ -15,6 +23,20 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      * @var bool
      */
     protected $display_logo;
+
+    /**
+     * Minimum transaction amount, zero does not define a minimum
+     *
+     * @var int
+     */
+    public $min_amount = 0;
+
+    /**
+     * Maximum transaction amount, zero does not define a maximum
+     *
+     * @var int
+     */
+    public $max_amount = 0;
 
     /**
      *
@@ -37,6 +59,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         $this->_initDescription();
         $this->_initIcon();
+        $this->_initMinMaxAmount();
 
         add_action('woocommerce_api_' . $this->id, array($this, 'webhookAction'));
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
@@ -83,6 +106,25 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 'desc_tip'    => true,
             ),
         );
+
+        if ($this->paymentConfirmationAfterCoupleOfDays())
+        {
+            $this->form_fields['initial_order_status'] = array(
+                'title'       => __('Initial order status', 'mollie-payments-for-woocommerce'),
+                'type'        => 'select',
+                'options'     => array(
+                    self::STATUS_ON_HOLD => wc_get_order_status_name(self::STATUS_ON_HOLD) . ' (' . __('default', 'mollie-payments-for-woocommerce') . ')',
+                    self::STATUS_PENDING => wc_get_order_status_name(self::STATUS_PENDING),
+                ),
+                'default'     => self::STATUS_ON_HOLD,
+                /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
+                'description' => sprintf(
+                    __('Some payment methods take longer than a few hours to complete. The initial order state is then set to \'%s\'. This ensures the order is not cancelled when the setting %s is used.', 'mollie-payments-for-woocommerce'),
+                    wc_get_order_status_name(self::STATUS_ON_HOLD),
+                    '<a href="' . admin_url( 'admin.php?page=wc-settings&tab=products&section=inventory') . '" target="_blank">' . __('Hold Stock (minutes)', 'woocommerce') . '</a>'
+                ),
+            );
+        }
     }
 
     /**
@@ -114,6 +156,15 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $description .= $this->get_option('description');
 
         $this->description = $description;
+    }
+
+    protected function _initMinMaxAmount ()
+    {
+        if ($mollie_method = $this->getMollieMethod())
+        {
+            $this->min_amount = $mollie_method->getMinimumAmount() ? : 0;
+            $this->max_amount = $mollie_method->getMaximumAmount() ? : 0;
+        }
     }
 
     public function admin_options ()
@@ -182,6 +233,50 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     }
 
     /**
+     * Check if the gateway is available for use
+     *
+     * @return bool
+     */
+    public function is_available()
+    {
+        if (!parent::is_available())
+        {
+            return false;
+        }
+
+        if (WC()->cart && $this->get_order_total() > 0)
+        {
+            // Validate min amount
+            if (0 < $this->min_amount && $this->min_amount > $this->get_order_total())
+            {
+                return false;
+            }
+
+            // Validate max amount
+            if (0 < $this->max_amount && $this->max_amount < $this->get_order_total())
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Will the payment confirmation be delivered after a couple of days.
+     *
+     * Overwrite this method for payment gateways where the payment confirmation takes a couple of days.
+     * When this method return true, a new setting will be available where the merchant can set the initial
+     * payment state: on-hold or pending
+     *
+     * @return bool
+     */
+    protected function paymentConfirmationAfterCoupleOfDays ()
+    {
+        return false;
+    }
+
+    /**
      * @param int $order_id
      * @return array
      */
@@ -198,20 +293,13 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             return array('result' => 'failure');
         }
 
-        $initial_status = $this->getInitialStatus();
+        $initial_order_status = $this->getInitialOrderStatus();
 
         // Overwrite plugin-wide
-        $initial_status = apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_initial_order_status', $initial_status);
+        $initial_order_status = apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_initial_order_status', $initial_order_status);
 
         // Overwrite gateway-wide
-        $initial_status = apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_initial_order_status_' . $this->id, $initial_status);
-
-        // Set initial status
-        // Status is only updated if the new status is not the same as the default order status (pending)
-        $order->update_status(
-            $initial_status,
-            __('Awaiting payment confirmation.', 'mollie-payments-for-woocommerce') . "\n"
-        );
+        $initial_order_status = apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_initial_order_status_' . $this->id, $initial_order_status);
 
         $settings_helper     = Mollie_WC_Plugin::getSettingsHelper();
 
@@ -271,6 +359,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
             Mollie_WC_Plugin::debug($this->id . ': Payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $order->id);
 
+            // Set initial status
+            // Status is only updated if the new status is not the same as the default order status (pending)
+            $this->updateOrderStatus(
+                $order,
+                $initial_order_status,
+                __('Awaiting payment confirmation.', 'mollie-payments-for-woocommerce') . "\n"
+            );
+
             $order->add_order_note(sprintf(
                 /* translators: Placeholder 1: Payment method title, placeholder 2: payment ID */
                 __('%s payment started (%s).', 'mollie-payments-for-woocommerce'),
@@ -278,8 +374,13 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
             ));
 
+            // Empty cart
+            WC()->cart->empty_cart();
+
+            Mollie_WC_Plugin::debug("Cart emptied, redirect user to payment URL: {$payment->getPaymentUrl()}");
+
             return array(
-                'result' => 'success',
+                'result'   => 'success',
                 'redirect' => $payment->getPaymentUrl(),
             );
         }
@@ -299,6 +400,43 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         }
 
         return array('result' => 'failure');
+    }
+
+    /**
+     * @param WC_Order $order
+     * @param string $new_status
+     * @param string $note
+     */
+    public function updateOrderStatus (WC_Order $order, $new_status, $note = '')
+    {
+        $order->update_status($new_status, $note);
+
+        switch ($new_status)
+        {
+            case self::STATUS_ON_HOLD:
+                if (!get_post_meta($order->id, '_order_stock_reduced', $single = true))
+                {
+                    // Reduce order stock
+                    $order->reduce_order_stock();
+
+                    Mollie_WC_Plugin::debug(__METHOD__ . ":  Stock for order {$order->id} reduced.");
+                }
+
+                break;
+
+            case self::STATUS_PENDING:
+            case self::STATUS_FAILED:
+            case self::STATUS_CANCELLED:
+                if (get_post_meta($order->id, '_order_stock_reduced', $single = true))
+                {
+                    // Restore order stock
+                    Mollie_WC_Plugin::getDataHelper()->restoreOrderStock($order);
+
+                    Mollie_WC_Plugin::debug(__METHOD__ . " Stock for order {$order->id} restored.");
+                }
+
+                break;
+        }
     }
 
     public function webhookAction ()
@@ -447,7 +585,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             ->setCancelledMolliePaymentId($order->id, $payment->id);
 
         // Reset state
-        $order->update_status('pending');
+        $this->updateOrderStatus($order, self::STATUS_PENDING);
 
         // User cancelled payment on Mollie or issuer page, add a cancel note.. do not cancel order.
         $order->add_order_note(sprintf(
@@ -466,8 +604,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         Mollie_WC_Plugin::debug(__METHOD__ . ' called.');
 
-        // Reset state
-        $order->update_status('pending');
+        // Cancel order
+        $this->updateOrderStatus($order, self::STATUS_CANCELLED);
 
         $order->add_order_note(sprintf(
             /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
@@ -489,9 +627,23 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         {
             Mollie_WC_Plugin::addNotice(__('You have cancelled your payment. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'));
 
+            if (method_exists($order, 'get_checkout_payment_url'))
+            {
+                /*
+                 * Return to order payment page
+                 */
+                return $order->get_checkout_payment_url(false);
+            }
+
+            /*
+             * Return to cart
+             */
             return WC()->cart->get_checkout_url();
         }
 
+        /*
+         * Return to order received page
+         */
         return $this->get_return_url($order);
     }
 
@@ -663,7 +815,18 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function orderNeedsPayment (WC_Order $order)
     {
-        return $order->needs_payment();
+        if ($order->needs_payment())
+        {
+            return true;
+        }
+
+        // Has initial order status 'on-hold'
+        if ($this->getInitialOrderStatus() === self::STATUS_ON_HOLD && Mollie_WC_Plugin::getDataHelper()->hasOrderStatus($order, self::STATUS_ON_HOLD))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -690,9 +853,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     /**
      * @return string
      */
-    protected function getInitialStatus ()
+    protected function getInitialOrderStatus ()
     {
-        return 'pending';
+        if ($this->paymentConfirmationAfterCoupleOfDays())
+        {
+            return $this->get_option('initial_order_status');
+        }
+
+        return self::STATUS_PENDING;
     }
 
     /**
@@ -707,7 +875,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             'key'            => $order->order_key,
         ), $return_url);
 
-        return $return_url;
+        return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_return_url', $return_url, $order);
     }
 
     /**

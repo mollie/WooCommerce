@@ -102,21 +102,13 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
     }
 
     /**
-     * @return string
-     */
-    protected function getInitialStatus ()
-    {
-        return 'on-hold';
-    }
-
-    /**
-     * @param WC_Order $order
+     * {@inheritdoc}
+     *
      * @return bool
      */
-    protected function orderNeedsPayment (WC_Order $order)
+    protected function paymentConfirmationAfterCoupleOfDays ()
     {
-        // needs_payment() searches using valid_statusses, but does not include on-hold status, so we add it here.
-        return parent::orderNeedsPayment($order) || Mollie_WC_Plugin::getDataHelper()->hasOrderStatus($order, 'on-hold');
+        return true;
     }
 
     /**

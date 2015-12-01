@@ -25,6 +25,16 @@ class Mollie_WC_Gateway_DirectDebit extends Mollie_WC_Gateway_Abstract
 		return '';
 	}
 
+    /**
+     * {@inheritdoc}
+     *
+     * @return bool
+     */
+    protected function paymentConfirmationAfterCoupleOfDays ()
+    {
+        return true;
+    }
+
 	/**
 	 * @param WC_Order                  $order
 	 * @param Mollie_API_Object_Payment $payment

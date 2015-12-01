@@ -52,7 +52,7 @@ class Mollie_WC_Helper_Settings
             if ($setting == 'wp_locale')
             {
                 // Send current locale to Mollie
-                return get_locale();
+                return $this->getCurrentLocale();
             }
             else
             {
@@ -63,6 +63,16 @@ class Mollie_WC_Helper_Settings
 
         // Do not send locale to Mollie, use browser language
         return null;
+    }
+
+    /**
+     * Get current locale
+     *
+     * @return string
+     */
+    public function getCurrentLocale ()
+    {
+        return apply_filters('wpml_current_language', get_locale());
     }
 
     /**
@@ -341,7 +351,7 @@ class Mollie_WC_Helper_Settings
                 'options' => array(
                     ''          => __('Detect using browser language', 'mollie-payments-for-woocommerce'),
                     /* translators: Placeholder 1: Current WordPress locale */
-                    'wp_locale' => sprintf(__('Send WordPress language (%s)', 'mollie-payments-for-woocommerce'), get_locale()) . ' (' . __('default', 'mollie-payments-for-woocommerce') . ')',
+                    'wp_locale' => sprintf(__('Send WordPress language (%s)', 'mollie-payments-for-woocommerce'), $this->getCurrentLocale()) . ' (' . __('default', 'mollie-payments-for-woocommerce') . ')',
                     'nl_NL'     => __('Dutch', 'mollie-payments-for-woocommerce'),
                     'nl_BE'     => __('Flemish (Belgium)', 'mollie-payments-for-woocommerce'),
                     'en'        => __('English', 'mollie-payments-for-woocommerce'),

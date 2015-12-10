@@ -51,7 +51,7 @@ Contact: [www.mollie.com](https://www.mollie.com) — info@mollie.com — +31 20
 + [Meer informatie over Creditcard via Mollie](https://www.mollie.com/creditcard/)
 + [Meer informatie over Bancontact/Mister Cash via Mollie](https://www.mollie.com/mistercash/)
 + [Meer informatie over SOFORT Banking via Mollie](https://www.mollie.com/sofort/)
-+ [Meer informatie over Overboeking via Mollie](https://www.mollie.com/overboeking/)
++ [Meer informatie over Overboeking via Mollie](https://www.mollie.com/banktransfer/)
 + [Meer informatie over SEPA-incasso via Mollie](https://www.mollie.com/directdebit/)
 + [Meer informatie over Bitcoin via Mollie](https://www.mollie.com/bitcoin/)
 + [Meer informatie over PayPal via Mollie](https://www.mollie.com/paypal/)

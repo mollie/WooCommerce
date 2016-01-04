@@ -869,11 +869,16 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function getReturnUrl (WC_Order $order)
     {
+        $site_url = get_site_url();
+
         $return_url = WC()->api_request_url('mollie_return');
         $return_url = add_query_arg(array(
             'order_id'       => $order->id,
             'key'            => $order->order_key,
         ), $return_url);
+
+        $lang_url = $this->getSiteUrlWithLanguageSlugIfSiteHasAMultiLangPlugin();
+        $return_url = str_replace($site_url, $lang_url, $return_url);
 
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_return_url', $return_url, $order);
     }
@@ -884,13 +889,38 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function getWebhookUrl (WC_Order $order)
     {
+        $site_url = get_site_url();
+
         $webhook_url = WC()->api_request_url(strtolower(get_class($this)));
         $webhook_url = add_query_arg(array(
             'order_id' => $order->id,
             'key'      => $order->order_key,
         ), $webhook_url);
 
+        $lang_url = $this->getSiteUrlWithLanguageSlugIfSiteHasAMultiLangPlugin();
+        $webhook_url = str_replace($site_url, $lang_url, $webhook_url);
+
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_webhook_url', $webhook_url, $order);
+    }
+
+    /**
+     * @return string
+     */
+    protected function getSiteUrlWithLanguageSlugIfSiteHasAMultiLangPlugin()
+    {
+        $site_url = get_site_url();
+        $slug = ''; // default is NO slug/language
+        if (is_plugin_active('polylang/polylang.php'))
+        {
+            // we probably hav a multilang site.
+            // retrieve current language
+            $slug = get_bloginfo('language');
+            $pos = strpos($slug, '-');
+            $slug = substr($slug, 0, $pos);
+            $slug = '/' . $slug;
+        }
+
+        return str_replace($site_url, $site_url . $slug, $site_url);
     }
 
     /**

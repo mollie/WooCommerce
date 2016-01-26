@@ -910,6 +910,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function getSiteUrlWithLanguage()
     {
+        /**
+         * function is_plugin_active() is not available. Lets include it to use it.
+         */
+        include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+
         $site_url = get_site_url();
         $slug     = ''; // default is NO slug/language
 

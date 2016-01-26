@@ -196,10 +196,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
             $this->errors[] = ($test_mode ? __('Test mode enabled.', 'mollie-payments-for-woocommerce') . ' ' : '') . sprintf(
                 /* translators: The surrounding %s's Will be replaced by a link to the global setting page */
-                __('No API key provided. Please %sset you Mollie API key%s first.', 'mollie-payments-for-woocommerce'),
-                '<a href="' . $settings->getGlobalSettingsUrl() . '">',
-                '</a>'
-            );
+                    __('No API key provided. Please %sset you Mollie API key%s first.', 'mollie-payments-for-woocommerce'),
+                    '<a href="' . $settings->getGlobalSettingsUrl() . '">',
+                    '</a>'
+                );
 
             return false;
         }
@@ -207,7 +207,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         if (null === $this->getMollieMethod())
         {
             $this->errors[] = sprintf(
-                /* translators: Placeholder 1: payment method title. The surrounding %s's Will be replaced by a link to the Mollie profile */
+            /* translators: Placeholder 1: payment method title. The surrounding %s's Will be replaced by a link to the Mollie profile */
                 __('%s not enabled in your Mollie profile. You can enabled it by editing your %sMollie profile%s.', 'mollie-payments-for-woocommerce'),
                 $this->getDefaultTitle(),
                 '<a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">',
@@ -220,7 +220,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         if (!$this->isCurrencySupported())
         {
             $this->errors[] = sprintf(
-                /* translators: Placeholder 1: WooCommerce currency, placeholder 2: Supported Mollie currencies */
+            /* translators: Placeholder 1: WooCommerce currency, placeholder 2: Supported Mollie currencies */
                 __('Shop currency %s not supported by Mollie. Mollie only supports: %s.', 'mollie-payments-for-woocommerce'),
                 get_woocommerce_currency(),
                 implode(', ', $this->getSupportedCurrencies())
@@ -368,7 +368,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             );
 
             $order->add_order_note(sprintf(
-                /* translators: Placeholder 1: Payment method title, placeholder 2: payment ID */
+            /* translators: Placeholder 1: Payment method title, placeholder 2: payment ID */
                 __('%s payment started (%s).', 'mollie-payments-for-woocommerce'),
                 $this->method_title,
                 $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
@@ -532,7 +532,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         else
         {
             $order->add_order_note(sprintf(
-                /* translators: Placeholder 1: payment method title, placeholder 2: payment status, placeholder 3: payment ID */
+            /* translators: Placeholder 1: payment method title, placeholder 2: payment status, placeholder 3: payment ID */
                 __('%s payment %s (%s).', 'mollie-payments-for-woocommerce'),
                 $this->method_title,
                 $payment->status,
@@ -564,7 +564,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         }
 
         $order->add_order_note(sprintf(
-            /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+        /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
             __('Order completed using %s payment (%s).', 'mollie-payments-for-woocommerce'),
             $this->method_title,
             $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
@@ -589,7 +589,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         // User cancelled payment on Mollie or issuer page, add a cancel note.. do not cancel order.
         $order->add_order_note(sprintf(
-            /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+        /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
             __('%s payment cancelled (%s).', 'mollie-payments-for-woocommerce'),
             $this->method_title,
             $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
@@ -608,7 +608,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $this->updateOrderStatus($order, self::STATUS_CANCELLED);
 
         $order->add_order_note(sprintf(
-            /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+        /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
             __('%s payment expired (%s).', 'mollie-payments-for-woocommerce'),
             $this->method_title,
             $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
@@ -698,7 +698,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             do_action(Mollie_WC_Plugin::PLUGIN_ID . '_refund_created', $refund, $order);
 
             $order->add_order_note(sprintf(
-                /* translators: Placeholder 1: currency, placeholder 2: refunded amount, placeholder 3: optional refund reason, placeholder 4: payment ID, placeholder 5: refund ID */
+            /* translators: Placeholder 1: currency, placeholder 2: refunded amount, placeholder 3: optional refund reason, placeholder 4: payment ID, placeholder 5: refund ID */
                 __('Refunded %s%s (reason: %s) - Payment ID: %s, Refund: %s', 'mollie-payments-for-woocommerce'),
                 get_woocommerce_currency_symbol(),
                 $amount,
@@ -800,7 +800,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         elseif ($payment->isPaid())
         {
             return sprintf(
-                /* translators: Placeholder 1: payment method */
+            /* translators: Placeholder 1: payment method */
                 __('Payment completed with <strong>%s</strong>', 'mollie-payments-for-woocommerce'),
                 $this->get_title()
             );
@@ -869,7 +869,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function getReturnUrl (WC_Order $order)
     {
-        $site_url = get_site_url();
+        $site_url   = get_site_url();
 
         $return_url = WC()->api_request_url('mollie_return');
         $return_url = add_query_arg(array(
@@ -877,7 +877,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             'key'            => $order->order_key,
         ), $return_url);
 
-        $lang_url = $this->getSiteUrlWithLanguageSlugIfSiteHasAMultiLangPlugin();
+        $lang_url   = $this->getSiteUrlWithLanguage();
         $return_url = str_replace($site_url, $lang_url, $return_url);
 
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_return_url', $return_url, $order);
@@ -889,7 +889,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function getWebhookUrl (WC_Order $order)
     {
-        $site_url = get_site_url();
+        $site_url    = get_site_url();
 
         $webhook_url = WC()->api_request_url(strtolower(get_class($this)));
         $webhook_url = add_query_arg(array(
@@ -897,25 +897,27 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             'key'      => $order->order_key,
         ), $webhook_url);
 
-        $lang_url = $this->getSiteUrlWithLanguageSlugIfSiteHasAMultiLangPlugin();
+        $lang_url    = $this->getSiteUrlWithLanguage();
         $webhook_url = str_replace($site_url, $lang_url, $webhook_url);
 
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_webhook_url', $webhook_url, $order);
     }
 
     /**
+     * Check if any multi language plugins are enabled and return the correct site url.
+     *
      * @return string
      */
-    protected function getSiteUrlWithLanguageSlugIfSiteHasAMultiLangPlugin()
+    protected function getSiteUrlWithLanguage()
     {
         $site_url = get_site_url();
-        $slug = ''; // default is NO slug/language
-        if (is_plugin_active('polylang/polylang.php'))
+        $slug     = ''; // default is NO slug/language
+
+        if (is_plugin_active('polylang/polylang.php') || is_plugin_active('mlang/mlang.php'))
         {
-            // we probably hav a multilang site.
-            // retrieve current language
+            // we probably have a multilang site. Retrieve current language.
             $slug = get_bloginfo('language');
-            $pos = strpos($slug, '-');
+            $pos  = strpos($slug, '-');
             $slug = substr($slug, 0, $pos);
             $slug = '/' . $slug;
         }

@@ -402,30 +402,28 @@ class Mollie_WC_Helper_Settings
      */
     protected function mergeSettings(array $settings, array $mollie_settings)
     {
-        $insert_after_index = NULL;
+        $new_settings           = array();
+        $mollie_settings_merged = false;
 
         // Find payment gateway options index
         foreach ($settings as $index => $setting) {
             if (isset($setting['id']) && $setting['id'] == 'payment_gateways_options'
                 && (!isset($setting['type']) || $setting['type'] != 'sectionend')
             ) {
-                $insert_after_index = $index;
-                break;
+                $new_settings           = array_merge($new_settings, $mollie_settings);
+                $mollie_settings_merged = true;
             }
+
+            $new_settings[] = $setting;
         }
 
-        // Payment gateways setting found
-        if ($insert_after_index !== NULL)
-        {
-            // Insert Mollie settings before payment gateways setting
-            array_splice($settings, $insert_after_index, 0, $mollie_settings);
-        }
-        else
+        // Mollie settings not merged yet, payment_gateways_options not found
+        if (!$mollie_settings_merged)
         {
             // Append Mollie settings
-            $settings = array_merge($settings, $mollie_settings);
+            $new_settings = array_merge($new_settings, $mollie_settings);
         }
 
-        return $settings;
+        return $new_settings;
     }
 }

@@ -374,9 +374,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
             ));
 
-            // Empty cart
-            WC()->cart->empty_cart();
-
             Mollie_WC_Plugin::debug("Cart emptied, redirect user to payment URL: {$payment->getPaymentUrl()}");
 
             return array(
@@ -726,6 +723,13 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         if (!$order)
         {
             return;
+        }
+
+        // On order return page, when the order does not need a payment (any more), because paid or other end-status, empty the cart
+        if (!$this->orderNeedsPayment($order))
+        {
+            // Empty cart
+            WC()->cart->empty_cart();
         }
 
         // Same as email instructions, just run that

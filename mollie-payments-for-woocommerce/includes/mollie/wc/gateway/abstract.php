@@ -162,8 +162,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         if ($mollie_method = $this->getMollieMethod())
         {
-            $this->min_amount = $mollie_method->getMinimumAmount() ? : 0;
-            $this->max_amount = $mollie_method->getMaximumAmount() ? : 0;
+            $this->min_amount = $mollie_method->getMinimumAmount() ? $mollie_method->getMinimumAmount() : 0;
+            $this->max_amount = $mollie_method->getMaximumAmount() ? $mollie_method->getMaximumAmount() : 0;
         }
     }
 

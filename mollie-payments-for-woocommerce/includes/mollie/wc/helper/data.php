@@ -7,7 +7,7 @@ class Mollie_WC_Helper_Data
      *
      * @var string
      */
-    const TRANSIENT_PREFIX = 'mollie-woocommerce-';
+    const TRANSIENT_PREFIX = 'mollie-wc-';
 
     /**
      * @var Mollie_API_Object_Method[]|Mollie_API_Object_List|array

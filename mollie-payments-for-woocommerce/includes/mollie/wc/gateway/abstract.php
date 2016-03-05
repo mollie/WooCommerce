@@ -309,6 +309,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $selected_issuer     = $this->getSelectedIssuer();
         $return_url          = $this->getReturnUrl($order);
         $webhook_url         = $this->getWebhookUrl($order);
+        $customer_id         = Mollie_WC_Plugin::getDataHelper()->getUserMollieCustomerId($order->customer_user);
 
         $payment_description = strtr($payment_description, array(
             '{order_number}' => $order->get_order_number(),
@@ -336,6 +337,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             'metadata'        => array(
                 'order_id' => $order->id,
             ),
+            'customerId'      => $customer_id,
         ));
 
         $data = apply_filters('woocommerce_' . $this->id . '_args', $data, $order);
@@ -349,11 +351,28 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             // Is test mode enabled?
             $test_mode = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
 
-            // Create Mollie payment
-            $payment   = Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode)->payments->create($data);
+            // Create Mollie payment with customer id.
+            try
+            {
+                $payment = Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode)->payments->create($data);
+            }
+            catch (Mollie_API_Exception $e)
+            {
+                if ($e->getField() !== 'customerId')
+                {
+                    throw $e;
+                }
+
+                // Retry without customer id.
+                unset($data['customerId']);
+                $payment = Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode)->payments->create($data);
+            }
 
             // Set active Mollie payment
             Mollie_WC_Plugin::getDataHelper()->setActiveMolliePayment($order->id, $payment);
+
+            // Set Mollie customer
+            Mollie_WC_Plugin::getDataHelper()->setUserMollieCustomerId($order->customer_user, $payment->customerId);
 
             do_action(Mollie_WC_Plugin::PLUGIN_ID . '_payment_created', $payment, $order);
 

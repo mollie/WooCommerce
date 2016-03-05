@@ -371,7 +371,43 @@ class Mollie_WC_Helper_Data
 
         delete_post_meta($order_id, '_mollie_cancelled_payment_id');
 
+        if ($payment->customerId)
+        {
+            add_post_meta($order_id, '_mollie_customer_id', $payment->customerId, $single = true);
+        }
+
         return $this;
+    }
+
+    /**
+     * @param int         $user_id
+     * @param string|null $customer_id
+     * @return $this
+     */
+    public function setUserMollieCustomerId ($user_id, $customer_id)
+    {
+        if (!empty($user_id))
+        {
+            update_user_meta($user_id, 'mollie_customer_id', $customer_id);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param int    $user_id
+     * @return string|null
+     */
+    public function getUserMollieCustomerId ($user_id)
+    {
+        if (empty($user_id))
+        {
+            return NULL;
+        }
+
+        $customer_id = get_user_meta($user_id, 'mollie_customer_id', true);
+
+        return !empty($customer_id) ? $customer_id : NULL;
     }
 
     /**

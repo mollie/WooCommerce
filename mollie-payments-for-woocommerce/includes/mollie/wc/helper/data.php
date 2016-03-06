@@ -395,17 +395,41 @@ class Mollie_WC_Helper_Data
     }
 
     /**
-     * @param int    $user_id
-     * @return string|null
+     * @param int  $user_id
+     * @param bool $test_mode
+     * @return null|string
      */
-    public function getUserMollieCustomerId ($user_id)
+    public function getUserMollieCustomerId ($user_id, $test_mode = FALSE)
     {
         if (empty($user_id))
         {
             return NULL;
         }
 
-        $customer_id = get_user_meta($user_id, 'mollie_customer_id', true);
+        $customer_id = get_user_meta($user_id, 'mollie_customer_id', $single = true);
+        $userdata    = get_userdata($user_id);
+
+        if (empty($customer_id) && !empty($userdata->user_email) && !empty($userdata->user_nicename))
+        {
+            try
+            {
+                $customer = $this->api_helper->getApiClient($test_mode)->customers->create(array(
+                    'email'  => trim($userdata->user_email),
+                    'name'   => trim($userdata->user_nicename),
+                    'locale' => trim($this->getCurrentLocale()),
+                ));
+
+                $customer_id = $customer->id;
+
+                $this->setUserMollieCustomerId($user_id, $customer_id);
+            }
+            catch (Exception $e)
+            {
+                Mollie_WC_Plugin::debug(
+                    __FUNCTION__ . ": Could not create customer $user_id (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')'
+                );
+            }
+        }
 
         return !empty($customer_id) ? $customer_id : NULL;
     }

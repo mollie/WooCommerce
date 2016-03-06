@@ -386,10 +386,7 @@ class Mollie_WC_Helper_Data
      */
     public function setUserMollieCustomerId ($user_id, $customer_id)
     {
-        if (!empty($user_id))
-        {
-            update_user_meta($user_id, 'mollie_customer_id', $customer_id);
-        }
+        update_user_meta($user_id, 'mollie_customer_id', $customer_id);
 
         return $this;
     }
@@ -419,9 +416,9 @@ class Mollie_WC_Helper_Data
                     'locale' => trim($this->getCurrentLocale()),
                 ));
 
-                $customer_id = $customer->id;
+                $this->setUserMollieCustomerId($user_id, $customer->id);
 
-                $this->setUserMollieCustomerId($user_id, $customer_id);
+                return $customer->id;
             }
             catch (Exception $e)
             {
@@ -431,7 +428,7 @@ class Mollie_WC_Helper_Data
             }
         }
 
-        return !empty($customer_id) ? $customer_id : NULL;
+        return $customer_id;
     }
 
     /**

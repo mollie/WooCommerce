@@ -386,7 +386,10 @@ class Mollie_WC_Helper_Data
      */
     public function setUserMollieCustomerId ($user_id, $customer_id)
     {
-        update_user_meta($user_id, 'mollie_customer_id', $customer_id);
+        if (!empty($customer_id))
+        {
+            update_user_meta($user_id, 'mollie_customer_id', $customer_id);
+        }
 
         return $this;
     }
@@ -404,15 +407,16 @@ class Mollie_WC_Helper_Data
         }
 
         $customer_id = get_user_meta($user_id, 'mollie_customer_id', $single = true);
-        $userdata    = get_userdata($user_id);
 
-        if (empty($customer_id) && !empty($userdata->user_email) && !empty($userdata->user_nicename))
+        if (empty($customer_id))
         {
             try
             {
+                $userdata = get_userdata($user_id);
+
                 $customer = $this->api_helper->getApiClient($test_mode)->customers->create(array(
-                    'email'  => trim($userdata->user_email),
                     'name'   => trim($userdata->user_nicename),
+                    'email'  => trim($userdata->user_email),
                     'locale' => trim($this->getCurrentLocale()),
                 ));
 
@@ -428,7 +432,20 @@ class Mollie_WC_Helper_Data
             }
         }
 
-        return $customer_id;
+        try
+        {
+            $customer = $this->api_helper->getApiClient($test_mode)->customers->get($customer_id);
+
+            return $customer->id;
+        }
+        catch (Exception $e)
+        {
+            Mollie_WC_Plugin::debug(
+                __FUNCTION__ . ": Could not validate customer $customer_id (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')'
+            );
+        }
+
+        return NULL;
     }
 
     /**

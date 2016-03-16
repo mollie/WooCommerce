@@ -415,14 +415,15 @@ class Mollie_WC_Helper_Data
                 $userdata = get_userdata($user_id);
 
                 $customer = $this->api_helper->getApiClient($test_mode)->customers->create(array(
-                    'name'   => trim($userdata->user_nicename),
-                    'email'  => trim($userdata->user_email),
-                    'locale' => trim($this->getCurrentLocale()),
+                    'name'     => trim($userdata->user_nicename),
+                    'email'    => trim($userdata->user_email),
+                    'locale'   => trim($this->getCurrentLocale()),
+                    'metadata' => array('user_id' => $user_id),
                 ));
 
                 $this->setUserMollieCustomerId($user_id, $customer->id);
 
-                return $customer->id;
+                $customer_id = $customer->id;
             }
             catch (Exception $e)
             {
@@ -432,20 +433,7 @@ class Mollie_WC_Helper_Data
             }
         }
 
-        try
-        {
-            $customer = $this->api_helper->getApiClient($test_mode)->customers->get($customer_id);
-
-            return $customer->id;
-        }
-        catch (Exception $e)
-        {
-            Mollie_WC_Plugin::debug(
-                __FUNCTION__ . ": Could not validate customer $customer_id (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')'
-            );
-        }
-
-        return NULL;
+        return $customer_id;
     }
 
     /**

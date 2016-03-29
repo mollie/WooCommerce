@@ -1,15 +1,15 @@
-# Copyright (C) 2015 Mollie Payments for WooCommerce
+# Copyright (C) 2016 Mollie Payments for WooCommerce
 # This file is distributed under the same license as the Mollie Payments for WooCommerce package.
 msgid ""
 msgstr ""
-"Project-Id-Version: Mollie Payments for WooCommerce 2.0.1\n"
+"Project-Id-Version: Mollie Payments for WooCommerce 2.2.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/mollie-payments-"
 "for-woocommerce\n"
-"POT-Creation-Date: 2015-12-01 10:29:23+00:00\n"
+"POT-Creation-Date: 2016-03-25 14:38:48+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2015-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: 2016-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 
@@ -106,50 +106,50 @@ msgstr ""
 msgid "Could not load order %s"
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:367
+#: includes/mollie/wc/gateway/abstract.php:386
 msgid "Awaiting payment confirmation."
 msgstr ""
 
 #. translators: Placeholder 1: Payment method title, placeholder 2: payment ID
-#: includes/mollie/wc/gateway/abstract.php:372
+#: includes/mollie/wc/gateway/abstract.php:391
 msgid "%s payment started (%s)."
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:374
-#: includes/mollie/wc/gateway/abstract.php:539
-#: includes/mollie/wc/gateway/abstract.php:570
-#: includes/mollie/wc/gateway/abstract.php:595
+#: includes/mollie/wc/gateway/abstract.php:393
+#: includes/mollie/wc/gateway/abstract.php:558
+#: includes/mollie/wc/gateway/abstract.php:589
 #: includes/mollie/wc/gateway/abstract.php:614
+#: includes/mollie/wc/gateway/abstract.php:633
 msgid "test mode"
 msgstr ""
 
 #. translators: Placeholder 1: Payment method title
-#: includes/mollie/wc/gateway/abstract.php:392
+#: includes/mollie/wc/gateway/abstract.php:411
 msgid "Could not create %s payment."
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment
 #. status, placeholder 3: payment ID
-#: includes/mollie/wc/gateway/abstract.php:536
+#: includes/mollie/wc/gateway/abstract.php:555
 msgid "%s payment %s (%s)."
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: includes/mollie/wc/gateway/abstract.php:568
+#: includes/mollie/wc/gateway/abstract.php:587
 msgid "Order completed using %s payment (%s)."
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: includes/mollie/wc/gateway/abstract.php:593
+#: includes/mollie/wc/gateway/abstract.php:612
 msgid "%s payment cancelled (%s)."
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: includes/mollie/wc/gateway/abstract.php:612
+#: includes/mollie/wc/gateway/abstract.php:631
 msgid "%s payment expired (%s)."
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:628
+#: includes/mollie/wc/gateway/abstract.php:647
 msgid ""
 "You have cancelled your payment. Please complete your order with a different "
 "payment method."
@@ -158,26 +158,26 @@ msgstr ""
 #. translators: Placeholder 1: currency, placeholder 2: refunded amount,
 #. placeholder 3: optional refund reason, placeholder 4: payment ID,
 #. placeholder 5: refund ID
-#: includes/mollie/wc/gateway/abstract.php:702
+#: includes/mollie/wc/gateway/abstract.php:721
 msgid "Refunded %s%s (reason: %s) - Payment ID: %s, Refund: %s"
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:771
+#: includes/mollie/wc/gateway/abstract.php:790
 msgid "Payment"
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:792
+#: includes/mollie/wc/gateway/abstract.php:811
 msgid "We have not received a definite payment status."
 msgstr ""
 
-#: includes/mollie/wc/gateway/abstract.php:797
+#: includes/mollie/wc/gateway/abstract.php:816
 msgid ""
 "We have not received a definite payment status. You will receive an email as "
 "soon as we receive a confirmation of the bank/merchant."
 msgstr ""
 
 #. translators: Placeholder 1: payment method
-#: includes/mollie/wc/gateway/abstract.php:804
+#: includes/mollie/wc/gateway/abstract.php:823
 msgid "Payment completed with <strong>%s</strong>"
 msgstr ""
 
@@ -329,7 +329,7 @@ msgid ""
 "further contain any special characters."
 msgstr ""
 
-#: includes/mollie/wc/helper/data.php:501
+#: includes/mollie/wc/helper/data.php:563
 msgid "Item #%s stock incremented from %s to %s."
 msgstr ""
 
@@ -548,9 +548,7 @@ msgid "https://github.com/mollie/WooCommerce"
 msgstr ""
 
 #. Description of the plugin/theme
-msgid ""
-"Accept payments in WooCommerce with Mollie iDEAL, Credit Card, Bancontact/"
-"Mister Cash, Bank Transfer, PayPal, Bitcoin, paysafecard and SOFORT Banking"
+msgid "Accept payments in WooCommerce with the official Mollie plugin"
 msgstr ""
 
 #. Author of the plugin/theme

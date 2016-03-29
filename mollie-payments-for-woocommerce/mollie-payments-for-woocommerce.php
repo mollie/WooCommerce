@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Mollie Payments for WooCommerce
  * Plugin URI: https://github.com/mollie/WooCommerce
- * Description: Accept payments in WooCommerce with Mollie iDEAL, Credit Card, Bancontact/Mister Cash, Bank Transfer, PayPal, Bitcoin, paysafecard and SOFORT Banking
+ * Description: Accept payments in WooCommerce with the official Mollie plugin
  * Version: 2.2.0
  * Author: Mollie
  * Author URI: https://www.mollie.com

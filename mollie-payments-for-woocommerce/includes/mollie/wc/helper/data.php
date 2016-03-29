@@ -7,7 +7,7 @@ class Mollie_WC_Helper_Data
      *
      * @var string
      */
-    const TRANSIENT_PREFIX = 'mollie-woocommerce-';
+    const TRANSIENT_PREFIX = 'mollie-wc-';
 
     /**
      * @var Mollie_API_Object_Method[]|Mollie_API_Object_List|array
@@ -371,7 +371,69 @@ class Mollie_WC_Helper_Data
 
         delete_post_meta($order_id, '_mollie_cancelled_payment_id');
 
+        if ($payment->customerId)
+        {
+            add_post_meta($order_id, '_mollie_customer_id', $payment->customerId, $single = true);
+        }
+
         return $this;
+    }
+
+    /**
+     * @param int         $user_id
+     * @param string|null $customer_id
+     * @return $this
+     */
+    public function setUserMollieCustomerId ($user_id, $customer_id)
+    {
+        if (!empty($customer_id))
+        {
+            update_user_meta($user_id, 'mollie_customer_id', $customer_id);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param int  $user_id
+     * @param bool $test_mode
+     * @return null|string
+     */
+    public function getUserMollieCustomerId ($user_id, $test_mode = FALSE)
+    {
+        if (empty($user_id))
+        {
+            return NULL;
+        }
+
+        $customer_id = get_user_meta($user_id, 'mollie_customer_id', $single = true);
+
+        if (empty($customer_id))
+        {
+            try
+            {
+                $userdata = get_userdata($user_id);
+
+                $customer = $this->api_helper->getApiClient($test_mode)->customers->create(array(
+                    'name'     => trim($userdata->user_nicename),
+                    'email'    => trim($userdata->user_email),
+                    'locale'   => trim($this->getCurrentLocale()),
+                    'metadata' => array('user_id' => $user_id),
+                ));
+
+                $this->setUserMollieCustomerId($user_id, $customer->id);
+
+                $customer_id = $customer->id;
+            }
+            catch (Exception $e)
+            {
+                Mollie_WC_Plugin::debug(
+                    __FUNCTION__ . ": Could not create customer $user_id (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')'
+                );
+            }
+        }
+
+        return $customer_id;
     }
 
     /**

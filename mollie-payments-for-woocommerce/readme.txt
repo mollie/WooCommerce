@@ -2,12 +2,12 @@
 Contributors: l.vangunst, daanvm, iricardoj
 Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, ideal, sofort, credit card, creditcard, visa, mastercard, mistercash, bancontact, bitcoin, paysafecard, direct debit, incasso, sepa, banktransfer, overboeking, betalingen
 Requires at least: 3.8
-Tested up to: 4.4.1
-Stable tag: 2.1.1
+Tested up to: 4.4.2
+Stable tag: 2.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Accept payments in WooCommerce with Mollie iDEAL, Credit Card, Bancontact/Mister Cash, Bank Transfer, PayPal, Bitcoin, paysafecard and SOFORT Banking
+Accept payments in WooCommerce with the official Mollie plugin
 
 == Description ==
 
@@ -131,6 +131,11 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 = 2.1.1 - 27/01/2016 =
 * Add better support for translation plugins Polylang and mLanguage.
 * Fixed small issue for PHP 5.2 users.
+
+= 2.2.0 - 29/03/2016 =
+* Add integration with Mollie Customers API.
+* Use shorter transient prefix.
+* Update Mollie API client to v1.4.1.
 
 == Upgrade Notice ==
 

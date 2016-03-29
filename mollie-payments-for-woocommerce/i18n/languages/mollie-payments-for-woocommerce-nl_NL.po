@@ -5,8 +5,8 @@ msgstr ""
 "Project-Id-Version: Mollie Payments for WooCommerce 2.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/mollie-payments-"
 "for-woocommerce\n"
-"POT-Creation-Date: 2015-12-01 11:32+0100\n"
-"PO-Revision-Date: 2015-12-01 11:43+0100\n"
+"POT-Creation-Date: 2016-03-25 15:39+0100\n"
+"PO-Revision-Date: 2016-03-29 13:04+0200\n"
 "Last-Translator: Lennard van Gunst <lennard@mollie.com>\n"
 "Language-Team: Mollie <info@mollie.nl>\n"
 "Language: nl\n"
@@ -121,50 +121,50 @@ msgstr ""
 msgid "Could not load order %s"
 msgstr "Kan bestelling %s niet laden"
 
-#: includes/mollie/wc/gateway/abstract.php:367
+#: includes/mollie/wc/gateway/abstract.php:386
 msgid "Awaiting payment confirmation."
 msgstr "In afwachting van betaling bevestiging."
 
 #. translators: Placeholder 1: Payment method title, placeholder 2: payment ID
-#: includes/mollie/wc/gateway/abstract.php:372
+#: includes/mollie/wc/gateway/abstract.php:391
 msgid "%s payment started (%s)."
 msgstr "%s betaling gestart (%s)."
 
-#: includes/mollie/wc/gateway/abstract.php:374
-#: includes/mollie/wc/gateway/abstract.php:539
-#: includes/mollie/wc/gateway/abstract.php:570
-#: includes/mollie/wc/gateway/abstract.php:595
+#: includes/mollie/wc/gateway/abstract.php:393
+#: includes/mollie/wc/gateway/abstract.php:558
+#: includes/mollie/wc/gateway/abstract.php:589
 #: includes/mollie/wc/gateway/abstract.php:614
+#: includes/mollie/wc/gateway/abstract.php:633
 msgid "test mode"
 msgstr "test modus"
 
 #. translators: Placeholder 1: Payment method title
-#: includes/mollie/wc/gateway/abstract.php:392
+#: includes/mollie/wc/gateway/abstract.php:411
 msgid "Could not create %s payment."
 msgstr "Kon geen %s betaling aanmaken."
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment
 #. status, placeholder 3: payment ID
-#: includes/mollie/wc/gateway/abstract.php:536
+#: includes/mollie/wc/gateway/abstract.php:555
 msgid "%s payment %s (%s)."
 msgstr "%s betaling %s (%s)."
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: includes/mollie/wc/gateway/abstract.php:568
+#: includes/mollie/wc/gateway/abstract.php:587
 msgid "Order completed using %s payment (%s)."
 msgstr "Bestelling afgerond met %s betaling (%s)."
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: includes/mollie/wc/gateway/abstract.php:593
+#: includes/mollie/wc/gateway/abstract.php:612
 msgid "%s payment cancelled (%s)."
 msgstr "%s betaling geannuleerd (%s)."
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: includes/mollie/wc/gateway/abstract.php:612
+#: includes/mollie/wc/gateway/abstract.php:631
 msgid "%s payment expired (%s)."
 msgstr "%s betaling verlopen (%s)."
 
-#: includes/mollie/wc/gateway/abstract.php:628
+#: includes/mollie/wc/gateway/abstract.php:647
 msgid ""
 "You have cancelled your payment. Please complete your order with a different "
 "payment method."
@@ -175,19 +175,19 @@ msgstr ""
 #. translators: Placeholder 1: currency, placeholder 2: refunded amount,
 #. placeholder 3: optional refund reason, placeholder 4: payment ID,
 #. placeholder 5: refund ID
-#: includes/mollie/wc/gateway/abstract.php:702
+#: includes/mollie/wc/gateway/abstract.php:721
 msgid "Refunded %s%s (reason: %s) - Payment ID: %s, Refund: %s"
 msgstr "Terugstorting %s%s (reden: %s) - Payment ID: %s, Refund: %s"
 
-#: includes/mollie/wc/gateway/abstract.php:771
+#: includes/mollie/wc/gateway/abstract.php:790
 msgid "Payment"
 msgstr "Betaling"
 
-#: includes/mollie/wc/gateway/abstract.php:792
+#: includes/mollie/wc/gateway/abstract.php:811
 msgid "We have not received a definite payment status."
 msgstr "We hebben nog geen definitieve status van de betaling ontvangen."
 
-#: includes/mollie/wc/gateway/abstract.php:797
+#: includes/mollie/wc/gateway/abstract.php:816
 msgid ""
 "We have not received a definite payment status. You will receive an email as "
 "soon as we receive a confirmation of the bank/merchant."
@@ -196,7 +196,7 @@ msgstr ""
 "een e-mail zodra wij een bevestiging van de bank ontvangen."
 
 #. translators: Placeholder 1: payment method
-#: includes/mollie/wc/gateway/abstract.php:804
+#: includes/mollie/wc/gateway/abstract.php:823
 msgid "Payment completed with <strong>%s</strong>"
 msgstr "Betaling afgerond met <strong>%s</strong>"
 
@@ -363,7 +363,7 @@ msgstr ""
 "Ongeldige API key ingesteld. De API key moet beginnen met 'live_’ of 'test_’ "
 "en mag verder geen speciale tekens bevatten."
 
-#: includes/mollie/wc/helper/data.php:501
+#: includes/mollie/wc/helper/data.php:563
 msgid "Item #%s stock incremented from %s to %s."
 msgstr "Artikel #%s voorraad verhoogd van %s naar %s."
 
@@ -598,12 +598,8 @@ msgid "https://github.com/mollie/WooCommerce"
 msgstr "https://github.com/mollie/WooCommerce"
 
 #. Description of the plugin/theme
-msgid ""
-"Accept payments in WooCommerce with Mollie iDEAL, Credit Card, Bancontact/"
-"Mister Cash, Bank Transfer, PayPal, Bitcoin, paysafecard and SOFORT Banking"
-msgstr ""
-"Accepteer betalingen in WooCommerce met Mollie iDEAL, Creditcard, Bancontact/"
-"Mister Cash, Overboeking, PayPal, Bitcoin, paysafecard en SOFORT Banking"
+msgid "Accept payments in WooCommerce with the official Mollie plugin"
+msgstr "Accepteer betalingen in WooCommerce met de officiële Mollie plugin"
 
 #. Author of the plugin/theme
 msgid "Mollie"
@@ -612,6 +608,15 @@ msgstr "Mollie"
 #. Author URI of the plugin/theme
 msgid "https://www.mollie.com"
 msgstr "https://www.mollie.com"
+
+#~ msgid ""
+#~ "Accept payments in WooCommerce with the official Mollie plugin for iDEAL, "
+#~ "Credit Card, Bancontact/Mister Cash, Bank Transfer, PayPal, Bitcoin, "
+#~ "paysafecard and SOFORT Banking"
+#~ msgstr ""
+#~ "Accepteer betalingen in WooCommerce met de officiële Mollie plugin voor "
+#~ "iDEAL, Creditcard, Bancontact/Mister Cash, Overboeking, PayPal, Bitcoin, "
+#~ "paysafecard en SOFORT Banking"
 
 #~ msgid ""
 #~ "This payment method is not supported by this plugin. Please check if "

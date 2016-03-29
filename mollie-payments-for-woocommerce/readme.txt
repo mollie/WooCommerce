@@ -1,6 +1,6 @@
 === Mollie Payments for WooCommerce ===
 Contributors: l.vangunst, daanvm, iricardoj
-Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, ideal, sofort, credit card, creditcard, visa, mastercard, mistercash, bancontact, bitcoin, paysafecard, direct debit, incasso, sepa, banktransfer, overboeking, podium cadeaukaart, podiumcadeaukaart, betalingen
+Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, ideal, sofort, credit card, creditcard, visa, mastercard, mistercash, bancontact, bitcoin, paysafecard, direct debit, incasso, sepa, banktransfer, overboeking, betalingen
 Requires at least: 3.8
 Tested up to: 4.4.2
 Stable tag: 2.2.0
@@ -23,7 +23,6 @@ This plugin will add support for the following Mollie payments methods to your W
 * Belfius Direct Net
 * Bitcoin
 * paysafecard
-* PODIUM Cadeaukaart
 
 Please go to the [signup page](https://www.mollie.com/nl/signup) to create a new Mollie account and start receiving payments in a couple of minutes. Contact info@mollie.com if you have any questions or comments about this plugin.
 

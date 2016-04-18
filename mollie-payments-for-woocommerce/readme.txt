@@ -3,7 +3,7 @@ Contributors: l.vangunst, daanvm, iricardoj
 Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, ideal, sofort, credit card, creditcard, visa, mastercard, mistercash, bancontact, bitcoin, paysafecard, direct debit, incasso, sepa, banktransfer, overboeking, betalingen
 Requires at least: 3.8
 Tested up to: 4.5
-Stable tag: 2.2.0
+Stable tag: 2.2.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -112,7 +112,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= To be released =
+= 2.2.1 - 18/04/2016 =
 * Add option for the Bank Transfer gateway to skip redirecting your users to the Mollie payment screen. Instead directly redirect to the WooCommerce order 
 received page where payment instruction will be displayed. You can turn on this option on the Mollie Bank Transfer setting page: 
 WooCommerce -> Settings -> Checkout -> Mollie - Bank Transfer.

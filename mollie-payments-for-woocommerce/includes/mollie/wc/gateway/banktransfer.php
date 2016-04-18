@@ -39,6 +39,13 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
                     'step' => 1,
                 ),
             ),
+            'skip_mollie_payment_screen' => array(
+                'title'             => __('Skip Mollie payment screen', 'mollie-payments-for-woocommerce'),
+                'label'             => __('Skip Mollie payment screen when Bank Transfer is selected', 'mollie-payments-for-woocommerce'),
+                'description'       => __('Enable this option if you want to skip redirecting your user to the Mollie payment screen, instead this will redirect your user directly to the WooCommerce order received page displaying instructions how to complete the Bank Transfer payment.', 'mollie-payments-for-woocommerce'),
+                'type'              => 'checkbox',
+                'default'           => 'no',
+            ),
             'mail_payment_instructions' => array(
                 'title'             => __('Mail payment instructions', 'mollie-payments-for-woocommerce'),
                 /* translators: Placeholder 1: enabled or disabled */
@@ -75,6 +82,34 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
         }
 
         return $args;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param WC_Order $order
+     * @param Mollie_API_Object_Payment $payment
+     *
+     * @return string
+     */
+    protected function getProcessPaymentRedirect(WC_Order $order, Mollie_API_Object_Payment $payment)
+    {
+        if ($this->get_option('skip_mollie_payment_screen') === 'yes')
+        {
+            /*
+             * Redirect to order received page
+             */
+            $redirect_url = $this->get_return_url($order);
+
+            // Add utm_nooverride query string
+            $redirect_url = add_query_arg(array(
+                'utm_nooverride' => 1,
+            ), $redirect_url);
+
+            return $redirect_url;
+        }
+
+        return parent::getProcessPaymentRedirect($order, $payment);
     }
 
     /**

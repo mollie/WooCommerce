@@ -2,7 +2,7 @@
 Contributors: l.vangunst, daanvm, iricardoj
 Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, ideal, sofort, credit card, creditcard, visa, mastercard, mistercash, bancontact, bitcoin, paysafecard, direct debit, incasso, sepa, banktransfer, overboeking, betalingen
 Requires at least: 3.8
-Tested up to: 4.4.2
+Tested up to: 4.5
 Stable tag: 2.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -112,12 +112,19 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 2.0.0 - 17/08/2015 =
-* Complete rewrite of our WooCommerce plugin to better follow WordPress and WooCommerce standards and add better support for other plugins.
+= To be released =
+* Add option for the Bank Transfer gateway to skip redirecting your users to the Mollie payment screen. Instead directly redirect to the WooCommerce order 
+received page where payment instruction will be displayed. You can turn on this option on the Mollie Bank Transfer setting page: 
+WooCommerce -> Settings -> Checkout -> Mollie - Bank Transfer.
 
-= 2.0.1 - 02/10/2015 =
-* Add support for SEPA Direct Debit.
-* Add message for Belfius, Bitcoin, Bancontact/Mister Cash and paysafecard when the payment is paid successfully.
+= 2.2.0 - 29/03/2016 =
+* Add integration with Mollie Customers API.
+* Use shorter transient prefix.
+* Update Mollie API client to v1.4.1.
+
+= 2.1.1 - 27/01/2016 =
+* Add better support for translation plugins Polylang and mLanguage.
+* Fixed small issue for PHP 5.2 users.
 
 = 2.1.0 - 01/12/2015 =
 * For payment methods where the payment status will be delivered after a couple of days you can set the initial order status. Choose between `on-hold` or `pending`.
@@ -128,14 +135,12 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 * Hide payment gateway when cart exceeds method min / max amount. Method min / max amount is returned by Mollie API.
 * Add filter to change the return URL.
 
-= 2.1.1 - 27/01/2016 =
-* Add better support for translation plugins Polylang and mLanguage.
-* Fixed small issue for PHP 5.2 users.
+= 2.0.1 - 02/10/2015 =
+* Add support for SEPA Direct Debit.
+* Add message for Belfius, Bitcoin, Bancontact/Mister Cash and paysafecard when the payment is paid successfully.
 
-= 2.2.0 - 29/03/2016 =
-* Add integration with Mollie Customers API.
-* Use shorter transient prefix.
-* Update Mollie API client to v1.4.1.
+= 2.0.0 - 17/08/2015 =
+* Complete rewrite of our WooCommerce plugin to better follow WordPress and WooCommerce standards and add better support for other plugins.
 
 == Upgrade Notice ==
 

@@ -400,7 +400,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
             return array(
                 'result'   => 'success',
-                'redirect' => $payment->getPaymentUrl(),
+                'redirect' => $this->getProcessPaymentRedirect($order, $payment),
             );
         }
         catch (Mollie_API_Exception $e)
@@ -419,6 +419,22 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         }
 
         return array('result' => 'failure');
+    }
+
+    /**
+     * Redirect location after successfully completing process_payment
+     *
+     * @param WC_Order $order
+     * @param Mollie_API_Object_Payment $payment
+     *
+     * @return string
+     */
+    protected function getProcessPaymentRedirect(WC_Order $order, Mollie_API_Object_Payment $payment)
+    {
+        /*
+         * Redirect to payment URL
+         */
+        return $payment->getPaymentUrl();
     }
 
     /**

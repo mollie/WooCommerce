@@ -63,6 +63,78 @@ A gateway ID is used by WooCommerce to identify the payment gateway.
 
 ## Filters
 
+### `mollie-payments-for-woocommerce_initial_order_status`
+Determine the default order status (default: `pending`). This status is assigned to the order when the payment is created. Use this filter 
+if you want to overwrite this status for all payment gateways this plugin provides.
+
+```
+add_filter('mollie-payments-for-woocommerce_initial_order_status', function($initial_order_status) {
+    /* https://docs.woocommerce.com/document/managing-orders/ */
+    return 'pending';
+});
+```
+
+### `mollie-payments-for-woocommerce_initial_order_status_<gateway_id>`
+Determine the default order status (default: `pending`). This status is assigned to the order when the payment is created. Use this filter 
+if you want to overwrite this status for a specific payment gateway this plugin provides.
+
+```
+$gateway_id = 'mollie_wc_gateway_creditcard';
+
+add_filter('mollie-payments-for-woocommerce_initial_order_status_' . $gateway_id, function($initial_order_status) {
+    /* https://docs.woocommerce.com/document/managing-orders/ */
+    return 'pending';
+});
+```
+
+### `mollie-payments-for-woocommerce_order_status_cancelled`
+Determine the new order status for when the Mollie payment is cancelled (default: `pending`). Use this filter if you want to overwrite this 
+status for all payment gateways this plugin provides.
+
+```
+add_filter('mollie-payments-for-woocommerce_order_status_cancelled', function($order_status) {
+    /* https://docs.woocommerce.com/document/managing-orders/ */
+    return 'pending';
+});
+```
+
+### `mollie-payments-for-woocommerce_order_status_cancelled_<gateway_id>`
+Determine the new order status for when the Mollie payment is cancelled (default: `pending`). Use this filter if you want 
+to overwrite this status for a specific payment gateway this plugin provides.
+
+```
+$gateway_id = 'mollie_wc_gateway_creditcard';
+
+add_filter('mollie-payments-for-woocommerce_order_status_cancelled_' . $gateway_id, function($order_status) {
+    /* https://docs.woocommerce.com/document/managing-orders/ */
+    return 'pending';
+});
+```
+
+### `mollie-payments-for-woocommerce_order_status_expired`
+Determine the new order status for when the Mollie payment has expired (default: `pending`). Use this filter if you want to overwrite this 
+status for all payment gateways this plugin provides.
+
+```
+add_filter('mollie-payments-for-woocommerce_order_status_cancelled', function($order_status) {
+    /* https://docs.woocommerce.com/document/managing-orders/ */
+    return 'cancelled';
+});
+```
+
+### `mollie-payments-for-woocommerce_order_status_expired_<gateway_id>`
+Determine the new order status for when the Mollie payment has expired (default: `pending`). Use this filter if you want 
+to overwrite this status for a specific payment gateway this plugin provides.
+
+```
+$gateway_id = 'mollie_wc_gateway_creditcard';
+
+add_filter('mollie-payments-for-woocommerce_order_status_expired_' . $gateway_id, function($order_status) {
+    /* https://docs.woocommerce.com/document/managing-orders/ */
+    return 'cancelled';
+});
+```
+
 ### `<gateway_id>_icon_url`
 Implement this filter if you want to overwrite the default gateway icon URL.
 

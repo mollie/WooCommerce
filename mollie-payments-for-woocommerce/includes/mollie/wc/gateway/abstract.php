@@ -619,8 +619,17 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             ->unsetActiveMolliePayment($order->id)
             ->setCancelledMolliePaymentId($order->id, $payment->id);
 
+        // New order status
+        $new_order_status = self::STATUS_PENDING;
+
+        // Overwrite plugin-wide
+        $new_order_status = apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_order_status_cancelled', $new_order_status);
+
+        // Overwrite gateway-wide
+        $new_order_status = apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_order_status_cancelled_' . $this->id, $new_order_status);
+
         // Reset state
-        $this->updateOrderStatus($order, self::STATUS_PENDING);
+        $this->updateOrderStatus($order, $new_order_status);
 
         // User cancelled payment on Mollie or issuer page, add a cancel note.. do not cancel order.
         $order->add_order_note(sprintf(
@@ -639,8 +648,17 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         Mollie_WC_Plugin::debug(__METHOD__ . ' called.');
 
+        // New order status
+        $new_order_status = self::STATUS_CANCELLED;
+
+        // Overwrite plugin-wide
+        $new_order_status = apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_order_status_expired', $new_order_status);
+
+        // Overwrite gateway-wide
+        $new_order_status = apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_order_status_expired_' . $this->id, $new_order_status);
+
         // Cancel order
-        $this->updateOrderStatus($order, self::STATUS_CANCELLED);
+        $this->updateOrderStatus($order, $new_order_status);
 
         $order->add_order_note(sprintf(
         /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */

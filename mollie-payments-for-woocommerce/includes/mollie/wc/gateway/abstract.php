@@ -744,7 +744,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             $test_mode = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
 
             // Send refund to Mollie
-            $refund = Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode)->payments->refund($payment, $amount);
+            $refund = Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode)->payments->refund($payment, array(
+                'amount'      => $amount,
+                'description' => $reason
+            ));
 
             Mollie_WC_Plugin::debug('process_refund - refund created - refund: ' . $refund->id . ', payment: ' . $payment->id . ', order: ' . $order_id . ', amount: ' . $amount . (!empty($reason) ? ', reason: ' . $reason : ''));
 

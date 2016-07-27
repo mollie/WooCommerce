@@ -40,9 +40,9 @@ Please go to the [signup page](https://www.mollie.com/nl/signup) to create a new
 
 = I can't install the plugin, the plugin is displayed incorrectly =
 
-Please temporary enable the [WordPress Debug Mode](https://codex.wordpress.org/Debugging_in_WordPress). Edit your `wp-config.php` and set the contants `WP_DEBUG` and `WP_DEBUG_LOG` to `true` and try
+Please temporarily enable the [WordPress Debug Mode](https://codex.wordpress.org/Debugging_in_WordPress). Edit your `wp-config.php` and set the constants `WP_DEBUG` and `WP_DEBUG_LOG` to `true` and try
 it again. When the plugin triggers an error, WordPress will log the error to the log file `/wp-content/debug.log`. Please check this file for errors. When done, don't forget to turn off
-the WordPress debug mode by setting the two contants `WP_DEBUG` and `WP_DEBUG_LOG` back to `false`.
+the WordPress debug mode by setting the two constants `WP_DEBUG` and `WP_DEBUG_LOG` back to `false`.
 
 = I get a white screen when opening ... =
 
@@ -64,7 +64,7 @@ Most of the time a white screen means a PHP error. Because PHP won't show error 
 = Why do orders with payment method BankTransfer and Direct Debit get the status 'on-hold'? =
 
 These payment methods take longer than a few hours to complete. The order status is set to 'on-hold' to prevent the WooCommerce setting 'Hold stock (minutes)' (https://docs.woothemes.com/document/configuring-woocommerce-settings/#inventory-options) will 
-cancel the order. The order stock is also reduced to reserve stock for these orders. The stock is restored if the payment fails or is cancelled. You can change the initial order status for these payment methods on there setting page.
+cancel the order. The order stock is also reduced to reserve stock for these orders. The stock is restored if the payment fails or is cancelled. You can change the initial order status for these payment methods on their setting page.
 
 = I have a different question about this plugin =
 
@@ -93,7 +93,7 @@ Where possible, also include the Mollie log file. You can find the Mollie log fi
 
 1. Install the plugin via Plugins -> New plugin. Search for 'Mollie Payments for WooCommerce'.
 2. Activate the 'Mollie Payments for WooCommerce' plugin through the 'Plugins' menu in WordPress
-3. Set you Mollie API key at WooCommerce -> Settings -> Checkout (or use the *Mollie Settings* link in the Plugins overview)
+3. Set your Mollie API key at WooCommerce -> Settings -> Checkout (or use the *Mollie Settings* link in the Plugins overview)
 4. You're done, the active payment methods should be visible in the checkout of your webshop.
 
 = Manual installation =
@@ -101,7 +101,7 @@ Where possible, also include the Mollie log file. You can find the Mollie log fi
 1. Unpack the download package
 2. Upload the directory 'mollie-payments-for-woocommerce' to the `/wp-content/plugins/` directory
 3. Activate the 'Mollie Payments for WooCommerce' plugin through the 'Plugins' menu in WordPress
-4. Set you Mollie API key at WooCommerce -> Settings -> Checkout (or use the *Mollie Settings* link in the Plugins overview)
+4. Set your Mollie API key at WooCommerce -> Settings -> Checkout (or use the *Mollie Settings* link in the Plugins overview)
 5. You're done, the active payment methods should be visible in the checkout of your webshop.
 
 Please contact info@mollie.com if you need help installing the Mollie WooCommerce plugin. Please provide your Mollie partner ID and website URL.

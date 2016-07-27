@@ -1,9 +1,9 @@
 === Mollie Payments for WooCommerce ===
-Contributors: l.vangunst, daanvm, iricardoj
+Contributors: l.vangunst, daanvm, ndijkstra
 Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, ideal, sofort, credit card, creditcard, visa, mastercard, mistercash, bancontact, bitcoin, paysafecard, direct debit, incasso, sepa, banktransfer, overboeking, betalingen
 Requires at least: 3.8
-Tested up to: 4.5
-Stable tag: 2.2.1
+Tested up to: 4.5.3
+Stable tag: 2.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -111,6 +111,13 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 2.3.0 - 27/07/2016 =
+* Update payment method icons.
+* Send the refund description to Mollie. The refund description will be visible for your customer on their bank statement.
+* Add new filters `mollie-payments-for-woocommerce_order_status_cancelled` and `mollie-payments-for-woocommerce_order_status_expired` to be able 
+to overwrite the order status for cancelled and expired Mollie payments. You can find all available filters on https://github.com/mollie/WooCommerce/tree/master/development.
+* Update Mollie API client to v1.6.5.
 
 = 2.2.1 - 18/04/2016 =
 * Add option for the Bank Transfer gateway to skip redirecting your users to the Mollie payment screen. Instead directly redirect to the WooCommerce order 

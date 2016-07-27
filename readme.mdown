@@ -42,7 +42,7 @@ Maar wat denk je er over om bij een [technology driven organisatie](https://www.
 
 # Licentie
 [GPLv2 (GNU General Public License, version 2) License](http://www.gnu.org/licenses/gpl-2.0.html).
-Copyright (c) 2015, Mollie B.V.
+Copyright (c) 2015-2016, Mollie B.V.
 
 # Ondersteuning
 Contact: [www.mollie.com](https://www.mollie.com) — info@mollie.com — +31 20-612 88 55

@@ -982,7 +982,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             // we probably have a multilang site. Retrieve current language.
             $slug = get_bloginfo('language');
             $pos  = strpos($slug, '-');
-            $slug = substr($slug, 0, $pos);
+            if ($pos !== false)
+                $slug = substr($slug, 0, $pos);
+                
             $slug = '/' . $slug;
         }
 

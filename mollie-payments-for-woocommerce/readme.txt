@@ -2,8 +2,8 @@
 Contributors: l.vangunst, daanvm, ndijkstra
 Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, ideal, sofort, credit card, creditcard, visa, mastercard, mistercash, bancontact, bitcoin, paysafecard, direct debit, incasso, sepa, banktransfer, overboeking, betalingen
 Requires at least: 3.8
-Tested up to: 4.5.3
-Stable tag: 2.3.0
+Tested up to: 4.6.1
+Stable tag: 2.3.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -111,6 +111,10 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 2.3.1 - 14/09/2016 =
+* Turn on 'mail payment instructions' for Bank Transfer by default
+* Fix bug to support Polylang plugin
 
 = 2.3.0 - 27/07/2016 =
 * Update payment method icons.

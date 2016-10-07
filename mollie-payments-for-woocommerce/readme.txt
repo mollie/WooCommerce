@@ -112,6 +112,9 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= Next version - not released =
+* Add option to the iDEAL gateway to set the text for the empty option in the issuers drop down. Go to the iDEAL gateway settings to change this value.
+
 = 2.3.1 - 14/09/2016 =
 * Turn on 'mail payment instructions' for Bank Transfer by default
 * Fix bug to support Polylang plugin

@@ -113,6 +113,11 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= 2.4.0 - 10/10/2016 =
+* Add KBC/CBC Payment Button method.
+* Add option to the iDEAL gateway to set the text for the empty option in the issuers drop down. Go to the iDEAL gateway settings to change this value.
+* Update Mollie API client to v1.7.1.
+
 = 2.3.2 - 05/19/2916 =
 * Add KBC/CBC Payment Button method.
 * Add option to the iDEAL gateway to set the text for the empty option in the issuers drop down. Go to the iDEAL gateway settings to change this value.

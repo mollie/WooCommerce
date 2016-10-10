@@ -323,7 +323,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             'amount'          => $order->get_total(),
             'description'     => $payment_description,
             'redirectUrl'     => $return_url,
-            'webhookUrl'      => $webhook_url,
+//            'webhookUrl'      => $webhook_url,
             'method'          => $mollie_method,
             'issuer'          => $selected_issuer,
             'locale'          => $payment_locale,

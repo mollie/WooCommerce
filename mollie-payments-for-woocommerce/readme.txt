@@ -3,7 +3,7 @@ Contributors: l.vangunst, daanvm, ndijkstra
 Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, ideal, sofort, credit card, creditcard, visa, mastercard, mistercash, bancontact, bitcoin, paysafecard, direct debit, incasso, sepa, banktransfer, overboeking, betalingen
 Requires at least: 3.8
 Tested up to: 4.6.1
-Stable tag: 2.3.1
+Stable tag: 2.3.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,6 +23,7 @@ This plugin will add support for the following Mollie payments methods to your W
 * Belfius Direct Net
 * Bitcoin
 * paysafecard
+* KBC/CBC Payment Button
 
 Please go to the [signup page](https://www.mollie.com/nl/signup) to create a new Mollie account and start receiving payments in a couple of minutes. Contact info@mollie.com if you have any questions or comments about this plugin.
 
@@ -112,7 +113,8 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= Next version - not released =
+= 2.3.2 - 05/19/2916 =
+* Add KBC/CBC Payment Button method.
 * Add option to the iDEAL gateway to set the text for the empty option in the issuers drop down. Go to the iDEAL gateway settings to change this value.
 
 = 2.3.1 - 14/09/2016 =

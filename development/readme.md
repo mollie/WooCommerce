@@ -56,6 +56,7 @@ A gateway ID is used by WooCommerce to identify the payment gateway.
 * mollie_wc_gateway_creditcard
 * mollie_wc_gateway_directdebit
 * mollie_wc_gateway_ideal
+* mollie_wc_gateway_kbc
 * mollie_wc_gateway_mistercash
 * mollie_wc_gateway_paypal
 * mollie_wc_gateway_paysafecard

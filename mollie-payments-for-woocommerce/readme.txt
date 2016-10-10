@@ -114,7 +114,6 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 = Next version - not released =
 * Add option to the iDEAL gateway to set the text for the empty option in the issuers drop down. Go to the iDEAL gateway settings to change this value.
-* Validate if the WordPress locale is supported by Mollie before sending it to the Mollie API.
 
 = 2.3.1 - 14/09/2016 =
 * Turn on 'mail payment instructions' for Bank Transfer by default

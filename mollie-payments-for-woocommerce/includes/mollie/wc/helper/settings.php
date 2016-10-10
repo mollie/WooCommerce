@@ -41,30 +41,6 @@ class Mollie_WC_Helper_Settings
     }
 
     /**
-     * Check if the provided locale is supported by Mollie
-     *
-     * @param string $locale
-     * @return bool
-     */
-    protected function isValidMollieLocale ($locale)
-    {
-        // https://www.mollie.com/nl/docs/reference/payments/create
-        $supported_languages = array(
-            'de',
-            'en',
-            'es',
-            'fr',
-            'nl',
-        );
-
-        /*
-         * Mollie currently only supports locales like en, en_US and en-US. It does not have support for locales
-         * like en_US.UTF-8
-         */
-        return preg_match('/^([a-z]{2})(?:[\-_][A-Z]{2})?$/iu', $locale, $matches) && in_array(strtolower($matches[1]), $supported_languages);
-    }
-
-    /**
      * @return string|null
      */
     public function getPaymentLocale ()
@@ -75,10 +51,8 @@ class Mollie_WC_Helper_Settings
         {
             if ($setting == 'wp_locale')
             {
-                $wordpress_locale = $this->getCurrentLocale();
-
-                // Send current locale to Mollie when valid, otherwise let Mollie detect language based on the browser language
-                return $this->isValidMollieLocale($wordpress_locale) ? $wordpress_locale : null;
+                // Send current locale to Mollie
+                return $this->getCurrentLocale();
             }
             else
             {
@@ -98,7 +72,7 @@ class Mollie_WC_Helper_Settings
      */
     public function getCurrentLocale ()
     {
-        return 'pl_PL'; // apply_filters('wpml_current_language', get_locale());
+        return apply_filters('wpml_current_language', get_locale());
     }
 
     /**

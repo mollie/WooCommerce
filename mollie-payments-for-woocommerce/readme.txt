@@ -1,9 +1,9 @@
 === Mollie Payments for WooCommerce ===
-Contributors: l.vangunst, daanvm, ndijkstra
+Contributors: l.vangunst, daanvm, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, ideal, sofort, credit card, creditcard, visa, mastercard, mistercash, bancontact, bitcoin, paysafecard, direct debit, incasso, sepa, banktransfer, overboeking, betalingen
 Requires at least: 3.8
 Tested up to: 4.6.1
-Stable tag: 2.3.2
+Stable tag: 2.4.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -117,10 +117,6 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 * Add KBC/CBC Payment Button method.
 * Add option to the iDEAL gateway to set the text for the empty option in the issuers drop down. Go to the iDEAL gateway settings to change this value.
 * Update Mollie API client to v1.7.1.
-
-= 2.3.2 - 05/19/2916 =
-* Add KBC/CBC Payment Button method.
-* Add option to the iDEAL gateway to set the text for the empty option in the issuers drop down. Go to the iDEAL gateway settings to change this value.
 
 = 2.3.1 - 14/09/2016 =
 * Turn on 'mail payment instructions' for Bank Transfer by default

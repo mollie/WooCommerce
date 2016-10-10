@@ -3,7 +3,7 @@ Contributors: l.vangunst, daanvm, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, ideal, sofort, credit card, creditcard, visa, mastercard, mistercash, bancontact, bitcoin, paysafecard, direct debit, incasso, sepa, banktransfer, overboeking, betalingen
 Requires at least: 3.8
 Tested up to: 4.6.1
-Stable tag: 2.4.0
+Stable tag: 2.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -112,6 +112,9 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 2.4.1 - 10/10/2016 =
+* Fix 2.4.0 release (https://wordpress.org/support/topic/error-500-after-updating)
 
 = 2.4.0 - 10/10/2016 =
 * Add KBC/CBC Payment Button method.

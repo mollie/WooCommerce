@@ -78,7 +78,7 @@ class Mollie_WC_Gateway_Ideal extends Mollie_WC_Gateway_Abstract
         $selected_issuer = $this->getSelectedIssuer();
 
         $html  = '<select name="' . Mollie_WC_Plugin::PLUGIN_ID . '_issuer_' . $this->id . '">';
-        $html .= '<option value="">' . esc_html(__($this->get_option('issuers_empty_option', ''))) . '</option>';
+        $html .= '<option value="">' . esc_html(__($this->get_option('issuers_empty_option', ''), 'mollie-payments-for-woocommerce')) . '</option>';
         foreach ($ideal_issuers as $issuer)
         {
             $html .= '<option value="' . esc_attr($issuer->id) . '"' . ($selected_issuer == $issuer->id ? ' selected=""' : '') . '>' . esc_html($issuer->name) . '</option>';

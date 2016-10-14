@@ -393,10 +393,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
             ));
 
-            // Empty cart
-            WC()->cart->empty_cart();
-
-            Mollie_WC_Plugin::debug("Cart emptied, redirect user to payment URL: {$payment->getPaymentUrl()}");
+            Mollie_WC_Plugin::debug("Redirect user to payment URL: {$payment->getPaymentUrl()}");
 
             return array(
                 'result'   => 'success',
@@ -597,6 +594,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         {
             $order->payment_complete();
         }
+
+        // Empty cart on succesful checkout
+        WC()->cart->empty_cart();
+        Mollie_WC_Plugin::debug("Cart emptied.");
+
 
         $order->add_order_note(sprintf(
         /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */

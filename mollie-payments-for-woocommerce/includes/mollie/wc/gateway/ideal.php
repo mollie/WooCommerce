@@ -29,7 +29,7 @@ class Mollie_WC_Gateway_Ideal extends Mollie_WC_Gateway_Abstract
 				'title'       => __('Issuers empty option', 'mollie-payments-for-woocommerce'),
 				'type'        => 'text',
 				'description' => sprintf(__('This text will be displayed as the first option in the iDEAL issuers drop down', 'mollie-payments-for-woocommerce'), $this->getDefaultTitle()),
-				'default'     => '',
+				'default'     => __('Select your bank', 'mollie-payments-for-woocommerce'),
 				'desc_tip'    => true,
 			),
 		));

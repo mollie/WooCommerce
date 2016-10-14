@@ -29,7 +29,7 @@ class Mollie_WC_Gateway_Ideal extends Mollie_WC_Gateway_Abstract
 				'title'       => __('Issuers empty option', 'mollie-payments-for-woocommerce'),
 				'type'        => 'text',
 				'description' => sprintf(__('This text will be displayed as the first option in the iDEAL issuers drop down', 'mollie-payments-for-woocommerce'), $this->getDefaultTitle()),
-				'default'     => __('Select your bank', 'mollie-payments-for-woocommerce'),
+				'default'     => '',
 				'desc_tip'    => true,
 			),
 		));
@@ -78,7 +78,7 @@ class Mollie_WC_Gateway_Ideal extends Mollie_WC_Gateway_Abstract
         $selected_issuer = $this->getSelectedIssuer();
 
         $html  = '<select name="' . Mollie_WC_Plugin::PLUGIN_ID . '_issuer_' . $this->id . '">';
-        $html .= '<option value="">' . esc_html($this->get_option('issuers_empty_option', '')) . '</option>';
+        $html .= '<option value="">' . esc_html(__($this->get_option('issuers_empty_option', ''))) . '</option>';
         foreach ($ideal_issuers as $issuer)
         {
             $html .= '<option value="' . esc_attr($issuer->id) . '"' . ($selected_issuer == $issuer->id ? ' selected=""' : '') . '>' . esc_html($issuer->name) . '</option>';

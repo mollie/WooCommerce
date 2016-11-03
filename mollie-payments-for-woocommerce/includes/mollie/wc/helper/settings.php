@@ -1,6 +1,7 @@
 <?php
 class Mollie_WC_Helper_Settings
 {
+    const DEFAULT_TIME_PAYMENT_CONFIRMATION_CHECK = '3:00';
     /**
      * @return bool
      */
@@ -336,6 +337,16 @@ class Mollie_WC_Helper_Settings
                 ),
             ),
             array(
+                'id'      => $this->getSettingId('payment_confirmation_check_time'),
+                'title'   => __('Payment Confirmation Check Time', 'mollie-payments-for-woocommerce'),
+                'type'    => 'text',
+                'placeholder'       => self::DEFAULT_TIME_PAYMENT_CONFIRMATION_CHECK,
+                /* translators: Placeholder 1: Default payment */
+                'desc'    => sprintf(__('Payment Confirmation Check Time. Default <code>%s</code><br/>', 'mollie-payments-for-woocommerce'), '3:00'),
+                'default' => '3:00:00',
+                'css'     => 'width: 350px',
+            ),
+            array(
                 'id'      => $this->getSettingId('payment_description'),
                 'title'   => __('Description', 'mollie-payments-for-woocommerce'),
                 'type'    => 'text',
@@ -376,6 +387,32 @@ class Mollie_WC_Helper_Settings
         );
 
         return $this->mergeSettings($settings, $mollie_settings);
+    }
+
+    public function getPaymentConfirmationCheckTime()
+    {
+        $time = trim(get_option($this->getSettingId('payment_confirmation_check_time')));
+        $checked = false;
+        if (preg_match('/^\d{2}:\d{2}$/', $time)) {
+            if (preg_match("/(2[0-3]|[0][0-9]|1[0-9]):([0-5][0-9])/", $time)) {
+                $checked = true;
+            }
+        }
+        if (!$checked){
+            $time = self::DEFAULT_TIME_PAYMENT_CONFIRMATION_CHECK;
+        }
+        $time = strtotime($time);
+        $date = new DateTime();
+
+        if ($date->getTimestamp() > $time){
+            $date->setTimestamp($time);
+            $date->add(new DateInterval('P1D'));
+        } else {
+            $date->setTimestamp($time);
+        }
+
+
+        return $date->getTimestamp();
     }
 
     /**

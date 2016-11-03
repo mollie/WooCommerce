@@ -1,5 +1,5 @@
 <?php
-class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_Abstract
+class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscription
 {
     /**
      *
@@ -10,7 +10,7 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_Abstract
             'products',
             'refunds',
         );
-
+        $this->initSubscriptionSupport();
         parent::__construct();
     }
 

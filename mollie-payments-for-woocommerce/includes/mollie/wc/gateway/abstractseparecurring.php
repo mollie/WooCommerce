@@ -74,10 +74,10 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
 
 
     /**
-     * @param Wc_Order $order
+     * @param WC_Order $order
      * @param Mollie_API_Object_Payment $payment
      */
-    protected function onWebhookPaid (Wc_Order $order, Mollie_API_Object_Payment $payment)
+    protected function onWebhookPaid (WC_Order $order, Mollie_API_Object_Payment $payment)
     {
         Mollie_WC_Plugin::debug(__METHOD__ . ' called.');
 
@@ -104,10 +104,10 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     }
 
     /**
-     * @param Wc_Order $order
+     * @param WC_Order $order
      * @param Mollie_API_Object_Payment $payment
      */
-    protected function onWebhookCancelled (Wc_Order $order, Mollie_API_Object_Payment $payment)
+    protected function onWebhookCancelled (WC_Order $order, Mollie_API_Object_Payment $payment)
     {
         Mollie_WC_Plugin::debug(__METHOD__ . ' called.');
 
@@ -140,10 +140,10 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     }
 
     /**
-     * @param Wc_Order $order
+     * @param WC_Order $order
      * @param Mollie_API_Object_Payment $payment
      */
-    protected function onWebhookExpired (Wc_Order $order, Mollie_API_Object_Payment $payment)
+    protected function onWebhookExpired (WC_Order $order, Mollie_API_Object_Payment $payment)
     {
         Mollie_WC_Plugin::debug(__METHOD__ . ' called.');
 

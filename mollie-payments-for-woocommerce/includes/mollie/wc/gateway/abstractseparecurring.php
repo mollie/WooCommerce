@@ -2,6 +2,7 @@
 abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway_AbstractSubscription
 {
 
+    protected $recurringMethodId = '';
 
     /**
      * Mollie_WC_Gateway_AbstractSepaRecurring constructor.
@@ -12,10 +13,135 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
         $directDebit = new Mollie_WC_Gateway_DirectDebit();
         if ($directDebit->is_available()) {
             $this->initSubscriptionSupport();
+            $this->recurringMollieMethod = $directDebit;
         }
         return $this;
     }
 
+    public function webhookAction ()
+    {
+        // Webhook test by Mollie
+        if (isset($_GET['testByMollie']))
+        {
+            Mollie_WC_Plugin::debug(__METHOD__ . ': Webhook tested by Mollie.', true);
+            return;
+        }
+
+        if (empty($_GET['order_id']) || empty($_GET['key']))
+        {
+            Mollie_WC_Plugin::setHttpResponseCode(400);
+            Mollie_WC_Plugin::debug(__METHOD__ . ":  No order ID or order key provided.");
+            return;
+        }
+
+        $order_id    = $_GET['order_id'];
+        $key         = $_GET['key'];
+
+        $data_helper = Mollie_WC_Plugin::getDataHelper();
+        $order       = $data_helper->getWcOrder($order_id);
+
+        if (!$order)
+        {
+            Mollie_WC_Plugin::setHttpResponseCode(404);
+            Mollie_WC_Plugin::debug(__METHOD__ . ":  Could not find order $order_id.");
+            return;
+        }
+
+        if (!$order->key_is_valid($key))
+        {
+            Mollie_WC_Plugin::setHttpResponseCode(401);
+            Mollie_WC_Plugin::debug(__METHOD__ . ":  Invalid key $key for order $order_id.");
+            return;
+        }
+
+        // No Mollie payment id provided
+        if (empty($_REQUEST['id']))
+        {
+            Mollie_WC_Plugin::setHttpResponseCode(400);
+            Mollie_WC_Plugin::debug(__METHOD__ . ': No payment ID provided.', true);
+            return;
+        }
+
+        $payment_id = $_REQUEST['id'];
+        $test_mode  = $data_helper->getActiveMolliePaymentMode($order_id) == 'test';
+
+        // Load the payment from Mollie, do not use cache
+        $payment = $data_helper->getPayment($payment_id, $test_mode, $use_cache = false);
+
+        // Payment not found
+        if (!$payment)
+        {
+            Mollie_WC_Plugin::setHttpResponseCode(404);
+            Mollie_WC_Plugin::debug(__METHOD__ . ": payment $payment_id not found.", true);
+            return;
+        }
+
+        if ($order_id != $payment->metadata->order_id)
+        {
+            Mollie_WC_Plugin::setHttpResponseCode(400);
+            Mollie_WC_Plugin::debug(__METHOD__ . ": Order ID does not match order_id in payment metadata. Payment ID {$payment->id}, order ID $order_id");
+            return;
+        }
+
+        // Payment requires different gateway, payment method changed on Mollie platform?
+        $isValidPaymentMethod = in_array($payment->method,[$this->getMollieMethodId(),$this->getRecurringMollieMethodId()]);
+        if (!$isValidPaymentMethod)
+        {
+            Mollie_WC_Plugin::setHttpResponseCode(400);
+            Mollie_WC_Plugin::debug($this->id . ": Invalid gateway. This gateways can process Mollie " . $this->getMollieMethodId() . " payments. This payment has payment method " . $payment->method, true);
+            return;
+        }
+
+        // Order does not need a payment
+        if (!$this->orderNeedsPayment($order))
+        {
+            $paymentMethodTitle = $this->method_title;
+            if ($payment->method == $this->getRecurringMollieMethodId()){
+                $paymentMethodTitle = $this->getRecurringMollieMethodTitle();
+            }
+
+            $order->add_order_note(sprintf(
+            /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+                __('Order completed using %s payment (%s).', 'mollie-payments-for-woocommerce'),
+                $paymentMethodTitle,
+                $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
+            ));
+
+            $this->deleteOrderFromPendingPaymentQueue($order);
+            return;
+        }
+
+        Mollie_WC_Plugin::debug($this->id . ": Mollie payment {$payment->id} (" . $payment->mode . ") webhook call for order {$order->id}.", true);
+
+        $method_name = 'onWebhook' . ucfirst($payment->status);
+
+        if (method_exists($this, $method_name))
+        {
+            $this->{$method_name}($order, $payment);
+        }
+        else
+        {
+            $order->add_order_note(sprintf(
+            /* translators: Placeholder 1: payment method title, placeholder 2: payment status, placeholder 3: payment ID */
+                __('%s payment %s (%s).', 'mollie-payments-for-woocommerce'),
+                $this->method_title,
+                $payment->status,
+                $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
+            ));
+        }
+
+        // Status 200
+    }
+
+    protected function getRecurringMollieMethodId()
+    {
+        return $this->recurringMollieMethod->getMollieMethodId();
+    }
+
+    protected function getRecurringMollieMethodTitle()
+    {
+        return $this->recurringMollieMethod->getDefaultTitle();
+    }
     /**
      * @param $renewal_order
      * @param $initial_order_status
@@ -29,10 +155,15 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
             __('Awaiting payment confirmation. For 10 Days', 'mollie-payments-for-woocommerce') . "\n"
         );
 
+        $paymentMethodTitle = $this->method_title;
+        if ($payment->method == $this->getRecurringMollieMethodId()){
+            $paymentMethodTitle = $this->getRecurringMollieMethodTitle();
+        }
+
         $renewal_order->add_order_note(sprintf(
         /* translators: Placeholder 1: Payment method title, placeholder 2: payment ID */
             __('%s payment started (%s).', 'mollie-payments-for-woocommerce'),
-            $this->method_title,
+            $paymentMethodTitle,
             $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
         ));
 
@@ -93,10 +224,15 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
             $order->payment_complete();
         }
 
+        $paymentMethodTitle = $this->method_title;
+        if ($payment->method == $this->getRecurringMollieMethodId()){
+            $paymentMethodTitle = $this->getRecurringMollieMethodTitle();
+        }
+
         $order->add_order_note(sprintf(
         /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
             __('Order completed using %s payment (%s).', 'mollie-payments-for-woocommerce'),
-            $this->method_title,
+            $paymentMethodTitle,
             $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
         ));
 
@@ -159,10 +295,15 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
         // Cancel order
         $this->updateOrderStatus($order, $new_order_status);
 
+        $paymentMethodTitle = $this->method_title;
+        if ($payment->method == $this->getRecurringMollieMethodId()){
+            $paymentMethodTitle = $this->getRecurringMollieMethodTitle();
+        }
+
         $order->add_order_note(sprintf(
         /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
             __('%s payment expired (%s).', 'mollie-payments-for-woocommerce'),
-            $this->method_title,
+            $paymentMethodTitle,
             $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
         ));
         $this->deleteOrderFromPendingPaymentQueue($order);

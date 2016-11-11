@@ -65,7 +65,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     {
         global $wpdb;
         $wpdb->delete(
-            $wpdb->molliePendingPayment,
+            $wpdb->mollie_pending_payment,
             array(
                 'post_id' => $order->id,
             )

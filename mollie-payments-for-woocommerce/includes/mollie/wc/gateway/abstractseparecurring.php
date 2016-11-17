@@ -2,7 +2,6 @@
 abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway_AbstractSubscription
 {
 
-    const WAITING_CONFIRMATION_DAYS = 15;
 
     /**
      * Mollie_WC_Gateway_AbstractSepaRecurring constructor.
@@ -48,7 +47,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
         global $wpdb;
 
         $confirmationDate = new DateTime();
-        $confirmationDate->add(new DateInterval('P'. self::WAITING_CONFIRMATION_DAYS . 'D'));
+        $confirmationDate->add(new DateInterval('P10D'));
 
         $wpdb->insert(
             $wpdb->mollie_pending_payment,

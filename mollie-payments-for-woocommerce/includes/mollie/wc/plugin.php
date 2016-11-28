@@ -41,15 +41,16 @@ class Mollie_WC_Plugin
      */
     public static function schedulePendingPaymentOrdersExpirationCheck()
     {
-        $settings_helper = self::getSettingsHelper();
-        $time = $settings_helper->getPaymentConfirmationCheckTime();
-        $nextScheduledTime = wp_next_scheduled( 'pending_payment_confirmation_check' ) ;
-        if ( !$nextScheduledTime) {
-            wp_schedule_event( $time, 'daily', 'pending_payment_confirmation_check' );
+        if ( class_exists( 'WC_Subscriptions_Order' ) ) {
+            $settings_helper = self::getSettingsHelper();
+            $time = $settings_helper->getPaymentConfirmationCheckTime();
+            $nextScheduledTime = wp_next_scheduled('pending_payment_confirmation_check');
+            if (!$nextScheduledTime) {
+                wp_schedule_event($time, 'daily', 'pending_payment_confirmation_check');
+            }
+
+            add_action('pending_payment_confirmation_check', array(__CLASS__, 'checkPendingPaymentOrdersExpiration'));
         }
-
-        add_action( 'pending_payment_confirmation_check', array(__CLASS__, 'checkPendingPaymentOrdersExpiration'));
-
 
     }
 
@@ -120,11 +121,6 @@ class Mollie_WC_Plugin
             }
         }
 
-        //reinit job
-        $nextScheduledTime = wp_next_scheduled( 'pending_payment_confirmation_check' ) ;
-        if ($nextScheduledTime) {
-            wp_unschedule_event( $nextScheduledTime, 'pending_payment_confirmation_check' );
-        }
     }
 
     /**

@@ -90,6 +90,10 @@ function mollie_wc_plugin_admin_init ()
 
 function mollie_wc_plugin_deactivated ()
 {
+    $nextScheduledTime = wp_next_scheduled( 'pending_payment_confirmation_check' ) ;
+    if ($nextScheduledTime) {
+        wp_unschedule_event( $nextScheduledTime, 'pending_payment_confirmation_check' );
+    }
     echo '<div class="error"><p>' . sprintf(__('%s deactivated because it depends on WooCommerce.', 'mollie-payments-for-woocommerce'), Mollie_WC_Plugin::PLUGIN_TITLE) . '</p></div>';
 }
 

@@ -295,7 +295,6 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
         return $this;
     }
 
-
     /**
      * @param $order
      * @param bool|false $test_mode
@@ -350,9 +349,6 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
         $customerId = get_post_meta( $order->id, '_mollie_customer_id', true );
         return $customerId;
     }
-
-
-
 
     /**
      * @param $renewal_order
@@ -458,7 +454,6 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
         return $result;
 
     }
-
 
     /**
      * @param $order_id

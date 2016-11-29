@@ -2,6 +2,8 @@
 abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_Abstract
 {
 
+    const PAYMENT_TEST_MODE = 'test';
+
     protected $isSubscriptionPayment = false;
     /**
      * Mollie_WC_Gateway_AbstractSubscription constructor.
@@ -146,9 +148,9 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
         $data = apply_filters('woocommerce_' . $this->id . '_args', $data, $renewal_order);
 
-        $settings_helper     = Mollie_WC_Plugin::getSettingsHelper();
+
         // Is test mode enabled?
-        $test_mode = $settings_helper->isTestModeEnabled();
+        $test_mode = $this->isTestModeEnabledForRenewalOrder($renewal_order);
         try
         {
             Mollie_WC_Plugin::debug($this->id . ': Create payment for order ' . $renewal_order->id);
@@ -226,6 +228,23 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
         return array('result' => 'failure');
     }
 
+    public function isTestModeEnabledForRenewalOrder($order)
+    {
+        $result = false;
+        $subscriptions = array();
+        if ( wcs_order_contains_renewal( $order->id) ) {
+            $subscriptions = wcs_get_subscriptions_for_renewal_order( $order->id );
+        }
+
+        foreach( $subscriptions as $subscription ) {
+            $paymentMode = get_post_meta( $subscription->id, '_mollie_payment_mode', true );
+            if ($paymentMode == self::PAYMENT_TEST_MODE){
+                $result = true;
+                break;
+            }
+        }
+        return $result;
+    }
     /**
      * @param $order_id
      * @param Mollie_API_Object_Payment $payment

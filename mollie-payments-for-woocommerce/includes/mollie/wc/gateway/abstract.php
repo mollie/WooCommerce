@@ -639,7 +639,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      * @param Wc_Order $order
      * @param Mollie_API_Object_Payment $payment
      */
-    protected function onWebhookPaid (Wc_Order $order, Mollie_API_Object_Payment $payment)
+    protected function onWebhookPaid(Wc_Order $order, Mollie_API_Object_Payment $payment)
     {
         Mollie_WC_Plugin::debug(__METHOD__ . ' called.');
 
@@ -682,7 +682,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      * @param Wc_Order $order
      * @param Mollie_API_Object_Payment $payment
      */
-    protected function onWebhookCancelled (Wc_Order $order, Mollie_API_Object_Payment $payment)
+    protected function onWebhookCancelled(Wc_Order $order, Mollie_API_Object_Payment $payment)
     {
         Mollie_WC_Plugin::debug(__METHOD__ . ' called.');
 
@@ -718,7 +718,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      * @param Wc_Order $order
      * @param Mollie_API_Object_Payment $payment
      */
-    protected function onWebhookExpired (Wc_Order $order, Mollie_API_Object_Payment $payment)
+    protected function onWebhookExpired(Wc_Order $order, Mollie_API_Object_Payment $payment)
     {
         Mollie_WC_Plugin::debug(__METHOD__ . ' called.');
 
@@ -748,7 +748,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      * @param WC_Order $order
      * @return string
      */
-    public function getReturnRedirectUrlForOrder (WC_Order $order)
+    public function getReturnRedirectUrlForOrder(WC_Order $order)
     {
         $data_helper = Mollie_WC_Plugin::getDataHelper();
 

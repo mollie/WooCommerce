@@ -295,10 +295,11 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
         return $this;
     }
 
+
     /**
-     * @param $user_id
+     * @param $order
      * @param bool|false $test_mode
-     * @return null
+     * @return null|string
      */
     protected function getUserMollieCustomerId($order, $test_mode = false)
     {

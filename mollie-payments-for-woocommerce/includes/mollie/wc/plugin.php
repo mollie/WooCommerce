@@ -78,7 +78,6 @@ class Mollie_WC_Plugin
             update_option(self::DB_VERSION_PARAM_NAME, self::DB_VERSION);
         }
 
-
     }
 
     /**

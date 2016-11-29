@@ -103,9 +103,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
      */
     protected function onWebhookPaid (WC_Order $order, Mollie_API_Object_Payment $payment)
     {
-
         parent::onWebhookPaid($order, $payment);
-
         $this->deleteOrderFromPendingPaymentQueue($order);
     }
 
@@ -116,7 +114,6 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     protected function onWebhookCancelled (WC_Order $order, Mollie_API_Object_Payment $payment)
     {
         parent::onWebhookCancelled($order, $payment);
-
         $this->deleteOrderFromPendingPaymentQueue($order);
     }
 
@@ -127,7 +124,6 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     protected function onWebhookExpired (WC_Order $order, Mollie_API_Object_Payment $payment)
     {
         parent::onWebhookExpired($order, $payment);
-
         $this->deleteOrderFromPendingPaymentQueue($order);
     }
 

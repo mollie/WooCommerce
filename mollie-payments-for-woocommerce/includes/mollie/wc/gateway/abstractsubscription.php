@@ -120,9 +120,8 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
      * @return array
      * @throws Mollie_WC_Exception_InvalidApiKey
      */
-    public function scheduled_subscription_payment( $amount_to_charge, $renewal_order ) {
-
-
+    public function scheduled_subscription_payment( $amount_to_charge, $renewal_order )
+    {
         if (!$renewal_order)
         {
             Mollie_WC_Plugin::debug($this->id . ': Could not process payment, order ' . $renewal_order->id . ' not found.');
@@ -374,7 +373,8 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
     /**
      * @param $resubscribe_order
      */
-    public function delete_resubscribe_meta( $resubscribe_order ) {
+    public function delete_resubscribe_meta( $resubscribe_order )
+    {
         $this->delete_renewal_meta( $resubscribe_order );
     }
 
@@ -382,7 +382,8 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
      * @param $renewal_order
      * @return mixed
      */
-    public function delete_renewal_meta( $renewal_order ) {
+    public function delete_renewal_meta( $renewal_order )
+    {
         delete_post_meta( $renewal_order->id, '_mollie_card_4_digits' );
         delete_post_meta( $renewal_order->id, '_mollie_payment_id' );
         delete_post_meta( $renewal_order->id, '_mollie_payment_mode' );
@@ -395,7 +396,8 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
      * @param $subscription
      * @return mixed
      */
-    public function add_subscription_payment_meta( $payment_meta, $subscription ) {
+    public function add_subscription_payment_meta( $payment_meta, $subscription )
+    {
         $payment_meta[ $this->id ] = array(
             'post_meta' => array(
                 '_mollie_payment_id' => array(
@@ -420,7 +422,8 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
      * @param $payment_meta
      * @throws Exception
      */
-    public function validate_subscription_payment_meta( $payment_method_id, $payment_meta ) {
+    public function validate_subscription_payment_meta( $payment_method_id, $payment_meta )
+    {
         if ( $this->id === $payment_method_id ) {
 
             if ( ! isset( $payment_meta['post_meta']['_mollie_customer_id']['value'] ) || empty( $payment_meta['post_meta']['_mollie_customer_id']['value'] ) ) {
@@ -433,7 +436,8 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
      * @param $subscription
      * @param $renewal_order
      */
-    public function update_failing_payment_method( $subscription, $renewal_order ) {
+    public function update_failing_payment_method( $subscription, $renewal_order )
+    {
         update_post_meta( $subscription->id, '_mollie_customer_id', $renewal_order->mollie_customer_id );
         update_post_meta( $subscription->id, '_mollie_payment_id', $renewal_order->mollie_payment_id );
     }
@@ -459,7 +463,8 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
      * @param $order_id
      * @return bool
      */
-    protected function is_subscription( $order_id ) {
+    protected function is_subscription( $order_id )
+    {
         return ( function_exists( 'wcs_order_contains_subscription' ) && ( wcs_order_contains_subscription( $order_id ) || wcs_is_subscription( $order_id ) || wcs_order_contains_renewal( $order_id ) ) );
     }
 

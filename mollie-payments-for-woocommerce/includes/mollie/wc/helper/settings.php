@@ -1,6 +1,7 @@
 <?php
 class Mollie_WC_Helper_Settings
 {
+    const DEFAULT_TIME_PAYMENT_CONFIRMATION_CHECK = '3:00';
     /**
      * @return bool
      */
@@ -376,6 +377,22 @@ class Mollie_WC_Helper_Settings
         );
 
         return $this->mergeSettings($settings, $mollie_settings);
+    }
+
+    public function getPaymentConfirmationCheckTime()
+    {
+        $time = strtotime(self::DEFAULT_TIME_PAYMENT_CONFIRMATION_CHECK);
+        $date = new DateTime();
+
+        if ($date->getTimestamp() > $time){
+            $date->setTimestamp($time);
+            $date->add(new DateInterval('P1D'));
+        } else {
+            $date->setTimestamp($time);
+        }
+
+
+        return $date->getTimestamp();
     }
 
     /**

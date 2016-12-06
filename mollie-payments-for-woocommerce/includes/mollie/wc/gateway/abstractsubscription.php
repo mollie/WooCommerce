@@ -109,6 +109,11 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
      */
     protected function saveMollieInfo($order, $payment)
     {
+
+        if (!$this->is_subscription($order->id)){
+            parent::saveMollieInfo($order,$payment);
+            return;
+        }
         // Set active Mollie payment
         $this->setActiveMolliePayment($order->id, $payment);
 

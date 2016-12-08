@@ -26,7 +26,12 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
      */
     protected function getRecurringMollieMethodId()
     {
-        return $this->recurringMollieMethod->getMollieMethodId();
+        $result = null;
+        if ($this->recurringMollieMethod){
+            $result = $this->recurringMollieMethod->getMollieMethodId();
+        }
+
+        return $result;
     }
 
     /**
@@ -34,7 +39,12 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
      */
     protected function getRecurringMollieMethodTitle()
     {
-        return $this->recurringMollieMethod->getDefaultTitle();
+        $result = null;
+        if ($this->recurringMollieMethod){
+            $result = $this->recurringMollieMethod->getDefaultTitle();
+        }
+
+        return $result;
     }
 
     /**
@@ -114,7 +124,10 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     protected function onWebhookCancelled(WC_Order $order, Mollie_API_Object_Payment $payment)
     {
         parent::onWebhookCancelled($order, $payment);
-        $this->deleteOrderFromPendingPaymentQueue($order);
+
+        if ($this->is_subscription($order->id)){
+            $this->deleteOrderFromPendingPaymentQueue($order);
+        }
     }
 
     /**
@@ -124,7 +137,10 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     protected function onWebhookExpired(WC_Order $order, Mollie_API_Object_Payment $payment)
     {
         parent::onWebhookExpired($order, $payment);
-        $this->deleteOrderFromPendingPaymentQueue($order);
+
+        if ($this->is_subscription($order->id)){
+            $this->deleteOrderFromPendingPaymentQueue($order);
+        }
     }
 
     /**
@@ -134,7 +150,8 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     protected function getPaymentMethodTitle($payment)
     {
         $paymentMethodTitle = parent::getPaymentMethodTitle($payment);
-        if ($payment->method == $this->getRecurringMollieMethodId()){
+        $orderId = $payment->metadata->order_id;
+        if ($orderId && $this->is_subscription($orderId) && $payment->method == $this->getRecurringMollieMethodId()){
             $paymentMethodTitle = $this->getRecurringMollieMethodTitle();
         }
 
@@ -148,7 +165,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     protected function handlePayedOrderWebhook($order, $payment)
     {
         // Duplicate webhook call
-        if (isset($payment->recurringType) && $payment->recurringType == 'recurring') {
+        if ($this->is_subscription($order->id) && isset($payment->recurringType) && $payment->recurringType == 'recurring') {
             $paymentMethodTitle = $this->getPaymentMethodTitle($payment);
 
             $order->add_order_note(sprintf(
@@ -159,9 +176,10 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
             ));
 
             $this->deleteOrderFromPendingPaymentQueue($order);
-        } else {
-            parent::handlePayedOrderWebhook($order,$payment);
+            return;
         }
+
+        parent::handlePayedOrderWebhook($order, $payment);
 
     }
 
@@ -171,9 +189,15 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
      */
     protected function isValidPaymentMethod($payment)
     {
+        $isValidPaymentMethod = parent::isValidPaymentMethod($payment);
+        $orderId = $payment->metadata->order_id;
+
         // First payment was made by one gateway, and the next from another.
         // For Example Recurring First with IDEAL, the second With Sepa Direct Debit
-        $isValidPaymentMethod = in_array($payment->method,[$this->getMollieMethodId(),$this->getRecurringMollieMethodId()]);
+        if ($orderId && $this->is_subscription($orderId)){
+            $isValidPaymentMethod = in_array($payment->method,[$this->getMollieMethodId(),$this->getRecurringMollieMethodId()]);
+        }
+
         return $isValidPaymentMethod;
     }
 

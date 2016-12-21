@@ -665,10 +665,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     }
 
     /**
-     * @param null $payment
+     * @param $payment
      * @return string
      */
-    protected function getPaymentMethodTitle($payment = null)
+    protected function getPaymentMethodTitle($payment)
     {
         $paymentMethodTitle = '';
         if ($payment->method == $this->getMollieMethodId()){

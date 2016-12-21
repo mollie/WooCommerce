@@ -275,7 +275,7 @@ class Mollie_WC_Helper_Data
         }
 
 
-        self::$recurring_api_methods = $this->getApiPaymentMethods($test_mode, $use_cache,['recurringType'=>'recurring']);
+        self::$recurring_api_methods = $this->getApiPaymentMethods($test_mode, $use_cache, array('recurringType'=>'recurring'));
 
         return self::$recurring_api_methods;
     }
@@ -287,7 +287,7 @@ class Mollie_WC_Helper_Data
      * @return array|mixed|Mollie_API_Object_List|Mollie_API_Object_Method[]
      * @throws Mollie_WC_Exception_InvalidApiKey
      */
-    protected function getApiPaymentMethods($test_mode = false, $use_cache = true, $filters = [])
+    protected function getApiPaymentMethods($test_mode = false, $use_cache = true, $filters = array())
     {
         $result  = array();
 

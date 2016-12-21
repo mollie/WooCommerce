@@ -15,6 +15,11 @@ class Mollie_WC_Helper_Data
     protected static $api_methods;
 
     /**
+     * @var Mollie_API_Object_Method[]|Mollie_API_Object_List|array
+     */
+    protected static $recurring_api_methods;
+
+    /**
      * @var Mollie_API_Object_Issuer[]|Mollie_API_Object_List|array
      */
     protected static $api_issuers;
@@ -247,16 +252,50 @@ class Mollie_WC_Helper_Data
     public function getPaymentMethods ($test_mode = false, $use_cache = true)
     {
         // Already initialized
-        if ($use_cache && !empty(self::$api_methods))
-        {
+        if ($use_cache && !empty(self::$api_methods)) {
             return self::$api_methods;
         }
 
-        $locale = $this->getCurrentLocale();
+        self::$api_methods = $this->getApiPaymentMethods($test_mode, $use_cache);
 
+        return self::$api_methods;
+    }
+
+
+    /**
+     * @param bool|false $test_mode
+     * @param bool|true $use_cache
+     * @return array|mixed|Mollie_API_Object_List|Mollie_API_Object_Method[]
+     */
+    public function getRecurringPaymentMethods($test_mode = false, $use_cache = true)
+    {
+        // Already initialized
+        if ($use_cache && !empty(self::$recurring_api_methods)) {
+            return self::$recurring_api_methods;
+        }
+
+
+        self::$recurring_api_methods = $this->getApiPaymentMethods($test_mode, $use_cache, array('recurringType'=>'recurring'));
+
+        return self::$recurring_api_methods;
+    }
+
+    /**
+     * @param bool|false $test_mode
+     * @param bool|true $use_cache
+     * @param array $filters
+     * @return array|mixed|Mollie_API_Object_List|Mollie_API_Object_Method[]
+     * @throws Mollie_WC_Exception_InvalidApiKey
+     */
+    protected function getApiPaymentMethods($test_mode = false, $use_cache = true, $filters = array())
+    {
+        $result  = array();
+
+        $locale = $this->getCurrentLocale();
         try
         {
-            $transient_id = $this->getTransientId('api_methods_' . ($test_mode ? 'test' : 'live') . "_$locale");
+            $filtersKey = implode('_',array_keys($filters));
+            $transient_id = $this->getTransientId('api_methods_' . ($test_mode ? 'test' : 'live') . "_$locale". $filtersKey);
 
             if ($use_cache)
             {
@@ -264,22 +303,42 @@ class Mollie_WC_Helper_Data
 
                 if ($cached && $cached instanceof Mollie_API_Object_List)
                 {
-                    return (self::$api_methods = $cached);
+                    return $cached;
                 }
             }
 
-            self::$api_methods = $this->api_helper->getApiClient($test_mode)->methods->all();
+            $result = $this->api_helper->getApiClient($test_mode)->methods->all(0,0,$filters);
 
-            set_transient($transient_id, self::$api_methods, MINUTE_IN_SECONDS * 5);
+            set_transient($transient_id, $result, MINUTE_IN_SECONDS * 5);
 
-            return self::$api_methods;
+            return $result;
         }
         catch (Mollie_API_Exception $e)
         {
             Mollie_WC_Plugin::debug(__FUNCTION__ . ": Could not load Mollie methods (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
 
-        return array();
+        return $result;
+    }
+
+    /**
+     * @param $methodId
+     * @param bool|false $test_mode
+     * @return bool
+     */
+    public function isRecurringPaymentMethodAvailable($methodId, $test_mode = false)
+    {
+        $result = false;
+
+        $recurringPaymentMethods = $this->getRecurringPaymentMethods($test_mode);
+        foreach ($recurringPaymentMethods as $paymentMethod){
+            if ($paymentMethod->id == $methodId){
+                $result = true;
+                break;
+            }
+        }
+
+        return $result;
     }
 
     /**

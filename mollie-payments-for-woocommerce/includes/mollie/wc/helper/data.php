@@ -12,12 +12,12 @@ class Mollie_WC_Helper_Data
     /**
      * @var Mollie_API_Object_Method[]|Mollie_API_Object_List|array
      */
-    protected static $regular_api_methods = [];
+    protected static $regular_api_methods = array();
 
     /**
      * @var Mollie_API_Object_Method[]|Mollie_API_Object_List|array
      */
-    protected static $recurring_api_methods = [];
+    protected static $recurring_api_methods = array();
 
     /**
      * @var Mollie_API_Object_Issuer[]|Mollie_API_Object_List|array

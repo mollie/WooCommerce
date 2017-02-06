@@ -149,14 +149,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
     protected function _initDescription ()
     {
-        $description = '';
-
-        if (Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled())
-        {
-            $description .= '<strong>' . __('Test mode enabled.', 'mollie-payments-for-woocommerce') . '</strong><br/>';
-        }
-
-        $description .= $this->get_option('description');
+        $description = $this->get_option('description', '');
 
         $this->description = $description;
     }

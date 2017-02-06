@@ -3,7 +3,7 @@ Contributors: l.vangunst, daanvm, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, ideal, sofort, credit card, creditcard, visa, mastercard, mistercash, bancontact, bitcoin, paysafecard, direct debit, incasso, sepa, banktransfer, overboeking, betalingen
 Requires at least: 3.8
 Tested up to: 4.6.1
-Stable tag: 2.5.1
+Stable tag: 2.5.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -112,6 +112,12 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 2.5.2 - 06/02/2017 =
+* Fixed error when no API key is configured
+* Fixed problems with regular payment methods
+* Removed 'test mode enabled' description, which causes problems when using WPML
+* Empty the cart when the order is finished, rather than when the payment is created
 
 = 2.5.1 - 21/12/2016 =
 * Normal payments (non-recurring payments) are now processed correctly

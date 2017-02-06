@@ -185,7 +185,7 @@ class Mollie_WC_Helper_Settings
             if (isset($_GET['refresh-methods']) && check_admin_referer('refresh-methods'))
             {
                 /* Reload active Mollie methods */
-                $data_helper->getPaymentMethods($test_mode, $use_cache = false);
+                $data_helper->getAllPaymentMethods($test_mode, $use_cache = false);
             }
 
             $icon_available     = ' <span style="color: green; cursor: help;" title="' . __('Gateway enabled', 'mollie-payments-for-woocommerce'). '">' . strtolower(__('Enabled', 'mollie-payments-for-woocommerce')) . '</span>';

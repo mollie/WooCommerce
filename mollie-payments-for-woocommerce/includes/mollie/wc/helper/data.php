@@ -12,12 +12,12 @@ class Mollie_WC_Helper_Data
     /**
      * @var Mollie_API_Object_Method[]|Mollie_API_Object_List|array
      */
-    protected static $api_methods;
+    protected static $regular_api_methods = array();
 
     /**
      * @var Mollie_API_Object_Method[]|Mollie_API_Object_List|array
      */
-    protected static $recurring_api_methods;
+    protected static $recurring_api_methods = array();
 
     /**
      * @var Mollie_API_Object_Issuer[]|Mollie_API_Object_List|array
@@ -244,49 +244,68 @@ class Mollie_WC_Helper_Data
         return NULL;
     }
 
+
+    /**
+     * @param bool|false $test_mode
+     * @param bool|true $use_cache
+     * @return array|Mollie_API_Object_Method[]
+     */
+    public function getAllPaymentMethods($test_mode = false, $use_cache = true)
+    {
+        $result = $this->getRegularPaymentMethods($test_mode, $use_cache);
+        $recurringPaymentMethods = $this->getRecurringPaymentMethods($test_mode, $use_cache);
+        foreach ($recurringPaymentMethods as $recurringItem){
+            $notFound = true;
+            foreach ($result as $item){
+                if ($item->id == $recurringItem->id){
+                    $notFound = false;
+                    break;
+                }
+            }
+            if ($notFound){
+                $result[] = $recurringItem;
+            }
+        }
+
+
+        return $result;
+    }
+
     /**
      * @param bool $test_mode (default: false)
      * @param bool $use_cache (default: true)
      * @return array|Mollie_API_Object_List|Mollie_API_Object_Method[]
      */
-    public function getPaymentMethods ($test_mode = false, $use_cache = true)
+    public function getRegularPaymentMethods ($test_mode = false, $use_cache = true)
     {
         // Already initialized
-        if ($use_cache && !empty(self::$api_methods)) {
-            return self::$api_methods;
+        if ($use_cache && !empty(self::$regular_api_methods))
+        {
+            return self::$regular_api_methods;
         }
 
-        self::$api_methods = $this->getApiPaymentMethods($test_mode, $use_cache);
 
-        return self::$api_methods;
+        self::$regular_api_methods = $this->getApiPaymentMethods($test_mode, $use_cache);
+
+        return self::$regular_api_methods;
     }
 
 
-    /**
-     * @param bool|false $test_mode
-     * @param bool|true $use_cache
-     * @return array|mixed|Mollie_API_Object_List|Mollie_API_Object_Method[]
-     */
+
     public function getRecurringPaymentMethods($test_mode = false, $use_cache = true)
     {
         // Already initialized
-        if ($use_cache && !empty(self::$recurring_api_methods)) {
+        if ($use_cache && !empty(self::$recurring_api_methods))
+        {
             return self::$recurring_api_methods;
         }
 
 
-        self::$recurring_api_methods = $this->getApiPaymentMethods($test_mode, $use_cache, array('recurringType'=>'recurring'));
+        self::$recurring_api_methods = $this->getApiPaymentMethods($test_mode, $use_cache,['recurringType'=>'recurring']);
 
         return self::$recurring_api_methods;
     }
 
-    /**
-     * @param bool|false $test_mode
-     * @param bool|true $use_cache
-     * @param array $filters
-     * @return array|mixed|Mollie_API_Object_List|Mollie_API_Object_Method[]
-     * @throws Mollie_WC_Exception_InvalidApiKey
-     */
     protected function getApiPaymentMethods($test_mode = false, $use_cache = true, $filters = array())
     {
         $result  = array();
@@ -321,11 +340,6 @@ class Mollie_WC_Helper_Data
         return $result;
     }
 
-    /**
-     * @param $methodId
-     * @param bool|false $test_mode
-     * @return bool
-     */
     public function isRecurringPaymentMethodAvailable($methodId, $test_mode = false)
     {
         $result = false;
@@ -348,7 +362,7 @@ class Mollie_WC_Helper_Data
      */
     public function getPaymentMethod ($test_mode = false, $method)
     {
-        $payment_methods = $this->getPaymentMethods($test_mode);
+        $payment_methods = $this->getAllPaymentMethods($test_mode);
 
         foreach ($payment_methods as $payment_method)
         {

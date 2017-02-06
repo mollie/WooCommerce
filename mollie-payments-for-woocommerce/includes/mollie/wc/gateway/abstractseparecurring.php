@@ -14,9 +14,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     {
         parent::__construct();
         $directDebit = new Mollie_WC_Gateway_DirectDebit();
-        $testMode = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
-        $dataHelper = Mollie_WC_Plugin::getDataHelper();
-        if ($dataHelper->isRecurringPaymentMethodAvailable($directDebit->getMollieMethodId(), $testMode)) {
+        if ($directDebit->is_available()) {
             $this->initSubscriptionSupport();
             $this->recurringMollieMethod = $directDebit;
         }

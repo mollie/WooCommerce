@@ -61,9 +61,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $this->_initIcon();
         $this->_initMinMaxAmount();
 
+        if(!has_action('woocommerce_thankyou_' . $this->id)) {
+            add_action('woocommerce_thankyou_' . $this->id, array($this, 'thankyou_page'));
+        }
+
         add_action('woocommerce_api_' . $this->id, array($this, 'webhookAction'));
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
-        add_action('woocommerce_thankyou_' . $this->id, array($this, 'thankyou_page'));
         add_action('woocommerce_email_after_order_table', array($this, 'displayInstructions'), 10, 3);
 
         if (!$this->isValidForUse())

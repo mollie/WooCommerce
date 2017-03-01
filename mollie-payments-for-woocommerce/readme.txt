@@ -3,7 +3,7 @@ Contributors: l.vangunst, daanvm, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, ideal, sofort, credit card, creditcard, visa, mastercard, mistercash, bancontact, bitcoin, paysafecard, direct debit, incasso, sepa, banktransfer, overboeking, betalingen, recurring, subscriptions
 Requires at least: 3.8
 Tested up to: 4.7.2
-Stable tag: 2.5.2
+Stable tag: 2.5.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -112,6 +112,9 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 2.5.3 - 01/03/2017 =
+* Bugfix for crashing Wordpress when using PHP version 5.3 or lower
 
 = 2.5.2 - 28/02/2017 =
 * The plugin is now compatible with WooCommerce Subscriptions for recurring payments

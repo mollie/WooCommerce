@@ -301,7 +301,7 @@ class Mollie_WC_Helper_Data
         }
 
 
-        self::$recurring_api_methods = $this->getApiPaymentMethods($test_mode, $use_cache,['recurringType'=>'recurring']);
+        self::$recurring_api_methods = $this->getApiPaymentMethods($test_mode, $use_cache,array('recurringType'=>'recurring'));
 
         return self::$recurring_api_methods;
     }

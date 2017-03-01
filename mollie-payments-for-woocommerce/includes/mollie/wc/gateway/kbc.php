@@ -1,5 +1,5 @@
 <?php
-class Mollie_WC_Gateway_Belfius extends Mollie_WC_Gateway_AbstractSepaRecurring
+class Mollie_WC_Gateway_Kbc extends Mollie_WC_Gateway_Abstract
 {
     /**
      *
@@ -19,7 +19,7 @@ class Mollie_WC_Gateway_Belfius extends Mollie_WC_Gateway_AbstractSepaRecurring
      */
     public function getMollieMethodId ()
     {
-        return Mollie_API_Object_Method::BELFIUS;
+        return Mollie_API_Object_Method::KBC;
     }
 
     /**
@@ -27,7 +27,7 @@ class Mollie_WC_Gateway_Belfius extends Mollie_WC_Gateway_AbstractSepaRecurring
      */
     public function getDefaultTitle ()
     {
-        return __('Belfius Direct Net', 'mollie-payments-for-woocommerce');
+        return __('KBC/CBC Payment Button', 'mollie-payments-for-woocommerce');
     }
 
     /**

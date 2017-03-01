@@ -1,6 +1,7 @@
 <?php
 class Mollie_WC_Helper_Settings
 {
+    const DEFAULT_TIME_PAYMENT_CONFIRMATION_CHECK = '3:00';
     /**
      * @return bool
      */
@@ -184,7 +185,7 @@ class Mollie_WC_Helper_Settings
             if (isset($_GET['refresh-methods']) && check_admin_referer('refresh-methods'))
             {
                 /* Reload active Mollie methods */
-                $data_helper->getPaymentMethods($test_mode, $use_cache = false);
+                $data_helper->getAllPaymentMethods($test_mode, $use_cache = false);
             }
 
             $icon_available     = ' <span style="color: green; cursor: help;" title="' . __('Gateway enabled', 'mollie-payments-for-woocommerce'). '">' . strtolower(__('Enabled', 'mollie-payments-for-woocommerce')) . '</span>';
@@ -376,6 +377,22 @@ class Mollie_WC_Helper_Settings
         );
 
         return $this->mergeSettings($settings, $mollie_settings);
+    }
+
+    public function getPaymentConfirmationCheckTime()
+    {
+        $time = strtotime(self::DEFAULT_TIME_PAYMENT_CONFIRMATION_CHECK);
+        $date = new DateTime();
+
+        if ($date->getTimestamp() > $time){
+            $date->setTimestamp($time);
+            $date->add(new DateInterval('P1D'));
+        } else {
+            $date->setTimestamp($time);
+        }
+
+
+        return $date->getTimestamp();
     }
 
     /**

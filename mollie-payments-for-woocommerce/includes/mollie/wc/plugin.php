@@ -6,7 +6,11 @@ class Mollie_WC_Plugin
 {
     const PLUGIN_ID      = 'mollie-payments-for-woocommerce';
     const PLUGIN_TITLE   = 'Mollie Payments for WooCommerce';
-    const PLUGIN_VERSION = '2.2.0';
+    const PLUGIN_VERSION = '2.5.2';
+
+    const DB_VERSION     = '1.0';
+    const DB_VERSION_PARAM_NAME = 'mollie-db-version';
+    const PENDING_PAYMENT_DB_TABLE_NAME = 'mollie_pending_payment';
 
     /**
      * @var bool
@@ -23,6 +27,7 @@ class Mollie_WC_Plugin
         'Mollie_WC_Gateway_Creditcard',
         'Mollie_WC_Gateway_DirectDebit',
         'Mollie_WC_Gateway_Ideal',
+        'Mollie_WC_Gateway_Kbc',
         'Mollie_WC_Gateway_MisterCash',
         'Mollie_WC_Gateway_PayPal',
         'Mollie_WC_Gateway_Paysafecard',
@@ -30,6 +35,92 @@ class Mollie_WC_Plugin
     );
 
     private function __construct () {}
+
+    /**
+     *
+     */
+    public static function schedulePendingPaymentOrdersExpirationCheck()
+    {
+        if ( class_exists( 'WC_Subscriptions_Order' ) ) {
+            $settings_helper = self::getSettingsHelper();
+            $time = $settings_helper->getPaymentConfirmationCheckTime();
+            $nextScheduledTime = wp_next_scheduled('pending_payment_confirmation_check');
+            if (!$nextScheduledTime) {
+                wp_schedule_event($time, 'daily', 'pending_payment_confirmation_check');
+            }
+
+            add_action('pending_payment_confirmation_check', array(__CLASS__, 'checkPendingPaymentOrdersExpiration'));
+        }
+
+    }
+
+    /**
+     *
+     */
+    public static function initDb()
+    {
+        global $wpdb;
+        $wpdb->mollie_pending_payment = $wpdb->prefix . self::PENDING_PAYMENT_DB_TABLE_NAME;
+        if(get_option(self::DB_VERSION_PARAM_NAME, '') != self::DB_VERSION){
+
+            global $wpdb;
+            $pendingPaymentConfirmTable = $wpdb->prefix . self::PENDING_PAYMENT_DB_TABLE_NAME;
+            require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+            if($wpdb->get_var("show tables like '$pendingPaymentConfirmTable'") != $pendingPaymentConfirmTable) {
+                $sql = "CREATE TABLE " . $pendingPaymentConfirmTable . " (
+                    `id` int(11) NOT NULL AUTO_INCREMENT,
+                    `post_id` bigint NOT NULL,
+                    `expired_time` int NOT NULL,
+                    UNIQUE KEY id (id)
+                );";
+                dbDelta($sql);
+            }
+            update_option(self::DB_VERSION_PARAM_NAME, self::DB_VERSION);
+        }
+
+    }
+
+    /**
+     *
+     */
+    public static function checkPendingPaymentOrdersExpiration()
+    {
+        global $wpdb;
+        $currentDate = new DateTime();
+        $items = $wpdb->get_results("SELECT * FROM {$wpdb->mollie_pending_payment} WHERE expired_time < {$currentDate->getTimestamp()};");
+        foreach ($items as $item){
+            $order =  wc_get_order( $item->post_id );
+            if ($order->get_status() == Mollie_WC_Gateway_Abstract::STATUS_COMPLETED){
+
+                $new_order_status = Mollie_WC_Gateway_Abstract::STATUS_FAILED;
+                $paymentMethodId = get_post_meta( $order->id, '_payment_method_title', true );
+                $molliePaymentId    = get_post_meta( $order->id, '_mollie_payment_id', true );
+
+                $order->add_order_note(sprintf(
+                /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+                    __('%s payment failed (%s).', 'mollie-payments-for-woocommerce'),
+                    $paymentMethodId,$molliePaymentId
+                ));
+
+                $order->update_status($new_order_status, '');
+
+                if (get_post_meta($order->id, '_order_stock_reduced', $single = true)) {
+                    // Restore order stock
+                    Mollie_WC_Plugin::getDataHelper()->restoreOrderStock($order);
+
+                    Mollie_WC_Plugin::debug(__METHOD__ . " Stock for order {$order->id} restored.");
+                }
+
+                $wpdb->delete(
+                    $wpdb->mollie_pending_payment,
+                    array(
+                        'post_id' => $order->id,
+                    )
+                );
+            }
+        }
+
+    }
 
     /**
      * Initialize plugin
@@ -61,6 +152,9 @@ class Mollie_WC_Plugin
         // On order details
         add_action('woocommerce_order_details_after_order_table', array(__CLASS__, 'onOrderDetails'), 10, 1);
 
+
+        self::initDb();
+        self::schedulePendingPaymentOrdersExpirationCheck();
         // Mark plugin initiated
         self::$initiated = true;
     }
@@ -350,3 +444,4 @@ class Mollie_WC_Plugin
         return $status_helper;
     }
 }
+

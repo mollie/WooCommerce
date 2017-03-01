@@ -3,17 +3,17 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Mollie Payments for WooCommerce 2.0\n"
-"Report-Msgid-Bugs-To: http://wordpress.org/support/plugin/mollie-payments-"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/mollie-payments-"
 "for-woocommerce\n"
-"POT-Creation-Date: 2016-04-17 16:30+0200\n"
-"PO-Revision-Date: 2016-04-17 16:36+0200\n"
+"POT-Creation-Date: 2016-10-06 15:22+0200\n"
+"PO-Revision-Date: 2016-10-06 15:22+0200\n"
 "Last-Translator: Lennard van Gunst <lennard@mollie.com>\n"
 "Language-Team: Mollie <info@mollie.nl>\n"
 "Language: nl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.7\n"
+"X-Generator: Poedit 1.8.9\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-Basepath: ../..\n"
 "X-Poedit-SearchPath-0: .\n"
@@ -133,8 +133,8 @@ msgstr "%s betaling gestart (%s)."
 #: includes/mollie/wc/gateway/abstract.php:393
 #: includes/mollie/wc/gateway/abstract.php:574
 #: includes/mollie/wc/gateway/abstract.php:605
-#: includes/mollie/wc/gateway/abstract.php:630
-#: includes/mollie/wc/gateway/abstract.php:649
+#: includes/mollie/wc/gateway/abstract.php:639
+#: includes/mollie/wc/gateway/abstract.php:667
 msgid "test mode"
 msgstr "test modus"
 
@@ -155,16 +155,16 @@ msgid "Order completed using %s payment (%s)."
 msgstr "Bestelling afgerond met %s betaling (%s)."
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: includes/mollie/wc/gateway/abstract.php:628
+#: includes/mollie/wc/gateway/abstract.php:637
 msgid "%s payment cancelled (%s)."
 msgstr "%s betaling geannuleerd (%s)."
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: includes/mollie/wc/gateway/abstract.php:647
+#: includes/mollie/wc/gateway/abstract.php:665
 msgid "%s payment expired (%s)."
 msgstr "%s betaling verlopen (%s)."
 
-#: includes/mollie/wc/gateway/abstract.php:663
+#: includes/mollie/wc/gateway/abstract.php:681
 msgid ""
 "You have cancelled your payment. Please complete your order with a different "
 "payment method."
@@ -175,19 +175,19 @@ msgstr ""
 #. translators: Placeholder 1: currency, placeholder 2: refunded amount,
 #. placeholder 3: optional refund reason, placeholder 4: payment ID,
 #. placeholder 5: refund ID
-#: includes/mollie/wc/gateway/abstract.php:737
+#: includes/mollie/wc/gateway/abstract.php:758
 msgid "Refunded %s%s (reason: %s) - Payment ID: %s, Refund: %s"
 msgstr "Terugstorting %s%s (reden: %s) - Payment ID: %s, Refund: %s"
 
-#: includes/mollie/wc/gateway/abstract.php:806
+#: includes/mollie/wc/gateway/abstract.php:827
 msgid "Payment"
 msgstr "Betaling"
 
-#: includes/mollie/wc/gateway/abstract.php:827
+#: includes/mollie/wc/gateway/abstract.php:848
 msgid "We have not received a definite payment status."
 msgstr "We hebben nog geen definitieve status van de betaling ontvangen."
 
-#: includes/mollie/wc/gateway/abstract.php:832
+#: includes/mollie/wc/gateway/abstract.php:853
 msgid ""
 "We have not received a definite payment status. You will receive an email as "
 "soon as we receive a confirmation of the bank/merchant."
@@ -196,7 +196,7 @@ msgstr ""
 "een e-mail zodra wij een bevestiging van de bank ontvangen."
 
 #. translators: Placeholder 1: payment method
-#: includes/mollie/wc/gateway/abstract.php:839
+#: includes/mollie/wc/gateway/abstract.php:860
 msgid "Payment completed with <strong>%s</strong>"
 msgstr "Betaling afgerond met <strong>%s</strong>"
 
@@ -257,20 +257,20 @@ msgstr ""
 "er zelf nog voor kiezen om de betaalinstructies te versturen naar een e-"
 "mailadres."
 
-#: includes/mollie/wc/gateway/banktransfer.php:121
+#: includes/mollie/wc/gateway/banktransfer.php:128
 msgid "Bank Transfer"
 msgstr "Overboeking"
 
 #. translators: Placeholder 1: consumer name, placeholder 2: consumer IBAN,
 #. placeholder 3: consumer BIC
-#: includes/mollie/wc/gateway/banktransfer.php:164
+#: includes/mollie/wc/gateway/banktransfer.php:171
 #: includes/mollie/wc/gateway/directdebit.php:51
 #: includes/mollie/wc/gateway/ideal.php:86
 #: includes/mollie/wc/gateway/sofort.php:56
 msgid "Payment completed by <strong>%s</strong> (IBAN: %s, BIC: %s)"
 msgstr "Betaling afgerond door <strong>%s</strong> (IBAN: %s, BIC: %s)"
 
-#: includes/mollie/wc/gateway/banktransfer.php:174
+#: includes/mollie/wc/gateway/banktransfer.php:181
 msgid ""
 "Please complete your payment by transferring the total amount to the "
 "following bank account:"
@@ -279,37 +279,37 @@ msgstr ""
 "rekening:"
 
 #. translators: Placeholder 1: 'Stichting Mollie Payments'
-#: includes/mollie/wc/gateway/banktransfer.php:178
+#: includes/mollie/wc/gateway/banktransfer.php:185
 msgid "Beneficiary: %s"
 msgstr "Begunstigde: %s"
 
-#: includes/mollie/wc/gateway/banktransfer.php:179
+#: includes/mollie/wc/gateway/banktransfer.php:186
 msgid "IBAN: <strong>%s</strong>"
 msgstr "IBAN: <strong>%s</strong>"
 
-#: includes/mollie/wc/gateway/banktransfer.php:180
+#: includes/mollie/wc/gateway/banktransfer.php:187
 msgid "BIC: %s"
 msgstr "BIC: %s"
 
 #. translators: Placeholder 1: Payment reference e.g. RF49-0000-4716-6216
 #. (SEPA) or +++513/7587/59959+++ (Belgium)
-#: includes/mollie/wc/gateway/banktransfer.php:185
+#: includes/mollie/wc/gateway/banktransfer.php:192
 msgid "Payment reference: %s"
 msgstr "Betalingskenmerk: %s"
 
 #. translators: Placeholder 1: Payment reference e.g. RF49-0000-4716-6216
 #. (SEPA) or +++513/7587/59959+++ (Belgium)
-#: includes/mollie/wc/gateway/banktransfer.php:190
+#: includes/mollie/wc/gateway/banktransfer.php:197
 msgid "Please provide the payment reference <strong>%s</strong>"
 msgstr ""
 "Gelieve het betalingskenmerk <strong>%s</strong> op te geven bij de "
 "overboeking"
 
-#: includes/mollie/wc/gateway/banktransfer.php:203
+#: includes/mollie/wc/gateway/banktransfer.php:210
 msgid "The payment will expire on <strong>%s</strong>."
 msgstr "De betaling zal op <strong>%s</strong> verlopen."
 
-#: includes/mollie/wc/gateway/banktransfer.php:210
+#: includes/mollie/wc/gateway/banktransfer.php:217
 msgid ""
 "The payment will expire on <strong>%s</strong>. Please make sure you "
 "transfer the total amount before this date."
@@ -346,6 +346,10 @@ msgstr "iDEAL"
 #: includes/mollie/wc/gateway/ideal.php:42
 msgid "Select your bank"
 msgstr "Selecteer uw bank"
+
+#: includes/mollie/wc/gateway/kbc.php:30
+msgid "KBC/CBC Payment Button"
+msgstr "KBC/CBC Betaalknop"
 
 #: includes/mollie/wc/gateway/mistercash.php:30
 msgid "Bancontact / Mister Cash"
@@ -444,7 +448,7 @@ msgstr "Bekijk logboeken"
 msgid "Log files are saved to <code>%s</code>"
 msgstr "Logboeken worden opgeslagen in <code>%s</code>"
 
-#: includes/mollie/wc/helper/settings.php:288 includes/mollie/wc/plugin.php:280
+#: includes/mollie/wc/helper/settings.php:288 includes/mollie/wc/plugin.php:281
 msgid "Mollie settings"
 msgstr "Mollie instellingen"
 
@@ -597,7 +601,7 @@ msgstr ""
 "De Mollie API client heeft de volgende PHP cURL functies nodig: %s. Zorg dat "
 "al deze functies beschikbaar zijn."
 
-#: includes/mollie/wc/plugin.php:287
+#: includes/mollie/wc/plugin.php:288
 msgid "Logs"
 msgstr "Logboeken"
 

@@ -1,5 +1,5 @@
 <?php
-class Mollie_WC_Gateway_Sofort extends Mollie_WC_Gateway_Abstract
+class Mollie_WC_Gateway_Sofort extends Mollie_WC_Gateway_AbstractSepaRecurring
 {
     /**
      *

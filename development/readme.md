@@ -4,13 +4,13 @@ I use [Varying Vagrant Vagrants](https://github.com/Varying-Vagrant-Vagrants/VVV
 
 ### Add new WordPress website to vagrant machine
 
-You can manually add new WordPress websites using [auto site setup](https://github.com/varying-vagrant-vagrants/vvv/wiki/Auto-site-Setup) but you can also use a command line tool like [vv](https://github.com/bradp/vv) to add and configure new WordPress websites. The tool will automatically update and provisions your vagrant machine.
+You can manually add new WordPress websites using [auto site setup](https://github.com/varying-vagrant-vagrants/vvv/wiki/Auto-site-Setup) but you can also use a command line tool like [vv](https://github.com/bradp/vv) to add and configure new WordPress websites. The tool will automatically update and provision your vagrant machine.
 
 This can be used to test the Mollie WooCommerce plugin in a specific WordPress + WooCommerce version.
 
 ## GIT checkout plugin code
 
-I have checkout the Mollie plugin in my vagrant `www` directory so it is accessible by the vagrant machine and makes it easier to later update the translation files.
+I have checked out the Mollie plugin in my vagrant `www` directory so it is accessible by the vagrant machine and makes it easier to later update the translation files.
 
 ```
 cd <path-to-vagrant-local>/wwww
@@ -24,7 +24,7 @@ git submodule update
 
 ## Keep the plugin sourcecode in sync with the plugin in your WordPress website
 
-I use [fswatch](https://github.com/emcrisostomo/fswatch) to watch the plugin directory for changes a copy the changes to my WordPress plugin directory to keep them in sync. I use [this shell script](https://github.com/mollie/WooCommerce/tree/master/development/fswatch-sync.sh) to automatically watch for changes a ndupdate the plugin in my WordPress website.
+I use [fswatch](https://github.com/emcrisostomo/fswatch) to watch the plugin directory for changes and copy the changes to my WordPress plugin directory to keep them in sync. I use [this shell script](https://github.com/mollie/WooCommerce/tree/master/development/fswatch-sync.sh) to automatically watch for changes and update the plugin in my WordPress website.
 
 ```
 cd <path-to-vagrant-local>/wwww
@@ -35,7 +35,7 @@ It will notify you that the target directory will be overwritten. Changes made i
 
 ## Updating translations
 
-The development Wordpress website in the vagrant machine contain [translation tools](https://codex.wordpress.org/I18n_for_WordPress_Developers#Using_the_i18n_tools) to parse your sourcecode and update the translation `.pot` file.
+The development Wordpress website in the vagrant machine contains [translation tools](https://codex.wordpress.org/I18n_for_WordPress_Developers#Using_the_i18n_tools) to parse your sourcecode and update the translation `.pot` file.
 
 On your vagrant machine:
 
@@ -56,6 +56,7 @@ A gateway ID is used by WooCommerce to identify the payment gateway.
 * mollie_wc_gateway_creditcard
 * mollie_wc_gateway_directdebit
 * mollie_wc_gateway_ideal
+* mollie_wc_gateway_kbc
 * mollie_wc_gateway_mistercash
 * mollie_wc_gateway_paypal
 * mollie_wc_gateway_paysafecard
@@ -150,7 +151,7 @@ add_filter($gateway_id . '_icon_url', function($icon_url) {
 ```
 
 ### `mollie-payments-for-woocommerce_webhook_url`
-This filter can be added if you want to overwrite the payment webhook. This can be usefull if your development environment is on a local machine and your machine is not publicly accessable by the Mollie platform. Mollie can not deliver the webhook request to your website. You can use a tool like [ngrok](https://ngrok.com/) to create a public endpoint that proxies request to your local machine.
+This filter can be added if you want to overwrite the payment webhook. This can be useful if your development environment is on a local machine and your machine is not publicly accessible by the Mollie platform, in which case Mollie can not deliver the webhook request to your website. You can use a tool like [ngrok](https://ngrok.com/) to create a public endpoint that proxies requests to your local machine.
 
 ```
 add_filter('mollie-payments-for-woocommerce_webhook_url', function($webhook_url, WC_Order $order) {
@@ -171,7 +172,7 @@ add_filter('mollie-payments-for-woocommerce_return_url', function($return_url, W
 ```
 
 ### `mollie-payments-for-woocommerce_api_endpoint`
-You can use this filter to overwrite the Mollie API endpoint. This is only usefull for Mollie employess who have a local development version of Mollie on their own machine.
+You can use this filter to overwrite the Mollie API endpoint. This is only useful for Mollie employees who have a local development version of Mollie on their own machine.
 
 ```
 // Overwrite Mollie API endpoint for local Mollie installation (Mollie employees only)
@@ -194,7 +195,7 @@ add_filter('woocommerce_' . $this->id . '_args', function(array $arguments, WC_O
 ## Actions
 
 ### `mollie-payments-for-woocommerce_create_payment`
-Add this action if you want to receive the arguments that are used for creating a new payment. This can be usefull if you want to log this during development.
+Add this action if you want to receive the arguments that are used for creating a new payment. This can be useful if you want to log this during development.
 
 ```
 add_action('mollie-payments-for-woocommerce_create_payment', function(array $payment_arguments, WC_Order $order) {
@@ -203,7 +204,7 @@ add_action('mollie-payments-for-woocommerce_create_payment', function(array $pay
 ```
 
 ### `mollie-payments-for-woocommerce_payment_created`
-Add this action if you want to receive the arguments that are used for creating a new payment. This can be usefull if you want to log this during development.
+Add this action if you want to receive the arguments that are used for creating a new payment. This can be useful if you want to log this during development.
 
 ```
 add_action('mollie-payments-for-woocommerce_payment_created', function(Mollie_API_Object_Payment $payment, WC_Order $order) {
@@ -212,7 +213,7 @@ add_action('mollie-payments-for-woocommerce_payment_created', function(Mollie_AP
 ```
 
 ### `mollie-payments-for-woocommerce_create_refund`
-Add this action if you want to receive the payment that is being refunded. This can be usefull if you want to log this during development.
+Add this action if you want to receive the payment that is being refunded. This can be useful if you want to log this during development.
 
 ```
 add_action('mollie-payments-for-woocommerce_create_refund', function(Mollie_API_Object_Payment $payment, WC_Order $order) {
@@ -221,7 +222,7 @@ add_action('mollie-payments-for-woocommerce_create_refund', function(Mollie_API_
 ```
 
 ### `mollie-payments-for-woocommerce_refund_created`
-Add this action if you want to receive the payment that is being refunded. This can be usefull if you want to log this during development.
+Add this action if you want to receive the payment that is being refunded. This can be useful if you want to log this during development.
 
 ```
 add_action('mollie-payments-for-woocommerce_create_refund', function(Mollie_API_Object_Payment_Refund $refund, WC_Order $order) {

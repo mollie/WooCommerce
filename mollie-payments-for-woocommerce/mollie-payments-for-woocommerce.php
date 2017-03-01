@@ -3,11 +3,11 @@
  * Plugin Name: Mollie Payments for WooCommerce
  * Plugin URI: https://github.com/mollie/WooCommerce
  * Description: Accept payments in WooCommerce with the official Mollie plugin
- * Version: 2.3.0
+ * Version: 2.5.2
  * Author: Mollie
  * Author URI: https://www.mollie.com
  * Requires at least: 3.8
- * Tested up to: 4.5.3
+ * Tested up to: 4.6.1
  * Text Domain: mollie-payments-for-woocommerce
  * Domain Path: /i18n/languages/
  * License: GPLv2 or later
@@ -90,6 +90,10 @@ function mollie_wc_plugin_admin_init ()
 
 function mollie_wc_plugin_deactivated ()
 {
+    $nextScheduledTime = wp_next_scheduled( 'pending_payment_confirmation_check' ) ;
+    if ($nextScheduledTime) {
+        wp_unschedule_event( $nextScheduledTime, 'pending_payment_confirmation_check' );
+    }
     echo '<div class="error"><p>' . sprintf(__('%s deactivated because it depends on WooCommerce.', 'mollie-payments-for-woocommerce'), Mollie_WC_Plugin::PLUGIN_TITLE) . '</p></div>';
 }
 

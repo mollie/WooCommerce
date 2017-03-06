@@ -30,6 +30,10 @@ class Mollie_WC_Helper_Api
 
         $api_key = $this->settings_helper->getApiKey($test_mode);
 
+        if(has_filter('mollie_api_key_filter')) {
+            $api_key = apply_filters('mollie_api_key_filter', $api_key);
+        }
+
         if (empty($api_key))
         {
             throw new Mollie_WC_Exception_InvalidApiKey(__('No API key provided.', 'mollie-payments-for-woocommerce'));

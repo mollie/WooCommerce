@@ -77,6 +77,16 @@ class Mollie_WC_Helper_Settings
     }
 
     /**
+     * Store customer details at Mollie
+     *
+     * @return string
+     */
+    public function shouldStoreCustomer ()
+    {
+        return get_option($this->getSettingId('customer_details'), 'yes') === 'yes';
+    }
+
+    /**
      * @return bool
      */
     public function isDebugEnabled ()
@@ -362,6 +372,15 @@ class Mollie_WC_Helper_Settings
                     'fr_BE'     => __('French (Belgium)', 'mollie-payments-for-woocommerce'),
                 ),
                 'default' => 'wp_locale',
+            ),
+            array(
+                'id'                => $this->getSettingId('customer_details'),
+                'title'             => __('Store customer details at Mollie', 'mollie-payments-for-woocommerce'),
+                /* translators: Placeholder 1: enabled or disabled */
+                'desc'              => sprintf(__('Should Mollie store customers name and email address for Single Click Payments? Default <code>%s</code>', 'mollie-payments-for-woocommerce'), strtolower(__('Enabled', 'mollie-payments-for-woocommerce'))),
+                'type'              => 'checkbox',
+                'default'           => 'yes',
+
             ),
             array(
                 'id'      => $this->getSettingId('debug'),

@@ -400,6 +400,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $settings_helper     = Mollie_WC_Plugin::getSettingsHelper();
         $payment_description = $settings_helper->getPaymentDescription();
         $payment_locale      = $settings_helper->getPaymentLocale();
+        $store_customer      = $settings_helper->shouldStoreCustomer();
         $mollie_method       = $this->getMollieMethodId();
         $selected_issuer     = $this->getSelectedIssuer();
         $return_url          = $this->getReturnUrl($order);
@@ -432,8 +433,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             'metadata'        => array(
                 'order_id' => $order->id,
             ),
-            'customerId'      => $customer_id,
         );
+
+        if ($store_customer)
+            $paymentRequestData['customerId'] = $customer_id;
 
         return $paymentRequestData;
 

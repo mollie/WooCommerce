@@ -1,0 +1,15 @@
+language: php
+
+php:
+- 5.3
+- 5.4
+- 5.5
+- 5.6
+- 7.0
+- 7.1
+- hhvm
+
+sudo: false
+
+script:
+- find mollie-payments-for-woocommerce -name *.php | xargs -n 1 -P4 php -l

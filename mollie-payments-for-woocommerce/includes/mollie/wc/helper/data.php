@@ -53,6 +53,8 @@ class Mollie_WC_Helper_Data
      */
     protected function getTransientId ($transient)
     {
+        global $wp_version;
+
         /*
          * WordPress will save two options to wp_options table:
          * 1. _transient_<transient_id>
@@ -62,9 +64,19 @@ class Mollie_WC_Helper_Data
         $option_name        = '_transient_timeout_' . $transient_id;
         $option_name_length = strlen($option_name);
 
-        if ($option_name_length > 64)
+        $max_option_name_length = 191;
+
+        /**
+         * Prior to Wordpress version 4.4.0, the maximum length for wp_options.option_name is 64 characters.
+         * @see https://core.trac.wordpress.org/changeset/34030
+         */
+        if ($wp_version < '4.4.0') {
+            $max_option_name_length = 64;
+        }
+
+        if ($option_name_length > $max_option_name_length)
         {
-            trigger_error("Transient id $transient_id is to long. Option name $option_name ($option_name_length) will be to long for database column wp_options.option_name which is varchar(64).", E_USER_WARNING);
+            trigger_error("Transient id $transient_id is to long. Option name $option_name ($option_name_length) will be to long for database column wp_options.option_name which is varchar($max_option_name_length).", E_USER_WARNING);
         }
 
         return $transient_id;

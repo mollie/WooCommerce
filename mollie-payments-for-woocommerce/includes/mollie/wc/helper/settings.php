@@ -420,12 +420,24 @@ class Mollie_WC_Helper_Settings
      */
     protected function getSettingId ($setting)
     {
+        global $wp_version;
+
         $setting_id        = Mollie_WC_Plugin::PLUGIN_ID . '_' . trim($setting);
         $setting_id_length = strlen($setting_id);
 
-        if ($setting_id_length > 64)
+        $max_option_name_length = 191;
+
+        /**
+         * Prior to Wordpress version 4.4.0, the maximum length for wp_options.option_name is 64 characters.
+         * @see https://core.trac.wordpress.org/changeset/34030
+         */
+        if ($wp_version < '4.4.0') {
+            $max_option_name_length = 64;
+        }
+
+        if ($setting_id_length > $max_option_name_length)
         {
-            trigger_error("Setting id $setting_id ($setting_id_length) to long for database column wp_options.option_name which is varchar(64).", E_USER_WARNING);
+            trigger_error("Setting id $setting_id ($setting_id_length) to long for database column wp_options.option_name which is varchar($max_option_name_length).", E_USER_WARNING);
         }
 
         return $setting_id;

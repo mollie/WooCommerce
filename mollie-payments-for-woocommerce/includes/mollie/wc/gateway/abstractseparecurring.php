@@ -87,7 +87,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
         $wpdb->insert(
             $wpdb->mollie_pending_payment,
             array(
-                'post_id' => $renewal_order->id,
+                'post_id' => $renewal_order->get_id(),
                 'expired_time' => $confirmationDate->getTimestamp(),
             )
         );
@@ -102,7 +102,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
         $wpdb->delete(
             $wpdb->mollie_pending_payment,
             array(
-                'post_id' => $order->id,
+                'post_id' => $order->get_id(),
             )
         );
     }
@@ -114,7 +114,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     protected function onWebhookPaid(WC_Order $order, Mollie_API_Object_Payment $payment)
     {
         parent::onWebhookPaid($order, $payment);
-        if ($this->is_subscription($order->id)) {
+        if ($this->is_subscription($order->get_id())) {
             $this->deleteOrderFromPendingPaymentQueue($order);
         }
     }
@@ -127,7 +127,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     {
         parent::onWebhookCancelled($order, $payment);
 
-        if ($this->is_subscription($order->id)) {
+        if ($this->is_subscription($order->get_id())) {
             $this->deleteOrderFromPendingPaymentQueue($order);
         }
     }
@@ -140,7 +140,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     {
         parent::onWebhookExpired($order, $payment);
 
-        if ($this->is_subscription($order->id)) {
+        if ($this->is_subscription($order->get_id())) {
             $this->deleteOrderFromPendingPaymentQueue($order);
         }
     }
@@ -167,7 +167,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     protected function handlePayedOrderWebhook($order, $payment)
     {
         // Duplicate webhook call
-        if ($this->is_subscription($order->id) && isset($payment->recurringType) && $payment->recurringType == 'recurring') {
+        if ($this->is_subscription($order->get_id()) && isset($payment->recurringType) && $payment->recurringType == 'recurring') {
             $paymentMethodTitle = $this->getPaymentMethodTitle($payment);
 
             $order->add_order_note(sprintf(

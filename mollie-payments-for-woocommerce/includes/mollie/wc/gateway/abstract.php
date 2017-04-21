@@ -409,7 +409,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         $payment_description = strtr($payment_description, array(
             '{order_number}' => $order->get_order_number(),
-            '{order_date}'   => date_i18n(wc_date_format(), $order->get_date_created()),
+            '{order_date}'   => date_i18n(wc_date_format(), $order->get_date_created()->getTimestamp()),
         ));
 
         $paymentRequestData = array(

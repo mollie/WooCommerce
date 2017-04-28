@@ -93,9 +93,13 @@ class Mollie_WC_Plugin
             if ($order->get_status() == Mollie_WC_Gateway_Abstract::STATUS_COMPLETED){
 
                 $new_order_status = Mollie_WC_Gateway_Abstract::STATUS_FAILED;
-                $paymentMethodId = get_post_meta( $order->id, '_payment_method_title', true );
-                $molliePaymentId    = get_post_meta( $order->id, '_mollie_payment_id', true );
-
+	            if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		            $paymentMethodId = get_post_meta( $order->id, '_payment_method_title', true );
+		            $molliePaymentId = get_post_meta( $order->id, '_mollie_payment_id', true );
+	            } else {
+		            $paymentMethodId = get_post_meta( $order->get_id(), '_payment_method_title', true );
+		            $molliePaymentId = get_post_meta( $order->get_id(), '_mollie_payment_id', true );
+	            }
                 $order->add_order_note(sprintf(
                 /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
                     __('%s payment failed (%s).', 'mollie-payments-for-woocommerce'),
@@ -104,19 +108,35 @@ class Mollie_WC_Plugin
 
                 $order->update_status($new_order_status, '');
 
-                if (get_post_meta($order->id, '_order_stock_reduced', $single = true)) {
-                    // Restore order stock
-                    Mollie_WC_Plugin::getDataHelper()->restoreOrderStock($order);
+	            if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		            if ( get_post_meta( $order->id, '_order_stock_reduced', $single = true ) ) {
+			            // Restore order stock
+			            Mollie_WC_Plugin::getDataHelper()->restoreOrderStock( $order );
 
-                    Mollie_WC_Plugin::debug(__METHOD__ . " Stock for order {$order->id} restored.");
-                }
+			            Mollie_WC_Plugin::debug( __METHOD__ . " Stock for order {$order->id} restored." );
+		            }
 
-                $wpdb->delete(
-                    $wpdb->mollie_pending_payment,
-                    array(
-                        'post_id' => $order->id,
-                    )
-                );
+		            $wpdb->delete(
+			            $wpdb->mollie_pending_payment,
+			            array(
+				            'post_id' => $order->id,
+			            )
+		            );
+	            } else {
+		            if ( get_post_meta( $order->get_id(), '_order_stock_reduced', $single = true ) ) {
+			            // Restore order stock
+			            Mollie_WC_Plugin::getDataHelper()->restoreOrderStock( $order );
+
+			            Mollie_WC_Plugin::debug( __METHOD__ . " Stock for order {$order->get_id()} restored." );
+		            }
+
+		            $wpdb->delete(
+			            $wpdb->mollie_pending_payment,
+			            array(
+				            'post_id' => $order->get_id(),
+			            )
+		            );
+	            }
             }
         }
 

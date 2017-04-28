@@ -186,7 +186,9 @@ class Mollie_WC_Helper_Data
             }
         }
 
-        return isset($payment_gateways[$order->payment_method]) ? $payment_gateways[$order->payment_method] : false;
+	    $order_payment_method = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $order->payment_method : $order->get_payment_method();
+
+	    return isset($payment_gateways[$order_payment_method]) ? $payment_gateways[$order_payment_method] : false;
     }
 
     /**
@@ -657,6 +659,10 @@ class Mollie_WC_Helper_Data
         }
 
         // Mark order stock as not-reduced
-        delete_post_meta($order->id, '_order_stock_reduced');
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    delete_post_meta($order->id, '_order_stock_reduced');
+	    } else {
+		    delete_post_meta($order->get_id(), '_order_stock_reduced');
+	    }
     }
 }

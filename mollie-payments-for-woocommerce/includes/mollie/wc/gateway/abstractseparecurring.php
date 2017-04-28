@@ -84,13 +84,24 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
         $period = 'P'.self::WAITING_CONFIRMATION_PERIOD_DAYS . 'D';
         $confirmationDate->add(new DateInterval($period));
 
-        $wpdb->insert(
-            $wpdb->mollie_pending_payment,
-            array(
-                'post_id' => $renewal_order->id,
-                'expired_time' => $confirmationDate->getTimestamp(),
-            )
-        );
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    $wpdb->insert(
+			    $wpdb->mollie_pending_payment,
+			    array(
+				    'post_id' => $renewal_order->id,
+				    'expired_time' => $confirmationDate->getTimestamp(),
+			    )
+		    );
+	    } else {
+		    $wpdb->insert(
+			    $wpdb->mollie_pending_payment,
+			    array(
+				    'post_id' => $renewal_order->get_id(),
+				    'expired_time' => $confirmationDate->getTimestamp(),
+			    )
+		    );
+	    }
+
     }
 
     /**
@@ -99,12 +110,24 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     protected function deleteOrderFromPendingPaymentQueue($order)
     {
         global $wpdb;
-        $wpdb->delete(
-            $wpdb->mollie_pending_payment,
-            array(
-                'post_id' => $order->id,
-            )
-        );
+
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    $wpdb->delete(
+			    $wpdb->mollie_pending_payment,
+			    array(
+				    'post_id' => $order->id,
+			    )
+		    );
+
+	    } else {
+		    $wpdb->delete(
+			    $wpdb->mollie_pending_payment,
+			    array(
+				    'post_id' => $order->get_id(),
+			    )
+		    );
+
+	    }
     }
 
     /**
@@ -114,9 +137,15 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     protected function onWebhookPaid(WC_Order $order, Mollie_API_Object_Payment $payment)
     {
         parent::onWebhookPaid($order, $payment);
-        if ($this->is_subscription($order->id)) {
-            $this->deleteOrderFromPendingPaymentQueue($order);
-        }
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    if ($this->is_subscription($order->id)) {
+			    $this->deleteOrderFromPendingPaymentQueue($order);
+		    }
+	    } else {
+		    if ($this->is_subscription($order->get_id())) {
+			    $this->deleteOrderFromPendingPaymentQueue($order);
+		    }
+	    }
     }
 
     /**
@@ -126,10 +155,15 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     protected function onWebhookCancelled(WC_Order $order, Mollie_API_Object_Payment $payment)
     {
         parent::onWebhookCancelled($order, $payment);
-
-        if ($this->is_subscription($order->id)) {
-            $this->deleteOrderFromPendingPaymentQueue($order);
-        }
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    if ($this->is_subscription($order->id)) {
+			    $this->deleteOrderFromPendingPaymentQueue($order);
+		    }
+	    } else {
+		    if ($this->is_subscription($order->get_id())) {
+			    $this->deleteOrderFromPendingPaymentQueue($order);
+		    }
+	    }
     }
 
     /**
@@ -139,10 +173,15 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     protected function onWebhookExpired(WC_Order $order, Mollie_API_Object_Payment $payment)
     {
         parent::onWebhookExpired($order, $payment);
-
-        if ($this->is_subscription($order->id)) {
-            $this->deleteOrderFromPendingPaymentQueue($order);
-        }
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    if ($this->is_subscription($order->id)) {
+			    $this->deleteOrderFromPendingPaymentQueue($order);
+		    }
+	    } else {
+		    if ($this->is_subscription($order->get_id())) {
+			    $this->deleteOrderFromPendingPaymentQueue($order);
+		    }
+	    }
     }
 
     /**
@@ -166,20 +205,37 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
      */
     protected function handlePayedOrderWebhook($order, $payment)
     {
-        // Duplicate webhook call
-        if ($this->is_subscription($order->id) && isset($payment->recurringType) && $payment->recurringType == 'recurring') {
-            $paymentMethodTitle = $this->getPaymentMethodTitle($payment);
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    // Duplicate webhook call
+		    if ($this->is_subscription($order->id) && isset($payment->recurringType) && $payment->recurringType == 'recurring') {
+			    $paymentMethodTitle = $this->getPaymentMethodTitle($payment);
 
-            $order->add_order_note(sprintf(
-            /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-                __('Order completed using %s payment (%s).', 'mollie-payments-for-woocommerce'),
-                $paymentMethodTitle,
-                $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
-            ));
+			    $order->add_order_note(sprintf(
+			    /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+				    __('Order completed using %s payment (%s).', 'mollie-payments-for-woocommerce'),
+				    $paymentMethodTitle,
+				    $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
+			    ));
 
-            $this->deleteOrderFromPendingPaymentQueue($order);
-            return;
-        }
+			    $this->deleteOrderFromPendingPaymentQueue($order);
+			    return;
+		    }
+	    } else {
+		    // Duplicate webhook call
+		    if ($this->is_subscription($order->get_id()) && isset($payment->recurringType) && $payment->recurringType == 'recurring') {
+			    $paymentMethodTitle = $this->getPaymentMethodTitle($payment);
+
+			    $order->add_order_note(sprintf(
+			    /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+				    __('Order completed using %s payment (%s).', 'mollie-payments-for-woocommerce'),
+				    $paymentMethodTitle,
+				    $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
+			    ));
+
+			    $this->deleteOrderFromPendingPaymentQueue($order);
+			    return;
+		    }
+	    }
 
         parent::handlePayedOrderWebhook($order, $payment);
 

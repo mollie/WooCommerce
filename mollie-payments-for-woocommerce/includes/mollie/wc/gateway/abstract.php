@@ -426,11 +426,17 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $return_url          = $this->getReturnUrl($order);
         $webhook_url         = $this->getWebhookUrl($order);
 
-
-        $payment_description = strtr($payment_description, array(
-            '{order_number}' => $order->get_order_number(),
-            '{order_date}'   => date_i18n(wc_date_format(), strtotime($order->order_date)),
-        ));
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    $payment_description = strtr($payment_description, array(
+			    '{order_number}' => $order->get_order_number(),
+			    '{order_date}'   => date_i18n(wc_date_format(), strtotime($order->order_date)),
+		    ));
+	    } else {
+		    $payment_description = strtr($payment_description, array(
+			    '{order_number}' => $order->get_order_number(),
+			    '{order_date}'   => date_i18n(wc_date_format(), $order->get_date_created()->getTimestamp()),
+		    ));
+	    }
 
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 		    $paymentRequestData = array(

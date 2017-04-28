@@ -86,14 +86,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			    '{order_number}' => $order->get_order_number(),
 			    '{order_date}'   => date_i18n(wc_date_format(), strtotime($order->order_date)),
 		    ));
-	    } else {
-		    $payment_description = strtr($payment_description, array(
-			    '{order_number}' => $order->get_order_number(),
-			    '{order_date}'   => date_i18n(wc_date_format(), $order->get_date_created()->getTimestamp()),
-		    ));
-	    }
 
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 		    $data = array_filter(array(
 			    'amount'          => $order->get_total(),
 			    'description'     => $payment_description,
@@ -109,6 +102,11 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			    'customerId'      => $customer_id,
 		    ));
 	    } else {
+		    $payment_description = strtr($payment_description, array(
+			    '{order_number}' => $order->get_order_number(),
+			    '{order_date}'   => date_i18n(wc_date_format(), $order->get_date_created()->getTimestamp()),
+		    ));
+
 		    $data = array_filter(array(
 			    'amount'          => $order->get_total(),
 			    'description'     => $payment_description,

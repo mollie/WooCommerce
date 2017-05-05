@@ -567,7 +567,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				    if (!get_post_meta($order->get_id(), '_order_stock_reduced', $single = true))
 				    {
 					    // Reduce order stock
-					    $order->reduce_order_stock();
+					    wc_reduce_stock_levels( $order->get_id() );
 
 					    Mollie_WC_Plugin::debug(__METHOD__ . ":  Stock for order {$order->get_id()} reduced.");
 				    }

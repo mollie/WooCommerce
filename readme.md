@@ -1,4 +1,4 @@
-![Mollie](https://www.mollie.com/files/Mollie-Logo-Style-Small.png)
+![Mollie](https://www.mollie.com/assets/images/mollie/logo-black.svg)
 
 # WooCommerce extensie voor [betalingen via Mollie](https://www.mollie.com/nl/pricing).
 

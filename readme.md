@@ -1,4 +1,5 @@
-![Mollie](https://www.mollie.com/assets/images/mollie/logo-black.svg)
+<img src="https://www.mollie.com/assets/images/mollie/logo-black.svg" width="110">  
+  
 
 # WooCommerce extensie voor [betalingen via Mollie](https://www.mollie.com/nl/pricing).
 
@@ -45,16 +46,4 @@ Maar wat denk je er over om bij een [technology driven organisatie](https://www.
 Copyright (c) 2014-2016, Mollie B.V.
 
 # Ondersteuning
-Contact: [www.mollie.com](https://www.mollie.com) — info@mollie.com — +31 20-612 88 55
-
-+ [Meer informatie over iDEAL via Mollie](https://www.mollie.com/ideal/)
-+ [Meer informatie over Creditcard via Mollie](https://www.mollie.com/creditcard/)
-+ [Meer informatie over Bancontact/Mister Cash via Mollie](https://www.mollie.com/mistercash/)
-+ [Meer informatie over SOFORT Banking via Mollie](https://www.mollie.com/sofort/)
-+ [Meer informatie over Overboeking via Mollie](https://www.mollie.com/banktransfer/)
-+ [Meer informatie over SEPA-incasso via Mollie](https://www.mollie.com/directdebit/)
-+ [Meer informatie over Bitcoin via Mollie](https://www.mollie.com/bitcoin/)
-+ [Meer informatie over PayPal via Mollie](https://www.mollie.com/paypal/)
-+ [Meer informatie over Belfius Direct Net via Mollie](https://www.mollie.com/belfiusdirectnet/)
-+ [Meer informatie over paysafecard via Mollie](https://www.mollie.com/paysafecard/)
-+ [Meer informatie over KBC/CBC via Mollie](https://www.mollie.com/kbccbc/)
+Contact: [www.mollie.com](https://www.mollie.com) — info@mollie.com

@@ -337,7 +337,7 @@ class Mollie_WC_Plugin
         // Convert message to string
         if (!is_string($message))
         {
-            $message = print_r($message, true);
+            $message = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? print_r($message, true) : wc_print_r($message, true);
         }
 
         // Set debug header
@@ -346,19 +346,31 @@ class Mollie_WC_Plugin
             header("X-Mollie-Debug: $message");
         }
 
-        // Log message
-        if (self::getSettingsHelper()->isDebugEnabled())
-        {
-            static $logger;
+	    // Log message
+	    if ( self::getSettingsHelper()->isDebugEnabled() ) {
 
-            if (empty($logger))
-            {
-                // TODO: Use error_log() fallback if Wc_Logger is not available
-                $logger = new WC_Logger();
-            }
+		    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 
-            $logger->add(self::PLUGIN_ID . '-' . date('Y-m-d'), $message);
-        }
+			    static $logger;
+
+			    if ( empty( $logger ) ) {
+				    // TODO: Use error_log() fallback if Wc_Logger is not available
+				    $logger = new WC_Logger();
+			    }
+
+			    $logger->add( self::PLUGIN_ID . '-' . date( 'Y-m-d' ), $message );
+
+		    } else {
+
+			    $logger = wc_get_logger();
+
+			    $context = array ( 'source' => self::PLUGIN_ID . '-' . date( 'Y-m-d' ) );
+
+			    $logger->debug( $message, $context );
+
+		    }
+
+	    }
     }
 
     /**

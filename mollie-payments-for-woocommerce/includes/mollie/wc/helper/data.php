@@ -634,15 +634,15 @@ class Mollie_WC_Helper_Data
         {
             if ($item['product_id'] > 0)
             {
-                $product = $order->get_product_from_item($item);
+	            $product = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $order->get_product_from_item($item) : $item->get_product();
 
-                if ($product && $product->exists() && $product->managing_stock())
+	            if ($product && $product->exists() && $product->managing_stock())
                 {
-                    $old_stock = $product->stock;
+	                $old_stock = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $product->stock : $product->get_stock_quantity();
 
                     $qty = apply_filters( 'woocommerce_order_item_quantity', $item['qty'], $order, $item);
 
-                    $new_quantity = $product->increase_stock( $qty );
+	                $new_quantity = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $product->increase_stock( $qty ) : wc_update_product_stock( $product, $qty, 'increase');
 
                     do_action('woocommerce_auto_stock_restored', $product, $item);
 

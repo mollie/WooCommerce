@@ -310,7 +310,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         try
         {
-            Mollie_WC_Plugin::debug($this->id . ': Create payment for order ' . $order->id, true);
+            Mollie_WC_Plugin::debug($this->id . ': Create payment for order ' . $order->get_id(), true);
 
             do_action(Mollie_WC_Plugin::PLUGIN_ID . '_create_payment', $data, $order);
 
@@ -335,7 +335,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
             do_action(Mollie_WC_Plugin::PLUGIN_ID . '_payment_created', $payment, $order);
 
-            Mollie_WC_Plugin::debug($this->id . ': Payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $order->id);
+            Mollie_WC_Plugin::debug($this->id . ': Payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $order->get_id());
 
             // Set initial status
             // Status is only updated if the new status is not the same as the default order status (pending)
@@ -361,7 +361,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         }
         catch (Mollie_API_Exception $e)
         {
-            Mollie_WC_Plugin::debug($this->id . ': Failed to create payment for order ' . $order->id . ': ' . $e->getMessage());
+            Mollie_WC_Plugin::debug($this->id . ': Failed to create payment for order ' . $order->get_id() . ': ' . $e->getMessage());
 
             /* translators: Placeholder 1: Payment method title */
             $message = sprintf(__('Could not create %s payment.', 'mollie-payments-for-woocommerce'), $this->title);
@@ -384,10 +384,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     protected function saveMollieInfo($order, $payment)
     {
         // Set active Mollie payment
-        Mollie_WC_Plugin::getDataHelper()->setActiveMolliePayment($order->id, $payment);
+        Mollie_WC_Plugin::getDataHelper()->setActiveMolliePayment($order->get_id(), $payment);
 
         // Set Mollie customer
-        Mollie_WC_Plugin::getDataHelper()->setUserMollieCustomerId($order->customer_user, $payment->customerId);
+        Mollie_WC_Plugin::getDataHelper()->setUserMollieCustomerId($order->get_customer_id(), $payment->customerId);
     }
 
     /**
@@ -409,7 +409,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         $payment_description = strtr($payment_description, array(
             '{order_number}' => $order->get_order_number(),
-            '{order_date}'   => date_i18n(wc_date_format(), strtotime($order->order_date)),
+            '{order_date}'   => date_i18n(wc_date_format(), $order->get_date_created()->getTimestamp()),
         ));
 
         $paymentRequestData = array(
@@ -420,18 +420,18 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             'method'          => $mollie_method,
             'issuer'          => $selected_issuer,
             'locale'          => $payment_locale,
-            'billingAddress'  => $order->billing_address_1,
-            'billingCity'     => $order->billing_city,
-            'billingRegion'   => $order->billing_state,
-            'billingPostal'   => $order->billing_postcode,
-            'billingCountry'  => $order->billing_country,
-            'shippingAddress' => $order->shipping_address_1,
-            'shippingCity'    => $order->shipping_city,
-            'shippingRegion'  => $order->shipping_state,
-            'shippingPostal'  => $order->shipping_postcode,
-            'shippingCountry' => $order->shipping_country,
+            'billingAddress'  => $order->get_billing_address_1(),
+            'billingCity'     => $order->get_billing_city(),
+            'billingRegion'   => $order->get_billing_state(),
+            'billingPostal'   => $order->get_billing_postcode(),
+            'billingCountry'  => $order->get_billing_country(),
+            'shippingAddress' => $order->get_shipping_address_1(),
+            'shippingCity'    => $order->get_shipping_city(),
+            'shippingRegion'  => $order->get_shipping_state(),
+            'shippingPostal'  => $order->get_shipping_postcode(),
+            'shippingCountry' => $order->get_shipping_country(),
             'metadata'        => array(
-                'order_id' => $order->id,
+                'order_id' => $order->get_id(),
             ),
         );
 
@@ -449,7 +449,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function getUserMollieCustomerId($order, $test_mode)
     {
-       return  Mollie_WC_Plugin::getDataHelper()->getUserMollieCustomerId($order->customer_user, $test_mode);
+       return  Mollie_WC_Plugin::getDataHelper()->getUserMollieCustomerId($order->get_customer_id(), $test_mode);
     }
 
     /**
@@ -480,12 +480,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         switch ($new_status)
         {
             case self::STATUS_ON_HOLD:
-                if (!get_post_meta($order->id, '_order_stock_reduced', $single = true))
+                if (!get_post_meta($order->get_id(), '_order_stock_reduced', $single = true))
                 {
                     // Reduce order stock
                     $order->reduce_order_stock();
 
-                    Mollie_WC_Plugin::debug(__METHOD__ . ":  Stock for order {$order->id} reduced.");
+                    Mollie_WC_Plugin::debug(__METHOD__ . ":  Stock for order {$order->get_id()} reduced.");
                 }
 
                 break;
@@ -493,12 +493,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             case self::STATUS_PENDING:
             case self::STATUS_FAILED:
             case self::STATUS_CANCELLED:
-                if (get_post_meta($order->id, '_order_stock_reduced', $single = true))
+                if (get_post_meta($order->get_id(), '_order_stock_reduced', $single = true))
                 {
                     // Restore order stock
                     Mollie_WC_Plugin::getDataHelper()->restoreOrderStock($order);
 
-                    Mollie_WC_Plugin::debug(__METHOD__ . " Stock for order {$order->id} restored.");
+                    Mollie_WC_Plugin::debug(__METHOD__ . " Stock for order {$order->get_id()} restored.");
                 }
 
                 break;
@@ -587,7 +587,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             return;
         }
 
-        Mollie_WC_Plugin::debug($this->id . ": Mollie payment {$payment->id} (" . $payment->mode . ") webhook call for order {$order->id}.", true);
+        Mollie_WC_Plugin::debug($this->id . ": Mollie payment {$payment->id} (" . $payment->mode . ") webhook call for order {$order->get_id()}.", true);
 
         $method_name = 'onWebhook' . ucfirst($payment->status);
 
@@ -617,7 +617,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         // Duplicate webhook call
         Mollie_WC_Plugin::setHttpResponseCode(204);
-        Mollie_WC_Plugin::debug($this->id . ": Order $order->id does not need a payment (payment webhook {$payment->id}).", true);
+        Mollie_WC_Plugin::debug($this->id . ": Order $order->get_id() does not need a payment (payment webhook {$payment->id}).", true);
 
     }
 
@@ -684,8 +684,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         // Unset active Mollie payment id
         Mollie_WC_Plugin::getDataHelper()
-            ->unsetActiveMolliePayment($order->id)
-            ->setCancelledMolliePaymentId($order->id, $payment->id);
+            ->unsetActiveMolliePayment($order->get_id())
+            ->setCancelledMolliePaymentId($order->get_id(), $payment->id);
 
         // New order status
         $new_order_status = self::STATUS_PENDING;
@@ -748,7 +748,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         $data_helper = Mollie_WC_Plugin::getDataHelper();
 
-        if ($data_helper->hasCancelledMolliePayment($order->id))
+        if ($data_helper->hasCancelledMolliePayment($order->get_id()))
         {
             Mollie_WC_Plugin::addNotice(__('You have cancelled your payment. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'));
 
@@ -876,12 +876,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     public function displayInstructions(WC_Order $order, $admin_instructions = false, $plain_text = false)
     {
         // Invalid gateway
-        if ($this->id !== $order->payment_method)
+        if ($this->id !== $order->get_payment_method())
         {
             return;
         }
 
-        $payment = Mollie_WC_Plugin::getDataHelper()->getActiveMolliePayment($order->id);
+        $payment = Mollie_WC_Plugin::getDataHelper()->getActiveMolliePayment($order->get_id());
 
         // Mollie payment not found or invalid gateway
         if (!$payment || $payment->method != $this->getMollieMethodId())
@@ -1006,8 +1006,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         $return_url = WC()->api_request_url('mollie_return');
         $return_url = add_query_arg(array(
-            'order_id'       => $order->id,
-            'key'            => $order->order_key,
+            'order_id'       => $order->get_id(),
+            'key'            => $order->get_order_key(),
         ), $return_url);
 
         $lang_url   = $this->getSiteUrlWithLanguage();
@@ -1026,8 +1026,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         $webhook_url = WC()->api_request_url(strtolower(get_class($this)));
         $webhook_url = add_query_arg(array(
-            'order_id' => $order->id,
-            'key'      => $order->order_key,
+            'order_id' => $order->get_id(),
+            'key'      => $order->get_order_key(),
         ), $webhook_url);
 
         $lang_url    = $this->getSiteUrlWithLanguage();

@@ -453,15 +453,30 @@ class Mollie_WC_Helper_Data
      */
     public function setActiveMolliePayment ($order_id, Mollie_API_Object_Payment $payment)
     {
-        add_post_meta($order_id, '_mollie_payment_id', $payment->id, $single = true);
-        add_post_meta($order_id, '_mollie_payment_mode', $payment->mode, $single = true);
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    add_post_meta( $order_id, '_mollie_payment_id', $payment->id, $single = true );
+		    add_post_meta( $order_id, '_mollie_payment_mode', $payment->mode, $single = true );
 
-        delete_post_meta($order_id, '_mollie_cancelled_payment_id');
+		    delete_post_meta( $order_id, '_mollie_cancelled_payment_id' );
 
-        if ($payment->customerId)
-        {
-            add_post_meta($order_id, '_mollie_customer_id', $payment->customerId, $single = true);
-        }
+		    if ( $payment->customerId ) {
+			    add_post_meta( $order_id, '_mollie_customer_id', $payment->customerId, $single = true );
+		    }
+
+	    } else {
+		    $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+
+		    $order->update_meta_data( '_mollie_payment_id', $payment->id );
+		    $order->update_meta_data( '_mollie_payment_mode', $payment->mode );
+
+		    $order->delete_meta_data( '_mollie_cancelled_payment_id' );
+
+		    if ( $payment->customerId ) {
+			    $order->update_meta_data( '_mollie_customer_id', $payment->customerId );
+		    }
+
+		    $order->save();
+	    }
 
         return $this;
     }
@@ -531,8 +546,15 @@ class Mollie_WC_Helper_Data
      */
     public function unsetActiveMolliePayment ($order_id)
     {
-        delete_post_meta($order_id, '_mollie_payment_id');
-        delete_post_meta($order_id, '_mollie_payment_mode');
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    delete_post_meta($order_id, '_mollie_payment_id');
+		    delete_post_meta($order_id, '_mollie_payment_mode');
+	    } else {
+		    $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+		    $order->delete_meta_data( '_mollie_payment_id' );
+		    $order->delete_meta_data( '_mollie_payment_mode' );
+		    $order->save();
+	    }
 
         return $this;
     }
@@ -545,7 +567,14 @@ class Mollie_WC_Helper_Data
      */
     public function getActiveMolliePaymentId ($order_id)
     {
-        return get_post_meta($order_id, '_mollie_payment_id', $single = true);
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    $mollie_payment_id = get_post_meta( $order_id, '_mollie_payment_id', $single = true );
+	    } else {
+		    $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+		    $mollie_payment_id = $order->get_meta( '_mollie_payment_id', true );
+	    }
+
+	    return $mollie_payment_id;
     }
 
     /**
@@ -556,7 +585,14 @@ class Mollie_WC_Helper_Data
      */
     public function getActiveMolliePaymentMode ($order_id)
     {
-        return get_post_meta($order_id, '_mollie_payment_mode', $single = true);
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    $mollie_payment_mode = get_post_meta( $order_id, '_mollie_payment_mode', $single = true );
+	    } else {
+		    $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+		    $mollie_payment_mode = $order->get_meta( '_mollie_payment_mode', true );
+	    }
+
+	    return $mollie_payment_mode;
     }
 
     /**
@@ -598,7 +634,13 @@ class Mollie_WC_Helper_Data
      */
     public function setCancelledMolliePaymentId ($order_id, $payment_id)
     {
-        add_post_meta($order_id, '_mollie_cancelled_payment_id', $payment_id, $single = true);
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+	    	add_post_meta($order_id, '_mollie_cancelled_payment_id', $payment_id, $single = true);
+	    } else {
+		    $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+		    $order->update_meta_data( '_mollie_cancelled_payment_id', $payment_id );
+		    $order->save();
+	    }
 
         return $this;
     }
@@ -609,7 +651,14 @@ class Mollie_WC_Helper_Data
      */
     public function getCancelledMolliePaymentId ($order_id)
     {
-        return get_post_meta($order_id, '_mollie_cancelled_payment_id', $single = true);
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    $mollie_cancelled_payment_id = get_post_meta( $order_id, '_mollie_cancelled_payment_id', $single = true );
+	    } else {
+		    $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+		    $mollie_cancelled_payment_id = $order->get_meta( '_mollie_cancelled_payment_id', true );
+	    }
+
+        return $mollie_cancelled_payment_id;
     }
 
     /**
@@ -662,7 +711,8 @@ class Mollie_WC_Helper_Data
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 		    delete_post_meta($order->id, '_order_stock_reduced');
 	    } else {
-		    delete_post_meta($order->get_id(), '_order_stock_reduced');
+		    $order->delete_meta_data( '_order_stock_reduced' );
+		    $order->save();
 	    }
     }
 }

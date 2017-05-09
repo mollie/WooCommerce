@@ -97,8 +97,8 @@ class Mollie_WC_Plugin
 		            $paymentMethodId = get_post_meta( $order->id, '_payment_method_title', true );
 		            $molliePaymentId = get_post_meta( $order->id, '_mollie_payment_id', true );
 	            } else {
-		            $paymentMethodId = get_post_meta( $order->get_id(), '_payment_method_title', true );
-		            $molliePaymentId = get_post_meta( $order->get_id(), '_mollie_payment_id', true );
+		            $paymentMethodId = $order->get_meta( '_payment_method_title', true );
+		            $molliePaymentId = $order->get_meta( '_mollie_payment_id', true );
 	            }
                 $order->add_order_note(sprintf(
                 /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
@@ -123,7 +123,7 @@ class Mollie_WC_Plugin
 			            )
 		            );
 	            } else {
-		            if ( get_post_meta( $order->get_id(), '_order_stock_reduced', $single = true ) ) {
+		            if ( $order->get_meta( '_order_stock_reduced', $single = true ) ) {
 			            // Restore order stock
 			            Mollie_WC_Plugin::getDataHelper()->restoreOrderStock( $order );
 

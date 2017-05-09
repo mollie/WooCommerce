@@ -564,7 +564,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		    switch ($new_status)
 		    {
 			    case self::STATUS_ON_HOLD:
-				    if (!get_post_meta($order->get_id(), '_order_stock_reduced', $single = true))
+				    if ( ! $order->get_meta( '_order_stock_reduced', true ) )
 				    {
 					    // Reduce order stock
 					    wc_reduce_stock_levels( $order->get_id() );
@@ -577,7 +577,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			    case self::STATUS_PENDING:
 			    case self::STATUS_FAILED:
 			    case self::STATUS_CANCELLED:
-				    if (get_post_meta($order->get_id(), '_order_stock_reduced', $single = true))
+				    if ( $order->get_meta( '_order_stock_reduced', true ) )
 				    {
 					    // Restore order stock
 					    Mollie_WC_Plugin::getDataHelper()->restoreOrderStock($order);

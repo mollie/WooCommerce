@@ -490,7 +490,13 @@ class Mollie_WC_Helper_Data
     {
         if (!empty($customer_id))
         {
-            update_user_meta($user_id, 'mollie_customer_id', $customer_id);
+	        if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		        update_user_meta( $user_id, 'mollie_customer_id', $customer_id );
+	        } else {
+		        $customer = new WC_Customer( $user_id );
+		        $customer->update_meta_data( 'mollie_customer_id', $customer_id );
+		        $customer->save();
+	        }
         }
 
         return $this;
@@ -508,7 +514,12 @@ class Mollie_WC_Helper_Data
             return NULL;
         }
 
-        $customer_id = get_user_meta($user_id, 'mollie_customer_id', $single = true);
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    $customer_id = get_user_meta( $user_id, 'mollie_customer_id', $single = true );
+	    } else {
+		    $customer    = new WC_Customer( $user_id );
+		    $customer_id = $customer->get_meta( 'mollie_customer_id' );
+	    }
 
         if (empty($customer_id))
         {

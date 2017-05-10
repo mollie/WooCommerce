@@ -420,7 +420,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 	        if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 		        update_post_meta( $orderId, '_mollie_customer_id', $customer_id );
 	        } else {
-		        $order = wc_get_order( 100 );
+		        $order = wc_get_order( $orderId );
 		        $order->update_meta_data( '_mollie_customer_id', $customer_id );
 		        $order->save();
 	        }

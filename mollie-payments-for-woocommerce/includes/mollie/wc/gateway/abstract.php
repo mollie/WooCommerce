@@ -703,19 +703,20 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      * @param $order
      * @param $payment
      */
-    protected function handlePayedOrderWebhook($order, $payment)
-    {
-        // Duplicate webhook call
-        Mollie_WC_Plugin::setHttpResponseCode(204);
+	protected function handlePayedOrderWebhook( $order, $payment ) {
+		// Duplicate webhook call
+		Mollie_WC_Plugin::setHttpResponseCode( 204 );
 
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    Mollie_WC_Plugin::debug($this->id . ": Order $order->id does not need a payment (payment webhook {$payment->id}).", true);
-	    } else {
-		    Mollie_WC_Plugin::debug($this->id . ": Order $order->get_id() does not need a payment (payment webhook {$payment->id}).", true);
-	    }
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			$order_id = $order->id;
+		} else {
+			$order    = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order );
+			$order_id = $order->get_id();
+		}
 
+		Mollie_WC_Plugin::debug( $this->id . ": Order $order_id does not need a payment (payment webhook {$payment->id}).", true );
 
-    }
+	}
 
     /**
      * @param $payment

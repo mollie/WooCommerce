@@ -89,7 +89,7 @@ class Mollie_WC_Plugin
         $currentDate = new DateTime();
         $items = $wpdb->get_results("SELECT * FROM {$wpdb->mollie_pending_payment} WHERE expired_time < {$currentDate->getTimestamp()};");
         foreach ($items as $item){
-            $order =  wc_get_order( $item->post_id );
+	        $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $item->post_id );
             if ($order->get_status() == Mollie_WC_Gateway_Abstract::STATUS_COMPLETED){
 
                 $new_order_status = Mollie_WC_Gateway_Abstract::STATUS_FAILED;

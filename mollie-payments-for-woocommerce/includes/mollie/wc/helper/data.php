@@ -67,7 +67,7 @@ class Mollie_WC_Helper_Data
         $max_option_name_length = 191;
 
         /**
-         * Prior to Wordpress version 4.4.0, the maximum length for wp_options.option_name is 64 characters.
+         * Prior to WooPress version 4.4.0, the maximum length for wp_options.option_name is 64 characters.
          * @see https://core.trac.wordpress.org/changeset/34030
          */
         if ($wp_version < '4.4.0') {

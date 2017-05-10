@@ -114,13 +114,13 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 == Changelog ==
 
 = 2.5.5 - 31/03/2017 =
-* Allow the option name to have maximum 191 characters for newer Wordpress installations.
+* Allow the option name to have maximum 191 characters for newer WooPress installations.
 
 = 2.5.4 - 07/03/2017 =
 * Added an option to disable storing the customer details at Mollie
 
 = 2.5.3 - 01/03/2017 =
-* Bugfix for crashing Wordpress when using PHP version 5.3 or lower
+* Bugfix for crashing WooPress when using PHP version 5.3 or lower
 
 = 2.5.2 - 28/02/2017 =
 * The plugin is now compatible with WooCommerce Subscriptions for recurring payments

@@ -736,7 +736,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         Mollie_WC_Plugin::debug(__METHOD__ . ' called.');
 
-        // Woocommerce 2.2.0 has the option to store the Payment transaction id.
+        // WooCommerce 2.2.0 has the option to store the Payment transaction id.
         $woo_version = get_option('woocommerce_version', 'Unknown');
 
         if (version_compare($woo_version, '2.2.0', '>='))

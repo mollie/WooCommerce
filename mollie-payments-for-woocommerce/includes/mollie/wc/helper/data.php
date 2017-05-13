@@ -713,7 +713,9 @@ class Mollie_WC_Helper_Data
                         $new_quantity
                     ));
 
-                    $order->send_stock_notifications($product, $new_quantity, $item['qty']);
+	                if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		                $order->send_stock_notifications( $product, $new_quantity, $item['qty'] );
+	                }
                 }
             }
         }

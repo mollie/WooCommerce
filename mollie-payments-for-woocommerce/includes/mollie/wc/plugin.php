@@ -67,13 +67,20 @@ class Mollie_WC_Plugin
             $pendingPaymentConfirmTable = $wpdb->prefix . self::PENDING_PAYMENT_DB_TABLE_NAME;
             require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
             if($wpdb->get_var("show tables like '$pendingPaymentConfirmTable'") != $pendingPaymentConfirmTable) {
-                $sql = "CREATE TABLE " . $pendingPaymentConfirmTable . " (
-                    `id` int(11) NOT NULL AUTO_INCREMENT,
-                    `post_id` bigint NOT NULL,
-                    `expired_time` int NOT NULL,
+                $sql = "
+					CREATE TABLE " . $pendingPaymentConfirmTable . " (
+                    id int(11) NOT NULL AUTO_INCREMENT,
+                    post_id bigint NOT NULL,
+                    expired_time int NOT NULL,
                     UNIQUE KEY id (id)
                 );";
                 dbDelta($sql);
+
+	            /**
+	             * Remove redundant 'DESCRIBE *__mollie_pending_payment' error so it doesn't show up in error logs
+	             */
+	            global $EZSQL_ERROR;
+				array_pop($EZSQL_ERROR);
             }
             update_option(self::DB_VERSION_PARAM_NAME, self::DB_VERSION);
         }

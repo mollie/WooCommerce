@@ -81,25 +81,48 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
         $return_url          = $this->getReturnUrl($order);
         $webhook_url         = $this->getWebhookUrl($order);
 
-        $payment_description = strtr($payment_description, array(
-            '{order_number}' => $order->get_order_number(),
-            '{order_date}'   => date_i18n(wc_date_format(), strtotime($order->order_date)),
-        ));
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    $payment_description = strtr($payment_description, array(
+			    '{order_number}' => $order->get_order_number(),
+			    '{order_date}'   => date_i18n(wc_date_format(), strtotime($order->order_date)),
+		    ));
 
-        $data = array_filter(array(
-            'amount'          => $order->get_total(),
-            'description'     => $payment_description,
-            'redirectUrl'     => $return_url,
-            'webhookUrl'      => $webhook_url,
-            'method'          => $mollie_method,
-            'issuer'          => $selected_issuer,
-            'locale'          => $payment_locale,
-            'metadata'        => array(
-                'order_id' => $order->id,
-            ),
-            'recurringType'   => 'recurring',
-            'customerId'      => $customer_id,
-        ));
+		    $data = array_filter(array(
+			    'amount'          => $order->get_total(),
+			    'description'     => $payment_description,
+			    'redirectUrl'     => $return_url,
+			    'webhookUrl'      => $webhook_url,
+			    'method'          => $mollie_method,
+			    'issuer'          => $selected_issuer,
+			    'locale'          => $payment_locale,
+			    'metadata'        => array(
+				    'order_id' => $order->id,
+			    ),
+			    'recurringType'   => 'recurring',
+			    'customerId'      => $customer_id,
+		    ));
+	    } else {
+		    $payment_description = strtr($payment_description, array(
+			    '{order_number}' => $order->get_order_number(),
+			    '{order_date}'   => date_i18n(wc_date_format(), $order->get_date_created()->getTimestamp()),
+		    ));
+
+		    $data = array_filter(array(
+			    'amount'          => $order->get_total(),
+			    'description'     => $payment_description,
+			    'redirectUrl'     => $return_url,
+			    'webhookUrl'      => $webhook_url,
+			    'method'          => $mollie_method,
+			    'issuer'          => $selected_issuer,
+			    'locale'          => $payment_locale,
+			    'metadata'        => array(
+				    'order_id' => $order->get_id(),
+			    ),
+			    'recurringType'   => 'recurring',
+			    'customerId'      => $customer_id,
+		    ));
+	    }
+
         return $data;
     }
 
@@ -109,16 +132,29 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
      */
     protected function saveMollieInfo($order, $payment)
     {
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    if ( ! $this->is_subscription( $order->id ) ) {
+			    parent::saveMollieInfo( $order, $payment );
 
-        if (!$this->is_subscription($order->id)){
-            parent::saveMollieInfo($order,$payment);
-            return;
-        }
-        // Set active Mollie payment
-        $this->setActiveMolliePayment($order->id, $payment);
+			    return;
+		    }
+		    // Set active Mollie payment
+		    $this->setActiveMolliePayment( $order->id, $payment );
 
-        // Set Mollie customer
-        $this->setUserMollieCustomerId($order->id, $payment->customerId);
+		    // Set Mollie customer
+		    $this->setUserMollieCustomerId( $order->id, $payment->customerId );
+	    } else {
+		    if ( ! $this->is_subscription( $order->get_id() ) ) {
+			    parent::saveMollieInfo( $order, $payment );
+
+			    return;
+		    }
+		    // Set active Mollie payment
+		    $this->setActiveMolliePayment( $order->get_id(), $payment );
+
+		    // Set Mollie customer
+		    $this->setUserMollieCustomerId( $order->get_id(), $payment->customerId );
+	    }
     }
 
     /**
@@ -131,14 +167,22 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
     {
         if (!$renewal_order)
         {
-            Mollie_WC_Plugin::debug($this->id . ': Could not process payment, order ' . $renewal_order->id . ' not found.');
+	        if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		        Mollie_WC_Plugin::debug($this->id . ': Could not process payment, order ' . $renewal_order->id . ' not found.');
 
-            Mollie_WC_Plugin::addNotice(sprintf(__('Could not load order %s', 'mollie-payments-for-woocommerce'), $renewal_order->id), 'error');
+		        Mollie_WC_Plugin::addNotice(sprintf(__('Could not load order %s', 'mollie-payments-for-woocommerce'), $renewal_order->id), 'error');
+	        } else {
+		        Mollie_WC_Plugin::debug($this->id . ': Could not process payment, order ' . $renewal_order->get_id() . ' not found.');
+
+		        Mollie_WC_Plugin::addNotice(sprintf(__('Could not load order %s', 'mollie-payments-for-woocommerce'), $renewal_order->get_id()), 'error');
+	        }
 
             return array('result' => 'failure');
         }
 
-        Mollie_WC_Plugin::debug($this->id . ': Try to create payment for order ' . $renewal_order->id);
+	    $renewal_order_id 	= ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $renewal_order->id : $renewal_order->get_id();
+
+	    Mollie_WC_Plugin::debug($this->id . ': Try to create payment for order ' . $renewal_order_id);
         $initial_order_status = $this->getInitialOrderStatus();
 
         // Overwrite plugin-wide
@@ -158,14 +202,14 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
         $test_mode = $this->isTestModeEnabledForRenewalOrder($renewal_order);
         try
         {
-            Mollie_WC_Plugin::debug($this->id . ': Create payment for order ' . $renewal_order->id);
+            Mollie_WC_Plugin::debug($this->id . ': Create payment for order ' . $renewal_order_id);
 
             do_action(Mollie_WC_Plugin::PLUGIN_ID . '_create_payment', $data, $renewal_order);
             $payment = null;
             // Create Mollie payment with customer id.
             try
             {
-                Mollie_WC_Plugin::debug($this->id . ': Fetch mandate' . $renewal_order->id);
+                Mollie_WC_Plugin::debug($this->id . ': Fetch mandate' . $renewal_order_id);
                 $mandates =  Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode)->customers_mandates->withParentId($customer_id)->all();
                 $validMandate = false;
                 foreach ($mandates as $mandate) {
@@ -176,10 +220,10 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
                     }
                 }
                 if ($validMandate){
-                    Mollie_WC_Plugin::debug($this->id . ': Valid mandate ' . $renewal_order->id);
+                    Mollie_WC_Plugin::debug($this->id . ': Valid mandate ' . $renewal_order_id);
                     $payment = Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode)->payments->create($data);
                 } else {
-                    Mollie_WC_Plugin::debug($this->id . 'Payment problem ' . $renewal_order->id);
+                    Mollie_WC_Plugin::debug($this->id . 'Payment problem ' . $renewal_order_id);
                     throw new Mollie_API_Exception(__('Payment cannot be processed.', 'mollie-payments-for-woocommerce-mandate-problem'));
                 }
             }
@@ -194,17 +238,17 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
                 unset($data['customerId']);
                 $payment = Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode)->payments->create($data);
             }
-            Mollie_WC_Plugin::debug($this->id . ': Created payment for order ' . $renewal_order->id. ' payment json response '.json_encode($payment));
-            Mollie_WC_Plugin::getDataHelper()->unsetActiveMolliePayment($renewal_order->id);
+            Mollie_WC_Plugin::debug($this->id . ': Created payment for order ' . $renewal_order_id. ' payment json response '.json_encode($payment));
+            Mollie_WC_Plugin::getDataHelper()->unsetActiveMolliePayment($renewal_order_id);
             // Set active Mollie payment
-            Mollie_WC_Plugin::getDataHelper()->setActiveMolliePayment($renewal_order->id, $payment);
+            Mollie_WC_Plugin::getDataHelper()->setActiveMolliePayment($renewal_order_id, $payment);
 
             // Set Mollie customer
-            $this->setUserMollieCustomerId($renewal_order->id, $payment->customerId);
+            $this->setUserMollieCustomerId($renewal_order_id, $payment->customerId);
 
             do_action(Mollie_WC_Plugin::PLUGIN_ID . '_payment_created', $payment, $renewal_order);
 
-            Mollie_WC_Plugin::debug($this->id . ': Payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $renewal_order->id);
+            Mollie_WC_Plugin::debug($this->id . ': Payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $renewal_order_id);
 
             // Set initial status
             // Status is only updated if the new status is not the same as the default order status (pending)
@@ -217,7 +261,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
         }
         catch (Mollie_API_Exception $e)
         {
-            Mollie_WC_Plugin::debug($this->id . ': Failed to create payment for order ' . $renewal_order->id . ': ' . $e->getMessage());
+            Mollie_WC_Plugin::debug($this->id . ': Failed to create payment for order ' . $renewal_order_id . ': ' . $e->getMessage());
 
             /* translators: Placeholder 1: Payment method title */
             $message = sprintf(__('Could not create %s payment.', 'mollie-payments-for-woocommerce'), $this->title);
@@ -237,17 +281,32 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
     {
         $result = false;
         $subscriptions = array();
-        if ( wcs_order_contains_renewal( $order->id) ) {
-            $subscriptions = wcs_get_subscriptions_for_renewal_order( $order->id );
-        }
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    if ( wcs_order_contains_renewal( $order->id) ) {
+			    $subscriptions = wcs_get_subscriptions_for_renewal_order( $order->id );
+		    }
 
-        foreach( $subscriptions as $subscription ) {
-            $paymentMode = get_post_meta( $subscription->id, '_mollie_payment_mode', true );
-            if ($paymentMode == self::PAYMENT_TEST_MODE){
-                $result = true;
-                break;
-            }
-        }
+		    foreach( $subscriptions as $subscription ) {
+			    $paymentMode = get_post_meta( $subscription->id, '_mollie_payment_mode', true );
+			    if ($paymentMode == self::PAYMENT_TEST_MODE){
+				    $result = true;
+				    break;
+			    }
+		    }
+	    } else {
+		    if ( wcs_order_contains_renewal( $order->get_id()) ) {
+			    $subscriptions = wcs_get_subscriptions_for_renewal_order( $order->get_id() );
+		    }
+
+		    foreach( $subscriptions as $subscription ) {
+			    $paymentMode = $subscription->get_meta( '_mollie_payment_mode', true );
+			    if ($paymentMode == self::PAYMENT_TEST_MODE){
+				    $result = true;
+				    break;
+			    }
+		    }
+	    }
+
         return $result;
     }
     /**
@@ -257,36 +316,75 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
      */
     public function setActiveMolliePayment ($order_id, Mollie_API_Object_Payment $payment)
     {
-        add_post_meta($order_id, '_mollie_payment_id', $payment->id, $single = true);
-        add_post_meta($order_id, '_mollie_payment_mode', $payment->mode, $single = true);
 
-        delete_post_meta($order_id, '_mollie_cancelled_payment_id');
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 
-        if ($payment->customerId)
-        {
-            add_post_meta($order_id, '_mollie_customer_id', $payment->customerId, $single = true);
-        }
+		    add_post_meta( $order_id, '_mollie_payment_id', $payment->id, $single = true );
+		    add_post_meta( $order_id, '_mollie_payment_mode', $payment->mode, $single = true );
 
-        // Also store it on the subscriptions being purchased or paid for in the order
-        if ( wcs_order_contains_subscription( $order_id) ) {
-            $subscriptions = wcs_get_subscriptions_for_order( $order_id);
-        } elseif ( wcs_order_contains_renewal( $order_id) ) {
-            $subscriptions = wcs_get_subscriptions_for_renewal_order( $order_id );
-        } else {
-            $subscriptions = array();
-        }
+		    delete_post_meta( $order_id, '_mollie_cancelled_payment_id' );
 
-        foreach( $subscriptions as $subscription ) {
-            $this->unsetActiveMolliePayment($subscription->id);
-            delete_post_meta($subscription->id, '_mollie_customer_id');
-            add_post_meta( $subscription->id, '_mollie_payment_id', $payment->id, $single = true );
-            add_post_meta( $subscription->id, '_mollie_payment_mode', $payment->mode, $single = true );
-            delete_post_meta($subscription->id, '_mollie_cancelled_payment_id');
-            if ($payment->customerId)
-            {
-                add_post_meta($subscription->id, '_mollie_customer_id', $payment->customerId, $single = true);
-            }
-        }
+		    if ( $payment->customerId ) {
+			    add_post_meta( $order_id, '_mollie_customer_id', $payment->customerId, $single = true );
+		    }
+
+		    // Also store it on the subscriptions being purchased or paid for in the order
+		    if ( wcs_order_contains_subscription( $order_id ) ) {
+			    $subscriptions = wcs_get_subscriptions_for_order( $order_id );
+		    } elseif ( wcs_order_contains_renewal( $order_id ) ) {
+			    $subscriptions = wcs_get_subscriptions_for_renewal_order( $order_id );
+		    } else {
+			    $subscriptions = array ();
+		    }
+
+		    foreach ( $subscriptions as $subscription ) {
+			    $this->unsetActiveMolliePayment( $subscription->id );
+			    delete_post_meta( $subscription->id, '_mollie_customer_id' );
+			    add_post_meta( $subscription->id, '_mollie_payment_id', $payment->id, $single = true );
+			    add_post_meta( $subscription->id, '_mollie_payment_mode', $payment->mode, $single = true );
+			    delete_post_meta( $subscription->id, '_mollie_cancelled_payment_id' );
+			    if ( $payment->customerId ) {
+				    add_post_meta( $subscription->id, '_mollie_customer_id', $payment->customerId, $single = true );
+			    }
+		    }
+
+	    } else {
+
+		    $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+
+		    $order->update_meta_data( '_mollie_payment_id', $payment->id );
+		    $order->update_meta_data( '_mollie_payment_mode', $payment->mode );
+
+		    $order->delete_meta_data( array ( '_mollie_cancelled_payment_id' ) );
+
+		    if ( $payment->customerId ) {
+			    $order->update_meta_data( '_mollie_customer_id', $payment->customerId );
+		    }
+
+		    // Also store it on the subscriptions being purchased or paid for in the order
+		    if ( wcs_order_contains_subscription( $order_id ) ) {
+			    $subscriptions = wcs_get_subscriptions_for_order( $order_id );
+		    } elseif ( wcs_order_contains_renewal( $order_id ) ) {
+			    $subscriptions = wcs_get_subscriptions_for_renewal_order( $order_id );
+		    } else {
+			    $subscriptions = array ();
+		    }
+
+		    foreach ( $subscriptions as $subscription ) {
+			    $this->unsetActiveMolliePayment( $subscription->id );
+			    $subscription->delete_meta_data( array ( '_mollie_customer_id' ) );
+			    $subscription->update_meta_data( '_mollie_payment_id', $payment->id );
+			    $subscription->update_meta_data( '_mollie_payment_mode', $payment->mode );
+			    $subscription->delete_meta_data( array ( '_mollie_cancelled_payment_id' ) );
+			    if ( $payment->customerId ) {
+				    $subscription->update_meta_data( '_mollie_customer_id', $payment->customerId );
+			    }
+			    $subscription->save();
+		    }
+
+		    $order->save();
+
+	    }
 
         return $this;
     }
@@ -297,8 +395,15 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
      */
     public function unsetActiveMolliePayment ($order_id)
     {
-        delete_post_meta($order_id, '_mollie_payment_id');
-        delete_post_meta($order_id, '_mollie_payment_mode');
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    delete_post_meta($order_id, '_mollie_payment_id');
+		    delete_post_meta($order_id, '_mollie_payment_mode');
+	    } else {
+		    $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+		    $order->delete_meta_data( array ( '_mollie_payment_id' ) );
+		    $order->delete_meta_data( array ( '_mollie_payment_mode' ) );
+		    $order->save();
+	    }
 
         return $this;
     }
@@ -312,7 +417,13 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
     {
         if (!empty($customer_id))
         {
-            update_post_meta($orderId, '_mollie_customer_id', $customer_id);
+	        if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		        update_post_meta( $orderId, '_mollie_customer_id', $customer_id );
+	        } else {
+		        $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $orderId );
+		        $order->update_meta_data( '_mollie_customer_id', $customer_id );
+		        $order->save();
+	        }
         }
 
         return $this;
@@ -325,7 +436,12 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
      */
     protected function getUserMollieCustomerId($order, $test_mode = false)
     {
-        $user_id = $order->customer_user;
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    $user_id = $order->customer_user;
+	    } else {
+		    $user_id = $order->get_customer_id();
+	    }
+
         if (empty($user_id)){
             return null;
         }
@@ -369,7 +485,12 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
      */
     public function getOrderMollieCustomerId($order)
     {
-        $customerId = get_post_meta( $order->id, '_mollie_customer_id', true );
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    $customerId = get_post_meta( $order->id, '_mollie_customer_id', true );
+	    } else {
+		    $customerId = $order->get_meta( '_mollie_customer_id', true );
+	    }
+
         return $customerId;
     }
 
@@ -408,10 +529,19 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
      */
     public function delete_renewal_meta( $renewal_order )
     {
-        delete_post_meta( $renewal_order->id, '_mollie_card_4_digits' );
-        delete_post_meta( $renewal_order->id, '_mollie_payment_id' );
-        delete_post_meta( $renewal_order->id, '_mollie_payment_mode' );
-        delete_post_meta( $renewal_order->id, '_mollie_cancelled_payment_id' );
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    delete_post_meta( $renewal_order->id, '_mollie_card_4_digits' );
+		    delete_post_meta( $renewal_order->id, '_mollie_payment_id' );
+		    delete_post_meta( $renewal_order->id, '_mollie_payment_mode' );
+		    delete_post_meta( $renewal_order->id, '_mollie_cancelled_payment_id' );
+	    } else {
+		    $renewal_order->delete_meta_data( array ( '_mollie_card_4_digits' ) );
+		    $renewal_order->delete_meta_data( array ( '_mollie_payment_id' ) );
+		    $renewal_order->delete_meta_data( array ( '_mollie_payment_mode' ) );
+		    $renewal_order->delete_meta_data( array ( '_mollie_cancelled_payment_id' ) );
+		    $renewal_order->save();
+	    }
+
         return $renewal_order;
     }
 
@@ -422,22 +552,41 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
      */
     public function add_subscription_payment_meta( $payment_meta, $subscription )
     {
-        $payment_meta[ $this->id ] = array(
-            'post_meta' => array(
-                '_mollie_payment_id' => array(
-                    'value' => get_post_meta( $subscription->id, '_mollie_payment_id', true ),
-                    'label' => 'Mollie Payment ID',
-                ),
-                '_mollie_payment_mode' => array(
-                    'value' => get_post_meta( $subscription->id, '_mollie_payment_mode', true ),
-                    'label' => 'Mollie Payment Mode',
-                ),
-                '_mollie_customer_id' => array(
-                    'value' => get_post_meta( $subscription->id, '_mollie_customer_id', true ),
-                    'label' => 'Mollie Customer ID',
-                ),
-            ),
-        );
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    $payment_meta[ $this->id ] = array (
+			    'post_meta' => array (
+				    '_mollie_payment_id'   => array (
+					    'value' => get_post_meta( $subscription->id, '_mollie_payment_id', true ),
+					    'label' => 'Mollie Payment ID',
+				    ),
+				    '_mollie_payment_mode' => array (
+					    'value' => get_post_meta( $subscription->id, '_mollie_payment_mode', true ),
+					    'label' => 'Mollie Payment Mode',
+				    ),
+				    '_mollie_customer_id'  => array (
+					    'value' => get_post_meta( $subscription->id, '_mollie_customer_id', true ),
+					    'label' => 'Mollie Customer ID',
+				    ),
+			    ),
+		    );
+	    } else {
+		    $payment_meta[ $this->id ] = array (
+			    'post_meta' => array (
+				    '_mollie_payment_id'   => array (
+					    'value' => $subscription->get_meta( '_mollie_payment_id', true ),
+					    'label' => 'Mollie Payment ID',
+				    ),
+				    '_mollie_payment_mode' => array (
+					    'value' => $subscription->get_meta( '_mollie_payment_mode', true ),
+					    'label' => 'Mollie Payment Mode',
+				    ),
+				    '_mollie_customer_id'  => array (
+					    'value' => $subscription->get_meta( '_mollie_customer_id', true ),
+					    'label' => 'Mollie Customer ID',
+				    ),
+			    ),
+		    );
+	    }
         return $payment_meta;
     }
 
@@ -462,8 +611,15 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
      */
     public function update_failing_payment_method( $subscription, $renewal_order )
     {
-        update_post_meta( $subscription->id, '_mollie_customer_id', $renewal_order->mollie_customer_id );
-        update_post_meta( $subscription->id, '_mollie_payment_id', $renewal_order->mollie_payment_id );
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    update_post_meta( $subscription->id, '_mollie_customer_id', $renewal_order->mollie_customer_id );
+		    update_post_meta( $subscription->id, '_mollie_payment_id', $renewal_order->mollie_payment_id );
+	    } else {
+		    $subscription = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $subscription->id );
+		    $subscription->update_meta_data( '_mollie_customer_id', $renewal_order->mollie_customer_id );
+		    $subscription->update_meta_data( '_mollie_payment_id', $renewal_order->mollie_payment_id );
+		    $subscription->save();
+	    }
     }
 
     /**

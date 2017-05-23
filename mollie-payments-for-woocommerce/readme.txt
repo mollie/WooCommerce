@@ -1,5 +1,5 @@
 === Mollie Payments for WooCommerce ===
-Contributors: l.vangunst, daanvm, ndijkstra, robin-mollie
+Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, ideal, sofort, credit card, creditcard, visa, mastercard, mistercash, bancontact, bitcoin, paysafecard, direct debit, incasso, sepa, banktransfer, overboeking, betalingen, recurring, subscriptions
 Requires at least: 3.8
 Tested up to: 4.7.3

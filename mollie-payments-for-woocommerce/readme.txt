@@ -3,7 +3,7 @@ Contributors: l.vangunst, daanvm, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, ideal, sofort, credit card, creditcard, visa, mastercard, mistercash, bancontact, bitcoin, paysafecard, direct debit, incasso, sepa, banktransfer, overboeking, betalingen, recurring, subscriptions
 Requires at least: 3.8
 Tested up to: 4.7.3
-Stable tag: 2.5.5
+Stable tag: 2.6.0-beta
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -112,6 +112,11 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 2.6.0-beta - 23/05/2017 =
+* Add support for WooCommerce 3.0 (backwards compatible with older versions of WooCommerce)
+* The expiry date that's shown for payments via Bank transfer is now in the correct (translated) format
+* Fix redundant "DESCRIBE *__mollie_pending_payment" error (on new installs)
 
 = 2.5.5 - 31/03/2017 =
 * Allow the option name to have maximum 191 characters for newer WooPress installations.

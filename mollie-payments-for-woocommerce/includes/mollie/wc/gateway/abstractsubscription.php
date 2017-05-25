@@ -31,10 +31,10 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
     {
         $supportSubscriptions = array(
             'subscriptions',
-            'subscription_suspension',
-            'subscription_reactivation',
-            'subscription_cancellation',
-            'subscription_date_changes',
+	        'subscription_cancellation',
+	        'subscription_suspension',
+	        'subscription_reactivation',
+	        'subscription_date_changes',
             'multiple_subscriptions',
         );
 

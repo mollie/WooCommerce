@@ -1,4 +1,3 @@
-- Clear transients in settings (maybe by clearing WooCommerce transients?)
 - Option to enable/disable gateway for virtual orders (see PayPal plugin)
 - Add get_transaction_url() link to new Mollie dashboard payment permalink
 - Use '<order_id> - <gateway_id>' prefix in log messages

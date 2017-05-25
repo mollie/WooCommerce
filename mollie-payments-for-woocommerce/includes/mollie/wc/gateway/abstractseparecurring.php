@@ -56,9 +56,8 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     {
         $this->updateOrderStatus(
             $renewal_order,
-            self::STATUS_COMPLETED,
-            __("Awaiting payment confirmation. For %s Days", 'mollie-payments-for-woocommerce') . "\n",
-            self::WAITING_CONFIRMATION_PERIOD_DAYS
+            self::STATUS_PROCESSING,
+            sprintf(__("Awaiting payment confirmation for %s days", 'mollie-payments-for-woocommerce') . "\n", self::WAITING_CONFIRMATION_PERIOD_DAYS)
         );
 
         $paymentMethodTitle = $this->getPaymentMethodTitle($payment);

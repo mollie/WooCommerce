@@ -1,8 +1,0 @@
-- Option to enable/disable gateway for virtual orders (see PayPal plugin)
-- Add get_transaction_url() link to new Mollie dashboard payment permalink
-- Use '<order_id> - <gateway_id>' prefix in log messages
-- Add expiry date in payment add_order_note
-- Add payment details to admin order details: http://stackoverflow.com/questions/22563693/woocommerce-custom-field-on-custom-order-details-page
-- Bitcoin Gateway: Add method addWebhookInProgress - set order on-hold with message that Bitcoin confirmation is pending
-- Add filter plugin_row_meta - see WooCommerce
-- Add composer file and publish to Packagist

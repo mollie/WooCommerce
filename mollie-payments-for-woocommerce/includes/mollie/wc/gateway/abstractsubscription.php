@@ -372,7 +372,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 		    }
 
 		    foreach ( $subscriptions as $subscription ) {
-			    $this->unsetActiveMolliePayment( $subscription->id );
+			    $this->unsetActiveMolliePayment( $subscription->get_id() );
 			    $subscription->delete_meta_data( array ( '_mollie_customer_id' ) );
 			    $subscription->update_meta_data( '_mollie_payment_id', $payment->id );
 			    $subscription->update_meta_data( '_mollie_payment_mode', $payment->mode );

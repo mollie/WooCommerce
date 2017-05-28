@@ -251,7 +251,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
         $orderId = $payment->metadata->order_id;
 
         // First payment was made by one gateway, and the next from another.
-        // For Example Recurring First with IDEAL, the second With Sepa Direct Debit
+        // For Example Recurring First with IDEAL, the second With SEPA Direct Debit
         if ($orderId && $this->is_subscription($orderId)){
             $isValidPaymentMethod = in_array($payment->method, array($this->getMollieMethodId(),$this->getRecurringMollieMethodId()));
         }

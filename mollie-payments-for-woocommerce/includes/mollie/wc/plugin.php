@@ -1,12 +1,13 @@
 <?php
 // Require WooCommerce fallback functions
 require_once dirname(dirname(dirname(__FILE__))) . '/woocommerce_functions.php';
+require_once dirname(dirname(dirname(__FILE__))) . '/subscriptions_status_check_functions.php';
 
 class Mollie_WC_Plugin
 {
     const PLUGIN_ID      = 'mollie-payments-for-woocommerce';
     const PLUGIN_TITLE   = 'Mollie Payments for WooCommerce';
-    const PLUGIN_VERSION = '2.5.5';
+    const PLUGIN_VERSION = '2.6.0-beta';
 
     const DB_VERSION     = '1.0';
     const DB_VERSION_PARAM_NAME = 'mollie-db-version';

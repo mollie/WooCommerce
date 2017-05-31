@@ -6,7 +6,6 @@ class WC_Tools_Subscriptions_Status_Button {
 	 * __construct function.
 	 *
 	 * @access public
-	 * @return void
 	 */
 	function __construct() {
 
@@ -20,7 +19,7 @@ class WC_Tools_Subscriptions_Status_Button {
 	 *
 	 * @param mixed $old
 	 *
-	 * @return void
+	 * @return array
 	 */
 	function mollie_subscription_status_check_button( $old ) {
 
@@ -55,8 +54,6 @@ class WC_Tools_Subscriptions_Status_Button {
 
 		// Define a var that registers all updated subscriptions
 		$updated_subscriptions = '';
-
-
 
 		// Loop through all subscriptions
 		foreach ( $subscriptions as $subscription ) {
@@ -158,15 +155,15 @@ class WC_Tools_Subscriptions_Status_Button {
 
 		}
 
-		if ( !empty($updated_subscriptions)) {
+		if ( ! empty( $updated_subscriptions ) ) {
 			// Show a message about what just happened
 			echo '<div class="updated"><p>';
-			echo 'The following subscriptions have been updated ' . implode(', ', $updated_subscriptions) . '. Manually check them as described in the ';
+			echo 'The following subscriptions have been updated ' . implode( ', ', $updated_subscriptions ) . '. Manually check them as described in the ';
 			echo '<a href=\'https://github.com/mollie/WooCommerce/wiki/Mollie-Subscriptions-Status\'>instructions</a>.';
 			echo '</p></div>';
 
 			// Log a message about what just happened
-			Mollie_WC_Plugin::debug('Subscriptions updated by \'Check Mollie Subscriptions Status\': ' . implode(', ', $updated_subscriptions) . '. See https://github.com/mollie/WooCommerce/wiki/Mollie-Subscriptions-Status' );
+			Mollie_WC_Plugin::debug( 'Subscriptions updated by \'Check Mollie Subscriptions Status\': ' . implode( ', ', $updated_subscriptions ) . '. See https://github.com/mollie/WooCommerce/wiki/Mollie-Subscriptions-Status' );
 
 		}
 

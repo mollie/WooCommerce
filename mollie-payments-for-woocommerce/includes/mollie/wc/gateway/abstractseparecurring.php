@@ -2,7 +2,7 @@
 abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway_AbstractSubscription
 {
 
-    const WAITING_CONFIRMATION_PERIOD_DAYS = '15';
+    const WAITING_CONFIRMATION_PERIOD_DAYS = '21';
 
     protected $recurringMollieMethod = null;
 

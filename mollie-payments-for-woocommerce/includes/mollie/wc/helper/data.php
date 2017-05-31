@@ -469,7 +469,7 @@ class Mollie_WC_Helper_Data
 		    $order->update_meta_data( '_mollie_payment_id', $payment->id );
 		    $order->update_meta_data( '_mollie_payment_mode', $payment->mode );
 
-		    $order->delete_meta_data( array ( '_mollie_cancelled_payment_id' ) );
+		    $order->delete_meta_data( '_mollie_cancelled_payment_id' );
 
 		    if ( $payment->customerId ) {
 			    $order->update_meta_data( '_mollie_customer_id', $payment->customerId );
@@ -562,8 +562,8 @@ class Mollie_WC_Helper_Data
 		    delete_post_meta($order_id, '_mollie_payment_mode');
 	    } else {
 		    $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
-		    $order->delete_meta_data( array ( '_mollie_payment_id' ) );
-		    $order->delete_meta_data( array ( '_mollie_payment_mode' ) );
+		    $order->delete_meta_data( '_mollie_payment_id' );
+		    $order->delete_meta_data( '_mollie_payment_mode' );
 		    $order->save();
 	    }
 
@@ -724,7 +724,7 @@ class Mollie_WC_Helper_Data
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 		    delete_post_meta($order->id, '_order_stock_reduced');
 	    } else {
-		    $order->delete_meta_data( array(  '_order_stock_reduced' ));
+		    $order->delete_meta_data( '_order_stock_reduced' );
 		    $order->save();
 	    }
     }

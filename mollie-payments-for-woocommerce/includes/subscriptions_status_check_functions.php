@@ -58,32 +58,25 @@ class WC_Tools_Subscriptions_Status_Button {
 		// Loop through all subscriptions
 		foreach ( $subscriptions as $subscription ) {
 
-			$subscription = new WC_Subscription( $subscription->ID );
+			// Get all data in the correct way for WooCommerce 3.x or lower
+			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+				$subscription_is_manual = get_post_meta( $subscription->id, '_requires_manual_renewal', true );
+				$subscription_status    = $subscription->status;
 
-			// During testing enable this (makes sure there are subscriptions that meet update criteria)
-
-			/* if (  $subscription->get_status() == 'active' ) {
-
-				delete_transient( 'mollie_subscription_status_offset');
-
-				$subscription->update_status( 'on-hold',
-					__( 'Changed status because working on \'Mollie Subscriptions Status\' tool.', 'mollie-payments-for-woocommerce' ),
-					true
-				);
-
-				update_post_meta( $subscription->get_id(), '_payment_method', '' );
-				update_post_meta( $subscription->get_id(), '_payment_method_title', '' );
-
+				$mollie_customer_id = get_post_meta( $subscription->id, '_mollie_customer_id', true );
+				$subscription_id    = $subscription->id;
+			} else {
 				$subscription = new WC_Subscription( $subscription->ID );
 
+				$subscription_is_manual = $subscription->is_manual();
+				$subscription_status    = $subscription->get_status();
+
+				$mollie_customer_id = $subscription->get_meta( '_mollie_customer_id' );
+				$subscription_id    = $subscription->get_id();
 			}
-			*/
 
 			// Only continue if the subscription is set to require manual renewal and status is On-Hold
-			if ( ( $subscription->is_manual() ) && ( $subscription->get_status() == 'on-hold' ) ) {
-
-				// Try to find Mollie customer ID in subscription data
-				$mollie_customer_id = $subscription->get_meta( '_mollie_customer_id' );
+			if ( ( $subscription_is_manual ) && ( $subscription_status == 'on-hold' ) ) {
 
 				// Skip to next subscription if no Mollie Customer ID is found (nothing we can do...)
 				if ( empty( $mollie_customer_id ) ) {
@@ -116,28 +109,27 @@ class WC_Tools_Subscriptions_Status_Button {
 					}
 				}
 
-				// If one valid mandate is found, update the subscription to Automatic Renewal
+				// If a valid mandate is found, update the subscription to Automatic Renewal
 				if ( $validMandate ) {
 
-					update_post_meta( $subscription->get_id(), '_requires_manual_renewal', 'false' );
+					update_post_meta( $subscription_id, '_requires_manual_renewal', 'false' );
 
 					if ( $method == 'directdebit' ) {
-						update_post_meta( $subscription->get_id(), '_payment_method', 'mollie_wc_gateway_ideal' );
-						update_post_meta( $subscription->get_id(), '_payment_method_title', 'iDEAL' );
+						update_post_meta( $subscription_id, '_payment_method', 'mollie_wc_gateway_ideal' );
+						update_post_meta( $subscription_id, '_payment_method_title', 'iDEAL' );
 					}
 
 					if ( $method == 'creditcard' ) {
-						update_post_meta( $subscription->get_id(), '_payment_method', 'mollie_wc_gateway_creditcard' );
-						update_post_meta( $subscription->get_id(), '_payment_method_title', 'Credit Card' );
+						update_post_meta( $subscription_id, '_payment_method', 'mollie_wc_gateway_creditcard' );
+						update_post_meta( $subscription_id, '_payment_method_title', 'Credit Card' );
 					}
 
-					// TO DO: Also update status? Otherwise new payments are not made and shop-owners need to do th
 					$subscription->update_status( 'active',
 						__( 'Subscription updated to Automated renewal via Mollie, status set to Active. Processed by \'Mollie Subscriptions Status\' tool.', 'mollie-payments-for-woocommerce' ),
 						true
 					);
 
-					$updated_subscriptions[] = $subscription->get_id();
+					$updated_subscriptions[] = $subscription_id;
 
 				} else {
 
@@ -155,16 +147,19 @@ class WC_Tools_Subscriptions_Status_Button {
 
 		}
 
+		// Output (and log) a message about which (if any) subscriptions got updated
 		if ( ! empty( $updated_subscriptions ) ) {
-			// Show a message about what just happened
 			echo '<div class="updated"><p>';
 			echo 'The following subscriptions have been updated ' . implode( ', ', $updated_subscriptions ) . '. Manually check them as described in the ';
 			echo '<a href=\'https://github.com/mollie/WooCommerce/wiki/Mollie-Subscriptions-Status\'>instructions</a>.';
 			echo '</p></div>';
 
-			// Log a message about what just happened
 			Mollie_WC_Plugin::debug( 'Subscriptions updated by \'Check Mollie Subscriptions Status\': ' . implode( ', ', $updated_subscriptions ) . '. See https://github.com/mollie/WooCommerce/wiki/Mollie-Subscriptions-Status' );
 
+		} else {
+			echo '<div class="updated"><p>';
+			echo __( 'No subscriptions updated in this batch.', 'mollie-payments-for-woocommerce' );
+			echo '</p></div>';
 		}
 
 		// Get current offset and check if there are any subscriptions left

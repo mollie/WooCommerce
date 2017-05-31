@@ -399,7 +399,7 @@ class Mollie_WC_Plugin
      */
     public static function getPluginUrl ($path = '')
     {
-        return untrailingslashit(plugins_url($path, self::getPluginFile()));
+    	return M4W_PLUGIN_URL . $path;
     }
 
     /**

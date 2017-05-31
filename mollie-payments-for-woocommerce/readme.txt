@@ -113,10 +113,17 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 2.6.0-beta - 23/05/2017 =
+= 2.6.0 - 01/06/2017 =
 * Add support for WooCommerce 3.0 (backwards compatible with older versions of WooCommerce)
 * The expiry date that's shown for payments via Bank transfer is now in the correct (translated) format
 * Fix redundant "DESCRIBE *__mollie_pending_payment" error (on new installs)
+
+WooCommerce Subscriptions
+* Important: added Subscription Status tool to fix broken subscriptions, see [instructions](https://github.com/mollie/WooCommerce/wiki/Mollie-Subscriptions-Status)
+* Fix issue where valid subscriptions are set to 'on-hold' and 'manual renewal' only 15 days after renewal payment is created (now only do that after 21 days)
+* Improve "Subscription switching" support to also allow amount changes
+* Fix bug: set orders for recurring payments to Processing instead of completed
+* Fix typo in recurring payment order notes
 
 = 2.5.5 - 31/03/2017 =
 * Allow the option name to have maximum 191 characters for newer WooPress installations.

@@ -65,7 +65,7 @@ class WC_Tools_Subscriptions_Status_Button {
 
 			// During testing enable this (makes sure there are subscriptions that meet update criteria)
 
-			if (  $subscription->get_status() == 'active' ) {
+			/* if (  $subscription->get_status() == 'active' ) {
 
 				delete_transient( 'mollie_subscription_status_offset');
 
@@ -80,6 +80,7 @@ class WC_Tools_Subscriptions_Status_Button {
 				$subscription = new WC_Subscription( $subscription->ID );
 
 			}
+			*/
 
 			// Only continue if the subscription is set to require manual renewal and status is On-Hold
 			if ( ( $subscription->is_manual() ) && ( $subscription->get_status() == 'on-hold' ) ) {

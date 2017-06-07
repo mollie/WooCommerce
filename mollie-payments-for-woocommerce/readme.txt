@@ -120,7 +120,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 WooCommerce Subscriptions
 * Important: added Subscription Status tool to fix broken subscriptions, see [instructions](https://github.com/mollie/WooCommerce/wiki/Mollie-Subscriptions-Status)
-* For SEPA recurring payments, take initial order status from settings, default On-Hold (instead of Completed)
+* SEPA recurring payments, take initial order status from settings, default On-Hold (instead of Completed)
 * Fix issue where valid subscriptions are set to 'on-hold' and 'manual renewal' only 15 days after renewal payment is created (now only do that after 21 days)
 * Improve "Subscription switching" support to also allow amount changes
 * Fix typo in recurring payment order notes

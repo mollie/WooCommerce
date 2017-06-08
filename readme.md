@@ -8,32 +8,46 @@ Ga naar [**Mollie Payments for WooCommerce**](https://wordpress.org/plugins/moll
 # Ondersteunde betaalmethodes
 
 ### iDEAL
-Met iDEAL kunt u vertrouwd, veilig en gemakkelijk uw online aankopen afrekenen. iDEAL is het systeem dat u direct koppelt aan uw internetbankierprogramma bij een online aankoop.
-Via [Mollie](https://www.mollie.com/) is iDEAL gemakkelijk aan te sluiten zonder de gebruikelijke technische en administratieve rompslomp. Mollie geeft u op ieder moment toegang tot uw transactieoverzichten en andere statistieken. Tevens is het mogelijk per e-mail of SMS een notificatie te ontvangen bij elke gelukte betaling. [Mollie](https://www.mollie.com/) is hierdoor dus een perfecte partner op het gebied van iDEAL en is het dan ook niet verbazingwekkend dat [Mollie](https://www.mollie.com/) ondertussen op meer dan 20.000 websites iDEAL-betalingen mag verzorgen.
+Met [iDEAL via Mollie](https://www.mollie.com/nl/payments/ideal) kunt u vertrouwd, veilig en gemakkelijk uw online aankopen afrekenen. iDEAL is het systeem dat u direct koppelt aan uw internetbankierprogramma bij een online aankoop.
+Via [Mollie](https://www.mollie.com/) is iDEAL gemakkelijk aan te sluiten zonder de gebruikelijke technische en administratieve rompslomp. Mollie geeft u op ieder moment toegang tot uw transactieoverzichten en andere statistieken. Tevens is het mogelijk per e-mail of SMS een notificatie te ontvangen bij elke gelukte betaling. [Mollie](https://www.mollie.com/) is hierdoor dus een perfecte partner op het gebied van iDEAL en is het dan ook niet verbazingwekkend dat [Mollie](https://www.mollie.com/) ondertussen op meer dan 30.000 websites iDEAL-betalingen mag verzorgen.
 
 ### Creditcard
-[Creditcard](https://www.mollie.com/creditcard/) is vrijwel de bekendste methode voor het ontvangen van betalingen met wereldwijde dekking. Doordat we onder andere de bekende merken Mastercard en Visa ondersteunen, zorgt dit direct voor veel potentiële kopers.
+[Creditcard](https://www.mollie.com/nl/payments/credit-card) is vrijwel de bekendste methode voor het ontvangen van betalingen met wereldwijde dekking. Doordat we onder andere de bekende merken Mastercard en Visa ondersteunen, zorgt dit direct voor veel potentiële kopers.
 
-### Bancontact/Mister Cash
-[Bancontact/Mister Cash](https://www.mollie.com/mistercash/) maakt gebruik van een fysieke kaart die gekoppeld is aan tegoed op een Belgische bankrekening. Betalingen via Bancontact/Mister Cash zijn gegarandeerd en lijkt daarmee sterk op iDEAL in Nederland. Daarom is het uitermate geschikt voor uw webwinkel.
+### Bancontact
+[Bancontact](https://www.mollie.com/nl/payments/bancontact) maakt gebruik van een fysieke kaart die gekoppeld is aan tegoed op een Belgische bankrekening. Betalingen via Bancontact/Mister Cash zijn gegarandeerd en lijkt daarmee sterk op iDEAL in Nederland. Daarom is het uitermate geschikt voor uw webwinkel.
 
 ### SOFORT Banking
-[SOFORT Banking](https://www.mollie.com/sofort/) is één van de populairste betaalmethodes in Duitsland en actief in 11 landen. Betalingen zijn direct en niet storneerbaar, waarmee het sterk op het Nederlandse iDEAL lijkt. Daarom is het uitermate geschikt voor uw webwinkel.
+[SOFORT Banking](https://www.mollie.com/nl/payments/sofort) is één van de populairste betaalmethodes in Duitsland en actief in 11 landen. Betalingen zijn direct en niet storneerbaar, waarmee het sterk op het Nederlandse iDEAL lijkt. Daarom is het uitermate geschikt voor uw webwinkel.
 
 ### Overboekingen
-[Overboekingen](https://www.mollie.com/overboeking/) binnen de SEPA zone ontvangen via Mollie. Hiermee kun je betalingen ontvangen van zowel particulieren als zakelijke klanten in meer dan 35 Europese landen.
+[Overboekingen](https://www.mollie.com/nl/payments/bank-transfer) binnen de SEPA zone ontvangen via Mollie. Hiermee kun je betalingen ontvangen van zowel particulieren als zakelijke klanten in meer dan 35 Europese landen.
 
 ### Eenmalige incasso ###
-[Eenmalige incasso](https://www.mollie.com/directdebit/) binnen de SEPA zone ontvangen via Mollie. Een eenvoudige betaalmethode waarbij het bedrag achteraf van de rekening van de consument wordt afgeschreven.
+[Eenmalige incasso](https://www.mollie.com/nl/payments/direct-debit) binnen de SEPA zone ontvangen via Mollie. Een eenvoudige betaalmethode waarbij het bedrag achteraf van de rekening van de consument wordt afgeschreven. SEPA incasso's zijn beschikbaar voor [Mollie Recurring](https://www.mollie.com/nl/recurring) in combinatie met [WooCommerce Subscriptions](https://woocommerce.com/products/woocommerce-subscriptions/) en niet voor losse betalingen.
 
 ### PayPal
-[PayPal](https://www.mollie.com/paypal/) is wereldwijd een zeer populaire betaalmethode. In enkele klikken kunt u betalingen ontvangen via een bankoverschrijving, creditcard of het PayPal-saldo.
+[PayPal](https://www.mollie.com/nl/payments/paypal) is wereldwijd een zeer populaire betaalmethode. In enkele klikken kunt u betalingen ontvangen via een bankoverschrijving, creditcard of het PayPal-saldo.
 
 ### Bitcoin
-[Bitcoin](https://www.mollie.com/bitcoin/) is een vorm van elektronisch geld. De bitcoin-euro wisselkoers wordt vastgesteld op het moment van de transactie waardoor het bedrag en de uitbetaling zijn gegarandeerd.
+[Bitcoin](https://www.mollie.com/nl/payments/bitcoin) is een vorm van elektronisch geld. De bitcoin-euro wisselkoers wordt vastgesteld op het moment van de transactie waardoor het bedrag en de uitbetaling zijn gegarandeerd.
 
 ### paysafecard
-[paysafecard](https://www.mollie.com/paysafecard/) is de populairste prepaidcard voor online betalingen die veel door ouders voor hun kinderen wordt gekocht.
+[paysafecard](https://www.mollie.com/nl/payments/paysafecard) is de populairste prepaidcard voor online betalingen die veel door ouders voor hun kinderen wordt gekocht.
+
+### KBC/CBC-Betaalknop
+De [KBC/CBC-Betaalknop](https://www.mollie.com/nl/payments/kbc-cbc) is een online betaalmethode voor de klanten van de KBC en CBC, samen de grootste bank van België. KBC richt zich op Vlaanderen en CBC op Wallonië.
+
+### Belfius Pay Button
+[Belfius](https://www.mollie.com/nl/payments/belfius) is een van de grootste banken van België. Met de Belfius Pay Button voorziet de bank haar klanten van een eigen betaaloplossing.
+
+### CartaSi
+[CartaSi](https://www.mollie.com/nl/payments/cartasi) is een van de meest gebruikte betaalmethoden in Italië. Er zijn ruim 13 miljoen CartaSi-creditcards in circulatie en het is een van de meest gebruikte betaalmethoden in Italië. 
+
+### Cartes Bancaires
+[Cartes Bancaires](https://www.mollie.com/nl/payments/cartes-bancaires) zijn de meest gebruikte creditcards in Frankrijk, met meer dan 64 miljoen kaarten in circulatie. De kaarten zijn co-branded met Visa.
+
+
 
 # Wil je meewerken aan deze module? #
 

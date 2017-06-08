@@ -636,7 +636,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             return;
         }
 
-        $payment_id = $_POST['id'];
+        $payment_id = preg_replace('/[^\w]/', '', $_POST['id']);
         $test_mode  = $data_helper->getActiveMolliePaymentMode($order_id) == 'test';
 
         // Load the payment from Mollie, do not use cache

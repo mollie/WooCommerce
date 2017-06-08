@@ -3,7 +3,7 @@ Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, ideal, sofort, credit card, creditcard, visa, mastercard, mistercash, bancontact, bitcoin, paysafecard, direct debit, incasso, sepa, banktransfer, overboeking, betalingen, recurring, subscriptions
 Requires at least: 3.8
 Tested up to: 4.8
-Stable tag: 2.6.0
+Stable tag: 2.6.1-beta
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -117,13 +117,12 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 * Add support for WooCommerce 3.0 (backwards compatible with older versions of WooCommerce)
 * The expiry date that's shown for payments via Bank transfer is now in the correct (translated) format
 * Fix redundant "DESCRIBE *__mollie_pending_payment" error (on new installs)
-
-WooCommerce Subscriptions
-* Important: added Subscription Status tool to fix broken subscriptions, see [instructions](https://github.com/mollie/WooCommerce/wiki/Mollie-Subscriptions-Status)
-* SEPA recurring payments, take initial order status from settings, default On-Hold (instead of Completed)
-* Fix issue where valid subscriptions are set to 'on-hold' and 'manual renewal' only 15 days after renewal payment is created (now only do that after 21 days)
-* Improve "Subscription switching" support to also allow amount changes
-* Fix typo in recurring payment order notes
+* WooCommerce Subscriptions:
+    * Important: added Subscription Status tool to fix broken subscriptions, see [instructions](https://github.com/mollie/WooCommerce/wiki/Mollie-Subscriptions-Status)
+    * SEPA recurring payments, take initial order status from settings, default On-Hold (instead of Completed)
+    * Fix issue where valid subscriptions are set to 'on-hold' and 'manual renewal' only 15 days after renewal payment is created (now only do that after 21 days)
+    * Improve "Subscription switching" support to also allow amount changes
+    * Fix typo in recurring payment order notes
 
 = 2.5.5 - 31/03/2017 =
 * Allow the option name to have maximum 191 characters for newer WooPress installations.

@@ -9,6 +9,10 @@ class WC_Tools_Subscriptions_Status_Button {
 	 */
 	function __construct() {
 
+		if ( !class_exists( 'WC_Subscriptions' ) ) {
+			return;
+		}
+
 		add_filter( 'woocommerce_debug_tools', array ( $this, 'mollie_subscription_status_check_button' ) );
 	}
 

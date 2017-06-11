@@ -126,9 +126,9 @@ class Mollie_WC_Helper_Settings
         {
             // Just stop here!
             return ''
-                . '<div id="message" class="error fade">'
-                . ' <strong>' . __('Error', 'mollie-payments-for-woocommerce') . ':</strong> ' . implode('<br/>', $status->getErrors())
-                . '</div>';
+                . '<div class="notice notice-error">'
+                . '<p><strong>' . __('Error', 'mollie-payments-for-woocommerce') . ':</strong> ' . implode('<br/>', $status->getErrors())
+                . '</p></div>';
         }
 
         try

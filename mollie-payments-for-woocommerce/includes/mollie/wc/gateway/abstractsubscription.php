@@ -210,7 +210,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
             // Create Mollie payment with customer id.
             try
             {
-                Mollie_WC_Plugin::debug($this->id . ': Fetch mandate' . $renewal_order_id);
+                Mollie_WC_Plugin::debug($this->id . ': Fetch mandate ' . $renewal_order_id);
                 $mandates =  Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode)->customers_mandates->withParentId($customer_id)->all();
                 $validMandate = false;
                 foreach ($mandates as $mandate) {

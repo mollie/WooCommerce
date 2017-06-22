@@ -360,7 +360,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
             ));
 
-            Mollie_WC_Plugin::debug("Redirect user to payment URL: {$payment->getPaymentUrl()}");
+	        if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		        Mollie_WC_Plugin::debug( "For order " . $order->id . " redirect user to payment URL: {$payment->getPaymentUrl()}" );
+	        } else {
+		        Mollie_WC_Plugin::debug( "For order " . $order->get_id() . " redirect user to payment URL: {$payment->getPaymentUrl()}" );
+	        }
 
             return array(
                 'result'   => 'success',
@@ -734,7 +738,13 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function onWebhookPaid(WC_Order $order, Mollie_API_Object_Payment $payment)
     {
-        Mollie_WC_Plugin::debug(__METHOD__ . ' called.');
+
+	    // Add messages to log
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order->id );
+	    } else {
+		    Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order->get_id() );
+	    }
 
         // WooCommerce 2.2.0 has the option to store the Payment transaction id.
         $woo_version = get_option('woocommerce_version', 'Unknown');
@@ -777,17 +787,23 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function onWebhookCancelled(WC_Order $order, Mollie_API_Object_Payment $payment)
     {
-        Mollie_WC_Plugin::debug(__METHOD__ . ' called.');
+
+		// Add messages to log
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order->id );
+	    } else {
+		    Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order->get_id() );
+	    }
 
 	    // Unset active Mollie payment id
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 		    Mollie_WC_Plugin::getDataHelper()
-		                    ->unsetActiveMolliePayment($order->id)
-		                    ->setCancelledMolliePaymentId($order->id, $payment->id);
+		                    ->unsetActiveMolliePayment( $order->id )
+		                    ->setCancelledMolliePaymentId( $order->id, $payment->id );
 	    } else {
 		    Mollie_WC_Plugin::getDataHelper()
-		                    ->unsetActiveMolliePayment($order->get_id())
-		                    ->setCancelledMolliePaymentId($order->get_id(), $payment->id);
+		                    ->unsetActiveMolliePayment( $order->get_id() )
+		                    ->setCancelledMolliePaymentId( $order->get_id(), $payment->id );
 	    }
 
         // New order status
@@ -819,7 +835,13 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function onWebhookExpired(WC_Order $order, Mollie_API_Object_Payment $payment)
     {
-        Mollie_WC_Plugin::debug(__METHOD__ . ' called.');
+
+	    // Add messages to log
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order->id );
+	    } else {
+		    Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order->get_id() );
+	    }
 
         // New order status
         $new_order_status = self::STATUS_CANCELLED;

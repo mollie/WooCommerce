@@ -2,12 +2,12 @@
 Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, ideal, sofort, credit card, creditcard, visa, mastercard, mistercash, bancontact, bitcoin, paysafecard, direct debit, incasso, sepa, banktransfer, overboeking, betalingen, recurring, subscriptions
 Requires at least: 3.8
-Tested up to: 4.8
+Tested up to: 4.9
 Stable tag: 2.6.1-beta
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 2.1
-WC tested up to: 3.0
+WC tested up to: 3.1
 
 Accept payments in WooCommerce with the official Mollie plugin
 

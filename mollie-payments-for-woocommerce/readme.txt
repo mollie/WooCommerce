@@ -6,6 +6,8 @@ Tested up to: 4.8
 Stable tag: 2.6.1-beta
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
+WC requires at least: 2.1
+WC tested up to: 3.0
 
 Accept payments in WooCommerce with the official Mollie plugin
 

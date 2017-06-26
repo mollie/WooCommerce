@@ -236,7 +236,7 @@ class Mollie_WC_Helper_Data
 
             if ($use_cache)
             {
-                $payment = @unserialize(get_transient($transient_id));
+                $payment = unserialize(get_transient($transient_id));
 
                 if ($payment && $payment instanceof Mollie_API_Object_Payment)
                 {
@@ -246,7 +246,7 @@ class Mollie_WC_Helper_Data
 
             $payment = $this->api_helper->getApiClient($test_mode)->payments->get($payment_id);
 
-            set_transient($transient_id, $payment, MINUTE_IN_SECONDS * 5);
+            set_transient($transient_id, serialize($payment), MINUTE_IN_SECONDS * 5);
 
             return $payment;
         }
@@ -332,7 +332,7 @@ class Mollie_WC_Helper_Data
 
             if ($use_cache)
             {
-                $cached = @unserialize(get_transient($transient_id));
+                $cached = unserialize(get_transient($transient_id));
 
                 if ($cached && $cached instanceof Mollie_API_Object_List)
                 {
@@ -342,7 +342,7 @@ class Mollie_WC_Helper_Data
 
             $result = $this->api_helper->getApiClient($test_mode)->methods->all(0,0,$filters);
 
-            set_transient($transient_id, $result, MINUTE_IN_SECONDS * 5);
+            set_transient($transient_id, serialize($result), MINUTE_IN_SECONDS * 5);
 
             return $result;
         }
@@ -404,7 +404,7 @@ class Mollie_WC_Helper_Data
 
             if (empty(self::$api_issuers))
             {
-                $cached = @unserialize(get_transient($transient_id));
+                $cached = unserialize(get_transient($transient_id));
 
                 if ($cached && $cached instanceof Mollie_API_Object_List)
                 {
@@ -414,7 +414,7 @@ class Mollie_WC_Helper_Data
                 {
                     self::$api_issuers = $this->api_helper->getApiClient($test_mode)->issuers->all();
 
-                    set_transient($transient_id, self::$api_issuers, MINUTE_IN_SECONDS * 5);
+                    set_transient($transient_id, serialize(self::$api_issuers), MINUTE_IN_SECONDS * 5);
                 }
             }
 

@@ -18,13 +18,15 @@ This plugin will add support for the following Mollie payments methods to your W
 * iDEAL
 * Bank transfer
 * Credit card
-* Bancontact / Mister Cash
+* Bancontact
 * PayPal
 * SOFORT banking
 * Belfius Direct Net
 * Bitcoin
 * paysafecard
 * KBC/CBC Payment Button
+* CartaSi (Italy)
+* Cartes Bancaires (France)
 
 Please go to the [signup page](https://www.mollie.com/nl/signup) to create a new Mollie account and start receiving payments in a couple of minutes. Contact info@mollie.com if you have any questions or comments about this plugin.
 

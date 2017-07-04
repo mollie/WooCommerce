@@ -14,8 +14,6 @@
  */
 require_once 'includes/mollie/wc/autoload.php';
 
-load_plugin_textdomain('mollie-payments-for-woocommerce', false, 'mollie-payments-for-woocommerce/i18n/languages');
-
 // TODO: Add more constants WP-style, and move from classes to here.
 
 // Plugin folder URL.
@@ -113,3 +111,14 @@ register_activation_hook(__FILE__, 'mollie_wc_plugin_activation_hook');
 
 add_action('admin_init', 'mollie_wc_plugin_admin_init');
 add_action('init', 'mollie_wc_plugin_init');
+
+/**
+ * Load the plugin text domain for translations.
+ */
+function mollie_add_plugin_textdomain() {
+
+	load_plugin_textdomain( 'mollie-payments-for-woocommerce', false, M4W_PLUGIN_DIR . 'i18n/languages/' );
+
+}
+
+add_action( 'plugins_loaded', 'mollie_add_plugin_textdomain' );

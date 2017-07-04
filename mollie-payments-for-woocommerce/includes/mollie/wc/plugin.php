@@ -153,41 +153,45 @@ class Mollie_WC_Plugin
     /**
      * Initialize plugin
      */
-    public static function init ()
-    {
-        if (self::$initiated)
-        {
-            /*
-             * Already initialized
-             */
-            return;
-        }
+	public static function init() {
+		if ( self::$initiated ) {
+			/*
+			 * Already initialized
+			 */
+			return;
+		}
 
-        $plugin_basename = self::getPluginFile();
-        $settings_helper = self::getSettingsHelper();
-        $data_helper     = self::getDataHelper();
+		$plugin_basename = self::getPluginFile();
+		$settings_helper = self::getSettingsHelper();
+		$data_helper     = self::getDataHelper();
 
-        // Add global Mollie settings to 'WooCommerce -> Checkout -> Checkout Options'
-        add_filter('woocommerce_payment_gateways_settings',   array($settings_helper, 'addGlobalSettingsFields'));
-        // When page 'WooCommerce -> Checkout -> Checkout Options' is saved
-        add_action('woocommerce_settings_save_checkout',      array($data_helper, 'deleteTransients'));
-        // Add Mollie gateways
-        add_filter('woocommerce_payment_gateways',            array(__CLASS__, 'addGateways'));
-        // Add settings link to plugins page
-        add_filter('plugin_action_links_' . $plugin_basename, array(__CLASS__, 'addPluginActionLinks'));
-        // Listen to return URL call
-        add_action('woocommerce_api_mollie_return',           array(__CLASS__, 'onMollieReturn'));
-        // On order details
-        add_action('woocommerce_order_details_after_order_table', array(__CLASS__, 'onOrderDetails'), 10, 1);
+		// Add global Mollie settings to 'WooCommerce -> Checkout -> Checkout Options'
+		add_filter( 'woocommerce_payment_gateways_settings', array ( $settings_helper, 'addGlobalSettingsFields' ) );
 
-	    add_filter( 'woocommerce_available_payment_gateways', array ( __CLASS__, 'disableSEPAInCheckout' ), 10, 1 );
-	    add_filter( 'woocommerce_payment_gateways', array ( __CLASS__, 'disableSEPAInSettings' ), 20, 1 );
+		// When page 'WooCommerce -> Checkout -> Checkout Options' is saved
+		add_action( 'woocommerce_settings_save_checkout', array ( $data_helper, 'deleteTransients' ) );
 
-        self::initDb();
-        self::schedulePendingPaymentOrdersExpirationCheck();
-        // Mark plugin initiated
-        self::$initiated = true;
-    }
+		// Add Mollie gateways
+		add_filter( 'woocommerce_payment_gateways', array ( __CLASS__, 'addGateways' ) );
+
+		// Add settings link to plugins page
+		add_filter( 'plugin_action_links_' . $plugin_basename, array ( __CLASS__, 'addPluginActionLinks' ) );
+
+		// Listen to return URL call
+		add_action( 'woocommerce_api_mollie_return', array ( __CLASS__, 'onMollieReturn' ) );
+
+		// On order details
+		add_action( 'woocommerce_order_details_after_order_table', array ( __CLASS__, 'onOrderDetails' ), 10, 1 );
+
+
+		add_filter( 'woocommerce_available_payment_gateways', array ( __CLASS__, 'disableSEPAInCheckout' ), 10, 1 );
+		add_filter( 'woocommerce_payment_gateways', array ( __CLASS__, 'disableSEPAInSettings' ), 20, 1 );
+
+		self::initDb();
+		self::schedulePendingPaymentOrdersExpirationCheck();
+		// Mark plugin initiated
+		self::$initiated = true;
+	}
 
     /**
      * Payment return url callback

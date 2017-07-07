@@ -17,7 +17,7 @@ This plugin will add support for the following Mollie payments methods to your W
 
 * iDEAL
 * Bank transfer
-* Credit card
+* Credit card (Mastercard, VISA, American Express and Maestro)
 * Bancontact
 * PayPal
 * SOFORT banking

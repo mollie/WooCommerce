@@ -12,7 +12,7 @@ Met [iDEAL via Mollie](https://www.mollie.com/nl/payments/ideal) kunt u vertrouw
 Via [Mollie](https://www.mollie.com/) is iDEAL gemakkelijk aan te sluiten zonder de gebruikelijke technische en administratieve rompslomp. Mollie geeft u op ieder moment toegang tot uw transactieoverzichten en andere statistieken. Tevens is het mogelijk per e-mail of SMS een notificatie te ontvangen bij elke gelukte betaling. [Mollie](https://www.mollie.com/) is hierdoor dus een perfecte partner op het gebied van iDEAL en is het dan ook niet verbazingwekkend dat [Mollie](https://www.mollie.com/) ondertussen op meer dan 30.000 websites iDEAL-betalingen mag verzorgen.
 
 ### Creditcard
-[Creditcard](https://www.mollie.com/nl/payments/credit-card) is vrijwel de bekendste methode voor het ontvangen van betalingen met wereldwijde dekking. Doordat we onder andere de bekende merken Mastercard en Visa ondersteunen, zorgt dit direct voor veel potentiële kopers.
+[Creditcard](https://www.mollie.com/nl/payments/credit-card) is vrijwel de bekendste methode voor het ontvangen van betalingen met wereldwijde dekking. Doordat we onder andere de bekende merken Mastercard, VISA en American Express ondersteunen, zorgt dit direct voor veel potentiële kopers.
 
 ### Bancontact
 [Bancontact](https://www.mollie.com/nl/payments/bancontact) maakt gebruik van een fysieke kaart die gekoppeld is aan tegoed op een Belgische bankrekening. Betalingen via Bancontact/Mister Cash zijn gegarandeerd en lijkt daarmee sterk op iDEAL in Nederland. Daarom is het uitermate geschikt voor uw webwinkel.

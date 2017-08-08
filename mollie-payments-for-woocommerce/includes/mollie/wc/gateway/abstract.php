@@ -836,11 +836,34 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     protected function onWebhookExpired(WC_Order $order, Mollie_API_Object_Payment $payment)
     {
 
-	    // Add messages to log
+	    // Get details in correct way depending on WooCommerce version
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order->id );
+		    $order_id = $order->id;
+		    $mollie_payment_id = get_post_meta( $order_id, '_mollie_payment_id', $single = true );
 	    } else {
-		    Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order->get_id() );
+		    $order_id = $order->get_id();
+		    $mollie_payment_id = $order->get_meta( '_mollie_payment_id', true );
+	    }
+
+	    // Add messages to log
+	    Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id );
+
+	    // Get payment method title for use in log messages and order notes
+	    $paymentMethodTitle = $this->getPaymentMethodTitle($payment);
+
+	    // Check that this payment is the most recent, based on Mollie Payment ID from post meta, do not cancel the order if it isn't
+	    if ( $mollie_payment_id != $payment->id) {
+		    Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id . ' and payment ' . $payment->id . ', not processed because of a newer pending payment ' . $mollie_payment_id );
+
+		    $order->add_order_note(sprintf(
+		    /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+			    __('%s payment expired (%s) but order not cancelled because of another pending payment (%s).', 'mollie-payments-for-woocommerce'),
+			    $paymentMethodTitle,
+			    $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : ''),
+			    $mollie_payment_id
+		    ));
+
+	    	return;
 	    }
 
         // New order status
@@ -854,8 +877,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         // Cancel order
         $this->updateOrderStatus($order, $new_order_status);
-
-        $paymentMethodTitle = $this->getPaymentMethodTitle($payment);
 
         $order->add_order_note(sprintf(
         /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */

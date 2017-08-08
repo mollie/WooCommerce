@@ -612,8 +612,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             return;
         }
 
-        $order_id    = $_GET['order_id'];
-        $key         = $_GET['key'];
+	    $order_id = sanitize_text_field( $_GET['order_id'] );
+	    $key      = sanitize_text_field( $_GET['key'] );
 
         $data_helper = Mollie_WC_Plugin::getDataHelper();
         $order       = $data_helper->getWcOrder($order_id);
@@ -633,14 +633,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         }
 
         // No Mollie payment id provided
-        if (empty($_REQUEST['id']))
+        if (empty($_POST['id']))
         {
             Mollie_WC_Plugin::setHttpResponseCode(400);
             Mollie_WC_Plugin::debug(__METHOD__ . ': No payment ID provided.', true);
             return;
         }
 
-        $payment_id = preg_replace('/[^\w]/', '', $_POST['id']);
+	    $payment_id = sanitize_text_field( $_POST['id'] );
         $test_mode  = $data_helper->getActiveMolliePaymentMode($order_id) == 'test';
 
         // Load the payment from Mollie, do not use cache

@@ -200,8 +200,8 @@ class Mollie_WC_Plugin
     {
         $data_helper = self::getDataHelper();
 
-        $order_id = !empty($_GET['order_id']) ? $_GET['order_id'] : NULL;
-        $key      = !empty($_GET['key']) ? $_GET['key'] : NULL;
+	    $order_id = ! empty( $_GET['order_id'] ) ? sanitize_text_field( $_GET['order_id'] ) : null;
+	    $key      = ! empty( $_GET['key'] ) ? sanitize_text_field( $_GET['key'] ) : null;
 
         $order    = $data_helper->getWcOrder($order_id);
 

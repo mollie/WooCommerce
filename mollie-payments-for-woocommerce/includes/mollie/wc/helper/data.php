@@ -454,13 +454,13 @@ class Mollie_WC_Helper_Data
     public function setActiveMolliePayment ($order_id, Mollie_API_Object_Payment $payment)
     {
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    add_post_meta( $order_id, '_mollie_payment_id', $payment->id, $single = true );
-		    add_post_meta( $order_id, '_mollie_payment_mode', $payment->mode, $single = true );
+		    update_post_meta( $order_id, '_mollie_payment_id', $payment->id, $single = true );
+		    update_post_meta( $order_id, '_mollie_payment_mode', $payment->mode, $single = true );
 
 		    delete_post_meta( $order_id, '_mollie_cancelled_payment_id' );
 
 		    if ( $payment->customerId ) {
-			    add_post_meta( $order_id, '_mollie_customer_id', $payment->customerId, $single = true );
+			    update_post_meta( $order_id, '_mollie_customer_id', $payment->customerId, $single = true );
 		    }
 
 	    } else {

@@ -509,6 +509,8 @@ class Mollie_WC_Helper_Data
      */
     public function getUserMollieCustomerId ($user_id, $test_mode = FALSE)
     {
+    	// Guest users can't buy subscriptions and don't need a Mollie customer ID
+	    // https://github.com/mollie/WooCommerce/issues/132
         if (empty($user_id))
         {
             return NULL;

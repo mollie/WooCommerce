@@ -739,12 +739,15 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     protected function onWebhookPaid(WC_Order $order, Mollie_API_Object_Payment $payment)
     {
 
-	    // Add messages to log
+	    // Get order ID in the correct way depending on WooCommerce version
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order->id );
+		    $order_id = $order->id;
 	    } else {
-		    Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order->get_id() );
+		    $order_id = $order->get_id();
 	    }
+
+	    // Add messages to log
+	    Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id );
 
         // WooCommerce 2.2.0 has the option to store the Payment transaction id.
         $woo_version = get_option('woocommerce_version', 'Unknown');
@@ -788,23 +791,20 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     protected function onWebhookCancelled(WC_Order $order, Mollie_API_Object_Payment $payment)
     {
 
-		// Add messages to log
+	    // Get order ID in the correct way depending on WooCommerce version
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order->id );
+		    $order_id = $order->id;
 	    } else {
-		    Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order->get_id() );
+		    $order_id = $order->get_id();
 	    }
 
-	    // Unset active Mollie payment id
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    Mollie_WC_Plugin::getDataHelper()
-		                    ->unsetActiveMolliePayment( $order->id, $payment->id )
-		                    ->setCancelledMolliePaymentId( $order->id, $payment->id );
-	    } else {
-		    Mollie_WC_Plugin::getDataHelper()
-		                    ->unsetActiveMolliePayment( $order->get_id(), $payment->id )
-		                    ->setCancelledMolliePaymentId( $order->get_id(), $payment->id );
-	    }
+	    // Add messages to log
+	    Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id );
+
+	    Mollie_WC_Plugin::getDataHelper()
+		                    ->unsetActiveMolliePayment( $order_id, $payment->id )
+		                    ->setCancelledMolliePaymentId( $order_id, $payment->id );
+
 
         // New order status
         $new_order_status = self::STATUS_PENDING;
@@ -836,7 +836,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     protected function onWebhookExpired(WC_Order $order, Mollie_API_Object_Payment $payment)
     {
 
-	    // Get details in correct way depending on WooCommerce version
+	    // Get order ID in correct way depending on WooCommerce version
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 		    $order_id = $order->id;
 		    $mollie_payment_id = get_post_meta( $order_id, '_mollie_payment_id', $single = true );

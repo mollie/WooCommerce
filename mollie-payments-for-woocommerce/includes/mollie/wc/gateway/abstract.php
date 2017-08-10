@@ -768,6 +768,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             $paymentMethodTitle,
             $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
         ));
+
+	    // Remove (old) cancelled payments from this order
+	    Mollie_WC_Plugin::getDataHelper()->unsetCancelledMolliePaymentId( $order_id );
+
     }
 
     /**
@@ -884,6 +888,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             $paymentMethodTitle,
             $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
         ));
+
+	    // Remove (old) cancelled payments from this order
+	    Mollie_WC_Plugin::getDataHelper()->unsetCancelledMolliePaymentId( $order_id );
+
     }
 
     /**

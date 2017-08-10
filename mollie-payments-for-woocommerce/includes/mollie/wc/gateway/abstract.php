@@ -798,11 +798,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	    // Unset active Mollie payment id
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 		    Mollie_WC_Plugin::getDataHelper()
-		                    ->unsetActiveMolliePayment( $order->id )
+		                    ->unsetActiveMolliePayment( $order->id, $payment->id )
 		                    ->setCancelledMolliePaymentId( $order->id, $payment->id );
 	    } else {
 		    Mollie_WC_Plugin::getDataHelper()
-		                    ->unsetActiveMolliePayment( $order->get_id() )
+		                    ->unsetActiveMolliePayment( $order->get_id(), $payment->id )
 		                    ->setCancelledMolliePaymentId( $order->get_id(), $payment->id );
 	    }
 
@@ -890,35 +890,40 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      * @param WC_Order $order
      * @return string
      */
-    public function getReturnRedirectUrlForOrder(WC_Order $order)
-    {
-        $data_helper = Mollie_WC_Plugin::getDataHelper();
+	public function getReturnRedirectUrlForOrder( WC_Order $order ) {
+		$data_helper = Mollie_WC_Plugin::getDataHelper();
 
-	    $hasCancelledMolliePayment = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $data_helper->hasCancelledMolliePayment($order->id) : $data_helper->hasCancelledMolliePayment($order->get_id());;
 
-        if ($hasCancelledMolliePayment)
-        {
-            Mollie_WC_Plugin::addNotice(__('You have cancelled your payment. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'));
+		if ( $this->orderNeedsPayment( $order ) ) {
 
-            if (method_exists($order, 'get_checkout_payment_url'))
-            {
-                /*
-                 * Return to order payment page
-                 */
-                return $order->get_checkout_payment_url(false);
-            }
+			$hasCancelledMolliePayment = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $data_helper->hasCancelledMolliePayment( $order->id ) : $data_helper->hasCancelledMolliePayment( $order->get_id() );;
 
-            /*
-             * Return to cart
-             */
-            return WC()->cart->get_checkout_url();
-        }
+			if ( $hasCancelledMolliePayment ) {
 
-        /*
-         * Return to order received page
-         */
-        return $this->get_return_url($order);
-    }
+				Mollie_WC_Plugin::addNotice( __( 'You have cancelled your payment. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ) );
+
+				if ( method_exists( $order, 'get_checkout_payment_url' ) ) {
+					/*
+					 * Return to order payment page
+					 */
+					return $order->get_checkout_payment_url( false );
+				}
+
+				/*
+				 * Return to cart
+				 */
+
+				return WC()->cart->get_checkout_url();
+
+			}
+		}
+
+		/*
+		 * Return to order received page
+		 */
+
+		return $this->get_return_url( $order );
+	}
 
     /**
      * Process a refund if supported

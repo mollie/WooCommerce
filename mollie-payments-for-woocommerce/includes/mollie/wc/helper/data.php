@@ -527,12 +527,20 @@ class Mollie_WC_Helper_Data
             {
                 $userdata = get_userdata($user_id);
 
-                $customer = $this->api_helper->getApiClient($test_mode)->customers->create(array(
-                    'name'     => trim($userdata->user_nicename),
-                    'email'    => trim($userdata->user_email),
-                    'locale'   => trim($this->getCurrentLocale()),
-                    'metadata' => array('user_id' => $user_id),
-                ));
+	            // Get the best name for use as Mollie Customer name
+	            $user_full_name = $userdata->user_firstname . ' ' . $userdata->user_lastname;
+
+	            if ( empty( $user_full_name ) ) {
+		            $user_full_name = $userdata->display_name;
+	            }
+
+	            // Create the Mollie Customer
+	            $customer = $this->api_helper->getApiClient( $test_mode )->customers->create( array (
+		            'name'     => trim( $user_full_name ),
+		            'email'    => trim( $userdata->user_email ),
+		            'locale'   => trim( $this->getCurrentLocale() ),
+		            'metadata' => array ( 'user_id' => $user_id ),
+	            ) );
 
                 $this->setUserMollieCustomerId($user_id, $customer->id);
 

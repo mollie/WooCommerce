@@ -452,12 +452,19 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
         {
             $userdata = get_userdata($user_id);
 
-            $customer = Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode)->customers->create(array(
-                'name'     => trim($userdata->user_nicename),
-                'email'    => trim($userdata->user_email),
-                'locale'   => trim($this->getCurrentLocale()),
-                'metadata' => array('user_id' => $user_id),
-            ));
+	        // Get the best name for use as Mollie Customer name
+	        $user_full_name = $userdata->user_firstname . ' ' . $userdata->user_lastname;
+
+	        if ( empty( $user_full_name ) ) {
+		        $user_full_name = $userdata->display_name;
+	        }
+
+	        $customer = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers->create( array (
+		        'name'     => trim( $user_full_name ),
+		        'email'    => trim( $userdata->user_email ),
+		        'locale'   => trim( $this->getCurrentLocale() ),
+		        'metadata' => array ( 'user_id' => $user_id ),
+	        ) );
 
 
             $customer_id = $customer->id;

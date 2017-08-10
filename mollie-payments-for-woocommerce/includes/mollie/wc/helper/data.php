@@ -549,26 +549,40 @@ class Mollie_WC_Helper_Data
         return $customer_id;
     }
 
-    /**
-     * Delete active Mollie payment id for order
-     *
-     * @param int $order_id
-     * @return $this
-     */
-    public function unsetActiveMolliePayment ($order_id)
-    {
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    delete_post_meta($order_id, '_mollie_payment_id');
-		    delete_post_meta($order_id, '_mollie_payment_mode');
-	    } else {
-		    $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
-		    $order->delete_meta_data( '_mollie_payment_id' );
-		    $order->delete_meta_data( '_mollie_payment_mode' );
-		    $order->save();
-	    }
+	/**
+	 * Delete active Mollie payment id for order
+	 *
+	 * @param int    $order_id
+	 * @param string $payment_id
+	 *
+	 * @return $this
+	 */
+	public function unsetActiveMolliePayment( $order_id, $payment_id ) {
 
-        return $this;
-    }
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+
+			// Only remove Mollie payment details if they belong to this payment, not when a new payment was already placed
+			$mollie_payment_id = get_post_meta( $order_id, '_mollie_payment_id', $single = true );
+
+			if ( $mollie_payment_id == $payment_id ) {
+				delete_post_meta( $order_id, '_mollie_payment_id' );
+				delete_post_meta( $order_id, '_mollie_payment_mode' );
+			}
+		} else {
+
+			// Only remove Mollie payment details if they belong to this payment, not when a new payment was already placed
+			$order             = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+			$mollie_payment_id = $order->get_meta( '_mollie_payment_id', true );
+
+			if ( $mollie_payment_id == $payment_id ) {
+				$order->delete_meta_data( '_mollie_payment_id' );
+				$order->delete_meta_data( '_mollie_payment_mode' );
+				$order->save();
+			}
+		}
+
+		return $this;
+	}
 
     /**
      * Get active Mollie payment id for order

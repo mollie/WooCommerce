@@ -670,6 +670,35 @@ class Mollie_WC_Helper_Data
         return $this;
     }
 
+	/**
+	 * @param int $order_id
+	 *
+	 * @return null
+	 */
+	public function unsetCancelledMolliePaymentId( $order_id ) {
+
+		// If this order contains a cancelled (previous) payment, remove it.
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			$mollie_cancelled_payment_id = get_post_meta( $order_id, '_mollie_cancelled_payment_id', $single = true );
+
+			if ( ! empty( $mollie_cancelled_payment_id ) ) {
+				delete_post_meta( $order_id, '_mollie_cancelled_payment_id' );
+			}
+		} else {
+
+			$order                       = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+			$mollie_cancelled_payment_id = $order->get_meta( '_mollie_cancelled_payment_id', true );
+
+			if ( ! empty( $mollie_cancelled_payment_id ) ) {
+				$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+				$order->delete_meta_data( '_mollie_cancelled_payment_id' );
+				$order->save();
+			}
+		}
+
+		return null;
+	}
+
     /**
      * @param int $order_id
      * @return string|false

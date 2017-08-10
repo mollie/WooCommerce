@@ -530,9 +530,9 @@ class Mollie_WC_Helper_Data
                 $userdata = get_userdata($user_id);
 
 	            // Get the best name for use as Mollie Customer name
-	            $user_full_name = $userdata->user_firstname . ' ' . $userdata->user_lastname;
+	            $user_full_name = $userdata->first_name . ' ' . $userdata->last_name;
 
-	            if ( empty( $user_full_name ) ) {
+	            if ( strlen( trim( $user_full_name ) ) == null ) {
 		            $user_full_name = $userdata->display_name;
 	            }
 

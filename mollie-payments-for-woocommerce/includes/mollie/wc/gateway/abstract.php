@@ -345,7 +345,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		        Mollie_WC_Plugin::debug( $this->id . ': Payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $order->get_id() );
 	        }
 
-            // Set initial status
+            // Update initial order status for payment methods where the payment status will be delivered after a couple of days.
             // Status is only updated if the new status is not the same as the default order status (pending)
             $this->updateOrderStatus(
                 $order,

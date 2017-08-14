@@ -239,6 +239,28 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
                 unset($data['customerId']);
                 $payment = Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode)->payments->create($data);
             }
+
+	        // Update payment method to actual payment method used for renewal order, this is
+	        // for subscriptions where the first order used methods like iDEAL as first payment and
+	        // later renewal orders switch to SEPA Direct Debit.
+
+	        $methods_needing_update = array (
+		        'mollie_wc_gateway_ideal',
+		        'mollie_wc_gateway_mistercash',
+		        'mollie_wc_gateway_bancontact',
+		        'mollie_wc_gateway_sofort',
+		        'mollie_wc_gateway_kbc',
+		        'mollie_wc_gateway_belfius',
+		        'mollie_wc_gateway_creditcard', // TODO DAVID -- REMOVE
+	        );
+
+	        $current_method = get_post_meta( $renewal_order_id, '_payment_method', $single = true );
+
+	        if ( in_array( $current_method, $methods_needing_update ) && $payment->method == 'directdebit' ) {
+		        update_post_meta( $renewal_order_id, '_payment_method', 'mollie_wc_gateway_directdebit' );
+		        update_post_meta( $renewal_order_id, '_payment_method_title', 'SEPA Direct Debit' );
+	        }
+
             Mollie_WC_Plugin::debug($this->id . ': Created payment for order ' . $renewal_order_id. ' payment json response '.json_encode($payment));
             Mollie_WC_Plugin::getDataHelper()->unsetActiveMolliePayment($renewal_order_id);
             // Set active Mollie payment

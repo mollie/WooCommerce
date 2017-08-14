@@ -567,7 +567,7 @@ class Mollie_WC_Helper_Data
 	 *
 	 * @return $this
 	 */
-	public function unsetActiveMolliePayment( $order_id, $payment_id ) {
+	public function unsetActiveMolliePayment( $order_id, $payment_id = NULL ) {
 
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 

@@ -251,14 +251,19 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 		        'mollie_wc_gateway_sofort',
 		        'mollie_wc_gateway_kbc',
 		        'mollie_wc_gateway_belfius',
-		        'mollie_wc_gateway_creditcard', // TODO DAVID -- REMOVE
 	        );
 
 	        $current_method = get_post_meta( $renewal_order_id, '_payment_method', $single = true );
 
 	        if ( in_array( $current_method, $methods_needing_update ) && $payment->method == 'directdebit' ) {
-		        update_post_meta( $renewal_order_id, '_payment_method', 'mollie_wc_gateway_directdebit' );
-		        update_post_meta( $renewal_order_id, '_payment_method_title', 'SEPA Direct Debit' );
+		        if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			        update_post_meta( $renewal_order_id, '_payment_method', 'mollie_wc_gateway_directdebit' );
+			        update_post_meta( $renewal_order_id, '_payment_method_title', 'SEPA Direct Debit' );
+		        } else {
+			        $renewal_order->update_meta_data( '_payment_method', 'mollie_wc_gateway_directdebit' );
+			        $renewal_order->update_meta_data( '_payment_method_title', 'SEPA Direct Debit' );
+			        $renewal_order->save();
+		        }
 	        }
 
             Mollie_WC_Plugin::debug($this->id . ': Created payment for order ' . $renewal_order_id. ' payment json response '.json_encode($payment));

@@ -1,4 +1,4 @@
-<img src="https://www.mollie.com/assets/images/mollie/logo-black.svg" width="110">  
+[<img src="https://www.mollie.com/assets/images/mollie/logo-black.svg" width="110">](https://www.mollie.com/)
   
 
 # WooCommerce extensie voor [betalingen via Mollie](https://www.mollie.com/nl/pricing).

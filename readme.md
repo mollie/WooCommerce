@@ -1,7 +1,7 @@
 [<img src="https://www.mollie.com/assets/images/mollie/logo-black.svg" width="110">](https://www.mollie.com/)
   
 
-# WooCommerce extensie voor [betalingen via Mollie](https://www.mollie.com/nl/pricing).
+# WooCommerce extensie voor [betalingen via Mollie](https://www.mollie.com/).
 
 Ga naar [**Mollie Payments for WooCommerce**](https://wordpress.org/plugins/mollie-payments-for-woocommerce/) voor meer informatie over deze plugin.
 

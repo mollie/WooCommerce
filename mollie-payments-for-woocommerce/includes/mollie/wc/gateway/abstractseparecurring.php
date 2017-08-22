@@ -14,10 +14,13 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     {
         parent::__construct();
         $directDebit = new Mollie_WC_Gateway_DirectDebit();
-        if ($directDebit->is_available()) {
+        //if ($directDebit->is_available()) {
+	        $this->supports = array(
+		        'subscription_payment_method_change_admin',
+	        );
             $this->initSubscriptionSupport();
             $this->recurringMollieMethod = $directDebit;
-        }
+        //}
         return $this;
     }
 

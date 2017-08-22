@@ -193,6 +193,7 @@ class Mollie_WC_Plugin
 
 
 		add_filter( 'woocommerce_available_payment_gateways', array ( __CLASS__, 'disableSEPAInCheckout' ), 10, 1 );
+		//add_filter( 'woocommerce_available_payment_gateways', array ( __CLASS__, 'disableSEPAInCheckout' ), 10, 1 );
 
 		self::initDb();
 		self::schedulePendingPaymentOrdersExpirationCheck();

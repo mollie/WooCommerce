@@ -649,6 +649,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
     {
         if ( $this->id === $payment_method_id ) {
 
+        	// Check that a Mollie Customer ID is entered
             if ( ! isset( $payment_meta['post_meta']['_mollie_customer_id']['value'] ) || empty( $payment_meta['post_meta']['_mollie_customer_id']['value'] ) ) {
                 throw new Exception( 'A "_mollie_customer_id" value is required.' );
             }

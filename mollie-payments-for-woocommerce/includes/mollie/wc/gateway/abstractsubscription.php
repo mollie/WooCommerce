@@ -158,6 +158,66 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 	    }
     }
 
+	/**
+	 * @param $renewal_order
+	 * @param $payment
+	 *
+	 * @return void
+	 */
+	public function update_subscription_status_for_direct_debit( $renewal_order, $payment ) {
+
+		// Get renewal order id
+		$renewal_order_id  = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $renewal_order->id : $renewal_order->get_id();
+
+		// Make sure order is a renewal order with subscription
+		if ( wcs_order_contains_renewal( $renewal_order_id ) ) {
+
+			// Get required information about order and subscription
+			$renewal_order     = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $renewal_order_id );
+			$mollie_payment_id = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? get_post_meta( $renewal_order_id, '_mollie_payment_id', $single = true ) : $renewal_order->get_meta( '_mollie_payment_id', $single = true );
+			$subscription_id   = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? get_post_meta( $renewal_order_id, '_subscription_renewal', $single = true ) : $renewal_order->get_meta( '_subscription_renewal', $single = true );
+			$subscription      = wcs_get_subscription( $subscription_id );
+			$current_method    = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? get_post_meta( $renewal_order_id, '_payment_method', $single = true ) : $subscription->get_payment_method();
+
+			// Check that subscription status isn't already active
+			if ( $subscription->get_status() == 'active' ) {
+				return;
+			}
+
+			// Check that payment method is SEPA Direct Debit or similar
+			$methods_needing_update = array (
+				'mollie_wc_gateway_directdebit',
+				'mollie_wc_gateway_ideal',
+				'mollie_wc_gateway_mistercash',
+				'mollie_wc_gateway_bancontact',
+				'mollie_wc_gateway_sofort',
+				'mollie_wc_gateway_kbc',
+				'mollie_wc_gateway_belfius',
+			);
+
+			if ( in_array( $current_method, $methods_needing_update ) == false ) {
+				return;
+			}
+
+			// Check that a new payment is made for renewal order
+			if ( $mollie_payment_id == null ) {
+				return;
+			}
+
+			// Update subscription to Active
+			$subscription->update_status( 'active' );
+
+			// Add order note to subscription explaining the change
+			$subscription->add_order_note(
+			/* translators: Placeholder 1: Payment method title, placeholder 2: payment ID */
+				__( 'Updated subscription from \'On hold\' to \'Active\' until payment fails, because a SEPA Direct Debit payment takes some time to process.', 'mollie-payments-for-woocommerce' )
+			);
+
+		}
+		return;
+
+	}
+
     /**
      * @param $amount_to_charge
      * @param $renewal_order
@@ -274,6 +334,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
             // Set Mollie customer
             $this->setUserMollieCustomerId($renewal_order_id, $payment->customerId);
 
+            // Tell WooCommerce a new payment was created for the order/subscription
             do_action(Mollie_WC_Plugin::PLUGIN_ID . '_payment_created', $payment, $renewal_order);
 
             Mollie_WC_Plugin::debug($this->id . ': Payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $renewal_order_id);
@@ -282,6 +343,8 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
             // Status is only updated if the new status is not the same as the default order status (pending)
             $this->_updateScheduledPaymentOrder($renewal_order, $initial_order_status, $payment);
 
+            // Update status of subscriptions with payment method SEPA Direct Debit or similar
+	        $this->update_subscription_status_for_direct_debit( $renewal_order, $payment );
 
             return array(
                 'result'   => 'success',

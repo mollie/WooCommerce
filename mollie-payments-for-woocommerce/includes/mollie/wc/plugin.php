@@ -507,21 +507,28 @@ class Mollie_WC_Plugin
 	 */
 	public static function disableSEPAInSettings( $load_gateways ) {
 
-		if ( is_admin() ) {
-			if ( get_current_screen()->id == 'woocommerce_page_wc-settings' ) {
+		if ( ! is_admin() ) {
+			return $load_gateways;
+		}
 
-				$remove_gateways = array (
-					'Mollie_WC_Gateway_DirectDebit',
-				);
+		if ( get_current_screen() == null ) {
+			return $load_gateways;
+		}
 
-				foreach ( $load_gateways as $key => $value ) {
+		if ( get_current_screen()->id == 'woocommerce_page_wc-settings' ) {
 
-					if ( in_array( $value, $remove_gateways ) ) {
-						unset( $load_gateways[ $key ] );
-					}
+			$remove_gateways = array (
+				'Mollie_WC_Gateway_DirectDebit',
+			);
+
+			foreach ( $load_gateways as $key => $value ) {
+
+				if ( in_array( $value, $remove_gateways ) ) {
+					unset( $load_gateways[ $key ] );
 				}
 			}
 		}
+
 		return $load_gateways;
 	}
 

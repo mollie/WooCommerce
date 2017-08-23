@@ -117,6 +117,26 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= 2.7.0 - 25/08/2017 =
+
+* Fix - Subscriptions would be set to 'On Hold' during SEPA Direct Debit payments, those subscriptions are now set to 'Active'
+* Fix - Multiple issues that occurred when users had multiple (unpaid) payments per order
+* Fix - Remove SEPA Direct Debit (only used for Mollie recurring) as visible gateway in checkout and settings
+* Fix - Tested with WordPress 4.9 Alpha and WooCommerce 3.1
+* Fix - Remove existing language files from plugin so they can be managed via https://translate.wordpress.org/projects/wp-plugins/mollie-payments-for-woocommerce
+* Fix - Use better customer name when name is sent to Mollie (use full name and last name if available)
+* Fix - Don't update orders to cancelled status for expired payments if there are still pending payments for same order
+* Fix - Show correct return page to customer when they have placed multiple payments for single order
+* Fix - For subscription renewal orders, update payment method (from iDEAL, Belfius etc) to SEPA Direct Debit when needed
+
+* Dev - In setActiveMolliePayment use update_post_meta so payment is always updated to latest
+* Dev - In unsetActiveMolliePayment, a payment calling that function should only be able to unset itself
+* Dev - Improve log messages (WooCommerce > System status > Logs > mollie-payments-for-woocommerce)
+* Dev - Security improvement: sanitize getting ID's via POST and use $_POST instead of $_REQUEST
+* Dev - Only show "Check Subscription Status" tool if WooCommerce Subscriptions is installed
+* Dev - Fix PHP warnings about unserialize() by using serialize() before storing object as transient
+* Dev - Move load_plugin_textdomain to own function and load on plugins_loaded action
+
 = 2.6.0 - 07/06/2017 =
 * Add support for WooCommerce 3.0 (backwards compatible with older versions of WooCommerce)
 * The expiry date that's shown for payments via Bank transfer is now in the correct (translated) format

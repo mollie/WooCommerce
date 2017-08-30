@@ -345,13 +345,28 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		        Mollie_WC_Plugin::debug( $this->id . ': Payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $order->get_id() );
 	        }
 
-            // Update initial order status for payment methods where the payment status will be delivered after a couple of days.
-            // Status is only updated if the new status is not the same as the default order status (pending)
-            $this->updateOrderStatus(
-                $order,
-                $initial_order_status,
-                __('Awaiting payment confirmation.', 'mollie-payments-for-woocommerce') . "\n"
-            );
+	        // Update initial order status for payment methods where the payment status will be delivered after a couple of days.
+	        // See: https://www.mollie.com/nl/docs/status#expiry-times-per-payment-method
+	        // Status is only updated if the new status is not the same as the default order status (pending)
+	        if ( ( $payment->method == 'banktransfer' ) || ( $payment->method == 'directdebit' ) ) {
+
+		        // Don't change the status of the order if it's Partially Paid
+		        // This adds support for WooCommerce Deposits (by Webtomizer)
+		        // See https://github.com/mollie/WooCommerce/issues/138
+
+		        $order_status = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $order->status : $order->get_status();
+
+		        if ( $order_status != 'wc-partially-paid ' ) {
+
+			        $this->updateOrderStatus(
+				        $order,
+				        $initial_order_status,
+				        __( 'Awaiting payment confirmation.', 'mollie-payments-for-woocommerce' ) . "\n"
+			        );
+
+		        }
+	        }
+
 
             $order->add_order_note(sprintf(
             /* translators: Placeholder 1: Payment method title, placeholder 2: payment ID */

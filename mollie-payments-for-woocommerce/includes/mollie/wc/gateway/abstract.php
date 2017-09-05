@@ -136,8 +136,15 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function getIconUrl ()
     {
-        return Mollie_WC_Plugin::getPluginUrl('/assets/images/' . $this->getMollieMethodId() . '.png');
+        return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $this->getMollieMethodId() . '.png');
     }
+
+	/**
+	 * @return string
+	 */
+	public function getIssuerIconUrl( $issuer_id ) {
+		return Mollie_WC_Plugin::getPluginUrl( 'assets/images/' . $issuer_id . '.png' );
+	}
 
     protected function _initIcon ()
     {

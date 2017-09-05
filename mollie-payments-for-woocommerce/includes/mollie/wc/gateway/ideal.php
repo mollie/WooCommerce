@@ -70,7 +70,7 @@ class Mollie_WC_Gateway_Ideal extends Mollie_WC_Gateway_AbstractSepaRecurring
 
         $test_mode = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
 
-        $ideal_issuers = Mollie_WC_Plugin::getDataHelper()->getIssuers(
+        $issuers = Mollie_WC_Plugin::getDataHelper()->getMethodIssuers(
             $test_mode,
             $this->getMollieMethodId()
         );
@@ -79,7 +79,7 @@ class Mollie_WC_Gateway_Ideal extends Mollie_WC_Gateway_AbstractSepaRecurring
 
         $html  = '<select name="' . Mollie_WC_Plugin::PLUGIN_ID . '_issuer_' . $this->id . '">';
         $html .= '<option value="">' . esc_html(__($this->get_option('issuers_empty_option', ''), 'mollie-payments-for-woocommerce')) . '</option>';
-        foreach ($ideal_issuers as $issuer)
+        foreach ($issuers->issuers as $issuer)
         {
             $html .= '<option value="' . esc_attr($issuer->id) . '"' . ($selected_issuer == $issuer->id ? ' selected=""' : '') . '>' . esc_html($issuer->name) . '</option>';
         }

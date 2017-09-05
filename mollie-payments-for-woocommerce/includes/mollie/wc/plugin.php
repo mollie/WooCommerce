@@ -33,6 +33,7 @@ class Mollie_WC_Plugin
         'Mollie_WC_Gateway_PayPal',
         'Mollie_WC_Gateway_Paysafecard',
         'Mollie_WC_Gateway_Sofort',
+        'Mollie_WC_Gateway_Giftcard',
     );
 
     private function __construct () {}

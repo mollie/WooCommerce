@@ -49,6 +49,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $this->id           = strtolower(get_class($this));
         // Set gateway title (visible in admin)
         $this->method_title = 'Mollie - ' . $this->getDefaultTitle();
+        $this->method_description = $this->getDefaultDescription();
 
         // Load the settings.
         $this->init_form_fields();

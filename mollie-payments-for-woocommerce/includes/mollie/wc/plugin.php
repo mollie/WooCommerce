@@ -185,7 +185,6 @@ class Mollie_WC_Plugin
 
 
 		add_filter( 'woocommerce_available_payment_gateways', array ( __CLASS__, 'disableSEPAInCheckout' ), 10, 1 );
-		add_filter( 'woocommerce_payment_gateways', array ( __CLASS__, 'disableSEPAInSettings' ), 20, 1 );
 
 		self::initDb();
 		self::schedulePendingPaymentOrdersExpirationCheck();
@@ -500,36 +499,6 @@ class Mollie_WC_Plugin
 		}
 
 		return $available_gateways;
-	}
-
-	/**
-	 * Don't show SEPA Direct Debit in WooCommerce Settings
-	 */
-	public static function disableSEPAInSettings( $load_gateways ) {
-
-		if ( ! is_admin() ) {
-			return $load_gateways;
-		}
-
-		if ( get_current_screen() == null ) {
-			return $load_gateways;
-		}
-
-		if ( get_current_screen()->id == 'woocommerce_page_wc-settings' ) {
-
-			$remove_gateways = array (
-				'Mollie_WC_Gateway_DirectDebit',
-			);
-
-			foreach ( $load_gateways as $key => $value ) {
-
-				if ( in_array( $value, $remove_gateways ) ) {
-					unset( $load_gateways[ $key ] );
-				}
-			}
-		}
-
-		return $load_gateways;
 	}
 
 }

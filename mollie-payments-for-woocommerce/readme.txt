@@ -1,6 +1,6 @@
 === Mollie Payments for WooCommerce ===
 Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
-Tags: mollie, payments, woocommerce, e-commerce, webshop, psp, ideal, sofort, credit card, creditcard, visa, mastercard, mistercash, bancontact, bitcoin, paysafecard, direct debit, incasso, sepa, banktransfer, overboeking, betalingen, recurring, subscriptions
+Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, ideal, sofort, bancontact, bitcoin, direct debit, subscriptions
 Requires at least: 3.8
 Tested up to: 4.9
 Stable tag: 2.6.1-beta
@@ -9,33 +9,46 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 2.1
 WC tested up to: 3.1
 
-Accept payments in WooCommerce with the official Mollie plugin
+Accept all major payment methods in WooCommerce today. Credit cards, iDEAL, bitcoin and more! Fast, safe and intuitive.
 
 == Description ==
 
-This plugin will add support for the following Mollie payments methods to your WooCommerce webshop:
+Quickly integrate all major payment methods in WooCommerce, wherever you need them. Simply drop them ready-made into your WooCommerce webshop with this powerful plugin by Mollie. Mollie is dedicated to making payments better for WooCommerce.
 
-* iDEAL
-* Bank transfer
-* Credit card (Mastercard, VISA, American Express and Maestro)
-* Bancontact
+> Next level payments, for WooCommerce
+
+No need to spend weeks on paperwork or security compliance procedures. No more lost conversions because you don’t support a shopper’s favorite payment method or because they don’t feel safe. We made payments intuitive and safe for merchants and their customers.
+
+= PAYMENT METHODS =
+
+* Credit Cards (Visa / MasterCard & American Express and Maestro)
 * PayPal
+* iDEAL
+* SEPA Direct Debits
+* SEPA Bank Transfer
 * SOFORT banking
-* Belfius Direct Net
 * Bitcoin
-* paysafecard
+* Bancontact
+* Paysafecard
 * KBC/CBC Payment Button
+* Belfius Payment Button
 * CartaSi (Italy)
 * Cartes Bancaires (France)
 
-Please go to the [signup page](https://www.mollie.com/nl/signup) to create a new Mollie account and start receiving payments in a couple of minutes. Contact info@mollie.com if you have any questions or comments about this plugin.
+Please go to the [signup page](https://www.mollie.com/signup) to create a new Mollie account and start receiving payments in a couple of minutes. Contact info@mollie.com if you have any questions or comments about this plugin.
 
-= Features = 
+> Our pricing is always per transaction. No startup fees, no monthly fees, and no gateway fees. No hidden fees, period.
+
+= FEATURES =
 
 * Support for all available Mollie payment methods
-* Compatible with WooCommerce Subscriptions for recurring payments
-* Edit order, title, description for every payment method
-* Refunds (WooCommerce 2.2+)
+* Compatible with WooCommerce Subscriptions for recurring payments (credit card, iDEAL, SEPA Direct Debit)
+* Transparent pricing. No startup fees, no monthly fees, and no gateway fees. No hidden fees, period.
+* Edit the order, title and description of every payment method in WooCommerce checkout
+* Support for full and partial payment refunds (WooCommerce 2.2+)
+* Configurable pay outs: daily, weekly, monthly - whatever you prefer
+* [Powerful dashboard](https://www.mollie.com/en/features/dashboard) on mollie.com to easily keep track of your payments.
+* Fast in-house support. You will always be helped by someone who knows our products intimately.
 * Multiple translations: English, Dutch, German and French
 * Event log for debugging purposes
 * WordPress Multisite support
@@ -89,7 +102,7 @@ Where possible, also include the Mollie log file. You can find the Mollie log fi
 
 = Minimum Requirements =
 
-* PHP version 5.2 or greater
+* PHP version 5.3 or greater
 * PHP extensions enabled: cURL, JSON
 * WordPress 3.8 or greater
 * WooCommerce 2.1.0 or greater

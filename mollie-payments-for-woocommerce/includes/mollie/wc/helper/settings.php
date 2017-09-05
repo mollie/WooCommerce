@@ -166,7 +166,7 @@ class Mollie_WC_Helper_Settings
         }
 
         return ''
-            . '<div id="message" class="' . $api_status_type . ' fade">'
+            . '<div id="message" class="' . $api_status_type . ' fade notice">'
             . $api_status
             . '</div>';
     }
@@ -184,10 +184,11 @@ class Mollie_WC_Helper_Settings
     {
         $content = '';
 
+	    $data_helper     = Mollie_WC_Plugin::getDataHelper();
+	    $settings_helper = Mollie_WC_Plugin::getSettingsHelper();
+
         try
         {
-            $data_helper     = Mollie_WC_Plugin::getDataHelper();
-            $settings_helper = Mollie_WC_Plugin::getSettingsHelper();
 
             // Is Test mode enabled?
             $test_mode       = $settings_helper->isTestModeEnabled();
@@ -252,6 +253,11 @@ class Mollie_WC_Helper_Settings
 
             $content .= '</ul>';
             $content .= '<div class="clear"></div>';
+
+            // Make sure users also enable iDEAL when they enable SEPA Direct Debit
+	        // iDEAL is needed for the first payment of subscriptions with SEPA Direct Debit
+	        $content = $this->checkDirectDebitStatus( $content );
+
         }
         catch (Mollie_WC_Exception_InvalidApiKey $e)
         {
@@ -474,4 +480,33 @@ class Mollie_WC_Helper_Settings
 
         return $new_settings;
     }
+
+	/**
+	 * @param $ideal_gateway
+	 * @param $sepa_gateway
+	 * @param $content
+	 *
+	 * @return string
+	 */
+	protected function checkDirectDebitStatus( $content ) {
+
+		$ideal_gateway = new Mollie_WC_Gateway_iDEAL();
+		$sepa_gateway  = new Mollie_WC_Gateway_DirectDebit();
+
+		// TODO David: finish condition(s)
+		if ( ( class_exists( 'WC_Subscription' ) ) && ( $ideal_gateway->is_available() ) && ( ! $sepa_gateway->is_available() ) ) {
+
+			$content .= '<div class="notice notice-warning is-dismissible"><p>';
+			$content .= __( 'You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL.', 'mollie-payments-for-woocommerce' );
+			$content .= '</p></div> ';
+
+			$content .= '<strong><p>';
+			$content .= __( 'You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL.', 'mollie-payments-for-woocommerce' );
+			$content .= '</p></strong> ';
+
+			return $content;
+		}
+
+		return $content;
+	}
 }

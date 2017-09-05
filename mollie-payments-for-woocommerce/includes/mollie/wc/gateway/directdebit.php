@@ -18,11 +18,24 @@ class Mollie_WC_Gateway_DirectDebit extends Mollie_WC_Gateway_Abstract
 	}
 
 	/**
+	 * Initialise Gateway Settings Form Fields
+	 */
+	public function init_form_fields()
+	{
+		parent::init_form_fields();
+
+		unset($this->form_fields['title']);
+		unset($this->form_fields['display_logo']);
+		unset($this->form_fields['description']);
+
+	}
+
+	/**
 	 * @return string
 	 */
 	protected function getDefaultDescription ()
 	{
-		return '';
+		return __('SEPA Direct Debit is used for recurring payments with WooCommerce Subscriptions, and will not be shown in the WooCommerce checkout for regular payments!', 'mollie-payments-for-woocommerce');
 	}
 
     /**

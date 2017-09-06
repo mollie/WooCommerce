@@ -684,15 +684,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             return;
         }
 
-        // Payment requires different gateway, payment method changed on Mollie platform?
-        $isValidPaymentMethod = $this->isValidPaymentMethod($payment);
-        if (!$isValidPaymentMethod)
-        {
-            Mollie_WC_Plugin::setHttpResponseCode(400);
-            Mollie_WC_Plugin::debug($this->id . ": Invalid gateway. This gateways can process Mollie " . $this->getMollieMethodId() . " payments. This payment has payment method " . $payment->method, true);
-            return;
-        }
-
         // Order does not need a payment
         if (!$this->orderNeedsPayment($order))
         {
@@ -744,16 +735,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		Mollie_WC_Plugin::debug( $this->id . ": Order $order_id does not need a payment (payment webhook {$payment->id}).", true );
 
 	}
-
-    /**
-     * @param $payment
-     * @return bool
-     */
-    protected function isValidPaymentMethod($payment)
-    {
-        $isValidPaymentMethod =  $payment->method == $this->getMollieMethodId();
-        return $isValidPaymentMethod;
-    }
 
     /**
      * @param WC_Order $order

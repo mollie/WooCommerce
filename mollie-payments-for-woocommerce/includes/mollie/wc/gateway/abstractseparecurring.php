@@ -241,23 +241,4 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
 
     }
 
-    /**
-     * @param $payment
-     * @return bool
-     */
-    protected function isValidPaymentMethod($payment)
-    {
-        $isValidPaymentMethod = parent::isValidPaymentMethod($payment);
-        $orderId = $payment->metadata->order_id;
-
-        // First payment was made by one gateway, and the next from another.
-        // For Example Recurring First with IDEAL, the second With SEPA Direct Debit
-        if ($orderId && $this->is_subscription($orderId)){
-            $isValidPaymentMethod = in_array($payment->method, array($this->getMollieMethodId(),$this->getRecurringMollieMethodId()));
-        }
-
-        return $isValidPaymentMethod;
-    }
-
-
 }

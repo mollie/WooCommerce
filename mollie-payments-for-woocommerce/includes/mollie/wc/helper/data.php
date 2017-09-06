@@ -24,6 +24,11 @@ class Mollie_WC_Helper_Data
      */
     protected static $api_issuers;
 
+	/**
+	 * @var Mollie_API_Object_Method[]
+	 */
+	protected static $method_issuers;
+
     /**
      * @var Mollie_WC_Helper_Api
      */
@@ -205,6 +210,12 @@ class Mollie_WC_Helper_Data
             'api_methods_live',
             'api_issuers_test',
             'api_issuers_live',
+            'ideal_issuers_test',
+            'ideal_issuers_live',
+	        'kbc_issuers_test',
+            'kbc_issuers_live',
+	        'giftcard_issuers_test',
+            'giftcard_issuers_live',
         );
 
         $languages   = array_keys(apply_filters('wpml_active_languages', array()));
@@ -443,6 +454,44 @@ class Mollie_WC_Helper_Data
 
         return array();
     }
+
+
+	/**
+	 * Get issuers for payment method (e.g. for iDEAL, KBC/CBC payment button, gift cards)
+	 *
+	 * @param bool        $test_mode (default: false)
+	 * @param string|null $method
+	 *
+	 * @return array|Mollie_API_Object_Issuer[]|Mollie_API_Object_List
+	 */
+	public function getMethodIssuers( $test_mode = false, $method = null ) {
+		$locale = $this->getCurrentLocale();
+
+		try {
+			$transient_id = $this->getTransientId( $method . '_' . 'issuers_' . ( $test_mode ? 'test' : 'live' ) . "_$locale" );
+
+			if ( empty( $method_issuers ) ) {
+				$cached = unserialize( get_transient( $transient_id ) );
+
+				if ( $cached && $cached instanceof Mollie_API_Object_Method ) {
+					$method_issuers = $cached;
+				} else {
+
+					$method_issuers = $this->api_helper->getApiClient( $test_mode )->methods->get( "$method", array ( "include" => "issuers" ) );
+
+					set_transient( $transient_id, serialize( $method_issuers ), MINUTE_IN_SECONDS * 5 );
+				}
+			}
+
+			return $method_issuers;
+
+		}
+		catch ( Mollie_API_Exception $e ) {
+			Mollie_WC_Plugin::debug( __FUNCTION__ . ": Could not load " . $method . " issuers (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class( $e ) . ')' );
+		}
+
+		return array ();
+	}
 
     /**
      * Save active Mollie payment id for order

@@ -30,7 +30,14 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
         return __('Credit card', 'mollie-payments-for-woocommerce');
     }
 
-    /**
+	/**
+	 * @return string
+	 */
+	protected function getSettingsDescription() {
+		return '';
+	}
+
+	/**
      * @return string
      */
     protected function getDefaultDescription ()

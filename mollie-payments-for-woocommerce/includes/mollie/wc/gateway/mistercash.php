@@ -30,7 +30,14 @@ class Mollie_WC_Gateway_MisterCash extends Mollie_WC_Gateway_AbstractSepaRecurri
         return __('Bancontact / Mister Cash', 'mollie-payments-for-woocommerce');
     }
 
-    /**
+	/**
+	 * @return string
+	 */
+	protected function getSettingsDescription() {
+		return '';
+	}
+
+	/**
      * @return string
      */
     protected function getDefaultDescription ()

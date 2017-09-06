@@ -48,16 +48,23 @@ class Mollie_WC_Gateway_Giftcard extends Mollie_WC_Gateway_Abstract
      */
     public function getDefaultTitle ()
     {
-        return __('Giftcards', 'mollie-payments-for-woocommerce');
+        return __('Gift cards', 'mollie-payments-for-woocommerce');
     }
 
-    /**
+	/**
+	 * @return string
+	 */
+	protected function getSettingsDescription() {
+		return '';
+	}
+
+	/**
      * @return string
      */
     protected function getDefaultDescription ()
     {
-	    /* translators: Default giftcard dropdown description, displayed above issuer drop down */
-	    return __('Select your giftcard', 'mollie-payments-for-woocommerce');
+	    /* translators: Default gift card dropdown description, displayed above issuer drop down */
+	    return __('Select your gift card', 'mollie-payments-for-woocommerce');
     }
 	/**
 	 * Display fields below payment method in checkout
@@ -74,12 +81,6 @@ class Mollie_WC_Gateway_Giftcard extends Mollie_WC_Gateway_Abstract
 			$test_mode,
 			$this->getMollieMethodId()
 		);
-
-
-
-		// TODO David: check this out
-		$selected_issuer = $this->getSelectedIssuer();
-
 
 		$html = '';
 

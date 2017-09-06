@@ -30,7 +30,14 @@ class Mollie_WC_Gateway_Sofort extends Mollie_WC_Gateway_AbstractSepaRecurring
         return __('SOFORT Banking', 'mollie-payments-for-woocommerce');
     }
 
-    /**
+	/**
+	 * @return string
+	 */
+	protected function getSettingsDescription() {
+		return '';
+	}
+
+	/**
      * @return string
      */
     protected function getDefaultDescription ()

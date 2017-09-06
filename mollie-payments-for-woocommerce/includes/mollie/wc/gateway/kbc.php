@@ -51,7 +51,14 @@ class Mollie_WC_Gateway_Kbc extends Mollie_WC_Gateway_Abstract
         return __('KBC/CBC Payment Button', 'mollie-payments-for-woocommerce');
     }
 
-    /**
+	/**
+	 * @return string
+	 */
+	protected function getSettingsDescription() {
+		return '';
+	}
+
+	/**
      * @return string
      */
     protected function getDefaultDescription ()

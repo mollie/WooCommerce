@@ -51,6 +51,13 @@ class Mollie_WC_Gateway_Ideal extends Mollie_WC_Gateway_AbstractSepaRecurring
         return __('iDEAL', 'mollie-payments-for-woocommerce');
     }
 
+	/**
+	 * @return string
+	 */
+	protected function getSettingsDescription() {
+		return '';
+	}
+
     /**
      * @return string
      */

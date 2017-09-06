@@ -30,6 +30,13 @@ class Mollie_WC_Gateway_Belfius extends Mollie_WC_Gateway_AbstractSepaRecurring
         return __('Belfius Direct Net', 'mollie-payments-for-woocommerce');
     }
 
+	/**
+	 * @return string
+	 */
+	protected function getSettingsDescription() {
+		return '';
+	}
+
     /**
      * @return string
      */

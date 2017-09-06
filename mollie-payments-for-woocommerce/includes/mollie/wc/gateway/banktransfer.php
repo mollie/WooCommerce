@@ -130,6 +130,13 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
         return __('Bank Transfer', 'mollie-payments-for-woocommerce');
     }
 
+	/**
+	 * @return string
+	 */
+	protected function getSettingsDescription() {
+		return '';
+	}
+
     /**
      * @return string
      */

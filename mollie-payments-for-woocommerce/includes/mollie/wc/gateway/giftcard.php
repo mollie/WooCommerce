@@ -82,6 +82,8 @@ class Mollie_WC_Gateway_Giftcard extends Mollie_WC_Gateway_Abstract
 			$this->getMollieMethodId()
 		);
 
+		$selected_issuer = $this->getSelectedIssuer();
+
 		$html = '';
 
 		// If only one gift card issuers is available, show it without a dropdown

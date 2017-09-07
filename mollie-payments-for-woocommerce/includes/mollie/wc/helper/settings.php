@@ -482,8 +482,6 @@ class Mollie_WC_Helper_Settings
     }
 
 	/**
-	 * @param $ideal_gateway
-	 * @param $sepa_gateway
 	 * @param $content
 	 *
 	 * @return string

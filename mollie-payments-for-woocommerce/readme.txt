@@ -8,8 +8,6 @@ Stable tag: 2.6.1-beta
 Requires PHP: 5.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
-WC requires at least: 2.1
-WC tested up to: 3.1
 
 Accept all major payment methods in WooCommerce today. Credit cards, iDEAL, bitcoin and more! Fast, safe and intuitive.
 

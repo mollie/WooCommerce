@@ -11,6 +11,8 @@
  * Text Domain: mollie-payments-for-woocommerce
  * Domain Path: /i18n/languages/
  * License: GPLv2 or later
+ * WC requires at least: 2.1.0
+ * WC tested up to: 3.2.0
  */
 require_once 'includes/mollie/wc/autoload.php';
 

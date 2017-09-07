@@ -245,12 +245,9 @@ class Mollie_WC_Helper_Settings
                         $content .= $icon_no_available;
                     }
 
-                    // Don't show gateway edit button for SEPA Direct Debit
-                    if ($gateway_classname != 'Mollie_WC_Gateway_DirectDebit') {
-	                    $content .= ' <a href="' . $this->getGatewaySettingsUrl( $gateway_classname ) . '">' . strtolower( __( 'Edit', 'mollie-payments-for-woocommerce' ) ) . '</a>';
-                    }
+	                $content .= ' <a href="' . $this->getGatewaySettingsUrl( $gateway_classname ) . '">' . strtolower( __( 'Edit', 'mollie-payments-for-woocommerce' ) ) . '</a>';
 
-                    $content .= '</li>';
+	                $content .= '</li>';
                 }
             }
 

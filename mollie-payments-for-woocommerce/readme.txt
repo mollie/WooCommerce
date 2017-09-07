@@ -4,7 +4,7 @@ Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, i
 Requires at least: 3.8
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 2.6.1-beta
+Stable tag: 2.7.0
 Requires PHP: 5.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -130,8 +130,12 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 2.7.0 - 25/08/2017 =
+= 2.7.0 - 07/09/2017 =
 
+* New - Support for gift cards! See: https://www.mollie.com/en/blog/post/mollie-launches-gift-cards/
+* New - Also show issuers (banks) for KBC payment method
+
+* Fix - Add better support for WooCommerce Deposits (by Webtomizer)
 * Fix - Subscriptions would be set to 'On Hold' during SEPA Direct Debit payments, those subscriptions are now set to 'Active'
 * Fix - Multiple issues that occurred when users had multiple (unpaid) payments per order
 * Fix - Remove SEPA Direct Debit (only used for Mollie recurring) as visible gateway in checkout and settings
@@ -141,7 +145,10 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 * Fix - Don't update orders to cancelled status for expired payments if there are still pending payments for same order
 * Fix - Show correct return page to customer when they have placed multiple payments for single order
 * Fix - For subscription renewal orders, update payment method (from iDEAL, Belfius etc) to SEPA Direct Debit when needed
+* Fix - Add message that SEPA Direct Debit is required when using WooCommerce Subscriptions with iDEAL
 
+* Dev - Stop checking change of payment methods with isValidPaymentMethod
+* Dev - Add support for new WooCommerce version check
 * Dev - In setActiveMolliePayment use update_post_meta so payment is always updated to latest
 * Dev - In unsetActiveMolliePayment, a payment calling that function should only be able to unset itself
 * Dev - Improve log messages (WooCommerce > System status > Logs > mollie-payments-for-woocommerce)

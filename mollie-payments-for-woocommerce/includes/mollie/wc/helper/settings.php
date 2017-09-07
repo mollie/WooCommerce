@@ -491,7 +491,6 @@ class Mollie_WC_Helper_Settings
 		$ideal_gateway = new Mollie_WC_Gateway_iDEAL();
 		$sepa_gateway  = new Mollie_WC_Gateway_DirectDebit();
 
-		// TODO David: finish condition(s)
 		if ( ( class_exists( 'WC_Subscription' ) ) && ( $ideal_gateway->is_available() ) && ( ! $sepa_gateway->is_available() ) ) {
 
 			$content .= '<div class="notice notice-warning is-dismissible"><p>';

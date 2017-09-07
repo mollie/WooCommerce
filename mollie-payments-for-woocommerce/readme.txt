@@ -21,19 +21,32 @@ No need to spend weeks on paperwork or security compliance procedures. No more l
 
 = PAYMENT METHODS =
 
-* Credit Cards (Visa / MasterCard & American Express and Maestro)
-* PayPal
-* iDEAL
-* SEPA Direct Debits
-* SEPA Bank Transfer
-* SOFORT banking
-* Bitcoin
-* Bancontact
-* Paysafecard
-* KBC/CBC Payment Button
-* Belfius Payment Button
-* CartaSi (Italy)
+Credit cards:
+
+* VISA (International)
+* MasterCard (International)
+* American Express (International)
 * Cartes Bancaires (France)
+* CartaSi (Italy)
+
+Debit cards:
+
+* V Pay (International)
+* Maestro (International)
+
+Alternative payment methods:
+
+* iDEAL (Netherlands)
+* Bancontact (Belgium)
+* PayPal (International)
+* SOFORTbanking (EU)
+* Belfius (Belgium)
+* KBC/CBC payment button (Belgium)
+* SEPA - Credit Transfer (EU)
+* SEPA - Direct Debit (EU)
+* Bitcoin (International)
+* Paysafecard (International)
+* Gift cards (Netherlands)
 
 Please go to the [signup page](https://www.mollie.com/signup) to create a new Mollie account and start receiving payments in a couple of minutes. Contact info@mollie.com if you have any questions or comments about this plugin.
 

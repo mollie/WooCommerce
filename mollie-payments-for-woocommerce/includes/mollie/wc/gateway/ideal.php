@@ -108,9 +108,9 @@ class Mollie_WC_Gateway_Ideal extends Mollie_WC_Gateway_AbstractSepaRecurring
         {
             return sprintf(
                 /* translators: Placeholder 1: consumer name, placeholder 2: consumer IBAN, placeholder 3: consumer BIC */
-                __('Payment completed by <strong>%s</strong> (IBAN: %s, BIC: %s)', 'mollie-payments-for-woocommerce'),
+                __('Payment completed by <strong>%s</strong> (IBAN (last 4 digits): %s, BIC: %s)', 'mollie-payments-for-woocommerce'),
                 $payment->details->consumerName,
-                implode(' ', str_split($payment->details->consumerAccount, 4)),
+	            substr($payment->details->consumerAccount, -4),
                 $payment->details->consumerBic
             );
         }

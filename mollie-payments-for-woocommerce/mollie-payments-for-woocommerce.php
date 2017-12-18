@@ -12,7 +12,7 @@
  * Domain Path: /i18n/languages/
  * License: GPLv2 or later
  * WC requires at least: 2.2.0
- * WC tested up to: 3.2.0
+ * WC tested up to: 3.3
  */
 require_once 'includes/mollie/wc/autoload.php';
 

@@ -815,7 +815,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 
         // New order status
-        $new_order_status = self::STATUS_PENDING;
+        $new_order_status = self::STATUS_CANCELLED;
 
         // Overwrite plugin-wide
         $new_order_status = apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_order_status_cancelled', $new_order_status);

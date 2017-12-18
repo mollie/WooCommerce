@@ -28,8 +28,8 @@ class Mollie_WC_Gateway_Kbc extends Mollie_WC_Gateway_Abstract
 			'issuers_empty_option' => array(
 				'title'       => __('Issuers empty option', 'mollie-payments-for-woocommerce'),
 				'type'        => 'text',
-				'description' => sprintf(__('This text will be displayed as the first option in the KBC/CBC issuers drop down', 'mollie-payments-for-woocommerce'), $this->getDefaultTitle()),
-				'default'     => '',
+				'description' => sprintf(__('This text will be displayed as the first option in the KBC/CBC issuers drop down, if nothing is entered, "Select your bank" will be shown.', 'mollie-payments-for-woocommerce'), $this->getDefaultTitle()),
+				'default'     => 'Select your bank',
 				'desc_tip'    => true,
 			),
 		));
@@ -85,7 +85,7 @@ class Mollie_WC_Gateway_Kbc extends Mollie_WC_Gateway_Abstract
 		$selected_issuer = $this->getSelectedIssuer();
 
 		$html  = '<select name="' . Mollie_WC_Plugin::PLUGIN_ID . '_issuer_' . $this->id . '">';
-		$html .= '<option value="">' . esc_html(__($this->get_option('issuers_empty_option', ''), 'mollie-payments-for-woocommerce')) . '</option>';
+		$html .= '<option value="">' . esc_html(__($this->get_option('issuers_empty_option', $this->getDefaultDescription()), 'mollie-payments-for-woocommerce')) . '</option>';
 		foreach ($issuers->issuers as $issuer)
 		{
 			$html .= '<option value="' . esc_attr($issuer->id) . '"' . ($selected_issuer == $issuer->id ? ' selected=""' : '') . '>' . esc_html($issuer->name) . '</option>';

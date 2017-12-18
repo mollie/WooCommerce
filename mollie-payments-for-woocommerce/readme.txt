@@ -92,6 +92,22 @@ Most of the time a white screen means a PHP error. Because PHP won't show error 
 * Please check your Mollie dashboard to check if there are failed webhook reports. Mollie tried to report the payment status to your website but something went wrong.
 * Contact info@mollie.com with your Mollie partner ID and the order number. We can investigate the specific payment and check whether Mollie successfully reported the payment state to your webshop.
 
+= Payment gateways and mails aren't always translated =
+
+This plugin uses [translate.wordpress.org](https://translate.wordpress.org/projects/wp-plugins/mollie-payments-for-woocommerce) for translations. WordPress will automatically add those translations to your website if they hit 100% completion at least once. If you are not seeing the Mollie plugin as translated on your website, the plugin is probably not translated (completely) into your language (you can view the status on the above URL).
+
+You can either download and use the incomplete translations or help us get the translation to 100% by translating it.
+
+To download translations manually:
+1. Go to [translate.wordpress.org](https://translate.wordpress.org/projects/wp-plugins/mollie-payments-for-woocommerce/)
+2. Click on the percentage in the "Stable" column for your language.
+3. Scroll down to "Export". 
+4. Choose "All current" and "MO - Machine Object" 
+5. Upload this file to plugins/languages/mollie-payments-for-woocommerce/.
+6. Repeat this for all your translations.
+
+If you want to help translate the plugin, read the instructions in the [Translate strings instructions](https://make.wordpress.org/polyglots/handbook/tools/glotpress-translate-wordpress-org/#translating-strings).
+
 = Why do orders with payment method BankTransfer and Direct Debit get the status 'on-hold'? =
 
 These payment methods take longer than a few hours to complete. The order status is set to 'on-hold' to prevent the WooCommerce setting 'Hold stock (minutes)' (https://docs.woothemes.com/document/configuring-woocommerce-settings/#inventory-options) will 

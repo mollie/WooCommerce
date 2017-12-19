@@ -212,7 +212,7 @@ class Mollie_WC_Helper_Settings
             $content .= sprintf(
                 /* translators: The surrounding %s's Will be replaced by a link to the Mollie profile */
                 __('The following payment methods are activated in your %sMollie profile%s:', 'mollie-payments-for-woocommerce'),
-                '<a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">',
+                '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
                 '</a>'
             );
 
@@ -316,7 +316,7 @@ class Mollie_WC_Helper_Settings
                     /* translators: Placeholder 1: API key mode (live or test). The surrounding %s's Will be replaced by a link to the Mollie profile */
                     __('The API key is used to connect to Mollie. You can find your <strong>%s</strong> API key in your %sMollie profile%s', 'mollie-payments-for-woocommerce'),
                     'live',
-                    '<a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">',
+                    '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
                     '</a>'
                 ),
                 'css'               => 'width: 350px',
@@ -342,7 +342,7 @@ class Mollie_WC_Helper_Settings
                     /* translators: Placeholder 1: API key mode (live or test). The surrounding %s's Will be replaced by a link to the Mollie profile */
                     __('The API key is used to connect to Mollie. You can find your <strong>%s</strong> API key in your %sMollie profile%s', 'mollie-payments-for-woocommerce'),
                     'test',
-                    '<a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">',
+                    '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
                     '</a>'
                 ),
                 'css'               => 'width: 350px',

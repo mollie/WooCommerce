@@ -214,7 +214,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             /* translators: Placeholder 1: payment method title. The surrounding %s's Will be replaced by a link to the Mollie profile */
                 __('%s not enabled in your Mollie profile. You can enabled it by editing your %sMollie profile%s.', 'mollie-payments-for-woocommerce'),
                 $this->getDefaultTitle(),
-                '<a href="https://www.mollie.com/beheer/account/profielen/" target="_blank">',
+                '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
                 '</a>'
             );
 

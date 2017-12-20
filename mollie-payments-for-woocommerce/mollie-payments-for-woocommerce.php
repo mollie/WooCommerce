@@ -7,7 +7,7 @@
  * Author: Mollie
  * Author URI: https://www.mollie.com
  * Requires at least: 3.8
- * Tested up to: 4.8
+ * Tested up to: 4.9
  * Text Domain: mollie-payments-for-woocommerce
  * Domain Path: /i18n/languages/
  * License: GPLv2 or later

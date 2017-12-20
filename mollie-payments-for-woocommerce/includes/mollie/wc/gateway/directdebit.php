@@ -14,7 +14,6 @@ class Mollie_WC_Gateway_DirectDebit extends Mollie_WC_Gateway_Abstract {
 	public function init_form_fields() {
 		parent::init_form_fields();
 
-		unset( $this->form_fields['title'] );
 		unset( $this->form_fields['display_logo'] );
 		unset( $this->form_fields['description'] );
 

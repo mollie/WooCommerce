@@ -38,11 +38,14 @@ if ( ! defined( 'M4W_PLUGIN_DIR' ) ) {
 /**
  * Check if WooCommerce is active and of a supported version
  */
-if ( ! is_plugin_active( 'woocommerce/woocommerce.php' ) || version_compare( get_option( 'woocommerce_db_version' ), '2.2', '<' ) ) {
-	add_action( 'admin_notices', 'mollie_wc_plugin_inactive' );
-
-	return;
+function mollie_wc_check_woocommerce_status() {
+	if ( ! class_exists( 'WooCommerce' ) || version_compare( get_option( 'woocommerce_db_version' ), '2.2', '<' ) ) {
+		remove_action('init', 'mollie_wc_plugin_init');
+		add_action( 'admin_notices', 'mollie_wc_plugin_inactive' );
+		return;
+	}
 }
+add_action( 'plugins_loaded', 'mollie_wc_check_woocommerce_status' );
 
 /**
  * Called when plugin is loaded
@@ -62,6 +65,12 @@ function mollie_wc_plugin_init() {
 function mollie_wc_plugin_activation_hook ()
 {
 
+	if ( ! class_exists( 'WooCommerce' ) || version_compare( get_option( 'woocommerce_db_version' ), '2.2', '<' ) ) {
+		remove_action('init', 'mollie_wc_plugin_init');
+		add_action( 'admin_notices', 'mollie_wc_plugin_inactive' );
+		return;
+	}
+
     // Register Mollie autoloader
     Mollie_WC_Autoload::register();
 
@@ -77,6 +86,8 @@ function mollie_wc_plugin_activation_hook ()
         return;
     }
 }
+
+register_activation_hook(__FILE__, 'mollie_wc_plugin_activation_hook');
 
 function mollie_wc_plugin_inactive() {
 
@@ -104,8 +115,6 @@ function mollie_wc_plugin_inactive() {
 
 	}
 }
-
-register_activation_hook(__FILE__, 'mollie_wc_plugin_activation_hook');
 
 add_action('init', 'mollie_wc_plugin_init');
 

@@ -14,6 +14,13 @@
  * WC requires at least: 2.2.0
  * WC tested up to: 3.3
  */
+
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 require_once 'includes/mollie/wc/autoload.php';
 
 // TODO: Add more constants WP-style, and move from classes to here.
@@ -29,24 +36,24 @@ if ( ! defined( 'M4W_PLUGIN_DIR' ) ) {
 }
 
 /**
+ * Check if WooCommerce is active and of a supported version
+ */
+if ( ! is_plugin_active( 'woocommerce/woocommerce.php' ) || version_compare( get_option( 'woocommerce_db_version' ), '2.2', '<' ) ) {
+	add_action( 'admin_notices', 'mollie_wc_plugin_inactive' );
+
+	return;
+}
+
+/**
  * Called when plugin is loaded
  */
-function mollie_wc_plugin_init ()
-{
-    if (!class_exists('WooCommerce'))
-    {
-        /*
-         * Plugin depends on WooCommerce
-         * is_plugin_active() is not available yet :(
-         */
-        return;
-    }
+function mollie_wc_plugin_init() {
 
-    // Register Mollie autoloader
-    Mollie_WC_Autoload::register();
+	// Register Mollie autoloader
+	Mollie_WC_Autoload::register();
 
-    // Setup and start plugin
-    Mollie_WC_Plugin::init();
+	// Setup and start plugin
+	Mollie_WC_Plugin::init();
 }
 
 /**
@@ -54,20 +61,6 @@ function mollie_wc_plugin_init ()
  */
 function mollie_wc_plugin_activation_hook ()
 {
-    // WooCommerce plugin not activated
-    if (!is_plugin_active('woocommerce/woocommerce.php'))
-    {
-        $title = sprintf(
-            __('Could not activate plugin %s', 'mollie-payments-for-woocommerce'),
-            'Mollie Payments for WooCommerce'
-        );
-        $message = ''
-            . '<h1><strong>' . $title . '</strong></h1><br/>'
-            . 'WooCommerce plugin not activated. Please activate WooCommerce plugin first.';
-
-        wp_die($message, $title, array('back_link' => true));
-        return;
-    }
 
     // Register Mollie autoloader
     Mollie_WC_Autoload::register();
@@ -85,33 +78,35 @@ function mollie_wc_plugin_activation_hook ()
     }
 }
 
-/**
- * Called when admin is initialised
- */
-function mollie_wc_plugin_admin_init ()
-{
-    // WooCommerce plugin not activated
-    if (!is_plugin_active('woocommerce/woocommerce.php'))
-    {
-        // Deactivate myself
-        deactivate_plugins(plugin_basename(__FILE__));
+function mollie_wc_plugin_inactive() {
 
-        add_action('admin_notices', 'mollie_wc_plugin_deactivated');
-    }
-}
+	$nextScheduledTime = wp_next_scheduled( 'pending_payment_confirmation_check' );
+	if ( $nextScheduledTime ) {
+		wp_unschedule_event( $nextScheduledTime, 'pending_payment_confirmation_check' );
+	}
 
-function mollie_wc_plugin_deactivated ()
-{
-    $nextScheduledTime = wp_next_scheduled( 'pending_payment_confirmation_check' ) ;
-    if ($nextScheduledTime) {
-        wp_unschedule_event( $nextScheduledTime, 'pending_payment_confirmation_check' );
-    }
-    echo '<div class="error"><p>' . sprintf(__('%s deactivated because it depends on WooCommerce.', 'mollie-payments-for-woocommerce'), Mollie_WC_Plugin::PLUGIN_TITLE) . '</p></div>';
+	if ( ! is_admin() ) {
+		return;
+	}
+
+	if ( ! is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
+
+		echo '<div class="error"><p>';
+		echo sprintf( esc_html__( '%1$sMollie Payments for WooCommerce is inactive.%2$s The %3$sWooCommerce plugin%4$s must be active for it to work. Please %5$sinstall & activate WooCommerce &raquo;%6$s', 'mollie-payments-for-woocommerce' ), '<strong>', '</strong>', '<a href="https://wordpress.org/plugins/woocommerce/">', '</a>', '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">', '</a>' );
+		echo '</p></div>';
+	}
+
+	if ( version_compare( get_option( 'woocommerce_db_version' ), '2.2', '<' ) ) {
+
+		echo '<div class="error"><p>';
+		echo sprintf( esc_html__( '%1$sMollie Payments for WooCommerce is inactive.%2$s This version requires WooCommerce 2.2 or newer. Please %3$supdate WooCommerce to version 2.2 or newer &raquo;%4$s', 'mollie-payments-for-woocommerce' ), '<strong>', '</strong>', '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">', '</a>' );
+		echo '</p></div>';
+
+	}
 }
 
 register_activation_hook(__FILE__, 'mollie_wc_plugin_activation_hook');
 
-add_action('admin_init', 'mollie_wc_plugin_admin_init');
 add_action('init', 'mollie_wc_plugin_init');
 
 /**

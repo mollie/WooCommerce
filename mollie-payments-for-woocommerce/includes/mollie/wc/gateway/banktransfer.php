@@ -212,7 +212,7 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
             {
                 $expiry_date = DateTime::createFromFormat( 'U', time() );
 	            $expiry_date->add( new DateInterval( $payment->expiryPeriod ) );
-	            $expiry_date = $expiry_date->format( wc_date_format() );
+	            $expiry_date = $expiry_date->format( 'Y-m-d H:i:s' );
 	            $expiry_date = date_i18n( wc_date_format(), strtotime( $expiry_date ) );
 
                 if ($admin_instructions)

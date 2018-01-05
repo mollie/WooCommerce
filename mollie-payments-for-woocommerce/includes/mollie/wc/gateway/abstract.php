@@ -1341,6 +1341,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $slug     = ''; // default is NO slug/language
 
         if (is_plugin_active('polylang/polylang.php')
+            || is_plugin_active('polylang-pro/polylang-pro.php')
             || is_plugin_active('mlang/mlang.php')
             || is_plugin_active('mlanguage/mlanguage.php')
         )

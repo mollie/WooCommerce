@@ -70,6 +70,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
         add_action('woocommerce_email_after_order_table', array($this, 'displayInstructions'), 10, 3);
 
+	    // For open/pending payments, change default "ORDER RECEIVED" to something more informative, see issue #166
+	    add_filter( 'the_title', array ( $this, 'onOpenOrderStatusReturnTitle' ), 10, 2 );
+
         if (!$this->isValidForUse())
         {
             // Disable gateway if it's not valid for use
@@ -815,7 +818,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 
         // New order status
-        $new_order_status = self::STATUS_CANCELLED;
+        $new_order_status = self::STATUS_PENDING;
 
         // Overwrite plugin-wide
         $new_order_status = apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_order_status_cancelled', $new_order_status);
@@ -1116,6 +1119,59 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         return null;
     }
+
+	/**
+	 * @param WC_Order $order
+	 */
+	public function onOpenOrderStatusReturnTitle( $title, $id ) {
+
+		if ( is_order_received_page() && get_the_ID() === $id ) {
+			global $wp;
+
+			$order_id  = apply_filters( 'woocommerce_thankyou_order_id', absint( $wp->query_vars['order-received'] ) );
+			$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( $_GET['key'] ) );
+			if ( $order_id > 0 ) {
+				$order = wc_get_order( $order_id );
+				if ( $order->get_order_key() != $order_key ) {
+					$order = false;
+				}
+			}
+
+			$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order );
+
+			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+				$order_payment_method = $order->payment_method;
+			} else {
+				$order_payment_method = $order->get_payment_method();
+			}
+
+			// Invalid gateway
+			if ( $this->id !== $order_payment_method ) {
+				return $title;
+			}
+
+			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+				$payment = Mollie_WC_Plugin::getDataHelper()->getActiveMolliePayment( $order->id );
+			} else {
+				$payment = Mollie_WC_Plugin::getDataHelper()->getActiveMolliePayment( $order->get_id() );
+			}
+
+			// Mollie payment not found or invalid gateway
+			if ( ! $payment || $payment->method != $this->getMollieMethodId() ) {
+				return $title;
+			}
+
+			if ( ! $payment->isOpen() ) {
+				return $title;
+			}
+
+			$title .= __( ', payment pending.', 'mollie-payments-for-woocommerce' );
+
+		}
+
+		return $title;
+
+	}
 
     /**
      * @param WC_Order $order

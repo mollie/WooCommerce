@@ -70,8 +70,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
         add_action('woocommerce_email_after_order_table', array($this, 'displayInstructions'), 10, 3);
 
-	    // For open/pending payments, change default "ORDER RECEIVED" to something more informative, see issue #166
-	    add_filter( 'the_title', array ( $this, 'onOpenOrderStatusReturnTitle' ), 10, 2 );
+	    // Adjust title and text on Order Received page in some cases, see issue #166
+	    add_filter( 'the_title', array ( $this, 'onOrderReceivedTitle' ), 10, 2 );
+	    add_filter( 'woocommerce_thankyou_order_received_text', array( $this, 'onOrderReceivedText'), 10, 2 );
 
         if (!$this->isValidForUse())
         {
@@ -816,9 +817,16 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		                    ->unsetActiveMolliePayment( $order_id, $payment->id )
 		                    ->setCancelledMolliePaymentId( $order_id, $payment->id );
 
+	    // What status does the user want to give orders with cancelled payments?
+	    $settings_helper     = Mollie_WC_Plugin::getSettingsHelper();
+	    $order_status_cancelled_payments      = $settings_helper->getOrderStatusCancelledPayments();
 
         // New order status
-        $new_order_status = self::STATUS_PENDING;
+	    if($order_status_cancelled_payments == 'pending' || $order_status_cancelled_payments == null) {
+		    $new_order_status = self::STATUS_PENDING;
+	    } elseif ($order_status_cancelled_payments == 'cancelled' ) {
+		    $new_order_status = self::STATUS_CANCELLED;
+	    }
 
         // Overwrite plugin-wide
         $new_order_status = apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_order_status_cancelled', $new_order_status);
@@ -1123,7 +1131,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	/**
 	 * @param WC_Order $order
 	 */
-	public function onOpenOrderStatusReturnTitle( $title, $id ) {
+	public function onOrderReceivedTitle( $title, $id ) {
 
 		if ( is_order_received_page() && get_the_ID() === $id ) {
 			global $wp;
@@ -1150,6 +1158,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				return $title;
 			}
 
+			// Title for cancelled orders
+			if ( $order->has_status( 'cancelled' ) ) {
+				$title = __( 'Order cancelled', 'mollie-payments-for-woocommerce' );
+
+				return $title;
+			}
+
+			// Checks and title for pending/open orders
 			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 				$payment = Mollie_WC_Plugin::getDataHelper()->getActiveMolliePayment( $order->id );
 			} else {
@@ -1161,11 +1177,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				return $title;
 			}
 
-			if ( ! $payment->isOpen() ) {
+			if ( $payment->isOpen() ) {
+				$title .= __( ', payment pending.', 'mollie-payments-for-woocommerce' );
+
 				return $title;
 			}
-
-			$title .= __( ', payment pending.', 'mollie-payments-for-woocommerce' );
 
 		}
 
@@ -1173,7 +1189,33 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 	}
 
-    /**
+	/**
+	 * @param WC_Order $order
+	 */
+	public function onOrderReceivedText( $text, $order ) {
+
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			$order_payment_method = $order->payment_method;
+		} else {
+			$order_payment_method = $order->get_payment_method();
+		}
+
+		// Invalid gateway
+		if ( $this->id !== $order_payment_method ) {
+			return $text;
+		}
+
+		if ( $order->has_status( 'cancelled' ) ) {
+			$text = __( 'Your order has been cancelled.', 'mollie-payments-for-woocommerce' );
+
+			return $text;
+		}
+
+		return $text;
+
+	}
+
+	/**
      * @param WC_Order $order
      * @return bool
      */

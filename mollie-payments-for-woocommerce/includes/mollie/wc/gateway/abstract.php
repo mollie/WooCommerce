@@ -740,47 +740,46 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 	}
 
-    /**
-     * @param WC_Order $order
-     * @param Mollie_API_Object_Payment $payment
-     */
-    protected function onWebhookPaid(WC_Order $order, Mollie_API_Object_Payment $payment)
-    {
+	/**
+	 * @param WC_Order                  $order
+	 * @param Mollie_API_Object_Payment $payment
+	 */
+	protected function onWebhookPaid( WC_Order $order, Mollie_API_Object_Payment $payment ) {
 
-	    // Get order ID in the correct way depending on WooCommerce version
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    $order_id = $order->id;
-	    } else {
-		    $order_id = $order->get_id();
-	    }
+		if ( $payment->isPaid() ) {
 
-	    // Add messages to log
-	    Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id );
+			// Get order ID in the correct way depending on WooCommerce version
+			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+				$order_id = $order->id;
+			} else {
+				$order_id = $order->get_id();
+			}
 
-        // WooCommerce 2.2.0 has the option to store the Payment transaction id.
-        $woo_version = get_option('woocommerce_version', 'Unknown');
+			// Add messages to log
+			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id );
 
-        if (version_compare($woo_version, '2.2.0', '>='))
-        {
-            $order->payment_complete($payment->id);
-        }
-        else
-        {
-            $order->payment_complete();
-        }
+			// WooCommerce 2.2.0 has the option to store the Payment transaction id.
+			$woo_version = get_option( 'woocommerce_version', 'Unknown' );
 
-        $paymentMethodTitle = $this->getPaymentMethodTitle($payment);
-        $order->add_order_note(sprintf(
-        /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-            __('Order completed using %s payment (%s).', 'mollie-payments-for-woocommerce'),
-            $paymentMethodTitle,
-            $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
-        ));
+			if ( version_compare( $woo_version, '2.2.0', '>=' ) ) {
+				$order->payment_complete( $payment->id );
+			} else {
+				$order->payment_complete();
+			}
 
-	    // Remove (old) cancelled payments from this order
-	    Mollie_WC_Plugin::getDataHelper()->unsetCancelledMolliePaymentId( $order_id );
+			$paymentMethodTitle = $this->getPaymentMethodTitle( $payment );
+			$order->add_order_note( sprintf(
+			/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+				__( 'Order completed using %s payment (%s).', 'mollie-payments-for-woocommerce' ),
+				$paymentMethodTitle,
+				$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
+			) );
 
-    }
+			// Remove (old) cancelled payments from this order
+			Mollie_WC_Plugin::getDataHelper()->unsetCancelledMolliePaymentId( $order_id );
+
+		}
+	}
 
     /**
      * @param $payment

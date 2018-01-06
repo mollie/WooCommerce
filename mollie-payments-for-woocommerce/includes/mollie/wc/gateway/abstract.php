@@ -711,7 +711,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         {
             $order->add_order_note(sprintf(
             /* translators: Placeholder 1: payment method title, placeholder 2: payment status, placeholder 3: payment ID */
-                __('%s payment %s (%s).', 'mollie-payments-for-woocommerce'),
+                __('%s payment %s (%s), not processed.', 'mollie-payments-for-woocommerce'),
                 $this->method_title,
                 $payment->status,
                 $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
@@ -774,6 +774,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				$paymentMethodTitle,
 				$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
 			) );
+
+			// Mark the order as processed and paid via Mollie
+			$this->setOrderPaidAndProcessed( $order );
 
 			// Remove (old) cancelled payments from this order
 			Mollie_WC_Plugin::getDataHelper()->unsetCancelledMolliePaymentId( $order_id );
@@ -1220,7 +1223,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function orderNeedsPayment (WC_Order $order)
     {
-        if ($order->needs_payment())
+	    // Check whether the order is processed and paid via Mollie
+	    if ( ! $this->isOrderPaidAndProcessed( $order ) ) {
+		    return true;
+	    }
+
+    	if ($order->needs_payment())
         {
             return true;
         }
@@ -1396,6 +1404,40 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         return !empty($api_key) && preg_match('/^(live|test)_\w+$/', $api_key);
     }
+
+
+	/**
+	 * @return bool
+	 */
+	protected function setOrderPaidAndProcessed( WC_Order $order ) {
+
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			$order_id = $order->id;
+			update_post_meta( $order_id, '_mollie_paid_and_processed', '1' );
+		} else {
+			$order->update_meta_data( '_mollie_paid_and_processed', '1' );
+			$order->save();
+		}
+		return true;
+	}
+
+
+	/**
+	 * @return bool
+	 */
+	protected function isOrderPaidAndProcessed( WC_Order $order ) {
+
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			$order_id           = $order->id;
+			$paid_and_processed = get_post_meta( $order_id, '_mollie_paid_and_processed', $single = true );
+		} else {
+			$paid_and_processed = $order->get_meta( '_mollie_paid_and_processed', true );
+		}
+
+		return $paid_and_processed;
+
+	}
+
 
     /**
      * @return mixed

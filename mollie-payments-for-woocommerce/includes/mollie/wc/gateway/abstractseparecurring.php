@@ -136,14 +136,18 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
      */
     protected function onWebhookPaid(WC_Order $order, Mollie_API_Object_Payment $payment)
     {
-        parent::onWebhookPaid($order, $payment);
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    if ($this->is_subscription($order->id)) {
-			    $this->deleteOrderFromPendingPaymentQueue($order);
-		    }
-	    } else {
-		    if ($this->is_subscription($order->get_id())) {
-			    $this->deleteOrderFromPendingPaymentQueue($order);
+	    if ( $payment->isPaid() ) {
+		    parent::onWebhookPaid( $order, $payment );
+		    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			    if ( $this->is_subscription( $order->id ) ) {
+				    $this->deleteOrderFromPendingPaymentQueue( $order );
+				    WC_Subscriptions_Manager::activate_subscriptions_for_order($order);
+			    }
+		    } else {
+			    if ( $this->is_subscription( $order->get_id() ) ) {
+				    $this->deleteOrderFromPendingPaymentQueue( $order );
+				    WC_Subscriptions_Manager::activate_subscriptions_for_order($order);
+			    }
 		    }
 	    }
     }

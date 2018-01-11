@@ -1142,7 +1142,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( $_GET['key'] ) );
 			if ( $order_id > 0 ) {
 				$order = wc_get_order( $order_id );
-				if ( $order->get_order_key() != $order_key ) {
+
+				if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+					$order_key_db = $order->order_key;
+				} else {
+					$order_key_db = $order->get_order_key();
+				}
+
+				if ( $order_key_db != $order_key ) {
 					$order = false;
 				}
 			}

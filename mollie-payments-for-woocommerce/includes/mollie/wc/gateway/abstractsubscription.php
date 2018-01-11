@@ -521,55 +521,6 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
     }
 
     /**
-     * @param $order
-     * @param bool|false $test_mode
-     * @return null|string
-     */
-    protected function getUserMollieCustomerId($order, $test_mode = false)
-    {
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    $user_id = $order->customer_user;
-	    } else {
-		    $user_id = $order->get_customer_id();
-	    }
-
-        if (empty($user_id)){
-            return null;
-        }
-
-        $customer_id = null;
-        try
-        {
-            $userdata = get_userdata($user_id);
-
-	        // Get the best name for use as Mollie Customer name
-	        $user_full_name = $userdata->first_name . ' ' . $userdata->last_name;
-
-	        if ( strlen( trim( $user_full_name ) ) == null ) {
-		        $user_full_name = $userdata->display_name;
-	        }
-
-	        $customer = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers->create( array (
-		        'name'     => trim( $user_full_name ),
-		        'email'    => trim( $userdata->user_email ),
-		        'locale'   => trim( $this->getCurrentLocale() ),
-		        'metadata' => array ( 'user_id' => $user_id ),
-	        ) );
-
-
-            $customer_id = $customer->id;
-        }
-        catch (Exception $e)
-        {
-            Mollie_WC_Plugin::debug(
-                __FUNCTION__ . ": Could not create customer $user_id (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')'
-            );
-        }
-
-        return $customer_id;
-    }
-
-    /**
      * @return mixed
      */
     protected function getCurrentLocale()

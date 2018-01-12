@@ -74,6 +74,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	    add_filter( 'the_title', array ( $this, 'onOrderReceivedTitle' ), 10, 2 );
 	    add_filter( 'woocommerce_thankyou_order_received_text', array( $this, 'onOrderReceivedText'), 10, 2 );
 
+	    /* Override show issuers dropdown? */
+	    if ( $this->get_option( 'issuers_dropdown_shown', 'yes' ) == 'no' ) {
+		    $this->has_fields = false;
+	    }
+
         if (!$this->isValidForUse())
         {
             // Disable gateway if it's not valid for use

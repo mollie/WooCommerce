@@ -338,9 +338,13 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 					    }
 				    }
 				    if ( $validMandate ) {
-					    Mollie_WC_Plugin::debug( $this->id . ': Subscription switch, valid mandate ' . $order_id );
 
 					    $order->payment_complete();
+
+					    $order->add_order_note( sprintf(
+						    __( 'Order completed internally because of an existing valid mandate at Mollie.', 'mollie-payments-for-woocommerce' ) ) );
+
+					    Mollie_WC_Plugin::debug( $this->id . ': Subscription switch, valid mandate ' . $order_id );
 
 					    return array (
 						    'result'   => 'success',

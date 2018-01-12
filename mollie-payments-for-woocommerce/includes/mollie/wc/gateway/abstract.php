@@ -320,8 +320,46 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         $data = apply_filters('woocommerce_' . $this->id . '_args', $data, $order);
 
-        try
-        {
+	    // If this is a subscription switch and customer has a valid mandate, process the order internally
+	    try {
+
+		    if ( ( '0.00' === $order->get_total() ) && ( $this->is_subscription( $order_id ) == true ) &&
+		         0 != $order->get_user_id() && ( wcs_order_contains_switch( $order ) )
+		    ) {
+			    try {
+				    Mollie_WC_Plugin::debug( $this->id . ': Subscription switch, fetch mandate ' . $order_id );
+				    $mandates     = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers_mandates->withParentId( $customer_id )->all();
+				    $validMandate = false;
+				    foreach ( $mandates as $mandate ) {
+					    if ( $mandate->status == 'valid' ) {
+						    $validMandate   = true;
+						    $data['method'] = $mandate->method;
+						    break;
+					    }
+				    }
+				    if ( $validMandate ) {
+					    Mollie_WC_Plugin::debug( $this->id . ': Subscription switch, valid mandate ' . $order_id );
+
+					    $order->payment_complete();
+
+					    return array (
+						    'result'   => 'success',
+						    'redirect' => $this->get_return_url( $order ),
+					    );
+
+				    } else {
+					    Mollie_WC_Plugin::debug( $this->id . ': Subscription switch, payment problem ' . $order_id );
+					    throw new Mollie_API_Exception( __( 'Subscription switch cannot be processed, no valid mandate.', 'mollie-payments-for-woocommerce-mandate-problem' ) );
+				    }
+			    }
+			    catch ( Mollie_API_Exception $e ) {
+				    if ( $e->getField() ) {
+					    throw $e;
+				    }
+			    }
+
+		    }
+
 	        if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 		        Mollie_WC_Plugin::debug( $this->id . ': Create payment for order ' . $order->id, true );
 	        } else {
@@ -1465,4 +1503,15 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      * @return string
      */
     abstract protected function getDefaultDescription ();
+
+	/**
+	 * @param $order_id
+	 * @return bool
+	 */
+	protected function is_subscription( $order_id )
+	{
+		return ( function_exists( 'wcs_order_contains_subscription' ) && ( wcs_order_contains_subscription( $order_id ) || wcs_is_subscription( $order_id ) || wcs_order_contains_renewal( $order_id ) ) );
+	}
+
+
 }

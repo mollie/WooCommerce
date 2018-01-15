@@ -958,13 +958,13 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
     }
 
-    /**
-     * @param WC_Order $order
-     * @return string
-     */
+	/**
+	 * @param WC_Order $order
+	 *
+	 * @return string
+	 */
 	public function getReturnRedirectUrlForOrder( WC_Order $order ) {
 		$data_helper = Mollie_WC_Plugin::getDataHelper();
-
 
 		if ( $this->orderNeedsPayment( $order ) ) {
 
@@ -972,13 +972,26 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 			if ( $hasCancelledMolliePayment ) {
 
-				Mollie_WC_Plugin::addNotice( __( 'You have cancelled your payment. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ) );
+				$settings_helper                 = Mollie_WC_Plugin::getSettingsHelper();
+				$order_status_cancelled_payments = $settings_helper->getOrderStatusCancelledPayments();
 
-				if ( method_exists( $order, 'get_checkout_payment_url' ) ) {
-					/*
-					 * Return to order payment page
-					 */
-					return $order->get_checkout_payment_url( false );
+				// If user set all cancelled payments to also cancel the order,
+				// redirect to /checkout/order-received/ with a message about the
+				// order being cancelled. Otherwise redirect to /checkout/order-pay/ so
+				// customers can try to pay with another payment method.
+				if ( $order_status_cancelled_payments == 'cancelled' ) {
+
+					return $this->get_return_url( $order );
+
+				} else {
+					Mollie_WC_Plugin::addNotice( __( 'You have cancelled your payment. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ) );
+
+					if ( method_exists( $order, 'get_checkout_payment_url' ) ) {
+						/*
+						 * Return to order payment page
+						 */
+						return $order->get_checkout_payment_url( false );
+					}
 				}
 
 				/*

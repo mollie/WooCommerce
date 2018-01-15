@@ -4,7 +4,7 @@ Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, i
 Requires at least: 3.8
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 2.8.0
+Stable tag: 2.8.1
 Requires PHP: 5.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -158,6 +158,15 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 2.8.1 - 15/01/2018 =
+
+* New - iDEAL, KBC, Gift cards: Option to hide issuers/bank list in WooCommerce
+* New - Allow subscription switching (downgrade) when amount to pay is €0 and there is a valid mandate for the user
+
+* Fix - A new customerID was created for every new order where a payment method that supported recurring payments was selected
+* Fix - When plugin 2.8.0 was used with WooCommerce 2.6 or older, a fatal error would be shown on the return page (because of use of new WooCommerce 3.0 method)
+* Fix - Some cancelled payments for cancelled orders where redirected to "Retry payment" instead of "Order received" page, see Github issue #166
 
 = 2.8.0 - 09/01/2018 =
 

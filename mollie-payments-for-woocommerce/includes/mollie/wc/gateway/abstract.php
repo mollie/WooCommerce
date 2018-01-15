@@ -1193,7 +1193,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	/**
 	 * @param WC_Order $order
 	 */
-	public function onOrderReceivedTitle( $title, $id ) {
+	public function onOrderReceivedTitle( $title, $id = null ) {
 
 		if ( is_order_received_page() && get_the_ID() === $id ) {
 			global $wp;

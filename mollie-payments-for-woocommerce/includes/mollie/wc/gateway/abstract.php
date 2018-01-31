@@ -1407,7 +1407,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         $site_url   = get_site_url();
 
-        $return_url = WC()->api_request_url('mollie_return');
+	    $return_url = WC()->api_request_url( 'mollie_return' );
+	    $return_url = $this->removeTrailingSlashAfterParamater( $return_url );
 
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 		    $return_url = add_query_arg(array(
@@ -1435,7 +1436,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         $site_url    = get_site_url();
 
-        $webhook_url = WC()->api_request_url(strtolower(get_class($this)));
+	    $webhook_url = WC()->api_request_url( strtolower( get_class( $this ) ) );
+	    $webhook_url = $this->removeTrailingSlashAfterParamater( $webhook_url );
 
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 		    $webhook_url = add_query_arg(array(
@@ -1454,6 +1456,22 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_webhook_url', $webhook_url, $order);
     }
+
+	/**
+	 * Remove a trailing slash after a query string if there is one in the WooCommerce API request URL.
+	 * For example WMPL adds a query string with trailing slash like /?lang=de/ to WC()->api_request_url.
+	 * This causes issues when we append to that URL with add_query_arg.
+	 *
+	 * @return string
+	 */
+	protected function removeTrailingSlashAfterParamater( $url ) {
+
+		if ( strpos( $url, '?' ) ) {
+			$url = untrailingslashit( $url );
+		}
+
+		return $url;
+	}
 
     /**
      * Check if any multi language plugins are enabled and return the correct site url.

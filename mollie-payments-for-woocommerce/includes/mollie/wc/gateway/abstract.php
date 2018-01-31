@@ -38,6 +38,13 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public $max_amount = 0;
 
+	/**
+	 * Recurring total, zero does not define a recurring total
+	 *
+	 * @var int
+	 */
+	public $recurring_total = 0;
+
     /**
      *
      */
@@ -245,35 +252,29 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         return true;
     }
 
-    /**
-     * Check if the gateway is available for use
-     *
-     * @return bool
-     */
-    public function is_available()
-    {
-        if (!parent::is_available())
-        {
-            return false;
-        }
+	/**
+	 * Check if the gateway is available for use
+	 *
+	 * @return bool
+	 */
+	public function is_available() {
 
-        if (WC()->cart && $this->get_order_total() > 0)
-        {
-            // Validate min amount
-            if (0 < $this->min_amount && $this->min_amount > $this->get_order_total())
-            {
-                return false;
-            }
+		$this->get_recurring_total();
 
-            // Validate max amount
-            if (0 < $this->max_amount && $this->max_amount < $this->get_order_total())
-            {
-                return false;
-            }
-        }
+		if ( WC()->cart && $this->recurring_total > 0 ) {
+			// Validate min amount
+			if ( 0 < $this->min_amount && $this->min_amount > $this->recurring_total ) {
+				return false;
+			}
 
-        return true;
-    }
+			// Validate max amount
+			if ( 0 < $this->max_amount && $this->max_amount < $this->recurring_total ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
 
     /**
      * Will the payment confirmation be delivered after a couple of days.
@@ -1588,6 +1589,24 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	protected function is_subscription( $order_id )
 	{
 		return ( function_exists( 'wcs_order_contains_subscription' ) && ( wcs_order_contains_subscription( $order_id ) || wcs_is_subscription( $order_id ) || wcs_order_contains_renewal( $order_id ) ) );
+	}
+
+	/**
+	 * @return mixed
+	 */
+	protected function get_recurring_total() {
+
+		if ( isset( WC()->cart ) ) {
+
+			foreach ( WC()->cart->cart_contents as $item_key => $item ) {
+				$item_quantity        = $item['quantity'];
+				$item_price           = WC_Subscriptions_Product::get_price( $item['product_id'] );
+				$item_recurring_total = $item_quantity * $item_price;
+				$this->recurring_total += $item_recurring_total;
+			}
+		}
+
+		return $this->recurring_total;
 	}
 
 

@@ -387,9 +387,9 @@ class Mollie_WC_Helper_Settings
                 'title'   => __('Payment screen language', 'mollie-payments-for-woocommerce'),
                 'type'    => 'select',
                 'options' => array(
-                    ''          => __('Detect using browser language', 'mollie-payments-for-woocommerce'),
+                    ''          => __('Detect using browser language', 'mollie-payments-for-woocommerce')  . ' (' . __('default', 'mollie-payments-for-woocommerce') . ')',
                     /* translators: Placeholder 1: Current WordPress locale */
-                    'wp_locale' => sprintf(__('Send WordPress language (%s)', 'mollie-payments-for-woocommerce'), $this->getCurrentLocale()) . ' (' . __('default', 'mollie-payments-for-woocommerce') . ')',
+                    'wp_locale' => sprintf(__('Send WordPress language (%s)', 'mollie-payments-for-woocommerce'), $this->getCurrentLocale()),
                     'nl_NL'     => __('Dutch', 'mollie-payments-for-woocommerce'),
                     'nl_BE'     => __('Flemish (Belgium)', 'mollie-payments-for-woocommerce'),
                     'en'        => __('English', 'mollie-payments-for-woocommerce'),
@@ -398,7 +398,12 @@ class Mollie_WC_Helper_Settings
                     'fr_FR'     => __('French', 'mollie-payments-for-woocommerce'),
                     'fr_BE'     => __('French (Belgium)', 'mollie-payments-for-woocommerce'),
                 ),
-                'default' => 'wp_locale',
+                'desc'    => sprintf(
+                	__('The option \'Detect using browser language\' is usually more accurate. Only use \'Send WordPress language\' if you are sure all languages/locales on your website are supported by Mollie %s(see \'locale\' under \'Parameters\')%s. Currently supported locales: <code>en_US</code>, <code>de_AT</code>, <code>de_CH</code>, <code>de_DE</code>, <code>es_ES</code>, <code>fr_BE</code>, <code>fr_FR</code>, <code>nl_BE</code>, <code>nl_NL</code>.', 'mollie-payments-for-woocommerce'),
+	                '<a href="https://www.mollie.com/nl/docs/reference/payments/create" target="_blank">',
+	                '</a>'
+                ),
+                'default' => '',
             ),
             array(
                 'id'                => $this->getSettingId('customer_details'),

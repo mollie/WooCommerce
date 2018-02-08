@@ -25,10 +25,17 @@ class Mollie_WC_Gateway_Giftcard extends Mollie_WC_Gateway_Abstract
 		parent::init_form_fields();
 
 		$this->form_fields = array_merge($this->form_fields, array(
+			'issuers_dropdown_shown' => array(
+				'title'       => __('Show gift cards dropdown', 'mollie-payments-for-woocommerce'),
+				'type'        => 'checkbox',
+				'description' => sprintf(__('If you disable this, a dropdown with various gift cards will not be shown in the WooCommerce checkout, so users will select a gift card on the Mollie payment page after checkout.', 'mollie-payments-for-woocommerce'), $this->getDefaultTitle()),
+				'default'     => 'yes',
+				'desc_tip'    => true,
+			),
 			'issuers_empty_option' => array(
 				'title'       => __('Issuers empty option', 'mollie-payments-for-woocommerce'),
 				'type'        => 'text',
-				'description' => sprintf(__('This text will be displayed as the first option in the Giftcard issuers drop down', 'mollie-payments-for-woocommerce'), $this->getDefaultTitle()),
+				'description' => sprintf(__('This text will be displayed as the first option in the gift card dropdown, but only if the above \'Show gift cards dropdown\' is enabled.', 'mollie-payments-for-woocommerce'), $this->getDefaultTitle()),
 				'default'     => '',
 				'desc_tip'    => true,
 			),

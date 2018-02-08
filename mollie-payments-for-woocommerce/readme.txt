@@ -4,7 +4,7 @@ Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, i
 Requires at least: 3.8
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 2.7.0
+Stable tag: 2.8.2
 Requires PHP: 5.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -108,6 +108,10 @@ To download translations manually:
 
 If you want to help translate the plugin, read the instructions in the [Translate strings instructions](https://make.wordpress.org/polyglots/handbook/tools/glotpress-translate-wordpress-org/#translating-strings).
 
+= Can I add payment fees to payment methods? =
+
+Yes, you can with a separate plugin. At the moment we have tested and can recommend [Payment Gateway Based Fees and Discounts for WooCommerce](https://wordpress.org/plugins/checkout-fees-for-woocommerce/). Other plugins might also work. For more specific information, also see [helpful snippets](https://github.com/mollie/WooCommerce/wiki/Helpful-snippets#add-payment-fee-to-payment-methods).
+
 = Why do orders with payment method BankTransfer and Direct Debit get the status 'on-hold'? =
 
 These payment methods take longer than a few hours to complete. The order status is set to 'on-hold' to prevent the WooCommerce setting 'Hold stock (minutes)' (https://docs.woothemes.com/document/configuring-woocommerce-settings/#inventory-options) will 
@@ -158,6 +162,42 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 2.8.2 - 15/01/2018 =
+
+* Fix - Fixed a PHP error by setting an argument default for onOrderReceivedTitle(), because post ID not set in all WordPress versions
+
+= 2.8.1 - 15/01/2018 =
+
+* New - iDEAL, KBC, Gift cards: Option to hide issuers/bank list in WooCommerce
+* New - Allow subscription switching (downgrade) when amount to pay is €0 and there is a valid mandate for the user
+
+* Fix - A new customerID was created for every new order where a payment method that supported recurring payments was selected
+* Fix - When plugin 2.8.0 was used with WooCommerce 2.6 or older, a fatal error would be shown on the return page (because of use of new WooCommerce 3.0 method)
+* Fix - Some cancelled payments for cancelled orders where redirected to "Retry payment" instead of "Order received" page, see Github issue #166
+
+= 2.8.0 - 09/01/2018 =
+
+* New - Updated required WooCommerce version to 2.2.0
+* New - Tested with WooCommerce 3.3 beta, no issues found
+* New - Better message on "Order Received" page for open/pending payments
+* New - Allow users to set the order status for orders where a payment was cancelled
+* New - Added support for Polylang Pro (polylang-pro) to getSiteUrlWithLanguage()
+* New - Updated credit card icon in WooCommerce checkout to show icons for MasterCard, Visa, AMEX, CartaSi, Cartes Bancaires
+* New - Better way to check if WooCommerce is activated and has correct version (so plugin doesn't de-activate on WooCommerce updates)
+* New - Redact customer IBAN in notification-mails
+* New - Update how "Select your bank" is shown in the dropdown for iDEAL and KBC/CBC (and show a default)
+
+* Fix - Fix error by making sure order is not removed/exists (in checkPendingPaymentOrdersExpiration)
+* Fix - Make sure payments cancelled at Mollie are also cancelled in WooCommerce, so customers can select a new payment method
+* Fix - KBC/CBC: Make sure KBC/CBC is listed as "Automatic Recurring Payment" gateway in WooCommerce
+* Fix - Fix (no title) showing in settings for SEPA Direct Debit for some new installs
+* Fix - Fix wrong date formatting shown for bank transfer instructions, thank you profoX!
+* Fix - Typo in SEPA Direct Debit description, thank you Yame-!
+* Fix - It's possible to set the initial status of bank transfer to pending instead of on-hold, but in that case the payment instructions would not be shown on the Order Received page (missing in condition)
+* Fix - Make sure webhook processing for Paid doesn't run on status PaidOut
+* Fix - Improve orderNeedsPayment so there are less false-positives if users use 3PD plugins to change the order status too early
+* Fix - Add WC_Subscriptions_Manager::activate_subscriptions_for_order to make sure subscriptions are always activated when payment is paid, independent of order status
 
 = 2.7.0 - 07/09/2017 =
 

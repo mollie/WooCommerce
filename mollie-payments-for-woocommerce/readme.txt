@@ -4,7 +4,7 @@ Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, i
 Requires at least: 3.8
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 2.8.2
+Stable tag: 2.9.0
 Requires PHP: 5.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html

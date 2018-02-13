@@ -25,6 +25,7 @@ Alternative payment methods:
 
 * iDEAL (Netherlands)
 * Bancontact (Belgium)
+* Home'Pay (Belgium)
 * PayPal (International)
 * SOFORTbanking (EU)
 * Belfius (Belgium)

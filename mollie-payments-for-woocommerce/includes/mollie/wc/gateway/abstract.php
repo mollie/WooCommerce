@@ -259,8 +259,15 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 */
 	public function is_available() {
 
+		// In WooCommerce check if the gateway is available for use (WooCommerce settings)
+		if (!parent::is_available())
+		{
+			return false;
+		}
+
 		$this->get_recurring_total();
 
+		// Only in WooCommerce checkout, check min/max amounts
 		if ( WC()->cart && $this->recurring_total > 0 ) {
 			// Validate min amount
 			if ( 0 < $this->min_amount && $this->min_amount > $this->recurring_total ) {

@@ -698,26 +698,4 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
         return ( function_exists( 'wcs_order_contains_subscription' ) && ( wcs_order_contains_subscription( $order_id ) || wcs_is_subscription( $order_id ) || wcs_order_contains_renewal( $order_id ) ) );
     }
 
-	/**
-	 * Check if the gateway is available for use
-	 *
-	 * @return bool
-	 */
-	public function is_available() {
-
-		if ( WC()->cart && $this->get_order_total() > 0 ) {
-			// Validate min amount
-			if ( 0 < $this->min_amount && $this->min_amount > $this->get_order_total() ) {
-				return false;
-			}
-
-			// Validate max amount
-			if ( 0 < $this->max_amount && $this->max_amount < $this->get_order_total() ) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
 }

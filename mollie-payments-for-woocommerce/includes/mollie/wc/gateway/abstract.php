@@ -260,7 +260,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	public function is_available() {
 
 		// In WooCommerce check if the gateway is available for use (WooCommerce settings)
-		if ( ! parent::is_available() ) {
+		if ( $this->enabled != 'yes' ) {
+
 			return false;
 		}
 
@@ -271,7 +272,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			$order_total = $this->get_order_total();
 
 			// If WooCommerce Subscriptions is installed, get the recurring order total
-			if ( class_exists( 'WooCommerceSubscriptions' ) ) {
+			if ( class_exists( 'WC_Subscriptions_Product' ) ) {
 				$order_total = $this->get_recurring_total();
 			}
 

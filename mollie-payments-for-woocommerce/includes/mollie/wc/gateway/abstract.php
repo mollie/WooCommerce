@@ -260,23 +260,32 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	public function is_available() {
 
 		// In WooCommerce check if the gateway is available for use (WooCommerce settings)
-		if (!parent::is_available())
-		{
+		if ( ! parent::is_available() ) {
 			return false;
 		}
 
-		$this->get_recurring_total();
-
 		// Only in WooCommerce checkout, check min/max amounts
-		if ( WC()->cart && $this->recurring_total > 0 ) {
-			// Validate min amount
-			if ( 0 < $this->min_amount && $this->min_amount > $this->recurring_total ) {
-				return false;
+		if ( WC()->cart ) {
+
+			// Get the regular order total for this order
+			$order_total = $this->get_order_total();
+
+			// If WooCommerce Subscriptions is installed, get the recurring order total
+			if ( class_exists( 'WooCommerceSubscriptions' ) ) {
+				$order_total = $this->get_recurring_total();
 			}
 
-			// Validate max amount
-			if ( 0 < $this->max_amount && $this->max_amount < $this->recurring_total ) {
-				return false;
+			// If order total is more then zero, check min/max amounts
+			if ( $order_total > 0 ) {
+				// Validate min amount
+				if ( 0 < $this->min_amount && $this->min_amount > $order_total ) {
+					return false;
+				}
+
+				// Validate max amount
+				if ( 0 < $this->max_amount && $this->max_amount < $order_total ) {
+					return false;
+				}
 			}
 		}
 

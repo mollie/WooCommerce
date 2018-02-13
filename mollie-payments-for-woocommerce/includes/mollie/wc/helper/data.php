@@ -572,10 +572,9 @@ class Mollie_WC_Helper_Data
 		    $customer_id = $customer->get_meta( 'mollie_customer_id' );
 	    }
 
-	    // Check that customer IDis valid for this API key
+	    // Check that customer ID is valid for this API key
 	    try {
-		    $customer_verification = $this->api_helper->getApiClient( $test_mode )->customers->get( $customer_id );
-
+		    $this->api_helper->getApiClient( $test_mode )->customers->get( $customer_id );
 	    }
 	    catch ( Exception $e ) {
 		    Mollie_WC_Plugin::debug( __FUNCTION__ . ": Mollie Customer ID " . $customer_id . " not valid for this API key, try to create a new one (" . ( $test_mode ? 'test' : 'live' ) . ")." );

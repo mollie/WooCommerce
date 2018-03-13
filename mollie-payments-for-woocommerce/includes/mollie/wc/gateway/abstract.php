@@ -1271,6 +1271,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		if ( is_order_received_page() && get_the_ID() === $id ) {
 			global $wp;
 
+			$order = false;
 			$order_id  = apply_filters( 'woocommerce_thankyou_order_id', absint( $wp->query_vars['order-received'] ) );
 			$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( $_GET['key'] ) );
 			if ( $order_id > 0 ) {
@@ -1285,6 +1286,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				if ( $order_key_db != $order_key ) {
 					$order = false;
 				}
+			}
+
+			if ( $order == false){
+				return $title;
 			}
 
 			$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order );

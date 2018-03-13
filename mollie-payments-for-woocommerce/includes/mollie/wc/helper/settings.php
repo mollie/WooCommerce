@@ -376,8 +376,8 @@ class Mollie_WC_Helper_Settings
 		        'title'   => __('Order status after cancelled payment', 'mollie-payments-for-woocommerce'),
 		        'type'    => 'select',
 		        'options' => array(
-			        'pending'          => __('Pending', 'mollie-payments-for-woocommerce'),
-			        'cancelled'     => __('Cancelled', 'mollie-payments-for-woocommerce'),
+			        'pending'          => __('Pending', 'woocommerce'),
+			        'cancelled'     => __('Cancelled', 'woocommerce'),
 		        ),
 		        'desc'    => __('Status for orders when a payment is cancelled. Default: pending. Orders with status Pending can be paid with another payment method, customers can try again. Cancelled orders are final. Set this to Cancelled if you only have one payment method or don\'t want customers to re-try paying with a different payment method.', 'mollie-payments-for-woocommerce'),
 		        'default' => 'pending',

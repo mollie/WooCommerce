@@ -188,11 +188,11 @@ class Mollie_WC_Plugin
 		// Listen to return URL call
 		add_action( 'woocommerce_api_mollie_return', array ( __CLASS__, 'onMollieReturn' ) );
 
-		// On order details
+		// Show Mollie instructions on order details page
 		add_action( 'woocommerce_order_details_after_order_table', array ( __CLASS__, 'onOrderDetails' ), 10, 1 );
 
-
-		//add_filter( 'woocommerce_available_payment_gateways', array ( __CLASS__, 'disableSEPAInCheckout' ), 10, 1 );
+		// Disable SEPA as payment option in WooCommerce checkout
+		add_filter( 'woocommerce_available_payment_gateways', array ( __CLASS__, 'disableSEPAInCheckout' ), 10, 1 );
 
 		self::initDb();
 		self::schedulePendingPaymentOrdersExpirationCheck();

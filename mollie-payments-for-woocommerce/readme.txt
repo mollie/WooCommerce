@@ -307,7 +307,7 @@ WooCommerce -> Settings -> Checkout -> Mollie - Bank Transfer.
 
 = 2.0.1 - 02/10/2015 =
 * Add support for SEPA Direct Debit.
-* Add message for Belfius, Bitcoin, Bancontact/Mister Cash and paysafecard when the payment is paid successfully.
+* Add message for Belfius, Bitcoin, Bancontact and paysafecard when the payment is paid successfully.
 
 = 2.0.0 - 17/08/2015 =
 * Complete rewrite of our WooCommerce plugin to better follow WordPress and WooCommerce standards and add better support for other plugins.

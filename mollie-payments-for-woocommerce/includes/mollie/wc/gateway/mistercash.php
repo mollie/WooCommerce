@@ -27,7 +27,7 @@ class Mollie_WC_Gateway_MisterCash extends Mollie_WC_Gateway_AbstractSepaRecurri
      */
     public function getDefaultTitle ()
     {
-        return __('Bancontact / Mister Cash', 'mollie-payments-for-woocommerce');
+        return __('Bancontact', 'mollie-payments-for-woocommerce');
     }
 
 	/**

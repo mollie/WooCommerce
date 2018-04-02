@@ -37,6 +37,8 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 	        'subscription_amount_changes',
 	        'subscription_date_changes',
             'multiple_subscriptions',
+	        'subscription_payment_method_change',
+	        'subscription_payment_method_change_customer',
         );
 
         $this->supports = array_merge($this->supports,$supportSubscriptions);

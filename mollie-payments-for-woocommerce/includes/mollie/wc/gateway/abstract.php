@@ -1326,6 +1326,28 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			}
 
 			if ( $payment->isOpen() ) {
+
+				// Add a message to log and order explaining a payment with status "open", only if it hasn't been added already
+				if ( get_post_meta( $order_id, '_mollie_open_status_note', true ) !== '1' ) {
+
+					// Get payment method title
+					$paymentMethodTitle = $this->getPaymentMethodTitle( $payment );
+
+					// Add message to log
+					Mollie_WC_Plugin::debug( $this->id . ': Customer returned to store, but payment still pending for order #' . $order_id . '. Status should be updated automatically in the future, if it doesn\'t this might indicate a communication issue between the site and Mollie.' );
+
+					// Add message to order as order note
+					$order->add_order_note( sprintf(
+					/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+						__( '%s payment still pending (%s) but customer already returned to the store. Status should be updated automatically in the future, if it doesn\'t this might indicate a communication issue between the site and Mollie.', 'mollie-payments-for-woocommerce' ),
+						$paymentMethodTitle,
+						$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
+					) );
+
+					update_post_meta( $order_id, '_mollie_open_status_note', '1' );
+				}
+
+				// Update the title on the Order received page to better communicate that the payment is pending.
 				$title .= __( ', payment pending.', 'mollie-payments-for-woocommerce' );
 
 				return $title;

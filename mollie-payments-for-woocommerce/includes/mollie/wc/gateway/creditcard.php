@@ -8,8 +8,7 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
     {
         $this->supports = array(
             'products',
-            'refunds',
-	        'subscription_payment_method_change',
+            'refunds'
         );
 
         $this->initSubscriptionSupport();

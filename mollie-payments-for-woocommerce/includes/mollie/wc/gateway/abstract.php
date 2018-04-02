@@ -307,183 +307,197 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         return false;
     }
 
-    /**
-     * @param int $order_id
-     * @return array
-     */
-    public function process_payment ($order_id)
-    {
-        $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder($order_id);
+	/**
+	 * @param int $order_id
+	 *
+	 * @return array
+	 */
+	public function process_payment( $order_id ) {
+		$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
 
-        if (!$order)
-        {
-            Mollie_WC_Plugin::debug($this->id . ': Could not process payment, order ' . $order_id . ' not found.');
+		if ( ! $order ) {
+			Mollie_WC_Plugin::debug( $this->id . ': Could not process payment, order ' . $order_id . ' not found.' );
 
-            Mollie_WC_Plugin::addNotice(sprintf(__('Could not load order %s', 'mollie-payments-for-woocommerce'), $order_id), 'error');
+			Mollie_WC_Plugin::addNotice( sprintf( __( 'Could not load order %s', 'mollie-payments-for-woocommerce' ), $order_id ), 'error' );
 
-            return array('result' => 'failure');
-        }
+			return array ( 'result' => 'failure' );
+		}
 
-        $initial_order_status = $this->getInitialOrderStatus();
+		$initial_order_status = $this->getInitialOrderStatus();
 
-        // Overwrite plugin-wide
-        $initial_order_status = apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_initial_order_status', $initial_order_status);
+		// Overwrite plugin-wide
+		$initial_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_initial_order_status', $initial_order_status );
 
-        // Overwrite gateway-wide
-        $initial_order_status = apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_initial_order_status_' . $this->id, $initial_order_status);
+		// Overwrite gateway-wide
+		$initial_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_initial_order_status_' . $this->id, $initial_order_status );
 
-        $settings_helper     = Mollie_WC_Plugin::getSettingsHelper();
+		$settings_helper = Mollie_WC_Plugin::getSettingsHelper();
 
-        // Is test mode enabled?
-        $test_mode          = $settings_helper->isTestModeEnabled();
-        $customer_id        = $this->getUserMollieCustomerId($order,$test_mode);
-        $paymentRequestData = $this->getPaymentRequestData($order, $customer_id);
+		// Is test mode enabled?
+		$test_mode          = $settings_helper->isTestModeEnabled();
+		$customer_id        = $this->getUserMollieCustomerId( $order, $test_mode );
+		$paymentRequestData = $this->getPaymentRequestData( $order, $customer_id );
 
-        $data = array_filter($paymentRequestData);
+		$data = array_filter( $paymentRequestData );
 
-        $data = apply_filters('woocommerce_' . $this->id . '_args', $data, $order);
+		$data = apply_filters( 'woocommerce_' . $this->id . '_args', $data, $order );
 
-	    // If this is a subscription switch and customer has a valid mandate, process the order internally
-	    try {
+		//	    if ( ( $this->is_subscription( $order_id ) == true  )
+		//	    ) {
+		//	    	echo "hello there";
+		//	    	var_dump($order->get_id());
+		//	    	var_dump($order->get_total());
+		//		    $order->set_total(0.01);
+		//		    $order->save();
+		//		    var_dump($order->get_total());
+		//	    	exit();
+		//	    }
 
-		    if ( ( '0.00' === $order->get_total() ) && ( $this->is_subscription( $order_id ) == true ) &&
-		         0 != $order->get_user_id() && ( wcs_order_contains_switch( $order ) )
-		    ) {
-			    try {
-				    Mollie_WC_Plugin::debug( $this->id . ': Subscription switch, fetch mandate ' . $order_id );
-				    $mandates     = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers_mandates->withParentId( $customer_id )->all();
-				    $validMandate = false;
-				    foreach ( $mandates as $mandate ) {
-					    if ( $mandate->status == 'valid' ) {
-						    $validMandate   = true;
-						    $data['method'] = $mandate->method;
-						    break;
-					    }
-				    }
-				    if ( $validMandate ) {
+		//
+		// PROCESS SUBSCRIPTION SWITCH - If this is a subscription switch and customer has a valid mandate, process the order internally
+		//
+		if ( ( '0.00' === $order->get_total() ) && ( $this->is_subscription( $order_id ) == true ) &&
+		     0 != $order->get_user_id() && ( wcs_order_contains_switch( $order ) )
+		) {
 
-					    $order->payment_complete();
+			//  if ( ( $this->is_subscription( $order_id ) == true  )
 
-					    $order->add_order_note( sprintf(
-						    __( 'Order completed internally because of an existing valid mandate at Mollie.', 'mollie-payments-for-woocommerce' ) ) );
+			try {
+				Mollie_WC_Plugin::debug( $this->id . ': Subscription switch, start by fetching mandate(s) for order #' . $order_id );
+				$mandates     = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers_mandates->withParentId( $customer_id )->all();
+				$validMandate = false;
+				foreach ( $mandates as $mandate ) {
+					if ( $mandate->status == 'valid' ) {
+						$validMandate   = true;
+						$data['method'] = $mandate->method;
+						break;
+					}
+				}
+				if ( $validMandate ) {
 
-					    Mollie_WC_Plugin::debug( $this->id . ': Subscription switch, valid mandate ' . $order_id );
+					$order->payment_complete();
 
-					    return array (
-						    'result'   => 'success',
-						    'redirect' => $this->get_return_url( $order ),
-					    );
+					$order->add_order_note( sprintf(
+						__( 'Order completed internally because of an existing valid mandate at Mollie.', 'mollie-payments-for-woocommerce' ) ) );
 
-				    } else {
-					    Mollie_WC_Plugin::debug( $this->id . ': Subscription switch, payment problem ' . $order_id );
-					    throw new Mollie_API_Exception( __( 'Subscription switch cannot be processed, no valid mandate.', 'mollie-payments-for-woocommerce-mandate-problem' ) );
-				    }
-			    }
-			    catch ( Mollie_API_Exception $e ) {
-				    if ( $e->getField() ) {
-					    throw $e;
-				    }
-			    }
+					Mollie_WC_Plugin::debug( $this->id . ': Subscription switch, valid mandate for order #' . $order_id );
 
-		    }
+					return array (
+						'result'   => 'success',
+						'redirect' => $this->get_return_url( $order ),
+					);
 
-	        if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		        Mollie_WC_Plugin::debug( $this->id . ': Create payment for order ' . $order->id, true );
-	        } else {
-		        Mollie_WC_Plugin::debug( $this->id . ': Create payment for order ' . $order->get_id(), true );
-	        }
+				} else {
+					Mollie_WC_Plugin::debug( $this->id . ': Subscription switch cannot be processed, no valid mandate for order #' . $order_id );
+					Mollie_WC_Plugin::addNotice( __( 'Subscription switch cannot be processed, no valid mandate found. Place a completely new order to change your subscription.', 'mollie-payments-for-woocommerce' ), 'error' );
+					throw new Mollie_API_Exception( __( 'Subscription switch cannot be processed, no valid mandate.', 'mollie-payments-for-woocommerce' ) );
+				}
+			}
+			catch ( Mollie_API_Exception $e ) {
+				if ( $e->getField() ) {
+					throw $e;
+				}
+			}
 
-            do_action(Mollie_WC_Plugin::PLUGIN_ID . '_create_payment', $data, $order);
+			return array ( 'result' => 'failure' );
 
-            // Create Mollie payment with customer id.
-            try
-            {
-                $payment = Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode)->payments->create($data);
-            }
-            catch (Mollie_API_Exception $e)
-            {
-                if ($e->getField() !== 'customerId')
-                {
-                    throw $e;
-                }
+		}
 
-                // Retry without customer id.
-                unset($data['customerId']);
-                $payment = Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode)->payments->create($data);
-            }
+		//
+		// PROCESS REGULAR PAYMENT
+		//
+		try {
+			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+				Mollie_WC_Plugin::debug( $this->id . ': Create payment for order ' . $order->id, true );
+			} else {
+				Mollie_WC_Plugin::debug( $this->id . ': Create payment for order ' . $order->get_id(), true );
+			}
 
-            $this->saveMollieInfo($order, $payment);
+			do_action( Mollie_WC_Plugin::PLUGIN_ID . '_create_payment', $data, $order );
 
-            do_action(Mollie_WC_Plugin::PLUGIN_ID . '_payment_created', $payment, $order);
+			// Create Mollie payment with customer id.
+			try {
+				$payment = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->create( $data );
+			}
+			catch ( Mollie_API_Exception $e ) {
+				if ( $e->getField() !== 'customerId' ) {
+					throw $e;
+				}
 
-	        if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		        Mollie_WC_Plugin::debug( $this->id . ': Payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $order->id );
-	        } else {
-		        Mollie_WC_Plugin::debug( $this->id . ': Payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $order->get_id() );
-	        }
+				// Retry without customer id.
+				unset( $data['customerId'] );
+				$payment = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->create( $data );
+			}
 
-	        // Update initial order status for payment methods where the payment status will be delivered after a couple of days.
-	        // See: https://www.mollie.com/nl/docs/status#expiry-times-per-payment-method
-	        // Status is only updated if the new status is not the same as the default order status (pending)
-	        if ( ( $payment->method == 'banktransfer' ) || ( $payment->method == 'directdebit' ) ) {
+			$this->saveMollieInfo( $order, $payment );
 
-		        // Don't change the status of the order if it's Partially Paid
-		        // This adds support for WooCommerce Deposits (by Webtomizer)
-		        // See https://github.com/mollie/WooCommerce/issues/138
+			do_action( Mollie_WC_Plugin::PLUGIN_ID . '_payment_created', $payment, $order );
 
-		        $order_status = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $order->status : $order->get_status();
+			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+				Mollie_WC_Plugin::debug( $this->id . ': Payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $order->id );
+			} else {
+				Mollie_WC_Plugin::debug( $this->id . ': Payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $order->get_id() );
+			}
 
-		        if ( $order_status != 'wc-partially-paid ' ) {
+			// Update initial order status for payment methods where the payment status will be delivered after a couple of days.
+			// See: https://www.mollie.com/nl/docs/status#expiry-times-per-payment-method
+			// Status is only updated if the new status is not the same as the default order status (pending)
+			if ( ( $payment->method == 'banktransfer' ) || ( $payment->method == 'directdebit' ) ) {
 
-			        $this->updateOrderStatus(
-				        $order,
-				        $initial_order_status,
-				        __( 'Awaiting payment confirmation.', 'mollie-payments-for-woocommerce' ) . "\n"
-			        );
+				// Don't change the status of the order if it's Partially Paid
+				// This adds support for WooCommerce Deposits (by Webtomizer)
+				// See https://github.com/mollie/WooCommerce/issues/138
 
-		        }
-	        }
+				$order_status = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $order->status : $order->get_status();
 
+				if ( $order_status != 'wc-partially-paid ' ) {
 
-            $order->add_order_note(sprintf(
-            /* translators: Placeholder 1: Payment method title, placeholder 2: payment ID */
-                __('%s payment started (%s).', 'mollie-payments-for-woocommerce'),
-                $this->method_title,
-                $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
-            ));
+					$this->updateOrderStatus(
+						$order,
+						$initial_order_status,
+						__( 'Awaiting payment confirmation.', 'mollie-payments-for-woocommerce' ) . "\n"
+					);
 
-	        if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		        Mollie_WC_Plugin::debug( "For order " . $order->id . " redirect user to payment URL: {$payment->getPaymentUrl()}" );
-	        } else {
-		        Mollie_WC_Plugin::debug( "For order " . $order->get_id() . " redirect user to payment URL: {$payment->getPaymentUrl()}" );
-	        }
+				}
+			}
 
-            return array(
-                'result'   => 'success',
-                'redirect' => $this->getProcessPaymentRedirect($order, $payment),
-            );
-        }
-        catch (Mollie_API_Exception $e)
-        {
-	        if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		        Mollie_WC_Plugin::debug( $this->id . ': Failed to create payment for order ' . $order->id . ': ' . $e->getMessage() );
-	        } else {
-		        Mollie_WC_Plugin::debug( $this->id . ': Failed to create payment for order ' . $order->get_id() . ': ' . $e->getMessage() );
-	        }
+			$order->add_order_note( sprintf(
+			/* translators: Placeholder 1: Payment method title, placeholder 2: payment ID */
+				__( '%s payment started (%s).', 'mollie-payments-for-woocommerce' ),
+				$this->method_title,
+				$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
+			) );
 
-            /* translators: Placeholder 1: Payment method title */
-            $message = sprintf(__('Could not create %s payment.', 'mollie-payments-for-woocommerce'), $this->title);
+			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+				Mollie_WC_Plugin::debug( "For order " . $order->id . " redirect user to payment URL: {$payment->getPaymentUrl()}" );
+			} else {
+				Mollie_WC_Plugin::debug( "For order " . $order->get_id() . " redirect user to payment URL: {$payment->getPaymentUrl()}" );
+			}
 
-            if (defined('WP_DEBUG') && WP_DEBUG)
-            {
-                $message .= ' ' . $e->getMessage();
-            }
+			return array (
+				'result'   => 'success',
+				'redirect' => $this->getProcessPaymentRedirect( $order, $payment ),
+			);
+		}
+		catch ( Mollie_API_Exception $e ) {
+			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+				Mollie_WC_Plugin::debug( $this->id . ': Failed to create payment for order ' . $order->id . ': ' . $e->getMessage() );
+			} else {
+				Mollie_WC_Plugin::debug( $this->id . ': Failed to create payment for order ' . $order->get_id() . ': ' . $e->getMessage() );
+			}
 
-            Mollie_WC_Plugin::addNotice($message, 'error');
-        }
+			/* translators: Placeholder 1: Payment method title */
+			$message = sprintf( __( 'Could not create %s payment.', 'mollie-payments-for-woocommerce' ), $this->title );
 
-        return array('result' => 'failure');
-    }
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				$message .= ' ' . $e->getMessage();
+			}
+
+			Mollie_WC_Plugin::addNotice( $message, 'error' );
+		}
+
+		return array ( 'result' => 'failure' );
+	}
 
     /**
      * @param $order

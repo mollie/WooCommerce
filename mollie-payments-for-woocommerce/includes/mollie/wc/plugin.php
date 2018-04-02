@@ -194,6 +194,9 @@ class Mollie_WC_Plugin
 		// Disable SEPA as payment option in WooCommerce checkout
 		add_filter( 'woocommerce_available_payment_gateways', array ( __CLASS__, 'disableSEPAInCheckout' ), 10, 1 );
 
+		// Disable Mollie methods on some pages
+		add_filter( 'woocommerce_available_payment_gateways', array ( __CLASS__, 'disableMollieOnPaymentMethodChange' ), 10, 1 );
+
 		self::initDb();
 		self::schedulePendingPaymentOrdersExpirationCheck();
 		// Mark plugin initiated
@@ -504,6 +507,27 @@ class Mollie_WC_Plugin
 
 		if ( is_checkout() ) {
 			unset( $available_gateways['mollie_wc_gateway_directdebit'] );
+		}
+
+		return $available_gateways;
+	}
+
+	/**
+	 * Don't show Mollie Payment Methods in WooCommerce Account > Subscriptions
+	 */
+	public static function disableMollieOnPaymentMethodChange( $available_gateways ) {
+
+		// Can't use $wp->request or is_wc_endpoint_url() to check if this code only runs on /subscriptions and /view-subscriptions,
+		// because slugs/endpoints can be translated (with WPML) and other plugins.
+		// So disabling on is_account_page and $_GET['change_payment_method'] for now.
+
+		if ( is_account_page() || ! empty( $_GET['change_payment_method'] ) ) {
+			foreach ( $available_gateways as $key => $value ) {
+				if ( strpos( $key, 'mollie_' ) !== false ) {
+					unset( $available_gateways[ $key ] );
+				}
+			}
+
 		}
 
 		return $available_gateways;

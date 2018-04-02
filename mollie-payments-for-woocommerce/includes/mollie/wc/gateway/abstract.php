@@ -342,25 +342,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		$data = apply_filters( 'woocommerce_' . $this->id . '_args', $data, $order );
 
-		//	    if ( ( $this->is_subscription( $order_id ) == true  )
-		//	    ) {
-		//	    	echo "hello there";
-		//	    	var_dump($order->get_id());
-		//	    	var_dump($order->get_total());
-		//		    $order->set_total(0.01);
-		//		    $order->save();
-		//		    var_dump($order->get_total());
-		//	    	exit();
-		//	    }
-
 		//
 		// PROCESS SUBSCRIPTION SWITCH - If this is a subscription switch and customer has a valid mandate, process the order internally
 		//
 		if ( ( '0.00' === $order->get_total() ) && ( $this->is_subscription( $order_id ) == true ) &&
 		     0 != $order->get_user_id() && ( wcs_order_contains_switch( $order ) )
 		) {
-
-			//  if ( ( $this->is_subscription( $order_id ) == true  )
 
 			try {
 				Mollie_WC_Plugin::debug( $this->id . ': Subscription switch, start by fetching mandate(s) for order #' . $order_id );

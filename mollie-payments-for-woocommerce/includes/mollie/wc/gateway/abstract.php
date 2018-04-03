@@ -809,7 +809,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			$order_id = $order->get_id();
 		}
 
-		Mollie_WC_Plugin::debug( $this->id . ": Order $order_id does not need a payment (payment webhook {$payment->id}).", true );
+		Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $this->id . ": Order $order_id does not need a payment by Mollie (payment {$payment->id}).", true );
 
 	}
 
@@ -1343,6 +1343,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function orderNeedsPayment (WC_Order $order)
     {
+	    // Check whether the order is processed and paid via another gateway
+	    if ( $this->isOrderPaidByOtherGateway( $order ) ) {
+		    return false;
+	    }
+
 	    // Check whether the order is processed and paid via Mollie
 	    if ( ! $this->isOrderPaidAndProcessed( $order ) ) {
 		    return true;
@@ -1573,6 +1578,22 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		}
 
 		return $paid_and_processed;
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	protected function isOrderPaidByOtherGateway( WC_Order $order ) {
+
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			$order_id           = $order->id;
+			$paid_by_other_gateway = get_post_meta( $order_id, '_mollie_paid_by_other_gateway', $single = true );
+		} else {
+			$paid_by_other_gateway = $order->get_meta( '_mollie_paid_by_other_gateway', true );
+		}
+
+		return $paid_by_other_gateway;
 
 	}
 

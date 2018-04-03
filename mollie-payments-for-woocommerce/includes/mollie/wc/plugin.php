@@ -197,6 +197,9 @@ class Mollie_WC_Plugin
 		// Disable Mollie methods on some pages
 		add_filter( 'woocommerce_available_payment_gateways', array ( __CLASS__, 'disableMollieOnPaymentMethodChange' ), 10, 1 );
 
+		// Set order to paid and processed when eventually completed without Mollie
+		add_action( 'woocommerce_payment_complete', array ( __CLASS__, 'setOrderPaidByOtherGateway' ), 10, 1 );
+
 		self::initDb();
 		self::schedulePendingPaymentOrdersExpirationCheck();
 		// Mark plugin initiated
@@ -531,6 +534,40 @@ class Mollie_WC_Plugin
 		}
 
 		return $available_gateways;
+	}
+
+	/**
+	 * If an order is paid with another payment method (gateway) after a first payment was
+	 * placed with Mollie, set a flag, so status updates (like expired) aren't processed by
+	 * Mollie Payments for WooCommerce.
+	 */
+	public static function setOrderPaidByOtherGateway( $order_id ) {
+
+		$order = wc_get_order( $order_id );
+
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+
+			$mollie_payment_id    = get_post_meta( $order_id, '_mollie_payment_id', $single = true );
+			$order_payment_method = get_post_meta( $order_id, '_payment_method', $single = true );
+
+			if ( $mollie_payment_id !== '' && ( strpos( $order_payment_method, 'mollie' ) === false ) ) {
+				update_post_meta( $order->id, '_mollie_paid_by_other_gateway', '1' );
+			}
+
+		} else {
+
+			$mollie_payment_id    = $order->get_meta( '_mollie_payment_id', $single = true );
+			$order_payment_method = $order->get_payment_method();
+
+			if ( $mollie_payment_id !== '' && ( strpos( $order_payment_method, 'mollie' ) === false ) ) {
+
+				$order->update_meta_data( '_mollie_paid_by_other_gateway', '1' );
+				$order->save();
+			}
+		}
+
+		return true;
+
 	}
 
 }

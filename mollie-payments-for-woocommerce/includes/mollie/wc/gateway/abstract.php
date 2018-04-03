@@ -1017,7 +1017,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			$new_order_status,
 			sprintf(
 			/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-				__( '%s payment charged back via Mollie (%s). You will need to manually review the payment and adjust product stocks if you use them.', 'mollie-payments-for-woocommerce' ),
+				__( '%s renewal payment charged back via Mollie (%s). You will need to manually review the payment and adjust product stocks if you use them.', 'mollie-payments-for-woocommerce' ),
 				$paymentMethodTitle,
 				$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
 			),

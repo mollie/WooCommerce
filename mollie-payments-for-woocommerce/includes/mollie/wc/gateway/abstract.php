@@ -350,7 +350,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		) {
 
 			try {
-				Mollie_WC_Plugin::debug( $this->id . ': Subscription switch, start by fetching mandate(s) for order #' . $order_id );
+				Mollie_WC_Plugin::debug( $this->id . ': Subscription switch started, fetching mandate(s) for order #' . $order_id );
 				$mandates     = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers_mandates->withParentId( $customer_id )->all();
 				$validMandate = false;
 				foreach ( $mandates as $mandate ) {
@@ -367,7 +367,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 					$order->add_order_note( sprintf(
 						__( 'Order completed internally because of an existing valid mandate at Mollie.', 'mollie-payments-for-woocommerce' ) ) );
 
-					Mollie_WC_Plugin::debug( $this->id . ': Subscription switch, valid mandate for order #' . $order_id );
+					Mollie_WC_Plugin::debug( $this->id . ': Subscription switch completed, valid mandate for order #' . $order_id );
 
 					return array (
 						'result'   => 'success',
@@ -375,9 +375,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 					);
 
 				} else {
-					Mollie_WC_Plugin::debug( $this->id . ': Subscription switch cannot be processed, no valid mandate for order #' . $order_id );
-					Mollie_WC_Plugin::addNotice( __( 'Subscription switch cannot be processed, no valid mandate found. Place a completely new order to change your subscription.', 'mollie-payments-for-woocommerce' ), 'error' );
-					throw new Mollie_API_Exception( __( 'Subscription switch cannot be processed, no valid mandate.', 'mollie-payments-for-woocommerce' ) );
+					Mollie_WC_Plugin::debug( $this->id . ': Subscription switch failed, no valid mandate for order #' . $order_id );
+					Mollie_WC_Plugin::addNotice( __( 'Subscription switch failed, no valid mandate found. Place a completely new order to change your subscription.', 'mollie-payments-for-woocommerce' ), 'error' );
+					throw new Mollie_API_Exception( __( 'Subscription switch failed, no valid mandate.', 'mollie-payments-for-woocommerce' ) );
 				}
 			}
 			catch ( Mollie_API_Exception $e ) {

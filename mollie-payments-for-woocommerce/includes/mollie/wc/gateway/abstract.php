@@ -1175,8 +1175,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             }
             else
             {
-                echo '<h2>' . __('Payment', 'mollie-payments-for-woocommerce') . '</h2>';
+                echo '<section class="woocommerce-order-details mollie-instructions abc">';
+	            echo '<h2 class="woocommerce-order-details__title">' . __('Payment', 'mollie-payments-for-woocommerce') . '</h2>';
                 echo wpautop($instructions) . PHP_EOL;
+                echo '</section>';
             }
         }
     }

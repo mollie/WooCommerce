@@ -4,7 +4,7 @@ Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, i
 Requires at least: 3.8
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 3.0.0
+Stable tag: 3.0.1
 Requires PHP: 5.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -164,6 +164,10 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= 3.0.1 - 17/04/2018 =
+
+* [Fix/Revert, see issue 173](https://github.com/mollie/WooCommerce/issues/173) - Improve support for Polylang option "Hide URL language information for default language" in webhook and return URLs
+
 = 3.0.0 - 17/04/2018 =
 
 * New - WooCommerce Subscriptions: add support for 'subscription_payment_method_change', shop-customers can change payment method if renewal payment fails (SEPA incasso, credit card)
@@ -172,7 +176,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 * New - WooCommerce Subscriptions: set renewal orders and subscriptions to 'On-Hold' if renewal payment fails
 
 * Fix - Fallback for getUserMollieCustomerId, get Mollie Customer ID from recent subscription if it's empty in WordPress user meta
-* Fix - Improve support for Polylang option "Hide URL language information for default language" in webhook and return URLs,
+* Fix - Improve support for Polylang option "Hide URL language information for default language" in webhook and return URLs
 * Fix - Only check if customer ID is valid on current API key if there is a customer ID (not empty)(and improve log messages)
 * Fix - Make sure payment instructions (Bank Transfer) are styled the same as WooCommerce content (Order received, payment pending)
 * Fix - Don't update/process/expire Mollie payments on WooCommerce orders that have been paid with other payment gateways

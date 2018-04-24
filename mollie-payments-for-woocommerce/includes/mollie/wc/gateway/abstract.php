@@ -323,6 +323,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			return array ( 'result' => 'failure' );
 		}
 
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			Mollie_WC_Plugin::debug( $this->id . ': Start process_payment for order ' . $order->id, true );
+		} else {
+			Mollie_WC_Plugin::debug( $this->id . ': Start process_payment for order ' . $order->get_id(), true );
+		}
+
 		$initial_order_status = $this->getInitialOrderStatus();
 
 		// Overwrite plugin-wide

@@ -709,7 +709,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 		// Add messages to log
 		Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id );
 
-		if ( wcs_order_contains_renewal( $order_id ) ) {
+		if ( function_exists( 'wcs_order_contains_renewal' ) && wcs_order_contains_renewal( $order_id ) ) {
 
 			// New order status
 			$new_order_status = self::STATUS_ON_HOLD;
@@ -735,7 +735,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 				$restore_stock = false
 			);
 
-			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id . ' and payment ' . $payment->id . ', renewal order payment failed, order set to On-Hold for shop-owner review. ' . $mollie_payment_id );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id . ' and payment ' . $payment->id . ', renewal order payment failed, order set to On-Hold for shop-owner review.' );
 
 
 			// Send a "Failed order" email to notify the admin

@@ -268,26 +268,48 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		// Only in WooCommerce checkout, check min/max amounts
 		if ( WC()->cart ) {
 
-			// Get the regular order total for this order
+			// Check the current (normal) order total
 			$order_total = $this->get_order_total();
 
-			// If WooCommerce Subscriptions is installed, get the recurring order total
-			if ( class_exists( 'WC_Subscriptions_Product' ) ) {
-				$order_total = $this->get_recurring_total();
+			// Don't check SEPA Direct Debit, as it's only available for recurring payments
+			if ( $this->id !== 'mollie_wc_gateway_directdebit' ) {
+
+				// If order total is more then zero, check min/max amounts
+				if ( $order_total > 0 ) {
+					// Validate min amount
+					if ( 0 < $this->min_amount && $this->min_amount > $order_total ) {
+						return false;
+					}
+
+					// Validate max amount
+					if ( 0 < $this->max_amount && $this->max_amount < $order_total ) {
+						return false;
+					}
+				}
 			}
 
-			// If order total is more then zero, check min/max amounts
-			if ( $order_total > 0 ) {
-				// Validate min amount
-				if ( 0 < $this->min_amount && $this->min_amount > $order_total ) {
-					return false;
+			// If WooCommerce Subscriptions is installed, also check recurring order total
+			if ( class_exists( 'WC_Subscriptions' ) ) {
+
+				foreach ( $this->get_recurring_total() as $order_total ) {
+
+					// If order total is more then zero, check min/max amounts
+					if ( $order_total > 0 ) {
+						// Validate min amount
+						if ( 0 < $this->min_amount && $this->min_amount > $order_total ) {
+							return false;
+						}
+
+						// Validate max amount
+						if ( 0 < $this->max_amount && $this->max_amount < $order_total ) {
+							return false;
+						}
+					}
+
 				}
 
-				// Validate max amount
-				if ( 0 < $this->max_amount && $this->max_amount < $order_total ) {
-					return false;
-				}
 			}
+
 		}
 
 		return true;
@@ -1642,11 +1664,15 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		if ( isset( WC()->cart ) ) {
 
-			foreach ( WC()->cart->cart_contents as $item_key => $item ) {
-				$item_quantity        = $item['quantity'];
-				$item_price           = WC_Subscriptions_Product::get_price( $item['product_id'] );
-				$item_recurring_total = $item_quantity * $item_price;
-				$this->recurring_total += $item_recurring_total;
+			$this->recurring_total = array (); // Reset for cached carts
+
+			foreach ( WC()->cart->recurring_carts as $cart ) {
+
+				if ( ! $cart->prices_include_tax ) {
+					$this->recurring_total[] = $cart->cart_contents_total;
+				} else {
+					$this->recurring_total[] = $cart->cart_contents_total + $cart->tax_total;
+				}
 			}
 		}
 

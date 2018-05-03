@@ -524,13 +524,17 @@ class Mollie_WC_Plugin
 		// because slugs/endpoints can be translated (with WPML) and other plugins.
 		// So disabling on is_account_page and $_GET['change_payment_method'] for now.
 
-		if ( is_account_page() || ! empty( $_GET['change_payment_method'] ) ) {
-			foreach ( $available_gateways as $key => $value ) {
-				if ( strpos( $key, 'mollie_' ) !== false ) {
-					unset( $available_gateways[ $key ] );
+		// Only disable payment methods if WooCommerce Subscriptions is installed
+		if ( class_exists( 'WC_Subscription' ) ) {
+			// Do not disable is account page is also checkout, do disable on change payment method page (param)
+			if ( ( ! is_checkout() && is_account_page() ) || ! empty( $_GET['change_payment_method'] ) ) {
+				// Final check, disable on is_account_page and on Change payment method
+				foreach ( $available_gateways as $key => $value ) {
+					if ( strpos( $key, 'mollie_' ) !== false ) {
+						unset( $available_gateways[ $key ] );
+					}
 				}
 			}
-
 		}
 
 		return $available_gateways;

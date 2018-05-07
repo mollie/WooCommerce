@@ -3,8 +3,7 @@ Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, ideal, sofort, bancontact, bitcoin, direct debit, subscriptions
 Requires at least: 3.8
 Tested up to: 4.9
-Requires PHP: 5.3
-Stable tag: 3.0.1
+Stable tag: 3.0.2
 Requires PHP: 5.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -163,6 +162,13 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 3.0.2 - 07/05/2018 =
+
+* New - Add extra log message "Start process_payment for order ..."
+* Fix - Fix "Uncaught Error: Call to undefined function wcs_order_contains_renewal()" when users don't have WooCommerce Subscriptions installed
+* Fix - Improve condition(s) for disableMollieOnPaymentMethodChange, make sure not to disable payment methods on checkout (because of is_account_page() false positives, bug in WooCommerce)
+* Fix - Improve is_available() check for minimum/maximum amounts, better check renewal payment amounts
 
 = 3.0.1 - 17/04/2018 =
 

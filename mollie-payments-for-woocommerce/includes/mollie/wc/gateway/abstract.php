@@ -291,23 +291,26 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			// If WooCommerce Subscriptions is installed, also check recurring order total
 			if ( class_exists( 'WC_Subscriptions' ) ) {
 
-				foreach ( $this->get_recurring_total() as $order_total ) {
+				$recurring_total = $this->get_recurring_total();
 
-					// If order total is more then zero, check min/max amounts
-					if ( $order_total > 0 ) {
-						// Validate min amount
-						if ( 0 < $this->min_amount && $this->min_amount > $order_total ) {
-							return false;
+				if ( $recurring_total != false ) {
+					foreach ( $recurring_total as $order_total ) {
+
+						// If order total is more then zero, check min/max amounts
+						if ( $order_total > 0 ) {
+							// Validate min amount
+							if ( 0 < $this->min_amount && $this->min_amount > $order_total ) {
+								return false;
+							}
+
+							// Validate max amount
+							if ( 0 < $this->max_amount && $this->max_amount < $order_total ) {
+								return false;
+							}
 						}
 
-						// Validate max amount
-						if ( 0 < $this->max_amount && $this->max_amount < $order_total ) {
-							return false;
-						}
 					}
-
 				}
-
 			}
 
 		}
@@ -1664,15 +1667,20 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		if ( isset( WC()->cart ) ) {
 
-			$this->recurring_total = array (); // Reset for cached carts
+			if ( ! empty( WC()->cart->recurring_carts ) ) {
 
-			foreach ( WC()->cart->recurring_carts as $cart ) {
+				$this->recurring_total = array (); // Reset for cached carts
 
-				if ( ! $cart->prices_include_tax ) {
-					$this->recurring_total[] = $cart->cart_contents_total;
-				} else {
-					$this->recurring_total[] = $cart->cart_contents_total + $cart->tax_total;
+				foreach ( WC()->cart->recurring_carts as $cart ) {
+
+					if ( ! $cart->prices_include_tax ) {
+						$this->recurring_total[] = $cart->cart_contents_total;
+					} else {
+						$this->recurring_total[] = $cart->cart_contents_total + $cart->tax_total;
+					}
 				}
+			} else {
+				return false;
 			}
 		}
 

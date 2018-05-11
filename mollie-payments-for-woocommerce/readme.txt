@@ -163,6 +163,11 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= 3.0.3 - 10/05/2018 =
+
+* Polylang: Received all versions of Polylang from Frederic, made sure our integration works with all combinations
+* If you use Polylang or another multilanguage plugin, read this [FAQ item](https://github.com/mollie/WooCommerce/wiki/Common-issues#issues-with-polylang-or-other-multilanguage-plugins)!
+
 = 3.0.2 - 07/05/2018 =
 
 * New - Add extra log message "Start process_payment for order ..."

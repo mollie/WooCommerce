@@ -409,7 +409,7 @@ class Mollie_WC_Helper_Settings
                 'id'                => $this->getSettingId('customer_details'),
                 'title'             => __('Store customer details at Mollie', 'mollie-payments-for-woocommerce'),
                 /* translators: Placeholder 1: enabled or disabled */
-                'desc'              => sprintf(__('Should Mollie store customers name and email address for Single Click Payments? Default <code>%s</code>', 'mollie-payments-for-woocommerce'), strtolower(__('Enabled', 'mollie-payments-for-woocommerce'))),
+                'desc'              => sprintf(__('Should Mollie store customers name and email address for Single Click Payments? Default <code>%s</code>. Required if WooCommerce Subscriptions is being used!', 'mollie-payments-for-woocommerce'), strtolower(__('Enabled', 'mollie-payments-for-woocommerce'))),
                 'type'              => 'checkbox',
                 'default'           => 'yes',
 

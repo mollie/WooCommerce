@@ -1206,7 +1206,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             }
             else
             {
-                echo '<section class="woocommerce-order-details mollie-instructions abc">';
+                echo '<section class="woocommerce-order-details mollie-instructions">';
 	            echo '<h2 class="woocommerce-order-details__title">' . __('Payment', 'mollie-payments-for-woocommerce') . '</h2>';
                 echo wpautop($instructions) . PHP_EOL;
                 echo '</section>';

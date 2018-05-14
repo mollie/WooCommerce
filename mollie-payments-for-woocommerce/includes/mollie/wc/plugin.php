@@ -321,37 +321,33 @@ class Mollie_WC_Plugin
         return array_merge($gateways, self::$GATEWAYS);
     }
 
-    /**
-     * Add a WooCommerce notification message
-     *
-     * @param string $message Notification message
-     * @param string $type One of notice, error or success (default notice)
-     * @return $this
-     */
-    public static function addNotice ($message, $type = 'notice')
-    {
-        $type = in_array($type, array('notice','error','success')) ? $type : 'notice';
+	/**
+	 * Add a WooCommerce notification message
+	 *
+	 * @param string $message Notification message
+	 * @param string $type    One of notice, error or success (default notice)
+	 *
+	 * @return $this
+	 */
+	public static function addNotice( $message, $type = 'notice' ) {
+		$type = in_array( $type, array ( 'notice', 'error', 'success' ) ) ? $type : 'notice';
 
-        // Check for existence of new notification api (WooCommerce >= 2.1)
-        if (function_exists('wc_add_notice'))
-        {
-            wc_add_notice($message, $type);
-        }
-        else
-        {
-            $woocommerce = WooCommerce::instance();
+		// Check for existence of new notification api (WooCommerce >= 2.1)
+		if ( function_exists( 'wc_add_notice' ) ) {
+			wc_add_notice( $message, $type );
+		} else {
+			$woocommerce = WooCommerce::instance();
 
-            switch ($type)
-            {
-                case 'error' :
-                    $woocommerce->add_error($message);
-                    break;
-                default :
-                    $woocommerce->add_message($message);
-                    break;
-            }
-        }
-    }
+			switch ( $type ) {
+				case 'error' :
+					$woocommerce->add_error( $message );
+					break;
+				default :
+					$woocommerce->add_message( $message );
+					break;
+			}
+		}
+	}
 
     /**
      * Log messages to WooCommerce log

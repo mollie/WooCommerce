@@ -1234,7 +1234,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     protected function getInstructions (WC_Order $order, Mollie_API_Object_Payment $payment, $admin_instructions, $plain_text)
     {
         // No definite payment status
-        if ($payment->isOpen())
+        if ($payment->isOpen() || $payment->isPending())
         {
             if ($admin_instructions)
             {

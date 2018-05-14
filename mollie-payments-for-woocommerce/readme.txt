@@ -3,7 +3,7 @@ Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, ideal, sofort, bancontact, bitcoin, direct debit, subscriptions
 Requires at least: 3.8
 Tested up to: 4.9
-Stable tag: 3.0.2
+Stable tag: 3.0.3
 Requires PHP: 5.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -163,10 +163,16 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 3.0.3 - 10/05/2018 =
+= 3.0.3 - 14/05/2018 =
 
-* Polylang: Received all versions of Polylang from Frederic, made sure our integration works with all combinations
-* If you use Polylang or another multilanguage plugin, read this [FAQ item](https://github.com/mollie/WooCommerce/wiki/Common-issues#issues-with-polylang-or-other-multilanguage-plugins)!
+* Note - If you use Polylang or another multilanguage plugin, read this [FAQ item](https://github.com/mollie/WooCommerce/wiki/Common-issues#issues-with-polylang-or-other-multilanguage-plugins)!
+* Fix - Polylang: Received all versions of Polylang from Frederic, made sure our integration works with all combinations
+
+* Fix - Order confirmation/Thank you page ([issue #206](https://github.com/mollie/WooCommerce/issues/206)):
+    * Show pending payment message for open and pending payments, not just open
+    * Show payment instructions and pending payment message in WooCommerce notice style, so shop-customers notice it better
+    * Make sure pending payment message is also shown for creditcard, PayPal and Sofort payments
+* Fix - Redirect to checkout payment URL (retry payment) more often, also for failed payments
 
 = 3.0.2 - 07/05/2018 =
 

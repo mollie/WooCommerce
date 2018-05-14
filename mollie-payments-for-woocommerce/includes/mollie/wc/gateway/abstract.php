@@ -1054,9 +1054,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				/*
 				 * Return to cart
 				 */
-
-				return WC()->cart->get_checkout_url();
-
+				if ( version_compare( WC_VERSION, '2.5', '<' ) ) {
+					return WC()->cart->get_checkout_url();
+				} else {
+					return wc_get_checkout_url();
+				}
 			}
 		}
 

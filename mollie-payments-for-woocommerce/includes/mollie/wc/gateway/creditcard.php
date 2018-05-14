@@ -56,17 +56,16 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
      */
     protected function getInstructions (WC_Order $order, Mollie_API_Object_Payment $payment, $admin_instructions, $plain_text)
     {
-        $instructions = '';
-
         if ($payment->isPaid() && $payment->details)
         {
-            $instructions .= sprintf(
+            return sprintf(
                 /* translators: Placeholder 1: card holder */
                 __('Payment completed by <strong>%s</strong>', 'mollie-payments-for-woocommerce'),
                 $payment->details->cardHolder
             );
         }
 
-        return $instructions;
+	    return parent::getInstructions($order, $payment, $admin_instructions, $plain_text);
+
     }
 }

@@ -54,11 +54,9 @@ class Mollie_WC_Gateway_Sofort extends Mollie_WC_Gateway_AbstractSepaRecurring
      */
     protected function getInstructions (WC_Order $order, Mollie_API_Object_Payment $payment, $admin_instructions, $plain_text)
     {
-        $instructions = '';
-
         if ($payment->isPaid() && $payment->details)
         {
-            $instructions .= sprintf(
+	        return sprintf(
                 /* translators: Placeholder 1: consumer name, placeholder 2: consumer IBAN, placeholder 3: consumer BIC */
                 __('Payment completed by <strong>%s</strong> (IBAN (last 4 digits): %s, BIC: %s)', 'mollie-payments-for-woocommerce'),
                 $payment->details->consumerName,
@@ -67,6 +65,6 @@ class Mollie_WC_Gateway_Sofort extends Mollie_WC_Gateway_AbstractSepaRecurring
             );
         }
 
-        return $instructions;
+	    return parent::getInstructions($order, $payment, $admin_instructions, $plain_text);
     }
 }

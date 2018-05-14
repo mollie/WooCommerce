@@ -54,11 +54,9 @@ class Mollie_WC_Gateway_PayPal extends Mollie_WC_Gateway_Abstract
      */
     protected function getInstructions (WC_Order $order, Mollie_API_Object_Payment $payment, $admin_instructions, $plain_text)
     {
-        $instructions = '';
-
         if ($payment->isPaid() && $payment->details)
         {
-            $instructions .= sprintf(
+	        return sprintf(
                 /* translators: Placeholder 1: PayPal consumer name, placeholder 2: PayPal email, placeholder 3: PayPal transaction ID */
                 __("Payment completed by <strong>%s</strong> - %s (PayPal transaction ID: %s)", 'mollie-payments-for-woocommerce'),
                 $payment->details->consumerName,
@@ -67,6 +65,7 @@ class Mollie_WC_Gateway_PayPal extends Mollie_WC_Gateway_Abstract
             );
         }
 
-        return $instructions;
+	    return parent::getInstructions($order, $payment, $admin_instructions, $plain_text);
+
     }
 }

@@ -1051,21 +1051,20 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 					}
 				}
 
-				/*
-				 * Return to cart
-				 */
-				if ( version_compare( WC_VERSION, '2.5', '<' ) ) {
-					return WC()->cart->get_checkout_url();
-				} else {
-					return $order->get_checkout_payment_url( false );
-				}
+				// Return to retry payment page
+				return $order->get_checkout_payment_url( false );
+
 			}
 
-			$payment = Mollie_WC_Plugin::getDataHelper()->getActiveMolliePayment( $order->get_id() );
+			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+				$payment = Mollie_WC_Plugin::getDataHelper()->getActiveMolliePayment($order->id);
+			} else {
+				$payment = Mollie_WC_Plugin::getDataHelper()->getActiveMolliePayment($order->get_id());
+			}
 
 			if ( ! $payment->isOpen() && ! $payment->isPending() ) {
 				Mollie_WC_Plugin::addNotice( __( 'Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ) );
-
+				// Return to retry payment page
 				return $order->get_checkout_payment_url( false );
 			}
 

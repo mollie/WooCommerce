@@ -1498,6 +1498,16 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $lang_url    = $this->getSiteUrlWithLanguage();
         $webhook_url = str_replace($site_url, $lang_url, $webhook_url);
 
+        // Some (multilanguage) plugins will add a extra slash to the url (/nl//) causing the URL to redirect and lose it's data.
+	    // Status updates via webhook will therefor not be processed. The below regex will find and remove those double slashes.
+	    $webhook_url = preg_replace('/([^:])(\/{2,})/', '$1/', $webhook_url);
+
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order->id . ' webhookUrl: ' . $webhook_url, true );
+	    } else {
+		    Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order->get_id() . ' webhookUrl: ' . $webhook_url, true );
+	    }
+
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_webhook_url', $webhook_url, $order);
     }
 

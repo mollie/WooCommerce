@@ -1043,16 +1043,16 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				} else {
 					Mollie_WC_Plugin::addNotice( __( 'You have cancelled your payment. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ) );
 
+					// Return to order payment page
 					if ( method_exists( $order, 'get_checkout_payment_url' ) ) {
-						/*
-						 * Return to order payment page
-						 */
 						return $order->get_checkout_payment_url( false );
 					}
 				}
 
-				// Return to retry payment page
-				return $order->get_checkout_payment_url( false );
+				// Return to order payment page
+				if ( method_exists( $order, 'get_checkout_payment_url' ) ) {
+					return $order->get_checkout_payment_url( false );
+				}
 
 			}
 
@@ -1064,8 +1064,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 			if ( ! $payment->isOpen() && ! $payment->isPending() && ! $payment->isPaid() ) {
 				Mollie_WC_Plugin::addNotice( __( 'Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ) );
-				// Return to retry payment page
-				return $order->get_checkout_payment_url( false );
+				// Return to order payment page
+				if ( method_exists( $order, 'get_checkout_payment_url' ) ) {
+					return $order->get_checkout_payment_url( false );
+				}
 			}
 
 		}

@@ -1,4 +1,7 @@
 <?php
+
+use Mollie\API\Types\PaymentMethod;
+
 class Mollie_WC_Gateway_MisterCash extends Mollie_WC_Gateway_AbstractSepaRecurring
 {
     /**
@@ -19,7 +22,7 @@ class Mollie_WC_Gateway_MisterCash extends Mollie_WC_Gateway_AbstractSepaRecurri
      */
     public function getMollieMethodId ()
     {
-        return Mollie_API_Object_Method::MISTERCASH;
+        return PaymentMethod::MISTERCASH;
     }
 
     /**

@@ -67,7 +67,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         $this->_initDescription();
         $this->_initIcon();
-        $this->_initMinMaxAmount();
+
+        // TODO: David, needs to be converted to new way, submit amount to get PMs that support the amount and currency
+        //$this->_initMinMaxAmount();
 
         if(!has_action('woocommerce_thankyou_' . $this->id)) {
             add_action('woocommerce_thankyou_' . $this->id, array($this, 'thankyou_page'));
@@ -487,9 +489,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			) );
 
 			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-				Mollie_WC_Plugin::debug( "For order " . $order->id . " redirect user to payment URL: {$payment->getPaymentUrl()}" );
+				Mollie_WC_Plugin::debug( "For order " . $order->id . " redirect user to payment URL: {$payment->_links->checkout->href}" );
 			} else {
-				Mollie_WC_Plugin::debug( "For order " . $order->get_id() . " redirect user to payment URL: {$payment->getPaymentUrl()}" );
+				Mollie_WC_Plugin::debug( "For order " . $order->get_id() . " redirect user to payment URL: {$payment->_links->checkout->href}" );
 			}
 
 			return array (
@@ -554,61 +556,85 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $return_url          = $this->getReturnUrl($order);
         $webhook_url         = $this->getWebhookUrl($order);
 
+
+
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+
 		    $payment_description = strtr($payment_description, array(
 			    '{order_number}' => $order->get_order_number(),
 			    '{order_date}'   => date_i18n(wc_date_format(), strtotime($order->order_date)),
 		    ));
-	    } else {
-		    $payment_description = strtr($payment_description, array(
-			    '{order_number}' => $order->get_order_number(),
-			    '{order_date}'   => date_i18n(wc_date_format(), $order->get_date_created()->getTimestamp()),
-		    ));
-	    }
 
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    $paymentRequestData = array(
-			    'amount'          => $order->get_total(),
+		    // Create billingAddress object
+		    $billingAddress                  = new stdClass();
+		    $billingAddress->streetAndNumber = $order->billing_address_1;
+		    $billingAddress->postalCode      = $order->billing_postcode;
+		    $billingAddress->city            = $order->billing_city;
+		    $billingAddress->region          = $order->billing_state;
+		    $billingAddress->country         = $order->billing_country;
+
+		    // Create shippingAddress object
+		    $shippingAddress                  = new stdClass();
+		    $shippingAddress->streetAndNumber = $order->shipping_address_1;
+		    $shippingAddress->postalCode      = $order->shipping_postcode;
+		    $shippingAddress->city            = $order->shipping_city;
+		    $shippingAddress->region          = $order->shipping_state;
+		    $shippingAddress->country         = $order->shipping_country;
+
+		    $paymentRequestData = array (
+			    'amount'          => array (
+				    'currency' => $order->get_currency(),
+				    'value'    => $order->get_total()
+			    ),
 			    'description'     => $payment_description,
 			    'redirectUrl'     => $return_url,
 			    'webhookUrl'      => $webhook_url,
 			    'method'          => $mollie_method,
 			    'issuer'          => $selected_issuer,
 			    'locale'          => $payment_locale,
-			    'billingAddress'  => $order->billing_address_1,
-			    'billingCity'     => $order->billing_city,
-			    'billingRegion'   => $order->billing_state,
-			    'billingPostal'   => $order->billing_postcode,
-			    'billingCountry'  => $order->billing_country,
-			    'shippingAddress' => $order->shipping_address_1,
-			    'shippingCity'    => $order->shipping_city,
-			    'shippingRegion'  => $order->shipping_state,
-			    'shippingPostal'  => $order->shipping_postcode,
-			    'shippingCountry' => $order->shipping_country,
-			    'metadata'        => array(
+			    'billingAddress'  => $billingAddress,
+			    'shippingAddress' => $shippingAddress,
+			    'metadata'        => array (
 				    'order_id' => $order->id,
 			    ),
 		    );
 	    } else {
-		    $paymentRequestData = array(
-			    'amount'          => $order->get_total(),
+
+		    $payment_description = strtr($payment_description, array(
+			    '{order_number}' => $order->get_order_number(),
+			    '{order_date}'   => date_i18n(wc_date_format(), $order->get_date_created()->getTimestamp()),
+		    ));
+
+		    // Create billingAddress object
+		    $billingAddress                  = new stdClass();
+		    $billingAddress->streetAndNumber = $order->get_billing_address_1();
+		    $billingAddress->postalCode      = $order->get_billing_postcode();
+		    $billingAddress->city            = $order->get_billing_city();
+		    $billingAddress->region          = $order->get_billing_state();
+		    $billingAddress->country         = $order->get_billing_country();
+
+		    // Create shippingAddress object
+		    $shippingAddress                  = new stdClass();
+		    $shippingAddress->streetAndNumber = $order->get_shipping_address_1();
+		    $shippingAddress->postalCode      = $order->get_shipping_postcode();
+		    $shippingAddress->city            = $order->get_shipping_city();
+		    $shippingAddress->region          = $order->get_shipping_state();
+		    $shippingAddress->country         = $order->get_shipping_country();
+
+		    $paymentRequestData = array (
+			    'amount'          => array (
+				    'currency' => $order->get_currency(),
+				    'value'    => $order->get_total()
+			    ),
 			    'description'     => $payment_description,
 			    'redirectUrl'     => $return_url,
 			    'webhookUrl'      => $webhook_url,
 			    'method'          => $mollie_method,
 			    'issuer'          => $selected_issuer,
 			    'locale'          => $payment_locale,
-			    'billingAddress'  => $order->get_billing_address_1(),
-			    'billingCity'     => $order->get_billing_city(),
-			    'billingRegion'   => $order->get_billing_state(),
-			    'billingPostal'   => $order->get_billing_postcode(),
-			    'billingCountry'  => $order->get_billing_country(),
-			    'shippingAddress' => $order->get_shipping_address_1(),
-			    'shippingCity'    => $order->get_shipping_city(),
-			    'shippingRegion'  => $order->get_shipping_state(),
-			    'shippingPostal'  => $order->get_shipping_postcode(),
-			    'shippingCountry' => $order->get_shipping_country(),
-			    'metadata'        => array(
+			    'billingAddress'  => $billingAddress,
+			    'shippingAddress' => $shippingAddress,
+			    'metadata'        => array (
 				    'order_id' => $order->get_id(),
 			    ),
 		    );
@@ -637,16 +663,16 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      * Redirect location after successfully completing process_payment
      *
      * @param WC_Order $order
-     * @param Mollie_API_Object_Payment $payment
+     * @param Mollie\Api\Resources\Payment $payment
      *
      * @return string
      */
-    protected function getProcessPaymentRedirect(WC_Order $order, Mollie_API_Object_Payment $payment)
+    protected function getProcessPaymentRedirect(WC_Order $order, Mollie\Api\Resources\Payment $payment)
     {
         /*
          * Redirect to payment URL
          */
-        return $payment->getPaymentUrl();
+        return $payment->_links->checkout->href;
     }
 
     /**
@@ -846,9 +872,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 	/**
 	 * @param WC_Order                  $order
-	 * @param Mollie_API_Object_Payment $payment
+	 * @param Mollie\Api\Resources\Payment $payment
 	 */
-	protected function onWebhookPaid( WC_Order $order, Mollie_API_Object_Payment $payment ) {
+	protected function onWebhookPaid( WC_Order $order, Mollie\Api\Resources\Payment $payment ) {
 
 		if ( $payment->isPaid() ) {
 
@@ -904,9 +930,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
     /**
      * @param WC_Order $order
-     * @param Mollie_API_Object_Payment $payment
+     * @param Mollie\Api\Resources\Payment $payment
      */
-    protected function onWebhookCancelled(WC_Order $order, Mollie_API_Object_Payment $payment)
+    protected function onWebhookCancelled(WC_Order $order, Mollie\Api\Resources\Payment $payment)
     {
 
 	    // Get order ID in the correct way depending on WooCommerce version
@@ -956,9 +982,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
     /**
      * @param WC_Order $order
-     * @param Mollie_API_Object_Payment $payment
+     * @param Mollie\Api\Resources\Payment $payment
      */
-    protected function onWebhookExpired(WC_Order $order, Mollie_API_Object_Payment $payment)
+    protected function onWebhookExpired(WC_Order $order, Mollie\Api\Resources\Payment $payment)
     {
 
 	    // Get order ID in correct way depending on WooCommerce version
@@ -1061,6 +1087,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			} else {
 				$payment = Mollie_WC_Plugin::getDataHelper()->getActiveMolliePayment($order->get_id());
 			}
+
+			var_dump($payment);
 
 			if ( ! $payment->isOpen() && ! $payment->isPending() ) {
 				Mollie_WC_Plugin::addNotice( __( 'Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ) );
@@ -1225,12 +1253,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
     /**
      * @param WC_Order                  $order
-     * @param Mollie_API_Object_Payment $payment
+     * @param Mollie\Api\Resources\Payment $payment
      * @param bool                      $admin_instructions
      * @param bool                      $plain_text
      * @return string|null
      */
-    protected function getInstructions (WC_Order $order, Mollie_API_Object_Payment $payment, $admin_instructions, $plain_text)
+    protected function getInstructions (WC_Order $order, Mollie\Api\Resources\Payment $payment, $admin_instructions, $plain_text)
     {
         // No definite payment status
         if ($payment->isOpen() || $payment->isPending())
@@ -1573,7 +1601,36 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function getSupportedCurrencies ()
     {
-        $default = array('EUR');
+        $default = array(
+        	'AUD',
+	        'BGN',
+	        'BRL',
+	        'CAD',
+	        'CHF',
+	        'CZK',
+	        'DKK',
+	        'EUR',
+	        'GBP',
+	        'HKD',
+	        'HRK',
+	        'HUF',
+	        'ILS',
+	        'ISK',
+	        'JPY',
+	        'MXN',
+	        'MYR',
+	        'NOK',
+	        'NZD',
+	        'PHP',
+	        'PLN',
+	        'RON',
+	        'RUB',
+	        'SEK',
+	        'SGD',
+	        'THB',
+	        'TWD',
+	        'USD',
+	        );
 
         return apply_filters('woocommerce_' . $this->id . '_supported_currencies', $default);
     }

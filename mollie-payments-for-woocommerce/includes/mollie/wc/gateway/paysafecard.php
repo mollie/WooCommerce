@@ -1,4 +1,7 @@
 <?php
+
+use Mollie\API\Types\PaymentMethod;
+
 class Mollie_WC_Gateway_Paysafecard extends Mollie_WC_Gateway_Abstract
 {
     /**
@@ -6,7 +9,7 @@ class Mollie_WC_Gateway_Paysafecard extends Mollie_WC_Gateway_Abstract
      */
     public function getMollieMethodId ()
     {
-        return Mollie_API_Object_Method::PAYSAFECARD;
+        return PaymentMethod::PAYSAFECARD;
     }
 
     /**

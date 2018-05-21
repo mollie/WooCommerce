@@ -64,7 +64,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
     {
         $paymentRequestData = parent::getPaymentRequestData($order, $customer_id);
         if ($this->isSubscriptionPayment){
-            $paymentRequestData['recurringType'] = 'first';
+            $paymentRequestData['sequenceType'] = 'first';
         }
         return $paymentRequestData;
     }
@@ -90,6 +90,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			    '{order_date}'   => date_i18n(wc_date_format(), strtotime($order->order_date)),
 		    ));
 
+		    // TODO Update amount
 		    $data = array_filter(array(
 			    'amount'          => $order->get_total(),
 			    'description'     => $payment_description,
@@ -101,7 +102,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			    'metadata'        => array(
 				    'order_id' => $order->id,
 			    ),
-			    'recurringType'   => 'recurring',
+			    'sequenceType'   => 'recurring',
 			    'customerId'      => $customer_id,
 		    ));
 	    } else {
@@ -110,6 +111,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			    '{order_date}'   => date_i18n(wc_date_format(), $order->get_date_created()->getTimestamp()),
 		    ));
 
+		    // TODO Update amount
 		    $data = array_filter(array(
 			    'amount'          => $order->get_total(),
 			    'description'     => $payment_description,
@@ -121,7 +123,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			    'metadata'        => array(
 				    'order_id' => $order->get_id(),
 			    ),
-			    'recurringType'   => 'recurring',
+			    'sequenceType'   => 'recurring',
 			    'customerId'      => $customer_id,
 		    ));
 	    }
@@ -406,10 +408,10 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
     }
     /**
      * @param $order_id
-     * @param Mollie_API_Object_Payment $payment
+     * @param Mollie\Api\Resources\Payment $payment
      * @return $this
      */
-    public function setActiveMolliePayment ($order_id, Mollie_API_Object_Payment $payment)
+    public function setActiveMolliePayment ($order_id, Mollie\Api\Resources\Payment $payment)
     {
 
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
@@ -695,9 +697,9 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
 	/**
 	 * @param WC_Order                  $order
-	 * @param Mollie_API_Object_Payment $payment
+	 * @param Mollie\Api\Resources\Payment $payment
 	 */
-	protected function onWebhookFailed( WC_Order $order, Mollie_API_Object_Payment $payment ) {
+	protected function onWebhookFailed( WC_Order $order, Mollie\Api\Resources\Payment $payment ) {
 
 		// Get order ID in the correct way depending on WooCommerce version
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
@@ -748,9 +750,9 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
 	/**
 	 * @param WC_Order                  $order
-	 * @param Mollie_API_Object_Payment $payment
+	 * @param Mollie\Api\Resources\Payment $payment
 	 */
-	protected function onWebhookChargedback( WC_Order $order, Mollie_API_Object_Payment $payment ) {
+	protected function onWebhookChargedback( WC_Order $order, Mollie\Api\Resources\Payment $payment ) {
 
 		// Get order ID in the correct way depending on WooCommerce version
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {

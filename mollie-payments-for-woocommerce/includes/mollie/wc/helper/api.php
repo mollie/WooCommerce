@@ -1,8 +1,9 @@
 <?php
+use Mollie\Api\MollieApiClient;
 class Mollie_WC_Helper_Api
 {
     /**
-     * @var Mollie_API_Client
+     * @var \Mollie\Api\MollieApiClient
      */
     protected static $api_client;
 
@@ -21,7 +22,7 @@ class Mollie_WC_Helper_Api
 
     /**
      * @param bool $test_mode
-     * @return Mollie_API_Client
+     * @return \Mollie\Api\MollieApiClient
      * @throws Mollie_WC_Exception_InvalidApiKey
      */
     public function getApiClient ($test_mode = false)
@@ -45,13 +46,14 @@ class Mollie_WC_Helper_Api
 
         if (empty(self::$api_client))
         {
-            $client = new Mollie_API_Client();
-            $client->setApiKey($api_key);
-            $client->setApiEndpoint(self::getApiEndpoint());
-            $client->addVersionString('WordPress/'   . (isset($wp_version) ? $wp_version : 'Unknown'));
-            $client->addVersionString('WooCommerce/' . get_option('woocommerce_version', 'Unknown'));
-            $client->addVersionString('WooCommerceSubscriptions/' . get_option('woocommerce_subscriptions_active_version', 'Unknown'));
-            $client->addVersionString('MollieWoo/'   . Mollie_WC_Plugin::PLUGIN_VERSION);
+		        $client = new MollieApiClient();
+		        $client->setApiKey( $api_key );
+		        $client->setApiEndpoint( self::getApiEndpoint() );
+		        $client->addVersionString( 'WordPress/' . ( isset( $wp_version ) ? $wp_version : 'Unknown' ) );
+		        $client->addVersionString( 'WooCommerce/' . get_option( 'woocommerce_version', 'Unknown' ) );
+		        $client->addVersionString( 'WooCommerceSubscriptions/' . get_option( 'woocommerce_subscriptions_active_version', 'Unknown' ) );
+		        $client->addVersionString( 'MollieWoo/' . Mollie_WC_Plugin::PLUGIN_VERSION );
+
 
             self::$api_client = $client;
         }
@@ -62,10 +64,11 @@ class Mollie_WC_Helper_Api
     /**
      * Get API endpoint. Override using filter.
      * @return string
+     * @throws \Mollie_WC_Exception_InvalidApiKey
      */
     public static function getApiEndpoint ()
     {
-        return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_api_endpoint', Mollie_API_Client::API_ENDPOINT);
+        return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_api_endpoint', \Mollie\Api\MollieApiClient::API_ENDPOINT);
     }
 
 }

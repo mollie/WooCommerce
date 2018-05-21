@@ -1,4 +1,7 @@
 <?php
+
+use Mollie\API\Types\PaymentMethod;
+
 class Mollie_WC_Gateway_Kbc extends Mollie_WC_Gateway_AbstractSepaRecurring
 {
     /**
@@ -47,7 +50,7 @@ class Mollie_WC_Gateway_Kbc extends Mollie_WC_Gateway_AbstractSepaRecurring
      */
     public function getMollieMethodId ()
     {
-        return Mollie_API_Object_Method::KBC;
+        return PaymentMethod::KBC;
     }
 
     /**

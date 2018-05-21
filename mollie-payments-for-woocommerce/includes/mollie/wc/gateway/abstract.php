@@ -1380,34 +1380,47 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	}
 
 	/**
-     * @param WC_Order $order
-     * @return bool
-     */
-    protected function orderNeedsPayment (WC_Order $order)
-    {
-	    // Check whether the order is processed and paid via another gateway
-	    if ( $this->isOrderPaidByOtherGateway( $order ) ) {
-		    return false;
-	    }
+	 * @param WC_Order $order
+	 *
+	 * @return bool
+	 */
+	protected function orderNeedsPayment( WC_Order $order ) {
 
-	    // Check whether the order is processed and paid via Mollie
-	    if ( ! $this->isOrderPaidAndProcessed( $order ) ) {
-		    return true;
-	    }
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			$order_id = $order->id;
+		} else {
+			$order_id = $order->get_id();
+		}
 
-    	if ($order->needs_payment())
-        {
-            return true;
-        }
+		// Check whether the order is processed and paid via another gateway
+		if ( $this->isOrderPaidByOtherGateway( $order ) ) {
+			Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order_id . ' orderNeedsPayment, no, processed by other (non-Mollie) gateway.', true );
 
-        // Has initial order status 'on-hold'
-        if ($this->getInitialOrderStatus() === self::STATUS_ON_HOLD && Mollie_WC_Plugin::getDataHelper()->hasOrderStatus($order, self::STATUS_ON_HOLD))
-        {
-            return true;
-        }
+			return false;
+		}
 
-        return false;
-    }
+		// Check whether the order is processed and paid via Mollie
+		if ( ! $this->isOrderPaidAndProcessed( $order ) ) {
+			Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order_id . ' orderNeedsPayment check, yes, not processed by Mollie gateway.', true );
+
+			return true;
+		}
+
+		if ( $order->needs_payment() ) {
+			Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, WooCommerce thinks order needs payment.', true );
+
+			return true;
+		}
+
+		// Has initial order status 'on-hold'
+		if ( $this->getInitialOrderStatus() === self::STATUS_ON_HOLD && Mollie_WC_Plugin::getDataHelper()->hasOrderStatus( $order, self::STATUS_ON_HOLD ) ) {
+			Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, has status On-Hold. ', true );
+
+			return true;
+		}
+
+		return false;
+	}
 
     /**
      * @return Mollie_API_Object_Method|null

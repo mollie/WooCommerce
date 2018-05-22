@@ -152,26 +152,13 @@ class Mollie_WC_Helper_Settings
                 . '</p>';
             $api_status_type = 'updated';
         }
-        catch (Mollie_WC_Exception_CouldNotConnectToMollie $e)
+        catch (Mollie_WC_Exception $e)
         {
+
             $api_status = ''
                 . '<p style="font-weight:bold;"><span style="color:red;">Communicating with Mollie failed:</span> ' . esc_html($e->getMessage()) . '</p>'
-                . '<p>Please check the following conditions. You can ask your system administrator to help with this.</p>'
+                . '<p>Please view the FAQ item <a href="https://github.com/mollie/WooCommerce/wiki/Common-issues#communicating-with-mollie-failed" target="_blank">Communicating with Mollie failed</a> if this does not fix your problem.';
 
-                . '<ul style="color: #2D60B0;">'
-                . ' <li>Please check if you\'ve inserted your API key correctly.</li>'
-                . ' <li>Make sure outside connections to <strong>' . esc_html(Mollie_WC_Helper_Api::getApiEndpoint()) . '</strong> are not blocked.</li>'
-                . ' <li>Make sure SSL v3 is disabled on your server. Mollie does not support SSL v3.</li>'
-                . ' <li>Make sure your server is up-to-date and the latest security patches have been installed.</li>'
-                . '</ul><br/>'
-
-                . '<p>Please contact <a href="mailto:info@mollie.com">info@mollie.com</a> if this still does not fix your problem.</p>';
-
-            $api_status_type = 'error';
-        }
-        catch (Mollie_WC_Exception_InvalidApiKey $e)
-        {
-            $api_status      = '<p style="color:red; font-weight:bold;">' . esc_html($e->getMessage()) . '</p>';
             $api_status_type = 'error';
         }
 
@@ -269,7 +256,7 @@ class Mollie_WC_Helper_Settings
 	        $content = $this->checkDirectDebitStatus( $content );
 
         }
-        catch (Mollie_WC_Exception_InvalidApiKey $e)
+        catch ( \Mollie\Api\Exceptions\ApiException $e)
         {
             // Ignore
         }

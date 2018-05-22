@@ -365,7 +365,7 @@ class Mollie_WC_Helper_Data
 
             return $result;
         }
-        catch (Mollie_API_Exception $e)
+        catch ( \Mollie\Api\Exceptions\ApiException $e)
         {
             Mollie_WC_Plugin::debug(__FUNCTION__ . ": Could not load Mollie methods (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
@@ -455,7 +455,7 @@ class Mollie_WC_Helper_Data
 
             return self::$api_issuers;
         }
-        catch (Mollie_API_Exception $e)
+        catch ( Mollie_WC_Exception_InvalidApiKey $e )
         {
             Mollie_WC_Plugin::debug(__FUNCTION__ . ": Could not load Mollie issuers (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }

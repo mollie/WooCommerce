@@ -156,7 +156,7 @@ class Mollie_WC_Helper_Status
             // Try to load Mollie issuers
             $api_client->methods->all();
         }
-        catch ( Mollie_WC_Exception $e)
+        catch ( \Mollie\Api\Exceptions\ApiException $e)
         {
 
 	        if ( $e->getMessage() == 'Error executing API call (401: Unauthorized Request): Missing authentication, or failed to authenticate. Documentation: https://www.mollie.com/en/docs/authentication') {

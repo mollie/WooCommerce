@@ -333,7 +333,7 @@ class Mollie_WC_Helper_Settings
                 'placeholder'       => $live_placeholder = __('Live API key should start with live_', 'mollie-payments-for-woocommerce'),
                 'custom_attributes' => array(
                     'placeholder' => $live_placeholder,
-                    'pattern'     => '^live_\w+$',
+                    'pattern'     => '^live_\w{30,}$',
                 ),
             ),
             array(
@@ -359,7 +359,7 @@ class Mollie_WC_Helper_Settings
                 'placeholder'       => $test_placeholder = __('Test API key should start with test_', 'mollie-payments-for-woocommerce'),
                 'custom_attributes' => array(
                     'placeholder' => $test_placeholder,
-                    'pattern'     => '^test_\w+$',
+                    'pattern'     => '^test_\w{30,}$',
                 ),
             ),
             array(

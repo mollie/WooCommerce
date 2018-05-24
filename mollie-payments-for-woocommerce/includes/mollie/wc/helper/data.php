@@ -355,13 +355,7 @@ class Mollie_WC_Helper_Data
 
 	        $result = $this->api_helper->getApiClient( $test_mode )->methods->all();
 
-	        $methods = [];
-	        foreach ($result as $method) {
-		        $methods[] = $method->id;
-	        }
-
-	        // TODO: David, update
-           set_transient($transient_id, serialize($methods), MINUTE_IN_SECONDS * 5);
+	        set_transient( $transient_id, serialize( $result ), MINUTE_IN_SECONDS * 5 );
 
 	        return $result;
         }

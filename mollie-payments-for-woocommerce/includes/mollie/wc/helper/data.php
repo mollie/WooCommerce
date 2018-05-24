@@ -245,21 +245,8 @@ class Mollie_WC_Helper_Data
     {
         try
         {
-            $transient_id = $this->getTransientId('payment_' . $payment_id);
-
-            if ($use_cache)
-            {
-                $payment = unserialize(get_transient($transient_id));
-
-                if ($payment && $payment instanceof Mollie\Api\Resources\Payment)
-                {
-                    return $payment;
-                }
-            }
 
             $payment = $this->api_helper->getApiClient($test_mode)->payments->get($payment_id);
-
-            set_transient($transient_id, serialize($payment), MINUTE_IN_SECONDS * 5);
 
             return $payment;
         }
@@ -337,25 +324,10 @@ class Mollie_WC_Helper_Data
     {
         $result  = array();
 
-        $locale = $this->getCurrentLocale();
         try
         {
-            $filtersKey = implode('_',array_keys($filters));
-            $transient_id = $this->getTransientId('api_methods_' . ($test_mode ? 'test' : 'live') . "_$locale". $filtersKey);
-
-            if ($use_cache)
-            {
-                $cached = unserialize(get_transient($transient_id));
-
-                if ($cached && $cached instanceof Mollie_API_Object_List)
-                {
-                    return $cached;
-                }
-            }
 
 	        $result = $this->api_helper->getApiClient( $test_mode )->methods->all();
-
-	        set_transient( $transient_id, serialize( $result ), MINUTE_IN_SECONDS * 5 );
 
 	        return $result;
         }
@@ -409,27 +381,15 @@ class Mollie_WC_Helper_Data
      */
     public function getIssuers ($test_mode = false, $method = NULL)
     {
-        $locale = $this->getCurrentLocale();
 
         try
         {
-            $transient_id = $this->getTransientId('api_issuers_' . ($test_mode ? 'test' : 'live')  . "_$locale");
 
-            if (empty(self::$api_issuers))
-            {
-                $cached = unserialize(get_transient($transient_id));
+	        if ( empty( self::$api_issuers ) ) {
 
-                if ($cached && $cached instanceof Mollie_API_Object_List)
-                {
-                    self::$api_issuers = $cached;
-                }
-                else
-                {
-                    self::$api_issuers = $this->api_helper->getApiClient($test_mode)->issuers->all();
+		        self::$api_issuers = $this->api_helper->getApiClient( $test_mode )->issuers->all();
 
-                    set_transient($transient_id, serialize(self::$api_issuers), MINUTE_IN_SECONDS * 5);
-                }
-            }
+	        }
 
             // Filter issuers by method
             if ($method !== NULL)
@@ -467,23 +427,13 @@ class Mollie_WC_Helper_Data
 	 * @return array|Mollie_API_Object_Issuer[]|Mollie_API_Object_List
 	 */
 	public function getMethodIssuers( $test_mode = false, $method = null ) {
-		$locale = $this->getCurrentLocale();
 
 		try {
-			$transient_id = $this->getTransientId( $method . '_' . 'issuers_' . ( $test_mode ? 'test' : 'live' ) . "_$locale" );
 
 			if ( empty( $method_issuers ) ) {
-				$cached = unserialize( get_transient( $transient_id ) );
 
-				if ( $cached && $cached instanceof Mollie_API_Object_Method ) {
-					$method_issuers = $cached;
-				} else {
+				$method_issuers = $this->api_helper->getApiClient( $test_mode )->methods->get( "$method", array ( "include" => "issuers" ) );
 
-					$method_issuers = $this->api_helper->getApiClient( $test_mode )->methods->get( "$method", array ( "include" => "issuers" ) );
-
-					// TODO: David, update
-					//set_transient( $transient_id, serialize( $method_issuers ), MINUTE_IN_SECONDS * 5 );
-				}
 			}
 
 			return $method_issuers;

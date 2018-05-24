@@ -377,7 +377,6 @@ class Mollie_WC_Plugin
 			    static $logger;
 
 			    if ( empty( $logger ) ) {
-				    // TODO: Use error_log() fallback if Wc_Logger is not available
 				    $logger = new WC_Logger();
 			    }
 

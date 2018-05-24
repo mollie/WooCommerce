@@ -353,7 +353,7 @@ class Mollie_WC_Helper_Data
                 }
             }
 
-	        $result = $this->api_helper->getApiClient($test_mode)->methods->all();
+	        $result = $this->api_helper->getApiClient( $test_mode )->methods->all();
 
 	        $methods = [];
 	        foreach ($result as $method) {
@@ -363,9 +363,9 @@ class Mollie_WC_Helper_Data
 	        // TODO: David, update
            set_transient($transient_id, serialize($methods), MINUTE_IN_SECONDS * 5);
 
-            return $result;
+	        return $result;
         }
-        catch ( \Mollie\Api\Exceptions\ApiException $e)
+        catch ( Exception $e)
         {
             Mollie_WC_Plugin::debug(__FUNCTION__ . ": Could not load Mollie methods (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
@@ -495,7 +495,7 @@ class Mollie_WC_Helper_Data
 			return $method_issuers;
 
 		}
-		catch ( Mollie_API_Exception $e ) {
+		catch ( Exception $e ) {
 			Mollie_WC_Plugin::debug( __FUNCTION__ . ": Could not load " . $method . " issuers (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class( $e ) . ')' );
 		}
 

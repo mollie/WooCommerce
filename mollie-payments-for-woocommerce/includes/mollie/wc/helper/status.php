@@ -98,7 +98,6 @@ class Mollie_WC_Helper_Status
                 case \Mollie\Api\Exceptions\IncompatiblePlatform::INCOMPATIBLE_CURL_FUNCTION:
 	                $error =
 		                __( 'Mollie Payments for WooCommerce requires PHP cURL functions to be available. Please make sure all of these functions are available.', 'mollie-payments-for-woocommerce' );
-                    );
                     break;
 
                 default:

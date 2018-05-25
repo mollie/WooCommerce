@@ -303,10 +303,6 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
                 {
                     throw $e;
                 }
-
-                // Retry without customer id.
-                unset($data['customerId']);
-                $payment = Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode)->payments->create($data);
             }
 
 	        // Update payment method to actual payment method used for renewal order, this is

@@ -3,8 +3,8 @@ Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, ideal, sofort, bancontact, bitcoin, direct debit, subscriptions
 Requires at least: 3.8
 Tested up to: 4.9
-Stable tag: 3.0.3
-Requires PHP: 5.3
+Stable tag: 3.0.4
+Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -162,6 +162,13 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 3.0.4 - 24/05/2018 =
+
+* Fix - Limit order status update for cancelled and expired payments if another non-Mollie payment gateway also started payment processing (and is active) for that order, prevents expired and cancelled Mollie payments from cancelling the order
+* Fix - Webhook URL's with double slashes, caused by some multilanguage plugins (Polylang etc)
+* Fix - Add extra condition to make sure customers with paid payments are redirected to correct URL after payment
+* Fix - Incorrect return page after payment for some orders, fix was to get payment without cache at least once on return URL (in case Webhook Url is still processing)
 
 = 3.0.3 - 14/05/2018 =
 

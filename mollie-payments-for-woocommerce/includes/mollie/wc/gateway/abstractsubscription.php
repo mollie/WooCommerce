@@ -90,9 +90,11 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			    '{order_date}'   => date_i18n(wc_date_format(), strtotime($order->order_date)),
 		    ));
 
-		    // TODO Update amount
 		    $data = array_filter(array(
-			    'amount'          => $order->get_total(),
+			    'amount'          => array (
+				    'currency' => $order->get_currency(),
+				    'value'    => $order->get_total()
+			    ),
 			    'description'     => $payment_description,
 			    'redirectUrl'     => $return_url,
 			    'webhookUrl'      => $webhook_url,
@@ -111,9 +113,11 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			    '{order_date}'   => date_i18n(wc_date_format(), $order->get_date_created()->getTimestamp()),
 		    ));
 
-		    // TODO Update amount
 		    $data = array_filter(array(
-			    'amount'          => $order->get_total(),
+			    'amount'          => array (
+				    'currency' => $order->get_currency(),
+				    'value'    => $order->get_total()
+			    ),
 			    'description'     => $payment_description,
 			    'redirectUrl'     => $return_url,
 			    'webhookUrl'      => $webhook_url,

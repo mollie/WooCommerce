@@ -35,6 +35,19 @@ if ( ! defined( 'M4W_PLUGIN_DIR' ) ) {
 	define( 'M4W_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 }
 
+
+/**
+ * Pro-actively check and communicate PHP version incompatibility for Mollie Payments for WooCommerce 4.0
+ */
+function mollie_wc_check_php_version() {
+	if ( ! version_compare( PHP_VERSION, '5.6.0', ">=" ) ) {
+		remove_action( 'init', 'mollie_wc_plugin_init' );
+		add_action( 'admin_notices', 'mollie_wc_plugin_inactive_php' );
+		return;
+	}
+}
+add_action( 'plugins_loaded', 'mollie_wc_check_php_version' );
+
 /**
  * Check if WooCommerce is active and of a supported version
  */
@@ -88,6 +101,25 @@ function mollie_wc_plugin_activation_hook ()
 }
 
 register_activation_hook(__FILE__, 'mollie_wc_plugin_activation_hook');
+
+function mollie_wc_plugin_inactive_php() {
+
+	$nextScheduledTime = wp_next_scheduled( 'pending_payment_confirmation_check' );
+	if ( $nextScheduledTime ) {
+		wp_unschedule_event( $nextScheduledTime, 'pending_payment_confirmation_check' );
+	}
+
+	if ( ! is_admin() ) {
+		return false;
+	}
+
+	echo '<div class="error"><p>';
+	echo sprintf( esc_html__( 'Mollie Payments for WooCommerce 4.0 will require at least PHP 5.6.0. Your PHP version is outdated. Upgrade your PHP version and view %sthis FAQ%s.', 'mollie-payments-for-woocommerce' ), '<a href="https://github.com/mollie/WooCommerce/wiki/PHP-&-Mollie-API-v2" target="_blank">', '</a>' );
+	echo '</p></div>';
+
+	return false;
+
+}
 
 function mollie_wc_plugin_inactive() {
 

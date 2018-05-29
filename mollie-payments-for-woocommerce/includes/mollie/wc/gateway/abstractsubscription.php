@@ -234,7 +234,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 	}
 
     /**
-     * @param $amount_to_charge
+     * @param $renewal_total
      * @param $renewal_order
      * @return array
      * @throws Mollie_WC_Exception_InvalidApiKey
@@ -341,7 +341,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 	        }
 
 			// Log successful creation of payment
-	        Mollie_WC_Plugin::debug( $this->id . ': Payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $renewal_order_id . ' payment json response: ' . json_encode( $payment ) );
+	        Mollie_WC_Plugin::debug( $this->id . ': Renewal payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $renewal_order_id . ' payment json response: ' . json_encode( $payment ) );
 
 	        // Unset & set active Mollie payment
             Mollie_WC_Plugin::getDataHelper()->unsetActiveMolliePayment($renewal_order_id);

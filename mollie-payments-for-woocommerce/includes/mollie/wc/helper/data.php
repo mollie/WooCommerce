@@ -450,7 +450,7 @@ class Mollie_WC_Helper_Data
      * Save active Mollie payment id for order
      *
      * @param int                       $order_id
-     * @param Mollie\Api\Resources\Payment $payment
+     * @param object|Mollie\Api\Resources\Payment $payment
      * @return $this
      */
     public function setActiveMolliePayment ($order_id, Mollie\Api\Resources\Payment $payment)

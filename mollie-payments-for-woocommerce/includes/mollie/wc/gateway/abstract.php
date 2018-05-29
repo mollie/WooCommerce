@@ -410,10 +410,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				} else {
 					Mollie_WC_Plugin::debug( $this->id . ': Subscription switch failed, no valid mandate for order #' . $order_id );
 					Mollie_WC_Plugin::addNotice( __( 'Subscription switch failed, no valid mandate found. Place a completely new order to change your subscription.', 'mollie-payments-for-woocommerce' ), 'error' );
-					throw new Mollie_API_Exception( __( 'Subscription switch failed, no valid mandate.', 'mollie-payments-for-woocommerce' ) );
+					throw new Mollie\Api\Exceptions\ApiException( __( 'Subscription switch failed, no valid mandate.', 'mollie-payments-for-woocommerce' ) );
 				}
 			}
-			catch ( Mollie_API_Exception $e ) {
+			catch ( Mollie\Api\Exceptions\ApiException $e ) {
 				if ( $e->getField() ) {
 					throw $e;
 				}
@@ -439,7 +439,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			try {
 				$payment = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->create( $data );
 			}
-			catch ( Mollie_API_Exception $e ) {
+			catch ( Mollie\Api\Exceptions\ApiException $e ) {
 				if ( $e->getField() !== 'customerId' ) {
 					throw $e;
 				}
@@ -499,7 +499,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				'redirect' => $this->getProcessPaymentRedirect( $order, $payment ),
 			);
 		}
-		catch ( Mollie_API_Exception $e ) {
+		catch ( Mollie\Api\Exceptions\ApiException $e ) {
 			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 				Mollie_WC_Plugin::debug( $this->id . ': Failed to create payment for order ' . $order->id . ': ' . $e->getMessage() );
 			} else {

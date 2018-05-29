@@ -19,13 +19,13 @@ class Mollie_WC_Helper_Data
      */
     protected static $recurring_api_methods = array();
 
-    // TODO Issuers changed
+    // TODO David Issuers changed
     /**
      * @var Mollie_API_Object_Issuer[]|Mollie_API_Object_List|array
      */
     protected static $api_issuers;
 
-	// TODO Issuers changed
+	// TODO David Issuers changed
 	/**
 	 * @var Mollie_API_Object_Method[]
 	 */

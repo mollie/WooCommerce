@@ -233,13 +233,14 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
 	}
 
-    /**
-     * @param $renewal_total
-     * @param $renewal_order
-     * @return array
-     * @throws Mollie_WC_Exception_InvalidApiKey
-     */
-    public function scheduled_subscription_payment( $renewal_total, $renewal_order )
+	/**
+	 * @param          $renewal_total
+	 * @param WC_Order $renewal_order
+	 *
+	 * @return array
+	 * @throws Mollie_WC_Exception_InvalidApiKey
+	 */
+    public function scheduled_subscription_payment( $renewal_total, WC_Order $renewal_order )
     {
 
 	    if ( ! $renewal_order ) {

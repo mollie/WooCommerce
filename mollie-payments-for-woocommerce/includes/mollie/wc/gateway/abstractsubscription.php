@@ -168,11 +168,10 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
 	/**
 	 * @param $renewal_order
-	 * @param $payment
 	 *
 	 * @return void
 	 */
-	public function update_subscription_status_for_direct_debit( $renewal_order, $payment ) {
+	public function update_subscription_status_for_direct_debit( $renewal_order ) {
 
 		// Get renewal order id
 		$renewal_order_id  = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $renewal_order->id : $renewal_order->get_id();
@@ -214,7 +213,14 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			}
 
 			// Update subscription to Active
-			$subscription->update_status( 'active' );
+			try {
+
+				$subscription->update_status( 'active' );
+			}
+			catch ( Exception $e ) {
+				// Already logged by WooCommerce Subscriptions
+				Mollie_WC_Plugin::debug( 'Could not update subscription ' . $subscription_id . ' status:' . $e->getMessage() );
+			}
 
 			// Add order note to subscription explaining the change
 			$subscription->add_order_note(
@@ -352,7 +358,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
             $this->_updateScheduledPaymentOrder($renewal_order, $initial_order_status, $payment);
 
             // Update status of subscriptions with payment method SEPA Direct Debit or similar
-	        $this->update_subscription_status_for_direct_debit( $renewal_order, $payment );
+	        $this->update_subscription_status_for_direct_debit( $renewal_order );
 
             return array(
                 'result'   => 'success',

@@ -19,15 +19,8 @@ class Mollie_WC_Helper_Data
      */
     protected static $recurring_api_methods = array();
 
-    // TODO David Issuers changed
-    /**
-     * @var Mollie_API_Object_Issuer[]|Mollie_API_Object_List|array
-     */
-    protected static $api_issuers;
-
-	// TODO David Issuers changed
 	/**
-	 * @var Mollie_API_Object_Method[]
+	 * @var \Mollie\Api\Resources\MethodCollection[]
 	 */
 	protected static $method_issuers;
 
@@ -374,57 +367,13 @@ class Mollie_WC_Helper_Data
         return null;
     }
 
-    /**
-     * @param bool        $test_mode (default: false)
-     * @param string|null $method
-     * @return array|Mollie_API_Object_Issuer[]|Mollie_API_Object_List
-     */
-    public function getIssuers ($test_mode = false, $method = NULL)
-    {
-
-        try
-        {
-
-	        if ( empty( self::$api_issuers ) ) {
-
-		        self::$api_issuers = $this->api_helper->getApiClient( $test_mode )->issuers->all();
-
-	        }
-
-            // Filter issuers by method
-            if ($method !== NULL)
-            {
-                $method_issuers = array();
-
-                foreach(self::$api_issuers AS $issuer)
-                {
-                    if ($issuer->method === $method)
-                    {
-                        $method_issuers[] = $issuer;
-                    }
-                }
-
-                return $method_issuers;
-            }
-
-            return self::$api_issuers;
-        }
-        catch ( Mollie_WC_Exception_InvalidApiKey $e )
-        {
-            Mollie_WC_Plugin::debug(__FUNCTION__ . ": Could not load Mollie issuers (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
-        }
-
-        return array();
-    }
-
-
 	/**
 	 * Get issuers for payment method (e.g. for iDEAL, KBC/CBC payment button, gift cards)
 	 *
 	 * @param bool        $test_mode (default: false)
 	 * @param string|null $method
 	 *
-	 * @return array|Mollie_API_Object_Issuer[]|Mollie_API_Object_List
+	 * @return array|\Mollie\Api\Resources\Issuer[]|\Mollie\Api\Resources\IssuerCollection
 	 */
 	public function getMethodIssuers( $test_mode = false, $method = null ) {
 

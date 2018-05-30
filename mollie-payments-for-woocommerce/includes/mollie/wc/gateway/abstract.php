@@ -68,9 +68,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $this->_initDescription();
         $this->_initIcon();
 
-        // TODO: David, needs to be converted to new way, submit amount to get PMs that support the amount and currency
-        //$this->_initMinMaxAmount();
-
         if(!has_action('woocommerce_thankyou_' . $this->id)) {
             add_action('woocommerce_thankyou_' . $this->id, array($this, 'thankyou_page'));
         }
@@ -180,15 +177,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $this->description = $description;
     }
 
-    protected function _initMinMaxAmount ()
-    {
-        if ($mollie_method = $this->getMollieMethod())
-        {
-            $this->min_amount = $mollie_method->getMinimumAmount() ? $mollie_method->getMinimumAmount() : 0;
-            $this->max_amount = $mollie_method->getMaximumAmount() ? $mollie_method->getMaximumAmount() : 0;
-        }
-    }
-
     public function admin_options ()
     {
         if (!$this->enabled && count($this->errors))
@@ -270,50 +258,44 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		// Only in WooCommerce checkout, check min/max amounts
 		if ( WC()->cart ) {
 
+			$status = true;
+
 			// Check the current (normal) order total
 			$order_total = $this->get_order_total();
 
-			// Don't check SEPA Direct Debit, as it's only available for recurring payments
-			if ( $this->id !== 'mollie_wc_gateway_directdebit' ) {
+			$filters = array (
+				'amount'       => array (
+					'currency' => get_woocommerce_currency(), // get_woocommerce_currency()
+					'value'    => number_format( $order_total, 2, '.', '' )
+				),
+				'sequenceType' => 'oneoff'
+			);
 
-				// If order total is more then zero, check min/max amounts
-				if ( $order_total > 0 ) {
-					// Validate min amount
-					if ( 0 < $this->min_amount && $this->min_amount > $order_total ) {
-						return false;
-					}
+			// Check regular payments
+			$status = $this->getAvailableMethodsInCheckout( $filters );
 
-					// Validate max amount
-					if ( 0 < $this->max_amount && $this->max_amount < $order_total ) {
-						return false;
-					}
-				}
-			}
-
-			// If WooCommerce Subscriptions is installed, also check recurring order total
+			// Check recurring payments if WooCommerce Subscriptions is installed
 			if ( class_exists( 'WC_Subscriptions' ) ) {
 
 				$recurring_total = $this->get_recurring_total();
 
-				if ( $recurring_total != false ) {
-					foreach ( $recurring_total as $order_total ) {
+				foreach ( $recurring_total as $order_total ) {
 
-						// If order total is more then zero, check min/max amounts
-						if ( $order_total > 0 ) {
-							// Validate min amount
-							if ( 0 < $this->min_amount && $this->min_amount > $order_total ) {
-								return false;
-							}
+					$filters = array (
+						'amount'       => array (
+							'currency' => get_woocommerce_currency(), // get_woocommerce_currency()
+							'value'    => number_format( $order_total, 2, '.', '' )
+						),
+						'sequenceType' => 'first'
+					);
 
-							// Validate max amount
-							if ( 0 < $this->max_amount && $this->max_amount < $order_total ) {
-								return false;
-							}
-						}
-
-					}
+					// Check regular payments
+					$status = $this->getAvailableMethodsInCheckout( $filters );
 				}
+
 			}
+
+			return $status;
 
 		}
 
@@ -1836,5 +1818,37 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		return $this->recurring_total;
 	}
 
+	/**
+	 * Get available payment methods in checkout based on amount, currency and sequenceType
+	 *
+	 * @return bool
+	 * @throws \Mollie\Api\Exceptions\ApiException
+	 * @throws \Mollie_WC_Exception_InvalidApiKey
+	 */
+	protected function getAvailableMethodsInCheckout( $filters ) {
+
+		$settings_helper = Mollie_WC_Plugin::getSettingsHelper();
+		$test_mode       = $settings_helper->isTestModeEnabled();
+
+		$methods = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->methods->all( $filters );
+
+		// Set to status true for SEPA Direct Debit
+		$status = true;
+
+		// Set all other payment methods to false, so they can be updated if available
+		$status = false;
+		foreach ( $methods as $method ) {
+
+			$woocommerce_method = str_replace( 'mollie_wc_gateway_', '', $this->id );
+
+			if ( $method->id == $woocommerce_method ) {
+				$status = true;
+			} else {
+				continue;
+			}
+		}
+
+		return $status;
+	}
 
 }

@@ -350,7 +350,7 @@ class Mollie_WC_Helper_Data
     /**
      * @param bool   $test_mode (default: false)
      * @param string $method
-     * @return Mollie_API_Object_Method|null
+     * @return \Mollie\Api\Resources\Method|null
      */
     public function getPaymentMethod ($test_mode = false, $method)
     {

@@ -24,20 +24,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected $display_logo;
 
-    /**
-     * Minimum transaction amount, zero does not define a minimum
-     *
-     * @var int
-     */
-    public $min_amount = 0;
-
-    /**
-     * Maximum transaction amount, zero does not define a maximum
-     *
-     * @var int
-     */
-    public $max_amount = 0;
-
 	/**
 	 * Recurring total, zero does not define a recurring total
 	 *
@@ -257,8 +243,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		// Only in WooCommerce checkout, check min/max amounts
 		if ( WC()->cart ) {
-
-			$status = true;
 
 			// Check the current (normal) order total
 			$order_total = $this->get_order_total();
@@ -641,14 +625,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	    return  Mollie_WC_Plugin::getDataHelper()->getUserMollieCustomerId($order_customer_id, $test_mode);
     }
 
-    /**
-     * Redirect location after successfully completing process_payment
-     *
-     * @param WC_Order $order
-     * @param Mollie\Api\Resources\Payment $payment
-     *
-     * @return string
-     */
+	/**
+	 * Redirect location after successfully completing process_payment
+	 *
+	 * @param WC_Order                     $order
+	 * @param Mollie\Api\Resources\Payment $payment
+	 *
+	 * @return string
+	 */
     protected function getProcessPaymentRedirect(WC_Order $order, Mollie\Api\Resources\Payment $payment)
     {
         /*
@@ -1461,7 +1445,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	}
 
     /**
-     * @return Mollie_API_Object_Method|null
+     * @return \Mollie\Api\Resources\Method|null
      */
     public function getMollieMethod()
     {
@@ -1822,8 +1806,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 * Get available payment methods in checkout based on amount, currency and sequenceType
 	 *
 	 * @return bool
-	 * @throws \Mollie\Api\Exceptions\ApiException
-	 * @throws \Mollie_WC_Exception_InvalidApiKey
 	 */
 	protected function getAvailableMethodsInCheckout( $filters ) {
 

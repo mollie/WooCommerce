@@ -255,7 +255,7 @@ class Mollie_WC_Helper_Data
     /**
      * @param bool|false $test_mode
      * @param bool|true $use_cache
-     * @return array|\Mollie\Api\Resources\Method[]
+     * @return array|\Mollie\Api\Resources\MethodCollection
      */
     public function getAllPaymentMethods($test_mode = false, $use_cache = true)
     {
@@ -432,26 +432,31 @@ class Mollie_WC_Helper_Data
         return $this;
     }
 
-    /**
-     * @param int         $user_id
-     * @param string|null $customer_id
-     * @return $this
-     */
-    public function setUserMollieCustomerId ($user_id, $customer_id)
-    {
-        if (!empty($customer_id))
-        {
-	        if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		        update_user_meta( $user_id, 'mollie_customer_id', $customer_id );
-	        } else {
-		        $customer = new WC_Customer( $user_id );
-		        $customer->update_meta_data( 'mollie_customer_id', $customer_id );
-		        $customer->save();
-	        }
-        }
+	/**
+	 * @param int         $user_id
+	 * @param string|null $customer_id
+	 *
+	 * @return $this
+	 */
+	public function setUserMollieCustomerId( $user_id, $customer_id ) {
+		if ( ! empty( $customer_id ) ) {
+			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+				update_user_meta( $user_id, 'mollie_customer_id', $customer_id );
+			} else {
+				try {
+					$customer = new WC_Customer( $user_id );
+					$customer->update_meta_data( 'mollie_customer_id', $customer_id );
+					$customer->save();
+				}
+				catch ( Exception $e ) {
+					Mollie_WC_Plugin::debug( __FUNCTION__ . ": Couldn't load (and save) WooCommerce customer based on user ID " . $user_id );
 
-        return $this;
-    }
+				}
+			}
+		}
+
+		return $this;
+	}
 
     /**
      * @param int  $user_id

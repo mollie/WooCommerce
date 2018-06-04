@@ -58,7 +58,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             add_action('woocommerce_thankyou_' . $this->id, array($this, 'thankyou_page'));
         }
 
-        add_action('woocommerce_api_' . $this->id, array($this, 'webhookAction'));
+        add_action('woocommerce_api_' . $this->id, array($this, 'onWebhookAction'));
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
         add_action('woocommerce_email_after_order_table', array($this, 'displayInstructions'), 10, 3);
 
@@ -1812,25 +1812,29 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		$settings_helper = Mollie_WC_Plugin::getSettingsHelper();
 		$test_mode       = $settings_helper->isTestModeEnabled();
 
-		$methods = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->methods->all( $filters );
+		try {
+			$methods = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->methods->all( $filters );
 
-		// Set to status true for SEPA Direct Debit
-		$status = true;
+			// Set all other payment methods to false, so they can be updated if available
+			$status = false;
+			foreach ( $methods as $method ) {
 
-		// Set all other payment methods to false, so they can be updated if available
-		$status = false;
-		foreach ( $methods as $method ) {
+				$woocommerce_method = str_replace( 'mollie_wc_gateway_', '', $this->id );
 
-			$woocommerce_method = str_replace( 'mollie_wc_gateway_', '', $this->id );
-
-			if ( $method->id == $woocommerce_method ) {
-				$status = true;
-			} else {
-				continue;
+				if ( $method->id == $woocommerce_method ) {
+					$status = true;
+				} else {
+					continue;
+				}
 			}
-		}
 
-		return $status;
+			return $status;
+		}
+		catch ( Exception $e ) {
+
+			Mollie_WC_Plugin::debug( __FUNCTION__ . ": Could not check availability of Mollie payment methods (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class( $e ) . ')' );
+
+		}
 	}
 
 }

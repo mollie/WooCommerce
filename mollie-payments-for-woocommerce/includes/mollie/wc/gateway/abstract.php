@@ -5,8 +5,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     const STATUS_PROCESSING = 'processing';
     const STATUS_ON_HOLD    = 'on-hold';
     const STATUS_COMPLETED  = 'completed';
-    const STATUS_CANCELLED  = 'cancelled';
-    const STATUS_REFUNDED   = 'refunded';
+    const STATUS_CANCELLED  = 'canceled';
+    // Mollie uses canceled (US English spelling), WooCommerce and this plugin use cancelled.
     const STATUS_FAILED     = 'failed';
 
     /**

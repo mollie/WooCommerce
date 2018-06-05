@@ -1387,6 +1387,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 * @param WC_Order $order
 	 */
 	public function onOrderReceivedText( $text, $order ) {
+		if ( !is_a( $order, 'WC_Order' ) ) {
+			return $text;
+		}
 
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 			$order_payment_method = $order->payment_method;

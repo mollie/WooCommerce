@@ -718,7 +718,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     }
 
 
-    public function webhookAction ()
+    public function onWebhookAction ()
     {
         // Webhook test by Mollie
         if (isset($_GET['testByMollie']))

@@ -1810,6 +1810,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	/**
 	 * Get available payment methods in checkout based on amount, currency and sequenceType
 	 *
+	 * @param $filters
 	 * @return bool
 	 */
 	protected function getAvailableMethodsInCheckout( $filters ) {

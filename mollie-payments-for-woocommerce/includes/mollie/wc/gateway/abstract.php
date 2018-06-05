@@ -784,9 +784,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         }
 
 	    // Order does not need a payment
-	    if ( ! $this->orderNeedsPayment( $order ) &&
-	         ( $payment->status != 'charged_back' )
-	    ) {
+	    if ( ! $this->orderNeedsPayment( $order ) ) {
 		    $this->handlePayedOrderWebhook( $order, $payment );
 
 		    return;
@@ -798,7 +796,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		    Mollie_WC_Plugin::debug($this->id . ": Mollie payment {$payment->id} (" . $payment->mode . ") webhook call for order {$order->get_id()}.", true);
 	    }
 
-        $method_name = 'onWebhook' . str_replace( '_', '', ucfirst($payment->status));
+	    // Create the method name based on the payment status
+	    // Replace canceled with cancelled (WooCommerce and this plugin use UK English)
+        $method_name = 'onWebhook' . str_replace( 'Canceled' , 'Cancelled', ucfirst($payment->status));
+
 
         if (method_exists($this, $method_name))
         {

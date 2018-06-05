@@ -217,9 +217,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         {
             $this->errors[] = sprintf(
             /* translators: Placeholder 1: WooCommerce currency, placeholder 2: Supported Mollie currencies */
-                __('Shop currency %s not supported by Mollie. Mollie only supports: %s.', 'mollie-payments-for-woocommerce'),
+                __('Current shop currency %s not supported by Mollie. Read more about %ssupported currencies and payment methods.%s ', 'mollie-payments-for-woocommerce'),
                 get_woocommerce_currency(),
-                implode(', ', $this->getSupportedCurrencies())
+                '<a href="https://help.mollie.com/hc/en-us/articles/360003980013-Which-currencies-are-supported-and-what-is-the-settlement-currency-" target="_blank">',
+                '</a>'
             );
 
             return false;

@@ -265,19 +265,21 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				// Check recurring totals against recurring payment methods for future renewal payments
 				$recurring_totals = $this->get_recurring_total();
 
-				foreach ( $recurring_totals as $recurring_total ) {
+				if ( ! empty( $recurring_totals ) ) {
+					foreach ( $recurring_totals as $recurring_total ) {
 
-					// First check recurring payment methods CC and SDD
-					$filters = array (
-						'amount'       => array (
-							'currency' => get_woocommerce_currency(),
-							'value'    => number_format( $recurring_total, 2, '.', '' )
-						),
-						'sequenceType' => 'recurring'
-					);
+						// First check recurring payment methods CC and SDD
+						$filters = array (
+							'amount'       => array (
+								'currency' => get_woocommerce_currency(),
+								'value'    => number_format( $recurring_total, 2, '.', '' )
+							),
+							'sequenceType' => 'recurring'
+						);
 
-					$status = $this->getAvailableMethodsInCheckout( $filters );
+						$status = $this->getAvailableMethodsInCheckout( $filters );
 
+					}
 				}
 
 				// Now check available first payment methods with today's order total, but ignore SSD gateway (not shown in checkout)

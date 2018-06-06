@@ -29,7 +29,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 *
 	 * @var int
 	 */
-	public $recurring_total = 0;
+	public $recurring_totals = 0;
 
     /**
      *
@@ -1804,14 +1804,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 			if ( ! empty( WC()->cart->recurring_carts ) ) {
 
-				$this->recurring_total = array (); // Reset for cached carts
+				$this->recurring_totals = array (); // Reset for cached carts
 
 				foreach ( WC()->cart->recurring_carts as $cart ) {
 
 					if ( ! $cart->prices_include_tax ) {
-						$this->recurring_total[] = $cart->cart_contents_total;
+						$this->recurring_totals[] = $cart->cart_contents_total;
 					} else {
-						$this->recurring_total[] = $cart->cart_contents_total + $cart->tax_total;
+						$this->recurring_totals[] = $cart->cart_contents_total + $cart->tax_total;
 					}
 				}
 			} else {
@@ -1819,7 +1819,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			}
 		}
 
-		return $this->recurring_total;
+		return $this->recurring_totals;
 	}
 
 	/**

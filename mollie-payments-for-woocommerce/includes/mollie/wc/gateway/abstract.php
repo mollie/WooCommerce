@@ -250,7 +250,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 			$filters = array (
 				'amount'       => array (
-					'currency' => get_woocommerce_currency(), // get_woocommerce_currency()
+					'currency' => get_woocommerce_currency(),
 					'value'    => number_format( $order_total, 2, '.', '' )
 				),
 				'sequenceType' => 'oneoff'
@@ -259,22 +259,37 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			// Check regular payments
 			$status = $this->getAvailableMethodsInCheckout( $filters );
 
-			// Check recurring payments if WooCommerce Subscriptions is installed
+			// Do extra checks if WooCommerce Subscriptions is installed
 			if ( class_exists( 'WC_Subscriptions' ) ) {
 
-				$recurring_total = $this->get_recurring_total();
+				// Check recurring totals against recurring payment methods for future renewal payments
+				$recurring_totals = $this->get_recurring_total();
 
-				foreach ( $recurring_total as $order_total ) {
+				foreach ( $recurring_totals as $recurring_total ) {
 
+					// First check recurring payment methods CC and SDD
 					$filters = array (
 						'amount'       => array (
-							'currency' => get_woocommerce_currency(), // get_woocommerce_currency()
+							'currency' => get_woocommerce_currency(),
+							'value'    => number_format( $recurring_total, 2, '.', '' )
+						),
+						'sequenceType' => 'recurring'
+					);
+
+					$status = $this->getAvailableMethodsInCheckout( $filters );
+
+				}
+
+				// Now check available first payment methods with today's order total, but ignore SSD gateway (not shown in checkout)
+				if ( $this->id !== 'mollie_wc_gateway_directdebit' ) {
+					$filters = array (
+						'amount'       => array (
+							'currency' => get_woocommerce_currency(),
 							'value'    => number_format( $order_total, 2, '.', '' )
 						),
 						'sequenceType' => 'first'
 					);
 
-					// Check regular payments
 					$status = $this->getAvailableMethodsInCheckout( $filters );
 				}
 

@@ -252,27 +252,28 @@ class Mollie_WC_Helper_Data
     }
 
 
-    /**
-     * @param bool|false $test_mode
-     * @param bool|true $use_cache
-     * @return array|\Mollie\Api\Resources\MethodCollection
-     */
-    public function getAllPaymentMethods($test_mode = false, $use_cache = true)
-    {
-        $result = $this->getRegularPaymentMethods($test_mode, $use_cache);
+	/**
+	 * @param bool|false $test_mode
+	 * @param bool|true  $use_cache
+	 *
+	 * @return array|\Mollie\Api\Resources\MethodCollection
+	 */
+	public function getAllPaymentMethods( $test_mode = false, $use_cache = true ) {
+
+		$result                  = $this->getRegularPaymentMethods( $test_mode, $use_cache );
         $recurringPaymentMethods = $this->getRecurringPaymentMethods($test_mode, $use_cache);
-        foreach ($recurringPaymentMethods as $recurringItem){
-            $notFound = true;
-            foreach ($result as $item){
-                if ($item->id == $recurringItem->id){
-                    $notFound = false;
-                    break;
-                }
-            }
-            if ($notFound){
-                $result[] = $recurringItem;
-            }
-        }
+		foreach ( $recurringPaymentMethods as $recurringItem ) {
+			$notFound = true;
+			foreach ( $result as $item ) {
+				if ( $item->id == $recurringItem->id ) {
+					$notFound = false;
+					break;
+				}
+			}
+			if ( $notFound ) {
+				$result[] = $recurringItem;
+			}
+		}
 
 		return $result;
 	}

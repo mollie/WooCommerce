@@ -801,6 +801,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             return;
         }
 
+	    // TODO David WAIT Need to add special processing for webhook calls because of refunds or charge backs. Waiting for Willem reply.
+	    // TODO David WAIT Need to update orderNeedsPayment check, which checked for status 'charged_back' in the past. Waiting for Willem reply.
+	    // Docs: https://docs.mollie.com/guides/webhooks
+
 	    // Order does not need a payment
 	    if ( ! $this->orderNeedsPayment( $order ) ) {
 		    $this->handlePayedOrderWebhook( $order, $payment );

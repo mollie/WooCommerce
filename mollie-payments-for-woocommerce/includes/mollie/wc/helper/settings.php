@@ -152,7 +152,7 @@ class Mollie_WC_Helper_Settings
                 . '</p>';
             $api_status_type = 'updated';
         }
-        catch (Mollie_WC_Exception $e)
+        catch (\Mollie\Api\Exceptions\ApiException $e)
         {
 
             $api_status = ''
@@ -177,92 +177,75 @@ class Mollie_WC_Helper_Settings
         return admin_url('admin.php?page=wc-settings&tab=checkout&section=' . sanitize_title(strtolower($gateway_class_name)));
     }
 
-    protected function getMollieMethods ()
-    {
-        $content = '';
+	protected function getMollieMethods() {
+		$content = '';
 
-	    $data_helper     = Mollie_WC_Plugin::getDataHelper();
-	    $settings_helper = Mollie_WC_Plugin::getSettingsHelper();
+		$data_helper     = Mollie_WC_Plugin::getDataHelper();
+		$settings_helper = Mollie_WC_Plugin::getSettingsHelper();
 
-        try
-        {
+		// Is Test mode enabled?
+		$test_mode = $settings_helper->isTestModeEnabled();
 
-            // Is Test mode enabled?
-            $test_mode       = $settings_helper->isTestModeEnabled();
+		if ( isset( $_GET['refresh-methods'] ) && check_admin_referer( 'refresh-methods' ) ) {
+			/* Reload active Mollie methods */
+			$data_helper->getAllPaymentMethods( $test_mode, $use_cache = false );
+		}
 
-            if (isset($_GET['refresh-methods']) && check_admin_referer('refresh-methods'))
-            {
-                /* Reload active Mollie methods */
-                $data_helper->getAllPaymentMethods($test_mode, $use_cache = false);
-            }
+		$icon_available    = ' <span style="color: green; cursor: help;" title="' . __( 'Gateway enabled', 'mollie-payments-for-woocommerce' ) . '">' . strtolower( __( 'Enabled', 'mollie-payments-for-woocommerce' ) ) . '</span>';
+		$icon_no_available = ' <span style="color: red; cursor: help;" title="' . __( 'Gateway disabled', 'mollie-payments-for-woocommerce' ) . '">' . strtolower( __( 'Disabled', 'mollie-payments-for-woocommerce' ) ) . '</span>';
 
-            $icon_available     = ' <span style="color: green; cursor: help;" title="' . __('Gateway enabled', 'mollie-payments-for-woocommerce'). '">' . strtolower(__('Enabled', 'mollie-payments-for-woocommerce')) . '</span>';
-            $icon_no_available  = ' <span style="color: red; cursor: help;" title="' . __('Gateway disabled', 'mollie-payments-for-woocommerce'). '">' . strtolower(__('Disabled', 'mollie-payments-for-woocommerce')) . '</span>';
+		$content .= '<br /><br />';
 
-            $content .= '<br /><br />';
+		if ( $test_mode ) {
+			$content .= '<strong>' . __( 'Test mode enabled.', 'mollie-payments-for-woocommerce' ) . '</strong> ';
+		}
 
-            if ($test_mode)
-            {
-                $content .= '<strong>' . __('Test mode enabled.', 'mollie-payments-for-woocommerce') . '</strong> ';
-            }
+		$content .= sprintf(
+		/* translators: The surrounding %s's Will be replaced by a link to the Mollie profile */
+			__( 'The following payment methods are activated in your %sMollie profile%s:', 'mollie-payments-for-woocommerce' ),
+			'<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
+			'</a>'
+		);
 
-            $content .= sprintf(
-                /* translators: The surrounding %s's Will be replaced by a link to the Mollie profile */
-                __('The following payment methods are activated in your %sMollie profile%s:', 'mollie-payments-for-woocommerce'),
-                '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
-                '</a>'
-            );
+		$refresh_methods_url = wp_nonce_url(
+			                       add_query_arg( array ( 'refresh-methods' => 1 ) ),
+			                       'refresh-methods'
+		                       ) . '#' . Mollie_WC_Plugin::PLUGIN_ID;
 
-            $refresh_methods_url = wp_nonce_url(
-                add_query_arg(array('refresh-methods' => 1)),
-                'refresh-methods'
-            ) . '#' . Mollie_WC_Plugin::PLUGIN_ID;
+		$content .= ' (<a href="' . esc_attr( $refresh_methods_url ) . '">' . strtolower( __( 'Refresh', 'mollie-payments-for-woocommerce' ) ) . '</a>)';
 
-            $content .= ' (<a href="' . esc_attr($refresh_methods_url) . '">' . strtolower(__('Refresh', 'mollie-payments-for-woocommerce')) . '</a>)';
+		$content .= '<ul style="width: 1000px">';
 
-            $content .= '<ul style="width: 1000px">';
+		foreach ( Mollie_WC_Plugin::$GATEWAYS as $gateway_classname ) {
+			$gateway = new $gateway_classname;
 
-            foreach (Mollie_WC_Plugin::$GATEWAYS as $gateway_classname)
-            {
-                $gateway = new $gateway_classname;
+			if ( $gateway instanceof Mollie_WC_Gateway_Abstract ) {
+				$content .= '<li style="float: left; width: 33%;">';
 
-                if ($gateway instanceof Mollie_WC_Gateway_Abstract)
-                {
-                    $content .= '<li style="float: left; width: 33%;">';
+				$content .= '<img src="' . esc_attr( $gateway->getIconUrl() ) . '" alt="' . esc_attr( $gateway->getDefaultTitle() ) . '" title="' . esc_attr( $gateway->getDefaultTitle() ) . '" style="width: 25px; vertical-align: bottom;" />';
+				$content .= ' ' . esc_html( $gateway->getDefaultTitle() );
 
-                    $content .= '<img src="' . esc_attr($gateway->getIconUrl()) . '" alt="' . esc_attr($gateway->getDefaultTitle()) . '" title="' . esc_attr($gateway->getDefaultTitle()) . '" style="width: 25px; vertical-align: bottom;" />';
-                    $content .= ' ' . esc_html($gateway->getDefaultTitle());
+				if ( $gateway->is_available() ) {
+					$content .= $icon_available;
+				} else {
+					$content .= $icon_no_available;
+				}
 
-                    if ($gateway->is_available())
-                    {
-                        $content .= $icon_available;
-                    }
-                    else
-                    {
-                        $content .= $icon_no_available;
-                    }
+				$content .= ' <a href="' . $this->getGatewaySettingsUrl( $gateway_classname ) . '">' . strtolower( __( 'Edit', 'mollie-payments-for-woocommerce' ) ) . '</a>';
 
-	                $content .= ' <a href="' . $this->getGatewaySettingsUrl( $gateway_classname ) . '">' . strtolower( __( 'Edit', 'mollie-payments-for-woocommerce' ) ) . '</a>';
+				$content .= '</li>';
+			}
+		}
 
-	                $content .= '</li>';
-                }
-            }
+		$content .= '</ul>';
+		$content .= '<div class="clear"></div>';
 
-            $content .= '</ul>';
-            $content .= '<div class="clear"></div>';
+		// Make sure users also enable iDEAL when they enable SEPA Direct Debit
+		// iDEAL is needed for the first payment of subscriptions with SEPA Direct Debit
+		$content = $this->checkDirectDebitStatus( $content );
 
-            // Make sure users also enable iDEAL when they enable SEPA Direct Debit
-	        // iDEAL is needed for the first payment of subscriptions with SEPA Direct Debit
-	        $content = $this->checkDirectDebitStatus( $content );
-
-        }
-        catch ( \Mollie\Api\Exceptions\ApiException $e)
-        {
-            // Ignore
-        }
-
-        return $content;
-    }
+		return $content;
+	}
 
     /**
      * @param array $settings

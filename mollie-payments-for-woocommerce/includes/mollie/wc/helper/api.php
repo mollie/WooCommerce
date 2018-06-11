@@ -24,7 +24,7 @@ class Mollie_WC_Helper_Api {
 	 * @param bool $test_mode
 	 *
 	 * @return \Mollie\Api\MollieApiClient
-	 * @throws Mollie_WC_Exception_InvalidApiKey
+	 * @throws \Mollie\Api\Exceptions\ApiException
 	 */
 	public function getApiClient( $test_mode = false ) {
 		global $wp_version;
@@ -36,9 +36,9 @@ class Mollie_WC_Helper_Api {
 		}
 
 		if ( empty( $api_key ) ) {
-			throw new Mollie_WC_Exception_InvalidApiKey( __( 'No API key provided. Please set you Mollie API keys below.', 'mollie-payments-for-woocommerce' ) );
+			throw new \Mollie\Api\Exceptions\ApiException( __( 'No API key provided. Please set you Mollie API keys below.', 'mollie-payments-for-woocommerce' ) );
 		} elseif ( ! preg_match( '/^(live|test)_\w{30,}$/', $api_key ) ) {
-			throw new Mollie_WC_Exception_InvalidApiKey( __( "Invalid API key(s). The API key(s) must start with 'live_' or 'test_', be at least 30 characters and can't further contain any special characters. Get them in the Profiles section in the Mollie dashboard.", 'mollie-payments-for-woocommerce' ) );
+			throw new \Mollie\Api\Exceptions\ApiException( __( "Invalid API key(s). The API key(s) must start with 'live_' or 'test_', be at least 30 characters and can't further contain any special characters. Get them in the Profiles section in the Mollie dashboard.", 'mollie-payments-for-woocommerce' ) );
 		}
 
 		if ( empty( self::$api_client ) ) {
@@ -52,7 +52,7 @@ class Mollie_WC_Helper_Api {
 				$client->addVersionString( 'MollieWoo/' . Mollie_WC_Plugin::PLUGIN_VERSION );
 			}
 			catch ( Mollie\Api\Exceptions\ApiException $e ) {
-				throw new Mollie_WC_Exception_InvalidApiKey( $e->getMessage() );
+				throw new \Mollie\Api\Exceptions\ApiException( $e->getMessage() );
 			}
 
 			self::$api_client = $client;
@@ -64,7 +64,6 @@ class Mollie_WC_Helper_Api {
 	/**
 	 * Get API endpoint. Override using filter.
 	 * @return string
-	 * @throws \Mollie_WC_Exception_InvalidApiKey
 	 */
 	public static function getApiEndpoint() {
 		return apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_api_endpoint', \Mollie\Api\MollieApiClient::API_ENDPOINT );

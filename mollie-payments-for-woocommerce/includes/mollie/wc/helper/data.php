@@ -243,7 +243,7 @@ class Mollie_WC_Helper_Data
 
             return $payment;
         }
-        catch (Exception $e)
+        catch ( \Mollie\Api\Exceptions\ApiException $e )
         {
             Mollie_WC_Plugin::debug(__FUNCTION__ . ": Could not load payment $payment_id (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
@@ -274,78 +274,67 @@ class Mollie_WC_Helper_Data
             }
         }
 
+		return $result;
+	}
 
-        return $result;
-    }
+	/**
+	 * @param bool $test_mode (default: false)
+	 * @param bool $use_cache (default: true)
+	 *
+	 * @return bool|\Mollie\Api\Resources\MethodCollection
+	 */
+	public function getRegularPaymentMethods( $test_mode = false, $use_cache = true ) {
+		// Already initialized
+		if ( $use_cache && ! empty( self::$regular_api_methods ) ) {
+			return self::$regular_api_methods;
+		}
 
-    /**
-     * @param bool $test_mode (default: false)
-     * @param bool $use_cache (default: true)
-     * @return bool|\Mollie\Api\Resources\MethodCollection
-     */
-    public function getRegularPaymentMethods ($test_mode = false, $use_cache = true)
-    {
-        // Already initialized
-        if ($use_cache && !empty(self::$regular_api_methods))
-        {
-            return self::$regular_api_methods;
-        }
+		self::$regular_api_methods = $this->getApiPaymentMethods( $test_mode, $use_cache );
 
-
-        self::$regular_api_methods = $this->getApiPaymentMethods($test_mode, $use_cache);
-
-        return self::$regular_api_methods;
-    }
+		return self::$regular_api_methods;
+	}
 
 
+	public function getRecurringPaymentMethods( $test_mode = false, $use_cache = true ) {
+		// Already initialized
+		if ( $use_cache && ! empty( self::$recurring_api_methods ) ) {
+			return self::$recurring_api_methods;
+		}
 
-    public function getRecurringPaymentMethods($test_mode = false, $use_cache = true)
-    {
-        // Already initialized
-        if ($use_cache && !empty(self::$recurring_api_methods))
-        {
-            return self::$recurring_api_methods;
-        }
+		self::$recurring_api_methods = $this->getApiPaymentMethods( $test_mode, $use_cache, array ( 'sequenceType' => 'recurring' ) );
 
+		return self::$recurring_api_methods;
+	}
 
-        self::$recurring_api_methods = $this->getApiPaymentMethods($test_mode, $use_cache,array('sequenceType'=>'recurring'));
+	protected function getApiPaymentMethods( $test_mode = false, $use_cache = true, $filters = array () ) {
+		$result = array ();
 
-        return self::$recurring_api_methods;
-    }
-
-    protected function getApiPaymentMethods($test_mode = false, $use_cache = true, $filters = array())
-    {
-        $result  = array();
-
-        try
-        {
+		try {
 
 	        $result = $this->api_helper->getApiClient( $test_mode )->methods->all();
 
-	        return $result;
-        }
-        catch ( Exception $e)
-        {
-            Mollie_WC_Plugin::debug(__FUNCTION__ . ": Could not load Mollie methods (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
-        }
+			return $result;
+		}
+		catch ( \Mollie\Api\Exceptions\ApiException $e ) {
+			Mollie_WC_Plugin::debug( __FUNCTION__ . ": Could not load Mollie methods (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class( $e ) . ')' );
+		}
 
-        return $result;
-    }
+		return $result;
+	}
 
-    public function isRecurringPaymentMethodAvailable($methodId, $test_mode = false)
-    {
-        $result = false;
+	public function isRecurringPaymentMethodAvailable( $methodId, $test_mode = false ) {
+		$result = false;
 
-        $recurringPaymentMethods = $this->getRecurringPaymentMethods($test_mode);
-        foreach ($recurringPaymentMethods as $paymentMethod){
-            if ($paymentMethod->id == $methodId){
-                $result = true;
-                break;
-            }
-        }
+		$recurringPaymentMethods = $this->getRecurringPaymentMethods( $test_mode );
+		foreach ( $recurringPaymentMethods as $paymentMethod ) {
+			if ( $paymentMethod->id == $methodId ) {
+				$result = true;
+				break;
+			}
+		}
 
-        return $result;
-    }
+		return $result;
+	}
 
     /**
      * @param bool   $test_mode (default: false)
@@ -388,7 +377,7 @@ class Mollie_WC_Helper_Data
 			return $method_issuers;
 
 		}
-		catch ( Exception $e ) {
+		catch ( \Mollie\Api\Exceptions\ApiException $e ) {
 			Mollie_WC_Plugin::debug( __FUNCTION__ . ": Could not load " . $method . " issuers (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class( $e ) . ')' );
 		}
 
@@ -504,7 +493,7 @@ class Mollie_WC_Helper_Data
 		    try {
 			    $this->api_helper->getApiClient( $test_mode )->customers->get( $customer_id );
 		    }
-		    catch ( Exception $e ) {
+		    catch ( \Mollie\Api\Exceptions\ApiException $e ) {
 			    Mollie_WC_Plugin::debug( __FUNCTION__ . ": Mollie Customer ID ($customer_id) not valid for user $user_id on this API key, try to create a new one (" . ( $test_mode ? 'test' : 'live' ) . ")." );
 			    $customer_id = '';
 		    }
@@ -541,7 +530,7 @@ class Mollie_WC_Helper_Data
 	            return $customer_id;
 
             }
-            catch (Exception $e)
+            catch ( \Mollie\Api\Exceptions\ApiException $e )
             {
 	            Mollie_WC_Plugin::debug( __FUNCTION__ . ": Could not create Mollie Customer for WordPress user with ID $user_id (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class( $e ) . ')' );
             }

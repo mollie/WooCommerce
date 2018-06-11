@@ -321,6 +321,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	/**
 	 * @param int $order_id
 	 *
+	 * @throws \Mollie\Api\Exceptions\ApiException
 	 * @return array
 	 */
 	public function process_payment( $order_id ) {
@@ -1186,7 +1187,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
             return true;
         }
-        catch (Exception $e)
+        catch ( \Mollie\Api\Exceptions\ApiException $e )
         {
             return new WP_Error(1, $e->getMessage());
         }
@@ -1469,23 +1470,16 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     /**
      * @return \Mollie\Api\Resources\Method|null
      */
-    public function getMollieMethod()
-    {
-        try
-        {
-            $test_mode = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
+	public function getMollieMethod() {
 
-            return Mollie_WC_Plugin::getDataHelper()->getPaymentMethod(
-                $test_mode,
-                $this->getMollieMethodId()
-            );
-        }
-        catch (Mollie_WC_Exception_InvalidApiKey $e)
-        {
-        }
+		$test_mode = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
 
-        return null;
-    }
+		return Mollie_WC_Plugin::getDataHelper()->getPaymentMethod(
+			$test_mode,
+			$this->getMollieMethodId()
+		);
+
+	}
 
     /**
      * @return string
@@ -1853,7 +1847,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 			return $status;
 		}
-		catch ( Exception $e ) {
+		catch ( \Mollie\Api\Exceptions\ApiException $e ) {
 
 			Mollie_WC_Plugin::debug( __FUNCTION__ . ": Could not check availability of Mollie payment methods (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class( $e ) . ')' );
 

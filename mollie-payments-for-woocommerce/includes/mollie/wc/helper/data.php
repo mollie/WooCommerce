@@ -311,7 +311,7 @@ class Mollie_WC_Helper_Data
 
 		try {
 
-	        $result = $this->api_helper->getApiClient( $test_mode )->methods->all();
+			$result = $this->api_helper->getApiClient( $test_mode )->methods->all( $filters );
 
 			return $result;
 		}
@@ -362,7 +362,7 @@ class Mollie_WC_Helper_Data
 	 * @param bool        $test_mode (default: false)
 	 * @param string|null $method
 	 *
-	 * @return array|\Mollie\Api\Resources\Issuer[]|\Mollie\Api\Resources\IssuerCollection
+	 * @return array|\Mollie\Api\Resources\Method||\Mollie\Api\Resources\MethodCollection
 	 */
 	public function getMethodIssuers( $test_mode = false, $method = null ) {
 

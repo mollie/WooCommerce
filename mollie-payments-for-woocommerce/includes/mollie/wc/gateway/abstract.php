@@ -369,7 +369,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 			try {
 				Mollie_WC_Plugin::debug( $this->id . ': Subscription switch started, fetching mandate(s) for order #' . $order_id );
-				$mandates     = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers_mandates->withParentId( $customer_id )->all();
+				$mandates = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers->get( $customer_id )->mandates();;
 				$validMandate = false;
 				foreach ( $mandates as $mandate ) {
 					if ( $mandate->status == 'valid' ) {

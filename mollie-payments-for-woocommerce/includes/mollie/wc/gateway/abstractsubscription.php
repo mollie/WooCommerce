@@ -93,7 +93,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 		    $data = array_filter(array(
 			    'amount'          => array (
 				    'currency' => $order->get_currency(),
-				    'value'    => $order->get_total()
+				    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order->get_total(), $order->get_currency())
 			    ),
 			    'description'     => $payment_description,
 			    'redirectUrl'     => $return_url,
@@ -116,7 +116,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 		    $data = array_filter(array(
 			    'amount'          => array (
 				    'currency' => $order->get_currency(),
-				    'value'    => $order->get_total()
+				    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order->get_total(), $order->get_currency())
 			    ),
 			    'description'     => $payment_description,
 			    'redirectUrl'     => $return_url,

@@ -251,7 +251,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			$filters = array (
 				'amount'       => array (
 					'currency' => get_woocommerce_currency(),
-					'value'    => number_format( $order_total, 2, '.', '' )
+					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order_total, get_woocommerce_currency() )
 				),
 				'sequenceType' => 'oneoff'
 			);
@@ -272,7 +272,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 						$filters = array (
 							'amount'       => array (
 								'currency' => get_woocommerce_currency(),
-								'value'    => number_format( $recurring_total, 2, '.', '' )
+								'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($recurring_total, get_woocommerce_currency())
 							),
 							'sequenceType' => 'recurring'
 						);
@@ -287,7 +287,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 					$filters = array (
 						'amount'       => array (
 							'currency' => get_woocommerce_currency(),
-							'value'    => number_format( $order_total, 2, '.', '' )
+							'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order_total, get_woocommerce_currency() )
 						),
 						'sequenceType' => 'first'
 					);
@@ -569,7 +569,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		    $paymentRequestData = array (
 			    'amount'          => array (
 				    'currency' => $order->get_currency(),
-				    'value'    => $order->get_total()
+				    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order->get_total(), $order->get_currency() )
 			    ),
 			    'description'     => $payment_description,
 			    'redirectUrl'     => $return_url,
@@ -609,7 +609,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		    $paymentRequestData = array (
 			    'amount'          => array (
 				    'currency' => $order->get_currency(),
-				    'value'    => $order->get_total()
+				    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order->get_total(), $order->get_currency())
 			    ),
 			    'description'     => $payment_description,
 			    'redirectUrl'     => $return_url,

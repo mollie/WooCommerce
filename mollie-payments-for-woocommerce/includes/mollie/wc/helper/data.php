@@ -764,4 +764,24 @@ class Mollie_WC_Helper_Data
 		    $order->save();
 	    }
     }
+
+	/**
+	 * Format currency value into Mollie API v2 format
+	 *
+	 * @param $value
+	 *
+	 * @return int $value
+	 */
+	public function formatCurrencyValue( $value, $currency ) {
+
+		// Only the Japanese Yen has no decimals in the currency
+		if ( $currency == "JPY" ) {
+			$value = number_format( $value, 0, '.', '' );
+		} else {
+			$value = number_format( $value, 2, '.', '' );
+		}
+
+		return $value;
+	}
+
 }

@@ -770,54 +770,6 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 		}
 	}
 
-	/**
-	 * @param WC_Order                  $order
-	 * @param Mollie\Api\Resources\Payment $payment
-	 */
-	protected function onWebhookChargedback( WC_Order $order, Mollie\Api\Resources\Payment $payment ) {
-
-		// Get order ID in the correct way depending on WooCommerce version
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			$order_id = $order->id;
-		} else {
-			$order_id = $order->get_id();
-		}
-
-		// Add messages to log
-		Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id );
-
-		// New order status
-		$new_order_status = self::STATUS_ON_HOLD;
-
-		// Overwrite plugin-wide
-		$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_on_hold', $new_order_status );
-
-		// Overwrite gateway-wide
-		$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_on_hold_' . $this->id, $new_order_status );
-
-		$paymentMethodTitle = $this->getPaymentMethodTitle( $payment );
-
-		// Update order status for order with charged_back payment, don't restore stock
-		$this->updateOrderStatus(
-			$order,
-			$new_order_status,
-			sprintf(
-			/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-				__( '%s renewal payment charged back via Mollie (%s). You will need to manually review the payment and adjust product stocks if you use them.', 'mollie-payments-for-woocommerce' ),
-				$paymentMethodTitle,
-				$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
-			),
-			$restore_stock = false
-		);
-
-		// Send a "Failed order" email to notify the admin
-		$emails = WC()->mailer()->get_emails();
-		if ( ! empty( $emails ) && ! empty( $order_id ) ) {
-			$emails['WC_Email_Failed_Order']->trigger( $order_id );
-		}
-
-	}
-
     /**
      * @param $order_id
      * @return bool

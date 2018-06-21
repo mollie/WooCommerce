@@ -163,6 +163,11 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= 3.0.6 - 21/06/2018 =
+
+* Fix - Remove a remove_action() call that blocked the plugin from running on PHP versions below PHP 5.6
+* Fix - Added more log messages to onWebhookPaid
+
 = 3.0.5 - 18/06/2018 =
 
 IMPORTANT

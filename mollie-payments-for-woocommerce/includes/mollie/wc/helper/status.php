@@ -158,7 +158,7 @@ class Mollie_WC_Helper_Status
         catch ( \Mollie\Api\Exceptions\ApiException $e )
         {
 
-	        if ( $e->getMessage() == 'Error executing API call (401: Unauthorized Request): Missing authentication, or failed to authenticate. Documentation: https://www.mollie.com/en/docs/authentication') {
+	        if ( $e->getMessage() == 'Error executing API call (401: Unauthorized Request): Missing authentication, or failed to authenticate. Documentation: https://docs.mollie.com/guides/authentication') {
 		        throw new \Mollie\Api\Exceptions\ApiException(
 			        'incorrect API key or other authentication issue. Please check your API keys!'
 		        );

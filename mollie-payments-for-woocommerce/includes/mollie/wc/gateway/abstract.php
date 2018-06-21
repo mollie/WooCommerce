@@ -850,14 +850,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 */
 	protected function onWebhookPaid( WC_Order $order, Mollie_API_Object_Payment $payment ) {
 
-		if ( $payment->isPaid() ) {
+		// Get order ID in the correct way depending on WooCommerce version
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			$order_id = $order->id;
+		} else {
+			$order_id = $order->get_id();
+		}
 
-			// Get order ID in the correct way depending on WooCommerce version
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-				$order_id = $order->id;
-			} else {
-				$order_id = $order->get_id();
-			}
+		if ( $payment->isPaid() ) {
 
 			// Add messages to log
 			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id );
@@ -870,6 +870,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			} else {
 				$order->payment_complete();
 			}
+
+			// Add messages to log
+			Mollie_WC_Plugin::debug( __METHOD__ . ' WooCommerce payment_complete() processed and returned to onWebHookPaid for order ' . $order_id );
 
 			$paymentMethodTitle = $this->getPaymentMethodTitle( $payment );
 			$order->add_order_note( sprintf(
@@ -884,6 +887,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 			// Remove (old) cancelled payments from this order
 			Mollie_WC_Plugin::getDataHelper()->unsetCancelledMolliePaymentId( $order_id );
+
+			// Add messages to log
+			Mollie_WC_Plugin::debug( __METHOD__ . ' processing paid order via Mollie plugin fully completed for order ' . $order_id );
+
+		} else {
+
+			// Add messages to log
+			Mollie_WC_Plugin::debug( __METHOD__ . ' payment at Mollie not paid, so no processing for order ' . $order_id );
 
 		}
 	}
@@ -1427,14 +1438,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		// Check whether the order is processed and paid via another gateway
 		if ( $this->isOrderPaidByOtherGateway( $order ) ) {
-			Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order_id . ' orderNeedsPayment, no, processed by other (non-Mollie) gateway.', true );
+			Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order_id . ' orderNeedsPayment check: no, processed by other (non-Mollie) gateway.', true );
 
 			return false;
 		}
 
 		// Check whether the order is processed and paid via Mollie
 		if ( ! $this->isOrderPaidAndProcessed( $order ) ) {
-			Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order_id . ' orderNeedsPayment check, yes, not processed by Mollie gateway.', true );
+			Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, not processed by Mollie gateway.', true );
 
 			return true;
 		}

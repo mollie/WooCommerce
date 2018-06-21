@@ -93,7 +93,7 @@ class WC_Tools_Subscriptions_Status_Button {
 
 				// Get all mandates for this Mollie customer ID
 				try {
-					$mandates = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers->get( $mollie_customer_id )->mandates();;
+					$mandates = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers->get( $mollie_customer_id )->mandates();
 				}
 				catch
 				( Mollie\Api\Exceptions\ApiException $e ) {

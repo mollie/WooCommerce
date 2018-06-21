@@ -41,7 +41,6 @@ if ( ! defined( 'M4W_PLUGIN_DIR' ) ) {
  */
 function mollie_wc_check_php_version() {
 	if ( ! version_compare( PHP_VERSION, '5.6.0', ">=" ) ) {
-		remove_action( 'init', 'mollie_wc_plugin_init' );
 		add_action( 'admin_notices', 'mollie_wc_plugin_inactive_php' );
 		return;
 	}

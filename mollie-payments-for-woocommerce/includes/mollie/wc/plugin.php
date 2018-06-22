@@ -30,7 +30,7 @@ class Mollie_WC_Plugin
         'Mollie_WC_Gateway_Ideal',
         'Mollie_WC_Gateway_IngHomePay',
         'Mollie_WC_Gateway_Kbc',
-        'Mollie_WC_Gateway_MisterCash',
+        'Mollie_WC_Gateway_Bancontact',
         'Mollie_WC_Gateway_PayPal',
         'Mollie_WC_Gateway_Paysafecard',
         'Mollie_WC_Gateway_Sofort',

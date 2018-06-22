@@ -369,7 +369,7 @@ class Mollie_WC_Helper_Settings
                     'fr_BE'     => __('French (Belgium)', 'mollie-payments-for-woocommerce'),
                 ),
                 'desc'    => sprintf(
-                	__('The option \'Detect using browser language\' is usually more accurate. Only use \'Send WordPress language\' if you are sure all languages/locales on your website are supported by Mollie %s(see \'locale\' under \'Parameters\')%s. Currently supported locales: <code>en_US</code>, <code>de_AT</code>, <code>de_CH</code>, <code>de_DE</code>, <code>es_ES</code>, <code>fr_BE</code>, <code>fr_FR</code>, <code>nl_BE</code>, <code>nl_NL</code>.', 'mollie-payments-for-woocommerce'),
+                	__('The option \'Detect using browser language\' is usually more accurate. Only use \'Send WordPress language\' if you are sure all languages/locales on your website are supported by Mollie %s(see \'locale\' under \'Parameters\')%s. Currently supported locales: <code>en_US</code>, <code>nl_NL</code>, <code>nl_BE</code>, <code>fr_FR</code>, <code>fr_BE</code>, <code>de_DE</code>,  <code>de_AT</code>, <code>de_CH</code>, <code>es_ES</code>, <code>ca_ES</code>, <code>pt_PT</code>, <code>it_IT</code>, <code>nb_NO</code>, <code>sv_SE</code>, <code>fi_FI</code>, <code>da_DK</code>, <code>is_IS</code>, <code>hu_HU</code>, <code>pl_PL</code>, <code>lv_LV</code>, <code>lt_LT</code>.', 'mollie-payments-for-woocommerce'),
 	                '<a href="https://www.mollie.com/nl/docs/reference/payments/create" target="_blank">',
 	                '</a>'
                 ),

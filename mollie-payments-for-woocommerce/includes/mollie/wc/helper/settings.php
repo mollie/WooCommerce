@@ -244,6 +244,10 @@ class Mollie_WC_Helper_Settings
 		// iDEAL is needed for the first payment of subscriptions with SEPA Direct Debit
 		$content = $this->checkDirectDebitStatus( $content );
 
+		// Advice users to use bank transfer via Mollie, not
+		// WooCommerce default BACS method
+		$content = $this->checkMollieBankTransferNotBACS( $content );
+
 		return $content;
 	}
 
@@ -516,4 +520,30 @@ class Mollie_WC_Helper_Settings
 
 		return $content;
 	}
+
+	/**
+	 * @param $content
+	 *
+	 * @return string
+	 */
+	protected function checkMollieBankTransferNotBACS( $content ) {
+
+		$woocommerce_banktransfer_gateway  = new WC_Gateway_BACS();
+
+		if ( $woocommerce_banktransfer_gateway->is_available() ) {
+
+			$content .= '<div class="notice notice-warning is-dismissible"><p>';
+			$content .= __( 'You have the WooCommerce default Direct Bank Transfer (BACS) payment gateway enabled in WooCommerce. Mollie strongly advices only using Bank Transfer via Mollie and disabling the default WooCommerce BACS payment gateway to prevent possible conflicts.', 'mollie-payments-for-woocommerce' );
+			$content .= '</p></div> ';
+
+			$content .= '<strong><p>';
+			$content .= __( 'You have the WooCommerce default Direct Bank Transfer (BACS) payment gateway enabled in WooCommerce. Mollie strongly advices only using Bank Transfer via Mollie and disabling the default WooCommerce BACS payment gateway to prevent possible conflicts.', 'mollie-payments-for-woocommerce' );
+			$content .= '</p></strong> ';
+
+			return $content;
+		}
+
+		return $content;
+	}
+
 }

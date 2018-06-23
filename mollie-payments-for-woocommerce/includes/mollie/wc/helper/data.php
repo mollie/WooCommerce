@@ -518,7 +518,6 @@ class Mollie_WC_Helper_Data
 	            $customer = $this->api_helper->getApiClient( $test_mode )->customers->create( array (
 		            'name'     => trim( $user_full_name ),
 		            'email'    => trim( $userdata->user_email ),
-		            'locale'   => trim( $this->getCurrentLocale() ),
 		            'metadata' => array ( 'user_id' => $user_id ),
 	            ) );
 
@@ -535,9 +534,9 @@ class Mollie_WC_Helper_Data
             {
 	            Mollie_WC_Plugin::debug( __FUNCTION__ . ": Could not create Mollie Customer for WordPress user with ID $user_id (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class( $e ) . ')' );
             }
+        } else {
+	        Mollie_WC_Plugin::debug( __FUNCTION__ . ": Mollie Customer ID ($customer_id) found and valid for user $user_id on this API key. (" . ( $test_mode ? 'test' : 'live' ) . ")." );
         }
-
-	    Mollie_WC_Plugin::debug( __FUNCTION__ . ": Mollie Customer ID ($customer_id) found and valid for user $user_id on this API key. (" . ( $test_mode ? 'test' : 'live' ) . ")." );
 
         return $customer_id;
     }

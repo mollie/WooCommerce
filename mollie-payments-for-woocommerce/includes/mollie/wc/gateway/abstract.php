@@ -2088,4 +2088,17 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		}
 	}
 
+	/**
+	 * Get the transaction URL.
+	 *
+	 * @param  WC_Order $order
+	 *
+	 * @return string
+	 */
+	public function get_transaction_url( $order ) {
+		$this->view_transaction_url = 'https://www.mollie.com/dashboard/payments/tr_fEBgzAgbwN';
+
+		return parent::get_transaction_url( $order );
+	}
+
 }

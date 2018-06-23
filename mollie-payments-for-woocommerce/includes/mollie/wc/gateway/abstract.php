@@ -137,14 +137,20 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function getIconUrl ()
     {
-        return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $this->getMollieMethodId() . '.png');
+
+    	// In checkout, show the creditcards.svg with multiple logo's
+    	if ( $this->getMollieMethodId() == 'creditcard'  && !is_admin()) {
+		    return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $this->getMollieMethodId() . 's.svg');
+	    }
+
+        return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $this->getMollieMethodId() . '.svg');
     }
 
 	/**
 	 * @return string
 	 */
 	public function getIssuerIconUrl( $issuer_id ) {
-		return Mollie_WC_Plugin::getPluginUrl( 'assets/images/' . $issuer_id . '.png' );
+		return Mollie_WC_Plugin::getPluginUrl( 'assets/images/' . $issuer_id . '.svg' );
 	}
 
     protected function _initIcon ()

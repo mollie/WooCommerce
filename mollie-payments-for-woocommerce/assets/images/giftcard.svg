@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="34" height="32" viewBox="0 0 34 32">
+  <defs>
+    <linearGradient id="giftcard-a" x1="100%" x2="3.91%" y1="100%" y2="3.91%">
+      <stop offset="0%" stop-color="#0072FF"/>
+      <stop offset="100%" stop-color="#00B2FF"/>
+    </linearGradient>
+    <rect id="giftcard-b" width="32" height="32" rx="8"/>
+    <rect id="giftcard-d" width="32" height="3" y="12"/>
+    <filter id="giftcard-c" width="112.5%" height="233.3%" x="-6.2%" y="-33.3%" filterUnits="objectBoundingBox">
+      <feOffset dy="1" in="SourceAlpha" result="shadowOffsetOuter1"/>
+      <feGaussianBlur in="shadowOffsetOuter1" result="shadowBlurOuter1" stdDeviation=".5"/>
+      <feColorMatrix in="shadowBlurOuter1" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.2 0"/>
+    </filter>
+    <polygon id="giftcard-f" points="11 14 16 14 16 21 13.5 19 11 21"/>
+    <filter id="giftcard-e" width="180%" height="157.1%" x="-40%" y="-14.3%" filterUnits="objectBoundingBox">
+      <feOffset dy="1" in="SourceAlpha" result="shadowOffsetOuter1"/>
+      <feGaussianBlur in="shadowOffsetOuter1" result="shadowBlurOuter1" stdDeviation=".5"/>
+      <feColorMatrix in="shadowBlurOuter1" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.2 0"/>
+    </filter>
+    <path id="giftcard-h" d="M15.4811541,11.5730029 L19.4811541,9.14527849 L19.4811541,9.14527849 C19.9532846,8.85872784 20.5683172,9.00916999 20.8548678,9.48130045 C20.9498006,9.63771488 21,9.81717716 21,10.0001463 L21,17.256899 L21,17.256899 C21,17.8091837 20.5522847,18.256899 20,18.256899 C19.8612597,18.256899 19.7240373,18.228029 19.5970586,18.1721248 L15.5970586,16.4110671 L15.5970586,16.4110671 C15.2342112,16.2513183 15,15.892298 15,15.4958413 L15,12.4278707 L15,12.4278707 C15,12.0784184 15.1824186,11.7543147 15.4811541,11.5730029 Z"/>
+    <filter id="giftcard-g" width="166.7%" height="143.2%" x="-33.3%" y="-10.8%" filterUnits="objectBoundingBox">
+      <feOffset dy="1" in="SourceAlpha" result="shadowOffsetOuter1"/>
+      <feGaussianBlur in="shadowOffsetOuter1" result="shadowBlurOuter1" stdDeviation=".5"/>
+      <feColorMatrix in="shadowBlurOuter1" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.2 0"/>
+    </filter>
+    <path id="giftcard-j" d="M6.48115414,11.5730029 L10.4811541,9.14527849 L10.4811541,9.14527849 C10.9532846,8.85872784 11.5683172,9.00916999 11.8548678,9.48130045 C11.9498006,9.63771488 12,9.81717716 12,10.0001463 L12,17.256899 L12,17.256899 C12,17.8091837 11.5522847,18.256899 11,18.256899 C10.8612597,18.256899 10.7240373,18.228029 10.5970586,18.1721248 L6.59705864,16.4110671 L6.59705864,16.4110671 C6.23421121,16.2513183 6,15.892298 6,15.4958413 L6,12.4278707 L6,12.4278707 C6,12.0784184 6.18241861,11.7543147 6.48115414,11.5730029 Z"/>
+    <filter id="giftcard-i" width="166.7%" height="143.2%" x="-33.3%" y="-10.8%" filterUnits="objectBoundingBox">
+      <feOffset dy="1" in="SourceAlpha" result="shadowOffsetOuter1"/>
+      <feGaussianBlur in="shadowOffsetOuter1" result="shadowBlurOuter1" stdDeviation=".5"/>
+      <feColorMatrix in="shadowBlurOuter1" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.2 0"/>
+    </filter>
+    <circle id="giftcard-l" cx="13.5" cy="13.5" r="3.5"/>
+    <filter id="giftcard-k" width="157.1%" height="157.1%" x="-28.6%" y="-14.3%" filterUnits="objectBoundingBox">
+      <feOffset dy="1" in="SourceAlpha" result="shadowOffsetOuter1"/>
+      <feGaussianBlur in="shadowOffsetOuter1" result="shadowBlurOuter1" stdDeviation=".5"/>
+      <feColorMatrix in="shadowBlurOuter1" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.2 0"/>
+    </filter>
+  </defs>
+  <g fill="none" fill-rule="evenodd" transform="translate(1)">
+    <use fill="url(#giftcard-a)" xlink:href="#giftcard-b"/>
+    <rect width="31" height="31" x=".5" y=".5" stroke="#000" stroke-opacity=".05" rx="8"/>
+    <use fill="#000" filter="url(#giftcard-c)" xlink:href="#giftcard-d"/>
+    <use fill="#FFF" xlink:href="#giftcard-d"/>
+    <use fill="#000" filter="url(#giftcard-e)" xlink:href="#giftcard-f"/>
+    <use fill="#FFF" xlink:href="#giftcard-f"/>
+    <g>
+      <use fill="#000" filter="url(#giftcard-g)" xlink:href="#giftcard-h"/>
+      <use fill="#FFF" xlink:href="#giftcard-h"/>
+    </g>
+    <g transform="matrix(-1 0 0 1 18 0)">
+      <use fill="#000" filter="url(#giftcard-i)" xlink:href="#giftcard-j"/>
+      <use fill="#FFF" xlink:href="#giftcard-j"/>
+    </g>
+    <g>
+      <use fill="#000" filter="url(#giftcard-k)" xlink:href="#giftcard-l"/>
+      <use fill="#FFF" xlink:href="#giftcard-l"/>
+    </g>
+  </g>
+</svg>

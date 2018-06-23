@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32" height="32" viewBox="0 0 32 32">
+  <defs>
+    <rect id="abn-amro-a" width="32" height="32" rx="8"/>
+  </defs>
+  <g fill="none" fill-rule="evenodd">
+    <mask id="abn-amro-b" fill="#fff">
+      <use xlink:href="#abn-amro-a"/>
+    </mask>
+    <use fill="#ABD3C3" xlink:href="#abn-amro-a"/>
+    <g mask="url(#abn-amro-b)">
+      <g transform="translate(10 8)">
+        <polygon fill="#009586" points="0 0 13 0 13 11.314 6.697 18 0 11.314"/>
+        <polygon fill="#FCBF00" points="7.313 4.909 13 11.455 7.313 18"/>
+      </g>
+    </g>
+  </g>
+</svg>

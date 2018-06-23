@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32" height="32" viewBox="0 0 32 32">
+  <defs>
+    <rect id="nationale-kunst&amp;cultuurkaart-a" width="32" height="32" rx="8"/>
+  </defs>
+  <g fill="none" fill-rule="evenodd">
+    <use fill="#FFF" xlink:href="#nationale-kunst&amp;cultuurkaart-a"/>
+    <rect width="31" height="31" x=".5" y=".5" stroke="#000" stroke-opacity=".1" rx="8"/>
+    <polygon fill="#F80000" points="10.5 6.5 14.929 6.5 23.5 15.995 14.929 25.5 10.5 25.5 10.5 23.675 17.452 15.995 10.5 8.369"/>
+  </g>
+</svg>

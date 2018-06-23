@@ -767,6 +767,8 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			if ( ! empty( $emails ) && ! empty( $order_id ) ) {
 				$emails['WC_Email_Failed_Order']->trigger( $order_id );
 			}
+		} else {
+			parent::onWebhookFailed( $order, $payment );
 		}
 	}
 

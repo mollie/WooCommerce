@@ -374,7 +374,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 			try {
 				Mollie_WC_Plugin::debug( $this->id . ': Subscription switch started, fetching mandate(s) for order #' . $order_id );
-				$mandates = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers->get( $customer_id )->mandates();;
+				$mandates = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers->get( $customer_id )->mandates();
 				$validMandate = false;
 				foreach ( $mandates as $mandate ) {
 					if ( $mandate->status == 'valid' ) {
@@ -806,6 +806,13 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             return;
         }
 
+        // Log a message that webhook was called, doesn't mean the payment is actually processed
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    Mollie_WC_Plugin::debug($this->id . ": Mollie payment {$payment->id} (" . $payment->mode . ") webhook call for order {$order->id}.", true);
+	    } else {
+		    Mollie_WC_Plugin::debug($this->id . ": Mollie payment {$payment->id} (" . $payment->mode . ") webhook call for order {$order->get_id()}.", true);
+	    }
+
 	    // Order does not need a payment
 	    if ( ! $this->orderNeedsPayment( $order ) ) {
 
@@ -817,12 +824,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		    $this->processChargebacks( $order, $payment );
 
 		    return;
-	    }
-
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    Mollie_WC_Plugin::debug($this->id . ": Mollie payment {$payment->id} (" . $payment->mode . ") webhook call for order {$order->id}.", true);
-	    } else {
-		    Mollie_WC_Plugin::debug($this->id . ": Mollie payment {$payment->id} (" . $payment->mode . ") webhook call for order {$order->get_id()}.", true);
 	    }
 
 	    // Create the method name based on the payment status

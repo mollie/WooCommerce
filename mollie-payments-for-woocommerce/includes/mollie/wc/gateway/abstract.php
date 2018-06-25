@@ -1,4 +1,7 @@
 <?php
+
+use Mollie\API\Types\PaymentMethod;
+
 abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 {
     const STATUS_PENDING    = 'pending';
@@ -139,7 +142,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
 
     	// In checkout, show the creditcards.svg with multiple logo's
-    	if ( $this->getMollieMethodId() == 'creditcard'  && !is_admin()) {
+    	if ( $this->getMollieMethodId() == PaymentMethod::CREDITCARD  && !is_admin()) {
 		    return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $this->getMollieMethodId() . 's.svg');
 	    }
 

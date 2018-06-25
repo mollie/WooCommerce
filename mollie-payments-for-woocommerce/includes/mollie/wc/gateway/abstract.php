@@ -262,7 +262,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 					'currency' => get_woocommerce_currency(),
 					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order_total, get_woocommerce_currency() )
 				),
-				'sequenceType' => 'oneoff'
+				'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_ONEOFF
 			);
 
 			// Check regular payments
@@ -283,7 +283,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 								'currency' => get_woocommerce_currency(),
 								'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $recurring_total, get_woocommerce_currency() )
 							),
-							'sequenceType' => 'recurring'
+							'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_RECURRING
 						);
 
 						$status = $this->getAvailableMethodsInCheckout( $filters );
@@ -297,7 +297,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 								'currency' => get_woocommerce_currency(),
 								'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order_total, get_woocommerce_currency() )
 							),
-							'sequenceType' => 'first'
+							'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_FIRST
 						);
 
 						$status = $this->getAvailableMethodsInCheckout( $filters );

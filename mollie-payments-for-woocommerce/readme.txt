@@ -39,6 +39,8 @@ Alternative payment methods:
 * Bancontact (Belgium)
 * ING Home'Pay (Belgium)
 * PayPal (International)
+* Giropay (Germany)
+* EPS (Austria)
 * SOFORTbanking (EU)
 * Belfius (Belgium)
 * KBC/CBC payment button (Belgium)

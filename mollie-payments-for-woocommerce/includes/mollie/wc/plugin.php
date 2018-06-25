@@ -27,6 +27,8 @@ class Mollie_WC_Plugin
         'Mollie_WC_Gateway_Bitcoin',
         'Mollie_WC_Gateway_Creditcard',
         'Mollie_WC_Gateway_DirectDebit',
+        'Mollie_WC_Gateway_EPS',
+        'Mollie_WC_Gateway_Giropay',
         'Mollie_WC_Gateway_Ideal',
         'Mollie_WC_Gateway_IngHomePay',
         'Mollie_WC_Gateway_Kbc',

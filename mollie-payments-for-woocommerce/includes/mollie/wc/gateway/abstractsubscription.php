@@ -196,6 +196,8 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 				'mollie_wc_gateway_directdebit',
 				'mollie_wc_gateway_ideal',
 				'mollie_wc_gateway_inghomepay',
+				'mollie_wc_gateway_eps',
+				'mollie_wc_gateway_giropay',
 				'mollie_wc_gateway_mistercash',
 				'mollie_wc_gateway_bancontact',
 				'mollie_wc_gateway_sofort',
@@ -402,6 +404,8 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 		$methods_needing_update = array (
 			'mollie_wc_gateway_ideal',
 			'mollie_wc_gateway_inghomepay',
+			'mollie_wc_gateway_eps',
+			'mollie_wc_gateway_giropay',
 			'mollie_wc_gateway_mistercash',
 			'mollie_wc_gateway_bancontact',
 			'mollie_wc_gateway_sofort',

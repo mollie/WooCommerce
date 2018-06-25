@@ -1590,6 +1590,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			if ( $order_id > 0 ) {
 				$order = wc_get_order( $order_id );
 
+				if ( ! is_a( $order, 'WC_Order' ) ) {
+					return $title;
+				}
+
 				if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 					$order_key_db = $order->order_key;
 				} else {

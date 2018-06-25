@@ -211,7 +211,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     {
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 		    // Duplicate webhook call
-		    if ($this->is_subscription($order->id) && isset($payment->sequenceType) && $payment->sequenceType == 'recurring') {
+		    if ($this->is_subscription($order->id) && isset($payment->sequenceType) && $payment->sequenceType == \Mollie\Api\Types\SequenceType::SEQUENCETYPE_RECURRING ) {
 			    $paymentMethodTitle = $this->getPaymentMethodTitle($payment);
 
 			    $order->add_order_note(sprintf(
@@ -226,7 +226,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
 		    }
 	    } else {
 		    // Duplicate webhook call
-		    if ($this->is_subscription($order->get_id()) && isset($payment->sequenceType) && $payment->sequenceType == 'recurring') {
+		    if ($this->is_subscription($order->get_id()) && isset($payment->sequenceType) && $payment->sequenceType == \Mollie\Api\Types\SequenceType::SEQUENCETYPE_RECURRING ) {
 			    $paymentMethodTitle = $this->getPaymentMethodTitle($payment);
 
 			    $order->add_order_note(sprintf(

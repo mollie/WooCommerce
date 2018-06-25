@@ -820,7 +820,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	    if ( ! $this->orderNeedsPayment( $order ) ) {
 
 		    // Add a debug message that order was already paid for
-		    $this->handlePayedOrderWebhook( $order, $payment );
+		    $this->handlePaidOrderWebhook( $order, $payment );
 
 		    // Check and process a possible refund or chargeback
 		    $this->processRefunds( $order, $payment );
@@ -856,7 +856,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      * @param $order
      * @param $payment
      */
-	protected function handlePayedOrderWebhook( $order, $payment ) {
+	protected function handlePaidOrderWebhook( $order, $payment ) {
 		// Duplicate webhook call
 		Mollie_WC_Plugin::setHttpResponseCode( 204 );
 

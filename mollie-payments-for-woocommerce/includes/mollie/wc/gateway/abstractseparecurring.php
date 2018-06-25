@@ -207,7 +207,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
      * @param $order
      * @param $payment
      */
-    protected function handlePayedOrderWebhook($order, $payment)
+    protected function handlePaidOrderWebhook($order, $payment)
     {
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 		    // Duplicate webhook call
@@ -241,7 +241,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
 		    }
 	    }
 
-        parent::handlePayedOrderWebhook($order, $payment);
+        parent::handlePaidOrderWebhook($order, $payment);
 
     }
 

@@ -768,7 +768,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
 			// Send a "Failed order" email to notify the admin
 			$emails = WC()->mailer()->get_emails();
-			if ( ! empty( $emails ) && ! empty( $order_id ) ) {
+			if ( ! empty( $emails ) && ! empty( $order_id ) && ! empty( $emails['WC_Email_Failed_Order'] ) ) {
 				$emails['WC_Email_Failed_Order']->trigger( $order_id );
 			}
 		} else {

@@ -1448,7 +1448,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	        $refund = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->refund( $payment, array (
 		        'amount'      => array (
 			        'currency' => $order->get_currency(),
-			        'value'    => $amount
+			        'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $amount, $order->get_currency() )
 		        ),
 		        'description' => $reason
 	        ) );

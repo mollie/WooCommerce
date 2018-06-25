@@ -278,7 +278,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 						$filters = array (
 							'amount'       => array (
 								'currency' => get_woocommerce_currency(),
-								'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($recurring_total, get_woocommerce_currency())
+								'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $recurring_total, get_woocommerce_currency() )
 							),
 							'sequenceType' => 'recurring'
 						);
@@ -286,21 +286,20 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 						$status = $this->getAvailableMethodsInCheckout( $filters );
 
 					}
+
+					// Now check available first payment methods with today's order total, but ignore SSD gateway (not shown in checkout)
+					if ( $this->id !== 'mollie_wc_gateway_directdebit' ) {
+						$filters = array (
+							'amount'       => array (
+								'currency' => get_woocommerce_currency(),
+								'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order_total, get_woocommerce_currency() )
+							),
+							'sequenceType' => 'first'
+						);
+
+						$status = $this->getAvailableMethodsInCheckout( $filters );
+					}
 				}
-
-				// Now check available first payment methods with today's order total, but ignore SSD gateway (not shown in checkout)
-				if ( $this->id !== 'mollie_wc_gateway_directdebit' ) {
-					$filters = array (
-						'amount'       => array (
-							'currency' => get_woocommerce_currency(),
-							'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order_total, get_woocommerce_currency() )
-						),
-						'sequenceType' => 'first'
-					);
-
-					$status = $this->getAvailableMethodsInCheckout( $filters );
-				}
-
 			}
 
 			return $status;

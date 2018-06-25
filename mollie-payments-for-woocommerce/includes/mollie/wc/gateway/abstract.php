@@ -830,8 +830,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	    }
 
 	    // Create the method name based on the payment status
-	    // Replace canceled with cancelled (WooCommerce and this plugin use UK English)
-        $method_name = 'onWebhook' . str_replace( 'Canceled' , 'Cancelled', ucfirst($payment->status));
+        $method_name = 'onWebhook' . ucfirst($payment->status);
 
 
         if (method_exists($this, $method_name))

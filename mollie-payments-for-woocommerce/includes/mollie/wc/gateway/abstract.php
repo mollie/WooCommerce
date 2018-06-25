@@ -2108,6 +2108,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 * Get available payment methods in checkout based on amount, currency and sequenceType
 	 *
 	 * @param $filters
+	 *
 	 * @return bool
 	 */
 	protected function getAvailableMethodsInCheckout( $filters ) {
@@ -2118,26 +2119,26 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		try {
 			$methods = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->methods->all( $filters );
 
+			// Get the ID of the WooCommerce/Mollie payment method
+			$woocommerce_method = $this->getMollieMethodId();
+
 			// Set all other payment methods to false, so they can be updated if available
-			$status = false;
 			foreach ( $methods as $method ) {
 
-				$woocommerce_method = str_replace( 'mollie_wc_gateway_', '', $this->id );
-
 				if ( $method->id == $woocommerce_method ) {
-					$status = true;
+					return true;
 				} else {
 					continue;
 				}
 			}
-
-			return $status;
 		}
 		catch ( \Mollie\Api\Exceptions\ApiException $e ) {
 
 			Mollie_WC_Plugin::debug( __FUNCTION__ . ": Could not check availability of Mollie payment methods (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class( $e ) . ')' );
 
 		}
+
+		return false;
 	}
 
 	/**

@@ -482,9 +482,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			) );
 
 			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-				Mollie_WC_Plugin::debug( "For order " . $order->id . " redirect user to payment URL: {$payment->_links->checkout->href}" );
+				Mollie_WC_Plugin::debug( "For order " . $order->id . " redirect user to Mollie Checkout URL: " . $payment->getCheckoutUrl() );
 			} else {
-				Mollie_WC_Plugin::debug( "For order " . $order->get_id() . " redirect user to payment URL: {$payment->_links->checkout->href}" );
+				Mollie_WC_Plugin::debug( "For order " . $order->get_id() . " redirect user to Mollie Checkout URL: " . $payment->getCheckoutUrl() );
 			}
 
 			return array (
@@ -665,7 +665,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         /*
          * Redirect to payment URL
          */
-        return $payment->_links->checkout->href;
+        return $payment->getCheckoutUrl();
     }
 
     /**

@@ -1335,11 +1335,21 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 * @return string
 	 */
 	public function getReturnRedirectUrlForOrder( WC_Order $order ) {
+
+		// Get order ID in the correct way depending on WooCommerce version
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			$order_id = $order->id;
+		} else {
+			$order_id = $order->get_id();
+		}
+
+		Mollie_WC_Plugin::debug( __METHOD__ . " $order_id: Determine what the redirect URL in WooCommerce should be." );
+
 		$data_helper = Mollie_WC_Plugin::getDataHelper();
 
 		if ( $this->orderNeedsPayment( $order ) ) {
 
-			$hasCancelledMolliePayment = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $data_helper->hasCancelledMolliePayment( $order->id ) : $data_helper->hasCancelledMolliePayment( $order->get_id() );;
+			$hasCancelledMolliePayment = $data_helper->hasCancelledMolliePayment( $order_id);
 
 			if ( $hasCancelledMolliePayment ) {
 
@@ -1370,11 +1380,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 			}
 
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-				$payment = Mollie_WC_Plugin::getDataHelper()->getActiveMolliePayment($order->id, false );
-			} else {
-				$payment = Mollie_WC_Plugin::getDataHelper()->getActiveMolliePayment($order->get_id(), false );
-			}
+			$payment = Mollie_WC_Plugin::getDataHelper()->getActiveMolliePayment($order_id, false );
 
 			if ( ! $payment->isOpen() && ! $payment->isPending() && ! $payment->isPaid() ) {
 				Mollie_WC_Plugin::addNotice( __( 'Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ) );

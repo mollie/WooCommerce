@@ -512,12 +512,14 @@ class Mollie_WC_Helper_Settings
 
 		if ( ( class_exists( 'WC_Subscription' ) ) && ( $ideal_gateway->is_available() ) && ( ! $sepa_gateway->is_available() ) ) {
 
+			$warning_message = __( 'You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL and/or other "first" payment methods.', 'mollie-payments-for-woocommerce' );
+
 			$content .= '<div class="notice notice-warning is-dismissible"><p>';
-			$content .= __( 'You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL.', 'mollie-payments-for-woocommerce' );
+			$content .= $warning_message;
 			$content .= '</p></div> ';
 
 			$content .= '<strong><p>';
-			$content .= __( 'You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL.', 'mollie-payments-for-woocommerce' );
+			$content .= $warning_message;
 			$content .= '</p></strong> ';
 
 			return $content;

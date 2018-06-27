@@ -265,8 +265,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_ONEOFF
 			);
 
-			// Check regular payments
-			$status = $this->getAvailableMethodsInCheckout( $filters );
+			// For regular payments, check available payment methods, but ignore SSD gateway (not shown in checkout)
+			$status = ( $this->id !== 'mollie_wc_gateway_directdebit' ) ? $this->isAvailableMethodInCheckout( $filters ) : false;
 
 			// Do extra checks if WooCommerce Subscriptions is installed
 			if ( class_exists( 'WC_Subscriptions' ) ) {
@@ -286,11 +286,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 							'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_RECURRING
 						);
 
-						$status = $this->getAvailableMethodsInCheckout( $filters );
+						$status = $this->isAvailableMethodInCheckout( $filters );
 
 					}
 
-					// Now check available first payment methods with today's order total, but ignore SSD gateway (not shown in checkout)
+					// Check available first payment methods with today's order total, but ignore SSD gateway (not shown in checkout)
 					if ( $this->id !== 'mollie_wc_gateway_directdebit' ) {
 						$filters = array (
 							'amount'       => array (
@@ -300,7 +300,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 							'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_FIRST
 						);
 
-						$status = $this->getAvailableMethodsInCheckout( $filters );
+						$status = $this->isAvailableMethodInCheckout( $filters );
 					}
 				}
 			}
@@ -2105,19 +2105,40 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	}
 
 	/**
-	 * Get available payment methods in checkout based on amount, currency and sequenceType
+	 * Check if payment method is available in checkout based on amount, currency and sequenceType
 	 *
 	 * @param $filters
 	 *
 	 * @return bool
 	 */
-	protected function getAvailableMethodsInCheckout( $filters ) {
+	protected function isAvailableMethodInCheckout( $filters ) {
 
 		$settings_helper = Mollie_WC_Plugin::getSettingsHelper();
 		$test_mode       = $settings_helper->isTestModeEnabled();
 
 		try {
-			$methods = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->methods->all( $filters );
+
+			$filtersKey   = $filters['amount']['currency'] . '_' . str_replace( '.', '', $filters['amount']['value'] ) . '_' . $filters['sequenceType'];
+			$transient_id = Mollie_WC_Plugin::getDataHelper()->getTransientId( 'api_methods_' . ( $test_mode ? 'test' : 'live' ) . '_' . $filtersKey );
+
+			$cached = unserialize( get_transient( $transient_id ) );
+
+			if ( $cached && $cached instanceof \Mollie\Api\Resources\MethodCollection ) {
+				$methods = $cached;
+			}
+
+			if ( empty ( $methods ) ) {
+
+				// Remove existing expired transients
+				delete_transient( $transient_id );
+
+				// Get payment methods at Mollie
+				$methods = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->methods->all( $filters );
+
+				// Set new transients (as cache)
+				set_transient( $transient_id, serialize( $methods ), MINUTE_IN_SECONDS * 5 );
+
+			}
 
 			// Get the ID of the WooCommerce/Mollie payment method
 			$woocommerce_method = $this->getMollieMethodId();

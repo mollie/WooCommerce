@@ -261,7 +261,8 @@ class Mollie_WC_Helper_Data
 	public function getAllPaymentMethods( $test_mode = false, $use_cache = true ) {
 
 		$result                  = $this->getRegularPaymentMethods( $test_mode, $use_cache );
-        $recurringPaymentMethods = $this->getRecurringPaymentMethods($test_mode, $use_cache);
+		$recurringPaymentMethods = $this->getRecurringPaymentMethods( $test_mode, $use_cache );
+
 		foreach ( $recurringPaymentMethods as $recurringItem ) {
 			$notFound = true;
 			foreach ( $result as $item ) {
@@ -308,19 +309,40 @@ class Mollie_WC_Helper_Data
 	}
 
 	protected function getApiPaymentMethods( $test_mode = false, $use_cache = true, $filters = array () ) {
-		$result = array ();
+		$methods = array ();
 
 		try {
 
-			$result = $this->api_helper->getApiClient( $test_mode )->methods->all( $filters );
+			$filtersKey   = ( ! empty ( $filters['sequenceType'] ) ) ? '_' . $filters['sequenceType'] : '';
+			$transient_id = Mollie_WC_Plugin::getDataHelper()->getTransientId( 'api_methods_' . ( $test_mode ? 'test' : 'live' ) . $filtersKey );
 
-			return $result;
+			if ( $use_cache ) {
+				$cached_methods = unserialize( get_transient( $transient_id ) );
+
+				if ( $cached_methods && $cached_methods instanceof \Mollie\Api\Resources\MethodCollection ) {
+					return $cached_methods;
+				}
+			}
+
+			if ( empty ( $methods ) ) {
+
+				// Remove existing expired transients
+				delete_transient( $transient_id );
+
+				$methods = $this->api_helper->getApiClient( $test_mode )->methods->all( $filters );
+
+				// Set new transients (as cache)
+				set_transient( $transient_id, serialize( $methods ), MINUTE_IN_SECONDS * 5 );
+
+			}
+
+			return $methods;
 		}
 		catch ( \Mollie\Api\Exceptions\ApiException $e ) {
 			Mollie_WC_Plugin::debug( __FUNCTION__ . ": Could not load Mollie methods (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class( $e ) . ')' );
 		}
 
-		return $result;
+		return $methods;
 	}
 
     /**
@@ -355,13 +377,18 @@ class Mollie_WC_Helper_Data
 
 		try {
 
-			if ( empty( $method_issuers ) ) {
+			$transient_id = Mollie_WC_Plugin::getDataHelper()->getTransientId( 'issuers_' . ( $test_mode ? 'test' : 'live' ) );
 
-				$method_issuers = $this->api_helper->getApiClient( $test_mode )->methods->get( "$method", array ( "include" => "issuers" ) );
+			$cached_issuers = unserialize( get_transient( $transient_id ) );
 
+			if ( $cached_issuers && $cached_issuers instanceof \Mollie\Api\Resources\MethodCollection ) {
+				return $cached_issuers;
+			} else {
+				$issuers = $this->api_helper->getApiClient( $test_mode )->methods->get( "$method", array ( "include" => "issuers" ) );
+				set_transient( $transient_id, serialize( $issuers ), MINUTE_IN_SECONDS * 5 );
 			}
 
-			return $method_issuers;
+			return $issuers;
 
 		}
 		catch ( \Mollie\Api\Exceptions\ApiException $e ) {

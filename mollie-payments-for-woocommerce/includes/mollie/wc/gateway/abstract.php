@@ -193,7 +193,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function isValidForUse()
     {
-        $settings = Mollie_WC_Plugin::getSettingsHelper();
+	    $settings = Mollie_WC_Plugin::getSettingsHelper();
 
         if (!$this->isValidApiKeyProvided())
         {

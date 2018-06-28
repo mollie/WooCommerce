@@ -3,7 +3,7 @@ Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, ideal, sofort, bancontact, bitcoin, direct debit, subscriptions
 Requires at least: 3.8
 Tested up to: 4.9
-Stable tag: 3.0.5
+Stable tag: 3.0.6
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -164,6 +164,9 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 == Changelog ==
 
 = 3.0.6 - 21/06/2018 =
+
+IMPORTANT
+Starting with version 4.0, this plugin will require PHP 5.6. If you are using an older version, please read this article: [PHP & Mollie API v2](https://github.com/mollie/WooCommerce/wiki/PHP-&-Mollie-API-v2). We expect to launch version 4.0 in June 2018.
 
 * Fix - Remove a remove_action() call that blocked the plugin from running on PHP versions below PHP 5.6
 * Fix - Added more log messages to onWebhookPaid

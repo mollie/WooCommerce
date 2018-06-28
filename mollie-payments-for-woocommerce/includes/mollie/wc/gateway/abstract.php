@@ -257,10 +257,23 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			// Check the current (normal) order total
 			$order_total = $this->get_order_total();
 
+			// Get the correct currency for this payment or order
+			// On order-pay page, oorder is already created and has an order currency
+			// On checkout, order is not created, use get_woocommerce_currency
+			global $wp;
+			if ( ! empty( $wp->query_vars['order-pay'] ) ) {
+				$order_id = $wp->query_vars['order-pay'];
+				$order    = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+
+				$currency = $order->get_currency();
+			} else {
+				$currency = get_woocommerce_currency();
+			}
+
 			$filters = array (
 				'amount'       => array (
-					'currency' => get_woocommerce_currency(),
-					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order_total, get_woocommerce_currency() )
+					'currency' => $currency,
+					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order_total, $currency )
 				),
 				'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_ONEOFF
 			);
@@ -280,8 +293,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 						// First check recurring payment methods CC and SDD
 						$filters = array (
 							'amount'       => array (
-								'currency' => get_woocommerce_currency(),
-								'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $recurring_total, get_woocommerce_currency() )
+								'currency' => $currency,
+								'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $recurring_total, $currency )
 							),
 							'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_RECURRING
 						);
@@ -294,8 +307,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 					if ( $this->id !== 'mollie_wc_gateway_directdebit' ) {
 						$filters = array (
 							'amount'       => array (
-								'currency' => get_woocommerce_currency(),
-								'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order_total, get_woocommerce_currency() )
+								'currency' => $currency,
+								'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order_total, $currency )
 							),
 							'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_FIRST
 						);

@@ -22,7 +22,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 require_once 'includes/mollie/wc/autoload.php';
-require_once 'includes/mollie-api-php/vendor/autoload.php';
+
+// TODO: Add more constants WP-style, and move from classes to here.
 
 // Plugin folder URL.
 if ( ! defined( 'M4W_PLUGIN_URL' ) ) {

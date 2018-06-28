@@ -169,6 +169,23 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= 3.0.6 - 21/06/2018 =
+
+IMPORTANT
+Starting with version 4.0, this plugin will require PHP 5.6. If you are using an older version, please read this article: [PHP & Mollie API v2](https://github.com/mollie/WooCommerce/wiki/PHP-&-Mollie-API-v2). We expect to launch version 4.0 in June 2018.
+
+* Fix - Remove a remove_action() call that blocked the plugin from running on PHP versions below PHP 5.6
+* Fix - Added more log messages to onWebhookPaid
+
+= 3.0.5 - 18/06/2018 =
+
+IMPORTANT
+Starting with version 4.0, this plugin will require PHP 5.6. If you are using an older version, please read this article: [PHP & Mollie API v2](https://github.com/mollie/WooCommerce/wiki/PHP-&-Mollie-API-v2). We expect to launch version 4.0 in June 2018.
+
+* Add warning that version 4.0 will require PHP 5.6
+* Update 'Required PHP' tag to PHP 5.6
+* Removes fatal error for thank you page without valid order (Issue #212 by NielsdeBlaauw)
+
 = 3.0.4 - 24/05/2018 =
 
 * Fix - Limit order status update for cancelled and expired payments if another non-Mollie payment gateway also started payment processing (and is active) for that order, prevents expired and cancelled Mollie payments from cancelling the order

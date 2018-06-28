@@ -890,8 +890,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		Mollie_WC_Plugin::debug( __METHOD__ . ' called for ' . $log_id );
 		
 		// Make sure there are refunds to process at all
-		if ( $payment->_links->refunds->href == null ) {
+		if ( ! $payment->_links->refunds ) {
 			Mollie_WC_Plugin::debug( __METHOD__ . ": No refunds to process for {$log_id}", true );
+
+			return;
 		}
 
 		// Check for new refund
@@ -985,8 +987,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		Mollie_WC_Plugin::debug( __METHOD__ . ' called for ' . $log_id );
 
 		// Make sure there are chargebacks to process at all
-		if ( $payment->_links->chargebacks->href == null ) {
+		if ( ! $payment->_links->chargebacks ) {
 			Mollie_WC_Plugin::debug( __METHOD__ . ": No chargebacks to process for {$log_id}", true );
+
+			return;
 		}
 
 		// Check for new chargeback
@@ -2118,8 +2122,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		try {
 
-			$filtersKey   = $filters['amount']['currency'] . '_' . str_replace( '.', '', $filters['amount']['value'] ) . '_' . $filters['sequenceType'];
-			$transient_id = Mollie_WC_Plugin::getDataHelper()->getTransientId( 'api_methods_' . ( $test_mode ? 'test' : 'live' ) . '_' . $filtersKey );
+			$filters_key   = $filters['amount']['currency'] . '_' . str_replace( '.', '', $filters['amount']['value'] ) . '_' . $filters['sequenceType'];
+			$transient_id = Mollie_WC_Plugin::getDataHelper()->getTransientId( 'api_methods_' . ( $test_mode ? 'test' : 'live' ) . '_' . $filters_key );
 
 			$cached = unserialize( get_transient( $transient_id ) );
 
@@ -2148,8 +2152,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 				if ( $method->id == $woocommerce_method ) {
 					return true;
-				} else {
-					continue;
 				}
 			}
 		}
@@ -2170,7 +2172,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 * @return string
 	 */
 	public function get_transaction_url( $order ) {
-		$this->view_transaction_url = 'https://www.mollie.com/dashboard/payments/tr_fEBgzAgbwN';
+		$this->view_transaction_url = 'https://www.mollie.com/dashboard/payments/%s';
 
 		return parent::get_transaction_url( $order );
 	}

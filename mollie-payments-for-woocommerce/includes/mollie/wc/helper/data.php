@@ -313,8 +313,8 @@ class Mollie_WC_Helper_Data
 
 		try {
 
-			$filtersKey   = ( ! empty ( $filters['sequenceType'] ) ) ? '_' . $filters['sequenceType'] : '';
-			$transient_id = Mollie_WC_Plugin::getDataHelper()->getTransientId( 'api_methods_' . ( $test_mode ? 'test' : 'live' ) . $filtersKey );
+			$filters_key   = ( ! empty ( $filters['sequenceType'] ) ) ? '_' . $filters['sequenceType'] : '';
+			$transient_id = Mollie_WC_Plugin::getDataHelper()->getTransientId( 'api_methods_' . ( $test_mode ? 'test' : 'live' ) . $filters_key );
 
 			if ( $use_cache ) {
 				$cached_methods = unserialize( get_transient( $transient_id ) );

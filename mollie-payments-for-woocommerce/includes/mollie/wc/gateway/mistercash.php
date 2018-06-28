@@ -4,8 +4,10 @@
  * Class Mollie_WC_Gateway_MisterCash
  *
  * LEGACY - DO NOT REMOVE!
- * MiserCash was renamed to Bancontact, but this class should stay available for
+ * MisterCash was renamed to Bancontact, but this class should stay available for
  * old orders and subscriptions!
+ *
+ * @deprecated Replaced by Mollie_WC_Gateway_Bancontact
  */
 
 class Mollie_WC_Gateway_MisterCash extends Mollie_WC_Gateway_AbstractSepaRecurring

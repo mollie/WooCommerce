@@ -34,7 +34,7 @@ class Mollie_WC_Plugin
         'Mollie_WC_Gateway_Kbc',
         'Mollie_WC_Gateway_Bancontact',
 	    // LEGACY - DO NOT REMOVE!
-        // MiserCash was renamed to Bancontact, but this class should stay available for old orders and subscriptions!
+        // MisterCash was renamed to Bancontact, but this class should stay available for old orders and subscriptions!
         'Mollie_WC_Gateway_MisterCash',
         'Mollie_WC_Gateway_PayPal',
         'Mollie_WC_Gateway_Paysafecard',

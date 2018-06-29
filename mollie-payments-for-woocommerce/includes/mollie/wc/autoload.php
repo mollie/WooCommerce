@@ -58,15 +58,5 @@ class Mollie_WC_Autoload
                 require_once $class_path;
             }
         }
-        // Mollie API client
-        elseif (stripos($class_name, "Mollie") === 0)
-        {
-            $class_path = $base_path . str_replace( 'Mollie/API', '/mollie-api-php/src', str_replace('\\', '/', $class_name)) . '.php';
-
-            if (file_exists($class_path))
-            {
-                require_once $class_path;
-            }
-        }
     }
 }

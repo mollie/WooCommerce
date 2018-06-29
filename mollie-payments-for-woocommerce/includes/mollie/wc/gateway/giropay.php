@@ -1,6 +1,6 @@
 <?php
 
-use Mollie\API\Types\PaymentMethod;
+use Mollie\Api\Types\PaymentMethod;
 
 class Mollie_WC_Gateway_Giropay extends Mollie_WC_Gateway_Abstract {
 	/**

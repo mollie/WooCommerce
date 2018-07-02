@@ -169,7 +169,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 4.0.0-beta2 - 28/06/2018 =
+= 4.0.0-beta2 - 02/07/2018 =
 
 IMPORTANT
 Version 4.0 requires PHP 5.6 or higher. If you are using an older PHP version, please read this article: [PHP & Mollie API v2](https://github.com/mollie/WooCommerce/wiki/PHP-&-Mollie-API-v2).

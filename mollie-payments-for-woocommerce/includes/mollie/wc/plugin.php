@@ -245,6 +245,7 @@ class Mollie_WC_Plugin
         if (!$gateway)
         {
             self::setHttpResponseCode(404);
+
             self::debug(__METHOD__ . ":  Could not find gateway for order $order_id.");
             return;
         }
@@ -328,8 +329,21 @@ class Mollie_WC_Plugin
 
 		$gateways = array_merge( $gateways, self::$GATEWAYS );
 
+		// Return if function get_current_screen() is not defined
+		if ( ! function_exists( 'get_current_screen' ) ) {
+			return $gateways;
+		}
+
+		// Try getting get_current_screen()
+		$current_screen = get_current_screen();
+
+		// Return if get_current_screen() isn't set
+		if ( ! $current_screen ) {
+			return $gateways;
+		}
+
 		// Remove old MisterCash (only) from WooCommerce Payment settings
-		if ( is_admin() && ! empty( get_current_screen()->base ) && get_current_screen()->base == 'woocommerce_page_wc-settings' ) {
+		if ( is_admin() && ! empty( $current_screen->base ) && $current_screen->base == 'woocommerce_page_wc-settings' ) {
 			if ( ( $key = array_search( 'Mollie_WC_Gateway_MisterCash', $gateways ) ) !== false ) {
 				unset( $gateways[ $key ] );
 			}

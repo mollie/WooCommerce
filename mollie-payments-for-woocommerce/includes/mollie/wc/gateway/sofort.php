@@ -1,4 +1,7 @@
 <?php
+
+use Mollie\Api\Types\PaymentMethod;
+
 class Mollie_WC_Gateway_Sofort extends Mollie_WC_Gateway_AbstractSepaRecurring
 {
     /**
@@ -19,7 +22,7 @@ class Mollie_WC_Gateway_Sofort extends Mollie_WC_Gateway_AbstractSepaRecurring
      */
     public function getMollieMethodId ()
     {
-        return Mollie_API_Object_Method::SOFORT;
+        return PaymentMethod::SOFORT;
     }
 
     /**
@@ -47,12 +50,12 @@ class Mollie_WC_Gateway_Sofort extends Mollie_WC_Gateway_AbstractSepaRecurring
 
     /**
      * @param WC_Order                  $order
-     * @param Mollie_API_Object_Payment $payment
+     * @param Mollie\Api\Resources\Payment $payment
      * @param bool                      $admin_instructions
      * @param bool                      $plain_text
      * @return string|null
      */
-    protected function getInstructions (WC_Order $order, Mollie_API_Object_Payment $payment, $admin_instructions, $plain_text)
+    protected function getInstructions (WC_Order $order, Mollie\Api\Resources\Payment $payment, $admin_instructions, $plain_text)
     {
         if ($payment->isPaid() && $payment->details)
         {

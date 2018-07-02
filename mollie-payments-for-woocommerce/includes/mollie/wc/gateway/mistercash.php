@@ -1,4 +1,15 @@
 <?php
+
+/**
+ * Class Mollie_WC_Gateway_MisterCash
+ *
+ * LEGACY - DO NOT REMOVE!
+ * MisterCash was renamed to Bancontact, but this class should stay available for
+ * old orders and subscriptions!
+ *
+ * @deprecated Replaced by Mollie_WC_Gateway_Bancontact
+ */
+
 class Mollie_WC_Gateway_MisterCash extends Mollie_WC_Gateway_AbstractSepaRecurring
 {
     /**
@@ -19,7 +30,8 @@ class Mollie_WC_Gateway_MisterCash extends Mollie_WC_Gateway_AbstractSepaRecurri
      */
     public function getMollieMethodId ()
     {
-        return Mollie_API_Object_Method::MISTERCASH;
+    	// Don't use constant as it's no longer part of Mollie API PHP
+        return 'mistercash';
     }
 
     /**

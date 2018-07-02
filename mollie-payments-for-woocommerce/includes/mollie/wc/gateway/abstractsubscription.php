@@ -64,7 +64,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
     {
         $paymentRequestData = parent::getPaymentRequestData($order, $customer_id);
         if ($this->isSubscriptionPayment){
-            $paymentRequestData['recurringType'] = 'first';
+            $paymentRequestData['sequenceType'] = 'first';
         }
         return $paymentRequestData;
     }
@@ -91,7 +91,10 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 		    ));
 
 		    $data = array_filter(array(
-			    'amount'          => $order->get_total(),
+			    'amount'          => array (
+				    'currency' => $order->get_currency(),
+				    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order->get_total(), $order->get_currency())
+			    ),
 			    'description'     => $payment_description,
 			    'redirectUrl'     => $return_url,
 			    'webhookUrl'      => $webhook_url,
@@ -101,7 +104,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			    'metadata'        => array(
 				    'order_id' => $order->id,
 			    ),
-			    'recurringType'   => 'recurring',
+			    'sequenceType'   => 'recurring',
 			    'customerId'      => $customer_id,
 		    ));
 	    } else {
@@ -111,7 +114,10 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 		    ));
 
 		    $data = array_filter(array(
-			    'amount'          => $order->get_total(),
+			    'amount'          => array (
+				    'currency' => $order->get_currency(),
+				    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order->get_total(), $order->get_currency())
+			    ),
 			    'description'     => $payment_description,
 			    'redirectUrl'     => $return_url,
 			    'webhookUrl'      => $webhook_url,
@@ -121,7 +127,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			    'metadata'        => array(
 				    'order_id' => $order->get_id(),
 			    ),
-			    'recurringType'   => 'recurring',
+			    'sequenceType'   => 'recurring',
 			    'customerId'      => $customer_id,
 		    ));
 	    }
@@ -162,11 +168,10 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
 	/**
 	 * @param $renewal_order
-	 * @param $payment
 	 *
 	 * @return void
 	 */
-	public function update_subscription_status_for_direct_debit( $renewal_order, $payment ) {
+	public function update_subscription_status_for_direct_debit( $renewal_order ) {
 
 		// Get renewal order id
 		$renewal_order_id  = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $renewal_order->id : $renewal_order->get_id();
@@ -191,6 +196,8 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 				'mollie_wc_gateway_directdebit',
 				'mollie_wc_gateway_ideal',
 				'mollie_wc_gateway_inghomepay',
+				'mollie_wc_gateway_eps',
+				'mollie_wc_gateway_giropay',
 				'mollie_wc_gateway_mistercash',
 				'mollie_wc_gateway_bancontact',
 				'mollie_wc_gateway_sofort',
@@ -208,7 +215,14 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			}
 
 			// Update subscription to Active
-			$subscription->update_status( 'active' );
+			try {
+
+				$subscription->update_status( 'active' );
+			}
+			catch ( Exception $e ) {
+				// Already logged by WooCommerce Subscriptions
+				Mollie_WC_Plugin::debug( 'Could not update subscription ' . $subscription_id . ' status:' . $e->getMessage() );
+			}
 
 			// Add order note to subscription explaining the change
 			$subscription->add_order_note(
@@ -221,32 +235,26 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
 	}
 
-    /**
-     * @param $amount_to_charge
-     * @param $renewal_order
-     * @return array
-     * @throws Mollie_WC_Exception_InvalidApiKey
-     */
-    public function scheduled_subscription_payment( $amount_to_charge, $renewal_order )
+	/**
+	 * @param          $renewal_total
+	 * @param WC_Order $renewal_order
+	 *
+	 * @return array
+	 * @throws Mollie_WC_Exception_InvalidApiKey
+	 */
+    public function scheduled_subscription_payment( $renewal_total, WC_Order $renewal_order )
     {
-        if (!$renewal_order)
-        {
-	        if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		        Mollie_WC_Plugin::debug($this->id . ': Could not process payment, order ' . $renewal_order->id . ' not found.');
 
-		        Mollie_WC_Plugin::addNotice(sprintf(__('Could not load order %s', 'mollie-payments-for-woocommerce'), $renewal_order->id), 'error');
-	        } else {
-		        Mollie_WC_Plugin::debug($this->id . ': Could not process payment, order ' . $renewal_order->get_id() . ' not found.');
+	    if ( ! $renewal_order ) {
 
-		        Mollie_WC_Plugin::addNotice(sprintf(__('Could not load order %s', 'mollie-payments-for-woocommerce'), $renewal_order->get_id()), 'error');
-	        }
+		    Mollie_WC_Plugin::debug( $this->id . ': Could not load renewal order or process renewal payment.');
 
-            return array('result' => 'failure');
-        }
+		    return array ( 'result' => 'failure' );
+	    }
 
 	    $renewal_order_id 	= ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $renewal_order->id : $renewal_order->get_id();
 
-	    Mollie_WC_Plugin::debug($this->id . ': Try to create payment for order ' . $renewal_order_id);
+	    Mollie_WC_Plugin::debug($this->id . ': Try to create renewal payment for renewal order ' . $renewal_order_id);
         $initial_order_status = $this->getInitialOrderStatus();
 
         // Overwrite plugin-wide
@@ -255,26 +263,31 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
         // Overwrite gateway-wide
         $initial_order_status = apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_initial_order_status_' . $this->id, $initial_order_status);
 
+        // Get Mollie customer ID
         $customer_id    = $this->getOrderMollieCustomerId($renewal_order);
 
+        // Get all data for the renewal payment
         $data = $this->getRecurringPaymentRequestData($renewal_order, $customer_id);
 
+        // Allow filtering the renewal payment data
         $data = apply_filters('woocommerce_' . $this->id . '_args', $data, $renewal_order);
 
 
-        // Is test mode enabled?
+        // Check if test mode is enabled
         $test_mode = $this->isTestModeEnabledForRenewalOrder($renewal_order);
+
+        // Create a renewal payment
         try
         {
-            Mollie_WC_Plugin::debug($this->id . ': Create payment for order ' . $renewal_order_id);
 
             do_action(Mollie_WC_Plugin::PLUGIN_ID . '_create_payment', $data, $renewal_order);
             $payment = null;
-            // Create Mollie payment with customer id.
+
+	        // Get all mandates for the customer ID
             try
             {
-                Mollie_WC_Plugin::debug($this->id . ': Fetch mandate ' . $renewal_order_id);
-                $mandates =  Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode)->customers_mandates->withParentId($customer_id)->all();
+                Mollie_WC_Plugin::debug($this->id . ': Try to get all mandates for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id );
+                $mandates =  Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode)->customers->get($customer_id)->mandates();
                 $validMandate = false;
                 foreach ($mandates as $mandate) {
                     if ($mandate->status == 'valid') {
@@ -283,56 +296,33 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
                         break;
                     }
                 }
-                if ($validMandate){
-                    Mollie_WC_Plugin::debug($this->id . ': Valid mandate ' . $renewal_order_id);
-                    $payment = Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode)->payments->create($data);
-                } else {
-                    Mollie_WC_Plugin::debug($this->id . ': Payment problem ' . $renewal_order_id);
-                    throw new Mollie_API_Exception(__('Payment cannot be processed, no valid mandate.', 'mollie-payments-for-woocommerce-mandate-problem'));
-                }
-            }
-            catch (Mollie_API_Exception $e)
-            {
-                if ($e->getField() !== 'customerId')
-                {
-                    throw $e;
-                }
 
-                // Retry without customer id.
-                unset($data['customerId']);
-                $payment = Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode)->payments->create($data);
+            }
+            catch ( Mollie\Api\Exceptions\ApiException $e ) {
+	            throw new \Mollie\Api\Exceptions\ApiException( sprintf( __( 'The customer (%s) could not be used or found', 'mollie-payments-for-woocommerce-mandate-problem' ), $customer_id ) );
             }
 
-	        // Update payment method to actual payment method used for renewal order, this is
-	        // for subscriptions where the first order used methods like iDEAL as first payment and
-	        // later renewal orders switch to SEPA Direct Debit.
-
-	        $methods_needing_update = array (
-		        'mollie_wc_gateway_ideal',
-		        'mollie_wc_gateway_inghomepay',
-		        'mollie_wc_gateway_mistercash',
-		        'mollie_wc_gateway_bancontact',
-		        'mollie_wc_gateway_sofort',
-		        'mollie_wc_gateway_kbc',
-		        'mollie_wc_gateway_belfius',
-	        );
-
-	        $current_method = get_post_meta( $renewal_order_id, '_payment_method', $single = true );
-
-	        if ( in_array( $current_method, $methods_needing_update ) && $payment->method == 'directdebit' ) {
-		        if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			        update_post_meta( $renewal_order_id, '_payment_method', 'mollie_wc_gateway_directdebit' );
-			        update_post_meta( $renewal_order_id, '_payment_method_title', 'SEPA Direct Debit' );
+	        // Check that there is at least one valid mandate
+	        try {
+		        if ( $validMandate ) {
+			        Mollie_WC_Plugin::debug( $this->id . ': Valid mandate found for renewal order ' . $renewal_order_id );
+			        $payment = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->create( $data );
 		        } else {
-			        $renewal_order->update_meta_data( '_payment_method', 'mollie_wc_gateway_directdebit' );
-			        $renewal_order->update_meta_data( '_payment_method_title', 'SEPA Direct Debit' );
-			        $renewal_order->save();
+			        throw new \Mollie\Api\Exceptions\ApiException( sprintf( __( 'The customer (%s) does not have a valid mandate.', 'mollie-payments-for-woocommerce-mandate-problem' ), $customer_id ) );
 		        }
 	        }
+	        catch ( Mollie\Api\Exceptions\ApiException $e ) {
+		        throw $e;
+	        }
 
-            Mollie_WC_Plugin::debug($this->id . ': Created payment for order ' . $renewal_order_id. ' payment json response '.json_encode($payment));
+	        // Update first payment method to actual recurring payment method used for renewal order
+	        $this->updateFirstPaymentMethodToRecurringPaymentMethod( $renewal_order, $renewal_order_id, $payment );
+
+			// Log successful creation of payment
+	        Mollie_WC_Plugin::debug( $this->id . ': Renewal payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $renewal_order_id . ' payment json response: ' . json_encode( $payment ) );
+
+	        // Unset & set active Mollie payment
             Mollie_WC_Plugin::getDataHelper()->unsetActiveMolliePayment($renewal_order_id);
-            // Set active Mollie payment
             Mollie_WC_Plugin::getDataHelper()->setActiveMolliePayment($renewal_order_id, $payment);
 
             // Set Mollie customer
@@ -341,31 +331,25 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
             // Tell WooCommerce a new payment was created for the order/subscription
             do_action(Mollie_WC_Plugin::PLUGIN_ID . '_payment_created', $payment, $renewal_order);
 
-            Mollie_WC_Plugin::debug($this->id . ': Payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $renewal_order_id);
-
             // Set initial status
             // Status is only updated if the new status is not the same as the default order status (pending)
             $this->_updateScheduledPaymentOrder($renewal_order, $initial_order_status, $payment);
 
             // Update status of subscriptions with payment method SEPA Direct Debit or similar
-	        $this->update_subscription_status_for_direct_debit( $renewal_order, $payment );
+	        $this->update_subscription_status_for_direct_debit( $renewal_order );
 
             return array(
                 'result'   => 'success',
             );
         }
-        catch (Mollie_API_Exception $e)
-        {
-            Mollie_WC_Plugin::debug($this->id . ': Failed to create payment for order ' . $renewal_order_id . ': ' . $e->getMessage());
+        catch ( Mollie\Api\Exceptions\ApiException $e ) {
 
-            /* translators: Placeholder 1: Payment method title */
-            $message = sprintf(__('Could not create %s payment.', 'mollie-payments-for-woocommerce'), $this->title);
+	        Mollie_WC_Plugin::debug( $this->id . ': Failed to create payment for order ' . $renewal_order_id . ': ' . $e->getMessage() );
 
-            if (defined('WP_DEBUG') && WP_DEBUG)
-            {
-                $message .= ' ' . $e->getMessage();
-            }
-            $renewal_order->update_status( 'failed',$message );
+	        /* translators: Placeholder 1: Payment method title */
+	        $message = sprintf( __( 'Could not create %s renewal payment.', 'mollie-payments-for-woocommerce' ), $this->title );
+	        $message .= ' ' . $e->getMessage();
+	        $renewal_order->update_status( 'failed', $message );
 
         }
 
@@ -404,12 +388,56 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
         return $result;
     }
+
+	/**
+	 * @param WC_Order                            $renewal_order
+	 * @param                                     $renewal_order_id
+	 * @param Mollie\Api\Resources\Payment        $payment
+	 *
+	 */
+	public function updateFirstPaymentMethodToRecurringPaymentMethod( $renewal_order, $renewal_order_id, $payment ) {
+
+		// Update first payment method to actual recurring payment method used for renewal order, this is
+		// for subscriptions where the first order used methods like iDEAL as first payment and
+		// later renewal orders switch to SEPA Direct Debit.
+
+		$methods_needing_update = array (
+			'mollie_wc_gateway_ideal',
+			'mollie_wc_gateway_inghomepay',
+			'mollie_wc_gateway_eps',
+			'mollie_wc_gateway_giropay',
+			'mollie_wc_gateway_mistercash',
+			'mollie_wc_gateway_bancontact',
+			'mollie_wc_gateway_sofort',
+			'mollie_wc_gateway_kbc',
+			'mollie_wc_gateway_belfius',
+		);
+
+		$current_method = get_post_meta( $renewal_order_id, '_payment_method', $single = true );
+		if ( in_array( $current_method, $methods_needing_update ) && $payment->method == 'directdebit' ) {
+			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+				update_post_meta( $renewal_order_id, '_payment_method', 'mollie_wc_gateway_directdebit' );
+				update_post_meta( $renewal_order_id, '_payment_method_title', 'SEPA Direct Debit' );
+			} else {
+				try {
+					$renewal_order->set_payment_method( 'mollie_wc_gateway_directdebit' );
+					$renewal_order->set_payment_method_title( 'SEPA Direct Debit' );
+					$renewal_order->save();
+				}
+				catch ( WC_Data_Exception $e ) {
+					Mollie_WC_Plugin::debug( 'Updating payment method to SEPA Direct Debit failed for renewal order: ' . $renewal_order_id );
+				}
+			}
+		}
+
+	}
+
     /**
      * @param $order_id
-     * @param Mollie_API_Object_Payment $payment
+     * @param Mollie\Api\Resources\Payment $payment
      * @return $this
      */
-    public function setActiveMolliePayment ($order_id, Mollie_API_Object_Payment $payment)
+    public function setActiveMolliePayment ($order_id, Mollie\Api\Resources\Payment $payment)
     {
 
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
@@ -695,9 +723,9 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
 	/**
 	 * @param WC_Order                  $order
-	 * @param Mollie_API_Object_Payment $payment
+	 * @param Mollie\Api\Resources\Payment $payment
 	 */
-	protected function onWebhookFailed( WC_Order $order, Mollie_API_Object_Payment $payment ) {
+	protected function onWebhookFailed( WC_Order $order, Mollie\Api\Resources\Payment $payment ) {
 
 		// Get order ID in the correct way depending on WooCommerce version
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
@@ -740,58 +768,12 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
 			// Send a "Failed order" email to notify the admin
 			$emails = WC()->mailer()->get_emails();
-			if ( ! empty( $emails ) && ! empty( $order_id ) ) {
+			if ( ! empty( $emails ) && ! empty( $order_id ) && ! empty( $emails['WC_Email_Failed_Order'] ) ) {
 				$emails['WC_Email_Failed_Order']->trigger( $order_id );
 			}
-		}
-	}
-
-	/**
-	 * @param WC_Order                  $order
-	 * @param Mollie_API_Object_Payment $payment
-	 */
-	protected function onWebhookChargedback( WC_Order $order, Mollie_API_Object_Payment $payment ) {
-
-		// Get order ID in the correct way depending on WooCommerce version
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			$order_id = $order->id;
 		} else {
-			$order_id = $order->get_id();
+			parent::onWebhookFailed( $order, $payment );
 		}
-
-		// Add messages to log
-		Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id );
-
-		// New order status
-		$new_order_status = self::STATUS_ON_HOLD;
-
-		// Overwrite plugin-wide
-		$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_on_hold', $new_order_status );
-
-		// Overwrite gateway-wide
-		$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_on_hold_' . $this->id, $new_order_status );
-
-		$paymentMethodTitle = $this->getPaymentMethodTitle( $payment );
-
-		// Update order status for order with charged_back payment, don't restore stock
-		$this->updateOrderStatus(
-			$order,
-			$new_order_status,
-			sprintf(
-			/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-				__( '%s renewal payment charged back via Mollie (%s). You will need to manually review the payment and adjust product stocks if you use them.', 'mollie-payments-for-woocommerce' ),
-				$paymentMethodTitle,
-				$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
-			),
-			$restore_stock = false
-		);
-
-		// Send a "Failed order" email to notify the admin
-		$emails = WC()->mailer()->get_emails();
-		if ( ! empty( $emails ) && ! empty( $order_id ) ) {
-			$emails['WC_Email_Failed_Order']->trigger( $order_id );
-		}
-
 	}
 
     /**

@@ -1,12 +1,15 @@
 <?php
+
+use Mollie\Api\Types\PaymentMethod;
+
 abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 {
     const STATUS_PENDING    = 'pending';
     const STATUS_PROCESSING = 'processing';
     const STATUS_ON_HOLD    = 'on-hold';
     const STATUS_COMPLETED  = 'completed';
-    const STATUS_CANCELLED  = 'cancelled';
-    const STATUS_REFUNDED   = 'refunded';
+    const STATUS_CANCELLED  = 'canceled';
+    // Mollie uses canceled (US English spelling), WooCommerce and this plugin use cancelled.
     const STATUS_FAILED     = 'failed';
 
     /**
@@ -24,26 +27,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected $display_logo;
 
-    /**
-     * Minimum transaction amount, zero does not define a minimum
-     *
-     * @var int
-     */
-    public $min_amount = 0;
-
-    /**
-     * Maximum transaction amount, zero does not define a maximum
-     *
-     * @var int
-     */
-    public $max_amount = 0;
-
 	/**
 	 * Recurring total, zero does not define a recurring total
 	 *
 	 * @var int
 	 */
-	public $recurring_total = 0;
+	public $recurring_totals = 0;
 
     /**
      *
@@ -67,13 +56,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         $this->_initDescription();
         $this->_initIcon();
-        $this->_initMinMaxAmount();
 
         if(!has_action('woocommerce_thankyou_' . $this->id)) {
             add_action('woocommerce_thankyou_' . $this->id, array($this, 'thankyou_page'));
         }
 
-        add_action('woocommerce_api_' . $this->id, array($this, 'webhookAction'));
+        add_action('woocommerce_api_' . $this->id, array($this, 'onWebhookAction'));
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
         add_action('woocommerce_email_after_order_table', array($this, 'displayInstructions'), 10, 3);
 
@@ -152,14 +140,20 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function getIconUrl ()
     {
-        return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $this->getMollieMethodId() . '.png');
+
+    	// In checkout, show the creditcards.svg with multiple logo's
+    	if ( $this->getMollieMethodId() == PaymentMethod::CREDITCARD  && !is_admin()) {
+		    return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $this->getMollieMethodId() . 's.svg');
+	    }
+
+        return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $this->getMollieMethodId() . '.svg');
     }
 
 	/**
 	 * @return string
 	 */
 	public function getIssuerIconUrl( $issuer_id ) {
-		return Mollie_WC_Plugin::getPluginUrl( 'assets/images/' . $issuer_id . '.png' );
+		return Mollie_WC_Plugin::getPluginUrl( 'assets/images/' . $issuer_id . '.svg' );
 	}
 
     protected function _initIcon ()
@@ -176,15 +170,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $description = $this->get_option('description', '');
 
         $this->description = $description;
-    }
-
-    protected function _initMinMaxAmount ()
-    {
-        if ($mollie_method = $this->getMollieMethod())
-        {
-            $this->min_amount = $mollie_method->getMinimumAmount() ? $mollie_method->getMinimumAmount() : 0;
-            $this->max_amount = $mollie_method->getMaximumAmount() ? $mollie_method->getMaximumAmount() : 0;
-        }
     }
 
     public function admin_options ()
@@ -208,7 +193,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function isValidForUse()
     {
-        $settings = Mollie_WC_Plugin::getSettingsHelper();
+	    $settings = Mollie_WC_Plugin::getSettingsHelper();
 
         if (!$this->isValidApiKeyProvided())
         {
@@ -241,9 +226,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         {
             $this->errors[] = sprintf(
             /* translators: Placeholder 1: WooCommerce currency, placeholder 2: Supported Mollie currencies */
-                __('Shop currency %s not supported by Mollie. Mollie only supports: %s.', 'mollie-payments-for-woocommerce'),
+                __('Current shop currency %s not supported by Mollie. Read more about %ssupported currencies and payment methods.%s ', 'mollie-payments-for-woocommerce'),
                 get_woocommerce_currency(),
-                implode(', ', $this->getSupportedCurrencies())
+                '<a href="https://help.mollie.com/hc/en-us/articles/360003980013-Which-currencies-are-supported-and-what-is-the-settlement-currency-" target="_blank">',
+                '</a>'
             );
 
             return false;
@@ -271,47 +257,68 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			// Check the current (normal) order total
 			$order_total = $this->get_order_total();
 
-			// Don't check SEPA Direct Debit, as it's only available for recurring payments
-			if ( $this->id !== 'mollie_wc_gateway_directdebit' ) {
+			// Get the correct currency for this payment or order
+			// On order-pay page, oorder is already created and has an order currency
+			// On checkout, order is not created, use get_woocommerce_currency
+			global $wp;
+			if ( ! empty( $wp->query_vars['order-pay'] ) ) {
+				$order_id = $wp->query_vars['order-pay'];
+				$order    = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
 
-				// If order total is more then zero, check min/max amounts
-				if ( $order_total > 0 ) {
-					// Validate min amount
-					if ( 0 < $this->min_amount && $this->min_amount > $order_total ) {
-						return false;
-					}
-
-					// Validate max amount
-					if ( 0 < $this->max_amount && $this->max_amount < $order_total ) {
-						return false;
-					}
-				}
+				$currency = $order->get_currency();
+			} else {
+				$currency = get_woocommerce_currency();
 			}
 
-			// If WooCommerce Subscriptions is installed, also check recurring order total
+			$filters = array (
+				'amount'       => array (
+					'currency' => $currency,
+					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order_total, $currency )
+				),
+				'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_ONEOFF
+			);
+
+			// For regular payments, check available payment methods, but ignore SSD gateway (not shown in checkout)
+			$status = ( $this->id !== 'mollie_wc_gateway_directdebit' ) ? $this->isAvailableMethodInCheckout( $filters ) : false;
+
+			// Do extra checks if WooCommerce Subscriptions is installed
 			if ( class_exists( 'WC_Subscriptions' ) ) {
 
-				$recurring_total = $this->get_recurring_total();
+				// Check recurring totals against recurring payment methods for future renewal payments
+				$recurring_totals = $this->get_recurring_total();
 
-				if ( $recurring_total != false ) {
-					foreach ( $recurring_total as $order_total ) {
+				if ( ! empty( $recurring_totals ) ) {
+					foreach ( $recurring_totals as $recurring_total ) {
 
-						// If order total is more then zero, check min/max amounts
-						if ( $order_total > 0 ) {
-							// Validate min amount
-							if ( 0 < $this->min_amount && $this->min_amount > $order_total ) {
-								return false;
-							}
+						// First check recurring payment methods CC and SDD
+						$filters = array (
+							'amount'       => array (
+								'currency' => $currency,
+								'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $recurring_total, $currency )
+							),
+							'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_RECURRING
+						);
 
-							// Validate max amount
-							if ( 0 < $this->max_amount && $this->max_amount < $order_total ) {
-								return false;
-							}
-						}
+						$status = $this->isAvailableMethodInCheckout( $filters );
 
+					}
+
+					// Check available first payment methods with today's order total, but ignore SSD gateway (not shown in checkout)
+					if ( $this->id !== 'mollie_wc_gateway_directdebit' ) {
+						$filters = array (
+							'amount'       => array (
+								'currency' => $currency,
+								'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order_total, $currency )
+							),
+							'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_FIRST
+						);
+
+						$status = $this->isAvailableMethodInCheckout( $filters );
 					}
 				}
 			}
+
+			return $status;
 
 		}
 
@@ -335,6 +342,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	/**
 	 * @param int $order_id
 	 *
+	 * @throws \Mollie\Api\Exceptions\ApiException
 	 * @return array
 	 */
 	public function process_payment( $order_id ) {
@@ -382,7 +390,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 			try {
 				Mollie_WC_Plugin::debug( $this->id . ': Subscription switch started, fetching mandate(s) for order #' . $order_id );
-				$mandates     = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers_mandates->withParentId( $customer_id )->all();
+				$mandates = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers->get( $customer_id )->mandates();
 				$validMandate = false;
 				foreach ( $mandates as $mandate ) {
 					if ( $mandate->status == 'valid' ) {
@@ -408,10 +416,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				} else {
 					Mollie_WC_Plugin::debug( $this->id . ': Subscription switch failed, no valid mandate for order #' . $order_id );
 					Mollie_WC_Plugin::addNotice( __( 'Subscription switch failed, no valid mandate found. Place a completely new order to change your subscription.', 'mollie-payments-for-woocommerce' ), 'error' );
-					throw new Mollie_API_Exception( __( 'Subscription switch failed, no valid mandate.', 'mollie-payments-for-woocommerce' ) );
+					throw new Mollie\Api\Exceptions\ApiException( __( 'Subscription switch failed, no valid mandate.', 'mollie-payments-for-woocommerce' ) );
 				}
 			}
-			catch ( Mollie_API_Exception $e ) {
+			catch ( Mollie\Api\Exceptions\ApiException $e ) {
 				if ( $e->getField() ) {
 					throw $e;
 				}
@@ -437,7 +445,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			try {
 				$payment = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->create( $data );
 			}
-			catch ( Mollie_API_Exception $e ) {
+			catch ( Mollie\Api\Exceptions\ApiException $e ) {
 				if ( $e->getField() !== 'customerId' ) {
 					throw $e;
 				}
@@ -487,9 +495,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			) );
 
 			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-				Mollie_WC_Plugin::debug( "For order " . $order->id . " redirect user to payment URL: {$payment->getPaymentUrl()}" );
+				Mollie_WC_Plugin::debug( "For order " . $order->id . " redirect user to Mollie Checkout URL: " . $payment->getCheckoutUrl() );
 			} else {
-				Mollie_WC_Plugin::debug( "For order " . $order->get_id() . " redirect user to payment URL: {$payment->getPaymentUrl()}" );
+				Mollie_WC_Plugin::debug( "For order " . $order->get_id() . " redirect user to Mollie Checkout URL: " . $payment->getCheckoutUrl() );
 			}
 
 			return array (
@@ -497,7 +505,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				'redirect' => $this->getProcessPaymentRedirect( $order, $payment ),
 			);
 		}
-		catch ( Mollie_API_Exception $e ) {
+		catch ( Mollie\Api\Exceptions\ApiException $e ) {
 			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 				Mollie_WC_Plugin::debug( $this->id . ': Failed to create payment for order ' . $order->id . ': ' . $e->getMessage() );
 			} else {
@@ -554,61 +562,85 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $return_url          = $this->getReturnUrl($order);
         $webhook_url         = $this->getWebhookUrl($order);
 
+
+
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+
 		    $payment_description = strtr($payment_description, array(
 			    '{order_number}' => $order->get_order_number(),
 			    '{order_date}'   => date_i18n(wc_date_format(), strtotime($order->order_date)),
 		    ));
-	    } else {
-		    $payment_description = strtr($payment_description, array(
-			    '{order_number}' => $order->get_order_number(),
-			    '{order_date}'   => date_i18n(wc_date_format(), $order->get_date_created()->getTimestamp()),
-		    ));
-	    }
 
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    $paymentRequestData = array(
-			    'amount'          => $order->get_total(),
+		    // Create billingAddress object
+		    $billingAddress                  = new stdClass();
+		    $billingAddress->streetAndNumber = $order->billing_address_1;
+		    $billingAddress->postalCode      = $order->billing_postcode;
+		    $billingAddress->city            = $order->billing_city;
+		    $billingAddress->region          = $order->billing_state;
+		    $billingAddress->country         = $order->billing_country;
+
+		    // Create shippingAddress object
+		    $shippingAddress                  = new stdClass();
+		    $shippingAddress->streetAndNumber = $order->shipping_address_1;
+		    $shippingAddress->postalCode      = $order->shipping_postcode;
+		    $shippingAddress->city            = $order->shipping_city;
+		    $shippingAddress->region          = $order->shipping_state;
+		    $shippingAddress->country         = $order->shipping_country;
+
+		    $paymentRequestData = array (
+			    'amount'          => array (
+				    'currency' => $order->get_currency(),
+				    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order->get_total(), $order->get_currency() )
+			    ),
 			    'description'     => $payment_description,
 			    'redirectUrl'     => $return_url,
 			    'webhookUrl'      => $webhook_url,
 			    'method'          => $mollie_method,
 			    'issuer'          => $selected_issuer,
 			    'locale'          => $payment_locale,
-			    'billingAddress'  => $order->billing_address_1,
-			    'billingCity'     => $order->billing_city,
-			    'billingRegion'   => $order->billing_state,
-			    'billingPostal'   => $order->billing_postcode,
-			    'billingCountry'  => $order->billing_country,
-			    'shippingAddress' => $order->shipping_address_1,
-			    'shippingCity'    => $order->shipping_city,
-			    'shippingRegion'  => $order->shipping_state,
-			    'shippingPostal'  => $order->shipping_postcode,
-			    'shippingCountry' => $order->shipping_country,
-			    'metadata'        => array(
+			    'billingAddress'  => $billingAddress,
+			    'shippingAddress' => $shippingAddress,
+			    'metadata'        => array (
 				    'order_id' => $order->id,
 			    ),
 		    );
 	    } else {
-		    $paymentRequestData = array(
-			    'amount'          => $order->get_total(),
+
+		    $payment_description = strtr($payment_description, array(
+			    '{order_number}' => $order->get_order_number(),
+			    '{order_date}'   => date_i18n(wc_date_format(), $order->get_date_created()->getTimestamp()),
+		    ));
+
+		    // Create billingAddress object
+		    $billingAddress                  = new stdClass();
+		    $billingAddress->streetAndNumber = $order->get_billing_address_1();
+		    $billingAddress->postalCode      = $order->get_billing_postcode();
+		    $billingAddress->city            = $order->get_billing_city();
+		    $billingAddress->region          = $order->get_billing_state();
+		    $billingAddress->country         = $order->get_billing_country();
+
+		    // Create shippingAddress object
+		    $shippingAddress                  = new stdClass();
+		    $shippingAddress->streetAndNumber = $order->get_shipping_address_1();
+		    $shippingAddress->postalCode      = $order->get_shipping_postcode();
+		    $shippingAddress->city            = $order->get_shipping_city();
+		    $shippingAddress->region          = $order->get_shipping_state();
+		    $shippingAddress->country         = $order->get_shipping_country();
+
+		    $paymentRequestData = array (
+			    'amount'          => array (
+				    'currency' => $order->get_currency(),
+				    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order->get_total(), $order->get_currency())
+			    ),
 			    'description'     => $payment_description,
 			    'redirectUrl'     => $return_url,
 			    'webhookUrl'      => $webhook_url,
 			    'method'          => $mollie_method,
 			    'issuer'          => $selected_issuer,
 			    'locale'          => $payment_locale,
-			    'billingAddress'  => $order->get_billing_address_1(),
-			    'billingCity'     => $order->get_billing_city(),
-			    'billingRegion'   => $order->get_billing_state(),
-			    'billingPostal'   => $order->get_billing_postcode(),
-			    'billingCountry'  => $order->get_billing_country(),
-			    'shippingAddress' => $order->get_shipping_address_1(),
-			    'shippingCity'    => $order->get_shipping_city(),
-			    'shippingRegion'  => $order->get_shipping_state(),
-			    'shippingPostal'  => $order->get_shipping_postcode(),
-			    'shippingCountry' => $order->get_shipping_country(),
-			    'metadata'        => array(
+			    'billingAddress'  => $billingAddress,
+			    'shippingAddress' => $shippingAddress,
+			    'metadata'        => array (
 				    'order_id' => $order->get_id(),
 			    ),
 		    );
@@ -633,20 +665,20 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	    return  Mollie_WC_Plugin::getDataHelper()->getUserMollieCustomerId($order_customer_id, $test_mode);
     }
 
-    /**
-     * Redirect location after successfully completing process_payment
-     *
-     * @param WC_Order $order
-     * @param Mollie_API_Object_Payment $payment
-     *
-     * @return string
-     */
-    protected function getProcessPaymentRedirect(WC_Order $order, Mollie_API_Object_Payment $payment)
+	/**
+	 * Redirect location after successfully completing process_payment
+	 *
+	 * @param WC_Order                     $order
+	 * @param Mollie\Api\Resources\Payment $payment
+	 *
+	 * @return string
+	 */
+    protected function getProcessPaymentRedirect(WC_Order $order, Mollie\Api\Resources\Payment $payment)
     {
         /*
          * Redirect to payment URL
          */
-        return $payment->getPaymentUrl();
+        return $payment->getCheckoutUrl();
     }
 
     /**
@@ -725,7 +757,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     }
 
 
-    public function webhookAction ()
+    public function onWebhookAction ()
     {
         // Webhook test by Mollie
         if (isset($_GET['testByMollie']))
@@ -790,22 +822,29 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             return;
         }
 
-	    // Order does not need a payment
-	    if ( ! $this->orderNeedsPayment( $order ) &&
-	         ( $payment->status != 'charged_back' )
-	    ) {
-		    $this->handlePayedOrderWebhook( $order, $payment );
-
-		    return;
-	    }
-
+        // Log a message that webhook was called, doesn't mean the payment is actually processed
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 		    Mollie_WC_Plugin::debug($this->id . ": Mollie payment {$payment->id} (" . $payment->mode . ") webhook call for order {$order->id}.", true);
 	    } else {
 		    Mollie_WC_Plugin::debug($this->id . ": Mollie payment {$payment->id} (" . $payment->mode . ") webhook call for order {$order->get_id()}.", true);
 	    }
 
-        $method_name = 'onWebhook' . str_replace( '_', '', ucfirst($payment->status));
+	    // Order does not need a payment
+	    if ( ! $this->orderNeedsPayment( $order ) ) {
+
+		    // Add a debug message that order was already paid for
+		    $this->handlePaidOrderWebhook( $order, $payment );
+
+		    // Check and process a possible refund or chargeback
+		    $this->processRefunds( $order, $payment );
+		    $this->processChargebacks( $order, $payment );
+
+		    return;
+	    }
+
+	    // Create the method name based on the payment status
+        $method_name = 'onWebhook' . ucfirst($payment->status);
+
 
         if (method_exists($this, $method_name))
         {
@@ -829,7 +868,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      * @param $order
      * @param $payment
      */
-	protected function handlePayedOrderWebhook( $order, $payment ) {
+	protected function handlePaidOrderWebhook( $order, $payment ) {
 		// Duplicate webhook call
 		Mollie_WC_Plugin::setHttpResponseCode( 204 );
 
@@ -845,10 +884,236 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	}
 
 	/**
-	 * @param WC_Order                  $order
-	 * @param Mollie_API_Object_Payment $payment
+	 * @param WC_Order                     $order
+	 * @param Mollie\Api\Resources\Payment $payment
 	 */
-	protected function onWebhookPaid( WC_Order $order, Mollie_API_Object_Payment $payment ) {
+	protected function processRefunds( WC_Order $order, Mollie\Api\Resources\Payment $payment ) {
+
+		// Get order ID in the correct way depending on WooCommerce version
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			$order_id = $order->id;
+		} else {
+			$order_id = $order->get_id();
+		}
+
+		// Debug log ID (order id/payment id)
+		$log_id = 'order ' . $order_id . ' / payment ' . $payment->id;
+
+		// Add message to log
+		Mollie_WC_Plugin::debug( __METHOD__ . ' called for ' . $log_id );
+		
+		// Make sure there are refunds to process at all
+		if ( ! $payment->_links->refunds ) {
+			Mollie_WC_Plugin::debug( __METHOD__ . ": No refunds to process for {$log_id}", true );
+
+			return;
+		}
+
+		// Check for new refund
+		try {
+
+			// Get all refunds for this payment
+			$refunds = $payment->refunds();
+
+			// Collect all refund IDs in one array
+			$refund_ids = array ();
+			foreach ( $refunds as $refund ) {
+				$refund_ids[] = $refund->id;
+			}
+
+
+			Mollie_WC_Plugin::debug( __METHOD__ . ' All refund IDs for ' . $log_id . ': ' . json_encode( $refund_ids ) );
+
+			// Get possibly already processed refunds
+			if ( $order->meta_exists( '_mollie_processed_refund_ids' ) ) {
+				$processed_refund_ids = $order->get_meta( '_mollie_processed_refund_ids', true );
+			} else {
+				$processed_refund_ids = array ();
+			}
+
+			Mollie_WC_Plugin::debug( __METHOD__ . ' Already processed refunds for ' . $log_id . ': ' . json_encode( $processed_refund_ids ) );
+
+			// Order the refund arrays by value (refund ID)
+			asort( $refund_ids );
+			asort( $processed_refund_ids );
+
+			// Check if there are new refunds that need processing
+			if ( $refund_ids != $processed_refund_ids ) {
+				// There are new refunds.
+				$refunds_to_process = array_diff( $refund_ids, $processed_refund_ids );
+				Mollie_WC_Plugin::debug( __METHOD__ . ' Refunds that need to be processed for ' . $log_id . ': ' . json_encode( $refunds_to_process ) );
+
+			} else {
+				// No new refunds, stop processing.
+				Mollie_WC_Plugin::debug( __METHOD__ . ' No new refunds, stop processing for ' . $log_id );
+
+				return;
+			}
+
+			$data_helper = Mollie_WC_Plugin::getDataHelper();
+			$order       = $data_helper->getWcOrder( $order_id );
+
+			foreach ( $refunds_to_process as $refund_to_process ) {
+
+				Mollie_WC_Plugin::debug( __METHOD__ . ' New refund ' . $refund_to_process . ' processed in Mollie Dashboard for ' . $log_id . '. Order note added, but order not updated.' );
+
+				$order->add_order_note( sprintf(
+					__( 'New refund %s processed in Mollie Dashboard! Order note added, but order not updated.', 'mollie-payments-for-woocommerce' ),
+					$refund_to_process
+				) );
+
+				$processed_refund_ids[] = $refund_to_process;
+
+			}
+
+			$order->update_meta_data( '_mollie_processed_refund_ids', $processed_refund_ids );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' Updated, all processed refunds for ' . $log_id . ': ' . json_encode( $processed_refund_ids ) );
+
+			$order->save();
+
+			return;
+
+		}
+		catch ( \Mollie\Api\Exceptions\ApiException $e ) {
+			Mollie_WC_Plugin::debug( __FUNCTION__ . ": Could not load refunds for $payment->id: " . $e->getMessage() . ' (' . get_class( $e ) . ')' );
+		}
+
+	}
+
+	/**
+	 * @param WC_Order                     $order
+	 * @param Mollie\Api\Resources\Payment $payment
+	 */
+	protected function processChargebacks( WC_Order $order, Mollie\Api\Resources\Payment $payment ) {
+
+		// Get order ID in the correct way depending on WooCommerce version
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			$order_id = $order->id;
+		} else {
+			$order_id = $order->get_id();
+		}
+
+		// Debug log ID (order id/payment id)
+		$log_id = 'order ' . $order_id . ' / payment ' . $payment->id;
+
+		// Add message to log
+		Mollie_WC_Plugin::debug( __METHOD__ . ' called for ' . $log_id );
+
+		// Make sure there are chargebacks to process at all
+		if ( ! $payment->_links->chargebacks ) {
+			Mollie_WC_Plugin::debug( __METHOD__ . ": No chargebacks to process for {$log_id}", true );
+
+			return;
+		}
+
+		// Check for new chargeback
+		try {
+
+			// Get all chargebacks for this payment
+			$chargebacks = $payment->chargebacks();
+
+			// Collect all chargeback IDs in one array
+			$chargeback_ids = array ();
+			foreach ( $chargebacks as $chargeback ) {
+				$chargeback_ids[] = $chargeback->id;
+			}
+
+			Mollie_WC_Plugin::debug( __METHOD__ . ' All chargeback IDs for ' . $log_id . ': ' . json_encode( $chargeback_ids ) );
+
+			// Get possibly already processed chargebacks
+			if ( $order->meta_exists( '_mollie_processed_chargeback_ids' ) ) {
+				$processed_chargeback_ids = $order->get_meta( '_mollie_processed_chargeback_ids', true );
+			} else {
+				$processed_chargeback_ids = array ();
+			}
+
+			Mollie_WC_Plugin::debug( __METHOD__ . ' Already processed chargebacks for ' . $log_id . ': ' . json_encode( $processed_chargeback_ids ) );
+
+			// Order the chargeback arrays by value (chargeback ID)
+			asort( $chargeback_ids );
+			asort( $processed_chargeback_ids );
+
+			// Check if there are new chargebacks that need processing
+			if ( $chargeback_ids != $processed_chargeback_ids ) {
+				// There are new chargebacks.
+				$chargebacks_to_process = array_diff( $chargeback_ids, $processed_chargeback_ids );
+				Mollie_WC_Plugin::debug( __METHOD__ . ' Chargebacks that need to be processed for ' . $log_id . ': ' . json_encode( $chargebacks_to_process ) );
+
+			} else {
+				// No new chargebacks, stop processing.
+				Mollie_WC_Plugin::debug( __METHOD__ . ' No new chargebacks, stop processing for ' . $log_id );
+
+				return;
+			}
+
+			$data_helper = Mollie_WC_Plugin::getDataHelper();
+			$order       = $data_helper->getWcOrder( $order_id );
+
+			// Update order notes, add message ahout chargeback
+			foreach ( $chargebacks_to_process as $chargeback_to_process ) {
+
+				Mollie_WC_Plugin::debug( __METHOD__ . ' New chargeback ' . $chargeback_to_process . ' for ' . $log_id . '. Order note and order status updated.' );
+
+				$order->add_order_note( sprintf(
+					__( 'New chargeback %s processed! Order note and order status updated.', 'mollie-payments-for-woocommerce' ),
+					$chargeback_to_process
+				) );
+
+				$processed_chargeback_ids[] = $chargeback_to_process;
+			}
+
+			// Update order status and add general note
+
+			// New order status
+			$new_order_status = self::STATUS_ON_HOLD;
+
+			// Overwrite plugin-wide
+			$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_on_hold', $new_order_status );
+
+			// Overwrite gateway-wide
+			$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_on_hold_' . $this->id, $new_order_status );
+
+			$paymentMethodTitle = $this->getPaymentMethodTitle( $payment );
+
+			// Update order status for order with charged_back payment, don't restore stock
+			$this->updateOrderStatus(
+				$order,
+				$new_order_status,
+				sprintf(
+				/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+					__( '%s payment charged back via Mollie (%s). You will need to manually review the payment and adjust product stocks if you use them.', 'mollie-payments-for-woocommerce' ),
+					$paymentMethodTitle,
+					$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
+				),
+				$restore_stock = false
+			);
+
+			// Send a "Failed order" email to notify the admin
+			$emails = WC()->mailer()->get_emails();
+			if ( ! empty( $emails ) && ! empty( $order_id ) && ! empty( $emails['WC_Email_Failed_Order'] ) ) {
+				$emails['WC_Email_Failed_Order']->trigger( $order_id );
+			}
+
+
+			$order->update_meta_data( '_mollie_processed_chargeback_ids', $processed_chargeback_ids );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' Updated, all processed chargebacks for ' . $log_id . ': ' . json_encode( $processed_chargeback_ids ) );
+
+			$order->save();
+
+			return;
+
+		}
+		catch ( \Mollie\Api\Exceptions\ApiException $e ) {
+			Mollie_WC_Plugin::debug( __FUNCTION__ . ": Could not load chargebacks for $payment->id: " . $e->getMessage() . ' (' . get_class( $e ) . ')' );
+		}
+
+	}
+
+	/**
+	 * @param WC_Order                  $order
+	 * @param Mollie\Api\Resources\Payment $payment
+	 */
+	protected function onWebhookPaid( WC_Order $order, Mollie\Api\Resources\Payment $payment ) {
 
 		// Get order ID in the correct way depending on WooCommerce version
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
@@ -915,9 +1180,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
     /**
      * @param WC_Order $order
-     * @param Mollie_API_Object_Payment $payment
+     * @param Mollie\Api\Resources\Payment $payment
      */
-    protected function onWebhookCancelled(WC_Order $order, Mollie_API_Object_Payment $payment)
+    protected function onWebhookCancelled(WC_Order $order, Mollie\Api\Resources\Payment $payment)
     {
 
 	    // Get order ID in the correct way depending on WooCommerce version
@@ -981,9 +1246,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
     /**
      * @param WC_Order $order
-     * @param Mollie_API_Object_Payment $payment
+     * @param Mollie\Api\Resources\Payment $payment
      */
-    protected function onWebhookExpired(WC_Order $order, Mollie_API_Object_Payment $payment)
+    protected function onWebhookExpired(WC_Order $order, Mollie\Api\Resources\Payment $payment)
     {
 
 	    // Get order ID in correct way depending on WooCommerce version
@@ -1055,16 +1320,66 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     }
 
 	/**
+	 * @param WC_Order                     $order
+	 * @param Mollie\Api\Resources\Payment $payment
+	 */
+	protected function onWebhookFailed( WC_Order $order, Mollie\Api\Resources\Payment $payment ) {
+
+		// Get order ID in the correct way depending on WooCommerce version
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			$order_id = $order->id;
+		} else {
+			$order_id = $order->get_id();
+		}
+
+		// New order status
+		$new_order_status = self::STATUS_FAILED;
+
+		// Overwrite plugin-wide
+		$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_on_hold', $new_order_status );
+
+		// Overwrite gateway-wide
+		$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_on_hold_' . $this->id, $new_order_status );
+
+		$paymentMethodTitle = $this->getPaymentMethodTitle( $payment );
+
+		// Update order status for order with failed payment, don't restore stock
+		$this->updateOrderStatus(
+			$order,
+			$new_order_status,
+			sprintf(
+			/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+				__( '%s payment failed via Mollie (%s).', 'mollie-payments-for-woocommerce' ),
+				$paymentMethodTitle,
+				$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
+			)
+		);
+
+		Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id . ' and payment ' . $payment->id . ', regular order payment failed.' );
+
+	}
+
+	/**
 	 * @param WC_Order $order
 	 *
 	 * @return string
 	 */
 	public function getReturnRedirectUrlForOrder( WC_Order $order ) {
+
+		// Get order ID in the correct way depending on WooCommerce version
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			$order_id = $order->id;
+		} else {
+			$order_id = $order->get_id();
+		}
+
+		Mollie_WC_Plugin::debug( __METHOD__ . " $order_id: Determine what the redirect URL in WooCommerce should be." );
+
 		$data_helper = Mollie_WC_Plugin::getDataHelper();
 
 		if ( $this->orderNeedsPayment( $order ) ) {
 
-			$hasCancelledMolliePayment = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $data_helper->hasCancelledMolliePayment( $order->id ) : $data_helper->hasCancelledMolliePayment( $order->get_id() );;
+			$hasCancelledMolliePayment = $data_helper->hasCancelledMolliePayment( $order_id);
 
 			if ( $hasCancelledMolliePayment ) {
 
@@ -1095,11 +1410,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 			}
 
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-				$payment = Mollie_WC_Plugin::getDataHelper()->getActiveMolliePayment($order->id, false );
-			} else {
-				$payment = Mollie_WC_Plugin::getDataHelper()->getActiveMolliePayment($order->get_id(), false );
-			}
+			$payment = Mollie_WC_Plugin::getDataHelper()->getActiveMolliePayment($order_id, false );
 
 			if ( ! $payment->isOpen() && ! $payment->isPending() && ! $payment->isPaid() ) {
 				Mollie_WC_Plugin::addNotice( __( 'Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ) );
@@ -1154,36 +1465,39 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 return false;
             }
 
-            Mollie_WC_Plugin::debug('process_refund - create refund - payment: ' . $payment->id . ', order: ' . $order_id . ', amount: ' . $amount . (!empty($reason) ? ', reason: ' . $reason : ''));
+            Mollie_WC_Plugin::debug('process_refund - create refund - payment: ' . $payment->id . ', order: ' . $order_id . ', amount: ' .  $order->get_currency() . $amount . (!empty($reason) ? ', reason: ' . $reason : ''));
 
             do_action(Mollie_WC_Plugin::PLUGIN_ID . '_create_refund', $payment, $order);
 
             // Is test mode enabled?
             $test_mode = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
 
-            // Send refund to Mollie
-            $refund = Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode)->payments->refund($payment, array(
-                'amount'      => $amount,
-                'description' => $reason
-            ));
+	        // Send refund to Mollie
+	        $refund = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->refund( $payment, array (
+		        'amount'      => array (
+			        'currency' => $order->get_currency(),
+			        'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $amount, $order->get_currency() )
+		        ),
+		        'description' => $reason
+	        ) );
 
-            Mollie_WC_Plugin::debug('process_refund - refund created - refund: ' . $refund->id . ', payment: ' . $payment->id . ', order: ' . $order_id . ', amount: ' . $amount . (!empty($reason) ? ', reason: ' . $reason : ''));
+            Mollie_WC_Plugin::debug('process_refund - refund created - refund: ' . $refund->id . ', payment: ' . $payment->id . ', order: ' . $order_id . ', amount: ' .  $order->get_currency() . $amount . (!empty($reason) ? ', reason: ' . $reason : ''));
 
             do_action(Mollie_WC_Plugin::PLUGIN_ID . '_refund_created', $refund, $order);
 
             $order->add_order_note(sprintf(
             /* translators: Placeholder 1: currency, placeholder 2: refunded amount, placeholder 3: optional refund reason, placeholder 4: payment ID, placeholder 5: refund ID */
-                __('Refunded %s%s (reason: %s) - Payment ID: %s, Refund: %s', 'mollie-payments-for-woocommerce'),
-                get_woocommerce_currency_symbol(),
+                __('Refunded %s%s%s - Payment: %s, Refund: %s', 'mollie-payments-for-woocommerce'),
+	            $order->get_currency(),
                 $amount,
-                $reason,
-                $refund->payment->id,
+	            (!empty($reason) ? ' (reason: ' . $reason . ')' : ''),
+                $refund->paymentId,
                 $refund->id
             ));
 
             return true;
         }
-        catch (Exception $e)
+        catch ( \Mollie\Api\Exceptions\ApiException $e )
         {
             return new WP_Error(1, $e->getMessage());
         }
@@ -1266,12 +1580,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
     /**
      * @param WC_Order                  $order
-     * @param Mollie_API_Object_Payment $payment
+     * @param Mollie\Api\Resources\Payment $payment
      * @param bool                      $admin_instructions
      * @param bool                      $plain_text
      * @return string|null
      */
-    protected function getInstructions (WC_Order $order, Mollie_API_Object_Payment $payment, $admin_instructions, $plain_text)
+    protected function getInstructions (WC_Order $order, Mollie\Api\Resources\Payment $payment, $admin_instructions, $plain_text)
     {
         // No definite payment status
         if ($payment->isOpen() || $payment->isPending())
@@ -1312,6 +1626,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( $_GET['key'] ) );
 			if ( $order_id > 0 ) {
 				$order = wc_get_order( $order_id );
+
+				if ( ! is_a( $order, 'WC_Order' ) ) {
+					return $title;
+				}
 
 				if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 					$order_key_db = $order->order_key;
@@ -1467,25 +1785,18 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	}
 
     /**
-     * @return Mollie_API_Object_Method|null
+     * @return \Mollie\Api\Resources\Method|null
      */
-    public function getMollieMethod()
-    {
-        try
-        {
-            $test_mode = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
+	public function getMollieMethod() {
 
-            return Mollie_WC_Plugin::getDataHelper()->getPaymentMethod(
-                $test_mode,
-                $this->getMollieMethodId()
-            );
-        }
-        catch (Mollie_WC_Exception_InvalidApiKey $e)
-        {
-        }
+		$test_mode = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
 
-        return null;
-    }
+		return Mollie_WC_Plugin::getDataHelper()->getPaymentMethod(
+			$test_mode,
+			$this->getMollieMethodId()
+		);
+
+	}
 
     /**
      * @return string
@@ -1640,7 +1951,36 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function getSupportedCurrencies ()
     {
-        $default = array('EUR');
+        $default = array(
+        	'AUD',
+	        'BGN',
+	        'BRL',
+	        'CAD',
+	        'CHF',
+	        'CZK',
+	        'DKK',
+	        'EUR',
+	        'GBP',
+	        'HKD',
+	        'HRK',
+	        'HUF',
+	        'ILS',
+	        'ISK',
+	        'JPY',
+	        'MXN',
+	        'MYR',
+	        'NOK',
+	        'NZD',
+	        'PHP',
+	        'PLN',
+	        'RON',
+	        'RUB',
+	        'SEK',
+	        'SGD',
+	        'THB',
+	        'TWD',
+	        'USD',
+	        );
 
         return apply_filters('woocommerce_' . $this->id . '_supported_currencies', $default);
     }
@@ -1777,14 +2117,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 			if ( ! empty( WC()->cart->recurring_carts ) ) {
 
-				$this->recurring_total = array (); // Reset for cached carts
+				$this->recurring_totals = array (); // Reset for cached carts
 
 				foreach ( WC()->cart->recurring_carts as $cart ) {
 
 					if ( ! $cart->prices_include_tax ) {
-						$this->recurring_total[] = $cart->cart_contents_total;
+						$this->recurring_totals[] = $cart->cart_contents_total;
 					} else {
-						$this->recurring_total[] = $cart->cart_contents_total + $cart->tax_total;
+						$this->recurring_totals[] = $cart->cart_contents_total + $cart->tax_total;
 					}
 				}
 			} else {
@@ -1792,8 +2132,76 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			}
 		}
 
-		return $this->recurring_total;
+		return $this->recurring_totals;
 	}
 
+	/**
+	 * Check if payment method is available in checkout based on amount, currency and sequenceType
+	 *
+	 * @param $filters
+	 *
+	 * @return bool
+	 */
+	protected function isAvailableMethodInCheckout( $filters ) {
+
+		$settings_helper = Mollie_WC_Plugin::getSettingsHelper();
+		$test_mode       = $settings_helper->isTestModeEnabled();
+
+		try {
+
+			$filters_key   = $filters['amount']['currency'] . '_' . str_replace( '.', '', $filters['amount']['value'] ) . '_' . $filters['sequenceType'];
+			$transient_id = Mollie_WC_Plugin::getDataHelper()->getTransientId( 'api_methods_' . ( $test_mode ? 'test' : 'live' ) . '_' . $filters_key );
+
+			$cached = unserialize( get_transient( $transient_id ) );
+
+			if ( $cached && $cached instanceof \Mollie\Api\Resources\MethodCollection ) {
+				$methods = $cached;
+			}
+
+			if ( empty ( $methods ) ) {
+
+				// Remove existing expired transients
+				delete_transient( $transient_id );
+
+				// Get payment methods at Mollie
+				$methods = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->methods->all( $filters );
+
+				// Set new transients (as cache)
+				set_transient( $transient_id, serialize( $methods ), MINUTE_IN_SECONDS * 5 );
+
+			}
+
+			// Get the ID of the WooCommerce/Mollie payment method
+			$woocommerce_method = $this->getMollieMethodId();
+
+			// Set all other payment methods to false, so they can be updated if available
+			foreach ( $methods as $method ) {
+
+				if ( $method->id == $woocommerce_method ) {
+					return true;
+				}
+			}
+		}
+		catch ( \Mollie\Api\Exceptions\ApiException $e ) {
+
+			Mollie_WC_Plugin::debug( __FUNCTION__ . ": Could not check availability of Mollie payment methods (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class( $e ) . ')' );
+
+		}
+
+		return false;
+	}
+
+	/**
+	 * Get the transaction URL.
+	 *
+	 * @param  WC_Order $order
+	 *
+	 * @return string
+	 */
+	public function get_transaction_url( $order ) {
+		$this->view_transaction_url = 'https://www.mollie.com/dashboard/payments/%s';
+
+		return parent::get_transaction_url( $order );
+	}
 
 }

@@ -152,26 +152,13 @@ class Mollie_WC_Helper_Settings
                 . '</p>';
             $api_status_type = 'updated';
         }
-        catch (Mollie_WC_Exception_CouldNotConnectToMollie $e)
+        catch (\Mollie\Api\Exceptions\ApiException $e)
         {
+
             $api_status = ''
-                . '<p style="font-weight:bold;"><span style="color:red;">Communicating with Mollie failed:</span> ' . esc_html($e->getMessage()) . '</p>'
-                . '<p>Please check the following conditions. You can ask your system administrator to help with this.</p>'
+                . '<p style="font-weight:bold;"><span style="color:red;">Communicating with Mollie failed:</span> ' . $e->getMessage() . '</p>'
+                . '<p>Please view the FAQ item <a href="https://github.com/mollie/WooCommerce/wiki/Common-issues#communicating-with-mollie-failed" target="_blank">Communicating with Mollie failed</a> if this does not fix your problem.';
 
-                . '<ul style="color: #2D60B0;">'
-                . ' <li>Please check if you\'ve inserted your API key correctly.</li>'
-                . ' <li>Make sure outside connections to <strong>' . esc_html(Mollie_WC_Helper_Api::getApiEndpoint()) . '</strong> are not blocked.</li>'
-                . ' <li>Make sure SSL v3 is disabled on your server. Mollie does not support SSL v3.</li>'
-                . ' <li>Make sure your server is up-to-date and the latest security patches have been installed.</li>'
-                . '</ul><br/>'
-
-                . '<p>Please contact <a href="mailto:info@mollie.com">info@mollie.com</a> if this still does not fix your problem.</p>';
-
-            $api_status_type = 'error';
-        }
-        catch (Mollie_WC_Exception_InvalidApiKey $e)
-        {
-            $api_status      = '<p style="color:red; font-weight:bold;">' . esc_html($e->getMessage()) . '</p>';
             $api_status_type = 'error';
         }
 
@@ -190,92 +177,84 @@ class Mollie_WC_Helper_Settings
         return admin_url('admin.php?page=wc-settings&tab=checkout&section=' . sanitize_title(strtolower($gateway_class_name)));
     }
 
-    protected function getMollieMethods ()
-    {
-        $content = '';
+	protected function getMollieMethods() {
+		$content = '';
 
-	    $data_helper     = Mollie_WC_Plugin::getDataHelper();
-	    $settings_helper = Mollie_WC_Plugin::getSettingsHelper();
+		$data_helper     = Mollie_WC_Plugin::getDataHelper();
+		$settings_helper = Mollie_WC_Plugin::getSettingsHelper();
 
-        try
-        {
+		// Is Test mode enabled?
+		$test_mode = $settings_helper->isTestModeEnabled();
 
-            // Is Test mode enabled?
-            $test_mode       = $settings_helper->isTestModeEnabled();
+		if ( isset( $_GET['refresh-methods'] ) && check_admin_referer( 'refresh-methods' ) ) {
+			/* Reload active Mollie methods */
+			$data_helper->getAllPaymentMethods( $test_mode, $use_cache = false );
+		}
 
-            if (isset($_GET['refresh-methods']) && check_admin_referer('refresh-methods'))
-            {
-                /* Reload active Mollie methods */
-                $data_helper->getAllPaymentMethods($test_mode, $use_cache = false);
-            }
+		$icon_available    = ' <span style="color: green; cursor: help;" title="' . __( 'Gateway enabled', 'mollie-payments-for-woocommerce' ) . '">' . strtolower( __( 'Enabled', 'mollie-payments-for-woocommerce' ) ) . '</span>';
+		$icon_no_available = ' <span style="color: red; cursor: help;" title="' . __( 'Gateway disabled', 'mollie-payments-for-woocommerce' ) . '">' . strtolower( __( 'Disabled', 'mollie-payments-for-woocommerce' ) ) . '</span>';
 
-            $icon_available     = ' <span style="color: green; cursor: help;" title="' . __('Gateway enabled', 'mollie-payments-for-woocommerce'). '">' . strtolower(__('Enabled', 'mollie-payments-for-woocommerce')) . '</span>';
-            $icon_no_available  = ' <span style="color: red; cursor: help;" title="' . __('Gateway disabled', 'mollie-payments-for-woocommerce'). '">' . strtolower(__('Disabled', 'mollie-payments-for-woocommerce')) . '</span>';
+		$content .= '<br /><br />';
 
-            $content .= '<br /><br />';
+		if ( $test_mode ) {
+			$content .= '<strong>' . __( 'Test mode enabled.', 'mollie-payments-for-woocommerce' ) . '</strong> ';
+		}
 
-            if ($test_mode)
-            {
-                $content .= '<strong>' . __('Test mode enabled.', 'mollie-payments-for-woocommerce') . '</strong> ';
-            }
+		$content .= sprintf(
+		/* translators: The surrounding %s's Will be replaced by a link to the Mollie profile */
+			__( 'The following payment methods are activated in your %sMollie profile%s:', 'mollie-payments-for-woocommerce' ),
+			'<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
+			'</a>'
+		);
 
-            $content .= sprintf(
-                /* translators: The surrounding %s's Will be replaced by a link to the Mollie profile */
-                __('The following payment methods are activated in your %sMollie profile%s:', 'mollie-payments-for-woocommerce'),
-                '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
-                '</a>'
-            );
+		$refresh_methods_url = wp_nonce_url(
+			                       add_query_arg( array ( 'refresh-methods' => 1 ) ),
+			                       'refresh-methods'
+		                       ) . '#' . Mollie_WC_Plugin::PLUGIN_ID;
 
-            $refresh_methods_url = wp_nonce_url(
-                add_query_arg(array('refresh-methods' => 1)),
-                'refresh-methods'
-            ) . '#' . Mollie_WC_Plugin::PLUGIN_ID;
+		$content .= ' (<a href="' . esc_attr( $refresh_methods_url ) . '">' . strtolower( __( 'Refresh', 'mollie-payments-for-woocommerce' ) ) . '</a>)';
 
-            $content .= ' (<a href="' . esc_attr($refresh_methods_url) . '">' . strtolower(__('Refresh', 'mollie-payments-for-woocommerce')) . '</a>)';
+		$content .= '<ul style="width: 1000px">';
 
-            $content .= '<ul style="width: 1000px">';
+		foreach ( Mollie_WC_Plugin::$GATEWAYS as $gateway_classname ) {
+			$gateway = new $gateway_classname;
 
-            foreach (Mollie_WC_Plugin::$GATEWAYS as $gateway_classname)
-            {
-                $gateway = new $gateway_classname;
+			// Remove MisterCash from list as it's renamed Bancontact
+			if ( $gateway->id == 'mollie_wc_gateway_mistercash' ) {
+				continue;
+			}
 
-                if ($gateway instanceof Mollie_WC_Gateway_Abstract)
-                {
-                    $content .= '<li style="float: left; width: 33%;">';
+			if ( $gateway instanceof Mollie_WC_Gateway_Abstract ) {
+				$content .= '<li style="float: left; width: 33%;">';
 
-                    $content .= '<img src="' . esc_attr($gateway->getIconUrl()) . '" alt="' . esc_attr($gateway->getDefaultTitle()) . '" title="' . esc_attr($gateway->getDefaultTitle()) . '" style="width: 25px; vertical-align: bottom;" />';
-                    $content .= ' ' . esc_html($gateway->getDefaultTitle());
+				$content .= '<img src="' . esc_attr( $gateway->getIconUrl() ) . '" alt="' . esc_attr( $gateway->getDefaultTitle() ) . '" title="' . esc_attr( $gateway->getDefaultTitle() ) . '" style="width: 25px; vertical-align: bottom;" />';
+				$content .= ' ' . esc_html( $gateway->getDefaultTitle() );
 
-                    if ($gateway->is_available())
-                    {
-                        $content .= $icon_available;
-                    }
-                    else
-                    {
-                        $content .= $icon_no_available;
-                    }
+				if ( $gateway->is_available() ) {
+					$content .= $icon_available;
+				} else {
+					$content .= $icon_no_available;
+				}
 
-	                $content .= ' <a href="' . $this->getGatewaySettingsUrl( $gateway_classname ) . '">' . strtolower( __( 'Edit', 'mollie-payments-for-woocommerce' ) ) . '</a>';
+				$content .= ' <a href="' . $this->getGatewaySettingsUrl( $gateway_classname ) . '">' . strtolower( __( 'Edit', 'mollie-payments-for-woocommerce' ) ) . '</a>';
 
-	                $content .= '</li>';
-                }
-            }
+				$content .= '</li>';
+			}
+		}
 
-            $content .= '</ul>';
-            $content .= '<div class="clear"></div>';
+		$content .= '</ul>';
+		$content .= '<div class="clear"></div>';
 
-            // Make sure users also enable iDEAL when they enable SEPA Direct Debit
-	        // iDEAL is needed for the first payment of subscriptions with SEPA Direct Debit
-	        $content = $this->checkDirectDebitStatus( $content );
+		// Make sure users also enable iDEAL when they enable SEPA Direct Debit
+		// iDEAL is needed for the first payment of subscriptions with SEPA Direct Debit
+		$content = $this->checkDirectDebitStatus( $content );
 
-        }
-        catch (Mollie_WC_Exception_InvalidApiKey $e)
-        {
-            // Ignore
-        }
+		// Advice users to use bank transfer via Mollie, not
+		// WooCommerce default BACS method
+		$content = $this->checkMollieBankTransferNotBACS( $content );
 
-        return $content;
-    }
+		return $content;
+	}
 
     /**
      * @param array $settings
@@ -333,7 +312,7 @@ class Mollie_WC_Helper_Settings
                 'placeholder'       => $live_placeholder = __('Live API key should start with live_', 'mollie-payments-for-woocommerce'),
                 'custom_attributes' => array(
                     'placeholder' => $live_placeholder,
-                    'pattern'     => '^live_\w+$',
+                    'pattern'     => '^live_\w{30,}$',
                 ),
             ),
             array(
@@ -359,7 +338,7 @@ class Mollie_WC_Helper_Settings
                 'placeholder'       => $test_placeholder = __('Test API key should start with test_', 'mollie-payments-for-woocommerce'),
                 'custom_attributes' => array(
                     'placeholder' => $test_placeholder,
-                    'pattern'     => '^test_\w+$',
+                    'pattern'     => '^test_\w{30,}$',
                 ),
             ),
             array(
@@ -390,16 +369,30 @@ class Mollie_WC_Helper_Settings
                     ''          => __('Detect using browser language', 'mollie-payments-for-woocommerce')  . ' (' . __('default', 'mollie-payments-for-woocommerce') . ')',
                     /* translators: Placeholder 1: Current WordPress locale */
                     'wp_locale' => sprintf(__('Send WordPress language (%s)', 'mollie-payments-for-woocommerce'), $this->getCurrentLocale()),
-                    'nl_NL'     => __('Dutch', 'mollie-payments-for-woocommerce'),
-                    'nl_BE'     => __('Flemish (Belgium)', 'mollie-payments-for-woocommerce'),
-                    'en'        => __('English', 'mollie-payments-for-woocommerce'),
-                    'de'        => __('German', 'mollie-payments-for-woocommerce'),
-                    'es'        => __('Spanish', 'mollie-payments-for-woocommerce'),
-                    'fr_FR'     => __('French', 'mollie-payments-for-woocommerce'),
-                    'fr_BE'     => __('French (Belgium)', 'mollie-payments-for-woocommerce'),
+                    'en_US' => __('English', 'mollie-payments-for-woocommerce'),
+                    'nl_NL' => __('Dutch', 'mollie-payments-for-woocommerce'),
+                    'nl_BE' => __('Flemish (Belgium)', 'mollie-payments-for-woocommerce'),
+                    'fr_FR' => __('French', 'mollie-payments-for-woocommerce'),
+                    'fr_BE' => __('French (Belgium)', 'mollie-payments-for-woocommerce'),
+                    'de_DE' => __('German', 'mollie-payments-for-woocommerce'),
+                    'de_AT' => __('Austrian German', 'mollie-payments-for-woocommerce'),
+                    'de_CH' => __('Swiss German', 'mollie-payments-for-woocommerce'),
+                    'es_ES' => __('Spanish', 'mollie-payments-for-woocommerce'),
+                    'ca_ES' => __('Catalan', 'mollie-payments-for-woocommerce'),
+                    'pt_PT' => __('Portuguese', 'mollie-payments-for-woocommerce'),
+                    'it_IT' => __('Italian', 'mollie-payments-for-woocommerce'),
+                    'nb_NO' => __('Norwegian', 'mollie-payments-for-woocommerce'),
+                    'sv_SE' => __('Swedish', 'mollie-payments-for-woocommerce'),
+                    'fi_FI' => __('Finnish', 'mollie-payments-for-woocommerce'),
+                    'da_DK' => __('Danish', 'mollie-payments-for-woocommerce'),
+                    'is_IS' => __('Icelandic', 'mollie-payments-for-woocommerce'),
+                    'hu_HU' => __('Hungarian', 'mollie-payments-for-woocommerce'),
+                    'pl_PL' => __('Polish', 'mollie-payments-for-woocommerce'),
+                    'lv_LV' => __('Latvian', 'mollie-payments-for-woocommerce'),
+                    'lt_LT' => __('Lithuanian', 'mollie-payments-for-woocommerce'),
                 ),
                 'desc'    => sprintf(
-                	__('The option \'Detect using browser language\' is usually more accurate. Only use \'Send WordPress language\' if you are sure all languages/locales on your website are supported by Mollie %s(see \'locale\' under \'Parameters\')%s. Currently supported locales: <code>en_US</code>, <code>de_AT</code>, <code>de_CH</code>, <code>de_DE</code>, <code>es_ES</code>, <code>fr_BE</code>, <code>fr_FR</code>, <code>nl_BE</code>, <code>nl_NL</code>.', 'mollie-payments-for-woocommerce'),
+                	__('The option \'Detect using browser language\' is usually more accurate. Only use \'Send WordPress language\' if you are sure all languages/locales on your website are supported by Mollie %s(see \'locale\' under \'Parameters\')%s. Currently supported locales: <code>en_US</code>, <code>nl_NL</code>, <code>nl_BE</code>, <code>fr_FR</code>, <code>fr_BE</code>, <code>de_DE</code>,  <code>de_AT</code>, <code>de_CH</code>, <code>es_ES</code>, <code>ca_ES</code>, <code>pt_PT</code>, <code>it_IT</code>, <code>nb_NO</code>, <code>sv_SE</code>, <code>fi_FI</code>, <code>da_DK</code>, <code>is_IS</code>, <code>hu_HU</code>, <code>pl_PL</code>, <code>lv_LV</code>, <code>lt_LT</code>.', 'mollie-payments-for-woocommerce'),
 	                '<a href="https://www.mollie.com/nl/docs/reference/payments/create" target="_blank">',
 	                '</a>'
                 ),
@@ -519,12 +512,14 @@ class Mollie_WC_Helper_Settings
 
 		if ( ( class_exists( 'WC_Subscription' ) ) && ( $ideal_gateway->is_available() ) && ( ! $sepa_gateway->is_available() ) ) {
 
+			$warning_message = __( 'You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL and/or other "first" payment methods.', 'mollie-payments-for-woocommerce' );
+
 			$content .= '<div class="notice notice-warning is-dismissible"><p>';
-			$content .= __( 'You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL.', 'mollie-payments-for-woocommerce' );
+			$content .= $warning_message;
 			$content .= '</p></div> ';
 
 			$content .= '<strong><p>';
-			$content .= __( 'You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL.', 'mollie-payments-for-woocommerce' );
+			$content .= $warning_message;
 			$content .= '</p></strong> ';
 
 			return $content;
@@ -532,4 +527,30 @@ class Mollie_WC_Helper_Settings
 
 		return $content;
 	}
+
+	/**
+	 * @param $content
+	 *
+	 * @return string
+	 */
+	protected function checkMollieBankTransferNotBACS( $content ) {
+
+		$woocommerce_banktransfer_gateway  = new WC_Gateway_BACS();
+
+		if ( $woocommerce_banktransfer_gateway->is_available() ) {
+
+			$content .= '<div class="notice notice-warning is-dismissible"><p>';
+			$content .= __( 'You have the WooCommerce default Direct Bank Transfer (BACS) payment gateway enabled in WooCommerce. Mollie strongly advices only using Bank Transfer via Mollie and disabling the default WooCommerce BACS payment gateway to prevent possible conflicts.', 'mollie-payments-for-woocommerce' );
+			$content .= '</p></div> ';
+
+			$content .= '<strong><p>';
+			$content .= __( 'You have the WooCommerce default Direct Bank Transfer (BACS) payment gateway enabled in WooCommerce. Mollie strongly advices only using Bank Transfer via Mollie and disabling the default WooCommerce BACS payment gateway to prevent possible conflicts.', 'mollie-payments-for-woocommerce' );
+			$content .= '</p></strong> ';
+
+			return $content;
+		}
+
+		return $content;
+	}
+
 }

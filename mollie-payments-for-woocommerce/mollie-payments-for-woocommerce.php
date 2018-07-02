@@ -3,7 +3,7 @@
  * Plugin Name: Mollie Payments for WooCommerce
  * Plugin URI: https://www.mollie.com
  * Description: Accept payments in WooCommerce with the official Mollie plugin
- * Version: 3.0.6
+ * Version: 4.0.0-beta2
  * Author: Mollie
  * Author URI: https://www.mollie.com
  * Requires at least: 3.8
@@ -22,8 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 require_once 'includes/mollie/wc/autoload.php';
-
-// TODO: Add more constants WP-style, and move from classes to here.
+require_once 'includes/mollie-api-php/vendor/autoload.php';
 
 // Plugin folder URL.
 if ( ! defined( 'M4W_PLUGIN_URL' ) ) {
@@ -41,6 +40,7 @@ if ( ! defined( 'M4W_PLUGIN_DIR' ) ) {
  */
 function mollie_wc_check_php_version() {
 	if ( ! version_compare( PHP_VERSION, '5.6.0', ">=" ) ) {
+		remove_action( 'init', 'mollie_wc_plugin_init' );
 		add_action( 'admin_notices', 'mollie_wc_plugin_inactive_php' );
 		return;
 	}
@@ -113,7 +113,7 @@ function mollie_wc_plugin_inactive_php() {
 	}
 
 	echo '<div class="error"><p>';
-	echo sprintf( esc_html__( 'Mollie Payments for WooCommerce 4.0 will require at least PHP 5.6.0. Your PHP version is outdated. Upgrade your PHP version and view %sthis FAQ%s.', 'mollie-payments-for-woocommerce' ), '<a href="https://github.com/mollie/WooCommerce/wiki/PHP-&-Mollie-API-v2" target="_blank">', '</a>' );
+	echo sprintf( esc_html__( 'Mollie Payments for WooCommerce 4.0 requires PHP 5.6 or higher. Your PHP version is outdated. Upgrade your PHP version and view %sthis FAQ%s.', 'mollie-payments-for-woocommerce' ), '<a href="https://github.com/mollie/WooCommerce/wiki/PHP-&-Mollie-API-v2" target="_blank">', '</a>' );
 	echo '</p></div>';
 
 	return false;

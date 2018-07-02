@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32" height="32" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="creditcard-b" x1="0%" y1="100%" y2="0%">
+      <stop offset="0%" stop-color="#060B0E"/>
+      <stop offset="100%" stop-color="#254764"/>
+    </linearGradient>
+    <rect id="creditcard-a" width="32" height="32" rx="8"/>
+    <linearGradient id="creditcard-c" x1="27.635%" x2="22.59%" y1="25.476%" y2="11.652%">
+      <stop offset="0%" stop-color="#FFF" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#FFF"/>
+    </linearGradient>
+    <linearGradient id="creditcard-e" x1="50%" x2="38.943%" y1="100%" y2="55.528%">
+      <stop offset="0%" stop-color="#FFF" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#FFF"/>
+    </linearGradient>
+    <linearGradient id="creditcard-f" x1="38.943%" x2="50%" y1="55.528%" y2="100%">
+      <stop offset="0%" stop-color="#FFF" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#FFF"/>
+    </linearGradient>
+    <linearGradient id="creditcard-i" x1="50%" x2="50%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#FAD961"/>
+      <stop offset="100%" stop-color="#F7955D"/>
+    </linearGradient>
+    <rect id="creditcard-h" width="7" height="5" rx="1"/>
+    <filter id="creditcard-g" width="157.1%" height="180%" x="-28.6%" y="-20%" filterUnits="objectBoundingBox">
+      <feOffset dy="1" in="SourceAlpha" result="shadowOffsetOuter1"/>
+      <feGaussianBlur in="shadowOffsetOuter1" result="shadowBlurOuter1" stdDeviation=".5"/>
+      <feColorMatrix in="shadowBlurOuter1" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.1 0"/>
+    </filter>
+  </defs>
+  <g fill="none" fill-rule="evenodd">
+    <mask id="creditcard-d" fill="#fff">
+      <use xlink:href="#creditcard-a"/>
+    </mask>
+    <use fill="url(#creditcard-b)" xlink:href="#creditcard-a"/>
+    <circle cx="37.5" cy="40.5" r="31.5" fill="url(#creditcard-c)" mask="url(#creditcard-d)" opacity=".1"/>
+    <circle cx="6.5" cy="31.5" r="16.5" fill="url(#creditcard-e)" mask="url(#creditcard-d)" opacity=".1"/>
+    <circle cx="42.5" cy="-1.5" r="26.5" fill="url(#creditcard-f)" mask="url(#creditcard-d)" opacity=".1"/>
+    <g mask="url(#creditcard-d)">
+      <g transform="translate(4 14)">
+        <g>
+          <use fill="#000" filter="url(#creditcard-g)" xlink:href="#creditcard-h"/>
+          <use fill="url(#creditcard-i)" xlink:href="#creditcard-h"/>
+        </g>
+        <rect width="1" height="3" x="1" y="1" fill="#7A3802" opacity=".3"/>
+        <rect width="1" height="3" x="3" y="1" fill="#7A3802" opacity=".3"/>
+        <rect width="1" height="3" x="5" y="1" fill="#7A3802" opacity=".3"/>
+      </g>
+    </g>
+    <rect width="5" height="1" x="4" y="22" fill="#FFF" fill-opacity=".8" mask="url(#creditcard-d)"/>
+    <rect width="3" height="1" x="4" y="24" fill="#FFF" fill-opacity=".8" mask="url(#creditcard-d)"/>
+    <rect width="3" height="1" x="8" y="24" fill="#FFF" fill-opacity=".8" mask="url(#creditcard-d)"/>
+    <rect width="3" height="1" x="12" y="24" fill="#FFF" fill-opacity=".8" mask="url(#creditcard-d)"/>
+    <rect width="5" height="1" x="10" y="22" fill="#FFF" fill-opacity=".8" mask="url(#creditcard-d)"/>
+    <rect width="5" height="1" x="16" y="22" fill="#FFF" fill-opacity=".8" mask="url(#creditcard-d)"/>
+    <rect width="5" height="1" x="22" y="22" fill="#FFF" fill-opacity=".8" mask="url(#creditcard-d)"/>
+  </g>
+</svg>

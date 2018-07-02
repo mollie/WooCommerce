@@ -7,7 +7,7 @@ class Mollie_WC_Plugin
 {
     const PLUGIN_ID      = 'mollie-payments-for-woocommerce';
     const PLUGIN_TITLE   = 'Mollie Payments for WooCommerce';
-    const PLUGIN_VERSION = '3.0.6';
+    const PLUGIN_VERSION = '3.0.4';
 
     const DB_VERSION     = '1.0';
     const DB_VERSION_PARAM_NAME = 'mollie-db-version';
@@ -27,9 +27,14 @@ class Mollie_WC_Plugin
         'Mollie_WC_Gateway_Bitcoin',
         'Mollie_WC_Gateway_Creditcard',
         'Mollie_WC_Gateway_DirectDebit',
+        'Mollie_WC_Gateway_EPS',
+        'Mollie_WC_Gateway_Giropay',
         'Mollie_WC_Gateway_Ideal',
         'Mollie_WC_Gateway_IngHomePay',
         'Mollie_WC_Gateway_Kbc',
+        'Mollie_WC_Gateway_Bancontact',
+	    // LEGACY - DO NOT REMOVE!
+        // MisterCash was renamed to Bancontact, but this class should stay available for old orders and subscriptions!
         'Mollie_WC_Gateway_MisterCash',
         'Mollie_WC_Gateway_PayPal',
         'Mollie_WC_Gateway_Paysafecard',
@@ -194,6 +199,9 @@ class Mollie_WC_Plugin
 		// Disable SEPA as payment option in WooCommerce checkout
 		add_filter( 'woocommerce_available_payment_gateways', array ( __CLASS__, 'disableSEPAInCheckout' ), 10, 1 );
 
+		// Disable old MisterCash as payment option in WooCommerce checkout
+		add_filter( 'woocommerce_available_payment_gateways', array ( __CLASS__, 'disableMisterCashInCheckout' ), 10, 1 );
+
 		// Disable Mollie methods on some pages
 		add_filter( 'woocommerce_available_payment_gateways', array ( __CLASS__, 'disableMollieOnPaymentMethodChange' ), 10, 1 );
 
@@ -316,10 +324,19 @@ class Mollie_WC_Plugin
      * @param array $gateways
      * @return array
      */
-    public static function addGateways (array $gateways)
-    {
-        return array_merge($gateways, self::$GATEWAYS);
-    }
+	public static function addGateways( array $gateways ) {
+
+		$gateways = array_merge( $gateways, self::$GATEWAYS );
+
+		// Remove old MisterCash (only) from WooCommerce Payment settings
+		if ( is_admin() && ! empty( get_current_screen()->base ) && get_current_screen()->base == 'woocommerce_page_wc-settings' ) {
+			if ( ( $key = array_search( 'Mollie_WC_Gateway_MisterCash', $gateways ) ) !== false ) {
+				unset( $gateways[ $key ] );
+			}
+		}
+
+		return $gateways;
+	}
 
 	/**
 	 * Add a WooCommerce notification message
@@ -377,7 +394,6 @@ class Mollie_WC_Plugin
 			    static $logger;
 
 			    if ( empty( $logger ) ) {
-				    // TODO: Use error_log() fallback if Wc_Logger is not available
 				    $logger = new WC_Logger();
 			    }
 
@@ -506,6 +522,18 @@ class Mollie_WC_Plugin
 
 		if ( is_checkout() ) {
 			unset( $available_gateways['mollie_wc_gateway_directdebit'] );
+		}
+
+		return $available_gateways;
+	}
+
+	/**
+	 * Don't show old MisterCash in WooCommerce Checkout
+	 */
+	public static function disableMisterCashInCheckout( $available_gateways ) {
+
+		if ( is_checkout() ) {
+			unset( $available_gateways['mollie_wc_gateway_mistercash'] );
 		}
 
 		return $available_gateways;

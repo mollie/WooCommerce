@@ -1,4 +1,7 @@
 <?php
+
+use Mollie\Api\Types\PaymentMethod;
+
 class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscription
 {
     /**
@@ -21,7 +24,7 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
      */
     public function getMollieMethodId ()
     {
-        return Mollie_API_Object_Method::CREDITCARD;
+        return PaymentMethod::CREDITCARD;
     }
 
     /**
@@ -49,12 +52,12 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
 
     /**
      * @param WC_Order                  $order
-     * @param Mollie_API_Object_Payment $payment
+     * @param Mollie\Api\Resources\Payment $payment
      * @param bool                      $admin_instructions
      * @param bool                      $plain_text
      * @return string|null
      */
-    protected function getInstructions (WC_Order $order, Mollie_API_Object_Payment $payment, $admin_instructions, $plain_text)
+    protected function getInstructions (WC_Order $order, Mollie\Api\Resources\Payment $payment, $admin_instructions, $plain_text)
     {
         if ($payment->isPaid() && $payment->details)
         {

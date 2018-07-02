@@ -3,7 +3,7 @@ Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, ideal, sofort, bancontact, bitcoin, direct debit, subscriptions
 Requires at least: 3.8
 Tested up to: 4.9
-Stable tag: 3.0.6
+Stable tag: 4.0.0-beta2
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -39,6 +39,8 @@ Alternative payment methods:
 * Bancontact (Belgium)
 * ING Home'Pay (Belgium)
 * PayPal (International)
+* Giropay (Germany)
+* EPS (Austria)
 * SOFORTbanking (EU)
 * Belfius (Belgium)
 * KBC/CBC payment button (Belgium)
@@ -112,6 +114,10 @@ If you want to help translate the plugin, read the instructions in the [Translat
 
 Yes, you can with a separate plugin. At the moment we have tested and can recommend [Payment Gateway Based Fees and Discounts for WooCommerce](https://wordpress.org/plugins/checkout-fees-for-woocommerce/). Other plugins might also work. For more specific information, also see [helpful snippets](https://github.com/mollie/WooCommerce/wiki/Helpful-snippets#add-payment-fee-to-payment-methods).
 
+= Can I set up payment methods to show based on customers country? =
+
+Yes, you can with a separate plugin. At the moment we have tested and can recommend [WooCommerce - Country Based Payments](https://wordpress.org/plugins/woocommerce-country-based-payments/). Other plugins might also work.
+
 = Why do orders with payment method BankTransfer and Direct Debit get the status 'on-hold'? =
 
 These payment methods take longer than a few hours to complete. The order status is set to 'on-hold' to prevent the WooCommerce setting 'Hold stock (minutes)' (https://docs.woothemes.com/document/configuring-woocommerce-settings/#inventory-options) will 
@@ -162,6 +168,21 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 4.0.0-beta2 - 28/06/2018 =
+
+IMPORTANT
+Version 4.0 requires PHP 5.6 or higher. If you are using an older PHP version, please read this article: [PHP & Mollie API v2](https://github.com/mollie/WooCommerce/wiki/PHP-&-Mollie-API-v2).
+
+* [Multicurrency support for WooCommerce added](https://www.mollie.com/en/features/multicurrency/)
+* [New payment methods EPS and GiroPay added](https://www.mollie.com/en/news/post/introducing-two-new-payment-methods-eps-and-giropay)
+* Updated payment method logo's (better quality SVG's)
+* Updated Mollie API PHP to 2.0.5
+
+* Add support for failed regular payments (already had support for failed renewal payments)
+* In WooCommerce order edit view, add direct link to payment in Mollie Dashboard
+* Add notice to use bank transfer via Mollie, not default BACS gateway
+* Add support for new refunds and chargebacks processing (that are initiated in Mollie Dashboard)
 
 = 3.0.6 - 21/06/2018 =
 

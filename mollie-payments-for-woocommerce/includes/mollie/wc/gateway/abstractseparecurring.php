@@ -14,7 +14,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     {
         parent::__construct();
         $directDebit = new Mollie_WC_Gateway_DirectDebit();
-        if ($directDebit->is_available()) {
+        if ($directDebit->enabled == 'yes' ) {
             $this->initSubscriptionSupport();
             $this->recurringMollieMethod = $directDebit;
         }
@@ -132,9 +132,9 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
 
     /**
      * @param WC_Order $order
-     * @param Mollie_API_Object_Payment $payment
+     * @param Mollie\Api\Resources\Payment $payment
      */
-    protected function onWebhookPaid(WC_Order $order, Mollie_API_Object_Payment $payment)
+    protected function onWebhookPaid(WC_Order $order, Mollie\Api\Resources\Payment $payment)
     {
 	    if ( $payment->isPaid() ) {
 		    parent::onWebhookPaid( $order, $payment );
@@ -154,9 +154,9 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
 
     /**
      * @param WC_Order $order
-     * @param Mollie_API_Object_Payment $payment
+     * @param Mollie\Api\Resources\Payment $payment
      */
-    protected function onWebhookCancelled(WC_Order $order, Mollie_API_Object_Payment $payment)
+    protected function onWebhookCancelled(WC_Order $order, Mollie\Api\Resources\Payment $payment)
     {
         parent::onWebhookCancelled($order, $payment);
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
@@ -172,9 +172,9 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
 
     /**
      * @param WC_Order $order
-     * @param Mollie_API_Object_Payment $payment
+     * @param Mollie\Api\Resources\Payment $payment
      */
-    protected function onWebhookExpired(WC_Order $order, Mollie_API_Object_Payment $payment)
+    protected function onWebhookExpired(WC_Order $order, Mollie\Api\Resources\Payment $payment)
     {
         parent::onWebhookExpired($order, $payment);
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
@@ -207,11 +207,11 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
      * @param $order
      * @param $payment
      */
-    protected function handlePayedOrderWebhook($order, $payment)
+    protected function handlePaidOrderWebhook($order, $payment)
     {
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 		    // Duplicate webhook call
-		    if ($this->is_subscription($order->id) && isset($payment->recurringType) && $payment->recurringType == 'recurring') {
+		    if ($this->is_subscription($order->id) && isset($payment->sequenceType) && $payment->sequenceType == \Mollie\Api\Types\SequenceType::SEQUENCETYPE_RECURRING ) {
 			    $paymentMethodTitle = $this->getPaymentMethodTitle($payment);
 
 			    $order->add_order_note(sprintf(
@@ -226,7 +226,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
 		    }
 	    } else {
 		    // Duplicate webhook call
-		    if ($this->is_subscription($order->get_id()) && isset($payment->recurringType) && $payment->recurringType == 'recurring') {
+		    if ($this->is_subscription($order->get_id()) && isset($payment->sequenceType) && $payment->sequenceType == \Mollie\Api\Types\SequenceType::SEQUENCETYPE_RECURRING ) {
 			    $paymentMethodTitle = $this->getPaymentMethodTitle($payment);
 
 			    $order->add_order_note(sprintf(
@@ -241,7 +241,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
 		    }
 	    }
 
-        parent::handlePayedOrderWebhook($order, $payment);
+        parent::handlePaidOrderWebhook($order, $payment);
 
     }
 

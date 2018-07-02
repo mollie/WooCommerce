@@ -1,4 +1,7 @@
 <?php
+
+use Mollie\Api\Types\PaymentMethod;
+
 class Mollie_WC_Gateway_Belfius extends Mollie_WC_Gateway_AbstractSepaRecurring
 {
     /**
@@ -19,7 +22,7 @@ class Mollie_WC_Gateway_Belfius extends Mollie_WC_Gateway_AbstractSepaRecurring
      */
     public function getMollieMethodId ()
     {
-        return Mollie_API_Object_Method::BELFIUS;
+        return PaymentMethod::BELFIUS;
     }
 
     /**

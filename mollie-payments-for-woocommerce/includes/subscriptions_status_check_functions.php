@@ -92,7 +92,15 @@ class WC_Tools_Subscriptions_Status_Button {
 				$test_mode       = $settings_helper->isTestModeEnabled();
 
 				// Get all mandates for this Mollie customer ID
-				$mandates = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers_mandates->withParentId( $mollie_customer_id )->all();
+				try {
+					$mandates = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers->get( $mollie_customer_id )->mandates();
+				}
+				catch
+				( Mollie\Api\Exceptions\ApiException $e ) {
+					if ( $e->getField() ) {
+						echo '<div class="error notice"><p>' . $e->getMessage() . '</p></div>';
+					}
+				}
 
 				// Find one valid mandate for direct debit or credit card
 				// Prefer using a direct debit mandate because transaction costs are lower
@@ -128,10 +136,17 @@ class WC_Tools_Subscriptions_Status_Button {
 						update_post_meta( $subscription_id, '_payment_method_title', 'Credit Card' );
 					}
 
-					$subscription->update_status( 'active',
-						__( 'Subscription updated to Automated renewal via Mollie, status set to Active. Processed by \'Mollie Subscriptions Status\' tool.', 'mollie-payments-for-woocommerce' ),
-						true
-					);
+					try {
+
+						$subscription->update_status( 'active',
+							__( 'Subscription updated to Automated renewal via Mollie, status set to Active. Processed by \'Mollie Subscriptions Status\' tool.', 'mollie-payments-for-woocommerce' ),
+							true
+						);
+					}
+					catch
+					( Exception $e ) {
+						echo '<div class="error notice"><p>' . $e->getMessage() . '</p></div>';
+					}
 
 					$updated_subscriptions[] = $subscription_id;
 

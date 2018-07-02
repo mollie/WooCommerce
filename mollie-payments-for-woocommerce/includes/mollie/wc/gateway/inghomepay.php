@@ -1,5 +1,7 @@
 <?php
 
+use Mollie\Api\Types\PaymentMethod;
+
 class Mollie_WC_Gateway_IngHomePay extends Mollie_WC_Gateway_AbstractSepaRecurring {
 	/**
 	 *
@@ -17,7 +19,7 @@ class Mollie_WC_Gateway_IngHomePay extends Mollie_WC_Gateway_AbstractSepaRecurri
 	 * @return string
 	 */
 	public function getMollieMethodId() {
-		return Mollie_API_Object_Method::INGHOMEPAY;
+		return PaymentMethod::INGHOMEPAY;
 	}
 
 	/**

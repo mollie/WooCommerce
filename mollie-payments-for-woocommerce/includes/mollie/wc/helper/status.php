@@ -72,33 +72,32 @@ class Mollie_WC_Helper_Status
 
             $checker->checkCompatibility();
         }
-        catch (Mollie_API_Exception_IncompatiblePlatform $e)
+        catch ( \Mollie\Api\Exceptions\IncompatiblePlatform $e)
         {
             switch ($e->getCode())
             {
-                case Mollie_API_Exception_IncompatiblePlatform::INCOMPATIBLE_PHP_VERSION:
+                case \Mollie\Api\Exceptions\IncompatiblePlatform::INCOMPATIBLE_PHP_VERSION:
                     $error = sprintf(
                         /* translators: Placeholder 1: Required PHP version, placeholder 2: current PHP version */
-                        __('The client requires PHP version >= %s, you have %s.', 'mollie-payments-for-woocommerce'),
-                        Mollie_API_CompatibilityChecker::$MIN_PHP_VERSION,
-                        PHP_VERSION
+                        __('Mollie Payments for WooCommerce requires PHP %s or higher, you have PHP %s. Please upgrade and view %sthis FAQ%s', 'mollie-payments-for-woocommerce'),
+                        \Mollie\Api\CompatibilityChecker::MIN_PHP_VERSION,
+                        PHP_VERSION,
+	                    '<a href="https://github.com/mollie/WooCommerce/wiki/PHP-&-Mollie-API-v2" target="_blank">',
+                        '</a>'
                     );
                     break;
 
-                case Mollie_API_Exception_IncompatiblePlatform::INCOMPATIBLE_JSON_EXTENSION:
-                    $error = __('The Mollie API client requires the PHP extension JSON to be enabled. Please enable the \'json\' extension in your PHP configuration.', 'mollie-payments-for-woocommerce');
+                case \Mollie\Api\Exceptions\IncompatiblePlatform::INCOMPATIBLE_JSON_EXTENSION:
+                    $error = __('Mollie Payments for WooCommerce requires the PHP extension JSON to be enabled. Please enable the \'json\' extension in your PHP configuration.', 'mollie-payments-for-woocommerce');
                     break;
 
-                case Mollie_API_Exception_IncompatiblePlatform::INCOMPATIBLE_CURL_EXTENSION:
-                    $error = __('The Mollie API client requires the PHP extension cURL to be enabled. Please enable the \'curl\' extension in your PHP configuration.', 'mollie-payments-for-woocommerce');
+                case \Mollie\Api\Exceptions\IncompatiblePlatform::INCOMPATIBLE_CURL_EXTENSION:
+                    $error = __('Mollie Payments for WooCommerce requires the PHP extension cURL to be enabled. Please enable the \'curl\' extension in your PHP configuration.', 'mollie-payments-for-woocommerce');
                     break;
 
-                case Mollie_API_Exception_IncompatiblePlatform::INCOMPATIBLE_CURL_FUNCTION:
-                    $error = sprintf(
-                        /* translators: Placeholder 1: The required cURL function names */
-                        __('The Mollie API client requires the following PHP cURL functions to be available: %s. Please make sure all of these functions are available.', 'mollie-payments-for-woocommerce'),
-                        implode(', ', Mollie_API_CompatibilityChecker::$REQUIRED_CURL_FUNCTIONS)
-                    );
+                case \Mollie\Api\Exceptions\IncompatiblePlatform::INCOMPATIBLE_CURL_FUNCTION:
+	                $error =
+		                __( 'Mollie Payments for WooCommerce requires PHP cURL functions to be available. Please make sure all of these functions are available.', 'mollie-payments-for-woocommerce' );
                     break;
 
                 default:
@@ -141,7 +140,7 @@ class Mollie_WC_Helper_Status
     }
 
     /**
-     * @throws Mollie_WC_Exception_CouldNotConnectToMollie
+     * @throws \Mollie\Api\Exceptions\ApiException
      */
     public function getMollieApiStatus ()
     {
@@ -154,23 +153,28 @@ class Mollie_WC_Helper_Status
             $api_client = $api_helper->getApiClient($test_mode);
 
             // Try to load Mollie issuers
-            $api_client->issuers->all();
+            $api_client->methods->all();
         }
-        catch (Mollie_API_Exception $e)
+        catch ( \Mollie\Api\Exceptions\ApiException $e )
         {
-            throw new Mollie_WC_Exception_CouldNotConnectToMollie(
-                $e->getMessage(),
-                0,
-                $e
+
+	        if ( $e->getMessage() == 'Error executing API call (401: Unauthorized Request): Missing authentication, or failed to authenticate. Documentation: https://docs.mollie.com/guides/authentication') {
+		        throw new \Mollie\Api\Exceptions\ApiException(
+			        'incorrect API key or other authentication issue. Please check your API keys!'
+		        );
+	        }
+
+            throw new \Mollie\Api\Exceptions\ApiException(
+                $e->getMessage()
             );
         }
     }
 
     /**
-     * @return Mollie_API_CompatibilityChecker
+     * @return Mollie\Api\CompatibilityChecker()
      */
     protected function getApiClientCompatibilityChecker ()
     {
-        return new Mollie_API_CompatibilityChecker();
+        return new Mollie\Api\CompatibilityChecker();
     }
 }

@@ -3,7 +3,7 @@ Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, ideal, sofort, bancontact, bitcoin, direct debit, subscriptions
 Requires at least: 3.8
 Tested up to: 4.9
-Stable tag: 4.0.0-beta2
+Stable tag: 4.0.0-beta3
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -168,6 +168,23 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 4.0.0-beta3 - 02-07-2018 =
+
+IMPORTANT
+Version 4.0 requires PHP 5.6 or higher. If you are using an older PHP version, please read this article: [PHP & Mollie API v2](https://github.com/mollie/WooCommerce/wiki/PHP-&-Mollie-API-v2).
+
+* Fix "Call to undefined function get_current_screen()" that can happen on some screens
+
+* [Multicurrency support for WooCommerce added](https://www.mollie.com/en/features/multicurrency/)
+* [New payment methods EPS and GiroPay added](https://www.mollie.com/en/news/post/introducing-two-new-payment-methods-eps-and-giropay)
+* Updated payment method logo's (better quality SVG's)
+* Updated Mollie API PHP to 2.0.5
+
+* Add support for failed regular payments (already had support for failed renewal payments)
+* In WooCommerce order edit view, add direct link to payment in Mollie Dashboard
+* Add notice to use bank transfer via Mollie, not default BACS gateway
+* Add support for new refunds and chargebacks processing (that are initiated in Mollie Dashboard)
 
 = 4.0.0-beta2 - 02/07/2018 =
 

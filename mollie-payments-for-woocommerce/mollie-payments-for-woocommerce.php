@@ -113,7 +113,7 @@ function mollie_wc_plugin_inactive_php() {
 	}
 
 	echo '<div class="error"><p>';
-	echo sprintf( esc_html__( 'Mollie Payments for WooCommerce 4.0 will require at least PHP 5.6.0. Your PHP version is outdated. Upgrade your PHP version and view %sthis FAQ%s.', 'mollie-payments-for-woocommerce' ), '<a href="https://github.com/mollie/WooCommerce/wiki/PHP-&-Mollie-API-v2" target="_blank">', '</a>' );
+	echo sprintf( esc_html__( 'Mollie Payments for WooCommerce 4.0 requires PHP 5.6 or higher. Your PHP version is outdated. Upgrade your PHP version and view %sthis FAQ%s.', 'mollie-payments-for-woocommerce' ), '<a href="https://github.com/mollie/WooCommerce/wiki/PHP-&-Mollie-API-v2" target="_blank">', '</a>' );
 	echo '</p></div>';
 
 	return false;

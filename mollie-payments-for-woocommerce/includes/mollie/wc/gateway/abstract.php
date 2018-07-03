@@ -598,8 +598,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			    'method'          => $mollie_method,
 			    'issuer'          => $selected_issuer,
 			    'locale'          => $payment_locale,
-			    'billingAddress'  => $billingAddress,
-			    'shippingAddress' => $shippingAddress,
+			    //'billingAddress'  => $billingAddress,
+			    //'shippingAddress' => $shippingAddress,
 			    'metadata'        => array (
 				    'order_id' => $order->id,
 			    ),
@@ -638,8 +638,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			    'method'          => $mollie_method,
 			    'issuer'          => $selected_issuer,
 			    'locale'          => $payment_locale,
-			    'billingAddress'  => $billingAddress,
-			    'shippingAddress' => $shippingAddress,
+			    //'billingAddress'  => $billingAddress,
+			    //'shippingAddress' => $shippingAddress,
 			    'metadata'        => array (
 				    'order_id' => $order->get_id(),
 			    ),

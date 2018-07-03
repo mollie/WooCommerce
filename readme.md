@@ -35,6 +35,8 @@ Alternative payment methods:
 * Bitcoin (International)
 * Paysafecard (International)
 * Gift cards (Netherlands)
+* EPS (Austria)
+* Giropay (Germany)
 
 Please go to the [signup page](https://www.mollie.com/signup) to create a new Mollie account and start receiving payments in a couple of minutes. Contact info@mollie.com if you have any questions or comments about this plugin.
 

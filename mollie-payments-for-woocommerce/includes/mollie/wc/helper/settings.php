@@ -81,10 +81,40 @@ class Mollie_WC_Helper_Settings
      *
      * @return string
      */
-    public function getCurrentLocale ()
-    {
-        return apply_filters('wpml_current_language', get_locale());
-    }
+	public function getCurrentLocale() {
+		$locale = apply_filters( 'wpml_current_language', get_locale() );
+
+		// TODO: check API changelog to make sure there haven't been changes to this list.
+		$valid_locales = array (
+			'en_US',
+			'nl_NL',
+			'nl_BE',
+			'fr_FR',
+			'fr_BE',
+			'de_DE',
+			'de_AT',
+			'de_CH',
+			'es_ES',
+			'ca_ES',
+			'pt_PT',
+			'it_IT',
+			'nb_NO',
+			'sv_SE',
+			'fi_FI',
+			'da_DK',
+			'is_IS',
+			'hu_HU',
+			'pl_PL',
+			'lv_LV',
+			'lt_LT'
+		);
+
+		if ( in_array( $locale, $valid_locales ) ) {
+			return $locale;
+		}
+
+		return '';
+	}
 
     /**
      * Store customer details at Mollie

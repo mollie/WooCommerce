@@ -398,7 +398,7 @@ class Mollie_WC_Helper_Settings
                 'options' => array(
                     ''          => __('Detect using browser language', 'mollie-payments-for-woocommerce')  . ' (' . __('default', 'mollie-payments-for-woocommerce') . ')',
                     /* translators: Placeholder 1: Current WordPress locale */
-                    'wp_locale' => sprintf(__('Send WordPress language (%s)', 'mollie-payments-for-woocommerce'), $this->getCurrentLocale()),
+                    'wp_locale' => sprintf(__('Send WordPress language%s', 'mollie-payments-for-woocommerce'), (!empty($this->getCurrentLocale())) ? $this->getCurrentLocale() : '' ),
                     'en_US' => __('English', 'mollie-payments-for-woocommerce'),
                     'nl_NL' => __('Dutch', 'mollie-payments-for-woocommerce'),
                     'nl_BE' => __('Flemish (Belgium)', 'mollie-payments-for-woocommerce'),

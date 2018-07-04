@@ -2167,7 +2167,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				$methods = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->methods->all( $filters );
 
 				// Set new transients (as cache)
-				set_transient( $transient_id, serialize( $methods ), MINUTE_IN_SECONDS * 5 );
+				try {
+					set_transient( $transient_id, serialize( $methods ), MINUTE_IN_SECONDS * 5 );
+				}
+				catch ( Exception $e ) {
+					Mollie_WC_Plugin::debug( __FUNCTION__ . ": No caching because serialization failed." );
+				}
 
 			}
 

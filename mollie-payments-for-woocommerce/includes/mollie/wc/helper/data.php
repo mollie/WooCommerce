@@ -332,7 +332,12 @@ class Mollie_WC_Helper_Data
 				$methods = $this->api_helper->getApiClient( $test_mode )->methods->all( $filters );
 
 				// Set new transients (as cache)
-				set_transient( $transient_id, serialize( $methods ), MINUTE_IN_SECONDS * 5 );
+				try {
+					set_transient( $transient_id, serialize( $methods ), MINUTE_IN_SECONDS * 5 );
+				}
+				catch ( Exception $e ) {
+					Mollie_WC_Plugin::debug( __FUNCTION__ . ": No caching because serialization failed." );
+				}
 
 			}
 
@@ -385,7 +390,14 @@ class Mollie_WC_Helper_Data
 				return $cached_issuers;
 			} else {
 				$issuers = $this->api_helper->getApiClient( $test_mode )->methods->get( "$method", array ( "include" => "issuers" ) );
-				set_transient( $transient_id, serialize( $issuers ), MINUTE_IN_SECONDS * 5 );
+
+				// Set new transients (as cache)
+				try {
+					set_transient( $transient_id, serialize( $issuers ), MINUTE_IN_SECONDS * 5 );
+				}
+				catch ( Exception $e ) {
+					Mollie_WC_Plugin::debug( __FUNCTION__ . ": No caching because serialization failed." );
+				}
 			}
 
 			return $issuers;

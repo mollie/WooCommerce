@@ -258,14 +258,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			$order_total = $this->get_order_total();
 
 			// Get the correct currency for this payment or order
-			// On order-pay page, oorder is already created and has an order currency
+			// On order-pay page, order is already created and has an order currency
 			// On checkout, order is not created, use get_woocommerce_currency
 			global $wp;
 			if ( ! empty( $wp->query_vars['order-pay'] ) ) {
 				$order_id = $wp->query_vars['order-pay'];
 				$order    = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
 
-				$currency = $order->get_currency();
+				$currency = $this->getOrderCurrency( $order );
 			} else {
 				$currency = get_woocommerce_currency();
 			}
@@ -589,8 +589,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		    $paymentRequestData = array (
 			    'amount'          => array (
-				    'currency' => $order->get_currency(),
-				    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order->get_total(), $order->get_currency() )
+				    'currency' => $this->getOrderCurrency( $order ),
+				    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order->get_total(), $this->getOrderCurrency( $order ) )
 			    ),
 			    'description'     => $payment_description,
 			    'redirectUrl'     => $return_url,
@@ -629,8 +629,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		    $paymentRequestData = array (
 			    'amount'          => array (
-				    'currency' => $order->get_currency(),
-				    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order->get_total(), $order->get_currency())
+				    'currency' => $this->getOrderCurrency( $order ),
+				    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order->get_total(), $this->getOrderCurrency( $order ))
 			    ),
 			    'description'     => $payment_description,
 			    'redirectUrl'     => $return_url,
@@ -1465,7 +1465,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 return false;
             }
 
-            Mollie_WC_Plugin::debug('process_refund - create refund - payment: ' . $payment->id . ', order: ' . $order_id . ', amount: ' .  $order->get_currency() . $amount . (!empty($reason) ? ', reason: ' . $reason : ''));
+            Mollie_WC_Plugin::debug('process_refund - create refund - payment: ' . $payment->id . ', order: ' . $order_id . ', amount: ' .  $this->getOrderCurrency( $order ) . $amount . (!empty($reason) ? ', reason: ' . $reason : ''));
 
             do_action(Mollie_WC_Plugin::PLUGIN_ID . '_create_refund', $payment, $order);
 
@@ -1475,20 +1475,20 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	        // Send refund to Mollie
 	        $refund = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->refund( $payment, array (
 		        'amount'      => array (
-			        'currency' => $order->get_currency(),
-			        'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $amount, $order->get_currency() )
+			        'currency' => $this->getOrderCurrency( $order ),
+			        'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $amount, $this->getOrderCurrency( $order ) )
 		        ),
 		        'description' => $reason
 	        ) );
 
-            Mollie_WC_Plugin::debug('process_refund - refund created - refund: ' . $refund->id . ', payment: ' . $payment->id . ', order: ' . $order_id . ', amount: ' .  $order->get_currency() . $amount . (!empty($reason) ? ', reason: ' . $reason : ''));
+            Mollie_WC_Plugin::debug('process_refund - refund created - refund: ' . $refund->id . ', payment: ' . $payment->id . ', order: ' . $order_id . ', amount: ' .  $this->getOrderCurrency( $order ) . $amount . (!empty($reason) ? ', reason: ' . $reason : ''));
 
             do_action(Mollie_WC_Plugin::PLUGIN_ID . '_refund_created', $refund, $order);
 
             $order->add_order_note(sprintf(
             /* translators: Placeholder 1: currency, placeholder 2: refunded amount, placeholder 3: optional refund reason, placeholder 4: payment ID, placeholder 5: refund ID */
                 __('Refunded %s%s%s - Payment: %s, Refund: %s', 'mollie-payments-for-woocommerce'),
-	            $order->get_currency(),
+	            $this->getOrderCurrency( $order ),
                 $amount,
 	            (!empty($reason) ? ' (reason: ' . $reason . ')' : ''),
                 $refund->paymentId,
@@ -1945,6 +1945,17 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         return !empty($_POST[$issuer_id]) ? $_POST[$issuer_id] : NULL;
     }
+
+
+	/**
+	 */
+	protected function getOrderCurrency( WC_Order $order ) {
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			return $order->get_order_currency();
+		} else {
+			return $order->get_currency();
+		}
+	}
 
     /**
      * @return array

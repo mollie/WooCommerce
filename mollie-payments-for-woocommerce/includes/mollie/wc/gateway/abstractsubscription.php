@@ -116,7 +116,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 		    $data = array_filter(array(
 			    'amount'          => array (
 				    'currency' => $this->getOrderCurrency( $order ),
-				    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order->get_total(), $$this->getOrderCurrency( $order ))
+				    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order->get_total(), $this->getOrderCurrency( $order ))
 			    ),
 			    'description'     => $payment_description,
 			    'redirectUrl'     => $return_url,

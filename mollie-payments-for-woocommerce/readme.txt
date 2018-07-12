@@ -3,7 +3,7 @@ Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, ideal, sofort, bancontact, bitcoin, direct debit, subscriptions
 Requires at least: 3.8
 Tested up to: 4.9
-Stable tag: 4.0.0-beta6
+Stable tag: 4.0.0-beta7
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -169,7 +169,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 4.0.0-beta6 - 11-07-2018 =
+= 4.0.0-beta7 - 12-07-2018 =
 
 IMPORTANT
 Version 4.0 requires PHP 5.6 or higher. If you are using an older PHP version, please read this article: [PHP & Mollie API v2](https://github.com/mollie/WooCommerce/wiki/PHP-&-Mollie-API-v2).

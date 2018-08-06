@@ -3,7 +3,7 @@ Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, ideal, sofort, bancontact, bitcoin, direct debit, subscriptions
 Requires at least: 3.8
 Tested up to: 4.9
-Stable tag: 4.0.0-beta7
+Stable tag: 4.0.1
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -169,27 +169,29 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 4.0.0-beta7 - 12-07-2018 =
+= 4.0.1 - 06-08-2018 =
 
 IMPORTANT
 Version 4.0 requires PHP 5.6 or higher. If you are using an older PHP version, please read this article: [PHP & Mollie API v2](https://github.com/mollie/WooCommerce/wiki/PHP-&-Mollie-API-v2).
 
+* New - [Multicurrency support for WooCommerce added](https://www.mollie.com/en/features/multicurrency/)
+* New - [New payment methods EPS and GiroPay added](https://www.mollie.com/en/news/post/introducing-two-new-payment-methods-eps-and-giropay)
+* New - Updated payment method logo's (better quality SVG's)
+* New - Updated Mollie API PHP to 2.0.10
+
+* New - Add support for failed regular payments (already had support for failed renewal payments)
+* New - In WooCommerce order edit view, add direct link to payment in Mollie Dashboard
+* New - Add notice to use bank transfer via Mollie, not default BACS gateway
+* New - Add support for new refunds and chargebacks processing (that are initiated in Mollie Dashboard)
+
+* Fix - Guzzle conflicts with other plugins solved (Klarna, Simple Locator, Cardinity, LeadPages, ConstantContact)
+* Fix - "cURL error 60" fixed by including valid cacert.pem file
 * Fix - Make sure getting the shop currency is also possible on WooCommerce 2.6 or older
 * Fix - Fix "Fatal error: Uncaught exception 'Exception' with message 'Serialization of 'Closure' is not allowed' in " by adding try/catch blocks for serialize() for the rare cases where __sleep() isn't found in PHP
 * Fix - Check that a locale (language code) is supported by Mollie before trying to create a payment
 * Fix - "Couldn't create * payment", when other plugins (like WPML) use another locale format then the Mollie API (ISO 15897)
 * Fix - "Couldn't create * payment", temporarily disable sending the address details to Mollie for fraud detection, payments not allowed if one of the fields is missing
 * Fix - "Call to undefined function get_current_screen()" that can happen on some screens
-
-* New - [Multicurrency support for WooCommerce added](https://www.mollie.com/en/features/multicurrency/)
-* New - [New payment methods EPS and GiroPay added](https://www.mollie.com/en/news/post/introducing-two-new-payment-methods-eps-and-giropay)
-* New - Updated payment method logo's (better quality SVG's)
-* New - Updated Mollie API PHP to 2.0.6
-
-* New - Add support for failed regular payments (already had support for failed renewal payments)
-* New - In WooCommerce order edit view, add direct link to payment in Mollie Dashboard
-* New - Add notice to use bank transfer via Mollie, not default BACS gateway
-* New - Add support for new refunds and chargebacks processing (that are initiated in Mollie Dashboard)
 
 = 3.0.6 - 21/06/2018 =
 

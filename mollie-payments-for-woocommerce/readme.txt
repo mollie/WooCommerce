@@ -3,7 +3,7 @@ Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, ideal, sofort, bancontact, bitcoin, direct debit, subscriptions
 Requires at least: 3.8
 Tested up to: 4.9
-Stable tag: 4.0.1
+Stable tag: 4.0.2
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -168,6 +168,10 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 4.0.2 - 07-08-2018 =
+
+* Fix - Reverted to older version of Mollie API PHP client, as it caused more issues than it fixed. This means conflicts with other plugins that use Guzzle are still possible. Use Mollie Payments For WooCommerce 3.0.6 if you also use plugins Klarna, Simple Locator, Cardinity, LeadPages, ConstantContact until we can provide a solution. If you experience issues, please contact us. [Please review this article.](https://github.com/mollie/WooCommerce/wiki/Composer-Guzzle-conflicts)
 
 = 4.0.1 - 06-08-2018 =
 

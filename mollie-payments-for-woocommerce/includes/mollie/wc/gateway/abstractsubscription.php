@@ -193,16 +193,16 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
 			// Check that payment method is SEPA Direct Debit or similar
 			$methods_needing_update = array (
+				'mollie_wc_gateway_bancontact',
+				'mollie_wc_gateway_belfius',
 				'mollie_wc_gateway_directdebit',
-				'mollie_wc_gateway_ideal',
-				'mollie_wc_gateway_inghomepay',
 				'mollie_wc_gateway_eps',
 				'mollie_wc_gateway_giropay',
-				'mollie_wc_gateway_mistercash',
-				'mollie_wc_gateway_bancontact',
-				'mollie_wc_gateway_sofort',
+				'mollie_wc_gateway_ideal',
+				'mollie_wc_gateway_inghomepay',
 				'mollie_wc_gateway_kbc',
-				'mollie_wc_gateway_belfius',
+				'mollie_wc_gateway_mistercash',
+				'mollie_wc_gateway_sofort',
 			);
 
 			if ( in_array( $current_method, $methods_needing_update ) == false ) {
@@ -402,15 +402,15 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 		// later renewal orders switch to SEPA Direct Debit.
 
 		$methods_needing_update = array (
-			'mollie_wc_gateway_ideal',
-			'mollie_wc_gateway_inghomepay',
+			'mollie_wc_gateway_bancontact',
+			'mollie_wc_gateway_belfius',
 			'mollie_wc_gateway_eps',
 			'mollie_wc_gateway_giropay',
-			'mollie_wc_gateway_mistercash',
-			'mollie_wc_gateway_bancontact',
-			'mollie_wc_gateway_sofort',
+			'mollie_wc_gateway_ideal',
+			'mollie_wc_gateway_inghomepay',
 			'mollie_wc_gateway_kbc',
-			'mollie_wc_gateway_belfius',
+			'mollie_wc_gateway_mistercash',
+			'mollie_wc_gateway_sofort',
 		);
 
 		$current_method = get_post_meta( $renewal_order_id, '_payment_method', $single = true );

@@ -1756,14 +1756,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		// Check whether the order is processed and paid via another gateway
 		if ( $this->isOrderPaidByOtherGateway( $order ) ) {
-			Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order_id . ' orderNeedsPayment check: no, processed by other (non-Mollie) gateway.', true );
+			Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order_id . ' orderNeedsPayment check: no, previously processed by other (non-Mollie) gateway.', true );
 
 			return false;
 		}
 
 		// Check whether the order is processed and paid via Mollie
 		if ( ! $this->isOrderPaidAndProcessed( $order ) ) {
-			Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, not processed by Mollie gateway.', true );
+			Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, order not previously processed by Mollie gateway.', true );
 
 			return true;
 		}

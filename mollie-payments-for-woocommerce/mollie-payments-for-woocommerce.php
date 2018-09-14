@@ -12,7 +12,7 @@
  * Domain Path: /i18n/languages/
  * License: GPLv2 or later
  * WC requires at least: 2.2.0
- * WC tested up to: 3.4
+ * WC tested up to: 3.5
  */
 
 // Exit if accessed directly.

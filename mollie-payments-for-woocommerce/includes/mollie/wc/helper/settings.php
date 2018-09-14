@@ -216,7 +216,7 @@ class Mollie_WC_Helper_Settings
 		// Is Test mode enabled?
 		$test_mode = $settings_helper->isTestModeEnabled();
 
-		if ( isset( $_GET['refresh-methods'] ) && check_admin_referer( 'refresh-methods' ) ) {
+		if ( isset( $_GET['refresh-methods'] ) && wp_verify_nonce( $_GET['nonce_mollie_refresh_methods'], 'nonce_mollie_refresh_methods' ) ) {
 			/* Reload active Mollie methods */
 			$data_helper->getAllPaymentMethods( $test_mode, $use_cache = false );
 		}
@@ -237,10 +237,9 @@ class Mollie_WC_Helper_Settings
 			'</a>'
 		);
 
-		$refresh_methods_url = wp_nonce_url(
-			                       add_query_arg( array ( 'refresh-methods' => 1 ) ),
-			                       'refresh-methods'
-		                       ) . '#' . Mollie_WC_Plugin::PLUGIN_ID;
+		// Set a "refresh" link so payment method status can be refreshed from Mollie API
+		$nonce_mollie_refresh_methods = wp_create_nonce( 'nonce_mollie_refresh_methods' );
+		$refresh_methods_url = add_query_arg( array ( 'refresh-methods' => 1, 'nonce_mollie_refresh_methods' => $nonce_mollie_refresh_methods ) );
 
 		$content .= ' (<a href="' . esc_attr( $refresh_methods_url ) . '">' . strtolower( __( 'Refresh', 'mollie-payments-for-woocommerce' ) ) . '</a>)';
 

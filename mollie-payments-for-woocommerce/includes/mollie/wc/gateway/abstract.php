@@ -1422,7 +1422,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		}
 		
-		do_action( Mollie_WC_Plugin::PLUGIN_ID . '_payment_success', $order );
+		do_action( Mollie_WC_Plugin::PLUGIN_ID . '_customer_return_payment_success', $order );
 		/*
 		 * Return to order received page
 		 */

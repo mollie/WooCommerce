@@ -2014,7 +2014,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $test_mode = $settings->isTestModeEnabled();
         $api_key   = $settings->getApiKey($test_mode);
 
-        return !empty($api_key) && preg_match('/^(live|test)_\w+$/', $api_key);
+        return !empty($api_key) && preg_match('/^(live|test)_\w{30,}$/', $api_key);
     }
 
 

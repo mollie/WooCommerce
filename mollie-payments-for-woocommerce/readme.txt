@@ -141,7 +141,7 @@ Where possible, also include the Mollie log file. You can find the Mollie log fi
 
 = Minimum Requirements =
 
-* PHP version 5.3 or greater
+* PHP version 5.6 or greater
 * PHP extensions enabled: cURL, JSON
 * WordPress 3.8 or greater
 * WooCommerce 2.2.0 or greater

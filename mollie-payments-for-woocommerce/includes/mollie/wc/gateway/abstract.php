@@ -282,7 +282,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			$status = ( $this->id !== 'mollie_wc_gateway_directdebit' ) ? $this->isAvailableMethodInCheckout( $filters ) : false;
 
 			// Do extra checks if WooCommerce Subscriptions is installed
-			if ( class_exists( 'WC_Subscriptions' ) ) {
+			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
 
 				// Check recurring totals against recurring payment methods for future renewal payments
 				$recurring_totals = $this->get_recurring_total();

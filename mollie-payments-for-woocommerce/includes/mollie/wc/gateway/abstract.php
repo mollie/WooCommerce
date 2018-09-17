@@ -252,7 +252,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		}
 
 		// Only in WooCommerce checkout, check min/max amounts
-		if ( WC()->cart ) {
+		if ( WC()->cart && $this->get_order_total() > 0 ) {
 
 			// Check the current (normal) order total
 			$order_total = $this->get_order_total();

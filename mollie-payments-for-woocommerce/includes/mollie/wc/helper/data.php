@@ -789,6 +789,22 @@ class Mollie_WC_Helper_Data
 	    }
     }
 
+
+	/**
+	 * Get the WooCommerce currency for current order
+	 *
+	 * @param $order
+	 *
+	 * @return string $value
+	 */
+	public function getOrderCurrency( WC_Order $order ) {
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			return $order->get_order_currency();
+		} else {
+			return $order->get_currency();
+		}
+	}
+
 	/**
 	 * Format currency value into Mollie API v2 format
 	 *

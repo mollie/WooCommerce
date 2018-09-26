@@ -92,8 +92,8 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
 		    $data = array_filter(array(
 			    'amount'          => array (
-				    'currency' => $this->getOrderCurrency( $order ),
-				    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order->get_total(), $this->getOrderCurrency( $order ))
+				    'currency' => Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
+				    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order->get_total(), Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ))
 			    ),
 			    'description'     => $payment_description,
 			    'redirectUrl'     => $return_url,
@@ -113,10 +113,10 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			    '{order_date}'   => date_i18n(wc_date_format(), $order->get_date_created()->getTimestamp()),
 		    ));
 
-		    $data = array_filter(array(
-			    'amount'          => array (
-				    'currency' => $this->getOrderCurrency( $order ),
-				    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order->get_total(), $this->getOrderCurrency( $order ))
+		    $data = array_filter( array (
+			    'amount' => array (
+				    'currency' => Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
+				    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order->get_total(), Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) )
 			    ),
 			    'description'     => $payment_description,
 			    'redirectUrl'     => $return_url,

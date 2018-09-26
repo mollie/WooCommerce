@@ -34,6 +34,13 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 */
 	public $recurring_totals = 0;
 
+	/**
+	 * Shop base country.
+	 *
+	 * @var string
+	 */
+	public $shop_country;
+
     /**
      *
      */
@@ -46,6 +53,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         // Set gateway title (visible in admin)
         $this->method_title = 'Mollie - ' . $this->getDefaultTitle();
         $this->method_description = $this->getSettingsDescription();
+
+	    $base_location      = wc_get_base_location();
+	    $this->shop_country = $base_location['country'];
 
         // Load the settings.
         $this->init_form_fields();
@@ -265,17 +275,23 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				$order_id = $wp->query_vars['order-pay'];
 				$order    = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
 
-				$currency = $this->getOrderCurrency( $order );
+				$currency = Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order );
 			} else {
 				$currency = get_woocommerce_currency();
 			}
 
+			// Get current locale for this user
+			$payment_locale     = Mollie_WC_Plugin::getSettingsHelper()->getPaymentLocale();
+
 			$filters = array (
-				'amount'       => array (
+				'amount'         => array (
 					'currency' => $currency,
 					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order_total, $currency )
 				),
-				'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_ONEOFF
+				'resource'       => 'orders',
+				'billingCountry' => WC()->customer->get_shipping_country(),
+				'locale'         => $payment_locale,
+				'sequenceType'   => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_ONEOFF
 			);
 
 			// For regular payments, check available payment methods, but ignore SSD gateway (not shown in checkout)
@@ -302,6 +318,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 									'currency' => $currency,
 									'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $recurring_total, $currency )
 								),
+								'resource'       => 'orders',
+								'billingCountry' => WC()->customer->get_shipping_country(),
+								'locale'         => $payment_locale,
 								'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_RECURRING
 							);
 
@@ -316,6 +335,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 									'currency' => $currency,
 									'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order_total, $currency )
 								),
+								'resource'       => 'orders',
+								'billingCountry' => WC()->customer->get_shipping_country(),
+								'locale'         => $payment_locale,
 								'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_FIRST
 							);
 
@@ -443,17 +465,17 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		//
 		try {
 			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-				Mollie_WC_Plugin::debug( $this->id . ': Create payment for order ' . $order->id, true );
+				Mollie_WC_Plugin::debug( $this->id . ': Create Mollie Order for order ' . $order->id, true );
 			} else {
-				Mollie_WC_Plugin::debug( $this->id . ': Create payment for order ' . $order->get_id(), true );
+				Mollie_WC_Plugin::debug( $this->id . ': Create Mollie Order for order ' . $order->get_id(), true );
 			}
 
 			do_action( Mollie_WC_Plugin::PLUGIN_ID . '_create_payment', $data, $order );
 
 			// Create Mollie payment with customer id.
 			try {
-				$payment = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->create( $data );
-			}
+				$mollie_order = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->create( $data );
+				}
 			catch ( Mollie\Api\Exceptions\ApiException $e ) {
 				if ( $e->getField() !== 'customerId' ) {
 					throw $e;
@@ -461,23 +483,23 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 				// Retry without customer id.
 				unset( $data['customerId'] );
-				$payment = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->create( $data );
+				$mollie_order = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->create( $data );
 			}
 
-			$this->saveMollieInfo( $order, $payment );
+			$this->saveMollieInfo( $order, $mollie_order );
 
-			do_action( Mollie_WC_Plugin::PLUGIN_ID . '_payment_created', $payment, $order );
+			do_action( Mollie_WC_Plugin::PLUGIN_ID . '_payment_created', $mollie_order, $order );
 
 			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-				Mollie_WC_Plugin::debug( $this->id . ': Payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $order->id );
+				Mollie_WC_Plugin::debug( $this->id . ': Mollie Order ' . $mollie_order->id . ' (' . $mollie_order->mode . ') created for order ' . $order->id );
 			} else {
-				Mollie_WC_Plugin::debug( $this->id . ': Payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $order->get_id() );
+				Mollie_WC_Plugin::debug( $this->id . ': Mollie Order ' . $mollie_order->id . ' (' . $mollie_order->mode . ') created for order ' . $order->get_id() );
 			}
 
 			// Update initial order status for payment methods where the payment status will be delivered after a couple of days.
 			// See: https://www.mollie.com/nl/docs/status#expiry-times-per-payment-method
 			// Status is only updated if the new status is not the same as the default order status (pending)
-			if ( ( $payment->method == 'banktransfer' ) || ( $payment->method == 'directdebit' ) ) {
+			if ( ( $mollie_order->method == 'banktransfer' ) || ( $mollie_order->method == 'directdebit' ) ) {
 
 				// Don't change the status of the order if it's Partially Paid
 				// This adds support for WooCommerce Deposits (by Webtomizer)
@@ -500,29 +522,29 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			/* translators: Placeholder 1: Payment method title, placeholder 2: payment ID */
 				__( '%s payment started (%s).', 'mollie-payments-for-woocommerce' ),
 				$this->method_title,
-				$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
+				$mollie_order->id . ( $mollie_order->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
 			) );
 
 			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-				Mollie_WC_Plugin::debug( "For order " . $order->id . " redirect user to Mollie Checkout URL: " . $payment->getCheckoutUrl() );
+				Mollie_WC_Plugin::debug( "For order " . $order->id . " redirect user to Mollie Checkout URL: " . $mollie_order->getCheckoutUrl() );
 			} else {
-				Mollie_WC_Plugin::debug( "For order " . $order->get_id() . " redirect user to Mollie Checkout URL: " . $payment->getCheckoutUrl() );
+				Mollie_WC_Plugin::debug( "For order " . $order->get_id() . " redirect user to Mollie Checkout URL: " . $mollie_order->getCheckoutUrl() );
 			}
 
 			return array (
 				'result'   => 'success',
-				'redirect' => $this->getProcessPaymentRedirect( $order, $payment ),
+				'redirect' => $this->getProcessPaymentRedirect( $order, $mollie_order ),
 			);
 		}
 		catch ( Mollie\Api\Exceptions\ApiException $e ) {
 			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-				Mollie_WC_Plugin::debug( $this->id . ': Failed to create payment for order ' . $order->id . ': ' . $e->getMessage() );
+				Mollie_WC_Plugin::debug( $this->id . ': Failed to create Mollie Order for order ' . $order->id . ': ' . $e->getMessage() );
 			} else {
-				Mollie_WC_Plugin::debug( $this->id . ': Failed to create payment for order ' . $order->get_id() . ': ' . $e->getMessage() );
+				Mollie_WC_Plugin::debug( $this->id . ': Failed to create Mollie Order for order ' . $order->get_id() . ': ' . $e->getMessage() );
 			}
 
 			/* translators: Placeholder 1: Payment method title */
-			$message = sprintf( __( 'Could not create %s payment.', 'mollie-payments-for-woocommerce' ), $this->title );
+			$message = sprintf( __( 'Could not create %s Mollie payment/order.', 'mollie-payments-for-woocommerce' ), $this->title );
 
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 				$message .= ' ' . $e->getMessage();
@@ -571,8 +593,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $return_url          = $this->getReturnUrl($order);
         $webhook_url         = $this->getWebhookUrl($order);
 
-
-
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 
 		    $payment_description = strtr($payment_description, array(
@@ -615,13 +635,21 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		    );
 	    } else {
 
-		    $payment_description = strtr($payment_description, array(
-			    '{order_number}' => $order->get_order_number(),
-			    '{order_date}'   => date_i18n(wc_date_format(), $order->get_date_created()->getTimestamp()),
-		    ));
+		    // Setup billing and shipping objects
+		    $billingAddress  = new stdClass();
+		    $shippingAddress = new stdClass();
+
+		    // Get user details
+		    $billingAddress->givenName  = $order->get_billing_first_name();
+		    $billingAddress->familyName = $order->get_billing_last_name();
+		    $billingAddress->email      = $order->get_billing_email();
+
+		    // Get user details
+		    $shippingAddress->givenName  = $order->get_shipping_first_name();
+		    $shippingAddress->familyName = $order->get_shipping_last_name();
+		    $shippingAddress->email      = $order->get_billing_email(); // WooCommerce doesn't have a shipping email
 
 		    // Create billingAddress object
-		    $billingAddress                  = new stdClass();
 		    $billingAddress->streetAndNumber = $order->get_billing_address_1();
 		    $billingAddress->postalCode      = $order->get_billing_postcode();
 		    $billingAddress->city            = $order->get_billing_city();
@@ -629,29 +657,37 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		    $billingAddress->country         = $order->get_billing_country();
 
 		    // Create shippingAddress object
-		    $shippingAddress                  = new stdClass();
 		    $shippingAddress->streetAndNumber = $order->get_shipping_address_1();
 		    $shippingAddress->postalCode      = $order->get_shipping_postcode();
 		    $shippingAddress->city            = $order->get_shipping_city();
 		    $shippingAddress->region          = $order->get_shipping_state();
 		    $shippingAddress->country         = $order->get_shipping_country();
 
+		    // Generate order lines for Mollie Orders
+		    $order_lines_helper = Mollie_WC_Plugin::getOrderLinesHelper( $this->shop_country, $order );
+		    $order_lines        = $order_lines_helper->order_lines();
+
+		    // Build the Mollie order data
 		    $paymentRequestData = array (
 			    'amount'          => array (
 				    'currency' => $this->getOrderCurrency( $order ),
 				    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order->get_total(), $this->getOrderCurrency( $order ))
 			    ),
-			    'description'     => $payment_description,
 			    'redirectUrl'     => $return_url,
 			    'webhookUrl'      => $webhook_url,
 			    'method'          => $mollie_method,
-			    'issuer'          => $selected_issuer,
-			    'locale'          => $payment_locale,
-			    //'billingAddress'  => $billingAddress,
-			    //'shippingAddress' => $shippingAddress,
-			    'metadata'        => array (
-				    'order_id' => $order->get_id(),
+			    'payment'         => array (
+				    'issuer' => $selected_issuer
 			    ),
+			    'locale'          => $payment_locale,
+			    'billingAddress'  => $billingAddress,
+			    'shippingAddress' => $shippingAddress,
+			    'metadata'        => array (
+				    'order_id'     => $order->get_id(),
+				    'order_number' => $order->get_order_number(),
+			    ),
+			    'lines'           => $order_lines['lines'],
+			    'orderNumber'     => $order->get_order_number(), // TODO David: use order number or order id?
 		    );
 	    }
 

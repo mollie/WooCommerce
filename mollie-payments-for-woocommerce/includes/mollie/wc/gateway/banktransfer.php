@@ -75,7 +75,7 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
         {
             $expiry_date = date("Y-m-d", strtotime("+$expiry_days days"));
 
-            $args['dueDate'] = $expiry_date;
+            $args['payment']['dueDate'] = $expiry_date;
         }
 
 	    $order_billing_email = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $order->billing_email : $order->get_billing_email();

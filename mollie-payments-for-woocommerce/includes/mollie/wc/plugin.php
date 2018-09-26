@@ -530,6 +530,22 @@ class Mollie_WC_Plugin
     }
 
 	/**
+	 * @return Mollie_WC_Helper_OrderLines
+	 */
+	public static function getOrderLinesHelper ( $shop_country, WC_Order $order )
+	{
+		static $order_lines_helper;
+
+		if (!$order_lines_helper)
+		{
+
+			$order_lines_helper = new Mollie_WC_Helper_OrderLines( $shop_country, $order );
+		}
+
+		return $order_lines_helper;
+	}
+
+	/**
 	 * Don't show SEPA Direct Debit in WooCommerce Checkout
 	 */
 	public static function disableSEPAInCheckout( $available_gateways ) {

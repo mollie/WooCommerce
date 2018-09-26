@@ -714,16 +714,16 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 * Redirect location after successfully completing process_payment
 	 *
 	 * @param WC_Order                     $order
-	 * @param Mollie\Api\Resources\Payment $payment
+	 * @param Mollie\Api\Resources\Order    $mollie_order
 	 *
 	 * @return string
 	 */
-    protected function getProcessPaymentRedirect(WC_Order $order, Mollie\Api\Resources\Payment $payment)
+    protected function getProcessPaymentRedirect(WC_Order $order, Mollie\Api\Resources\Order $mollie_order)
     {
         /*
          * Redirect to payment URL
          */
-        return $payment->getCheckoutUrl();
+        return $mollie_order->getCheckoutUrl();
     }
 
     /**

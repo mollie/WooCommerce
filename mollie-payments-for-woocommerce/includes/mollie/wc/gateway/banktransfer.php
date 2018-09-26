@@ -78,11 +78,11 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
      * {@inheritdoc}
      *
      * @param WC_Order $order
-     * @param Mollie\Api\Resources\Payment $payment
+     * @param Mollie\Api\Resources\Order $mollie_order
      *
      * @return string
      */
-    protected function getProcessPaymentRedirect(WC_Order $order, Mollie\Api\Resources\Payment $payment)
+    protected function getProcessPaymentRedirect(WC_Order $order, Mollie\Api\Resources\Order $mollie_order)
     {
         if ($this->get_option('skip_mollie_payment_screen') === 'yes')
         {
@@ -99,7 +99,7 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
             return $redirect_url;
         }
 
-        return parent::getProcessPaymentRedirect($order, $payment);
+        return parent::getProcessPaymentRedirect($order, $mollie_order);
     }
 
     /**

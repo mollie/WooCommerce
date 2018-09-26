@@ -72,8 +72,10 @@ class Mollie_WC_Helper_Settings
             }
         }
 
-        // Do not send locale to Mollie, use browser language
-        return null;
+        // If setting is empty, users selected "Use browser language"
+	    // Locale is now required for Orders API, so that's useless
+	    // Fall back to en_US if we have no other options
+        return 'en_US';
     }
 
     /**
@@ -84,7 +86,11 @@ class Mollie_WC_Helper_Settings
 	public function getCurrentLocale() {
 		$locale = apply_filters( 'wpml_current_language', get_locale() );
 
-		// TODO: check API changelog to make sure there haven't been changes to this list.
+		// Convert known exceptions
+		( $locale == 'nl_NL_formal' ? $locale = 'nl_NL': '');
+		( $locale == 'no_NO' ? $locale = 'nb_NO': '');
+
+		// TODO: Once in a while, check API changelog to make sure there haven't been changes to this list.
 		$valid_locales = array (
 			'en_US',
 			'nl_NL',
@@ -109,11 +115,21 @@ class Mollie_WC_Helper_Settings
 			'lt_LT'
 		);
 
+		// Check if the current WordPress locale is valid for Mollie Orders API
 		if ( in_array( $locale, $valid_locales ) ) {
 			return $locale;
 		}
 
-		return '';
+		// If current WordPress locale is invalid, try to get the correct format
+		// by searching for part of a needle in a haystack
+		foreach ($valid_locales as $key => $value) {
+			if (false !== stripos($value, $locale)) {
+				return $value;
+			}
+		}
+
+		// Fall back to en_US if we have no other options
+		return 'en_US';
 	}
 
     /**
@@ -395,9 +411,7 @@ class Mollie_WC_Helper_Settings
                 'title'   => __('Payment screen language', 'mollie-payments-for-woocommerce'),
                 'type'    => 'select',
                 'options' => array(
-                    ''          => __('Detect using browser language', 'mollie-payments-for-woocommerce')  . ' (' . __('default', 'mollie-payments-for-woocommerce') . ')',
-                    /* translators: Placeholder 1: Current WordPress locale */
-                    'wp_locale' => sprintf(__('Send WordPress language%s', 'mollie-payments-for-woocommerce'), (!empty($this->getCurrentLocale())) ? $this->getCurrentLocale() : '' ),
+                    'wp_locale' => __('Automatically send WordPress language', 'mollie-payments-for-woocommerce'),
                     'en_US' => __('English', 'mollie-payments-for-woocommerce'),
                     'nl_NL' => __('Dutch', 'mollie-payments-for-woocommerce'),
                     'nl_BE' => __('Flemish (Belgium)', 'mollie-payments-for-woocommerce'),
@@ -421,7 +435,7 @@ class Mollie_WC_Helper_Settings
                     'lt_LT' => __('Lithuanian', 'mollie-payments-for-woocommerce'),
                 ),
                 'desc'    => sprintf(
-                	__('The option \'Detect using browser language\' is usually more accurate. Only use \'Send WordPress language\' if you are sure all languages/locales on your website are supported by Mollie %s(see \'locale\' under \'Parameters\')%s. Currently supported locales: <code>en_US</code>, <code>nl_NL</code>, <code>nl_BE</code>, <code>fr_FR</code>, <code>fr_BE</code>, <code>de_DE</code>,  <code>de_AT</code>, <code>de_CH</code>, <code>es_ES</code>, <code>ca_ES</code>, <code>pt_PT</code>, <code>it_IT</code>, <code>nb_NO</code>, <code>sv_SE</code>, <code>fi_FI</code>, <code>da_DK</code>, <code>is_IS</code>, <code>hu_HU</code>, <code>pl_PL</code>, <code>lv_LV</code>, <code>lt_LT</code>.', 'mollie-payments-for-woocommerce'),
+                	__('Sending a language (or locale) is required. The option \'Automatically send WordPress language\' will try get the customer\'s language in WordPress (and respects multilanguage plugins) and convert it to a format Mollie understands. If this fails, or if the language is not supported, it will fall back to American English. You can also select one of the locales currently supported by Mollie, that will then be used for all customers.', 'mollie-payments-for-woocommerce'),
 	                '<a href="https://www.mollie.com/nl/docs/reference/payments/create" target="_blank">',
 	                '</a>'
                 ),

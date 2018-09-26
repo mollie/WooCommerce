@@ -108,28 +108,34 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			    'customerId'      => $customer_id,
 		    ));
 	    } else {
-		    $payment_description = strtr($payment_description, array(
-			    '{order_number}' => $order->get_order_number(),
-			    '{order_date}'   => date_i18n(wc_date_format(), $order->get_date_created()->getTimestamp()),
-		    ));
+
+		    // Generate order lines for Mollie Orders
+		    $order_lines_helper = Mollie_WC_Plugin::getOrderLinesHelper( $this->shop_country, $order );
+		    $order_lines        = $order_lines_helper->order_lines();
+
+		    // TODO David: don't get details from cart in case of recurring payment? Or is Klarna never recurring?
 
 		    $data = array_filter( array (
 			    'amount' => array (
 				    'currency' => Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
 				    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order->get_total(), Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) )
 			    ),
-			    'description'     => $payment_description,
-			    'redirectUrl'     => $return_url,
-			    'webhookUrl'      => $webhook_url,
-			    'method'          => $mollie_method,
-			    'issuer'          => $selected_issuer,
-			    'locale'          => $payment_locale,
-			    'metadata'        => array(
-				    'order_id' => $order->get_id(),
+			    'redirectUrl' => $return_url,
+			    'webhookUrl'  => $webhook_url,
+			    'method'      => $mollie_method,
+			    'payment'     => array (
+				    'issuer'       => $selected_issuer,
+				    'sequenceType' => 'recurring'
 			    ),
-			    'sequenceType'   => 'recurring',
-			    'customerId'      => $customer_id,
-		    ));
+			    'locale'      => $payment_locale,
+			    'metadata'    => array (
+				    'order_id'     => $order->get_id(),
+				    'order_number' => $order->get_order_number(),
+			    ),
+			    'lines'       => $order_lines['lines'],
+			    'orderNumber' => $order->get_order_number(), // TODO David: use order number or order id?
+			    'customerId'  => $customer_id,
+		    ) );
 	    }
 
         return $data;

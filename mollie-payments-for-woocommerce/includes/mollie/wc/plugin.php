@@ -32,6 +32,8 @@ class Mollie_WC_Plugin
         'Mollie_WC_Gateway_Ideal',
         'Mollie_WC_Gateway_IngHomePay',
         'Mollie_WC_Gateway_Kbc',
+        'Mollie_WC_Gateway_KlarnaPayLater',
+        'Mollie_WC_Gateway_KlarnaSliceIt',
         'Mollie_WC_Gateway_Bancontact',
 	    // LEGACY - DO NOT REMOVE!
         // MisterCash was renamed to Bancontact, but this class should stay available for old orders and subscriptions!

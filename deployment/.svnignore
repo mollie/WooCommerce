@@ -1,0 +1,6 @@
+.*
+build
+tests
+phpunit.xml
+Thumbs.db
+composer.lock

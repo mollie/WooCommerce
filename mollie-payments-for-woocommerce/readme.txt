@@ -382,7 +382,7 @@ to overwrite the order status for cancelled and expired Mollie payments. You can
 = 2.2.1 - 18/04/2016 =
 * Add option for the Bank Transfer gateway to skip redirecting your users to the Mollie payment screen. Instead directly redirect to the WooCommerce order 
 received page where payment instruction will be displayed. You can turn on this option on the Mollie Bank Transfer setting page: 
-WooCommerce -> Settings -> Checkout -> Mollie - Bank Transfer.
+WooCommerce -> Settings -> Payments -> Mollie - Bank Transfer.
 
 = 2.2.0 - 29/03/2016 =
 * Add integration with Mollie Customers API.
@@ -416,4 +416,4 @@ Our plugin is now compatible with WooCommerce Subscriptions for recurring paymen
 
 = 2.0.0 =
 * The 2.x version of the plugin uses a different plugin name. You can still run version 1.x of our plugin if you want to temporary
-keep support for payments created using version 1.x. Hide the old payment gateways by disabling the old 'Mollie Payment Module' payment gateway in WooCommerce -> Settings -> Checkout.
+keep support for payments created using version 1.x. Hide the old payment gateways by disabling the old 'Mollie Payment Module' payment gateway in WooCommerce -> Settings -> Payments.

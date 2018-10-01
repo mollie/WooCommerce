@@ -2173,7 +2173,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			$filters_key   = $filters['amount']['currency'] . '_' . str_replace( '.', '', $filters['amount']['value'] ) . '_' . $filters['sequenceType'];
 			$transient_id = Mollie_WC_Plugin::getDataHelper()->getTransientId( 'api_methods_' . ( $test_mode ? 'test' : 'live' ) . '_' . $filters_key );
 
-			//$cached = unserialize( get_transient( $transient_id ) );
+			$cached = unserialize( get_transient( $transient_id ) );
 
 			if ( $cached && $cached instanceof \Mollie\Api\Resources\MethodCollection ) {
 				$methods = $cached;

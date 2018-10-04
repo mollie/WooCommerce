@@ -34,7 +34,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 */
 	public $recurring_totals = 0;
 
-    /**
+	/**
+	 * @var bool
+	 */
+	public static $alreadyDisplayedInstructions = false;
+
+	/**
      *
      */
     public function __construct ()
@@ -1535,58 +1540,57 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $this->displayInstructions($order, $admin_instructions = false, $plain_text = false);
     }
 
-    /**
-     * Add content to the WC emails.
-     *
-     * @param WC_Order $order
-     * @param bool     $admin_instructions (default: false)
-     * @param bool     $plain_text (default: false)
-     * @return void
-     */
-    public function displayInstructions(WC_Order $order, $admin_instructions = false, $plain_text = false)
-    {
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    $order_payment_method = $order->payment_method;
-	    } else {
-		    $order_payment_method = $order->get_payment_method();
-	    }
+	/**
+	 * Add content to the WC emails.
+	 *
+	 * @param WC_Order $order
+	 * @param bool     $admin_instructions (default: false)
+	 * @param bool     $plain_text         (default: false)
+	 *
+	 * @return void
+	 */
+	public function displayInstructions( WC_Order $order, $admin_instructions = false, $plain_text = false ) {
 
-        // Invalid gateway
-        if ($this->id !== $order_payment_method)
-        {
-            return;
-        }
+		if ( ! self::$alreadyDisplayedInstructions ) {
+			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+				$order_payment_method = $order->payment_method;
+			} else {
+				$order_payment_method = $order->get_payment_method();
+			}
 
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    $payment = Mollie_WC_Plugin::getDataHelper()->getActiveMolliePayment($order->id);
-	    } else {
-		    $payment = Mollie_WC_Plugin::getDataHelper()->getActiveMolliePayment($order->get_id());
-	    }
+			// Invalid gateway
+			if ( $this->id !== $order_payment_method ) {
+				return;
+			}
 
-        // Mollie payment not found or invalid gateway
-        if (!$payment || $payment->method != $this->getMollieMethodId())
-        {
-            return;
-        }
+			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+				$payment = Mollie_WC_Plugin::getDataHelper()->getActiveMolliePayment( $order->id );
+			} else {
+				$payment = Mollie_WC_Plugin::getDataHelper()->getActiveMolliePayment( $order->get_id() );
+			}
 
-        $instructions = $this->getInstructions($order, $payment, $admin_instructions, $plain_text);
+			// Mollie payment not found or invalid gateway
+			if ( ! $payment || $payment->method != $this->getMollieMethodId() ) {
+				return;
+			}
 
-        if (!empty($instructions))
-        {
-            $instructions = wptexturize($instructions);
+			$instructions = $this->getInstructions( $order, $payment, $admin_instructions, $plain_text );
 
-            if ($plain_text)
-            {
-                echo $instructions . PHP_EOL;
-            }
-            else
-            {
-                echo '<section class="woocommerce-order-details woocommerce-info mollie-instructions" >';
-                echo wpautop($instructions) . PHP_EOL;
-                echo '</section>';
-            }
-        }
-    }
+			if ( ! empty( $instructions ) ) {
+				$instructions = wptexturize( $instructions );
+
+				if ( $plain_text ) {
+					echo $instructions . PHP_EOL;
+				} else {
+					echo '<section class="woocommerce-order-details woocommerce-info mollie-instructions" >';
+					echo wpautop( $instructions ) . PHP_EOL;
+					echo '</section>';
+				}
+			}
+		}
+		self::$alreadyDisplayedInstructions = true;
+
+	}
 
     /**
      * @param WC_Order                  $order

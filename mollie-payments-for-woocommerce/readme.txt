@@ -83,7 +83,7 @@ Most of the time a white screen means a PHP error. Because PHP won't show error 
 
 = The Mollie payment gateways aren't displayed in my checkout =
 
-* Please go to WooCommerce -> Settings -> Checkout in your WordPress admin and scroll down to the Mollie settings section.
+* Please go to WooCommerce -> Settings -> Payments in your WordPress admin and scroll down to the Mollie settings section.
 * Check which payment gateways are disabled.
 * Go to the specific payment gateway settings page to find out why the payment gateway is disabled.
 
@@ -150,7 +150,7 @@ Where possible, also include the Mollie log file. You can find the Mollie log fi
 
 1. Install the plugin via Plugins -> New plugin. Search for 'Mollie Payments for WooCommerce'.
 2. Activate the 'Mollie Payments for WooCommerce' plugin through the 'Plugins' menu in WordPress
-3. Set your Mollie API key at WooCommerce -> Settings -> Checkout (or use the *Mollie Settings* link in the Plugins overview)
+3. Set your Mollie API key at WooCommerce -> Settings -> Payments (or use the *Mollie Settings* link in the Plugins overview)
 4. You're done, the active payment methods should be visible in the checkout of your webshop.
 
 = Manual installation =
@@ -158,7 +158,7 @@ Where possible, also include the Mollie log file. You can find the Mollie log fi
 1. Unpack the download package
 2. Upload the directory 'mollie-payments-for-woocommerce' to the `/wp-content/plugins/` directory
 3. Activate the 'Mollie Payments for WooCommerce' plugin through the 'Plugins' menu in WordPress
-4. Set your Mollie API key at WooCommerce -> Settings -> Checkout (or use the *Mollie Settings* link in the Plugins overview)
+4. Set your Mollie API key at WooCommerce -> Settings -> Payments (or use the *Mollie Settings* link in the Plugins overview)
 5. You're done, the active payment methods should be visible in the checkout of your webshop.
 
 Please contact info@mollie.com if you need help installing the Mollie WooCommerce plugin. Please provide your Mollie partner ID and website URL.
@@ -382,7 +382,7 @@ to overwrite the order status for cancelled and expired Mollie payments. You can
 = 2.2.1 - 18/04/2016 =
 * Add option for the Bank Transfer gateway to skip redirecting your users to the Mollie payment screen. Instead directly redirect to the WooCommerce order 
 received page where payment instruction will be displayed. You can turn on this option on the Mollie Bank Transfer setting page: 
-WooCommerce -> Settings -> Checkout -> Mollie - Bank Transfer.
+WooCommerce -> Settings -> Payments -> Mollie - Bank Transfer.
 
 = 2.2.0 - 29/03/2016 =
 * Add integration with Mollie Customers API.
@@ -416,4 +416,4 @@ Our plugin is now compatible with WooCommerce Subscriptions for recurring paymen
 
 = 2.0.0 =
 * The 2.x version of the plugin uses a different plugin name. You can still run version 1.x of our plugin if you want to temporary
-keep support for payments created using version 1.x. Hide the old payment gateways by disabling the old 'Mollie Payment Module' payment gateway in WooCommerce -> Settings -> Checkout.
+keep support for payments created using version 1.x. Hide the old payment gateways by disabling the old 'Mollie Payment Module' payment gateway in WooCommerce -> Settings -> Payments.

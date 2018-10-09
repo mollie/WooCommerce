@@ -30,7 +30,7 @@ class Mollie_WC_Gateway_KlarnaSliceIt extends Mollie_WC_Gateway_Abstract
 	 */
 	public function getDefaultTitle ()
 	{
-		return __('Klarna Slice It', 'mollie-payments-for-woocommerce');
+		return __('Klarna Slice it', 'mollie-payments-for-woocommerce');
 	}
 
 	/**

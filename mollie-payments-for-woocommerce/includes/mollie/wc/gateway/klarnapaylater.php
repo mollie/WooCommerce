@@ -30,7 +30,7 @@ class Mollie_WC_Gateway_KlarnaPayLater extends Mollie_WC_Gateway_Abstract
 	 */
 	public function getDefaultTitle ()
 	{
-		return __('Klarna Pay Later', 'mollie-payments-for-woocommerce');
+		return __('Klarna Pay later', 'mollie-payments-for-woocommerce');
 	}
 
 	/**

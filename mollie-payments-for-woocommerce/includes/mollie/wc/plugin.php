@@ -210,6 +210,12 @@ class Mollie_WC_Plugin
 		// Set order to paid and processed when eventually completed without Mollie
 		add_action( 'woocommerce_payment_complete', array ( __CLASS__, 'setOrderPaidByOtherGateway' ), 10, 1 );
 
+		// Cancel order at Mollie (for Orders API/Klarna)
+		add_action( 'woocommerce_order_status_cancelled', array( __CLASS__, 'cancelOrderAtMollie' ) );
+
+		// Capture order at Mollie (for Orders API/Klarna)
+		add_action( 'woocommerce_order_status_completed', array( __CLASS__, 'shipAndCaptureOrderAtMollie' ) );
+
 		self::initDb();
 		self::schedulePendingPaymentOrdersExpirationCheck();
 		// Mark plugin initiated
@@ -532,6 +538,34 @@ class Mollie_WC_Plugin
     }
 
 	/**
+	 * @return Mollie_WC_Helper_PaymentFactory
+	 */
+	public static function getPaymentFactoryHelper() {
+		static $payment_helper;
+
+		if ( ! $payment_helper ) {
+			$payment_helper = new Mollie_WC_Helper_PaymentFactory();
+		}
+
+		return $payment_helper;
+
+	}
+
+	/**
+	 * @return Mollie_WC_Payment_Object
+	 */
+	public static function getPaymentObject() {
+		static $payment_parent;
+
+		if ( ! $payment_parent ) {
+			$payment_parent = new Mollie_WC_Payment_Object( null );
+		}
+
+		return $payment_parent;
+
+	}
+
+	/**
 	 * @return Mollie_WC_Helper_OrderLines
 	 */
 	public static function getOrderLinesHelper ( $shop_country, WC_Order $order )
@@ -545,6 +579,168 @@ class Mollie_WC_Plugin
 		}
 
 		return $order_lines_helper;
+	}
+
+	/**
+	 * Ship all order lines and capture an order at Mollie.
+	 *
+	 */
+	public static function shipAndCaptureOrderAtMollie( $order_id ) {
+
+		Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Start processing completed order for a potential capture at Mollie.' );
+
+		$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+
+		// Set Klarna payment methods
+		$klarna_methods = array (
+			'mollie_wc_gateway_klarnasliceit',
+			'mollie_wc_gateway_klarnapaylater'
+		);
+
+		// TODO David: Check minimal WooCommerce or Mollie status
+
+		// Does WooCommerce order contain a payment via Klarna?
+		if ( ! in_array( $order->get_payment_method(), $klarna_methods, true ) ) {
+			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Processing completed order stopped, not a Klarna payment.' );
+
+			return;
+		}
+
+		// Does WooCommerce order contain a Mollie Order?
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			$mollie_order_id = ( $mollie_order_id = get_post_meta( $order->id, '_mollie_order_id', true ) ) ? $mollie_order_id : false;
+		} else {
+			$mollie_order_id = ( $mollie_order_id = $order->get_meta( '_mollie_order_id', true ) ) ? $mollie_order_id : false;
+		}
+
+		if ( $mollie_order_id == false ) {
+			$order->add_order_note( 'Order contains Klarna payment methods, but not a valid Mollie Order ID. Processing capture canceled.' );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Order contains Klarna payment methods, but not a valid Mollie Order ID. Processing capture cancelled.' );
+
+			return;
+		}
+
+		// Is test mode enabled?
+		$settings_helper = Mollie_WC_Plugin::getSettingsHelper();
+		$test_mode       = $settings_helper->isTestModeEnabled();
+
+		try {
+			// Get the order from the Mollie API
+			$mollie_order = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->get( $mollie_order_id );
+
+			// Check that order is Paid or Authorized and can be captured
+			if ( $mollie_order->isCanceled() ) {
+				$order->add_order_note( 'Order already canceled at Mollie, can not be shipped/captured.' );
+				Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Order already canceled at Mollie, can not be shipped/captured.' );
+
+				return;
+
+			}
+
+			if ( $mollie_order->isCompleted() ) {
+				$order->add_order_note( 'Order already completed at Mollie, can not be shipped/captured.' );
+				Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Order already completed at Mollie, can not be shipped/captured.' );
+
+				return;
+
+			}
+
+			if ( $mollie_order->isPaid() || $mollie_order->isAuthorized() ) {
+				Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->get( $mollie_order_id )->shipAll();
+				$order->add_order_note( 'Order successfully updated to shipped at Mollie, capture of funds underway.' );
+				Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Order successfully updated to shipped at Mollie, capture of funds underway.' );
+
+				return;
+
+			}
+
+			$order->add_order_note( 'Order not paid or authorized at Mollie yet, can not be shipped.' );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Order not paid or authorized at Mollie yet, can not be shipped.' );
+
+		}
+		catch ( Mollie\Api\Exceptions\ApiException $e ) {
+			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Processing shipment & capture failed, error: ' . $e->getMessage() );
+		}
+
+		return;
+	}
+
+
+	/**
+	 * Cancel an order at Mollie.
+	 *
+	 */
+	public static function cancelOrderAtMollie( $order_id ) {
+
+		Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Start canceling an order at Mollie.' );
+
+		$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+
+		// Set Klarna payment methods
+		$klarna_methods = array (
+			'mollie_wc_gateway_klarnasliceit',
+			'mollie_wc_gateway_klarnapaylater'
+		);
+
+		// TODO David: Check minimal WooCommerce or Mollie status
+
+		// Does WooCommerce order contain a payment via Klarna?
+		if ( ! in_array( $order->get_payment_method(), $klarna_methods, true ) ) {
+			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Canceling order stopped, not a Klarna payment.' );
+
+			return;
+		}
+
+		// Does WooCommerce order contain a Mollie Order?
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			$mollie_order_id = ( $mollie_order_id = get_post_meta( $order->id, '_mollie_order_id', true ) ) ? $mollie_order_id : false;
+		} else {
+			$mollie_order_id = ( $mollie_order_id = $order->get_meta( '_mollie_order_id', true ) ) ? $mollie_order_id : false;
+		}
+
+		if ( $mollie_order_id == false ) {
+			$order->add_order_note( 'Order contains Klarna payment methods, but not a valid Mollie Order ID. Canceling order failed.' );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Order contains Klarna payment methods, but not a valid Mollie Order ID. Canceling order failed.' );
+
+			return;
+		}
+
+		// Is test mode enabled?
+		$settings_helper = Mollie_WC_Plugin::getSettingsHelper();
+		$test_mode       = $settings_helper->isTestModeEnabled();
+
+		try {
+			// Get the order from the Mollie API
+			$mollie_order = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->get( $mollie_order_id );
+
+			// Check that order is not already canceled at Mollie
+			if ( $mollie_order->isCanceled() ) {
+				$order->add_order_note( 'Order already canceled at Mollie, can not be canceled again.' );
+				Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Order already canceled at Mollie, can not be canceled again.' );
+
+				return;
+
+			}
+
+			// Check that order has the correct status to be canceled
+			if ( $mollie_order->isCreated() || $mollie_order->isAuthorized() || $mollie_order->isShipping() ) {
+				Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->get( $mollie_order_id )->cancel();
+				$order->add_order_note( 'Order also cancelled at Mollie.' );
+				Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Order cancelled in WooCommerce, also cancelled at Mollie.' );
+
+				return;
+
+			}
+
+			$order->add_order_note( 'Order could not be canceled at Mollie, because order status is ' . $mollie_order->status . '.' );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Order could not be canceled at Mollie, because order status is ' . $mollie_order->status . '.' );
+
+		}
+		catch ( Mollie\Api\Exceptions\ApiException $e ) {
+			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Updating order to canceled at Mollie failed, error: ' . $e->getMessage() );
+		}
+
+		return;
 	}
 
 	/**

@@ -1,4 +1,5 @@
 <?php
+
 class Mollie_WC_Helper_OrderLines {
 
 	/**
@@ -6,7 +7,7 @@ class Mollie_WC_Helper_OrderLines {
 	 *
 	 * @var $order_lines
 	 */
-	private $order_lines = array();
+	private $order_lines = array ();
 
 	/**
 	 * WooCommerce order.
@@ -30,26 +31,15 @@ class Mollie_WC_Helper_OrderLines {
 	private $shop_country;
 
 	/**
-	 * Send sales tax as separate item (US merchants).
-	 *
-	 * @var bool
-	 */
-	private $separate_sales_tax = false;
-
-	/**
 	 * Mollie_WC_Helper_Order_Lines constructor.
 	 *
 	 * @param bool|string $shop_country Shop country.
-	 * @param object $order WooCommerce Order
+	 * @param object      $order        WooCommerce Order
 	 */
 	public function __construct( $shop_country, $order ) {
 		$this->shop_country = $shop_country;
 
-		if ( 'US' === $this->shop_country ) {
-			$this->separate_sales_tax = true;
-		}
-
-		$this->order = $order;
+		$this->order    = $order;
 		$this->currency = Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $this->order );
 
 	}
@@ -62,14 +52,12 @@ class Mollie_WC_Helper_OrderLines {
 	public function order_lines() {
 		$this->process_cart();
 		$this->process_shipping();
-		//$this->process_sales_tax();
+
 		$this->process_coupons();
 		$this->process_fees();
 
-		return array(
-			'lines'      => $this->get_order_lines(),
-			//'amount'     => $this->get_order_amount(),
-			//'order_tax_amount' => $this->get_order_tax_amount(),
+		return array (
+			'lines' => $this->get_order_lines(),
 		);
 	}
 
@@ -81,26 +69,6 @@ class Mollie_WC_Helper_OrderLines {
 	 */
 	private function get_order_lines() {
 		return $this->order_lines;
-	}
-
-	/**
-	 * Get order total amount for Mollie Orders API.
-	 *
-	 * @access private
-	 * @return mixed
-	 */
-	private function get_order_amount() {
-		return round( WC()->cart->total  );
-	}
-
-	/**
-	 * Get order tax amount for Mollie Orders API.
-	 *
-	 * @access private
-	 * @return mixed
-	 */
-	private function get_order_tax_amount() {
-		return round( ( WC()->cart->tax_total + WC()->cart->shipping_tax_total )  );
 	}
 
 	/**
@@ -132,7 +100,6 @@ class Mollie_WC_Helper_OrderLines {
 						'currency' => $this->currency,
 						'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $this->get_item_total_amount( $cart_item ), $this->currency ),
 					),
-
 					'vatAmount'      =>
 						array (
 							'currency' => $this->currency,
@@ -145,14 +112,7 @@ class Mollie_WC_Helper_OrderLines {
 						),
 				);
 
-				// Add images.
-//				$mollie_order_payment_settings = get_option( 'mollie_for_woocommerce_payments_settings' );
-//				if ( 'yes' === $mollie_order_payment_settings['send_product_urls'] ) {
-//					$mollie_order_item['productUrl'] = $this->get_item_product_url( $product );
-//					if ( $this->get_item_image_url( $product ) ) {
-//						$mollie_order_item['imageUrl'] = $this->get_item_image_url( $product );
-//					}
-//				}
+				// TODO David: Continue testing adding WooCommerce images to Mollie Orders
 
 				$this->order_lines[] = $mollie_order_item;
 			}
@@ -166,51 +126,26 @@ class Mollie_WC_Helper_OrderLines {
 	 */
 	private function process_shipping() {
 		if ( WC()->shipping->get_packages() && WC()->session->get( 'chosen_shipping_methods' ) ) {
-			$shipping = array(
-				'type'             => 'shipping_fee',
-				'name'             => $this->get_shipping_name(),
-				'quantity'         => 1,
-				'vatRate' => $this->get_shipping_vat_rate(),
-				'unitPrice'       => array (
+			$shipping = array (
+				'type'        => 'shipping_fee',
+				'name'        => $this->get_shipping_name(),
+				'quantity'    => 1,
+				'vatRate'     => $this->get_shipping_vat_rate(),
+				'unitPrice'   => array (
 					'currency' => $this->currency,
 					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $this->get_shipping_amount(), $this->currency ),
 				),
-				'totalAmount'     => array (
+				'totalAmount' => array (
 					'currency' => $this->currency,
 					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $this->get_shipping_amount(), $this->currency ),
 				),
-				'vatAmount' => array (
+				'vatAmount'   => array (
 					'currency' => $this->currency,
 					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $this->get_shipping_tax_amount(), $this->currency ),
 				)
 			);
 
 			$this->order_lines[] = $shipping;
-		}
-	}
-
-	/**
-	 * Process sales tax for US.
-	 *
-	 * @access private
-	 */
-	private function process_sales_tax() {
-		if ( $this->separate_sales_tax ) {
-			$sales_tax_amount = round( ( WC()->cart->tax_total + WC()->cart->shipping_tax_total )  );
-
-			// Add sales tax line item.
-			$sales_tax = array(
-				'type'                  => 'sales_tax',
-				'name'                  => __( 'Sales Tax', 'mollie-payments-for-woocommerce' ),
-				'quantity'              => 1,
-				'unitPrice'            => $sales_tax_amount,
-				'vatRate'              => 0,
-				'totalAmount'          => $sales_tax_amount,
-				'discountAmount' => 0,
-				'vatAmount'      => 0,
-			);
-
-			$this->order_lines[] = $sales_tax;
 		}
 	}
 
@@ -227,8 +162,8 @@ class Mollie_WC_Helper_OrderLines {
 
 				// Smart coupons are processed as real line items, cart and product discounts sent for reference only.
 				if ( 'smart_coupon' === $coupon->get_discount_type() ) {
-					$coupon_amount     = - WC()->cart->get_coupon_discount_amount( $coupon_key ) ;
-					$coupon_tax_amount = - WC()->cart->get_coupon_discount_tax_amount( $coupon_key ) ;
+					$coupon_amount     = - WC()->cart->get_coupon_discount_amount( $coupon_key );
+					$coupon_tax_amount = - WC()->cart->get_coupon_discount_tax_amount( $coupon_key );
 				} else {
 					if ( 'US' === $this->shop_country ) {
 						$coupon_amount     = 0;
@@ -285,44 +220,40 @@ class Mollie_WC_Helper_OrderLines {
 		if ( ! empty( WC()->cart->get_fees() ) ) {
 			foreach ( WC()->cart->get_fees() as $cart_fee ) {
 				if ( $cart_fee->taxable && $cart_fee->tax > 0 ) {
+
 					// Calculate tax rate.
-					if ( $this->separate_sales_tax ) {
-						$cart_fee_vat_rate   = 0;
-						$cart_fee_tax_amount = 0;
-						$cart_fee_total      = $cart_fee->total ;
+					$_tax      = new WC_Tax();
+					$tmp_rates = $_tax::get_rates( $cart_fee->tax_class );
+					$vat       = array_shift( $tmp_rates );
+
+					if ( isset( $vat['rate'] ) ) {
+						$cart_fee_vat_rate = round( $vat['rate'] );
 					} else {
-						$_tax      = new WC_Tax();
-						$tmp_rates = $_tax::get_rates( $cart_fee->tax_class );
-						$vat       = array_shift( $tmp_rates );
-
-						if ( isset( $vat['rate'] ) ) {
-							$cart_fee_vat_rate = round( $vat['rate']  );
-						} else {
-							$cart_fee_vat_rate = 0;
-						}
-
-						$cart_fee_tax_amount = $cart_fee->tax ;
-						$cart_fee_total      = ( $cart_fee->total + $cart_fee->tax ) ;
+						$cart_fee_vat_rate = 0;
 					}
+
+					$cart_fee_tax_amount = $cart_fee->tax;
+					$cart_fee_total      = ( $cart_fee->total + $cart_fee->tax );
+
 				} else {
 					$cart_fee_vat_rate   = 0;
 					$cart_fee_tax_amount = 0;
-					$cart_fee_total      = $cart_fee->total ;
+					$cart_fee_total      = $cart_fee->total;
 				}
 
-				$fee = array(
-					'type'                  => 'surcharge',
-					'name'                  => $cart_fee->name,
-					'quantity'              => 1,
-					'unitPrice'            => array (
+				$fee = array (
+					'type'           => 'surcharge',
+					'name'           => $cart_fee->name,
+					'quantity'       => 1,
+					'unitPrice'      => array (
 						'currency' => $this->currency,
 						'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $cart_fee_total, $this->currency ),
 					),
-					'vatRate'              => array (
+					'vatRate'        => array (
 						'currency' => $this->currency,
 						'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $cart_fee_vat_rate, $this->currency ),
 					),
-					'totalAmount'          => array (
+					'totalAmount'    => array (
 						'currency' => $this->currency,
 						'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $cart_fee_total, $this->currency ),
 					),
@@ -368,11 +299,7 @@ class Mollie_WC_Helper_OrderLines {
 	 * @return integer $item_tax_amount Item tax amount.
 	 */
 	private function get_item_tax_amount( $cart_item ) {
-		if ( $this->separate_sales_tax ) {
-			$item_tax_amount = 0;
-		} else {
-			$item_tax_amount = $cart_item['line_tax'] ;
-		}
+		$item_tax_amount = $cart_item['line_tax'];
 
 		return round( $item_tax_amount );
 	}
@@ -383,27 +310,25 @@ class Mollie_WC_Helper_OrderLines {
 	 * @since  1.0
 	 * @access private
 	 *
-	 * @param  array $cart_item Cart item.
-	 * @param  object $product Product object.
+	 * @param  array  $cart_item Cart item.
+	 * @param  object $product   Product object.
 	 *
 	 * @return integer $item_vatRate Item tax percentage formatted for Mollie Orders API.
 	 */
 	private function get_item_vatRate( $cart_item, $product ) {
 		if ( $product->is_taxable() && $cart_item['line_subtotal_tax'] > 0 ) {
 			// Calculate tax rate.
-			if ( $this->separate_sales_tax ) {
-				$item_vatRate = 0;
-			} else {
-				$_tax      = new WC_Tax();
-				$tmp_rates = $_tax->get_rates( $product->get_tax_class() );
-				$vat       = array_shift( $tmp_rates );
 
-				if ( isset( $vat['rate'] ) ) {
-					$item_vatRate = round( $vat['rate']  );
-				} else {
-					$item_vatRate = 0;
-				}
+			$_tax      = new WC_Tax();
+			$tmp_rates = $_tax->get_rates( $product->get_tax_class() );
+			$vat       = array_shift( $tmp_rates );
+
+			if ( isset( $vat['rate'] ) ) {
+				$item_vatRate = round( $vat['rate'] );
+			} else {
+				$item_vatRate = 0;
 			}
+
 		} else {
 			$item_vatRate = 0;
 		}
@@ -422,13 +347,9 @@ class Mollie_WC_Helper_OrderLines {
 	 * @return integer $item_price Cart item price.
 	 */
 	private function get_item_price( $cart_item ) {
-		if ( $this->separate_sales_tax ) {
-			$item_subtotal = $cart_item['line_subtotal'];
-		} else {
-			$item_subtotal = $cart_item['line_subtotal'] + $cart_item['line_subtotal_tax'];
-		}
 
-		$item_price = $item_subtotal  / $cart_item['quantity'];
+		$item_subtotal = $cart_item['line_subtotal'] + $cart_item['line_subtotal_tax'];
+		$item_price = $item_subtotal / $cart_item['quantity'];
 
 		return round( $item_price );
 	}
@@ -481,69 +402,15 @@ class Mollie_WC_Helper_OrderLines {
 	 */
 	private function get_item_discount_amount( $cart_item ) {
 		if ( $cart_item['line_subtotal'] > $cart_item['line_total'] ) {
-			if ( $this->separate_sales_tax ) {
-				$item_discount_amount = $cart_item['line_subtotal'] - $cart_item['line_total'];
-			} else {
-				$item_discount_amount = $cart_item['line_subtotal'] + $cart_item['line_subtotal_tax'] - $cart_item['line_total'] - $cart_item['line_tax'];
-			}
 
-			$item_discount_amount = $item_discount_amount ;
+			$item_discount_amount = $cart_item['line_subtotal'] + $cart_item['line_subtotal_tax'] - $cart_item['line_total'] - $cart_item['line_tax'];
+
+
 		} else {
 			$item_discount_amount = 0;
 		}
 
 		return round( $item_discount_amount );
-	}
-
-	/**
-	 * Get cart item product URL.
-	 *
-	 * @since  1.1
-	 * @access private
-	 *
-	 * @param  WC_Product $product Product.
-	 *
-	 * @return string $item_product_url Cart item product URL.
-	 */
-	private function get_item_product_url( $product ) {
-		return $product->get_permalink();
-	}
-
-	/**
-	 * Get cart item product image URL.
-	 *
-	 * @since  1.1
-	 * @access private
-	 *
-	 * @param  WC_Product $product Product.
-	 *
-	 * @return string $item_product_image_url Cart item product image URL.
-	 */
-	private function get_item_image_url( $product ) {
-		$image_url = false;
-
-		if ( $product->get_image_id() > 0 ) {
-			$image_id  = $product->get_image_id();
-			$image_url = wp_get_attachment_image_url( $image_id, 'shop_thumbnail', false );
-		}
-
-		return $image_url;
-	}
-
-	/**
-	 * Get cart item discount rate.
-	 *
-	 * @since  1.0
-	 * @access private
-	 *
-	 * @param  array $cart_item Cart item.
-	 *
-	 * @return integer $item_discount_rate Cart item discount rate.
-	 */
-	private function get_item_discount_rate( $cart_item ) {
-		$item_discount_rate = ( 1 - ( $cart_item['line_total'] / $cart_item['line_subtotal'] ) )  ;
-
-		return round( $item_discount_rate );
 	}
 
 	/**
@@ -557,11 +424,8 @@ class Mollie_WC_Helper_OrderLines {
 	 * @return integer $item_total_amount Cart item total amount.
 	 */
 	private function get_item_total_amount( $cart_item ) {
-		if ( $this->separate_sales_tax ) {
-			$item_total_amount = ( $cart_item['line_total']  );
-		} else {
-			$item_total_amount = ( ( $cart_item['line_total'] + $cart_item['line_tax'] )  );
-		}
+
+		$item_total_amount = ( ( $cart_item['line_total'] + $cart_item['line_tax'] ) );
 
 		return round( $item_total_amount );
 	}
@@ -597,37 +461,6 @@ class Mollie_WC_Helper_OrderLines {
 	}
 
 	/**
-	 * Get shipping reference.
-	 *
-	 * @since  1.0
-	 * @access private
-	 *
-	 * @return string $shipping_reference Reference for selected shipping method.
-	 */
-	private function get_shipping_reference() {
-		$shipping_packages = WC()->shipping->get_packages();
-		foreach ( $shipping_packages as $i => $package ) {
-			$chosen_method = isset( WC()->session->chosen_shipping_methods[ $i ] ) ? WC()->session->chosen_shipping_methods[ $i ] : '';
-
-			if ( '' !== $chosen_method ) {
-				$package_rates = $package['rates'];
-
-				foreach ( $package_rates as $rate_key => $rate_value ) {
-					if ( $rate_key === $chosen_method ) {
-						$shipping_reference = $rate_value->id;
-					}
-				}
-			}
-		}
-
-		if ( ! isset( $shipping_reference ) ) {
-			$shipping_reference = __( 'Shipping', 'mollie-payments-for-woocommerce' );
-		}
-
-		return (string) $shipping_reference;
-	}
-
-	/**
 	 * Get shipping method amount.
 	 *
 	 * @since  1.0
@@ -636,11 +469,8 @@ class Mollie_WC_Helper_OrderLines {
 	 * @return integer $shipping_amount Amount for selected shipping method.
 	 */
 	private function get_shipping_amount() {
-		if ( $this->separate_sales_tax ) {
-			$shipping_amount = number_format( WC()->cart->shipping_total , 0, '', '' );
-		} else {
-			$shipping_amount = number_format( ( WC()->cart->shipping_total + WC()->cart->shipping_tax_total ) , 0, '', '' );
-		}
+
+		$shipping_amount = number_format( ( WC()->cart->shipping_total + WC()->cart->shipping_tax_total ), 0, '', '' );
 
 		return round( $shipping_amount );
 	}
@@ -654,10 +484,9 @@ class Mollie_WC_Helper_OrderLines {
 	 * @return integer $shipping_vat_rate Tax rate for selected shipping method.
 	 */
 	private function get_shipping_vat_rate() {
-		if ( WC()->cart->shipping_tax_total > 0 && ! $this->separate_sales_tax ) {
-			$shipping_vat_rate = round( WC()->cart->shipping_tax_total / WC()->cart->shipping_total, 2 )  ;
-		} else {
-			$shipping_vat_rate = 0;
+		$shipping_vat_rate = 0;
+		if ( WC()->cart->shipping_tax_total > 0 ) {
+			$shipping_vat_rate = round( WC()->cart->shipping_tax_total / WC()->cart->shipping_total, 2 );
 		}
 
 		return round( $shipping_vat_rate );
@@ -672,11 +501,8 @@ class Mollie_WC_Helper_OrderLines {
 	 * @return integer $shipping_tax_amount Tax amount for selected shipping method.
 	 */
 	private function get_shipping_tax_amount() {
-		if ( $this->separate_sales_tax ) {
-			$shipping_tax_amount = 0;
-		} else {
-			$shipping_tax_amount = WC()->cart->shipping_tax_total ;
-		}
+
+		$shipping_tax_amount = WC()->cart->shipping_tax_total;
 
 		return round( $shipping_tax_amount );
 	}

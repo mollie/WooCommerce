@@ -298,6 +298,10 @@ class Mollie_WC_Helper_Settings
 		// WooCommerce default BACS method
 		$content = $this->checkMollieBankTransferNotBACS( $content );
 
+		// Warn users that all default WooCommerce checkout fields
+		// are required to accept Klarna as payment method
+		$content = $this->warnAboutRequiredCheckoutFieldForKlarna( $content );
+
 		return $content;
 	}
 
@@ -403,7 +407,7 @@ class Mollie_WC_Helper_Settings
 			        'pending'          => __('Pending', 'woocommerce'),
 			        'cancelled'     => __('Cancelled', 'woocommerce'),
 		        ),
-		        'desc'    => __('Status for orders when a payment is cancelled. Default: pending. Orders with status Pending can be paid with another payment method, customers can try again. Cancelled orders are final. Set this to Cancelled if you only have one payment method or don\'t want customers to re-try paying with a different payment method.', 'mollie-payments-for-woocommerce'),
+		        'desc'    => __('Status for orders when a payment (not a Mollie order via the Orders API) is cancelled. Default: pending. Orders with status Pending can be paid with another payment method, customers can try again. Cancelled orders are final. Set this to Cancelled if you only have one payment method or don\'t want customers to re-try paying with a different payment method. This doesn\'t apply to payments for orders via the new Orders API and Klarna payments.', 'mollie-payments-for-woocommerce'),
 		        'default' => 'pending',
 	        ),
 	        array(
@@ -588,6 +592,32 @@ class Mollie_WC_Helper_Settings
 
 			$content .= '<strong><p>';
 			$content .= __( 'You have the WooCommerce default Direct Bank Transfer (BACS) payment gateway enabled in WooCommerce. Mollie strongly advices only using Bank Transfer via Mollie and disabling the default WooCommerce BACS payment gateway to prevent possible conflicts.', 'mollie-payments-for-woocommerce' );
+			$content .= '</p></strong> ';
+
+			return $content;
+		}
+
+		return $content;
+	}
+
+	/**
+	 * @param $content
+	 *
+	 * @return string
+	 */
+	protected function warnAboutRequiredCheckoutFieldForKlarna( $content ) {
+
+		$woocommerce_klarnapaylater_gateway  = new Mollie_WC_Gateway_KlarnaPayLater();
+		$woocommerce_klarnasliceit_gateway  = new Mollie_WC_Gateway_KlarnaSliceIt();
+
+		if ( $woocommerce_klarnapaylater_gateway->is_available() || $woocommerce_klarnasliceit_gateway->is_available()  ) {
+
+			$content .= '<div class="notice notice-error is-dismissible"><p>';
+			$content .= __('To accept Klarna payments via Mollie, all default WooCommerce checkout fields should be enabled and required.', 'mollie-payments-for-woocommerce');
+			$content .= '</p></div> ';
+
+			$content .= '<strong><p>';
+			$content .= __('To accept Klarna payments via Mollie, all default WooCommerce checkout fields should be enabled and required.', 'mollie-payments-for-woocommerce');
 			$content .= '</p></strong> ';
 
 			return $content;

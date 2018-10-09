@@ -61,12 +61,12 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
 			    self::WAITING_CONFIRMATION_PERIOD_DAYS )
 	    );
 
-        $paymentMethodTitle = $this->getPaymentMethodTitle($payment);
+        $payment_method_title = $this->getPaymentMethodTitle($payment);
 
         $renewal_order->add_order_note(sprintf(
         /* translators: Placeholder 1: Payment method title, placeholder 2: payment ID */
             __('%s payment started (%s).', 'mollie-payments-for-woocommerce'),
-            $paymentMethodTitle,
+            $payment_method_title,
             $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
         ));
 
@@ -105,102 +105,18 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     }
 
     /**
-     * @param $order
-     */
-    protected function deleteOrderFromPendingPaymentQueue($order)
-    {
-        global $wpdb;
-
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    $wpdb->delete(
-			    $wpdb->mollie_pending_payment,
-			    array(
-				    'post_id' => $order->id,
-			    )
-		    );
-
-	    } else {
-		    $wpdb->delete(
-			    $wpdb->mollie_pending_payment,
-			    array(
-				    'post_id' => $order->get_id(),
-			    )
-		    );
-
-	    }
-    }
-
-    /**
-     * @param WC_Order $order
-     * @param Mollie\Api\Resources\Payment $payment
-     */
-    protected function onWebhookPaid(WC_Order $order, Mollie\Api\Resources\Payment $payment)
-    {
-	    if ( $payment->isPaid() ) {
-		    parent::onWebhookPaid( $order, $payment );
-		    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			    if ( $this->is_subscription( $order->id ) ) {
-				    $this->deleteOrderFromPendingPaymentQueue( $order );
-				    WC_Subscriptions_Manager::activate_subscriptions_for_order($order);
-			    }
-		    } else {
-			    if ( $this->is_subscription( $order->get_id() ) ) {
-				    $this->deleteOrderFromPendingPaymentQueue( $order );
-				    WC_Subscriptions_Manager::activate_subscriptions_for_order($order);
-			    }
-		    }
-	    }
-    }
-
-    /**
-     * @param WC_Order $order
-     * @param Mollie\Api\Resources\Payment $payment
-     */
-    protected function onWebhookCancelled(WC_Order $order, Mollie\Api\Resources\Payment $payment)
-    {
-        parent::onWebhookCancelled($order, $payment);
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    if ($this->is_subscription($order->id)) {
-			    $this->deleteOrderFromPendingPaymentQueue($order);
-		    }
-	    } else {
-		    if ($this->is_subscription($order->get_id())) {
-			    $this->deleteOrderFromPendingPaymentQueue($order);
-		    }
-	    }
-    }
-
-    /**
-     * @param WC_Order $order
-     * @param Mollie\Api\Resources\Payment $payment
-     */
-    protected function onWebhookExpired(WC_Order $order, Mollie\Api\Resources\Payment $payment)
-    {
-        parent::onWebhookExpired($order, $payment);
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    if ($this->is_subscription($order->id)) {
-			    $this->deleteOrderFromPendingPaymentQueue($order);
-		    }
-	    } else {
-		    if ($this->is_subscription($order->get_id())) {
-			    $this->deleteOrderFromPendingPaymentQueue($order);
-		    }
-	    }
-    }
-
-    /**
      * @param null $payment
      * @return string
      */
     protected function getPaymentMethodTitle($payment)
     {
-        $paymentMethodTitle = parent::getPaymentMethodTitle($payment);
+        $payment_method_title = parent::getPaymentMethodTitle($payment);
         $orderId = $payment->metadata->order_id;
-        if ($orderId && $this->is_subscription($orderId) && $payment->method == $this->getRecurringMollieMethodId()){
-            $paymentMethodTitle = $this->getRecurringMollieMethodTitle();
+        if ($orderId && Mollie_WC_Plugin::getDataHelper()->isSubscription($orderId) && $payment->method == $this->getRecurringMollieMethodId()){
+            $payment_method_title = $this->getRecurringMollieMethodTitle();
         }
 
-        return $paymentMethodTitle;
+        return $payment_method_title;
     }
 
     /**
@@ -211,32 +127,34 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     {
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 		    // Duplicate webhook call
-		    if ($this->is_subscription($order->id) && isset($payment->sequenceType) && $payment->sequenceType == \Mollie\Api\Types\SequenceType::SEQUENCETYPE_RECURRING ) {
-			    $paymentMethodTitle = $this->getPaymentMethodTitle($payment);
+		    if (Mollie_WC_Plugin::getDataHelper()->isSubscription($order->id) && isset($payment->sequenceType) && $payment->sequenceType == \Mollie\Api\Types\SequenceType::SEQUENCETYPE_RECURRING ) {
+			    $payment_method_title = $this->getPaymentMethodTitle($payment);
 
 			    $order->add_order_note(sprintf(
 			    /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
 				    __('Order completed using %s payment (%s).', 'mollie-payments-for-woocommerce'),
-				    $paymentMethodTitle,
+				    $payment_method_title,
 				    $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
 			    ));
 
-			    $this->deleteOrderFromPendingPaymentQueue($order);
+			    $payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject( $payment );
+			    $payment_object->deleteSubscriptionOrderFromPendingPaymentQueue($order);
 			    return;
 		    }
 	    } else {
 		    // Duplicate webhook call
-		    if ($this->is_subscription($order->get_id()) && isset($payment->sequenceType) && $payment->sequenceType == \Mollie\Api\Types\SequenceType::SEQUENCETYPE_RECURRING ) {
-			    $paymentMethodTitle = $this->getPaymentMethodTitle($payment);
+		    if (Mollie_WC_Plugin::getDataHelper()->isSubscription($order->get_id()) && isset($payment->sequenceType) && $payment->sequenceType == \Mollie\Api\Types\SequenceType::SEQUENCETYPE_RECURRING ) {
+			    $payment_method_title = $this->getPaymentMethodTitle($payment);
 
 			    $order->add_order_note(sprintf(
 			    /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
 				    __('Order completed using %s payment (%s).', 'mollie-payments-for-woocommerce'),
-				    $paymentMethodTitle,
+				    $payment_method_title,
 				    $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
 			    ));
 
-			    $this->deleteOrderFromPendingPaymentQueue($order);
+			    $payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject( $payment );
+			    $payment_object->deleteSubscriptionOrderFromPendingPaymentQueue($order);
 			    return;
 		    }
 	    }

@@ -37,7 +37,7 @@ class Mollie_WC_Gateway_KlarnaSliceIt extends Mollie_WC_Gateway_Abstract
 	 * @return string
 	 */
 	protected function getSettingsDescription() {
-		return '';
+		return __('To accept payments via Klarna, all default WooCommerce checkout fields should be enabled and required.', 'mollie-payments-for-woocommerce');
 	}
 
 	/**

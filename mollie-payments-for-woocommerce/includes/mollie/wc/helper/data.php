@@ -329,6 +329,9 @@ class Mollie_WC_Helper_Data
 				// Remove existing expired transients
 				delete_transient( $transient_id );
 
+				// TODO David: Support orders and payment resource?
+				$filters['resource']       = 'orders';
+
 				$methods = $this->api_helper->getApiClient( $test_mode )->methods->all( $filters );
 
 				// Set new transients (as cache)
@@ -410,43 +413,6 @@ class Mollie_WC_Helper_Data
 		return array ();
 	}
 
-    /**
-     * Save active Mollie payment id for order
-     *
-     * @param int                       $order_id
-     * @param object|Mollie\Api\Resources\Payment $payment
-     * @return $this
-     */
-    public function setActiveMolliePayment ($order_id, Mollie\Api\Resources\Payment $payment)
-    {
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    update_post_meta( $order_id, '_mollie_payment_id', $payment->id, $single = true );
-		    update_post_meta( $order_id, '_mollie_payment_mode', $payment->mode, $single = true );
-
-		    delete_post_meta( $order_id, '_mollie_cancelled_payment_id' );
-
-		    if ( $payment->customerId ) {
-			    update_post_meta( $order_id, '_mollie_customer_id', $payment->customerId, $single = true );
-		    }
-
-	    } else {
-		    $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
-
-		    $order->update_meta_data( '_mollie_payment_id', $payment->id );
-		    $order->update_meta_data( '_mollie_payment_mode', $payment->mode );
-
-		    $order->delete_meta_data( '_mollie_cancelled_payment_id' );
-
-		    if ( $payment->customerId ) {
-			    $order->update_meta_data( '_mollie_customer_id', $payment->customerId );
-		    }
-
-		    $order->save();
-	    }
-
-        return $this;
-    }
-
 	/**
 	 * @param int         $user_id
 	 * @param string|null $customer_id
@@ -462,11 +428,33 @@ class Mollie_WC_Helper_Data
 					$customer = new WC_Customer( $user_id );
 					$customer->update_meta_data( 'mollie_customer_id', $customer_id );
 					$customer->save();
+					Mollie_WC_Plugin::debug( __FUNCTION__ . ": Stored Mollie customer ID " . $customer_id . " with user " . $user_id );
 				}
 				catch ( Exception $e ) {
 					Mollie_WC_Plugin::debug( __FUNCTION__ . ": Couldn't load (and save) WooCommerce customer based on user ID " . $user_id );
 
 				}
+			}
+		}
+
+		return $this;
+	}
+
+	/**
+	 * @param $orderId
+	 * @param $customer_id
+	 * @return $this
+	 */
+	public function setUserMollieCustomerIdAtSubscription ($orderId, $customer_id)
+	{
+		if (!empty($customer_id))
+		{
+			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+				update_post_meta( $orderId, '_mollie_customer_id', $customer_id );
+			} else {
+				$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $orderId );
+				$order->update_meta_data( '_mollie_customer_id', $customer_id );
+				$order->save();
 			}
 		}
 
@@ -566,59 +554,6 @@ class Mollie_WC_Helper_Data
         return $customer_id;
     }
 
-	/**
-	 * Delete active Mollie payment id for order
-	 *
-	 * @param int    $order_id
-	 * @param string $payment_id
-	 *
-	 * @return $this
-	 */
-	public function unsetActiveMolliePayment( $order_id, $payment_id = NULL ) {
-
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-
-			// Only remove Mollie payment details if they belong to this payment, not when a new payment was already placed
-			$mollie_payment_id = get_post_meta( $order_id, '_mollie_payment_id', $single = true );
-
-			if ( $mollie_payment_id == $payment_id ) {
-				delete_post_meta( $order_id, '_mollie_payment_id' );
-				delete_post_meta( $order_id, '_mollie_payment_mode' );
-			}
-		} else {
-
-			// Only remove Mollie payment details if they belong to this payment, not when a new payment was already placed
-			$order             = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
-			$mollie_payment_id = $order->get_meta( '_mollie_payment_id', true );
-
-			if ( $mollie_payment_id == $payment_id ) {
-				$order->delete_meta_data( '_mollie_payment_id' );
-				$order->delete_meta_data( '_mollie_payment_mode' );
-				$order->save();
-			}
-		}
-
-		return $this;
-	}
-
-    /**
-     * Get active Mollie payment id for order
-     *
-     * @param int $order_id
-     * @return string
-     */
-    public function getActiveMolliePaymentId ($order_id)
-    {
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    $mollie_payment_id = get_post_meta( $order_id, '_mollie_payment_id', $single = true );
-	    } else {
-		    $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
-		    $mollie_payment_id = $order->get_meta( '_mollie_payment_id', true );
-	    }
-
-	    return $mollie_payment_id;
-    }
-
     /**
      * Get active Mollie payment mode for order
      *
@@ -635,114 +570,6 @@ class Mollie_WC_Helper_Data
 	    }
 
 	    return $mollie_payment_mode;
-    }
-
-    /**
-     * @param int  $order_id
-     * @param bool $use_cache
-     * @return Mollie\Api\Resources\Payment|null
-     */
-    public function getActiveMolliePayment ($order_id, $use_cache = true)
-    {
-        if ($this->hasActiveMolliePayment($order_id))
-        {
-            return $this->getPayment(
-                $this->getActiveMolliePaymentId($order_id),
-                $this->getActiveMolliePaymentMode($order_id) == 'test',
-                $use_cache
-            );
-        }
-
-        return null;
-    }
-
-    /**
-     * Check if the order has an active Mollie payment
-     *
-     * @param int $order_id
-     * @return bool
-     */
-    public function hasActiveMolliePayment ($order_id)
-    {
-        $mollie_payment_id = $this->getActiveMolliePaymentId($order_id);
-
-        return !empty($mollie_payment_id);
-    }
-
-    /**
-     * @param int $order_id
-     * @param string $payment_id
-     * @return $this
-     */
-    public function setCancelledMolliePaymentId ($order_id, $payment_id)
-    {
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-	    	add_post_meta($order_id, '_mollie_cancelled_payment_id', $payment_id, $single = true);
-	    } else {
-		    $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
-		    $order->update_meta_data( '_mollie_cancelled_payment_id', $payment_id );
-		    $order->save();
-	    }
-
-        return $this;
-    }
-
-	/**
-	 * @param int $order_id
-	 *
-	 * @return null
-	 */
-	public function unsetCancelledMolliePaymentId( $order_id ) {
-
-		// If this order contains a cancelled (previous) payment, remove it.
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			$mollie_cancelled_payment_id = get_post_meta( $order_id, '_mollie_cancelled_payment_id', $single = true );
-
-			if ( ! empty( $mollie_cancelled_payment_id ) ) {
-				delete_post_meta( $order_id, '_mollie_cancelled_payment_id' );
-			}
-		} else {
-
-			$order                       = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
-			$mollie_cancelled_payment_id = $order->get_meta( '_mollie_cancelled_payment_id', true );
-
-			if ( ! empty( $mollie_cancelled_payment_id ) ) {
-				$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
-				$order->delete_meta_data( '_mollie_cancelled_payment_id' );
-				$order->save();
-			}
-		}
-
-		return null;
-	}
-
-    /**
-     * @param int $order_id
-     * @return string|false
-     */
-    public function getCancelledMolliePaymentId ($order_id)
-    {
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    $mollie_cancelled_payment_id = get_post_meta( $order_id, '_mollie_cancelled_payment_id', $single = true );
-	    } else {
-		    $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
-		    $mollie_cancelled_payment_id = $order->get_meta( '_mollie_cancelled_payment_id', true );
-	    }
-
-        return $mollie_cancelled_payment_id;
-    }
-
-    /**
-     * Check if the order has been cancelled
-     *
-     * @param int $order_id
-     * @return bool
-     */
-    public function hasCancelledMolliePayment ($order_id)
-    {
-        $cancelled_payment_id = $this->getCancelledMolliePaymentId($order_id);
-
-        return !empty($cancelled_payment_id);
     }
 
     /**
@@ -822,6 +649,15 @@ class Mollie_WC_Helper_Data
 		}
 
 		return $value;
+	}
+
+	/**
+	 * @param $order_id
+	 *
+	 * @return bool
+	 */
+	public function isSubscription( $order_id ) {
+		return ( function_exists( 'wcs_order_contains_subscription' ) && ( wcs_order_contains_subscription( $order_id ) || function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order_id ) || function_exists( 'wcs_order_contains_renewal' ) && wcs_order_contains_renewal( $order_id ) ) );
 	}
 
 }

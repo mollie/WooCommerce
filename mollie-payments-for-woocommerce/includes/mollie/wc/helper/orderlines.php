@@ -125,7 +125,7 @@ class Mollie_WC_Helper_OrderLines {
 	 * @access private
 	 */
 	private function process_shipping() {
-		if ( WC()->shipping->get_packages() && WC()->session->get( 'chosen_shipping_methods' ) && $this->get_shipping_amount() > 0 ) {
+		if ( WC()->shipping->get_packages() && WC()->session->get( 'chosen_shipping_methods' ) ) {
 			$shipping = array (
 				'type'        => 'shipping_fee',
 				'name'        => $this->get_shipping_name(),

@@ -227,7 +227,7 @@ class Mollie_WC_Helper_OrderLines {
 					$vat       = array_shift( $tmp_rates );
 
 					if ( isset( $vat['rate'] ) ) {
-						$cart_fee_vat_rate = round( $vat['rate'] );
+						$cart_fee_vat_rate = $vat['rate'];
 					} else {
 						$cart_fee_vat_rate = 0;
 					}
@@ -301,7 +301,9 @@ class Mollie_WC_Helper_OrderLines {
 	private function get_item_tax_amount( $cart_item ) {
 		$item_tax_amount = $cart_item['line_tax'];
 
-		return round( $item_tax_amount );
+		Mollie_WC_Plugin::debug( '$item_tax_amount' );
+		Mollie_WC_Plugin::debug( $item_tax_amount );
+		return $item_tax_amount;
 	}
 
 	/**
@@ -324,7 +326,7 @@ class Mollie_WC_Helper_OrderLines {
 			$vat       = array_shift( $tmp_rates );
 
 			if ( isset( $vat['rate'] ) ) {
-				$item_vatRate = round( $vat['rate'] );
+				$item_vatRate = $vat['rate'];
 			} else {
 				$item_vatRate = 0;
 			}
@@ -333,7 +335,7 @@ class Mollie_WC_Helper_OrderLines {
 			$item_vatRate = 0;
 		}
 
-		return round( $item_vatRate );
+		return $item_vatRate;
 	}
 
 	/**
@@ -351,7 +353,7 @@ class Mollie_WC_Helper_OrderLines {
 		$item_subtotal = $cart_item['line_subtotal'] + $cart_item['line_subtotal_tax'];
 		$item_price = $item_subtotal / $cart_item['quantity'];
 
-		return round( $item_price );
+		return $item_price;
 	}
 
 	/**
@@ -410,7 +412,7 @@ class Mollie_WC_Helper_OrderLines {
 			$item_discount_amount = 0;
 		}
 
-		return round( $item_discount_amount );
+		return $item_discount_amount;
 	}
 
 	/**
@@ -427,7 +429,9 @@ class Mollie_WC_Helper_OrderLines {
 
 		$item_total_amount = ( ( $cart_item['line_total'] + $cart_item['line_tax'] ) );
 
-		return round( $item_total_amount );
+		Mollie_WC_Plugin::debug( ( $cart_item['line_total'] + $cart_item['line_tax'] ) );
+		Mollie_WC_Plugin::debug( $item_total_amount );
+		return $item_total_amount;
 	}
 
 	/**
@@ -470,9 +474,9 @@ class Mollie_WC_Helper_OrderLines {
 	 */
 	private function get_shipping_amount() {
 
-		$shipping_amount = number_format( ( WC()->cart->shipping_total + WC()->cart->shipping_tax_total ), 0, '', '' );
+		$shipping_amount = number_format( ( WC()->cart->shipping_total + WC()->cart->shipping_tax_total ), 2, '.', '' );
 
-		return round( $shipping_amount );
+		return $shipping_amount ;
 	}
 
 	/**
@@ -486,10 +490,10 @@ class Mollie_WC_Helper_OrderLines {
 	private function get_shipping_vat_rate() {
 		$shipping_vat_rate = 0;
 		if ( WC()->cart->shipping_tax_total > 0 ) {
-			$shipping_vat_rate = round( WC()->cart->shipping_tax_total / WC()->cart->shipping_total, 2 );
+			$shipping_vat_rate = round( WC()->cart->shipping_tax_total / WC()->cart->shipping_total, 2 )*100;
 		}
 
-		return round( $shipping_vat_rate );
+		return  $shipping_vat_rate ;
 	}
 
 	/**
@@ -504,7 +508,7 @@ class Mollie_WC_Helper_OrderLines {
 
 		$shipping_tax_amount = WC()->cart->shipping_tax_total;
 
-		return round( $shipping_tax_amount );
+		return $shipping_tax_amount;
 	}
 
 }

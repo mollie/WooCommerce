@@ -301,8 +301,6 @@ class Mollie_WC_Helper_OrderLines {
 	private function get_item_tax_amount( $cart_item ) {
 		$item_tax_amount = $cart_item['line_tax'];
 
-		Mollie_WC_Plugin::debug( '$item_tax_amount' );
-		Mollie_WC_Plugin::debug( $item_tax_amount );
 		return $item_tax_amount;
 	}
 
@@ -429,8 +427,6 @@ class Mollie_WC_Helper_OrderLines {
 
 		$item_total_amount = ( ( $cart_item['line_total'] + $cart_item['line_tax'] ) );
 
-		Mollie_WC_Plugin::debug( ( $cart_item['line_total'] + $cart_item['line_tax'] ) );
-		Mollie_WC_Plugin::debug( $item_total_amount );
 		return $item_total_amount;
 	}
 

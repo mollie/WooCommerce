@@ -101,8 +101,9 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 		self::$paymentId  = $this->getMolliePaymentIdFromPaymentObject();
 		self::$customerId = $this->getMollieCustomerIdFromPaymentObject();
 
-		self::$payment = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
-		self::$payment->update_meta_data( '_mollie_payment_id', $this->data->id );
+		self::$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+		self::$order->update_meta_data( '_mollie_payment_id', $this->data->id );
+		self::$order->save();
 
 		return parent::setActiveMolliePayment( $order_id );
 	}

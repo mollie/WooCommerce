@@ -144,6 +144,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 		self::$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
 		self::$order->update_meta_data( '_mollie_order_id', $this->data->id );
+		self::$order->save();
 
 		return parent::setActiveMolliePayment( $order_id );
 	}

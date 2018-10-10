@@ -52,27 +52,31 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
         ));
     }
 
-    /**
-     * @param array    $args
-     * @param WC_Order $order
-     * @return array
-     */
-    public function addPaymentArguments (array $args, WC_Order $order)
-    {
-        // Expiry date
-        $expiry_days = (int) $this->get_option('expiry_days', self::EXPIRY_DEFAULT_DAYS);
+	/**
+	 * @param array    $args
+	 * @param WC_Order $order
+	 *
+	 * @return array
+	 */
+	public function addPaymentArguments( array $args, WC_Order $order ) {
+		// Expiry date
+		$expiry_days = (int) $this->get_option( 'expiry_days', self::EXPIRY_DEFAULT_DAYS );
 
-        if ($expiry_days >= self::EXPIRY_MIN_DAYS && $expiry_days <= self::EXPIRY_MAX_DAYS)
-        {
-            $expiry_date = date("Y-m-d", strtotime("+$expiry_days days"));
+		if ( $expiry_days >= self::EXPIRY_MIN_DAYS && $expiry_days <= self::EXPIRY_MAX_DAYS ) {
+			$expiry_date = date( "Y-m-d", strtotime( "+$expiry_days days" ) );
 
-            $args['payment']['dueDate'] = $expiry_date;
-        }
+			// Add dueDate at the correct location
+			if ( isset( $args['payment'] ) ) {
+				$args['payment']['dueDate'] = $expiry_date;
+			} else {
+				$args['dueDate'] = $expiry_date;
+			}
+		}
 
-        // Billing email is now required
+		// Billing email is now required
 
-        return $args;
-    }
+		return $args;
+	}
 
     /**
      * {@inheritdoc}

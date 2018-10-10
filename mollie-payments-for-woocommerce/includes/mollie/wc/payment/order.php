@@ -50,8 +50,6 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 
-
-			// TODO David: Update for Klarna/Orders API
 			$payment_description = strtr( $payment_description, array (
 				'{order_number}' => $order->get_order_number(),
 				'{order_date}'   => date_i18n( wc_date_format(), strtotime( $order->order_date ) ),
@@ -116,7 +114,8 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 				'webhookUrl'      => $webhook_url,
 				'method'          => $mollie_method,
 				'payment'         => array (
-					'issuer' => $selected_issuer
+					'issuer' => $selected_issuer,
+					'method'      => $mollie_method,
 				),
 				'locale'          => $payment_locale,
 				'billingAddress'  => $billingAddress,

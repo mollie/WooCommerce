@@ -114,8 +114,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 				'webhookUrl'      => $webhook_url,
 				'method'          => $mollie_method,
 				'payment'         => array (
-					'issuer' => $selected_issuer,
-					'method'      => $mollie_method,
+					'issuer' => $selected_issuer
 				),
 				'locale'          => $payment_locale,
 				'billingAddress'  => $billingAddress,

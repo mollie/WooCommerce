@@ -461,8 +461,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		// PROCESS REGULAR PAYMENT
 		//
 
-		// TODO David: Add better log messages to fallback system
-
 		try {
 			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 				Mollie_WC_Plugin::debug( $this->id . ': Create Mollie payment object for order ' . $order->id, true );
@@ -474,50 +472,57 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 			// Create Mollie payment with customer id.
 			try {
-				Mollie_WC_Plugin::debug( 'Creating payment object: first try, creating a Mollie Order for this payment.' );
-				Mollie_WC_Plugin::debug( $data );
+				Mollie_WC_Plugin::debug( 'Creating payment object: type Order, first try creating a Mollie Order.' );
+
+				// Only enable this for hardcore debugging!
+				// Mollie_WC_Plugin::debug( $data );
+
 				$payment_object = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->create( $data );
 			}
 			catch ( Mollie\Api\Exceptions\ApiException $e ) {
 
-				Mollie_WC_Plugin::debug( 'Creating a Mollie Order failed after first try: ' . $e->getMessage() );
-
-				// TODO David: Re-add this to save on one try
-				//if ( $e->getField() !== 'customerId' ) {
-				//throw $e;
-				//}
+				Mollie_WC_Plugin::debug( 'Creating payment object: type Order, first try failed: ' . $e->getMessage() );
 
 				// Unset missing customer ID
 				unset( $data['payment']['customerId'] );
 
 				try {
+
+					if ( $e->getField() !== 'payment.customerId' ) {
+						Mollie_WC_Plugin::debug( 'Creating payment object: type Order, did not fail because of customerId, so trying Payment now.' );
+						throw $e;
+					}
+
 					// Retry without customer id.
-					Mollie_WC_Plugin::debug( 'Creating payment object: second try, creating a Mollie Order without a customerId.' );
+					Mollie_WC_Plugin::debug( 'Creating payment object: type Order, second try, creating a Mollie Order without a customerId.' );
 					$payment_object = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->create( $data );
 				}
 				catch ( Mollie\Api\Exceptions\ApiException $e ) {
 
-					// Don't try to create a Mollie Payment for Klarna payment methods
-					if ( $order->get_payment_method() == 'mollie_wc_gateway_klarnapaylater' || $order->get_payment_method() == 'mollie_wc_gateway_sliceit' ) {
-						Mollie_WC_Plugin::debug( 'Creating payment failed completely after second try.' );
-						throw $e;
-					}
-
-					Mollie_WC_Plugin::debug( 'Creating payment object: third and final try, creating a Mollie Payment without a customerId.' );
+					Mollie_WC_Plugin::debug( 'Creating payment object: type Payment, final try, creating a Payment.' );
 
 					// TODO David: Handle Klarna failed payments, maybe reset the method so users can choose again?
 
 					$payment_object     = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject( 'payment' );
 					$paymentRequestData = $payment_object->getPaymentRequestData( $order, $customer_id );
 
-
 					$data = array_filter( $paymentRequestData );
 
 					$data = apply_filters( 'woocommerce_' . $this->id . '_args', $data, $order );
 
-					unset( $data['customerId'] );
+					// Don't try to create a Mollie Payment for Klarna payment methods
+					$order_payment_method = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $order->payment_method : $order->get_payment_method();
+
+					if ( $order_payment_method == 'mollie_wc_gateway_klarnapaylater' || $order_payment_method == 'mollie_wc_gateway_sliceit' ) {
+						Mollie_WC_Plugin::debug( 'Creating payment object: removing method \'Klarna\' so cusromers can select another payment method at Mollie. ' );
+						unset( $data['method'] );
+					}
 
 					try {
+
+						// Only enable this for hardcore debugging!
+						// Mollie_WC_Plugin::debug( $data );
+
 						// Retry as simple payment
 						$payment_object = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->create( $data );
 					}

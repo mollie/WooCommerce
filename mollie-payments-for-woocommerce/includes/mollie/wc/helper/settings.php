@@ -269,6 +269,13 @@ class Mollie_WC_Helper_Settings
 				continue;
 			}
 
+			// Remove Klarna from list if not at least WooCommerce 3.x is used
+			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+				if ( $gateway->id == 'mollie_wc_gateway_klarnapaylater' || $gateway->id == 'mollie_wc_gateway_klarnasliceit' ) {
+					continue;
+				}
+			}
+
 			if ( $gateway instanceof Mollie_WC_Gateway_Abstract ) {
 				$content .= '<li style="float: left; width: 33%;">';
 

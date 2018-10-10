@@ -357,6 +357,18 @@ class Mollie_WC_Plugin
 			}
 		}
 
+		// Remove Klarna if WooCommerce is not version 3.0 or higher
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			if ( is_admin() && ! empty( $current_screen->base ) && $current_screen->base == 'woocommerce_page_wc-settings' ) {
+				if ( ( $key = array_search( 'Mollie_WC_Gateway_KlarnaPayLater', $gateways ) ) !== false ) {
+					unset( $gateways[ $key ] );
+				}
+				if ( ( $key = array_search( 'Mollie_WC_Gateway_KlarnaSliceIt', $gateways ) ) !== false ) {
+					unset( $gateways[ $key ] );
+				}
+			}
+		}
+
 		return $gateways;
 	}
 

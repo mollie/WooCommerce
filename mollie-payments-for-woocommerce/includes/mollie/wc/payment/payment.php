@@ -212,7 +212,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 	 * @param Mollie\Api\Resources\Payment $payment
 	 * @param string                       $payment_method_title
 	 */
-	protected function onWebhookCanceled( WC_Order $order, $payment, $payment_method_title ) {
+	public function onWebhookCanceled( WC_Order $order, $payment, $payment_method_title ) {
 
 		// Get order ID in the correct way depending on WooCommerce version
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
@@ -295,7 +295,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 	 * @param Mollie\Api\Resources\Payment $payment
 	 * @param string                       $payment_method_title
 	 */
-	protected function onWebhookFailed( WC_Order $order, $payment, $payment_method_title ) {
+	public function onWebhookFailed( WC_Order $order, $payment, $payment_method_title ) {
 
 		// Get order ID in the correct way depending on WooCommerce version
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
@@ -340,7 +340,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 	 * @param Mollie\Api\Resources\Payment $payment
 	 * @param string                       $payment_method_title
 	 */
-	protected function onWebhookExpired( WC_Order $order, $payment, $payment_method_title ) {
+	public function onWebhookExpired( WC_Order $order, $payment, $payment_method_title ) {
 
 		// Get order ID in correct way depending on WooCommerce version
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {

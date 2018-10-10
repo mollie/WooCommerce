@@ -302,6 +302,9 @@ class Mollie_WC_Helper_Settings
 		// are required to accept Klarna as payment method
 		$content = $this->warnAboutRequiredCheckoutFieldForKlarna( $content );
 
+		// Warn users that at least WooCommerce 3.x is required to accept Klarna as payment method
+		$content = $this->warnWoo3xRequiredForKlarna( $content );
+
 		return $content;
 	}
 
@@ -607,20 +610,52 @@ class Mollie_WC_Helper_Settings
 	 */
 	protected function warnAboutRequiredCheckoutFieldForKlarna( $content ) {
 
-		$woocommerce_klarnapaylater_gateway  = new Mollie_WC_Gateway_KlarnaPayLater();
-		$woocommerce_klarnasliceit_gateway  = new Mollie_WC_Gateway_KlarnaSliceIt();
+		if ( version_compare( WC_VERSION, '3.0', '>=' ) ) {
 
-		if ( $woocommerce_klarnapaylater_gateway->is_available() || $woocommerce_klarnasliceit_gateway->is_available()  ) {
+			$woocommerce_klarnapaylater_gateway = new Mollie_WC_Gateway_KlarnaPayLater();
+			$woocommerce_klarnasliceit_gateway  = new Mollie_WC_Gateway_KlarnaSliceIt();
 
-			$content .= '<div class="notice notice-error is-dismissible"><p>';
-			$content .= __('To accept Klarna payments via Mollie, all default WooCommerce checkout fields should be enabled and required.', 'mollie-payments-for-woocommerce');
-			$content .= '</p></div> ';
+			if ( $woocommerce_klarnapaylater_gateway->is_available() || $woocommerce_klarnasliceit_gateway->is_available() ) {
 
-			$content .= '<strong><p>';
-			$content .= __('To accept Klarna payments via Mollie, all default WooCommerce checkout fields should be enabled and required.', 'mollie-payments-for-woocommerce');
-			$content .= '</p></strong> ';
+				$content .= '<div class="notice notice-error is-dismissible"><p>';
+				$content .= __( 'To accept Klarna payments via Mollie, all default WooCommerce checkout fields should be enabled and required.', 'mollie-payments-for-woocommerce' );
+				$content .= '</p></div> ';
 
-			return $content;
+				$content .= '<strong><p>';
+				$content .= __( 'To accept Klarna payments via Mollie, all default WooCommerce checkout fields should be enabled and required.', 'mollie-payments-for-woocommerce' );
+				$content .= '</p></strong> ';
+
+				return $content;
+			}
+		}
+
+		return $content;
+	}
+
+	/**
+	 * @param $content
+	 *
+	 * @return string
+	 */
+	protected function warnWoo3xRequiredForKlarna( $content ) {
+
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+
+			$woocommerce_klarnapaylater_gateway = new Mollie_WC_Gateway_KlarnaPayLater();
+			$woocommerce_klarnasliceit_gateway  = new Mollie_WC_Gateway_KlarnaSliceIt();
+
+			if ( $woocommerce_klarnapaylater_gateway->is_available() || $woocommerce_klarnasliceit_gateway->is_available() ) {
+
+				$content .= '<div class="notice notice-error is-dismissible"><p>';
+				$content .= sprintf(__( 'To accept Klarna payments via Mollie, you need to use at least WooCommerce 3.0 or higher, you are now using version %s.', 'mollie-payments-for-woocommerce' ), WC_VERSION);
+				$content .= '</p></div> ';
+
+				$content .= '<strong><p>';
+				$content .= sprintf(__( 'To accept Klarna payments via Mollie, you need to use at least WooCommerce 3.0 or higher, you are now using version %s.', 'mollie-payments-for-woocommerce' ), WC_VERSION);
+				$content .= '</p></strong> ';
+
+				return $content;
+			}
 		}
 
 		return $content;

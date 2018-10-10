@@ -501,8 +501,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 					Mollie_WC_Plugin::debug( 'Creating payment object: type Payment, final try, creating a Payment.' );
 
-					// TODO David: Handle Klarna failed payments, maybe reset the method so users can choose again?
-
 					$payment_object     = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject( 'payment' );
 					$paymentRequestData = $payment_object->getPaymentRequestData( $order, $customer_id );
 

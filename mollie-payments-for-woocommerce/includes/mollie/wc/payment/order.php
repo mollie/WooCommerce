@@ -203,7 +203,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 			$order->add_order_note( sprintf(
 			/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-				__( 'Order completed using %s payment (%s). Products can be shipped.', 'mollie-payments-for-woocommerce' ),
+				__( 'Order completed using %s payment (%s).', 'mollie-payments-for-woocommerce' ),
 				$payment_method_title,
 				$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
 			) );

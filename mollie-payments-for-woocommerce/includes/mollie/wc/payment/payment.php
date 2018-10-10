@@ -101,10 +101,14 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 
 		self::$paymentId  = $this->getMolliePaymentIdFromPaymentObject();
 		self::$customerId = $this->getMollieCustomerIdFromPaymentObject();
+		self::$order      = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
 
-		self::$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
-		self::$order->update_meta_data( '_mollie_payment_id', $this->data->id );
-		self::$order->save();
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			update_post_meta( self::$order, '_mollie_paid_by_other_gateway', $this->data->id );
+		} else {
+			self::$order->update_meta_data( '_mollie_payment_id', $this->data->id );
+			self::$order->save();
+		}
 
 		return parent::setActiveMolliePayment( $order_id );
 	}
@@ -164,7 +168,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 
 			$order->add_order_note( sprintf(
 			/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-				__( 'Order completed using %s payment (%s). Products can be shipped.', 'mollie-payments-for-woocommerce' ),
+				__( 'Order completed using %s payment (%s).', 'mollie-payments-for-woocommerce' ),
 				$payment_method_title,
 				$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
 			) );

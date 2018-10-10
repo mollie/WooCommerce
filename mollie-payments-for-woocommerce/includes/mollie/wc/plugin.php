@@ -599,6 +599,11 @@ class Mollie_WC_Plugin
 	 */
 	public static function shipAndCaptureOrderAtMollie( $order_id ) {
 
+		// If this is an older WooCommerce version, don't run.
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			return;
+		}
+
 		Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Start processing completed order for a potential capture at Mollie.' );
 
 		$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
@@ -683,6 +688,11 @@ class Mollie_WC_Plugin
 	 *
 	 */
 	public static function cancelOrderAtMollie( $order_id ) {
+
+		// If this is an older WooCommerce version, don't run.
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			return;
+		}
 
 		Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Start canceling an order at Mollie.' );
 

@@ -23,10 +23,10 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 	/**
 	 * @param $order
 	 * @param $customer_id
+	 *
 	 * @return array
 	 */
-	public function getPaymentRequestData($order, $customer_id)
-	{
+	public function getPaymentRequestData( $order, $customer_id ) {
 		$settings_helper     = Mollie_WC_Plugin::getSettingsHelper();
 		$payment_description = $settings_helper->getPaymentDescription();
 		$payment_locale      = $settings_helper->getPaymentLocale();
@@ -34,63 +34,64 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 
 		$gateway = Mollie_WC_Plugin::getDataHelper()->getWcPaymentGatewayByOrder( $order );
 
-		if ( !$gateway || ! ( $gateway instanceof Mollie_WC_Gateway_Abstract ) ) {
+		if ( ! $gateway || ! ( $gateway instanceof Mollie_WC_Gateway_Abstract ) ) {
 			return array ( 'result' => 'failure' );
 		}
 
-		$mollie_method       = $gateway->getMollieMethodId();
-		$selected_issuer     = $gateway->getSelectedIssuer();
-		$return_url          = $gateway->getReturnUrl($order);
-		$webhook_url         = $gateway->getWebhookUrl($order);
+		$mollie_method   = $gateway->getMollieMethodId();
+		$selected_issuer = $gateway->getSelectedIssuer();
+		$return_url      = $gateway->getReturnUrl( $order );
+		$webhook_url     = $gateway->getWebhookUrl( $order );
 
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 
-			$payment_description = strtr($payment_description, array(
+			$payment_description = strtr( $payment_description, array (
 				'{order_number}' => $order->get_order_number(),
-				'{order_date}'   => date_i18n(wc_date_format(), strtotime($order->order_date)),
-			));
+				'{order_date}'   => date_i18n( wc_date_format(), strtotime( $order->order_date ) ),
+			) );
 
 			$paymentRequestData = array (
-				'amount'          => array (
+				'amount'      => array (
 					'currency' => Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
-					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order->get_total(), Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) )
+					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order->get_total(), Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) )
 				),
-				'description'     => $payment_description,
-				'redirectUrl'     => $return_url,
-				'webhookUrl'      => $webhook_url,
-				'method'          => $mollie_method,
-				'issuer'          => $selected_issuer,
-				'locale'          => $payment_locale,
-				'metadata'        => array (
+				'description' => $payment_description,
+				'redirectUrl' => $return_url,
+				'webhookUrl'  => $webhook_url,
+				'method'      => $mollie_method,
+				'issuer'      => $selected_issuer,
+				'locale'      => $payment_locale,
+				'metadata'    => array (
 					'order_id' => $order->id,
 				),
 			);
 		} else {
 
-			$payment_description = strtr($payment_description, array(
+			$payment_description = strtr( $payment_description, array (
 				'{order_number}' => $order->get_order_number(),
-				'{order_date}'   => date_i18n(wc_date_format(), $order->get_date_created()->getTimestamp()),
-			));
+				'{order_date}'   => date_i18n( wc_date_format(), $order->get_date_created()->getTimestamp() ),
+			) );
 
 			$paymentRequestData = array (
-				'amount'          => array (
+				'amount'      => array (
 					'currency' => Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
-					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order->get_total(), Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ))
+					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order->get_total(), Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) )
 				),
-				'description'     => $payment_description,
-				'redirectUrl'     => $return_url,
-				'webhookUrl'      => $webhook_url,
-				'method'          => $mollie_method,
-				'issuer'          => $selected_issuer,
-				'locale'          => $payment_locale,
-				'metadata'        => array (
+				'description' => $payment_description,
+				'redirectUrl' => $return_url,
+				'webhookUrl'  => $webhook_url,
+				'method'      => $mollie_method,
+				'issuer'      => $selected_issuer,
+				'locale'      => $payment_locale,
+				'metadata'    => array (
 					'order_id' => $order->get_id(),
 				),
 			);
 		}
 
-		if ($store_customer)
+		if ( $store_customer ) {
 			$paymentRequestData['customerId'] = $customer_id;
+		}
 
 		return $paymentRequestData;
 
@@ -178,16 +179,18 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 			Mollie_WC_Plugin::debug( __CLASS__ . __METHOD__ . ' processing paid payment via Mollie plugin fully completed for order ' . $order_id );
 
 			// Subscription processing
-			// TODO David: check if WC_Subscriptions is installed
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->id ) ) {
-					$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
-					WC_Subscriptions_Manager::activate_subscriptions_for_order( $order );
-				}
-			} else {
-				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
-					$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
-					WC_Subscriptions_Manager::activate_subscriptions_for_order( $order );
+			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
+
+				if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+					if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->id ) ) {
+						$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
+						WC_Subscriptions_Manager::activate_subscriptions_for_order( $order );
+					}
+				} else {
+					if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
+						$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
+						WC_Subscriptions_Manager::activate_subscriptions_for_order( $order );
+					}
 				}
 			}
 
@@ -269,14 +272,15 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 		) );
 
 		// Subscription processing
-		// TODO David: Check if WC_Subscription is installed
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->id ) ) {
-				$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
-			}
-		} else {
-			if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
-				$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
+		if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
+			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->id ) ) {
+					$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
+				}
+			} else {
+				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
+					$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
+				}
 			}
 		}
 

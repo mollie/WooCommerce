@@ -11,7 +11,7 @@ class Mollie_WC_Payment_Object {
 	public function __construct( $data ) {
 		$this->data = $data;
 
-		$base_location      = wc_get_base_location();
+		$base_location        = wc_get_base_location();
 		static::$shop_country = $base_location['country'];
 
 	}
@@ -59,17 +59,17 @@ class Mollie_WC_Payment_Object {
 	/**
 	 * @param $order
 	 * @param $customer_id
+	 *
 	 * @return array
 	 */
-	protected function getPaymentRequestData($order, $customer_id)
-	{
+	protected function getPaymentRequestData( $order, $customer_id ) {
 
 	}
 
 	/**
 	 * Save active Mollie payment id for order
 	 *
-	 * @param int                                 $order_id
+	 * @param int $order_id
 	 *
 	 * @return $this
 	 */
@@ -77,7 +77,7 @@ class Mollie_WC_Payment_Object {
 
 		// Do extra checks if WooCommerce Subscriptions is installed
 		if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-			if ( Mollie_WC_Plugin::getDataHelper()->isSubscription($order_id)){
+			if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order_id ) ) {
 				return $this->setActiveMolliePaymentForSubscriptions( $order_id );
 			}
 		}
@@ -89,7 +89,7 @@ class Mollie_WC_Payment_Object {
 	/**
 	 * Save active Mollie payment id for order
 	 *
-	 * @param int                                 $order_id
+	 * @param int $order_id
 	 *
 	 * @return $this
 	 */
@@ -128,7 +128,7 @@ class Mollie_WC_Payment_Object {
 	/**
 	 * Save active Mollie payment id for order
 	 *
-	 * @param int                                 $order_id
+	 * @param int $order_id
 	 *
 	 * @return $this
 	 */
@@ -220,7 +220,7 @@ class Mollie_WC_Payment_Object {
 
 		// Do extra checks if WooCommerce Subscriptions is installed
 		if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-			if ( Mollie_WC_Plugin::getDataHelper()->isSubscription($order_id)){
+			if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order_id ) ) {
 				return $this->unsetActiveMolliePaymentForSubscriptions( $order_id );
 			}
 		}
@@ -275,8 +275,8 @@ class Mollie_WC_Payment_Object {
 	public function unsetActiveMolliePaymentForSubscriptions( $order_id ) {
 
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			delete_post_meta($order_id, '_mollie_payment_id');
-			delete_post_meta($order_id, '_mollie_payment_mode');
+			delete_post_meta( $order_id, '_mollie_payment_id' );
+			delete_post_meta( $order_id, '_mollie_payment_mode' );
 		} else {
 			$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
 			$order->delete_meta_data( '_mollie_payment_id' );
@@ -492,6 +492,7 @@ class Mollie_WC_Payment_Object {
 
 		return true;
 	}
+
 	/**
 	 * @return bool
 	 */
@@ -519,14 +520,13 @@ class Mollie_WC_Payment_Object {
 	/**
 	 * @param $order
 	 */
-	public function deleteSubscriptionOrderFromPendingPaymentQueue($order)
-	{
+	public function deleteSubscriptionOrderFromPendingPaymentQueue( $order ) {
 		global $wpdb;
 
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 			$wpdb->delete(
 				$wpdb->mollie_pending_payment,
-				array(
+				array (
 					'post_id' => $order->id,
 				)
 			);
@@ -534,7 +534,7 @@ class Mollie_WC_Payment_Object {
 		} else {
 			$wpdb->delete(
 				$wpdb->mollie_pending_payment,
-				array(
+				array (
 					'post_id' => $order->get_id(),
 				)
 			);

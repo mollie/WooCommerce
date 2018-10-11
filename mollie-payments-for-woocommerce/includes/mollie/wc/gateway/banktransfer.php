@@ -78,14 +78,14 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
 		return $args;
 	}
 
-    /**
-     * {@inheritdoc}
-     *
-     * @param WC_Order $order
-     * @param Mollie\Api\Resources\Order $mollie_order
-     *
-     * @return string
-     */
+	/**
+	 * {@inheritdoc}
+	 *
+	 * @param WC_Order                                            $order
+	 * @param \Mollie_WC_Payment_Order|\Mollie_WC_Payment_Payment $payment_object
+	 *
+	 * @return string
+	 */
     protected function getProcessPaymentRedirect(WC_Order $order, $payment_object)
     {
         if ($this->get_option('skip_mollie_payment_screen') === 'yes')

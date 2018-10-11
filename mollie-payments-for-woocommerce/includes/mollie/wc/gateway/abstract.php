@@ -649,8 +649,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	/**
 	 * Redirect location after successfully completing process_payment
 	 *
-	 * @param WC_Order                     $order
-	 * @param \Mollie_WC_Payment_Object    $payment_object
+	 * @param WC_Order                                            $order
+	 * @param \Mollie_WC_Payment_Order|\Mollie_WC_Payment_Payment $payment_object
 	 *
 	 * @return string
 	 */

@@ -33,12 +33,11 @@ Debit cards:
 * V Pay (International)
 * Maestro (International)
 
-Alternative payment methods:
+European and local payment methods:
 
 * iDEAL (Netherlands)
 * Bancontact (Belgium)
 * ING Home'Pay (Belgium)
-* PayPal (International)
 * Giropay (Germany)
 * EPS (Austria)
 * SOFORTbanking (EU)
@@ -46,9 +45,18 @@ Alternative payment methods:
 * KBC/CBC payment button (Belgium)
 * SEPA - Credit Transfer (EU)
 * SEPA - Direct Debit (EU)
+* Gift cards (Netherlands)
+
+International payment methods:
+
+* PayPal (International)
 * Bitcoin (International)
 * Paysafecard (International)
-* Gift cards (Netherlands)
+
+Pay after delivery payment methods:
+
+* Klarna Pay later
+* Klarna Slice it
 
 Please go to the [signup page](https://www.mollie.com/signup) to create a new Mollie account and start receiving payments in a couple of minutes. Contact info@mollie.com if you have any questions or comments about this plugin.
 
@@ -136,6 +144,10 @@ Where possible, also include the Mollie log file. You can find the Mollie log fi
 4. The order received page will display the payment status and customer details if available.
 5. The order received page for the gateway bank transfer will display payment instructions.
 6. Some payment methods support refunds. The 'Refund' button will be available when the payment method supports refunds.
+7. Within Mollie Dashboard, intuitive design meets clever engineering, allowing you to get more work done, in less time.
+8. Also in Mollie Dashboard, get your administration done quick. You’ll have a detailed overview of your current balance.
+9. Statistics with a double graph gives gives you extensive insights and data on how your business is performing.
+10. Mollie Checkout turns a standard payment form into a professional experience that drives conversions.
 
 == Installation ==
 

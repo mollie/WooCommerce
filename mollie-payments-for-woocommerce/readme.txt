@@ -3,7 +3,7 @@ Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, ideal, sofort, bancontact, bitcoin, direct debit, subscriptions
 Requires at least: 3.8
 Tested up to: 4.9
-Stable tag: 5.0.1
+Stable tag: 5.0.2
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -181,7 +181,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 5.0.1 - 11-10-2018 =
+= 5.0.2 - 11-10-2018 =
 
 IMPORTANT
 This version requires PHP 5.6 or higher. If you are using an older PHP version, please read this article: [PHP & Mollie API v2](https://github.com/mollie/WooCommerce/wiki/PHP-&-Mollie-API-v2).
@@ -191,6 +191,7 @@ This version requires PHP 5.6 or higher. If you are using an older PHP version, 
 * New - Tested with and updated for WooCommerce 3.5 beta compatibility
 * New - EPS, GiroPay: implemented support for SEPA first payments (recurring payments)
 
+* Fix - Fixed for "Uncaught Error: Call to a member function isOpen() on null"
 * Fix - Fixed issue with Guzzle and PhpScoper
 
 * Fix - WooCommerce emails: make sure "Payment completed by..." message is only shown once per email

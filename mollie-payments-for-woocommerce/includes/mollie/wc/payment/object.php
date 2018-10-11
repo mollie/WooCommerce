@@ -45,6 +45,10 @@ class Mollie_WC_Payment_Object {
 	public function getPaymentObjectPayment( $payment_id, $test_mode = false, $use_cache = true ) {
 		try {
 
+			// Is test mode enabled?
+			$settings_helper = Mollie_WC_Plugin::getSettingsHelper();
+			$test_mode       = $settings_helper->isTestModeEnabled();
+
 			$payment = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->get( $payment_id );
 
 			return $payment;

@@ -14,6 +14,11 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 	public function getPaymentObject( $payment_id, $test_mode = false, $use_cache = true ) {
 		try {
+
+			// Is test mode enabled?
+			$settings_helper = Mollie_WC_Plugin::getSettingsHelper();
+			$test_mode       = $settings_helper->isTestModeEnabled();
+
 			self::$payment = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->get( $payment_id, [ "embed" => "payments" ] );
 
 			return parent::getPaymentObject( $payment_id, $test_mode = false, $use_cache = true );

@@ -49,55 +49,44 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
                 'type'              => 'checkbox',
                 'default'           => 'no',
             ),
-            'mail_payment_instructions' => array(
-                'title'             => __('Mail payment instructions', 'mollie-payments-for-woocommerce'),
-                /* translators: Placeholder 1: enabled or disabled */
-                'label'             => sprintf(__('Should Mollie automatically mail the payment instructions to the customer? Default <code>%s</code>', 'mollie-payments-for-woocommerce'), strtolower(__('Enabled', 'mollie-payments-for-woocommerce'))),
-                'type'              => 'checkbox',
-                'default'           => 'yes',
-                'description'       => __('If you disable this option the customer still has an option to send the payment instructions to an email address on the Mollie payment screen.', 'mollie-payments-for-woocommerce'),
-                'desc_tip'          => true,
-            ),
         ));
     }
 
-    /**
-     * @param array    $args
-     * @param WC_Order $order
-     * @return array
-     */
-    public function addPaymentArguments (array $args, WC_Order $order)
-    {
-        // Expiry date
-        $expiry_days = (int) $this->get_option('expiry_days', self::EXPIRY_DEFAULT_DAYS);
+	/**
+	 * @param array    $args
+	 * @param WC_Order $order
+	 *
+	 * @return array
+	 */
+	public function addPaymentArguments( array $args, WC_Order $order ) {
+		// Expiry date
+		$expiry_days = (int) $this->get_option( 'expiry_days', self::EXPIRY_DEFAULT_DAYS );
 
-        if ($expiry_days >= self::EXPIRY_MIN_DAYS && $expiry_days <= self::EXPIRY_MAX_DAYS)
-        {
-            $expiry_date = date("Y-m-d", strtotime("+$expiry_days days"));
+		if ( $expiry_days >= self::EXPIRY_MIN_DAYS && $expiry_days <= self::EXPIRY_MAX_DAYS ) {
+			$expiry_date = date( "Y-m-d", strtotime( "+$expiry_days days" ) );
 
-            $args['dueDate'] = $expiry_date;
-        }
+			// Add dueDate at the correct location
+			if ( isset( $args['payment'] ) ) {
+				$args['payment']['dueDate'] = $expiry_date;
+			} else {
+				$args['dueDate'] = $expiry_date;
+			}
+		}
 
-	    $order_billing_email = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $order->billing_email : $order->get_billing_email();
+		// Billing email is now required
 
-        // Mail payment instructions
-        if ($this->get_option('mail_payment_instructions') === 'yes' && !empty($order_billing_email))
-        {
-            $args['billingEmail'] = trim($order_billing_email);
-        }
+		return $args;
+	}
 
-        return $args;
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @param WC_Order $order
-     * @param Mollie\Api\Resources\Payment $payment
-     *
-     * @return string
-     */
-    protected function getProcessPaymentRedirect(WC_Order $order, Mollie\Api\Resources\Payment $payment)
+	/**
+	 * {@inheritdoc}
+	 *
+	 * @param WC_Order                                            $order
+	 * @param \Mollie_WC_Payment_Order|\Mollie_WC_Payment_Payment $payment_object
+	 *
+	 * @return string
+	 */
+    protected function getProcessPaymentRedirect(WC_Order $order, $payment_object)
     {
         if ($this->get_option('skip_mollie_payment_screen') === 'yes')
         {
@@ -114,7 +103,7 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
             return $redirect_url;
         }
 
-        return parent::getProcessPaymentRedirect($order, $payment);
+        return parent::getProcessPaymentRedirect($order, $payment_object);
     }
 
     /**

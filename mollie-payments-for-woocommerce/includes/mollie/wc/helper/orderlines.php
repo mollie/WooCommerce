@@ -17,9 +17,8 @@ class Mollie_WC_Helper_OrderLines {
 	private $order;
 
 	/**
-	 * WooCommerce order.
+	 * WooCommerce currency.
 	 *
-	 * @var WC_Order
 	 */
 	private $currency;
 
@@ -88,15 +87,15 @@ class Mollie_WC_Helper_OrderLines {
 				$this->currency = Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $this->order );
 
 				$mollie_order_item = array (
-					'sku'         => $this->get_item_reference( $product ),
-					'name'        => $this->get_item_name( $cart_item ),
-					'quantity'    => $this->get_item_quantity( $cart_item ),
-					'vatRate'     => $this->get_item_vatRate( $cart_item, $product ),
-					'unitPrice'   => array (
+					'sku'            => $this->get_item_reference( $product ),
+					'name'           => $this->get_item_name( $cart_item ),
+					'quantity'       => $this->get_item_quantity( $cart_item ),
+					'vatRate'        => $this->get_item_vatRate( $cart_item, $product ),
+					'unitPrice'      => array (
 						'currency' => $this->currency,
 						'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $this->get_item_price( $cart_item ), $this->currency ),
 					),
-					'totalAmount' => array (
+					'totalAmount'    => array (
 						'currency' => $this->currency,
 						'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $this->get_item_total_amount( $cart_item ), $this->currency ),
 					),
@@ -184,18 +183,18 @@ class Mollie_WC_Helper_OrderLines {
 				// Add separate discount line item, but only if it's a smart coupon or country is US.
 				if ( 'smart_coupon' === $coupon->get_discount_type() || 'US' === $this->shop_country ) {
 					$discount = array (
-						'name'           => $coupon_key,
-						'quantity'       => 1,
-						'unitPrice'      => array (
+						'name'        => $coupon_key,
+						'quantity'    => 1,
+						'unitPrice'   => array (
 							'currency' => $this->currency,
 							'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $coupon_amount, $this->currency ),
 						),
-						'vatRate'        => 0,
-						'totalAmount'    => array (
+						'vatRate'     => 0,
+						'totalAmount' => array (
 							'currency' => $this->currency,
 							'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $coupon_amount, $this->currency ),
 						),
-						'vatAmount'      => array (
+						'vatAmount'   => array (
 							'currency' => $this->currency,
 							'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $coupon_tax_amount, $this->currency ),
 						),
@@ -238,19 +237,19 @@ class Mollie_WC_Helper_OrderLines {
 				}
 
 				$fee = array (
-					'type'           => 'surcharge',
-					'name'           => $cart_fee->name,
-					'quantity'       => 1,
-					'vatRate'        => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $cart_fee_vat_rate, $this->currency ),
-					'unitPrice'      => array (
+					'type'        => 'surcharge',
+					'name'        => $cart_fee->name,
+					'quantity'    => 1,
+					'vatRate'     => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $cart_fee_vat_rate, $this->currency ),
+					'unitPrice'   => array (
 						'currency' => $this->currency,
 						'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $cart_fee_total, $this->currency ),
 					),
-					'totalAmount'    => array (
+					'totalAmount' => array (
 						'currency' => $this->currency,
 						'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $cart_fee_total, $this->currency ),
 					),
-					'vatAmount'      => array (
+					'vatAmount'   => array (
 						'currency' => $this->currency,
 						'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $cart_fee_tax_amount, $this->currency ),
 					),
@@ -341,7 +340,7 @@ class Mollie_WC_Helper_OrderLines {
 	private function get_item_price( $cart_item ) {
 
 		$item_subtotal = $cart_item['line_subtotal'] + $cart_item['line_subtotal_tax'];
-		$item_price = $item_subtotal / $cart_item['quantity'];
+		$item_price    = $item_subtotal / $cart_item['quantity'];
 
 		return $item_price;
 	}
@@ -463,7 +462,7 @@ class Mollie_WC_Helper_OrderLines {
 
 		$shipping_amount = number_format( ( WC()->cart->shipping_total + WC()->cart->shipping_tax_total ), 2, '.', '' );
 
-		return $shipping_amount ;
+		return $shipping_amount;
 	}
 
 	/**
@@ -477,10 +476,10 @@ class Mollie_WC_Helper_OrderLines {
 	private function get_shipping_vat_rate() {
 		$shipping_vat_rate = 0;
 		if ( WC()->cart->shipping_tax_total > 0 ) {
-			$shipping_vat_rate = round( WC()->cart->shipping_tax_total / WC()->cart->shipping_total, 2 )*100;
+			$shipping_vat_rate = round( WC()->cart->shipping_tax_total / WC()->cart->shipping_total, 2 ) * 100;
 		}
 
-		return  $shipping_vat_rate ;
+		return $shipping_vat_rate;
 	}
 
 	/**

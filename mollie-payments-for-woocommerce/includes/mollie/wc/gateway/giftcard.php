@@ -11,7 +11,6 @@ class Mollie_WC_Gateway_Giftcard extends Mollie_WC_Gateway_Abstract
     {
         $this->supports = array(
             'products',
-            'refunds',
         );
 
 	    /* Has issuers dropdown */

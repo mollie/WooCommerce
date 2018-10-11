@@ -245,19 +245,15 @@ class Mollie_WC_Helper_OrderLines {
 					'type'           => 'surcharge',
 					'name'           => $cart_fee->name,
 					'quantity'       => 1,
+					'vatRate'        => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $cart_fee_vat_rate, $this->currency ),
 					'unitPrice'      => array (
 						'currency' => $this->currency,
 						'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $cart_fee_total, $this->currency ),
-					),
-					'vatRate'        => array (
-						'currency' => $this->currency,
-						'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $cart_fee_vat_rate, $this->currency ),
 					),
 					'totalAmount'    => array (
 						'currency' => $this->currency,
 						'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $cart_fee_total, $this->currency ),
 					),
-					'discountAmount' => 0,
 					'vatAmount'      => array (
 						'currency' => $this->currency,
 						'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $cart_fee_tax_amount, $this->currency ),

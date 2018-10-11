@@ -3,7 +3,7 @@ Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, ideal, sofort, bancontact, bitcoin, direct debit, subscriptions
 Requires at least: 3.8
 Tested up to: 4.9
-Stable tag: 5.0.0-beta
+Stable tag: 5.0.0
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -168,6 +168,25 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 5.0.0 - 11-10-2018 =
+
+IMPORTANT
+This version requires PHP 5.6 or higher. If you are using an older PHP version, please read this article: [PHP & Mollie API v2](https://github.com/mollie/WooCommerce/wiki/PHP-&-Mollie-API-v2).
+
+* New - Now supports [Klarna Pay later](https://www.mollie.com/en/payments/klarna-pay-later) and [Klara Slice it](https://www.mollie.com/en/payments/klarna-slice-it), [read more](https://www.mollie.com/en/news/post/mollie-partners-with-klarna-for-maximum-payment-flexibility)
+* New - Implemented support for the new Orders API
+* New - Tested with and updated for WooCommerce 3.5 beta compatibility
+* New - EPS, GiroPay: implemented support for SEPA first payments (recurring payments)
+
+* Fix - WooCommerce emails: make sure "Payment completed by..." message is only shown once per email
+* Fix - WooCommerce Subscriptions: add support for "Accept Manual Renewals". This enables Bank Transfer and PayPal in checkout for subscription products.
+* Fix - Mollie payment gateways weren't always shows when cart was empty.
+* Fix - Fix for "Link expired" message after refresh methods in WooCommerce settings
+* Fix - Stricter check for valid API key when individual gateways are loaded
+* Fix - Added new action hook in Mollie_WC_Gateway_Abstract::getReturnRedirectUrlForOrder()
+* Fix - Improve log messages for orderNeedsPayment check, old messages where confusing to merchants
+* Fix - Update VVV giftcard logo filename
 
 = 4.0.2 - 07-08-2018 =
 

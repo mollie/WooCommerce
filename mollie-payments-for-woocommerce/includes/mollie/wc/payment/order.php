@@ -155,9 +155,12 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 	public function getMolliePaymentIdFromPaymentObject() {
 
-		if ( isset( $this->data->_embedded->payments{0}->id ) ) {
+		// TODO David: Quick fix, there needs to be a better way to do this!
+		$payment = $this->getPaymentObject($this->data->id);
 
-			return $this->data->_embedded->payments{0}->id;
+		if ( isset( $payment->_embedded->payments{0}->id ) ) {
+
+			return $payment->_embedded->payments{0}->id;
 
 		}
 

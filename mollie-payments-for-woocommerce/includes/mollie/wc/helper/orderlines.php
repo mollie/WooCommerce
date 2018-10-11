@@ -195,10 +195,6 @@ class Mollie_WC_Helper_OrderLines {
 							'currency' => $this->currency,
 							'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $coupon_amount, $this->currency ),
 						),
-						'discountAmount' => array (
-							'currency' => $this->currency,
-							'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( 0, $this->currency ),
-						),
 						'vatAmount'      => array (
 							'currency' => $this->currency,
 							'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $coupon_tax_amount, $this->currency ),
@@ -400,7 +396,6 @@ class Mollie_WC_Helper_OrderLines {
 		if ( $cart_item['line_subtotal'] > $cart_item['line_total'] ) {
 
 			$item_discount_amount = $cart_item['line_subtotal'] + $cart_item['line_subtotal_tax'] - $cart_item['line_total'] - $cart_item['line_tax'];
-
 
 		} else {
 			$item_discount_amount = 0;

@@ -21,22 +21,30 @@ Debit cards:
 * V Pay (International)
 * Maestro (International)
 
-Alternative payment methods:
+European and local payment methods:
 
 * iDEAL (Netherlands)
 * Bancontact (Belgium)
-* Home'Pay (Belgium)
-* PayPal (International)
+* ING Home'Pay (Belgium)
+* Giropay (Germany)
+* EPS (Austria)
 * SOFORTbanking (EU)
 * Belfius (Belgium)
 * KBC/CBC payment button (Belgium)
 * SEPA - Credit Transfer (EU)
 * SEPA - Direct Debit (EU)
+* Gift cards (Netherlands)
+
+International payment methods:
+
+* PayPal (International)
 * Bitcoin (International)
 * Paysafecard (International)
-* Gift cards (Netherlands)
-* EPS (Austria)
-* Giropay (Germany)
+
+Pay after delivery payment methods:
+
+* Klarna Pay later (Netherlands, Germany, Austria, Finland)
+* Klarna Slice it (Germany, Austria, Finland)
 
 Please go to the [signup page](https://www.mollie.com/signup) to create a new Mollie account and start receiving payments in a couple of minutes. Contact info@mollie.com if you have any questions or comments about this plugin.
 

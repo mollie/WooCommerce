@@ -512,7 +512,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 					$order_payment_method = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $order->payment_method : $order->get_payment_method();
 
 					if ( $order_payment_method == 'mollie_wc_gateway_klarnapaylater' || $order_payment_method == 'mollie_wc_gateway_sliceit' ) {
-						Mollie_WC_Plugin::debug( 'Creating payment object: removing method \'Klarna\' so cusromers can select another payment method at Mollie. ' );
+						Mollie_WC_Plugin::debug( 'Creating payment object: removing method \'Klarna\' so customers can select another payment method at Mollie. ' );
 						unset( $data['method'] );
 					}
 

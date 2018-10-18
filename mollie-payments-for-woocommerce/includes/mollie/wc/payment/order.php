@@ -82,30 +82,30 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			$shippingAddress = new stdClass();
 
 			// Get user details
-			$billingAddress->givenName  = $order->get_billing_first_name();
-			$billingAddress->familyName = $order->get_billing_last_name();
-			$billingAddress->email      = $order->get_billing_email();
+			$billingAddress->givenName  = ( ctype_space( $order->get_billing_first_name() ) ) ? null : $order->get_billing_first_name();
+			$billingAddress->familyName = ( ctype_space( $order->get_billing_last_name() ) ) ? null : $order->get_billing_last_name();
+			$billingAddress->email      = ( ctype_space( $order->get_billing_email() ) ) ? null : $order->get_billing_email();
 
 			// Get user details
-			$shippingAddress->givenName  = $order->get_shipping_first_name();
-			$shippingAddress->familyName = $order->get_shipping_last_name();
-			$shippingAddress->email      = $order->get_billing_email(); // WooCommerce doesn't have a shipping email
+			$shippingAddress->givenName  = ( ctype_space( $order->get_shipping_first_name() ) ) ? null : $order->get_shipping_first_name();
+			$shippingAddress->familyName = ( ctype_space( $order->get_shipping_last_name() ) ) ? null : $order->get_shipping_last_name();
+			$shippingAddress->email      = ( ctype_space( $order->get_billing_email() ) ) ? null : $order->get_billing_email(); // WooCommerce doesn't have a shipping email
 
 			// Create billingAddress object
-			$billingAddress->streetAndNumber  = $order->get_billing_address_1();
-			$billingAddress->streetAdditional = $order->get_billing_address_2();
-			$billingAddress->postalCode       = $order->get_billing_postcode();
-			$billingAddress->city             = $order->get_billing_city();
-			$billingAddress->region           = $order->get_billing_state();
-			$billingAddress->country          = $order->get_billing_country();
+			$billingAddress->streetAndNumber  = ( ctype_space( $order->get_billing_address_1() ) ) ? null : $order->get_billing_address_1();
+			$billingAddress->streetAdditional = ( ctype_space( $order->get_billing_address_2() ) ) ? null : $order->get_billing_address_2();
+			$billingAddress->postalCode       = ( ctype_space( $order->get_billing_postcode() ) ) ? null : $order->get_billing_postcode();
+			$billingAddress->city             = ( ctype_space( $order->get_billing_city() ) ) ? null : $order->get_billing_city();
+			$billingAddress->region           = ( ctype_space( $order->get_billing_state() ) ) ? null : $order->get_billing_state();
+			$billingAddress->country          = ( ctype_space( $order->get_billing_country() ) ) ? null : $order->get_billing_country();
 
 			// Create shippingAddress object
-			$shippingAddress->streetAndNumber  = $order->get_shipping_address_1();
-			$shippingAddress->streetAdditional = $order->get_shipping_address_2();
-			$shippingAddress->postalCode       = $order->get_shipping_postcode();
-			$shippingAddress->city             = $order->get_shipping_city();
-			$shippingAddress->region           = $order->get_shipping_state();
-			$shippingAddress->country          = $order->get_shipping_country();
+			$shippingAddress->streetAndNumber  = ( ctype_space( $order->get_shipping_address_1() ) ) ? null : $order->get_shipping_address_1();
+			$shippingAddress->streetAdditional = ( ctype_space( $order->get_shipping_address_2() ) ) ? null : $order->get_shipping_address_2();
+			$shippingAddress->postalCode       = ( ctype_space( $order->get_shipping_postcode() ) ) ? null : $order->get_shipping_postcode();
+			$shippingAddress->city             = ( ctype_space( $order->get_shipping_city() ) ) ? null : $order->get_shipping_city();
+			$shippingAddress->region           = ( ctype_space( $order->get_shipping_state() ) ) ? null : $order->get_shipping_state();
+			$shippingAddress->country          = ( ctype_space( $order->get_shipping_country() ) ) ? null : $order->get_shipping_country();
 
 			// Generate order lines for Mollie Orders
 			$order_lines_helper = Mollie_WC_Plugin::getOrderLinesHelper( self::$shop_country, $order );

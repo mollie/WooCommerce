@@ -92,18 +92,20 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			$shippingAddress->email      = $order->get_billing_email(); // WooCommerce doesn't have a shipping email
 
 			// Create billingAddress object
-			$billingAddress->streetAndNumber = $order->get_billing_address_1();
-			$billingAddress->postalCode      = $order->get_billing_postcode();
-			$billingAddress->city            = $order->get_billing_city();
-			$billingAddress->region          = $order->get_billing_state();
-			$billingAddress->country         = $order->get_billing_country();
+			$billingAddress->streetAndNumber  = $order->get_billing_address_1();
+			$billingAddress->streetAdditional = $order->get_billing_address_2();
+			$billingAddress->postalCode       = $order->get_billing_postcode();
+			$billingAddress->city             = $order->get_billing_city();
+			$billingAddress->region           = $order->get_billing_state();
+			$billingAddress->country          = $order->get_billing_country();
 
 			// Create shippingAddress object
-			$shippingAddress->streetAndNumber = $order->get_shipping_address_1();
-			$shippingAddress->postalCode      = $order->get_shipping_postcode();
-			$shippingAddress->city            = $order->get_shipping_city();
-			$shippingAddress->region          = $order->get_shipping_state();
-			$shippingAddress->country         = $order->get_shipping_country();
+			$shippingAddress->streetAndNumber  = $order->get_shipping_address_1();
+			$shippingAddress->streetAdditional = $order->get_shipping_address_2();
+			$shippingAddress->postalCode       = $order->get_shipping_postcode();
+			$shippingAddress->city             = $order->get_shipping_city();
+			$shippingAddress->region           = $order->get_shipping_state();
+			$shippingAddress->country          = $order->get_shipping_country();
 
 			// Generate order lines for Mollie Orders
 			$order_lines_helper = Mollie_WC_Plugin::getOrderLinesHelper( self::$shop_country, $order );

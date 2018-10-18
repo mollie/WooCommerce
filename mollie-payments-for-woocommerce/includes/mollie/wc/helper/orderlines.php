@@ -276,7 +276,7 @@ class Mollie_WC_Helper_OrderLines {
 		$cart_item_data = $cart_item['data'];
 		$item_name      = $cart_item_data->get_name();
 
-		return strip_tags( $item_name );
+		return html_entity_decode(strip_tags($item_name) );
 	}
 
 	/**

@@ -481,6 +481,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			}
 			catch ( Mollie\Api\Exceptions\ApiException $e ) {
 
+				// Don't try to create a Mollie Payment for Klarna payment methods
+				$order_payment_method = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $order->payment_method : $order->get_payment_method();
+
+				if ( $order_payment_method == 'mollie_wc_gateway_klarnapaylater' || $order_payment_method == 'mollie_wc_gateway_sliceit' ) {
+					Mollie_WC_Plugin::debug( 'Creating payment object: type Order, failed for Klarna payment, stopping process.' );
+					throw $e;
+				}
+
 				Mollie_WC_Plugin::debug( 'Creating payment object: type Order, first try failed: ' . $e->getMessage() );
 
 				// Unset missing customer ID
@@ -489,7 +497,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				try {
 
 					if ( $e->getField() !== 'payment.customerId' ) {
-						Mollie_WC_Plugin::debug( 'Creating payment object: type Order, did not fail because of customerId, so trying Payment now.' );
+						Mollie_WC_Plugin::debug( 'Creating payment object: type Order, did not fail because of incorrect customerId, so trying Payment now.' );
 						throw $e;
 					}
 
@@ -507,14 +515,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 					$data = array_filter( $paymentRequestData );
 
 					$data = apply_filters( 'woocommerce_' . $this->id . '_args', $data, $order );
-
-					// Don't try to create a Mollie Payment for Klarna payment methods
-					$order_payment_method = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $order->payment_method : $order->get_payment_method();
-
-					if ( $order_payment_method == 'mollie_wc_gateway_klarnapaylater' || $order_payment_method == 'mollie_wc_gateway_sliceit' ) {
-						Mollie_WC_Plugin::debug( 'Creating payment object: removing method \'Klarna\' so customers can select another payment method at Mollie. ' );
-						unset( $data['method'] );
-					}
 
 					try {
 

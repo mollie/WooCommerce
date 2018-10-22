@@ -162,7 +162,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 	public function getMolliePaymentIdFromPaymentObject() {
 
-		// TODO David: Quick fix, there needs to be a better way to do this!
+		// TODO David: Quick fix, make sure payment object has payments embedded, there needs to be a better way to do this!
 		$payment = $this->getPaymentObject($this->data->id);
 
 		if ( isset( $payment->_embedded->payments{0}->id ) ) {
@@ -176,9 +176,12 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 	public function getMollieCustomerIdFromPaymentObject() {
 
-		if ( isset( $this->data->_embedded->payments{0}->customerId ) ) {
+		// TODO David: Quick fix, make sure payment object has payments embedded, there needs to be a better way to do this!
+		$payment = $this->getPaymentObject($this->data->id);
 
-			return $this->data->_embedded->payments{0}->customerId;
+		if ( isset( $payment->_embedded->payments{0}->customerId ) ) {
+
+			return $payment->_embedded->payments{0}->customerId;
 
 		}
 

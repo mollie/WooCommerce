@@ -75,6 +75,14 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 					'order_id' => $order->id,
 				),
 			);
+
+			// Add sequenceType for subscriptions first payments
+			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
+				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->id ) ) {
+					$paymentRequestData['payment']['sequenceType'] = 'first';
+				}
+			}
+
 		} else {
 
 			// Setup billing and shipping objects
@@ -132,6 +140,13 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 				'lines'           => $order_lines['lines'],
 				'orderNumber'     => $order->get_order_number(), // TODO David: use order number or order id?
 			);
+
+			// Add sequenceType for subscriptions first payments
+			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
+				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
+					$paymentRequestData['payment']['sequenceType'] = 'first';
+				}
+			}
 		}
 
 		// Only add shippingAddress if all required fields are set

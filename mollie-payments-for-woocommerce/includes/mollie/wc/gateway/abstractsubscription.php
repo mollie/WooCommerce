@@ -60,20 +60,6 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
      * @param $customer_id
      * @return array
      */
-    protected function getPaymentRequestData($order, $customer_id)
-    {
-        $paymentRequestData = parent::getPaymentRequestData($order, $customer_id);
-        if ($this->isSubscriptionPayment){
-            $paymentRequestData['sequenceType'] = 'first';
-        }
-        return $paymentRequestData;
-    }
-
-    /**
-     * @param $order
-     * @param $customer_id
-     * @return array
-     */
     protected function getRecurringPaymentRequestData($order, $customer_id)
     {
 

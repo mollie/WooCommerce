@@ -400,15 +400,6 @@ class Mollie_WC_Helper_Settings
                     'pattern'     => '^test_\w{30,}$',
                 ),
             ),
-            array(
-                'id'      => $this->getSettingId('payment_description'),
-                'title'   => __('Description', 'mollie-payments-for-woocommerce'),
-                'type'    => 'text',
-                /* translators: Placeholder 1: Default payment description, placeholder 2: list of available tags */
-                'desc'    => sprintf(__('Payment description send to Mollie. Default <code>%s</code><br/>You can use the following tags: %s', 'mollie-payments-for-woocommerce'), $default_payment_description, $payment_description_tags),
-                'default' => $default_payment_description,
-                'css'     => 'width: 350px',
-            ),
 	        array(
 		        'id'      => $this->getSettingId('order_status_cancelled_payments'),
 		        'title'   => __('Order status after cancelled payment', 'mollie-payments-for-woocommerce'),

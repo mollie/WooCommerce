@@ -101,7 +101,7 @@ class Mollie_WC_Payment_Object {
 
 
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			update_post_meta( $order_id, '_mollie_payment_id', $this->data->id, $single = true );
+			update_post_meta( $order_id, '_mollie_payment_id', static::$paymentId, $single = true );
 			update_post_meta( $order_id, '_mollie_payment_mode', $this->data->mode, $single = true );
 
 			delete_post_meta( $order_id, '_mollie_cancelled_payment_id' );
@@ -119,7 +119,7 @@ class Mollie_WC_Payment_Object {
 
 			static::$order->delete_meta_data( '_mollie_cancelled_payment_id' );
 
-			if ( isset( $this->data->customerId ) && $this->data->customerId ) {
+			if ( static::$customerId ) {
 				static::$order->update_meta_data( '_mollie_customer_id', static::$customerId );
 			}
 
@@ -141,7 +141,7 @@ class Mollie_WC_Payment_Object {
 
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 
-			add_post_meta( $order_id, '_mollie_payment_id', $this->data->id, $single = true );
+			add_post_meta( $order_id, '_mollie_payment_id', static::$paymentId, $single = true );
 			add_post_meta( $order_id, '_mollie_payment_mode', $this->data->mode, $single = true );
 
 			delete_post_meta( $order_id, '_mollie_cancelled_payment_id' );
@@ -162,7 +162,7 @@ class Mollie_WC_Payment_Object {
 			foreach ( $subscriptions as $subscription ) {
 				$this->unsetActiveMolliePayment( $subscription->id );
 				delete_post_meta( $subscription->id, '_mollie_customer_id' );
-				add_post_meta( $subscription->id, '_mollie_payment_id', $this->data->id, $single = true );
+				add_post_meta( $subscription->id, '_mollie_payment_id', static::$paymentId, $single = true );
 				add_post_meta( $subscription->id, '_mollie_payment_mode', $this->data->mode, $single = true );
 				delete_post_meta( $subscription->id, '_mollie_cancelled_payment_id' );
 				if ( static::$customerId ) {
@@ -174,7 +174,7 @@ class Mollie_WC_Payment_Object {
 
 			$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
 
-			$order->update_meta_data( '_mollie_payment_id', $this->data->id );
+			$order->update_meta_data( '_mollie_payment_id', static::$paymentId );
 			$order->update_meta_data( '_mollie_payment_mode', $this->data->mode );
 
 			$order->delete_meta_data( '_mollie_cancelled_payment_id' );
@@ -195,7 +195,7 @@ class Mollie_WC_Payment_Object {
 			foreach ( $subscriptions as $subscription ) {
 				$this->unsetActiveMolliePayment( $subscription->get_id() );
 				$subscription->delete_meta_data( '_mollie_customer_id' );
-				$subscription->update_meta_data( '_mollie_payment_id', $this->data->id );
+				$subscription->update_meta_data( '_mollie_payment_id', static::$paymentId );
 				$subscription->update_meta_data( '_mollie_payment_mode', $this->data->mode );
 				$subscription->delete_meta_data( '_mollie_cancelled_payment_id' );
 				if ( static::$customerId ) {

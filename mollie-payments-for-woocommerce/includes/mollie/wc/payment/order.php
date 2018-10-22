@@ -125,7 +125,6 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 				),
 				'locale'          => $payment_locale,
 				'billingAddress'  => $billingAddress,
-				'shippingAddress' => $shippingAddress,
 				'metadata'        => array (
 					'order_id'     => $order->get_id(),
 					'order_number' => $order->get_order_number(),
@@ -135,6 +134,12 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			);
 		}
 
+		// Only add shippingAddress if all required fields are set
+		if ( isset( $shippingAddress->streetandNumber ) && isset( $shippingAddress->postalCode ) && isset( $shippingAddress->city ) && isset( $shippingAddress->country ) ) {
+			$paymentRequestData['shippingAddress'] = $shippingAddress;
+		}
+
+		// Only store customer at Mollie if setting is enabled
 		if ( $store_customer ) {
 			$paymentRequestData['payment']['customerId'] = $customer_id;
 		}

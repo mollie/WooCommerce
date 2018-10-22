@@ -313,14 +313,14 @@ class Mollie_WC_Helper_Data
 
 		try {
 
-			$filters_key   = ( ! empty ( $filters['sequenceType'] ) ) ? '_' . $filters['sequenceType'] : '';
+			$filters_key  = ( ! empty ( $filters['sequenceType'] ) ) ? '_' . $filters['sequenceType'] : '';
 			$transient_id = Mollie_WC_Plugin::getDataHelper()->getTransientId( 'api_methods_' . ( $test_mode ? 'test' : 'live' ) . $filters_key );
 
 			if ( $use_cache ) {
 				$cached_methods = unserialize( get_transient( $transient_id ) );
 
 				if ( $cached_methods && $cached_methods instanceof \Mollie\Api\Resources\MethodCollection ) {
-					return $cached_methods;
+					$methods = $cached_methods;
 				}
 			}
 
@@ -330,7 +330,7 @@ class Mollie_WC_Helper_Data
 				delete_transient( $transient_id );
 
 				// TODO David: Support orders and payment resource?
-				$filters['resource']       = 'orders';
+				$filters['resource'] = 'orders';
 
 				$methods = $this->api_helper->getApiClient( $test_mode )->methods->all( $filters );
 

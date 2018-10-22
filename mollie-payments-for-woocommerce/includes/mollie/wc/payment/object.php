@@ -101,6 +101,7 @@ class Mollie_WC_Payment_Object {
 
 
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			update_post_meta( $order_id, '_mollie_order_id', $this->data->id, $single = true );
 			update_post_meta( $order_id, '_mollie_payment_id', static::$paymentId, $single = true );
 			update_post_meta( $order_id, '_mollie_payment_mode', $this->data->mode, $single = true );
 
@@ -114,6 +115,7 @@ class Mollie_WC_Payment_Object {
 
 			static::$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
 
+			static::$order->update_meta_data( '_mollie_order_id', $this->data->id );
 			static::$order->update_meta_data( '_mollie_payment_id', static::$paymentId );
 			static::$order->update_meta_data( '_mollie_payment_mode', $this->data->mode );
 

@@ -156,7 +156,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 		if ( $payment->isPaid() ) {
 
 			// Add messages to log
-			Mollie_WC_Plugin::debug( __CLASS__ . __METHOD__ . ' called for payment ' . $order_id );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' called for payment ' . $order_id );
 
 			// WooCommerce 2.2.0 has the option to store the Payment transaction id.
 			$woo_version = get_option( 'woocommerce_version', 'Unknown' );
@@ -168,7 +168,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 			}
 
 			// Add messages to log
-			Mollie_WC_Plugin::debug( __CLASS__ . __METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for payment ' . $order_id );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for payment ' . $order_id );
 
 			$order->add_order_note( sprintf(
 			/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
@@ -184,7 +184,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 			$this->unsetCancelledMolliePaymentId( $order_id );
 
 			// Add messages to log
-			Mollie_WC_Plugin::debug( __CLASS__ . __METHOD__ . ' processing paid payment via Mollie plugin fully completed for order ' . $order_id );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' processing paid payment via Mollie plugin fully completed for order ' . $order_id );
 
 			// Subscription processing
 			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
@@ -205,7 +205,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 		} else {
 
 			// Add messages to log
-			Mollie_WC_Plugin::debug( __CLASS__ . __METHOD__ . ' payment at Mollie not paid, so no processing for order ' . $order_id );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' payment at Mollie not paid, so no processing for order ' . $order_id );
 
 		}
 
@@ -226,7 +226,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 		}
 
 		// Add messages to log
-		Mollie_WC_Plugin::debug( __CLASS__ . __METHOD__ . ' called for payment ' . $order_id );
+		Mollie_WC_Plugin::debug( __METHOD__ . ' called for payment ' . $order_id );
 
 		$this->unsetActiveMolliePayment( $order_id, $payment->id );
 		$this->setCancelledMolliePaymentId( $order_id, $payment->id );
@@ -335,7 +335,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 			);
 		}
 
-		Mollie_WC_Plugin::debug( __CLASS__ . __METHOD__ . ' called for order ' . $order_id . ' and payment ' . $payment->id . ', regular payment failed.' );
+		Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id . ' and payment ' . $payment->id . ', regular payment failed.' );
 
 	}
 
@@ -356,11 +356,11 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 		}
 
 		// Add messages to log
-		Mollie_WC_Plugin::debug( __CLASS__ . __METHOD__ . ' called for order ' . $order_id );
+		Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id );
 
 		// Check that this payment is the most recent, based on Mollie Payment ID from post meta, do not cancel the order if it isn't
 		if ( $mollie_payment_id != $payment->id ) {
-			Mollie_WC_Plugin::debug( __CLASS__ . __METHOD__ . ' called for order ' . $order_id . ' and payment ' . $payment->id . ', not processed because of a newer pending payment ' . $mollie_payment_id );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id . ' and payment ' . $payment->id . ', not processed because of a newer pending payment ' . $mollie_payment_id );
 
 			$order->add_order_note( sprintf(
 			/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */

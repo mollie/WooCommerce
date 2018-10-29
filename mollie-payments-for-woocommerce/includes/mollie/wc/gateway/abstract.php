@@ -1207,8 +1207,15 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			$payment = Mollie_WC_Plugin::getPaymentObject()->getActiveMolliePayment( $order->get_id() );
 		}
 
-		// Mollie payment not found or invalid gateway
-		if ( ! $payment || $payment->method != $this->getMollieMethodId() ) {
+		// Mollie payment object not found
+		if ( ! $payment ) {
+			Mollie_WC_Plugin::debug( __METHOD__ . ' - Mollie payment object not found for order ' . $order_id );
+			return false;
+		}
+
+		// Payment method for order isn't the same as payment object method
+		if ( $payment->method != $this->getMollieMethodId() ) {
+			Mollie_WC_Plugin::debug( __METHOD__ . ' - Invalid refund gateway for order ' . $order_id );
 			return false;
 		}
 

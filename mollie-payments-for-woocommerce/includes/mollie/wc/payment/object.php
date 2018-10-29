@@ -64,7 +64,6 @@ class Mollie_WC_Payment_Object {
 	 * @param $order
 	 * @param $customer_id
 	 *
-	 * @return array
 	 */
 	protected function getPaymentRequestData( $order, $customer_id ) {
 
@@ -480,6 +479,18 @@ class Mollie_WC_Payment_Object {
 	 * @param string                       $payment_method_title
 	 */
 	protected function onWebhookExpired( WC_Order $order, $payment, $payment_method_title ) {
+
+	}
+
+	/**
+	 * Process a refund if supported
+	 * @param int    $order_id
+	 * @param float  $amount
+	 * @param string $reason
+
+	 * @since WooCommerce 2.2
+	 */
+	public function refund( $order, $order_id, $amount = null, $reason = '' ) {
 
 	}
 

@@ -43,6 +43,7 @@ class Mollie_WC_Payment_Object {
 	 * @return Mollie\Api\Resources\Payment|null
 	 */
 	public function getPaymentObjectPayment( $payment_id, $test_mode = false, $use_cache = true ) {
+		// TODO David: Duplicate, send to child class.
 		try {
 
 			// Is test mode enabled?
@@ -55,6 +56,35 @@ class Mollie_WC_Payment_Object {
 		}
 		catch ( \Mollie\Api\Exceptions\ApiException $e ) {
 			Mollie_WC_Plugin::debug( __FUNCTION__ . ": Could not load payment $payment_id (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class( $e ) . ')' );
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get Mollie payment from cache or load from Mollie
+	 * Skip cache by setting $use_cache to false
+	 *
+	 * @param string $payment_id
+	 * @param bool   $test_mode (default: false)
+	 * @param bool   $use_cache (default: true)
+	 *
+	 * @return Mollie\Api\Resources\Payment|Mollie\Api\Resources\Order|null
+	 */
+	public function getPaymentObjectOrder( $payment_id, $test_mode = false, $use_cache = true ) {
+		// TODO David: Duplicate, send to child class.
+		try {
+
+			// Is test mode enabled?
+			$settings_helper = Mollie_WC_Plugin::getSettingsHelper();
+			$test_mode       = $settings_helper->isTestModeEnabled();
+
+			$payment = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->get( $payment_id, [ "embed" => "payments" ] );
+
+			return $payment;
+		}
+		catch ( \Mollie\Api\Exceptions\ApiException $e ) {
+			Mollie_WC_Plugin::debug( __FUNCTION__ . ": Could not load order $payment_id (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class( $e ) . ')' );
 		}
 
 		return null;
@@ -311,6 +341,24 @@ class Mollie_WC_Payment_Object {
 	}
 
 	/**
+	 * Get active Mollie payment id for order
+	 *
+	 * @param int $order_id
+	 *
+	 * @return string
+	 */
+	public function getActiveMollieOrderId( $order_id ) {
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			$mollie_payment_id = get_post_meta( $order_id, '_mollie_order_id', $single = true );
+		} else {
+			$order             = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+			$mollie_payment_id = $order->get_meta( '_mollie_order_id', true );
+		}
+
+		return $mollie_payment_id;
+	}
+
+	/**
 	 * Get active Mollie payment mode for order
 	 *
 	 * @param int $order_id
@@ -335,9 +383,23 @@ class Mollie_WC_Payment_Object {
 	 * @return Mollie\Api\Resources\Payment|null
 	 */
 	public function getActiveMolliePayment( $order_id, $use_cache = true ) {
+
+		// Check if there is a payment ID stored with order and get it
 		if ( $this->hasActiveMolliePayment( $order_id ) ) {
 			return $this->getPaymentObjectPayment(
 				$this->getActiveMolliePaymentId( $order_id ),
+				$this->getActiveMolliePaymentMode( $order_id ) == 'test',
+				$use_cache
+			);
+		}
+
+		// If there is no payment ID, try to get order ID and if it's stored, try getting payment ID from API
+		if ( $this->hasActiveMollieOrder( $order_id ) ) {
+			$mollie_order = $this->getPaymentObjectOrder($this->getActiveMollieOrderId( $order_id ));
+			$mollie_order = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject( $mollie_order );
+
+			return $this->getPaymentObjectPayment(
+				$mollie_order->getMolliePaymentIdFromPaymentObject(),
 				$this->getActiveMolliePaymentMode( $order_id ) == 'test',
 				$use_cache
 			);
@@ -355,6 +417,19 @@ class Mollie_WC_Payment_Object {
 	 */
 	public function hasActiveMolliePayment( $order_id ) {
 		$mollie_payment_id = $this->getActiveMolliePaymentId( $order_id );
+
+		return ! empty( $mollie_payment_id );
+	}
+
+	/**
+	 * Check if the order has an active Mollie order
+	 *
+	 * @param int $order_id
+	 *
+	 * @return bool
+	 */
+	public function hasActiveMollieOrder( $order_id ) {
+		$mollie_payment_id = $this->getActiveMollieOrderId( $order_id );
 
 		return ! empty( $mollie_payment_id );
 	}

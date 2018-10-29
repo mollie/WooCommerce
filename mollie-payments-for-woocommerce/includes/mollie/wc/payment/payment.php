@@ -448,11 +448,13 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 			if ( ! $payment_object ) {
 				Mollie_WC_Plugin::debug( __METHOD__ . ' - Could not find active Mollie payment for order ' . $order_id );
 
-				return false;
-			} elseif ( ! $payment_object->isPaid() ) {
-				Mollie_WC_Plugin::debug( __METHOD__ . ' - Could not refund payment ' . $payment_object->id . ' (not paid). Order ' . $order_id );
+				return new WP_Error( '1', 'Could not find active Mollie payment for order ' . $order_id );
+			}
 
-				return false;
+			if ( ! $payment_object->isPaid() ) {
+				Mollie_WC_Plugin::debug( __METHOD__ . ' - Can not refund the unpaid payment ' . $payment_object->id . ' for order ' . $order_id );
+
+				return new WP_Error( '1', 'Can not refund an unpaid payment ' . $payment_object->id . ' for order ' . $order_id );
 			}
 
 			Mollie_WC_Plugin::debug( __METHOD__ . ' - Create refund - payment: ' . $payment_object->id . ', order: ' . $order_id . ', amount: ' . Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) . $amount . ( ! empty( $reason ) ? ', reason: ' . $reason : '' ) );

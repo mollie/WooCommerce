@@ -1201,11 +1201,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			return false;
 		}
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			$payment = Mollie_WC_Plugin::getPaymentObject()->getActiveMolliePayment( $order->id );
-		} else {
-			$payment = Mollie_WC_Plugin::getPaymentObject()->getActiveMolliePayment( $order->get_id() );
-		}
+		$payment = Mollie_WC_Plugin::getPaymentObject()->getActiveMolliePayment( $order_id );
 
 		// Mollie payment object not found
 		if ( ! $payment ) {

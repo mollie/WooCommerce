@@ -3,7 +3,7 @@ Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, ideal, sofort, bancontact, bitcoin, direct debit, subscriptions
 Requires at least: 3.8
 Tested up to: 4.9
-Stable tag: 5.0.2
+Stable tag: 5.0.3
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -180,6 +180,28 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+
+= 5.0.3 - 01-11-2018 =
+
+IMPORTANT
+This version requires PHP 5.6 or higher. If you are using an older PHP version, please read this article: [PHP & Mollie API v2](https://github.com/mollie/WooCommerce/wiki/PHP-&-Mollie-API-v2).
+
+* Fix - Improvements to refunds: better log messages, show errors to shop-manager
+* Fix - Remove option to set a description for payments, the new Orders API does not support this
+* Fix - Update WooCommerce status constants in our plugin (cancelled and refunded)
+* Fix - Make sure customer ID is stored by getting the payment object with all payments embedded
+* Fix - Get and use correct _mollie_payment_id in setActiveMolliePaymentForOrders and setActiveMolliePaymentForSubscriptions
+* Fix - Move adding of sequenceType into payment object
+* Fix - Update Webship Giftcard logo to webshopgiftcard.svg
+
+* Fix - Klarna/Orders API: Also send Address Line 2 to Mollie Orders API
+* Fix - Klarna/Orders API: In billing and shipping address check that fields aren't just a space
+* Fix - Klarna/Orders API: Decode HTML entities in product names before sending them to Mollie
+* Fix - Klarna/Orders API: Don't fall back to Payments API if payment method is Klarna
+* Fix - Klarna/Orders API: Only add shipping address if all required fields are present
+* Fix - Klarna/Orders API: Always store Mollie order ID as _mollie_order_id
+* Fix - Klarna/Orders API: Add fallback to getActiveMolliePayment and try to get payment ID from Mollie order if possible
 
 = 5.0.2 - 11-10-2018 =
 

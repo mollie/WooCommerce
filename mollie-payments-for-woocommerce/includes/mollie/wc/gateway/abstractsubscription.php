@@ -221,6 +221,9 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
         // Overwrite gateway-wide
         $initial_order_status = apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_initial_order_status_' . $this->id, $initial_order_status);
 
+	    // Check if test mode is enabled
+	    $test_mode = $this->isTestModeEnabledForRenewalOrder($renewal_order);
+
         // Get Mollie customer ID
         $customer_id    = $this->getOrderMollieCustomerId($renewal_order);
 
@@ -229,10 +232,6 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
         // Allow filtering the renewal payment data
         $data = apply_filters('woocommerce_' . $this->id . '_args', $data, $renewal_order);
-
-
-        // Check if test mode is enabled
-        $test_mode = $this->isTestModeEnabledForRenewalOrder($renewal_order);
 
         // Create a renewal payment
         try

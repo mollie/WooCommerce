@@ -1,4 +1,7 @@
-[<img src="https://www.mollie.com/assets/images/mollie/logo-black.svg" width="110">](https://www.mollie.com/)
+<p align="center">
+  <img src="https://info.mollie.com/hubfs/github/woocommerce/logo.png" width="128" height="128"/>
+</p>
+<h1 align="center">Mollie for WooCommerce</h1>
   
 Quickly integrate all major payment methods in WooCommerce, wherever you need them. Simply drop them ready-made into your WooCommerce webshop with this powerful plugin by Mollie. Mollie is dedicated to making payments better for WooCommerce.
 
@@ -6,7 +9,7 @@ Quickly integrate all major payment methods in WooCommerce, wherever you need th
 
 No need to spend weeks on paperwork or security compliance procedures. No more lost conversions because you don’t support a shopper’s favorite payment method or because they don’t feel safe. We made payments intuitive and safe for merchants and their customers.
 
-### PAYMENT METHODS
+### Payment methods
 
 Credit cards:
 
@@ -50,7 +53,7 @@ Please go to the [signup page](https://www.mollie.com/signup) to create a new Mo
 
 > Our pricing is always per transaction. No startup fees, no monthly fees, and no gateway fees. No hidden fees, period.
 
-### FEATURES
+### Features
 
 * Support for all available Mollie payment methods
 * Compatible with WooCommerce Subscriptions for recurring payments (credit card, iDEAL, SEPA Direct Debit)

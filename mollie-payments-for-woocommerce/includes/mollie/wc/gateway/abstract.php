@@ -618,7 +618,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			$payment_object->setActiveMolliePayment( $order->id );
 
 			// Get Mollie Customer ID
-			$mollie_customer_id = $payment_object->getMollieCustomerIdFromPaymentObject( $payment_object );
+			$mollie_customer_id = $payment_object->getMollieCustomerIdFromPaymentObject( $payment_object->data->id );
 
 			// Set Mollie customer
 			Mollie_WC_Plugin::getDataHelper()->setUserMollieCustomerId( $order->customer_user, $mollie_customer_id );
@@ -630,7 +630,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			$payment_object->setActiveMolliePayment( $order->get_id() );
 
 			// Get Mollie Customer ID
-			$mollie_customer_id = $payment_object->getMollieCustomerIdFromPaymentObject( $payment_object );
+			$mollie_customer_id = $payment_object->getMollieCustomerIdFromPaymentObject( $payment_object->data->id );
 
 			// Set Mollie customer
 			Mollie_WC_Plugin::getDataHelper()->setUserMollieCustomerId( $order->get_customer_id(), $mollie_customer_id );

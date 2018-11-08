@@ -143,15 +143,36 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 		return null;
 	}
 
-	public function getMollieCustomerIdFromPaymentObject() {
+	public function getMollieCustomerIdFromPaymentObject( $payment = null ) {
 
-		if ( isset( $this->data->customerId ) ) {
+		if ( $payment == null ) {
+			$payment = $this->data->id;
+		}
 
-			return $this->data->customerId;
+		$payment = $this->getPaymentObject( $payment );
+
+		if ( isset( $payment->customerId ) ) {
+
+			return $payment->customerId;
 
 		}
 
 		return null;
+	}
+
+	public function getMollieCustomerIbanDetailsFromPaymentObject( $payment = null ) {
+
+		if ( $payment == null ) {
+			$payment = $this->data->id;
+		}
+
+		$payment = $this->getPaymentObject( $payment );
+
+		$iban_details['consumerName']    = $payment->details->consumerName;
+		$iban_details['consumerAccount'] = $payment->details->consumerAccount;
+
+		return $iban_details;
+
 	}
 
 	/**

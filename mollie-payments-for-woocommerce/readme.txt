@@ -3,7 +3,7 @@ Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, ideal, sofort, bancontact, bitcoin, direct debit, subscriptions
 Requires at least: 3.8
 Tested up to: 4.9
-Stable tag: 5.0.3
+Stable tag: 5.0.4
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -180,6 +180,15 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 5.0.4 - 08-11-2018 =
+
+IMPORTANT
+This version requires PHP 5.6 or higher. If you are using an older PHP version, please read this article: [PHP & Mollie API v2](https://github.com/mollie/WooCommerce/wiki/PHP-&-Mollie-API-v2).
+
+* Fix - Get test mode higher in scheduled_subscription_payment() process
+* Fix - Add automated option to restore a customer ID from Mollie API
+* Fix - Store sequenceType in the correct position for payments
 
 
 = 5.0.3 - 01-11-2018 =

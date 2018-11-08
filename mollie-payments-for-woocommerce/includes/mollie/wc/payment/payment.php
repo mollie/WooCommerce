@@ -73,7 +73,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 			// Add sequenceType for subscriptions first payments
 			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
 				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->id ) ) {
-					$paymentRequestData['payment']['sequenceType'] = 'first';
+					$paymentRequestData['sequenceType'] = 'first';
 				}
 			}
 

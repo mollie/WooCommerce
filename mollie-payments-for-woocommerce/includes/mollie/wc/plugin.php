@@ -604,8 +604,6 @@ class Mollie_WC_Plugin
 			return;
 		}
 
-		Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Start processing completed order for a potential capture at Mollie.' );
-
 		$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
 
 		// Set Klarna payment methods
@@ -618,10 +616,10 @@ class Mollie_WC_Plugin
 
 		// Does WooCommerce order contain a payment via Klarna?
 		if ( ! in_array( $order->get_payment_method(), $klarna_methods, true ) ) {
-			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Processing completed order stopped, not a Klarna payment.' );
-
 			return;
 		}
+
+		Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Try to process completed order for a potential capture at Mollie.' );
 
 		// Does WooCommerce order contain a Mollie Order?
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
@@ -694,8 +692,6 @@ class Mollie_WC_Plugin
 			return;
 		}
 
-		Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Start canceling an order at Mollie.' );
-
 		$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
 
 		// Set Klarna payment methods
@@ -708,10 +704,10 @@ class Mollie_WC_Plugin
 
 		// Does WooCommerce order contain a payment via Klarna?
 		if ( ! in_array( $order->get_payment_method(), $klarna_methods, true ) ) {
-			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Canceling order stopped, not a Klarna payment.' );
-
 			return;
 		}
+
+		Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Try to process cancelled order at Mollie.' );
 
 		// Does WooCommerce order contain a Mollie Order?
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {

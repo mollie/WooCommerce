@@ -566,10 +566,6 @@ class Mollie_WC_Helper_Settings
 			$content .= $warning_message;
 			$content .= '</p></div> ';
 
-			$content .= '<strong><p>';
-			$content .= $warning_message;
-			$content .= '</p></strong> ';
-
 			return $content;
 		}
 
@@ -591,10 +587,6 @@ class Mollie_WC_Helper_Settings
 			$content .= __( 'You have the WooCommerce default Direct Bank Transfer (BACS) payment gateway enabled in WooCommerce. Mollie strongly advices only using Bank Transfer via Mollie and disabling the default WooCommerce BACS payment gateway to prevent possible conflicts.', 'mollie-payments-for-woocommerce' );
 			$content .= '</p></div> ';
 
-			$content .= '<strong><p>';
-			$content .= __( 'You have the WooCommerce default Direct Bank Transfer (BACS) payment gateway enabled in WooCommerce. Mollie strongly advices only using Bank Transfer via Mollie and disabling the default WooCommerce BACS payment gateway to prevent possible conflicts.', 'mollie-payments-for-woocommerce' );
-			$content .= '</p></strong> ';
-
 			return $content;
 		}
 
@@ -615,13 +607,9 @@ class Mollie_WC_Helper_Settings
 
 			if ( $woocommerce_klarnapaylater_gateway->is_available() || $woocommerce_klarnasliceit_gateway->is_available() ) {
 
-				$content .= '<div class="notice notice-error is-dismissible"><p>';
-				$content .= __( 'To accept Klarna payments via Mollie, all default WooCommerce checkout fields should be enabled and required.', 'mollie-payments-for-woocommerce' );
+				$content .= '<div class="notice notice-warning is-dismissible"><p>';
+				$content .= __( 'To accept Klarna payments via Mollie, all default WooCommerce checkout fields should be enabled and required. Please make sure that is the case.', 'mollie-payments-for-woocommerce' );
 				$content .= '</p></div> ';
-
-				$content .= '<strong><p>';
-				$content .= __( 'To accept Klarna payments via Mollie, all default WooCommerce checkout fields should be enabled and required.', 'mollie-payments-for-woocommerce' );
-				$content .= '</p></strong> ';
 
 				return $content;
 			}
@@ -644,13 +632,9 @@ class Mollie_WC_Helper_Settings
 
 			if ( $woocommerce_klarnapaylater_gateway->is_available() || $woocommerce_klarnasliceit_gateway->is_available() ) {
 
-				$content .= '<div class="notice notice-error is-dismissible"><p>';
+				$content .= '<div class="notice notice-warning is-dismissible"><p>';
 				$content .= sprintf(__( 'To accept Klarna payments via Mollie, you need to use at least WooCommerce 3.0 or higher, you are now using version %s.', 'mollie-payments-for-woocommerce' ), WC_VERSION);
 				$content .= '</p></div> ';
-
-				$content .= '<strong><p>';
-				$content .= sprintf(__( 'To accept Klarna payments via Mollie, you need to use at least WooCommerce 3.0 or higher, you are now using version %s.', 'mollie-payments-for-woocommerce' ), WC_VERSION);
-				$content .= '</p></strong> ';
 
 				return $content;
 			}

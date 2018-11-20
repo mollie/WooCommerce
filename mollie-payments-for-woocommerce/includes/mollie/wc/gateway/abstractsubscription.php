@@ -299,12 +299,14 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
             // Tell WooCommerce a new payment was created for the order/subscription
             do_action(Mollie_WC_Plugin::PLUGIN_ID . '_payment_created', $payment, $renewal_order);
 
-            // Set initial status
-            // Status is only updated if the new status is not the same as the default order status (pending)
+            // Update order status and add order note
             $this->_updateScheduledPaymentOrder($renewal_order, $initial_order_status, $payment);
 
             // Update status of subscriptions with payment method SEPA Direct Debit or similar
 	        $this->update_subscription_status_for_direct_debit( $renewal_order );
+
+	        // Tell WooCommerce a new payment was created for the order/subscription
+	        do_action(Mollie_WC_Plugin::PLUGIN_ID . '_after_renewal_payment_created', $payment, $renewal_order);
 
             return array(
                 'result'   => 'success',

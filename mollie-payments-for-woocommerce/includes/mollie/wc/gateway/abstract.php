@@ -307,7 +307,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				$accept_manual_renewals = ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals', 'no' ) ) ? true : false;
 				$supports_subscriptions = $this->supports( 'subscriptions' );
 
-				if ( $accept_manual_renewals !== 1 && $supports_subscriptions ) {
+				if ( $accept_manual_renewals !== true && $supports_subscriptions ) {
 
 					if ( ! empty( $recurring_totals ) ) {
 						foreach ( $recurring_totals as $recurring_total ) {

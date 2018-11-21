@@ -60,69 +60,59 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
      * @param $customer_id
      * @return array
      */
-    protected function getRecurringPaymentRequestData($order, $customer_id)
-    {
+	protected function getRecurringPaymentRequestData( $order, $customer_id ) {
 
-    	// TODO David: is this still used?
-        $settings_helper     = Mollie_WC_Plugin::getSettingsHelper();
-        $payment_description = $settings_helper->getPaymentDescription();
-        $payment_locale      = $settings_helper->getPaymentLocale();
-        $mollie_method       = $this->getMollieMethodId();
-        $selected_issuer     = $this->getSelectedIssuer();
-        $return_url          = $this->getReturnUrl($order);
-        $webhook_url         = $this->getWebhookUrl($order);
+		// TODO David: is this still used?
+		$settings_helper     = Mollie_WC_Plugin::getSettingsHelper();
+		$payment_description = _( 'Order', 'woocommerce' ) . ' ' . $order->get_order_number();
+		$payment_locale      = $settings_helper->getPaymentLocale();
+		$mollie_method       = $this->getMollieMethodId();
+		$selected_issuer     = $this->getSelectedIssuer();
+		$return_url          = $this->getReturnUrl( $order );
+		$webhook_url         = $this->getWebhookUrl( $order );
 
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    $payment_description = strtr($payment_description, array(
-			    '{order_number}' => $order->get_order_number(),
-			    '{order_date}'   => date_i18n(wc_date_format(), strtotime($order->order_date)),
-		    ));
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 
-		    $data = array_filter(array(
-			    'amount'          => array (
-				    'currency' => Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
-				    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue($order->get_total(), Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ))
-			    ),
-			    'description'     => $payment_description,
-			    'redirectUrl'     => $return_url,
-			    'webhookUrl'      => $webhook_url,
-			    'method'          => $mollie_method,
-			    'issuer'          => $selected_issuer,
-			    'locale'          => $payment_locale,
-			    'metadata'        => array(
-				    'order_id' => $order->id,
-			    ),
-			    'sequenceType'   => 'recurring',
-			    'customerId'      => $customer_id,
-		    ));
-	    } else {
+			$data = array_filter( array (
+				'amount'       => array (
+					'currency' => Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
+					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order->get_total(), Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) )
+				),
+				'description'  => $payment_description,
+				'redirectUrl'  => $return_url,
+				'webhookUrl'   => $webhook_url,
+				'method'       => $mollie_method,
+				'issuer'       => $selected_issuer,
+				'locale'       => $payment_locale,
+				'metadata'     => array (
+					'order_id' => $order->id,
+				),
+				'sequenceType' => 'recurring',
+				'customerId'   => $customer_id,
+			) );
+		} else {
 
-	    		    $payment_description = strtr($payment_description, array(
-	    			    '{order_number}' => $order->get_order_number(),
-	    			    '{order_date}'   => date_i18n(wc_date_format(), $order->get_date_created()->getTimestamp()),
-	    		    ));
+			$data = array_filter( array (
+				'amount'       => array (
+					'currency' => Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
+					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order->get_total(), Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) )
+				),
+				'description'  => $payment_description,
+				'redirectUrl'  => $return_url,
+				'webhookUrl'   => $webhook_url,
+				'method'       => $mollie_method,
+				'issuer'       => $selected_issuer,
+				'locale'       => $payment_locale,
+				'metadata'     => array (
+					'order_id' => $order->get_id(),
+				),
+				'sequenceType' => 'recurring',
+				'customerId'   => $customer_id,
+			) );
+		}
 
-	    		    $data = array_filter( array (
-	    			    'amount' => array (
-	    				    'currency' => Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
-	    				    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order->get_total(), Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) )
-	    			    ),
-	    			    'description'     => $payment_description,
-	    			    'redirectUrl'     => $return_url,
-	    			    'webhookUrl'      => $webhook_url,
-	    			    'method'          => $mollie_method,
-	    			    'issuer'          => $selected_issuer,
-	    			    'locale'          => $payment_locale,
-	    			    'metadata'        => array(
-	    				    'order_id' => $order->get_id(),
-	    			    ),
-	    			    'sequenceType'   => 'recurring',
-	    			    'customerId'      => $customer_id,
-	    		    ));
-	    	    }
-
-        return $data;
-    }
+		return $data;
+	}
 
 	/**
 	 * @param $renewal_order

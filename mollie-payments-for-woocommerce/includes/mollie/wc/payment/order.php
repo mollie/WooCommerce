@@ -38,7 +38,6 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	 */
 	public function getPaymentRequestData( $order, $customer_id ) {
 		$settings_helper     = Mollie_WC_Plugin::getSettingsHelper();
-		$payment_description = $settings_helper->getPaymentDescription();
 		$payment_locale      = $settings_helper->getPaymentLocale();
 		$store_customer      = $settings_helper->shouldStoreCustomer();
 
@@ -55,17 +54,11 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 
-			$payment_description = strtr( $payment_description, array (
-				'{order_number}' => $order->get_order_number(),
-				'{order_date}'   => date_i18n( wc_date_format(), strtotime( $order->order_date ) ),
-			) );
-
 			$paymentRequestData = array (
 				'amount'      => array (
 					'currency' => Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
 					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order->get_total(), Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) )
 				),
-				'description' => $payment_description,
 				'redirectUrl' => $return_url,
 				'webhookUrl'  => $webhook_url,
 				'method'      => $mollie_method,

@@ -21,16 +21,6 @@ class Mollie_WC_Helper_Settings
         return trim(get_option($this->getSettingId($setting_id)));
     }
 
-    /**
-     * Description send to Mollie
-     *
-     * @return string|null
-     */
-    public function getPaymentDescription ()
-    {
-        return trim(get_option($this->getSettingId('payment_description')));
-    }
-
 	/**
 	 * Order status for cancelled payments
 	 *
@@ -327,10 +317,6 @@ class Mollie_WC_Helper_Settings
         $content = ''
             . $this->getPluginStatus()
             . $this->getMollieMethods();
-
-        /* translators: Default payment description. {order_number} and {order_date} are available tags. */
-        $default_payment_description = __('Order {order_number}', 'mollie-payments-for-woocommerce');
-        $payment_description_tags    = '<code>{order_number}</code>, <code>{order_date}</code>';
 
         $debug_desc = __('Log plugin events.', 'mollie-payments-for-woocommerce');
 

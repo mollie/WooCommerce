@@ -815,20 +815,19 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		    Mollie_WC_Plugin::debug($this->id . ": Mollie payment object {$payment->id} (" . $payment->mode . ") webhook call for order {$order->get_id()}.", true);
 	    }
 
-	    // TODO David: move to payment object?
 	    // Order does not need a payment
-//	    if ( ! $this->orderNeedsPayment( $order ) ) {
-//
-//	    	// TODO David: move to payment object?
-//		    // Add a debug message that order was already paid for
-//		    $this->handlePaidOrderWebhook( $order, $payment );
-//
-//		    // Check and process a possible refund or chargeback
-//		    $this->processRefunds( $order, $payment );
-//		    $this->processChargebacks( $order, $payment );
-//
-//		    return;
-//	    }
+	    if ( ! $this->orderNeedsPayment( $order ) ) {
+
+	    	// TODO David: move to payment object?
+		    // Add a debug message that order was already paid for
+		    $this->handlePaidOrderWebhook( $order, $payment );
+
+		    // Check and process a possible refund or chargeback
+		    $this->processRefunds( $order, $payment );
+		    $this->processChargebacks( $order, $payment );
+
+		    return;
+	    }
 
 	    // Get payment method title
 	    $payment_method_title = $this->getPaymentMethodTitle( $payment );
@@ -874,10 +873,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	}
 
 	/**
-	 * @param WC_Order                     $order
-	 * @param Mollie\Api\Resources\Payment $payment
+	 * @param WC_Order                                                $order
+	 * @param Mollie\Api\Resources\Payment|Mollie\Api\Resources\Order $payment
 	 */
-	protected function processRefunds( WC_Order $order, Mollie\Api\Resources\Payment $payment ) {
+	protected function processRefunds( WC_Order $order, $payment ) {
 
 		// Get order ID in the correct way depending on WooCommerce version
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
@@ -970,10 +969,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	}
 
 	/**
-	 * @param WC_Order                     $order
-	 * @param Mollie\Api\Resources\Payment $payment
+	 * @param WC_Order                                                $order
+	 * @param Mollie\Api\Resources\Payment|Mollie\Api\Resources\Order $payment
 	 */
-	protected function processChargebacks( WC_Order $order, Mollie\Api\Resources\Payment $payment ) {
+	protected function processChargebacks( WC_Order $order, $payment ) {
 
 		// Get order ID in the correct way depending on WooCommerce version
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {

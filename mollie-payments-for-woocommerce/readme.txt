@@ -3,7 +3,7 @@ Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, ideal, sofort, bancontact, bitcoin, direct debit, subscriptions
 Requires at least: 3.8
 Tested up to: 4.9
-Stable tag: 5.0.4
+Stable tag: 5.0.5
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -181,10 +181,17 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 5.0.4 - 08-11-2018 =
+= 5.0.5 - 22-11-2018 =
 
-IMPORTANT
-This version requires PHP 5.6 or higher. If you are using an older PHP version, please read this article: [PHP & Mollie API v2](https://github.com/mollie/WooCommerce/wiki/PHP-&-Mollie-API-v2).
+* Fix - WooCommerce Subscriptions: improve support for options "Accept Manual Renewals" and "Turn off Automatic Payments"
+* Fix - Update Refunds and Chargebacks processing to support Orders and Payments API
+* Fix - Remove option to set a description for payments, the new Orders API does not support this
+* Fix - Update is_available to use billing country, and add filter Mollie_WC_Plugin::PLUGIN_ID . '_is_available_billing_country_for_payment_gateways'
+* Fix - Add new hook after renewal payment is created: mollie-payments-for-woocommerce_after_renewal_payment_created
+* Fix - Improve warnings in WooCommerce > Settings > Payments so they are less confusing to users (and really dismissable)
+* Fix - Simplify log messages in shipAndCaptureOrderAtMollie, cancelOrderAtMollie
+
+= 5.0.4 - 08-11-2018 =
 
 * Fix - Get test mode higher in scheduled_subscription_payment() process
 * Fix - Add automated option to restore a customer ID from Mollie API
@@ -192,9 +199,6 @@ This version requires PHP 5.6 or higher. If you are using an older PHP version, 
 
 
 = 5.0.3 - 01-11-2018 =
-
-IMPORTANT
-This version requires PHP 5.6 or higher. If you are using an older PHP version, please read this article: [PHP & Mollie API v2](https://github.com/mollie/WooCommerce/wiki/PHP-&-Mollie-API-v2).
 
 * Fix - Improvements to refunds: better log messages, show errors to shop-manager
 * Fix - Remove option to set a description for payments, the new Orders API does not support this

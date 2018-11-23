@@ -1213,13 +1213,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			return false;
 		}
 
-		// Payment method for order isn't the same as payment object method
-		if ( $payment->method != $this->getMollieMethodId() ) {
-			Mollie_WC_Plugin::debug( __METHOD__ . ' - Invalid refund gateway for order ' . $order_id );
-
-			return false;
-		}
-
 		// TODO David: Continue improving the refund process
 		$payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject( $payment );
 

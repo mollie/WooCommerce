@@ -959,6 +959,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 			$order->save();
 
+			do_action( Mollie_WC_Plugin::PLUGIN_ID . '_refunds_processed', $payment, $order );
+
 			return;
 
 		}
@@ -1037,7 +1039,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			$data_helper = Mollie_WC_Plugin::getDataHelper();
 			$order       = $data_helper->getWcOrder( $order_id );
 
-			// Update order notes, add message ahout chargeback
+			// Update order notes, add message about chargeback
 			foreach ( $chargebacks_to_process as $chargeback_to_process ) {
 
 				Mollie_WC_Plugin::debug( __METHOD__ . ' New chargeback ' . $chargeback_to_process . ' for ' . $log_id . '. Order note and order status updated.' );
@@ -1050,7 +1052,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				$processed_chargeback_ids[] = $chargeback_to_process;
 			}
 
+			//
 			// Update order status and add general note
+			//
 
 			// New order status
 			$new_order_status = self::STATUS_ON_HOLD;
@@ -1069,7 +1073,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				$new_order_status,
 				sprintf(
 				/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-					__( '%s payment charged back via Mollie (%s). You will need to manually review the payment and adjust product stocks if you use them.', 'mollie-payments-for-woocommerce' ),
+					__( '%s payment charged back via Mollie (%s). You will need to manually review the payment (and adjust product stocks if you use it).', 'mollie-payments-for-woocommerce' ),
 					$payment_method_title,
 					$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
 				),
@@ -1087,6 +1091,40 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			Mollie_WC_Plugin::debug( __METHOD__ . ' Updated, all processed chargebacks for ' . $log_id . ': ' . json_encode( $processed_chargeback_ids ) );
 
 			$order->save();
+
+			//
+			// Check if this is a renewal order, and if so set subscription to "On-Hold"
+			//
+
+			// Do extra checks if WooCommerce Subscriptions is installed
+			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
+				// Also store it on the subscriptions being purchased or paid for in the order
+				if ( wcs_order_contains_subscription( $order_id ) ) {
+					$subscriptions = wcs_get_subscriptions_for_order( $order_id );
+				} elseif ( wcs_order_contains_renewal( $order_id ) ) {
+					$subscriptions = wcs_get_subscriptions_for_renewal_order( $order_id );
+				} else {
+					$subscriptions = array ();
+				}
+
+				foreach ( $subscriptions as $subscription ) {
+
+					$this->updateOrderStatus(
+						$subscription,
+						$new_order_status,
+						sprintf(
+						/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+							__( '%s payment charged back via Mollie (%s). Subscription status updated, please review (and adjust product stocks if you use it).', 'mollie-payments-for-woocommerce' ),
+							$payment_method_title,
+							$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
+						),
+						$restore_stock = false
+					);
+
+				}
+			}
+
+			do_action( Mollie_WC_Plugin::PLUGIN_ID . '_chargebacks_processed', $payment, $order );
 
 			return;
 

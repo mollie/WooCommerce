@@ -64,7 +64,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
 		// TODO David: is this still used?
 		$settings_helper     = Mollie_WC_Plugin::getSettingsHelper();
-		$payment_description = _( 'Order', 'woocommerce' ) . ' ' . $order->get_order_number();
+		$payment_description = __( 'Order', 'woocommerce' ) . ' ' . $order->get_order_number();
 		$payment_locale      = $settings_helper->getPaymentLocale();
 		$mollie_method       = $this->getMollieMethodId();
 		$selected_issuer     = $this->getSelectedIssuer();

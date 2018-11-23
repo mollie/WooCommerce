@@ -3,7 +3,7 @@ Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, ideal, sofort, bancontact, bitcoin, direct debit, subscriptions
 Requires at least: 3.8
 Tested up to: 4.9
-Stable tag: 5.0.5
+Stable tag: 5.0.6
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -180,6 +180,11 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 5.0.6 - 23-11-2018 =
+
+* Fix - Set subscription to On-Hold if renewal order gets a charge-back, add action hooks after refunds and chargebacks
+* Fix - Update translation function call
 
 = 5.0.5 - 22-11-2018 =
 

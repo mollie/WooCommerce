@@ -222,9 +222,9 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 	    $subscription_id                = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $subscription->id : $subscription->get_id();
 	    $subscription_mollie_payment_id = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? get_post_meta( $subscription_id, '_mollie_payment_id', $single = true ) : $subscription->get_meta( '_mollie_payment_id' );
 
-	    if ( empty( $customer_id ) && ! empty( $subscription_mollie_payment_id ) ) {
-		    $customer_id = $this->restore_mollie_customer_id( $subscription_mollie_payment_id, $subscription );
-	    }
+	    if ( ! empty( $subscription_mollie_payment_id ) && ! empty( $subscription )  ) {
+		    $customer_id = $this->restore_mollie_customer_id_and_mandate( $customer_id, $subscription_mollie_payment_id, $subscription );
+	   }
 
         // Get all data for the renewal payment
         $data = $this->getRecurringPaymentRequestData($renewal_order, $customer_id);
@@ -485,10 +485,6 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			$mollie_customer_id  = $subscription->get_meta( '_mollie_customer_id', true );
 		}
 
-		if ( empty( $mollie_customer_id ) && ! empty( $mollie_payment_id ) ) {
-			$mollie_customer_id = $this->restore_mollie_customer_id( $mollie_payment_id, $subscription );
-		}
-
 		$payment_meta[ $this->id ] = array (
 			'post_meta' => array (
 				'_mollie_payment_id'   => array (
@@ -563,35 +559,45 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
     }
 
 	/**
+	 * @param $mollie_customer_id
 	 * @param $mollie_payment_id
 	 * @param $subscription
 	 *
-	 * @return bool
-	 * @throws \Mollie\Api\Exceptions\ApiException
+	 * @return string
 	 */
-	public function restore_mollie_customer_id( $mollie_payment_id, $subscription ) {
+	public function restore_mollie_customer_id_and_mandate ( $mollie_customer_id, $mollie_payment_id, $subscription ) {
 
 		try {
 			// Get subscription ID
 			$subscription_id = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $subscription->id : $subscription->get_id();
 
-			Mollie_WC_Plugin::debug( __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: no valid customer ID found, trying to restore from Mollie API.' );
-
 			// Get full payment object from Mollie API
 			$payment_object_resource = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject( $mollie_payment_id );
 
-			// Try to get the customer ID from the payment object
-			$mollie_customer_id = $payment_object_resource->getMollieCustomerIdFromPaymentObject( $mollie_payment_id );
+			//
+			// If there is no known customer ID, try to get it from the API
+			//
 
-			if ( empty( $mollie_customer_id ) ) {
-				Mollie_WC_Plugin::debug( __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: stopped processing, no customer ID found for this customer/payment combination.' );
+			if ( empty ( $mollie_customer_id ) ) {
+				Mollie_WC_Plugin::debug( __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: no valid customer ID found, trying to restore from Mollie API payment (' . $mollie_payment_id . ').' );
 
-				return '';
-			} else {
-				Mollie_WC_Plugin::debug( __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: customer ID found, verifying status of customer and mandate(s).' );
+				// Try to get the customer ID from the payment object
+				$mollie_customer_id = $payment_object_resource->getMollieCustomerIdFromPaymentObject( $mollie_payment_id );
+
+				if ( empty( $mollie_customer_id ) ) {
+					Mollie_WC_Plugin::debug( __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: stopped processing, no customer ID found for this customer/payment combination.' );
+
+					return $mollie_customer_id;
+				}
+
+				Mollie_WC_Plugin::debug( __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: customer ID (' . $mollie_customer_id . ') found, verifying status of customer and mandate(s).' );
+
 			}
 
-			// Also check for valid mandates
+			//
+			// Check for valid mandates
+			//
+
 			$settings_helper = Mollie_WC_Plugin::getSettingsHelper();
 			$test_mode       = $settings_helper->isTestModeEnabled();
 
@@ -601,7 +607,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			if ( ! $gateway || ! ( $gateway instanceof Mollie_WC_Gateway_Abstract ) ) {
 				Mollie_WC_Plugin::debug( __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: stopped processing, not a Mollie payment gateway, could not restore customer ID.' );
 
-				return '';
+				return $mollie_customer_id;
 			}
 
 			$mollie_method = $gateway->getMollieMethodId();
@@ -636,8 +642,11 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			// Get a Payment object from Mollie to check for paid status
 			$payment_object = $payment_object_resource->getPaymentObject( $mollie_payment_id );
 
+			// Extra check that first payment was not sequenceType first
+			$sequence_type          = $payment_object_resource->getSequenceTypeFromPaymentObject( $mollie_payment_id );
+
 			// Check SEPA Direct Debit payments and mandates
-			if ( $mollie_method == 'directdebit' && ! $mandates->hasValidMandateForMethod( $mollie_method ) && $payment_object->isPaid() ) {
+			if ( $mollie_method == 'directdebit' && ! $mandates->hasValidMandateForMethod( $mollie_method ) && $payment_object->isPaid() && $sequence_type == 'oneoff' ) {
 
 				Mollie_WC_Plugin::debug( __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: no valid mandate for payment method ' . $mollie_method . ' found, trying to create one.' );
 
@@ -647,20 +656,20 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 				$customer = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers->get( $mollie_customer_id );
 				Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->mandates->createFor( $customer, $options );
 
-			} else {
-				Mollie_WC_Plugin::debug( __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: failed! No valid mandate(s) for payment method ' . $mollie_method . ' found, and no paid payment to create one from.' );
-			}
+				Mollie_WC_Plugin::debug( __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: mandate created successfully, customer restored.' );
 
-			Mollie_WC_Plugin::debug( __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: mandate created successfully, customer restored.' );
+			} else {
+				Mollie_WC_Plugin::debug( __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: the subscription doesn\'t meet the conditions for a mandate restore.' );
+			}
 
 			return $mollie_customer_id;
 
 		}
 		catch ( Mollie\Api\Exceptions\ApiException $e ) {
 
-			Mollie_WC_Plugin::debug( __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: failed. ' . $e->getMessage() );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: customer id and mandate restore failed. ' . $e->getMessage() );
 
-			return '';
+			return $mollie_customer_id;
 		}
 	}
 

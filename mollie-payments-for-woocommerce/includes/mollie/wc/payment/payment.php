@@ -164,6 +164,23 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 		return null;
 	}
 
+	public function getSequenceTypeFromPaymentObject( $payment = null ) {
+
+		if ( $payment == null ) {
+			$payment = $this->data->id;
+		}
+
+		$payment = $this->getPaymentObject( $payment );
+
+		if ( isset( $payment->sequenceType ) ) {
+
+			return $payment->sequenceType;
+
+		}
+
+		return null;
+	}
+
 	public function getMollieCustomerIbanDetailsFromPaymentObject( $payment = null ) {
 
 		if ( $payment == null ) {

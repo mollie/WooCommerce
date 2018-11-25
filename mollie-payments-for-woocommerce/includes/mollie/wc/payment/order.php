@@ -214,6 +214,24 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 		return null;
 	}
 
+	public function getSequenceTypeFromPaymentObject( $payment = null ) {
+
+		// TODO David: Quick fix, make sure payment object has payments embedded, there needs to be a better way to do this!
+		if ( $payment == null ) {
+			$payment = $this->data->id;
+		}
+
+		$payment = $this->getPaymentObject( $payment );
+
+		if ( isset( $payment->_embedded->payments{0}->sequenceType ) ) {
+
+			return $payment->_embedded->payments{0}->sequenceType;
+
+		}
+
+		return null;
+	}
+
 	public function getMollieCustomerIbanDetailsFromPaymentObject( $payment = null ) {
 
 		// TODO David: Quick fix, make sure payment object has payments embedded, there needs to be a better way to do this!

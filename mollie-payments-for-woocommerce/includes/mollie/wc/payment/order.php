@@ -157,7 +157,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 		}
 
 		// Only add shippingAddress if all required fields are set
-		if ( isset( $shippingAddress->streetAndNumber ) && isset( $shippingAddress->postalCode ) && isset( $shippingAddress->city ) && isset( $shippingAddress->country ) ) {
+		if ( ! empty( $shippingAddress->streetAndNumber ) && ! empty( $shippingAddress->postalCode ) && ! empty( $shippingAddress->city ) && ! empty( $shippingAddress->country ) ) {
 			$paymentRequestData['shippingAddress'] = $shippingAddress;
 		}
 

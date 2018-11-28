@@ -327,6 +327,13 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
 		    foreach( $subscriptions as $subscription ) {
 			    $paymentMode = get_post_meta( $subscription->id, '_mollie_payment_mode', true );
+
+			    // If subscription does not contain the mode, try getting it from the parent order
+			    if ( empty( $paymentMode ) ) {
+				    $parent_order = $subscription->order->id;
+				    $paymentMode = get_post_meta( $parent_order, '_mollie_payment_mode', true );
+			    }
+
 			    if ($paymentMode == self::PAYMENT_TEST_MODE){
 				    $result = true;
 				    break;
@@ -339,6 +346,13 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
 		    foreach( $subscriptions as $subscription ) {
 			    $paymentMode = $subscription->get_meta( '_mollie_payment_mode', true );
+
+			    // If subscription does not contain the mode, try getting it from the parent order
+			    if ( empty( $paymentMode ) ) {
+			    	$parent_order = new WC_Order($subscription->get_parent_id());
+				    $paymentMode = $parent_order->get_meta( '_mollie_payment_mode', true );
+			    }
+
 			    if ($paymentMode == self::PAYMENT_TEST_MODE){
 				    $result = true;
 				    break;

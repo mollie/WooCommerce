@@ -473,11 +473,9 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
     {
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 		    delete_post_meta( $renewal_order->id, '_mollie_payment_id' );
-		    delete_post_meta( $renewal_order->id, '_mollie_payment_mode' );
 		    delete_post_meta( $renewal_order->id, '_mollie_cancelled_payment_id' );
 	    } else {
 		    $renewal_order->delete_meta_data( '_mollie_payment_id' );
-		    $renewal_order->delete_meta_data( '_mollie_payment_mode' );
 		    $renewal_order->delete_meta_data( '_mollie_cancelled_payment_id' );
 		    $renewal_order->save();
 	    }

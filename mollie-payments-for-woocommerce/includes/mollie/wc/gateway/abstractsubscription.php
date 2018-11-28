@@ -15,8 +15,13 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
         if ( class_exists( 'WC_Subscriptions_Order' ) ) {
             add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, array( $this, 'scheduled_subscription_payment' ), 10, 2 );
+
+            // A resubscribe order to record a customer resubscribing to an expired or cancelled subscription.
             add_action( 'wcs_resubscribe_order_created', array( $this, 'delete_resubscribe_meta' ), 10 );
-            add_action( 'wcs_renewal_order_created', array( $this, 'delete_renewal_meta' ), 10 );
+
+	        // After creating a renewal order to record a scheduled subscription payment with the same post meta, order items etc.
+			 add_action( 'wcs_renewal_order_created', array( $this, 'delete_renewal_meta' ), 10 );
+
             add_action( 'woocommerce_subscription_failing_payment_method_updated_mollie', array( $this, 'update_failing_payment_method' ), 10, 2 );
 
             add_filter( 'woocommerce_subscription_payment_meta', array( $this, 'add_subscription_payment_meta' ), 10, 2 );
@@ -255,7 +260,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
             }
             catch ( Mollie\Api\Exceptions\ApiException $e ) {
-	            throw new \Mollie\Api\Exceptions\ApiException( sprintf( __( 'The customer (%s) could not be used or found.' . $e->getMessage(), 'mollie-payments-for-woocommerce-mandate-problem' ), $customer_id ) );
+	            throw new \Mollie\Api\Exceptions\ApiException( sprintf( __( 'The customer (%s) could not be used or found. ' . $e->getMessage(), 'mollie-payments-for-woocommerce-mandate-problem' ), $customer_id ) );
             }
 
 	        // Check that there is at least one valid mandate

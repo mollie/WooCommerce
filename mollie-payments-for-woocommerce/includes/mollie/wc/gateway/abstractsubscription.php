@@ -255,7 +255,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
             }
             catch ( Mollie\Api\Exceptions\ApiException $e ) {
-	            throw new \Mollie\Api\Exceptions\ApiException( sprintf( __( 'The customer (%s) could not be used or found', 'mollie-payments-for-woocommerce-mandate-problem' ), $customer_id ) );
+	            throw new \Mollie\Api\Exceptions\ApiException( sprintf( __( 'The customer (%s) could not be used or found.' . $e->getMessage(), 'mollie-payments-for-woocommerce-mandate-problem' ), $customer_id ) );
             }
 
 	        // Check that there is at least one valid mandate

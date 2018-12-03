@@ -278,7 +278,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				$currency = get_woocommerce_currency();
 			}
 
-			$billing_country = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_is_available_billing_country_for_payment_gateways', WC()->customer->get_billing_country() );
+			global $woocommerce;
+			$billing_country = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $woocommerce->customer->get_country() : WC()->customer->get_billing_country();
+			$billing_country = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_is_available_billing_country_for_payment_gateways', $billing_country );
 
 			// Get current locale for this user
 			$payment_locale     = Mollie_WC_Plugin::getSettingsHelper()->getPaymentLocale();

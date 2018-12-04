@@ -3,7 +3,7 @@ Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, ideal, sofort, bancontact, bitcoin, direct debit, subscriptions
 Requires at least: 3.8
 Tested up to: 4.9
-Stable tag: 5.0.6
+Stable tag: 5.0.7
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -180,6 +180,16 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 5.0.7 - 04-12-2018 =
+
+* Fix - Bancontact payments don't return a name as part of IBAN details (in Mollie API), so in that case use the WooCommerce name
+* Fix - WooCommerce 2.6 and older: use get_country instead of get_billing_country
+* Fix - Remove calls to delete payment mode, renewal payments can't use a different mode anyway, mandates aren't shared between modes
+* Fix - Subscription renewal payments: if subscription does not contain the payment mode, try getting it from the parent order
+* Fix - For shipping details use !empty() instead of isset
+* Fix - Further improve restore_mollie_customer_id so it catches more edge-cases (and rename to restore_mollie_customer_id_and_mandate)
+* Fix - Remove delete meta calls for meta that wasn't used anywhere (_mollie_card_4_digits)
 
 = 5.0.6 - 23-11-2018 =
 

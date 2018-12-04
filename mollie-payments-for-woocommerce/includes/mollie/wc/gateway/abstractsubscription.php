@@ -582,7 +582,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 	 *
 	 * @return string
 	 */
-	public function restore_mollie_customer_id_and_mandate ( $mollie_customer_id, $mollie_payment_id, $subscription ) {
+	public function restore_mollie_customer_id_and_mandate( $mollie_customer_id, $mollie_payment_id, $subscription ) {
 
 		try {
 			// Get subscription ID
@@ -660,14 +660,25 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			$payment_object = $payment_object_resource->getPaymentObject( $mollie_payment_id );
 
 			// Extra check that first payment was not sequenceType first
-			$sequence_type          = $payment_object_resource->getSequenceTypeFromPaymentObject( $mollie_payment_id );
+			$sequence_type = $payment_object_resource->getSequenceTypeFromPaymentObject( $mollie_payment_id );
 
 			// Check SEPA Direct Debit payments and mandates
 			if ( $mollie_method == 'directdebit' && ! $mandates->hasValidMandateForMethod( $mollie_method ) && $payment_object->isPaid() && $sequence_type == 'oneoff' ) {
 
 				Mollie_WC_Plugin::debug( __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: no valid mandate for payment method ' . $mollie_method . ' found, trying to create one.' );
 
-				$options           = $payment_object_resource->getMollieCustomerIbanDetailsFromPaymentObject( $mollie_payment_id );
+				$options = $payment_object_resource->getMollieCustomerIbanDetailsFromPaymentObject( $mollie_payment_id );
+
+				// consumerName can be empty for Bancontact payments, in that case use the WooCommerce customer name
+				if ( empty( $options['consumerName'] ) ) {
+
+					$billing_first_name = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $subscription->billing_first_name : $subscription->get_billing_first_name();
+					$billing_last_name  = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $subscription->billing_last_name : $subscription->get_billing_last_name();
+
+					$options['consumerName'] = $billing_first_name . ' ' . $billing_last_name;
+				}
+
+				// Set method
 				$options['method'] = $mollie_method;
 
 				$customer = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers->get( $mollie_customer_id );

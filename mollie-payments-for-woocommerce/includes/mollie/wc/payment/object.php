@@ -558,14 +558,15 @@ class Mollie_WC_Payment_Object {
 	}
 
 	/**
-	 * Process a refund if supported
+	 * Process a payment object refund
+	 *
+	 * @param object $order
 	 * @param int    $order_id
-	 * @param float  $amount
+	 * @param object $payment_object
+	 * @param null   $amount
 	 * @param string $reason
-
-	 * @since WooCommerce 2.2
 	 */
-	public function refund( $order, $order_id, $amount = null, $reason = '' ) {
+	public function refund( $order, $order_id, $payment_object, $amount = null, $reason = '' ) {
 
 	}
 

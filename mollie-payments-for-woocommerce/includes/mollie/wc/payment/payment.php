@@ -475,23 +475,19 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 	}
 
 	/**
-	 * Process a refund if supported
+	 * Process a payment object refund
+	 *
+	 * @param object $order
 	 * @param int    $order_id
-	 * @param float  $amount
+	 * @param object $payment_object
+	 * @param null   $amount
 	 * @param string $reason
-	 * @return bool|wp_error True or false based on success, or a WP_Error object
-	 * @since WooCommerce 2.2
+	 *
+	 * @return bool|\WP_Error
 	 */
-	public function refund( $order, $order_id, $amount = null, $reason = '' ) {
+	public function refund( $order, $order_id, $payment_object, $amount = null, $reason = '' ) {
 
 		try {
-			$payment_object = Mollie_WC_Plugin::getPaymentObject()->getActiveMolliePayment( $order_id );
-
-			if ( ! $payment_object ) {
-				Mollie_WC_Plugin::debug( __METHOD__ . ' - Could not find active Mollie payment for order ' . $order_id );
-
-				return new WP_Error( '1', 'Could not find active Mollie payment for order ' . $order_id );
-			}
 
 			if ( ! $payment_object->isPaid() ) {
 				Mollie_WC_Plugin::debug( __METHOD__ . ' - Can not refund the unpaid payment ' . $payment_object->id . ' for order ' . $order_id );

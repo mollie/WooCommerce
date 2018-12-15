@@ -1234,29 +1234,41 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 * @since WooCommerce 2.2
 	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
+
+		// Get the WooCommerce order
 		$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
 
-		// Order not found
+		// WooCommerce order not found
 		if ( ! $order ) {
-			Mollie_WC_Plugin::debug( __METHOD__ . ' - Could not find order ' . $order_id );
+			$error_message = "Could not find WooCommerce order $order_id.";
 
-			return false;
+			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $error_message);
+
+			return new WP_Error( '1', $error_message );
 		}
 
-		// Get the Mollie payment
-		$payment = Mollie_WC_Plugin::getPaymentObject()->getActiveMolliePayment( $order_id );
+		// Check if there is a Mollie Payment Order object connected to this WooCommerce order
+		$payment_object_id = Mollie_WC_Plugin::getPaymentObject()->getActiveMollieOrderId( $order_id);
 
-		// Mollie payment not found
-		if ( ! $payment ) {
-			Mollie_WC_Plugin::debug( __METHOD__ . ' - Mollie payment object not found for order ' . $order_id );
-
-			return false;
+		// If there is no Mollie Payment Order object, try getting a Mollie Payment Payment object
+		if ( $payment_object_id == null ) {
+			$payment_object_id = Mollie_WC_Plugin::getPaymentObject()->getActiveMolliePaymentId( $order_id);
 		}
 
-		// TODO David: Continue improving the refund process
-		$payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject( $payment );
+		// Mollie Payment object not found
+		if ( ! $payment_object_id ) {
 
-		return $payment_object->refund( $order, $order_id, $amount, $reason );
+			$error_message = "Can\'t process refund. Could not find Mollie payment object for order $order_id.";
+
+			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $error_message );
+
+			return new WP_Error( '1', $error_message );
+		}
+
+		// Load payment object from Mollie, don't use cache
+		$payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject( $payment_object_id );
+
+		return $payment_object->refund( $order, $order_id, $payment_object, $amount, $reason );
 
 	}
 

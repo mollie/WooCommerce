@@ -1258,7 +1258,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		// Mollie Payment object not found
 		if ( ! $payment_object_id ) {
 
-			$error_message = "Can\'t process refund. Could not find Mollie payment object for order $order_id.";
+			$error_message = "Can\'t process refund. Could not find Mollie Payment object id for order $order_id.";
 
 			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $error_message );
 
@@ -1267,6 +1267,15 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		// Load payment object from Mollie, don't use cache
 		$payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject( $payment_object_id );
+
+		if ( ! $payment_object ) {
+
+			$error_message = "Can\'t process refund. Could not find Mollie Payment object data for order $order_id.";
+
+			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $error_message);
+
+			return new WP_Error( '1', $error_message);
+		}
 
 		return $payment_object->refund( $order, $order_id, $payment_object, $amount, $reason );
 

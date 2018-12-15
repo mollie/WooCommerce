@@ -11,7 +11,7 @@ class Mollie_WC_Gateway_KlarnaPayLater extends Mollie_WC_Gateway_Abstract
 	{
 		$this->supports = array(
 			'products',
-			//'refunds', TODO David: Re-add support for refunds (via Order Refund API)
+			'refunds',
 		);
 
 		parent::__construct();

@@ -728,5 +728,70 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 		}
 	}
 
+	/**
+	 * Process a payment object refund
+	 *
+	 * @param object $order
+	 * @param int    $order_id
+	 * @param object $payment_object
+	 * @param null   $amount
+	 * @param string $reason
+	 *
+	 * @return bool|\WP_Error
+	 */
+	public function refund( $order, $order_id, $payment_object, $amount = null, $reason = '' ) {
+
+		try {
+
+			if ( ! $payment_object->isPaid() ) {
+
+				$error_message = "Can not refund $payment_object->id as order $order_id is not paid.";
+
+				Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $error_message );
+
+				return new WP_Error( '1', $error_message );
+			}
+
+			Mollie_WC_Plugin::debug( __METHOD__ . ' - Create refund - payment object: ' . $payment_object->id . ', order: ' . $order_id . ', amount: ' . Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) . $amount . ( ! empty( $reason ) ? ', reason: ' . $reason : '' ) );
+
+			do_action( Mollie_WC_Plugin::PLUGIN_ID . '_create_refund', $payment_object, $order );
+
+			// Is test mode enabled?
+			$test_mode = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
+
+			// Send refund to Mollie
+			$refund = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->refund( $payment_object, array (
+				'amount'      => array (
+					'currency' => Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
+					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $amount, Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) )
+				),
+				'description' => $reason
+			) );
+
+			Mollie_WC_Plugin::debug( __METHOD__ . ' - Refund created - refund: ' . $refund->id . ', payment: ' . $payment_object->id . ', order: ' . $order_id . ', amount: ' . Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) . $amount . ( ! empty( $reason ) ? ', reason: ' . $reason : '' ) );
+
+			do_action( Mollie_WC_Plugin::PLUGIN_ID . '_refund_created', $refund, $order );
+
+			$order->add_order_note( sprintf(
+			/* translators: Placeholder 1: currency, placeholder 2: refunded amount, placeholder 3: optional refund reason, placeholder 4: payment ID, placeholder 5: refund ID */
+				__( 'Refunded %s%s%s - Payment: %s, Refund: %s', 'mollie-payments-for-woocommerce' ),
+				Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
+				$amount,
+				( ! empty( $reason ) ? ' (reason: ' . $reason . ')' : '' ),
+				$refund->paymentId,
+				$refund->id
+			) );
+
+
+			return true;
+		}
+		catch ( \Mollie\Api\Exceptions\ApiException $e ) {
+
+			Mollie_WC_Plugin::debug( __METHOD__ . " - Can not process refund for order $order_id: " . $e->getMessage() );
+
+			return new WP_Error( 1, $e->getMessage() );
+		}
+	}
+
 
 }

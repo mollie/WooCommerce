@@ -487,6 +487,8 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 	 */
 	public function refund( WC_Order $order, $order_id, $payment_object, $amount = null, $reason = '' ) {
 
+		Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Try to process refunds for individual order line(s).' );
+
 		try {
 
 			$payment_object = Mollie_WC_Plugin::getPaymentObject()->getActiveMolliePayment( $order_id );

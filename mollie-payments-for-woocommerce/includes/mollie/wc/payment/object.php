@@ -25,7 +25,7 @@ class Mollie_WC_Payment_Object {
 	 * @param bool   $test_mode (default: false)
 	 * @param bool   $use_cache (default: true)
 	 *
-	 * @return Mollie\Api\Resources\Payment|null
+	 * @return Mollie\Api\Resources\Payment|Mollie\Api\Resources\Order|null
 	 */
 	public function getPaymentObject( $payment_id, $test_mode = false, $use_cache = true ) {
 		return static::$payment;
@@ -566,7 +566,7 @@ class Mollie_WC_Payment_Object {
 	 * @param null   $amount
 	 * @param string $reason
 	 */
-	public function refund( $order, $order_id, $payment_object, $amount = null, $reason = '' ) {
+	public function refund( WC_Order $order, $order_id, $payment_object, $amount = null, $reason = '' ) {
 
 	}
 

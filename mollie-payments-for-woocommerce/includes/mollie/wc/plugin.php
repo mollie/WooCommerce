@@ -606,16 +606,9 @@ class Mollie_WC_Plugin
 
 		$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
 
-		// Set Klarna payment methods
-		$klarna_methods = array (
-			'mollie_wc_gateway_klarnasliceit',
-			'mollie_wc_gateway_klarnapaylater'
-		);
-
-		// TODO David: Check minimal WooCommerce or Mollie status
-
-		// Does WooCommerce order contain a payment via Klarna?
-		if ( ! in_array( $order->get_payment_method(), $klarna_methods, true ) ) {
+		// Does WooCommerce order contain a Mollie payment?
+		if ( strstr( $order->get_payment_method(), 'mollie_wc_gateway_') == FALSE ) {
+			Mollie_WC_Plugin::debug( 'Not mollie' );
 			return;
 		}
 
@@ -629,8 +622,8 @@ class Mollie_WC_Plugin
 		}
 
 		if ( $mollie_order_id == false ) {
-			$order->add_order_note( 'Order contains Klarna payment methods, but not a valid Mollie Order ID. Processing capture canceled.' );
-			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Order contains Klarna payment methods, but not a valid Mollie Order ID. Processing capture cancelled.' );
+			$order->add_order_note( 'Order contains Mollie payment method, but not a valid Mollie Order ID. Processing capture canceled.' );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Order contains Mollie payment method, but not a valid Mollie Order ID. Processing capture cancelled.' );
 
 			return;
 		}
@@ -694,16 +687,9 @@ class Mollie_WC_Plugin
 
 		$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
 
-		// Set Klarna payment methods
-		$klarna_methods = array (
-			'mollie_wc_gateway_klarnasliceit',
-			'mollie_wc_gateway_klarnapaylater'
-		);
-
-		// TODO David: Check minimal WooCommerce or Mollie status
-
-		// Does WooCommerce order contain a payment via Klarna?
-		if ( ! in_array( $order->get_payment_method(), $klarna_methods, true ) ) {
+		// Does WooCommerce order contain a Mollie payment?
+		if ( strstr( $order->get_payment_method(), 'mollie_wc_gateway_') == FALSE ) {
+			Mollie_WC_Plugin::debug( 'Not mollie' );
 			return;
 		}
 
@@ -717,8 +703,8 @@ class Mollie_WC_Plugin
 		}
 
 		if ( $mollie_order_id == false ) {
-			$order->add_order_note( 'Order contains Klarna payment methods, but not a valid Mollie Order ID. Canceling order failed.' );
-			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Order contains Klarna payment methods, but not a valid Mollie Order ID. Canceling order failed.' );
+			$order->add_order_note( 'Order contains Mollie payment method, but not a valid Mollie Order ID. Canceling order failed.' );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Order contains Mollie payment method, but not a valid Mollie Order ID. Canceling order failed.' );
 
 			return;
 		}

@@ -614,6 +614,12 @@ class Mollie_WC_Plugin
 			return;
 		}
 
+		// To disable automatic shipping and capturing of the Mollie order when a WooCommerce order status is updated to completed,
+		// store an option 'mollie-payments-for-woocommerce_disableShipOrderAtMollie' with value 1
+		if ( get_option(Mollie_WC_Plugin::PLUGIN_ID . '_' . 'disableShipOrderAtMollie', '0' ) == '1' ) {
+			return;
+		}
+
 		Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Try to process completed order for a potential capture at Mollie.' );
 
 		// Does WooCommerce order contain a Mollie Order?
@@ -694,6 +700,12 @@ class Mollie_WC_Plugin
 			return;
 		}
 
+		// To disable automatic canceling of the Mollie order when a WooCommerce order status is updated to canceled,
+		// store an option 'mollie-payments-for-woocommerce_disableCancelOrderAtMollie' with value 1
+		if ( get_option(Mollie_WC_Plugin::PLUGIN_ID . '_' . 'disableCancelOrderAtMollie', '0' ) == '1' ) {
+			return;
+		}
+
 		Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Try to process cancelled order at Mollie.' );
 
 		// Does WooCommerce order contain a Mollie Order?
@@ -763,6 +775,12 @@ class Mollie_WC_Plugin
 
 		// Does WooCommerce order contain a Mollie payment?
 		if ( strstr( $order->get_payment_method(), 'mollie_wc_gateway_') == FALSE ) {
+			return;
+		}
+
+		// To disable automatic refunding of the Mollie order when a WooCommerce order status is updated to refunded,
+		// store an option 'mollie-payments-for-woocommerce_disableRefundOrderAtMollie' with value 1
+		if ( get_option(Mollie_WC_Plugin::PLUGIN_ID . '_' . 'disableRefundOrderAtMollie', '0' ) == '1' ) {
 			return;
 		}
 

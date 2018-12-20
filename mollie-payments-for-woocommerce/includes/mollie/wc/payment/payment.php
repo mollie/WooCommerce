@@ -485,7 +485,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 	 *
 	 * @return bool|\WP_Error
 	 */
-	public function refund( $order, $order_id, $payment_object, $amount = null, $reason = '' ) {
+	public function refund( WC_Order $order, $order_id, $payment_object, $amount = null, $reason = '' ) {
 
 		try {
 
@@ -493,7 +493,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 
 			if ( ! $payment_object ) {
 
-				$error_message = "Could not find active Mollie payment for order ' . $order_id";
+				$error_message = "Could not find active Mollie payment for WooCommerce order ' . $order_id";
 
 				Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $error_message );
 
@@ -502,14 +502,14 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 
 			if ( ! $payment_object->isPaid() ) {
 
-				$error_message = "Can not refund payment $payment_object->id for order $order_id as it is not paid.";
+				$error_message = "Can not refund payment $payment_object->id for WooCommerce order $order_id as it is not paid.";
 
 				Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $error_message );
 
 				return new WP_Error( '1', $error_message );
 			}
 
-			Mollie_WC_Plugin::debug( __METHOD__ . ' - Create refund - payment object: ' . $payment_object->id . ', order: ' . $order_id . ', amount: ' . Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) . $amount . ( ! empty( $reason ) ? ', reason: ' . $reason : '' ) );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' - Create refund - payment object: ' . $payment_object->id . ', WooCommerce order: ' . $order_id . ', amount: ' . Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) . $amount . ( ! empty( $reason ) ? ', reason: ' . $reason : '' ) );
 
 			do_action( Mollie_WC_Plugin::PLUGIN_ID . '_create_refund', $payment_object, $order );
 

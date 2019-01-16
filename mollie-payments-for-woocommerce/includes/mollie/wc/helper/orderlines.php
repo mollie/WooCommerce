@@ -52,8 +52,6 @@ class Mollie_WC_Helper_OrderLines {
 
 		$this->process_items();
 		$this->process_shipping();
-
-		$this->process_coupons();
 		$this->process_fees();
 
 		return array (
@@ -156,64 +154,6 @@ class Mollie_WC_Helper_OrderLines {
 
 			$this->order_lines[] = $shipping;
 		}
-	}
-
-	/**
-	 * Process smart coupons.
-	 *
-	 * @access private
-	 */
-	private function process_coupons() {
-		if ( ! empty( WC()->cart->get_coupons() ) ) {
-			foreach ( WC()->cart->get_coupons() as $coupon_key => $coupon ) {
-				$coupon_amount     = 0;
-				$coupon_tax_amount = '';
-
-				// Smart coupons are processed as real line items, cart and product discounts sent for reference only.
-				if ( 'smart_coupon' === $coupon->get_discount_type() ) {
-					$coupon_amount     = - WC()->cart->get_coupon_discount_amount( $coupon_key );
-					$coupon_tax_amount = - WC()->cart->get_coupon_discount_tax_amount( $coupon_key );
-				} else {
-					if ( 'US' === $this->shop_country ) {
-						$coupon_amount     = 0;
-						$coupon_tax_amount = 0;
-
-						if ( $coupon->is_type( 'fixed_cart' ) || $coupon->is_type( 'percent' ) ) {
-							$coupon_type = 'Cart discount';
-						} elseif ( $coupon->is_type( 'fixed_product' ) || $coupon->is_type( 'percent_product' ) ) {
-							$coupon_type = 'Product discount';
-						} else {
-							$coupon_type = 'Discount';
-						}
-
-						$coupon_key = $coupon_type . ' (amount: ' . WC()->cart->get_coupon_discount_amount( $coupon_key ) . ', tax amount: ' . WC()->cart->get_coupon_discount_tax_amount( $coupon_key ) . ')';
-					}
-				}
-
-				// Add separate discount line item, but only if it's a smart coupon or country is US.
-				if ( 'smart_coupon' === $coupon->get_discount_type() || 'US' === $this->shop_country ) {
-					$discount = array (
-						'name'        => $coupon_key,
-						'quantity'    => 1,
-						'unitPrice'   => array (
-							'currency' => $this->currency,
-							'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $coupon_amount, $this->currency ),
-						),
-						'vatRate'     => 0,
-						'totalAmount' => array (
-							'currency' => $this->currency,
-							'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $coupon_amount, $this->currency ),
-						),
-						'vatAmount'   => array (
-							'currency' => $this->currency,
-							'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $coupon_tax_amount, $this->currency ),
-						),
-					);
-
-					$this->order_lines[] = $discount;
-				}
-			} // End foreach().
-		} // End if().
 	}
 
 	/**

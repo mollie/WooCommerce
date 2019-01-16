@@ -111,6 +111,10 @@ class Mollie_WC_Helper_OrderLines {
 							'currency' => $this->currency,
 							'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $this->get_item_discount_amount( $cart_item ), $this->currency ),
 						),
+					'metadata' =>
+						array(
+							'order_item_id' => $cart_item->get_id(),
+						),
 				);
 
 				// TODO David: Continue testing adding WooCommerce images to Mollie Orders
@@ -144,7 +148,10 @@ class Mollie_WC_Helper_OrderLines {
 				'vatAmount'   => array (
 					'currency' => $this->currency,
 					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $this->get_shipping_tax_amount(), $this->currency ),
-				)
+				),
+				'metadata'    => array (
+					'order_item_id' => $this->get_shipping_id(),
+				),
 			);
 
 			$this->order_lines[] = $shipping;
@@ -257,6 +264,9 @@ class Mollie_WC_Helper_OrderLines {
 					'vatAmount'   => array (
 						'currency' => $this->currency,
 						'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $cart_fee_tax_amount, $this->currency ),
+					),
+					'metadata'    => array (
+						'order_item_id' => $cart_fee->get_id(),
 					),
 				);
 

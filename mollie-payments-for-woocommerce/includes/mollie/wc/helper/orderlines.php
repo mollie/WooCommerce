@@ -44,12 +44,13 @@ class Mollie_WC_Helper_OrderLines {
 	}
 
 	/**
-	 * Gets formatted order lines from WooCommerce cart.
+	 * Gets formatted order lines from WooCommerce order.
 	 *
 	 * @return array
 	 */
 	public function order_lines() {
-		$this->process_cart();
+
+		$this->process_items();
 		$this->process_shipping();
 
 		$this->process_coupons();
@@ -71,12 +72,13 @@ class Mollie_WC_Helper_OrderLines {
 	}
 
 	/**
-	 * Process WooCommerce cart to Mollie Orders API - order lines.
+	 * Process WooCommerce order items to Mollie Orders API - order lines.
 	 *
 	 * @access private
 	 */
-	private function process_cart() {
-		foreach ( WC()->cart->get_cart() as $cart_item ) {
+	private function process_items() {
+		foreach ( $this->order->get_items() as $cart_item ) {
+
 			if ( $cart_item['quantity'] ) {
 				if ( $cart_item['variation_id'] ) {
 					$product = wc_get_product( $cart_item['variation_id'] );
@@ -124,7 +126,8 @@ class Mollie_WC_Helper_OrderLines {
 	 * @access private
 	 */
 	private function process_shipping() {
-		if ( WC()->shipping->get_packages() && WC()->session->get( 'chosen_shipping_methods' ) ) {
+		if ( $this->order->get_shipping_methods() && WC()->session->get( 'chosen_shipping_methods' ) ) {
+
 			$shipping = array (
 				'type'        => 'shipping_fee',
 				'name'        => $this->get_shipping_name(),
@@ -212,13 +215,15 @@ class Mollie_WC_Helper_OrderLines {
 	 * @access private
 	 */
 	private function process_fees() {
-		if ( ! empty( WC()->cart->get_fees() ) ) {
-			foreach ( WC()->cart->get_fees() as $cart_fee ) {
-				if ( $cart_fee->taxable && $cart_fee->tax > 0 ) {
+
+		if ( ! empty( $this->order->get_items( 'fee' )  ) ) {
+			foreach ( $this->order->get_items( 'fee' ) as $cart_fee ) {
+
+				if ( $cart_fee['tax_status'] == 'taxable' && $cart_fee['total_tax'] > 0 ) {
 
 					// Calculate tax rate.
 					$_tax      = new WC_Tax();
-					$tmp_rates = $_tax::get_rates( $cart_fee->tax_class );
+					$tmp_rates = $_tax::get_rates( $cart_fee['tax_class'] );
 					$vat       = array_shift( $tmp_rates );
 
 					if ( isset( $vat['rate'] ) ) {
@@ -227,18 +232,18 @@ class Mollie_WC_Helper_OrderLines {
 						$cart_fee_vat_rate = 0;
 					}
 
-					$cart_fee_tax_amount = $cart_fee->tax;
-					$cart_fee_total      = ( $cart_fee->total + $cart_fee->tax );
+					$cart_fee_tax_amount = $cart_fee['total_tax'];
+					$cart_fee_total      = ( $cart_fee['total'] + $cart_fee['total_tax'] );
 
 				} else {
 					$cart_fee_vat_rate   = 0;
 					$cart_fee_tax_amount = 0;
-					$cart_fee_total      = $cart_fee->total;
+					$cart_fee_total      = $cart_fee['total'];
 				}
 
 				$fee = array (
 					'type'        => 'surcharge',
-					'name'        => $cart_fee->name,
+					'name'        => $cart_fee['name'],
 					'quantity'    => 1,
 					'vatRate'     => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $cart_fee_vat_rate, $this->currency ),
 					'unitPrice'   => array (
@@ -268,13 +273,12 @@ class Mollie_WC_Helper_OrderLines {
 	 * @since  1.0
 	 * @access private
 	 *
-	 * @param  array $cart_item Cart item.
+	 * @param  WC_Order_Item $cart_item Cart item.
 	 *
 	 * @return string $item_name Cart item name.
 	 */
 	private function get_item_name( $cart_item ) {
-		$cart_item_data = $cart_item['data'];
-		$item_name      = $cart_item_data->get_name();
+		$item_name      = $cart_item->get_name();
 
 		return html_entity_decode(strip_tags($item_name) );
 	}
@@ -285,7 +289,7 @@ class Mollie_WC_Helper_OrderLines {
 	 * @since  1.0
 	 * @access private
 	 *
-	 * @param  array $cart_item Cart item.
+	 * @param  WC_Order_Item $cart_item Cart item.
 	 *
 	 * @return integer $item_tax_amount Item tax amount.
 	 */
@@ -301,7 +305,7 @@ class Mollie_WC_Helper_OrderLines {
 	 * @since  1.0
 	 * @access private
 	 *
-	 * @param  array  $cart_item Cart item.
+	 * @param  WC_Order_Item  $cart_item Cart item.
 	 * @param  object $product   Product object.
 	 *
 	 * @return integer $item_vatRate Item tax percentage formatted for Mollie Orders API.
@@ -333,7 +337,7 @@ class Mollie_WC_Helper_OrderLines {
 	 * @since  1.0
 	 * @access private
 	 *
-	 * @param  array $cart_item Cart item.
+	 * @param  WC_Order_Item $cart_item Cart item.
 	 *
 	 * @return integer $item_price Cart item price.
 	 */
@@ -351,7 +355,7 @@ class Mollie_WC_Helper_OrderLines {
 	 * @since  1.0
 	 * @access private
 	 *
-	 * @param  array $cart_item Cart item.
+	 * @param  WC_Order_Item $cart_item Cart item.
 	 *
 	 * @return integer $item_quantity Cart item quantity.
 	 */
@@ -360,7 +364,7 @@ class Mollie_WC_Helper_OrderLines {
 	}
 
 	/**
-	 * Get cart item reference.
+	 * Get cart item SKU.
 	 *
 	 * Returns SKU or product ID.
 	 *
@@ -387,7 +391,7 @@ class Mollie_WC_Helper_OrderLines {
 	 * @since  1.0
 	 * @access private
 	 *
-	 * @param  array $cart_item Cart item.
+	 * @param  WC_Order_Item $cart_item Cart item.
 	 *
 	 * @return integer $item_discount_amount Cart item discount.
 	 */
@@ -409,7 +413,7 @@ class Mollie_WC_Helper_OrderLines {
 	 * @since  1.0
 	 * @access private
 	 *
-	 * @param  array $cart_item Cart item.
+	 * @param  WC_Order_Item $cart_item Cart item.
 	 *
 	 * @return integer $item_total_amount Cart item total amount.
 	 */
@@ -429,9 +433,8 @@ class Mollie_WC_Helper_OrderLines {
 	 * @return string $shipping_name Name for selected shipping method.
 	 */
 	private function get_shipping_name() {
-		$shipping_packages = WC()->shipping->get_packages();
 
-		foreach ( $shipping_packages as $i => $package ) {
+		foreach ( $this->order->get_items( 'shipping' ) as $i => $package ) {
 			$chosen_method = isset( WC()->session->chosen_shipping_methods[ $i ] ) ? WC()->session->chosen_shipping_methods[ $i ] : '';
 			if ( '' !== $chosen_method ) {
 				$package_rates = $package['rates'];
@@ -448,6 +451,27 @@ class Mollie_WC_Helper_OrderLines {
 		}
 
 		return (string) $shipping_name;
+	}
+
+
+	/**
+	 * Get shipping method name.
+	 *
+	 * @since  1.0
+	 * @access private
+	 *
+	 * @return string $shipping_name Name for selected shipping method.
+	 */
+	private function get_shipping_id() {
+		$shipping_id = '';
+
+		foreach ( $this->order->get_items( 'shipping' ) as $i => $package ) {
+
+			$shipping_id = $package->get_id();
+
+		}
+
+		return (string) $shipping_id;
 	}
 
 	/**

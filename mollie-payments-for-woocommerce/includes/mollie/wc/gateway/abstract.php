@@ -892,9 +892,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		// Add message to log
 		Mollie_WC_Plugin::debug( __METHOD__ . ' called for ' . $log_id );
-		
+
 		// Make sure there are refunds to process at all
-		if ( ! $payment->_links->refunds ) {
+		if ( empty($payment->_links->refunds) ) {
 			Mollie_WC_Plugin::debug( __METHOD__ . ": No refunds to process for {$log_id}", true );
 
 			return;
@@ -992,7 +992,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		Mollie_WC_Plugin::debug( __METHOD__ . ' called for ' . $log_id );
 
 		// Make sure there are chargebacks to process at all
-		if ( ! $payment->_links->chargebacks ) {
+		if ( empty($payment->_links->chargebacks) ) {
 			Mollie_WC_Plugin::debug( __METHOD__ . ": No chargebacks to process for {$log_id}", true );
 
 			return;

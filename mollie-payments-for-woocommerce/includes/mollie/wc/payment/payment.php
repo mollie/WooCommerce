@@ -92,9 +92,9 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 				'method'      => $mollie_method,
 				'issuer'      => $selected_issuer,
 				'locale'      => $payment_locale,
-				'metadata'    => array (
-					'order_id' => $order->get_id(),
-				),
+				'metadata'       => apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_payment_object_metadata', array (
+					'order_id'     => $order->get_id(),
+				) ),
 			);
 
 			// Add sequenceType for subscriptions first payments

@@ -131,14 +131,14 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 				'payment'         => array (
 					'issuer' => $selected_issuer
 				),
-				'locale'          => $payment_locale,
-				'billingAddress'  => $billingAddress,
-				'metadata'        => array (
+				'locale'         => $payment_locale,
+				'billingAddress' => $billingAddress,
+				'metadata'       => apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_payment_object_metadata', array (
 					'order_id'     => $order->get_id(),
-					'order_number' => $order->get_order_number(),
-				),
-				'lines'           => $order_lines['lines'],
-				'orderNumber'     => $order->get_order_number(), // TODO David: use order number or order id?
+					'order_number' => $order->get_order_number()
+				) ),
+				'lines'          => $order_lines['lines'],
+				'orderNumber'    => $order->get_order_number(), // TODO David: use order number or order id?
 			);
 
 			// Add sequenceType for subscriptions first payments

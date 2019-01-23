@@ -34,6 +34,17 @@ if ( ! defined( 'M4W_PLUGIN_DIR' ) ) {
 	define( 'M4W_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 }
 
+/**
+ * Pro-actively check for required PHP JSON extension
+ */
+function mollie_wc_check_json_extension() {
+	if ( function_exists( 'extension_loaded' ) && ! extension_loaded( 'json' ) ) {
+		remove_action( 'init', 'mollie_wc_plugin_init' );
+		add_action( 'admin_notices', 'mollie_wc_plugin_inactive_json_extension' );
+		return;
+	}
+}
+add_action( 'plugins_loaded', 'mollie_wc_check_json_extension' );
 
 /**
  * Pro-actively check and communicate PHP version incompatibility for Mollie Payments for WooCommerce 4.0
@@ -100,6 +111,25 @@ function mollie_wc_plugin_activation_hook ()
 }
 
 register_activation_hook(__FILE__, 'mollie_wc_plugin_activation_hook');
+
+function mollie_wc_plugin_inactive_json_extension() {
+
+	$nextScheduledTime = wp_next_scheduled( 'pending_payment_confirmation_check' );
+	if ( $nextScheduledTime ) {
+		wp_unschedule_event( $nextScheduledTime, 'pending_payment_confirmation_check' );
+	}
+
+	if ( ! is_admin() ) {
+		return false;
+	}
+
+	echo '<div class="error"><p>';
+	echo esc_html__( 'Mollie Payments for WooCommerce requires the JSON extension for PHP. Enable it in your server or ask your webhoster to enable it for you.', 'mollie-payments-for-woocommerce' );
+	echo '</p></div>';
+
+	return false;
+
+}
 
 function mollie_wc_plugin_inactive_php() {
 

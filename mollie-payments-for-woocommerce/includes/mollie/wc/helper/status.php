@@ -66,6 +66,13 @@ class Mollie_WC_Helper_Status
             return $is_compatible = false;
         }
 
+	    if ( function_exists( 'extension_loaded' ) && ! extension_loaded( 'json' ) ) {
+
+		    $this->errors[] = __('Mollie Payments for WooCommerce requires the JSON extension for PHP. Enable it in your server or ask your webhoster to enable it for you.', 'mollie-payments-for-woocommerce');
+
+		    return $is_compatible = false;
+	    }
+
         try
         {
             $checker = $this->getApiClientCompatibilityChecker();

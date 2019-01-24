@@ -121,14 +121,14 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 			// Build the Mollie order data
 			$paymentRequestData = array (
-				'amount'          => array (
+				'amount'         => array (
 					'currency' => Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
 					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order->get_total(), Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) )
 				),
-				'redirectUrl'     => $return_url,
-				'webhookUrl'      => $webhook_url,
-				'method'          => $mollie_method,
-				'payment'         => array (
+				'redirectUrl'    => $return_url,
+				'webhookUrl'     => $webhook_url,
+				'method'         => $mollie_method,
+				'payment'        => array (
 					'issuer' => $selected_issuer
 				),
 				'locale'         => $payment_locale,
@@ -431,7 +431,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 			$order->add_order_note( sprintf(
 			/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-				__( 'Order completed at Mollie for %s order (%s). At least one order line completed. ', 'mollie-payments-for-woocommerce' ),
+				__( 'Order completed at Mollie for %s order (%s). At least one order line completed. Remember: Completed status for an order at Mollie is not the same as Completed status in WooCommerce!', 'mollie-payments-for-woocommerce' ),
 				$payment_method_title,
 				$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
 			) );
@@ -776,6 +776,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 		// TODO David, check status per orderline
 
 		Mollie_WC_Plugin::debug( $items );
+
 		// If the refund contains items, it's a refund for individual order lines
 		if ( ! empty ( $items ) ) {
 
@@ -826,6 +827,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 					if( $line->unitPrice->value > abs($item->get_total()+ $item->get_subtotal_tax()) )
 					{
 						Mollie_WC_Plugin::debug( __METHOD__ . " - Mollie doesn't allow a partial refund of less than 1 quantity per order line. Use 'Refund amount' instead." );
+
 						return new WP_Error( 1, "Mollie doesn't allow a partial refund of less than 1 quantity per order line. Use 'Refund amount' instead." );
 					}
 
@@ -902,6 +904,8 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 				}
 
 			}
+
+
 		}
 
 	}

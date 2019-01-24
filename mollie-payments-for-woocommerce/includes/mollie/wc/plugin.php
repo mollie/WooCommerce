@@ -213,9 +213,6 @@ class Mollie_WC_Plugin
 		// Cancel order at Mollie (for Orders API/Klarna)
 		add_action( 'woocommerce_order_status_cancelled', array( __CLASS__, 'cancelOrderAtMollie' ) );
 
-		// Refund order at Mollie (for Orders API/Klarna)
-		add_action( 'woocommerce_order_status_refunded', array( __CLASS__, 'refundOrderAtMollie' ) );
-
 		// Capture order at Mollie (for Orders API/Klarna)
 		add_action( 'woocommerce_order_status_completed', array( __CLASS__, 'shipAndCaptureOrderAtMollie' ) );
 
@@ -755,85 +752,6 @@ class Mollie_WC_Plugin
 		}
 		catch ( Mollie\Api\Exceptions\ApiException $e ) {
 			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Updating order to canceled at Mollie failed, error: ' . $e->getMessage() );
-		}
-
-		return;
-	}
-
-	/**
-	 * Refund an order at Mollie.
-	 *
-	 */
-	public static function refundOrderAtMollie( $order_id ) {
-
-		// If this is an older WooCommerce version, don't run.
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			return;
-		}
-
-		$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
-
-		// Does WooCommerce order contain a Mollie payment?
-		if ( strstr( $order->get_payment_method(), 'mollie_wc_gateway_') == FALSE ) {
-			return;
-		}
-
-		// To disable automatic refunding of the Mollie order when a WooCommerce order status is updated to refunded,
-		// store an option 'mollie-payments-for-woocommerce_disableRefundOrderAtMollie' with value 1
-		if ( get_option(Mollie_WC_Plugin::PLUGIN_ID . '_' . 'disableRefundOrderAtMollie', '0' ) == '1' ) {
-			return;
-		}
-
-		Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Try to process refunded order at Mollie.' );
-
-		// Does WooCommerce order contain a Mollie Order?
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			$mollie_order_id = ( $mollie_order_id = get_post_meta( $order->id, '_mollie_order_id', true ) ) ? $mollie_order_id : false;
-		} else {
-			$mollie_order_id = ( $mollie_order_id = $order->get_meta( '_mollie_order_id', true ) ) ? $mollie_order_id : false;
-		}
-
-		if ( $mollie_order_id == false ) {
-			$order->add_order_note( 'Order contains Mollie payment method, but not a valid Mollie Order ID. Refunding order failed.' );
-			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Order contains Mollie payment method, but not a valid Mollie Order ID. Refunding order failed.' );
-
-			return;
-		}
-
-		// Is test mode enabled?
-		$settings_helper = Mollie_WC_Plugin::getSettingsHelper();
-		$test_mode       = $settings_helper->isTestModeEnabled();
-
-		try {
-			// Get the order from the Mollie API
-			$mollie_order = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->get( $mollie_order_id );
-
-			// If Mollie order has status Authorized, cancel it instead of refunding it
-			if ( $mollie_order->isAuthorized() ) {
-				Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->get( $mollie_order_id )->cancel();
-				$order->add_order_note( 'Order canceled at Mollie. Mollie order was Authorized and therefor can not be refunded.' );
-				Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Order refunded in WooCommerce, canceled at Mollie. Mollie order was Authorized and therefor can not be refunded.' );
-
-				return;
-
-			}
-
-			// Only refund is Mollie order status is Paid, Shipping or Completed
-			if ( $mollie_order->isPaid() || $mollie_order->isShipping() || $mollie_order->isCompleted() ) {
-				Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->get( $mollie_order_id )->refund( array ('lines' => array () ) );
-				$order->add_order_note( 'Order also refunded at Mollie.' );
-				Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Order refunded in WooCommerce, also refunded at Mollie.' );
-
-				return;
-
-			}
-
-			$order->add_order_note( 'Order could not be refunded at Mollie, because Mollie order status is ' . $mollie_order->status . '.' );
-			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Order could not be refunded at Mollie, because Mollie order status is ' . $mollie_order->status . '.' );
-
-		}
-		catch ( Mollie\Api\Exceptions\ApiException $e ) {
-			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Updating order to refunded at Mollie failed, error: ' . $e->getMessage() );
 		}
 
 		return;

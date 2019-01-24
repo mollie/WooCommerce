@@ -1205,7 +1205,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 			$payment = Mollie_WC_Plugin::getPaymentObject()->getActiveMolliePayment($order_id, false );
 
-			if ( ! $payment->isOpen() && ! $payment->isPending() && ! $payment->isPaid() ) {
+			if ( ! $payment->isOpen() && ! $payment->isPending() && ! $payment->isPaid() && ! $payment->isAuthorized() ) {
 				Mollie_WC_Plugin::addNotice( __( 'Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ) );
 				// Return to order payment page
 				if ( method_exists( $order, 'get_checkout_payment_url' ) ) {

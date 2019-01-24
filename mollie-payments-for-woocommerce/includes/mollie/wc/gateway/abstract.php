@@ -1533,27 +1533,27 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		// Check whether the order is processed and paid via another gateway
 		if ( $this->isOrderPaidByOtherGateway( $order ) ) {
-			Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order_id . ' orderNeedsPayment check: no, previously processed by other (non-Mollie) gateway.', true );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' ' . $this->id . ': Order ' . $order_id . ' orderNeedsPayment check: no, previously processed by other (non-Mollie) gateway.', true );
 
 			return false;
 		}
 
 		// Check whether the order is processed and paid via Mollie
 		if ( ! $this->isOrderPaidAndProcessed( $order ) ) {
-			Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, order not previously processed by Mollie gateway.', true );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' ' . $this->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, order not previously processed by Mollie gateway.', true );
 
 			return true;
 		}
 
 		if ( $order->needs_payment() ) {
-			Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, WooCommerce thinks order needs payment.', true );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' ' . $this->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, WooCommerce thinks order needs payment.', true );
 
 			return true;
 		}
 
 		// Has initial order status 'on-hold'
 		if ( $this->getInitialOrderStatus() === self::STATUS_ON_HOLD && Mollie_WC_Plugin::getDataHelper()->hasOrderStatus( $order, self::STATUS_ON_HOLD ) ) {
-			Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, has status On-Hold. ', true );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' ' . $this->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, has status On-Hold. ', true );
 
 			return true;
 		}

@@ -789,6 +789,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 			foreach ($items as $item_id => $item_data) {
 
+				// TODO David: non-numeric value encountered
 				$totals += $item_data->get_total() + $item_data->get_total_tax(); // Get the item line total
 
 			}
@@ -796,9 +797,9 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			Mollie_WC_Plugin::debug( "Totals " . $totals );
 
 			if ($amount > abs($totals)) {
-				Mollie_WC_Plugin::debug( __METHOD__ . " - Refund not processed! It looks like you are refunding one or more order lines and also using the 'Refund amount' option. Don't. First refund the order lines, and after that do a new refund for any extra amount with the 'Refund amount' option'." );
+				Mollie_WC_Plugin::debug( __METHOD__ . " - Refund not processed! It looks like you are refunding an order line(s) and also using the 'Refund amount' option. Don't. First refund the order lines, and after that do a new refund for any extra amount with the 'Refund amount' option'." );
 
-				return new WP_Error( 1, "Refund not processed! It looks like you are refunding one or more order lines and also using the 'Refund amount' option. Don't. First refund the order lines, and after that do a new refund for any extra amount with the 'Refund amount' option'." );
+				return new WP_Error( 1, "Refund not processed! It looks like you are refunding an order line(s) and also using the 'Refund amount' option. Don't. First refund the order lines, and after that do a new refund for any extra amount with the 'Refund amount' option'." );
 			}
 
 			return $this->refund_order_items( $order, $order_id, $amount, $items, $payment_object, $reason );
@@ -829,8 +830,10 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			foreach ( $payment_object->lines as $line ) {
 
 				// If there is no metadata wth the order item ID, this order can't process individual order lines
-				if ( ! isset($line->metadata->order_item_id)) {
-					return new WP_Error( 1, 'Refunds for this specific order can not be processed automatically via WooCommerce and Mollie. You will need to refund manually via WooCommerce and manually via the Mollie Dashboard.' );
+				if ( empty($line->metadata->order_item_id)) {
+
+					Mollie_WC_Plugin::debug( __METHOD__ . " " . $order_id . " - Mollie doesn't allow a partial refund of less than 1 quantity per order line. Use 'Refund amount' instead." );
+					return new WP_Error( 1, 'Refunds for this specific order can not be processed automatically via WooCommerce in Mollie. You will need to refund manually via WooCommerce and manually via the Mollie Dashboard.' );
 
 				}
 
@@ -914,20 +917,26 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 						$order->add_order_note( $note_message );
 
-						return true;
+						Mollie_WC_Plugin::debug( $items );
+						Mollie_WC_Plugin::debug( 'items key' . $items[$item->get_id()] );
+
+						// drop item from array
+						unset($items[$item->get_id()]);
+
+						Mollie_WC_Plugin::debug( $items );
 
 					}
 					catch ( \Mollie\Api\Exceptions\ApiException $e ) {
 						return new WP_Error( 1, $e->getMessage() );
 					}
 
-
 				}
 
 			}
 
-
 		}
+
+		return true;
 
 	}
 
@@ -945,7 +954,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 		try {
 
 			if ( $payment_object->isCreated() || $payment_object->isAuthorized() || $payment_object->isShipping() ) {
-				return new WP_Error( 1, 'Can not refund partial order amount that has status ' . ucfirst($payment_object->status) . ' at Mollie.' );
+				return new WP_Error( 1, 'Can not refund order amount that has status ' . ucfirst($payment_object->status) . ' at Mollie.' );
 			}
 
 			if ( $payment_object->isPaid() ||  $payment_object->isShipping() || $payment_object->isCompleted() ) {

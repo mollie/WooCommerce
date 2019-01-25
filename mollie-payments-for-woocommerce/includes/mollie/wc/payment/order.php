@@ -436,6 +436,8 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 				$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
 			) );
 
+			// TODO David: consider setting WooCommerce orders to completed when an order is completed in Mollie? Completed in WooCommerce is not the same as Completed in Mollie! From the API docs "When all order lines are completed or canceled, the order will be set to this status." Probably need to check if it should be converted to completed or cancelled.
+
 			// Mark the order as processed and paid via Mollie
 			$this->setOrderPaidAndProcessed( $order );
 

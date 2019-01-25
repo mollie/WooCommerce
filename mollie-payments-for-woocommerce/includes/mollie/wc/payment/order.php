@@ -743,74 +743,81 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 		Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Try to process refunds or cancels.' );
 
-		$payment_object = $this->getPaymentObject( $payment_object->data );
+		try {
+			$payment_object = $this->getPaymentObject( $payment_object->data );
 
-		if ( ! $payment_object ) {
+			if ( ! $payment_object ) {
 
-			$error_message = "Could not find active Mollie order for WooCommerce order ' . $order_id";
+				$error_message = "Could not find active Mollie order for WooCommerce order ' . $order_id";
 
-			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $error_message );
+				Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $error_message );
 
-			return new WP_Error( '1', $error_message );
-		}
+				throw new Exception ( $error_message );
+			}
 
-		if ( ! ( $payment_object->isPaid() || $payment_object->isAuthorized() || $payment_object->isCompleted() ) ) {
+			if ( ! ( $payment_object->isPaid() || $payment_object->isAuthorized() || $payment_object->isCompleted() ) ) {
 
-			$error_message = "Can not cancel or refund $payment_object->id as order $order_id has status " . ucfirst( $payment_object->status ) . ", it should be at least Paid, Authorized or Completed.";
+				$error_message = "Can not cancel or refund $payment_object->id as order $order_id has status " . ucfirst( $payment_object->status ) . ", it should be at least Paid, Authorized or Completed.";
 
-			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $error_message );
+				Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $error_message );
 
-			return new WP_Error( '1', $error_message );
-		}
+				throw new Exception ( $error_message );
+			}
 
-		// Get all existing refunds
-		$refunds = $order->get_refunds();
+			// Get all existing refunds
+			$refunds = $order->get_refunds();
 
-		// Get latest refund
-		$woocommerce_refund = wc_get_order( $refunds[0] );
+			// Get latest refund
+			$woocommerce_refund = wc_get_order( $refunds[0] );
 
-		Mollie_WC_Plugin::debug( $woocommerce_refund );
-		// Get order items from refund
-		$items = $woocommerce_refund->get_items( array( 'line_item', 'fee', 'shipping'));
+			Mollie_WC_Plugin::debug( $woocommerce_refund );
+			// Get order items from refund
+			$items = $woocommerce_refund->get_items( array ( 'line_item', 'fee', 'shipping' ) );
 
-		Mollie_WC_Plugin::debug( $items );
+			Mollie_WC_Plugin::debug( $items );
 
-		// If the refund contains items, it's a refund for individual order lines
-		if ( ! empty ( $items ) ) {
+			// If the refund contains items, it's a refund for individual order lines
+			if ( ! empty ( $items ) ) {
 
-
-			// Compare total amount of the refund to the combined totals of all refunded items,
-			// if the refund total is greater than sum of refund items, merchant is also doing a
-			// 'Refund amount', which the Mollie API does not support. In that case, stop entire
-			// process and warn the merchant.
-			Mollie_WC_Plugin::debug( 'Total amount ' . $amount );
+				// Compare total amount of the refund to the combined totals of all refunded items,
+				// if the refund total is greater than sum of refund items, merchant is also doing a
+				// 'Refund amount', which the Mollie API does not support. In that case, stop entire
+				// process and warn the merchant.
+				Mollie_WC_Plugin::debug( 'Total amount ' . $amount );
 
 			$totals = '';
 
-			foreach ($items as $item_id => $item_data) {
+				foreach ( $items as $item_id => $item_data ) {
 
 				// TODO David: non-numeric value encountered
 				$totals += $item_data->get_total() + $item_data->get_total_tax(); // Get the item line total
 
+				}
+
+				Mollie_WC_Plugin::debug( "Totals " . $totals );
+
+				if ( $amount > abs( $totals ) ) {
+					Mollie_WC_Plugin::debug( __METHOD__ . " - Refund not processed! It looks like you are refunding an order line(s) and also using the 'Refund amount' option. Don't. First refund the order lines, and after that do a new refund for any extra amount with the 'Refund amount' option'." );
+
+					throw new Exception ( "Refund not processed! It looks like you are refunding an order line(s) and also using the 'Refund amount' option. Don't. First refund the order lines, and after that do a new refund for any extra amount with the 'Refund amount' option'." );
+				}
+
+				return $this->refund_order_items( $order, $order_id, $amount, $items, $payment_object, $reason );
+
 			}
 
-			Mollie_WC_Plugin::debug( "Totals " . $totals );
+			// If the refund does not contain items, only refund the amount
+			if ( empty ( $items ) ) {
 
-			if ($amount > abs($totals)) {
-				Mollie_WC_Plugin::debug( __METHOD__ . " - Refund not processed! It looks like you are refunding an order line(s) and also using the 'Refund amount' option. Don't. First refund the order lines, and after that do a new refund for any extra amount with the 'Refund amount' option'." );
+				return $this->refund_amount( $order, $order_id, $amount, $payment_object, $reason );
 
-				return new WP_Error( 1, "Refund not processed! It looks like you are refunding an order line(s) and also using the 'Refund amount' option. Don't. First refund the order lines, and after that do a new refund for any extra amount with the 'Refund amount' option'." );
 			}
-
-			return $this->refund_order_items( $order, $order_id, $amount, $items, $payment_object, $reason );
-
 		}
+		catch ( Exception $e ) {
 
-		// If the refund does not contain items, only refund the amount
-		if ( empty ( $items ) ) {
+			Mollie_WC_Plugin::debug( 'hit' );
 
-			return $this->refund_amount( $order, $order_id, $amount, $payment_object, $reason );
-
+			return new WP_Error( 1, $e->getMessage() );
 		}
 
 		return false;
@@ -822,6 +829,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 		Mollie_WC_Plugin::debug( 'Try to process individual order item refunds or cancels.' );
 
+
 		// Try to do the actual refunds or cancellations
 		foreach ( $items as $key => $item ) {
 
@@ -830,10 +838,11 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			foreach ( $payment_object->lines as $line ) {
 
 				// If there is no metadata wth the order item ID, this order can't process individual order lines
-				if ( empty($line->metadata->order_item_id)) {
+				if ( empty( $line->metadata->order_item_id ) ) {
 
 					Mollie_WC_Plugin::debug( __METHOD__ . " " . $order_id . " - Mollie doesn't allow a partial refund of less than 1 quantity per order line. Use 'Refund amount' instead." );
-					return new WP_Error( 1, 'Refunds for this specific order can not be processed automatically via WooCommerce in Mollie. You will need to refund manually via WooCommerce and manually via the Mollie Dashboard.' );
+
+					throw new Exception ( 'Refunds for this specific order can not be processed automatically via WooCommerce in Mollie. You will need to refund manually via WooCommerce and manually via the Mollie Dashboard.' );
 
 				}
 
@@ -842,7 +851,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 				// Get the Mollie order line information that we need later
 				$original_order_item_id = $item->get_meta( '_refunded_item_id', true );
-				$item_refund_amount = abs($item->get_total() + $item->get_total_tax());
+				$item_refund_amount     = abs( $item->get_total() + $item->get_total_tax() );
 
 				Mollie_WC_Plugin::debug( 'Order item ids: ' . $item->get_name() . ' ' . $line->metadata->order_item_id . ' ' . $original_order_item_id );
 
@@ -855,86 +864,82 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 					if ( $line->unitPrice->value > $item_refund_amount ) {
 						Mollie_WC_Plugin::debug( __METHOD__ . " - Mollie doesn't allow a partial refund of less than 1 quantity per order line. Use 'Refund amount' instead." );
 
-						return new WP_Error( 1, "Mollie doesn't allow a partial refund of less than 1 quantity per order line. Use 'Refund amount' instead." );
+						throw new Exception ( "Mollie doesn't allow a partial refund of less than 1 quantity per order line. Use 'Refund amount' instead." );
 					}
 
-					try {
 
-						// Is test mode enabled?
-						$test_mode = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
+					// Is test mode enabled?
+					$test_mode = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
 
-						// Get the Mollie order
-						$mollie_order = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->get( $payment_object->id );
+					// Get the Mollie order
+					$mollie_order = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->get( $payment_object->id );
 
-						// Prepare the order line to update
-						$lines = array (
-							'lines' => array (
-								array (
-									'id'       => $line->id,
-									'quantity' => abs( $item->get_quantity() ),
-								)
+					// Prepare the order line to update
+					$lines = array (
+						'lines' => array (
+							array (
+								'id'       => $line->id,
+								'quantity' => abs( $item->get_quantity() ),
 							)
-						);
+						)
+					);
 
-						Mollie_WC_Plugin::debug( 'line status ' . $line->status );
+					Mollie_WC_Plugin::debug( 'line status ' . $line->status );
 
-						if ( $line->status == 'created' || $line->status == 'authorized' ) {
+					if ( $line->status == 'created' || $line->status == 'authorized' ) {
 
-							// Returns null if successful.
-							$refund = $mollie_order->cancelLines( $lines );
+						// Returns null if successful.
+						$refund = $mollie_order->cancelLines( $lines );
 
-							Mollie_WC_Plugin::debug( __METHOD__ . ' - Cancelled order line: ' . abs( $item->get_quantity() ) . 'x ' . $item->get_name() . '. Mollie order line: ' . $line->id . ', payment object: ' . $payment_object->id . ', order: ' . $order_id . ', amount: ' . Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) . wc_format_decimal($item_refund_amount) . ( ! empty( $reason ) ? ', reason: ' . $reason : '' ) );
+						Mollie_WC_Plugin::debug( __METHOD__ . ' - Cancelled order line: ' . abs( $item->get_quantity() ) . 'x ' . $item->get_name() . '. Mollie order line: ' . $line->id . ', payment object: ' . $payment_object->id . ', order: ' . $order_id . ', amount: ' . Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) . wc_format_decimal( $item_refund_amount ) . ( ! empty( $reason ) ? ', reason: ' . $reason : '' ) );
 
-							if ( $refund == null ) {
-								$note_message = sprintf(
-									__( '%sx %s cancelled for %s%s in WooCommerce and at Mollie.', 'mollie-payments-for-woocommerce' ),
-									abs( $item->get_quantity() ),
-									$item->get_name(),
-									Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
-									$item_refund_amount
-								);
-							}
-						}
-
-						if ( $line->status == 'paid' || $line->status == 'shipping' || $line->status == 'completed' ) {
-							$lines['description'] = $reason;
-							$refund               = $mollie_order->refund( $lines );
-
-							Mollie_WC_Plugin::debug( __METHOD__ . ' - Refunded order line: ' . abs( $item->get_quantity() ) . 'x ' . $item->get_name() . '. Mollie order line: ' . $line->id . ', payment object: ' . $payment_object->id . ', order: ' . $order_id . ', amount: ' . Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) . wc_format_decimal($item_refund_amount) . ( ! empty( $reason ) ? ', reason: ' . $reason : '' ) );
-
+						if ( $refund == null ) {
 							$note_message = sprintf(
-								__( '%sx %s refunded for %s%s in WooCommerce and at Mollie.%s Refund ID: %s.', 'mollie-payments-for-woocommerce' ),
+								__( '%sx %s cancelled for %s%s in WooCommerce and at Mollie.', 'mollie-payments-for-woocommerce' ),
 								abs( $item->get_quantity() ),
 								$item->get_name(),
 								Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
-								$item_refund_amount,
-								( ! empty( $reason ) ? ' Reason: ' . $reason . '.' : '' ),
-								$refund->id
+								$item_refund_amount
 							);
 						}
-
-						do_action( Mollie_WC_Plugin::PLUGIN_ID . '_refund_created', $refund, $order );
-
-						$order->add_order_note( $note_message );
-
-						Mollie_WC_Plugin::debug( $items );
-						Mollie_WC_Plugin::debug( 'items key' . $items[$item->get_id()] );
-
-						// drop item from array
-						unset($items[$item->get_id()]);
-
-						Mollie_WC_Plugin::debug( $items );
-
 					}
-					catch ( \Mollie\Api\Exceptions\ApiException $e ) {
-						return new WP_Error( 1, $e->getMessage() );
+
+					if ( $line->status == 'paid' || $line->status == 'shipping' || $line->status == 'completed' ) {
+						$lines['description'] = $reason;
+						$refund               = $mollie_order->refund( $lines );
+
+						Mollie_WC_Plugin::debug( __METHOD__ . ' - Refunded order line: ' . abs( $item->get_quantity() ) . 'x ' . $item->get_name() . '. Mollie order line: ' . $line->id . ', payment object: ' . $payment_object->id . ', order: ' . $order_id . ', amount: ' . Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) . wc_format_decimal( $item_refund_amount ) . ( ! empty( $reason ) ? ', reason: ' . $reason : '' ) );
+
+						$note_message = sprintf(
+							__( '%sx %s refunded for %s%s in WooCommerce and at Mollie.%s Refund ID: %s.', 'mollie-payments-for-woocommerce' ),
+							abs( $item->get_quantity() ),
+							$item->get_name(),
+							Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
+							$item_refund_amount,
+							( ! empty( $reason ) ? ' Reason: ' . $reason . '.' : '' ),
+							$refund->id
+						);
 					}
+
+					do_action( Mollie_WC_Plugin::PLUGIN_ID . '_refund_created', $refund, $order );
+
+					$order->add_order_note( $note_message );
+
+					Mollie_WC_Plugin::debug( $items );
+					Mollie_WC_Plugin::debug( 'items key' . $items[ $item->get_id() ] );
+
+					// drop item from array
+					unset( $items[ $item->get_id() ] );
+
+					Mollie_WC_Plugin::debug( $items );
+
 
 				}
 
 			}
 
 		}
+
 
 		return true;
 
@@ -951,28 +956,23 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 		Mollie_WC_Plugin::debug( $amount );
 
-		try {
 
-			if ( $payment_object->isCreated() || $payment_object->isAuthorized() || $payment_object->isShipping() ) {
-				return new WP_Error( 1, 'Can not refund order amount that has status ' . ucfirst($payment_object->status) . ' at Mollie.' );
-			}
-
-			if ( $payment_object->isPaid() ||  $payment_object->isShipping() || $payment_object->isCompleted() ) {
-				// Send refund to Mollie
-				Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->refund( $payment_object_payment, array (
-					'amount'      => array (
-						'currency' => Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
-						'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $amount, Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) )
-					),
-					'description' => $reason
-				) );
-
-				return true;
-
-			}
+		if ( $payment_object->isCreated() || $payment_object->isAuthorized() || $payment_object->isShipping() ) {
+			throw new Exception ( 'Can not refund order amount that has status ' . ucfirst( $payment_object->status ) . ' at Mollie.' );
 		}
-		catch ( \Mollie\Api\Exceptions\ApiException $e ) {
-			return new WP_Error( 1, $e->getMessage() );
+
+		if ( $payment_object->isPaid() || $payment_object->isShipping() || $payment_object->isCompleted() ) {
+			// Send refund to Mollie
+			Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->refund( $payment_object_payment, array (
+				'amount'      => array (
+					'currency' => Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
+					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $amount, Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) )
+				),
+				'description' => $reason
+			) );
+
+			return true;
+
 		}
 
 	}

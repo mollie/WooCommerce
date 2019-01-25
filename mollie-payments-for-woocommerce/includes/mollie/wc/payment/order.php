@@ -825,7 +825,17 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 	}
 
-
+	/**
+	 * @param $order
+	 * @param $order_id
+	 * @param $amount
+	 * @param $items
+	 * @param $payment_object
+	 * @param $reason
+	 *
+	 * @return bool
+	 * @throws \Mollie\Api\Exceptions\ApiException|Exception
+	 */
 	public function refund_order_items( $order, $order_id, $amount, $items, $payment_object, $reason ) {
 
 		Mollie_WC_Plugin::debug( 'Try to process individual order item refunds or cancels.' );
@@ -946,6 +956,16 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 	}
 
+	/**
+	 * @param $order
+	 * @param $order_id
+	 * @param $amount
+	 * @param $payment_object
+	 * @param $reason
+	 *
+	 * @return bool
+	 * @throws \Mollie\Api\Exceptions\ApiException|Exception
+	 */
 	public function refund_amount( $order, $order_id, $amount, $payment_object, $reason ) {
 
 		Mollie_WC_Plugin::debug( 'Try to process an amount refund (not individual order line)' );

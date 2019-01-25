@@ -785,12 +785,11 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 				// process and warn the merchant.
 				Mollie_WC_Plugin::debug( 'Total amount ' . $amount );
 
-			$totals = '';
+				$totals = 0;
 
 				foreach ( $items as $item_id => $item_data ) {
 
-				// TODO David: non-numeric value encountered
-				$totals += $item_data->get_total() + $item_data->get_total_tax(); // Get the item line total
+					$totals += $item_data->get_total() + $item_data->get_total_tax(); // Get the item line total
 
 				}
 

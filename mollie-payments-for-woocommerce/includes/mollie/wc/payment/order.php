@@ -733,7 +733,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	/**
 	 * Process a payment object refund
 	 *
-	 * @param object $order
+	 * @param WC_Order $order
 	 * @param int    $order_id
 	 * @param object $payment_object
 	 * @param null   $amount
@@ -772,11 +772,9 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			// Get latest refund
 			$woocommerce_refund = wc_get_order( $refunds[0] );
 
-			Mollie_WC_Plugin::debug( $woocommerce_refund );
 			// Get order items from refund
 			$items = $woocommerce_refund->get_items( array ( 'line_item', 'fee', 'shipping' ) );
 
-			Mollie_WC_Plugin::debug( $items );
 
 			// If the refund contains items, it's a refund for individual order lines
 			if ( ! empty ( $items ) ) {
@@ -785,7 +783,6 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 				// if the refund total is greater than sum of refund items, merchant is also doing a
 				// 'Refund amount', which the Mollie API does not support. In that case, stop entire
 				// process and warn the merchant.
-				Mollie_WC_Plugin::debug( 'Total amount ' . $amount );
 
 				$totals = 0;
 
@@ -795,12 +792,10 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 				}
 
-				Mollie_WC_Plugin::debug( "Totals " . $totals );
+				if ( (float)$amount != (float)abs( $totals ) ) {
+					Mollie_WC_Plugin::debug( __METHOD__ . " - Refund not processed! It looks like you are refunding an order line(s) and also using the 'Refund amount' option. Don't. First refund the order lines, and after that do a new refund for any extra amount with the 'Refund amount' option." );
 
-				if ( $amount > abs( $totals ) ) {
-					Mollie_WC_Plugin::debug( __METHOD__ . " - Refund not processed! It looks like you are refunding an order line(s) and also using the 'Refund amount' option. Don't. First refund the order lines, and after that do a new refund for any extra amount with the 'Refund amount' option'." );
-
-					throw new Exception ( "Refund not processed! It looks like you are refunding an order line(s) and also using the 'Refund amount' option. Don't. First refund the order lines, and after that do a new refund for any extra amount with the 'Refund amount' option'." );
+					throw new Exception ( "Refund not processed! It looks like you are refunding an order line(s) and also using the 'Refund amount' option. Don't. First refund the order lines, and after that do a new refund for any extra amount with the 'Refund amount' option." );
 				}
 
 				return $this->refund_order_items( $order, $order_id, $amount, $items, $payment_object, $reason );
@@ -815,9 +810,6 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			}
 		}
 		catch ( Exception $e ) {
-
-			Mollie_WC_Plugin::debug( 'hit' );
-
 			return new WP_Error( 1, $e->getMessage() );
 		}
 
@@ -851,8 +843,6 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 				if ( empty( $line->metadata->order_item_id ) ) {
 
 					$note_message = 'Refunds for this specific order can not be processed per order line. Trying to process this as an amount refund instead.';
-
-					$order->add_order_note( $note_message );
 					Mollie_WC_Plugin::debug( __METHOD__ . " - " . $note_message );
 
 					return $this->refund_amount( $order, $order_id, $amount, $payment_object, $reason );
@@ -948,6 +938,8 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 		}
 
+		// TODO David: add special version of
+		// do_action( Mollie_WC_Plugin::PLUGIN_ID . '_refund_created', $refund, $order );
 
 		return true;
 

@@ -840,7 +840,6 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 		Mollie_WC_Plugin::debug( 'Try to process individual order item refunds or cancels.' );
 
-
 		// Try to do the actual refunds or cancellations
 		foreach ( $items as $key => $item ) {
 
@@ -851,9 +850,12 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 				// If there is no metadata wth the order item ID, this order can't process individual order lines
 				if ( empty( $line->metadata->order_item_id ) ) {
 
-					Mollie_WC_Plugin::debug( __METHOD__ . " " . $order_id . " - Mollie doesn't allow a partial refund of less than 1 quantity per order line. Use 'Refund amount' instead." );
+					$note_message = 'Refunds for this specific order can not be processed per order line. Trying to process this as an amount refund instead.';
 
-					throw new Exception ( 'Refunds for this specific order can not be processed automatically via WooCommerce in Mollie. You will need to refund manually via WooCommerce and manually via the Mollie Dashboard.' );
+					$order->add_order_note( $note_message );
+					Mollie_WC_Plugin::debug( __METHOD__ . " - " . $note_message );
+
+					return $this->refund_amount( $order, $order_id, $amount, $payment_object, $reason );
 
 				}
 
@@ -935,15 +937,10 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 					do_action( Mollie_WC_Plugin::PLUGIN_ID . '_refund_created', $refund, $order );
 
 					$order->add_order_note( $note_message );
-
-					Mollie_WC_Plugin::debug( $items );
-					Mollie_WC_Plugin::debug( 'items key' . $items[ $item->get_id() ] );
+					Mollie_WC_Plugin::debug( $note_message );
 
 					// drop item from array
 					unset( $items[ $item->get_id() ] );
-
-					Mollie_WC_Plugin::debug( $items );
-
 
 				}
 
@@ -983,14 +980,16 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 		}
 
 		if ( $payment_object->isPaid() || $payment_object->isShipping() || $payment_object->isCompleted() ) {
-			// Send refund to Mollie
-			Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->refund( $payment_object_payment, array (
+
+			$refund = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->refund( $payment_object_payment, array (
 				'amount'      => array (
 					'currency' => Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
 					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $amount, Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) )
 				),
 				'description' => $reason
 			) );
+
+			do_action( Mollie_WC_Plugin::PLUGIN_ID . '_refund_created', $refund, $order );
 
 			return true;
 

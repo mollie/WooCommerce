@@ -976,7 +976,10 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 
 		if ( $payment_object->isCreated() || $payment_object->isAuthorized() || $payment_object->isShipping() ) {
-			throw new Exception ( 'Can not refund order amount that has status ' . ucfirst( $payment_object->status ) . ' at Mollie.' );
+			$note_message = 'Can not refund order amount that has status ' . ucfirst( $payment_object->status ) . ' at Mollie.';
+			$order->add_order_note( $note_message );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $note_message );
+			throw new Exception ( $note_message );
 		}
 
 		if ( $payment_object->isPaid() || $payment_object->isShipping() || $payment_object->isCompleted() ) {
@@ -989,12 +992,24 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 				'description' => $reason
 			) );
 
+			$note_message = sprintf(
+				__( 'Amount refund of %s%s refunded in WooCommerce and at Mollie.%s Refund ID: %s.', 'mollie-payments-for-woocommerce' ),
+				Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
+				$amount,
+				( ! empty( $reason ) ? ' Reason: ' . $reason . '.' : '' ),
+				$refund->id
+			);
+
+			$order->add_order_note( $note_message );
+			Mollie_WC_Plugin::debug( $note_message );
+
 			do_action( Mollie_WC_Plugin::PLUGIN_ID . '_refund_created', $refund, $order );
 
 			return true;
 
 		}
 
+		return false;
 	}
 
 }

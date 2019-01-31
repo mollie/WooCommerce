@@ -792,7 +792,10 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 				}
 
-				if ( (float)$amount != (float)abs( $totals ) ) {
+				$totals = number_format(abs($totals), 2);
+				$amount = number_format($amount, 2);
+
+				if ( $amount !== $totals ) {
 					Mollie_WC_Plugin::debug( __METHOD__ . " - Refund not processed! It looks like you are refunding an order line(s) and also using the 'Refund amount' option. Don't. First refund the order lines, and after that do a new refund for any extra amount with the 'Refund amount' option." );
 
 					throw new Exception ( "Refund not processed! It looks like you are refunding an order line(s) and also using the 'Refund amount' option. Don't. First refund the order lines, and after that do a new refund for any extra amount with the 'Refund amount' option." );
@@ -860,14 +863,17 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 				if ( $original_order_item_id == $line->metadata->order_item_id ) {
 
-					Mollie_WC_Plugin::debug( $line->unitPrice->value );
-					Mollie_WC_Plugin::debug( $item_refund_amount );
-
 					// Mollie doesn't allow a partial refund of less than 1 quantity, so when merchants try that, warn them and block the process
-					if ( $line->unitPrice->value > $item_refund_amount ) {
-						Mollie_WC_Plugin::debug( __METHOD__ . " - Mollie doesn't allow a partial refund of less than 1 quantity per order line. Use 'Refund amount' instead." );
+					if ( number_format( $line->unitPrice->value, 2) > number_format( $item_refund_amount, 2) ) {
 
-						throw new Exception ( "Mollie doesn't allow a partial refund of less than 1 quantity per order line. Use 'Refund amount' instead." );
+						$note_message = sprintf( "Mollie doesn't allow a partial refund of less than 1 quantity per order line. Use 'Refund amount' instead. The Mollie order line (%s) unit price is %s, and the WooCommerce refund item (%s) amount is %s.",
+							$line->id,
+							$line->unitPrice->value,
+							$original_order_item_id,
+							$item_refund_amount );
+
+						Mollie_WC_Plugin::debug( __METHOD__ . " - Order $order_id: " . $note_message );
+						throw new Exception ( $note_message );
 					}
 
 

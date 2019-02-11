@@ -430,7 +430,7 @@ class Mollie_WC_Helper_Settings
 	                '<a href="https://www.mollie.com/nl/docs/reference/payments/create" target="_blank">',
 	                '</a>'
                 ),
-                'default' => '',
+                'default' => 'wp_locale',
             ),
             array(
                 'id'                => $this->getSettingId('customer_details'),

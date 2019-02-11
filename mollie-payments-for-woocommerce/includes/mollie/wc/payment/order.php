@@ -779,8 +779,8 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 				}
 
-				$totals = number_format(abs($totals), 2);
-				$amount = number_format($amount, 2);
+				$totals = number_format(abs($totals), 2); // WooCommerce - sum of all refund items
+				$amount = number_format($amount, 2); // WooCommerce - refund amount
 
 				if ( $amount !== $totals ) {
 					Mollie_WC_Plugin::debug( __METHOD__ . " - Refund not processed! It looks like you are refunding an order line(s) and also using the 'Refund amount' option. Don't. First refund the order lines, and after that do a new refund for any extra amount with the 'Refund amount' option." );

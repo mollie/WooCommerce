@@ -162,6 +162,13 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 				return;
 			}
 
+			// Check if WooCommerce Subscriptions Failed Recurring Payment Retry System is in-use, if it is, don't update subscription status
+			if ( class_exists('WCS_Retry_Manager') && WCS_Retry_Manager::is_retry_enabled() && $subscription->get_date( 'payment_retry' ) > 0 ) {
+				Mollie_WC_Plugin::debug( __METHOD__ . ' - WooCommerce Subscriptions Failed Recurring Payment Retry System in use, not updating subscription status to Active!' );
+
+				return;
+			}
+
 			// Check that a new payment is made for renewal order
 			if ( $mollie_payment_id == null ) {
 				return;

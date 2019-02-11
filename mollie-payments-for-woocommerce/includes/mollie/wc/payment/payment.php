@@ -365,31 +365,60 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 			$order_id = $order->get_id();
 		}
 
+		// Add messages to log
+		Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id );
+
 		// New order status
 		$new_order_status = Mollie_WC_Gateway_Abstract::STATUS_FAILED;
 
 		// Overwrite plugin-wide
-		$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_on_hold', $new_order_status );
+		$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_failed', $new_order_status );
 
 		// Overwrite gateway-wide
-		$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_on_hold_' . $this->id, $new_order_status );
-
-		// Update order status for order with failed payment, don't restore stock
+		$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_failed_' . $this->id, $new_order_status );
 
 		$gateway = Mollie_WC_Plugin::getDataHelper()->getWcPaymentGatewayByOrder( $order );
 
-		if ( $gateway || ( $gateway instanceof Mollie_WC_Gateway_Abstract ) ) {
 
-			$gateway->updateOrderStatus(
-				$order,
-				$new_order_status,
-				sprintf(
-				/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-					__( '%s payment failed via Mollie (%s).', 'mollie-payments-for-woocommerce' ),
-					$payment_method_title,
-					$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
-				)
-			);
+		// If WooCommerce Subscriptions is installed, process this failure as a subscription, otherwise as a regular order
+		// Update order status for order with failed payment, don't restore stock
+		if ( function_exists( 'wcs_order_contains_renewal' ) && wcs_order_contains_renewal( $order_id ) ) {
+
+			if ( $gateway || ( $gateway instanceof Mollie_WC_Gateway_Abstract ) ) {
+				$gateway->updateOrderStatus(
+					$order,
+					$new_order_status,
+					sprintf(
+					/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+						__( '%s renewal payment failed via Mollie (%s). You will need to manually review the payment and adjust product stocks if you use them.', 'mollie-payments-for-woocommerce' ),
+						$payment_method_title,
+						$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
+					),
+					$restore_stock = false
+				);
+			}
+
+			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id . ' and payment ' . $payment->id . ', renewal order payment failed, order set to ' . $new_order_status . ' for shop-owner review.' );
+
+			// Send a "Failed order" email to notify the admin
+			$emails = WC()->mailer()->get_emails();
+			if ( ! empty( $emails ) && ! empty( $order_id ) && ! empty( $emails['WC_Email_Failed_Order'] ) ) {
+				$emails['WC_Email_Failed_Order']->trigger( $order_id );
+			}
+		} else {
+
+			if ( $gateway || ( $gateway instanceof Mollie_WC_Gateway_Abstract ) ) {
+				$gateway->updateOrderStatus(
+					$order,
+					$new_order_status,
+					sprintf(
+					/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+						__( '%s payment failed via Mollie (%s).', 'mollie-payments-for-woocommerce' ),
+						$payment_method_title,
+						$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
+					)
+				);
+			}
 		}
 
 		Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id . ' and payment ' . $payment->id . ', regular payment failed.' );

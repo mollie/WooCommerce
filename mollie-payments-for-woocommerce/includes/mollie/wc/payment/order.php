@@ -570,21 +570,21 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 		// Add messages to log
 		Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id );
 
+		// New order status
+		$new_order_status = Mollie_WC_Gateway_Abstract::STATUS_FAILED;
+
+		// Overwrite plugin-wide
+		$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_failed', $new_order_status );
+
+		// Overwrite gateway-wide
+		$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_failed_' . $this->id, $new_order_status );
+
+		$gateway = Mollie_WC_Plugin::getDataHelper()->getWcPaymentGatewayByOrder( $order );
+
+
 		// If WooCommerce Subscriptions is installed, process this failure as a subscription, otherwise as a regular order
+		// Update order status for order with failed payment, don't restore stock
 		if ( function_exists( 'wcs_order_contains_renewal' ) && wcs_order_contains_renewal( $order_id ) ) {
-
-			// New order status
-			$new_order_status = Mollie_WC_Gateway_Abstract::STATUS_ON_HOLD;
-
-			// Overwrite plugin-wide
-			$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_on_hold', $new_order_status );
-
-			// Overwrite gateway-wide
-			$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_on_hold_' . $this->id, $new_order_status );
-
-			// Update order status for order with failed payment, don't restore stock
-
-			$gateway = Mollie_WC_Plugin::getDataHelper()->getWcPaymentGatewayByOrder( $order );
 
 			if ( $gateway || ( $gateway instanceof Mollie_WC_Gateway_Abstract ) ) {
 				$gateway->updateOrderStatus(
@@ -600,8 +600,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 				);
 			}
 
-			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id . ' and payment ' . $payment->id . ', renewal order payment failed, order set to On-Hold for shop-owner review.' );
-
+			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id . ' and payment ' . $payment->id . ', renewal order payment failed, order set to ' . $new_order_status . ' for shop-owner review.' );
 
 			// Send a "Failed order" email to notify the admin
 			$emails = WC()->mailer()->get_emails();
@@ -609,18 +608,6 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 				$emails['WC_Email_Failed_Order']->trigger( $order_id );
 			}
 		} else {
-
-			// New order status
-			$new_order_status = Mollie_WC_Gateway_Abstract::STATUS_FAILED;
-
-			// Overwrite plugin-wide
-			$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_on_hold', $new_order_status );
-
-			// Overwrite gateway-wide
-			$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_on_hold_' . $this->id, $new_order_status );
-
-			// Update order status for order with failed payment, don't restore stock
-			$gateway = Mollie_WC_Plugin::getDataHelper()->getWcPaymentGatewayByOrder( $order );
 
 			if ( $gateway || ( $gateway instanceof Mollie_WC_Gateway_Abstract ) ) {
 

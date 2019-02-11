@@ -851,13 +851,13 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 				if ( $original_order_item_id == $line->metadata->order_item_id ) {
 
 					// Mollie doesn't allow a partial refund of less than 1 quantity, so when merchants try that, warn them and block the process
-					if ( number_format( $line->unitPrice->value, 2) > number_format( $item_refund_amount, 2) ) {
+					if ( number_format( $line->totalAmount->value, 2) > number_format( $item_refund_amount, 2) ) {
 
 						$note_message = sprintf( "Mollie doesn't allow a partial refund of less than 1 quantity per order line. Use 'Refund amount' instead. The Mollie order line (%s) unit price is %s, and the WooCommerce refund item (%s) amount is %s.",
 							$line->id,
-							$line->unitPrice->value,
+							number_format( $line->unitPrice->value, 2 ),
 							$original_order_item_id,
-							$item_refund_amount );
+							number_format( $item_refund_amount, 2 ) );
 
 						Mollie_WC_Plugin::debug( __METHOD__ . " - Order $order_id: " . $note_message );
 						throw new Exception ( $note_message );

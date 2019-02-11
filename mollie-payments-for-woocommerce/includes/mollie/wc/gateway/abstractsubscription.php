@@ -214,6 +214,9 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
 	    $renewal_order_id 	= ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $renewal_order->id : $renewal_order->get_id();
 
+	    // Allow developers to hook into the subscription renewal payment before it processed
+	    do_action(Mollie_WC_Plugin::PLUGIN_ID . '_before_renewal_payment_created', $renewal_order);
+
 	    Mollie_WC_Plugin::debug($this->id . ': Try to create renewal payment for renewal order ' . $renewal_order_id);
         $initial_order_status = $this->getInitialOrderStatus();
 

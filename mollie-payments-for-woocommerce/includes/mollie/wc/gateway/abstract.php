@@ -1610,8 +1610,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			    'key'            => $order->get_order_key(),
 		    ), $return_url);
 	    }
+	    $return_url = $this->removeTrailingSlashAfterParamater( $return_url );
 
         $lang_url   = $this->getSiteUrlWithLanguage();
+
+        if ( strpos( $lang_url, '/?') !== FALSE ) {
+        	$return_url = str_replace( '/?', '&', $return_url);
+        }
+
         $return_url = str_replace($site_url, $lang_url, $return_url);
 
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_return_url', $return_url, $order);
@@ -1641,6 +1647,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	    }
 
         $lang_url    = $this->getSiteUrlWithLanguage();
+
+	    if ( strpos( $lang_url, '/?') !== FALSE ) {
+		    $webhook_url = str_replace( '/?', '&', $webhook_url);
+	    }
+
         $webhook_url = str_replace($site_url, $lang_url, $webhook_url);
 
         // Some (multilanguage) plugins will add a extra slash to the url (/nl//) causing the URL to redirect and lose it's data.

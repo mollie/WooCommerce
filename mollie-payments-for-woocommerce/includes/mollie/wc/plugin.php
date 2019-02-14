@@ -40,6 +40,7 @@ class Mollie_WC_Plugin
         'Mollie_WC_Gateway_MisterCash',
         'Mollie_WC_Gateway_PayPal',
         'Mollie_WC_Gateway_Paysafecard',
+        'Mollie_WC_Gateway_Przelewy24',
         'Mollie_WC_Gateway_Sofort',
         'Mollie_WC_Gateway_Giftcard',
     );

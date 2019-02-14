@@ -783,9 +783,11 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 				$amount = number_format($amount, 2); // WooCommerce - refund amount
 
 				if ( $amount !== $totals ) {
-					Mollie_WC_Plugin::debug( __METHOD__ . " - Refund not processed! It looks like you are refunding an order line(s) and also using the 'Refund amount' option. Don't. First refund the order lines, and after that do a new refund for any extra amount with the 'Refund amount' option." );
+					$error_message = "The sum of refunds for all order lines is not identical to the refund amount, so this refund will be processed as a payment amount refund, not an order line refund.";
+					$order->add_order_note( $error_message );
+					Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $error_message );
 
-					throw new Exception ( "Refund not processed! It looks like you are refunding an order line(s) and also using the 'Refund amount' option. Don't. First refund the order lines, and after that do a new refund for any extra amount with the 'Refund amount' option." );
+					return $this->refund_amount( $order, $order_id, $amount, $payment_object, $reason );
 				}
 
 				return $this->refund_order_items( $order, $order_id, $amount, $items, $payment_object, $reason );

@@ -2,7 +2,7 @@
 Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, woocommerce, payment gateway, e-commerce, credit card, ideal, sofort, bancontact, bitcoin, direct debit, subscriptions
 Requires at least: 3.8
-Tested up to: 5.0
+Tested up to: 5.1
 Stable tag: 5.0.7
 Requires PHP: 5.6
 License: GPLv2 or later

@@ -848,9 +848,6 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 				}
 
-				Mollie_WC_Plugin::debug( 'Mollie order line' );
-				Mollie_WC_Plugin::debug( $line );
-
 				// Get the Mollie order line information that we need later
 				$original_order_item_id = $item->get_meta( '_refunded_item_id', true );
 				$item_refund_amount     = abs( $item->get_total() + $item->get_total_tax() );
@@ -860,18 +857,16 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 				if ( $original_order_item_id == $line->metadata->order_item_id ) {
 
 					// Mollie doesn't allow a partial refund of less than 1 quantity, so when merchants try that, warn them and block the process
-					if ( number_format( $line->unitPrice->value, 2) > number_format( $item_refund_amount, 2) ) {
+					if ( abs($item->get_quantity()) < 1 ) {
 
-						$note_message = sprintf( "Mollie doesn't allow a partial refund of less than 1 quantity per order line. Use 'Refund amount' instead. The Mollie order line (%s) unit price is %s, and the WooCommerce refund item (%s) amount is %s.",
-							$line->id,
-							number_format( $line->unitPrice->value, 2 ),
+						$note_message = sprintf( "Mollie doesn't allow a partial refund of less than 1 quantity per order line. Use 'Refund amount' instead. The WooCommerce order item ID is %s, Mollie order line ID is %s.",
 							$original_order_item_id,
-							number_format( $item_refund_amount, 2 ) );
+							$line->id
+						);
 
 						Mollie_WC_Plugin::debug( __METHOD__ . " - Order $order_id: " . $note_message );
 						throw new Exception ( $note_message );
 					}
-
 
 					// Is test mode enabled?
 					$test_mode = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
@@ -879,17 +874,32 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 					// Get the Mollie order
 					$mollie_order = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->get( $payment_object->id );
 
-					// Prepare the order line to update
-					$lines = array (
-						'lines' => array (
-							array (
-								'id'       => $line->id,
-								'quantity' => abs( $item->get_quantity() ),
-							)
-						)
-					);
+					$item_total_amount = abs(number_format($item->get_total() + $item->get_total_tax(), 2));
 
-					Mollie_WC_Plugin::debug( 'line status ' . $line->status );
+					// Prepare the order line to update
+					if ( !empty( $line->discountAmount) ) {
+						$lines = array (
+							'lines' => array (
+								array (
+									'id'       => $line->id,
+									'quantity' => abs( $item->get_quantity() ),
+									'amount'      => array (
+										'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $item_total_amount, Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) ),
+										'currency' => Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order )
+									),
+								)
+							)
+						);
+					} else {
+						$lines = array (
+							'lines' => array (
+								array (
+									'id'       => $line->id,
+									'quantity' => abs( $item->get_quantity() ),
+								)
+							)
+						);
+					}
 
 					if ( $line->status == 'created' || $line->status == 'authorized' ) {
 

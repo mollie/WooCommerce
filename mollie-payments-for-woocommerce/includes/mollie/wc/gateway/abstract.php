@@ -1881,6 +1881,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 */
 	protected function isAvailableMethodInCheckout( $filters ) {
 
+		$methods = array ();
+
 		$settings_helper = Mollie_WC_Plugin::getSettingsHelper();
 		$test_mode       = $settings_helper->isTestModeEnabled();
 
@@ -1889,10 +1891,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			$filters_key   = $filters['amount']['currency'] . '_' . str_replace( '.', '', $filters['amount']['value'] ) . '_' . $filters['billingCountry'] . '_' . $filters['locale'] . '_' . $filters['sequenceType'];
 			$transient_id = Mollie_WC_Plugin::getDataHelper()->getTransientId( 'api_methods_' . ( $test_mode ? 'test' : 'live' ) . '_' . $filters_key );
 
-			$cached = unserialize( get_transient( $transient_id ) );
+			if ( version_compare( PHP_VERSION, '7.3.0' >= 0 ) ) {
+				$cached = unserialize( get_transient( $transient_id ) );
 
-			if ( $cached && $cached instanceof \Mollie\Api\Resources\MethodCollection ) {
-				$methods = $cached;
+				if ( $cached && $cached instanceof \Mollie\Api\Resources\MethodCollection ) {
+					$methods = $cached;
+				}
 			}
 
 			if ( empty ( $methods ) ) {

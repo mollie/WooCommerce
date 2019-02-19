@@ -309,7 +309,12 @@ class Mollie_WC_Helper_Data
 	}
 
 	protected function getApiPaymentMethods( $test_mode = false, $use_cache = true, $filters = array () ) {
+
 		$methods = array ();
+
+		if ( version_compare( PHP_VERSION, '7.3.0' >= 0 ) ) {
+			$use_cache = false;
+		}
 
 		try {
 

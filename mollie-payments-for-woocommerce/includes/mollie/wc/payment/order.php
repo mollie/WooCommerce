@@ -852,8 +852,6 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 				$original_order_item_id = $item->get_meta( '_refunded_item_id', true );
 				$item_refund_amount     = abs( $item->get_total() + $item->get_total_tax() );
 
-				Mollie_WC_Plugin::debug( 'Order item ids: ' . $item->get_name() . ' ' . $line->metadata->order_item_id . ' ' . $original_order_item_id );
-
 				if ( $original_order_item_id == $line->metadata->order_item_id ) {
 
 					// Mollie doesn't allow a partial refund of less than 1 quantity, so when merchants try that, warn them and block the process
@@ -975,9 +973,6 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 		// Is test mode enabled?
 		$test_mode = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
-
-		Mollie_WC_Plugin::debug( $amount );
-
 
 		if ( $payment_object->isCreated() || $payment_object->isAuthorized() || $payment_object->isShipping() ) {
 			$note_message = 'Can not refund order amount that has status ' . ucfirst( $payment_object->status ) . ' at Mollie.';

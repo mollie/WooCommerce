@@ -3,7 +3,7 @@ Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, payment gateway, woocommerce, credit card
 Requires at least: 3.8
 Tested up to: 5.1
-Stable tag: 5.0.7
+Stable tag: 5.1.0
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -180,6 +180,28 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 5.1.0 - 19-02-2019 =
+
+* New - Enable 'refunds' for Klarna and SEPA Direct Debit payments
+* New - Support refunds per order line for payments via the Orders API (used to be only amount refunds)
+* New - Updated "Tested up to" to WordPress 5.1
+* New - Automatically updating Mollie Orders from WooCommerce to "Ship and Capture" and "Cancel" now supports all payments via Orders API, not just Klarna payments
+* New - Add support for refunding full Mollie Orders when refunding the full WooCommerce order (Orders API)
+* New - Update order lines processing to use Order instead of Cart data (for Orders API and Klarna)
+* New - Orders API/Klarna: also send WooCommerce order item id to Mollie as metadata, to allow for individual order line refunding
+* New - Pro-actively check for required PHP JSON extension
+* New - Added filter so merchants can manipulate the payment object metadata, default filter id mollie-payments-for-woocommerce_payment_object_metadata, also see https://www.mollie/WooCommerce/wiki/Helpful-snippets#add-custom-information-to-mollie-payment-object-metadata
+* New - Add billing country to payment methods cache in checkout, for when customers change their country in checkout
+* New - Allow developers to hook into the subscription renewal payment before it's processed with mollie-payments-for-woocommerce_before_renewal_payment_created
+* New - Set Payment screen language setting to wp_locale by default
+
+* Fix - Temporary fix for PHP 7.3 with sporadic caching issues of methods, better fix is now being tested
+* Fix - Check if WooCommerce Subscriptions Failed Recurring Payment Retry System is in-use, if it is, don't update subscription status
+* Fix - Polylang: another fix for edge-case with URL parameter, please test and provide feedback is you use Polylang!
+* Fix - Too many customers redirected to "Pay now" after payment, add isAuthorized to status check in getReturnRedirectUrlForOrder()
+* Fix - Add extra warning to order note for orders that are completed at Mollie (not WooCommerce)
+* Fix - Improve onWebhookFailed for WooCommerce Subscriptions so failed payments at Mollie are failed orders at WooCommerce
 
 = 5.0.7 - 04-12-2018 =
 

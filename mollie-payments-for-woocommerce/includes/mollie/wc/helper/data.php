@@ -253,10 +253,10 @@ class Mollie_WC_Helper_Data
 
 
 	/**
-	 * @param bool|false $test_mode
-	 * @param bool|true  $use_cache
+	 * @param bool $test_mode
+	 * @param bool $use_cache
 	 *
-	 * @return array|\Mollie\Api\Resources\MethodCollection
+	 * @return array|mixed|\Mollie\Api\Resources\Method[]|\Mollie\Api\Resources\MethodCollection
 	 */
 	public function getAllPaymentMethods( $test_mode = false, $use_cache = true ) {
 
@@ -266,7 +266,7 @@ class Mollie_WC_Helper_Data
 		foreach ( $recurringPaymentMethods as $recurringItem ) {
 			$notFound = true;
 			foreach ( $result as $item ) {
-				if ( $item->id == $recurringItem->id ) {
+				if ( $item['id'] == $recurringItem['id'] ) {
 					$notFound = false;
 					break;
 				}
@@ -280,10 +280,10 @@ class Mollie_WC_Helper_Data
 	}
 
 	/**
-	 * @param bool $test_mode (default: false)
-	 * @param bool $use_cache (default: true)
+	 * @param bool $test_mode
+	 * @param bool $use_cache
 	 *
-	 * @return bool|\Mollie\Api\Resources\MethodCollection
+	 * @return array|mixed|\Mollie\Api\Resources\Method[]|\Mollie\Api\Resources\MethodCollection
 	 */
 	public function getRegularPaymentMethods( $test_mode = false, $use_cache = true ) {
 		// Already initialized
@@ -312,10 +312,6 @@ class Mollie_WC_Helper_Data
 
 		$methods = array ();
 
-		if ( version_compare( PHP_VERSION, '7.3.0' >= 0 ) ) {
-			$use_cache = false;
-		}
-
 		try {
 
 			$filters_key  = ( ! empty ( $filters['sequenceType'] ) ) ? '_' . $filters['sequenceType'] : '';
@@ -324,7 +320,7 @@ class Mollie_WC_Helper_Data
 			if ( $use_cache ) {
 				$cached_methods = unserialize( get_transient( $transient_id ) );
 
-				if ( $cached_methods && $cached_methods instanceof \Mollie\Api\Resources\MethodCollection ) {
+				if ( $cached_methods ) {
 					$methods = $cached_methods;
 				}
 			}
@@ -334,14 +330,26 @@ class Mollie_WC_Helper_Data
 				// Remove existing expired transients
 				delete_transient( $transient_id );
 
-				// TODO David: Support orders and payment resource?
 				$filters['resource'] = 'orders';
 
 				$methods = $this->api_helper->getApiClient( $test_mode )->methods->all( $filters );
 
+				$methods_cleaned = array();
+
+				foreach ( $methods as $method ) {
+
+					$public_properties = get_object_vars( $method ); // get only the public properties of the object
+					$methods_cleaned[] = $public_properties;
+
+				}
+
+				if ( $methods_cleaned === NULL ) {
+					$methods_cleaned = array(0);
+				}
+
 				// Set new transients (as cache)
 				try {
-					set_transient( $transient_id, serialize( $methods ), MINUTE_IN_SECONDS * 5 );
+					set_transient( $transient_id, serialize( $methods_cleaned ), MINUTE_IN_SECONDS * 5 );
 				}
 				catch ( Exception $e ) {
 					Mollie_WC_Plugin::debug( __FUNCTION__ . ": No caching because serialization failed." );
@@ -369,7 +377,7 @@ class Mollie_WC_Helper_Data
 
         foreach ($payment_methods as $payment_method)
         {
-            if ($payment_method->id == $method)
+            if ($payment_method['id'] == $method)
             {
                 return $payment_method;
             }

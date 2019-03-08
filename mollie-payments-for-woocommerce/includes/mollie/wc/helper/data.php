@@ -366,11 +366,12 @@ class Mollie_WC_Helper_Data
 		return $methods;
 	}
 
-    /**
-     * @param bool   $test_mode (default: false)
-     * @param string $method
-     * @return \Mollie\Api\Resources\Method|null
-     */
+	/**
+	 * @param bool $test_mode
+	 * @param      $method
+	 *
+	 * @return mixed|\Mollie\Api\Resources\Method|null
+	 */
     public function getPaymentMethod ($test_mode = false, $method)
     {
         $payment_methods = $this->getAllPaymentMethods($test_mode);

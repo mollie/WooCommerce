@@ -347,9 +347,11 @@ class Mollie_WC_Helper_Data
 					$methods_cleaned = array(0);
 				}
 
+				$methods = $methods_cleaned;
+
 				// Set new transients (as cache)
 				try {
-					set_transient( $transient_id, serialize( $methods_cleaned ), MINUTE_IN_SECONDS * 5 );
+					set_transient( $transient_id, serialize( $methods ), MINUTE_IN_SECONDS * 5 );
 				}
 				catch ( Exception $e ) {
 					Mollie_WC_Plugin::debug( __FUNCTION__ . ": No caching because serialization failed." );

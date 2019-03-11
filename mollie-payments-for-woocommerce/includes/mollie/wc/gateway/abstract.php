@@ -1620,6 +1620,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         $return_url = str_replace($site_url, $lang_url, $return_url);
 
+	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order->id . ' returnUrl: ' . $return_url, true );
+	    } else {
+		    Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order->get_id() . ' returnUrl: ' . $return_url, true );
+	    }
+
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_return_url', $return_url, $order);
     }
 

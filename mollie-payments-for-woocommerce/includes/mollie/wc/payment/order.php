@@ -638,10 +638,10 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 		// Get order ID in correct way depending on WooCommerce version
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 			$order_id          = $order->id;
-			$mollie_payment_id = get_post_meta( $order_id, '_mollie_payment_id', $single = true );
+			$mollie_payment_id = get_post_meta( $order_id, '_mollie_order_id', $single = true );
 		} else {
 			$order_id          = $order->get_id();
-			$mollie_payment_id = $order->get_meta( '_mollie_payment_id', true );
+			$mollie_payment_id = $order->get_meta( '_mollie_order_id', true );
 		}
 
 		// Add messages to log

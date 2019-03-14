@@ -78,6 +78,9 @@ class Mollie_WC_Helper_OrderLines {
 		foreach ( $this->order->get_items() as $cart_item ) {
 
 			if ( $cart_item['quantity'] ) {
+
+				do_action( Mollie_WC_Plugin::PLUGIN_ID . '_orderlines_process_items_before_getting_product_id', $cart_item );
+
 				if ( $cart_item['variation_id'] ) {
 					$product = wc_get_product( $cart_item['variation_id'] );
 				} else {
@@ -118,6 +121,8 @@ class Mollie_WC_Helper_OrderLines {
 				// TODO David: Continue testing adding WooCommerce images to Mollie Orders
 
 				$this->order_lines[] = $mollie_order_item;
+
+				do_action( Mollie_WC_Plugin::PLUGIN_ID . '_orderlines_process_items_after_processing_item', $cart_item );
 			}
 		}
 	}

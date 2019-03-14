@@ -1594,7 +1594,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function getReturnUrl (WC_Order $order)
     {
-        $site_url   = get_site_url();
+        $site_url   = get_home_url();
 
 	    $return_url = WC()->api_request_url( 'mollie_return' );
 	    $return_url = $this->removeTrailingSlashAfterParamater( $return_url );
@@ -1635,7 +1635,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function getWebhookUrl (WC_Order $order)
     {
-        $site_url    = get_site_url();
+        $site_url    = get_home_url();
 
 	    $webhook_url = WC()->api_request_url( strtolower( get_class( $this ) ) );
 	    $webhook_url = $this->removeTrailingSlashAfterParamater( $webhook_url );
@@ -1651,6 +1651,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			    'key'      => $order->get_order_key(),
 		    ), $webhook_url);
 	    }
+	    $webhook_url = $this->removeTrailingSlashAfterParamater( $webhook_url );
 
         $lang_url    = $this->getSiteUrlWithLanguage();
 

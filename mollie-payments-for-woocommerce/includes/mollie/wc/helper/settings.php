@@ -78,6 +78,7 @@ class Mollie_WC_Helper_Settings
 
 		// Convert known exceptions
 		( $locale == 'nl_NL_formal' ? $locale = 'nl_NL': '');
+                ( $locale == 'de_DE_formal' ? $locale = 'de_DE': '');
 		( $locale == 'no_NO' ? $locale = 'nb_NO': '');
 
 		// TODO: Once in a while, check API changelog to make sure there haven't been changes to this list.

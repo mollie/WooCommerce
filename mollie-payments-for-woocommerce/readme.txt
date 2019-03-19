@@ -3,7 +3,7 @@ Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, payment gateway, woocommerce, credit card
 Requires at least: 3.8
 Tested up to: 5.1
-Stable tag: 5.1.1-beta
+Stable tag: 5.1.1
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -180,6 +180,14 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 5.1.1 - 19-03-2019 =
+
+* New - Added two new actions when processing items for Orders API, mollie-payments-for-woocommerce_orderlines_process_items_before_getting_product_id and mollie-payments-for-woocommerce_orderlines_process_items_after_processing_item
+* Fix - Fixed bug where expired orders weren't updated in WooCommerce because of check for payment ID instead of order ID
+* Fix - Use get_home_url() to solve issues where people have different URLs for admin/site (also influences Polylang)
+* Fix - Extended refund processing: make sure people can't do a partial order line amount refund during an order line refund
+* Fix - Permanent fix for PHP 7.3 with sporadic caching issues of methods
 
 = 5.1.0 - 19-02-2019 =
 

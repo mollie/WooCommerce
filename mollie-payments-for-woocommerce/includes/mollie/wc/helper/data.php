@@ -308,6 +308,13 @@ class Mollie_WC_Helper_Data
 		return self::$recurring_api_methods;
 	}
 
+	/**
+	 * @param bool  $test_mode
+	 * @param bool  $use_cache
+	 * @param array $filters
+	 *
+	 * @return array|mixed|\Mollie\Api\Resources\MethodCollection|null
+	 */
 	protected function getApiPaymentMethods( $test_mode = false, $use_cache = true, $filters = array () ) {
 
 		$methods = array ();
@@ -320,7 +327,7 @@ class Mollie_WC_Helper_Data
 			if ( $use_cache ) {
 				$cached_methods = unserialize( get_transient( $transient_id ) );
 
-				if ( $cached_methods ) {
+				if ( $cached_methods && is_array($cached_methods) ) {
 					$methods = $cached_methods;
 				}
 			}

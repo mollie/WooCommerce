@@ -313,7 +313,7 @@ class Mollie_WC_Helper_Data
 		$methods = false;
 
 		$filters_key = $filters;
-		$filters_key['test'] = ( $test_mode ? 'test' : 'live' );
+		$filters_key['mode'] = ( $test_mode ? 'test' : 'live' );
 		$filters_key['api'] = 'methods';
 
 		try {

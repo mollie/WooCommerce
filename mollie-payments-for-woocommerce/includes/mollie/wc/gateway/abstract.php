@@ -1904,7 +1904,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 *
 	 * @param $filters
 	 *
-	 * @return array|bool
+	 * @return bool
 	 */
 	protected function isAvailableMethodInCheckout( $filters ) {
 

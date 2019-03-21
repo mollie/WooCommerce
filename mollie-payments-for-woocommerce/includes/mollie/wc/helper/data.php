@@ -320,12 +320,13 @@ class Mollie_WC_Helper_Data
 			if ( $use_cache ) {
 				$cached_methods = unserialize( get_transient( $transient_id ) );
 
-				if ( $cached_methods ) {
+				if ( $cached_methods && is_array($cached_methods) ) {
+
 					$methods = $cached_methods;
 				}
 			}
 
-			if ( empty ( $methods ) ) {
+			if ( $methods !== NULL ) {
 
 				// Remove existing expired transients
 				delete_transient( $transient_id );

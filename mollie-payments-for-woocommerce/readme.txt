@@ -3,7 +3,7 @@ Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
 Tags: mollie, payments, payment gateway, woocommerce, credit card
 Requires at least: 3.8
 Tested up to: 5.1
-Stable tag: 5.1.3
+Stable tag: 5.1.4
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -180,6 +180,12 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 5.1.4 - 21-03-2019 =
+
+* Fix - Check for '$methods !== NULL' in getAPIPaymentMethods
+* Fix - Only run isValidForUse (and resulting API calls) in the WooCommerce settings
+* Fix - Check that cached methods are stored as array, otherwise retrieve from API
 
 = 5.1.3 - 21-03-2019 =
 

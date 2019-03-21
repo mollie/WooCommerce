@@ -183,9 +183,8 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 = 5.1.4 - 21-03-2019 =
 
-* Fix - Check for '$methods !== NULL' in getAPIPaymentMethods
+* Fix - Fix caching issues for methods check
 * Fix - Only run isValidForUse (and resulting API calls) in the WooCommerce settings
-* Fix - Check that cached methods are stored as array, otherwise retrieve from API
 
 = 5.1.3 - 21-03-2019 =
 

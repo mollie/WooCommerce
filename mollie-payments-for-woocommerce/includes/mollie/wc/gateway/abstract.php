@@ -201,47 +201,67 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function isValidForUse()
     {
-	    $settings = Mollie_WC_Plugin::getSettingsHelper();
 
-        if (!$this->isValidApiKeyProvided())
-        {
-            $test_mode = $settings->isTestModeEnabled();
+    	//
+    	// Abort if this is not the WooCommerce settings page
+		//
 
-            $this->errors[] = ($test_mode ? __('Test mode enabled.', 'mollie-payments-for-woocommerce') . ' ' : '') . sprintf(
-                /* translators: The surrounding %s's Will be replaced by a link to the global setting page */
-                    __('No API key provided. Please %sset you Mollie API key%s first.', 'mollie-payments-for-woocommerce'),
-                    '<a href="' . $settings->getGlobalSettingsUrl() . '">',
-                    '</a>'
-                );
+	    // Return if function get_current_screen() is not defined
+	    if ( ! function_exists( 'get_current_screen' ) ) {
+		    return true;
+	    }
 
-            return false;
-        }
+	    // Try getting get_current_screen()
+	    $current_screen = get_current_screen();
 
-        if (null === $this->getMollieMethod())
-        {
-            $this->errors[] = sprintf(
-            /* translators: Placeholder 1: payment method title. The surrounding %s's Will be replaced by a link to the Mollie profile */
-                __('%s not enabled in your Mollie profile. You can enabled it by editing your %sMollie profile%s.', 'mollie-payments-for-woocommerce'),
-                $this->getDefaultTitle(),
-                '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
-                '</a>'
-            );
+	    // Return if get_current_screen() isn't set
+	    if ( ! $current_screen ) {
+		    return true;
+	    }
 
-            return false;
-        }
+	    // Remove old MisterCash (only) from WooCommerce Payment settings
+	    if ( is_admin() && ! empty( $current_screen->base ) && $current_screen->base == 'woocommerce_page_wc-settings' ) {
 
-        if (!$this->isCurrencySupported())
-        {
-            $this->errors[] = sprintf(
-            /* translators: Placeholder 1: WooCommerce currency, placeholder 2: Supported Mollie currencies */
-                __('Current shop currency %s not supported by Mollie. Read more about %ssupported currencies and payment methods.%s ', 'mollie-payments-for-woocommerce'),
-                get_woocommerce_currency(),
-                '<a href="https://help.mollie.com/hc/en-us/articles/360003980013-Which-currencies-are-supported-and-what-is-the-settlement-currency-" target="_blank">',
-                '</a>'
-            );
+		    $settings = Mollie_WC_Plugin::getSettingsHelper();
 
-            return false;
-        }
+		    if ( ! $this->isValidApiKeyProvided() ) {
+			    $test_mode = $settings->isTestModeEnabled();
+
+			    $this->errors[] = ( $test_mode ? __( 'Test mode enabled.', 'mollie-payments-for-woocommerce' ) . ' ' : '' ) . sprintf(
+				    /* translators: The surrounding %s's Will be replaced by a link to the global setting page */
+					    __( 'No API key provided. Please %sset you Mollie API key%s first.', 'mollie-payments-for-woocommerce' ),
+					    '<a href="' . $settings->getGlobalSettingsUrl() . '">',
+					    '</a>'
+				    );
+
+			    return false;
+		    }
+
+		    // This should be simpler, check for specific payment method in settings, not on all pages
+		    if ( null === $this->getMollieMethod() ) {
+			    $this->errors[] = sprintf(
+			    /* translators: Placeholder 1: payment method title. The surrounding %s's Will be replaced by a link to the Mollie profile */
+				    __( '%s not enabled in your Mollie profile. You can enabled it by editing your %sMollie profile%s.', 'mollie-payments-for-woocommerce' ),
+				    $this->getDefaultTitle(),
+				    '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
+				    '</a>'
+			    );
+
+			    return false;
+		    }
+
+		    if ( ! $this->isCurrencySupported() ) {
+			    $this->errors[] = sprintf(
+			    /* translators: Placeholder 1: WooCommerce currency, placeholder 2: Supported Mollie currencies */
+				    __( 'Current shop currency %s not supported by Mollie. Read more about %ssupported currencies and payment methods.%s ', 'mollie-payments-for-woocommerce' ),
+				    get_woocommerce_currency(),
+				    '<a href="https://help.mollie.com/hc/en-us/articles/360003980013-Which-currencies-are-supported-and-what-is-the-settlement-currency-" target="_blank">',
+				    '</a>'
+			    );
+
+			    return false;
+		    }
+	    }
 
         return true;
     }

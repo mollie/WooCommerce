@@ -1721,7 +1721,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		 */
 		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 
-		$site_url          = get_site_url();
+		$site_url          = get_home_url();
 		$polylang_fallback = false;
 
 		if ( is_plugin_active( 'polylang/polylang.php' ) || is_plugin_active( 'polylang-pro/polylang.php' ) ) {

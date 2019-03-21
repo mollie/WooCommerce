@@ -1908,70 +1908,21 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 */
 	protected function isAvailableMethodInCheckout( $filters ) {
 
-		$methods = array ();
-
 		$settings_helper = Mollie_WC_Plugin::getSettingsHelper();
 		$test_mode       = $settings_helper->isTestModeEnabled();
 
-		try {
+		$data_helper = Mollie_WC_Plugin::getDataHelper();
+		$methods     = $data_helper->getApiPaymentMethods( $test_mode, $use_cache = true, $filters);
 
-			$filters_key   = $filters['amount']['currency'] . '_' . str_replace( '.', '', $filters['amount']['value'] ) . '_' . $filters['billingCountry'] . '_' . $filters['locale'] . '_' . $filters['sequenceType'];
-			$transient_id = Mollie_WC_Plugin::getDataHelper()->getTransientId( 'api_methods_' . ( $test_mode ? 'test' : 'live' ) . '_' . $filters_key );
+		// Get the ID of the WooCommerce/Mollie payment method
+		$woocommerce_method = $this->getMollieMethodId();
 
-			$cached = unserialize( get_transient( $transient_id ) );
+		// Set all other payment methods to false, so they can be updated if available
+		foreach ( $methods as $method ) {
 
-			if ( $cached ) {
-				$methods = $cached;
+			if ( $method['id'] == $woocommerce_method ) {
+				return true;
 			}
-
-			if ( empty ( $methods ) ) {
-
-				// Remove existing expired transients
-				delete_transient( $transient_id );
-
-				// Get payment methods at Mollie
-				$methods = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->methods->all( $filters );
-
-				$methods_cleaned = array();
-
-				foreach ( $methods as $method ) {
-
-					$public_properties = get_object_vars( $method ); // get only the public properties of the object
-					$methods_cleaned[] = $public_properties;
-
-				}
-
-				if ( $methods_cleaned === NULL ) {
-					$methods_cleaned = array(0);
-				}
-
-				$methods = $methods_cleaned;
-
-				// Set new transients (as cache)
-				try {
-					set_transient( $transient_id, serialize( $methods ), MINUTE_IN_SECONDS * 5 );
-				}
-				catch ( Exception $e ) {
-					Mollie_WC_Plugin::debug( __FUNCTION__ . ": No caching because serialization failed." );
-				}
-
-			}
-
-			// Get the ID of the WooCommerce/Mollie payment method
-			$woocommerce_method = $this->getMollieMethodId();
-
-			// Set all other payment methods to false, so they can be updated if available
-			foreach ( $methods as $method ) {
-
-				if ( $method['id'] == $woocommerce_method ) {
-					return true;
-				}
-			}
-		}
-		catch ( \Mollie\Api\Exceptions\ApiException $e ) {
-
-			Mollie_WC_Plugin::debug( __FUNCTION__ . ": Could not check availability of Mollie payment methods (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class( $e ) . ')' );
-
 		}
 
 		return false;

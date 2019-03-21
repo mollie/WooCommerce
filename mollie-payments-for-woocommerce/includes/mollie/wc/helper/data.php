@@ -308,14 +308,17 @@ class Mollie_WC_Helper_Data
 		return self::$recurring_api_methods;
 	}
 
-	protected function getApiPaymentMethods( $test_mode = false, $use_cache = true, $filters = array () ) {
+	public function getApiPaymentMethods( $test_mode = false, $use_cache = true, $filters = array () ) {
 
 		$methods = false;
 
+		$filters_key = $filters;
+		$filters_key['test'] = ( $test_mode ? 'test' : 'live' );
+		$filters_key['api'] = 'methods';
+
 		try {
 
-			$filters_key  = ( ! empty ( $filters['sequenceType'] ) ) ? '_' . $filters['sequenceType'] : '';
-			$transient_id = Mollie_WC_Plugin::getDataHelper()->getTransientId( 'api_methods_' . ( $test_mode ? 'test' : 'live' ) . $filters_key );
+			$transient_id = Mollie_WC_Plugin::getDataHelper()->getTransientId( md5(http_build_query($filters_key))  );
 
 			if ($use_cache) {
 				// When no cache exists $methods will be `false`

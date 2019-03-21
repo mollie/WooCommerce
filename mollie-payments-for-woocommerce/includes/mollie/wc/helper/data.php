@@ -310,23 +310,20 @@ class Mollie_WC_Helper_Data
 
 	protected function getApiPaymentMethods( $test_mode = false, $use_cache = true, $filters = array () ) {
 
-		$methods = array ();
+		$methods = false;
 
 		try {
 
 			$filters_key  = ( ! empty ( $filters['sequenceType'] ) ) ? '_' . $filters['sequenceType'] : '';
 			$transient_id = Mollie_WC_Plugin::getDataHelper()->getTransientId( 'api_methods_' . ( $test_mode ? 'test' : 'live' ) . $filters_key );
 
-			if ( $use_cache ) {
-				$cached_methods = unserialize( get_transient( $transient_id ) );
-
-				if ( $cached_methods && is_array($cached_methods) ) {
-
-					$methods = $cached_methods;
-				}
+			if ($use_cache) {
+				// When no cache exists $methods will be `false`
+				$methods = unserialize( get_transient( $transient_id ) );
 			}
 
-			if ( $methods !== NULL ) {
+			// No cache exists, call the API and cache the result
+			if ( $methods === false ) {
 
 				// Remove existing expired transients
 				delete_transient( $transient_id );
@@ -338,16 +335,11 @@ class Mollie_WC_Helper_Data
 				$methods_cleaned = array();
 
 				foreach ( $methods as $method ) {
-
 					$public_properties = get_object_vars( $method ); // get only the public properties of the object
 					$methods_cleaned[] = $public_properties;
-
 				}
 
-				if ( $methods_cleaned === NULL ) {
-					$methods_cleaned = array(0);
-				}
-
+				// $methods_cleaned is empty array when the API doesn't return any methods, cache the empty array
 				$methods = $methods_cleaned;
 
 				// Set new transients (as cache)
@@ -357,16 +349,15 @@ class Mollie_WC_Helper_Data
 				catch ( Exception $e ) {
 					Mollie_WC_Plugin::debug( __FUNCTION__ . ": No caching because serialization failed." );
 				}
-
 			}
 
 			return $methods;
 		}
 		catch ( \Mollie\Api\Exceptions\ApiException $e ) {
 			Mollie_WC_Plugin::debug( __FUNCTION__ . ": Could not load Mollie methods (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class( $e ) . ')' );
-		}
 
-		return $methods;
+			return array();
+		}
 	}
 
 	/**

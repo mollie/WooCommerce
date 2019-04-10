@@ -266,7 +266,7 @@ class Mollie_WC_Helper_OrderLines {
 	 * @return integer $item_vatRate Item tax percentage formatted for Mollie Orders API.
 	 */
 	private function get_item_vatRate( $cart_item, $product ) {
-		if ( $product->is_taxable() && $cart_item['line_subtotal_tax'] > 0 ) {
+		if ( $product && $product->is_taxable() && $cart_item['line_subtotal_tax'] > 0 ) {
 			// Calculate tax rate.
 
 			$_tax      = new WC_Tax();
@@ -331,7 +331,7 @@ class Mollie_WC_Helper_OrderLines {
 	 * @return string $item_reference Cart item reference.
 	 */
 	private function get_item_reference( $product ) {
-		if ( $product->get_sku() ) {
+		if ( $product && $product->get_sku() ) {
 			$item_reference = $product->get_sku();
 		} else {
 			$item_reference = $product->get_id();

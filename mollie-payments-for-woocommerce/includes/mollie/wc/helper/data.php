@@ -396,14 +396,18 @@ class Mollie_WC_Helper_Data
 
 		try {
 
-			$transient_id = Mollie_WC_Plugin::getDataHelper()->getTransientId( 'issuers_' . ( $test_mode ? 'test' : 'live' ) );
+			$transient_id = Mollie_WC_Plugin::getDataHelper()->getTransientId( $method . '_issuers_' . ( $test_mode ? 'test' : 'live' ) );
 
-			$cached_issuers = unserialize( get_transient( $transient_id ) );
+			// When no cache exists $cached_issuers will be `false`
+			$issuers = unserialize( get_transient( $transient_id ) );
 
-			if ( $cached_issuers && $cached_issuers instanceof \Mollie\Api\Resources\MethodCollection ) {
-				return $cached_issuers;
-			} else {
-				$issuers = $this->api_helper->getApiClient( $test_mode )->methods->get( "$method", array ( "include" => "issuers" ) );
+			if ( $issuers === false ) {
+
+				// Remove existing expired transients
+				delete_transient( $transient_id );
+
+				$method  = $this->api_helper->getApiClient( $test_mode )->methods->get( "$method", array ( "include" => "issuers" ) );
+				$issuers = $method->issuers;
 
 				// Set new transients (as cache)
 				try {

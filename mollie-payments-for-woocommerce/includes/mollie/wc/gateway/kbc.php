@@ -96,7 +96,7 @@ class Mollie_WC_Gateway_Kbc extends Mollie_WC_Gateway_AbstractSepaRecurring
 
 		$html  = '<select name="' . Mollie_WC_Plugin::PLUGIN_ID . '_issuer_' . $this->id . '">';
 		$html .= '<option value="">' . esc_html(__($this->get_option('issuers_empty_option', $this->getDefaultDescription()), 'mollie-payments-for-woocommerce')) . '</option>';
-		foreach ($issuers->issuers as $issuer)
+		foreach ($issuers as $issuer)
 		{
 			$html .= '<option value="' . esc_attr($issuer->id) . '"' . ($selected_issuer == $issuer->id ? ' selected=""' : '') . '>' . esc_html($issuer->name) . '</option>';
 		}

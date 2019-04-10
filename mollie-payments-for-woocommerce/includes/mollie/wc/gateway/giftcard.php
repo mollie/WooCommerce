@@ -96,8 +96,8 @@ class Mollie_WC_Gateway_Giftcard extends Mollie_WC_Gateway_Abstract
 		$html = '';
 
 		// If only one gift card issuers is available, show it without a dropdown
-		if ( count( $issuers->issuers ) === 1 ) {
-			$html .= '<img src="' . $this->getIssuerIconUrl( $issuers->issuers[0]->id ) . '" style="vertical-align:middle" />';
+		if ( count( $issuers ) === 1 ) {
+			$html .= '<img src="' . $this->getIssuerIconUrl( $issuers[0]->id ) . '" style="vertical-align:middle" />';
 			$html .= $issuers->description;
 			echo wpautop( wptexturize( $html ) );
 
@@ -107,7 +107,7 @@ class Mollie_WC_Gateway_Giftcard extends Mollie_WC_Gateway_Abstract
 		// If multiple gift card issuers are available, show them in a dropdown
 		$html .= '<select name="' . Mollie_WC_Plugin::PLUGIN_ID . '_issuer_' . $this->id . '">';
 		$html .= '<option value="">' . esc_html( __( $this->get_option( 'issuers_empty_option', '' ), 'mollie-payments-for-woocommerce' ) ) . '</option>';
-		foreach ( $issuers->issuers as $issuer ) {
+		foreach ( $issuers as $issuer ) {
 			$html .= '<option value="' . esc_attr( $issuer->id ) . '"' . ( $selected_issuer == $issuer->id ? ' selected=""' : '' ) . '>' . esc_html( $issuer->name ) . '</option>';
 		}
 		$html .= '</select>';

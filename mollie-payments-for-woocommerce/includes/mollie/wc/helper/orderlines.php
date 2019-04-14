@@ -333,8 +333,10 @@ class Mollie_WC_Helper_OrderLines {
 	private function get_item_reference( $product ) {
 		if ( $product && $product->get_sku() ) {
 			$item_reference = $product->get_sku();
-		} else {
+		} elseif ( $product ) {
 			$item_reference = $product->get_id();
+		} else {
+			$item_reference = '';
 		}
 
 		return substr( strval( $item_reference ), 0, 64 );

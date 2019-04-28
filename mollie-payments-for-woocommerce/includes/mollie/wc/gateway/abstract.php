@@ -1686,11 +1686,13 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         $lang_url   = $this->getSiteUrlWithLanguage();
 
-        if ( strpos( $lang_url, '/?') !== FALSE ) {
-        	$return_url = str_replace( '/?', '&', $return_url);
-        }
-
-        $return_url = str_replace($site_url, $lang_url, $return_url);
+	    // Make sure there aren't any double /? in the URL (some (multilanguage) plugins will add this)
+	    if ( strpos( $lang_url, '/?' ) !== false ) {
+		    $lang_url_params = substr( $lang_url, strpos( $lang_url, "/?" ) + 2 );
+		    $return_url = $return_url . '&' . $lang_url_params;
+	    } else {
+		    $return_url = str_replace( $site_url, $lang_url, $return_url );
+	    }
 
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 		    Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order->id . ' returnUrl: ' . $return_url, true );
@@ -1727,11 +1729,13 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         $lang_url    = $this->getSiteUrlWithLanguage();
 
-	    if ( strpos( $lang_url, '/?') !== FALSE ) {
-		    $webhook_url = str_replace( '/?', '&', $webhook_url);
+	    // Make sure there aren't any double /? in the URL (some (multilanguage) plugins will add this)
+	    if ( strpos( $lang_url, '/?' ) !== false ) {
+		    $lang_url_params = substr( $lang_url, strpos( $lang_url, "/?" ) + 2 );
+		    $webhook_url = $webhook_url . '&' . $lang_url_params;
+	    } else {
+		    $webhook_url = str_replace( $site_url, $lang_url, $webhook_url );
 	    }
-
-        $webhook_url = str_replace($site_url, $lang_url, $webhook_url);
 
         // Some (multilanguage) plugins will add a extra slash to the url (/nl//) causing the URL to redirect and lose it's data.
 	    // Status updates via webhook will therefor not be processed. The below regex will find and remove those double slashes.

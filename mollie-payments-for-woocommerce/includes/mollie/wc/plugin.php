@@ -24,7 +24,6 @@ class Mollie_WC_Plugin
     public static $GATEWAYS = array(
         'Mollie_WC_Gateway_BankTransfer',
         'Mollie_WC_Gateway_Belfius',
-        'Mollie_WC_Gateway_Bitcoin',
         'Mollie_WC_Gateway_Creditcard',
         'Mollie_WC_Gateway_DirectDebit',
         'Mollie_WC_Gateway_EPS',

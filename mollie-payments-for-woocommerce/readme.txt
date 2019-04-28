@@ -50,7 +50,6 @@ European and local payment methods:
 International payment methods:
 
 * PayPal (International)
-* Bitcoin (International)
 * Paysafecard (International)
 
 Pay after delivery payment methods:
@@ -183,7 +182,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 = 5.1.7 - 28-04-2019 =
 
-* Fix - Remove bitcoin as payment gateway, no longer supported by Mollie, contact info@mollie.com for details
+* Fix - Remove Bitcoin as payment gateway, no longer supported by Mollie, contact info@mollie.com for details
 * Fix - Add extra check for URL's with parameters and correct them is structure is incorrect
 * Fix - getMethodIssuers: improve caching of issuers (iDEAL, KBC/CBC)
 * Fix - During payment always check if a product exists, if it doesn't create a Mollie Payment instead of Mollie Order
@@ -548,7 +547,7 @@ WooCommerce -> Settings -> Payments -> Mollie - Bank Transfer.
 
 = 2.0.1 - 02/10/2015 =
 * Add support for SEPA Direct Debit.
-* Add message for Belfius, Bitcoin, Bancontact and paysafecard when the payment is paid successfully.
+* Add message for Belfius, Bancontact and paysafecard when the payment is paid successfully.
 
 = 2.0.0 - 17/08/2015 =
 * Complete rewrite of our WooCommerce plugin to better follow WordPress and WooCommerce standards and add better support for other plugins.

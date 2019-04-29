@@ -62,7 +62,7 @@ add_action( 'plugins_loaded', 'mollie_wc_check_php_version' );
  * Check if WooCommerce is active and of a supported version
  */
 function mollie_wc_check_woocommerce_status() {
-	if ( ! class_exists( 'WooCommerce' ) || version_compare( get_option( 'woocommerce_db_version' ), '2.2', '<' ) ) {
+	if ( ! class_exists( 'WooCommerce' ) || version_compare( get_option( 'woocommerce_version' ), '2.2', '<' ) ) {
 		remove_action('init', 'mollie_wc_plugin_init');
 		add_action( 'admin_notices', 'mollie_wc_plugin_inactive' );
 		return;
@@ -88,7 +88,7 @@ function mollie_wc_plugin_init() {
 function mollie_wc_plugin_activation_hook ()
 {
 
-	if ( ! class_exists( 'WooCommerce' ) || version_compare( get_option( 'woocommerce_db_version' ), '2.2', '<' ) ) {
+	if ( ! class_exists( 'WooCommerce' ) || version_compare( get_option( 'woocommerce_version' ), '2.2', '<' ) ) {
 		remove_action('init', 'mollie_wc_plugin_init');
 		add_action( 'admin_notices', 'mollie_wc_plugin_inactive' );
 		return;
@@ -169,7 +169,7 @@ function mollie_wc_plugin_inactive() {
 		return false;
 	}
 
-	if ( version_compare( get_option( 'woocommerce_db_version' ), '2.2', '<' ) ) {
+	if ( version_compare( get_option( 'woocommerce_version' ), '2.2', '<' ) ) {
 
 		echo '<div class="error"><p>';
 		echo sprintf( esc_html__( '%1$sMollie Payments for WooCommerce is inactive.%2$s This version requires WooCommerce 2.2 or newer. Please %3$supdate WooCommerce to version 2.2 or newer &raquo;%4$s', 'mollie-payments-for-woocommerce' ), '<strong>', '</strong>', '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">', '</a>' );

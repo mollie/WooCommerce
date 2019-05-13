@@ -285,6 +285,9 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 		// Add messages to log
 		Mollie_WC_Plugin::debug( __METHOD__ . ' called for payment ' . $order_id );
 
+		// Get current gateway
+		$gateway = Mollie_WC_Plugin::getDataHelper()->getWcPaymentGatewayByOrder( $order );
+
 		$this->unsetActiveMolliePayment( $order_id, $payment->id );
 		$this->setCancelledMolliePaymentId( $order_id, $payment->id );
 
@@ -303,12 +306,10 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 		$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_cancelled', $new_order_status );
 
 		// Overwrite gateway-wide
-		$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_cancelled_' . $this->id, $new_order_status );
+		$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_cancelled_' . $gateway->id, $new_order_status );
 
 		// Update order status, but only if there is no payment started by another gateway
 		if ( ! $this->isOrderPaymentStartedByOtherGateway( $order ) ) {
-
-			$gateway = Mollie_WC_Plugin::getDataHelper()->getWcPaymentGatewayByOrder( $order );
 
 			if ( $gateway || ( $gateway instanceof Mollie_WC_Gateway_Abstract ) ) {
 				$gateway->updateOrderStatus( $order, $new_order_status );
@@ -318,7 +319,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 			$order_payment_method_title = get_post_meta( $order_id, '_payment_method_title', $single = true );
 
 			// Add message to log
-			Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order->get_id() . ' webhook called, but payment also started via ' . $order_payment_method_title . ', so order status not updated.', true );
+			Mollie_WC_Plugin::debug( $gateway->id . ': Order ' . $order->get_id() . ' webhook called, but payment also started via ' . $order_payment_method_title . ', so order status not updated.', true );
 
 			// Add order note
 			$order->add_order_note( sprintf(
@@ -368,6 +369,9 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 		// Add messages to log
 		Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id );
 
+		// Get current gateway
+		$gateway = Mollie_WC_Plugin::getDataHelper()->getWcPaymentGatewayByOrder( $order );
+
 		// New order status
 		$new_order_status = Mollie_WC_Gateway_Abstract::STATUS_FAILED;
 
@@ -375,10 +379,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 		$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_failed', $new_order_status );
 
 		// Overwrite gateway-wide
-		$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_failed_' . $this->id, $new_order_status );
-
-		$gateway = Mollie_WC_Plugin::getDataHelper()->getWcPaymentGatewayByOrder( $order );
-
+		$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_failed_' . $gateway->id, $new_order_status );
 
 		// If WooCommerce Subscriptions is installed, process this failure as a subscription, otherwise as a regular order
 		// Update order status for order with failed payment, don't restore stock
@@ -444,6 +445,9 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 		// Add messages to log
 		Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id );
 
+		// Get current gateway
+		$gateway = Mollie_WC_Plugin::getDataHelper()->getWcPaymentGatewayByOrder( $order );
+
 		// Check that this payment is the most recent, based on Mollie Payment ID from post meta, do not cancel the order if it isn't
 		if ( $mollie_payment_id != $payment->id ) {
 			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id . ' and payment ' . $payment->id . ', not processed because of a newer pending payment ' . $mollie_payment_id );
@@ -466,12 +470,10 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 		$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_expired', $new_order_status );
 
 		// Overwrite gateway-wide
-		$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_expired_' . $this->id, $new_order_status );
+		$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_expired_' . $gateway->id, $new_order_status );
 
 		// Update order status, but only if there is no payment started by another gateway
 		if ( ! $this->isOrderPaymentStartedByOtherGateway( $order ) ) {
-
-			$gateway = Mollie_WC_Plugin::getDataHelper()->getWcPaymentGatewayByOrder( $order );
 
 			if ( $gateway || ( $gateway instanceof Mollie_WC_Gateway_Abstract ) ) {
 				$gateway->updateOrderStatus( $order, $new_order_status );
@@ -481,7 +483,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 			$order_payment_method_title = get_post_meta( $order_id, '_payment_method_title', $single = true );
 
 			// Add message to log
-			Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order->get_id() . ' webhook called, but payment also started via ' . $order_payment_method_title . ', so order status not updated.', true );
+			Mollie_WC_Plugin::debug( $gateway->id . ': Order ' . $order->get_id() . ' webhook called, but payment also started via ' . $order_payment_method_title . ', so order status not updated.', true );
 
 			// Add order note
 			$order->add_order_note( sprintf(

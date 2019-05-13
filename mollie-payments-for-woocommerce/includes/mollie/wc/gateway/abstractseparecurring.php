@@ -57,7 +57,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
 	    $this->updateOrderStatus(
 		    $renewal_order,
 		    $initial_order_status,
-		    sprintf( __( "Awaiting payment confirmation. For %s days", 'mollie-payments-for-woocommerce' ) . "\n",
+		    sprintf( __( "Awaiting payment confirmation.", 'mollie-payments-for-woocommerce' ) . "\n",
 			    self::WAITING_CONFIRMATION_PERIOD_DAYS )
 	    );
 
@@ -72,6 +72,14 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
 
         $this->addPendingPaymentOrder($renewal_order);
     }
+
+	/**
+	 * @return bool
+	 */
+	protected function paymentConfirmationAfterCoupleOfDays ()
+	{
+		return true;
+	}
 
     /**
      * @param $renewal_order

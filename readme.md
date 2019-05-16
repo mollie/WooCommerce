@@ -41,7 +41,6 @@ European and local payment methods:
 International payment methods:
 
 * PayPal (International)
-* Bitcoin (International)
 * Paysafecard (International)
 
 Pay after delivery payment methods:

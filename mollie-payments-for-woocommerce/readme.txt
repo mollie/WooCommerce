@@ -1,5 +1,5 @@
 === Mollie Payments for WooCommerce ===
-Contributors: daanvm, davdebcom, l.vangunst, ndijkstra, robin-mollie
+Contributors: daanvm, danielhuesken, davdebcom, dinamiko, inpsyde, l.vangunst, ndijkstra, robin-mollie, wido
 Tags: mollie, payments, payment gateway, woocommerce, credit card
 Requires at least: 3.8
 Tested up to: 5.2

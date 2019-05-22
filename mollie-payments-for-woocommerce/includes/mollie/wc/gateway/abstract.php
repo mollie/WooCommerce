@@ -507,8 +507,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 				if ( $product == false ) {
 					$mollie_payment_type = 'payment';
+					do_action( Mollie_WC_Plugin::PLUGIN_ID . '_orderlines_process_items_after_processing_item', $cart_item );
 					break;
 				}
+				do_action( Mollie_WC_Plugin::PLUGIN_ID . '_orderlines_process_items_after_processing_item', $cart_item );
 			}
 		}
 

@@ -3,7 +3,7 @@ Contributors: daanvm, danielhuesken, davdebcom, dinamiko, inpsyde, l.vangunst, n
 Tags: mollie, payments, payment gateway, woocommerce, credit card, ideal, bancontact, klarna, sofort, giropay, woocommerce subscriptions
 Requires at least: 3.8
 Tested up to: 5.2
-Stable tag: 5.1.7
+Stable tag: 5.1.8
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -180,6 +180,13 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 5.1.8 - 24-05-2019 =
+
+* Fix - Re-add "_orderlines_process_items_after_processing_item" hook
+* Fix - Fix issue where renewal order status was not respecting settings
+* Fix - Fix PHP Notice: Undefined property: Mollie_WC_Payment_Payment::$id, closes #289
+* Fix - Switch version check from woocommerce_db_version to woocommerce_version as the latter is re-added to database a lot faster when it's missing then the former. Might solve issues where Mollie plugin is disabled when WooCommerce updates.
 
 = 5.1.7 - 28-04-2019 =
 

@@ -1,6 +1,6 @@
 === Mollie Payments for WooCommerce ===
 Contributors: daanvm, danielhuesken, davdebcom, dinamiko, inpsyde, l.vangunst, ndijkstra, robin-mollie, wido
-Tags: mollie, payments, payment gateway, woocommerce, credit card
+Tags: mollie, payments, payment gateway, woocommerce, credit card, ideal, bancontact, klarna, sofort, giropay, woocommerce subscriptions
 Requires at least: 3.8
 Tested up to: 5.2
 Stable tag: 5.1.7

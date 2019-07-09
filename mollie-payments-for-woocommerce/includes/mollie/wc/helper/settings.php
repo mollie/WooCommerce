@@ -48,6 +48,10 @@ class Mollie_WC_Helper_Settings
     {
         $setting = $this->getPaymentLocaleSetting();
 
+        if ($setting === 'detect_by_browser') {
+            return null;
+        }
+
         if (!empty($setting))
         {
             if ($setting == 'wp_locale')
@@ -403,6 +407,9 @@ class Mollie_WC_Helper_Settings
                 'title'   => __('Payment screen language', 'mollie-payments-for-woocommerce'),
                 'type'    => 'select',
                 'options' => array(
+                    'detect_by_browser' => __('Detect using browser language',
+                            'mollie-payments-for-woocommerce') . ' (' . __('default',
+                            'mollie-payments-for-woocommerce') . ')',
                     'wp_locale' => __('Automatically send WordPress language', 'mollie-payments-for-woocommerce'),
                     'en_US' => __('English', 'mollie-payments-for-woocommerce'),
                     'nl_NL' => __('Dutch', 'mollie-payments-for-woocommerce'),

@@ -312,9 +312,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				),
 				'resource'       => 'orders',
 				'billingCountry' => $billing_country,
-				'locale'         => $payment_locale,
 				'sequenceType'   => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_ONEOFF
 			);
+
+			$payment_locale and $filters['locale'] = $payment_locale;
 
 			// For regular payments, check available payment methods, but ignore SSD gateway (not shown in checkout)
 			$status = ( $this->id !== 'mollie_wc_gateway_directdebit' ) ? $this->isAvailableMethodInCheckout( $filters ) : false;
@@ -342,9 +343,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 								),
 								'resource'       => 'orders',
 								'billingCountry' => $billing_country,
-								'locale'         => $payment_locale,
 								'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_RECURRING
 							);
+
+                            $payment_locale and $filters['locale'] = $payment_locale;
 
 							$status = $this->isAvailableMethodInCheckout( $filters );
 
@@ -359,9 +361,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 								),
 								'resource'       => 'orders',
 								'billingCountry' => $billing_country,
-								'locale'         => $payment_locale,
 								'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_FIRST
 							);
+
+                            $payment_locale and $filters['locale'] = $payment_locale;
 
 							$status = $this->isAvailableMethodInCheckout( $filters );
 						}
@@ -1288,7 +1291,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			}
 
 		}
-		
+
 		do_action( Mollie_WC_Plugin::PLUGIN_ID . '_customer_return_payment_success', $order );
 		/*
 		 * Return to order received page

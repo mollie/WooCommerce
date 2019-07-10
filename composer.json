@@ -1,0 +1,24 @@
+{
+    "name": "mollie/mollie-woocommerce",
+    "type": "wordpress-plugin",
+    "license": "GLP-v2",
+    "minimum-stability": "dev",
+    "require": {
+        "php": "5.6"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5",
+        "brain/monkey": "^2.0@dev"
+    },
+    "autoload": {
+        "classmap": [
+            "mollie-payments-for-woocommerce/includes"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Mollie\\WooCommerce\\Tests\\": "tests/php",
+            "Mollie\\WooCommerce\\Tests\\Unit\\": "tests/php/Unit"
+        }
+    }
+}

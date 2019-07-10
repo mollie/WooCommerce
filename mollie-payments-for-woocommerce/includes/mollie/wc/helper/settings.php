@@ -1,11 +1,44 @@
 <?php
 class Mollie_WC_Helper_Settings
 {
+    const FILTER_ALLOWED_LANGUAGE_CODE_SETTING = 'mollie.allowed_language_code_setting';
+    const FILTER_WPML_CURRENT_LOCALE = 'wpml_current_language';
+
     const DEFAULT_TIME_PAYMENT_CONFIRMATION_CHECK = '3:00';
+
+    const SETTING_NAME_PAYMENT_LOCALE = 'payment_locale';
+    const SETTING_LOCALE_DEFAULT_LANGUAGE = 'en_US';
+    const SETTING_LOCALE_DETECT_BY_BROWSER = 'detect_by_browser';
+    const SETTING_LOCALE_WP_LANGUAGE = 'wp_locale';
+
+    const ALLOWED_LANGUAGE_CODES = [
+        'en_US',
+        'nl_NL',
+        'nl_BE',
+        'fr_FR',
+        'fr_BE',
+        'de_DE',
+        'de_AT',
+        'de_CH',
+        'es_ES',
+        'ca_ES',
+        'pt_PT',
+        'it_IT',
+        'nb_NO',
+        'sv_SE',
+        'fi_FI',
+        'da_DK',
+        'is_IS',
+        'hu_HU',
+        'pl_PL',
+        'lv_LV',
+        'lt_LT',
+    ];
+
     /**
      * @return bool
      */
-    public function isTestModeEnabled ()
+    public function isTestModeEnabled()
     {
         return trim(get_option($this->getSettingId('test_mode_enabled'))) === 'yes';
     }
@@ -14,118 +47,62 @@ class Mollie_WC_Helper_Settings
      * @param bool $test_mode
      * @return null|string
      */
-    public function getApiKey ($test_mode = false)
+    public function getApiKey($test_mode = false)
     {
         $setting_id = $test_mode ? 'test_api_key' : 'live_api_key';
 
         return trim(get_option($this->getSettingId($setting_id)));
     }
 
-	/**
-	 * Order status for cancelled payments
-	 *
-	 * @return string|null
-	 */
-	public function getOrderStatusCancelledPayments ()
-	{
-		return trim(get_option($this->getSettingId('order_status_cancelled_payments')));
-	}
-
     /**
-     * @return string
-     */
-    protected function getPaymentLocaleSetting ()
-    {
-        $default_value = 'wp_locale';
-
-        return trim(get_option($this->getSettingId('payment_locale'), $default_value));
-    }
-
-    /**
+     * Order status for cancelled payments
+     *
      * @return string|null
      */
-    public function getPaymentLocale ()
+    public function getOrderStatusCancelledPayments()
     {
-        $setting = $this->getPaymentLocaleSetting();
-
-        if ($setting === 'detect_by_browser') {
-            return null;
-        }
-
-        if (!empty($setting))
-        {
-            if ($setting == 'wp_locale')
-            {
-                // Send current locale to Mollie
-                return $this->getCurrentLocale();
-            }
-            else
-            {
-                // Send specific locale to Mollie
-                return $setting;
-            }
-        }
-
-        // If setting is empty, users selected "Use browser language"
-	    // Locale is now required for Orders API, so that's useless
-	    // Fall back to en_US if we have no other options
-        return 'en_US';
+        return trim(get_option($this->getSettingId('order_status_cancelled_payments')));
     }
 
     /**
-     * Get current locale
+     * Retrieve the Payment Locale Setting from Database
      *
      * @return string
      */
-	public function getCurrentLocale() {
-		$locale = apply_filters( 'wpml_current_language', get_locale() );
+    protected function getPaymentLocaleSetting()
+    {
+        $option = (string)get_option(
+            $this->getSettingId(self::SETTING_NAME_PAYMENT_LOCALE),
+            self::SETTING_LOCALE_WP_LANGUAGE
+        );
 
-		// Convert known exceptions
-		( $locale == 'nl_NL_formal' ? $locale = 'nl_NL': '');
-                ( $locale == 'de_DE_formal' ? $locale = 'de_DE': '');
-		( $locale == 'no_NO' ? $locale = 'nb_NO': '');
+        $option = $option ?: self::SETTING_LOCALE_WP_LANGUAGE;
 
-		// TODO: Once in a while, check API changelog to make sure there haven't been changes to this list.
-		$valid_locales = array (
-			'en_US',
-			'nl_NL',
-			'nl_BE',
-			'fr_FR',
-			'fr_BE',
-			'de_DE',
-			'de_AT',
-			'de_CH',
-			'es_ES',
-			'ca_ES',
-			'pt_PT',
-			'it_IT',
-			'nb_NO',
-			'sv_SE',
-			'fi_FI',
-			'da_DK',
-			'is_IS',
-			'hu_HU',
-			'pl_PL',
-			'lv_LV',
-			'lt_LT'
-		);
+        return trim($option);
+    }
 
-		// Check if the current WordPress locale is valid for Mollie Orders API
-		if ( in_array( $locale, $valid_locales ) ) {
-			return $locale;
-		}
+    /**
+     * Retrieve the Payment Locale
+     *
+     * @return string
+     */
+    public function getPaymentLocale()
+    {
+        $setting = $this->getPaymentLocaleSetting();
 
-		// If current WordPress locale is invalid, try to get the correct format
-		// by searching for part of a needle in a haystack
-		foreach ($valid_locales as $key => $value) {
-			if (false !== stripos($value, $locale)) {
-				return $value;
-			}
-		}
+        if ($setting === self::SETTING_LOCALE_DETECT_BY_BROWSER) {
+            return $this->browserLanguage();
+        }
 
-		// Fall back to en_US if we have no other options
-		return 'en_US';
-	}
+        $setting === self::SETTING_LOCALE_WP_LANGUAGE
+            ? $languageCode = $this->getCurrentLocale()
+            : $languageCode = $setting;
+
+        // TODO Missing Post condition, $languageCode has to be check for a valid
+        //      language code.
+
+        return $languageCode ?: self::SETTING_LOCALE_DEFAULT_LANGUAGE;
+    }
 
     /**
      * Store customer details at Mollie
@@ -403,14 +380,18 @@ class Mollie_WC_Helper_Settings
 		        'default' => 'pending',
 	        ),
 	        array(
-                'id'      => $this->getSettingId('payment_locale'),
+                'id' => $this->getSettingId(self::SETTING_NAME_PAYMENT_LOCALE),
                 'title'   => __('Payment screen language', 'mollie-payments-for-woocommerce'),
                 'type'    => 'select',
                 'options' => array(
-                    'detect_by_browser' => __('Detect using browser language',
-                            'mollie-payments-for-woocommerce') . ' (' . __('default',
-                            'mollie-payments-for-woocommerce') . ')',
-                    'wp_locale' => __('Automatically send WordPress language', 'mollie-payments-for-woocommerce'),
+                    self::SETTING_LOCALE_WP_LANGUAGE => __(
+                            'Automatically send WordPress language',
+                            'mollie-payments-for-woocommerce'
+                        ) . ' (' . __('default', 'mollie-payments-for-woocommerce') . ')',
+                    self::SETTING_LOCALE_DETECT_BY_BROWSER => __(
+                        'Detect using browser language',
+                        'mollie-payments-for-woocommerce'
+                    ),
                     'en_US' => __('English', 'mollie-payments-for-woocommerce'),
                     'nl_NL' => __('Dutch', 'mollie-payments-for-woocommerce'),
                     'nl_BE' => __('Flemish (Belgium)', 'mollie-payments-for-woocommerce'),
@@ -438,7 +419,7 @@ class Mollie_WC_Helper_Settings
 	                '<a href="https://www.mollie.com/nl/docs/reference/payments/create" target="_blank">',
 	                '</a>'
                 ),
-                'default' => 'wp_locale',
+                'default' => self::SETTING_LOCALE_WP_LANGUAGE,
             ),
             array(
                 'id'                => $this->getSettingId('customer_details'),
@@ -637,4 +618,94 @@ class Mollie_WC_Helper_Settings
 		return $content;
 	}
 
+    /**
+     * Get current locale by WordPress
+     *
+     * Default to self::SETTING_LOCALE_DEFAULT_LANGUAGE
+     *
+     * @return string
+     */
+    protected function getCurrentLocale()
+    {
+        $locale = apply_filters(self::FILTER_WPML_CURRENT_LOCALE, get_locale());
+
+        // Convert known exceptions
+        $locale = $locale === 'nl_NL_formal' ? 'nl_NL' : $locale;
+        $locale = $locale === 'de_DE_formal' ? 'de_DE' : $locale;
+        $locale = $locale === 'no_NO' ? 'nb_NO' : $locale;
+
+        return $this->extractValidLanguageCode([$locale]);
+    }
+
+    /**
+     * Retrieve the browser language
+     *
+     * @return string
+     */
+    protected function browserLanguage()
+    {
+        if (empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+            return self::SETTING_LOCALE_DEFAULT_LANGUAGE;
+        }
+
+        $httpAcceptedLanguages = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
+        foreach ($httpAcceptedLanguages as $index => $languageCode) {
+            $languageCode = explode(';', $languageCode)[0];
+            if (strpos($languageCode, '-') !== false) {
+                $languageCode = str_replace('-', '_', $languageCode);
+            }
+
+            $httpAcceptedLanguages[$index] = $languageCode;
+        }
+        $httpAcceptedLanguages = array_filter($httpAcceptedLanguages);
+
+        if (!$httpAcceptedLanguages) {
+            return self::SETTING_LOCALE_DEFAULT_LANGUAGE;
+        }
+
+        return $this->extractValidLanguageCode($httpAcceptedLanguages);
+    }
+
+    /**
+     *
+     *
+     * @param array $languageCodes
+     * @return string
+     */
+    protected function extractValidLanguageCode(array $languageCodes)
+    {
+        // TODO Need Assertion to ensure $languageCodes is not empty and contains only strings
+
+        /**
+         * Filter Allowed Language Codes
+         *
+         * @param array $allowedLanguageCodes
+         */
+        $allowedLanguageCodes = apply_filters(
+            self::FILTER_ALLOWED_LANGUAGE_CODE_SETTING,
+            self::ALLOWED_LANGUAGE_CODES
+        );
+
+        if (empty($allowedLanguageCodes)) {
+            // TODO Need validation for Language Code
+            return (string)$languageCodes[0];
+        }
+
+        foreach ($languageCodes as $index => $languageCode) {
+            if (in_array($languageCode, $allowedLanguageCodes, true)) {
+                return $languageCode;
+            }
+        }
+
+        foreach ($languageCodes as $languageCode) {
+            foreach ($allowedLanguageCodes as $currentAllowedLanguageCode) {
+                $countryCode = substr($currentAllowedLanguageCode, 0, 2);
+                if ($countryCode === $languageCode) {
+                    return $currentAllowedLanguageCode;
+                }
+            }
+        }
+
+        return self::SETTING_LOCALE_DEFAULT_LANGUAGE;
+    }
 }

@@ -311,11 +311,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order_total, $currency )
 				),
 				'resource'       => 'orders',
+				'locale'         => $payment_locale,
 				'billingCountry' => $billing_country,
 				'sequenceType'   => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_ONEOFF
 			);
-
-			$payment_locale and $filters['locale'] = $payment_locale;
 
 			// For regular payments, check available payment methods, but ignore SSD gateway (not shown in checkout)
 			$status = ( $this->id !== 'mollie_wc_gateway_directdebit' ) ? $this->isAvailableMethodInCheckout( $filters ) : false;
@@ -360,11 +359,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 									'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order_total, $currency )
 								),
 								'resource'       => 'orders',
+                                'locale'         => $payment_locale,
 								'billingCountry' => $billing_country,
 								'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_FIRST
 							);
-
-                            $payment_locale and $filters['locale'] = $payment_locale;
 
 							$status = $this->isAvailableMethodInCheckout( $filters );
 						}

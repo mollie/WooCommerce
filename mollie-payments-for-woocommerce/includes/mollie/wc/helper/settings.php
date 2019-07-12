@@ -667,7 +667,17 @@ class Mollie_WC_Helper_Settings
     }
 
     /**
+     * Extract a valid code Language from the given arguments
      *
+     * The language Code could contains valid language codes that are not supported such as
+     * country codes.
+     *
+     * Since the Browser can send both country and region codes we need to map the country code
+     * to a region code on the fly.
+     *
+     * The method does that, it try to retrieve the language code if it's exists within the
+     * allowed language codes dictionary, if not it will try to retrieve the first one that
+     * contains the country code.
      *
      * @param array $languageCodes
      * @return string

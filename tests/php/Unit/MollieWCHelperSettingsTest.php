@@ -156,7 +156,7 @@ class MollieWCHelperSettingsTest extends TestCase
         /*
          * Stubs
          */
-        $settingId = uniqid(mt_rand(0, 8));
+        $settingId = uniqid();
 
         /*
          * Setup Testee

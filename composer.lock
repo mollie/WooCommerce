@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "373afbc0342d0044431254445f9b491b",
+    "content-hash": "799150a6b214853f5121cf70ab8de787",
     "packages": [],
     "packages-dev": [
         {
@@ -936,6 +936,39 @@
             "time": "2017-06-30T09:13:00+00:00"
         },
         {
+            "name": "ptrofimov/xpmock",
+            "version": "1.1.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ptrofimov/xpmock.git",
+                "reference": "5b95ace33624b66bf4e854071b8856722fde515e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ptrofimov/xpmock/zipball/5b95ace33624b66bf4e854071b8856722fde515e",
+                "reference": "5b95ace33624b66bf4e854071b8856722fde515e",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "3.7.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Xpmock": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "PHPUnit: simple syntax to create mock-objects",
+            "time": "2014-01-02T16:42:27+00:00"
+        },
+        {
             "name": "sebastian/code-unit-reverse-lookup",
             "version": "dev-master",
             "source": {
@@ -1624,6 +1657,8 @@
     },
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
+    "platform": {
+        "php": ">=5.6"
+    },
     "platform-dev": []
 }

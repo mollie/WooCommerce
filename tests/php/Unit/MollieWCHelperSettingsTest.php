@@ -23,10 +23,9 @@ class MollieWCHelperSettingsTest extends TestCase
         /*
          * Setup Testee
          */
-        list($testee, $testeeMethod) = $this->buildTesteeMethodMock(
+        $testee = $this->buildTesteeMethodMock(
             Testee::class,
             [],
-            'getPaymentLocale',
             ['getPaymentLocaleSetting']
         );
 
@@ -44,7 +43,7 @@ class MollieWCHelperSettingsTest extends TestCase
         /*
          * Execute test
          */
-        $result = $testeeMethod->invoke($testee);
+        $result = $testee->getPaymentLocale();
 
         self::assertEquals(Testee::SETTING_LOCALE_DEFAULT_LANGUAGE, $result);
     }
@@ -62,10 +61,9 @@ class MollieWCHelperSettingsTest extends TestCase
         /*
          * Setup Testee
          */
-        list($testee, $testeeMethod) = $this->buildTesteeMethodMock(
+        $testee = $this->buildTesteeMethodMock(
             Testee::class,
             [],
-            'getPaymentLocale',
             [
                 'getPaymentLocaleSetting',
                 'getCurrentLocale',
@@ -91,7 +89,7 @@ class MollieWCHelperSettingsTest extends TestCase
         /*
          * Execute test
          */
-        $result = $testeeMethod->invoke($testee);
+        $result = $testee->getPaymentLocale();
 
         self::assertEquals($validLanguageCode, $result);
     }
@@ -109,10 +107,9 @@ class MollieWCHelperSettingsTest extends TestCase
         /*
          * Setup Testee
          */
-        list($testee, $testeeMethod) = $this->buildTesteeMethodMock(
+        $testee = $this->buildTesteeMethodMock(
             Testee::class,
             [],
-            'getPaymentLocale',
             [
                 'getPaymentLocaleSetting',
                 'browserLanguage',
@@ -138,7 +135,7 @@ class MollieWCHelperSettingsTest extends TestCase
         /*
          * Execute Test
          */
-        $result = $testeeMethod->invoke($testee);
+        $result = $testee->getPaymentLocale();
 
         self::assertEquals($validLanguageCode, $result);
     }
@@ -161,10 +158,9 @@ class MollieWCHelperSettingsTest extends TestCase
         /*
          * Setup Testee
          */
-        list($testee, $testeeMethod) = $this->buildTesteeMethodMock(
+        $testee = $this->buildTesteeMethodMock(
             Testee::class,
             [],
-            'getPaymentLocaleSetting',
             ['getSettingId']
         );
 
@@ -189,7 +185,7 @@ class MollieWCHelperSettingsTest extends TestCase
         /*
          * Execute Test
          */
-        $result = $testeeMethod->invoke($testee);
+        $result = $testee->getPaymentLocaleSetting();
 
         self::assertEquals(Testee::SETTING_LOCALE_WP_LANGUAGE, $result);
     }
@@ -216,10 +212,9 @@ class MollieWCHelperSettingsTest extends TestCase
         /*
          * Setup Testee
          */
-        list($testee, $testeeMethod) = $this->buildTesteeMethodMock(
+        $testee = $this->buildTesteeMethodMock(
             Testee::class,
             [],
-            'browserLanguage',
             ['extractValidLanguageCode']
         );
 
@@ -235,7 +230,7 @@ class MollieWCHelperSettingsTest extends TestCase
         /*
          * Execute Test
          */
-        $result = $testeeMethod->invoke($testee);
+        $result = $testee->browserLanguage();
 
         self::assertEquals($expectedLanguageCode, $result);
     }
@@ -258,10 +253,9 @@ class MollieWCHelperSettingsTest extends TestCase
         /*
          * Setup Testee
          */
-        list($testee, $testeeMethod) = $this->buildTesteeMethodMock(
+        $testee = $this->buildTesteeMethodMock(
             Testee::class,
             [],
-            'browserLanguage',
             []
         );
 
@@ -276,7 +270,7 @@ class MollieWCHelperSettingsTest extends TestCase
         /*
          * Execute Test
          */
-        $result = $testeeMethod->invoke($testee);
+        $result = $testee->browserLanguage();
 
         self::assertEquals(Testee::SETTING_LOCALE_DEFAULT_LANGUAGE, $result);
     }
@@ -290,17 +284,16 @@ class MollieWCHelperSettingsTest extends TestCase
         /*
          * Setup Testee
          */
-        list($testee, $testeeMethod) = $this->buildTesteeMethodMock(
+        $testee = $this->buildTesteeMethodMock(
             Testee::class,
             [],
-            'browserLanguage',
             []
         );
 
         /*
          * Execute Test
          */
-        $result = $testeeMethod->invoke($testee);
+        $result = $testee->browserLanguage();
 
         self::assertEquals(Testee::SETTING_LOCALE_DEFAULT_LANGUAGE, $result);
     }
@@ -319,17 +312,16 @@ class MollieWCHelperSettingsTest extends TestCase
         /*
          * Setup Testee
          */
-        list($testee, $testeeMethod) = $this->buildTesteeMethodMock(
+        $testee = $this->buildTesteeMethodMock(
             Testee::class,
             [],
-            'browserLanguage',
             []
         );
 
         /*
          * Execute Test
          */
-        $result = $testeeMethod->invoke($testee);
+        $result = $testee->browserLanguage();
 
         self::assertEquals(Testee::SETTING_LOCALE_DEFAULT_LANGUAGE, $result);
     }
@@ -348,10 +340,9 @@ class MollieWCHelperSettingsTest extends TestCase
         /*
          * Setup Testee
          */
-        list($testee, $testeeMethod) = $this->buildTesteeMethodMock(
+        $testee = $this->buildTesteeMethodMock(
             Testee::class,
             [],
-            'getCurrentLocale',
             ['extractValidLanguageCode']
         );
 
@@ -374,7 +365,7 @@ class MollieWCHelperSettingsTest extends TestCase
         /*
          * Execute Testee
          */
-        $result = $testeeMethod->invoke($testee);
+        $result = $testee->getCurrentLocale($testee);
 
         self::assertEquals(Testee::SETTING_LOCALE_DEFAULT_LANGUAGE, $result);
     }
@@ -393,10 +384,9 @@ class MollieWCHelperSettingsTest extends TestCase
         /*
          * Setup Testee
          */
-        list($testee, $testeeMethod) = $this->buildTesteeMethodMock(
+        $testee = $this->buildTesteeMethodMock(
             Testee::class,
             [],
-            'getCurrentLocale',
             ['extractValidLanguageCode']
         );
 
@@ -419,7 +409,7 @@ class MollieWCHelperSettingsTest extends TestCase
         /*
          * Execute Testee
          */
-        $result = $testeeMethod->invoke($testee);
+        $result = $testee->getCurrentLocale($testee);
 
         // Only because `en_US` is the first in the list.
         self::assertEquals($expectedValidLanguageCode, $result);
@@ -441,10 +431,9 @@ class MollieWCHelperSettingsTest extends TestCase
         /*
          * Setup testee
          */
-        list($testee, $testeeMethod) = $this->buildTesteeMethodMock(
+        $testee = $this->buildTesteeMethodMock(
             Testee::class,
             [],
-            'extractValidLanguageCode',
             []
         );
 
@@ -458,7 +447,7 @@ class MollieWCHelperSettingsTest extends TestCase
         /*
          * Execute Test
          */
-        $result = $testeeMethod->invoke($testee, $languageCodes);
+        $result = $testee->extractValidLanguageCode($languageCodes);
 
         self::assertEquals($expectedResult, $result);
     }

@@ -7,14 +7,16 @@ use function Brain\Monkey\tearDown;
 use Mockery;
 use PHPUnit\Framework\TestCase as PhpUniTestCase;
 use PHPUnit_Framework_MockObject_MockBuilder;
-use ReflectionException;
-use ReflectionMethod;
+use Xpmock\Reflection;
+use Xpmock\TestCaseTrait;
 
 /**
  * Class Testcase
  */
 class TestCase extends PhpUniTestCase
 {
+    use TestCaseTrait;
+
     /**
      * Sets up the fixture, for example, open a network connection.
      * This method is called before a test is executed.
@@ -71,29 +73,18 @@ class TestCase extends PhpUniTestCase
      * return MockBuilder
      * @param string $className
      * @param array $constructorArguments
-     * @param string $method
      * @param array $methods
-     * @return array
-     * @throws ReflectionException
+     * @return Reflection
      */
-    protected function buildTesteeMethodMock(
-        $className,
-        $constructorArguments,
-        $method,
-        $methods
-    ) {
-
+    protected function buildTesteeMethodMock($className, $constructorArguments, $methods)
+    {
         $testee = $this->buildTesteeMock(
             $className,
             $constructorArguments,
             $methods,
             ''
         )->getMock();
-        $reflectionMethod = new ReflectionMethod($className, $method);
-        $reflectionMethod->setAccessible(true);
-        return [
-            $testee,
-            $reflectionMethod,
-        ];
+
+        return $this->reflect($testee);
     }
 }

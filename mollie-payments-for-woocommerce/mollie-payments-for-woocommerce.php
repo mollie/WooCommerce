@@ -191,3 +191,89 @@ function mollie_add_plugin_textdomain() {
 }
 
 add_action( 'plugins_loaded', 'mollie_add_plugin_textdomain' );
+
+add_action(
+    'woocommerce_after_add_to_cart_quantity',
+    function () {
+        ?>
+        <div id="mollie_applepay_button" class="apple-pay-button apple-pay-button-black"
+             lang="en"></div>
+        <style>
+            .apple-pay-button {
+                display: inline-block;
+                -webkit-appearance: -apple-pay-button;
+                -apple-pay-button-type: checkout; /* also: check-out, book, or subscribe */
+            }
+
+            .apple-pay-button-black {
+                -apple-pay-button-style: black;
+            }
+
+            .apple-pay-button-white {
+                -apple-pay-button-style: white;
+            }
+
+            .apple-pay-button-white-with-line {
+                -apple-pay-button-style: white-outline;
+            }
+        </style>
+        <script>
+          document.querySelector('#mollie_applepay_button').addEventListener('click', (evt) => {
+            const request = {
+              countryCode: 'IT',
+              currencyCode: 'EUR',
+              supportedNetworks: ['visa', 'masterCard'],
+              merchantCapabilities: ['supports3DS'],
+              total: { label: 'Your Merchant Name', amount: '0.01' },
+            }
+            const session = new ApplePaySession(3, request)
+            session.begin()
+            session.onvalidatemerchant = (applePayValidateMerchantEvent) => {
+              jQuery.ajax({
+                url: '/wp-admin/admin-ajax.php',
+                method: 'POST',
+                data: {
+                  action: 'mollie_apple_pay_authorization',
+                  validationURL: applePayValidateMerchantEvent.validationURL,
+                },
+                complete: (jqXHR, textStatus) => {
+                  session.completeMerchantValidation()
+                  console.log(textStatus)
+                },
+                success: (merchantSession, textStatus, jqXHR) => {
+                  session.completeMerchantValidation(merchantSession)
+                },
+                error: (jqXHR, textStatus, errorThrown) => {
+                  console.log(textStatus, errorThrown)
+                },
+              })
+            }
+          })
+        </script>
+        <?php
+    }
+);
+//
+add_action(
+    'wp_ajax_nopriv_mollie_apple_pay_authorization',
+    function () {
+//    $settings_helper = Mollie_WC_Plugin::getSettingsHelper();
+//    $test_mode = $settings_helper->isTestModeEnabled();
+
+//    update_option('mollie_payment_POST', $_POST);
+
+        try {
+            $json = Mollie_WC_Plugin::getApiHelper()
+                ->getApiClient()
+                ->wallets
+                ->requestApplePayPaymentSession(
+                    get_site_url(),
+                    $_POST['validationURL']
+                );
+        } catch (\Mollie\Api\Exceptions\ApiException $exc) {
+            update_option('g_test', $exc->getMessage());
+        }
+
+        update_option('mollie_apple_pay_session_response', $json);
+    }
+);

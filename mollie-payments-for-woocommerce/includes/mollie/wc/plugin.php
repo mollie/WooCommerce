@@ -42,6 +42,7 @@ class Mollie_WC_Plugin
         'Mollie_WC_Gateway_Przelewy24',
         'Mollie_WC_Gateway_Sofort',
         'Mollie_WC_Gateway_Giftcard',
+        'Mollie_WC_Gateway_Applepay',
     );
 
     private function __construct () {}
@@ -216,11 +217,37 @@ class Mollie_WC_Plugin
 		// Capture order at Mollie (for Orders API/Klarna)
 		add_action( 'woocommerce_order_status_completed', array( __CLASS__, 'shipAndCaptureOrderAtMollie' ) );
 
+        // Enqueue Scripts
+        add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueFrontendScripts']);
+
 		self::initDb();
 		self::schedulePendingPaymentOrdersExpirationCheck();
 		// Mark plugin initiated
 		self::$initiated = true;
 	}
+
+    /**
+     * Enqueue Frontend only scripts
+     *
+     * @return void
+     */
+    public static function enqueueFrontendScripts()
+    {
+        if (is_admin()) {
+            return;
+        }
+
+        if (is_checkout()) {
+            wp_register_script(
+                'mollie_wc_gateway_applepay',
+                Mollie_WC_Plugin::getPluginUrl('/assets/js/applepay.js'),
+                [],
+                filemtime(Mollie_WC_Plugin::getPluginPath('/assets/js/applepay.js')),
+                true
+            );
+            wp_enqueue_script('mollie_wc_gateway_applepay');
+        }
+    }
 
     /**
      * Payment return url callback
@@ -337,7 +364,15 @@ class Mollie_WC_Plugin
 
 		$gateways = array_merge( $gateways, self::$GATEWAYS );
 
-		// Return if function get_current_screen() is not defined
+        isset($_POST['post_data']) and parse_str($_POST['post_data'], $postData);
+        if (isset($postData['mollie_apple_pay_method_not_allowed']) && !is_admin()) {
+            $index = (int)array_search('Mollie_WC_Gateway_Applepay', $gateways, true);
+            if ($index !== false) {
+                unset($gateways[$index]);
+            }
+        }
+
+        // Return if function get_current_screen() is not defined
 		if ( ! function_exists( 'get_current_screen' ) ) {
 			return $gateways;
 		}
@@ -465,6 +500,11 @@ class Mollie_WC_Plugin
     public static function getPluginUrl ($path = '')
     {
     	return M4W_PLUGIN_URL . $path;
+    }
+
+    public static function getPluginPath($path = '')
+    {
+        return M4W_PLUGIN_DIR . $path;
     }
 
     /**

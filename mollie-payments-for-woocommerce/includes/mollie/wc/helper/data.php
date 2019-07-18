@@ -332,6 +332,7 @@ class Mollie_WC_Helper_Data
 				delete_transient( $transient_id );
 
 				$filters['resource'] = 'orders';
+				$filters['includeWallets'] = 'applepay';
 
 				$methods = $this->api_helper->getApiClient( $test_mode )->methods->all( $filters );
 

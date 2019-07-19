@@ -1,4 +1,4 @@
-(function () {
+(function (ApplePaySession) {
   document.addEventListener('DOMContentLoaded', function () {
     var applePayMethodElement = document.querySelector(
       '.payment_method_mollie_wc_gateway_applepay',
@@ -11,7 +11,7 @@
       return
     }
 
-    if (!window.ApplePaySession || !ApplePaySession.canMakePayments()) {
+    if (!ApplePaySession || !ApplePaySession.canMakePayments()) {
       applePayMethodElement &&
       applePayMethodElement.parentNode.removeChild(applePayMethodElement)
 
@@ -21,4 +21,4 @@
       )
     }
   })
-})()
+})(window.ApplePaySession)

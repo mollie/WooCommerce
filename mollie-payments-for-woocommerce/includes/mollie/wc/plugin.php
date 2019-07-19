@@ -237,7 +237,7 @@ class Mollie_WC_Plugin
     {
         wp_register_script(
             'mollie_wc_gateway_applepay',
-            Mollie_WC_Plugin::getPluginUrl('/assets/js/applepay.js'),
+            Mollie_WC_Plugin::getPluginUrl('assets/js/applepay.js'),
             [],
             filemtime(Mollie_WC_Plugin::getPluginPath('/assets/js/applepay.js')),
             true

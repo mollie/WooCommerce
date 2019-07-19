@@ -222,9 +222,27 @@ class Mollie_WC_Plugin
 
 		self::initDb();
 		self::schedulePendingPaymentOrdersExpirationCheck();
+        self::registerFrontendScripts();
+
 		// Mark plugin initiated
 		self::$initiated = true;
 	}
+
+    /**
+     * Register Scripts
+     *
+     * @return void
+     */
+    public static function registerFrontendScripts()
+    {
+        wp_register_script(
+            'mollie_wc_gateway_applepay',
+            Mollie_WC_Plugin::getPluginUrl('/assets/js/applepay.js'),
+            [],
+            filemtime(Mollie_WC_Plugin::getPluginPath('/assets/js/applepay.js')),
+            true
+        );
+    }
 
     /**
      * Enqueue Frontend only scripts
@@ -237,16 +255,7 @@ class Mollie_WC_Plugin
             return;
         }
 
-        if (is_checkout()) {
-            wp_register_script(
-                'mollie_wc_gateway_applepay',
-                Mollie_WC_Plugin::getPluginUrl('/assets/js/applepay.js'),
-                [],
-                filemtime(Mollie_WC_Plugin::getPluginPath('/assets/js/applepay.js')),
-                true
-            );
-            wp_enqueue_script('mollie_wc_gateway_applepay');
-        }
+        is_checkout() and wp_enqueue_script('mollie_wc_gateway_applepay');
     }
 
     /**

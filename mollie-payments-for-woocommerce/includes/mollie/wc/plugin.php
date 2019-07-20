@@ -235,6 +235,10 @@ class Mollie_WC_Plugin
      */
     public static function registerFrontendScripts()
     {
+        if (is_admin()) {
+            return;
+        }
+
         wp_register_script(
             'mollie_wc_gateway_applepay',
             Mollie_WC_Plugin::getPluginUrl('assets/js/applepay.js'),

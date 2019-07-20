@@ -190,6 +190,8 @@ class Mollie_WC_Plugin
 		// Add Mollie gateways
 		add_filter( 'woocommerce_payment_gateways', array ( __CLASS__, 'addGateways' ) );
 
+        add_filter('woocommerce_payment_gateways', [__CLASS__, 'maybeDisableApplePayGateway'], 20);
+
 		// Add settings link to plugins page
 		add_filter( 'plugin_action_links_' . $plugin_basename, array ( __CLASS__, 'addPluginActionLinks' ) );
 
@@ -375,19 +377,6 @@ class Mollie_WC_Plugin
      */
 	public static function addGateways( array $gateways ) {
 
-		$gateways = array_merge( $gateways, self::$GATEWAYS );
-        $postData = (string)filter_input(INPUT_POST, 'post_data', FILTER_SANITIZE_STRING) ?: '';
-
-        if ($postData) {
-            parse_str($postData, $postData);
-            if (isset($postData['mollie_apple_pay_method_not_allowed']) && !is_admin()) {
-                $index = (int)array_search('Mollie_WC_Gateway_Applepay', $gateways, true);
-                if ($index !== false) {
-                    unset($gateways[$index]);
-                }
-            }
-        }
-
         // Return if function get_current_screen() is not defined
 		if ( ! function_exists( 'get_current_screen' ) ) {
 			return $gateways;
@@ -422,6 +411,27 @@ class Mollie_WC_Plugin
 
 		return $gateways;
 	}
+
+    /**
+     * Disable Apple Pay Gateway
+     *
+     * @param array $gateways
+     * @return array
+     */
+    public static function maybeDisableApplePayGateway(array $gateways)
+    {
+        $gateways = array_merge($gateways, self::$GATEWAYS);
+        $postData = (string)filter_input(INPUT_POST, 'post_data', FILTER_SANITIZE_STRING) ?: '';
+
+        if ($postData) {
+            parse_str($postData, $postData);
+            if (isset($postData['mollie_apple_pay_method_not_allowed']) && !is_admin()) {
+                $gateways = array_diff($gateways, ['Mollie_WC_Gateway_Applepay']);
+            }
+        }
+
+        return $gateways;
+    }
 
 	/**
 	 * Add a WooCommerce notification message

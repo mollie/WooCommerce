@@ -311,8 +311,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order_total, $currency )
 				),
 				'resource'       => 'orders',
-				'billingCountry' => $billing_country,
 				'locale'         => $payment_locale,
+				'billingCountry' => $billing_country,
 				'sequenceType'   => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_ONEOFF
 			);
 
@@ -342,9 +342,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 								),
 								'resource'       => 'orders',
 								'billingCountry' => $billing_country,
-								'locale'         => $payment_locale,
 								'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_RECURRING
 							);
+
+                            $payment_locale and $filters['locale'] = $payment_locale;
 
 							$status = $this->isAvailableMethodInCheckout( $filters );
 
@@ -358,8 +359,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 									'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order_total, $currency )
 								),
 								'resource'       => 'orders',
+                                'locale'         => $payment_locale,
 								'billingCountry' => $billing_country,
-								'locale'         => $payment_locale,
 								'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_FIRST
 							);
 
@@ -1288,7 +1289,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			}
 
 		}
-		
+
 		do_action( Mollie_WC_Plugin::PLUGIN_ID . '_customer_return_payment_success', $order );
 		/*
 		 * Return to order received page

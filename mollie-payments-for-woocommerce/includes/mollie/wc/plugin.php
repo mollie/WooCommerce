@@ -423,11 +423,13 @@ class Mollie_WC_Plugin
         $gateways = array_merge($gateways, self::$GATEWAYS);
         $postData = (string)filter_input(INPUT_POST, 'post_data', FILTER_SANITIZE_STRING) ?: '';
 
-        if ($postData) {
-            parse_str($postData, $postData);
-            if (isset($postData['mollie_apple_pay_method_not_allowed']) && !is_admin()) {
-                $gateways = array_diff($gateways, ['Mollie_WC_Gateway_Applepay']);
-            }
+        if (!$postData) {
+            return $gateways;
+        }
+
+        parse_str($postData, $postData);
+        if (isset($postData['mollie_apple_pay_method_not_allowed']) && !is_admin()) {
+            $gateways = array_diff($gateways, ['Mollie_WC_Gateway_Applepay']);
         }
 
         return $gateways;

@@ -51,7 +51,7 @@ class Mollie_WC_Gateway_Applepay extends Mollie_WC_Gateway_Abstract
      */
     protected function getDefaultDescription()
     {
-        return __('To accept payments via Apple Pay', 'mollie-payments-for-woocommerce');
+        return '';
     }
 
     /**

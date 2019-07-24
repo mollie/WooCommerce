@@ -13,6 +13,9 @@ class Mollie_WC_Plugin
     const DB_VERSION_PARAM_NAME = 'mollie-db-version';
     const PENDING_PAYMENT_DB_TABLE_NAME = 'mollie_pending_payment';
 
+    const POST_DATA_KEY = 'post_data';
+    const POST_APPLE_PAY_METHOD_NOT_ALLOWED_KEY = 'mollie_apple_pay_method_not_allowed';
+
     /**
      * @var bool
      */
@@ -421,15 +424,22 @@ class Mollie_WC_Plugin
     public static function maybeDisableApplePayGateway(array $gateways)
     {
         $gateways = array_merge($gateways, self::$GATEWAYS);
-        $postData = (string)filter_input(INPUT_POST, 'post_data', FILTER_SANITIZE_STRING) ?: '';
+        $postData = (string)filter_input(
+            INPUT_POST,
+            self::POST_DATA_KEY,
+            FILTER_SANITIZE_STRING
+        ) ?: '';
 
         if (!$postData) {
             return $gateways;
         }
 
         parse_str($postData, $postData);
-        if (isset($postData['mollie_apple_pay_method_not_allowed']) && !is_admin()) {
-            $gateways = array_diff($gateways, ['Mollie_WC_Gateway_Applepay']);
+        if (isset($postData[self::POST_APPLE_PAY_METHOD_NOT_ALLOWED_KEY]) && !is_admin()) {
+            $index = array_search('Mollie_WC_Gateway_Applepay', $gateways, true);
+            if ($index !== false) {
+                unset($gateways[$index]);
+            }
         }
 
         return $gateways;

@@ -380,6 +380,8 @@ class Mollie_WC_Plugin
      */
 	public static function addGateways( array $gateways ) {
 
+        $gateways = array_merge($gateways, self::$GATEWAYS);
+
         // Return if function get_current_screen() is not defined
 		if ( ! function_exists( 'get_current_screen' ) ) {
 			return $gateways;
@@ -423,7 +425,6 @@ class Mollie_WC_Plugin
      */
     public static function maybeDisableApplePayGateway(array $gateways)
     {
-        $gateways = array_merge($gateways, self::$GATEWAYS);
         $postData = (string)filter_input(
             INPUT_POST,
             self::POST_DATA_KEY,

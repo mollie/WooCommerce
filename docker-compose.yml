@@ -35,6 +35,7 @@ services:
 #      PHP_XDEBUG_REMOTE_HOST: 10.0.75.1 # Windows
     volumes:
       - ./:/var/www/html
+      - ${BASE_DIR}:/var/www/html/wp-content/plugins/WooCommerce
 ## For macOS users (https://wodby.com/stacks/wordpress/docs/local/docker-for-mac/)
 #      - ./:/var/www/html:cached # User-guided caching
 #      - docker-sync:/var/www/html # Docker-sync
@@ -54,6 +55,7 @@ services:
       #NGINX_SERVER_ROOT: /var/www/html/subdir
     volumes:
       - ./:/var/www/html
+      - ${BASE_DIR}:/var/www/html/wp-content/plugins/WooCommerce
 # Options for macOS users (https://wodby.com/stacks/wordpress/docs/local/docker-for-mac/)
 #      - ./:/var/www/html:cached # User-guided caching
 #      - docker-sync:/var/www/html # Docker-sync

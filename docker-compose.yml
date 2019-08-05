@@ -12,7 +12,7 @@ services:
       MYSQL_PASSWORD: $DB_PASSWORD
 #    volumes:
 #      - ./mariadb-init:/docker-entrypoint-initdb.d # Place init .sql file(s) here.
-#      - /path/to/mariadb/data/on/host:/var/lib/mysql # I want to manage volumes manually.
+      - wpdb:/var/lib/mysql # I want to manage volumes manually.
 
   php:
     image: wodby/wordpress-php:$PHP_TAG
@@ -258,14 +258,15 @@ services:
     container_name: "${PROJECT_NAME}_traefik"
     command: -c /dev/null --web --docker --logLevel=INFO
     ports:
-      - '8000:80'
+      - '80:80'
 #      - '8080:8080' # Dashboard
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
-#volumes:
+volumes:
 ## Docker-sync for macOS users
 #  docker-sync:
 #    external: true
 ## For Xdebug profiler
 #  files:
+  wpdb:

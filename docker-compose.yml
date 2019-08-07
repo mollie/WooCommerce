@@ -36,8 +36,8 @@ services:
 #      PHP_XDEBUG_REMOTE_HOST: 10.254.254.254 # macOS
 #      PHP_XDEBUG_REMOTE_HOST: 10.0.75.1 # Windows
     volumes:
-      - ./:/var/www/html
-      - ${BASE_DIR}:/var/www/html/wp-content/plugins/WooCommerce
+      - ./:${DOCROOT}
+      - ${BASE_DIR}:${PROJECT_MOUNT_PATH}
 ## For macOS users (https://wodby.com/stacks/wordpress/docs/local/docker-for-mac/)
 #      - ./:/var/www/html:cached # User-guided caching
 #      - docker-sync:/var/www/html # Docker-sync
@@ -49,15 +49,15 @@ services:
     container_name: "${PROJECT_NAME}_nginx"
     depends_on:
       - php
-    environment:
+    environment: 
       NGINX_STATIC_OPEN_FILE_CACHE: "off"
       NGINX_ERROR_LOG_LEVEL: debug
       NGINX_BACKEND_HOST: php
       NGINX_VHOST_PRESET: wordpress
       #NGINX_SERVER_ROOT: /var/www/html/subdir
     volumes:
-      - ./:/var/www/html
-      - ${BASE_DIR}:/var/www/html/wp-content/plugins/WooCommerce
+      - ./:${DOCROOT}
+      - ${BASE_DIR}:${PROJECT_MOUNT_PATH}
 # Options for macOS users (https://wodby.com/stacks/wordpress/docs/local/docker-for-mac/)
 #      - ./:/var/www/html:cached # User-guided caching
 #      - docker-sync:/var/www/html # Docker-sync

@@ -1,4 +1,8 @@
 <?php
+
+use Mollie\Api\MollieApiClient;
+
+
 class Mollie_WC_Helper_Status
 {
     /**
@@ -141,9 +145,7 @@ class Mollie_WC_Helper_Status
      */
     protected function isApiClientInstalled ()
     {
-        $includes_dir = dirname(dirname(dirname(dirname(__FILE__))));
-
-        return file_exists($includes_dir . '/mollie-api-php');
+        return class_exists(MollieApiClient::class);
     }
 
     /**

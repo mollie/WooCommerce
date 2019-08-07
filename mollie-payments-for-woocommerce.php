@@ -21,18 +21,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
-require_once 'includes/mollie/wc/autoload.php';
-require_once 'includes/mollie-api-php/vendor/autoload.php';
+
+define('M4W_FILE', __FILE__);
+define('M4W_PLUGIN_DIR', dirname(M4W_FILE));
 
 // Plugin folder URL.
 if ( ! defined( 'M4W_PLUGIN_URL' ) ) {
-    define( 'M4W_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+	define( 'M4W_PLUGIN_URL', plugin_dir_url( M4W_FILE ) );
 }
 
-// Plugin directory
-if ( ! defined( 'M4W_PLUGIN_DIR' ) ) {
-    define( 'M4W_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-}
+
+// Main IIFE
+call_user_func_array(function ($baseDir) {
+    require_once "$baseDir/vendor/autoload.php";
+
+}, [M4W_PLUGIN_DIR]);
+
 
 /**
  * Pro-actively check for required PHP JSON extension
@@ -110,7 +114,7 @@ function mollie_wc_plugin_activation_hook ()
     }
 }
 
-register_activation_hook(__FILE__, 'mollie_wc_plugin_activation_hook');
+register_activation_hook(M4W_FILE, 'mollie_wc_plugin_activation_hook');
 
 function mollie_wc_plugin_inactive_json_extension() {
 

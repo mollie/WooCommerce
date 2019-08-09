@@ -3,7 +3,7 @@ Contributors: daanvm, danielhuesken, davdebcom, dinamiko, inpsyde, l.vangunst, n
 Tags: mollie, payments, payment gateway, woocommerce, credit card, ideal, bancontact, klarna, sofort, giropay, woocommerce subscriptions
 Requires at least: 3.8
 Tested up to: 5.2
-Stable tag: 5.1.8
+Stable tag: 5.2.1
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -128,7 +128,7 @@ Yes, you can with a separate plugin. At the moment we have tested and can recomm
 
 = Why do orders with payment method BankTransfer and Direct Debit get the status 'on-hold'? =
 
-These payment methods take longer than a few hours to complete. The order status is set to 'on-hold' to prevent the WooCommerce setting 'Hold stock (minutes)' (https://docs.woothemes.com/document/configuring-woocommerce-settings/#inventory-options) will 
+These payment methods take longer than a few hours to complete. The order status is set to 'on-hold' to prevent the WooCommerce setting 'Hold stock (minutes)' (https://docs.woothemes.com/document/configuring-woocommerce-settings/#inventory-options) will
 cancel the order. The order stock is also reduced to reserve stock for these orders. The stock is restored if the payment fails or is cancelled. You can change the initial order status for these payment methods on their setting page.
 
 = I have a different question about this plugin =
@@ -180,6 +180,15 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 5.2.1 - 24-07-2019 =
+
+* Fix - Payment wall won't load because third party code may register gateways in form of a class instance instead of a string
+
+= 5.2.0 - 23-07-2019 =
+
+* Fix - Missing browser language detect in payment settings
+* Add - Apple Pay payment method
 
 = 5.1.8 - 24-05-2019 =
 
@@ -526,13 +535,13 @@ Starting with version 4.0, this plugin will require PHP 5.6. If you are using an
 = 2.3.0 - 27/07/2016 =
 * Update payment method icons.
 * Send the refund description to Mollie. The refund description will be visible for your customer on their bank statement.
-* Add new filters `mollie-payments-for-woocommerce_order_status_cancelled` and `mollie-payments-for-woocommerce_order_status_expired` to be able 
+* Add new filters `mollie-payments-for-woocommerce_order_status_cancelled` and `mollie-payments-for-woocommerce_order_status_expired` to be able
 to overwrite the order status for cancelled and expired Mollie payments. You can find all available filters on https://github.com/mollie/WooCommerce/tree/master/development.
 * Update Mollie API client to v1.6.5.
 
 = 2.2.1 - 18/04/2016 =
-* Add option for the Bank Transfer gateway to skip redirecting your users to the Mollie payment screen. Instead directly redirect to the WooCommerce order 
-received page where payment instruction will be displayed. You can turn on this option on the Mollie Bank Transfer setting page: 
+* Add option for the Bank Transfer gateway to skip redirecting your users to the Mollie payment screen. Instead directly redirect to the WooCommerce order
+received page where payment instruction will be displayed. You can turn on this option on the Mollie Bank Transfer setting page:
 WooCommerce -> Settings -> Payments -> Mollie - Bank Transfer.
 
 = 2.2.0 - 29/03/2016 =

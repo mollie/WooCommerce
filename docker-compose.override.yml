@@ -6,11 +6,11 @@ services:
     environment:
       PHP_FPM_CLEAR_ENV: "no"
     volumes:
-      - codebase:/var/www/html
+      - codebase:${DOCROOT}
 
   nginx:
     volumes:
-      - codebase:/var/www/html
+      - codebase:${DOCROOT}
 
 volumes:
   codebase:

@@ -46,6 +46,7 @@ class Mollie_WC_Plugin
         'Mollie_WC_Gateway_Sofort',
         'Mollie_WC_Gateway_Giftcard',
         'Mollie_WC_Gateway_Applepay',
+        'Mollie_WC_Gateway_MyBank',
     );
 
     private function __construct () {}

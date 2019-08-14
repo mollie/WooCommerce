@@ -1,3 +1,0 @@
-[submodule "mollie-payments-for-woocommerce/includes/mollie-api-php"]
-	path = mollie-payments-for-woocommerce/includes/mollie-api-php
-	url = https://github.com/mollie/mollie-api-php.git

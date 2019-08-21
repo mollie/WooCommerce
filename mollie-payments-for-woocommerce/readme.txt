@@ -3,7 +3,7 @@ Contributors: daanvm, danielhuesken, davdebcom, dinamiko, inpsyde, l.vangunst, n
 Tags: mollie, payments, payment gateway, woocommerce, credit card, ideal, bancontact, klarna, sofort, giropay, woocommerce subscriptions
 Requires at least: 3.8
 Tested up to: 5.2
-Stable tag: 5.2.1
+Stable tag: 5.3.0
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -180,6 +180,12 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 5.3.0 - 21-08-2019 =
+
+* Add - Introduce MyBank payment method
+* Fix - Active Payment Object may be NULL causing WSOD after order is placed in Mollie
+* Fix - ApplePay logo does not have the right resolution
 
 = 5.2.1 - 24-07-2019 =
 

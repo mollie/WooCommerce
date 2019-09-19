@@ -15,15 +15,17 @@ class Mollie_WC_PluginTest extends TestCase
 {
     /**
      * Test Disable Apple Pay Gateway
+     *
+     * @dataProvider allowingDataProvider
      */
-    public function testMaybeDisableApplePayGateway()
+    public function testMaybeDisableApplePayGateway($allowed, $expected)
     {
         /*
          * Setup stubs
          */
-        $postData = Testee::POST_APPLE_PAY_METHOD_NOT_ALLOWED_KEY . '=1';
+        $postData = Testee::POST_APPLE_PAY_METHOD_ALLOWED_KEY . "={$allowed}";
         $gateways = [
-            uniqid(),
+            'Mollie_WC_Gateway_Applepay',
             new stdClass(),
         ];
 
@@ -45,6 +47,14 @@ class Mollie_WC_PluginTest extends TestCase
          */
         $result = Testee::maybeDisableApplePayGateway($gateways);
 
-        self::assertEquals(false, isset($result[Testee::POST_APPLE_PAY_METHOD_NOT_ALLOWED_KEY]));
+        self::assertEquals($expected, in_array('Mollie_WC_Gateway_Applepay', $result, true));
+    }
+
+    public function allowingDataProvider()
+    {
+        return [
+            [1, true],
+            [0, false]
+        ];
     }
 }

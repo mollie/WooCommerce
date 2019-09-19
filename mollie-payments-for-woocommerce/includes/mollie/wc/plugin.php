@@ -14,7 +14,7 @@ class Mollie_WC_Plugin
     const PENDING_PAYMENT_DB_TABLE_NAME = 'mollie_pending_payment';
 
     const POST_DATA_KEY = 'post_data';
-    const POST_APPLE_PAY_METHOD_NOT_ALLOWED_KEY = 'mollie_apple_pay_method_not_allowed';
+    const POST_APPLE_PAY_METHOD_ALLOWED_KEY = 'mollie_apple_pay_method_allowed';
 
     /**
      * @var bool
@@ -426,22 +426,23 @@ class Mollie_WC_Plugin
      */
     public static function maybeDisableApplePayGateway(array $gateways)
     {
+        $applePayGatewayClassName = 'Mollie_WC_Gateway_Applepay';
+        $applePayGatewayIndex = array_search($applePayGatewayClassName, $gateways, true);
         $postData = (string)filter_input(
             INPUT_POST,
             self::POST_DATA_KEY,
             FILTER_SANITIZE_STRING
         ) ?: '';
+        parse_str($postData, $postData);
 
-        if (!$postData) {
+        $applePayAllowed = isset($postData[self::POST_APPLE_PAY_METHOD_ALLOWED_KEY]) && $postData[self::POST_APPLE_PAY_METHOD_ALLOWED_KEY];
+
+        if (is_admin()) {
             return $gateways;
         }
 
-        parse_str($postData, $postData);
-        if (isset($postData[self::POST_APPLE_PAY_METHOD_NOT_ALLOWED_KEY]) && !is_admin()) {
-            $index = array_search('Mollie_WC_Gateway_Applepay', $gateways, true);
-            if ($index !== false) {
-                unset($gateways[$index]);
-            }
+        if ($applePayGatewayIndex !== false && !$applePayAllowed) {
+            unset($gateways[$applePayGatewayIndex]);
         }
 
         return $gateways;

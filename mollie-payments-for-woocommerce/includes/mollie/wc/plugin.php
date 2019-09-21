@@ -426,6 +426,10 @@ class Mollie_WC_Plugin
      */
     public static function maybeDisableApplePayGateway(array $gateways)
     {
+        if (is_admin()) {
+            return $gateways;
+        }
+
         $applePayGatewayClassName = 'Mollie_WC_Gateway_Applepay';
         $applePayGatewayIndex = array_search($applePayGatewayClassName, $gateways, true);
         $postData = (string)filter_input(
@@ -436,10 +440,6 @@ class Mollie_WC_Plugin
         parse_str($postData, $postData);
 
         $applePayAllowed = isset($postData[self::POST_APPLE_PAY_METHOD_ALLOWED_KEY]) && $postData[self::POST_APPLE_PAY_METHOD_ALLOWED_KEY];
-
-        if (is_admin()) {
-            return $gateways;
-        }
 
         if ($applePayGatewayIndex !== false && !$applePayAllowed) {
             unset($gateways[$applePayGatewayIndex]);

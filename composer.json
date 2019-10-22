@@ -19,7 +19,8 @@
     "autoload-dev": {
         "psr-4": {
             "Mollie\\WooCommerce\\Tests\\": "tests/php",
-            "Mollie\\WooCommerce\\Tests\\Unit\\": "tests/php/Unit"
+            "Mollie\\WooCommerce\\Tests\\Unit\\": "tests/php/Unit",
+            "Mollie\\WooCommerce\\Tests\\Functional\\": "tests/php/Functional"
         }
     }
 }

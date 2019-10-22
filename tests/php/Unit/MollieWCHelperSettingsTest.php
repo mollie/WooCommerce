@@ -1,5 +1,7 @@
 <?php # -*- coding: utf-8 -*-
 
+namespace Mollie\WooCommerce\Tests\Unit;
+
 use function Brain\Monkey\Filters\expectApplied as expectFilterApplied;
 use function Brain\Monkey\Functions\expect;
 use Mollie\WooCommerce\Tests\TestCase;

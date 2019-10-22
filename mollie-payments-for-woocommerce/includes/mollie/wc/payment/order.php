@@ -1,6 +1,11 @@
 <?php
 
+use Mollie\Api\Resources\Refund;
+
 class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
+
+    const ACTION_AFTER_REFUND_AMOUNT_CREATED = Mollie_WC_Plugin::PLUGIN_ID . '_refund_amount_created';
+    const ACTION_AFTER_REFUND_ORDER_CREATED = Mollie_WC_Plugin::PLUGIN_ID . '_refund_order_created';
 
 	public static $paymentId;
 	public static $customerId;
@@ -8,9 +13,21 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	public static $payment;
 	public static $shop_country;
 
-	public function __construct( $data ) {
-		$this->data = $data;
-	}
+    /**
+     * @var OrderItemsRefunder
+     */
+    private $orderItemsRefunder;
+
+    /**
+     * Mollie_WC_Payment_Order constructor.
+     * @param OrderItemsRefunder $orderItemsRefunder
+     * @param $data
+     */
+    public function __construct(OrderItemsRefunder $orderItemsRefunder, $data)
+    {
+        $this->data = $data;
+        $this->orderItemsRefunder = $orderItemsRefunder;
+    }
 
 	public function getPaymentObject( $payment_id, $test_mode = false, $use_cache = true ) {
 		try {
@@ -762,52 +779,58 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			// Get order items from refund
 			$items = $woocommerce_refund->get_items( array ( 'line_item', 'fee', 'shipping' ) );
 
+            if (empty ($items)) {
+                return $this->refund_amount($order, $amount, $payment_object, $reason);
+            }
 
-			// If the refund contains items, it's a refund for individual order lines
-			if ( ! empty ( $items ) ) {
+            // Compare total amount of the refund to the combined totals of all refunded items,
+            // if the refund total is greater than sum of refund items, merchant is also doing a
+            // 'Refund amount', which the Mollie API does not support. In that case, stop entire
+            // process and warn the merchant.
 
-				// Compare total amount of the refund to the combined totals of all refunded items,
-				// if the refund total is greater than sum of refund items, merchant is also doing a
-				// 'Refund amount', which the Mollie API does not support. In that case, stop entire
-				// process and warn the merchant.
+            $totals = 0;
 
-				$totals = 0;
+            foreach ($items as $item_id => $item_data) {
+                $totals += $item_data->get_total() + $item_data->get_total_tax();
+            }
 
-				foreach ( $items as $item_id => $item_data ) {
+            $totals = number_format(abs($totals), 2); // WooCommerce - sum of all refund items
+            $amount = number_format($amount, 2); // WooCommerce - refund amount
 
-					$totals += $item_data->get_total() + $item_data->get_total_tax(); // Get the item line total
+            if ($amount !== $totals) {
+                $error_message = "The sum of refunds for all order lines is not identical to the refund amount, so this refund will be processed as a payment amount refund, not an order line refund.";
+                $order->add_order_note($error_message);
+                Mollie_WC_Plugin::debug(__METHOD__ . ' - ' . $error_message);
 
-				}
+                return $this->refund_amount($order, $amount, $payment_object, $reason);
+            }
 
-				$totals = number_format(abs($totals), 2); // WooCommerce - sum of all refund items
-				$amount = number_format($amount, 2); // WooCommerce - refund amount
+            Mollie_WC_Plugin::debug('Try to process individual order item refunds or cancels.');
 
-				if ( $amount !== $totals ) {
-					$error_message = "The sum of refunds for all order lines is not identical to the refund amount, so this refund will be processed as a payment amount refund, not an order line refund.";
-					$order->add_order_note( $error_message );
-					Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $error_message );
+            try {
+                return $this->orderItemsRefunder->refund(
+                    $order,
+                    $items,
+                    $payment_object,
+                    $reason
+                );
+            } catch (PartialRefundException $exception) {
+                Mollie_WC_Plugin::debug(__METHOD__ . ' - ' . $exception->getMessage());
+                return $this->refund_amount(
+                    $order,
+                    $amount,
+                    $payment_object,
+                    $reason
+                );
+            }
+        } catch (Exception $exception) {
+            $exceptionMessage = $exception->getMessage();
+            Mollie_WC_Plugin::debug(__METHOD__ . ' - ' . $exceptionMessage);
+            return new WP_Error(1, $exceptionMessage);
+        }
 
-					return $this->refund_amount( $order, $order_id, $amount, $payment_object, $reason );
-				}
-
-				return $this->refund_order_items( $order, $order_id, $amount, $items, $payment_object, $reason );
-
-			}
-
-			// If the refund does not contain items, only refund the amount
-			if ( empty ( $items ) ) {
-
-				return $this->refund_amount( $order, $order_id, $amount, $payment_object, $reason );
-
-			}
-		}
-		catch ( Exception $e ) {
-			return new WP_Error( 1, $e->getMessage() );
-		}
-
-		return false;
-
-	}
+        return false;
+    }
 
 	/**
 	 * @param $order
@@ -840,12 +863,10 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 				// If there is no metadata wth the order item ID, this order can't process individual order lines
 				if ( empty( $line->metadata->order_item_id ) ) {
-
 					$note_message = 'Refunds for this specific order can not be processed per order line. Trying to process this as an amount refund instead.';
 					Mollie_WC_Plugin::debug( __METHOD__ . " - " . $note_message );
 
-					return $this->refund_amount( $order, $order_id, $amount, $payment_object, $reason );
-
+					return $this->refund_amount( $order, $amount, $payment_object, $reason );
 				}
 
 				// Get the Mollie order line information that we need later
@@ -937,7 +958,18 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 						);
 					}
 
-					do_action( Mollie_WC_Plugin::PLUGIN_ID . '_refund_created', $refund, $order );
+                    do_action(
+                        Mollie_WC_Plugin::PLUGIN_ID . '_refund_order_created',
+                        $refund,
+                        $order
+                    );
+
+                    do_action_deprecated(
+                        Mollie_WC_Plugin::PLUGIN_ID . '_refund_created',
+                        [$refund, $order],
+                        '[next-version]',
+                        self::ACTION_AFTER_REFUND_PAYMENT_CREATED
+                    );
 
 					$order->add_order_note( $note_message );
 					Mollie_WC_Plugin::debug( $note_message );
@@ -968,11 +1000,15 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	 * @return bool
 	 * @throws \Mollie\Api\Exceptions\ApiException|Exception
 	 */
-	public function refund_amount( $order, $order_id, $amount, $payment_object, $reason ) {
+    public function refund_amount($order, $amount, $payment_object, $reason)
+    {
+        $orderId = version_compare(WC_VERSION, '3.0', '<') ? $order->id : $order->get_id();
 
 		Mollie_WC_Plugin::debug( 'Try to process an amount refund (not individual order line)' );
 
-		$payment_object_payment = Mollie_WC_Plugin::getPaymentObject()->getActiveMolliePayment( $order_id );
+        $payment_object_payment = Mollie_WC_Plugin::getPaymentObject()->getActiveMolliePayment(
+            $orderId
+        );
 
 		// Is test mode enabled?
 		$test_mode = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
@@ -1005,7 +1041,21 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			$order->add_order_note( $note_message );
 			Mollie_WC_Plugin::debug( $note_message );
 
-			do_action( Mollie_WC_Plugin::PLUGIN_ID . '_refund_created', $refund, $order );
+            /**
+             * After Refund Amount Created
+             *
+             * @param Refund $refund
+             * @param WC_Order $order
+             * @param string $amount
+             */
+            do_action(self::ACTION_AFTER_REFUND_AMOUNT_CREATED, $refund, $order, $amount);
+
+            do_action_deprecated(
+                Mollie_WC_Plugin::PLUGIN_ID . '_refund_created',
+                [$refund, $order],
+                '[next-version]',
+                self::ACTION_AFTER_REFUND_AMOUNT_CREATED
+            );
 
 			return true;
 

@@ -1,5 +1,6 @@
 <?php
 
+use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Types\PaymentMethod;
 
 abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
@@ -437,14 +438,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		     0 != $order->get_user_id() && ( wcs_order_contains_switch( $order ) )
 		) {
 
-			$payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject( 'payment' );
-			$paymentRequestData = $payment_object->getPaymentRequestData( $order, $customer_id );
+            try {
+                $payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject(
+                    'payment'
+                );
+                $paymentRequestData = $payment_object->getPaymentRequestData($order, $customer_id);
+                $data = array_filter($paymentRequestData);
+                $data = apply_filters('woocommerce_' . $this->id . '_args', $data, $order);
 
-			$data = array_filter( $paymentRequestData );
-
-			$data = apply_filters( 'woocommerce_' . $this->id . '_args', $data, $order );
-
-			try {
 				Mollie_WC_Plugin::debug( $this->id . ': Subscription switch started, fetching mandate(s) for order #' . $order_id );
 				$mandates = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers->get( $customer_id )->mandates();
 				$validMandate = false;
@@ -533,7 +534,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 					Mollie_WC_Plugin::debug( $this->id . ': Create Mollie payment object for order ' . $order->get_id(), true );
 				}
 
-				$payment_object     = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject( 'order' );
+                try {
+                    $payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()
+                        ->getPaymentObject('order');
+                } catch (ApiException $exception) {
+                    Mollie_WC_Plugin::debug($exception->getMessage());
+                    return array('result' => 'failure');
+                }
+
 				$paymentRequestData = $payment_object->getPaymentRequestData( $order, $customer_id );
 
 				$data = array_filter( $paymentRequestData );
@@ -867,7 +875,15 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $test_mode  = $data_helper->getActiveMolliePaymentMode($order_id) == 'test';
 
         // Load the payment from Mollie, do not use cache
-	    $payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject( $payment_object_id );
+        try {
+            $payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()
+                ->getPaymentObject($payment_object_id);
+        } catch (ApiException $exception) {
+            Mollie_WC_Plugin::setHttpResponseCode(400);
+            Mollie_WC_Plugin::debug($exception->getMessage());
+            return;
+        }
+
 	    $payment = $payment_object->getPaymentObject( $payment_object->data, $test_mode, $use_cache = false );
 
         // Payment not found
@@ -1340,8 +1356,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			return new WP_Error( '1', $error_message );
 		}
 
-		// Load payment object from Mollie, don't use cache
-		$payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject( $payment_object_id );
+        try {
+            $payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()
+                ->getPaymentObject($payment_object_id);
+        } catch (ApiException $exception) {
+            $exceptionMessage = $exception->getMessage();
+            Mollie_WC_Plugin::debug($exceptionMessage);
+            return new WP_Error('error', $exceptionMessage);
+        }
 
 		if ( ! $payment_object ) {
 

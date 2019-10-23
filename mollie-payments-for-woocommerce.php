@@ -79,9 +79,6 @@ add_action( 'plugins_loaded', 'mollie_wc_check_woocommerce_status' );
  */
 function mollie_wc_plugin_init() {
 
-    // Register Mollie autoloader
-    Mollie_WC_Autoload::register();
-
     // Setup and start plugin
     Mollie_WC_Plugin::init();
 }
@@ -97,9 +94,6 @@ function mollie_wc_plugin_activation_hook ()
         add_action( 'admin_notices', 'mollie_wc_plugin_inactive' );
         return;
     }
-
-    // Register Mollie autoloader
-    Mollie_WC_Autoload::register();
 
     $status_helper = Mollie_WC_Plugin::getStatusHelper();
 

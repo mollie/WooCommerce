@@ -14,4 +14,4 @@ install:
 
 script:
     - find mollie-payments-for-woocommerce -name '*.php' | xargs -n 1 -P4 php -l
-    - ./vendor/bin/phpunit --testdox --coverage-clover=coverage/report/coverage.xml
+    - ./vendor/bin/phpunit --testdox

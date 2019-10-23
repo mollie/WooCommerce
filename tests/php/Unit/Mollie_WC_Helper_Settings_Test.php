@@ -7,9 +7,9 @@ use Mollie\WooCommerce\Tests\TestCase;
 use Mollie_WC_Helper_Settings as Testee;
 
 /**
- * Class MollieWCHelperSettingsTest
+ * Class Mollie_WC_Helper_Settings_Test
  */
-class MollieWCHelperSettingsTest extends TestCase
+class Mollie_WC_Helper_Settings_Test extends TestCase
 {
     /* -----------------------------------------------------------------
        getPaymentLocale Tests

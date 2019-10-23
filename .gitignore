@@ -8,5 +8,4 @@
 /.idea/tasks.xml
 /.idea/deployment.xml
 /.idea/vagrant.xml
-/.idea/misc.xml
-/.idea/dataSources*
+/.idea/codeStyles/

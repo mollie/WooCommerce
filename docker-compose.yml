@@ -38,6 +38,7 @@ services:
     volumes:
       - ./:${DOCROOT}
       - ${BASE_DIR}:${PROJECT_MOUNT_PATH}
+      - ${BASE_DIR}/vendor/woocommerce/woocommerce:${DOCROOT}/wp-content/plugins/woocommerce
 ## For macOS users (https://wodby.com/stacks/wordpress/docs/local/docker-for-mac/)
 #      - ./:/var/www/html:cached # User-guided caching
 #      - docker-sync:/var/www/html # Docker-sync
@@ -58,6 +59,7 @@ services:
     volumes:
       - ./:${DOCROOT}
       - ${BASE_DIR}:${PROJECT_MOUNT_PATH}
+      - ${BASE_DIR}/vendor/woocommerce/woocommerce:${DOCROOT}/wp-content/plugins/woocommerce
 # Options for macOS users (https://wodby.com/stacks/wordpress/docs/local/docker-for-mac/)
 #      - ./:/var/www/html:cached # User-guided caching
 #      - docker-sync:/var/www/html # Docker-sync

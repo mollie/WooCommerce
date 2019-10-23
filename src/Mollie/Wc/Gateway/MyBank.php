@@ -1,12 +1,11 @@
 <?php
 
 use Mollie\Api\Resources\Payment;
-use Mollie\Api\Types\PaymentMethod;
 
 /**
- * Class applepay
+ * Class Mollie_WC_Gateway_MyBank
  */
-class Mollie_WC_Gateway_Applepay extends Mollie_WC_Gateway_Abstract
+class Mollie_WC_Gateway_MyBank extends Mollie_WC_Gateway_Abstract
 {
     /**
      * Mollie_WC_Gateway_Applepay constructor.
@@ -26,7 +25,7 @@ class Mollie_WC_Gateway_Applepay extends Mollie_WC_Gateway_Abstract
      */
     public function getMollieMethodId()
     {
-        return PaymentMethod::APPLEPAY;
+        return 'mybank';
     }
 
     /**
@@ -34,7 +33,7 @@ class Mollie_WC_Gateway_Applepay extends Mollie_WC_Gateway_Abstract
      */
     public function getDefaultTitle()
     {
-        return __('Apple Pay', 'mollie-payments-for-woocommerce');
+        return __('MyBank', 'mollie-payments-for-woocommerce');
     }
 
     /**
@@ -42,7 +41,7 @@ class Mollie_WC_Gateway_Applepay extends Mollie_WC_Gateway_Abstract
      */
     protected function getSettingsDescription()
     {
-        return __('To accept payments via Apple Pay', 'mollie-payments-for-woocommerce');
+        return __('To accept payments via MyBank', 'mollie-payments-for-woocommerce');
     }
 
     /**
@@ -68,16 +67,16 @@ class Mollie_WC_Gateway_Applepay extends Mollie_WC_Gateway_Abstract
         $admin_instructions,
         $plain_text
     ) {
+
         if ($payment->isPaid() && $payment->details) {
             return sprintf(
                 __(
-                /* translators: Placeholder 1: PayPal consumer name, placeholder 2: PayPal email, placeholder 3: PayPal transaction ID */
-                    "Payment completed by <strong>%1$s</strong> - %2$s (Apple Pay transaction ID: %3$s)",
+                    /* translators: Placeholder 1: MyBank consumer name, placeholder 2: Consumer Account number */
+                    'Payment completed by <strong>%1$s</strong> - %2$s',
                     'mollie-payments-for-woocommerce'
                 ),
                 $payment->details->consumerName,
-                $payment->details->consumerAccount,
-                $payment->details->paypalReference
+                $payment->details->consumerAccount
             );
         }
 

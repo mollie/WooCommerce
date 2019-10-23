@@ -7,14 +7,14 @@ class Mollie_WC_Plugin
 {
     const PLUGIN_ID      = 'mollie-payments-for-woocommerce';
     const PLUGIN_TITLE   = 'Mollie Payments for WooCommerce';
-    const PLUGIN_VERSION = '5.2.1';
+    const PLUGIN_VERSION = '5.3.0';
 
     const DB_VERSION     = '1.0';
     const DB_VERSION_PARAM_NAME = 'mollie-db-version';
     const PENDING_PAYMENT_DB_TABLE_NAME = 'mollie_pending_payment';
 
     const POST_DATA_KEY = 'post_data';
-    const POST_APPLE_PAY_METHOD_NOT_ALLOWED_KEY = 'mollie_apple_pay_method_not_allowed';
+    const POST_APPLE_PAY_METHOD_ALLOWED_KEY = 'mollie_apple_pay_method_allowed';
 
     /**
      * @var bool
@@ -46,6 +46,7 @@ class Mollie_WC_Plugin
         'Mollie_WC_Gateway_Sofort',
         'Mollie_WC_Gateway_Giftcard',
         'Mollie_WC_Gateway_Applepay',
+        'Mollie_WC_Gateway_MyBank',
     );
 
     private function __construct () {}
@@ -425,22 +426,23 @@ class Mollie_WC_Plugin
      */
     public static function maybeDisableApplePayGateway(array $gateways)
     {
+        if (is_admin()) {
+            return $gateways;
+        }
+
+        $applePayGatewayClassName = 'Mollie_WC_Gateway_Applepay';
+        $applePayGatewayIndex = array_search($applePayGatewayClassName, $gateways, true);
         $postData = (string)filter_input(
             INPUT_POST,
             self::POST_DATA_KEY,
             FILTER_SANITIZE_STRING
         ) ?: '';
-
-        if (!$postData) {
-            return $gateways;
-        }
-
         parse_str($postData, $postData);
-        if (isset($postData[self::POST_APPLE_PAY_METHOD_NOT_ALLOWED_KEY]) && !is_admin()) {
-            $index = array_search('Mollie_WC_Gateway_Applepay', $gateways, true);
-            if ($index !== false) {
-                unset($gateways[$index]);
-            }
+
+        $applePayAllowed = isset($postData[self::POST_APPLE_PAY_METHOD_ALLOWED_KEY]) && $postData[self::POST_APPLE_PAY_METHOD_ALLOWED_KEY];
+
+        if ($applePayGatewayIndex !== false && !$applePayAllowed) {
+            unset($gateways[$applePayGatewayIndex]);
         }
 
         return $gateways;

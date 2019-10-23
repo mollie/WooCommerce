@@ -2,6 +2,7 @@
 
 namespace Mollie\WooCommerce\Tests\Functional;
 
+use Brain\Monkey\Expectation\Exception\ExpectationArgsRequired;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mollie\Api\Endpoints\OrderEndpoint;
 use Mollie\Api\Exceptions\ApiException;
@@ -49,6 +50,7 @@ class OrderItemsRefunderTest extends TestCase
      * @throws PHPUnit_Framework_Exception
      * @throws PHPUnit_Framework_MockObject_RuntimeException
      * @throws UnexpectedValueException
+     * @throws ExpectationArgsRequired
      */
     public function testRefund()
     {
@@ -137,6 +139,7 @@ class OrderItemsRefunderTest extends TestCase
                 'id' => uniqid(),
             ]
         );
+        /** @var Order $remoteOrder */
         $remoteOrder = $this->remoteOrder([$orderLineItem]);
         $refundReason = uniqid();
         $lineItems = $this->buildLineItems($refundReason);

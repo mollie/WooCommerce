@@ -2,6 +2,7 @@
 
 namespace Mollie\WooCommerce\Tests\Unit;
 
+use Brain\Monkey\Expectation\Exception\NotAllowedMethod;
 use function Brain\Monkey\Filters\expectApplied as expectFilterApplied;
 use function Brain\Monkey\Functions\expect;
 use Mollie\WooCommerce\Tests\TestCase;
@@ -9,9 +10,9 @@ use Mollie\WooCommerce\Tests\TestCase;
 use Mollie_WC_Helper_Settings as Testee;
 
 /**
- * Class MollieWCHelperSettingsTest
+ * Class Mollie_WC_Helper_Settings_Test
  */
-class MollieWCHelperSettingsTest extends TestCase
+class Mollie_WC_Helper_Settings_Test extends TestCase
 {
     /* -----------------------------------------------------------------
        getPaymentLocale Tests
@@ -179,7 +180,7 @@ class MollieWCHelperSettingsTest extends TestCase
          * Then expect to retrieve the value from a call to `get_option` but
          * that value is a falsy value because of problem in retrieving the option.
          */
-        Brain\Monkey\Functions\expect('get_option')
+        expect('get_option')
             ->once()
             ->with($settingId, Testee::SETTING_LOCALE_WP_LANGUAGE)
             ->andReturn(false);
@@ -425,8 +426,7 @@ class MollieWCHelperSettingsTest extends TestCase
      * @dataProvider extractValidLanguageCodeDataProvider
      * @param array $languageCodes
      * @param $expectedResult
-     * @throws ReflectionException
-     * @throws \Brain\Monkey\Expectation\Exception\NotAllowedMethod
+     * @throws NotAllowedMethod
      */
     public function testExtractValidLanguageCode(array $languageCodes, $expectedResult)
     {

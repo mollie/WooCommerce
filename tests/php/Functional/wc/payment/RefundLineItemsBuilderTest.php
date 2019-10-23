@@ -11,6 +11,7 @@ use PHPUnit_Framework_MockObject_MockObject;
 use RefundLineItemsBuilder;
 use stdClass;
 use UnexpectedValueException;
+use WC_Order_Item;
 use function Brain\Monkey\Functions\when;
 
 /**
@@ -128,7 +129,7 @@ class RefundLineItemsBuilderTest extends TestCase
      * @throws PartialRefundException
      * @throws UnexpectedValueException
      */
-    public function testBuildLineItemsSkipItemBecauseNoRefoundAmountSpecified()
+    public function testBuildLineItemsSkipItemBecauseNoRefundAmountSpecified()
     {
         /*
          * Stubs

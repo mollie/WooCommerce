@@ -1,5 +1,6 @@
 <?php
 
+use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Refund;
 
 class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
@@ -40,7 +41,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 			return parent::getPaymentObject( $payment_id, $test_mode = false, $use_cache = true );
 		}
-		catch ( \Mollie\Api\Exceptions\ApiException $e ) {
+		catch ( ApiException $e ) {
 			Mollie_WC_Plugin::debug( __CLASS__ . __FUNCTION__ . ": Could not load payment $payment_id (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class( $e ) . ')' );
 		}
 
@@ -832,17 +833,18 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
         return false;
     }
 
-	/**
-	 * @param $order
-	 * @param $order_id
-	 * @param $amount
-	 * @param $items
-	 * @param $payment_object
-	 * @param $reason
-	 *
-	 * @return bool
-	 * @throws \Mollie\Api\Exceptions\ApiException|Exception
-	 */
+    /**
+     * @param $order
+     * @param $order_id
+     * @param $amount
+     * @param $items
+     * @param $payment_object
+     * @param $reason
+     *
+     * @return bool
+     * @throws ApiException
+     * @deprecated Not recommended because merchant will be charged for every refunded item, use OrderItemsRefunder instead.
+     */
 	public function refund_order_items( $order, $order_id, $amount, $items, $payment_object, $reason ) {
 
 		Mollie_WC_Plugin::debug( 'Try to process individual order item refunds or cancels.' );
@@ -998,7 +1000,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	 * @param $reason
 	 *
 	 * @return bool
-	 * @throws \Mollie\Api\Exceptions\ApiException|Exception
+	 * @throws ApiException|Exception
 	 */
     public function refund_amount($order, $amount, $payment_object, $reason)
     {

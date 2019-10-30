@@ -14,7 +14,7 @@ class Mollie_WC_Plugin
     const PENDING_PAYMENT_DB_TABLE_NAME = 'mollie_pending_payment';
 
     const POST_DATA_KEY = 'post_data';
-    const POST_APPLE_PAY_METHOD_ALLOWED_KEY = 'mollie_apple_pay_method_allowed';
+    const APPLE_PAY_METHOD_ALLOWED_KEY = 'mollie_apple_pay_method_allowed';
 
     /**
      * @var bool
@@ -195,6 +195,12 @@ class Mollie_WC_Plugin
 		add_filter( 'woocommerce_payment_gateways', array ( __CLASS__, 'addGateways' ) );
 
         add_filter('woocommerce_payment_gateways', [__CLASS__, 'maybeDisableApplePayGateway'], 20);
+        add_action(
+            'woocommerce_after_order_object_save',
+            function () {
+                mollieWooCommerceSession()->__unset(self::APPLE_PAY_METHOD_ALLOWED_KEY);
+            }
+        );
 
 		// Add settings link to plugins page
 		add_filter( 'plugin_action_links_' . $plugin_basename, array ( __CLASS__, 'addPluginActionLinks' ) );
@@ -426,7 +432,13 @@ class Mollie_WC_Plugin
      */
     public static function maybeDisableApplePayGateway(array $gateways)
     {
+        $wooCommerceSession = mollieWooCommerceSession();
+
         if (is_admin()) {
+            return $gateways;
+        }
+
+        if ($wooCommerceSession->get(self::APPLE_PAY_METHOD_ALLOWED_KEY, false)) {
             return $gateways;
         }
 
@@ -439,10 +451,14 @@ class Mollie_WC_Plugin
         ) ?: '';
         parse_str($postData, $postData);
 
-        $applePayAllowed = isset($postData[self::POST_APPLE_PAY_METHOD_ALLOWED_KEY]) && $postData[self::POST_APPLE_PAY_METHOD_ALLOWED_KEY];
+        $applePayAllowed = isset($postData[self::APPLE_PAY_METHOD_ALLOWED_KEY]) && $postData[self::APPLE_PAY_METHOD_ALLOWED_KEY];
 
         if ($applePayGatewayIndex !== false && !$applePayAllowed) {
             unset($gateways[$applePayGatewayIndex]);
+        }
+
+        if ($applePayGatewayIndex !== false && $applePayAllowed) {
+            $wooCommerceSession->set(self::APPLE_PAY_METHOD_ALLOWED_KEY, true);
         }
 
         return $gateways;
@@ -919,6 +935,5 @@ class Mollie_WC_Plugin
 		return true;
 
 	}
-
 }
 

@@ -36,3 +36,8 @@ if (!function_exists('untrailingslashit'))
         return rtrim($string, '/');
     }
 }
+
+function mollieWooCommerceSession()
+{
+    return WC()->session;
+}

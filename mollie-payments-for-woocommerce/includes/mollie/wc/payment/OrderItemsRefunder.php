@@ -146,7 +146,13 @@ class OrderItemsRefunder
 
             if (!$orderItemId) {
                 throw new UnexpectedValueException(
-                    "Impossible to retrieve the order item id related to the remote item: {$remoteItem->id}. Try to do a refund by amount."
+                    sprintf(
+                        __(
+                            'Impossible to retrieve the order item id related to the remote item: %1$s. Try to do a refund by amount.',
+                            'mollie-payments-for-woocommerce'
+                        ),
+                        $remoteItem->id
+                    )
                 );
             }
 

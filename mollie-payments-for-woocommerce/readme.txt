@@ -185,6 +185,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 * Fix - Apple Pay payment method appear temporary in checkout page even if the device does not support Apple Pay
 * Fix - Refunding per line items is not possible when the refund amount field is disabled in WooCommerce order edit page
+* Fix - Compatibility with PHP 7.4
 
 = 5.3.0 - 21-08-2019 =
 

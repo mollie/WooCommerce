@@ -3,7 +3,7 @@ Contributors: daanvm, danielhuesken, davdebcom, dinamiko, inpsyde, l.vangunst, n
 Tags: mollie, payments, payment gateway, woocommerce, credit card, ideal, bancontact, klarna, sofort, giropay, woocommerce subscriptions
 Requires at least: 3.8
 Tested up to: 5.2
-Stable tag: 5.3.0
+Stable tag: 5.3.1
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -180,6 +180,11 @@ Please contact info@mollie.com if you need help installing the Mollie WooCommerc
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
 
 == Changelog ==
+
+= 5.3.1 - 05-11-2019 =
+
+* Fix - Apple Pay payment method appear temporary in checkout page even if the device does not support Apple Pay
+* Fix - Refunding per line items is not possible when the refund amount field is disabled in WooCommerce order edit page
 
 = 5.3.0 - 21-08-2019 =
 

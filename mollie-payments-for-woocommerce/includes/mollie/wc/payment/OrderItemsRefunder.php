@@ -6,7 +6,7 @@ use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Refund;
 
 /**
- * Class OrderItemsRefunder
+ * Refund a WooCommerce order by line items
  */
 class OrderItemsRefunder
 {
@@ -46,12 +46,12 @@ class OrderItemsRefunder
     }
 
     /**
-     * @param WC_Order $order
-     * @param array $items
-     * @param Order $remotePaymentObject
-     * @param $refundReason
+     * @param WC_Order $order WooCommerce Order
+     * @param array $items WooCommerce Order Items
+     * @param Order $remotePaymentObject Mollie Order service
+     * @param string $refundReason The reason of refunding
      * @return bool
-     * @throws ApiException
+     * @throws ApiException When the API call fails for any reason
      * @throws UnexpectedValueException
      */
     public function refund(
@@ -61,7 +61,7 @@ class OrderItemsRefunder
         $refundReason
     ) {
 
-        $toRefundItems = $this->toRefundItems($items);
+        $toRefundItems = $this->normalizedWooCommerceItemsList($items);
         $toRefundRemoteItems = $this->toRefundRemoteItems(
             $remotePaymentObject->lines,
             $toRefundItems
@@ -90,11 +90,13 @@ class OrderItemsRefunder
     }
 
     /**
-     * @param array $items
+     * Normalized version of WooCommerce order items where the key is the id of the item to refund
+     *
+     * @param array $items WooCommerce Order Items
      * @return array
      * @throws UnexpectedValueException
      */
-    private function toRefundItems(array $items)
+    private function normalizedWooCommerceItemsList(array $items)
     {
         $toRefundItems = [];
         /** @var WC_Order_Item $item */
@@ -117,6 +119,8 @@ class OrderItemsRefunder
     }
 
     /**
+     * Given remote items of an order extract the ones for which the refund was requested
+     *
      * @param array $remoteItems
      * @param array $toRefundItems
      * @return array
@@ -125,17 +129,19 @@ class OrderItemsRefunder
     private function toRefundRemoteItems(array $remoteItems, array $toRefundItems)
     {
         return array_intersect_key(
-            $this->remoteItems($remoteItems),
+            $this->normalizedRemoteItems($remoteItems),
             $toRefundItems
         );
     }
 
     /**
+     * Normalized version of remote items where the key is the id of the item to refund
+     *
      * @param array $remoteItems
      * @return array
      * @throws UnexpectedValueException
      */
-    private function remoteItems(array $remoteItems)
+    private function normalizedRemoteItems(array $remoteItems)
     {
         $relatedRemoteItems = [];
 
@@ -163,6 +169,8 @@ class OrderItemsRefunder
     }
 
     /**
+     * Throw an exception if one of the given items list is empty
+     *
      * @param array $items
      * @param array $remoteItems
      * @throws UnexpectedValueException

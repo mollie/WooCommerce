@@ -439,9 +439,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		) {
 
             try {
-                $payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject(
-                    'payment'
-                );
+                $payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()
+                                                  ->getPaymentObject('payment');
                 $paymentRequestData = $payment_object->getPaymentRequestData($order, $customer_id);
                 $data = array_filter($paymentRequestData);
                 $data = apply_filters('woocommerce_' . $this->id . '_args', $data, $order);

@@ -1,7 +1,9 @@
 <?php
 
 /**
- * Class RefundLineItemsBuilder
+ * Create the line items list to refund according to Mollie rest api documentation
+ *
+ * @link https://docs.mollie.com/reference/v2/orders-api/create-order-refund
  */
 class RefundLineItemsBuilder
 {
@@ -22,8 +24,8 @@ class RefundLineItemsBuilder
     /**
      * @param array $toRefundRemoteItems
      * @param array $toRefundItems
-     * @param $currency
-     * @param $reason
+     * @param string $currency
+     * @param string $refundReason
      * @return array
      * @throws PartialRefundException
      * @throws UnexpectedValueException
@@ -32,15 +34,15 @@ class RefundLineItemsBuilder
         array $toRefundRemoteItems,
         array $toRefundItems,
         $currency,
-        $reason
+        $refundReason
     ) {
 
         $toCancel = [
-            'description' => $reason,
+            'description' => $refundReason,
             'lines' => [],
         ];
         $toRefund = [
-            'description' => $reason,
+            'description' => $refundReason,
             'lines' => [],
         ];
 
@@ -80,8 +82,8 @@ class RefundLineItemsBuilder
     /**
      * @param WC_Order_Item $toRefundItem
      * @param stdClass $toRefundRemoteItem
-     * @param $currency
-     * @return array|null
+     * @param string $currency
+     * @return array
      * @throws PartialRefundException
      */
     private function buildLineItem(
@@ -90,7 +92,6 @@ class RefundLineItemsBuilder
         $currency
     ) {
 
-        $remoteClientData = null;
         $toRefundItemQuantity = abs($toRefundItem->get_quantity());
         $toRefundItemAmount = number_format(
             abs($toRefundItem->get_total() + $toRefundItem->get_total_tax()),
@@ -125,7 +126,6 @@ class RefundLineItemsBuilder
 
         if (!empty($toRefundRemoteItem->discountAmount)) {
             $remoteClientData['amount'] = [
-                // TODO The currency here shouldn't be the one defined in the remote item? It get passed one from woocommerce.
                 'value' => $this->dataHelper->formatCurrencyValue($toRefundItemAmount, $currency),
                 'currency' => $currency,
             ];

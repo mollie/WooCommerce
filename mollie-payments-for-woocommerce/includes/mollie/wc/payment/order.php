@@ -200,78 +200,59 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 		return parent::setActiveMolliePayment( $order_id );
 	}
 
-	public function getMolliePaymentIdFromPaymentObject() {
+    public function getMolliePaymentIdFromPaymentObject()
+    {
+        $payment = $this->getPaymentObject($this->data->id);
 
-		// TODO David: Quick fix, make sure payment object has payments embedded, there needs to be a better way to do this!
-		$payment = $this->getPaymentObject($this->data->id);
+        if (isset($payment->_embedded->payments[0]->id)) {
+            return $payment->_embedded->payments[0]->id;
+        }
+    }
 
-		if ( isset( $payment->_embedded->payments{0}->id ) ) {
+    public function getMollieCustomerIdFromPaymentObject($payment = null)
+    {
+        if ($payment == null) {
+            $payment = $this->data->id;
+        }
 
-			return $payment->_embedded->payments{0}->id;
+        $payment = $this->getPaymentObject($payment);
 
-		}
+        if (isset($payment->_embedded->payments[0]->customerId)) {
+            return $payment->_embedded->payments[0]->customerId;
+        }
+    }
 
-		return null;
-	}
+    public function getSequenceTypeFromPaymentObject($payment = null)
+    {
+        if ($payment == null) {
+            $payment = $this->data->id;
+        }
 
-	public function getMollieCustomerIdFromPaymentObject( $payment = null ) {
+        $payment = $this->getPaymentObject($payment);
 
-		// TODO David: Quick fix, make sure payment object has payments embedded, there needs to be a better way to do this!
-		if ( $payment == null ) {
-			$payment = $this->data->id;
-		}
+        if (isset($payment->_embedded->payments[0]->sequenceType)) {
+            return $payment->_embedded->payments[0]->sequenceType;
+        }
+    }
 
-		$payment = $this->getPaymentObject( $payment );
+    public function getMollieCustomerIbanDetailsFromPaymentObject($payment = null)
+    {
+        if ($payment == null) {
+            $payment = $this->data->id;
+        }
 
-		if ( isset( $payment->_embedded->payments{0}->customerId ) ) {
+        $payment = $this->getPaymentObject($payment);
 
-			return $payment->_embedded->payments{0}->customerId;
+        if (isset($payment->_embedded->payments[0]->id)) {
+            $actual_payment = new Mollie_WC_Payment_Payment($payment->_embedded->payments[0]->id);
+            $actual_payment = $actual_payment->getPaymentObject($actual_payment->data);
 
-		}
+            $iban_details['consumerName'] = $actual_payment->details->consumerName;
+            $iban_details['consumerAccount'] = $actual_payment->details->consumerAccount;
+        }
 
-		return null;
-	}
-
-	public function getSequenceTypeFromPaymentObject( $payment = null ) {
-
-		// TODO David: Quick fix, make sure payment object has payments embedded, there needs to be a better way to do this!
-		if ( $payment == null ) {
-			$payment = $this->data->id;
-		}
-
-		$payment = $this->getPaymentObject( $payment );
-
-		if ( isset( $payment->_embedded->payments{0}->sequenceType ) ) {
-
-			return $payment->_embedded->payments{0}->sequenceType;
-
-		}
-
-		return null;
-	}
-
-	public function getMollieCustomerIbanDetailsFromPaymentObject( $payment = null ) {
-
-		// TODO David: Quick fix, make sure payment object has payments embedded, there needs to be a better way to do this!
-		if ( $payment == null ) {
-			$payment = $this->data->id;
-		}
-
-		$payment = $this->getPaymentObject( $payment );
-
-		if ( isset( $payment->_embedded->payments{0}->id ) ) {
-
-			$actual_payment = new Mollie_WC_Payment_Payment( $payment->_embedded->payments{0}->id );
-			$actual_payment = $actual_payment->getPaymentObject( $actual_payment->data );
-
-			$iban_details['consumerName']    = $actual_payment->details->consumerName;
-			$iban_details['consumerAccount'] = $actual_payment->details->consumerAccount;
-
-		}
-
-		return $iban_details;
-
-	}
+        return $iban_details;
+    }
 
 	/**
 	 * @param WC_Order                   $order

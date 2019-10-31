@@ -22,10 +22,5 @@
             "Mollie\\WooCommerce\\Tests\\Unit\\": "tests/php/Unit",
             "Mollie\\WooCommerce\\Tests\\Functional\\": "tests/php/Functional"
         }
-    },
-    "config": {
-        "platform": {
-            "php": "5.6"
-        }
     }
 }

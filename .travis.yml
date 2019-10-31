@@ -12,8 +12,8 @@ php:
 sudo: false
 
 install:
-    composer install
+    composer update
 
 script:
     - find mollie-payments-for-woocommerce -name '*.php' | xargs -n 1 -P4 php -l
-    - ./vendor/bin/phpunit --testdox
+    - ./vendor/bin/phpunit

@@ -242,7 +242,7 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
      * Test Default language code is returned because the browser languages
      * doesn't include any allowed language.
      */
-    public function testeeBrowserLanguageReturnDefaultLanguage()
+    public function testBrowserLanguageReturnDefaultLanguage()
     {
         /*
          * Stubs

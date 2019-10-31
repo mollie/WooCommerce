@@ -9,9 +9,9 @@ use Mollie_WC_Plugin as Testee;
 use stdClass;
 
 /**
- * Class Mollie_WC_PluginTest
+ * Class Mollie_WC_Plugin_Test
  */
-class Mollie_WC_PluginTest extends TestCase
+class Mollie_WC_Plugin_Test extends TestCase
 {
     /**
      * Test Disable Apple Pay Gateway

@@ -75,6 +75,13 @@ add_action( 'plugins_loaded', 'mollie_wc_check_woocommerce_status' );
  */
 function mollie_wc_plugin_init() {
 
+    $pluginDir = untrailingslashit(plugin_dir_path(__FILE__));
+
+    require_once $pluginDir . '/includes/mollie/OrderLineStatus.php';
+    require_once $pluginDir . '/includes/mollie/wc/payment/OrderItemsRefunder.php';
+    require_once $pluginDir . '/includes/mollie/wc/payment/PartialRefundException.php';
+    require_once $pluginDir . '/includes/mollie/wc/payment/RefundLineItemsBuilder.php';
+
 	// Register Mollie autoloader
 	Mollie_WC_Autoload::register();
 

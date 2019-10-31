@@ -1,5 +1,7 @@
 <?php
 // Require WooCommerce fallback functions
+use Mollie\Api\Resources\Refund;
+
 require_once dirname(dirname(dirname(__FILE__))) . '/woocommerce_functions.php';
 require_once dirname(dirname(dirname(__FILE__))) . '/subscriptions_status_check_functions.php';
 
@@ -232,6 +234,19 @@ class Mollie_WC_Plugin
         // Enqueue Scripts
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueFrontendScripts']);
 
+        add_action(
+            OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS,
+            [__CLASS__, 'addOrderNoteForRefundCreated'],
+            10,
+            3
+        );
+        add_action(
+            OrderItemsRefunder::ACTION_AFTER_CANCELED_ORDER_ITEMS,
+            [__CLASS__, 'addOrderNoteForCancelledLineItems'],
+            10,
+            2
+        );
+
 		self::initDb();
 		self::schedulePendingPaymentOrdersExpirationCheck();
         self::registerFrontendScripts();
@@ -239,6 +254,47 @@ class Mollie_WC_Plugin
 		// Mark plugin initiated
 		self::$initiated = true;
 	}
+
+    /**
+     * @param Refund $refund
+     * @param WC_Order $order
+     * @param array $data
+     */
+    public static function addOrderNoteForRefundCreated(
+        Refund $refund,
+        WC_Order $order,
+        array $data
+    ) {
+
+        $orderNote = sprintf(
+            __(
+                '%1$s items refunded in WooCommerce and at Mollie.',
+                'mollie-payments-for-woocommerce'
+            ),
+            self::extractRemoteItemsIds($data)
+        );
+
+        $order->add_order_note($orderNote);
+        Mollie_WC_Plugin::debug($orderNote);
+    }
+
+    /**
+     * @param array $data
+     * @param WC_Order $order
+     */
+    public static function addOrderNoteForCancelledLineItems(array $data, WC_Order $order)
+    {
+        $orderNote = sprintf(
+            __(
+                '%1$s items cancelled in WooCommerce and at Mollie.',
+                'mollie-payments-for-woocommerce'
+            ),
+            self::extractRemoteItemsIds($data)
+        );
+
+        $order->add_order_note($orderNote);
+        Mollie_WC_Plugin::debug($orderNote);
+    }
 
     /**
      * Register Scripts
@@ -935,5 +991,14 @@ class Mollie_WC_Plugin
 		return true;
 
 	}
+
+    private static function extractRemoteItemsIds(array $data)
+    {
+        if (empty($data['lines'])) {
+            return [];
+        }
+
+        return implode(',', wp_list_pluck($data['lines'], 'id'));
+    }
 }
 

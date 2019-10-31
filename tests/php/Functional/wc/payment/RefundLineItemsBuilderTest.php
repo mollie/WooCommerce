@@ -302,7 +302,7 @@ class RefundLineItemsBuilderTest extends TestCase
 
         $this->expectException(PartialRefundException::class);
         $this->expectExceptionMessage(
-            'Mollie doesn\'t allow a partial refund of the full amount or quantity of at least one order line. Trying to process this as an amount refund instead.',
+            'Mollie doesn\'t allow a partial refund of the full amount or quantity of at least one order line. Trying to process this as an amount refund instead.'
         );
 
         /*

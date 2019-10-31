@@ -7,7 +7,7 @@
         "php": ">=5.6"
     },
     "require-dev": {
-        "phpunit/phpunit": "^5",
+        "phpunit/phpunit": "^5 || ^6.5 || ^7.1",
         "brain/monkey": "~2.3",
         "ptrofimov/xpmock": "^1"
     },
@@ -21,6 +21,11 @@
             "Mollie\\WooCommerce\\Tests\\": "tests/php",
             "Mollie\\WooCommerce\\Tests\\Unit\\": "tests/php/Unit",
             "Mollie\\WooCommerce\\Tests\\Functional\\": "tests/php/Functional"
+        }
+    },
+    "config": {
+        "platform": {
+            "php": "5.6"
         }
     }
 }

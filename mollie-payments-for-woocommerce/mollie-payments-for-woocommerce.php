@@ -3,7 +3,7 @@
  * Plugin Name: Mollie Payments for WooCommerce
  * Plugin URI: https://www.mollie.com
  * Description: Accept payments in WooCommerce with the official Mollie plugin
- * Version: 5.3.0
+ * Version: 5.3.1
  * Author: Mollie
  * Author URI: https://www.mollie.com
  * Requires at least: 3.8
@@ -74,6 +74,13 @@ add_action( 'plugins_loaded', 'mollie_wc_check_woocommerce_status' );
  * Called when plugin is loaded
  */
 function mollie_wc_plugin_init() {
+
+    $pluginDir = untrailingslashit(plugin_dir_path(__FILE__));
+
+    require_once $pluginDir . '/includes/mollie/OrderLineStatus.php';
+    require_once $pluginDir . '/includes/mollie/wc/payment/OrderItemsRefunder.php';
+    require_once $pluginDir . '/includes/mollie/wc/payment/PartialRefundException.php';
+    require_once $pluginDir . '/includes/mollie/wc/payment/RefundLineItemsBuilder.php';
 
 	// Register Mollie autoloader
 	Mollie_WC_Autoload::register();

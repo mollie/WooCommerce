@@ -41,22 +41,17 @@ class Mollie_WC_Helper_Api {
 			throw new \Mollie\Api\Exceptions\ApiException( sprintf(__( "Invalid API key(s). Get them on the %sDevelopers page in the Mollie dashboard%s. The API key(s) must start with 'live_' or 'test_', be at least 30 characters and can't further contain any special characters.", 'mollie-payments-for-woocommerce' ), '<a href="https://www.mollie.com/dashboard/developers/api-keys" target="_blank">', '</a>' ) );
 		}
 
-		if ( empty( self::$api_client ) ) {
-			try {
-				$client = new MollieApiClient();
-				$client->setApiKey( $api_key );
-				$client->setApiEndpoint( self::getApiEndpoint() );
-				$client->addVersionString( 'WordPress/' . ( isset( $wp_version ) ? $wp_version : 'Unknown' ) );
-				$client->addVersionString( 'WooCommerce/' . get_option( 'woocommerce_version', 'Unknown' ) );
-				$client->addVersionString( 'WooCommerceSubscriptions/' . get_option( 'woocommerce_subscriptions_active_version', 'Unknown' ) );
-				$client->addVersionString( 'MollieWoo/' . Mollie_WC_Plugin::PLUGIN_VERSION );
-			}
-			catch ( Mollie\Api\Exceptions\ApiException $e ) {
-				throw new \Mollie\Api\Exceptions\ApiException( $e->getMessage() );
-			}
+        if (empty(self::$api_client)) {
+            $client = new MollieApiClient();
+            $client->setApiKey( $api_key );
+            $client->setApiEndpoint( self::getApiEndpoint() );
+            $client->addVersionString( 'WordPress/' . ( isset( $wp_version ) ? $wp_version : 'Unknown' ) );
+            $client->addVersionString( 'WooCommerce/' . get_option( 'woocommerce_version', 'Unknown' ) );
+            $client->addVersionString( 'WooCommerceSubscriptions/' . get_option( 'woocommerce_subscriptions_active_version', 'Unknown' ) );
+            $client->addVersionString( 'MollieWoo/' . Mollie_WC_Plugin::PLUGIN_VERSION );
 
-			self::$api_client = $client;
-		}
+            self::$api_client = $client;
+        }
 
 		return self::$api_client;
 	}

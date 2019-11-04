@@ -1,5 +1,7 @@
 <?php
 // Require WooCommerce fallback functions
+use Mollie\Api\Resources\Refund;
+
 require_once dirname(dirname(dirname(__FILE__))) . '/woocommerce_functions.php';
 require_once dirname(dirname(dirname(__FILE__))) . '/subscriptions_status_check_functions.php';
 
@@ -7,14 +9,14 @@ class Mollie_WC_Plugin
 {
     const PLUGIN_ID      = 'mollie-payments-for-woocommerce';
     const PLUGIN_TITLE   = 'Mollie Payments for WooCommerce';
-    const PLUGIN_VERSION = '5.3.0';
+    const PLUGIN_VERSION = '5.3.1';
 
     const DB_VERSION     = '1.0';
     const DB_VERSION_PARAM_NAME = 'mollie-db-version';
     const PENDING_PAYMENT_DB_TABLE_NAME = 'mollie_pending_payment';
 
     const POST_DATA_KEY = 'post_data';
-    const POST_APPLE_PAY_METHOD_NOT_ALLOWED_KEY = 'mollie_apple_pay_method_not_allowed';
+    const APPLE_PAY_METHOD_ALLOWED_KEY = 'mollie_apple_pay_method_allowed';
 
     /**
      * @var bool
@@ -195,6 +197,12 @@ class Mollie_WC_Plugin
 		add_filter( 'woocommerce_payment_gateways', array ( __CLASS__, 'addGateways' ) );
 
         add_filter('woocommerce_payment_gateways', [__CLASS__, 'maybeDisableApplePayGateway'], 20);
+        add_action(
+            'woocommerce_after_order_object_save',
+            function () {
+                mollieWooCommerceSession()->__unset(self::APPLE_PAY_METHOD_ALLOWED_KEY);
+            }
+        );
 
 		// Add settings link to plugins page
 		add_filter( 'plugin_action_links_' . $plugin_basename, array ( __CLASS__, 'addPluginActionLinks' ) );
@@ -226,6 +234,19 @@ class Mollie_WC_Plugin
         // Enqueue Scripts
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueFrontendScripts']);
 
+        add_action(
+            OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS,
+            [__CLASS__, 'addOrderNoteForRefundCreated'],
+            10,
+            3
+        );
+        add_action(
+            OrderItemsRefunder::ACTION_AFTER_CANCELED_ORDER_ITEMS,
+            [__CLASS__, 'addOrderNoteForCancelledLineItems'],
+            10,
+            2
+        );
+
 		self::initDb();
 		self::schedulePendingPaymentOrdersExpirationCheck();
         self::registerFrontendScripts();
@@ -233,6 +254,47 @@ class Mollie_WC_Plugin
 		// Mark plugin initiated
 		self::$initiated = true;
 	}
+
+    /**
+     * @param Refund $refund
+     * @param WC_Order $order
+     * @param array $data
+     */
+    public static function addOrderNoteForRefundCreated(
+        Refund $refund,
+        WC_Order $order,
+        array $data
+    ) {
+
+        $orderNote = sprintf(
+            __(
+                '%1$s items refunded in WooCommerce and at Mollie.',
+                'mollie-payments-for-woocommerce'
+            ),
+            self::extractRemoteItemsIds($data)
+        );
+
+        $order->add_order_note($orderNote);
+        Mollie_WC_Plugin::debug($orderNote);
+    }
+
+    /**
+     * @param array $data
+     * @param WC_Order $order
+     */
+    public static function addOrderNoteForCancelledLineItems(array $data, WC_Order $order)
+    {
+        $orderNote = sprintf(
+            __(
+                '%1$s items cancelled in WooCommerce and at Mollie.',
+                'mollie-payments-for-woocommerce'
+            ),
+            self::extractRemoteItemsIds($data)
+        );
+
+        $order->add_order_note($orderNote);
+        Mollie_WC_Plugin::debug($orderNote);
+    }
 
     /**
      * Register Scripts
@@ -426,22 +488,33 @@ class Mollie_WC_Plugin
      */
     public static function maybeDisableApplePayGateway(array $gateways)
     {
+        $wooCommerceSession = mollieWooCommerceSession();
+
+        if (is_admin()) {
+            return $gateways;
+        }
+
+        if ($wooCommerceSession->get(self::APPLE_PAY_METHOD_ALLOWED_KEY, false)) {
+            return $gateways;
+        }
+
+        $applePayGatewayClassName = 'Mollie_WC_Gateway_Applepay';
+        $applePayGatewayIndex = array_search($applePayGatewayClassName, $gateways, true);
         $postData = (string)filter_input(
             INPUT_POST,
             self::POST_DATA_KEY,
             FILTER_SANITIZE_STRING
         ) ?: '';
+        parse_str($postData, $postData);
 
-        if (!$postData) {
-            return $gateways;
+        $applePayAllowed = isset($postData[self::APPLE_PAY_METHOD_ALLOWED_KEY]) && $postData[self::APPLE_PAY_METHOD_ALLOWED_KEY];
+
+        if ($applePayGatewayIndex !== false && !$applePayAllowed) {
+            unset($gateways[$applePayGatewayIndex]);
         }
 
-        parse_str($postData, $postData);
-        if (isset($postData[self::POST_APPLE_PAY_METHOD_NOT_ALLOWED_KEY]) && !is_admin()) {
-            $index = array_search('Mollie_WC_Gateway_Applepay', $gateways, true);
-            if ($index !== false) {
-                unset($gateways[$index]);
-            }
+        if ($applePayGatewayIndex !== false && $applePayAllowed) {
+            $wooCommerceSession->set(self::APPLE_PAY_METHOD_ALLOWED_KEY, true);
         }
 
         return $gateways;
@@ -919,5 +992,13 @@ class Mollie_WC_Plugin
 
 	}
 
+    private static function extractRemoteItemsIds(array $data)
+    {
+        if (empty($data['lines'])) {
+            return [];
+        }
+
+        return implode(',', wp_list_pluck($data['lines'], 'id'));
+    }
 }
 

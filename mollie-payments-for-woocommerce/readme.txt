@@ -181,11 +181,11 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 5.3.2 - 05-11-2019 =
+= 5.3.2 - 04-11-2019 =
 
 * Fix - WooCommerce Session is not available before a specific action has been preformed causing null pointer exceptions in backend
 
-= 5.3.1 - 05-11-2019 =
+= 5.3.1 - 04-11-2019 =
 
 * Fix - Apple Pay payment method appear temporary in checkout page even if the device does not support Apple Pay
 * Fix - Refunding per line items is not possible when the refund amount field is disabled in WooCommerce order edit page

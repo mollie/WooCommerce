@@ -200,7 +200,10 @@ class Mollie_WC_Plugin
         add_action(
             'woocommerce_after_order_object_save',
             function () {
-                mollieWooCommerceSession()->__unset(self::APPLE_PAY_METHOD_ALLOWED_KEY);
+                $mollieWooCommerceSession = mollieWooCommerceSession();
+                if ($mollieWooCommerceSession instanceof WC_Session) {
+                    $mollieWooCommerceSession->__unset(self::APPLE_PAY_METHOD_ALLOWED_KEY);
+                }
             }
         );
 
@@ -489,6 +492,10 @@ class Mollie_WC_Plugin
     public static function maybeDisableApplePayGateway(array $gateways)
     {
         $wooCommerceSession = mollieWooCommerceSession();
+
+        if (!$wooCommerceSession instanceof WC_Session) {
+            return $gateways;
+        }
 
         if (is_admin()) {
             return $gateways;

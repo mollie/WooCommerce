@@ -1,7 +1,8 @@
 {
-  "name": "mollie/payments-for-woocommerce",
+  "name": "mollie/mollie-woocommerce",
   "type": "wordpress-plugin",
   "license": "GPL-2.0-or-later",
+  "minimum-stability": "dev",
   "authors": [
     {
       "name": "Mollie B.V.",
@@ -12,26 +13,28 @@
       "email": "hello@inpsyde.com"
     }
   ],
-  "minimum-stability": "dev",
   "require": {
     "php": "^5.6.40 | ^7.0",
     "mollie/mollie-api-php": "^2.0"
   },
   "require-dev": {
-    "woocommerce/woocommerce": "^2.2.0 | ^3.0.0",
-    "phpunit/phpunit": "^5",
-    "brain/monkey": "^2.0@dev",
+    "phpunit/phpunit": "^5 || ^6.5 || ^7.1",
+    "brain/monkey": "^2.3",
     "ptrofimov/xpmock": "^1"
   },
   "autoload": {
     "psr-0": {
       "Mollie_WC_": "./src"
+    },
+    "psr-4": {
+      "Mollie\\": "./src/Mollie"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Mollie\\WooCommerce\\Tests\\": "tests/php",
-      "Mollie\\WooCommerce\\Tests\\Unit\\": "tests/php/Unit"
+      "MollieTests\\": "tests/php",
+      "MollieTests\\Unit\\": "tests/php/Unit",
+      "MollieTests\\Functional\\": "tests/php/Functional"
     }
   },
   "repositories": [
@@ -39,5 +42,10 @@
       "type": "composer",
       "url": "https://wpackagist.org"
     }
-  ]
+  ],
+  "config": {
+    "platform": {
+      "php": "5.6.40"
+    }
+  }
 }

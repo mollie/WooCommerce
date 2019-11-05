@@ -396,7 +396,15 @@ class Mollie_WC_Payment_Object {
 		// If there is no payment ID, try to get order ID and if it's stored, try getting payment ID from API
 		if ( $this->hasActiveMollieOrder( $order_id ) ) {
 			$mollie_order = $this->getPaymentObjectOrder($this->getActiveMollieOrderId( $order_id ));
-			$mollie_order = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject( $mollie_order );
+
+            try {
+                $mollie_order = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject(
+                    $mollie_order
+                );
+            } catch (ApiException $exception) {
+                Mollie_WC_Plugin::debug($exception->getMessage());
+                return;
+            }
 
 			return $this->getPaymentObjectPayment(
 				$mollie_order->getMolliePaymentIdFromPaymentObject(),

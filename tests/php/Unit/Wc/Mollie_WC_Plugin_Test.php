@@ -1,12 +1,9 @@
 <?php # -*- coding: utf-8 -*-
 
-namespace Mollie\WooCommerce\Tests\Unit;
-
 use function Brain\Monkey\Functions\expect;
 use function Brain\Monkey\Functions\when;
-use Mollie\WooCommerce\Tests\TestCase;
+use MollieTests\TestCase;
 use Mollie_WC_Plugin as Testee;
-use stdClass;
 
 /**
  * Class Mollie_WC_Plugin_Test
@@ -23,16 +20,39 @@ class Mollie_WC_Plugin_Test extends TestCase
         /*
          * Setup stubs
          */
-        $postData = Testee::POST_APPLE_PAY_METHOD_ALLOWED_KEY . "={$allowed}";
+        $postData = Testee::APPLE_PAY_METHOD_ALLOWED_KEY . "={$allowed}";
         $gateways = [
             'Mollie_WC_Gateway_Applepay',
             new stdClass(),
         ];
 
         /*
+         * Mocks
+         */
+        $wooCommerceSession = $this
+            ->getMockBuilder('\\WC_Session')
+            ->disableOriginalConstructor()
+            ->setMethods(['get', 'set'])
+            ->getMock();
+
+        /*
          * We test frontend
          */
         when('is_admin')->justReturn(false);
+
+        /*
+         * Expect to retrieve the WooCommerce Session
+         * Wc Session is used to store the availability of Apple Pay payment method
+         */
+        expect('mollieWooCommerceSession')
+            ->once()
+            ->andReturn($wooCommerceSession);
+
+        $wooCommerceSession
+            ->expects($this->once())
+            ->method('get')
+            ->with(\Mollie_WC_Plugin::APPLE_PAY_METHOD_ALLOWED_KEY, false)
+            ->willReturn(false);
 
         /*
          * Expect to have the request to remove the apple pay method
@@ -41,6 +61,11 @@ class Mollie_WC_Plugin_Test extends TestCase
             ->once()
             ->with(INPUT_POST, Testee::POST_DATA_KEY, FILTER_SANITIZE_STRING)
             ->andReturn($postData);
+
+        $wooCommerceSession
+            ->expects($allowed ? $this->once() : $this->never())
+            ->method('set')
+            ->with(\Mollie_WC_Plugin::APPLE_PAY_METHOD_ALLOWED_KEY, true);
 
         /*
          * Execute Test
@@ -54,7 +79,7 @@ class Mollie_WC_Plugin_Test extends TestCase
     {
         return [
             [1, true],
-            [0, false]
+            [0, false],
         ];
     }
 }

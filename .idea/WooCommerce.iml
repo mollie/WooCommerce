@@ -5,8 +5,8 @@
       <sourceFolder url="file://$MODULE_DIR$/tests/php/Unit" isTestSource="true" packagePrefix="Mollie\WooCommerce\Tests\Unit\" />
       <sourceFolder url="file://$MODULE_DIR$/../WooCommercesrc" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tests/php" isTestSource="true" packagePrefix="Mollie\WooCommerce\Tests\" />
+      <excludeFolder url="file://$MODULE_DIR$/coverage" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/antecedent/patchwork" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/automattic/jetpack-autoloader" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/brain/monkey" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/composer" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/doctrine/instantiator" />
@@ -44,7 +44,6 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/polyfill-ctype" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/yaml" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/webmozart/assert" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/woocommerce/woocommerce" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

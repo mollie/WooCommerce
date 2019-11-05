@@ -1,12 +1,13 @@
 <?php # -*- coding: utf-8 -*-
 
-namespace Mollie\WooCommerce\Tests;
+namespace MollieTests;
 
 use function Brain\Monkey\setUp;
 use function Brain\Monkey\tearDown;
 use Mockery;
 use PHPUnit\Framework\TestCase as PhpUniTestCase;
 use PHPUnit_Framework_MockObject_MockBuilder;
+use PHPUnit_Framework_MockObject_MockObject;
 use Xpmock\Reflection;
 use Xpmock\TestCaseTrait;
 
@@ -46,23 +47,16 @@ class TestCase extends PhpUniTestCase
      * @param string $className
      * @param array $constructorArguments
      * @param array $methods
-     * @param string $sutMethod
      * @return PHPUnit_Framework_MockObject_MockBuilder
      */
-    protected function buildTesteeMock(
-        $className,
-        $constructorArguments,
-        $methods,
-        $sutMethod
-    ) {
-
+    protected function buildTesteeMock($className, $constructorArguments, $methods)
+    {
         $testee = $this->getMockBuilder($className);
         $constructorArguments
             ? $testee->setConstructorArgs($constructorArguments)
             : $testee->disableOriginalConstructor();
 
-        $methods and $testee->setMethods($methods);
-        $sutMethod and $testee->setMethodsExcept([$sutMethod]);
+        $testee->setMethods($methods);
 
         return $testee;
     }
@@ -78,13 +72,19 @@ class TestCase extends PhpUniTestCase
      */
     protected function buildTesteeMethodMock($className, $constructorArguments, $methods)
     {
-        $testee = $this->buildTesteeMock(
-            $className,
-            $constructorArguments,
-            $methods,
-            ''
-        )->getMock();
+        $testee = $this->buildTesteeMock($className, $constructorArguments, $methods)->getMock();
 
+        return $this->proxyFor($testee);
+    }
+
+    /**
+     * Create a proxy for a mocked class
+     *
+     * @param PHPUnit_Framework_MockObject_MockObject $testee
+     * @return Reflection
+     */
+    protected function proxyFor(PHPUnit_Framework_MockObject_MockObject $testee)
+    {
         return $this->reflect($testee);
     }
 }

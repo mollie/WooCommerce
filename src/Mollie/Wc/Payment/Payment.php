@@ -1,6 +1,10 @@
 <?php
 
+use Mollie\Api\Resources\Refund;
+
 class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
+
+    const ACTION_AFTER_REFUND_PAYMENT_CREATED = Mollie_WC_Plugin::PLUGIN_ID . '_refund_payment_created';
 
 	public function __construct( $data ) {
 		$this->data = $data;
@@ -560,7 +564,20 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 
 			Mollie_WC_Plugin::debug( __METHOD__ . ' - Refund created - refund: ' . $refund->id . ', payment: ' . $payment_object->id . ', order: ' . $order_id . ', amount: ' . Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) . $amount . ( ! empty( $reason ) ? ', reason: ' . $reason : '' ) );
 
-			do_action( Mollie_WC_Plugin::PLUGIN_ID . '_refund_created', $refund, $order );
+            /**
+             * After Payment Refund has been created
+             *
+             * @param Refund $refund
+             * @param WC_Order $order
+             */
+            do_action(self::ACTION_AFTER_REFUND_PAYMENT_CREATED, $refund, $order);
+
+            do_action_deprecated(
+                Mollie_WC_Plugin::PLUGIN_ID . '_refund_created',
+                [$refund, $order],
+                '5.3.1',
+                self::ACTION_AFTER_REFUND_PAYMENT_CREATED
+            );
 
 			$order->add_order_note( sprintf(
 			/* translators: Placeholder 1: currency, placeholder 2: refunded amount, placeholder 3: optional refund reason, placeholder 4: payment ID, placeholder 5: refund ID */

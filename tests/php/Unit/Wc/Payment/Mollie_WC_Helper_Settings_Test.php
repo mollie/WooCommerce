@@ -1,8 +1,9 @@
 <?php # -*- coding: utf-8 -*-
 
+use Brain\Monkey\Expectation\Exception\NotAllowedMethod;
 use function Brain\Monkey\Filters\expectApplied as expectFilterApplied;
 use function Brain\Monkey\Functions\expect;
-use Mollie\WooCommerce\Tests\TestCase;
+use MollieTests\TestCase;
 
 use Mollie_WC_Helper_Settings as Testee;
 
@@ -177,7 +178,7 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
          * Then expect to retrieve the value from a call to `get_option` but
          * that value is a falsy value because of problem in retrieving the option.
          */
-        Brain\Monkey\Functions\expect('get_option')
+        expect('get_option')
             ->once()
             ->with($settingId, Testee::SETTING_LOCALE_WP_LANGUAGE)
             ->andReturn(false);
@@ -239,7 +240,7 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
      * Test Default language code is returned because the browser languages
      * doesn't include any allowed language.
      */
-    public function testeeBrowserLanguageReturnDefaultLanguage()
+    public function testBrowserLanguageReturnDefaultLanguage()
     {
         /*
          * Stubs
@@ -423,8 +424,7 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
      * @dataProvider extractValidLanguageCodeDataProvider
      * @param array $languageCodes
      * @param $expectedResult
-     * @throws ReflectionException
-     * @throws \Brain\Monkey\Expectation\Exception\NotAllowedMethod
+     * @throws NotAllowedMethod
      */
     public function testExtractValidLanguageCode(array $languageCodes, $expectedResult)
     {

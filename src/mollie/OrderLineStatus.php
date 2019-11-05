@@ -1,5 +1,7 @@
 <?php
 
+namespace Mollie;
+
 use Mollie\Api\Types\OrderLineStatus as ApiOrderLineStatus;
 
 /**

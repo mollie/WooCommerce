@@ -3,11 +3,12 @@
 /nbproject
 /vendor/
 /coverage/
-/.idea/dictionaries/
-/.idea/workspace.xml
-/.idea/tasks.xml
-/.idea/deployment.xml
-/.idea/vagrant.xml
-/.idea/codeStyles/
+/.idea
+/.idea.example/dictionaries/
+/.idea.example/workspace.xml
+/.idea.example/tasks.xml
+/.idea.example/deployment.xml
+/.idea.example/vagrant.xml
+/.idea.example/codeStyles/
 
 .env

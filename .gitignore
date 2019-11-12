@@ -9,3 +9,5 @@
 /.idea/deployment.xml
 /.idea/vagrant.xml
 /.idea/codeStyles/
+
+.env

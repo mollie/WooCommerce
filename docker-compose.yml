@@ -36,14 +36,25 @@ services:
 #      PHP_XDEBUG_REMOTE_HOST: 10.254.254.254 # macOS
 #      PHP_XDEBUG_REMOTE_HOST: 10.0.75.1 # Windows
     volumes:
-      - ./:${DOCROOT}
+      - ${BASE_DIR}/docker/.htaccess:${DOCROOT}/.htaccess
+      - ${BASE_DIR}/docker/wp.sh:/opt/wp.sh
+      - ${BASE_DIR}/docker/wp-config.php:${DOCROOT}/wp-config.php
+      - ${BASE_DIR}/vendor/johnpbloch/wordpress-core:${DOCROOT}
       - ${BASE_DIR}:${PROJECT_MOUNT_PATH}
       - ${BASE_DIR}/vendor/woocommerce/woocommerce:${DOCROOT}/wp-content/plugins/woocommerce
+      - ${BASE_DIR}/vendor/woocommerce/woocommerce-blocks:${DOCROOT}/wp-content/plugins/woocommerce-blocks
+      - ${BASE_DIR}/vendor/woocommerce/woocommerce-rest-api:${DOCROOT}/wp-content/plugins/woocommerce-rest-api
 ## For macOS users (https://wodby.com/stacks/wordpress/docs/local/docker-for-mac/)
 #      - ./:/var/www/html:cached # User-guided caching
 #      - docker-sync:/var/www/html # Docker-sync
 ## For XHProf and Xdebug profiler traces
 #      - files:/mnt/files
+
+  composer:
+    image: composer
+    container_name: "${PROJECT_NAME}_composer"
+    volumes:
+      - ${BASE_DIR}:/app
 
   nginx:
     image: wodby/nginx:$NGINX_TAG
@@ -57,7 +68,9 @@ services:
       NGINX_VHOST_PRESET: wordpress
       #NGINX_SERVER_ROOT: /var/www/html/subdir
     volumes:
-      - ./:${DOCROOT}
+      - ${BASE_DIR}/docker/.htaccess:${DOCROOT}/.htaccess
+      - ${BASE_DIR}/docker/wp-config.php:${DOCROOT}/wp-config.php
+      - ${BASE_DIR}/vendor/johnpbloch/wordpress-core:${DOCROOT}
       - ${BASE_DIR}:${PROJECT_MOUNT_PATH}
       - ${BASE_DIR}/vendor/woocommerce/woocommerce:${DOCROOT}/wp-content/plugins/woocommerce
 # Options for macOS users (https://wodby.com/stacks/wordpress/docs/local/docker-for-mac/)

@@ -1251,18 +1251,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 */
 	public function getReturnRedirectUrlForOrder( WC_Order $order ) {
 
-		// Get order ID in the correct way depending on WooCommerce version
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			$order_id = $order->id;
-		} else {
-			$order_id = $order->get_id();
-		}
+		$order_id = $this->wooCommerceOrderId($order);
 
-		Mollie_WC_Plugin::debug( __METHOD__ . " $order_id: Determine what the redirect URL in WooCommerce should be." );
+		$debugLine = __METHOD__ . " $order_id: Determine what the redirect URL in WooCommerce should be.";
+        $this->staticDebug($debugLine);
 
-		if ( $this->orderNeedsPayment( $order ) ) {
+        if ( $this->orderNeedsPayment( $order ) ) {
 
-			$hasCancelledMolliePayment = Mollie_WC_Plugin::getPaymentObject()->getCancelledMolliePaymentId( $order_id );
+			$hasCancelledMolliePayment = $this->paymentObject()->getCancelledMolliePaymentId( $order_id );
 
 			if ( $hasCancelledMolliePayment ) {
 
@@ -1293,7 +1289,18 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 			}
 
-			$payment = Mollie_WC_Plugin::getPaymentObject()->getActiveMolliePayment($order_id, false );
+
+            try {
+                $payment = $this->activePaymentObject($order_id, false);
+            } catch (UnexpectedValueException $exc) {
+			    $message = 'There was a problem when processing your payment. Please try again.';
+			    $type = 'mollie-payments-for-woocommerce';
+                $this->staticAddNotice($message, $type);
+                // Return to order payment page
+                if (method_exists($order, 'get_checkout_payment_url')) {
+                    return $order->get_checkout_payment_url(false);
+                }
+            }
 
 			if ( ! $payment->isOpen() && ! $payment->isPending() && ! $payment->isPaid() && ! $payment->isAuthorized() ) {
 				Mollie_WC_Plugin::addNotice( __( 'Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ) );
@@ -1312,6 +1319,40 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		return $this->get_return_url( $order );
 	}
+    /**
+     * Retrieve the payment object
+     *
+     * @return Mollie_WC_Payment_Object
+     */
+    protected function paymentObject()
+    {
+        return Mollie_WC_Plugin::getPaymentObject();
+    }
+
+    /**
+     * Retrieve the active payment object
+     *
+     * @param $order_id
+     * @param $useCache
+     * @return Payment
+     * @throws UnexpectedValueException
+     */
+    protected function activePaymentObject($order_id, $useCache)
+    {
+        // TODO Assert int value for $order_id
+
+        $paymentObject = $this->paymentObject();
+
+        $activePaymentObject = $paymentObject->getActiveMolliePayment($order_id, $useCache);
+
+        if ($activePaymentObject === null) {
+            throw new UnexpectedValueException(
+                'Active Payment Object is not a valid Payment Resource instance'
+            );
+        }
+
+        return $activePaymentObject;
+    }
 
 	/**
 	 * Process a refund if supported
@@ -1450,6 +1491,19 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		self::$alreadyDisplayedInstructions = true;
 
 	}
+
+    /**
+     * Get order ID in the correct way depending on WooCommerce version
+     *
+     * @param WC_Order $order
+     * @return int
+     */
+    protected function wooCommerceOrderId(WC_Order $order)
+    {
+        return version_compare(WC_VERSION, '3.0', '<')
+            ? $order->id
+            : $order->get_id();
+    }
 
     /**
      * @param WC_Order                  $order
@@ -2028,5 +2082,31 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		return parent::get_transaction_url( $order );
 	}
+
+    /**
+     * Isolates static addNotice calls.
+     *
+     * @param  string $message
+     * @param  string $type
+     */
+    protected function staticAddNotice($message, $type)
+    {
+        Mollie_WC_Plugin::addNotice(
+            __(
+                $message,
+                $type
+            )
+        );
+    }
+
+    /**
+     * Isolates static debug calls.
+     *
+     * @param  string $debugLine
+     */
+    protected function staticDebug($debugLine)
+    {
+        Mollie_WC_Plugin::debug($debugLine);
+    }
 
 }

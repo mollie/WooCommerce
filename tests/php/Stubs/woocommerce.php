@@ -1,4 +1,9 @@
 <?php
+class WC_Payment_Gateway
+{
+
+}
+
 class WC_Order
 {
     public function add_order_note($note)

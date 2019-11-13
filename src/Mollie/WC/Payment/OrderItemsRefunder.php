@@ -1,6 +1,6 @@
 <?php
 
-namespace Mollie\Wc\Payment;
+namespace Mollie\WC\Payment;
 
 use Mollie\Api\Endpoints\OrderEndpoint;
 use Mollie\Api\Exceptions\ApiException;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Mollie\Wc\Payment;
+namespace Mollie\WC\Payment;
 
 use Mollie\OrderLineStatus;
 use Mollie_WC_Helper_Data;

@@ -2,7 +2,7 @@
 
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Refund;
-use Mollie\Wc\Payment\OrderItemsRefunder;
+use Mollie\WC\Payment\OrderItemsRefunder;
 
 class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 

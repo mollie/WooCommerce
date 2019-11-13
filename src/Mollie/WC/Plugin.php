@@ -1,7 +1,7 @@
 <?php
 // Require WooCommerce fallback functions
 use Mollie\Api\Resources\Refund;
-use Mollie\Wc\Payment\OrderItemsRefunder;
+use Mollie\WC\Payment\OrderItemsRefunder;
 
 require_once dirname(dirname(dirname(__FILE__))) . '/woocommerce_functions.php';
 require_once dirname(dirname(dirname(__FILE__))) . '/subscriptions_status_check_functions.php';

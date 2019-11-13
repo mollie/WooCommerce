@@ -1,8 +1,8 @@
 <?php
 
 use Mollie\Api\Exceptions\ApiException;
-use Mollie\Wc\Payment\OrderItemsRefunder;
-use Mollie\Wc\Payment\RefundLineItemsBuilder;
+use Mollie\WC\Payment\OrderItemsRefunder;
+use Mollie\WC\Payment\RefundLineItemsBuilder;
 
 class Mollie_WC_Helper_PaymentFactory
 {

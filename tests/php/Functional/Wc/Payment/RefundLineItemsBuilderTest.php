@@ -4,11 +4,11 @@ namespace MollieTests\Functional\Wc\Payment;
 
 use Mollie_WC_Helper_Data;
 use Mollie\OrderLineStatus;
-use Mollie\Wc\Payment\PartialRefundException;
+use Mollie\WC\Payment\PartialRefundException;
 use MollieTests\TestCase;
 use PHPUnit_Framework_Exception;
 use PHPUnit_Framework_MockObject_MockObject;
-use Mollie\Wc\Payment\RefundLineItemsBuilder;
+use Mollie\WC\Payment\RefundLineItemsBuilder;
 use stdClass;
 use UnexpectedValueException;
 use WC_Order_Item;

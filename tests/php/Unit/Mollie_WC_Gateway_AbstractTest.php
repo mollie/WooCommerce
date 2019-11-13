@@ -229,6 +229,15 @@ class Mollie_WC_Gateway_AbstractTest extends TestCase
             ->with('There was a problem when processing your payment. Please try again.',
                    'mollie-payments-for-woocommerce');
 
+        /*
+         * Then we call order->get_checkout_payment_url and return the url string
+         */
+        $order
+            ->expects($this->once())
+            ->method('get_checkout_payment_url')
+            ->withAnyParameters()
+            ->willReturn('url');
+
 
 
 

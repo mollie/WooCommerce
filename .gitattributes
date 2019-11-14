@@ -17,4 +17,4 @@ docker-compose.yml export-ignore
 docker-sync.yml export-ignore
 Makefile export-ignore
 phpunit.xml.dist export-ignore
-traefix.yml export-ignore
+traefik.yml export-ignore

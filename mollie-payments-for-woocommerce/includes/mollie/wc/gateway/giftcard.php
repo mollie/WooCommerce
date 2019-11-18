@@ -97,7 +97,7 @@ class Mollie_WC_Gateway_Giftcard extends Mollie_WC_Gateway_Abstract
 
 		// If only one gift card issuers is available, show it without a dropdown
 		if ( count( $issuers ) === 1 ) {
-			$html .= '<img src="' . $this->getIssuerIconUrl( $issuers[0]->id ) . '" style="vertical-align:middle" />';
+			$html .= '<img src="' . $issuers[0]->image->svg . '" style="vertical-align:middle" />';
 			$html .= $issuers->description;
 			echo wpautop( wptexturize( $html ) );
 

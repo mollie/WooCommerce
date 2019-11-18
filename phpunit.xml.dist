@@ -21,9 +21,9 @@
             <file>./</file>
         </whitelist>
     </filter>
-    <logging>
+    <!--<logging>
         <log type="coverage-clover" target="coverage/report/clover.xml"/>
         <log type="coverage-html" target="coverage/report/html" lowUpperBound="35"
              highLowerBound="70"/>
-    </logging>
+    </logging>-->
 </phpunit>

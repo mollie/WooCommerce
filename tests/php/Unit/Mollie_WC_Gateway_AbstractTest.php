@@ -238,9 +238,6 @@ class Mollie_WC_Gateway_AbstractTest extends TestCase
             ->withAnyParameters()
             ->willReturn('url');
 
-
-
-
         /**
          * @var Testee $testee
          */

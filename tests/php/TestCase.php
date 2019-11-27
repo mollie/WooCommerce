@@ -1,6 +1,6 @@
 <?php # -*- coding: utf-8 -*-
 
-namespace Mollie\WooCommerce\Tests;
+namespace MollieTests;
 
 use function Brain\Monkey\setUp;
 use function Brain\Monkey\tearDown;

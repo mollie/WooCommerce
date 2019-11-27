@@ -3,7 +3,7 @@
 namespace Mollie\WooCommerce\Tests\Functional;
 
 use function Brain\Monkey\Functions\when;
-use Mollie\WooCommerce\Tests\TestCase;
+use MollieTests\TestCase;
 use Mollie_WC_Payment_Object;
 use Mollie_WC_Plugin;
 

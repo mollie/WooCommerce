@@ -1,11 +1,13 @@
 <?php # -*- coding: utf-8 -*-
 
-namespace Mollie\WooCommerce\Tests\Unit;
+namespace MollieTests\Unit;
 
 use Mollie\Api\Resources\Payment;
-use Mollie\WooCommerce\Tests\TestCase;
+
 use Mollie_WC_Gateway_Abstract as Testee;
 use Mollie_WC_Payment_Object;
+
+use MollieTests\TestCase;
 use UnexpectedValueException;
 
 /**

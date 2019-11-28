@@ -60,7 +60,6 @@ class Mollie_WC_Gateway_AbstractTest extends TestCase
         self::assertEquals($orderId, $result);
     }
 
-
     /**
      * Test WooCommerce use Property if Wc < 3.0
      */
@@ -71,8 +70,8 @@ class Mollie_WC_Gateway_AbstractTest extends TestCase
          */
         define('WC_VERSION', mt_rand(1, 2));
         $orderId = mt_rand(1, 2);
-        $order2 = $this->getMockBuilder('\\WC_Order')->getMock();
-        $order2->id = $orderId;
+        $order = $this->getMockBuilder('\\WC_Order')->getMock();
+        $order->id = $orderId;
 
         /*
          * Setup Testee
@@ -89,7 +88,7 @@ class Mollie_WC_Gateway_AbstractTest extends TestCase
         /*
          * Execute Testee
          */
-        $result = $testee->wooCommerceOrderId($order2);
+        $result = $testee->wooCommerceOrderId($order);
 
         self::assertEquals($orderId, $result);
     }
@@ -221,7 +220,7 @@ class Mollie_WC_Gateway_AbstractTest extends TestCase
          * Setup Stubs
          */
         $order_id = 1;
-        $order3 = $this
+        $order = $this
             ->getMockBuilder('\\WC_Order')
             ->disableOriginalConstructor()
             ->setMethods(['get_checkout_payment_url'])
@@ -313,7 +312,7 @@ class Mollie_WC_Gateway_AbstractTest extends TestCase
         /*
          * Then we call order->get_checkout_payment_url and return the url string
          */
-        $order3
+        $order
             ->expects($this->once())
             ->method('get_checkout_payment_url')
             ->withAnyParameters()
@@ -322,7 +321,7 @@ class Mollie_WC_Gateway_AbstractTest extends TestCase
         /**
          * @var Testee $testee
          */
-        $testee->getReturnRedirectUrlForOrder($order3);
+        $testee->getReturnRedirectUrlForOrder($order);
     }
 
 

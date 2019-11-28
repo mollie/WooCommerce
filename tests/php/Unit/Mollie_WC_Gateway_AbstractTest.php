@@ -17,6 +17,85 @@ use UnexpectedValueException;
 class Mollie_WC_Gateway_AbstractTest extends TestCase
 {
     /* -----------------------------------------------------------------------
+        Test wooCommerceOrderId
+      ---------------------------------------------------------------------- */
+    /**
+     * Test WooCommerce use Method if WC >= 3.0
+     */
+    public function testWooCommerceOrderIdCallMethod()
+    {
+        /*
+         * Setup Stubs
+         */
+        define('WC_VERSION', mt_rand(3, 4));
+        $orderId = mt_rand(1, 2);
+        $order = $this
+            ->getMockBuilder('\\WC_Order')
+            ->disableOriginalConstructor()
+            ->setMethods(['get_id'])
+            ->getMock();
+        /*
+         * Setup Testee
+         */
+        $testee = $this
+            ->buildTesteeMock(
+                Testee::class,
+                [],
+                []
+            )
+            ->getMockForAbstractClass();
+        $testee = $this->proxyFor($testee);
+        /*
+         * Expect get_id is called
+         */
+        $order
+            ->expects($this->once())
+            ->method('get_id')
+            ->willReturn($orderId);
+
+        /*
+         * Execute Testee
+         */
+        $result = $testee->wooCommerceOrderId($order);
+        self::assertEquals($orderId, $result);
+    }
+
+
+    /**
+     * Test WooCommerce use Property if Wc < 3.0
+     */
+    public function testWooCommerceOrderIdUseProperty()
+    {
+        /*
+         * Setup Stubs
+         */
+        define('WC_VERSION', mt_rand(1, 2));
+        $orderId = mt_rand(1, 2);
+        $order = $this->getMockBuilder('\\WC_Order')->getMock();
+        $order->id = $orderId;
+
+        /*
+         * Setup Testee
+         */
+        $testee = $this
+            ->buildTesteeMock(
+                Testee::class,
+                [],
+                []
+            )
+            ->getMockForAbstractClass();
+        $testee = $this->proxyFor($testee);
+
+        /*
+         * Execute Testee
+         */
+        $result = $testee->wooCommerceOrderId($order);
+
+        self::assertEquals($orderId, $result);
+    }
+
+
+    /* -----------------------------------------------------------------------
        Test activePaymentObject
      ---------------------------------------------------------------------- */
 
@@ -244,87 +323,6 @@ class Mollie_WC_Gateway_AbstractTest extends TestCase
          * @var Testee $testee
          */
         $testee->getReturnRedirectUrlForOrder($order);
-    }
-
-    /* -----------------------------------------------------------------------
-          Test wooCommerceOrderId
-        ---------------------------------------------------------------------- */
-
-    /**
-     * Test WooCommerce use Property if Wc < 3.0
-     */
-    public function testWooCommerceOrderIdUseProperty()
-    {
-        /*
-         * Setup Stubs
-         */
-        define('WC_VERSION', mt_rand(1, 2));
-        $orderId = mt_rand(1, 2);
-        $order = $this->getMockBuilder('\\WC_Order')->getMock();
-        $order->id = $orderId;
-
-        /*
-         * Setup Testee
-         */
-        $testee = $this
-            ->buildTesteeMock(
-                Testee::class,
-                [],
-                []
-            )
-            ->getMockForAbstractClass();
-        $testee = $this->proxyFor($testee);
-
-        /*
-         * Execute Testee
-         */
-        $result = $testee->wooCommerceOrderId($order);
-
-        self::assertEquals($orderId, $result);
-    }
-
-    /**
-     * Test WooCommerce use Method if WC >= 3.0
-     */
-    public function testWooCommerceOrderIdCallMethod()
-    {
-        /*
-         * Setup Stubs
-         */
-        define('WC_VERSION', mt_rand(3, 4));
-        $orderId = mt_rand(1, 2);
-        $order = $this
-            ->getMockBuilder('\\WC_Order')
-            ->disableOriginalConstructor()
-            ->setMethods(['get_id'])
-            ->getMock();
-
-        /*
-         * Setup Testee
-         */
-        $testee = $this
-            ->buildTesteeMock(
-                Testee::class,
-                [],
-                []
-            )
-            ->getMockForAbstractClass();
-        $testee = $this->proxyFor($testee);
-
-        /*
-         * Expect get_id is called
-         */
-        $order
-            ->expects($this->once())
-            ->method('get_id')
-            ->willReturn($orderId);
-
-        /*
-         * Execute Testee
-         */
-        $result = $testee->wooCommerceOrderId($order);
-
-        self::assertEquals($orderId, $result);
     }
 
 

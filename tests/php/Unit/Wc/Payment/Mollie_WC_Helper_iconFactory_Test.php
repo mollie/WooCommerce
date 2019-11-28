@@ -1,12 +1,12 @@
 <?php # -*- coding: utf-8 -*-
 
-namespace Mollie\WooCommerce\Tests\Unit;
+namespace MollieTests\Unit;
 
 
 use Mollie\Api\MollieApiClient;
 use Mollie\Api\Resources\Method;
 use Mollie\Api\Resources\MethodCollection;
-use Mollie\WooCommerce\Tests\TestCase;
+use MollieTests\TestCase;
 use Mollie_WC_Helper_IconFactory as Testee;
 
 

@@ -27,8 +27,10 @@ class Mollie_WC_Gateway_AbstractTest extends TestCase
         /*
          * Setup Stubs
          */
-        define('WC_VERSION', mt_rand(3, 4));
-        $orderId = mt_rand(1, 2);
+
+        define('WC_VERSION','3.0');
+
+        $orderId = 1;
         $order = $this
             ->getMockBuilder('\\WC_Order')
             ->disableOriginalConstructor()

@@ -16,6 +16,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	const STATUS_FAILED = 'failed';
 	const STATUS_REFUNDED = 'refunded';
 
+    const PAYMENT_METHOD_TYPE_PAYMENT = 'payment';
+    const PAYMENT_METHOD_TYPE_ORDER = 'order';
+
     /**
      * @var string
      */
@@ -439,8 +442,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		) {
 
             try {
-                $payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()
-                                                  ->getPaymentObject('payment');
+                $payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject(
+                    self::PAYMENT_METHOD_TYPE_PAYMENT
+                );
                 $paymentRequestData = $payment_object->getPaymentRequestData($order, $customer_id);
                 $data = array_filter($paymentRequestData);
                 $data = apply_filters('woocommerce_' . $this->id . '_args', $data, $order);
@@ -492,7 +496,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		// If products are virtual, use Payments API instead of Orders API
 		//
 
-		$mollie_payment_type = 'order';
+        $molliePaymentType = 'order';
 
 		foreach ( $order->get_items() as $cart_item ) {
 
@@ -507,7 +511,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				}
 
 				if ( $product == false ) {
-					$mollie_payment_type = 'payment';
+                    $molliePaymentType = self::PAYMENT_METHOD_TYPE_PAYMENT;
 					do_action( Mollie_WC_Plugin::PLUGIN_ID . '_orderlines_process_items_after_processing_item', $cart_item );
 					break;
 				}
@@ -524,8 +528,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			//
 			// PROCESS REGULAR PAYMENT AS MOLLIE ORDER
 			//
-
-			if ( $mollie_payment_type == 'order' ) {
+            if ($molliePaymentType == self::PAYMENT_METHOD_TYPE_ORDER) {
 
 				if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 					Mollie_WC_Plugin::debug( $this->id . ': Create Mollie payment object for order ' . $order->id, true );
@@ -534,8 +537,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				}
 
                 try {
-                    $payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()
-                        ->getPaymentObject('order');
+                    $payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject(
+                        self::PAYMENT_METHOD_TYPE_ORDER
+                    );
                 } catch (ApiException $exception) {
                     Mollie_WC_Plugin::debug($exception->getMessage());
                     return array('result' => 'failure');
@@ -571,7 +575,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 					Mollie_WC_Plugin::debug( 'Creating payment object: type Order, first try failed: ' . $e->getMessage() );
 
 					// Unset missing customer ID
-					unset( $data['payment']['customerId'] );
+                    unset($data['payment']['customerId']);
 
 					try {
 
@@ -587,7 +591,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 					catch ( Mollie\Api\Exceptions\ApiException $e ) {
 
 						// Set Mollie payment type to payment, when creating a Mollie Order has failed
-						$mollie_payment_type = 'payment';
+                        $molliePaymentType = self::PAYMENT_METHOD_TYPE_PAYMENT;
 					}
 				}
 			}
@@ -596,10 +600,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			// PROCESS REGULAR PAYMENT AS MOLLIE PAYMENT
 			//
 
-			if ( $mollie_payment_type == 'payment' ) {
+            if ($molliePaymentType == self::PAYMENT_METHOD_TYPE_PAYMENT) {
 				Mollie_WC_Plugin::debug( 'Creating payment object: type Payment, creating a Payment.' );
 
-				$payment_object     = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject( 'payment' );
+                $payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject(
+                    self::PAYMENT_METHOD_TYPE_PAYMENT
+                );
 				$paymentRequestData = $payment_object->getPaymentRequestData( $order, $customer_id );
 
 				$data = array_filter( $paymentRequestData );

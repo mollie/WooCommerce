@@ -21,6 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+require_once 'inc/functions.php';
 require_once 'includes/mollie/wc/autoload.php';
 require_once 'includes/mollie-api-php/vendor/autoload.php';
 

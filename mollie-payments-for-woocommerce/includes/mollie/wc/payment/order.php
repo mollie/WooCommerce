@@ -184,6 +184,11 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			$paymentRequestData['payment']['customerId'] = $customer_id;
 		}
 
+        $cardToken = cardToken();
+        if ($cardToken && isset($paymentRequestData['payment'])) {
+            $paymentRequestData['payment']['cardToken'] = $cardToken;
+        }
+
 		return $paymentRequestData;
 
 	}

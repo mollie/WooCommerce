@@ -210,12 +210,6 @@ function mollieInstance (merchantProfileId, settings)
       'updated_checkout',
       () => initializeComponentsWithSettings(mollieComponentsSettings)
     )
-
-    // TODO This create conflicts with the one above
-    // jQuery(document).on(
-    //   'payment_method_selected',
-    //   () => initializeComponentsWithSettings(mollieComponentsSettings)
-    // )
   }
 )(
   window,

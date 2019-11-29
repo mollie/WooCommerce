@@ -1,6 +1,7 @@
 <?php
 
-use Mollie\WooCommerce\Tests\TestCase;
+namespace Mollie\WooCommerceTests;
+
 use function Brain\Monkey\Functions\stubs;
 
 class Functions_Test extends TestCase
@@ -53,6 +54,6 @@ class Functions_Test extends TestCase
     {
         parent::setUp();
 
-        require_once PROJECT_DIR . '/mollie-payments-for-woocommerce/inc/functions.php';
+        require_once PROJECT_DIR . '/inc/functions.php';
     }
 }

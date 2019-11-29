@@ -179,10 +179,10 @@ function initializeComponentsWithSettings (mollieComponentsSettings)
       return
     }
 
-    insertTokenField(componentsContainer)
-
     const mollie = mollieInstance(merchantProfileId, componentSettings)
     mountComponents(mollie, componentsSelectors, componentSettings[gateway])
+
+    insertTokenField(componentsContainer)
 
     // TODO What if this is not the latest callback executed? If the next will return true this
     //      will not block the checkout.

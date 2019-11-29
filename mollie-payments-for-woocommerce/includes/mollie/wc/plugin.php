@@ -238,6 +238,7 @@ class Mollie_WC_Plugin
 
         // Enqueue Scripts
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueFrontendScripts']);
+        add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueComponentsAssets']);
 
         add_action(
             OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS,
@@ -354,40 +355,31 @@ class Mollie_WC_Plugin
         }
 
         wp_enqueue_script('mollie_wc_gateway_applepay');
-
-        try {
-            self::enqueueComponentsAssets();
-        } catch (Exception $exception) {
-            return;
-        }
     }
 
     /**
      * Enqueue Mollie Component Assets
-     * @throws ApiException
-     * @throws OutOfBoundsException
      */
-    protected static function enqueueComponentsAssets()
+    public static function enqueueComponentsAssets()
     {
-        $merchantProfile = merchantProfile();
+        try {
+            $merchantProfileId = merchantProfileId();
+        } catch (ApiException $exception) {
+            return;
+        }
+
+        $mollieComponentsStylesGateways = mollieComponentsStylesForAvailableGateways();
+        $gatewayNames = array_keys($mollieComponentsStylesGateways);
+
+        if (!$merchantProfileId || !$mollieComponentsStylesGateways) {
+            return;
+        }
+
+        if (is_admin() || !isCheckoutContext()) {
+            return;
+        }
+
         $locale = get_locale();
-        $merchantProfileId = isset($merchantProfile->id) ? $merchantProfile->id : 0;
-        $mollieComponentsSettings = new Mollie_WC_Settings_Components();
-        $gatewaysWithMollieComponentsEnabled = availableGatewaysWithMollieComponentsEnabled();
-
-        if (!$gatewaysWithMollieComponentsEnabled) {
-            return;
-        }
-
-        $gatewayNames = gatewayNames($gatewaysWithMollieComponentsEnabled);
-        $mollieComponentsStylesGateways = array_combine(
-            $gatewayNames,
-            array_fill(0, count($gatewayNames), ['styles' => $mollieComponentsSettings->styles()])
-        );
-
-        if (!$merchantProfileId) {
-            return;
-        }
 
         wp_enqueue_style('mollie-components');
         wp_enqueue_script('mollie-components');

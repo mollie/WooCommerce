@@ -93,6 +93,19 @@ function merchantProfile()
 }
 
 /**
+ * Retrieve the merchant profile ID
+ *
+ * @return int|string
+ * @throws ApiException
+ */
+function merchantProfileId()
+{
+    $merchantProfile = merchantProfile();
+
+    return isset($merchantProfile->id) ? $merchantProfile->id : 0;
+}
+
+/**
  * Retrieve the cardToken value for Mollie Components
  *
  * @return string
@@ -100,4 +113,47 @@ function merchantProfile()
 function cardToken()
 {
     return $cardToken = filter_input(INPUT_POST, 'cardToken', FILTER_SANITIZE_STRING) ?: '';
+}
+
+/**
+ * Retrieve the mollie components styles for all of the available Gateways
+ *
+ * Gateways are enabled along with mollie components
+ *
+ * @return array
+ */
+function mollieComponentsStylesForAvailableGateways()
+{
+    $mollieComponentsSettings = new Mollie_WC_Settings_Components();
+    $gatewaysWithMollieComponentsEnabled = availableGatewaysWithMollieComponentsEnabled();
+
+    if (!$gatewaysWithMollieComponentsEnabled) {
+        return [];
+    }
+
+    return mollieComponentsStylesPerGateway(
+        $gatewaysWithMollieComponentsEnabled,
+        $mollieComponentsSettings
+    );
+}
+
+/**
+ * Retrieve the mollie components styles associated to the given gateways
+ *
+ * @param array $gateways
+ * @param Mollie_WC_Settings_Components $mollieComponentsSettings
+ * @return array
+ */
+function mollieComponentsStylesPerGateway(
+    array $gateways,
+    Mollie_WC_Settings_Components $mollieComponentsSettings
+) {
+
+    $gatewayNames = gatewayNames($gateways);
+    $mollieComponentsStylesGateways = array_combine(
+        $gatewayNames,
+        array_fill(0, count($gatewayNames), ['styles' => $mollieComponentsSettings->styles()])
+    );
+
+    return $mollieComponentsStylesGateways ?: [];
 }

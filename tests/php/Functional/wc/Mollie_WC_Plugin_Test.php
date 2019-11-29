@@ -98,31 +98,12 @@ class Mollie_WC_Plugin_Test extends TestCase
         /*
          * Stubs
          */
-        $locale = uniqid();
-        $merchantProfile = (object)[
-            'id' => uniqid(),
-        ];
         stubs(
             [
                 'is_admin' => false,
                 'isCheckoutContext' => true,
-                'merchantProfile' => $merchantProfile,
-                'components' => [],
-                'get_locale' => $locale,
-                'isTestModeEnabled' => true,
             ]
         );
-
-        /*
-         * Expect localize script is called with the right parameters
-         */
-        expect('wp_localize_script')
-            ->once()
-            ->with(
-                'mollie-components',
-                'mollieComponentsSettings',
-                Mockery::type('array')
-            );
 
         /*
          * Execute Test
@@ -135,18 +116,25 @@ class Mollie_WC_Plugin_Test extends TestCase
             true,
             $wpScriptsStub->isEnqueued('script', 'mollie_wc_gateway_applepay')
         );
-        self::assertEquals(true, $wpScriptsStub->isEnqueued('script', 'mollie-components'));
     }
 
-    public function testEnqueueFrontendScriptsDoesNotEnqueueInInvalidContext()
-    {
+    /**
+     * @dataProvider frontendCheckoutContextDataProvider
+     * @param $isAdmin
+     * @param $isCheckoutContext
+     */
+    public function testEnqueueFrontendScriptsDoesNotEnqueueInInvalidContext(
+        $isAdmin,
+        $isCheckoutContext
+    ) {
+
         /*
          * Stubs
          */
         stubs(
             [
-                'is_admin' => false,
-                'isCheckoutContext' => false,
+                'is_admin' => $isAdmin,
+                'isCheckoutContext' => $isCheckoutContext,
             ]
         );
 
@@ -156,5 +144,52 @@ class Mollie_WC_Plugin_Test extends TestCase
         Mollie_WC_Plugin::enqueueFrontendScripts();
 
         self::assertEquals(true, empty(WpScriptsStub::instance()->allEnqueued('script')));
+    }
+
+    public function testEnqueueComponentsAssets()
+    {
+        stubs(
+            [
+                'merchantProfileId' => uniqid(),
+                'mollieComponentsStylesForAvailableGateways' => [uniqid()],
+                'is_admin' => false,
+                'isCheckoutContext' => true,
+                'get_locale' => uniqid(),
+                'isTestModeEnabled' => true,
+                'esc_html__' => '',
+            ]
+        );
+
+        /*
+         * Expect to localize script for mollie components
+         */
+        expect('wp_localize_script')
+            ->once()
+            ->andReturnUsing(
+                function ($handle, $objectName, $data) {
+                    self::assertEquals('mollie-components', $handle);
+                    self::assertEquals('mollieComponentsSettings', $objectName);
+                    self::assertEquals('array', gettype($data));
+                }
+            );
+
+        /*
+         * Execute Test
+         */
+        Mollie_WC_Plugin::enqueueComponentsAssets();
+
+        $wpScriptsStub = WpScriptsStub::instance();
+
+        self::assertEquals(true, $wpScriptsStub->isEnqueued('style', 'mollie-components'));
+        self::assertEquals(true, $wpScriptsStub->isEnqueued('script', 'mollie-components'));
+    }
+
+    public function frontendCheckoutContextDataProvider()
+    {
+        // Admin, CheckoutPage
+        return [
+            [false, false],
+            [true, false],
+        ];
     }
 }

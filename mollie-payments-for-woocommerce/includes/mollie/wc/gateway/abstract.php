@@ -2035,4 +2035,61 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		return parent::get_transaction_url( $order );
 	}
 
+    protected function hasFieldsIfMollieComponentsIsEnabled()
+    {
+        $this->has_fields = $this->isMollieComponentsEnabled() ? true : false;
+    }
+
+    protected function includeMollieComponentsFields()
+    {
+        $fields = include Mollie_WC_Plugin::getPluginPath(
+            '/inc/settings/mollie_components_enabler.php'
+        );
+
+        $this->form_fields = array_merge($this->form_fields, $fields);
+    }
+
+    protected function mollieComponentsFields()
+    {
+        if (!$this->isMollieComponentsEnabled()) {
+            return;
+        }
+
+        ?>
+        <div class="mollie-components"></div>
+        <p>
+            <?php
+            echo $this->lockIcon();
+            esc_html_e('Secure payments provided by ');
+            // TODO Check if possible to make svg accessible so we can show `mollie` text
+            echo $this->mollieLogo();
+            ?>
+        </p>
+        <?php
+    }
+
+    protected function isMollieComponentsEnabled()
+    {
+        $option = isset($this->settings['mollie_components_enabled'])
+            ? $this->settings['mollie_components_enabled']
+            : 'no';
+
+        $option = wc_string_to_bool($option);
+
+        return $option;
+    }
+
+    protected function lockIcon()
+    {
+        return file_get_contents(
+            Mollie_WC_Plugin::getPluginPath('assets/images/lock-icon.svg')
+        );
+    }
+
+    protected function mollieLogo()
+    {
+        return file_get_contents(
+            Mollie_WC_Plugin::getPluginPath('assets/images/mollie-logo.svg')
+        );
+    }
 }

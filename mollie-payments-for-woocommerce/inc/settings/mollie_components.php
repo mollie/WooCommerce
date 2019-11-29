@@ -3,46 +3,47 @@
 // TODO Remember validation.
 
 return [
-    'mollie_components' => [
+    [
         'type' => 'title',
+        'id' => 'mollie_components_styles',
         'title' => _x(
-            'Mollie Components',
-            'Mollie Components Settings',
-            'mollie-payments-for-woocommerce'
-        ),
-        'description' => _x(
-            'Mollie Components is a set of Javascript APIs that allow you to add the fields needed for credit card holder data to your own checkout.',
+            'Base Styles',
             'Mollie Components Settings',
             'mollie-payments-for-woocommerce'
         ),
     ],
-    Mollie_WC_Components_Styles::BACKGROUND_COLOR => [
+    Mollie_WC_Components_Stylesproperties::BACKGROUND_COLOR => [
         'type' => 'color',
+        'id' => 'mollie_components_' . Mollie_WC_Components_Stylesproperties::BACKGROUND_COLOR,
         'title' => _x('Background Color', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
         'default' => '#ffffff',
     ],
-    Mollie_WC_Components_Styles::TEXT_COLOR => [
+    Mollie_WC_Components_Stylesproperties::TEXT_COLOR => [
         'type' => 'color',
+        'id' => 'mollie_components_' . Mollie_WC_Components_Stylesproperties::TEXT_COLOR,
         'title' => _x('Text Color', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
         'default' => '#000000',
     ],
-    Mollie_WC_Components_Styles::INPUT_PLACEHOLDER => [
+    Mollie_WC_Components_Stylesproperties::INPUT_PLACEHOLDER => [
         'type' => 'color',
+        'id' => 'mollie_components_' . Mollie_WC_Components_Stylesproperties::INPUT_PLACEHOLDER,
         'title' => _x('Placeholder Color', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
         'default' => '#cccccc',
     ],
-    Mollie_WC_Components_Styles::FONT_SIZE => [
+    Mollie_WC_Components_Stylesproperties::FONT_SIZE => [
         'type' => 'text',
+        'id' => 'mollie_components_' . Mollie_WC_Components_Stylesproperties::FONT_SIZE,
         'title' => _x('Font Size', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
-        'description' => _x(
+        'desc' => _x(
             'Font size define the size for the font in the components. `em`, `px`, `rem` units are allowed.',
             'Mollie Components Settings',
             'mollie-payments-for-woocommerce'
         ),
         'default' => '16px',
     ],
-    Mollie_WC_Components_Styles::FONT_WEIGHT => [
+    Mollie_WC_Components_Stylesproperties::FONT_WEIGHT => [
         'type' => 'select',
+        'id' => 'mollie_components_' . Mollie_WC_Components_Stylesproperties::FONT_WEIGHT,
         'title' => _x('Font Weight', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
         'default' => 'normal',
         'options' => [
@@ -51,32 +52,37 @@ return [
             'bolder' => _x('Bold', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
         ],
     ],
-    Mollie_WC_Components_Styles::LETTER_SPACING => [
+    Mollie_WC_Components_Stylesproperties::LETTER_SPACING => [
         'type' => 'number',
+        'id' => 'mollie_components_' . Mollie_WC_Components_Stylesproperties::LETTER_SPACING,
         'title' => _x('Letter Spacing', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
         'default' => '0',
     ],
-    Mollie_WC_Components_Styles::LINE_HEIGHT => [
+    Mollie_WC_Components_Stylesproperties::LINE_HEIGHT => [
         'type' => 'number',
+        'id' => 'mollie_components_' . Mollie_WC_Components_Stylesproperties::LINE_HEIGHT,
         'title' => _x('Line Height', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
         'default' => '1.2',
         'custom_attributes' => [
             'step' => '.1',
         ],
     ],
-    Mollie_WC_Components_Styles::PADDING => [
+    Mollie_WC_Components_Stylesproperties::PADDING => [
         'type' => 'string',
+        'id' => 'mollie_components_' . Mollie_WC_Components_Stylesproperties::PADDING,
         'title' => _x('Padding', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
-        'description' => _x(
+        'desc' => _x(
             'Add padding to the components. Eg. `16px 16px 16px 16px` and `em`, `px`, `rem` units are allowed.',
             'Mollie Components Settings',
             'mollie-payments-for-woocommerce'
         ),
         'default' => '.63em',
     ],
-    Mollie_WC_Components_Styles::TEXT_ALIGN => [
+    Mollie_WC_Components_Stylesproperties::TEXT_ALIGN => [
         'type' => 'select',
+        'id' => 'mollie_components_' . Mollie_WC_Components_Stylesproperties::TEXT_ALIGN,
         'title' => _x('Text Align', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
+        'default' => 'left',
         'options' => [
             'left' => _x('Left', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
             'right' => _x('Right', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
@@ -84,9 +90,11 @@ return [
             'justify' => _x('Justify', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
         ],
     ],
-    Mollie_WC_Components_Styles::TEXT_TRANSFORM => [
+    Mollie_WC_Components_Stylesproperties::TEXT_TRANSFORM => [
         'type' => 'select',
+        'id' => 'mollie_components_' . Mollie_WC_Components_Stylesproperties::TEXT_TRANSFORM,
         'title' => _x('Text Transform', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
+        'default' => 'none',
         'options' => [
             'none' => _x(
                 'None',
@@ -120,38 +128,43 @@ return [
             ),
         ],
     ],
-    // TODO Check again for description
-    'mollie_components_invalid' => [
+    [
+        'type' => 'sectionend',
+        'id' => 'mollie_components_styles',
+    ],
+    [
         'type' => 'title',
+        'id' => 'mollie_components_invalid_styles',
         'title' => _x(
-            'Invalid Status',
-            'Mollie Components Settings',
-            'mollie-payments-for-woocommerce'
-        ),
-        'description' => _x(
-            'Input fields for invalid data entry status.',
+            'Invalid Status Styles',
             'Mollie Components Settings',
             'mollie-payments-for-woocommerce'
         ),
     ],
-    Mollie_WC_Components_Styles::INVALID_TEXT_COLOR => [
+    Mollie_WC_Components_Stylesproperties::INVALID_TEXT_COLOR => [
         'type' => 'color',
+        'id' => 'mollie_components_' . Mollie_WC_Components_Stylesproperties::INVALID_TEXT_COLOR,
         'title' => _x('Text Color', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
-        'description' => _x(
+        'desc' => _x(
             'Text Color for invalid input.',
             'Mollie Components Settings',
             'mollie-payments-for-woocommerce'
         ),
         'default' => '#000000',
     ],
-    Mollie_WC_Components_Styles::INVALID_BACKGROUND_COLOR => [
+    Mollie_WC_Components_Stylesproperties::INVALID_BACKGROUND_COLOR => [
         'type' => 'color',
+        'id' => 'mollie_components_' . Mollie_WC_Components_Stylesproperties::INVALID_BACKGROUND_COLOR,
         'title' => _x('Background Color', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
-        'description' => _x(
+        'desc' => _x(
             'Background Color for invalid input.',
             'Mollie Components Settings',
             'mollie-payments-for-woocommerce'
         ),
         'default' => '#FFF0F0',
+    ],
+    [
+        'type' => 'sectionend',
+        'id' => 'mollie_components_invalid_styles',
     ],
 ];

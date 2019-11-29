@@ -1,4 +1,4 @@
-const SELECTOR_TOKEN_ELEMENT = '#cardToken'
+const SELECTOR_TOKEN_ELEMENT = '.cardToken'
 const SELECTOR_MOLLIE_COMPONENT = '.mollie-component'
 const SELECTOR_FORM = 'form.checkout'
 const MOLLIE_COMPONENTS_CONTAINER = '.wc_payment_methods'
@@ -48,10 +48,10 @@ function scrollToNotice ()
   jQuery.scroll_to_notices(jQuery(scrollElement))
 }
 
-function mountComponents (mollie, components, options)
+function mountComponents (mollie, components, settings)
 {
   for (const componentName in components) {
-    const component = mollie.createComponent(componentName, options)
+    const component = mollie.createComponent(componentName, settings)
     const container = document.querySelector('.mollie-components')
 
     container.insertAdjacentHTML('beforeend', `<div id="${componentName}"></div>`)
@@ -74,11 +74,13 @@ function mountComponents (mollie, components, options)
   }
 }
 
-function insertTokenFieldIn (element)
+function insertTokenField (componentsContainer)
 {
-  element.insertAdjacentHTML(
-    'beforeend',
-    '<input type="hidden" name="cardToken" id="cardToken" value="" />'
+  componentsContainer
+    .querySelector('.mollie-components')
+    .insertAdjacentHTML(
+      'beforeend',
+      '<input type="hidden" name="cardToken" class="cardToken" value="" />'
   )
 }
 
@@ -91,7 +93,7 @@ async function retrievePaymentToken (mollie)
 {
   // TODO There's a problem with invalid request errors. see https://molliehq.slack.com/archives/CD7BV7JBX/p1574787556115400
 
-  const { token, error } = await mollie.createToken()
+  const { token, error } = await mollie.createToken(SELECTOR_TOKEN_ELEMENT)
 
   if (error) {
     throw new Error(error.message || '')
@@ -100,9 +102,9 @@ async function retrievePaymentToken (mollie)
   return token
 }
 
-function assignTokenValue (token)
+function assignTokenValue (token, componentsContainer)
 {
-  const tokenFieldElement = tokenField()
+  const tokenFieldElement = componentsContainer.querySelector(SELECTOR_TOKEN_ELEMENT)
 
   if (!tokenFieldElement) {
     return
@@ -110,11 +112,6 @@ function assignTokenValue (token)
 
   tokenFieldElement.value = token
   tokenFieldElement.setAttribute('value', token)
-}
-
-function tokenField ()
-{
-  return document.querySelector(SELECTOR_TOKEN_ELEMENT)
 }
 
 function componentsAlreadyExistsUnder (mollieComponents)
@@ -128,13 +125,11 @@ function turnMollieComponentsSubmissionOff (form)
   form.off('submit', submitForm)
 }
 
-async function submitForm (evt)
+async function submitForm (evt, mollie, gateway, componentsContainer)
 {
-  const container = componentsContainer()
-  const form = jQuery(formFrom(container))
+  const form = jQuery(formFrom(componentsContainer))
 
-  // TODO This has to work with other gateways too
-  if (!document.querySelector('#payment_method_mollie_wc_gateway_creditcard').checked) {
+  if (!document.querySelector(`#payment_method_mollie_wc_gateway_${gateway}`).checked) {
     turnMollieComponentsSubmissionOff(form)
     return
   }
@@ -142,7 +137,6 @@ async function submitForm (evt)
   evt.preventDefault()
   evt.stopImmediatePropagation()
 
-  const mollie = mollieInstance()
   let token = ''
 
   try {
@@ -153,8 +147,7 @@ async function submitForm (evt)
     return
   }
 
-  assignTokenValue(token)
-
+  assignTokenValue(token, componentsContainer)
   turnMollieComponentsSubmissionOff(form)
 
   form.submit()
@@ -164,55 +157,51 @@ function initializeComponentsWithSettings (mollieComponentsSettings)
 {
   const merchantProfileId = mollieComponentsSettings.merchantProfileId || null
   const componentsSelectors = mollieComponentsSettings.components || []
-  const componentOptions = mollieComponentsSettings.componentOptions || []
+  const componentSettings = mollieComponentsSettings.componentSettings || []
+  const enabledGateways = mollieComponentsSettings.enabledGateways || []
 
-  const paymentMethodWithComponents = document.querySelector('#payment_method_mollie_wc_gateway_creditcard')
-  if (!paymentMethodWithComponents) {
-    return
-  }
+  enabledGateways.forEach(gateway =>
+  {
+    const componentsContainer = document.querySelector(`.payment_method_mollie_wc_gateway_${gateway}`)
 
-  const container = componentsContainer()
-  const form = formFrom(container)
-  const $form = jQuery(form)
+    if (!componentsContainer) {
+      return
+    }
 
-  if (!form) {
-    console.warn('Cannot mount Mollie Components, no form found.')
-  }
+    const form = formFrom(componentsContainer)
+    const $form = jQuery(form)
 
-  if (componentsAlreadyExistsUnder(container)) {
-    return
-  }
+    if (!form) {
+      console.warn('Cannot mount Mollie Components, no form found.')
+    }
 
-  // TODO Must be insert into the #mollie_components
-  insertTokenFieldIn(form)
+    if (componentsAlreadyExistsUnder(componentsContainer)) {
+      return
+    }
 
-  const mollie = mollieInstance(merchantProfileId, componentOptions)
-  mountComponents(mollie, componentsSelectors, componentOptions)
+    insertTokenField(componentsContainer)
 
-  // TODO What if this is not the latest callback executed? If the next will return true this
-  //      will not block the checkout.
-  $form.on('checkout_place_order', returnFalse)
-  // TODO Not trigger when in checkout pay page
-  $form.on('submit', submitForm)
+    const mollie = mollieInstance(merchantProfileId, componentSettings)
+    mountComponents(mollie, componentsSelectors, componentSettings[gateway])
+
+    // TODO What if this is not the latest callback executed? If the next will return true this
+    //      will not block the checkout.
+    $form.on('checkout_place_order', returnFalse)
+    // TODO Not trigger when in checkout pay page
+    $form.on('submit', evt =>
+    {
+      submitForm(evt, mollie, gateway, componentsContainer)
+    })
+  })
 }
 
-function mollieInstance (merchantProfileId, componentOptions)
+function mollieInstance (merchantProfileId, settings)
 {
   if (null === mollie && merchantProfileId) {
-    mollie = new Mollie(merchantProfileId, componentOptions)
+    mollie = new Mollie(merchantProfileId, settings)
   }
 
   return mollie
-}
-
-class MollieComponents
-{
-  constructor (jQuery, settings, componentsWrapper)
-  {
-    this.jQuery = jQuery
-    this.settings = settings
-    this.componentsWrapper = componentsWrapper
-  }
 }
 
 (function (window, mollieComponentsSettings, Mollie, jQuery)

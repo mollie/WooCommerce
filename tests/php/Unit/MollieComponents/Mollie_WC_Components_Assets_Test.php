@@ -33,7 +33,7 @@ class Mollie_WC_Components_Assets_Test extends TestCase
                         'locale' => $locale,
                         'testmode' => true,
                     ],
-                    'componentOptions' => [
+                    'componentSettings' => [
                         'styles' => $styles,
                     ],
                     'componentsSelectors' => [

@@ -23,6 +23,46 @@ function availablePaymentGateways()
     return WC()->payment_gateways()->get_available_payment_gateways();
 }
 
+function availableGatewaysWithMollieComponentsEnabled()
+{
+    // TODO May be we want to cache them for the current request?
+
+    $gatewaysWithMollieComponentsEnabled = [];
+    $availablePaymentGateways = availablePaymentGateways();
+
+    /** @var WC_Payment_Gateway $gateway */
+    foreach ($availablePaymentGateways as $gateway) {
+        $isGatewayEnabled = wc_string_to_bool($gateway->enabled);
+        // TODO The mollie_components_enabled should be a constant somewhere
+        if ($isGatewayEnabled && isMollieComponentsEnabledForGateway($gateway)) {
+            $gatewaysWithMollieComponentsEnabled[] = $gateway;
+        }
+    }
+
+    return $gatewaysWithMollieComponentsEnabled;
+}
+
+function gatewayNames(array $gateways)
+{
+    $gatewayNames = [];
+
+    /** @var WC_Payment_Gateway $gateway */
+    foreach ($gateways as $gateway) {
+        $gatewayNames[] = str_replace('mollie_wc_gateway_', '', $gateway->id);
+    }
+
+    return $gatewayNames;
+}
+
+function isMollieComponentsEnabledForGateway(WC_Payment_Gateway $gateway)
+{
+    if (!isset($gateway->settings['mollie_components_enabled'])) {
+        return false;
+    }
+
+    return wc_string_to_bool($gateway->settings['mollie_components_enabled']);
+}
+
 /**
  * Is Mollie Test Mode enabled?
  *
@@ -35,61 +75,6 @@ function isTestModeEnabled()
     $isTestModeEnabled = $settingsHelper->isTestModeEnabled();
 
     return $isTestModeEnabled;
-}
-
-/**
- * Retrieve the instance of the Credit Card Gateway
- *
- * @param $gatewayKey
- * @param array $availableGateways
- * @return mixed
- * @throws OutOfBoundsException
- */
-function gatewayFromAvailableGateways($gatewayKey, array $availableGateways)
-{
-    if (!isset($availableGateways[$gatewayKey])) {
-        throw new OutOfBoundsException('Gateway Credit Card is not registered');
-    }
-
-    return $availableGateways[$gatewayKey];
-}
-
-/**
- * Retrieve the mollie components settings from the given gateway
- *
- * @param WC_Payment_Gateway $gateway
- * @return array
- */
-function componentsSettings(WC_Payment_Gateway $gateway)
-{
-    $gatewayComponentsSettings = get_option($gateway->get_option_key(), null) ?: [];
-
-    return $gatewayComponentsSettings;
-}
-
-/**
- * Retrieve the default mollie components settings values from the given gateway
- *
- * @param WC_Payment_Gateway $gateway
- * @return array
- */
-function defaultComponentSettings(WC_Payment_Gateway $gateway)
-{
-    $settings = $gateway->settings;
-    $defaultComponentSettings = [];
-
-    $componentKeys = array_merge(
-        Mollie_WC_Components_Styles::STYLES_OPTIONS_KEYS_MAP,
-        Mollie_WC_Components_Styles::INVALID_STYLES_OPTIONS_KEYS_MAP
-    );
-
-    foreach ($settings as $key => $value) {
-        if (in_array($key, $componentKeys, true)) {
-            $defaultComponentSettings[$key] = $value;
-        }
-    }
-
-    return $defaultComponentSettings;
 }
 
 /**

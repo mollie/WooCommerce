@@ -252,6 +252,15 @@ class Mollie_WC_Plugin
             2
         );
 
+        add_filter(
+            'woocommerce_get_settings_pages',
+            function ($settings) {
+                $settings[] = new Mollie_WC_Settings_Page_Components();
+
+                return $settings;
+            }
+        );
+
 		self::initDb();
 		self::schedulePendingPaymentOrdersExpirationCheck();
         self::registerFrontendScripts();
@@ -361,18 +370,19 @@ class Mollie_WC_Plugin
     protected static function enqueueComponentsAssets()
     {
         $merchantProfile = merchantProfile();
-        $creditCardGateway = gatewayFromAvailableGateways(
-            'mollie_wc_gateway_creditcard',
-            availablePaymentGateways()
-        );
-        $componentsSettings = componentsSettings($creditCardGateway);
-        $defaultComponentSettings = defaultComponentSettings($creditCardGateway);
-
         $locale = get_locale();
         $merchantProfileId = isset($merchantProfile->id) ? $merchantProfile->id : 0;
-        $mollieComponentsStyles = new Mollie_WC_Components_Styles(
-            $componentsSettings,
-            $defaultComponentSettings
+        $mollieComponentsSettings = new Mollie_WC_Settings_Components();
+        $gatewaysWithMollieComponentsEnabled = availableGatewaysWithMollieComponentsEnabled();
+
+        if (!$gatewaysWithMollieComponentsEnabled) {
+            return;
+        }
+
+        $gatewayNames = gatewayNames($gatewaysWithMollieComponentsEnabled);
+        $mollieComponentsStylesGateways = array_combine(
+            $gatewayNames,
+            array_fill(0, count($gatewayNames), ['styles' => $mollieComponentsSettings->styles()])
         );
 
         if (!$merchantProfileId) {
@@ -391,9 +401,8 @@ class Mollie_WC_Plugin
                     'locale' => $locale,
                     'testmode' => isTestModeEnabled(),
                 ],
-                'componentOptions' => [
-                    'styles' => $mollieComponentsStyles->all(),
-                ],
+                'enabledGateways' => $gatewayNames,
+                'componentSettings' => $mollieComponentsStylesGateways,
                 'components' => [
                     'cardHolder' => [
                         'label' => esc_html__('Card Holder', 'mollie-payments-for-woocommerce')

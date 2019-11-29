@@ -1,6 +1,6 @@
 <?php
 
-class Mollie_WC_Components_Stylesproperties
+class Mollie_WC_Components_StylesPropertiesDictionary
 {
     const BASE_STYLE_KEY = 'base';
     const INVALID_STYLE_KEY = 'invalid';

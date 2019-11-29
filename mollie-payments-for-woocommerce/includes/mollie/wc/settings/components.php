@@ -11,12 +11,12 @@ class Mollie_WC_Settings_Components
         $defaults = $this->defaultSettings();
         $settings = [];
 
-        $settings[Mollie_WC_Components_Stylesproperties::BASE_STYLE_KEY] = $this->optionsFor(
-            Mollie_WC_Components_Stylesproperties::STYLES_OPTIONS_KEYS_MAP,
+        $settings[Mollie_WC_Components_StylesPropertiesDictionary::BASE_STYLE_KEY] = $this->optionsFor(
+            Mollie_WC_Components_StylesPropertiesDictionary::STYLES_OPTIONS_KEYS_MAP,
             $defaults
         );
-        $settings[Mollie_WC_Components_Stylesproperties::INVALID_STYLE_KEY] = $this->optionsFor(
-            Mollie_WC_Components_Stylesproperties::INVALID_STYLES_OPTIONS_KEYS_MAP,
+        $settings[Mollie_WC_Components_StylesPropertiesDictionary::INVALID_STYLE_KEY] = $this->optionsFor(
+            Mollie_WC_Components_StylesPropertiesDictionary::INVALID_STYLES_OPTIONS_KEYS_MAP,
             $defaults
         );
 

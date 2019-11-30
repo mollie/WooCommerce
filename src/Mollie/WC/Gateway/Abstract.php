@@ -1,6 +1,7 @@
 <?php
 
 use Mollie\Api\Exceptions\ApiException;
+use Mollie\Api\Types\PaymentMethod;
 
 abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 {

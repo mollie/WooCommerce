@@ -22,7 +22,7 @@ function notice (content, type)
   const mollieNotice = document.querySelector('#mollie-notice')
   const template = `
       <div id="mollie-notice" class="woocommerce-${type}">
-        Credit Card: ${content}
+        ${content}
       </div>
     `
 

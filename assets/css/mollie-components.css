@@ -26,6 +26,7 @@
 
 .mollie-components div {
     flex-grow: 1;
+    width: 100%;
 }
 
 .mollie-components div + div {

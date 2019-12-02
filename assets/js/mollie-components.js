@@ -182,8 +182,6 @@ function initializeComponentsWithSettings (mollieComponentsSettings)
 
     insertTokenField(componentsContainer)
 
-    // TODO What if this is not the latest callback executed? If the next will return true this
-    //      will not block the checkout.
     $form.on('checkout_place_order', returnFalse)
     // TODO Not trigger when in checkout pay page
     $form.on('submit', evt =>

@@ -19,3 +19,4 @@ Makefile export-ignore
 phpunit.xml.dist export-ignore
 traefik.yml export-ignore
 node_modules export-ignore
+*.map export-ignore

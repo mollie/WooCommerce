@@ -1,19 +1,11 @@
 <?php
 
-namespace Mollie\WC\Payment;
-
-use Mollie\OrderLineStatus;
-use Mollie_WC_Helper_Data;
-use stdClass;
-use UnexpectedValueException;
-use WC_Order_Item;
-
 /**
  * Create the line items list to refund according to Mollie rest api documentation
  *
  * @link https://docs.mollie.com/reference/v2/orders-api/create-order-refund
  */
-class RefundLineItemsBuilder
+class Mollie_WC_Payment_RefundLineItemsBuilder
 {
     /**
      * @var Mollie_WC_Helper_Data
@@ -35,7 +27,7 @@ class RefundLineItemsBuilder
      * @param string $currency
      * @param string $refundReason
      * @return array
-     * @throws PartialRefundException
+     * @throws Mollie_WC_Payment_PartialRefundException
      * @throws UnexpectedValueException
      */
     public function buildLineItems(
@@ -75,11 +67,11 @@ class RefundLineItemsBuilder
                 continue;
             }
 
-            if (in_array($toRefundRemoteItem->status, OrderLineStatus::CAN_BE_CANCELED, true)) {
+            if (in_array($toRefundRemoteItem->status, Mollie_WC_OrderLineStatus::CAN_BE_CANCELED, true)) {
                 $toCancel['lines'][] = $lineItem;
             }
 
-            if (in_array($toRefundRemoteItem->status, OrderLineStatus::CAN_BE_REFUNDED, true)) {
+            if (in_array($toRefundRemoteItem->status, Mollie_WC_OrderLineStatus::CAN_BE_REFUNDED, true)) {
                 $toRefund['lines'][] = $lineItem;
             }
         }
@@ -92,7 +84,7 @@ class RefundLineItemsBuilder
      * @param stdClass $toRefundRemoteItem
      * @param string $currency
      * @return array
-     * @throws PartialRefundException
+     * @throws Mollie_WC_Payment_PartialRefundException
      */
     private function buildLineItem(
         WC_Order_Item $toRefundItem,
@@ -119,7 +111,7 @@ class RefundLineItemsBuilder
         );
 
         if ($toRefundRemoteItemAmount !== $toRefundItemAmount) {
-            throw new PartialRefundException(
+            throw new Mollie_WC_Payment_PartialRefundException(
                 __(
                     'Mollie doesn\'t allow a partial refund of the full amount or quantity of at least one order line. Trying to process this as an amount refund instead.',
                     'mollie-payments-for-woocommerce'

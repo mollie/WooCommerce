@@ -16,6 +16,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	const STATUS_FAILED = 'failed';
 	const STATUS_REFUNDED = 'refunded';
 
+    const PAYMENT_METHOD_TYPE_PAYMENT = 'payment';
+    const PAYMENT_METHOD_TYPE_ORDER = 'order';
+
     /**
      * @var string
      */
@@ -438,7 +441,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
             try {
                 $payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject(
-                    'payment'
+                    self::PAYMENT_METHOD_TYPE_PAYMENT
                 );
                 $paymentRequestData = $payment_object->getPaymentRequestData($order, $customer_id);
                 $data = array_filter($paymentRequestData);
@@ -491,7 +494,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		// If products are virtual, use Payments API instead of Orders API
 		//
 
-		$mollie_payment_type = 'order';
+        $molliePaymentType = 'order';
 
 		foreach ( $order->get_items() as $cart_item ) {
 
@@ -506,7 +509,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				}
 
 				if ( $product == false ) {
-					$mollie_payment_type = 'payment';
+                    $molliePaymentType = self::PAYMENT_METHOD_TYPE_PAYMENT;
 					do_action( Mollie_WC_Plugin::PLUGIN_ID . '_orderlines_process_items_after_processing_item', $cart_item );
 					break;
 				}
@@ -523,8 +526,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			//
 			// PROCESS REGULAR PAYMENT AS MOLLIE ORDER
 			//
-
-			if ( $mollie_payment_type == 'order' ) {
+            if ($molliePaymentType == self::PAYMENT_METHOD_TYPE_ORDER) {
 
 				if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 					Mollie_WC_Plugin::debug( $this->id . ': Create Mollie payment object for order ' . $order->id, true );
@@ -534,7 +536,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
                 try {
                     $payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject(
-                        'order'
+                        self::PAYMENT_METHOD_TYPE_ORDER
                     );
                 } catch (ApiException $exception) {
                     Mollie_WC_Plugin::debug($exception->getMessage());
@@ -571,7 +573,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 					Mollie_WC_Plugin::debug( 'Creating payment object: type Order, first try failed: ' . $e->getMessage() );
 
 					// Unset missing customer ID
-					unset( $data['payment']['customerId'] );
+                    unset($data['payment']['customerId']);
 
 					try {
 
@@ -587,7 +589,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 					catch ( Mollie\Api\Exceptions\ApiException $e ) {
 
 						// Set Mollie payment type to payment, when creating a Mollie Order has failed
-						$mollie_payment_type = 'payment';
+                        $molliePaymentType = self::PAYMENT_METHOD_TYPE_PAYMENT;
 					}
 				}
 			}
@@ -596,10 +598,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			// PROCESS REGULAR PAYMENT AS MOLLIE PAYMENT
 			//
 
-			if ( $mollie_payment_type == 'payment' ) {
+            if ($molliePaymentType === self::PAYMENT_METHOD_TYPE_PAYMENT) {
 				Mollie_WC_Plugin::debug( 'Creating payment object: type Payment, creating a Payment.' );
 
-				$payment_object     = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject( 'payment' );
+                $payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject(
+                    self::PAYMENT_METHOD_TYPE_PAYMENT
+                );
 				$paymentRequestData = $payment_object->getPaymentRequestData( $order, $customer_id );
 
 				$data = array_filter( $paymentRequestData );
@@ -2028,4 +2032,62 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		return parent::get_transaction_url( $order );
 	}
+
+    protected function hasFieldsIfMollieComponentsIsEnabled()
+    {
+        $this->has_fields = $this->isMollieComponentsEnabled() ? true : false;
+    }
+
+    protected function includeMollieComponentsFields()
+    {
+        $fields = include Mollie_WC_Plugin::getPluginPath(
+            '/inc/settings/mollie_components_enabler.php'
+        );
+
+        $this->form_fields = array_merge($this->form_fields, $fields);
+    }
+
+    protected function mollieComponentsFields()
+    {
+        if (!$this->isMollieComponentsEnabled()) {
+            return;
+        }
+
+        ?>
+        <div class="mollie-components"></div>
+        <p>
+            <?php
+            echo $this->lockIcon();
+            esc_html_e('Secure payments provided by ');
+            // TODO Check if possible to make svg accessible so we can show `mollie` text
+            echo $this->mollieLogo();
+            ?>
+        </p>
+        <?php
+    }
+
+    protected function isMollieComponentsEnabled()
+    {
+        $option = isset($this->settings['mollie_components_enabled'])
+            ? $this->settings['mollie_components_enabled']
+            : 'no';
+
+        $option = wc_string_to_bool($option);
+
+        return $option;
+    }
+
+    protected function lockIcon()
+    {
+        return file_get_contents(
+            Mollie_WC_Plugin::getPluginPath('assets/images/lock-icon.svg')
+        );
+    }
+
+    protected function mollieLogo()
+    {
+        return file_get_contents(
+            Mollie_WC_Plugin::getPluginPath('assets/images/mollie-logo.svg')
+        );
+    }
 }

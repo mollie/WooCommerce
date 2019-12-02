@@ -1,24 +1,20 @@
 <?php # -*- coding: utf-8 -*-
 
-namespace MollieTests\Functional\Wc\Payment;
+namespace Mollie\WooCommerceTests\Functional\WC\Payment;
 
+use Mollie\WooCommerceTests\TestCase;
 use Mollie_WC_Helper_Data;
-use Mollie\OrderLineStatus;
-use Mollie\WC\Payment\PartialRefundException;
-use MollieTests\TestCase;
+use Mollie_WC_OrderLineStatus;
+use Mollie_WC_Payment_PartialRefundException;
+use Mollie_WC_Payment_RefundLineItemsBuilder;
 use PHPUnit_Framework_Exception;
 use PHPUnit_Framework_MockObject_MockObject;
-use Mollie\WC\Payment\RefundLineItemsBuilder;
 use stdClass;
 use UnexpectedValueException;
 use WC_Order_Item;
 use function Brain\Monkey\Functions\when;
 
-/**
- * Class RefundLineItemsBuilderTest
- * @package Mollie\WooCommerce\Tests\Unit
- */
-class RefundLineItemsBuilderTest extends TestCase
+class Mollie_WC_Payment_RefundLineItemsBuilder_Test extends TestCase
 {
     /**
      * @var PHPUnit_Framework_MockObject_MockObject|Mollie_WC_Helper_Data
@@ -29,7 +25,7 @@ class RefundLineItemsBuilderTest extends TestCase
      * Expect to build correct line items to perform the api call for refund
      *
      * @throws PHPUnit_Framework_Exception
-     * @throws PartialRefundException
+     * @throws Mollie_WC_Payment_PartialRefundException
      * @throws UnexpectedValueException
      */
     public function testBuildlLineItems()
@@ -44,7 +40,7 @@ class RefundLineItemsBuilderTest extends TestCase
         $toCancelItem = $this->wooCommerceOrderItem(-1, mt_rand(-100, -1), 0);
         $toCancelRemoteItem = $this->orderLineItem(
             uniqid(),
-            OrderLineStatus::CAN_BE_CANCELED[0],
+            Mollie_WC_OrderLineStatus::CAN_BE_CANCELED[0],
             [
                 'value' => abs($toCancelItem->get_total()),
                 'currency' => $currency,
@@ -59,7 +55,7 @@ class RefundLineItemsBuilderTest extends TestCase
         $toRefundItem = $this->wooCommerceOrderItem(-1, mt_rand(-100, -1), 0);
         $toRefundRemoteItem = $this->orderLineItem(
             uniqid(),
-            OrderLineStatus::CAN_BE_REFUNDED[0],
+            Mollie_WC_OrderLineStatus::CAN_BE_REFUNDED[0],
             [
                 'value' => abs($toRefundItem->get_total()),
                 'currency' => $currency,
@@ -75,7 +71,7 @@ class RefundLineItemsBuilderTest extends TestCase
         /*
          * Sut
          */
-        $refundLineItemsBuilder = new RefundLineItemsBuilder(
+        $refundLineItemsBuilder = new Mollie_WC_Payment_RefundLineItemsBuilder(
             $this->dataHelper
         );
 
@@ -126,7 +122,7 @@ class RefundLineItemsBuilderTest extends TestCase
 
     /**
      * @throws PHPUnit_Framework_Exception
-     * @throws PartialRefundException
+     * @throws Mollie_WC_Payment_PartialRefundException
      * @throws UnexpectedValueException
      */
     public function testBuildLineItemsSkipItemBecauseNoRefundAmountSpecified()
@@ -141,7 +137,7 @@ class RefundLineItemsBuilderTest extends TestCase
         $toRefundItem = $this->wooCommerceOrderItem(-1, 0, 0);
         $toRefundRemoteItem = $this->orderLineItem(
             uniqid(),
-            OrderLineStatus::CAN_BE_REFUNDED[0],
+            Mollie_WC_OrderLineStatus::CAN_BE_REFUNDED[0],
             [
                 'value' => abs($toRefundItem->get_total()),
                 'currency' => $currency,
@@ -153,7 +149,7 @@ class RefundLineItemsBuilderTest extends TestCase
         /*
          * Sut
          */
-        $refundLineItemsBuilder = new RefundLineItemsBuilder(
+        $refundLineItemsBuilder = new Mollie_WC_Payment_RefundLineItemsBuilder(
             $this->dataHelper
         );
 
@@ -172,7 +168,7 @@ class RefundLineItemsBuilderTest extends TestCase
 
     /**
      * @throws PHPUnit_Framework_Exception
-     * @throws PartialRefundException
+     * @throws Mollie_WC_Payment_PartialRefundException
      * @throws UnexpectedValueException
      */
     public function testBuildLineItemsSkipItemBecauseNoRefundItemQuantity()
@@ -187,7 +183,7 @@ class RefundLineItemsBuilderTest extends TestCase
         $toRefundItem = $this->wooCommerceOrderItem(0, mt_rand(-100, -1), 0);
         $toRefundRemoteItem = $this->orderLineItem(
             uniqid(),
-            OrderLineStatus::CAN_BE_REFUNDED[0],
+            Mollie_WC_OrderLineStatus::CAN_BE_REFUNDED[0],
             [
                 'value' => abs($toRefundItem->get_total()),
                 'currency' => $currency,
@@ -199,7 +195,7 @@ class RefundLineItemsBuilderTest extends TestCase
         /*
          * Sut
          */
-        $refundLineItemsBuilder = new RefundLineItemsBuilder(
+        $refundLineItemsBuilder = new Mollie_WC_Payment_RefundLineItemsBuilder(
             $this->dataHelper
         );
 
@@ -218,7 +214,7 @@ class RefundLineItemsBuilderTest extends TestCase
 
     /**
      * @throws PHPUnit_Framework_Exception
-     * @throws PartialRefundException
+     * @throws Mollie_WC_Payment_PartialRefundException
      * @throws UnexpectedValueException
      */
     public function testBuildLineItemsSkipItemBecauseNoRemoteItemPrice()
@@ -232,7 +228,7 @@ class RefundLineItemsBuilderTest extends TestCase
         $toRefundItem = $this->wooCommerceOrderItem(-1, mt_rand(-100, -1), 0);
         $toRefundRemoteItem = $this->orderLineItem(
             uniqid(),
-            OrderLineStatus::CAN_BE_REFUNDED[0],
+            Mollie_WC_OrderLineStatus::CAN_BE_REFUNDED[0],
             [
                 // Will generate a order line item price equal to zero.
                 'value' => 0,
@@ -245,7 +241,7 @@ class RefundLineItemsBuilderTest extends TestCase
         /*
          * Sut
          */
-        $refundLineItemsBuilder = new RefundLineItemsBuilder(
+        $refundLineItemsBuilder = new Mollie_WC_Payment_RefundLineItemsBuilder(
             $this->dataHelper
         );
 
@@ -268,7 +264,7 @@ class RefundLineItemsBuilderTest extends TestCase
      *
      * If this value does not match a PartialRefundException is thrown
      *
-     * @throws PartialRefundException
+     * @throws Mollie_WC_Payment_PartialRefundException
      * @throws UnexpectedValueException
      * @throws PHPUnit_Framework_Exception
      */
@@ -283,7 +279,7 @@ class RefundLineItemsBuilderTest extends TestCase
         $toRefundItem = $this->wooCommerceOrderItem(-1, mt_rand(-100, -1), 0);
         $toRefundRemoteItem = $this->orderLineItem(
             uniqid(),
-            OrderLineStatus::CAN_BE_REFUNDED[0],
+            Mollie_WC_OrderLineStatus::CAN_BE_REFUNDED[0],
             [
                 // The value here do the trick, infact the value to refund is different than the remote item price.
                 'value' => mt_rand(101, 200),
@@ -296,11 +292,11 @@ class RefundLineItemsBuilderTest extends TestCase
         /*
          * Sut
          */
-        $refundLineItemsBuilder = new RefundLineItemsBuilder(
+        $refundLineItemsBuilder = new Mollie_WC_Payment_RefundLineItemsBuilder(
             $this->dataHelper
         );
 
-        $this->expectException(PartialRefundException::class);
+        $this->expectException(Mollie_WC_Payment_PartialRefundException::class);
         $this->expectExceptionMessage(
             'Mollie doesn\'t allow a partial refund of the full amount or quantity of at least one order line. Trying to process this as an amount refund instead.'
         );
@@ -323,7 +319,7 @@ class RefundLineItemsBuilderTest extends TestCase
      * If the refunding item does not exists in mollie service an UnexpectedValueException is thrown
      *
      * @throws PHPUnit_Framework_Exception
-     * @throws PartialRefundException
+     * @throws Mollie_WC_Payment_PartialRefundException
      * @throws UnexpectedValueException
      */
     public function testBuildLineItemsThrowUnexpectedValueExceptionBecauseRemoteItemNotFound()
@@ -338,7 +334,7 @@ class RefundLineItemsBuilderTest extends TestCase
         $toRefundItem = $this->wooCommerceOrderItem(-1, mt_rand(-100, -1), 0);
         $toRefundRemoteItem = $this->orderLineItem(
             uniqid(),
-            OrderLineStatus::CAN_BE_REFUNDED[0],
+            Mollie_WC_OrderLineStatus::CAN_BE_REFUNDED[0],
             [
                 // The value here do the trick, infact the value to refund is different than the remote item price.
                 'value' => mt_rand(101, 200),
@@ -351,7 +347,7 @@ class RefundLineItemsBuilderTest extends TestCase
         /*
          * Sut
          */
-        $refundLineItemsBuilder = new RefundLineItemsBuilder(
+        $refundLineItemsBuilder = new Mollie_WC_Payment_RefundLineItemsBuilder(
             $this->dataHelper
         );
 

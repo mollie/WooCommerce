@@ -1,20 +1,17 @@
 <?php # -*- coding: utf-8 -*-
 
-namespace Mollie\WooCommerce\Tests\Functional;
+namespace Mollie\WooCommerceTests\Functional\WC\Gateway;
 
-use function Brain\Monkey\Functions\when;
-use MollieTests\TestCase;
+use Mollie\WooCommerceTests\TestCase;
 use Mollie_WC_Payment_Object;
-use Mollie_WC_Plugin;
+use PHPUnit_Framework_Exception;
+use function Brain\Monkey\Functions\when;
 
-/**
- * Class Mollie_WC_Gateway_AbstractTest
- * @package Mollie\WooCommerce\Tests\Unit
- */
-class Mollie_WC_Gateway_AbstractTest extends TestCase
+class Mollie_WC_Payment_Object_Test extends TestCase
 {
     /**
      * Test paymentObject return a valid Mollie_WC_Payment_Object instance
+     * @throws PHPUnit_Framework_Exception
      */
     public function testPaymentObject()
     {
@@ -28,7 +25,7 @@ class Mollie_WC_Gateway_AbstractTest extends TestCase
                 ]
             );
 
-        $result = Mollie_WC_Plugin::getPaymentObject();
+        $result = \Mollie_WC_Plugin::getPaymentObject();
 
         self::assertInstanceOf(
             Mollie_WC_Payment_Object::class,

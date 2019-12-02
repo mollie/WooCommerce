@@ -1,22 +1,23 @@
 <?php # -*- coding: utf-8 -*-
 
-use Brain\Monkey\Expectation\Exception\ExpectationArgsRequired;
-use function Brain\Monkey\Functions\expect;
-use MollieTests\TestCase;
+namespace Mollie\WooCommerceTests\Unit\WC;
 
-/**
- * Class Mollie_WC_Plugin_Test
- */
+use Brain\Monkey\Expectation\Exception\ExpectationArgsRequired;
+use Mollie\WooCommerceTests\TestCase;
+use Mollie_WC_Plugin;
+use PHPUnit_Framework_MockObject_MockObject;
+use PHPUnit_Framework_MockObject_RuntimeException;
+use stdClass;
+use function Brain\Monkey\Functions\expect;
+
 class Mollie_WC_Plugin_Test extends TestCase
 {
     /**
-     * Test Disable Apple Pay Gateway
-     *
-     * @dataProvider allowingDataProvider
      * @param $allowed
      * @param $expected
-     * @throws PHPUnit_Framework_MockObject_RuntimeException
      * @throws ExpectationArgsRequired
+     * @throws PHPUnit_Framework_MockObject_RuntimeException
+     * @dataProvider allowingDataProvider
      */
     public function testMaybeDisableApplePayGateway($allowed, $expected)
     {

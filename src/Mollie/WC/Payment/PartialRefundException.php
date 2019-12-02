@@ -1,9 +1,5 @@
 <?php
 
-namespace Mollie\WC\Payment;
-
-use UnexpectedValueException;
-
-class PartialRefundException extends UnexpectedValueException
+class Mollie_WC_Payment_PartialRefundException extends UnexpectedValueException
 {
 }

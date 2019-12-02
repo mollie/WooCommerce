@@ -1,0 +1,16 @@
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "useBuiltIns": "entry",
+        "targets": {
+          "browsers": [
+            "latest 2 versions",
+            "ie 10"
+          ]
+        }
+      }
+    ]
+  ]
+}

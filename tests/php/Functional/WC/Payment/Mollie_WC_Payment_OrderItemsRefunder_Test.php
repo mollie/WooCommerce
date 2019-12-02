@@ -1,6 +1,8 @@
 <?php
 
-namespace MollieTests\Functional\Wc\Payment;
+namespace Mollie\WooCommerceTests\Functional\Payment;
+
+use Mollie\WooCommerceTests\TestCase;
 
 use Brain\Monkey\Expectation\Exception\ExpectationArgsRequired;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
@@ -9,12 +11,11 @@ use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Refund;
 use Mollie_WC_Helper_Data;
-use Mollie\WC\Payment\OrderItemsRefunder;
-use MollieTests\TestCase;
+use Mollie_WC_Payment_OrderItemsRefunder;
+use Mollie_WC_Payment_RefundLineItemsBuilder;
 use PHPUnit_Framework_Exception;
 use PHPUnit_Framework_MockObject_MockObject;
 use PHPUnit_Framework_MockObject_RuntimeException;
-use Mollie\WC\Payment\RefundLineItemsBuilder;
 use stdClass;
 use UnexpectedValueException;
 use WC_Order;
@@ -22,16 +23,12 @@ use WC_Order_Item;
 use function Brain\Monkey\Actions\expectDone as expectedActionDone;
 use function Brain\Monkey\Functions\when;
 
-/**
- * Class OrderItemsRefunderTest
- * @package Mollie\WooCommerce\Tests\Unit
- */
-class OrderItemsRefunderTest extends TestCase
+class Mollie_WC_Payment_OrderItemsRefunder_Test extends TestCase
 {
     use MockeryPHPUnitIntegration;
 
     /**
-     * @var PHPUnit_Framework_MockObject_MockObject|RefundLineItemsBuilder
+     * @var PHPUnit_Framework_MockObject_MockObject|Mollie_WC_Payment_RefundLineItemsBuilder
      */
     private $refundLineItemsBuilder;
 
@@ -47,10 +44,10 @@ class OrderItemsRefunderTest extends TestCase
 
     /**
      * @throws ApiException
+     * @throws ExpectationArgsRequired
      * @throws PHPUnit_Framework_Exception
      * @throws PHPUnit_Framework_MockObject_RuntimeException
      * @throws UnexpectedValueException
-     * @throws ExpectationArgsRequired
      */
     public function testRefund()
     {
@@ -74,7 +71,7 @@ class OrderItemsRefunderTest extends TestCase
         /*
          * Sut
          */
-        $orderItemsRefunder = new OrderItemsRefunder(
+        $orderItemsRefunder = new Mollie_WC_Payment_OrderItemsRefunder(
             $this->refundLineItemsBuilder,
             $this->dataHelper,
             $this->ordersApiClient
@@ -105,11 +102,11 @@ class OrderItemsRefunderTest extends TestCase
             ->with($lineItems['toRefund'])
             ->willReturn($refund);
 
-        expectedActionDone(OrderItemsRefunder::ACTION_AFTER_CANCELED_ORDER_ITEMS)
+        expectedActionDone(Mollie_WC_Payment_OrderItemsRefunder::ACTION_AFTER_CANCELED_ORDER_ITEMS)
             ->once()
             ->with($lineItems['toCancel'], $order);
 
-        expectedActionDone(OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS)
+        expectedActionDone(Mollie_WC_Payment_OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS)
             ->once()
             ->with($refund, $order, $lineItems['toRefund']);
 
@@ -122,7 +119,6 @@ class OrderItemsRefunderTest extends TestCase
     /**
      * @throws ApiException
      * @throws PHPUnit_Framework_Exception
-     * @throws PHPUnit_Framework_MockObject_RuntimeException
      * @throws UnexpectedValueException
      */
     public function testRefundDoesNotRefundNorCancelOrderLineItems()
@@ -147,7 +143,7 @@ class OrderItemsRefunderTest extends TestCase
         /*
          * Sut
          */
-        $orderItemsRefunder = new OrderItemsRefunder(
+        $orderItemsRefunder = new Mollie_WC_Payment_OrderItemsRefunder(
             $this->refundLineItemsBuilder,
             $this->dataHelper,
             $this->ordersApiClient
@@ -173,8 +169,12 @@ class OrderItemsRefunderTest extends TestCase
         $remoteOrder->expects($this->never())->method('cancelLines');
         $remoteOrder->expects($this->never())->method('refund');
 
-        expectedActionDone(OrderItemsRefunder::ACTION_AFTER_CANCELED_ORDER_ITEMS)->never();
-        expectedActionDone(OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS)->never();
+        expectedActionDone(
+            Mollie_WC_Payment_OrderItemsRefunder::ACTION_AFTER_CANCELED_ORDER_ITEMS
+        )->never();
+        expectedActionDone(
+            Mollie_WC_Payment_OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS
+        )->never();
 
         /*
          * Execute Test
@@ -208,7 +208,7 @@ class OrderItemsRefunderTest extends TestCase
         /*
          * Sut
          */
-        $orderItemsRefunder = new OrderItemsRefunder(
+        $orderItemsRefunder = new Mollie_WC_Payment_OrderItemsRefunder(
             $this->refundLineItemsBuilder,
             $this->dataHelper,
             $this->ordersApiClient
@@ -253,7 +253,7 @@ class OrderItemsRefunderTest extends TestCase
         /*
          * Sut
          */
-        $orderItemsRefunder = new OrderItemsRefunder(
+        $orderItemsRefunder = new Mollie_WC_Payment_OrderItemsRefunder(
             $this->refundLineItemsBuilder,
             $this->dataHelper,
             $this->ordersApiClient
@@ -290,7 +290,7 @@ class OrderItemsRefunderTest extends TestCase
         /*
          * Sut
          */
-        $orderItemsRefunder = new OrderItemsRefunder(
+        $orderItemsRefunder = new Mollie_WC_Payment_OrderItemsRefunder(
             $this->refundLineItemsBuilder,
             $this->dataHelper,
             $this->ordersApiClient
@@ -401,7 +401,7 @@ class OrderItemsRefunderTest extends TestCase
     private function refundLineItemsBuilder()
     {
         $mock = $this
-            ->getMockBuilder(RefundLineItemsBuilder::class)
+            ->getMockBuilder(Mollie_WC_Payment_RefundLineItemsBuilder::class)
             ->disableOriginalConstructor()
             ->setMethods(['buildLineItems'])
             ->getMock();

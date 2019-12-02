@@ -1,8 +1,6 @@
 <?php
 
 use Mollie\Api\Exceptions\ApiException;
-use Mollie\WC\Payment\OrderItemsRefunder;
-use Mollie\WC\Payment\RefundLineItemsBuilder;
 
 class Mollie_WC_Helper_PaymentFactory
 {
@@ -18,11 +16,11 @@ class Mollie_WC_Helper_PaymentFactory
             || (is_object($data) && $data->resource == 'order')
         ) {
             $dataHelper = Mollie_WC_Plugin::getDataHelper();
-            $refundLineItemsBuilder = new RefundLineItemsBuilder($dataHelper);
+            $refundLineItemsBuilder = new Mollie_WC_Payment_RefundLineItemsBuilder($dataHelper);
             $apiHelper = Mollie_WC_Plugin::getApiHelper();
             $settingsHelper = Mollie_WC_Plugin::getSettingsHelper();
 
-            $orderItemsRefunded = new OrderItemsRefunder(
+            $orderItemsRefunded = new Mollie_WC_Payment_OrderItemsRefunder(
                 $refundLineItemsBuilder,
                 $dataHelper,
                 $apiHelper->getApiClient($settingsHelper->isTestModeEnabled())->orders

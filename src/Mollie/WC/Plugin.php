@@ -1,10 +1,8 @@
 <?php
-// Require WooCommerce fallback functions
-use Mollie\Api\Resources\Refund;
-use Mollie\WC\Payment\OrderItemsRefunder;
 
-require_once dirname(dirname(dirname(__FILE__))) . '/woocommerce_functions.php';
-require_once dirname(dirname(dirname(__FILE__))) . '/subscriptions_status_check_functions.php';
+use Mollie\Api\CompatibilityChecker;
+use Mollie\Api\Exceptions\ApiException;
+use Mollie\Api\Resources\Refund;
 
 class Mollie_WC_Plugin
 {
@@ -237,18 +235,28 @@ class Mollie_WC_Plugin
 
         // Enqueue Scripts
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueFrontendScripts']);
+        add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueComponentsAssets']);
 
         add_action(
-            OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS,
+            Mollie_WC_Payment_OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS,
             [__CLASS__, 'addOrderNoteForRefundCreated'],
             10,
             3
         );
         add_action(
-            OrderItemsRefunder::ACTION_AFTER_CANCELED_ORDER_ITEMS,
+            Mollie_WC_Payment_OrderItemsRefunder::ACTION_AFTER_CANCELED_ORDER_ITEMS,
             [__CLASS__, 'addOrderNoteForCancelledLineItems'],
             10,
             2
+        );
+
+        add_filter(
+            'woocommerce_get_settings_pages',
+            function ($settings) {
+                $settings[] = new Mollie_WC_Settings_Page_Components();
+
+                return $settings;
+            }
         );
 
 		self::initDb();
@@ -307,15 +315,35 @@ class Mollie_WC_Plugin
      */
     public static function registerFrontendScripts()
     {
-        if (is_admin()) {
-            return;
-        }
+        wp_register_script(
+            'babel-polyfill',
+            Mollie_WC_Plugin::getPluginUrl('/assets/js/babel-polyfill.min.js'),
+            [],
+            filemtime(Mollie_WC_Plugin::getPluginPath('/assets/js/babel-polyfill.min.js')),
+            true
+        );
 
         wp_register_script(
             'mollie_wc_gateway_applepay',
-            Mollie_WC_Plugin::getPluginUrl('assets/js/applepay.js'),
+            Mollie_WC_Plugin::getPluginUrl('/assets/js/applepay.min.js'),
             [],
-            filemtime(Mollie_WC_Plugin::getPluginPath('/assets/js/applepay.js')),
+            filemtime(Mollie_WC_Plugin::getPluginPath('/assets/js/applepay.min.js')),
+            true
+        );
+
+        wp_register_style(
+            'mollie-components',
+            Mollie_WC_Plugin::getPluginUrl('/assets/css/mollie-components.css'),
+            [],
+            filemtime(Mollie_WC_Plugin::getPluginPath('/assets/css/mollie-components.css')),
+            'screen'
+        );
+        wp_register_script('mollie', 'https://js.mollie.com/v1/mollie.js', [], null, true);
+        wp_register_script(
+            'mollie-components',
+            Mollie_WC_Plugin::getPluginUrl('/assets/js/mollie-components.min.js'),
+            ['jquery', 'mollie', 'babel-polyfill'],
+            filemtime(Mollie_WC_Plugin::getPluginPath('/assets/js/mollie-components.min.js')),
             true
         );
     }
@@ -327,11 +355,78 @@ class Mollie_WC_Plugin
      */
     public static function enqueueFrontendScripts()
     {
-        if (is_admin()) {
+        if (is_admin() || !isCheckoutContext()) {
             return;
         }
 
-        is_checkout() and wp_enqueue_script('mollie_wc_gateway_applepay');
+        wp_enqueue_script('mollie_wc_gateway_applepay');
+    }
+
+    /**
+     * Enqueue Mollie Component Assets
+     */
+    public static function enqueueComponentsAssets()
+    {
+        try {
+            $merchantProfileId = merchantProfileId();
+        } catch (ApiException $exception) {
+            return;
+        }
+
+        $mollieComponentsStylesGateways = mollieComponentsStylesForAvailableGateways();
+        $gatewayNames = array_keys($mollieComponentsStylesGateways);
+
+        if (!$merchantProfileId || !$mollieComponentsStylesGateways) {
+            return;
+        }
+
+        if (is_admin() || !isCheckoutContext()) {
+            return;
+        }
+
+        $locale = get_locale();
+
+        wp_enqueue_style('mollie-components');
+        wp_enqueue_script('mollie-components');
+
+        wp_localize_script(
+            'mollie-components',
+            'mollieComponentsSettings',
+            [
+                'merchantProfileId' => $merchantProfileId,
+                'options' => [
+                    'locale' => $locale,
+                    'testmode' => isTestModeEnabled(),
+                ],
+                'enabledGateways' => $gatewayNames,
+                'componentSettings' => $mollieComponentsStylesGateways,
+                'components' => [
+                    'cardHolder' => [
+                        'label' => esc_html__('Card Holder', 'mollie-payments-for-woocommerce')
+                    ],
+                    'cardNumber' => [
+                        'label' => esc_html__('Card Number', 'mollie-payments-for-woocommerce')
+                    ],
+                    'expiryDate' => [
+                        'label' => esc_html__('Expiry Date', 'mollie-payments-for-woocommerce')
+                    ],
+                    'verificationCode' => [
+                        'label' => esc_html__(
+                            'Verification Code',
+                            'mollie-payments-for-woocommerce'
+                        )
+                    ],
+                ],
+                'messages' => [
+                    'defaultErrorMessage' => esc_html__(
+                        'An unknown error occurred, please check the card fields.',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                ],
+                'isCheckout' => is_checkout(),
+                'isCheckoutPayPage' => is_checkout_pay_page()
+            ]
+        );
     }
 
     /**
@@ -622,12 +717,12 @@ class Mollie_WC_Plugin
      */
     public static function getPluginUrl ($path = '')
     {
-    	return M4W_PLUGIN_URL . $path;
+        return untrailingslashit(M4W_PLUGIN_URL) . '/' . ltrim($path, '/');
     }
 
     public static function getPluginPath($path = '')
     {
-        return M4W_PLUGIN_DIR . $path;
+        return untrailingslashit(M4W_PLUGIN_DIR) . '/' . ltrim($path, '/');
     }
 
     /**
@@ -706,7 +801,7 @@ class Mollie_WC_Plugin
 
         if (!$status_helper)
         {
-            $status_helper = new Mollie_WC_Helper_Status();
+            $status_helper = new Mollie_WC_Helper_Status(new CompatibilityChecker());
         }
 
         return $status_helper;
@@ -797,8 +892,7 @@ class Mollie_WC_Plugin
 		}
 
 		// Is test mode enabled?
-		$settings_helper = Mollie_WC_Plugin::getSettingsHelper();
-		$test_mode       = $settings_helper->isTestModeEnabled();
+        $test_mode = isTestModeEnabled();
 
 		try {
 			// Get the order from the Mollie API
@@ -883,8 +977,7 @@ class Mollie_WC_Plugin
 		}
 
 		// Is test mode enabled?
-		$settings_helper = Mollie_WC_Plugin::getSettingsHelper();
-		$test_mode       = $settings_helper->isTestModeEnabled();
+        $test_mode = isTestModeEnabled();
 
 		try {
 			// Get the order from the Mollie API

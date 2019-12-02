@@ -1,13 +1,11 @@
 <?php
 
-namespace Mollie;
-
 use Mollie\Api\Types\OrderLineStatus as ApiOrderLineStatus;
 
 /**
- * Class OrderLineStatuses
+ * Class Mollie_WC_OrderLineStatus
  */
-class OrderLineStatus extends ApiOrderLineStatus
+class Mollie_WC_OrderLineStatus extends ApiOrderLineStatus
 {
     const CAN_BE_CANCELED = [
         self::STATUS_CREATED,

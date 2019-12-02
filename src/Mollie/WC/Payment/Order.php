@@ -2,7 +2,6 @@
 
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Refund;
-use Mollie\WC\Payment\OrderItemsRefunder;
 
 class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
@@ -16,16 +15,16 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	public static $shop_country;
 
     /**
-     * @var OrderItemsRefunder
+     * @var Mollie_WC_Payment_OrderItemsRefunder
      */
     private $orderItemsRefunder;
 
     /**
      * Mollie_WC_Payment_Order constructor.
-     * @param OrderItemsRefunder $orderItemsRefunder
+     * @param Mollie_WC_Payment_OrderItemsRefunder $orderItemsRefunder
      * @param $data
      */
-    public function __construct(OrderItemsRefunder $orderItemsRefunder, $data)
+    public function __construct(Mollie_WC_Payment_OrderItemsRefunder $orderItemsRefunder, $data)
     {
         $this->data = $data;
         $this->orderItemsRefunder = $orderItemsRefunder;
@@ -184,6 +183,11 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 		if ( $store_customer ) {
 			$paymentRequestData['payment']['customerId'] = $customer_id;
 		}
+
+        $cardToken = cardToken();
+        if ($cardToken && isset($paymentRequestData['payment'])) {
+            $paymentRequestData['payment']['cardToken'] = $cardToken;
+        }
 
 		return $paymentRequestData;
 
@@ -797,7 +801,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
                     $payment_object,
                     $reason
                 );
-            } catch (PartialRefundException $exception) {
+            } catch (Mollie_WC_Payment_PartialRefundException $exception) {
                 Mollie_WC_Plugin::debug(__METHOD__ . ' - ' . $exception->getMessage());
                 return $this->refund_amount(
                     $order,

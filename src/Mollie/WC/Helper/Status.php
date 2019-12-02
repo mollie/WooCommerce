@@ -1,5 +1,7 @@
 <?php
 
+use Mollie\Api\CompatibilityChecker;
+use Mollie\Api\Exceptions\IncompatiblePlatform;
 use Mollie\Api\MollieApiClient;
 
 
@@ -10,12 +12,22 @@ class Mollie_WC_Helper_Status
      *
      * @var string
      */
-    const MIN_WOOCOMMERCE_VERSION = '2.1.0';
+    const MIN_WOOCOMMERCE_VERSION = '2.2.0';
 
     /**
      * @var string[]
      */
     protected $errors = array();
+
+    /**
+     * @var CompatibilityChecker
+     */
+    protected $compatibilityChecker;
+
+    public function __construct(Mollie\Api\CompatibilityChecker $compatibilityChecker)
+    {
+        $this->compatibilityChecker = $compatibilityChecker;
+    }
 
     /**
      * @return bool
@@ -38,90 +50,101 @@ class Mollie_WC_Helper_Status
      *
      * @return bool
      */
-    public function isCompatible ()
+    public function isCompatible()
     {
-        static $is_compatible = null;
+        static $isCompatible = null;
 
-        if ($is_compatible !== null)
-        {
-            return $is_compatible;
+        if ($isCompatible !== null) {
+            return $isCompatible;
         }
 
         // Default
-        $is_compatible = true;
+        $isCompatible = true;
 
-        if (!$this->hasCompatibleWooCommerceVersion())
-        {
+        if (!$this->hasCompatibleWooCommerceVersion()) {
             $this->errors[] = sprintf(
-                /* translators: Placeholder 1: Plugin name, placeholder 2: required WooCommerce version, placeholder 3: used WooCommerce version */
-                __('The %s plugin requires at least WooCommerce version %s, you are using version %s. Please update your WooCommerce plugin.', 'mollie-payments-for-woocommerce'),
+            /* translators: Placeholder 1: Plugin name, placeholder 2: required WooCommerce version, placeholder 3: used WooCommerce version */
+                __(
+                    'The %s plugin requires at least WooCommerce version %s, you are using version %s. Please update your WooCommerce plugin.',
+                    'mollie-payments-for-woocommerce'
+                ),
                 Mollie_WC_Plugin::PLUGIN_TITLE,
                 self::MIN_WOOCOMMERCE_VERSION,
                 $this->getWooCommerceVersion()
             );
 
-            return $is_compatible = false;
+            return $isCompatible = false;
         }
 
-        if (!$this->isApiClientInstalled())
-        {
-            $this->errors[] = __('Mollie API client not installed. Please make sure the plugin is installed correctly.', 'mollie-payments-for-woocommerce');
+        if (!$this->isApiClientInstalled()) {
+            $this->errors[] = __(
+                'Mollie API client not installed. Please make sure the plugin is installed correctly.',
+                'mollie-payments-for-woocommerce'
+            );
 
-            return $is_compatible = false;
+            return $isCompatible = false;
         }
 
-	    if ( function_exists( 'extension_loaded' ) && ! extension_loaded( 'json' ) ) {
+        if (function_exists('extension_loaded') && !extension_loaded('json')) {
+            $this->errors[] = __(
+                'Mollie Payments for WooCommerce requires the JSON extension for PHP. Enable it in your server or ask your webhoster to enable it for you.',
+                'mollie-payments-for-woocommerce'
+            );
 
-		    $this->errors[] = __('Mollie Payments for WooCommerce requires the JSON extension for PHP. Enable it in your server or ask your webhoster to enable it for you.', 'mollie-payments-for-woocommerce');
-
-		    return $is_compatible = false;
-	    }
-
-        try
-        {
-            $checker = $this->getApiClientCompatibilityChecker();
-
-            $checker->checkCompatibility();
+            return $isCompatible = false;
         }
-        catch ( \Mollie\Api\Exceptions\IncompatiblePlatform $e)
-        {
-            switch ($e->getCode())
-            {
-                case \Mollie\Api\Exceptions\IncompatiblePlatform::INCOMPATIBLE_PHP_VERSION:
+
+        try {
+            $this->compatibilityChecker->checkCompatibility();
+        } catch (IncompatiblePlatform $exception) {
+            switch ($exception->getCode()) {
+                case IncompatiblePlatform::INCOMPATIBLE_PHP_VERSION:
                     $error = sprintf(
-                        /* translators: Placeholder 1: Required PHP version, placeholder 2: current PHP version */
-                        __('Mollie Payments for WooCommerce requires PHP %s or higher, you have PHP %s. Please upgrade and view %sthis FAQ%s', 'mollie-payments-for-woocommerce'),
-                        \Mollie\Api\CompatibilityChecker::MIN_PHP_VERSION,
+                    /* translators: Placeholder 1: Required PHP version, placeholder 2: current PHP version */
+                        __(
+                            'Mollie Payments for WooCommerce requires PHP %s or higher, you have PHP %s. Please upgrade and view %sthis FAQ%s',
+                            'mollie-payments-for-woocommerce'
+                        ),
+                        CompatibilityChecker::MIN_PHP_VERSION,
                         PHP_VERSION,
-	                    '<a href="https://github.com/mollie/WooCommerce/wiki/PHP-&-Mollie-API-v2" target="_blank">',
+                        '<a href="https://github.com/mollie/WooCommerce/wiki/PHP-&-Mollie-API-v2" target="_blank">',
                         '</a>'
                     );
                     break;
 
-                case \Mollie\Api\Exceptions\IncompatiblePlatform::INCOMPATIBLE_JSON_EXTENSION:
-                    $error = __('Mollie Payments for WooCommerce requires the PHP extension JSON to be enabled. Please enable the \'json\' extension in your PHP configuration.', 'mollie-payments-for-woocommerce');
+                case IncompatiblePlatform::INCOMPATIBLE_JSON_EXTENSION:
+                    $error = __(
+                        'Mollie Payments for WooCommerce requires the PHP extension JSON to be enabled. Please enable the \'json\' extension in your PHP configuration.',
+                        'mollie-payments-for-woocommerce'
+                    );
                     break;
 
-                case \Mollie\Api\Exceptions\IncompatiblePlatform::INCOMPATIBLE_CURL_EXTENSION:
-                    $error = __('Mollie Payments for WooCommerce requires the PHP extension cURL to be enabled. Please enable the \'curl\' extension in your PHP configuration.', 'mollie-payments-for-woocommerce');
+                case IncompatiblePlatform::INCOMPATIBLE_CURL_EXTENSION:
+                    $error = __(
+                        'Mollie Payments for WooCommerce requires the PHP extension cURL to be enabled. Please enable the \'curl\' extension in your PHP configuration.',
+                        'mollie-payments-for-woocommerce'
+                    );
                     break;
 
-                case \Mollie\Api\Exceptions\IncompatiblePlatform::INCOMPATIBLE_CURL_FUNCTION:
-	                $error =
-		                __( 'Mollie Payments for WooCommerce requires PHP cURL functions to be available. Please make sure all of these functions are available.', 'mollie-payments-for-woocommerce' );
+                case IncompatiblePlatform::INCOMPATIBLE_CURL_FUNCTION:
+                    $error =
+                        __(
+                            'Mollie Payments for WooCommerce requires PHP cURL functions to be available. Please make sure all of these functions are available.',
+                            'mollie-payments-for-woocommerce'
+                        );
                     break;
 
                 default:
-                    $error = $e->getMessage();
+                    $error = $exception->getMessage();
                     break;
             }
 
             $this->errors[] = $error;
 
-            return $is_compatible = false;
+            return $isCompatible = false;
         }
 
-        return $is_compatible;
+        return $isCompatible;
     }
 
     /**
@@ -177,13 +200,5 @@ class Mollie_WC_Helper_Status
                 $e->getMessage()
             );
         }
-    }
-
-    /**
-     * @return Mollie\Api\CompatibilityChecker()
-     */
-    protected function getApiClientCompatibilityChecker ()
-    {
-        return new Mollie\Api\CompatibilityChecker();
     }
 }

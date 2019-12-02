@@ -33,7 +33,6 @@ function mollieComponentsStylesForAvailableGateways()
  *
  * @return bool
  */
-// TODO change all of the other occurencies
 function isTestModeEnabled()
 {
     $settingsHelper = Mollie_WC_Plugin::getSettingsHelper();

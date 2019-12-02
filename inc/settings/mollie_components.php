@@ -1,7 +1,5 @@
 <?php
 
-// TODO Remember validation.
-
 return [
     [
         'type' => 'title',

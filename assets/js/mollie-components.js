@@ -1,6 +1,6 @@
 const SELECTOR_TOKEN_ELEMENT = '.cardToken'
 const SELECTOR_MOLLIE_COMPONENT = '.mollie-component'
-const SELECTOR_FORM = 'form.checkout'
+const SELECTOR_FORM = 'form'
 const MOLLIE_COMPONENTS_CONTAINER = '.wc_payment_methods'
 
 let mollie = null
@@ -119,16 +119,20 @@ function componentsAlreadyExistsUnder (mollieComponents)
 
 function turnMollieComponentsSubmissionOff (form)
 {
-  form.off('checkout_place_order', returnFalse)
-  form.off('submit', submitForm)
+  const $form = jQuery(form)
+
+  $form.off('checkout_place_order', returnFalse)
+  $form.off('submit', submitForm)
 }
 
-async function submitForm (evt, mollie, gateway, componentsContainer, messages)
+async function submitForm (evt)
 {
-  const form = jQuery(formFrom(componentsContainer))
+  const { mollie, gateway, componentsContainer, messages } = evt.data
+
+  const $form = jQuery(formFrom(componentsContainer))
 
   if (!document.querySelector(`#payment_method_mollie_wc_gateway_${gateway}`).checked) {
-    turnMollieComponentsSubmissionOff(form)
+    turnMollieComponentsSubmissionOff($form)
     return
   }
 
@@ -142,13 +146,15 @@ async function submitForm (evt, mollie, gateway, componentsContainer, messages)
   } catch (error) {
     const content = error.message ? error.message : messages.defaultErrorMessage
     content && notice(content, 'error')
+    $form.removeClass('processing').unblock()
+    jQuery(document.body).trigger('checkout_error')
     return
   }
 
-  assignTokenValue(token, componentsContainer)
-  turnMollieComponentsSubmissionOff(form)
+  turnMollieComponentsSubmissionOff($form)
 
-  form.submit()
+  assignTokenValue(token, componentsContainer)
+  $form.submit()
 }
 
 function initializeComponentsWithSettings (mollieComponentsSettings)
@@ -157,6 +163,7 @@ function initializeComponentsWithSettings (mollieComponentsSettings)
   const componentsSelectors = mollieComponentsSettings.components || []
   const componentSettings = mollieComponentsSettings.componentSettings || []
   const enabledGateways = mollieComponentsSettings.enabledGateways || []
+  const messages = mollieComponentsSettings.messages || {}
 
   enabledGateways.forEach(gateway =>
   {
@@ -183,16 +190,17 @@ function initializeComponentsWithSettings (mollieComponentsSettings)
     insertTokenField(componentsContainer)
 
     $form.on('checkout_place_order', returnFalse)
-    // TODO Not trigger when in checkout pay page
-    $form.on('submit', evt =>
-    {
-      submitForm(
-        evt,
+    $form.on(
+      'submit',
+      null,
+      {
         mollie,
         gateway,
         componentsContainer,
-        mollieComponentsSettings.messages || {})
-    })
+        messages
+      },
+      submitForm
+    )
   })
 }
 

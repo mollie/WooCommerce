@@ -149,12 +149,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function getIconUrl ()
     {
-
-    	// In checkout, show the creditcards.svg with multiple logo's
-    	if ( $this->getMollieMethodId() == PaymentMethod::CREDITCARD  && !is_admin()) {
-		    return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $this->getMollieMethodId() . 's.svg');
-	    }
-
+        // In checkout, show the creditcards.svg with multiple logo's
+        if ( $this->getMollieMethodId() === PaymentMethod::CREDITCARD  && !is_admin()) {
+            return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $this->getMollieMethodId() . 's.svg');
+        }
         return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $this->getMollieMethodId() . '.svg');
     }
 
@@ -1245,8 +1243,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         return $payment_method_title;
     }
 
-
-
 	/**
 	 * @param WC_Order $order
 	 *
@@ -2032,5 +2028,4 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		return parent::get_transaction_url( $order );
 	}
-
 }

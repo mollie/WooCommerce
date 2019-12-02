@@ -53,6 +53,7 @@ class Mollie_WC_Payment_OrderItemsRefunder
      * @return bool
      * @throws ApiException When the API call fails for any reason
      * @throws UnexpectedValueException
+     * @throws Mollie_WC_Payment_PartialRefundException
      */
     public function refund(
         WC_Order $order,

@@ -801,7 +801,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
                     $payment_object,
                     $reason
                 );
-            } catch (PartialRefundException $exception) {
+            } catch (Mollie_WC_Payment_PartialRefundException $exception) {
                 Mollie_WC_Plugin::debug(__METHOD__ . ' - ' . $exception->getMessage());
                 return $this->refund_amount(
                     $order,

@@ -32,6 +32,13 @@ if (!defined('M4W_PLUGIN_URL')) {
  */
 function mollie_wc_plugin_activation_hook()
 {
+    require_once __DIR__ . '/inc/functions.php';
+    require_once __DIR__ . '/src/subscriptions_status_check_functions.php';
+
+    if (!autoload()) {
+        return;
+    }
+
     if (!isWooCommerceCompatible()) {
         add_action('admin_notices', 'mollie_wc_plugin_inactive');
         return;

@@ -37,7 +37,9 @@ if (!function_exists('untrailingslashit'))
     }
 }
 
-function mollieWooCommerceSession()
-{
-    return WC()->session;
+if (!function_exists('mollieWooCommerceSession')) {
+    function mollieWooCommerceSession()
+    {
+        return WC()->session;
+    }
 }

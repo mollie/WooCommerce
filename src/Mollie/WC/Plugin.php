@@ -339,54 +339,48 @@ class Mollie_WC_Plugin
      */
     public static function onMollieReturn ()
     {
-        $data_helper = self::getDataHelper();
+        $dataHelper = self::getDataHelper();
 
-	    $order_id = ! empty( $_GET['order_id'] ) ? sanitize_text_field( $_GET['order_id'] ) : null;
-	    $key      = ! empty( $_GET['key'] ) ? sanitize_text_field( $_GET['key'] ) : null;
+        $orderId = filter_input(INPUT_GET, 'order_id', FILTER_SANITIZE_NUMBER_INT) ?: null;
+        $key = filter_input(INPUT_GET, 'key', FILTER_SANITIZE_STRING) ?: null;
+        $order = $dataHelper->getWcOrder($orderId);
 
-        $order    = $data_helper->getWcOrder($order_id);
-
-        if (!$order)
-        {
+        if (!$order) {
             self::setHttpResponseCode(404);
-            self::debug(__METHOD__ . ":  Could not find order $order_id.");
+            self::debug(__METHOD__ . ":  Could not find order $orderId.");
             return;
         }
 
-        if (!$order->key_is_valid($key))
-        {
+        if (!$order->key_is_valid($key)) {
             self::setHttpResponseCode(401);
-            self::debug(__METHOD__ . ":  Invalid key $key for order $order_id.");
+            self::debug(__METHOD__ . ":  Invalid key $key for order $orderId.");
             return;
         }
 
-        $gateway = $data_helper->getWcPaymentGatewayByOrder($order);
+        $gateway = $dataHelper->getWcPaymentGatewayByOrder($order);
 
-        if (!$gateway)
-        {
+        if (!$gateway) {
+            $gatewayName = $order->get_payment_method();
+
             self::setHttpResponseCode(404);
-
-            self::debug(__METHOD__ . ":  Could not find gateway for order $order_id.");
+            self::debug(
+                __METHOD__ . ":  Could not find gateway {$gatewayName} for order {$orderId}."
+            );
             return;
         }
 
-        if (!($gateway instanceof Mollie_WC_Gateway_Abstract))
-        {
+        if (!($gateway instanceof Mollie_WC_Gateway_Abstract)) {
             self::setHttpResponseCode(400);
-            self::debug(__METHOD__ . ": Invalid gateway " . get_class($gateway) . " for this plugin. Order $order_id.");
+            self::debug(__METHOD__ . ": Invalid gateway " . get_class($gateway) . " for this plugin. Order $orderId.");
             return;
         }
-
-        /** @var Mollie_WC_Gateway_Abstract $gateway */
 
         $redirect_url = $gateway->getReturnRedirectUrlForOrder($order);
 
         // Add utm_nooverride query string
-        $redirect_url = add_query_arg(array(
-            'utm_nooverride' => 1,
-        ), $redirect_url);
+        $redirect_url = add_query_arg(['utm_nooverride' => 1], $redirect_url);
 
-        self::debug(__METHOD__ . ": Redirect url on return order " . $gateway->id . ", order $order_id: $redirect_url");
+        self::debug(__METHOD__ . ": Redirect url on return order " . $gateway->id . ", order $orderId: $redirect_url");
 
         wp_safe_redirect($redirect_url);
     }
@@ -492,13 +486,21 @@ class Mollie_WC_Plugin
      */
     public static function maybeDisableApplePayGateway(array $gateways)
     {
+        $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_STRING);
         $wooCommerceSession = mollieWooCommerceSession();
 
-        if (!$wooCommerceSession instanceof WC_Session) {
-            return $gateways;
-        }
-
-        if (is_admin()) {
+        /*
+         * There is only one case where we want to filter the gateway and it's when the checkout
+         * page render the available payments methods.
+         *
+         * For any other case we want to be sure apple pay gateway is included.
+         */
+        if ($isWcApiRequest ||
+            !$wooCommerceSession instanceof WC_Session ||
+            !doing_action('woocommerce_payment_gateways') ||
+            !wp_doing_ajax() ||
+            is_admin()
+        ) {
             return $gateways;
         }
 

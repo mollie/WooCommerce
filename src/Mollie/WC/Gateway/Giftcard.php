@@ -98,7 +98,9 @@ class Mollie_WC_Gateway_Giftcard extends Mollie_WC_Gateway_Abstract
 		// If only one gift card issuers is available, show it without a dropdown
 		if ( count( $issuers ) === 1 ) {
             $issuerImageSvg = $this->checkSvgIssuers($issuers);
-			$html .= '<img src="' . $issuerImageSvg . '" style="vertical-align:middle" />';
+            if(isset($issuerImageSvg)){
+                $html .= '<img src="' . $issuerImageSvg . '" style="vertical-align:middle" />';
+            }
 			$html .= $issuers->description;
 			echo wpautop( wptexturize( $html ) );
 
@@ -123,6 +125,7 @@ class Mollie_WC_Gateway_Giftcard extends Mollie_WC_Gateway_Abstract
      */
     protected function checkSvgIssuers($issuers)
     {
+
         if(!isset($issuers[0]) || ! is_object($issuers[0])) {
             return '';
         }
@@ -130,7 +133,7 @@ class Mollie_WC_Gateway_Giftcard extends Mollie_WC_Gateway_Abstract
         if(!$image) {
             return '';
         }
-        return isset($image->svg) && is_string($image->svg) ? $image->svg : null;
+        return isset($image->svg) && is_string($image->svg) ? $image->svg : '';
     }
 
 }

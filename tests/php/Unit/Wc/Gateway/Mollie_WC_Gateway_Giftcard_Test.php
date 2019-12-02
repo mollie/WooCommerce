@@ -1,6 +1,6 @@
 <?php # -*- coding: utf-8 -*-
 
-namespace MollieTests\Unit\wc\Gateway;
+namespace Mollie\WooCommerceTests\Unit\WC\Gateway;
 
 use MollieTests\TestCase;
 use Mollie_WC_Gateway_Giftcard as Testee;

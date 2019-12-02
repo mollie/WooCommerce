@@ -152,12 +152,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function getIconUrl ()
     {
-
-    	// In checkout, show the creditcards.svg with multiple logo's
-    	if ( $this->getMollieMethodId() == PaymentMethod::CREDITCARD  && !is_admin()) {
-		    return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $this->getMollieMethodId() . 's.svg');
-	    }
-
+        // In checkout, show the creditcards.svg with multiple logo's
+        if ( $this->getMollieMethodId() === PaymentMethod::CREDITCARD  && !is_admin()) {
+            return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $this->getMollieMethodId() . 's.svg');
+        }
         return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $this->getMollieMethodId() . '.svg');
     }
 
@@ -600,7 +598,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			// PROCESS REGULAR PAYMENT AS MOLLIE PAYMENT
 			//
 
-            if ($molliePaymentType == self::PAYMENT_METHOD_TYPE_PAYMENT) {
+            if ($molliePaymentType === self::PAYMENT_METHOD_TYPE_PAYMENT) {
 				Mollie_WC_Plugin::debug( 'Creating payment object: type Payment, creating a Payment.' );
 
                 $payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject(
@@ -1248,8 +1246,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         }
         return $payment_method_title;
     }
-
-
 
 	/**
 	 * @param WC_Order $order

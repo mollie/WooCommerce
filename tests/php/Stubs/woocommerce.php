@@ -21,6 +21,11 @@ function wc_bool_to_string($bool)
     return true === $bool ? 'yes' : 'no';
 }
 
+class WC_Payment_Gateway
+{
+
+}
+
 class WC_Order
 {
     public function add_order_note($note)

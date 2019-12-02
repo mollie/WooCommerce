@@ -3,6 +3,10 @@
     flex-wrap: wrap;
 }
 
+.mollie-components .mollie-component-label {
+    font-weight: 400;
+}
+
 .mollie-components .mollie-component {
     width: 100%;
     min-height: 34px;
@@ -13,6 +17,7 @@
     box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.1),
     0px 1px 3px 0px rgba(0, 0, 0, 0.1),
     0px 0px 0px 1px rgba(0, 0, 0, 0.05);
+    border: 2px solid transparent;
 }
 
 .mollie-components .mollie-component iframe {
@@ -42,12 +47,14 @@
 }
 
 .mollie-components .mollie-component.is-invalid {
-    box-shadow: 0px 1px 1px 0px rgba(255, 51, 68, 0.1), 0px 1px 3px 0px rgba(255, 51, 68, 0.1);
+    box-shadow: 0px 1px 1px 0px rgba(255, 51, 68, 0.1),
+    0px 1px 3px 0px rgba(255, 51, 68, 0.1);
+    border-color: #fff0f0;
 }
 
 .mollie-components .mollie-component.has-focus {
     box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.1),
     0px 2px 6px 0px rgba(0, 0, 0, 0.1),
     0px 0px 0px 1px rgba(0, 0, 0, 0.05);
-    border: 2px solid #07f;
+    border-color: #07f;
 }

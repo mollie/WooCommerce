@@ -68,7 +68,7 @@ return [
         ],
     ],
     Mollie_WC_Components_StylesPropertiesDictionary::PADDING => [
-        'type' => 'string',
+        'type' => 'text',
         'id' => 'mollie_components_' . Mollie_WC_Components_StylesPropertiesDictionary::PADDING,
         'title' => _x('Padding', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
         'desc_tip' => _x(

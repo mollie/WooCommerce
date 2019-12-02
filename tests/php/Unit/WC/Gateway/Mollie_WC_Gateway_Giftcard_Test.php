@@ -2,7 +2,7 @@
 
 namespace Mollie\WooCommerceTests\Unit\WC\Gateway;
 
-use MollieTests\TestCase;
+use Mollie\WooCommerceTests\TestCase;
 use Mollie_WC_Gateway_Giftcard as Testee;
 
 

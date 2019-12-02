@@ -14,11 +14,7 @@ use UnexpectedValueException;
 use WC_Order_Item;
 use function Brain\Monkey\Functions\when;
 
-/**
- * Class RefundLineItemsBuilderTest
- * @package Mollie\WooCommerce\Tests\Unit
- */
-class RefundLineItemsBuilderTest extends TestCase
+class Mollie_WC_Payment_RefundLineItemsBuilder_Test extends TestCase
 {
     /**
      * @var PHPUnit_Framework_MockObject_MockObject|Mollie_WC_Helper_Data

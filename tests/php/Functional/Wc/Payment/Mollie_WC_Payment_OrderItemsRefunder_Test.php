@@ -23,11 +23,7 @@ use WC_Order_Item;
 use function Brain\Monkey\Actions\expectDone as expectedActionDone;
 use function Brain\Monkey\Functions\when;
 
-/**
- * Class OrderItemsRefunderTest
- * @package Mollie\WooCommerce\Tests\Unit
- */
-class OrderItemsRefunderTest extends TestCase
+class Mollie_WC_Payment_OrderItemsRefunder_Test extends TestCase
 {
     use MockeryPHPUnitIntegration;
 

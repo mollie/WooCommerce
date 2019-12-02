@@ -12,7 +12,7 @@ use function Brain\Monkey\Functions\when;
 /**
  * Class Mollie_WC_Plugin_Test
  */
-class PluginTest extends TestCase
+class Mollie_WC_Plugin_Test extends TestCase
 {
     public function testGetPluginUrl()
     {
@@ -161,6 +161,8 @@ class PluginTest extends TestCase
                 'get_locale' => uniqid(),
                 'isTestModeEnabled' => true,
                 'esc_html__' => '',
+                'is_checkout' => true,
+                'is_checkout_pay_page' => false
             ]
         );
 

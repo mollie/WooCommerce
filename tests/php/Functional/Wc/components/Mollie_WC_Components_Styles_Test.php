@@ -9,7 +9,7 @@ use PHPUnit_Framework_MockObject_MockObject;
 use WC_Payment_Gateway;
 use WC_Payment_Gateways;
 
-class ComponentsStylesTest extends TestCase
+class Mollie_WC_Components_Styles_Test extends TestCase
 {
     /**
      * @var PHPUnit_Framework_MockObject_MockObject|Mollie_WC_Settings_Components

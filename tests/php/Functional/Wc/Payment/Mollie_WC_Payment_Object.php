@@ -7,11 +7,7 @@ use Mollie_WC_Payment_Object;
 use PHPUnit_Framework_Exception;
 use function Brain\Monkey\Functions\when;
 
-/**
- * Class Mollie_WC_Gateway_AbstractTest
- * @package Mollie\WooCommerce\Tests\Unit
- */
-class GatewayAbstractTest extends TestCase
+class Mollie_WC_Payment_Object_Test extends TestCase
 {
     /**
      * Test paymentObject return a valid Mollie_WC_Payment_Object instance

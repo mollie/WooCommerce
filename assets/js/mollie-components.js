@@ -91,8 +91,6 @@ function returnFalse ()
 
 async function retrievePaymentToken (mollie)
 {
-  // TODO There's a problem with invalid request errors. see https://molliehq.slack.com/archives/CD7BV7JBX/p1574787556115400
-
   const { token, error } = await mollie.createToken(SELECTOR_TOKEN_ELEMENT)
 
   if (error) {
@@ -206,10 +204,19 @@ function mollieInstance (merchantProfileId, settings)
 
 (function (window, mollieComponentsSettings, Mollie, jQuery)
   {
-    jQuery(document).on(
-      'updated_checkout',
-      () => initializeComponentsWithSettings(mollieComponentsSettings)
-    )
+    if (mollieComponentsSettings.isCheckout) {
+      jQuery(document).on(
+        'updated_checkout',
+        () => initializeComponentsWithSettings(mollieComponentsSettings)
+      )
+    }
+
+    if (mollieComponentsSettings.isCheckoutPayPage) {
+      jQuery(document).on(
+        'payment_method_selected',
+        () => initializeComponentsWithSettings(mollieComponentsSettings)
+      )
+    }
   }
 )(
   window,

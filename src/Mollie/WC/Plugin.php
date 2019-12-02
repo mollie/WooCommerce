@@ -409,6 +409,8 @@ class Mollie_WC_Plugin
                         )
                     ],
                 ],
+                'isCheckout' => is_checkout(),
+                'isCheckoutPayPage' => is_checkout_pay_page()
             ]
         );
     }

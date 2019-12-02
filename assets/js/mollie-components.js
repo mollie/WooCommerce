@@ -123,7 +123,7 @@ function turnMollieComponentsSubmissionOff (form)
   form.off('submit', submitForm)
 }
 
-async function submitForm (evt, mollie, gateway, componentsContainer)
+async function submitForm (evt, mollie, gateway, componentsContainer, messages)
 {
   const form = jQuery(formFrom(componentsContainer))
 
@@ -140,8 +140,8 @@ async function submitForm (evt, mollie, gateway, componentsContainer)
   try {
     token = await retrievePaymentToken(mollie)
   } catch (error) {
-    // TODO Add default error message
-    error.message && notice(error.message, 'error')
+    const content = error.message ? error.message : messages.defaultErrorMessage
+    content && notice(content, 'error')
     return
   }
 
@@ -188,7 +188,12 @@ function initializeComponentsWithSettings (mollieComponentsSettings)
     // TODO Not trigger when in checkout pay page
     $form.on('submit', evt =>
     {
-      submitForm(evt, mollie, gateway, componentsContainer)
+      submitForm(
+        evt,
+        mollie,
+        gateway,
+        componentsContainer,
+        mollieComponentsSettings.messages || {})
     })
   })
 }

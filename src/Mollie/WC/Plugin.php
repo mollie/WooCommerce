@@ -409,6 +409,12 @@ class Mollie_WC_Plugin
                         )
                     ],
                 ],
+                'messages' => [
+                    'defaultErrorMessage' => esc_html__(
+                        'An unknown error occurred, please check the card fields.',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                ],
                 'isCheckout' => is_checkout(),
                 'isCheckoutPayPage' => is_checkout_pay_page()
             ]

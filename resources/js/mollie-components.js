@@ -144,16 +144,16 @@ async function submitForm (evt)
   try {
     token = await retrievePaymentToken(mollie)
   } catch (error) {
-    const content = error.message ? error.message : messages.defaultErrorMessage
-    content && notice(content, 'error')
-    $form.removeClass('processing').unblock()
-    jQuery(document.body).trigger('checkout_error')
-    return
+    // const content = error.message ? error.message : messages.defaultErrorMessage
+    // content && notice(content, 'error')
+    // $form.removeClass('processing').unblock()
+    // jQuery(document.body).trigger('checkout_error')
+    // return
   }
 
   turnMollieComponentsSubmissionOff($form)
 
-  assignTokenValue(token, componentsContainer)
+  token && assignTokenValue(token, componentsContainer)
   $form.submit()
 }
 

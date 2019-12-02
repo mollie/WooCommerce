@@ -293,7 +293,7 @@ class Mollie_WC_Helper_Settings
      */
     public function addGlobalSettingsFields (array $settings)
     {
-        wp_register_script('mollie_wc_admin_settings', Mollie_WC_Plugin::getPluginUrl('/assets/js/settings.js'), array('jquery'), Mollie_WC_Plugin::PLUGIN_VERSION);
+        wp_register_script('mollie_wc_admin_settings', Mollie_WC_Plugin::getPluginUrl('/assets/js/settings.min.js'), array('jquery'), Mollie_WC_Plugin::PLUGIN_VERSION);
         wp_enqueue_script('mollie_wc_admin_settings');
 
         $content = ''

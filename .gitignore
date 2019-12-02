@@ -3,6 +3,7 @@
 /nbproject
 /vendor/
 /coverage/
+/node_modules/
 /.idea
 /.idea.example/dictionaries/
 /.idea.example/workspace.xml

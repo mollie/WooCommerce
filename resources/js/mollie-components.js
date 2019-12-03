@@ -1,92 +1,102 @@
 const SELECTOR_TOKEN_ELEMENT = '.cardToken'
-const SELECTOR_MOLLIE_COMPONENT = '.mollie-component'
+const SELECTOR_MOLLIE_COMPONENTS_CONTAINER = '.mollie-components'
 const SELECTOR_FORM = 'form'
-const MOLLIE_COMPONENTS_CONTAINER = '.wc_payment_methods'
-
-let mollie = null
-
-function formFrom (element)
-{
-  return element.closest(SELECTOR_FORM)
-}
-
-function componentsContainer ()
-{
-  return document.querySelector(MOLLIE_COMPONENTS_CONTAINER)
-}
-
-function notice (content, type)
-{
-  const container = componentsContainer()
-  const formWrapper = formFrom(container).parentNode || null
-  const mollieNotice = document.querySelector('#mollie-notice')
-  const template = `
-      <div id="mollie-notice" class="woocommerce-${type}">
-        ${content}
-      </div>
-    `
-
-  mollieNotice && mollieNotice.remove()
-
-  if (!formWrapper) {
-    alert(content)
-    return
-  }
-
-  formWrapper.insertAdjacentHTML('beforebegin', template)
-
-  scrollToNotice()
-}
-
-function scrollToNotice ()
-{
-  var scrollElement = document.querySelector('#mollie-notice')
-
-  if (!scrollElement) {
-    scrollElement = document.querySelector(MOLLIE_COMPONENTS_CONTAINER)
-  }
-  jQuery.scroll_to_notices(jQuery(scrollElement))
-}
-
-function mountComponents (mollie, components, settings)
-{
-  for (const componentName in components) {
-    const component = mollie.createComponent(componentName, settings)
-    const container = document.querySelector('.mollie-components')
-
-    container.insertAdjacentHTML('beforeend', `<div id="${componentName}"></div>`)
-    component.mount(`#${componentName}`)
-
-    const currentComponent = document.querySelector(`.mollie-component--${componentName}`)
-
-    if (!currentComponent) {
-      continue
-    }
-
-    currentComponent.insertAdjacentHTML(
-      'beforebegin',
-      `<b class="mollie-component-label">${components[componentName].label}</b>`
-    )
-    currentComponent.insertAdjacentHTML(
-      'afterend',
-      `<div role="alert" id="${componentName}-errors"></div>`
-    )
-  }
-}
-
-function insertTokenField (componentsContainer)
-{
-  componentsContainer
-    .querySelector('.mollie-components')
-    .insertAdjacentHTML(
-      'beforeend',
-      '<input type="hidden" name="cardToken" class="cardToken" value="" />'
-  )
-}
+const SELECTOR_MOLLIE_GATEWAY_CONTAINER = '.wc_payment_methods'
+const SELECTOR_MOLLIE_NOTICE_CONTAINER = '#mollie-notice'
 
 function returnFalse ()
 {
   return false
+}
+
+/* -------------------------------------------------------------------
+   Containers
+   ---------------------------------------------------------------- */
+function gatewayContainer (container)
+{
+  return container ? container.querySelector(SELECTOR_MOLLIE_GATEWAY_CONTAINER) : null
+}
+
+function containerForGateway (gateway, container)
+{
+  return container ? container.querySelector(`.payment_method_mollie_wc_gateway_${gateway}`) : null
+}
+
+function noticeContainer (container)
+{
+  return container ? container.querySelector(SELECTOR_MOLLIE_NOTICE_CONTAINER) : null
+}
+
+function componentsContainerFromWithin (container)
+{
+  return container ? container.querySelector(SELECTOR_MOLLIE_COMPONENTS_CONTAINER) : null
+}
+
+function cleanContainer (container)
+{
+  if (!container) {
+    return
+  }
+
+  container.innerText = ''
+}
+
+/* -------------------------------------------------------------------
+   Notice
+   ---------------------------------------------------------------- */
+function renderNotice ({ content, type })
+{
+  return `
+      <div id="mollie-notice" class="woocommerce-${type}">
+        ${content}
+      </div>
+    `
+}
+
+function printNotice (jQuery, noticeData)
+{
+  const container = gatewayContainer(document)
+  const formContainer = closestFormForElement(container).parentNode || null
+  const mollieNotice = noticeContainer(document)
+  const renderedNotice = renderNotice(noticeData)
+
+  mollieNotice && mollieNotice.remove()
+
+  if (!formContainer) {
+    alert(noticeData.content)
+    return
+  }
+
+  formContainer.insertAdjacentHTML('beforebegin', renderedNotice)
+
+  scrollToNotice(jQuery)
+}
+
+function scrollToNotice (jQuery)
+{
+  var scrollToElement = noticeContainer(document)
+
+  if (!scrollToElement) {
+    scrollToElement = gatewayContainer(document)
+  }
+
+  jQuery.scroll_to_notices(jQuery(scrollToElement))
+}
+
+/* -------------------------------------------------------------------
+   Token
+   ---------------------------------------------------------------- */
+function createTokenFieldWithin (container)
+{
+  container.insertAdjacentHTML(
+    'beforeend',
+    '<input type="hidden" name="cardToken" class="cardToken" value="" />'
+  )
+}
+
+function tokenElementWithin (container)
+{
+  return container.querySelector(SELECTOR_TOKEN_ELEMENT)
 }
 
 async function retrievePaymentToken (mollie)
@@ -100,10 +110,8 @@ async function retrievePaymentToken (mollie)
   return token
 }
 
-function assignTokenValue (token, componentsContainer)
+function setTokenValueToField (token, tokenFieldElement)
 {
-  const tokenFieldElement = componentsContainer.querySelector(SELECTOR_TOKEN_ELEMENT)
-
   if (!tokenFieldElement) {
     return
   }
@@ -112,26 +120,44 @@ function assignTokenValue (token, componentsContainer)
   tokenFieldElement.setAttribute('value', token)
 }
 
-function componentsAlreadyExistsUnder (mollieComponents)
+/* -------------------------------------------------------------------
+   Form
+   ---------------------------------------------------------------- */
+function closestFormForElement (element)
 {
-  return mollieComponents.querySelector(SELECTOR_MOLLIE_COMPONENT)
+  return element ? element.closest(SELECTOR_FORM) : null
 }
 
-function turnMollieComponentsSubmissionOff (form)
+function turnMollieComponentsSubmissionOff ($form)
 {
-  const $form = jQuery(form)
-
   $form.off('checkout_place_order', returnFalse)
   $form.off('submit', submitForm)
 }
 
+function isGatewaySelected (gateway)
+{
+  const gatewayContainer = containerForGateway(gateway, document)
+  const gatewayInput = gatewayContainer
+    ? gatewayContainer.querySelector(`#payment_method_mollie_wc_gateway_${gateway}`)
+    : null
+
+  if (!gatewayInput) {
+    return false
+  }
+
+  return gatewayInput.checked || false
+}
+
 async function submitForm (evt)
 {
-  const { mollie, gateway, componentsContainer, messages } = evt.data
+  let token = ''
+  const { jQuery, mollie, gateway, gatewayContainer, messages } = evt.data
+  const form = closestFormForElement(gatewayContainer)
+  const $form = jQuery(form)
+  const $document = jQuery(document.body)
 
-  const $form = jQuery(formFrom(componentsContainer))
-
-  if (!document.querySelector(`#payment_method_mollie_wc_gateway_${gateway}`).checked) {
+  if (!isGatewaySelected(gateway)) {
+    // Let other gateway to submit the form
     turnMollieComponentsSubmissionOff($form)
     return
   }
@@ -139,64 +165,187 @@ async function submitForm (evt)
   evt.preventDefault()
   evt.stopImmediatePropagation()
 
-  let token = ''
-
   try {
     token = await retrievePaymentToken(mollie)
   } catch (error) {
-    // const content = error.message ? error.message : messages.defaultErrorMessage
-    // content && notice(content, 'error')
-    // $form.removeClass('processing').unblock()
-    // jQuery(document.body).trigger('checkout_error')
-    // return
+    const content = { message = messages.defaultErrorMessage } = error
+    content && printNotice(jQuery, { content, type: 'error' })
+
+    $form.removeClass('processing').unblock()
+    $document.trigger('checkout_error')
+    return
   }
 
   turnMollieComponentsSubmissionOff($form)
 
-  token && assignTokenValue(token, componentsContainer)
+  token && setTokenValueToField(token, tokenElementWithin(gatewayContainer))
   $form.submit()
 }
 
-function initializeComponentsWithSettings (mollieComponentsSettings)
+/* -------------------------------------------------------------------
+   Component
+   ---------------------------------------------------------------- */
+function componentElementByNameFromWithin (name, container)
 {
-  const merchantProfileId = mollieComponentsSettings.merchantProfileId || null
-  const componentsSelectors = mollieComponentsSettings.components || []
-  const componentSettings = mollieComponentsSettings.componentSettings || []
-  const enabledGateways = mollieComponentsSettings.enabledGateways || []
-  const messages = mollieComponentsSettings.messages || {}
+  return container ? container.querySelector(`.mollie-component--${name}`) : null
+}
+
+function createComponentLabelElementWithin (container, { label })
+{
+  container.insertAdjacentHTML(
+    'beforebegin',
+    `<b class="mollie-component-label">${label}</b>`
+  )
+}
+
+function createComponentsErrorContainerWithin (container, { name })
+{
+  container.insertAdjacentHTML(
+    'afterend',
+    `<div role="alert" id="${name}-errors"></div>`
+  )
+}
+
+function componentByName (name, mollie, settings, mollieComponentsMap)
+{
+  let component
+
+  if (mollieComponentsMap.has(name)) {
+    component = mollieComponentsMap.get(name)
+  }
+  if (!component) {
+    component = mollie.createComponent(name, settings)
+  }
+
+  return component
+}
+
+function unmountComponents (mollieComponentsMap)
+{
+  mollieComponentsMap.forEach(component => component.unmount())
+}
+
+function mountComponent (
+  mollie,
+  componentSettings,
+  componentAttributes,
+  mollieComponentsMap,
+  baseContainer
+)
+{
+  const { name: componentName } = componentAttributes
+  const component = componentByName(componentName, mollie, componentSettings, mollieComponentsMap)
+  const mollieComponentsContainer = componentsContainerFromWithin(baseContainer)
+
+  mollieComponentsContainer.insertAdjacentHTML('beforeend', `<div id="${componentName}"></div>`)
+  component.mount(`#${componentName}`)
+
+  const currentComponentElement = componentElementByNameFromWithin(componentName, baseContainer)
+  if (!currentComponentElement) {
+    console.warn(`Component ${componentName} not found in the DOM. Probably had problem during mount.`)
+    return
+  }
+
+  createComponentLabelElementWithin(currentComponentElement, componentAttributes)
+  createComponentsErrorContainerWithin(currentComponentElement, componentAttributes)
+
+  !mollieComponentsMap.has(componentName) && mollieComponentsMap.set(componentName, component)
+}
+
+function mountComponents (
+  mollie,
+  componentSettings,
+  componentsAttributes,
+  mollieComponentsMap,
+  baseContainer
+)
+{
+  componentsAttributes.forEach(
+    componentAttributes => mountComponent(
+      mollie,
+      componentSettings,
+      componentAttributes,
+      mollieComponentsMap,
+      baseContainer
+    )
+  )
+}
+
+/* -------------------------------------------------------------------
+   Init
+   ---------------------------------------------------------------- */
+
+/**
+ * Unmount and Mount the components if them already exists, create them if it's the first time
+ * the components are created.
+ */
+function initializeComponents (
+  jQuery,
+  mollie,
+  {
+    options,
+    merchantProfileId,
+    componentsSettings,
+    componentsAttributes,
+    enabledGateways,
+    messages
+  },
+  mollieComponentsMap
+)
+{
+
+  /*
+   * WooCommerce update the DOM when something on checkout page happen.
+   * Mollie does not allow to keep a copy of the mounted components.
+   *
+   * We have to mount every time the components but we cannot recreate them.
+   */
+  unmountComponents(mollieComponentsMap)
 
   enabledGateways.forEach(gateway =>
   {
-    const componentsContainer = document.querySelector(`.payment_method_mollie_wc_gateway_${gateway}`)
-
-    if (!componentsContainer) {
-      return
-    }
-
-    const form = formFrom(componentsContainer)
+    const gatewayContainer = containerForGateway(gateway, document)
+    const mollieComponentsContainer = componentsContainerFromWithin(gatewayContainer)
+    const form = closestFormForElement(gatewayContainer)
     const $form = jQuery(form)
 
-    if (!form) {
-      console.warn('Cannot mount Mollie Components, no form found.')
-    }
-
-    if (componentsAlreadyExistsUnder(componentsContainer)) {
+    if (!gatewayContainer) {
+      console.warn(`Cannot initialize Mollie Components for gateway ${gateway}.`)
       return
     }
 
-    const mollie = mollieInstance(merchantProfileId, componentSettings)
-    mountComponents(mollie, componentsSelectors, componentSettings[gateway])
+    if (!form) {
+      console.warn('Cannot initialize Mollie Components, no form found.')
+      return
+    }
 
-    insertTokenField(componentsContainer)
+    // Remove old listener before add new ones or form will not be submitted
+    turnMollieComponentsSubmissionOff($form)
+
+    /*
+     * Clean container for mollie components because we do not know in which context we may need
+     * to create components.
+     */
+    cleanContainer(mollieComponentsContainer)
+    createTokenFieldWithin(mollieComponentsContainer)
+
+    mountComponents(
+      mollie,
+      componentsSettings[gateway],
+      componentsAttributes,
+      mollieComponentsMap,
+      gatewayContainer
+    )
 
     $form.on('checkout_place_order', returnFalse)
     $form.on(
       'submit',
       null,
       {
+        jQuery,
         mollie,
         gateway,
-        componentsContainer,
+        gatewayContainer,
         messages
       },
       submitForm
@@ -204,34 +353,34 @@ function initializeComponentsWithSettings (mollieComponentsSettings)
   })
 }
 
-function mollieInstance (merchantProfileId, settings)
-{
-  if (null === mollie && merchantProfileId) {
-    mollie = new Mollie(merchantProfileId, settings)
-  }
-
-  return mollie
-}
-
-(function (window, mollieComponentsSettings, Mollie, jQuery)
+(
+  function ({ _, Mollie, mollieComponentsSettings, jQuery })
   {
-    if (mollieComponentsSettings.isCheckout) {
-      jQuery(document).on(
-        'updated_checkout',
-        () => initializeComponentsWithSettings(mollieComponentsSettings)
-      )
+    if (_.isEmpty(mollieComponentsSettings) || !_.isFunction(Mollie)) {
+      return
     }
 
-    if (mollieComponentsSettings.isCheckoutPayPage) {
-      jQuery(document).on(
-        'payment_method_selected',
-        () => initializeComponentsWithSettings(mollieComponentsSettings)
-      )
+    let eventName = 'updated_checkout'
+    const mollieComponentsMap = new Map()
+    const $document = jQuery(document)
+    const { merchantProfileId, options, isCheckoutPayPage } = mollieComponentsSettings
+    const mollie = new Mollie(merchantProfileId, options)
+
+    if (isCheckoutPayPage) {
+      eventName = 'payment_method_selected'
     }
+
+    $document.on(
+      eventName,
+      () => initializeComponents(
+        jQuery,
+        mollie,
+        mollieComponentsSettings,
+        mollieComponentsMap
+      )
+    )
   }
-)(
-  window,
-  window.mollieComponentsSettings,
-  window.Mollie,
-  jQuery
+)
+(
+  window
 )

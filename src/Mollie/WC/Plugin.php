@@ -342,7 +342,7 @@ class Mollie_WC_Plugin
         wp_register_script(
             'mollie-components',
             Mollie_WC_Plugin::getPluginUrl('/assets/js/mollie-components.min.js'),
-            ['jquery', 'mollie', 'babel-polyfill'],
+            ['underscore', 'jquery', 'mollie', 'babel-polyfill'],
             filemtime(Mollie_WC_Plugin::getPluginPath('/assets/js/mollie-components.min.js')),
             true
         );
@@ -399,18 +399,22 @@ class Mollie_WC_Plugin
                     'testmode' => isTestModeEnabled(),
                 ],
                 'enabledGateways' => $gatewayNames,
-                'componentSettings' => $mollieComponentsStylesGateways,
-                'components' => [
-                    'cardHolder' => [
+                'componentsSettings' => $mollieComponentsStylesGateways,
+                'componentsAttributes' => [
+                    [
+                        'name' => 'cardHolder',
                         'label' => esc_html__('Card Holder', 'mollie-payments-for-woocommerce')
                     ],
-                    'cardNumber' => [
+                    [
+                        'name' => 'cardNumber',
                         'label' => esc_html__('Card Number', 'mollie-payments-for-woocommerce')
                     ],
-                    'expiryDate' => [
+                    [
+                        'name' => 'expiryDate',
                         'label' => esc_html__('Expiry Date', 'mollie-payments-for-woocommerce')
                     ],
-                    'verificationCode' => [
+                    [
+                        'name' => 'verificationCode',
                         'label' => esc_html__(
                             'Verification Code',
                             'mollie-payments-for-woocommerce'

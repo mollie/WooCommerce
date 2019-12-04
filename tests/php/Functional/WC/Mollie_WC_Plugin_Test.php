@@ -64,7 +64,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         );
     }
 
-    public function testRegisterFrontendScripts()
+    public function testRegisterFrontendScriptsRegisterPolyfill()
     {
         /*
          * Execute Test
@@ -84,6 +84,16 @@ class Mollie_WC_Plugin_Test extends TestCase
             $babelPolifyll[3]
         );
         self::assertEquals(true, $babelPolifyll[4]);
+    }
+
+    public function testRegisterFrontendScriptsRegisterApplePay()
+    {
+        /*
+         * Execute Test
+         */
+        Mollie_WC_Plugin::registerFrontendScripts();
+
+        $wpScriptsStub = WpScriptsStub::instance();
 
         /*
          * Apple Pay
@@ -97,6 +107,26 @@ class Mollie_WC_Plugin_Test extends TestCase
             $applepayScript[3]
         );
         self::assertEquals(true, $applepayScript[4]);
+    }
+
+    public function testRegisterFrontendScriptsRegisterMollieComponents()
+    {
+        /*
+         * Execute Test
+         */
+        Mollie_WC_Plugin::registerFrontendScripts();
+
+        $wpScriptsStub = WpScriptsStub::instance();
+
+        /*
+        * Mollie JS
+        */
+        $mollieScript = $wpScriptsStub->registered('script', 'mollie');
+        self::assertEquals('mollie', $mollieScript[0]);
+        self::assertEquals('https://js.mollie.com/v1/mollie.js', $mollieScript[1]);
+        self::assertEquals([], $mollieScript[2]);
+        self::assertEquals(null, $mollieScript[3]);
+        self::assertEquals(true, $mollieScript[4]);
 
         /*
          * Mollie Components Css
@@ -115,16 +145,6 @@ class Mollie_WC_Plugin_Test extends TestCase
         self::assertEquals('screen', $mollieComponentsStyle[4]);
 
         /*
-         * Mollie JS
-         */
-        $mollieScript = $wpScriptsStub->registered('script', 'mollie');
-        self::assertEquals('mollie', $mollieScript[0]);
-        self::assertEquals('https://js.mollie.com/v1/mollie.js', $mollieScript[1]);
-        self::assertEquals([], $mollieScript[2]);
-        self::assertEquals(null, $mollieScript[3]);
-        self::assertEquals(true, $mollieScript[4]);
-
-        /*
          * Mollie Components Js
          */
         $mollieComponentsScript = $wpScriptsStub->registered('script', 'mollie-components');
@@ -133,7 +153,10 @@ class Mollie_WC_Plugin_Test extends TestCase
             M4W_PLUGIN_URL . '/assets/js/mollie-components.min.js',
             $mollieComponentsScript[1]
         );
-        self::assertEquals(['jquery', 'mollie', 'babel-polyfill'], $mollieComponentsScript[2]);
+        self::assertEquals(
+            ['underscore', 'jquery', 'mollie', 'babel-polyfill'],
+            $mollieComponentsScript[2]
+        );
         self::assertEquals(
             filemtime(M4W_PLUGIN_DIR . '/assets/js/mollie-components.min.js'),
             $mollieComponentsScript[3]

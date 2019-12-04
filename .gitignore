@@ -1,6 +1,16 @@
-.idea
 .DS_Store
 /*.zip
 /nbproject
 /vendor/
 /coverage/
+/node_modules/
+/.idea
+/.idea.example/dictionaries/
+/.idea.example/workspace.xml
+/.idea.example/tasks.xml
+/.idea.example/deployment.xml
+/.idea.example/vagrant.xml
+/.idea.example/codeStyles/
+/assets/js/*.map
+
+.env

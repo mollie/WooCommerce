@@ -1,13 +1,13 @@
 <?php # -*- coding: utf-8 -*-
 
-namespace Mollie\WooCommerce\Tests;
+namespace Mollie\WooCommerceTests;
 
-use function Brain\Monkey\setUp;
-use function Brain\Monkey\tearDown;
 use Mockery;
-use PHPUnit\Framework\TestCase as PhpUniTestCase;
 use PHPUnit_Framework_MockObject_MockBuilder;
 use PHPUnit_Framework_MockObject_MockObject;
+use function Brain\Monkey\setUp;
+use function Brain\Monkey\tearDown;
+use PHPUnit\Framework\TestCase as PhpUniTestCase;
 use Xpmock\Reflection;
 use Xpmock\TestCaseTrait;
 

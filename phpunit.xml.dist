@@ -17,13 +17,9 @@
     </testsuites>
     <filter>
         <whitelist>
-            <directory suffix=".php">./mollie-payments-for-woocommerce/includes/mollie</directory>
+            <directory suffix=".php">./inc</directory>
+            <directory suffix=".php">./src</directory>
             <file>./</file>
         </whitelist>
     </filter>
-    <logging>
-        <log type="coverage-clover" target="coverage/report/clover.xml"/>
-        <log type="coverage-html" target="coverage/report/html" lowUpperBound="35"
-             highLowerBound="70"/>
-    </logging>
 </phpunit>

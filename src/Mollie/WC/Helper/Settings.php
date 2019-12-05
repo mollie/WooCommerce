@@ -1,4 +1,7 @@
 <?php
+
+use Mollie\Api\Exceptions\ApiException;
+
 class Mollie_WC_Helper_Settings
 {
     const FILTER_ALLOWED_LANGUAGE_CODE_SETTING = 'mollie.allowed_language_code_setting';
@@ -51,7 +54,14 @@ class Mollie_WC_Helper_Settings
     {
         $setting_id = $test_mode ? 'test_api_key' : 'live_api_key';
 
-        return trim(get_option($this->getSettingId($setting_id)));
+        $apiKeyId = $this->getSettingId($setting_id);
+        $apiKey = get_option($apiKeyId);
+
+        if (!$apiKey && is_admin()) {
+            $apiKey = filter_input(INPUT_POST, $apiKeyId, FILTER_SANITIZE_STRING);
+        }
+
+        return trim($apiKey);
     }
 
     /**
@@ -133,9 +143,35 @@ class Mollie_WC_Helper_Settings
     /**
      * @return string
      */
-    public function getLogsUrl ()
+    public function getLogsUrl()
     {
         return admin_url('admin.php?page=wc-status&tab=logs');
+    }
+
+    public function updateMerchantIdOnApiKeyChanges($optionValue, $optionName)
+    {
+        $optionId = isset($optionName['id']) ? $optionName['id'] : '';
+        $allowedOptionsId = [
+            $this->getSettingId('live_api_key'),
+            $this->getSettingId('test_api_key'),
+        ];
+
+        if (!in_array($optionId, $allowedOptionsId, true)) {
+            return $optionValue;
+        }
+
+        $merchantProfileIdOptionKey = Mollie_WC_Plugin::PLUGIN_ID . '_merchant_profile_id';
+
+        try {
+            $merchantProfile = merchantProfile();
+            $merchantProfileId = isset($merchantProfile->id) ? $merchantProfile->id : '';
+        } catch (ApiException $exception) {
+            $merchantProfileId = '';
+        }
+
+        update_option($merchantProfileIdOptionKey, $merchantProfileId, false);
+
+        return $optionValue;
     }
 
     /**
@@ -146,16 +182,18 @@ class Mollie_WC_Helper_Settings
      *
      * @return string
      */
-    protected function getPluginStatus ()
+    protected function getPluginStatus()
     {
         $status = Mollie_WC_Plugin::getStatusHelper();
 
-        if (!$status->isCompatible())
-        {
+        if (!$status->isCompatible()) {
             // Just stop here!
             return ''
                 . '<div class="notice notice-error">'
-                . '<p><strong>' . __('Error', 'mollie-payments-for-woocommerce') . ':</strong> ' . implode('<br/>', $status->getErrors())
+                . '<p><strong>' . __(
+                    'Error',
+                    'mollie-payments-for-woocommerce'
+                ) . ':</strong> ' . implode('<br/>', $status->getErrors())
                 . '</p></div>';
         }
 

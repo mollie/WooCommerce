@@ -8,7 +8,7 @@ class Mollie_WC_Plugin
 {
     const PLUGIN_ID      = 'mollie-payments-for-woocommerce';
     const PLUGIN_TITLE   = 'Mollie Payments for WooCommerce';
-    const PLUGIN_VERSION = '5.4.0';
+    const PLUGIN_VERSION = '5.4.1';
 
     const DB_VERSION     = '1.0';
     const DB_VERSION_PARAM_NAME = 'mollie-db-version';
@@ -204,6 +204,12 @@ class Mollie_WC_Plugin
                     $mollieWooCommerceSession->__unset(self::APPLE_PAY_METHOD_ALLOWED_KEY);
                 }
             }
+        );
+        add_action(
+            'woocommerce_admin_settings_sanitize_option',
+            [$settings_helper, 'updateMerchantIdOnApiKeyChanges'],
+            10,
+            2
         );
 
 		// Add settings link to plugins page

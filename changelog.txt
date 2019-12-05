@@ -1,6 +1,10 @@
 == Changelog ==
 
-= 5.4.0 - 02-12-2019 =
+= 5.4.1 - 05-12-2019 =
+
+* Fix - Mollie Components request multiple times the merchant profile ID via API
+
+= 5.4.0 - 04-12-2019 =
 
 * Fix - Apple Pay Gateway is removed from available gateways during WooCommerce Api calls
 * Fix - Giftcard Gateway does not show the right payment icon in checkout page

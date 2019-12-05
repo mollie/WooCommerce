@@ -1,90 +1,50 @@
-const path = require('path')
-const webpack = require('webpack')
+const Encore = require('@symfony/webpack-encore')
 
-const ENV_PRODUCTION = 'production'
-const ENV_DEVELOPMENT = 'development'
-const ENV_NONE = 'none'
-
-/**
- * Resolve path based on dirname
- * @param part
- * @returns {*}
- */
-function resolve (part)
+function extractEncoreConfig (name)
 {
-  return path.resolve(__dirname, part)
+  const config = Encore.getWebpackConfig()
+
+  Encore.reset()
+
+  return { ...config, name }
 }
 
-module.exports = (env, argv) =>
+function configJavaScript ({ basePath })
 {
-  const mode = argv.mode || ENV_PRODUCTION
-  const devtool = 'eval-source-map'
-  const sourceMap = new webpack.SourceMapDevToolPlugin({
-    filename: '[file].map',
-  })
-  const buildBasePath = argv.buildBasePath || '.'
-  const configJsOutput = {
-    path: resolve(`${buildBasePath}/assets/js`),
-    filename: '[name].min.js',
-  }
+  Encore
+    .setOutputPath(`${basePath}/public/js`)
+    .setPublicPath('/public/js')
+    .enableSingleRuntimeChunk()
+    .addEntry('babel-polyfill.min', '@babel/polyfill')
+    .addEntry('applepay.min', './resources/js/applepay.js')
+    .addEntry('settings.min', './resources/js/settings.js')
+    .addEntry('mollie-components.min', './resources/js/mollie-components.js')
+    .enableSourceMaps(!Encore.isProduction())
 
-  const config = new Set([
-    {
-      entry: {
-        "babel-polyfill": "@babel/polyfill",
-      },
-      output: configJsOutput
-    },
-    {
-      entry: {
-        applepay: './resources/js/applepay.js',
-      },
-      output: configJsOutput
-    },
-    {
-      entry: {
-        'mollie-components': './resources/js/mollie-components.js',
-      },
-      output: configJsOutput
-    },
-    {
-      entry: {
-        settings: './resources/js/settings.js',
-      },
-      output: configJsOutput
-    },
-  ])
-
-  config.forEach(item => {
-    if (mode === ENV_DEVELOPMENT) {
-      Object.assign(item, {
-        devtool,
-        plugins: [
-          sourceMap,
-        ],
-      })
-    }
-
-    Object.assign(item, {
-      mode,
-      module: {
-        rules: [
-          {
-            test: /\.js$/,
-            exclude: /(node_modules)/,
-            use: {
-              loader: 'babel-loader',
-              options: {
-                presets: [
-                  ['@babel/preset-env'],
-                ],
-              },
-            },
-          },
-        ],
-      },
-    })
-  })
-
-  return [...config.values()]
+  return extractEncoreConfig('javascript-configuration')
 }
+
+function configCss ({ basePath })
+{
+  Encore
+    .setOutputPath(`${basePath}/public/css`)
+    .setPublicPath('/public/css')
+    .enableSingleRuntimeChunk()
+    .enableSassLoader()
+    .addStyleEntry('mollie-components.min', './resources/scss/mollie-components.scss')
+    .enableSourceMaps(!Encore.isProduction())
+
+  return extractEncoreConfig('css-configuration')
+}
+
+function config (env)
+{
+  const config = [
+    configJavaScript(env),
+    configCss(env)
+  ]
+
+  return [...config]
+}
+
+module.exports = env => config(env)

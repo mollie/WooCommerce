@@ -323,33 +323,33 @@ class Mollie_WC_Plugin
     {
         wp_register_script(
             'babel-polyfill',
-            Mollie_WC_Plugin::getPluginUrl('/assets/js/babel-polyfill.min.js'),
+            Mollie_WC_Plugin::getPluginUrl('/public/js/babel-polyfill.min.js'),
             [],
-            filemtime(Mollie_WC_Plugin::getPluginPath('/assets/js/babel-polyfill.min.js')),
+            filemtime(Mollie_WC_Plugin::getPluginPath('/public/js/babel-polyfill.min.js')),
             true
         );
 
         wp_register_script(
             'mollie_wc_gateway_applepay',
-            Mollie_WC_Plugin::getPluginUrl('/assets/js/applepay.min.js'),
+            Mollie_WC_Plugin::getPluginUrl('/public/js/applepay.min.js'),
             [],
-            filemtime(Mollie_WC_Plugin::getPluginPath('/assets/js/applepay.min.js')),
+            filemtime(Mollie_WC_Plugin::getPluginPath('/public/js/applepay.min.js')),
             true
         );
 
         wp_register_style(
             'mollie-components',
-            Mollie_WC_Plugin::getPluginUrl('/assets/css/mollie-components.css'),
+            Mollie_WC_Plugin::getPluginUrl('/public/css/mollie-components.min.css'),
             [],
-            filemtime(Mollie_WC_Plugin::getPluginPath('/assets/css/mollie-components.css')),
+            filemtime(Mollie_WC_Plugin::getPluginPath('/public/css/mollie-components.min.css')),
             'screen'
         );
         wp_register_script('mollie', 'https://js.mollie.com/v1/mollie.js', [], null, true);
         wp_register_script(
             'mollie-components',
-            Mollie_WC_Plugin::getPluginUrl('/assets/js/mollie-components.min.js'),
+            Mollie_WC_Plugin::getPluginUrl('/public/js/mollie-components.min.js'),
             ['underscore', 'jquery', 'mollie', 'babel-polyfill'],
-            filemtime(Mollie_WC_Plugin::getPluginPath('/assets/js/mollie-components.min.js')),
+            filemtime(Mollie_WC_Plugin::getPluginPath('/public/js/mollie-components.min.js')),
             true
         );
     }

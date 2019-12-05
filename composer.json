@@ -27,16 +27,13 @@
   "autoload": {
     "psr-0": {
       "Mollie_WC_": "./src"
-    },
-    "psr-4": {
-      "Mollie\\": "./src/Mollie"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "MollieTests\\": "tests/php",
-      "MollieTests\\Unit\\": "tests/php/Unit",
-      "MollieTests\\Functional\\": "tests/php/Functional"
+      "Mollie\\WooCommerceTests\\": "tests/php",
+      "Mollie\\WooCommerceTests\\Unit\\": "tests/php/Unit",
+      "Mollie\\WooCommerceTests\\Functional\\": "tests/php/Functional"
     }
   },
   "repositories": [

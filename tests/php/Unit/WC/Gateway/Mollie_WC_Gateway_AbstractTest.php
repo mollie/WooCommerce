@@ -1,9 +1,9 @@
 <?php # -*- coding: utf-8 -*-
 
-namespace MollieTests\Unit;
+namespace Mollie\WooCommerceTests\Unit\WC\Gateway;
 
 use Mollie\Api\Resources\Payment;
-use MollieTests\TestCase;
+use Mollie\WooCommerceTests\TestCase;
 use UnexpectedValueException;
 use function Brain\Monkey\Functions\when;
 use Mollie_WC_Gateway_Abstract as Testee;
@@ -14,7 +14,7 @@ use Mollie_WC_Payment_Object;
  * Class Mollie_WC_Gateway_AbstractTest
  * @package Mollie\WooCommerce\Tests\Unit
  */
-class Mollie_WC_Gateway_AbstractTest extends TestCase
+class Mollie_WC_Gateway_Abstract_Test extends TestCase
 {
     /* -----------------------------------------------------------------------
         Test wooCommerceOrderId

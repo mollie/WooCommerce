@@ -1,0 +1,39 @@
+{
+  "name": "mollie-payments-for-woocommerce",
+  "version": "2.0.4",
+  "license": "GPL-2.0-or-later",
+  "description": "Accept payments in WooCommerce with the official Mollie plugin",
+  "keywords": [
+    "Mollie",
+    "WooCommerce",
+    "WordPress"
+  ],
+  "authors": [
+    {
+      "name": "Inpsyde GmbH",
+      "homepage": "https://inpsyde.com/",
+      "email": "hallo@inpsyde.com",
+      "role": "Company"
+    },
+    {
+      "name": "Mollie B.V.",
+      "email": "info@mollie.com"
+    }
+  ],
+  "homepage": "https://github.com/mollie/WooCommerce",
+  "main": "gulpfile.js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:mollie/WooCommerce.git"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.3.4",
+    "@babel/preset-env": "^7.3.4",
+    "babel-loader": "^8.0.5",
+    "webpack": "^4.29.5",
+    "webpack-cli": "^3.2.3"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.7.0"
+  }
+}

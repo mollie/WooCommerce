@@ -1,5 +1,11 @@
 == Changelog ==
 
+= 5.4.0 - 02-12-2019 =
+
+* Fix - Apple Pay Gateway is removed from available gateways during WooCommerce Api calls
+* Fix - Giftcard Gateway does not show the right payment icon in checkout page
+* Add - Support for Mollie Components
+
 = 5.3.2 - 04-11-2019 =
 
 * Fix - WooCommerce Session is not available before a specific action has been preformed causing null pointer exceptions in backend

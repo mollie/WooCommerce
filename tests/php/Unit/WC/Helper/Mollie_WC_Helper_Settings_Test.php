@@ -1,15 +1,14 @@
 <?php # -*- coding: utf-8 -*-
 
+namespace Mollie\WooCommerceTests\Unit\WC\Helper;
+
+use Brain\Monkey\Expectation\Exception\ExpectationArgsRequired;
 use Brain\Monkey\Expectation\Exception\NotAllowedMethod;
+use Mollie\WooCommerceTests\TestCase;
+use Mollie_WC_Helper_Settings;
 use function Brain\Monkey\Filters\expectApplied as expectFilterApplied;
 use function Brain\Monkey\Functions\expect;
-use MollieTests\TestCase;
 
-use Mollie_WC_Helper_Settings as Testee;
-
-/**
- * Class Mollie_WC_Helper_Settings_Test
- */
 class Mollie_WC_Helper_Settings_Test extends TestCase
 {
     /* -----------------------------------------------------------------
@@ -22,10 +21,10 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
     public function testGetPaymentLocale()
     {
         /*
-         * Setup Testee
+         * Setup Mollie_WC_Helper_Settings
          */
         $testee = $this->buildTesteeMethodMock(
-            Testee::class,
+            Mollie_WC_Helper_Settings::class,
             [],
             ['getPaymentLocaleSetting']
         );
@@ -46,7 +45,7 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
          */
         $result = $testee->getPaymentLocale();
 
-        self::assertEquals(Testee::SETTING_LOCALE_DEFAULT_LANGUAGE, $result);
+        self::assertEquals(Mollie_WC_Helper_Settings::SETTING_LOCALE_DEFAULT_LANGUAGE, $result);
     }
 
     /**
@@ -60,10 +59,10 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
         $validLanguageCode = 'en_US';
 
         /*
-         * Setup Testee
+         * Setup Mollie_WC_Helper_Settings
          */
         $testee = $this->buildTesteeMethodMock(
-            Testee::class,
+            Mollie_WC_Helper_Settings::class,
             [],
             [
                 'getPaymentLocaleSetting',
@@ -72,12 +71,12 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
         );
 
         /*
-         * Expect getPaymentLocaleSettings returns Testee::SETTING_LOCALE_WP_LANGUAGE_CODE
+         * Expect getPaymentLocaleSettings returns Mollie_WC_Helper_Settings::SETTING_LOCALE_WP_LANGUAGE_CODE
          */
         $testee
             ->expects($this->once())
             ->method('getPaymentLocaleSetting')
-            ->willReturn(Testee::SETTING_LOCALE_WP_LANGUAGE);
+            ->willReturn(Mollie_WC_Helper_Settings::SETTING_LOCALE_WP_LANGUAGE);
 
         /*
          * Then expect getCurrentLocale is called and return a valid language code value.
@@ -106,10 +105,10 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
         $validLanguageCode = 'en_US';
 
         /*
-         * Setup Testee
+         * Setup Mollie_WC_Helper_Settings
          */
         $testee = $this->buildTesteeMethodMock(
-            Testee::class,
+            Mollie_WC_Helper_Settings::class,
             [],
             [
                 'getPaymentLocaleSetting',
@@ -118,12 +117,12 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
         );
 
         /*
-         * Expect to call getPaymentLocaleSettings and return Testee::SETTING_LOCALE_BY_BROWSER
+         * Expect to call getPaymentLocaleSettings and return Mollie_WC_Helper_Settings::SETTING_LOCALE_BY_BROWSER
          */
         $testee
             ->expects($this->once())
             ->method('getPaymentLocaleSetting')
-            ->willReturn(Testee::SETTING_LOCALE_DETECT_BY_BROWSER);
+            ->willReturn(Mollie_WC_Helper_Settings::SETTING_LOCALE_DETECT_BY_BROWSER);
 
         /*
          * Then expect to call browserLanguage to retrieve the browser language
@@ -148,6 +147,7 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
     /**
      * Test Wp Language option is returned as default value if options from
      * database is a falsy value.
+     * @throws ExpectationArgsRequired
      */
     public function testGetPaymentLocaleSettingsReturnWpLanguagePlaceholderAsDefaultValue()
     {
@@ -157,10 +157,10 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
         $settingId = uniqid();
 
         /*
-         * Setup Testee
+         * Setup Mollie_WC_Helper_Settings
          */
         $testee = $this->buildTesteeMethodMock(
-            Testee::class,
+            Mollie_WC_Helper_Settings::class,
             [],
             ['getSettingId']
         );
@@ -171,7 +171,7 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
         $testee
             ->expects($this->once())
             ->method('getSettingId')
-            ->with(Testee::SETTING_NAME_PAYMENT_LOCALE)
+            ->with(Mollie_WC_Helper_Settings::SETTING_NAME_PAYMENT_LOCALE)
             ->willReturn($settingId);
 
         /*
@@ -180,7 +180,7 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
          */
         expect('get_option')
             ->once()
-            ->with($settingId, Testee::SETTING_LOCALE_WP_LANGUAGE)
+            ->with($settingId, Mollie_WC_Helper_Settings::SETTING_LOCALE_WP_LANGUAGE)
             ->andReturn(false);
 
         /*
@@ -188,7 +188,7 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
          */
         $result = $testee->getPaymentLocaleSetting();
 
-        self::assertEquals(Testee::SETTING_LOCALE_WP_LANGUAGE, $result);
+        self::assertEquals(Mollie_WC_Helper_Settings::SETTING_LOCALE_WP_LANGUAGE, $result);
     }
 
     /* -----------------------------------------------------------------
@@ -211,10 +211,10 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
         $expectedLanguageCode = 'en_US';
 
         /*
-         * Setup Testee
+         * Setup Mollie_WC_Helper_Settings
          */
         $testee = $this->buildTesteeMethodMock(
-            Testee::class,
+            Mollie_WC_Helper_Settings::class,
             [],
             ['extractValidLanguageCode']
         );
@@ -239,6 +239,7 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
     /**
      * Test Default language code is returned because the browser languages
      * doesn't include any allowed language.
+     * @throws ExpectationArgsRequired
      */
     public function testBrowserLanguageReturnDefaultLanguage()
     {
@@ -252,10 +253,10 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
         $_SERVER['HTTP_ACCEPT_LANGUAGE'] = 'aa,aa_AA,ee,ee_EE';
 
         /*
-         * Setup Testee
+         * Setup Mollie_WC_Helper_Settings
          */
         $testee = $this->buildTesteeMethodMock(
-            Testee::class,
+            Mollie_WC_Helper_Settings::class,
             [],
             []
         );
@@ -263,17 +264,17 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
         /*
          * Expect to apply filter over the Allowed Language Codes
          */
-        expectFilterApplied(Testee::FILTER_ALLOWED_LANGUAGE_CODE_SETTING)
+        expectFilterApplied(Mollie_WC_Helper_Settings::FILTER_ALLOWED_LANGUAGE_CODE_SETTING)
             ->once()
-            ->with(Testee::ALLOWED_LANGUAGE_CODES)
-            ->andReturn(Testee::ALLOWED_LANGUAGE_CODES);
+            ->with(Mollie_WC_Helper_Settings::ALLOWED_LANGUAGE_CODES)
+            ->andReturn(Mollie_WC_Helper_Settings::ALLOWED_LANGUAGE_CODES);
 
         /*
          * Execute Test
          */
         $result = $testee->browserLanguage();
 
-        self::assertEquals(Testee::SETTING_LOCALE_DEFAULT_LANGUAGE, $result);
+        self::assertEquals(Mollie_WC_Helper_Settings::SETTING_LOCALE_DEFAULT_LANGUAGE, $result);
     }
 
     /**
@@ -283,10 +284,10 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
     public function testBrowserLanguageReturnDefaultLanguageBecauseNoLanguageProvidedByTheRequest()
     {
         /*
-         * Setup Testee
+         * Setup Mollie_WC_Helper_Settings
          */
         $testee = $this->buildTesteeMethodMock(
-            Testee::class,
+            Mollie_WC_Helper_Settings::class,
             [],
             []
         );
@@ -296,7 +297,7 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
          */
         $result = $testee->browserLanguage();
 
-        self::assertEquals(Testee::SETTING_LOCALE_DEFAULT_LANGUAGE, $result);
+        self::assertEquals(Mollie_WC_Helper_Settings::SETTING_LOCALE_DEFAULT_LANGUAGE, $result);
     }
 
     /**
@@ -311,10 +312,10 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
         $_SERVER['HTTP_ACCEPT_LANGUAGE'] = false;
 
         /*
-         * Setup Testee
+         * Setup Mollie_WC_Helper_Settings
          */
         $testee = $this->buildTesteeMethodMock(
-            Testee::class,
+            Mollie_WC_Helper_Settings::class,
             [],
             []
         );
@@ -324,7 +325,7 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
          */
         $result = $testee->browserLanguage();
 
-        self::assertEquals(Testee::SETTING_LOCALE_DEFAULT_LANGUAGE, $result);
+        self::assertEquals(Mollie_WC_Helper_Settings::SETTING_LOCALE_DEFAULT_LANGUAGE, $result);
     }
 
     /* -----------------------------------------------------------------
@@ -339,10 +340,10 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
         $locale = 'en_US';
 
         /*
-         * Setup Testee
+         * Setup Mollie_WC_Helper_Settings
          */
         $testee = $this->buildTesteeMethodMock(
-            Testee::class,
+            Mollie_WC_Helper_Settings::class,
             [],
             ['extractValidLanguageCode']
         );
@@ -364,11 +365,11 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
             ->willReturn($locale);
 
         /*
-         * Execute Testee
+         * Execute Mollie_WC_Helper_Settings
          */
         $result = $testee->getCurrentLocale($testee);
 
-        self::assertEquals(Testee::SETTING_LOCALE_DEFAULT_LANGUAGE, $result);
+        self::assertEquals(Mollie_WC_Helper_Settings::SETTING_LOCALE_DEFAULT_LANGUAGE, $result);
     }
 
     /**
@@ -383,10 +384,10 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
         $expectedValidLanguageCode = 'en_US';
 
         /*
-         * Setup Testee
+         * Setup Mollie_WC_Helper_Settings
          */
         $testee = $this->buildTesteeMethodMock(
-            Testee::class,
+            Mollie_WC_Helper_Settings::class,
             [],
             ['extractValidLanguageCode']
         );
@@ -408,7 +409,7 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
             ->willReturn($expectedValidLanguageCode);
 
         /*
-         * Execute Testee
+         * Execute Mollie_WC_Helper_Settings
          */
         $result = $testee->getCurrentLocale($testee);
 
@@ -432,7 +433,7 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
          * Setup testee
          */
         $testee = $this->buildTesteeMethodMock(
-            Testee::class,
+            Mollie_WC_Helper_Settings::class,
             [],
             []
         );
@@ -440,7 +441,7 @@ class Mollie_WC_Helper_Settings_Test extends TestCase
         /*
          * Expect filter is applied to add or remove allowed language codes
          */
-        expectFilterApplied(Testee::FILTER_ALLOWED_LANGUAGE_CODE_SETTING)
+        expectFilterApplied(Mollie_WC_Helper_Settings::FILTER_ALLOWED_LANGUAGE_CODE_SETTING)
             ->once()
             ->andReturnFirstArg();
 

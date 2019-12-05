@@ -1,26 +1,20 @@
 <?php
 
-namespace Mollie\WC\Payment;
-
 use Mollie\Api\Endpoints\OrderEndpoint;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Refund;
-use Mollie_WC_Helper_Data;
-use Mollie_WC_Plugin;
-use UnexpectedValueException;
-use WC_Order;
 
 /**
  * Refund a WooCommerce order by line items
  */
-class OrderItemsRefunder
+class Mollie_WC_Payment_OrderItemsRefunder
 {
     const ACTION_AFTER_REFUND_ORDER_ITEMS = Mollie_WC_Plugin::PLUGIN_ID . '_refund_items_created';
     const ACTION_AFTER_CANCELED_ORDER_ITEMS = Mollie_WC_Plugin::PLUGIN_ID . '_line_items_cancelled';
 
     /**
-     * @var RefundLineItemsBuilder
+     * @var Mollie_WC_Payment_RefundLineItemsBuilder
      */
     private $refundLineItemsBuilder;
 
@@ -36,12 +30,12 @@ class OrderItemsRefunder
 
     /**
      * OrderItemsRefunder constructor.
-     * @param RefundLineItemsBuilder $refundLineItemsBuilder
+     * @param Mollie_WC_Payment_RefundLineItemsBuilder $refundLineItemsBuilder
      * @param Mollie_WC_Helper_Data $dataHelper
      * @param OrderEndpoint $ordersApiClient
      */
     public function __construct(
-        RefundLineItemsBuilder $refundLineItemsBuilder,
+        Mollie_WC_Payment_RefundLineItemsBuilder $refundLineItemsBuilder,
         Mollie_WC_Helper_Data $dataHelper,
         OrderEndpoint $ordersApiClient
     ) {
@@ -59,6 +53,7 @@ class OrderItemsRefunder
      * @return bool
      * @throws ApiException When the API call fails for any reason
      * @throws UnexpectedValueException
+     * @throws Mollie_WC_Payment_PartialRefundException
      */
     public function refund(
         WC_Order $order,

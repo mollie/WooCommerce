@@ -81,3 +81,27 @@ function cardToken()
 {
     return $cardToken = filter_input(INPUT_POST, 'cardToken', FILTER_SANITIZE_STRING) ?: '';
 }
+
+/**
+ * Isolates static debug calls.
+ *
+ * @param  string $message
+ */
+function debug($message)
+{
+    Mollie_WC_Plugin::debug($message);
+}
+
+/**
+ * Isolates static addNotice calls.
+ *
+ * @param  string $message
+ */
+function notice($message)
+{
+    Mollie_WC_Plugin::addNotice(
+        $message
+    );
+}
+
+

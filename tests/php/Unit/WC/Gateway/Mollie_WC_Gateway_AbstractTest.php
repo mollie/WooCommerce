@@ -6,6 +6,7 @@ use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerceTests\TestCase;
 use UnexpectedValueException;
 use function Brain\Monkey\Functions\when;
+use function Brain\Monkey\Functions\expect;
 use Mollie_WC_Gateway_Abstract as Testee;
 use Mollie_WC_Payment_Object;
 
@@ -249,10 +250,8 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
                 [],
                 ['paymentObject',
                     'wooCommerceOrderId',
-                    'debug',
                     'orderNeedsPayment',
-                    'activePaymentObject',
-                    'notice'
+                    'activePaymentObject'
                 ]
             )
             ->getMockForAbstractClass();
@@ -268,11 +267,10 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             ->willReturn($order_id);
 
         /*
-         * staticDebug will be called with this line
+         * debug function will be called with this line
          */
-        $testee
-            ->expects($this->once())
-            ->method('debug')
+        expect('debug')
+            ->once()
             ->with("Mollie_WC_Gateway_Abstract::getReturnRedirectUrlForOrder" . " $order_id: Determine what the redirect URL in WooCommerce should be.");
 
         /*
@@ -312,10 +310,10 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         /*
          * And we expect to addNotice of it
          */
-        $testee
-            ->expects($this->once())
-            ->method('notice')
-            ->with('There was a problem when processing your payment. Please try again.');
+
+        expect('notice')
+            ->once()
+            ->with(__('There was a problem when processing your payment. Please try again.', 'mollie-payments-for-woocommerce' ));
 
         /*
          * Then we call order->get_checkout_payment_url and return the url string
@@ -331,7 +329,5 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
          */
         $testee->getReturnRedirectUrlForOrder($order);
     }
-
-
 }
 

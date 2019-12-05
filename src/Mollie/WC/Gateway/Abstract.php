@@ -1256,7 +1256,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         $order_id = $this->wooCommerceOrderId($order);
         $debugLine = __METHOD__ . " $order_id: Determine what the redirect URL in WooCommerce should be.";
-        $this->debug($debugLine);
+        debug($debugLine);
 
         if ( $this->orderNeedsPayment( $order ) ) {
 
@@ -1294,7 +1294,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             try {
                 $payment = $this->activePaymentObject($order_id, false);
             } catch (UnexpectedValueException $exc) {
-                $this->notice( __('There was a problem when processing your payment. Please try again.', 'mollie-payments-for-woocommerce' ));
+                notice( __('There was a problem when processing your payment. Please try again.', 'mollie-payments-for-woocommerce' ));
                 // Return to order payment page
                 if (method_exists($order, 'get_checkout_payment_url')) {
                     return $order->get_checkout_payment_url(false);
@@ -1302,7 +1302,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             }
 
 			if ( ! $payment->isOpen() && ! $payment->isPending() && ! $payment->isPaid() && ! $payment->isAuthorized() ) {
-                $this->notice(__('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'));
+                notice(__('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'));
                 // Return to order payment page
 				if ( method_exists( $order, 'get_checkout_payment_url' ) ) {
 					return $order->get_checkout_payment_url( false );
@@ -2080,28 +2080,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		return parent::get_transaction_url( $order );
 	}
-
-    /**
-     * Isolates static addNotice calls.
-     *
-     * @param  string $message
-     */
-    protected function notice($message)
-    {
-        Mollie_WC_Plugin::addNotice(
-            $message
-        );
-    }
-
-    /**
-     * Isolates static debug calls.
-     *
-     * @param  string $message
-     */
-    protected function debug($message)
-    {
-        Mollie_WC_Plugin::debug($message);
-    }
 
     protected function hasFieldsIfMollieComponentsIsEnabled()
     {

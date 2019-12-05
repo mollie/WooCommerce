@@ -205,6 +205,12 @@ class Mollie_WC_Plugin
                 }
             }
         );
+        add_action(
+            'woocommerce_admin_settings_sanitize_option',
+            [$settings_helper, 'updateMerchantIdOnApiKeyChanges'],
+            10,
+            2
+        );
 
 		// Add settings link to plugins page
 		add_filter( 'plugin_action_links_' . $plugin_basename, array ( __CLASS__, 'addPluginActionLinks' ) );

@@ -40,16 +40,16 @@ class Mollie_WC_Helper_PaymentMethodIconUrl
      * @param string $paymentMethodName
      * @return mixed
      */
-    public function svgUrlForPaymentMethod(string $paymentMethodName)
+    public function svgUrlForPaymentMethod($paymentMethodName)
     {
-        return $this->paymentMethodImages? $this->paymentMethodImages[$paymentMethodName]['images']['svg']: $this->fallToAssets($paymentMethodName);
+        return $this->paymentMethodImages? $this->paymentMethodImages[$paymentMethodName]['image']->svg : $this->fallToAssets($paymentMethodName);
     }
 
     /**
      * @param string $paymentMethodName
      * @return string
      */
-    public function fallToAssets(string $paymentMethodName)
+    protected function fallToAssets($paymentMethodName)
     {
         if ( $paymentMethodName == PaymentMethod::CREDITCARD  && !is_admin()) {
             return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $paymentMethodName . 's.svg');

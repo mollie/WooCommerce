@@ -1,7 +1,9 @@
 <?php # -*- coding: utf-8 -*-
 
+namespace Mollie\WooCommerceTests\Unit\WC\Helper;
+
 use function Brain\Monkey\Functions\expect;
-use MollieTests\TestCase;
+use Mollie\WooCommerceTests\TestCase;
 use Mollie_WC_Helper_PaymentMethodIconUrl as Testee;
 
 /**
@@ -19,14 +21,21 @@ class Payment_Method_Icon_Url_Test extends TestCase
         /*
          * Setup stubs
          */
+        $image = json_decode('{
+                            "size1x": "https://mollie.com/external/icons/payment-methods/ideal.png",
+                            "size2x": "https://mollie.com/external/icons/payment-methods/ideal%402x.png",
+                            "svg": "https://mollie.com/external/icons/payment-methods/ideal.svg"
+                            }');
         $paymentMethodsList = [
             "ideal" => [
                 "id" => "ideal",
-                "images" => [
-                    "size1x" => "https://mollie.com/external/icons/payment-methods/ideal.png",
-                    "size2x" => "https://mollie.com/external/icons/payment-methods/ideal%402x.png",
-                    "svg" => "https://mollie.com/external/icons/payment-methods/ideal.svg",
-                ]
+                "description"=> NULL,
+                "minimumAmount"=> NULL,
+                "maximumAmount" => NULL,
+                "image" => $image,
+                "issuers" => NULL,
+                "pricing"=> NULL,
+                "_links"=> NULL
             ]
         ];
 
@@ -53,8 +62,6 @@ class Payment_Method_Icon_Url_Test extends TestCase
          * Setup stubs
          */
         $paymentMethod = 'creditcard';
-        $imageUrlexpected = 'plugin/assets/images/' . $paymentMethod . 's.svg';
-        define( 'M4W_PLUGIN_URL', 'plugin/' );
         $paymentMethodsList = [];
 
         /*
@@ -74,6 +81,6 @@ class Payment_Method_Icon_Url_Test extends TestCase
          * Execute Test
          */
         $result = $testee->svgUrlForPaymentMethod($paymentMethod);
-        self::assertEquals($imageUrlexpected,$result );
+        self::assertStringEndsWith('assets/images/creditcards.svg', $result);
     }
 }

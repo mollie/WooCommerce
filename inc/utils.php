@@ -81,3 +81,17 @@ function cardToken()
 {
     return $cardToken = filter_input(INPUT_POST, 'cardToken', FILTER_SANITIZE_STRING) ?: '';
 }
+
+/**
+ * Retrieve the Payment Methods from the transient or the Api
+ *
+ * @return array|bool|mixed|\Mollie\Api\Resources\BaseCollection|\Mollie\Api\Resources\MethodCollection
+ */
+function getApiMethods()
+{
+    $settings_helper = Mollie_WC_Plugin::getSettingsHelper();
+    $test_mode = $settings_helper->isTestModeEnabled();
+    $data_helper = Mollie_WC_Plugin::getDataHelper();
+    $methods = $data_helper->getApiPaymentMethods($test_mode, $use_cache = true);
+    return $methods;
+}

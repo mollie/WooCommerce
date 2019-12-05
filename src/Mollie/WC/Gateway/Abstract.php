@@ -152,11 +152,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function getIconUrl ()
     {
-        // In checkout, show the creditcards.svg with multiple logo's
-        if ( $this->getMollieMethodId() === PaymentMethod::CREDITCARD  && !is_admin()) {
-            return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $this->getMollieMethodId() . 's.svg');
-        }
-        return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $this->getMollieMethodId() . '.svg');
+        $svg = $this->iconFactory()->svgUrlForPaymentMethod($this->getMollieMethodId());
+        return $svg;
     }
 
 	/**
@@ -2089,5 +2086,16 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         return file_get_contents(
             Mollie_WC_Plugin::getPluginPath('assets/images/mollie-logo.svg')
         );
+    }
+
+    /**
+     * Singleton of the class that handles icons (API/fallback)
+     * @return Mollie_WC_Helper_PaymentMethodIconUrl|null
+     */
+    protected function iconFactory()
+    {
+        $paymentMethodsList = Mollie_WC_Plugin::paymentMethodsImages();
+        $factory = Mollie_WC_Helper_PaymentMethodIconUrl::getInstance($paymentMethodsList);
+        return $factory;
     }
 }

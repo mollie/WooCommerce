@@ -1252,12 +1252,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 *
 	 * @return string
 	 */
-	public function getReturnRedirectUrlForOrder( WC_Order $order ) {
-
-		$order_id = $this->wooCommerceOrderId($order);
-
-		$debugLine = __METHOD__ . " $order_id: Determine what the redirect URL in WooCommerce should be.";
-        $this->staticDebug($debugLine);
+	public function getReturnRedirectUrlForOrder( WC_Order $order )
+    {
+        $order_id = $this->wooCommerceOrderId($order);
+        $debugLine = __METHOD__ . " $order_id: Determine what the redirect URL in WooCommerce should be.";
+        $this->debug($debugLine);
 
         if ( $this->orderNeedsPayment( $order ) ) {
 
@@ -1296,9 +1295,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             try {
                 $payment = $this->activePaymentObject($order_id, false);
             } catch (UnexpectedValueException $exc) {
-			    $message = 'There was a problem when processing your payment. Please try again.';
-			    $type = 'mollie-payments-for-woocommerce';
-                $this->staticAddNotice($message, $type);
+                $this->notice( __('There was a problem when processing your payment. Please try again.', 'mollie-payments-for-woocommerce' ));
                 // Return to order payment page
                 if (method_exists($order, 'get_checkout_payment_url')) {
                     return $order->get_checkout_payment_url(false);
@@ -1306,9 +1303,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             }
 
 			if ( ! $payment->isOpen() && ! $payment->isPending() && ! $payment->isPaid() && ! $payment->isAuthorized() ) {
-                $message = 'Your payment was not successful. Please complete your order with a different payment method.';
-                $type = 'mollie-payments-for-woocommerce';
-                $this->staticAddNotice($message, $type);
+                $this->notice(__('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'));
                 // Return to order payment page
 				if ( method_exists( $order, 'get_checkout_payment_url' ) ) {
 					return $order->get_checkout_payment_url( false );
@@ -1344,8 +1339,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function activePaymentObject($order_id, $useCache)
     {
-        // TODO Assert int value for $order_id
-
         $paymentObject = $this->paymentObject();
 
         $activePaymentObject = $paymentObject->getActiveMolliePayment($order_id, $useCache);
@@ -2093,26 +2086,22 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      * Isolates static addNotice calls.
      *
      * @param  string $message
-     * @param  string $type
      */
-    protected function staticAddNotice($message, $type)
+    protected function notice($message)
     {
         Mollie_WC_Plugin::addNotice(
-            __(
-                $message,
-                $type
-            )
+            $message
         );
     }
 
     /**
      * Isolates static debug calls.
      *
-     * @param  string $debugLine
+     * @param  string $message
      */
-    protected function staticDebug($debugLine)
+    protected function debug($message)
     {
-        Mollie_WC_Plugin::debug($debugLine);
+        Mollie_WC_Plugin::debug($message);
     }
 
 }

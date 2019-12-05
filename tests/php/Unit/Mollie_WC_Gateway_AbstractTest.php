@@ -3,12 +3,12 @@
 namespace MollieTests\Unit;
 
 use Mollie\Api\Resources\Payment;
-
+use MollieTests\TestCase;
+use UnexpectedValueException;
+use function Brain\Monkey\Functions\when;
 use Mollie_WC_Gateway_Abstract as Testee;
 use Mollie_WC_Payment_Object;
 
-use MollieTests\TestCase;
-use UnexpectedValueException;
 
 /**
  * Class Mollie_WC_Gateway_AbstractTest
@@ -19,6 +19,13 @@ class Mollie_WC_Gateway_AbstractTest extends TestCase
     /* -----------------------------------------------------------------------
         Test wooCommerceOrderId
       ---------------------------------------------------------------------- */
+    protected function setUp()
+    {
+        parent::setUp();
+
+        when('__')->returnArg(1);
+    }
+
     /**
      * Test WooCommerce use Method if WC >= 3.0
      */
@@ -28,7 +35,7 @@ class Mollie_WC_Gateway_AbstractTest extends TestCase
          * Setup Stubs
          */
 
-        define('WC_VERSION','3.0');
+        define('WC_VERSION', '3.0');
 
         $orderId = 1;
         $order = $this
@@ -240,12 +247,12 @@ class Mollie_WC_Gateway_AbstractTest extends TestCase
             ->buildTesteeMock(
                 Testee::class,
                 [],
-                [   'paymentObject',
+                ['paymentObject',
                     'wooCommerceOrderId',
-                    'staticDebug',
+                    'debug',
                     'orderNeedsPayment',
                     'activePaymentObject',
-                    'staticAddNotice'
+                    'notice'
                 ]
             )
             ->getMockForAbstractClass();
@@ -265,8 +272,8 @@ class Mollie_WC_Gateway_AbstractTest extends TestCase
          */
         $testee
             ->expects($this->once())
-            ->method('staticDebug')
-            ->with("Mollie_WC_Gateway_Abstract::getReturnRedirectUrlForOrder". " $order_id: Determine what the redirect URL in WooCommerce should be.");
+            ->method('debug')
+            ->with("Mollie_WC_Gateway_Abstract::getReturnRedirectUrlForOrder" . " $order_id: Determine what the redirect URL in WooCommerce should be.");
 
         /*
          * orderNeedsPayment will be true
@@ -307,9 +314,8 @@ class Mollie_WC_Gateway_AbstractTest extends TestCase
          */
         $testee
             ->expects($this->once())
-            ->method('staticAddNotice')
-            ->with('There was a problem when processing your payment. Please try again.',
-                   'mollie-payments-for-woocommerce');
+            ->method('notice')
+            ->with('There was a problem when processing your payment. Please try again.');
 
         /*
          * Then we call order->get_checkout_payment_url and return the url string
@@ -325,7 +331,6 @@ class Mollie_WC_Gateway_AbstractTest extends TestCase
          */
         $testee->getReturnRedirectUrlForOrder($order);
     }
-
 
 
 }

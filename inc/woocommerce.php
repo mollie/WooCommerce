@@ -16,14 +16,6 @@ if (!function_exists('is_order_received_page'))
     }
 }
 
-if (!function_exists('wc_date_format'))
-{
-    function wc_date_format ()
-    {
-        return apply_filters('woocommerce_date_format', get_option('date_format'));
-    }
-}
-
 if (!function_exists('untrailingslashit'))
 {
     /**

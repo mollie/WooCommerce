@@ -197,14 +197,14 @@ $bootstrap = Closure::bind(
                     add_action('admin_notices', 'mollie_wc_plugin_inactive');
                     return;
                 }
-            }
-        );
 
-        add_action(
-            'init',
-            function () {
-                load_plugin_textdomain('mollie-payments-for-woocommerce');
-                Mollie_WC_Plugin::init();
+                add_action(
+                    'init',
+                    function () {
+                        load_plugin_textdomain('mollie-payments-for-woocommerce');
+                        Mollie_WC_Plugin::init();
+                    }
+                );
             }
         );
     },

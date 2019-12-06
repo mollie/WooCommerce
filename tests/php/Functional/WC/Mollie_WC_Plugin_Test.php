@@ -14,6 +14,8 @@ use function Brain\Monkey\Functions\when;
  */
 class Mollie_WC_Plugin_Test extends TestCase
 {
+    private $fileMTime;
+
     public function testGetPluginUrl()
     {
         /*
@@ -79,10 +81,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         $babelPolifyll = $wpScriptsStub->registered('script', 'babel-polyfill');
         self::assertEquals('babel-polyfill', $babelPolifyll[0]);
         self::assertEquals(M4W_PLUGIN_URL . '/public/js/babel-polyfill.min.js', $babelPolifyll[1]);
-        self::assertEquals(
-            filemtime(M4W_PLUGIN_DIR . '/public/js/babel-polyfill.min.js'),
-            $babelPolifyll[3]
-        );
+        self::assertEquals($this->fileMTime, $babelPolifyll[3]);
         self::assertEquals(true, $babelPolifyll[4]);
     }
 
@@ -102,10 +101,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         self::assertEquals('mollie_wc_gateway_applepay', $applepayScript[0]);
         self::assertEquals(M4W_PLUGIN_URL . '/public/js/applepay.min.js', $applepayScript[1]);
         self::assertEquals([], $applepayScript[2]);
-        self::assertEquals(
-            filemtime(M4W_PLUGIN_DIR . '/public/js/applepay.min.js'),
-            $applepayScript[3]
-        );
+        self::assertEquals($this->fileMTime, $applepayScript[3]);
         self::assertEquals(true, $applepayScript[4]);
     }
 
@@ -134,14 +130,11 @@ class Mollie_WC_Plugin_Test extends TestCase
         $mollieComponentsStyle = $wpScriptsStub->registered('style', 'mollie-components');
         self::assertEquals('mollie-components', $mollieComponentsStyle[0]);
         self::assertEquals(
-            M4W_PLUGIN_URL . '/public/css/mollie-components.css',
+            M4W_PLUGIN_URL . '/public/css/mollie-components.min.css',
             $mollieComponentsStyle[1]
         );
         self::assertEquals([], $mollieComponentsStyle[2]);
-        self::assertEquals(
-            filemtime(M4W_PLUGIN_DIR . '/public/css/mollie-components.css'),
-            $mollieComponentsStyle[3]
-        );
+        self::assertEquals($this->fileMTime, $mollieComponentsStyle[3]);
         self::assertEquals('screen', $mollieComponentsStyle[4]);
 
         /*
@@ -157,10 +150,7 @@ class Mollie_WC_Plugin_Test extends TestCase
             ['underscore', 'jquery', 'mollie', 'babel-polyfill'],
             $mollieComponentsScript[2]
         );
-        self::assertEquals(
-            filemtime(M4W_PLUGIN_DIR . '/public/js/mollie-components.min.js'),
-            $mollieComponentsScript[3]
-        );
+        self::assertEquals($this->fileMTime, $mollieComponentsScript[3]);
         self::assertEquals(true, $mollieComponentsScript[4]);
     }
 
@@ -229,7 +219,7 @@ class Mollie_WC_Plugin_Test extends TestCase
                 'isTestModeEnabled' => true,
                 'esc_html__' => '',
                 'is_checkout' => true,
-                'is_checkout_pay_page' => false
+                'is_checkout_pay_page' => false,
             ]
         );
 
@@ -264,5 +254,14 @@ class Mollie_WC_Plugin_Test extends TestCase
             [false, false],
             [true, false],
         ];
+    }
+
+    protected function setUp()
+    {
+        parent::setUp();
+
+        $this->fileMTime = time();
+
+        when('filemtime')->justReturn($this->fileMTime);
     }
 }

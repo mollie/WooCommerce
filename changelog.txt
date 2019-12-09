@@ -4,6 +4,7 @@
 
 * Fix - Mollie crash when WooCommerce plugin is not active
 * Fix - Checkout form does not submit the order at first click on Place Order button when payment method is not one which support Mollie Components
+* Fix - Minor styles issues for Mollie Components
 
 = 5.4.1 - 05-12-2019 =
 

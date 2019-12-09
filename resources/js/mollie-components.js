@@ -159,6 +159,7 @@ async function submitForm (evt)
   if (!isGatewaySelected(gateway)) {
     // Let other gateway to submit the form
     turnMollieComponentsSubmissionOff($form)
+    $form.submit()
     return
   }
 

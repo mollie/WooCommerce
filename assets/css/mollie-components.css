@@ -3,6 +3,10 @@
     flex-wrap: wrap;
 }
 
+.mollie-components-description svg {
+    display: inline !important;
+}
+
 .mollie-components .mollie-component-label {
     font-weight: 400;
 }

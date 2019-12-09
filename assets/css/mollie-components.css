@@ -26,6 +26,7 @@
 
 .mollie-components .mollie-component iframe {
     border-radius: 6px;
+    margin: 0;
 }
 
 .mollie-components div {

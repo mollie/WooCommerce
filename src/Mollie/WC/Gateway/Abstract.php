@@ -2055,7 +2055,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         ?>
         <div class="mollie-components"></div>
-        <p>
+        <p class="mollie-components-description">
             <?php
             echo $this->lockIcon();
             esc_html_e('Secure payments provided by ');

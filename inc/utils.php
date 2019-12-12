@@ -99,9 +99,7 @@ function debug($message)
  */
 function notice($message)
 {
-    Mollie_WC_Plugin::addNotice(
-        $message
-    );
+    Mollie_WC_Plugin::addNotice($message);
 }
 
 

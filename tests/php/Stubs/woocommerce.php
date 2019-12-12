@@ -29,6 +29,9 @@ class WC_Payment_Gateway
 
 class WC_Order
 {
+    public function get_id()
+    {
+    }
     public function add_order_note($note)
     {
     }

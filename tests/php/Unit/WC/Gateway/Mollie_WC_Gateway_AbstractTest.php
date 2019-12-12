@@ -27,82 +27,6 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         when('__')->returnArg(1);
     }
 
-    /**
-     * Test WooCommerce use Method if WC >= 3.0
-     */
-    public function testWooCommerceOrderIdCallMethod()
-    {
-        /*
-         * Setup Stubs
-         */
-
-        define('WC_VERSION', '3.0');
-
-        $orderId = 1;
-        $order = $this
-            ->getMockBuilder('\\WC_Order')
-            ->disableOriginalConstructor()
-            ->setMethods(['get_id'])
-            ->getMock();
-        /*
-         * Setup Testee
-         */
-        $testee = $this
-            ->buildTesteeMock(
-                Testee::class,
-                [],
-                []
-            )
-            ->getMockForAbstractClass();
-        $testee = $this->proxyFor($testee);
-        /*
-         * Expect get_id is called
-         */
-        $order
-            ->expects($this->once())
-            ->method('get_id')
-            ->willReturn($orderId);
-
-        /*
-         * Execute Testee
-         */
-        $result = $testee->wooCommerceOrderId($order);
-        self::assertEquals($orderId, $result);
-    }
-
-    /**
-     * Test WooCommerce use Property if Wc < 3.0
-     */
-    public function testWooCommerceOrderIdUseProperty()
-    {
-        /*
-         * Setup Stubs
-         */
-        define('WC_VERSION', mt_rand(1, 2));
-        $orderId = mt_rand(1, 2);
-        $order = $this->getMockBuilder('\\WC_Order')->getMock();
-        $order->id = $orderId;
-
-        /*
-         * Setup Testee
-         */
-        $testee = $this
-            ->buildTesteeMock(
-                Testee::class,
-                [],
-                []
-            )
-            ->getMockForAbstractClass();
-        $testee = $this->proxyFor($testee);
-
-        /*
-         * Execute Testee
-         */
-        $result = $testee->wooCommerceOrderId($order);
-
-        self::assertEquals($orderId, $result);
-    }
-
 
     /* -----------------------------------------------------------------------
        Test activePaymentObject
@@ -249,9 +173,9 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
                 Testee::class,
                 [],
                 ['paymentObject',
-                    'wooCommerceOrderId',
                     'orderNeedsPayment',
-                    'activePaymentObject'
+                    'activePaymentObject',
+                    'get_return_url'
                 ]
             )
             ->getMockForAbstractClass();
@@ -260,11 +184,10 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         /*
          * wooCommerceOrderId will return an int
          */
-        $testee
-            ->expects($this->once())
-            ->method('wooCommerceOrderId')
-            ->withAnyParameters()
-            ->willReturn($order_id);
+        expect('wooCommerceOrderId')
+            ->once()
+            ->withAnyArgs()
+            ->andReturn($order_id);
 
         /*
          * debug function will be called with this line
@@ -316,11 +239,11 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             ->with(__('There was a problem when processing your payment. Please try again.', 'mollie-payments-for-woocommerce' ));
 
         /*
-         * Then we call order->get_checkout_payment_url and return the url string
+         * Finally we call $this->get_return_url( $order ) and return the url string
          */
-        $order
+        $testee
             ->expects($this->once())
-            ->method('get_checkout_payment_url')
+            ->method('get_return_url')
             ->withAnyParameters()
             ->willReturn('url');
 

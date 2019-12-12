@@ -1295,6 +1295,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 $payment = $this->activePaymentObject($order_id, false);
             } catch (UnexpectedValueException $exc) {
                 notice( __('There was a problem when processing your payment. Please try again.', 'mollie-payments-for-woocommerce' ));
+                $exceptionMessage = $exc->getMessage();
+                $debugLine = __METHOD__ . " Problem processing the payment. $exceptionMessage";
+                debug($debugLine);
                 // Return to order payment page
                 if (method_exists($order, 'get_checkout_payment_url')) {
                     return $order->get_checkout_payment_url(false);
@@ -1344,7 +1347,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         if ($activePaymentObject === null) {
             throw new UnexpectedValueException(
-                'Active Payment Object is not a valid Payment Resource instance'
+                "$order_id: Active Payment Object is not a valid Payment Resource instance"
             );
         }
 

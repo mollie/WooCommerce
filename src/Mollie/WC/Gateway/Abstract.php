@@ -1254,7 +1254,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 */
 	public function getReturnRedirectUrlForOrder( WC_Order $order )
     {
-        $order_id = $this->wooCommerceOrderId($order);
+        $order_id = wooCommerceOrderId($order);
         $debugLine = __METHOD__ . " $order_id: Determine what the redirect URL in WooCommerce should be.";
         debug($debugLine);
 
@@ -1492,19 +1492,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		self::$alreadyDisplayedInstructions = true;
 
 	}
-
-    /**
-     * Get order ID in the correct way depending on WooCommerce version
-     *
-     * @param WC_Order $order
-     * @return int
-     */
-    protected function wooCommerceOrderId(WC_Order $order)
-    {
-        return version_compare(WC_VERSION, '3.0', '<')
-            ? $order->id
-            : $order->get_id();
-    }
 
     /**
      * @param WC_Order                  $order

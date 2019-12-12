@@ -1293,32 +1293,26 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
             try {
                 $payment = $this->activePaymentObject($order_id, false);
+                if ( ! $payment->isOpen() && ! $payment->isPending() && ! $payment->isPaid() && ! $payment->isAuthorized() ) {
+                    notice(__('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'));
+                    // Return to order payment page
+                    if ( method_exists( $order, 'get_checkout_payment_url' ) ) {
+                        return $order->get_checkout_payment_url( false );
+                    }
+                }
+                do_action( Mollie_WC_Plugin::PLUGIN_ID . '_customer_return_payment_success', $order );
             } catch (UnexpectedValueException $exc) {
                 notice( __('There was a problem when processing your payment. Please try again.', 'mollie-payments-for-woocommerce' ));
                 $exceptionMessage = $exc->getMessage();
-                $debugLine = __METHOD__ . " Problem processing the payment. $exceptionMessage";
+                $debugLine = __METHOD__ . " Problem processing the payment. {$exceptionMessage}";
                 debug($debugLine);
-                // Return to order payment page
-                if (method_exists($order, 'get_checkout_payment_url')) {
-                    return $order->get_checkout_payment_url(false);
-                }
+                do_action( Mollie_WC_Plugin::PLUGIN_ID . '_customer_return_payment_failed', $order );
             }
-
-			if ( ! $payment->isOpen() && ! $payment->isPending() && ! $payment->isPaid() && ! $payment->isAuthorized() ) {
-                notice(__('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'));
-                // Return to order payment page
-				if ( method_exists( $order, 'get_checkout_payment_url' ) ) {
-					return $order->get_checkout_payment_url( false );
-				}
-			}
-
 		}
 
-		do_action( Mollie_WC_Plugin::PLUGIN_ID . '_customer_return_payment_success', $order );
 		/*
 		 * Return to order received page
 		 */
-
 		return $this->get_return_url( $order );
 	}
     /**
@@ -1334,20 +1328,20 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     /**
      * Retrieve the active payment object
      *
-     * @param $order_id
+     * @param $orderId
      * @param $useCache
      * @return Payment
      * @throws UnexpectedValueException
      */
-    protected function activePaymentObject($order_id, $useCache)
+    protected function activePaymentObject($orderId, $useCache)
     {
         $paymentObject = $this->paymentObject();
 
-        $activePaymentObject = $paymentObject->getActiveMolliePayment($order_id, $useCache);
+        $activePaymentObject = $paymentObject->getActiveMolliePayment($orderId, $useCache);
 
         if ($activePaymentObject === null) {
             throw new UnexpectedValueException(
-                "$order_id: Active Payment Object is not a valid Payment Resource instance"
+                "Active Payment Object is not a valid Payment Resource instance. Order ID: {$orderId}"
             );
         }
 

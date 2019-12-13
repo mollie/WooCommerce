@@ -2094,8 +2094,28 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function iconFactory()
     {
-        $paymentMethodsList = Mollie_WC_Plugin::paymentMethodsImages();
-        $factory = Mollie_WC_Helper_PaymentMethodIconUrl::getInstance($paymentMethodsList);
+        static $factory = null;
+        if ($factory === null){
+            $paymentMethodsImages = $this->associativePaymentMethodsImages(getApiMethods());
+            $factory = new Mollie_WC_Helper_PaymentMethodsIconUrl($paymentMethodsImages);
+        }
+
         return $factory;
+    }
+
+    /**
+     * @param $paymentMethods
+     * @return array
+     */
+    protected function associativePaymentMethodsImages($paymentMethods)
+    {
+        $list = [];
+        if($paymentMethods){
+            $listIds = array_column($paymentMethods, 'id');
+            $listImg = array_column($paymentMethods, 'image');
+            $list = array_combine($listIds, $listImg);
+        }
+
+        return $list;
     }
 }

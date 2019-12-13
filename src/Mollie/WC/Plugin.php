@@ -1103,21 +1103,5 @@ class Mollie_WC_Plugin
 
         return implode(',', wp_list_pluck($data['lines'], 'id'));
     }
-
-    /**
-     * @return array
-     */
-    public static function paymentMethodsImages()
-    {
-        $list = [];
-        $methods = getApiMethods();
-        if($methods){
-            $listIds = array_column($methods, 'id');
-            $list = array_combine($listIds, $methods);
-            return $list;
-        }else{
-            return $list;
-        }
-    }
 }
 

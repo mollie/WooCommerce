@@ -4,7 +4,7 @@ namespace Mollie\WooCommerceTests\Unit\WC\Helper;
 
 use function Brain\Monkey\Functions\expect;
 use Mollie\WooCommerceTests\TestCase;
-use Mollie_WC_Helper_PaymentMethodIconUrl as Testee;
+use Mollie_WC_Helper_PaymentMethodsIconUrl as Testee;
 
 /**
  * Class PaymentMethodIconUrl
@@ -27,22 +27,13 @@ class Payment_Method_Icon_Url_Test extends TestCase
                             "svg": "https://mollie.com/external/icons/payment-methods/ideal.svg"
                             }');
         $paymentMethodsList = [
-            "ideal" => [
-                "id" => "ideal",
-                "description"=> NULL,
-                "minimumAmount"=> NULL,
-                "maximumAmount" => NULL,
-                "image" => $image,
-                "issuers" => NULL,
-                "pricing"=> NULL,
-                "_links"=> NULL
-            ]
+            "ideal" => $image
         ];
 
         /*
          * Setup Testee
          */
-        $testee = Testee::getInstance($paymentMethodsList);
+        $testee = new Testee ($paymentMethodsList);
 
         /*
          * Execute Test
@@ -67,7 +58,7 @@ class Payment_Method_Icon_Url_Test extends TestCase
         /*
          * Setup Testee
          */
-        $testee = Testee::getInstance($paymentMethodsList);
+        $testee = new Testee($paymentMethodsList);
 
         /*
          * Expect to call is_admin() function and return false

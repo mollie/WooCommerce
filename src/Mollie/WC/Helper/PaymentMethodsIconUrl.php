@@ -2,12 +2,8 @@
 
 use Mollie\Api\Types\PaymentMethod;
 
-class Mollie_WC_Helper_PaymentMethodIconUrl
+class Mollie_WC_Helper_PaymentMethodsIconUrl
 {
-    /**
-     * @var null
-     */
-    private static $instance = null;
     /**
      * @var array
      */
@@ -17,23 +13,9 @@ class Mollie_WC_Helper_PaymentMethodIconUrl
      * PaymentMethodIconUrl constructor.
      * @param array $paymentMethodImages
      */
-    private function __construct(array $paymentMethodImages)
+    public function __construct(array $paymentMethodImages)
     {
         $this->paymentMethodImages = $paymentMethodImages;
-    }
-
-    /**
-     * @param $paymentMethodImages
-     * @return Mollie_WC_Helper_PaymentMethodIconUrl|null
-     */
-    public static function getInstance($paymentMethodImages)
-    {
-        if (self::$instance == null)
-        {
-            self::$instance = new Mollie_WC_Helper_PaymentMethodIconUrl($paymentMethodImages);
-        }
-
-        return self::$instance;
     }
 
     /**
@@ -42,7 +24,7 @@ class Mollie_WC_Helper_PaymentMethodIconUrl
      */
     public function svgUrlForPaymentMethod($paymentMethodName)
     {
-        return $this->paymentMethodImages? $this->paymentMethodImages[$paymentMethodName]['image']->svg : $this->fallToAssets($paymentMethodName);
+        return $this->paymentMethodImages? $this->paymentMethodImages[$paymentMethodName]->svg : $this->fallToAssets($paymentMethodName);
     }
 
     /**

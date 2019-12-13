@@ -89,9 +89,8 @@ function cardToken()
  */
 function getApiMethods()
 {
-    $settings_helper = Mollie_WC_Plugin::getSettingsHelper();
-    $test_mode = $settings_helper->isTestModeEnabled();
-    $data_helper = Mollie_WC_Plugin::getDataHelper();
-    $methods = $data_helper->getApiPaymentMethods($test_mode, $use_cache = true);
+    $testMode = isTestModeEnabled();
+    $dataHelper = Mollie_WC_Plugin::getDataHelper();
+    $methods = $dataHelper->getApiPaymentMethods($testMode, $use_cache = true);
     return $methods;
 }

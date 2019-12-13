@@ -44,5 +44,10 @@
   ],
   "extra": {
     "installer-disable": true
+  },
+  "config": {
+    "platform": {
+      "php": "5.6.40"
+    }
   }
 }

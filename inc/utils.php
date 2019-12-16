@@ -83,11 +83,11 @@ function cardToken()
 }
 
 /**
- * Retrieve the Payment Methods from the transient or the Api
+ * Retrieve the available Payment Methods Data
  *
  * @return array|bool|mixed|\Mollie\Api\Resources\BaseCollection|\Mollie\Api\Resources\MethodCollection
  */
-function getApiMethods()
+function availablePaymentMethods()
 {
     $testMode = isTestModeEnabled();
     $dataHelper = Mollie_WC_Plugin::getDataHelper();

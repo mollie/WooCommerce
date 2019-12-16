@@ -2096,7 +2096,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         static $factory = null;
         if ($factory === null){
-            $paymentMethodsImages = $this->associativePaymentMethodsImages(getApiMethods());
+            $paymentMethodsImages = $this->associativePaymentMethodsImages(availablePaymentMethods());
             $factory = new Mollie_WC_Helper_PaymentMethodsIconUrl($paymentMethodsImages);
         }
 

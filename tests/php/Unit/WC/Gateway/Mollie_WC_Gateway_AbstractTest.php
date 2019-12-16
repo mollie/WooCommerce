@@ -56,7 +56,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         /*
         * Expect to call getApiMethods() function and return a mock of one method with id 'ideal'
         */
-        expect('getApiMethods')
+        expect('availablePaymentMethods')
             ->once()
             ->withNoArgs()
             ->andReturn($methods);

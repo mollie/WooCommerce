@@ -1255,7 +1255,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	public function getReturnRedirectUrlForOrder( WC_Order $order )
     {
         $order_id = wooCommerceOrderId($order);
-        $debugLine = __METHOD__ . " $order_id: Determine what the redirect URL in WooCommerce should be.";
+        $debugLine = __METHOD__ . " {$order_id}: Determine what the redirect URL in WooCommerce should be.";
         debug($debugLine);
 
         if ( $this->orderNeedsPayment( $order ) ) {
@@ -1302,7 +1302,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 }
                 do_action( Mollie_WC_Plugin::PLUGIN_ID . '_customer_return_payment_success', $order );
             } catch (UnexpectedValueException $exc) {
-                notice( __('There was a problem when processing your payment. Please try again.', 'mollie-payments-for-woocommerce' ));
+                notice( __('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ));
                 $exceptionMessage = $exc->getMessage();
                 $debugLine = __METHOD__ . " Problem processing the payment. {$exceptionMessage}";
                 debug($debugLine);
@@ -1336,7 +1336,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     protected function activePaymentObject($orderId, $useCache)
     {
         $paymentObject = $this->paymentObject();
-
         $activePaymentObject = $paymentObject->getActiveMolliePayment($orderId, $useCache);
 
         if ($activePaymentObject === null) {

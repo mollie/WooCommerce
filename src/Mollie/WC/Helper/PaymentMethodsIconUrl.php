@@ -36,6 +36,7 @@ class Mollie_WC_Helper_PaymentMethodsIconUrl
         if ( $paymentMethodName == PaymentMethod::CREDITCARD  && !is_admin()) {
             return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $paymentMethodName . 's.svg');
         }
+
         return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $paymentMethodName . '.svg');
     }
 }

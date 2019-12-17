@@ -92,5 +92,6 @@ function availablePaymentMethods()
     $testMode = isTestModeEnabled();
     $dataHelper = Mollie_WC_Plugin::getDataHelper();
     $methods = $dataHelper->getApiPaymentMethods($testMode, $use_cache = true);
+
     return $methods;
 }

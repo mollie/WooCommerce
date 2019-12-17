@@ -236,7 +236,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
 
         expect('notice')
             ->once()
-            ->with(__('There was a problem when processing your payment. Please try again.', 'mollie-payments-for-woocommerce' ));
+            ->with(__('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ));
 
         /*
          * Finally we call $this->get_return_url( $order ) and return the url string

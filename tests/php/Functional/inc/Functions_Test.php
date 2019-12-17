@@ -30,21 +30,54 @@ class Functions_Test extends TestCase
     }
 
     public function isCheckoutContextDataProvider()
+{
+    return [
+        [
+            'is_checkout' => false,
+            'is_checkout_pay_page' => false,
+            'expected' => false,
+        ],
+        [
+            'is_checkout' => true,
+            'is_checkout_pay_page' => false,
+            'expected' => true,
+        ],
+        [
+            'is_checkout' => false,
+            'is_checkout_pay_page' => true,
+            'expected' => true,
+        ],
+    ];
+}
+    /**
+     * @dataProvider isArrayAssociativeDataProvider
+     * @param $array
+     * @param $expected
+     */
+    public function testIsArrayAssociative($array, $expected)
+    {
+        /*
+         * Execute Test
+         */
+        $result = isArrayAssociative($array);
+
+        self::assertEquals($expected, $result);
+    }
+    public function isArrayAssociativeDataProvider()
     {
         return [
             [
-                'is_checkout' => false,
-                'is_checkout_pay_page' => false,
+                'array' => [],
                 'expected' => false,
             ],
             [
-                'is_checkout' => true,
-                'is_checkout_pay_page' => false,
-                'expected' => true,
+                'array' => [true, true],
+                'expected' => false,
             ],
             [
-                'is_checkout' => false,
-                'is_checkout_pay_page' => true,
+                'array' => [
+                    "ideal" => ['svg'=>'url']
+                ],
                 'expected' => true,
             ],
         ];

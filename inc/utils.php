@@ -86,20 +86,22 @@ function cardToken()
  * Isolates static debug calls.
  *
  * @param  string $message
+ * @param bool  $set_debug_header Set X-Mollie-Debug header (default false)
  */
-function debug($message)
+function debug($message, $set_debug_header = false)
 {
-    Mollie_WC_Plugin::debug($message);
+    Mollie_WC_Plugin::debug($message, $set_debug_header);
 }
 
 /**
  * Isolates static addNotice calls.
  *
  * @param  string $message
+ * @param string $type    One of notice, error or success (default notice)
  */
-function notice($message)
+function notice($message, $type = 'notice')
 {
-    Mollie_WC_Plugin::addNotice($message);
+    Mollie_WC_Plugin::addNotice($message, $type);
 }
 
 

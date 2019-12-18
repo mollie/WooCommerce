@@ -2098,7 +2098,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         static $factory = null;
         if ($factory === null){
-            $paymentMethodsImages = $this->associativePaymentMethodsImages(availablePaymentMethods());
+            $paymentMethods = array_filter((array)availablePaymentMethods());
+            $paymentMethodsImages = $this->associativePaymentMethodsImages($paymentMethods);
             $factory = new Mollie_WC_Helper_PaymentMethodsIconUrl($paymentMethodsImages);
         }
 
@@ -2109,7 +2110,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      * @param $paymentMethods
      * @return array
      */
-    protected function associativePaymentMethodsImages($paymentMethods)
+    protected function associativePaymentMethodsImages(array $paymentMethods)
     {
         $list = [];
         if($paymentMethods){

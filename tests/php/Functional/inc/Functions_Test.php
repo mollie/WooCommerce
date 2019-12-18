@@ -49,39 +49,6 @@ class Functions_Test extends TestCase
         ],
     ];
 }
-    /**
-     * @dataProvider isArrayAssociativeDataProvider
-     * @param $array
-     * @param $expected
-     */
-    public function testIsArrayAssociative($array, $expected)
-    {
-        /*
-         * Execute Test
-         */
-        $result = isArrayAssociative($array);
-
-        self::assertEquals($expected, $result);
-    }
-    public function isArrayAssociativeDataProvider()
-    {
-        return [
-            [
-                'array' => [],
-                'expected' => false,
-            ],
-            [
-                'array' => [true, true],
-                'expected' => false,
-            ],
-            [
-                'array' => [
-                    "ideal" => ['svg'=>'url']
-                ],
-                'expected' => true,
-            ],
-        ];
-    }
 
     protected function setUp()
     {

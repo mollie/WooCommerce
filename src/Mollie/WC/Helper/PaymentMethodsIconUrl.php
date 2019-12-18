@@ -24,7 +24,7 @@ class Mollie_WC_Helper_PaymentMethodsIconUrl
      */
     public function svgUrlForPaymentMethod($paymentMethodName)
     {
-        return $this->paymentMethodImages? $this->paymentMethodImages[$paymentMethodName]->svg : $this->fallToAssets($paymentMethodName);
+        return isset($this->paymentMethodImages[$paymentMethodName]->svg)? $this->paymentMethodImages[$paymentMethodName]->svg : $this->fallToAssets($paymentMethodName);
     }
 
     /**

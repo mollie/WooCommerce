@@ -95,14 +95,3 @@ function availablePaymentMethods()
 
     return $methods;
 }
-/**
- * Are we getting an associative array?
- *
- * @param array $array The array checked
- *
- * @return bool
- */
-function isArrayAssociative(array $array)
-{
-    return ([] !== $array) && array_keys($array) !== range(0, count($array) - 1);
-}

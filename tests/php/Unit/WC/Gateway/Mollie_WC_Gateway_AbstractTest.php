@@ -20,10 +20,10 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
        -------------------------------------------------------------- */
 
     /**
-     * Test getIconUrl will return the url string
-     *
-     * @test
-     */
+ * Test getIconUrl will return the url string
+ *
+ * @test
+ */
     public function getIconUrlReturnsUrlString()
     {
         /*
@@ -54,7 +54,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         }
         $methods = $methods_cleaned;
         /*
-        * Expect to call getApiMethods() function and return a mock of one method with id 'ideal'
+        * Expect to call availablePaymentMethods() function and return a mock of one method with id 'ideal'
         */
         expect('availablePaymentMethods')
             ->once()
@@ -69,7 +69,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             [],
             ['getMollieMethodId']
         )
-        ->getMockForAbstractClass();
+            ->getMockForAbstractClass();
         $testee = $this->proxyFor($testee);
 
         /*
@@ -86,6 +86,49 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         $result = $testee->getIconUrl();
 
         self::assertEquals('https://mollie.com/external/icons/payment-methods/ideal.svg', $result);
+
+    }
+    /**
+     * Test getIconUrl will return the url string even if Api returns empty
+     *
+     * @test
+     */
+    public function getIconUrlReturnsUrlStringFromAssets()
+    {
+
+        /*
+        * Expect to call availablePaymentMethods() function and return false from the API
+        */
+        expect('availablePaymentMethods')
+            ->once()
+            ->withNoArgs()
+            ->andReturn(false);
+
+        /*
+         * Setup Testee
+         */
+        $testee = $this->buildTesteeMock(
+            Testee::class,
+            [],
+            ['getMollieMethodId']
+        )
+            ->getMockForAbstractClass();
+        $testee = $this->proxyFor($testee);
+
+        /*
+        * Expect testee is has id 'ideal'
+        */
+        $testee
+            ->expects($this->once())
+            ->method('getMollieMethodId')
+            ->willReturn('ideal');
+
+        /*
+         * Execute test
+         */
+        $result = $testee->getIconUrl();
+
+        self::assertStringEndsWith('assets/images/ideal.svg', $result);
 
     }
 
@@ -167,13 +210,6 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
          * Execute Test
          */
         $emptyArr = [];
-        $apiMethods = false;
-        $result = $testee->associativePaymentMethodsImages($apiMethods);
-
-        self::assertEquals($emptyArr, $result);
-        /*
-        * Execute Test
-        */
         $result = $testee->associativePaymentMethodsImages($emptyArr);
 
         self::assertEquals($emptyArr, $result);

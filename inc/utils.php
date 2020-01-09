@@ -103,3 +103,27 @@ function cardToken()
 {
     return $cardToken = filter_input(INPUT_POST, 'cardToken', FILTER_SANITIZE_STRING) ?: '';
 }
+
+/**
+ * Isolates static debug calls.
+ *
+ * @param  string $message
+ * @param bool  $set_debug_header Set X-Mollie-Debug header (default false)
+ */
+function debug($message, $set_debug_header = false)
+{
+    Mollie_WC_Plugin::debug($message, $set_debug_header);
+}
+
+/**
+ * Isolates static addNotice calls.
+ *
+ * @param  string $message
+ * @param string $type    One of notice, error or success (default notice)
+ */
+function notice($message, $type = 'notice')
+{
+    Mollie_WC_Plugin::addNotice($message, $type);
+}
+
+

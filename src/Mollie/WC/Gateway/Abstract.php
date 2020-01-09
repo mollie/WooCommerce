@@ -1718,8 +1718,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	    if ( strpos( $lang_url, '/?' ) !== false ) {
 		    $lang_url_params = substr( $lang_url, strpos( $lang_url, "/?" ) + 2 );
 		    $return_url = $return_url . '&' . $lang_url_params;
-	    } else {
-		    $return_url = str_replace( $site_url, $lang_url, $return_url );
 	    }
 
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {

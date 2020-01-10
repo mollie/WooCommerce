@@ -22,6 +22,11 @@ function wc_bool_to_string($bool)
     return true === $bool ? 'yes' : 'no';
 }
 
+class WooCommerce
+{
+
+}
+
 class WC_Payment_Gateway
 {
 
@@ -29,6 +34,9 @@ class WC_Payment_Gateway
 
 class WC_Order
 {
+    public function get_order_key()
+    {
+    }
     public function get_id()
     {
     }

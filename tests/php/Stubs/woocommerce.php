@@ -1,4 +1,5 @@
 <?php
+
 function wc_string_to_bool($string)
 {
     return is_bool($string) ? $string : ('yes' === strtolower(
@@ -28,6 +29,9 @@ class WC_Payment_Gateway
 
 class WC_Order
 {
+    public function get_id()
+    {
+    }
     public function add_order_note($note)
     {
     }

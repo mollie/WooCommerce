@@ -13,6 +13,7 @@
             <directory suffix="Test.php">./tests/php/Unit/</directory>
             <directory suffix="Test.php">./tests/php/Integration/</directory>
             <directory suffix="Test.php">./tests/php/Functional/</directory>
+            <exclude>./tests/php/TestCase.php</exclude>
         </testsuite>
     </testsuites>
     <filter>

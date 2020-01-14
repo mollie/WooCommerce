@@ -251,6 +251,5 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
          */
         $testee->getReturnRedirectUrlForOrder($order);
     }
-
 }
 

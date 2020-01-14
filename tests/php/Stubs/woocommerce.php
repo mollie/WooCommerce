@@ -29,7 +29,11 @@ class WooCommerce
 
 class WC_Payment_Gateway
 {
-
+    public $id;
+    public function __construct($id = 1)
+    {
+        $this->id = $id;
+    }
 }
 
 class WC_Order

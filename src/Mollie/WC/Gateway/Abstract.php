@@ -1758,16 +1758,17 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             $lang_url_params = substr($lang_url, strpos($lang_url, "/?") + 2);
             $return_url = $return_url . '&' . $lang_url_params;
         }
+        $gatewayId = $this->id;
 
         if (version_compare(WC_VERSION, '3.0', '<')) {
             debug(
-                $this->id . ': Order ' . $order->id . ' returnUrl: '
+                $gatewayId . ': Order ' . $order->id . ' returnUrl: '
                 . $return_url,
                 true
             );
         } else {
             debug(
-                $this->id . ': Order ' . $order->get_id() . ' returnUrl: '
+                $gatewayId . ': Order ' . $order->get_id() . ' returnUrl: '
                 . $return_url,
                 true
             );
@@ -1827,16 +1828,16 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         // Some (multilanguage) plugins will add a extra slash to the url (/nl//) causing the URL to redirect and lose it's data.
         // Status updates via webhook will therefor not be processed. The below regex will find and remove those double slashes.
         $webhook_url = preg_replace('/([^:])(\/{2,})/', '$1/', $webhook_url);
-
+        $gatewayId = $this->id;
         if (version_compare(WC_VERSION, '3.0', '<')) {
             debug(
-                $this->id . ': Order ' . $order->id . ' webhookUrl: '
+                $gatewayId . ': Order ' . $order->id . ' webhookUrl: '
                 . $webhook_url,
                 true
             );
         } else {
             debug(
-                $this->id . ': Order ' . $order->get_id() . ' webhookUrl: '
+                $gatewayId . ': Order ' . $order->get_id() . ' webhookUrl: '
                 . $webhook_url,
                 true
             );

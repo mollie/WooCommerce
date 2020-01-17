@@ -3,6 +3,7 @@
 namespace Mollie\WooCommerceTests;
 
 use Mockery;
+use PHPUnit_Framework_Error_Warning;
 use PHPUnit_Framework_MockObject_MockBuilder;
 use PHPUnit_Framework_MockObject_MockObject;
 use function Brain\Monkey\setUp;
@@ -24,6 +25,7 @@ class TestCase extends PhpUniTestCase
      */
     protected function setUp()
     {
+        PHPUnit_Framework_Error_Warning::$enabled = FALSE;
         parent::setUp();
         setUp();
     }

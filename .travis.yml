@@ -1,5 +1,14 @@
 language: php
 warnings_are_errors: false
+before_script:
+  - |
+    echo "TRAVIS_PHP_VERSION:" $TRAVIS_PHP_VERSION;
+    php -v;
+    php -r 'echo "PHP: ".PHP_VERSION."\n";';
+    if [ $(echo "$TRAVIS_PHP_VERSION == 7.0" | bc -l) -eq 1 ]; then
+      echo using PHPUnit 5.7.27
+      curl -sSfL -o ~/.phpenv/versions/$TRAVIS_PHP_VERSION/bin/phpunit https://phar.phpunit.de/phpunit-5.7.27.phar;
+    fi
 matrix:
   fast_finish: true
   allow_failures:

@@ -7,7 +7,9 @@
         backupStaticAttributes="true"
         processIsolation="true"
         stopOnError="false"
-        stopOnFailure="false">
+        stopOnFailure="false"
+        convertNoticesToExceptions="false"
+        convertWarningsToExceptions="false">
     <testsuites>
         <testsuite name="Test">
             <directory suffix="Test.php">./tests/php/Unit/</directory>

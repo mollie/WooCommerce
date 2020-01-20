@@ -154,16 +154,16 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         // In checkout, show the creditcards.svg with multiple logo's
         if ( $this->getMollieMethodId() === PaymentMethod::CREDITCARD  && !is_admin()) {
-            return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $this->getMollieMethodId() . 's.svg');
+            return Mollie_WC_Plugin::getPluginUrl('public/images/' . $this->getMollieMethodId() . 's.svg');
         }
-        return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $this->getMollieMethodId() . '.svg');
+        return Mollie_WC_Plugin::getPluginUrl('public/images/' . $this->getMollieMethodId() . '.svg');
     }
 
 	/**
 	 * @return string
 	 */
 	public function getIssuerIconUrl( $issuer_id ) {
-		return Mollie_WC_Plugin::getPluginUrl( 'assets/images/' . $issuer_id . '.svg' );
+		return Mollie_WC_Plugin::getPluginUrl( 'public/images/' . $issuer_id . '.svg' );
 	}
 
     protected function _initIcon ()
@@ -2111,14 +2111,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     protected function lockIcon()
     {
         return file_get_contents(
-            Mollie_WC_Plugin::getPluginPath('assets/images/lock-icon.svg')
+            Mollie_WC_Plugin::getPluginPath('public/images/lock-icon.svg')
         );
     }
 
     protected function mollieLogo()
     {
         return file_get_contents(
-            Mollie_WC_Plugin::getPluginPath('assets/images/mollie-logo.svg')
+            Mollie_WC_Plugin::getPluginPath('public/images/mollie-logo.svg')
         );
     }
 }

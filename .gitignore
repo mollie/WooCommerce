@@ -1,4 +1,5 @@
 .DS_Store
+/dist
 /*.zip
 /nbproject
 /vendor/
@@ -11,6 +12,7 @@
 /.idea.example/deployment.xml
 /.idea.example/vagrant.xml
 /.idea.example/codeStyles/
-/assets/js/*.map
+/public/js/
+/public/css/
 
 .env

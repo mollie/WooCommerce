@@ -150,21 +150,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     /**
      * @return string
      */
-    public function getIconUrl ()
+    public function getIconUrl()
     {
-        // In checkout, show the creditcards.svg with multiple logo's
-        if ( $this->getMollieMethodId() === PaymentMethod::CREDITCARD  && !is_admin()) {
-            return Mollie_WC_Plugin::getPluginUrl('public/images/' . $this->getMollieMethodId() . 's.svg');
-        }
-        return Mollie_WC_Plugin::getPluginUrl('public/images/' . $this->getMollieMethodId() . '.svg');
-    }
+        $svg = $this->iconFactory()->svgUrlForPaymentMethod(
+            $this->getMollieMethodId()
+        );
 
-	/**
-	 * @return string
-	 */
-	public function getIssuerIconUrl( $issuer_id ) {
-		return Mollie_WC_Plugin::getPluginUrl( 'public/images/' . $issuer_id . '.svg' );
-	}
+        return $svg;
+    }
 
     protected function _initIcon ()
     {
@@ -2120,5 +2113,37 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         return file_get_contents(
             Mollie_WC_Plugin::getPluginPath('public/images/mollie-logo.svg')
         );
+    }
+
+    /**
+     * Singleton of the class that handles icons (API/fallback)
+     * @return Mollie_WC_Helper_PaymentMethodIconUrl|null
+     */
+    protected function iconFactory()
+    {
+        static $factory = null;
+        if ($factory === null){
+            $paymentMethods = array_filter((array)availablePaymentMethods());
+            $paymentMethodsImages = $this->associativePaymentMethodsImages($paymentMethods);
+            $factory = new Mollie_WC_Helper_PaymentMethodsIconUrl($paymentMethodsImages);
+        }
+
+        return $factory;
+    }
+
+    /**
+     * @param $paymentMethods
+     * @return array
+     */
+    protected function associativePaymentMethodsImages(array $paymentMethods)
+    {
+        $list = [];
+        if($paymentMethods){
+            $listIds = array_column($paymentMethods, 'id');
+            $listImg = array_column($paymentMethods, 'image');
+            $list = array_combine($listIds, $listImg);
+        }
+
+        return $list;
     }
 }

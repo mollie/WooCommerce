@@ -2,255 +2,218 @@
 
 namespace Mollie\WooCommerceTests\Unit\WC\Gateway;
 
-use Mollie\Api\Resources\Payment;
+use Mollie\Api\MollieApiClient;
+use Mollie\Api\Resources\Method;
+use Mollie\Api\Resources\MethodCollection;
 use Mollie\WooCommerceTests\TestCase;
-use UnexpectedValueException;
-use function Brain\Monkey\Functions\when;
-use function Brain\Monkey\Functions\expect;
 use Mollie_WC_Gateway_Abstract as Testee;
-use Mollie_WC_Payment_Object;
+use function Brain\Monkey\Functions\expect;
 
 
 /**
- * Class Mollie_WC_Gateway_AbstractTest
- * @package Mollie\WooCommerce\Tests\Unit
+ * Class Mollie_WC_Helper_Settings_Test
  */
 class Mollie_WC_Gateway_Abstract_Test extends TestCase
 {
-    /* -----------------------------------------------------------------------
-        Test wooCommerceOrderId
-      ---------------------------------------------------------------------- */
-    protected function setUp()
-    {
-        parent::setUp();
-
-        when('__')->returnArg(1);
-    }
-
-
-    /* -----------------------------------------------------------------------
-       Test activePaymentObject
-     ---------------------------------------------------------------------- */
+    /* -----------------------------------------------------------------
+       getIconUrl Tests
+       -------------------------------------------------------------- */
 
     /**
-     * Test activePaymentObject
-     */
-    public function testActivePaymentObjectNullUserRedirectedToCheckoutPageWithNotice()
+ * Test getIconUrl will return the url string
+ *
+ * @test
+ */
+    public function getIconUrlReturnsUrlString()
     {
         /*
-         * Setup Stubs
+         * Setup Stubs to mock the API call
          */
-        $paymentObject = $this
-            ->getMockBuilder(Mollie_WC_Payment_Object::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['getActiveMolliePayment'])
+        $links = new \stdClass();
+        $methods = new MethodCollection(13, $links);
+        $client = $this
+            ->buildTesteeMock(
+                MollieApiClient::class,
+                [],
+                []
+            )
             ->getMock();
-
-        $paymentResource = $this->createMock(Payment::class);
+        $methodIdeal = new Method($client);
+        $methodIdeal->id = "ideal";
+        $methodIdeal->image = json_decode('{
+                            "size1x": "https://mollie.com/external/icons/payment-methods/ideal.png",
+                            "size2x": "https://mollie.com/external/icons/payment-methods/ideal%402x.png",
+                            "svg": "https://mollie.com/external/icons/payment-methods/ideal.svg"
+                            }');
+        //this part is the same code as data::getApiPaymentMethods
+        $methods[] = $methodIdeal;
+        $methods_cleaned = array();
+        foreach ( $methods as $method ) {
+            $public_properties = get_object_vars( $method ); // get only the public properties of the object
+            $methods_cleaned[] = $public_properties;
+        }
+        $methods = $methods_cleaned;
+        /*
+        * Expect to call availablePaymentMethods() function and return a mock of one method with id 'ideal'
+        */
+        expect('availablePaymentMethods')
+            ->once()
+            ->withNoArgs()
+            ->andReturn($methods);
 
         /*
          * Setup Testee
          */
-        $testee = $this
-            ->buildTesteeMock(
-                Testee::class,
-                [],
-                ['paymentObject']
-            )
+        $testee = $this->buildTesteeMock(
+            Testee::class,
+            [],
+            ['getMollieMethodId']
+        )
             ->getMockForAbstractClass();
         $testee = $this->proxyFor($testee);
 
         /*
-         * Expect to retrieve the payment object
-         */
+        * Expect testee is has id 'ideal'
+        */
         $testee
             ->expects($this->once())
-            ->method('paymentObject')
-            ->willReturn($paymentObject);
+            ->method('getMollieMethodId')
+            ->willReturn('ideal');
 
         /*
-         * Expect to get the active mollie payment and return a valid
-         *  Mollie\Api\Resources\Payment instance
+         * Execute test
          */
-        $paymentObject
+        $result = $testee->getIconUrl();
+
+        self::assertEquals('https://mollie.com/external/icons/payment-methods/ideal.svg', $result);
+
+    }
+    /**
+     * Test getIconUrl will return the url string even if Api returns empty
+     *
+     * @test
+     */
+    public function getIconUrlReturnsUrlStringFromAssets()
+    {
+
+        /*
+        * Expect to call availablePaymentMethods() function and return false from the API
+        */
+        expect('availablePaymentMethods')
+            ->once()
+            ->withNoArgs()
+            ->andReturn(false);
+
+        /*
+         * Setup Testee
+         */
+        $testee = $this->buildTesteeMock(
+            Testee::class,
+            [],
+            ['getMollieMethodId']
+        )
+            ->getMockForAbstractClass();
+        $testee = $this->proxyFor($testee);
+
+        /*
+        * Expect testee is has id 'ideal'
+        */
+        $testee
             ->expects($this->once())
-            ->method('getActiveMolliePayment')
-            ->withAnyParameters()
-            ->willReturn($paymentResource);
+            ->method('getMollieMethodId')
+            ->willReturn('ideal');
+
+        /*
+         * Execute test
+         */
+        $result = $testee->getIconUrl();
+
+        self::assertStringEndsWith('assets/images/ideal.svg', $result);
+
+    }
+
+    /**
+     * Test associativePaymentMethodsImages returns associative array
+     * ordered by id (method name) of image urls
+     *
+     * @test
+     */
+    public function associativePaymentMethodsImagesReturnsArrayOrderedById()
+    {
+        /*
+         * Setup stubs
+         */
+        $links = new \stdClass();
+        $methods = new MethodCollection(13, $links);
+        $client = $this
+            ->buildTesteeMock(
+                MollieApiClient::class,
+                [],
+                []
+            )
+            ->getMock();
+        $methodIdeal = new Method($client);
+        $methodIdeal->id = "ideal";
+        $methodIdeal->image = json_decode('{
+                            "size1x": "https://mollie.com/external/icons/payment-methods/ideal.png",
+                            "size2x": "https://mollie.com/external/icons/payment-methods/ideal%402x.png",
+                            "svg": "https://mollie.com/external/icons/payment-methods/ideal.svg"
+                            }');
+        $methods[] = $methodIdeal;
+        $methods_cleaned = array();
+        foreach ( $methods as $method ) {
+            $public_properties = get_object_vars( $method ); // get only the public properties of the object
+            $methods_cleaned[] = $public_properties;
+        }
+        $methods = $methods_cleaned;
+        $paymentMethodsImagesResult = [
+            "ideal" => $methodIdeal->image
+        ];
+        /*
+         * Setup Testee
+         */
+        $testee = $this->buildTesteeMock(
+            Testee::class,
+            [],
+            []
+        )
+            ->getMockForAbstractClass();
+        $testee = $this->proxyFor($testee);
 
         /*
          * Execute Test
          */
-        $result = $testee->activePaymentObject(mt_rand(1, 10), false);
+        $result = $testee->associativePaymentMethodsImages($methods);
 
-        self::assertEquals($paymentResource, $result);
+        self::assertEquals($paymentMethodsImagesResult,$result );
     }
 
     /**
-     * Test activePaymentObject throw exception because `getActiveMolliePayment` return null
-     */
-    public function testActivePaymentObjectThrowExceptionBecauseNotPossibleToGetThePaymentObject()
-    {
-        /*
-         * Setup Stubs
-         */
-        $paymentObject = $this
-            ->getMockBuilder(Mollie_WC_Payment_Object::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['getActiveMolliePayment'])
-            ->getMock();
-
-        /*
-         * Setup Testee
-         */
-        $testee = $this
-            ->buildTesteeMock(
-                Testee::class,
-                [],
-                ['paymentObject']
-            )
-            ->getMockForAbstractClass();
-        $testee = $this->proxyFor($testee);
-
-        /*
-         * Expect to retrieve the payment object
-         */
-        $testee
-            ->expects($this->once())
-            ->method('paymentObject')
-            ->willReturn($paymentObject);
-
-        /*
-         * Active Mollie Payment will return a null value and
-         * we expect exception
-         */
-        $paymentObject
-            ->expects($this->once())
-            ->method('getActiveMolliePayment')
-            ->withAnyParameters()
-            ->willReturn(null);
-
-        /*
-         * And we expect an UnexpectedValueException
-         */
-        $this->expectException(UnexpectedValueException::class);
-        $this->expectExceptionMessage(
-            'Active Payment Object is not a valid Payment Resource instance'
-        );
-
-        /**
-         * @var Testee $testee
-         */
-        $testee->activePaymentObject(mt_rand(1, 10), false);
-    }
-
-    /**
+     * Test associativePaymentMethodsImages returns array ordered by id of payment method to access images directly
+     *
      * @test
-     * Test getReturnRedirectUrlForOrder handle exception because `activePaymentObject` was null
      */
-    public function getReturnRedirectUrlForOrderHandlesIfActivePaymentReturnsNull()
+    public function associativePaymentMethodsImagesReturnsEmptyArrayIfApiFails()
     {
-        /*
-         * Setup Stubs
-         */
-        $order_id = 1;
-        $order = $this
-            ->getMockBuilder('\\WC_Order')
-            ->disableOriginalConstructor()
-            ->setMethods(['get_checkout_payment_url'])
-            ->getMock();
-        $paymentObject = $this
-            ->getMockBuilder(Mollie_WC_Payment_Object::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['getCancelledMolliePaymentId'])
-            ->getMock();
-
         /*
          * Setup Testee
          */
-        $testee = $this
-            ->buildTesteeMock(
-                Testee::class,
-                [],
-                ['paymentObject',
-                    'orderNeedsPayment',
-                    'activePaymentObject',
-                    'get_return_url'
-                ]
-            )
+        $testee = $this->buildTesteeMock(
+            Testee::class,
+            [],
+            []
+        )
             ->getMockForAbstractClass();
         $testee = $this->proxyFor($testee);
 
         /*
-         * wooCommerceOrderId will return an int
+         * Execute Test
          */
-        expect('wooCommerceOrderId')
-            ->once()
-            ->withAnyArgs()
-            ->andReturn($order_id);
+        $emptyArr = [];
+        $result = $testee->associativePaymentMethodsImages($emptyArr);
 
-        /*
-         * debug function will be called with this line
-         */
-        expect('debug')
-            ->once()
-            ->with("Mollie_WC_Gateway_Abstract::getReturnRedirectUrlForOrder" . " $order_id: Determine what the redirect URL in WooCommerce should be.");
-
-        /*
-         * orderNeedsPayment will be true
-         */
-        $testee
-            ->expects($this->once())
-            ->method('orderNeedsPayment')
-            ->willReturn(true);
-
-        /*
-         * Expect to retrieve the payment object
-         */
-        $testee
-            ->expects($this->once())
-            ->method('paymentObject')
-            ->willReturn($paymentObject);
-
-        /*
-         * getCancelledMolliePaymentId will return false
-         */
-        $paymentObject
-            ->expects($this->once())
-            ->method('getCancelledMolliePaymentId')
-            ->withAnyParameters()
-            ->willReturn(false);
-
-        /*
-         * activePaymentObject will throw an unexpectedValueException
-         */
-        $testee
-            ->expects($this->once())
-            ->method('activePaymentObject')
-            ->withAnyParameters()
-            ->willThrowException(new UnexpectedValueException);
-
-        /*
-         * And we expect to addNotice of it
-         */
-
-        expect('notice')
-            ->once()
-            ->with(__('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ));
-
-        /*
-         * Finally we call $this->get_return_url( $order ) and return the url string
-         */
-        $testee
-            ->expects($this->once())
-            ->method('get_return_url')
-            ->withAnyParameters()
-            ->willReturn('url');
-
-        /**
-         * @var Testee $testee
-         */
-        $testee->getReturnRedirectUrlForOrder($order);
+        self::assertEquals($emptyArr, $result);
     }
-}
 
+
+}

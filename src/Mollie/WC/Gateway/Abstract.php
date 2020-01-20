@@ -1731,18 +1731,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
 	    $return_url = WC()->api_request_url( 'mollie_return' );
 	    $return_url = $this->removeTrailingSlashAfterParamater( $return_url );
-
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    $return_url = add_query_arg(array(
-			    'order_id'       => $order->id,
-			    'key'            => $order->order_key,
-		    ), $return_url);
-	    } else {
-		    $return_url = add_query_arg(array(
-			    'order_id'       => $order->get_id(),
-			    'key'            => $order->get_order_key(),
-		    ), $return_url);
-	    }
+        $order_id = wooCommerceOrderId($order);
+        $order_key = wooCommerceOrderKey($order);
+        $return_url = add_query_arg(array(
+                                        'order_id'       => $order_id,
+                                        'key'            => $order_key,
+                                    ), $return_url);
 	    $return_url = $this->removeTrailingSlashAfterParamater( $return_url );
 
         $lang_url   = $this->getSiteUrlWithLanguage();
@@ -1752,12 +1746,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		    $lang_url_params = substr( $lang_url, strpos( $lang_url, "/?" ) + 2 );
 		    $return_url = $return_url . '&' . $lang_url_params;
 	    }
-
-        if (version_compare(WC_VERSION, '3.0', '<')) {
-            debug($this->id . ': Order ' . $order->id . ' returnUrl: ' . $return_url, true);
-        } else {
-            debug($this->id . ': Order ' . $order->get_id() . ' returnUrl: ' . $return_url, true);
-        }
+        debug($this->id . ': Order ' . $order_id . ' returnUrl: ' . $return_url, true);
 
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_return_url', $return_url, $order);
     }
@@ -1776,18 +1765,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 	    $webhook_url = WC()->api_request_url( strtolower( get_class( $this ) ) );
 	    $webhook_url = $this->removeTrailingSlashAfterParamater( $webhook_url );
-
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    $webhook_url = add_query_arg(array(
-			    'order_id' => $order->id,
-			    'key'      => $order->order_key,
-		    ), $webhook_url);
-	    } else {
-		    $webhook_url = add_query_arg(array(
-			    'order_id' => $order->get_id(),
-			    'key'      => $order->get_order_key(),
-		    ), $webhook_url);
-	    }
+        $order_id = wooCommerceOrderId($order);
+        $order_key = wooCommerceOrderKey($order);
+        $webhook_url = add_query_arg(array(
+                                         'order_id' => $order_id,
+                                         'key'      => $order_key,
+                                     ), $webhook_url);
 	    $webhook_url = $this->removeTrailingSlashAfterParamater( $webhook_url );
 
         $lang_url    = $this->getSiteUrlWithLanguage();
@@ -1803,12 +1786,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         // Some (multilanguage) plugins will add a extra slash to the url (/nl//) causing the URL to redirect and lose it's data.
 	    // Status updates via webhook will therefor not be processed. The below regex will find and remove those double slashes.
 	    $webhook_url = preg_replace('/([^:])(\/{2,})/', '$1/', $webhook_url);
-
-        if (version_compare(WC_VERSION, '3.0', '<')) {
-            debug($this->id . ': Order ' . $order->id . ' webhookUrl: ' . $webhook_url, true);
-        } else {
-            debug($this->id . ': Order ' . $order->get_id() . ' webhookUrl: ' . $webhook_url, true);
-        }
+        debug($this->id . ': Order ' . $order_id . ' webhookUrl: ' . $webhook_url, true);
 
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_webhook_url', $webhook_url, $order);
     }

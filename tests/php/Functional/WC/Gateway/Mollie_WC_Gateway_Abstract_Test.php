@@ -14,7 +14,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
     protected function setUp()
     {
         parent::setUp();
-
+        require('inc/woocommerce.php');
         when('__')->returnArg(1);
     }
     /* -----------------------------------------------------------------
@@ -65,13 +65,10 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             ->willReturn(
                 'http://mollie-wc.docker.myhost/wc-api/mollie_return/'
             );
-        $wcOrder
-            ->method('get_id')
-            ->willReturn(89);
-        $wcOrder
-            ->method('get_order_key')
-            ->willReturn('eFZyH8jki6fge');
-
+        expect('wooCommerceOrderId')
+            ->andReturn(89);
+        expect('wooCommerceOrderKey')
+            ->andReturn('eFZyH8jki6fge');
         expect('add_query_arg')
             ->once()
             ->with(
@@ -143,19 +140,15 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             ->andReturn('http://mollie-wc.docker.myhost/');
         expect('WC')
             ->andReturn($urlFromWcApi);
-
         $urlFromWcApi
             ->method('api_request_url')
             ->willReturn(
                 'http://mollie-wc.docker.myhost/wc-api/mollie_return/mollie_wc_gateway_bancontact/'
             );
-        $wcOrder
-            ->method('get_id')
-            ->willReturn(89);
-        $wcOrder
-            ->method('get_order_key')
-            ->willReturn('eFZyH8jki6fge');
-
+        expect('wooCommerceOrderId')
+            ->andReturn(89);
+        expect('wooCommerceOrderKey')
+            ->andReturn('eFZyH8jki6fge');
         expect('add_query_arg')
             ->once()
             ->with(

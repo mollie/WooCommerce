@@ -8,7 +8,7 @@ class Mollie_WC_Plugin
 {
     const PLUGIN_ID      = 'mollie-payments-for-woocommerce';
     const PLUGIN_TITLE   = 'Mollie Payments for WooCommerce';
-    const PLUGIN_VERSION = '5.3.2';
+    const PLUGIN_VERSION = '5.4.2';
 
     const DB_VERSION     = '1.0';
     const DB_VERSION_PARAM_NAME = 'mollie-db-version';
@@ -205,6 +205,12 @@ class Mollie_WC_Plugin
                 }
             }
         );
+        add_action(
+            'woocommerce_admin_settings_sanitize_option',
+            [$settings_helper, 'updateMerchantIdOnApiKeyChanges'],
+            10,
+            2
+        );
 
 		// Add settings link to plugins page
 		add_filter( 'plugin_action_links_' . $plugin_basename, array ( __CLASS__, 'addPluginActionLinks' ) );
@@ -317,33 +323,33 @@ class Mollie_WC_Plugin
     {
         wp_register_script(
             'babel-polyfill',
-            Mollie_WC_Plugin::getPluginUrl('/assets/js/babel-polyfill.min.js'),
+            Mollie_WC_Plugin::getPluginUrl('/public/js/babel-polyfill.min.js'),
             [],
-            filemtime(Mollie_WC_Plugin::getPluginPath('/assets/js/babel-polyfill.min.js')),
+            filemtime(Mollie_WC_Plugin::getPluginPath('/public/js/babel-polyfill.min.js')),
             true
         );
 
         wp_register_script(
             'mollie_wc_gateway_applepay',
-            Mollie_WC_Plugin::getPluginUrl('/assets/js/applepay.min.js'),
+            Mollie_WC_Plugin::getPluginUrl('/public/js/applepay.min.js'),
             [],
-            filemtime(Mollie_WC_Plugin::getPluginPath('/assets/js/applepay.min.js')),
+            filemtime(Mollie_WC_Plugin::getPluginPath('/public/js/applepay.min.js')),
             true
         );
 
         wp_register_style(
             'mollie-components',
-            Mollie_WC_Plugin::getPluginUrl('/assets/css/mollie-components.css'),
+            Mollie_WC_Plugin::getPluginUrl('/public/css/mollie-components.min.css'),
             [],
-            filemtime(Mollie_WC_Plugin::getPluginPath('/assets/css/mollie-components.css')),
+            filemtime(Mollie_WC_Plugin::getPluginPath('/public/css/mollie-components.min.css')),
             'screen'
         );
         wp_register_script('mollie', 'https://js.mollie.com/v1/mollie.js', [], null, true);
         wp_register_script(
             'mollie-components',
-            Mollie_WC_Plugin::getPluginUrl('/assets/js/mollie-components.min.js'),
-            ['jquery', 'mollie', 'babel-polyfill'],
-            filemtime(Mollie_WC_Plugin::getPluginPath('/assets/js/mollie-components.min.js')),
+            Mollie_WC_Plugin::getPluginUrl('/public/js/mollie-components.min.js'),
+            ['underscore', 'jquery', 'mollie', 'babel-polyfill'],
+            filemtime(Mollie_WC_Plugin::getPluginPath('/public/js/mollie-components.min.js')),
             true
         );
     }
@@ -399,18 +405,22 @@ class Mollie_WC_Plugin
                     'testmode' => isTestModeEnabled(),
                 ],
                 'enabledGateways' => $gatewayNames,
-                'componentSettings' => $mollieComponentsStylesGateways,
-                'components' => [
-                    'cardHolder' => [
+                'componentsSettings' => $mollieComponentsStylesGateways,
+                'componentsAttributes' => [
+                    [
+                        'name' => 'cardHolder',
                         'label' => esc_html__('Card Holder', 'mollie-payments-for-woocommerce')
                     ],
-                    'cardNumber' => [
+                    [
+                        'name' => 'cardNumber',
                         'label' => esc_html__('Card Number', 'mollie-payments-for-woocommerce')
                     ],
-                    'expiryDate' => [
+                    [
+                        'name' => 'expiryDate',
                         'label' => esc_html__('Expiry Date', 'mollie-payments-for-woocommerce')
                     ],
-                    'verificationCode' => [
+                    [
+                        'name' => 'verificationCode',
                         'label' => esc_html__(
                             'Verification Code',
                             'mollie-payments-for-woocommerce'

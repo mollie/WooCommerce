@@ -16,14 +16,6 @@ if (!function_exists('is_order_received_page'))
     }
 }
 
-if (!function_exists('wc_date_format'))
-{
-    function wc_date_format ()
-    {
-        return apply_filters('woocommerce_date_format', get_option('date_format'));
-    }
-}
-
 if (!function_exists('untrailingslashit'))
 {
     /**
@@ -37,9 +29,21 @@ if (!function_exists('untrailingslashit'))
     }
 }
 
-if (!function_exists('mollieWooCommerceSession')) {
-    function mollieWooCommerceSession()
-    {
-        return WC()->session;
-    }
+function mollieWooCommerceSession()
+{
+    return WC()->session;
 }
+
+/**
+ * Get order ID in the correct way depending on WooCommerce version
+ *
+ * @param WC_Order $order
+ * @return int
+ */
+function wooCommerceOrderId(WC_Order $order)
+{
+    return version_compare(WC_VERSION, '3.0', '<')
+        ? $order->id
+        : $order->get_id();
+}
+

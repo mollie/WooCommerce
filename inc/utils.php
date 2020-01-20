@@ -49,7 +49,7 @@ function merchantProfile()
 {
     static $profile = null;
 
-    if (null === $profile) {
+    if ($profile === null) {
         $isTestMode = isTestModeEnabled();
 
         $apiHelper = Mollie_WC_Plugin::getApiHelper();
@@ -67,9 +67,31 @@ function merchantProfile()
  */
 function merchantProfileId()
 {
-    $merchantProfile = merchantProfile();
+    static $merchantProfileId = null;
+    $merchantProfileIdOptionKey = Mollie_WC_Plugin::PLUGIN_ID . '_merchant_profile_id';
 
-    return isset($merchantProfile->id) ? $merchantProfile->id : 0;
+    if ($merchantProfileId === null) {
+        $merchantProfileId = get_option($merchantProfileIdOptionKey, '');
+
+        /*
+         * Try to retrieve the merchant profile ID from an Api Request if not stored already,
+         * then store it into the database
+         */
+        if (!$merchantProfileId) {
+            try {
+                $merchantProfile = merchantProfile();
+                $merchantProfileId = isset($merchantProfile->id) ? $merchantProfile->id : '';
+            } catch (ApiException $exception) {
+                $merchantProfileId = '';
+            }
+
+            if ($merchantProfileId) {
+                update_option($merchantProfileIdOptionKey, $merchantProfileId, false);
+            }
+        }
+    }
+
+    return $merchantProfileId;
 }
 
 /**
@@ -95,3 +117,27 @@ function availablePaymentMethods()
 
     return $methods;
 }
+
+/**
+ * Isolates static debug calls.
+ *
+ * @param  string $message
+ * @param bool  $set_debug_header Set X-Mollie-Debug header (default false)
+ */
+function debug($message, $set_debug_header = false)
+{
+    Mollie_WC_Plugin::debug($message, $set_debug_header);
+}
+
+/**
+ * Isolates static addNotice calls.
+ *
+ * @param  string $message
+ * @param string $type    One of notice, error or success (default notice)
+ */
+function notice($message, $type = 'notice')
+{
+    Mollie_WC_Plugin::addNotice($message, $type);
+}
+
+

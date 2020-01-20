@@ -111,9 +111,9 @@ rsync $PLUGINSLUG/* -ri --del -m --exclude ".*" $SVNPATH/trunk/ | grep sT
 # Support for the /assets folder on the .org repo.
 echo "Moving assets"
 # Make the directory if it doesn't already exist
-mkdir -p $SVNPATH/assets/
-rsync $CURRENTDIR/assets/* -ri --del -m --exclude ".*" $SVNPATH/assets/ | grep sT
-svn add --force $SVNPATH/assets/
+mkdir -p $SVNPATH/public/
+rsync $CURRENTDIR/public/* -ri --del -m --exclude ".*" $SVNPATH/public/ | grep sT
+svn add --force $SVNPATH/public/
 
 echo "Changing directory to SVN and committing to trunk"
 cd $SVNPATH/trunk/
@@ -124,12 +124,12 @@ svn status | grep -v "^.[ \t]*\..*" | grep "^?" | awk '{print $2"@"}' | xargs sv
 svn commit --username=$SVNUSER -m "Preparing for $PLUGINVERSION release"
 
 echo "Updating WordPress plugin repo assets and committing"
-cd $SVNPATH/assets/
+cd $SVNPATH/public/
 # Delete all new files that are not set to be ignored
 svn status | grep -v "^.[ \t]*\..*" | grep "^\!" | awk '{print $2"@"}' | xargs svn del
 # Add all new files that are not set to be ignored
 svn status | grep -v "^.[ \t]*\..*" | grep "^?" | awk '{print $2"@"}' | xargs svn add
-svn update --accept mine-full $SVNPATH/assets/*
+svn update --accept mine-full $SVNPATH/public/*
 svn commit --username=$SVNUSER -m "Updating assets for $PLUGINVERSION release"
 
 echo "Creating new SVN tag and committing it"

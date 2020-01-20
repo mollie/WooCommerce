@@ -56,4 +56,56 @@ class Functions_Test extends TestCase
 
         require_once PROJECT_DIR . '/inc/functions.php';
     }
+
+    /* -----------------------------------------------------------------
+       Woocommerce Functions Tests
+       -------------------------------------------------------------- */
+    /**
+     * Test WooCommerce use Method if WC >= 3.0
+     */
+    public function testWooCommerceOrderIdCallMethod()
+    {
+        /*
+         * Setup Stubs
+         */
+
+        define('WC_VERSION', '3.0');
+
+        $orderId = 1;
+        $order = $this->createConfiguredMock(
+            '\\WC_Order',
+            [
+                'get_id' => $orderId
+            ]
+        );
+
+        /*
+         * Execute Testee
+         */
+        $result = wooCommerceOrderId($order);
+        self::assertEquals($orderId, $result);
+    }
+
+    /**
+     * Test WooCommerce use Property if Wc < 3.0
+     */
+    public function testWooCommerceOrderIdUseProperty()
+    {
+        /*
+         * Setup Stubs
+         */
+        define('WC_VERSION', mt_rand(1, 2));
+        $orderId = mt_rand(1, 2);
+        $order = $this->getMockBuilder('\\WC_Order')->getMock();
+        $order->id = $orderId;
+
+        /*
+         * Execute Testee
+         */
+        $result = wooCommerceOrderId($order);
+
+        self::assertEquals($orderId, $result);
+    }
+
+
 }

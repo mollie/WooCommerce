@@ -290,7 +290,7 @@ class Mollie_WC_Plugin_Test extends TestCase
             [],
             ['getReturnRedirectUrlForOrder']
         )->setMockClassName('Mollie_WC_Gateway_Abstract')->getMock();
-
+        $gateway->id = 'creditcard';
         $order = $this->buildTesteeMock(
             WC_Order::class,
             [],
@@ -324,7 +324,8 @@ class Mollie_WC_Plugin_Test extends TestCase
             ->once()
             ->andReturn(true);
         expect('debug')
-            ->withAnyArgs();
+            ->withAnyArgs()
+            ->andReturn(true);
         /*
          * Execute Test
          */

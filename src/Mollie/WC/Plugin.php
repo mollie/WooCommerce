@@ -444,21 +444,21 @@ class Mollie_WC_Plugin
      */
     public static function onMollieReturn ()
     {
-        $dataHelper = self::getDataHelper();
+        $dataHelper = getDataHelper();
 
         $orderId = filter_input(INPUT_GET, 'order_id', FILTER_SANITIZE_NUMBER_INT) ?: null;
         $key = filter_input(INPUT_GET, 'key', FILTER_SANITIZE_STRING) ?: null;
-        $order = $dataHelper->getWcOrder($orderId);
+        $order = $dataHelper->getWcOrder (wc_get_order_id_by_order_key ($key));
 
         if (!$order) {
             self::setHttpResponseCode(404);
-            self::debug(__METHOD__ . ":  Could not find order $orderId.");
+            debug(__METHOD__ . ":  Could not find order $orderId.");
             return;
         }
 
         if (!$order->key_is_valid($key)) {
             self::setHttpResponseCode(401);
-            self::debug(__METHOD__ . ":  Invalid key $key for order $orderId.");
+            debug(__METHOD__ . ":  Invalid key $key for order $orderId.");
             return;
         }
 
@@ -468,7 +468,7 @@ class Mollie_WC_Plugin
             $gatewayName = $order->get_payment_method();
 
             self::setHttpResponseCode(404);
-            self::debug(
+            debug(
                 __METHOD__ . ":  Could not find gateway {$gatewayName} for order {$orderId}."
             );
             return;
@@ -476,7 +476,7 @@ class Mollie_WC_Plugin
 
         if (!($gateway instanceof Mollie_WC_Gateway_Abstract)) {
             self::setHttpResponseCode(400);
-            self::debug(__METHOD__ . ": Invalid gateway " . get_class($gateway) . " for this plugin. Order $orderId.");
+            debug(__METHOD__ . ": Invalid gateway " . get_class($gateway) . " for this plugin. Order $orderId.");
             return;
         }
 
@@ -485,7 +485,7 @@ class Mollie_WC_Plugin
         // Add utm_nooverride query string
         $redirect_url = add_query_arg(['utm_nooverride' => 1], $redirect_url);
 
-        self::debug(__METHOD__ . ": Redirect url on return order " . $gateway->id . ", order $orderId: $redirect_url");
+        debug(__METHOD__ . ": Redirect url on return order " . $gateway->id . ", order $orderId: $redirect_url");
 
         wp_safe_redirect($redirect_url);
     }

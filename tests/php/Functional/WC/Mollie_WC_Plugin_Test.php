@@ -290,7 +290,7 @@ class Mollie_WC_Plugin_Test extends TestCase
             [],
             ['getReturnRedirectUrlForOrder']
         )->setMockClassName('Mollie_WC_Gateway_Abstract')->getMock();
-        $gateway->id = "creditcard";
+        $gateway->id = 98;
         $order = $this->buildTesteeMock(
             WC_Order::class,
             [],
@@ -319,7 +319,7 @@ class Mollie_WC_Plugin_Test extends TestCase
             ->method('getReturnRedirectUrlForOrder')
             ->willReturn($redirectUrl);
         when('add_query_arg')
-            ->justReturn(['https://website.org/language/order-received/4927/?key=wc_order_zUHGhd2f4fGc9&utm_nooverride=1']);
+            ->justReturn('https://website.org/language/order-received/4927/?key=wc_order_zUHGhd2f4fGc9&utm_nooverride=1');
         expect('wp_safe_redirect')
             ->once()
             ->andReturn(true);

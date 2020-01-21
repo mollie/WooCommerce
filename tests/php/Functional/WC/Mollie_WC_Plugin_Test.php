@@ -4,6 +4,7 @@ namespace Mollie\WooCommerceTests\Functional\WC;
 
 use Mollie\WooCommerceTests\TestCase;
 use Mollie_WC_Plugin;
+use WC_Order;
 use WpScriptsStub;
 use function Brain\Monkey\Functions\expect;
 use function Brain\Monkey\Functions\stubs;
@@ -263,5 +264,70 @@ class Mollie_WC_Plugin_Test extends TestCase
         $this->fileMTime = time();
 
         when('filemtime')->justReturn($this->fileMTime);
+    }
+    /* -----------------------------------------------------------------
+       onMollieReturn Tests
+       -------------------------------------------------------------- */
+
+    /**
+     * Given onMollieReturn is called
+     * when order and gateway are valid
+     * then we get a redirectUrl
+     * @test
+     */
+    public function onMollieReturn_redirectUrlCorrect(){
+        $redirectUrl= 'https://website.org/language/order-received/4927/?key=wc_order_zUHGhd2f4fGc9';
+        /*
+         * Setup Stubs to mock the external dependencies and its methods
+         */
+        $dataHelper = $this->buildTesteeMock(
+            Mollie_WC_Helper_Data::class,
+            [],
+            ['getWcOrder', 'getWcPaymentGatewayByOrder']
+        )->getMock();
+        $gateway = $this->buildTesteeMock(
+            Mollie_WC_Gateway_Abstract::class,
+            [],
+            ['getReturnRedirectUrlForOrder']
+        )->setMockClassName('Mollie_WC_Gateway_Abstract')->getMock();
+
+        $order = $this->buildTesteeMock(
+            WC_Order::class,
+            [],
+            ['key_is_valid']
+        )->getMock();
+
+        expect('getDataHelper')
+            ->once()
+            ->andReturn($dataHelper);
+        when('wc_get_order_id_by_order_key')
+            ->justReturn([4927]);
+        $dataHelper
+            ->expects($this->once())
+            ->method('getWcOrder')
+            ->willReturn($order);
+        $order
+            ->expects($this->once())
+            ->method('key_is_valid')
+            ->willReturn(true);
+        $dataHelper
+            ->expects($this->once())
+            ->method('getWcPaymentGatewayByOrder')
+            ->willReturn($gateway);
+        $gateway
+            ->expects($this->once())
+            ->method('getReturnRedirectUrlForOrder')
+            ->willReturn($redirectUrl);
+        when('add_query_arg')
+            ->justReturn(['https://website.org/language/order-received/4927/?key=wc_order_zUHGhd2f4fGc9&utm_nooverride=1']);
+        expect('wp_safe_redirect')
+            ->once()
+            ->andReturn(true);
+        expect('debug')
+            ->withAnyArgs();
+        /*
+         * Execute Test
+         */
+        Mollie_WC_Plugin::onMollieReturn();
     }
 }

@@ -483,15 +483,22 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	public function onWebhookCanceled( WC_Order $order, $payment, $payment_method_title ) {
 
 		// Get order ID in the correct way depending on WooCommerce version
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			$order_id = $order->id;
-		} else {
-			$order_id = $order->get_id();
-		}
+        $order_id = wooCommerceOrderId($order);
 
 		// Add messages to log
-		Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id );
+		debug( __METHOD__ . ' called for order ' . $order_id );
 
+		// if the status is Completed|Refunded|Cancelled  DONT change the status to cancelled
+        $data_helper = getDataHelper();
+        $isCompleted = $data_helper->hasOrderStatus($order, 'completed');
+        $isRefunded = $data_helper->hasOrderStatus($order, 'refunded');
+        $isCancelled = $data_helper->hasOrderStatus($order, 'cancelled');
+
+        if ( $isCompleted || $isRefunded || $isCancelled){
+            return;
+        }
+
+        //status is Pending|Failed|Processing|On-hold so Cancel
 		$this->unsetActiveMolliePayment( $order_id, $payment->id );
 		$this->setCancelledMolliePaymentId( $order_id, $payment->id );
 

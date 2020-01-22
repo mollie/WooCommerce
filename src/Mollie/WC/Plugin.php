@@ -440,29 +440,55 @@ class Mollie_WC_Plugin
     }
 
     /**
+     * Returns the order from the Request first by Id, if not by Key
+     *
+     * @return bool|WC_Order
+     */
+    public static function orderByRequest()
+    {
+        $dataHelper = getDataHelper();
+
+        $orderId = filter_input(INPUT_GET, 'order_id', FILTER_SANITIZE_NUMBER_INT) ?: null;
+        $key = filter_input(INPUT_GET, 'key', FILTER_SANITIZE_STRING) ?: null;
+        $order = $dataHelper->getWcOrder($orderId);
+
+        if (!$order) {
+            $order = $dataHelper->getWcOrder(wc_get_order_id_by_order_key ($key));
+        }
+
+        if (!$order) {
+            throw new \RuntimeException(
+                "Could not find order by order Id {$orderId}",
+                404
+            );
+        }
+
+        if (!$order->key_is_valid($key)) {
+            throw new \RuntimeException(
+                "Invalid key given. Key {$key} does not match the order id: {$orderId}",
+                401
+            );
+        }
+
+        return $order;
+    }
+    /**
      * Payment return url callback
      */
     public static function onMollieReturn ()
     {
         $dataHelper = getDataHelper();
 
-        $orderId = filter_input(INPUT_GET, 'order_id', FILTER_SANITIZE_NUMBER_INT) ?: null;
-        $key = filter_input(INPUT_GET, 'key', FILTER_SANITIZE_STRING) ?: null;
-        $order = $dataHelper->getWcOrder (wc_get_order_id_by_order_key ($key));
-
-        if (!$order) {
-            self::setHttpResponseCode(404);
-            debug(__METHOD__ . ":  Could not find order $orderId.");
-            return;
-        }
-
-        if (!$order->key_is_valid($key)) {
-            self::setHttpResponseCode(401);
-            debug(__METHOD__ . ":  Invalid key $key for order $orderId.");
+        try {
+            $order = self::orderByRequest();
+        } catch(RuntimeException $exc) {
+            self::setHttpResponseCode($exc->getCode());
+            debug(__METHOD__ . $exc->getMessage());
             return;
         }
 
         $gateway = $dataHelper->getWcPaymentGatewayByOrder($order);
+        $orderId = wooCommerceOrderId($order);
 
         if (!$gateway) {
             $gatewayName = $order->get_payment_method();

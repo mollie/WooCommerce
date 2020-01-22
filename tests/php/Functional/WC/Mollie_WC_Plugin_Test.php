@@ -298,22 +298,20 @@ class Mollie_WC_Plugin_Test extends TestCase
         )->getMock();
 
         expect('getDataHelper')
-            ->once()
             ->andReturn($dataHelper);
         when('wc_get_order_id_by_order_key')
             ->justReturn([4927]);
         $dataHelper
-            ->expects($this->once())
             ->method('getWcOrder')
             ->willReturn($order);
         $order
-            ->expects($this->once())
             ->method('key_is_valid')
             ->willReturn(true);
         $dataHelper
-            ->expects($this->once())
             ->method('getWcPaymentGatewayByOrder')
             ->willReturn($gateway);
+        when('wooCommerceOrderId')
+            ->justReturn([4927]);
         $gateway
             ->expects($this->once())
             ->method('getReturnRedirectUrlForOrder')

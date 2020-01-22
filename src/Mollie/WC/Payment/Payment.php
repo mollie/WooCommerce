@@ -297,6 +297,8 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
         $isCancelled = $data_helper->hasOrderStatus($order, 'cancelled');
 
         if ( $isCompleted || $isRefunded || $isCancelled){
+            debug( __METHOD__ . ' called for payment ' . $order_id . ' has final status. Nothing to be done' );
+
             return;
         }
 

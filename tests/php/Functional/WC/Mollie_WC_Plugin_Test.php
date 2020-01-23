@@ -311,7 +311,7 @@ class Mollie_WC_Plugin_Test extends TestCase
             ->method('getWcPaymentGatewayByOrder')
             ->willReturn($gateway);
         when('wooCommerceOrderId')
-            ->justReturn([4927]);
+            ->justReturn(4927);
         $gateway
             ->expects($this->once())
             ->method('getReturnRedirectUrlForOrder')

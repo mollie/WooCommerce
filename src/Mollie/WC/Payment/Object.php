@@ -642,5 +642,21 @@ class Mollie_WC_Payment_Object {
 
 		}
 	}
+    /**
+     * @param WC_Order $order
+     *
+     * @return bool
+     */
+    protected function isFinalOrderStatus(WC_Order $order)
+    {
+        $data_helper = getDataHelper();
+        $orderStatus = $data_helper->getOrderStatus($order);
+        $isFinalOrderStatus = \in_array(
+            $orderStatus,
+            ['completed', 'refunded', 'canceled'],
+            true
+        );
+        return $isFinalOrderStatus;
+    }
 
 }

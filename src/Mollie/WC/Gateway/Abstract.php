@@ -1733,10 +1733,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	    $return_url = $this->removeTrailingSlashAfterParamater( $return_url );
         $order_id = wooCommerceOrderId($order);
         $order_key = wooCommerceOrderKey($order);
-        $return_url = add_query_arg(array(
-                                        'order_id'       => $order_id,
-                                        'key'            => $order_key,
-                                    ), $return_url);
+        $return_url = $this->getStringWithArgs(
+            $order_id,
+            $order_key,
+            $return_url
+        );
 	    $return_url = $this->removeTrailingSlashAfterParamater( $return_url );
 
         $lang_url   = $this->getSiteUrlWithLanguage();
@@ -1746,7 +1747,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		    $lang_url_params = substr( $lang_url, strpos( $lang_url, "/?" ) + 2 );
 		    $return_url = $return_url . '&' . $lang_url_params;
 	    }
-        debug($this->id . ': Order ' . $order_id . ' returnUrl: ' . $return_url, true);
+        debug($this->id . ': Order {$order_id} returnUrl: {$return_url}', true);
 
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_return_url', $return_url, $order);
     }
@@ -1767,11 +1768,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	    $webhook_url = $this->removeTrailingSlashAfterParamater( $webhook_url );
         $order_id = wooCommerceOrderId($order);
         $order_key = wooCommerceOrderKey($order);
-        $webhook_url = add_query_arg(array(
-                                         'order_id' => $order_id,
-                                         'key'      => $order_key,
-                                     ), $webhook_url);
-	    $webhook_url = $this->removeTrailingSlashAfterParamater( $webhook_url );
+        $webhook_url = $this->getStringWithArgs(
+            $order_id,
+            $order_key,
+            $webhook_url
+        );
+        $webhook_url = $this->removeTrailingSlashAfterParamater( $webhook_url );
 
         $lang_url    = $this->getSiteUrlWithLanguage();
 
@@ -2103,4 +2105,23 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             Mollie_WC_Plugin::getPluginPath('assets/images/mollie-logo.svg')
         );
     }
+
+    /**
+     * @param $order_id
+     * @param $order_key
+     * @param $webhook_url
+     *
+     * @return string
+     */
+    protected function getStringWithArgs($order_id, $order_key, $webhook_url)
+    {
+        $webhook_url = add_query_arg(
+            array(
+                'order_id' => $order_id,
+                'key' => $order_key,
+            ),
+            $webhook_url
+        );
+        return $webhook_url;
+}
 }

@@ -4,13 +4,12 @@ namespace Mollie\WooCommerceTests\Functional\Payment;
 
 use Mollie\Api\Resources\Order;
 use Mollie\WooCommerceTests\TestCase;
-
 use Mollie_WC_Helper_Data;
 use Mollie_WC_Payment_Order;
 use Mollie_WC_Payment_OrderItemsRefunder;
 use WC_Order;
-
 use function Brain\Monkey\Functions\when;
+use Faker;
 
 
 class Mollie_WC_Payment_Order_Test extends TestCase
@@ -30,27 +29,16 @@ class Mollie_WC_Payment_Order_Test extends TestCase
         /*
         * Setup Stubs
         */
-        $orderItemsRefunded = $this->buildTesteeMock(
-            Mollie_WC_Payment_OrderItemsRefunder::class,
-            [],
-            []
-        )->getMock();
-
-        $payment = $this->buildTesteeMock(
-            Order::class,
-            [],
-            []
-        )->getMock();
-        $order = $this->buildTesteeMock(
-            WC_Order::class,
-            [],
-            []
-        )->getMock();
-        $dataHelper = $this->buildTesteeMock(
+        $orderItemsRefunded = $this->createMock(
+                Mollie_WC_Payment_OrderItemsRefunder::class
+            );
+        $payment = $this->createMock(Order::class);
+        $order = $this->createMock(WC_Order::class);
+        $dataHelper = $this->createConfiguredMock(
             Mollie_WC_Helper_Data::class,
-            [],
-            ['hasOrderStatus']
-        )->getMock();
+            ['getOrderStatus' => 'completed']
+        );
+        $faker = Faker\Factory::create();
         $payment_method_title = 'creditcard';
 
         /*
@@ -63,22 +51,15 @@ class Mollie_WC_Payment_Order_Test extends TestCase
          * Expectations
          */
         when('wooCommerceOrderId')
-            ->justReturn(89);
+            ->justReturn($faker->randomNumber(2));
         when('debug')
-            ->justReturn(true);
+            ->justReturn($faker->word);
         when('getDataHelper')
             ->justReturn($dataHelper);
-        $dataHelper
-            ->expects($this->exactly(3))
-            ->method('hasOrderStatus')
-            ->willReturn(true);
 
         /*
          * Execute test
          */
         $testee->onWebhookCanceled($order, $payment, $payment_method_title);
-
     }
-
-
 }

@@ -4,12 +4,10 @@ namespace Mollie\WooCommerceTests\Functional\Payment;
 
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerceTests\TestCase;
-
 use Mollie_WC_Helper_Data;
 use WC_Order;
-
 use function Brain\Monkey\Functions\when;
-
+use Faker;
 
 class Mollie_WC_Payment_Payment_Test extends TestCase
 {
@@ -28,23 +26,11 @@ class Mollie_WC_Payment_Payment_Test extends TestCase
         /*
         * Setup Stubs
         */
-
-        $payment = $this->buildTesteeMock(
-            Payment::class,
-            [],
-            []
-        )->getMock();
-        $order = $this->buildTesteeMock(
-            WC_Order::class,
-            [],
-            []
-        )->getMock();
-        $dataHelper = $this->buildTesteeMock(
-            Mollie_WC_Helper_Data::class,
-            [],
-            ['hasOrderStatus']
-        )->getMock();
+        $payment = $this->createMock(Payment::class);
+        $order = $this->createMock(WC_Order::class);
+        $dataHelper = $this->createConfiguredMock(Mollie_WC_Helper_Data::class, ['getOrderStatus'=>'completed']);
         $payment_method_title = 'creditcard';
+        $faker = Faker\Factory::create();
 
         /*
         * Setup Testee
@@ -56,22 +42,15 @@ class Mollie_WC_Payment_Payment_Test extends TestCase
          * Expectations
          */
         when('wooCommerceOrderId')
-            ->justReturn(89);
+            ->justReturn($faker->randomNumber(2));
         when('debug')
-            ->justReturn(true);
+            ->justReturn($faker->word);
         when('getDataHelper')
             ->justReturn($dataHelper);
-        $dataHelper
-            ->expects($this->exactly(3))
-            ->method('hasOrderStatus')
-            ->willReturn(true);
 
         /*
          * Execute test
          */
         $testee->onWebhookCanceled($order, $payment, $payment_method_title);
-
     }
-
-
 }

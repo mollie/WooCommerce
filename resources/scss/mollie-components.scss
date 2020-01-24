@@ -1,0 +1,68 @@
+.mollie-components {
+  display: flex;
+  flex-wrap: wrap;
+
+  .mollie-component-label {
+    font-weight: 400;
+  }
+
+  .mollie-component {
+    width: 100%;
+    min-height: 34px;
+    background-color: #FFF;
+    border-radius: 6px;
+    color: #222;
+    transition: all .05s ease;
+    box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.1),
+    0px 1px 3px 0px rgba(0, 0, 0, 0.1),
+    0px 0px 0px 1px rgba(0, 0, 0, 0.05);
+    border: 2px solid transparent;
+
+    iframe {
+      border-radius: 6px;
+      margin: 0;
+    }
+
+    &.is-invalid {
+      box-shadow: 0px 1px 1px 0px rgba(255, 51, 68, 0.1),
+      0px 1px 3px 0px rgba(255, 51, 68, 0.1);
+      border-color: #fff0f0;
+    }
+
+    &.has-focus {
+      box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.1),
+      0px 2px 6px 0px rgba(0, 0, 0, 0.1),
+      0px 0px 0px 1px rgba(0, 0, 0, 0.05);
+      border-color: #07f;
+    }
+  }
+
+  div {
+    flex-grow: 1;
+    width: 100%;
+  }
+
+  div + div {
+    display: block;
+    margin-top: .63em;
+  }
+
+  #expiryDate,
+  #verificationCode {
+    max-width: 50%;
+  }
+
+  #expiryDate {
+    padding-right: 5%;
+  }
+
+  #verificationCode {
+    padding-left: 5%;
+  }
+}
+
+.mollie-components-description {
+  svg {
+    display: inline;
+  }
+}

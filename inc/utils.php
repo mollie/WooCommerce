@@ -105,6 +105,20 @@ function cardToken()
 }
 
 /**
+ * Retrieve the available Payment Methods Data
+ *
+ * @return array|bool|mixed|\Mollie\Api\Resources\BaseCollection|\Mollie\Api\Resources\MethodCollection
+ */
+function availablePaymentMethods()
+{
+    $testMode = isTestModeEnabled();
+    $dataHelper = Mollie_WC_Plugin::getDataHelper();
+    $methods = $dataHelper->getApiPaymentMethods($testMode, $use_cache = true);
+
+    return $methods;
+}
+
+/**
  * Isolates static debug calls.
  *
  * @param  string $message

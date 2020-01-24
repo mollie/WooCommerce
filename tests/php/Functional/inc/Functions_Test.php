@@ -30,25 +30,25 @@ class Functions_Test extends TestCase
     }
 
     public function isCheckoutContextDataProvider()
-    {
-        return [
-            [
-                'is_checkout' => false,
-                'is_checkout_pay_page' => false,
-                'expected' => false,
-            ],
-            [
-                'is_checkout' => true,
-                'is_checkout_pay_page' => false,
-                'expected' => true,
-            ],
-            [
-                'is_checkout' => false,
-                'is_checkout_pay_page' => true,
-                'expected' => true,
-            ],
-        ];
-    }
+{
+    return [
+        [
+            'is_checkout' => false,
+            'is_checkout_pay_page' => false,
+            'expected' => false,
+        ],
+        [
+            'is_checkout' => true,
+            'is_checkout_pay_page' => false,
+            'expected' => true,
+        ],
+        [
+            'is_checkout' => false,
+            'is_checkout_pay_page' => true,
+            'expected' => true,
+        ],
+    ];
+}
 
     protected function setUp()
     {

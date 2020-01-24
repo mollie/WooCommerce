@@ -1,5 +1,6 @@
 {
     "redefinable-internals": [
-        "filter_input"
+        "filter_input",
+        "filemtime"
     ]
 }

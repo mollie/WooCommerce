@@ -3,6 +3,9 @@
 namespace Mollie\WooCommerceTests\Unit\WC;
 
 use Brain\Monkey\Expectation\Exception\ExpectationArgsRequired;
+use Mollie\Api\MollieApiClient;
+use Mollie\Api\Resources\Method;
+use Mollie\Api\Resources\MethodCollection;
 use Mollie\WooCommerceTests\TestCase;
 use Mollie_WC_Plugin;
 use PHPUnit_Framework_MockObject_MockObject;

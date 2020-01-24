@@ -453,7 +453,7 @@ class Mollie_WC_Plugin
         $order = $dataHelper->getWcOrder($orderId);
 
         if (!$order) {
-            $order = $dataHelper->getWcOrder(wc_get_order_id_by_order_key ($key));
+            $order = $dataHelper->getWcOrder(wc_get_order_id_by_order_key($key));
         }
 
         if (!$order) {
@@ -481,9 +481,9 @@ class Mollie_WC_Plugin
 
         try {
             $order = self::orderByRequest();
-        } catch(RuntimeException $exc) {
+        } catch (RuntimeException $exc) {
             self::setHttpResponseCode($exc->getCode());
-            debug(__METHOD__ . $exc->getMessage());
+            debug(__METHOD__ . ": " . $exc->getMessage());
             return;
         }
 

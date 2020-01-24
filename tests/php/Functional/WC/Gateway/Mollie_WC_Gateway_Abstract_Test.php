@@ -14,7 +14,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
     protected function setUp()
     {
         parent::setUp();
-        require('inc/woocommerce.php');
+
         when('__')->returnArg(1);
     }
     /* -----------------------------------------------------------------

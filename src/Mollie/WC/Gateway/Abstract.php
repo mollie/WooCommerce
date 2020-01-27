@@ -1722,7 +1722,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 	    $return_url = WC()->api_request_url( 'mollie_return' );
 	    $return_url = $this->removeTrailingSlashAfterParamater( $return_url );
-
+        $return_url = idn_to_ascii($return_url);
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 		    $return_url = add_query_arg(array(
 			    'order_id'       => $order->id,
@@ -1765,7 +1765,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 	    $webhook_url = WC()->api_request_url( strtolower( get_class( $this ) ) );
 	    $webhook_url = $this->removeTrailingSlashAfterParamater( $webhook_url );
-
+        $webhook_url = idn_to_ascii($webhook_url);
 	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 		    $webhook_url = add_query_arg(array(
 			    'order_id' => $order->id,

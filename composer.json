@@ -22,7 +22,8 @@
     "brain/monkey": "^2.3",
     "ptrofimov/xpmock": "^1",
     "johnpbloch/wordpress-core": "^3.8 || ^4.0 || ^5.0",
-    "woocommerce/woocommerce": "^2.2 || ^3.0"
+    "woocommerce/woocommerce": "^2.2 || ^3.0",
+    "fzaninotto/faker": "^1.9@dev"
   },
   "autoload": {
     "psr-0": {

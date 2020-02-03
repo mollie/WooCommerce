@@ -24,7 +24,9 @@ function wc_bool_to_string($bool)
 
 class WooCommerce
 {
-
+    public function api_request_url()
+    {
+    }
 }
 
 class WC_Payment_Gateway

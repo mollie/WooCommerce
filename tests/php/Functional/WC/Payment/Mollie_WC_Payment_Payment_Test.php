@@ -5,6 +5,7 @@ namespace Mollie\WooCommerceTests\Functional\Payment;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerceTests\TestCase;
 use Mollie_WC_Helper_Data;
+use Mollie_WC_Payment_Payment;
 use WC_Order;
 use function Brain\Monkey\Functions\when;
 use Faker;
@@ -36,7 +37,7 @@ class Mollie_WC_Payment_Payment_Test extends TestCase
         * Setup Testee
         */
         $data = 'order';
-        $testee = new \Mollie_WC_Payment_Payment($data);
+        $testee = new Mollie_WC_Payment_Payment($data);
 
         /*
          * Expectations

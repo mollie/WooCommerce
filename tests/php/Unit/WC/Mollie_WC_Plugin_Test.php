@@ -14,6 +14,7 @@ use RuntimeException;
 use stdClass;
 use function Brain\Monkey\Functions\expect;
 use function Brain\Monkey\Functions\when;
+use Faker;
 
 class Mollie_WC_Plugin_Test extends TestCase
 {
@@ -285,13 +286,16 @@ class Mollie_WC_Plugin_Test extends TestCase
 
         return $mock;
     }
+
     /**
      * Given orderByRequest is called
      * when id and key are valid in the request
      * then we get an order by id
+     *
      * @test
      */
-    public function orderByRequest_returnOrder_byId(){
+    public function orderByRequest_returnOrder_byId()
+    {
         /*
          * Setup Stubs
          */
@@ -314,20 +318,24 @@ class Mollie_WC_Plugin_Test extends TestCase
         $result = Mollie_WC_Plugin::orderByRequest();
         self::assertEquals($order, $result);
     }
+
     /**
      * Given orderByRequest is called
      * when key is valid but not id in the request
      * then we get an order by key
+     *
      * @test
      */
-    public function orderByRequest_returnOrder_byKey(){
+    public function orderByRequest_returnOrder_byKey()
+    {
         /*
          * Setup Stubs
          */
         $dataHelper = $this->mockDataHelper();
         $order = $this->mockOrder();
-        $id = '';
-        $key = 'asj23';
+        $faker = Faker\Factory::create();
+        $id = $faker->uuid;
+        $key = $faker->word;
 
         //functions called
         expect('getDataHelper')
@@ -339,8 +347,8 @@ class Mollie_WC_Plugin_Test extends TestCase
         //and we pass key to retrieve order
         $dataHelper
             ->method('getWcOrder')
-            ->withConsecutive([$id],[$key])
-            ->willReturn(false,$order);
+            ->withConsecutive([$id], [$key])
+            ->willReturn(false, $order);
 
         $order
             ->method('key_is_valid')
@@ -351,6 +359,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         $result = Mollie_WC_Plugin::orderByRequest();
         self::assertEquals($order, $result);
     }
+
     /**
      * Given orderByRequest is called
      * when id nor key are valid
@@ -360,7 +369,8 @@ class Mollie_WC_Plugin_Test extends TestCase
      *
      * @param $returned wether we get or not the order
      * @param $message  the message of the runtimeException
-     * @param $code  the code of the runtimeException
+     * @param $code     the code of the runtimeException
+     *
      * @dataProvider orderByRequestDataProvider
      * @expectedException RuntimeException
      */
@@ -372,7 +382,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         $order = $this->mockOrder();
         $id = '';
         $key = '';
-        if($returned){
+        if ($returned) {
             $returned = $order;
         }
 
@@ -385,8 +395,8 @@ class Mollie_WC_Plugin_Test extends TestCase
         // retrieving fails
         $dataHelper
             ->method('getWcOrder')
-            ->withConsecutive([$id],[$key])
-            ->willReturn(false,$returned);
+            ->withConsecutive([$id], [$key])
+            ->willReturn(false, $returned);
 
         $order
             ->method('key_is_valid')
@@ -433,10 +443,13 @@ class Mollie_WC_Plugin_Test extends TestCase
     public function orderByRequestDataProvider()
     {
         return [
-            [false,
+            [
+                false,
                 "Could not find order by order Id {$orderId}",
-                404],
-            [true,
+                404
+            ],
+            [
+                true,
                 "Invalid key given. Key {$key} does not match the order id: {$orderId}",
                 401
             ],

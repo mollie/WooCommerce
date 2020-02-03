@@ -27,12 +27,25 @@ class WC_Payment_Gateway
 
 }
 
+class Mollie_WC_Helper_Data
+{
+    public function getWcOrder()
+    {
+    }
+    public function getWcPaymentGatewayByOrder()
+    {
+    }
+}
+
 class WC_Order
 {
     public function get_id()
     {
     }
     public function add_order_note($note)
+    {
+    }
+    public function key_is_valid()
     {
     }
 }

@@ -457,14 +457,14 @@ class Mollie_WC_Plugin
         }
 
         if (!$order) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 "Could not find order by order Id {$orderId}",
                 404
             );
         }
 
         if (!$order->key_is_valid($key)) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 "Invalid key given. Key {$key} does not match the order id: {$orderId}",
                 401
             );
@@ -483,7 +483,7 @@ class Mollie_WC_Plugin
             $order = self::orderByRequest();
         } catch (RuntimeException $exc) {
             self::setHttpResponseCode($exc->getCode());
-            debug(__METHOD__ . ": " . $exc->getMessage());
+            debug(__METHOD__ . ":  {$exc->getMessage()}");
             return;
         }
 
@@ -502,7 +502,7 @@ class Mollie_WC_Plugin
 
         if (!($gateway instanceof Mollie_WC_Gateway_Abstract)) {
             self::setHttpResponseCode(400);
-            debug(__METHOD__ . ": Invalid gateway " . get_class($gateway) . " for this plugin. Order $orderId.");
+            debug(__METHOD__ . ": Invalid gateway {get_class($gateway)} for this plugin. Order {$orderId}.");
             return;
         }
 
@@ -511,7 +511,7 @@ class Mollie_WC_Plugin
         // Add utm_nooverride query string
         $redirect_url = add_query_arg(['utm_nooverride' => 1], $redirect_url);
 
-        debug(__METHOD__ . ": Redirect url on return order " . $gateway->id . ", order $orderId: $redirect_url");
+        debug(__METHOD__ . ": Redirect url on return order {$gateway->id}, order {$orderId}: {$redirect_url}");
 
         wp_safe_redirect($redirect_url);
     }

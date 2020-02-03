@@ -2,7 +2,9 @@
 
 class Mollie_WC_Payment_Object {
 
-	public static $paymentId;
+    const FINAL_STATUSES = ['completed', 'refunded', 'canceled'];
+
+    public static $paymentId;
 	public static $customerId;
 	public static $order;
 	public static $payment;
@@ -642,6 +644,7 @@ class Mollie_WC_Payment_Object {
 
 		}
 	}
+
     /**
      * @param WC_Order $order
      *
@@ -649,13 +652,14 @@ class Mollie_WC_Payment_Object {
      */
     protected function isFinalOrderStatus(WC_Order $order)
     {
-        $data_helper = getDataHelper();
-        $orderStatus = $data_helper->getOrderStatus($order);
-        $isFinalOrderStatus = \in_array(
+        $dataHelper = getDataHelper();
+        $orderStatus = $dataHelper->getOrderStatus($order);
+        $isFinalOrderStatus = in_array(
             $orderStatus,
-            ['completed', 'refunded', 'canceled'],
+            self::FINAL_STATUSES,
             true
         );
+
         return $isFinalOrderStatus;
     }
 

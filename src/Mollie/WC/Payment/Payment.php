@@ -288,13 +288,13 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
         $order_id = wooCommerceOrderId($order);
 
 		// Add messages to log
-		debug( __METHOD__ . ' called for payment ' . $order_id );
+		debug( __METHOD__ . " called for payment {$order_id}" );
 
 		// if the status is Completed|Refunded|Cancelled  DONT change the status to cancelled
         if ($this->isFinalOrderStatus($order)) {
             debug(
-                __METHOD__ . ' called for payment ' . $order_id
-                . ' has final status. Nothing to be done'
+                __METHOD__
+                . " called for payment {$order_id} has final status. Nothing to be done"
             );
 
             return;
@@ -365,7 +365,6 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 				}
 			}
 		}
-
 	}
 
 	/**

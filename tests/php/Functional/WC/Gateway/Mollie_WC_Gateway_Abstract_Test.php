@@ -12,11 +12,31 @@ use Faker;
 
 class Mollie_WC_Gateway_Abstract_Test extends TestCase
 {
+    /**
+     * @var Generator
+     */
+    protected $faker;
+    /**
+     * @inheritDoc
+     * @throws InvalidArgumentException
+     */
     protected function setUp()
     {
         parent::setUp();
+        $this->setupFaker();
 
         when('__')->returnArg(1);
+    }
+    /**
+     * Create Faker instance
+     *
+     * @throws InvalidArgumentException
+     * @return void
+     */
+    protected function setupFaker()
+    {
+        $fakeFactory = new Faker\Factory();
+        $this->faker = $fakeFactory->create();
     }
     /* -----------------------------------------------------------------
   getReturnUrl Tests
@@ -45,14 +65,14 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         /*
          * Setup Stubs
          */
+        $apiRequestUrl = $this->faker->url;
         $urlFromWcApi = $this->createConfiguredMock(
                 \WooCommerce::class,
-                ['api_request_url'=>'http://mollie-wc.docker.myhost/wc-api/mollie_return/']
+                ['api_request_url'=>$apiRequestUrl]
             );
         $wcOrder = $this->createMock('WC_Order');
-        $faker = Faker\Factory::create();
-        $id = $faker->randomDigit;
-        $key = $faker->word;
+        $id = $this->faker->randomDigit;
+        $key = $this->faker->word;
         /*
         * Expectations
         */
@@ -69,10 +89,10 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
                     'order_id' => $id,
                     'key' => $key,
                 ),
-                'http://mollie-wc.docker.myhost/wc-api/mollie_return'
+                $apiRequestUrl
             )
             ->andReturn(
-                'http://mollie-wc.docker.myhost/wc-api/mollie_return/?order_id='.$id.'&key=wc_order_'.$key
+                "{$apiRequestUrl}/?order_id={$id}&key=wc_order_{$key}"
             );
         $testee
             ->expects($this->once())
@@ -86,7 +106,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         $result = $testee->getReturnUrl($wcOrder);
 
         self::assertEquals(
-            'http://mollie-wc.docker.myhost/wc-api/mollie_return/?order_id='.$id.'&key=wc_order_'.$key,
+            "{$apiRequestUrl}/?order_id={$id}&key=wc_order_{$key}",
             $result
         );
     }
@@ -116,19 +136,21 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         /*
         * Setup Stubs
         */
+        $homeUrl = $this->faker->url;
+        $apiRequestUrl = "{$homeUrl}/wc-api/mollie_return/mollie_wc_gateway_bancontact"
+        ;
         $urlFromWcApi = $this->createConfiguredMock(
             \WooCommerce::class,
-            ['api_request_url'=>'http://mollie-wc.docker.myhost/wc-api/mollie_return/mollie_wc_gateway_bancontact/']
+            ['api_request_url'=>$apiRequestUrl]
         );
         $wcOrder = $this->createMock('WC_Order');
-        $faker = Faker\Factory::create();
-        $id = $faker->randomDigit;
-        $key = $faker->word;
+        $id = $this->faker->randomDigit;
+        $key = $this->faker->word;
         /*
         * Expectations
         */
         expect('get_home_url')
-            ->andReturn('http://mollie-wc.docker.myhost/');
+            ->andReturn($homeUrl);
         expect('WC')
             ->andReturn($urlFromWcApi);
         expect('wooCommerceOrderId')
@@ -142,15 +164,15 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
                     'order_id' => $id,
                     'key' => $key,
                 ),
-                'http://mollie-wc.docker.myhost/wc-api/mollie_return/mollie_wc_gateway_bancontact'
+                $apiRequestUrl
             )
             ->andReturn(
-                'http://mollie-wc.docker.myhost/wc-api/mollie_return/mollie_wc_gateway_bancontact/?order_id='.$id.'&key=wc_order_'.$key
+                "{$apiRequestUrl}/?order_id={$id}&key=wc_order_{$key}"
             );
         $testee
             ->expects($this->once())
             ->method('getSiteUrlWithLanguage')
-            ->willReturn('http://mollie-wc.docker.myhost/nl/');
+            ->willReturn("{$homeUrl}/nl/");
         expect('debug')
             ->withAnyArgs();
         /*
@@ -160,7 +182,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         $result = $testee->getWebhookUrl($wcOrder);
 
         self::assertEquals(
-            'http://mollie-wc.docker.myhost/nl/wc-api/mollie_return/mollie_wc_gateway_bancontact/?order_id='.$id.'&key=wc_order_'.$key,
+            "{$homeUrl}nl/wc-api/mollie_return/mollie_wc_gateway_bancontact/?order_id={$id}&key=wc_order_{$key}",
             $result
         );
     }

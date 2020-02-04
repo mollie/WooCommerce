@@ -92,7 +92,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
                 $apiRequestUrl
             )
             ->andReturn(
-                "{$apiRequestUrl}/?order_id={$id}&key=wc_order_{$key}"
+                $apiRequestUrl."/?order_id={$id}&key=wc_order_{$key}"
             );
         $testee
             ->expects($this->once())
@@ -136,9 +136,8 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         /*
         * Setup Stubs
         */
-        $homeUrl = $this->faker->url.'/';
-        $apiRequestUrl = "{$homeUrl}/wc-api/mollie_return/mollie_wc_gateway_bancontact"
-        ;
+        $homeUrl = $this->faker->url;
+        $apiRequestUrl = "{$homeUrl}/wc-api/mollie_return/mollie_wc_gateway_bancontact";
         $urlFromWcApi = $this->createConfiguredMock(
             \WooCommerce::class,
             ['api_request_url'=>$apiRequestUrl]
@@ -172,7 +171,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         $testee
             ->expects($this->once())
             ->method('getSiteUrlWithLanguage')
-            ->willReturn("{$homeUrl}/nl/");
+            ->willReturn("{$homeUrl}/nl");
         expect('debug')
             ->withAnyArgs();
         /*
@@ -182,7 +181,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         $result = $testee->getWebhookUrl($wcOrder);
 
         self::assertEquals(
-            "{$homeUrl}nl/wc-api/mollie_return/mollie_wc_gateway_bancontact/?order_id={$id}&key=wc_order_{$key}",
+            "{$homeUrl}/nl/wc-api/mollie_return/mollie_wc_gateway_bancontact/?order_id={$id}&key=wc_order_{$key}",
             $result
         );
     }

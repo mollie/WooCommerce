@@ -409,32 +409,33 @@ class Mollie_WC_Plugin_Test extends TestCase
         self::expectExceptionMessage($message);
         self::expectExceptionCode($code);
     }
+
     /**
      * @return PHPUnit_Framework_MockObject_MockObject
      */
     private function mockOrder()
     {
-        $mock = $this->buildTesteeMock(
-            WC_Order::class,
-            [],
-            ['key_is_valid']
-        )->getMock();
+        $mock = $this->getMockBuilder(WC_Order::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['key_is_valid'])
+            ->getMock();
 
         return $mock;
     }
+
     /**
      * @return PHPUnit_Framework_MockObject_MockObject
      */
     private function mockDataHelper()
     {
-        $mock = $this->buildTesteeMock(
-            Mollie_WC_Helper_Data::class,
-            [],
-            ['getWcOrder', 'getWcPaymentGatewayByOrder']
-        )->getMock();
+        $mock = $this->getMockBuilder(Mollie_WC_Helper_Data::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getWcOrder', 'getWcPaymentGatewayByOrder'])
+            ->getMock();
 
         return $mock;
     }
+
     /**
      * Data Provider for orderByRequest
      *

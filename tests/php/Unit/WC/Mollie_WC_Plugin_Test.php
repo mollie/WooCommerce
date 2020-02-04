@@ -334,7 +334,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         $dataHelper = $this->mockDataHelper();
         $order = $this->mockOrder();
         $faker = Faker\Factory::create();
-        $id = $faker->uuid;
+        $id = null;
         $key = $faker->word;
 
         //functions called
@@ -445,12 +445,12 @@ class Mollie_WC_Plugin_Test extends TestCase
         return [
             [
                 false,
-                "Could not find order by order Id {$orderId}",
+                "Could not find order by order Id ",
                 404
             ],
             [
                 true,
-                "Invalid key given. Key {$key} does not match the order id: {$orderId}",
+                "Invalid key given. Key  does not match the order id: ",
                 401
             ],
         ];

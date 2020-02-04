@@ -65,7 +65,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         /*
          * Setup Stubs
          */
-        $apiRequestUrl = $this->faker->url;
+        $apiRequestUrl = "http://home_url.com";
         $urlFromWcApi = $this->createConfiguredMock(
                 \WooCommerce::class,
                 ['api_request_url'=>$apiRequestUrl]
@@ -136,7 +136,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         /*
         * Setup Stubs
         */
-        $homeUrl = $this->faker->url;
+        $homeUrl = "http://home_url.com";
         $apiRequestUrl = "{$homeUrl}/wc-api/mollie_return/mollie_wc_gateway_bancontact";
         $urlFromWcApi = $this->createConfiguredMock(
             \WooCommerce::class,

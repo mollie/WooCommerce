@@ -136,7 +136,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         /*
         * Setup Stubs
         */
-        $homeUrl = $this->faker->url;
+        $homeUrl = $this->faker->url.'/';
         $apiRequestUrl = "{$homeUrl}/wc-api/mollie_return/mollie_wc_gateway_bancontact"
         ;
         $urlFromWcApi = $this->createConfiguredMock(

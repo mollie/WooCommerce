@@ -1726,7 +1726,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $return_url = untrailingslashit($return_url);
         $order_id = wooCommerceOrderId($order);
         $order_key = wooCommerceOrderKey($order);
-        $return_url = $this->urlStringWithArgs(
+        $return_url = $this->appendOrderArgumentsToUrl(
             $order_id,
             $order_key,
             $return_url
@@ -1740,7 +1740,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		    $lang_url_params = substr( $lang_url, strpos( $lang_url, "/?" ) + 2 );
 		    $return_url = $return_url . '&' . $lang_url_params;
 	    }
-        debug($this->id . ": Order {$order_id} returnUrl: {$return_url}", true);
+        debug("{$this->id} : Order {$order_id} returnUrl: {$return_url}", true);
 
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_return_url', $return_url, $order);
     }
@@ -1761,7 +1761,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $webhook_url = untrailingslashit($webhook_url);
         $order_id = wooCommerceOrderId($order);
         $order_key = wooCommerceOrderKey($order);
-        $webhook_url = $this->urlStringWithArgs(
+        $webhook_url = $this->appendOrderArgumentsToUrl(
             $order_id,
             $order_key,
             $webhook_url
@@ -1781,7 +1781,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         // Some (multilanguage) plugins will add a extra slash to the url (/nl//) causing the URL to redirect and lose it's data.
 	    // Status updates via webhook will therefor not be processed. The below regex will find and remove those double slashes.
 	    $webhook_url = preg_replace('/([^:])(\/{2,})/', '$1/', $webhook_url);
-        debug($this->id . ": Order {$order_id} webhookUrl: {$webhook_url}", true);
+        debug("{$this->id} : Order {$order_id} webhookUrl: {$webhook_url}", true);
 
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_webhook_url', $webhook_url, $order);
     }
@@ -2122,7 +2122,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      *
      * @return string
      */
-    protected function urlStringWithArgs($order_id, $order_key, $webhook_url)
+    protected function appendOrderArgumentsToUrl($order_id, $order_key, $webhook_url)
     {
         $webhook_url = add_query_arg(
             array(

@@ -2,9 +2,12 @@
 
 namespace Mollie\WooCommerceTests;
 
+use Faker\Generator;
+use Faker;
 use Mockery;
 use PHPUnit_Framework_MockObject_MockBuilder;
 use PHPUnit_Framework_MockObject_MockObject;
+use function Brain\Monkey\Functions\when;
 use function Brain\Monkey\setUp;
 use function Brain\Monkey\tearDown;
 use PHPUnit\Framework\TestCase as PhpUniTestCase;
@@ -17,15 +20,36 @@ use Xpmock\TestCaseTrait;
 class TestCase extends PhpUniTestCase
 {
     use TestCaseTrait;
+    /**
+     * @var Generator
+     */
+    protected $faker;
 
     /**
      * Sets up the fixture, for example, open a network connection.
      * This method is called before a test is executed.
+     *
+     * @throws InvalidArgumentException
      */
     protected function setUp()
     {
         parent::setUp();
         setUp();
+        $this->setupFaker();
+
+        when('__')->returnArg(1);
+    }
+
+    /**
+     * Create Faker instance
+     *
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    protected function setupFaker()
+    {
+        $fakeFactory = new Faker\Factory();
+        $this->faker = $fakeFactory->create();
     }
 
     /**

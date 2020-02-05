@@ -1722,27 +1722,25 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function getReturnUrl(WC_Order $order)
     {
-        $return_url = WC()->api_request_url('mollie_return');
-        $return_url = untrailingslashit($return_url);
-        $order_id = wooCommerceOrderId($order);
-        $order_key = wooCommerceOrderKey($order);
-        $return_url = $this->appendOrderArgumentsToUrl(
-            $order_id,
-            $order_key,
-            $return_url
+        $returnUrl = WC()->api_request_url('mollie_return');
+        $returnUrl = untrailingslashit($returnUrl);
+        $orderId = wooCommerceOrderId($order);
+        $orderKey = wooCommerceOrderKey($order);
+        $returnUrl = $this->appendOrderArgumentsToUrl(
+            $orderId,
+            $orderKey,
+            $returnUrl
         );
-        $return_url = untrailingslashit($return_url);
-
-        $lang_url   = $this->getSiteUrlWithLanguage();
+        $returnUrl = untrailingslashit($returnUrl);
+        $langUrl   = $this->getSiteUrlWithLanguage();
 
 	    // Make sure there aren't any double /? in the URL (some (multilanguage) plugins will add this)
-	    if ( strpos( $lang_url, '/?' ) !== false ) {
-		    $lang_url_params = substr( $lang_url, strpos( $lang_url, "/?" ) + 2 );
-		    $return_url = $return_url . '&' . $lang_url_params;
+	    if ( strpos( $langUrl, '/?' ) !== false ) {
+		    $langUrlParams = substr( $langUrl, strpos( $langUrl, "/?" ) + 2 );
+		    $returnUrl = $returnUrl . '&' . $langUrlParams;
 	    }
-        debug("{$this->id} : Order {$order_id} returnUrl: {$return_url}", true);
-
-        return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_return_url', $return_url, $order);
+        debug("{$this->id} : Order {$orderId} returnUrl: {$returnUrl}", true);
+        return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_return_url', $returnUrl, $order);
     }
 
     /**
@@ -1755,35 +1753,35 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function getWebhookUrl (WC_Order $order)
     {
-        $site_url    = get_home_url();
+        $siteUrl    = get_home_url();
 
-        $webhook_url = WC()->api_request_url(strtolower(get_class($this)));
-        $webhook_url = untrailingslashit($webhook_url);
-        $order_id = wooCommerceOrderId($order);
-        $order_key = wooCommerceOrderKey($order);
-        $webhook_url = $this->appendOrderArgumentsToUrl(
-            $order_id,
-            $order_key,
-            $webhook_url
+        $webhookUrl = WC()->api_request_url(strtolower(get_class($this)));
+        $webhookUrl = untrailingslashit($webhookUrl);
+        $orderId = wooCommerceOrderId($order);
+        $orderKey = wooCommerceOrderKey($order);
+        $webhookUrl = $this->appendOrderArgumentsToUrl(
+            $orderId,
+            $orderKey,
+            $webhookUrl
         );
-        $webhook_url = untrailingslashit($webhook_url);
+        $webhookUrl = untrailingslashit($webhookUrl);
 
-        $lang_url    = $this->getSiteUrlWithLanguage();
+        $langUrl    = $this->getSiteUrlWithLanguage();
 
 	    // Make sure there aren't any double /? in the URL (some (multilanguage) plugins will add this)
-	    if ( strpos( $lang_url, '/?' ) !== false ) {
-		    $lang_url_params = substr( $lang_url, strpos( $lang_url, "/?" ) + 2 );
-		    $webhook_url = $webhook_url . '&' . $lang_url_params;
+	    if ( strpos( $langUrl, '/?' ) !== false ) {
+		    $langUrlParams = substr( $langUrl, strpos( $langUrl, "/?" ) + 2 );
+		    $webhookUrl = $webhookUrl . '&' . $langUrlParams;
 	    } else {
-		    $webhook_url = str_replace( $site_url, $lang_url, $webhook_url );
+		    $webhookUrl = str_replace( $siteUrl, $langUrl, $webhookUrl );
 	    }
 
         // Some (multilanguage) plugins will add a extra slash to the url (/nl//) causing the URL to redirect and lose it's data.
 	    // Status updates via webhook will therefor not be processed. The below regex will find and remove those double slashes.
-	    $webhook_url = preg_replace('/([^:])(\/{2,})/', '$1/', $webhook_url);
-        debug("{$this->id} : Order {$order_id} webhookUrl: {$webhook_url}", true);
+	    $webhookUrl = preg_replace('/([^:])(\/{2,})/', '$1/', $webhookUrl);
+        debug("{$this->id} : Order {$orderId} webhookUrl: {$webhookUrl}", true);
 
-        return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_webhook_url', $webhook_url, $order);
+        return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_webhook_url', $webhookUrl, $order);
     }
 
 	/**

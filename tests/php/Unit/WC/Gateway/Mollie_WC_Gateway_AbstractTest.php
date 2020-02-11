@@ -5,8 +5,11 @@ namespace Mollie\WooCommerceTests\Unit\WC\Gateway;
 use Mollie\Api\MollieApiClient;
 use Mollie\Api\Resources\Method;
 use Mollie\Api\Resources\MethodCollection;
+use Mollie\WooCommerceTests\Stubs\varPolylangTestsStubs;
 use Mollie\WooCommerceTests\TestCase;
 use Mollie_WC_Gateway_Abstract as Testee;
+use WooCommerce;
+
 use function Brain\Monkey\Functions\expect;
 
 /**
@@ -222,10 +225,8 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
      * Test getReturnUrl
      * given polylang plugin is installed
      * then will return correct string
-     *
-     * @test
      */
-    public function getReturnUrl_ReturnsString_withPolylang()
+    public function testgetReturnUrlReturnsStringwithPolylang()
     {
         /*
          * Setup Testee
@@ -233,19 +234,15 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         $testee = $this->testPolylangTestee();
 
         //set variables
-        list(
-            $orderId, $orderKey, $homeUrl, $apiRequestUrl, $untrailedUrl,
-            $urlWithParams,
-            $untrailedWithParams
-            )
-            = $this->testPolylangVariables();
+        $varStubs = new varPolylangTestsStubs();
+
 
         /*
         * Setup Stubs
         */
         $wcUrl = $this->createConfiguredMock(
-            \WooCommerce::class,
-            ['api_request_url' => $apiRequestUrl]
+            WooCommerce::class,
+            ['api_request_url' => $varStubs->apiRequestUrl]
         );
         $wcOrder = $this->createMock('WC_Order');
 
@@ -259,23 +256,23 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         //delete url final slash
         expect('untrailingslashit')
             ->twice()
-            ->andReturn($untrailedUrl, $untrailedWithParams);
+            ->andReturn($varStubs->untrailedUrl, $varStubs->untrailedWithParams);
         //get order id and key and append to the the url
         expect('wooCommerceOrderId')
-            ->andReturn($orderId);
+            ->andReturn($varStubs->orderId);
         expect('wooCommerceOrderKey')
-            ->andReturn($orderKey);
+            ->andReturn($varStubs->orderKey);
         $testee
             ->expects($this->once())
             ->method('appendOrderArgumentsToUrl')
-            ->with($orderId, $orderKey, $untrailedUrl)
-            ->willReturn($urlWithParams);
+            ->with($varStubs->orderId, $varStubs->orderKey, $varStubs->untrailedUrl)
+            ->willReturn($varStubs->urlWithParams);
 
         //check for multilanguage plugin enabled and receive url
         $testee
             ->expects($this->once())
             ->method('getSiteUrlWithLanguage')
-            ->willReturn("{$apiRequestUrl}/nl");
+            ->willReturn("{$varStubs->apiRequestUrl}/nl");
 
         expect('debug')
             ->withAnyArgs();
@@ -285,7 +282,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
          */
         $result = $testee->getReturnUrl($wcOrder);
 
-        self::assertEquals($urlWithParams, $result);
+        self::assertEquals($varStubs->urlWithParams, $result);
     }
 
     /* -----------------------------------------------------------------
@@ -295,10 +292,8 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
      * Test getWebhookUrl
      * given polylang plugin is installed
      * then will return correct string
-     *
-     * @test
      */
-    public function getWebhookUrl_ReturnsString_withPolylang()
+    public function testgetWebhookUrlReturnsStringwithPolylang()
     {
         /*
          * Setup Testee
@@ -306,19 +301,14 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         $testee = $this->testPolylangTestee();
 
         //set variables
-        list(
-            $orderId, $orderKey, $homeUrl, $apiRequestUrl, $untrailedUrl,
-            $urlWithParams,
-            $untrailedWithParams
-            )
-            = $this->testPolylangVariables();
+        $varStubs = new varPolylangTestsStubs();
 
         /*
         * Setup Stubs
         */
         $wcUrl = $this->createConfiguredMock(
-            \WooCommerce::class,
-            ['api_request_url' => $apiRequestUrl]
+            WooCommerce::class,
+            ['api_request_url' => $varStubs->apiRequestUrl]
         );
         $wcOrder = $this->createMock('WC_Order');
 
@@ -327,29 +317,29 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         * Expectations
         */
         expect('get_home_url')
-            ->andReturn($homeUrl);
+            ->andReturn($varStubs->homeUrl);
         //get url from request
         expect('WC')
             ->andReturn($wcUrl);
         //delete url final slash
         expect('untrailingslashit')
             ->twice()
-            ->andReturn($untrailedUrl, $untrailedWithParams);
+            ->andReturn($varStubs->untrailedUrl, $varStubs->untrailedWithParams);
         //get order id and key and append to the the url
         expect('wooCommerceOrderId')
-            ->andReturn($orderId);
+            ->andReturn($varStubs->orderId);
         expect('wooCommerceOrderKey')
-            ->andReturn($orderKey);
+            ->andReturn($varStubs->orderKey);
         $testee
             ->expects($this->once())
             ->method('appendOrderArgumentsToUrl')
-            ->with($orderId, $orderKey, $untrailedUrl)
-            ->willReturn($urlWithParams);
+            ->with($varStubs->orderId, $varStubs->orderKey, $varStubs->untrailedUrl)
+            ->willReturn($varStubs->urlWithParams);
         //check for multilanguage plugin enabled, receives url and adds it
         $testee
             ->expects($this->once())
             ->method('getSiteUrlWithLanguage')
-            ->willReturn("{$homeUrl}/nl");
+            ->willReturn("{$varStubs->homeUrl}/nl");
         expect('debug')
             ->withAnyArgs();
 
@@ -359,7 +349,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         $result = $testee->getWebhookUrl($wcOrder);
 
         self::assertEquals(
-            "{$homeUrl}/nl/wc-api/mollie_return/?order_id={$orderId}&key=wc_order_{$orderKey}",
+            "{$varStubs->homeUrl}/nl/wc-api/mollie_return/?order_id={$varStubs->orderId}&key=wc_order_{$varStubs->orderKey}",
             $result
         );
     }

@@ -156,19 +156,6 @@ class Mollie_WC_Plugin_Test extends TestCase
 
     public function testEnqueueFrontendScriptsInCheckoutPage()
     {
-        /*
-         * Stubs
-         */
-        stubs(
-            [
-                'is_admin' => false,
-                'isCheckoutContext' => true,
-            ]
-        );
-
-        /*
-         * Execute Test
-         */
         Mollie_WC_Plugin::enqueueFrontendScripts();
 
         $wpScriptsStub = WpScriptsStub::instance();
@@ -177,34 +164,6 @@ class Mollie_WC_Plugin_Test extends TestCase
             true,
             $wpScriptsStub->isEnqueued('script', 'mollie_wc_gateway_applepay')
         );
-    }
-
-    /**
-     * @dataProvider frontendCheckoutContextDataProvider
-     * @param $isAdmin
-     * @param $isCheckoutContext
-     */
-    public function testEnqueueFrontendScriptsDoesNotEnqueueInInvalidContext(
-        $isAdmin,
-        $isCheckoutContext
-    ) {
-
-        /*
-         * Stubs
-         */
-        stubs(
-            [
-                'is_admin' => $isAdmin,
-                'isCheckoutContext' => $isCheckoutContext,
-            ]
-        );
-
-        /*
-         * Execute Test
-         */
-        Mollie_WC_Plugin::enqueueFrontendScripts();
-
-        self::assertEquals(true, empty(WpScriptsStub::instance()->allEnqueued('script')));
     }
 
     public function testEnqueueComponentsAssets()
@@ -245,15 +204,6 @@ class Mollie_WC_Plugin_Test extends TestCase
 
         self::assertEquals(true, $wpScriptsStub->isEnqueued('style', 'mollie-components'));
         self::assertEquals(true, $wpScriptsStub->isEnqueued('script', 'mollie-components'));
-    }
-
-    public function frontendCheckoutContextDataProvider()
-    {
-        // Admin, CheckoutPage
-        return [
-            [false, false],
-            [true, false],
-        ];
     }
 
     protected function setUp()

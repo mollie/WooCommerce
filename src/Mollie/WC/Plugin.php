@@ -240,8 +240,10 @@ class Mollie_WC_Plugin
 		add_action( 'woocommerce_order_status_completed', array( __CLASS__, 'shipAndCaptureOrderAtMollie' ) );
 
         // Enqueue Scripts
-        add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueFrontendScripts']);
-        add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueComponentsAssets']);
+        if (!is_admin() && isCheckoutContext()) {
+            add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueFrontendScripts']);
+            add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueComponentsAssets']);
+        }
 
         add_action(
             Mollie_WC_Payment_OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS,
@@ -361,10 +363,6 @@ class Mollie_WC_Plugin
      */
     public static function enqueueFrontendScripts()
     {
-        if (is_admin() || !isCheckoutContext()) {
-            return;
-        }
-
         wp_enqueue_script('mollie_wc_gateway_applepay');
     }
 
@@ -383,10 +381,6 @@ class Mollie_WC_Plugin
         $gatewayNames = array_keys($mollieComponentsStylesGateways);
 
         if (!$merchantProfileId || !$mollieComponentsStylesGateways) {
-            return;
-        }
-
-        if (is_admin() || !isCheckoutContext()) {
             return;
         }
 

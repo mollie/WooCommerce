@@ -22,9 +22,20 @@ function wc_bool_to_string($bool)
     return true === $bool ? 'yes' : 'no';
 }
 
+class WooCommerce
+{
+    public function api_request_url()
+    {
+    }
+}
+
 class WC_Payment_Gateway
 {
-
+    public $id;
+    public function __construct($id = 1)
+    {
+        $this->id = $id;
+    }
 }
 
 class Mollie_WC_Helper_Data
@@ -39,6 +50,9 @@ class Mollie_WC_Helper_Data
 
 class WC_Order
 {
+    public function get_order_key()
+    {
+    }
     public function get_id()
     {
     }

@@ -285,15 +285,22 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 	public function onWebhookCanceled( WC_Order $order, $payment, $payment_method_title ) {
 
 		// Get order ID in the correct way depending on WooCommerce version
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			$order_id = $order->id;
-		} else {
-			$order_id = $order->get_id();
-		}
+        $order_id = wooCommerceOrderId($order);
 
 		// Add messages to log
-		Mollie_WC_Plugin::debug( __METHOD__ . ' called for payment ' . $order_id );
+		debug( __METHOD__ . " called for payment {$order_id}" );
 
+		// if the status is Completed|Refunded|Cancelled  DONT change the status to cancelled
+        if ($this->isFinalOrderStatus($order)) {
+            debug(
+                __METHOD__
+                . " called for payment {$order_id} has final status. Nothing to be done"
+            );
+
+            return;
+        }
+
+        //status is Pending|Failed|Processing|On-hold so Cancel
 		// Get current gateway
 		$gateway = Mollie_WC_Plugin::getDataHelper()->getWcPaymentGatewayByOrder( $order );
 
@@ -358,7 +365,6 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 				}
 			}
 		}
-
 	}
 
 	/**

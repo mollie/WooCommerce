@@ -440,35 +440,61 @@ class Mollie_WC_Plugin
     }
 
     /**
-     * Payment return url callback
+     * Returns the order from the Request first by Id, if not by Key
+     *
+     * @return bool|WC_Order
      */
-    public static function onMollieReturn ()
+    public static function orderByRequest()
     {
-        $dataHelper = self::getDataHelper();
+        $dataHelper = getDataHelper();
 
         $orderId = filter_input(INPUT_GET, 'order_id', FILTER_SANITIZE_NUMBER_INT) ?: null;
         $key = filter_input(INPUT_GET, 'key', FILTER_SANITIZE_STRING) ?: null;
         $order = $dataHelper->getWcOrder($orderId);
 
         if (!$order) {
-            self::setHttpResponseCode(404);
-            self::debug(__METHOD__ . ":  Could not find order $orderId.");
-            return;
+            $order = $dataHelper->getWcOrder(wc_get_order_id_by_order_key($key));
+        }
+
+        if (!$order) {
+            throw new RuntimeException(
+                "Could not find order by order Id {$orderId}",
+                404
+            );
         }
 
         if (!$order->key_is_valid($key)) {
-            self::setHttpResponseCode(401);
-            self::debug(__METHOD__ . ":  Invalid key $key for order $orderId.");
+            throw new RuntimeException(
+                "Invalid key given. Key {$key} does not match the order id: {$orderId}",
+                401
+            );
+        }
+
+        return $order;
+    }
+    /**
+     * Payment return url callback
+     */
+    public static function onMollieReturn ()
+    {
+        $dataHelper = getDataHelper();
+
+        try {
+            $order = self::orderByRequest();
+        } catch (RuntimeException $exc) {
+            self::setHttpResponseCode($exc->getCode());
+            debug(__METHOD__ . ":  {$exc->getMessage()}");
             return;
         }
 
         $gateway = $dataHelper->getWcPaymentGatewayByOrder($order);
+        $orderId = wooCommerceOrderId($order);
 
         if (!$gateway) {
             $gatewayName = $order->get_payment_method();
 
             self::setHttpResponseCode(404);
-            self::debug(
+            debug(
                 __METHOD__ . ":  Could not find gateway {$gatewayName} for order {$orderId}."
             );
             return;
@@ -476,7 +502,7 @@ class Mollie_WC_Plugin
 
         if (!($gateway instanceof Mollie_WC_Gateway_Abstract)) {
             self::setHttpResponseCode(400);
-            self::debug(__METHOD__ . ": Invalid gateway " . get_class($gateway) . " for this plugin. Order $orderId.");
+            debug(__METHOD__ . ": Invalid gateway {get_class($gateway)} for this plugin. Order {$orderId}.");
             return;
         }
 
@@ -485,7 +511,7 @@ class Mollie_WC_Plugin
         // Add utm_nooverride query string
         $redirect_url = add_query_arg(['utm_nooverride' => 1], $redirect_url);
 
-        self::debug(__METHOD__ . ": Redirect url on return order " . $gateway->id . ", order $orderId: $redirect_url");
+        debug(__METHOD__ . ": Redirect url on return order {$gateway->id}, order {$orderId}: {$redirect_url}");
 
         wp_safe_redirect($redirect_url);
     }

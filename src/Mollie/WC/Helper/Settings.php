@@ -169,7 +169,7 @@ class Mollie_WC_Helper_Settings
             $merchantProfileId = '';
         }
 
-        update_option($merchantProfileIdOptionKey, $merchantProfileId, false);
+        update_option($merchantProfileIdOptionKey, $merchantProfileId, true);
 
         return $optionValue;
     }

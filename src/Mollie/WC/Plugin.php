@@ -373,6 +373,9 @@ class Mollie_WC_Plugin
      */
     public static function enqueueComponentsAssets()
     {
+        if (is_admin() || !isCheckoutContext()) {
+            return;
+        }
         try {
             $merchantProfileId = merchantProfileId();
         } catch (ApiException $exception) {
@@ -383,10 +386,6 @@ class Mollie_WC_Plugin
         $gatewayNames = array_keys($mollieComponentsStylesGateways);
 
         if (!$merchantProfileId || !$mollieComponentsStylesGateways) {
-            return;
-        }
-
-        if (is_admin() || !isCheckoutContext()) {
             return;
         }
 

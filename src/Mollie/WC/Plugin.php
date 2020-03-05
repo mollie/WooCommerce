@@ -376,6 +376,7 @@ class Mollie_WC_Plugin
         if (is_admin() || !isCheckoutContext()) {
             return;
         }
+        
         try {
             $merchantProfileId = merchantProfileId();
         } catch (ApiException $exception) {

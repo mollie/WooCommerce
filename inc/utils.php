@@ -68,7 +68,7 @@ function merchantProfile()
 function merchantProfileId()
 {
     static $merchantProfileId = null;
-    $merchantProfileIdOptionKey = Mollie_WC_Plugin::PLUGIN_ID . '_cached_merchant_profile_id';
+    $merchantProfileIdOptionKey = Mollie_WC_Plugin::PLUGIN_ID . '_profile_merchant_id';
 
     if ($merchantProfileId === null) {
         $merchantProfileId = get_option($merchantProfileIdOptionKey, '');

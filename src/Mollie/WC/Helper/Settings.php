@@ -160,7 +160,7 @@ class Mollie_WC_Helper_Settings
             return $optionValue;
         }
 
-        $merchantProfileIdOptionKey = Mollie_WC_Plugin::PLUGIN_ID . '_cached_merchant_profile_id';
+        $merchantProfileIdOptionKey = Mollie_WC_Plugin::PLUGIN_ID . '_profile_merchant_id';
 
         try {
             $merchantProfile = merchantProfile();

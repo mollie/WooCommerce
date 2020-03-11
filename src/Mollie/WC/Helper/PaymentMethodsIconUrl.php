@@ -36,10 +36,10 @@ class Mollie_WC_Helper_PaymentMethodsIconUrl
     protected function fallToAssets($paymentMethodName)
     {
         if ( $paymentMethodName == PaymentMethod::CREDITCARD  && !is_admin()) {
-            return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $paymentMethodName . 's.svg');
+            return Mollie_WC_Plugin::getPluginUrl('public/images/' . $paymentMethodName . 's.svg');
         }
 
-        return Mollie_WC_Plugin::getPluginUrl('assets/images/' . $paymentMethodName . '.svg');
+        return Mollie_WC_Plugin::getPluginUrl('public/images/' . $paymentMethodName . '.svg');
     }
 }
 

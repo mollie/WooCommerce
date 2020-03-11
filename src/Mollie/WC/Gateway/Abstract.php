@@ -1,7 +1,6 @@
 <?php
 
 use Mollie\Api\Exceptions\ApiException;
-use Mollie\Api\Types\PaymentMethod;
 
 abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 {
@@ -1047,11 +1046,19 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			$order->update_meta_data( '_mollie_processed_refund_ids', $processed_refund_ids );
 			Mollie_WC_Plugin::debug( __METHOD__ . ' Updated, all processed refunds for ' . $log_id . ': ' . json_encode( $processed_refund_ids ) );
 
-			$order->save();
+            $order->save();
+            $this->processUpdateStateRefund($order, $payment);
+            Mollie_WC_Plugin::debug(
+                __METHOD__ . ' Updated state for order' . $order_id
+            );
 
-			do_action( Mollie_WC_Plugin::PLUGIN_ID . '_refunds_processed', $payment, $order );
+            do_action(
+                Mollie_WC_Plugin::PLUGIN_ID . '_refunds_processed',
+                $payment,
+                $order
+            );
 
-			return;
+            return;
 
 		}
 		catch ( \Mollie\Api\Exceptions\ApiException $e ) {
@@ -1147,17 +1154,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			//
 
 			// New order status
-			$new_order_status = self::STATUS_ON_HOLD;
+            $new_order_status = self::STATUS_ON_HOLD;
+            $new_order_status = $this->overwriteFilters(
+                $new_order_status,
+                '_order_status_on_hold'
+            );
+            $payment_method_title = $this->getPaymentMethodTitle($payment);
 
-			// Overwrite plugin-wide
-			$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_on_hold', $new_order_status );
-
-			// Overwrite gateway-wide
-			$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_on_hold_' . $this->id, $new_order_status );
-
-			$payment_method_title = $this->getPaymentMethodTitle( $payment );
-
-			// Update order status for order with charged_back payment, don't restore stock
+            // Update order status for order with charged_back payment, don't restore stock
 			$this->updateOrderStatus(
 				$order,
 				$new_order_status,
@@ -2117,7 +2121,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
     /**
      * Singleton of the class that handles icons (API/fallback)
-     * @return Mollie_WC_Helper_PaymentMethodIconUrl|null
+     * @return Mollie_WC_Helper_PaymentMethodsIconUrl|null
      */
     protected function iconFactory()
     {
@@ -2145,5 +2149,105 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         }
 
         return $list;
+    }
+
+    /**
+     * @param $new_order_status
+     *
+     * @param $statusTypeString
+     *
+     * @return mixed|void|null
+     */
+    protected function overwriteFilters($new_order_status, $statusTypeString)
+    {
+        // Overwrite plugin-wide
+        $new_order_status = apply_filters(
+            Mollie_WC_Plugin::PLUGIN_ID . $statusTypeString,
+            $new_order_status
+        );
+
+        // Overwrite gateway-wide
+        $new_order_status = apply_filters(
+            Mollie_WC_Plugin::PLUGIN_ID . $statusTypeString . $this->id,
+            $new_order_status
+        );
+        return $new_order_status;
+    }
+
+    /**
+     * @param Mollie\Api\Resources\Payment|Mollie\Api\Resources\Order $payment
+     *
+     * @return bool
+     */
+    protected function isPartialRefund($payment)
+    {
+        return ($payment->amount - $payment->amountRefunded) != 0;
+    }
+
+    /**
+     * @param WC_Order                                                $order
+     * @param Mollie\Api\Resources\Payment|Mollie\Api\Resources\Order $payment
+     */
+    protected function processUpdateStateRefund(WC_Order $order, $payment)
+    {
+        if ($this->isPartialRefund($payment)) {
+            $this->updateStateRefund(
+                $order,
+                $payment,
+                self::STATUS_ON_HOLD,
+                '_order_status_partially_refunded',
+                'partially refunded'
+            );
+            return;
+        }
+        $this->updateStateRefund(
+            $order,
+            $payment,
+            self::STATUS_REFUNDED,
+            '_order_status_refunded',
+            'refunded'
+        );
+    }
+
+    /**
+     * @param WC_Order                                                $order
+     * @param Mollie\Api\Resources\Payment|Mollie\Api\Resources\Order $payment
+     * @param                                                         $new_order_status
+     * @param                                                         $statusFilterString
+     * @param                                                         $statusNoteString
+     */
+    protected function updateStateRefund(
+        WC_Order $order,
+        $payment,
+        $new_order_status,
+        $statusFilterString,
+        $statusNoteString
+    ) {
+        // New order status
+        $new_order_status = $this->overwriteFilters(
+            $new_order_status,
+            $statusFilterString
+        );
+        $payment_method_title = $this->getPaymentMethodTitle($payment);
+
+        // Update order status for order with charged_back payment, don't restore stock
+        $this->updateOrderStatus(
+            $order,
+            $new_order_status,
+            sprintf(
+            /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+                __(
+                    '%s payment %s via Mollie (%s). You will need to manually review the payment (and adjust product stocks if you use it).',
+                    'mollie-payments-for-woocommerce'
+                ),
+                $payment_method_title,
+                $statusNoteString,
+                $payment->id . ($payment->mode == 'test' ? (' - ' . __(
+                        'test mode',
+                        'mollie-payments-for-woocommerce'
+                    )) : '')
+            ),
+            $restore_stock = false
+        );
     }
 }

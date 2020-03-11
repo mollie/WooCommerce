@@ -160,7 +160,7 @@ class Mollie_WC_Helper_Settings
             return $optionValue;
         }
 
-        $merchantProfileIdOptionKey = Mollie_WC_Plugin::PLUGIN_ID . '_merchant_profile_id';
+        $merchantProfileIdOptionKey = Mollie_WC_Plugin::PLUGIN_ID . '_profile_merchant_id';
 
         try {
             $merchantProfile = merchantProfile();
@@ -169,7 +169,7 @@ class Mollie_WC_Helper_Settings
             $merchantProfileId = '';
         }
 
-        update_option($merchantProfileIdOptionKey, $merchantProfileId, false);
+        update_option($merchantProfileIdOptionKey, $merchantProfileId);
 
         return $optionValue;
     }
@@ -331,7 +331,7 @@ class Mollie_WC_Helper_Settings
      */
     public function addGlobalSettingsFields (array $settings)
     {
-        wp_register_script('mollie_wc_admin_settings', Mollie_WC_Plugin::getPluginUrl('/assets/js/settings.min.js'), array('jquery'), Mollie_WC_Plugin::PLUGIN_VERSION);
+        wp_register_script('mollie_wc_admin_settings', Mollie_WC_Plugin::getPluginUrl('/public/js/settings.min.js'), array('jquery'), Mollie_WC_Plugin::PLUGIN_VERSION);
         wp_enqueue_script('mollie_wc_admin_settings');
 
         $content = ''

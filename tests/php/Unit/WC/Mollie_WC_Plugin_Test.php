@@ -3,12 +3,18 @@
 namespace Mollie\WooCommerceTests\Unit\WC;
 
 use Brain\Monkey\Expectation\Exception\ExpectationArgsRequired;
+use Mollie\Api\MollieApiClient;
+use Mollie\Api\Resources\Method;
+use Mollie\Api\Resources\MethodCollection;
 use Mollie\WooCommerceTests\TestCase;
 use Mollie_WC_Plugin;
 use PHPUnit_Framework_MockObject_MockObject;
 use PHPUnit_Framework_MockObject_RuntimeException;
+use RuntimeException;
 use stdClass;
 use function Brain\Monkey\Functions\expect;
+use function Brain\Monkey\Functions\when;
+use Faker;
 
 class Mollie_WC_Plugin_Test extends TestCase
 {
@@ -279,5 +285,175 @@ class Mollie_WC_Plugin_Test extends TestCase
             ->getMock();
 
         return $mock;
+    }
+
+    /**
+     * Given orderByRequest is called
+     * when id and key are valid in the request
+     * then we get an order by id
+     *
+     * @test
+     */
+    public function orderByRequest_returnOrder_byId()
+    {
+        /*
+         * Setup Stubs
+         */
+        $dataHelper = $this->mockDataHelper();
+        $order = $this->mockOrder();
+
+        //functions called
+        expect('getDataHelper')
+            ->andReturn($dataHelper);
+
+        $dataHelper
+            ->method('getWcOrder')
+            ->willReturn($order);
+        $order
+            ->method('key_is_valid')
+            ->willReturn(true);
+        /*
+         * Execute Test
+         */
+        $result = Mollie_WC_Plugin::orderByRequest();
+        self::assertEquals($order, $result);
+    }
+
+    /**
+     * Given orderByRequest is called
+     * when key is valid but not id in the request
+     * then we get an order by key
+     *
+     * @test
+     */
+    public function orderByRequest_returnOrder_byKey()
+    {
+        /*
+         * Setup Stubs
+         */
+        $dataHelper = $this->mockDataHelper();
+        $order = $this->mockOrder();
+        $faker = Faker\Factory::create();
+        $id = null;
+        $key = $faker->word;
+
+        //functions called
+        expect('getDataHelper')
+            ->andReturn($dataHelper);
+        when('wc_get_order_id_by_order_key')
+            ->justReturn($key);
+
+        //so first time id retrieving fails
+        //and we pass key to retrieve order
+        $dataHelper
+            ->method('getWcOrder')
+            ->withConsecutive([$id], [$key])
+            ->willReturn(false, $order);
+
+        $order
+            ->method('key_is_valid')
+            ->willReturn(true);
+        /*
+         * Execute Test
+         */
+        $result = Mollie_WC_Plugin::orderByRequest();
+        self::assertEquals($order, $result);
+    }
+
+    /**
+     * Given orderByRequest is called
+     * when id nor key are valid
+     * then we get an exception
+     *
+     * @test
+     *
+     * @param $returned wether we get or not the order
+     * @param $message  the message of the runtimeException
+     * @param $code     the code of the runtimeException
+     *
+     * @dataProvider orderByRequestDataProvider
+     * @expectedException RuntimeException
+     */
+    public function orderByRequest_returnException($returned, $message, $code){
+        /*
+         * Setup Stubs
+         */
+        $dataHelper = $this->mockDataHelper();
+        $order = $this->mockOrder();
+        $id = '';
+        $key = '';
+        if ($returned) {
+            $returned = $order;
+        }
+
+        //functions called
+        expect('getDataHelper')
+            ->andReturn($dataHelper);
+        when('wc_get_order_id_by_order_key')
+            ->justReturn($key);
+
+        // retrieving fails
+        $dataHelper
+            ->method('getWcOrder')
+            ->withConsecutive([$id], [$key])
+            ->willReturn(false, $returned);
+
+        $order
+            ->method('key_is_valid')
+            ->willReturn(false);
+        /*
+         * Execute Test
+         */
+        Mollie_WC_Plugin::orderByRequest();
+
+        self::expectExceptionMessage($message);
+        self::expectExceptionCode($code);
+    }
+
+    /**
+     * @return PHPUnit_Framework_MockObject_MockObject
+     */
+    private function mockOrder()
+    {
+        $mock = $this->getMockBuilder(WC_Order::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['key_is_valid'])
+            ->getMock();
+
+        return $mock;
+    }
+
+    /**
+     * @return PHPUnit_Framework_MockObject_MockObject
+     */
+    private function mockDataHelper()
+    {
+        $mock = $this->getMockBuilder(Mollie_WC_Helper_Data::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getWcOrder', 'getWcPaymentGatewayByOrder'])
+            ->getMock();
+
+        return $mock;
+    }
+
+    /**
+     * Data Provider for orderByRequest
+     *
+     * @return array
+     */
+    public function orderByRequestDataProvider()
+    {
+        return [
+            [
+                false,
+                "Could not find order by order Id ",
+                404
+            ],
+            [
+                true,
+                "Invalid key given. Key  does not match the order id: ",
+                401
+            ],
+        ];
     }
 }

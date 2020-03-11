@@ -68,7 +68,7 @@ function merchantProfile()
 function merchantProfileId()
 {
     static $merchantProfileId = null;
-    $merchantProfileIdOptionKey = Mollie_WC_Plugin::PLUGIN_ID . '_merchant_profile_id';
+    $merchantProfileIdOptionKey = Mollie_WC_Plugin::PLUGIN_ID . '_profile_merchant_id';
 
     if ($merchantProfileId === null) {
         $merchantProfileId = get_option($merchantProfileIdOptionKey, '');
@@ -86,7 +86,7 @@ function merchantProfileId()
             }
 
             if ($merchantProfileId) {
-                update_option($merchantProfileIdOptionKey, $merchantProfileId, false);
+                update_option($merchantProfileIdOptionKey, $merchantProfileId);
             }
         }
     }
@@ -103,3 +103,50 @@ function cardToken()
 {
     return $cardToken = filter_input(INPUT_POST, 'cardToken', FILTER_SANITIZE_STRING) ?: '';
 }
+
+/**
+ * Retrieve the available Payment Methods Data
+ *
+ * @return array|bool|mixed|\Mollie\Api\Resources\BaseCollection|\Mollie\Api\Resources\MethodCollection
+ */
+function availablePaymentMethods()
+{
+    $testMode = isTestModeEnabled();
+    $dataHelper = Mollie_WC_Plugin::getDataHelper();
+    $methods = $dataHelper->getApiPaymentMethods($testMode, $use_cache = true);
+
+    return $methods;
+}
+
+/**
+ * Isolates static debug calls.
+ *
+ * @param  string $message
+ * @param bool  $set_debug_header Set X-Mollie-Debug header (default false)
+ */
+function debug($message, $set_debug_header = false)
+{
+    Mollie_WC_Plugin::debug($message, $set_debug_header);
+}
+
+/**
+ * Isolates static addNotice calls.
+ *
+ * @param  string $message
+ * @param string $type    One of notice, error or success (default notice)
+ */
+function notice($message, $type = 'notice')
+{
+    Mollie_WC_Plugin::addNotice($message, $type);
+}
+/**
+ * Isolates static getDataHelper calls.
+ *
+ * @return Mollie_WC_Helper_Data
+ */
+function getDataHelper()
+{
+    return Mollie_WC_Plugin::getDataHelper();
+}
+
+

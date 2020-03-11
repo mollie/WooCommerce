@@ -29,9 +29,33 @@ if (!function_exists('untrailingslashit'))
     }
 }
 
-if (!function_exists('mollieWooCommerceSession')) {
-    function mollieWooCommerceSession()
-    {
-        return WC()->session;
-    }
+function mollieWooCommerceSession()
+{
+    return WC()->session;
 }
+
+/**
+ * Get order ID in the correct way depending on WooCommerce version
+ *
+ * @param WC_Order $order
+ * @return int
+ */
+function wooCommerceOrderId(WC_Order $order)
+{
+    return version_compare(WC_VERSION, '3.0', '<')
+        ? $order->id
+        : $order->get_id();
+}
+/**
+ * Get order key in the correct way depending on WooCommerce version
+ *
+ * @param WC_Order $order
+ * @return string
+ */
+function wooCommerceOrderKey(WC_Order $order)
+{
+    return version_compare(WC_VERSION, '3.0', '<')
+        ? $order->order_key
+        : $order->get_order_key();
+}
+

@@ -1,4 +1,5 @@
 <?php
+
 function wc_string_to_bool($string)
 {
     return is_bool($string) ? $string : ('yes' === strtolower(
@@ -21,14 +22,44 @@ function wc_bool_to_string($bool)
     return true === $bool ? 'yes' : 'no';
 }
 
+class WooCommerce
+{
+    public function api_request_url()
+    {
+    }
+}
+
 class WC_Payment_Gateway
 {
+    public $id;
+    public function __construct($id = 1)
+    {
+        $this->id = $id;
+    }
+}
 
+class Mollie_WC_Helper_Data
+{
+    public function getWcOrder()
+    {
+    }
+    public function getWcPaymentGatewayByOrder()
+    {
+    }
 }
 
 class WC_Order
 {
+    public function get_order_key()
+    {
+    }
+    public function get_id()
+    {
+    }
     public function add_order_note($note)
+    {
+    }
+    public function key_is_valid()
     {
     }
 }

@@ -72,6 +72,6 @@ class Payment_Method_Icon_Url_Test extends TestCase
          * Execute Test
          */
         $result = $testee->svgUrlForPaymentMethod($paymentMethod);
-        self::assertStringEndsWith('assets/images/creditcards.svg', $result);
+        self::assertStringEndsWith('public/images/creditcards.svg', $result);
     }
 }

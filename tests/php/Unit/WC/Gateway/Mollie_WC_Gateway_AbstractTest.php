@@ -130,7 +130,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
          */
         $result = $testee->getIconUrl();
 
-        self::assertStringEndsWith('assets/images/ideal.svg', $result);
+        self::assertStringEndsWith('public/images/ideal.svg', $result);
 
     }
 

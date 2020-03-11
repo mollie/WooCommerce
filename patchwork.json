@@ -1,6 +1,7 @@
 {
     "redefinable-internals": [
         "filter_input",
-        "filemtime"
+        "filemtime",
+      "idn_to_ascii"
     ]
 }

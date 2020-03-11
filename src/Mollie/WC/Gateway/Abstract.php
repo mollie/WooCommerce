@@ -1720,10 +1720,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      *
      * @return string The url with order id and key as params
      */
-    public function getReturnUrl(WC_Order $order)
+    public function getReturnUrl (WC_Order $order)
     {
-        $returnUrl = WC()->api_request_url('mollie_return');
-        $returnUrl = untrailingslashit($returnUrl);
+        $returnUrl = WC()->api_request_url( 'mollie_return' );
+	    $returnUrl = untrailingslashit($returnUrl);
+        $returnUrl = idn_to_ascii($returnUrl);
         $orderId = wooCommerceOrderId($order);
         $orderKey = wooCommerceOrderKey($order);
         $returnUrl = $this->appendOrderArgumentsToUrl(
@@ -1731,7 +1732,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             $orderKey,
             $returnUrl
         );
-        $returnUrl = untrailingslashit($returnUrl);
+	    $returnUrl = untrailingslashit($returnUrl);
         $langUrl   = $this->getSiteUrlWithLanguage();
 
 	    // Make sure there aren't any double /? in the URL (some (multilanguage) plugins will add this)
@@ -1757,6 +1758,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         $webhookUrl = WC()->api_request_url(strtolower(get_class($this)));
         $webhookUrl = untrailingslashit($webhookUrl);
+        $webhookUrl = idn_to_ascii($webhookUrl);
         $orderId = wooCommerceOrderId($order);
         $orderKey = wooCommerceOrderKey($order);
         $webhookUrl = $this->appendOrderArgumentsToUrl(

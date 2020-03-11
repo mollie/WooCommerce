@@ -257,6 +257,8 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         expect('untrailingslashit')
             ->twice()
             ->andReturn($varStubs->untrailedUrl, $varStubs->untrailedWithParams);
+        expect('idn_to_ascii')
+            ->andReturn($varStubs->untrailedUrl);
         //get order id and key and append to the the url
         expect('wooCommerceOrderId')
             ->andReturn($varStubs->orderId);
@@ -325,6 +327,8 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         expect('untrailingslashit')
             ->twice()
             ->andReturn($varStubs->untrailedUrl, $varStubs->untrailedWithParams);
+        expect('idn_to_ascii')
+            ->andReturn($varStubs->untrailedUrl);
         //get order id and key and append to the the url
         expect('wooCommerceOrderId')
             ->andReturn($varStubs->orderId);

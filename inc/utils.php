@@ -139,5 +139,14 @@ function notice($message, $type = 'notice')
 {
     Mollie_WC_Plugin::addNotice($message, $type);
 }
+/**
+ * Isolates static getDataHelper calls.
+ *
+ * @return Mollie_WC_Helper_Data
+ */
+function getDataHelper()
+{
+    return Mollie_WC_Plugin::getDataHelper();
+}
 
 

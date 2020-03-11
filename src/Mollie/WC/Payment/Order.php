@@ -305,6 +305,15 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 			// Add messages to log
 			Mollie_WC_Plugin::debug( __METHOD__ . ' processing paid order via Mollie plugin fully completed for order ' . $order_id );
+			//update payment so it can be refunded directly
+            $paymentCollection = $payment->payments();
+            foreach ($paymentCollection as $pay) {
+                $pay->webhookUrl = $payment->webhookUrl;
+                $pay->metadata = ["order_id" => $order_id];
+                $pay->update();
+            }
+            // Add a message to log
+            Mollie_WC_Plugin::debug( __METHOD__ . ' updated payment with webhook and metadata ' );
 
 			// Subscription processing
 			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {

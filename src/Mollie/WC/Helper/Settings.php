@@ -163,7 +163,7 @@ class Mollie_WC_Helper_Settings
         $merchantProfileIdOptionKey = Mollie_WC_Plugin::PLUGIN_ID . '_profile_merchant_id';
 
         try {
-            $merchantProfile = merchantProfile();
+            $merchantProfile = mollieWooCommerceMerchantProfile();
             $merchantProfileId = isset($merchantProfile->id) ? $merchantProfile->id : '';
         } catch (ApiException $exception) {
             $merchantProfileId = '';

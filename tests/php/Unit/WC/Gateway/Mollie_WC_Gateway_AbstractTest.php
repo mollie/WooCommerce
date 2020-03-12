@@ -58,7 +58,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         /*
         * Expect to call availablePaymentMethods() function and return a mock of one method with id 'ideal'
         */
-        expect('availablePaymentMethods')
+        expect('mollieWooCommerceAvailablePaymentMethods')
             ->once()
             ->withNoArgs()
             ->andReturn($methods);
@@ -101,7 +101,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         /*
         * Expect to call availablePaymentMethods() function and return false from the API
         */
-        expect('availablePaymentMethods')
+        expect('mollieWooCommerceAvailablePaymentMethods')
             ->once()
             ->withNoArgs()
             ->andReturn(false);
@@ -260,9 +260,9 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         expect('idn_to_ascii')
             ->andReturn($varStubs->untrailedUrl);
         //get order id and key and append to the the url
-        expect('wooCommerceOrderId')
+        expect('mollieWooCommerceOrderId')
             ->andReturn($varStubs->orderId);
-        expect('wooCommerceOrderKey')
+        expect('mollieWooCommerceOrderKey')
             ->andReturn($varStubs->orderKey);
         $testee
             ->expects($this->once())
@@ -276,7 +276,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             ->method('getSiteUrlWithLanguage')
             ->willReturn("{$varStubs->apiRequestUrl}/nl");
 
-        expect('debug')
+        expect('mollieWooCommerceDebug')
             ->withAnyArgs();
 
         /*
@@ -330,9 +330,9 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         expect('idn_to_ascii')
             ->andReturn($varStubs->untrailedUrl);
         //get order id and key and append to the the url
-        expect('wooCommerceOrderId')
+        expect('mollieWooCommerceOrderId')
             ->andReturn($varStubs->orderId);
-        expect('wooCommerceOrderKey')
+        expect('mollieWooCommerceOrderKey')
             ->andReturn($varStubs->orderKey);
         $testee
             ->expects($this->once())
@@ -344,7 +344,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             ->expects($this->once())
             ->method('getSiteUrlWithLanguage')
             ->willReturn("{$varStubs->homeUrl}/nl");
-        expect('debug')
+        expect('mollieWooCommerceDebug')
             ->withAnyArgs();
 
         /*
@@ -361,7 +361,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
-    protected function testPolylangTestee()
+    public function testPolylangTestee()
     {
         $testee = $this
             ->buildTesteeMock(
@@ -377,7 +377,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
     /**
      * @return array
      */
-    protected function testPolylangVariables()
+    public function testPolylangVariables()
     {
         $orderId = $this->faker->randomDigit;
         $orderKey = $this->faker->word;

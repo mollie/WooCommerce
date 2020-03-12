@@ -303,7 +303,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         $order = $this->mockOrder();
 
         //functions called
-        expect('getDataHelper')
+        expect('mollieWooCommerceGetDataHelper')
             ->andReturn($dataHelper);
 
         $dataHelper
@@ -338,7 +338,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         $key = $faker->word;
 
         //functions called
-        expect('getDataHelper')
+        expect('mollieWooCommerceGetDataHelper')
             ->andReturn($dataHelper);
         when('wc_get_order_id_by_order_key')
             ->justReturn($key);
@@ -387,7 +387,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         }
 
         //functions called
-        expect('getDataHelper')
+        expect('mollieWooCommerceGetDataHelper')
             ->andReturn($dataHelper);
         when('wc_get_order_id_by_order_key')
             ->justReturn($key);

@@ -24,7 +24,7 @@ class Functions_Test extends TestCase
         /*
          * Execute Test
          */
-        $result = isCheckoutContext();
+        $result = mollieWooCommerceIsCheckoutContext();
 
         self::assertEquals($expected, $result);
     }
@@ -82,7 +82,7 @@ class Functions_Test extends TestCase
         /*
          * Execute Testee
          */
-        $result = wooCommerceOrderId($order);
+        $result = mollieWooCommerceOrderId($order);
         self::assertEquals($orderId, $result);
     }
 
@@ -102,7 +102,7 @@ class Functions_Test extends TestCase
         /*
          * Execute Testee
          */
-        $result = wooCommerceOrderId($order);
+        $result = mollieWooCommerceOrderId($order);
 
         self::assertEquals($orderId, $result);
     }
@@ -128,7 +128,7 @@ class Functions_Test extends TestCase
         /*
          * Execute Testee
          */
-        $result = wooCommerceOrderKey($order);
+        $result = mollieWooCommerceOrderKey($order);
         self::assertEquals($orderKey, $result);
     }
 
@@ -148,7 +148,7 @@ class Functions_Test extends TestCase
         /*
          * Execute Testee
          */
-        $result = wooCommerceOrderKey($order);
+        $result = mollieWooCommerceOrderKey($order);
 
         self::assertEquals($orderKey, $result);
     }

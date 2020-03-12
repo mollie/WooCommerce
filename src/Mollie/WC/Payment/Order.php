@@ -184,7 +184,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			$paymentRequestData['payment']['customerId'] = $customer_id;
 		}
 
-        $cardToken = cardToken();
+        $cardToken = mollieWooCommerceCardToken();
         if ($cardToken && isset($paymentRequestData['payment'])) {
             $paymentRequestData['payment']['cardToken'] = $cardToken;
         }
@@ -483,14 +483,14 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	public function onWebhookCanceled( WC_Order $order, $payment, $payment_method_title ) {
 
 		// Get order ID in the correct way depending on WooCommerce version
-        $order_id = wooCommerceOrderId($order);
+        $order_id = mollieWooCommerceOrderId($order);
 
 		// Add messages to log
-		debug( __METHOD__ . " called for order {$order_id}" );
+		mollieWooCommerceDebug(__METHOD__ . " called for order {$order_id}" );
 
 		// if the status is Completed|Refunded|Cancelled  DONT change the status to cancelled
         if ($this->isFinalOrderStatus($order)) {
-            debug(
+            mollieWooCommerceDebug(
                 __METHOD__
                 . " called for payment {$order_id} has final status. Nothing to be done"
             );

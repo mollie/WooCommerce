@@ -1,7 +1,6 @@
 <?php
 
 use Mollie\Api\Exceptions\ApiException;
-use Mollie\Api\Types\PaymentMethod;
 
 abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 {
@@ -1724,7 +1723,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         $returnUrl = WC()->api_request_url( 'mollie_return' );
 	    $returnUrl = untrailingslashit($returnUrl);
-        $returnUrl = idn_to_ascii($returnUrl);
+        if (function_exists('idn_to_ascii')) {
+            $returnUrl = idn_to_ascii($returnUrl);
+        }
         $orderId = wooCommerceOrderId($order);
         $orderKey = wooCommerceOrderKey($order);
         $returnUrl = $this->appendOrderArgumentsToUrl(
@@ -1758,7 +1759,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         $webhookUrl = WC()->api_request_url(strtolower(get_class($this)));
         $webhookUrl = untrailingslashit($webhookUrl);
-        $webhookUrl = idn_to_ascii($webhookUrl);
+        if (function_exists('idn_to_ascii')) {
+            $webhookUrl = idn_to_ascii($webhookUrl);
+        }
         $orderId = wooCommerceOrderId($order);
         $orderKey = wooCommerceOrderKey($order);
         $webhookUrl = $this->appendOrderArgumentsToUrl(

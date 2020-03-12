@@ -165,7 +165,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         stubs(
             [
                 'is_admin' => false,
-                'isCheckoutContext' => true,
+                'mollieWooCommerceIsCheckoutContext' => true,
             ]
         );
 
@@ -198,7 +198,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         stubs(
             [
                 'is_admin' => $isAdmin,
-                'isCheckoutContext' => $isCheckoutContext,
+                'mollieWooCommerceIsCheckoutContext' => $isCheckoutContext,
             ]
         );
 
@@ -214,12 +214,12 @@ class Mollie_WC_Plugin_Test extends TestCase
     {
         stubs(
             [
-                'merchantProfileId' => uniqid(),
-                'mollieComponentsStylesForAvailableGateways' => [uniqid()],
+                'mollieWooCommerceMerchantProfileId' => uniqid(),
+                'mollieWooCommerceComponentsStylesForAvailableGateways' => [uniqid()],
                 'is_admin' => false,
-                'isCheckoutContext' => true,
+                'mollieWooCommerceIsCheckoutContext' => true,
                 'get_locale' => uniqid(),
-                'isTestModeEnabled' => true,
+                'mollieWooCommerceIsTestModeEnabled' => true,
                 'esc_html__' => '',
                 'is_checkout' => true,
                 'is_checkout_pay_page' => false,
@@ -310,11 +310,11 @@ class Mollie_WC_Plugin_Test extends TestCase
         /*
         * Expectations
         */
-        expect('getDataHelper')
+        expect('mollieWooCommerceGetDataHelper')
             ->andReturn($dataHelper);
         when('wc_get_order_id_by_order_key')
             ->justReturn($id);
-        when('wooCommerceOrderId')
+        when('mollieWooCommerceOrderId')
             ->justReturn($id);
         $gateway
             ->expects($this->once())
@@ -327,7 +327,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         expect('wp_safe_redirect')
             ->once()
             ->andReturn(true);
-        when('debug')
+        when('mollieWooCommerceDebug')
             ->justReturn(true);
 
         /*

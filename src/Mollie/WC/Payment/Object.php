@@ -652,7 +652,7 @@ class Mollie_WC_Payment_Object {
      */
     protected function isFinalOrderStatus(WC_Order $order)
     {
-        $dataHelper = getDataHelper();
+        $dataHelper = mollieWooCommerceGetDataHelper();
         $orderStatus = $dataHelper->getOrderStatus($order);
         $isFinalOrderStatus = in_array(
             $orderStatus,

@@ -40,7 +40,7 @@ function mollieWooCommerceSession()
  * @param WC_Order $order
  * @return int
  */
-function wooCommerceOrderId(WC_Order $order)
+function mollieWooCommerceOrderId(WC_Order $order)
 {
     return version_compare(WC_VERSION, '3.0', '<')
         ? $order->id
@@ -52,7 +52,7 @@ function wooCommerceOrderId(WC_Order $order)
  * @param WC_Order $order
  * @return string
  */
-function wooCommerceOrderKey(WC_Order $order)
+function mollieWooCommerceOrderKey(WC_Order $order)
 {
     return version_compare(WC_VERSION, '3.0', '<')
         ? $order->order_key

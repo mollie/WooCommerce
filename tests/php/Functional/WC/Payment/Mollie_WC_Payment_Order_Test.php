@@ -50,9 +50,9 @@ class Mollie_WC_Payment_Order_Test extends TestCase
         /*
          * Expectations
          */
-        when('wooCommerceOrderId')
+        when('mollieWooCommerceOrderId')
             ->justReturn($faker->randomNumber(2));
-        when('debug')
+        when('mollieWooCommerceDebug')
             ->justReturn($faker->word);
         when('getDataHelper')
             ->justReturn($dataHelper);

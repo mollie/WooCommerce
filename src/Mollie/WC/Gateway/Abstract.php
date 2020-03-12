@@ -1246,9 +1246,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 */
 	public function getReturnRedirectUrlForOrder( WC_Order $order )
     {
-        $order_id = wooCommerceOrderId($order);
+        $order_id = mollieWooCommerceOrderId($order);
         $debugLine = __METHOD__ . " {$order_id}: Determine what the redirect URL in WooCommerce should be.";
-        debug($debugLine);
+        mollieWooCommerceDebug($debugLine);
 
         if ( $this->orderNeedsPayment( $order ) ) {
 
@@ -1286,7 +1286,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             try {
                 $payment = $this->activePaymentObject($order_id, false);
                 if ( ! $payment->isOpen() && ! $payment->isPending() && ! $payment->isPaid() && ! $payment->isAuthorized() ) {
-                    notice(__('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'));
+                    mollieWooCommerceNotice(__('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'));
                     // Return to order payment page
                     if ( method_exists( $order, 'get_checkout_payment_url' ) ) {
                         return $order->get_checkout_payment_url( false );
@@ -1294,10 +1294,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 }
                 do_action( Mollie_WC_Plugin::PLUGIN_ID . '_customer_return_payment_success', $order );
             } catch (UnexpectedValueException $exc) {
-                notice( __('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ));
+                mollieWooCommerceNotice(__('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ));
                 $exceptionMessage = $exc->getMessage();
                 $debugLine = __METHOD__ . " Problem processing the payment. {$exceptionMessage}";
-                debug($debugLine);
+                mollieWooCommerceDebug($debugLine);
                 do_action( Mollie_WC_Plugin::PLUGIN_ID . '_customer_return_payment_failed', $order );
             }
 		}
@@ -1726,8 +1726,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         if (function_exists('idn_to_ascii')) {
             $returnUrl = idn_to_ascii($returnUrl);
         }
-        $orderId = wooCommerceOrderId($order);
-        $orderKey = wooCommerceOrderKey($order);
+        $orderId = mollieWooCommerceOrderId($order);
+        $orderKey = mollieWooCommerceOrderKey($order);
         $returnUrl = $this->appendOrderArgumentsToUrl(
             $orderId,
             $orderKey,
@@ -1741,7 +1741,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		    $langUrlParams = substr( $langUrl, strpos( $langUrl, "/?" ) + 2 );
 		    $returnUrl = $returnUrl . '&' . $langUrlParams;
 	    }
-        debug("{$this->id} : Order {$orderId} returnUrl: {$returnUrl}", true);
+        mollieWooCommerceDebug("{$this->id} : Order {$orderId} returnUrl: {$returnUrl}", true);
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_return_url', $returnUrl, $order);
     }
 
@@ -1762,8 +1762,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         if (function_exists('idn_to_ascii')) {
             $webhookUrl = idn_to_ascii($webhookUrl);
         }
-        $orderId = wooCommerceOrderId($order);
-        $orderKey = wooCommerceOrderKey($order);
+        $orderId = mollieWooCommerceOrderId($order);
+        $orderKey = mollieWooCommerceOrderKey($order);
         $webhookUrl = $this->appendOrderArgumentsToUrl(
             $orderId,
             $orderKey,
@@ -1784,7 +1784,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         // Some (multilanguage) plugins will add a extra slash to the url (/nl//) causing the URL to redirect and lose it's data.
 	    // Status updates via webhook will therefor not be processed. The below regex will find and remove those double slashes.
 	    $webhookUrl = preg_replace('/([^:])(\/{2,})/', '$1/', $webhookUrl);
-        debug("{$this->id} : Order {$orderId} webhookUrl: {$webhookUrl}", true);
+        mollieWooCommerceDebug("{$this->id} : Order {$orderId} webhookUrl: {$webhookUrl}", true);
 
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_webhook_url', $webhookUrl, $order);
     }
@@ -2094,7 +2094,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         static $factory = null;
         if ($factory === null){
-            $paymentMethods = array_filter((array)availablePaymentMethods());
+            $paymentMethods = array_filter((array)mollieWooCommerceAvailablePaymentMethods());
             $paymentMethodsImages = $this->associativePaymentMethodsImages($paymentMethods);
             $factory = new Mollie_WC_Helper_PaymentMethodsIconUrl($paymentMethodsImages);
         }

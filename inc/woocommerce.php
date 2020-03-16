@@ -59,3 +59,15 @@ function mollieWooCommerceOrderKey(WC_Order $order)
         : $order->get_order_key();
 }
 
+/**
+ * Mimics wc_string_to_bool
+ * @param $string
+ *
+ * @return bool
+ */
+function mollieWooCommerceStringToBoolOption($string)
+{
+    return is_bool($string) ? $string : ('yes' === strtolower(
+            $string
+        ) || 1 === $string || 'true' === strtolower($string) || '1' === $string);
+}

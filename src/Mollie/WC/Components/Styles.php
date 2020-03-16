@@ -62,7 +62,7 @@ class Mollie_WC_Components_Styles
 
         /** @var WC_Payment_Gateway $gateway */
         foreach ($gateways as $gateway) {
-            $isGatewayEnabled = wc_string_to_bool($gateway->enabled);
+            $isGatewayEnabled = mollieWooCommerceStringToBoolOption($gateway->enabled);
             if ($isGatewayEnabled && $this->isMollieComponentsEnabledForGateway($gateway)) {
                 $gatewaysWithMollieComponentsEnabled[] = $gateway;
             }
@@ -83,7 +83,7 @@ class Mollie_WC_Components_Styles
             return false;
         }
 
-        return wc_string_to_bool($gateway->settings['mollie_components_enabled']);
+        return mollieWooCommerceStringToBoolOption($gateway->settings['mollie_components_enabled']);
     }
 
     /**

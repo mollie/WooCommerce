@@ -9,6 +9,8 @@ use PHPUnit_Framework_MockObject_MockObject;
 use WC_Payment_Gateway;
 use WC_Payment_Gateways;
 
+use function Brain\Monkey\Functions\expect;
+
 class Mollie_WC_Components_Styles_Test extends TestCase
 {
     /**
@@ -47,6 +49,13 @@ class Mollie_WC_Components_Styles_Test extends TestCase
             ->expects($this->once())
             ->method('get_available_payment_gateways')
             ->willReturn([$availablePaymentGateway]);
+
+        expect('mollieWooCommerceStringToBoolOption')
+            ->andReturn(
+                $this->mollieWooCommerceStringToBoolOption(
+                    $availablePaymentGateway->enabled
+                )
+            );
 
         /*
          * Expect to retrieve the mollie components styles
@@ -94,6 +103,14 @@ class Mollie_WC_Components_Styles_Test extends TestCase
             ->method('get_available_payment_gateways')
             ->willReturn([$availablePaymentGateway]);
 
+        expect('mollieWooCommerceStringToBoolOption')
+            ->andReturn(
+                $this->mollieWooCommerceStringToBoolOption(
+                    $availablePaymentGateway->enabled
+                )
+            );
+
+
         /*
          * Execute Test
          */
@@ -127,6 +144,17 @@ class Mollie_WC_Components_Styles_Test extends TestCase
             ->expects($this->once())
             ->method('get_available_payment_gateways')
             ->willReturn([$availablePaymentGateway]);
+
+        expect('mollieWooCommerceStringToBoolOption')
+            ->twice()
+            ->andReturn(
+                $this->mollieWooCommerceStringToBoolOption(
+                    $availablePaymentGateway->enabled
+                ),
+                $this->mollieWooCommerceStringToBoolOption(
+                    $availablePaymentGateway->settings['mollie_components_enabled']
+                )
+            );
 
         /*
          * Execute Test
@@ -193,4 +221,12 @@ class Mollie_WC_Components_Styles_Test extends TestCase
 
         return $mock;
     }
+
+    private function mollieWooCommerceStringToBoolOption($string)
+    {
+        return is_bool($string) ? $string : ('yes' === strtolower(
+                $string
+            ) || 1 === $string || 'true' === strtolower($string) || '1' === $string);
+    }
+
 }

@@ -8,7 +8,7 @@ class Mollie_WC_Plugin
 {
     const PLUGIN_ID      = 'mollie-payments-for-woocommerce';
     const PLUGIN_TITLE   = 'Mollie Payments for WooCommerce';
-    const PLUGIN_VERSION = '5.4.2';
+    const PLUGIN_VERSION = '5.5.1';
 
     const DB_VERSION     = '1.0';
     const DB_VERSION_PARAM_NAME = 'mollie-db-version';
@@ -361,7 +361,7 @@ class Mollie_WC_Plugin
      */
     public static function enqueueFrontendScripts()
     {
-        if (is_admin() || !isCheckoutContext()) {
+        if (is_admin() || !mollieWooCommerceIsCheckoutContext()) {
             return;
         }
 
@@ -373,20 +373,20 @@ class Mollie_WC_Plugin
      */
     public static function enqueueComponentsAssets()
     {
+        if (is_admin() || !mollieWooCommerceIsCheckoutContext()) {
+            return;
+        }
+        
         try {
-            $merchantProfileId = merchantProfileId();
+            $merchantProfileId = mollieWooCommerceMerchantProfileId();
         } catch (ApiException $exception) {
             return;
         }
 
-        $mollieComponentsStylesGateways = mollieComponentsStylesForAvailableGateways();
+        $mollieComponentsStylesGateways = mollieWooCommerceComponentsStylesForAvailableGateways();
         $gatewayNames = array_keys($mollieComponentsStylesGateways);
 
         if (!$merchantProfileId || !$mollieComponentsStylesGateways) {
-            return;
-        }
-
-        if (is_admin() || !isCheckoutContext()) {
             return;
         }
 
@@ -402,7 +402,7 @@ class Mollie_WC_Plugin
                 'merchantProfileId' => $merchantProfileId,
                 'options' => [
                     'locale' => $locale,
-                    'testmode' => isTestModeEnabled(),
+                    'testmode' => mollieWooCommerceIsTestModeEnabled(),
                 ],
                 'enabledGateways' => $gatewayNames,
                 'componentsSettings' => $mollieComponentsStylesGateways,
@@ -440,35 +440,61 @@ class Mollie_WC_Plugin
     }
 
     /**
-     * Payment return url callback
+     * Returns the order from the Request first by Id, if not by Key
+     *
+     * @return bool|WC_Order
      */
-    public static function onMollieReturn ()
+    public static function orderByRequest()
     {
-        $dataHelper = self::getDataHelper();
+        $dataHelper = mollieWooCommerceGetDataHelper();
 
         $orderId = filter_input(INPUT_GET, 'order_id', FILTER_SANITIZE_NUMBER_INT) ?: null;
         $key = filter_input(INPUT_GET, 'key', FILTER_SANITIZE_STRING) ?: null;
         $order = $dataHelper->getWcOrder($orderId);
 
         if (!$order) {
-            self::setHttpResponseCode(404);
-            self::debug(__METHOD__ . ":  Could not find order $orderId.");
-            return;
+            $order = $dataHelper->getWcOrder(wc_get_order_id_by_order_key($key));
+        }
+
+        if (!$order) {
+            throw new RuntimeException(
+                "Could not find order by order Id {$orderId}",
+                404
+            );
         }
 
         if (!$order->key_is_valid($key)) {
-            self::setHttpResponseCode(401);
-            self::debug(__METHOD__ . ":  Invalid key $key for order $orderId.");
+            throw new RuntimeException(
+                "Invalid key given. Key {$key} does not match the order id: {$orderId}",
+                401
+            );
+        }
+
+        return $order;
+    }
+    /**
+     * Payment return url callback
+     */
+    public static function onMollieReturn ()
+    {
+        $dataHelper = mollieWooCommerceGetDataHelper();
+
+        try {
+            $order = self::orderByRequest();
+        } catch (RuntimeException $exc) {
+            self::setHttpResponseCode($exc->getCode());
+            mollieWooCommerceDebug(__METHOD__ . ":  {$exc->getMessage()}");
             return;
         }
 
         $gateway = $dataHelper->getWcPaymentGatewayByOrder($order);
+        $orderId = mollieWooCommerceOrderId($order);
 
         if (!$gateway) {
             $gatewayName = $order->get_payment_method();
 
             self::setHttpResponseCode(404);
-            self::debug(
+            mollieWooCommerceDebug(
                 __METHOD__ . ":  Could not find gateway {$gatewayName} for order {$orderId}."
             );
             return;
@@ -476,7 +502,7 @@ class Mollie_WC_Plugin
 
         if (!($gateway instanceof Mollie_WC_Gateway_Abstract)) {
             self::setHttpResponseCode(400);
-            self::debug(__METHOD__ . ": Invalid gateway " . get_class($gateway) . " for this plugin. Order $orderId.");
+            mollieWooCommerceDebug(__METHOD__ . ": Invalid gateway {get_class($gateway)} for this plugin. Order {$orderId}.");
             return;
         }
 
@@ -485,7 +511,7 @@ class Mollie_WC_Plugin
         // Add utm_nooverride query string
         $redirect_url = add_query_arg(['utm_nooverride' => 1], $redirect_url);
 
-        self::debug(__METHOD__ . ": Redirect url on return order " . $gateway->id . ", order $orderId: $redirect_url");
+        mollieWooCommerceDebug(__METHOD__ . ": Redirect url on return order {$gateway->id}, order {$orderId}: {$redirect_url}");
 
         wp_safe_redirect($redirect_url);
     }
@@ -902,7 +928,7 @@ class Mollie_WC_Plugin
 		}
 
 		// Is test mode enabled?
-        $test_mode = isTestModeEnabled();
+        $test_mode = mollieWooCommerceIsTestModeEnabled();
 
 		try {
 			// Get the order from the Mollie API
@@ -987,7 +1013,7 @@ class Mollie_WC_Plugin
 		}
 
 		// Is test mode enabled?
-        $test_mode = isTestModeEnabled();
+        $test_mode = mollieWooCommerceIsTestModeEnabled();
 
 		try {
 			// Get the order from the Mollie API

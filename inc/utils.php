@@ -8,7 +8,7 @@ use Mollie\Api\Resources\CurrentProfile;
  *
  * @return bool
  */
-function isCheckoutContext()
+function mollieWooCommerceIsCheckoutContext()
 {
     return is_checkout() || is_checkout_pay_page();
 }
@@ -18,7 +18,7 @@ function isCheckoutContext()
  *
  * @return array
  */
-function mollieComponentsStylesForAvailableGateways()
+function mollieWooCommerceComponentsStylesForAvailableGateways()
 {
     $mollieComponentsStyles = new Mollie_WC_Components_Styles(
         new Mollie_WC_Settings_Components(),
@@ -33,7 +33,7 @@ function mollieComponentsStylesForAvailableGateways()
  *
  * @return bool
  */
-function isTestModeEnabled()
+function mollieWooCommerceIsTestModeEnabled()
 {
     $settingsHelper = Mollie_WC_Plugin::getSettingsHelper();
     $isTestModeEnabled = $settingsHelper->isTestModeEnabled();
@@ -45,12 +45,12 @@ function isTestModeEnabled()
  * @return CurrentProfile
  * @throws ApiException
  */
-function merchantProfile()
+function mollieWooCommerceMerchantProfile()
 {
     static $profile = null;
 
     if ($profile === null) {
-        $isTestMode = isTestModeEnabled();
+        $isTestMode = mollieWooCommerceIsTestModeEnabled();
 
         $apiHelper = Mollie_WC_Plugin::getApiHelper();
         $profile = $apiHelper->getApiClient($isTestMode)->profiles->getCurrent();
@@ -65,10 +65,10 @@ function merchantProfile()
  * @return int|string
  * @throws ApiException
  */
-function merchantProfileId()
+function mollieWooCommerceMerchantProfileId()
 {
     static $merchantProfileId = null;
-    $merchantProfileIdOptionKey = Mollie_WC_Plugin::PLUGIN_ID . '_merchant_profile_id';
+    $merchantProfileIdOptionKey = Mollie_WC_Plugin::PLUGIN_ID . '_profile_merchant_id';
 
     if ($merchantProfileId === null) {
         $merchantProfileId = get_option($merchantProfileIdOptionKey, '');
@@ -79,14 +79,14 @@ function merchantProfileId()
          */
         if (!$merchantProfileId) {
             try {
-                $merchantProfile = merchantProfile();
+                $merchantProfile = mollieWooCommerceMerchantProfile();
                 $merchantProfileId = isset($merchantProfile->id) ? $merchantProfile->id : '';
             } catch (ApiException $exception) {
                 $merchantProfileId = '';
             }
 
             if ($merchantProfileId) {
-                update_option($merchantProfileIdOptionKey, $merchantProfileId, false);
+                update_option($merchantProfileIdOptionKey, $merchantProfileId);
             }
         }
     }
@@ -99,7 +99,7 @@ function merchantProfileId()
  *
  * @return string
  */
-function cardToken()
+function mollieWooCommerceCardToken()
 {
     return $cardToken = filter_input(INPUT_POST, 'cardToken', FILTER_SANITIZE_STRING) ?: '';
 }
@@ -109,9 +109,9 @@ function cardToken()
  *
  * @return array|bool|mixed|\Mollie\Api\Resources\BaseCollection|\Mollie\Api\Resources\MethodCollection
  */
-function availablePaymentMethods()
+function mollieWooCommerceAvailablePaymentMethods()
 {
-    $testMode = isTestModeEnabled();
+    $testMode = mollieWooCommerceIsTestModeEnabled();
     $dataHelper = Mollie_WC_Plugin::getDataHelper();
     $methods = $dataHelper->getApiPaymentMethods($testMode, $use_cache = true);
 
@@ -124,7 +124,7 @@ function availablePaymentMethods()
  * @param  string $message
  * @param bool  $set_debug_header Set X-Mollie-Debug header (default false)
  */
-function debug($message, $set_debug_header = false)
+function mollieWooCommerceDebug($message, $set_debug_header = false)
 {
     Mollie_WC_Plugin::debug($message, $set_debug_header);
 }
@@ -135,9 +135,18 @@ function debug($message, $set_debug_header = false)
  * @param  string $message
  * @param string $type    One of notice, error or success (default notice)
  */
-function notice($message, $type = 'notice')
+function mollieWooCommerceNotice($message, $type = 'notice')
 {
     Mollie_WC_Plugin::addNotice($message, $type);
+}
+/**
+ * Isolates static getDataHelper calls.
+ *
+ * @return Mollie_WC_Helper_Data
+ */
+function mollieWooCommerceGetDataHelper()
+{
+    return Mollie_WC_Plugin::getDataHelper();
 }
 
 

@@ -1251,9 +1251,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 */
 	public function getReturnRedirectUrlForOrder( WC_Order $order )
     {
-        $order_id = wooCommerceOrderId($order);
+        $order_id = mollieWooCommerceOrderId($order);
         $debugLine = __METHOD__ . " {$order_id}: Determine what the redirect URL in WooCommerce should be.";
-        debug($debugLine);
+        mollieWooCommerceDebug($debugLine);
 
         if ( $this->orderNeedsPayment( $order ) ) {
 
@@ -1291,7 +1291,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             try {
                 $payment = $this->activePaymentObject($order_id, false);
                 if ( ! $payment->isOpen() && ! $payment->isPending() && ! $payment->isPaid() && ! $payment->isAuthorized() ) {
-                    notice(__('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'));
+                    mollieWooCommerceNotice(__('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'));
                     // Return to order payment page
                     if ( method_exists( $order, 'get_checkout_payment_url' ) ) {
                         return $order->get_checkout_payment_url( false );
@@ -1299,10 +1299,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 }
                 do_action( Mollie_WC_Plugin::PLUGIN_ID . '_customer_return_payment_success', $order );
             } catch (UnexpectedValueException $exc) {
-                notice( __('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ));
+                mollieWooCommerceNotice(__('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ));
                 $exceptionMessage = $exc->getMessage();
                 $debugLine = __METHOD__ . " Problem processing the payment. {$exceptionMessage}";
-                debug($debugLine);
+                mollieWooCommerceDebug($debugLine);
                 do_action( Mollie_WC_Plugin::PLUGIN_ID . '_customer_return_payment_failed', $order );
             }
 		}
@@ -1717,110 +1717,82 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     }
 
     /**
-     * @param WC_Order $order
-     * @return string
+     * Get the url to return to on Mollie return
+     * For example 'http://mollie-wc.docker.myhost/wc-api/mollie_return/?order_id=89&key=wc_order_eFZyH8jki6fge'
+     *
+     * @param WC_Order $order The order processed
+     *
+     * @return string The url with order id and key as params
      */
     public function getReturnUrl (WC_Order $order)
     {
-        $site_url   = get_home_url();
-
-	    $return_url = WC()->api_request_url( 'mollie_return' );
-	    $return_url = $this->removeTrailingSlashAfterParamater( $return_url );
-
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    $return_url = add_query_arg(array(
-			    'order_id'       => $order->id,
-			    'key'            => $order->order_key,
-		    ), $return_url);
-	    } else {
-		    $return_url = add_query_arg(array(
-			    'order_id'       => $order->get_id(),
-			    'key'            => $order->get_order_key(),
-		    ), $return_url);
-	    }
-	    $return_url = $this->removeTrailingSlashAfterParamater( $return_url );
-
-        $lang_url   = $this->getSiteUrlWithLanguage();
+        $returnUrl = WC()->api_request_url( 'mollie_return' );
+	    $returnUrl = untrailingslashit($returnUrl);
+        if (function_exists('idn_to_ascii')) {
+            $returnUrl = idn_to_ascii($returnUrl);
+        }
+        $orderId = mollieWooCommerceOrderId($order);
+        $orderKey = mollieWooCommerceOrderKey($order);
+        $returnUrl = $this->appendOrderArgumentsToUrl(
+            $orderId,
+            $orderKey,
+            $returnUrl
+        );
+	    $returnUrl = untrailingslashit($returnUrl);
+        $langUrl   = $this->getSiteUrlWithLanguage();
 
 	    // Make sure there aren't any double /? in the URL (some (multilanguage) plugins will add this)
-	    if ( strpos( $lang_url, '/?' ) !== false ) {
-		    $lang_url_params = substr( $lang_url, strpos( $lang_url, "/?" ) + 2 );
-		    $return_url = $return_url . '&' . $lang_url_params;
-	    } else {
-		    $return_url = str_replace( $site_url, $lang_url, $return_url );
+	    if ( strpos( $langUrl, '/?' ) !== false ) {
+		    $langUrlParams = substr( $langUrl, strpos( $langUrl, "/?" ) + 2 );
+		    $returnUrl = $returnUrl . '&' . $langUrlParams;
 	    }
-
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order->id . ' returnUrl: ' . $return_url, true );
-	    } else {
-		    Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order->get_id() . ' returnUrl: ' . $return_url, true );
-	    }
-
-        return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_return_url', $return_url, $order);
+        mollieWooCommerceDebug("{$this->id} : Order {$orderId} returnUrl: {$returnUrl}", true);
+        return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_return_url', $returnUrl, $order);
     }
 
     /**
-     * @param WC_Order $order
-     * @return string
+     * Get the webhook url
+     * For example 'http://mollie-wc.docker.myhost/wc-api/mollie_return/mollie_wc_gateway_bancontact/?order_id=89&key=wc_order_eFZyH8jki6fge'
+     *
+     * @param WC_Order $order The order processed
+     *
+     * @return string The url with gateway and order id and key as params
      */
     public function getWebhookUrl (WC_Order $order)
     {
-        $site_url    = get_home_url();
+        $siteUrl    = get_home_url();
 
-	    $webhook_url = WC()->api_request_url( strtolower( get_class( $this ) ) );
-	    $webhook_url = $this->removeTrailingSlashAfterParamater( $webhook_url );
+        $webhookUrl = WC()->api_request_url(strtolower(get_class($this)));
+        $webhookUrl = untrailingslashit($webhookUrl);
+        if (function_exists('idn_to_ascii')) {
+            $webhookUrl = idn_to_ascii($webhookUrl);
+        }
+        $orderId = mollieWooCommerceOrderId($order);
+        $orderKey = mollieWooCommerceOrderKey($order);
+        $webhookUrl = $this->appendOrderArgumentsToUrl(
+            $orderId,
+            $orderKey,
+            $webhookUrl
+        );
+        $webhookUrl = untrailingslashit($webhookUrl);
 
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    $webhook_url = add_query_arg(array(
-			    'order_id' => $order->id,
-			    'key'      => $order->order_key,
-		    ), $webhook_url);
-	    } else {
-		    $webhook_url = add_query_arg(array(
-			    'order_id' => $order->get_id(),
-			    'key'      => $order->get_order_key(),
-		    ), $webhook_url);
-	    }
-	    $webhook_url = $this->removeTrailingSlashAfterParamater( $webhook_url );
-
-        $lang_url    = $this->getSiteUrlWithLanguage();
+        $langUrl    = $this->getSiteUrlWithLanguage();
 
 	    // Make sure there aren't any double /? in the URL (some (multilanguage) plugins will add this)
-	    if ( strpos( $lang_url, '/?' ) !== false ) {
-		    $lang_url_params = substr( $lang_url, strpos( $lang_url, "/?" ) + 2 );
-		    $webhook_url = $webhook_url . '&' . $lang_url_params;
+	    if ( strpos( $langUrl, '/?' ) !== false ) {
+		    $langUrlParams = substr( $langUrl, strpos( $langUrl, "/?" ) + 2 );
+		    $webhookUrl = $webhookUrl . '&' . $langUrlParams;
 	    } else {
-		    $webhook_url = str_replace( $site_url, $lang_url, $webhook_url );
+		    $webhookUrl = str_replace( $siteUrl, $langUrl, $webhookUrl );
 	    }
 
         // Some (multilanguage) plugins will add a extra slash to the url (/nl//) causing the URL to redirect and lose it's data.
 	    // Status updates via webhook will therefor not be processed. The below regex will find and remove those double slashes.
-	    $webhook_url = preg_replace('/([^:])(\/{2,})/', '$1/', $webhook_url);
+	    $webhookUrl = preg_replace('/([^:])(\/{2,})/', '$1/', $webhookUrl);
+        mollieWooCommerceDebug("{$this->id} : Order {$orderId} webhookUrl: {$webhookUrl}", true);
 
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order->id . ' webhookUrl: ' . $webhook_url, true );
-	    } else {
-		    Mollie_WC_Plugin::debug( $this->id . ': Order ' . $order->get_id() . ' webhookUrl: ' . $webhook_url, true );
-	    }
-
-        return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_webhook_url', $webhook_url, $order);
+        return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_webhook_url', $webhookUrl, $order);
     }
-
-	/**
-	 * Remove a trailing slash after a query string if there is one in the WooCommerce API request URL.
-	 * For example WMPL adds a query string with trailing slash like /?lang=de/ to WC()->api_request_url.
-	 * This causes issues when we append to that URL with add_query_arg.
-	 *
-	 * @return string
-	 */
-	protected function removeTrailingSlashAfterParamater( $url ) {
-
-		if ( strpos( $url, '?' ) ) {
-			$url = untrailingslashit( $url );
-		}
-
-		return $url;
-	}
 
 	/**
 	 * Check if any multi language plugins are enabled and return the correct site url.
@@ -2127,7 +2099,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         static $factory = null;
         if ($factory === null){
-            $paymentMethods = array_filter((array)availablePaymentMethods());
+            $paymentMethods = array_filter((array)mollieWooCommerceAvailablePaymentMethods());
             $paymentMethodsImages = $this->associativePaymentMethodsImages($paymentMethods);
             $factory = new Mollie_WC_Helper_PaymentMethodsIconUrl($paymentMethodsImages);
         }
@@ -2150,6 +2122,25 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         return $list;
     }
+
+    /**
+     * @param $order_id
+     * @param $order_key
+     * @param $webhook_url
+     *
+     * @return string
+     */
+    protected function appendOrderArgumentsToUrl($order_id, $order_key, $webhook_url)
+    {
+        $webhook_url = add_query_arg(
+            array(
+                'order_id' => $order_id,
+                'key' => $order_key,
+            ),
+            $webhook_url
+        );
+        return $webhook_url;
+}
 
     /**
      * @param $new_order_status

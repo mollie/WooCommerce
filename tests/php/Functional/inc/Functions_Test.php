@@ -24,7 +24,7 @@ class Functions_Test extends TestCase
         /*
          * Execute Test
          */
-        $result = isCheckoutContext();
+        $result = mollieWooCommerceIsCheckoutContext();
 
         self::assertEquals($expected, $result);
     }
@@ -82,7 +82,7 @@ class Functions_Test extends TestCase
         /*
          * Execute Testee
          */
-        $result = wooCommerceOrderId($order);
+        $result = mollieWooCommerceOrderId($order);
         self::assertEquals($orderId, $result);
     }
 
@@ -102,9 +102,55 @@ class Functions_Test extends TestCase
         /*
          * Execute Testee
          */
-        $result = wooCommerceOrderId($order);
+        $result = mollieWooCommerceOrderId($order);
 
         self::assertEquals($orderId, $result);
+    }
+    /**
+     * Test WooCommerce use Method if WC >= 3.0
+     */
+    public function testWooCommerceOrderKeyCallMethod()
+    {
+        /*
+         * Setup Stubs
+         */
+
+        define('WC_VERSION', '3.0');
+
+        $orderKey = 'eFZyH8jki6fge';
+        $order = $this->createConfiguredMock(
+            '\\WC_Order',
+            [
+                'get_order_key' => $orderKey
+            ]
+        );
+
+        /*
+         * Execute Testee
+         */
+        $result = mollieWooCommerceOrderKey($order);
+        self::assertEquals($orderKey, $result);
+    }
+
+    /**
+     * Test WooCommerce use Property if Wc < 3.0
+     */
+    public function testWooCommerceOrderKeyUseProperty()
+    {
+        /*
+         * Setup Stubs
+         */
+        define('WC_VERSION', mt_rand(1, 2));
+        $orderKey = 'eFZyH8jki6fge';
+        $order = $this->getMockBuilder('\\WC_Order')->getMock();
+        $order->order_key = $orderKey;
+
+        /*
+         * Execute Testee
+         */
+        $result = mollieWooCommerceOrderKey($order);
+
+        self::assertEquals($orderKey, $result);
     }
 
 

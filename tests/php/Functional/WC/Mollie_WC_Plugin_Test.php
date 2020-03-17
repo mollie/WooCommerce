@@ -4,10 +4,13 @@ namespace Mollie\WooCommerceTests\Functional\WC;
 
 use Mollie\WooCommerceTests\TestCase;
 use Mollie_WC_Plugin;
+use Mollie_WC_Helper_Data;
+use WC_Order;
 use WpScriptsStub;
 use function Brain\Monkey\Functions\expect;
 use function Brain\Monkey\Functions\stubs;
 use function Brain\Monkey\Functions\when;
+use Faker;
 
 /**
  * Class Mollie_WC_Plugin_Test
@@ -162,7 +165,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         stubs(
             [
                 'is_admin' => false,
-                'isCheckoutContext' => true,
+                'mollieWooCommerceIsCheckoutContext' => true,
             ]
         );
 
@@ -195,7 +198,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         stubs(
             [
                 'is_admin' => $isAdmin,
-                'isCheckoutContext' => $isCheckoutContext,
+                'mollieWooCommerceIsCheckoutContext' => $isCheckoutContext,
             ]
         );
 
@@ -211,12 +214,12 @@ class Mollie_WC_Plugin_Test extends TestCase
     {
         stubs(
             [
-                'merchantProfileId' => uniqid(),
-                'mollieComponentsStylesForAvailableGateways' => [uniqid()],
+                'mollieWooCommerceMerchantProfileId' => uniqid(),
+                'mollieWooCommerceComponentsStylesForAvailableGateways' => [uniqid()],
                 'is_admin' => false,
-                'isCheckoutContext' => true,
+                'mollieWooCommerceIsCheckoutContext' => true,
                 'get_locale' => uniqid(),
-                'isTestModeEnabled' => true,
+                'mollieWooCommerceIsTestModeEnabled' => true,
                 'esc_html__' => '',
                 'is_checkout' => true,
                 'is_checkout_pay_page' => false,
@@ -263,5 +266,73 @@ class Mollie_WC_Plugin_Test extends TestCase
         $this->fileMTime = time();
 
         when('filemtime')->justReturn($this->fileMTime);
+    }
+    /* -----------------------------------------------------------------
+       onMollieReturn Tests
+       -------------------------------------------------------------- */
+
+    /**
+     * Given onMollieReturn is called
+     * when order and gateway are valid
+     * then we get a redirectUrl
+     *
+     * @test
+     */
+    public function onMollieReturn_redirectUrlCorrect()
+    {
+        $faker = Faker\Factory::create();
+        $id = $faker->uuid;
+        $key = $faker->word;
+        $gwId = $faker->word;
+        $redirectUrl
+            = "https://website.org/language/order-received/{$id}/?key=wc_order_{$key}";
+        /*
+         * Setup Stubs to mock the external dependencies and its methods
+         */
+        $gateway = $this->getMockBuilder(Mollie_WC_Gateway_Abstract::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getReturnRedirectUrlForOrder'])
+            ->setMockClassName('Mollie_WC_Gateway_Abstract')
+            ->getMock();
+        $gateway->id = $gwId;
+        $order = $this->createConfiguredMock(
+            WC_Order::class,
+            ['key_is_valid' => true]
+        );
+        $dataHelper = $this->createConfiguredMock(
+            Mollie_WC_Helper_Data::class,
+            [
+                'getWcOrder' => $order,
+                'getWcPaymentGatewayByOrder' => $gateway
+            ]
+        );
+
+        /*
+        * Expectations
+        */
+        expect('mollieWooCommerceGetDataHelper')
+            ->andReturn($dataHelper);
+        when('wc_get_order_id_by_order_key')
+            ->justReturn($id);
+        when('mollieWooCommerceOrderId')
+            ->justReturn($id);
+        $gateway
+            ->expects($this->once())
+            ->method('getReturnRedirectUrlForOrder')
+            ->willReturn($redirectUrl);
+        when('add_query_arg')
+            ->justReturn(
+                "https://website.org/language/order-received/{$id}/?key=wc_order_{$key}&utm_nooverride=1"
+            );
+        expect('wp_safe_redirect')
+            ->once()
+            ->andReturn(true);
+        when('mollieWooCommerceDebug')
+            ->justReturn(true);
+
+        /*
+         * Execute Test
+         */
+        Mollie_WC_Plugin::onMollieReturn();
     }
 }

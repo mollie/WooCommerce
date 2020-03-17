@@ -58,7 +58,19 @@ function mollieWooCommerceOrderKey(WC_Order $order)
         ? $order->order_key
         : $order->get_order_key();
 }
-
+if (!function_exists('wc_string_to_bool'))
+{
+    /**
+     * Converts a string (e.g. 'yes' or 'no') to a bool.
+     *
+     * @since 3.0.0
+     * @param string $string String to convert.
+     * @return bool
+     */
+    function wc_string_to_bool( $string ) {
+        return is_bool( $string ) ? $string : ( 'yes' === strtolower( $string ) || 1 === $string || 'true' === strtolower( $string ) || '1' === $string );
+    }
+}
 /**
  * Mimics wc_string_to_bool
  * @param $string

@@ -262,38 +262,38 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	/**
 	 * @param WC_Order                   $order
 	 * @param Mollie\Api\Resources\Order $payment
-	 * @param string                     $payment_method_title
+	 * @param string                     $paymentMethodTitle
 	 */
-	public function onWebhookPaid( WC_Order $order, $payment, $payment_method_title ) {
+	public function onWebhookPaid( WC_Order $order, $payment, $paymentMethodTitle ) {
 
 		// Get order ID in the correct way depending on WooCommerce version
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			$order_id = $order->id;
+			$orderId = $order->id;
 		} else {
-			$order_id = $order->get_id();
+			$orderId = $order->get_id();
 		}
 
 		if ( $payment->isPaid() ) {
 
 			// Add messages to log
-			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $orderId );
 
 			// WooCommerce 2.2.0 has the option to store the Payment transaction id.
-			$woo_version = get_option( 'woocommerce_version', 'Unknown' );
+			$wooVersion = get_option( 'woocommerce_version', 'Unknown' );
 
-			if ( version_compare( $woo_version, '2.2.0', '>=' ) ) {
+			if ( version_compare( $wooVersion, '2.2.0', '>=' ) ) {
 				$order->payment_complete( $payment->id );
 			} else {
 				$order->payment_complete();
 			}
 
 			// Add messages to log
-			Mollie_WC_Plugin::debug( __METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for order ' . $order_id );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for order ' . $orderId );
 
 			$order->add_order_note( sprintf(
 			/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
 				__( 'Order completed using %s payment (%s).', 'mollie-payments-for-woocommerce' ),
-				$payment_method_title,
+				$paymentMethodTitle,
 				$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
 			) );
 
@@ -301,12 +301,12 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			$this->setOrderPaidAndProcessed( $order );
 
 			// Remove (old) cancelled payments from this order
-			$this->unsetCancelledMolliePaymentId( $order_id );
+			$this->unsetCancelledMolliePaymentId( $orderId );
 
 			// Add messages to log
-			Mollie_WC_Plugin::debug( __METHOD__ . ' processing paid order via Mollie plugin fully completed for order ' . $order_id );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' processing paid order via Mollie plugin fully completed for order ' . $orderId );
             //update payment so it can be refunded directly
-            $this->updatePaymentAfterPaid($payment, $order_id);
+            $this->updatePaymentForDashboardActions($payment, $orderId);
             // Add a message to log
             Mollie_WC_Plugin::debug(
                 __METHOD__ . ' updated payment with webhook and metadata '
@@ -330,7 +330,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 		} else {
 
 			// Add messages to log
-			Mollie_WC_Plugin::debug( __METHOD__ . ' payment at Mollie not paid, so no processing for order ' . $order_id );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' payment at Mollie not paid, so no processing for order ' . $orderId );
 
 		}
 	}
@@ -1067,14 +1067,14 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
     /**
      * @param Mollie\Api\Resources\Order $order
-     * @param string                     $order_id
+     * @param int                     $orderId
      */
-    protected function updatePaymentAfterPaid($order, $order_id)
+    protected function updatePaymentForDashboardActions($order, $orderId)
     {
         $paymentCollection = $order->payments();
         foreach ($paymentCollection as $payment) {
             $payment->webhookUrl = $order->webhookUrl;
-            $payment->metadata = ["order_id" => $order_id];
+            $payment->metadata = ['order_id' => $orderId];
             $payment->update();
         }
     }

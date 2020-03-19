@@ -969,20 +969,20 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		// Get order ID in the correct way depending on WooCommerce version
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			$order_id = $order->id;
+			$orderId = $order->id;
 		} else {
-			$order_id = $order->get_id();
+			$orderId = $order->get_id();
 		}
 
 		// Debug log ID (order id/payment id)
-		$log_id = 'order ' . $order_id . ' / payment ' . $payment->id;
+		$logId = 'order ' . $orderId . ' / payment ' . $payment->id;
 
 		// Add message to log
-		Mollie_WC_Plugin::debug( __METHOD__ . ' called for ' . $log_id );
+		Mollie_WC_Plugin::debug( __METHOD__ . ' called for ' . $logId );
 
 		// Make sure there are refunds to process at all
 		if ( empty($payment->_links->refunds) ) {
-			Mollie_WC_Plugin::debug( __METHOD__ . ": No refunds to process for {$log_id}", true );
+			Mollie_WC_Plugin::debug( __METHOD__ . ": No refunds to process for {$logId}", true );
 
 			return;
 		}
@@ -994,62 +994,62 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			$refunds = $payment->refunds();
 
 			// Collect all refund IDs in one array
-			$refund_ids = array ();
+			$refundIds = array ();
 			foreach ( $refunds as $refund ) {
-				$refund_ids[] = $refund->id;
+				$refundIds[] = $refund->id;
 			}
 
-			Mollie_WC_Plugin::debug( __METHOD__ . ' All refund IDs for ' . $log_id . ': ' . json_encode( $refund_ids ) );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' All refund IDs for ' . $logId . ': ' . json_encode( $refundIds ) );
 
 			// Get possibly already processed refunds
 			if ( $order->meta_exists( '_mollie_processed_refund_ids' ) ) {
-				$processed_refund_ids = $order->get_meta( '_mollie_processed_refund_ids', true );
+				$processedRefundIds = $order->get_meta( '_mollie_processed_refund_ids', true );
 			} else {
-				$processed_refund_ids = array ();
+				$processedRefundIds = array ();
 			}
 
-			Mollie_WC_Plugin::debug( __METHOD__ . ' Already processed refunds for ' . $log_id . ': ' . json_encode( $processed_refund_ids ) );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' Already processed refunds for ' . $logId . ': ' . json_encode( $processedRefundIds ) );
 
 			// Order the refund arrays by value (refund ID)
-			asort( $refund_ids );
-			asort( $processed_refund_ids );
+			asort( $refundIds );
+			asort( $processedRefundIds );
 
 			// Check if there are new refunds that need processing
-			if ( $refund_ids != $processed_refund_ids ) {
+			if ( $refundIds != $processedRefundIds ) {
 				// There are new refunds.
-				$refunds_to_process = array_diff( $refund_ids, $processed_refund_ids );
-				Mollie_WC_Plugin::debug( __METHOD__ . ' Refunds that need to be processed for ' . $log_id . ': ' . json_encode( $refunds_to_process ) );
+				$refundsToProcess = array_diff( $refundIds, $processedRefundIds );
+				Mollie_WC_Plugin::debug( __METHOD__ . ' Refunds that need to be processed for ' . $logId . ': ' . json_encode( $refundsToProcess ) );
 
 			} else {
 				// No new refunds, stop processing.
-				Mollie_WC_Plugin::debug( __METHOD__ . ' No new refunds, stop processing for ' . $log_id );
+				Mollie_WC_Plugin::debug( __METHOD__ . ' No new refunds, stop processing for ' . $logId );
 
 				return;
 			}
 
-			$data_helper = Mollie_WC_Plugin::getDataHelper();
-			$order       = $data_helper->getWcOrder( $order_id );
+			$dataHelper = Mollie_WC_Plugin::getDataHelper();
+			$order       = $dataHelper->getWcOrder( $orderId );
 
-			foreach ( $refunds_to_process as $refund_to_process ) {
+			foreach ( $refundsToProcess as $refundToProcess ) {
 
-				Mollie_WC_Plugin::debug( __METHOD__ . ' New refund ' . $refund_to_process . ' processed in Mollie Dashboard for ' . $log_id . '. Order note added, but order not updated.' );
+				Mollie_WC_Plugin::debug( __METHOD__ . ' New refund ' . $refundToProcess . ' processed in Mollie Dashboard for ' . $logId . '. Order note added, but order not updated.' );
 
 				$order->add_order_note( sprintf(
 					__( 'New refund %s processed in Mollie Dashboard! Order note added, but order not updated.', 'mollie-payments-for-woocommerce' ),
-					$refund_to_process
+					$refundToProcess
 				) );
 
-				$processed_refund_ids[] = $refund_to_process;
+				$processedRefundIds[] = $refundToProcess;
 
 			}
 
-			$order->update_meta_data( '_mollie_processed_refund_ids', $processed_refund_ids );
-			Mollie_WC_Plugin::debug( __METHOD__ . ' Updated, all processed refunds for ' . $log_id . ': ' . json_encode( $processed_refund_ids ) );
+			$order->update_meta_data( '_mollie_processed_refund_ids', $processedRefundIds );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' Updated, all processed refunds for ' . $logId . ': ' . json_encode( $processedRefundIds ) );
 
             $order->save();
             $this->processUpdateStateRefund($order, $payment);
             Mollie_WC_Plugin::debug(
-                __METHOD__ . ' Updated state for order' . $order_id
+                __METHOD__ . ' Updated state for order' . $orderId
             );
 
             do_action(
@@ -1075,20 +1075,20 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		// Get order ID in the correct way depending on WooCommerce version
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			$order_id = $order->id;
+			$orderId = $order->id;
 		} else {
-			$order_id = $order->get_id();
+			$orderId = $order->get_id();
 		}
 
 		// Debug log ID (order id/payment id)
-		$log_id = 'order ' . $order_id . ' / payment ' . $payment->id;
+		$logId = 'order ' . $orderId . ' / payment ' . $payment->id;
 
 		// Add message to log
-		Mollie_WC_Plugin::debug( __METHOD__ . ' called for ' . $log_id );
+		Mollie_WC_Plugin::debug( __METHOD__ . ' called for ' . $logId );
 
 		// Make sure there are chargebacks to process at all
 		if ( empty($payment->_links->chargebacks) ) {
-			Mollie_WC_Plugin::debug( __METHOD__ . ": No chargebacks to process for {$log_id}", true );
+			Mollie_WC_Plugin::debug( __METHOD__ . ": No chargebacks to process for {$logId}", true );
 
 			return;
 		}
@@ -1100,53 +1100,53 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			$chargebacks = $payment->chargebacks();
 
 			// Collect all chargeback IDs in one array
-			$chargeback_ids = array ();
+			$chargebackIds = array ();
 			foreach ( $chargebacks as $chargeback ) {
-				$chargeback_ids[] = $chargeback->id;
+				$chargebackIds[] = $chargeback->id;
 			}
 
-			Mollie_WC_Plugin::debug( __METHOD__ . ' All chargeback IDs for ' . $log_id . ': ' . json_encode( $chargeback_ids ) );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' All chargeback IDs for ' . $logId . ': ' . json_encode( $chargebackIds ) );
 
 			// Get possibly already processed chargebacks
 			if ( $order->meta_exists( '_mollie_processed_chargeback_ids' ) ) {
-				$processed_chargeback_ids = $order->get_meta( '_mollie_processed_chargeback_ids', true );
+				$processedChargebackIds = $order->get_meta( '_mollie_processed_chargeback_ids', true );
 			} else {
-				$processed_chargeback_ids = array ();
+				$processedChargebackIds = array ();
 			}
 
-			Mollie_WC_Plugin::debug( __METHOD__ . ' Already processed chargebacks for ' . $log_id . ': ' . json_encode( $processed_chargeback_ids ) );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' Already processed chargebacks for ' . $logId . ': ' . json_encode( $processedChargebackIds ) );
 
 			// Order the chargeback arrays by value (chargeback ID)
-			asort( $chargeback_ids );
-			asort( $processed_chargeback_ids );
+			asort( $chargebackIds );
+			asort( $processedChargebackIds );
 
 			// Check if there are new chargebacks that need processing
-			if ( $chargeback_ids != $processed_chargeback_ids ) {
+			if ( $chargebackIds != $processedChargebackIds ) {
 				// There are new chargebacks.
-				$chargebacks_to_process = array_diff( $chargeback_ids, $processed_chargeback_ids );
-				Mollie_WC_Plugin::debug( __METHOD__ . ' Chargebacks that need to be processed for ' . $log_id . ': ' . json_encode( $chargebacks_to_process ) );
+				$chargebacksToProcess = array_diff( $chargebackIds, $processedChargebackIds );
+				Mollie_WC_Plugin::debug( __METHOD__ . ' Chargebacks that need to be processed for ' . $logId . ': ' . json_encode( $chargebacksToProcess ) );
 
 			} else {
 				// No new chargebacks, stop processing.
-				Mollie_WC_Plugin::debug( __METHOD__ . ' No new chargebacks, stop processing for ' . $log_id );
+				Mollie_WC_Plugin::debug( __METHOD__ . ' No new chargebacks, stop processing for ' . $logId );
 
 				return;
 			}
 
-			$data_helper = Mollie_WC_Plugin::getDataHelper();
-			$order       = $data_helper->getWcOrder( $order_id );
+			$dataHelper = Mollie_WC_Plugin::getDataHelper();
+			$order       = $dataHelper->getWcOrder( $orderId );
 
 			// Update order notes, add message about chargeback
-			foreach ( $chargebacks_to_process as $chargeback_to_process ) {
+			foreach ( $chargebacksToProcess as $chargebackToProcess ) {
 
-				Mollie_WC_Plugin::debug( __METHOD__ . ' New chargeback ' . $chargeback_to_process . ' for ' . $log_id . '. Order note and order status updated.' );
+				Mollie_WC_Plugin::debug( __METHOD__ . ' New chargeback ' . $chargebackToProcess . ' for ' . $logId . '. Order note and order status updated.' );
 
 				$order->add_order_note( sprintf(
 					__( 'New chargeback %s processed! Order note and order status updated.', 'mollie-payments-for-woocommerce' ),
-					$chargeback_to_process
+					$chargebackToProcess
 				) );
 
-				$processed_chargeback_ids[] = $chargeback_to_process;
+				$processedChargebackIds[] = $chargebackToProcess;
 			}
 
 			//
@@ -1154,35 +1154,35 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			//
 
 			// New order status
-            $new_order_status = self::STATUS_ON_HOLD;
-            $new_order_status = $this->overwriteFilters(
-                $new_order_status,
+            $newOrderStatus = self::STATUS_ON_HOLD;
+            $newOrderStatus = $this->newStatusFilters(
+                $newOrderStatus,
                 '_order_status_on_hold'
             );
-            $payment_method_title = $this->getPaymentMethodTitle($payment);
+            $paymentMethodTitle = $this->getPaymentMethodTitle($payment);
 
             // Update order status for order with charged_back payment, don't restore stock
 			$this->updateOrderStatus(
 				$order,
-				$new_order_status,
+				$newOrderStatus,
 				sprintf(
 				/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
 					__( '%s payment charged back via Mollie (%s). You will need to manually review the payment (and adjust product stocks if you use it).', 'mollie-payments-for-woocommerce' ),
-					$payment_method_title,
+					$paymentMethodTitle,
 					$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
 				),
-				$restore_stock = false
+				$restoreStock = false
 			);
 
 			// Send a "Failed order" email to notify the admin
 			$emails = WC()->mailer()->get_emails();
-			if ( ! empty( $emails ) && ! empty( $order_id ) && ! empty( $emails['WC_Email_Failed_Order'] ) ) {
-				$emails['WC_Email_Failed_Order']->trigger( $order_id );
+			if ( ! empty( $emails ) && ! empty( $orderId ) && ! empty( $emails['WC_Email_Failed_Order'] ) ) {
+				$emails['WC_Email_Failed_Order']->trigger( $orderId );
 			}
 
 
-			$order->update_meta_data( '_mollie_processed_chargeback_ids', $processed_chargeback_ids );
-			Mollie_WC_Plugin::debug( __METHOD__ . ' Updated, all processed chargebacks for ' . $log_id . ': ' . json_encode( $processed_chargeback_ids ) );
+			$order->update_meta_data( '_mollie_processed_chargeback_ids', $processedChargebackIds );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' Updated, all processed chargebacks for ' . $logId . ': ' . json_encode( $processedChargebackIds ) );
 
 			$order->save();
 
@@ -1193,10 +1193,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			// Do extra checks if WooCommerce Subscriptions is installed
 			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
 				// Also store it on the subscriptions being purchased or paid for in the order
-				if ( wcs_order_contains_subscription( $order_id ) ) {
-					$subscriptions = wcs_get_subscriptions_for_order( $order_id );
-				} elseif ( wcs_order_contains_renewal( $order_id ) ) {
-					$subscriptions = wcs_get_subscriptions_for_renewal_order( $order_id );
+				if ( wcs_order_contains_subscription( $orderId ) ) {
+					$subscriptions = wcs_get_subscriptions_for_order( $orderId );
+				} elseif ( wcs_order_contains_renewal( $orderId ) ) {
+					$subscriptions = wcs_get_subscriptions_for_renewal_order( $orderId );
 				} else {
 					$subscriptions = array ();
 				}
@@ -1205,14 +1205,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 					$this->updateOrderStatus(
 						$subscription,
-						$new_order_status,
+						$newOrderStatus,
 						sprintf(
 						/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
 							__( '%s payment charged back via Mollie (%s). Subscription status updated, please review (and adjust product stocks if you use it).', 'mollie-payments-for-woocommerce' ),
-							$payment_method_title,
+							$paymentMethodTitle,
 							$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
 						),
-						$restore_stock = false
+						$restoreStock = false
 					);
 
 				}
@@ -2143,26 +2143,26 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 }
 
     /**
-     * @param $new_order_status
+     * @param $newOrderStatus
      *
      * @param $statusTypeString
      *
      * @return mixed|void|null
      */
-    protected function overwriteFilters($new_order_status, $statusTypeString)
+    protected function newStatusFilters($newOrderStatus, $statusTypeString)
     {
         // Overwrite plugin-wide
-        $new_order_status = apply_filters(
+        $newOrderStatus = apply_filters(
             Mollie_WC_Plugin::PLUGIN_ID . $statusTypeString,
-            $new_order_status
+            $newOrderStatus
         );
 
         // Overwrite gateway-wide
-        $new_order_status = apply_filters(
+        $newOrderStatus = apply_filters(
             Mollie_WC_Plugin::PLUGIN_ID . $statusTypeString . $this->id,
-            $new_order_status
+            $newOrderStatus
         );
-        return $new_order_status;
+        return $newOrderStatus;
     }
 
     /**
@@ -2172,7 +2172,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function isPartialRefund($payment)
     {
-        return ($payment->amount->value - $payment->amountRefunded->value) != 0;
+        return ($payment->amount->value - $payment->amountRefunded->value) !== 0;
     }
 
     /**
@@ -2181,64 +2181,70 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function processUpdateStateRefund(WC_Order $order, $payment)
     {
-        if ($this->isPartialRefund($payment)) {
-            $this->updateStateRefund(
-                $order,
-                $payment,
-                self::STATUS_ON_HOLD,
-                '_order_status_partially_refunded',
-                'partially refunded'
-            );
-            return;
-        }
-        $this->updateStateRefund(
+        $this->isPartialRefund($payment)
+            ? $this->updateStateRefund(
+            $order,
+            $payment,
+            self::STATUS_ON_HOLD,
+            '_order_status_partially_refunded'
+        )
+            : $this->updateStateRefund(
             $order,
             $payment,
             self::STATUS_REFUNDED,
-            '_order_status_refunded',
-            'refunded'
-        );
+            '_order_status_refunded');
     }
 
     /**
      * @param WC_Order                                                $order
      * @param Mollie\Api\Resources\Payment|Mollie\Api\Resources\Order $payment
-     * @param                                                         $new_order_status
+     * @param                                                         $newOrderStatus
      * @param                                                         $statusFilterString
-     * @param                                                         $statusNoteString
      */
     protected function updateStateRefund(
         WC_Order $order,
         $payment,
-        $new_order_status,
-        $statusFilterString,
-        $statusNoteString
+        $newOrderStatus,
+        $statusFilterString
     ) {
         // New order status
-        $new_order_status = $this->overwriteFilters(
-            $new_order_status,
+        $newOrderStatus = $this->newStatusFilters(
+            $newOrderStatus,
             $statusFilterString
         );
-        $payment_method_title = $this->getPaymentMethodTitle($payment);
-
-        // Update order status for order with charged_back payment, don't restore stock
+        $note = $this->notePrint($payment, $newOrderStatus);
         $this->updateOrderStatus(
             $order,
-            $new_order_status,
-            sprintf(
-            /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-                __(
-                    '%s payment %s via Mollie (%s). You will need to manually review the payment (and adjust product stocks if you use it).',
-                    'mollie-payments-for-woocommerce'
-                ),
-                $payment_method_title,
-                $statusNoteString,
-                $payment->id . ($payment->mode == 'test' ? (' - ' . __(
-                        'test mode',
-                        'mollie-payments-for-woocommerce'
-                    )) : '')
-            ),
-            $restore_stock = false
+            $newOrderStatus,
+            $note,
+            $restoreStock = false
         );
     }
+
+    /**
+     * @param $payment
+     * @param $newOrderStatus
+     *
+     * @return string
+     */
+    protected function notePrint($payment, $newOrderStatus)
+    {
+        $paymentMethodTitle = $this->getPaymentMethodTitle($payment);
+        $testMode = $payment->mode == 'test' ? (' - '
+            . __(
+                'test mode',
+                'mollie-payments-for-woocommerce'
+            )) : '';
+        $paymentIdString = $payment->id . $testMode;
+        return sprintf(
+        /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+            __(
+                '%s payment %s via Mollie (%s). You will need to manually review the payment (and adjust product stocks if you use it).',
+                'mollie-payments-for-woocommerce'
+            ),
+            $paymentMethodTitle,
+            $newOrderStatus,
+            $paymentIdString
+        );
+}
 }

@@ -276,7 +276,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 		if ( $payment->isPaid() ) {
 
 			// Add messages to log
-			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $orderId );
+			Mollie_WC_Plugin::debug( __METHOD__ . " called for order {$orderId}" );
 
 			// WooCommerce 2.2.0 has the option to store the Payment transaction id.
 			$wooVersion = get_option( 'woocommerce_version', 'Unknown' );
@@ -288,7 +288,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			}
 
 			// Add messages to log
-			Mollie_WC_Plugin::debug( __METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for order ' . $orderId );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . " for order {$orderId}" );
 
 			$order->add_order_note( sprintf(
 			/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
@@ -304,7 +304,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			$this->unsetCancelledMolliePaymentId( $orderId );
 
 			// Add messages to log
-			Mollie_WC_Plugin::debug( __METHOD__ . ' processing paid order via Mollie plugin fully completed for order ' . $orderId );
+			Mollie_WC_Plugin::debug( __METHOD__ . " processing paid order via Mollie plugin fully completed for order {$orderId}" );
             //update payment so it can be refunded directly
             $this->updatePaymentForDashboardActions($payment, $orderId);
             // Add a message to log
@@ -330,7 +330,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 		} else {
 
 			// Add messages to log
-			Mollie_WC_Plugin::debug( __METHOD__ . ' payment at Mollie not paid, so no processing for order ' . $orderId );
+			Mollie_WC_Plugin::debug( __METHOD__ . " payment at Mollie not paid, so no processing for order {$orderId}" );
 
 		}
 	}

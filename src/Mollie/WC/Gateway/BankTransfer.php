@@ -48,13 +48,7 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
 	 * @return array
 	 */
 	public function addPaymentArguments( array $args, WC_Order $order ) {
-		// Expiry date
-		$expiry_days = (int) $this->get_option( 'expiry_days', self::EXPIRY_DEFAULT_DAYS );
-
-		if ( $expiry_days >= self::EXPIRY_MIN_DAYS && $expiry_days <= self::EXPIRY_MAX_DAYS ) {
-			$expiry_date = date( "Y-m-d", strtotime( "+$expiry_days days" ) );
-            $args['dueDate'] = $expiry_date;
-		}
+		// Expiry date now is not customizable
 
 		// Billing email is now required
 

@@ -1249,6 +1249,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $order_id = mollieWooCommerceOrderId($order);
         $debugLine = __METHOD__ . " {$order_id}: Determine what the redirect URL in WooCommerce should be.";
         mollieWooCommerceDebug($debugLine);
+        $hookReturnPaymentStatus = 'success';
 
         if ( $this->orderNeedsPayment( $order ) ) {
 
@@ -1292,15 +1293,15 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                         return $order->get_checkout_payment_url( false );
                     }
                 }
-                do_action( Mollie_WC_Plugin::PLUGIN_ID . '_customer_return_payment_success', $order );
             } catch (UnexpectedValueException $exc) {
                 mollieWooCommerceNotice(__('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ));
                 $exceptionMessage = $exc->getMessage();
                 $debugLine = __METHOD__ . " Problem processing the payment. {$exceptionMessage}";
                 mollieWooCommerceDebug($debugLine);
-                do_action( Mollie_WC_Plugin::PLUGIN_ID . '_customer_return_payment_failed', $order );
+                $hookReturnPaymentStatus = 'failed';
             }
 		}
+        do_action( Mollie_WC_Plugin::PLUGIN_ID . '_customer_return_payment_' . $hookReturnPaymentStatus, $order );
 
 		/*
 		 * Return to order received page

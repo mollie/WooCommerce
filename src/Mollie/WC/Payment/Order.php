@@ -306,7 +306,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			// Add messages to log
 			Mollie_WC_Plugin::debug( __METHOD__ . " processing paid order via Mollie plugin fully completed for order {$orderId}" );
             //update payment so it can be refunded directly
-            $this->updatePaymentForDashboardActions($payment, $orderId);
+            $this->updatePaymentDataWithOrderData($payment, $orderId);
             // Add a message to log
             Mollie_WC_Plugin::debug(
                 __METHOD__ . ' updated payment with webhook and metadata '
@@ -1069,7 +1069,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
      * @param Mollie\Api\Resources\Order $order
      * @param int                     $orderId
      */
-    protected function updatePaymentForDashboardActions($order, $orderId)
+    protected function updatePaymentDataWithOrderData($order, $orderId)
     {
         $paymentCollection = $order->payments();
         foreach ($paymentCollection as $payment) {

@@ -2288,7 +2288,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             $newOrderStatus
         );
         // New order status
-        $note = $this->notePrint($payment, $refundType);
+        $note = $this->renderNote($payment, $refundType);
         $this->updateOrderStatus(
             $order,
             $newOrderStatus,
@@ -2303,7 +2303,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      *
      * @return string
      */
-    protected function notePrint($payment, $refundType)
+    protected function renderNote($payment, $refundType)
     {
         $paymentMethodTitle = $this->getPaymentMethodTitle($payment);
         $paymentTestModeNote = $this->paymentTestModeNote($payment);

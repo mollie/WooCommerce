@@ -26,4 +26,4 @@ jobs:
                 run: find src -name '*.php' | xargs -n 1 -P4 php -l
                 
             -   name: Run PHPUnit
-                run: vendor/bin/phpunit
+                run: ./vendor/bin/phpunit

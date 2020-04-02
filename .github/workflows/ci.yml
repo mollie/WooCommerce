@@ -7,7 +7,7 @@ jobs:
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                php-versions: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4', 'nightly']
+                php-versions: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4']
             fail-fast: true
         name: PHP ${{ matrix.php-versions }}
         steps:
@@ -19,11 +19,11 @@ jobs:
                     php-version: ${{ matrix.php-versions }}
                     coverage: none
 
-            -   name: Validate composer.json and composer.lock
-                run: composer validate
-
-            -   name: Install dependencies
-                run: composer install --no-interaction --optimize-autoloader
+            -   name: update dependencies
+                run: composer update
+                
+            -   name: check syntax
+                run: find src -name '*.php' | xargs -n 1 -P4 php -l
                 
             -   name: Run PHPUnit
                 run: vendor/bin/phpunit

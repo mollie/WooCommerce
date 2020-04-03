@@ -1,5 +1,6 @@
 {
   "name": "mollie/mollie-woocommerce",
+  "description": "Mollie Payments for WooCommerce",
   "type": "wordpress-plugin",
   "license": "GPL-2.0-or-later",
   "minimum-stability": "dev",

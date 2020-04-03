@@ -25,6 +25,9 @@ jobs:
                 
             -   name: install dependencies
                 run: composer install --no-interaction --optimize-autoloader
+
+            -   name: dump autoload
+                run: composer dump-autoload
                 
             -   name: check syntax
                 run: find src -name '*.php' | xargs -n 1 -P4 php -l

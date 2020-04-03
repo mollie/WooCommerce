@@ -6,9 +6,10 @@ jobs:
     run:
         runs-on: ubuntu-latest
         strategy:
+            fail-fast: false
             matrix:
-                php-versions: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4']
-            fail-fast: true
+                php-versions: ['5.6', '7.0']
+            
         name: PHP ${{ matrix.php-versions }}
         steps:
             -   uses: actions/checkout@v2

@@ -19,12 +19,12 @@ jobs:
                 with:
                     php-version: ${{ matrix.php-versions }}
                     coverage: none
-
+                    
+            -   name: Validate composer.json and composer.lock
+                run: composer validate
+                
             -   name: install dependencies
                 run: composer install --no-interaction --optimize-autoloader
-                
-            -   name: update dependencies
-                run: composer update
                 
             -   name: check syntax
                 run: find src -name '*.php' | xargs -n 1 -P4 php -l

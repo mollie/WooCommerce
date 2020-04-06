@@ -1777,8 +1777,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	    if ( strpos( $langUrl, '/?' ) !== false ) {
 		    $langUrlParams = substr( $langUrl, strpos( $langUrl, "/?" ) + 2 );
 		    $webhookUrl = $webhookUrl . '&' . $langUrlParams;
-	    } else {
-		    $webhookUrl = str_replace( $siteUrl, $langUrl, $webhookUrl );
 	    }
 
         // Some (multilanguage) plugins will add a extra slash to the url (/nl//) causing the URL to redirect and lose it's data.

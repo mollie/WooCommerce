@@ -37,7 +37,7 @@
     "gulp-help-doc": "^1.1.1",
     "gulp-phpunit": "^0.26.0",
     "gulp-zip": "^4.2.0",
-    "minimist": "^1.2.0",
+    "minimist": "^1.2.2",
     "node-sass": "^4.13.0",
     "pump": "^3.0.0",
     "sass-loader": "^7.0.1"

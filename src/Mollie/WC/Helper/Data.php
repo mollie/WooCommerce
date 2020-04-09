@@ -318,7 +318,7 @@ class Mollie_WC_Helper_Data
 
 		try {
 
-			$transient_id = Mollie_WC_Plugin::getDataHelper()->getTransientId( http_build_query($filters).$filters_key['api'].$filters_key['mode'] );
+			$transient_id = Mollie_WC_Plugin::getDataHelper()->getTransientId( md5(http_build_query($filters_key)));
 
 			if ($use_cache) {
 				// When no cache exists $methods will be `false`

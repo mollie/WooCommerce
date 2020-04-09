@@ -19,8 +19,6 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
         );
 
         parent::__construct();
-
-        add_filter('woocommerce_' . $this->id . '_args', array($this, 'addPaymentArguments'), 10, 2);
     }
 
     /**
@@ -40,20 +38,6 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
             ),
         ));
     }
-
-	/**
-	 * @param array    $args
-	 * @param WC_Order $order
-	 *
-	 * @return array
-	 */
-	public function addPaymentArguments( array $args, WC_Order $order ) {
-		// Expiry date now is not customizable
-
-		// Billing email is now required
-
-		return $args;
-	}
 
 	/**
 	 * {@inheritdoc}

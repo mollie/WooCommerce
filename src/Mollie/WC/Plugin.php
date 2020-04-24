@@ -629,7 +629,7 @@ class Mollie_WC_Plugin
         if ($isWcApiRequest ||
             !$wooCommerceSession instanceof WC_Session ||
             !doing_action('woocommerce_payment_gateways') ||
-            !wp_doing_ajax() ||
+            !wp_doing_ajax() && ! is_wc_endpoint_url( 'order-pay' )||
             is_admin()
         ) {
             return $gateways;

@@ -42,6 +42,7 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
         parent::init_form_fields();
 
         $this->includeMollieComponentsFields();
+        $this->includeCreditCardIconSelector();
     }
 
     /**
@@ -90,4 +91,16 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
         return parent::getInstructions($order, $payment, $admin_instructions, $plain_text);
     }
 
+    /**
+     * Include the credit card icon selector customization in the credit card
+     * settings page
+     */
+    protected function includeCreditCardIconSelector()
+    {
+        $fields = include Mollie_WC_Plugin::getPluginPath(
+            '/inc/settings/mollie_creditcard_icons_selector.php'
+        );
+
+        $this->form_fields = array_merge($this->form_fields, $fields);
+    }
 }

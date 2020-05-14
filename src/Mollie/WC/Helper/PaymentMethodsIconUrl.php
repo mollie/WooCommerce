@@ -88,7 +88,7 @@ class Mollie_WC_Helper_PaymentMethodsIconUrl
      *
      * @return bool
      */
-    private function enabledCreditcardOptions()
+    protected function enabledCreditcardOptions()
     {
         $creditcardSettings = get_option(
             'mollie_wc_gateway_creditcard_settings'
@@ -105,7 +105,7 @@ class Mollie_WC_Helper_PaymentMethodsIconUrl
      * @return array Array containing the credit cards names enabled in settings
      *               to make customization of checkout icons
      */
-    private function enabledCreditcards()
+    protected function enabledCreditcards()
     {
         $optionLexem = self::MOLLIE_CREDITCARD_ICONS;
         $creditcardsAvailable = self::AVAILABLE_CREDITCARD_ICONS;

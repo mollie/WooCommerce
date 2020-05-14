@@ -250,6 +250,8 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         /*
         * Expectations
         */
+        expect('get_home_url')
+            ->andReturn($varStubs->homeUrl);
         //get url from request
         expect('WC')
             ->andReturn($wcUrl);
@@ -274,7 +276,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         $testee
             ->expects($this->once())
             ->method('getSiteUrlWithLanguage')
-            ->willReturn("{$varStubs->apiRequestUrl}/nl");
+            ->willReturn("{$varStubs->afterLangUrl}");
 
         expect('mollieWooCommerceDebug')
             ->withAnyArgs();
@@ -284,7 +286,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
          */
         $result = $testee->getReturnUrl($wcOrder);
 
-        self::assertEquals($varStubs->urlWithParams, $result);
+        self::assertEquals($varStubs->result, $result);
     }
 
     /* -----------------------------------------------------------------

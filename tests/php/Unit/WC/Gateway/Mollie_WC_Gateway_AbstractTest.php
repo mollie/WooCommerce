@@ -355,7 +355,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         $result = $testee->getWebhookUrl($wcOrder);
 
         self::assertEquals(
-            "{$varStubs->homeUrl}/nl/wc-api/mollie_return/?order_id={$varStubs->orderId}&key=wc_order_{$varStubs->orderKey}",
+            "{$varStubs->homeUrl}/nl/wc-api/mollie_return?order_id={$varStubs->orderId}&key=wc_order_{$varStubs->orderKey}",
             $result
         );
     }

@@ -1784,7 +1784,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             $langUrlParams = substr( $langUrl, strpos( $langUrl, "/?" ) + 2 );
             $webhookUrl = $webhookUrl . '&' . $langUrlParams;
         } else {
-            $langUrl = untrailingslashit($langUrl);
             $webhookUrl = str_replace( $siteUrl, $langUrl, $webhookUrl );
         }
 

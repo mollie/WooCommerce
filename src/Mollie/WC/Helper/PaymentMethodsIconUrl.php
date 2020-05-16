@@ -5,8 +5,7 @@ use Mollie\Api\Types\PaymentMethod;
 class Mollie_WC_Helper_PaymentMethodsIconUrl
 {
     const MOLLIE_CREDITCARD_ICONS = 'mollie_creditcard_icons_';
-    const AVAILABLE_CREDITCARD_ICONS
-        = [
+    const AVAILABLE_CREDITCARD_ICONS = [
             'amex',
             'cartasi',
             'cartebancaire',
@@ -17,6 +16,7 @@ class Mollie_WC_Helper_PaymentMethodsIconUrl
         ];
     const SVG_FILE_EXTENSION = '.svg';
     const CREDIT_CARD_ICON_WIDTH = 33;
+    const MOLLIE_CREDITCARD_ICONS_ENABLER = 'mollie_creditcard_icons_enabler';
     /**
      * @var array
      */
@@ -42,11 +42,13 @@ class Mollie_WC_Helper_PaymentMethodsIconUrl
      */
     public function svgUrlForPaymentMethod($paymentMethodName)
     {
-        if ( $paymentMethodName == PaymentMethod::CREDITCARD  && !is_admin()) {
-            if($this->enabledCreditcardOptions()){
-                return $this->composeSvgImage($this->enabledCreditcards());
-            }
+        if ($paymentMethodName == PaymentMethod::CREDITCARD
+            && $this->enabledCreditcards()
+            && !is_admin()
+        ) {
+            return $this->composeSvgImage($this->enabledCreditcards());
         }
+
         return isset($this->paymentMethodImages[$paymentMethodName]->svg)
             ? $this->paymentMethodImages[$paymentMethodName]->svg
             : $this->fallToAssets($paymentMethodName);
@@ -58,11 +60,14 @@ class Mollie_WC_Helper_PaymentMethodsIconUrl
      */
     protected function fallToAssets($paymentMethodName)
     {
-        if ( $paymentMethodName == PaymentMethod::CREDITCARD  && !is_admin()) {
-            return Mollie_WC_Plugin::getPluginUrl('public/images/' . $paymentMethodName . 's.svg');
+        if ($paymentMethodName == PaymentMethod::CREDITCARD && !is_admin()) {
+            return Mollie_WC_Plugin::getPluginUrl(
+                "public/images/{$paymentMethodName}s.svg"
+            );
         }
 
-        return Mollie_WC_Plugin::getPluginUrl('public/images/' . $paymentMethodName . self::SVG_FILE_EXTENSION
+        return Mollie_WC_Plugin::getPluginUrl(
+            "public/images/{$paymentMethodName}" . self::SVG_FILE_EXTENSION
         );
     }
 
@@ -84,29 +89,19 @@ class Mollie_WC_Helper_PaymentMethodsIconUrl
     }
 
     /**
-     * Is the customization of credit card icons enabled?
-     *
-     * @return bool
-     */
-    protected function enabledCreditcardOptions()
-    {
-        $creditcardSettings = get_option(
-            'mollie_wc_gateway_creditcard_settings'
-        );
-        if (!isset($creditcardSettings['mollie_creditcard_icons_enabler'])) {
-            return false;
-        }
-        return wc_string_to_bool(
-            $creditcardSettings['mollie_creditcard_icons_enabler']
-        );
-    }
-
-    /**
      * @return array Array containing the credit cards names enabled in settings
      *               to make customization of checkout icons
      */
     protected function enabledCreditcards()
     {
+        $creditCardSettings = get_option('mollie_wc_gateway_creditcard_settings', false) ?: [];
+        $enabled = isset($creditCardSettings[self::MOLLIE_CREDITCARD_ICONS_ENABLER])
+            ? wc_string_to_bool($creditCardSettings[self::MOLLIE_CREDITCARD_ICONS_ENABLER])
+            : false;
+
+        if (!$enabled) {
+            return [];
+        }
         $optionLexem = self::MOLLIE_CREDITCARD_ICONS;
         $creditcardsAvailable = self::AVAILABLE_CREDITCARD_ICONS;
         $svgFileName = self::SVG_FILE_EXTENSION;

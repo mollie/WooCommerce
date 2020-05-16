@@ -1,12 +1,12 @@
 <?php
 
 return [
-    array(
+    [
         'title' => __( 'Customize Icons', 'mollie-payments-for-woocommerce' ),
         'type'  => 'title',
         'desc'  => '',
         'id'    => 'customize_icons',
-    ),
+    ],
     'mollie_creditcard_icons_enabler' => [
         'type' => 'checkbox',
         'title' => __('Enable Icons Selector', 'mollie-payments-for-woocommerce'),

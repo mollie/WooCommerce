@@ -1725,7 +1725,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $returnUrl = WC()->api_request_url( 'mollie_return' );
 	    $returnUrl = untrailingslashit($returnUrl);
         if (function_exists('idn_to_ascii')) {
-            $returnUrl = idn_to_ascii($returnUrl);
+        	
+        	if (defined('IDNA_NONTRANSITIONAL_TO_ASCII') && defined('INTL_IDNA_VARIANT_UTS46')) {
+        		$returnUrl = idn_to_ascii($returnUrl, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
+        	} else {
+            	$returnUrl = idn_to_ascii($returnUrl);
+        	}
         }
         $orderId = mollieWooCommerceOrderId($order);
         $orderKey = mollieWooCommerceOrderKey($order);
@@ -1766,7 +1771,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $webhookUrl = WC()->api_request_url(strtolower(get_class($this)));
         $webhookUrl = untrailingslashit($webhookUrl);
         if (function_exists('idn_to_ascii')) {
-            $webhookUrl = idn_to_ascii($webhookUrl);
+
+        	if (defined('IDNA_NONTRANSITIONAL_TO_ASCII') && defined('INTL_IDNA_VARIANT_UTS46')) {
+        		$webhookUrl = idn_to_ascii($webhookUrl, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
+        	} else {
+            	$webhookUrl = idn_to_ascii($webhookUrl);
+        	}
         }
         $orderId = mollieWooCommerceOrderId($order);
         $orderKey = mollieWooCommerceOrderKey($order);

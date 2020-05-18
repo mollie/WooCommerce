@@ -18,6 +18,18 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
         $this->hasFieldsIfMollieComponentsIsEnabled();
     }
 
+    public function get_icon() {
+        if ($this->enabledCreditcards()
+            && !is_admin()
+        ) {
+            $output = $this->buildSvgComposed() ?: '';
+        } else{
+            $output = $this->icon ? '<img src="' . WC_HTTPS::force_https_url( $this->icon ) . '" alt="' . esc_attr( $this->get_title() ) . '" />' : '';
+        }
+
+        return apply_filters( 'woocommerce_gateway_icon', $output, $this->id );
+    }
+
     /**
      * @inheritDoc
      */
@@ -101,7 +113,7 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
             '/inc/settings/mollie_creditcard_icons_selector.php'
         );
 
-        $this->form_fields = array_merge($this->form_fields, $fields);
+        $fields and $this->form_fields = array_merge($this->form_fields, $fields);
     }
 
     /**

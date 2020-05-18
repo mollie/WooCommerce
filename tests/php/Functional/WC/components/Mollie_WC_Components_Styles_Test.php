@@ -94,6 +94,7 @@ class Mollie_WC_Components_Styles_Test extends TestCase
             ->method('get_available_payment_gateways')
             ->willReturn([$availablePaymentGateway]);
 
+
         /*
          * Execute Test
          */

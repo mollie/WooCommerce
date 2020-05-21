@@ -2240,7 +2240,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function isPartialRefund($payment)
     {
-        return ($payment->amount->value - $payment->amountRefunded->value) !== 0;
+        return (float)($payment->amount->value - $payment->amountRefunded->value) !== 0.0;
     }
 
     /**

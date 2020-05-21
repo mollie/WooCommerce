@@ -28,11 +28,14 @@ class Mollie_WC_Gateway_CreditCard_Test extends TestCase
         /*
          * Setup Testee
          */
-        $testee = $this->buildTesteeMethodMock(
+        $testee = $this->buildTesteeMock(
             Testee::class,
             [],
             ['enabledCreditcards']
-        );
+        )
+            ->getMockForAbstractClass();
+        $testee = $this->proxyFor($testee);
+
 
         /*
          * Expect to call is_admin() function and return false

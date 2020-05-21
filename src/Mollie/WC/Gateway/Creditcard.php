@@ -152,8 +152,9 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
     public function buildSvgComposed()
     {
         $enabledCreditCards = $this->enabledCreditcards();
+
         $assetsImagesPath
-            = '/app/public/wp-content/plugins/WooCommerce-Mollie/public/images/Creditcard_issuers/';
+            = dirname(plugin_dir_path( __FILE__ ), 4).'/public/images/Creditcard_issuers/';
         $cardWidth = Mollie_WC_Helper_PaymentMethodsIconUrl::CREDIT_CARD_ICON_WIDTH;
         $cardsNumber = count($enabledCreditCards);
         $cardsWidth = $cardWidth * $cardsNumber;

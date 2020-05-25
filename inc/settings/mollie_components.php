@@ -33,7 +33,7 @@ return [
         'id' => 'mollie_components_' . Mollie_WC_Components_StylesPropertiesDictionary::FONT_SIZE,
         'title' => _x('Font Size', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
         'desc_tip' => _x(
-            'Font size define the size for the font in the components. `em`, `px`, `rem` units are allowed.',
+            'Defines the component font size. Allowed units: \'em\', \'px\', \'rem\'.',
             'Mollie Components Settings',
             'mollie-payments-for-woocommerce'
         ),
@@ -46,7 +46,7 @@ return [
         'default' => 'normal',
         'options' => [
             'lighter' => _x('Lighter', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
-            'normal' => _x('Normal', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
+            'normal' => _x('Regular', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
             'bolder' => _x('Bold', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
         ],
     ],
@@ -70,7 +70,7 @@ return [
         'id' => 'mollie_components_' . Mollie_WC_Components_StylesPropertiesDictionary::PADDING,
         'title' => _x('Padding', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
         'desc_tip' => _x(
-            'Add padding to the components. Eg. `16px 16px 16px 16px` and `em`, `px`, `rem` units are allowed.',
+            'Add padding to the components. Allowed units include `16px 16px 16px 16px` and `em`, `px`, `rem`.',
             'Mollie Components Settings',
             'mollie-payments-for-woocommerce'
         ),
@@ -79,7 +79,7 @@ return [
     Mollie_WC_Components_StylesPropertiesDictionary::TEXT_ALIGN => [
         'type' => 'select',
         'id' => 'mollie_components_' . Mollie_WC_Components_StylesPropertiesDictionary::TEXT_ALIGN,
-        'title' => _x('Text Align', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
+        'title' => _x('Align Text', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
         'default' => 'left',
         'options' => [
             'left' => _x('Left', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
@@ -91,7 +91,7 @@ return [
     Mollie_WC_Components_StylesPropertiesDictionary::TEXT_TRANSFORM => [
         'type' => 'select',
         'id' => 'mollie_components_' . Mollie_WC_Components_StylesPropertiesDictionary::TEXT_TRANSFORM,
-        'title' => _x('Text Transform', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
+        'title' => _x('Transform Text ', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
         'default' => 'none',
         'options' => [
             'none' => _x(

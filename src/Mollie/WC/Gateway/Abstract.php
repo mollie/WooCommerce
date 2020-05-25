@@ -235,7 +235,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		    if ( null === $this->getMollieMethod() ) {
 			    $this->errors[] = sprintf(
 			    /* translators: Placeholder 1: payment method title. The surrounding %s's Will be replaced by a link to the Mollie profile */
-				    __( '%s not enabled in your Mollie profile. You can enabled it by editing your %sMollie profile%s.', 'mollie-payments-for-woocommerce' ),
+				    __( '%s not enabled in your Mollie profile. You can enable it by editing your %sMollie profile%s.', 'mollie-payments-for-woocommerce' ),
 				    $this->getDefaultTitle(),
 				    '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
 				    '</a>'
@@ -466,7 +466,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				} else {
 					Mollie_WC_Plugin::debug( $this->id . ': Subscription switch failed, no valid mandate for order #' . $order_id );
 					Mollie_WC_Plugin::addNotice( __( 'Subscription switch failed, no valid mandate found. Place a completely new order to change your subscription.', 'mollie-payments-for-woocommerce' ), 'error' );
-					throw new Mollie\Api\Exceptions\ApiException( __( 'Subscription switch failed, no valid mandate.', 'mollie-payments-for-woocommerce' ) );
+					throw new Mollie\Api\Exceptions\ApiException( __( 'Failed switching subscriptions, no valid mandate.', 'mollie-payments-for-woocommerce' ) );
 				}
 			}
 			catch ( Mollie\Api\Exceptions\ApiException $e ) {
@@ -1162,7 +1162,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				$new_order_status,
 				sprintf(
 				/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-					__( '%s payment charged back via Mollie (%s). You will need to manually review the payment (and adjust product stocks if you use it).', 'mollie-payments-for-woocommerce' ),
+					__( '%s payment charged back via Mollie (%s). You will need to manually review the payment (and adjust product stocks if you use them).', 'mollie-payments-for-woocommerce' ),
 					$payment_method_title,
 					$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
 				),
@@ -1203,7 +1203,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 						$new_order_status,
 						sprintf(
 						/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-							__( '%s payment charged back via Mollie (%s). Subscription status updated, please review (and adjust product stocks if you use it).', 'mollie-payments-for-woocommerce' ),
+							__( '%s payment charged back via Mollie (%s). Subscription status updated, please review (and adjust product stocks if you use them).', 'mollie-payments-for-woocommerce' ),
 							$payment_method_title,
 							$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
 						),

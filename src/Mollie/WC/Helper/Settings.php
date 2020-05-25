@@ -453,7 +453,7 @@ class Mollie_WC_Helper_Settings
                     'lt_LT' => __('Lithuanian', 'mollie-payments-for-woocommerce'),
                 ),
                 'desc'    => sprintf(
-                	__('Sending a language (or locale) is required. The option \'Automatically send WordPress language\' will try get the customer\'s language in WordPress (and respects multilanguage plugins) and convert it to a format Mollie understands. If this fails, or if the language is not supported, it will fall back to American English. You can also select one of the locales currently supported by Mollie, that will then be used for all customers.', 'mollie-payments-for-woocommerce'),
+                	__('Sending a language (or locale) is required. The option \'Automatically send WordPress language\' will try to get the customer\'s language in WordPress (and respects multilanguage plugins) and convert it to a format Mollie understands. If this fails, or if the language is not supported, it will fall back to American English. You can also select one of the locales currently supported by Mollie, that will then be used for all customers.', 'mollie-payments-for-woocommerce'),
 	                '<a href="https://www.mollie.com/nl/docs/reference/payments/create" target="_blank">',
 	                '</a>'
                 ),
@@ -621,7 +621,7 @@ class Mollie_WC_Helper_Settings
 			if ( $woocommerce_klarnapaylater_gateway->is_available() || $woocommerce_klarnasliceit_gateway->is_available() ) {
 
 				$content .= '<div class="notice notice-warning is-dismissible"><p>';
-				$content .= __( 'To accept Klarna payments via Mollie, all default WooCommerce checkout fields should be enabled and required. Please make sure that is the case.', 'mollie-payments-for-woocommerce' );
+				$content .= __( 'To accept Klarna payments via Mollie, all default WooCommerce checkout fields should be enabled and required. Please ensure that is the case.', 'mollie-payments-for-woocommerce' );
 				$content .= '</p></div> ';
 
 				return $content;
@@ -646,7 +646,7 @@ class Mollie_WC_Helper_Settings
 			if ( $woocommerce_klarnapaylater_gateway->is_available() || $woocommerce_klarnasliceit_gateway->is_available() ) {
 
 				$content .= '<div class="notice notice-warning is-dismissible"><p>';
-				$content .= sprintf(__( 'To accept Klarna payments via Mollie, you need to use at least WooCommerce 3.0 or higher, you are now using version %s.', 'mollie-payments-for-woocommerce' ), WC_VERSION);
+				$content .= sprintf(__( 'To accept Klarna payments via Mollie, you need to use WooCommerce 3.0 or higher, you are now using version %s.', 'mollie-payments-for-woocommerce' ), WC_VERSION);
 				$content .= '</p></div> ';
 
 				return $content;

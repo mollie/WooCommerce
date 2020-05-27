@@ -8,7 +8,7 @@ class Mollie_WC_Plugin
 {
     const PLUGIN_ID      = 'mollie-payments-for-woocommerce';
     const PLUGIN_TITLE   = 'Mollie Payments for WooCommerce';
-    const PLUGIN_VERSION = '5.5.1';
+    const PLUGIN_VERSION = '5.6.1';
 
     const DB_VERSION     = '1.0';
     const DB_VERSION_PARAM_NAME = 'mollie-db-version';
@@ -629,7 +629,7 @@ class Mollie_WC_Plugin
         if ($isWcApiRequest ||
             !$wooCommerceSession instanceof WC_Session ||
             !doing_action('woocommerce_payment_gateways') ||
-            !wp_doing_ajax() ||
+            !wp_doing_ajax() && ! is_wc_endpoint_url( 'order-pay' )||
             is_admin()
         ) {
             return $gateways;

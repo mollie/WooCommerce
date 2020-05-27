@@ -192,7 +192,7 @@ class WC_Tools_Subscriptions_Status_Button {
 		if ( empty( $subscriptions_left ) ) {
 			echo '<div class="updated notice"><p>' . __( 'No more subscriptions left to process!', 'mollie-payments-for-woocommerce' ) . '</p></div>';
 		} else {
-			echo '<div class="error notice"><p>' . __( 'There are still subscriptions left, use the tool again!', 'mollie-payments-for-woocommerce' ) . '</p></div>';
+			echo '<div class="error notice"><p>' . __( 'There are still some subscriptions left, use the tool again!', 'mollie-payments-for-woocommerce' ) . '</p></div>';
 		}
 
 	}

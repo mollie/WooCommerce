@@ -1,0 +1,1110 @@
+# Translation of Plugins - Mollie Payments for WooCommerce - Development (trunk) in Dutch
+# This file is distributed under the same license as the Plugins - Mollie Payments for WooCommerce - Development (trunk) package.
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2020-05-20 14:48+0200\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: GlotPress/2.4.0-alpha\n"
+"Language: nl\n"
+"Project-Id-Version: Plugins - Mollie Payments for WooCommerce - Development (trunk)\n"
+
+#: inc/settings/mollie_components_enabler.php:7
+msgid "Enable the Mollie Components for this Gateway"
+msgstr "Activeer de Mollie-componenten voor deze gateway"
+
+#: inc/settings/mollie_components_enabler.php:6
+msgid "Enable Mollie Components"
+msgstr "Activeer Mollie-componenten"
+
+#: inc/settings/mollie_components.php:157
+msgctxt "Mollie Components Settings"
+msgid "Background Color for invalid input."
+msgstr "Achtergrondkleur voor ongeldige invoer"
+
+#: inc/settings/mollie_components.php:146
+msgctxt "Mollie Components Settings"
+msgid "Text Color for invalid input."
+msgstr "Tekstkleur voor ongeldige invoer"
+
+#: inc/settings/mollie_components.php:136
+msgctxt "Mollie Components Settings"
+msgid "Invalid Status Styles"
+msgstr "Ongeldige statusstijlen"
+
+#: inc/settings/mollie_components.php:122
+msgctxt "Mollie Components Settings"
+msgid "Full Size Kana"
+msgstr "Volledige grootte Kana"
+
+#: inc/settings/mollie_components.php:117
+msgctxt "Mollie Components Settings"
+msgid "Full Width"
+msgstr "Volledige breedte"
+
+#: inc/settings/mollie_components.php:112
+msgctxt "Mollie Components Settings"
+msgid "Lowercase"
+msgstr "Kleine letters"
+
+#: inc/settings/mollie_components.php:107
+msgctxt "Mollie Components Settings"
+msgid "Uppercase"
+msgstr "Hoofdletters"
+
+#: inc/settings/mollie_components.php:102
+msgctxt "Mollie Components Settings"
+msgid "Capitalize"
+msgstr "In hoofdletters schrijven"
+
+#: inc/settings/mollie_components.php:97
+msgctxt "Mollie Components Settings"
+msgid "None"
+msgstr "Geen"
+
+#: inc/settings/mollie_components.php:94
+msgctxt "Mollie Components Settings"
+msgid "Transform Text"
+msgstr "Tekstwijziging"
+
+#: inc/settings/mollie_components.php:88
+msgctxt "Mollie Components Settings"
+msgid "Justify"
+msgstr "Uitvullen"
+
+#: inc/settings/mollie_components.php:87
+msgctxt "Mollie Components Settings"
+msgid "Center"
+msgstr "Centreren"
+
+#: inc/settings/mollie_components.php:86
+msgctxt "Mollie Components Settings"
+msgid "Right"
+msgstr "Rechts"
+
+#: inc/settings/mollie_components.php:85
+msgctxt "Mollie Components Settings"
+msgid "Left"
+msgstr "Links"
+
+#: inc/settings/mollie_components.php:82
+msgctxt "Mollie Components Settings"
+msgid "Align Text"
+msgstr "Tekstuitlijning"
+
+#: inc/settings/mollie_components.php:72
+msgctxt "Mollie Components Settings"
+msgid "Add padding to the components. Allowed units include `16px 16px 16px 16px` and `em`, `px`, `rem`."
+msgstr "Voeg vulling toe aan de Componenten. bijv: '16px 16px 16px 16px' en 'em', 'px' en 'rem' waarden zijn toegestaan."
+
+#: inc/settings/mollie_components.php:71
+msgctxt "Mollie Components Settings"
+msgid "Padding"
+msgstr "Vulling"
+
+#: inc/settings/mollie_components.php:62
+msgctxt "Mollie Components Settings"
+msgid "Line Height"
+msgstr "Regelhoogte"
+
+#: inc/settings/mollie_components.php:56
+msgctxt "Mollie Components Settings"
+msgid "Letter Spacing"
+msgstr "Letterafstand"
+
+#: inc/settings/mollie_components.php:50
+msgctxt "Mollie Components Settings"
+msgid "Bold"
+msgstr "Vet"
+
+#: inc/settings/mollie_components.php:49
+msgctxt "Mollie Components Settings"
+msgid "Regular"
+msgstr "Normaal"
+
+#: inc/settings/mollie_components.php:48
+msgctxt "Mollie Components Settings"
+msgid "Lighter"
+msgstr "Lichter"
+
+#: inc/settings/mollie_components.php:45
+msgctxt "Mollie Components Settings"
+msgid "Font Weight"
+msgstr "Lettergewicht"
+
+#: inc/settings/mollie_components.php:35
+msgctxt "Mollie Components Settings"
+msgid "Defines the component font size. Allowed units: 'em', 'px', 'rem'."
+msgstr "De lettergrootte bepaalt de grootte van het lettertype in de componenten. `em`, `px`, `rem` eenheden zijn toegestaan."
+
+#: inc/settings/mollie_components.php:34
+msgctxt "Mollie Components Settings"
+msgid "Font Size"
+msgstr "Lettergrootte"
+
+#: inc/settings/mollie_components.php:28
+msgctxt "Mollie Components Settings"
+msgid "Placeholder Color"
+msgstr "Kleur van de plaatshouder"
+
+#: inc/settings/mollie_components.php:22 inc/settings/mollie_components.php:145
+msgctxt "Mollie Components Settings"
+msgid "Text Color"
+msgstr "Tekstkleur"
+
+#: inc/settings/mollie_components.php:16 inc/settings/mollie_components.php:156
+msgctxt "Mollie Components Settings"
+msgid "Background Color"
+msgstr "Achtergrondkleur"
+
+#: inc/settings/mollie_components.php:7
+msgctxt "Mollie Components Settings"
+msgid "Base Styles"
+msgstr "Basisstijlen"
+
+#: src/Mollie/WC/Gateway/Abstract.php:2056
+msgid "Secure payments provided by "
+msgstr "Beveiligde betalingen verschaft door"
+
+#: src/Mollie/WC/Plugin.php:431
+msgid "An unknown error occurred, please check the card fields."
+msgstr "Er is een onbekende fout opgetreden, controleer de kaartvelden."
+
+#: src/Mollie/WC/Plugin.php:424
+msgid "Verification Code"
+msgstr "Verificatiecode"
+
+#: src/Mollie/WC/Plugin.php:420
+msgid "Expiry Date"
+msgstr "Vervaldatum"
+
+#: src/Mollie/WC/Plugin.php:412
+msgid "Card Holder"
+msgstr "Kaarthouder"
+
+#: src/Mollie/WC/Settings/Page/Components.php:10
+msgid "Mollie Components"
+msgstr "Mollie-componenten"
+
+#: src/Mollie/WC/Plugin.php:416
+msgid "Card Number"
+msgstr "Kaartnummer"
+
+#: src/Mollie/WC/Plugin.php:306
+msgid "%1$s items cancelled in WooCommerce and at Mollie."
+msgstr "%1$s artikelen geannuleerd in WooCommerce en bij Mollie."
+
+#: src/Mollie/WC/Plugin.php:288
+msgid "%1$s items refunded in WooCommerce and at Mollie."
+msgstr "%1$s artikelen terugbetaald in WooCommerce en bij Mollie."
+
+#: src/Mollie/WC/Payment/OrderItemsRefunder.php:183
+msgid "Empty WooCommerce order items or mollie order lines."
+msgstr "Lege Woocommerce bestelartikelen of Mollie-bestellijnen."
+
+#: src/Mollie/WC/Payment/OrderItemsRefunder.php:157
+msgid "Impossible to retrieve the order item ID related to the remote item: %1$s. Try to do a refund by amount."
+msgstr "Onmogelijk om de bestelartikel-id met betrekking tot het afstandsartikel terug te halen: %1$s"
+
+#: src/Mollie/WC/Payment/OrderItemsRefunder.php:109
+msgid "One of the WooCommerce order items does not have the refund item ID meta value associated to Mollie Order item."
+msgstr "Een van de WooCommerce-bestelartikelen heeft niet de metawaarde van het terugbetaalartikel dat aan het Mollie-bestelartikel is gekoppeld."
+
+#: src/Mollie/WC/Payment/RefundLineItemsBuilder.php:115
+msgid "Mollie doesn't allow a partial refund of the full amount or quantity of at least one order line. Trying to process this as an amount refund instead."
+msgstr "Mollie staat geen gedeeltelijke terugbetaling toe van het volledige bedrag of hoeveelheid van ten minste één bestelregel. In plaats daarvan aan het proberen dit te verwerken als een terugbetaling van bedrag."
+
+#. translators: Placeholder 1: payment method title, placeholder 2: payment ID
+#: src/Mollie/WC/Gateway/AbstractSepaRecurring.php:159
+msgid "Order completed using %1$s payment (%2$s)."
+msgstr "Bestelling voltooid met gebruik van %1$s betaling (%2$s)."
+
+#. translators: Placeholder 1: MyBank consumer name, placeholder 2: Consumer
+#. Account number
+#: src/Mollie/WC/Gateway/MyBank.php:73
+msgid "Payment completed by <strong>%1$s</strong> - %2$s"
+msgstr "Betaling voltooid met <strong>%1$s</strong> - %2$s"
+
+#: src/Mollie/WC/Gateway/MyBank.php:44
+msgid "To accept payments via MyBank"
+msgstr "Om betalingen te accepteren via MyBank"
+
+#: src/Mollie/WC/Gateway/MyBank.php:36
+msgid "MyBank"
+msgstr "MyBank"
+
+#: src/Mollie/WC/Gateway/Applepay.php:45
+msgid "To accept payments via Apple Pay"
+msgstr "Om betalingen te accepteren via Apple Pay"
+
+#: src/Mollie/WC/Gateway/Applepay.php:37
+msgid "Apple Pay"
+msgstr "Apple Pay"
+
+#. translators: Placeholder 1: customer billing email
+#: src/Mollie/WC/Gateway/Przelewy24.php:64
+msgid "Payment completed by <strong>%s</strong>."
+msgstr "Betaling voltooid met <strong>%s</strong>."
+
+#: src/Mollie/WC/Gateway/Przelewy24.php:40
+msgid "To accept payments via Przelewy24, a customer email is required for every payment."
+msgstr "Om betalingen via Przelewy24 te accepteren, is voor elke betaling een e-mail van de klant vereist."
+
+#: src/Mollie/WC/Gateway/Przelewy24.php:33
+msgid "Przelewy24"
+msgstr "Przelewy24 "
+
+#: src/Mollie/WC/Helper/Status.php:89 mollie-payments-for-WooCommerce.php:83
+msgid "Mollie Payments for WooCommerce requires the JSON extension for PHP. Enable it in your server or ask your webhoster to enable it for you."
+msgstr "Mollie-betalingen voor WooCommerce vereisen dat de PHP-extensie JSON geactiveerd is. Activeer dit op je server of vraag je webhoster om het voor jou te activeren."
+
+#: src/Mollie/WC/Payment/Order.php:1029
+msgid "Amount refund of %s%s refunded in WooCommerce and at Mollie.%s Refund ID: %s."
+msgstr "Terugbetaling van %s%s terugbetaald in WooCommerce en bij Mollie.%s Terugbetalings-ID: %s. "
+
+#: src/Mollie/WC/Payment/Order.php:946
+msgid "%sx %s refunded for %s%s in WooCommerce and at Mollie.%s Refund ID: %s."
+msgstr "%sx %s terugbetaald voor %s%s in WooCommerce en bij Mollie.%s Terugbetalings-ID: %s. "
+
+#: src/Mollie/WC/Payment/Order.php:930
+msgid "%sx %s cancelled for %s%s in WooCommerce and at Mollie."
+msgstr "%sx %s geannuleerd voor %s%s in WooCommerce en bij Mollie. "
+
+#. translators: Placeholder 1: payment method title, placeholder 2: payment ID
+#: src/Mollie/WC/Payment/Order.php:438
+msgid "Order completed at Mollie for %s order (%s). At least one order line completed. Remember: Completed status for an order at Mollie is not the same as Completed status in WooCommerce!"
+msgstr "Bestelling voltooid bij Mollie voor %s bestelling (%s). Ten minste één orderregel voltooid. Onthoud: de Voltooid status voor een bestelling bij Mollie is niet hetzelfde als de Voltooid status in WooCommerce!"
+
+#. translators: Placeholder 1: payment method title, placeholder 2: payment ID
+#: src/Mollie/WC/Gateway/Abstract.php:1206
+msgid "%s payment charged back via Mollie (%s). Subscription status updated, please review (and adjust product stocks if you use them)."
+msgstr "%s betaling teruggevorderd via Mollie (%s). Abonnementstatus geüpdatet, controleer dit (en pas productvoorraden aan als je dit gebruikt)."
+
+#: src/Mollie/WC/Helper/Settings.php:624
+msgid "To accept Klarna payments via Mollie, all default WooCommerce checkout fields should be enabled and required. Please ensure that is the case."
+msgstr "Om Klarna-betalingen via Mollie te accepteren, moeten alle standaard WooCommerce-afrekenvelden geactiveerd en vereist zijn. Controleer of dit het geval is."
+
+#: src/Mollie/WC/Payment/Payment.php:39
+#: src/Mollie/WC/Gateway/AbstractSubscription.php:72
+msgid "Order"
+msgstr "Bestelling"
+
+#. translators: Placeholder 1: payment method title, placeholder 2: payment ID
+#: src/Mollie/WC/Payment/Payment.php:351
+msgid "%s payment (%s) cancelled ."
+msgstr "%s betaling (%s) geannuleerd."
+
+#. translators: Placeholder 1: payment method title, placeholder 2: payment ID
+#: src/Mollie/WC/Payment/Order.php:708
+msgid "%s order (%s) expired ."
+msgstr "%s bestelling (%s) verlopen."
+
+#. translators: Placeholder 1: payment method title, placeholder 2: payment ID
+#: src/Mollie/WC/Payment/Order.php:667
+msgid "%s order expired (%s) but not cancelled because of another pending payment (%s)."
+msgstr "%s bestelling verlopen (%s) maar bestelling niet geannuleerd wegens een andere hangende betaling (%s)."
+
+#. translators: Placeholder 1: payment method title, placeholder 2: payment ID
+#: src/Mollie/WC/Payment/Order.php:548
+msgid "%s order (%s) cancelled ."
+msgstr "%s bestelling (%s) geannuleerd."
+
+#. translators: Placeholder 1: payment method title, placeholder 2: payment ID
+#: src/Mollie/WC/Payment/Order.php:366
+msgid "Order authorized using %s payment (%s). Set order to completed in WooCommerce when you have shipped the products, to capture the payment. Do this within 28 days, or the order will expire. To handle individual order lines, process the order via the Mollie Dashboard."
+msgstr "Bestelling geautoriseerd met gebruik van %s betaling (%s). Om de betaling te ontvangen, moet je na het verzenden van de producten de bestelling in WooCommerce als voltooid markeren. Doe dit binnen 28 dagen, anders verloopt de bestelling. Voor het afhandelen van individuele orderregels, verwerk je de order via het Mollie Dashboard. "
+
+#: src/Mollie/WC/Helper/Settings.php:649
+msgid "To accept Klarna payments via Mollie, you need to use WooCommerce 3.0 or higher, you are now using version %s."
+msgstr "Om Klarna-betalingen via Mollie te accepteren, moet je ten minste WooCommerce 3.0 of hoger gebruiken. Nu gebruik je versie %s. "
+
+#: src/Mollie/WC/Helper/Settings.php:456
+msgid "Sending a language (or locale) is required. The option 'Automatically send WordPress language' will try to get the customer's language in WordPress (and respects multilanguage plugins) and convert it to a format Mollie understands. If this fails, or if the language is not supported, it will fall back to American English. You can also select one of the locales currently supported by Mollie, that will then be used for all customers."
+msgstr "Het verzenden van een taal (of locatie) is vereist. De optie 'Automatisch verzenden van WordPress-taal' zal proberen de taal van de klant in WordPress te krijgen (en respecteert meertalige plugins) en deze te converteren naar een formaat dat Mollie begrijpt. Als dit niet lukt, of als de taal niet wordt ondersteund, zal teruggegaan worden naar Amerikaans-Engels. Je kunt ook een van de momenteel door Mollie ondersteunde locaties selecteren, die dan voor alle klanten zal worden gebruikt."
+
+#: src/Mollie/WC/Helper/Settings.php:425
+msgid "Automatically send WordPress language"
+msgstr "Automatisch verzenden van WordPress-taal"
+
+#: src/Mollie/WC/Helper/Settings.php:417
+msgid "Status for orders when a payment (not a Mollie order via the Orders API) is cancelled. Default: pending. Orders with status Pending can be paid with another payment method, customers can try again. Cancelled orders are final. Set this to Cancelled if you only have one payment method or don't want customers to re-try paying with a different payment method. This doesn't apply to payments for orders via the new Orders API and Klarna payments."
+msgstr "Status voor bestellingen wanneer een betaling (niet een Mollie-besteling via de Bestellingen API) wordt geannuleerd. Standaard: In behandeling. Bestellingen met status In behandeling kunnen met een andere betaalmethode worden betaald, klanten kunnen opnieuw proberen. Geannuleerde bestellingen zijn definitief. Stel dit in op Geannuleerd als je maar één betaalmethode hebt of als je niet wilt dat klanten opnieuw proberen te betalen met een andere betaalmethode. Dit is niet van toepassing op betalingen voor bestellingen via de nieuwe Orders-API en Klarna-betalingen."
+
+#: src/Mollie/WC/Helper/OrderLines.php:407
+msgid "Shipping"
+msgstr "Verzending"
+
+#: src/Mollie/WC/Gateway/KlarnaSliceIt.php:33
+msgid "Klarna Slice it"
+msgstr "Klarna Slice it"
+
+#: src/Mollie/WC/Gateway/KlarnaSliceIt.php:40
+#: src/Mollie/WC/Gateway/KlarnaPayLater.php:40
+msgid "To accept payments via Klarna, all default WooCommerce checkout fields should be enabled and required."
+msgstr "Om betalingen via Klarna te accepteren, moeten alle standaard WooCommerce-afrekenvelden geactiveerd en vereist zijn."
+
+#: src/Mollie/WC/Gateway/KlarnaPayLater.php:33
+msgid "Klarna Pay later"
+msgstr "Klarna betaal later"
+
+#: src/Mollie/WC/Helper/Status.php:131
+msgid "Mollie Payments for WooCommerce require PHP cURL functions to be available. Please make sure all of these functions are available."
+msgstr "Mollie-betalingen voor WooCommerce vereisen dat PHP cURL functies beschikbaar zijn. Zorg ervoor dat al deze functies beschikbaar zijn. "
+
+#. translators: Placeholder 1: Required PHP version, placeholder 2: current PHP
+#. version
+#: src/Mollie/WC/Helper/Status.php:104
+msgid "Mollie Payments for WooCommerce require PHP %s or higher, you have PHP %s. Please upgrade and view %sthis FAQ%s"
+msgstr "Mollie-betalingen voor WooCommerce vereisen PHP %s of hoger, jij hebt PHP %s. Installeer de upgrade en bekijk %sdeze FAQ%s"
+
+#: src/Mollie/WC/Helper/Settings.php:600
+msgid "You have the WooCommerce default Direct Bank Transfer (BACS) payment gateway enabled in WooCommerce. Mollie strongly advices only using Bank Transfer via Mollie and disabling the default WooCommerce BACS payment gateway to prevent possible conflicts."
+msgstr "Je hebt de WooCommerce standaard Direct Bank Transfer (BACS) betalingsgateway geactiveerd in WooCommerce. Mollie adviseert dringend om alleen Bank Transfer via Mollie te gebruiken en de standaard WooCommerce BACS betalingsgateway uit te schakelen om mogelijke conflicten te voorkomen. "
+
+#: src/Mollie/WC/Helper/Settings.php:576
+msgid "You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL and/or other \"first\" payment methods."
+msgstr "Je hebt WooCommerce Abonnementen geactiveerd, maar geen SEPA-incasso. Activeer SEPA-incasso als je klanten wilt toestaan abonnementen met iDEAL en/of andere \"eerste\" betaalmethoden te betalen. "
+
+#: src/Mollie/WC/Helper/Settings.php:453
+msgid "Lithuanian"
+msgstr "Litouws"
+
+#: src/Mollie/WC/Helper/Settings.php:452
+msgid "Latvian"
+msgstr "Lets"
+
+#: src/Mollie/WC/Helper/Settings.php:451
+msgid "Polish"
+msgstr "Pools"
+
+#: src/Mollie/WC/Helper/Settings.php:450
+msgid "Hungarian"
+msgstr "Hongaars"
+
+#: src/Mollie/WC/Helper/Settings.php:449
+msgid "Icelandic"
+msgstr "Ijslands"
+
+#: src/Mollie/WC/Helper/Settings.php:448
+msgid "Danish"
+msgstr "Deens"
+
+#: src/Mollie/WC/Helper/Settings.php:447
+msgid "Finnish"
+msgstr "Fins"
+
+#: src/Mollie/WC/Helper/Settings.php:446
+msgid "Swedish"
+msgstr "Zweeds"
+
+#: src/Mollie/WC/Helper/Settings.php:445
+msgid "Norwegian"
+msgstr "Noors"
+
+#: src/Mollie/WC/Helper/Settings.php:444
+msgid "Italian"
+msgstr "Italiaans"
+
+#: src/Mollie/WC/Helper/Settings.php:443
+msgid "Portuguese"
+msgstr "Portugees"
+
+#: src/Mollie/WC/Helper/Settings.php:442
+msgid "Catalan"
+msgstr "Spaans (Catalaans)"
+
+#: src/Mollie/WC/Helper/Settings.php:440
+msgid "Swiss German"
+msgstr "Zwitserduits"
+
+#: src/Mollie/WC/Helper/Settings.php:439
+msgid "Austrian German"
+msgstr "Oostenrijks-Duits"
+
+#: src/Mollie/WC/Helper/Api.php:41
+msgid "Invalid API key(s). Get them on the %sDevelopers page in the Mollie dashboard%s. The API key(s) must start with 'live_' or 'test_', be at least 30 characters and must not contain any special characters."
+msgstr "Ongeldige API key(s). Haal deze op in de %sOntwikkelaars pagina in de Mollie dashboard%s. De API key(s) moeten beginnen met 'live_' of 'test_', minimaal 30 tekens lang zijn en mogen geen speciale tekens bevatten."
+
+#: src/Mollie/WC/Helper/Api.php:39
+msgid "No API key provided. Please set your Mollie API keys below."
+msgstr "Geen API key ingevuld, vul hier beneden je Mollie API keys in."
+
+#: src/Mollie/WC/Gateway/Giropay.php:29
+msgid "Giropay"
+msgstr "Giropay"
+
+#: src/Mollie/WC/Gateway/EPS.php:29
+msgid "EPS"
+msgstr "EPS"
+
+#. translators: Placeholder 1: Payment method title
+#: src/Mollie/WC/Gateway/AbstractSubscription.php:325
+msgid "Could not create %s renewal payment."
+msgstr "Kon geen %s betalingshernieuwing aanmaken. "
+
+#: src/Mollie/WC/Gateway/AbstractSubscription.php:282
+msgid "The customer (%s) does not have a valid mandate."
+msgstr "De klant (%s) heeft geen geldig mandaat."
+
+#: src/Mollie/WC/Gateway/AbstractSubscription.php:273
+msgid "The customer (%s) could not be used or found. "
+msgstr "De klant (%s) kon niet gebruikt of gevonden worden."
+
+#. translators: Placeholder 1: currency, placeholder 2: refunded amount,
+#. placeholder 3: optional refund reason, placeholder 4: payment ID,
+#. placeholder 5: refund ID
+#: src/Mollie/WC/Payment/Payment.php:595
+msgid "Refunded %s%s%s - Payment: %s, Refund: %s"
+msgstr "Terugbetaald %s%s%s - Betaling: %s, Terugbetaling: %s"
+
+#: src/Mollie/WC/Gateway/Abstract.php:1137
+msgid "New chargeback %s processed! Order note and order status updated."
+msgstr "Nieuwe terugboeking %s verwerkt! Bestelnota en bestelstatus bijgewerkt."
+
+#: src/Mollie/WC/Gateway/Abstract.php:1038
+msgid "New refund %s processed in Mollie Dashboard! Order note added, but order not updated."
+msgstr "Nieuwe terugbetaling %s verwerkt in Mollie Dashboard! Bestelnota toegevoegd, maar bestelling niet geüpdatet."
+
+#. translators: Placeholder 1: payment method title, placeholder 2: payment ID
+#: src/Mollie/WC/Payment/Order.php:630 src/Mollie/WC/Payment/Payment.php:432
+msgid "%s payment failed via Mollie (%s)."
+msgstr "%s betaling mislukt via Mollie (%s)."
+
+#. translators: Placeholder 1: WooCommerce currency, placeholder 2: Supported
+#. Mollie currencies
+#: src/Mollie/WC/Gateway/Abstract.php:250
+msgid "Current shop currency %s not supported by Mollie. Read more about %ssupported currencies and payment methods.%s "
+msgstr "Huidige shopvaluta %s niet ondersteund door Mollie. Lees meer over %sondersteunde valuta's en betaalmethoden.%s"
+
+#: mollie-payments-for-WooCommerce.php:105
+msgid "Mollie Payments for WooCommerce 4.0 requires PHP 5.6 or higher. Your PHP version is outdated. Upgrade your PHP version and view %sthis FAQ%s."
+msgstr "Mollie-betalingen voor WooCommerce 4.0 vereisen PHP 5.6 of hoger. Je PHP-versie is verouderd. Upgrade je PHP-versie en bekijk %sdeze FAQ%s."
+
+#. translators: Placeholder 1: payment method title, placeholder 2: payment ID
+#: src/Mollie/WC/Payment/Order.php:540 src/Mollie/WC/Payment/Order.php:701
+#: src/Mollie/WC/Payment/Payment.php:343 src/Mollie/WC/Payment/Payment.php:506
+msgid "Mollie webhook called, but payment also started via %s, so the order status is not updated."
+msgstr "Mollie-webhook heeft gebeld, maar betaling is ook gestart via %s, dus de bestellingsstatus is niet geüpdatet. "
+
+#. translators: Placeholder 1: enabled or disabled
+#: src/Mollie/WC/Helper/Settings.php:466
+msgid "Should Mollie store customers name and email address for Single Click Payments? Default <code>%s</code>. Required if WooCommerce Subscriptions is being used!"
+msgstr "Moet Mollie klantennaam en e-mailadres opslaan voor Single Click Payments? Standaard <code>%s</code>. Vereist als WooCommerce Abonnementen worden gebruikt!"
+
+#: src/Mollie/WC/Gateway/Abstract.php:1289
+#: src/Mollie/WC/Gateway/Abstract.php:1297
+msgid "Your payment was not successful. Please complete your order with a different payment method."
+msgstr "Je betaling is niet gelukt. Vervolledig je bestelling met een andere betaalmethode. "
+
+#. translators: Placeholder 1: payment method title, placeholder 2: payment ID
+#: src/Mollie/WC/Payment/Order.php:606 src/Mollie/WC/Payment/Payment.php:409
+msgid "%s renewal payment failed via Mollie (%s). You will need to manually review the payment and adjust product stocks if you use them."
+msgstr "%s vernieuwing van betaling mislukt via Mollie (%s). Je moet de betaling handmatig controleren en productvoorraden aanpassen als je deze gebruikt."
+
+#: src/Mollie/WC/Gateway/MisterCash.php:42
+#: src/Mollie/WC/Gateway/Bancontact.php:36
+msgid "Bancontact"
+msgstr "Bancontact"
+
+#. translators: Placeholder 1: payment method title, placeholder 2: payment ID
+#: src/Mollie/WC/Gateway/Abstract.php:1595
+msgid "%s payment still pending (%s) but customer already returned to the store. Status should be updated automatically in the future, if it doesn't this might indicate a communication issue between the site and Mollie."
+msgstr "%s betaling nog in behandeling (%s)  maar klant is reeds teruggekeerd naar de shop. Status moet in de toekomst automatisch worden bijgewerkt, als dat niet gebeurt, kan dit wijzen op een communicatieprobleem tussen de site en Mollie."
+
+#: src/Mollie/WC/Gateway/Abstract.php:469
+msgid "Failed switching subscriptions, no valid mandate."
+msgstr "Overschakelen naar abonnement mislukt, geen geldig mandaat. "
+
+#: src/Mollie/WC/Gateway/Abstract.php:468
+msgid "Failed switching subscriptions, no valid mandate.found. Place a completely new order to change your subscription."
+msgstr "Overschakelen naar abonnement mislukt, geen geldig mandaat gevonden. Plaats een volledig nieuwe bestelling om je abonnement te wijzigen."
+
+#: src/Mollie/WC/Gateway/IngHomePay.php:29
+msgid "ING Home'Pay"
+msgstr "ING Home'Pay"
+
+#. translators: Placeholder 1: payment method title, placeholder 2: payment ID
+#: src/Mollie/WC/Gateway/Abstract.php:1165
+msgid "%s payment charged back via Mollie (%s). You will need to manually review the payment (and adjust product stocks if you use them)."
+msgstr "%s betaling teruggevorderd via Mollie (%s). Je moet de betaling handmatig controleren (en productvoorraden aanpassen als je dit gebruikt)."
+
+#: src/Mollie/WC/Gateway/Kbc.php:41
+msgid "This text will be displayed as the first option in the KBC/CBC issuers drop down, if nothing is entered, \"Select your bank\" will be shown. Only if the above ''Show KBC/CBC banks dropdown' is enabled."
+msgstr "Deze tekst wordt weergegeven als eerste optie in de KBC/CBC-uitgevers drop-down, als er niets wordt ingevoerd, wordt \"Selecteer je bank\" weergegeven. Alleen als het bovenstaande ''Toon KBC/CBC-banken dropdown'' is geactiveerd."
+
+#: src/Mollie/WC/Gateway/Kbc.php:34
+msgid "If you disable this, a dropdown with various KBC/CBC banks will not be shown in the WooCommerce checkout, so users will select a KBC/CBC bank on the Mollie payment page after checkout."
+msgstr "Als je dit deactiveert, zal een dropdown bij verschillende KBC/CBC-banken niet in de WooCommerce- checkout worden getoond, dus gebruikers zullen een KBC/CBC-bank selecteren op de Mollie-betaalpagina na het afrekenen."
+
+#: src/Mollie/WC/Gateway/Kbc.php:32
+msgid "Show KBC/CBC banks dropdown"
+msgstr "Toon KBC/CBC-banken dropdown"
+
+#: src/Mollie/WC/Gateway/Ideal.php:41
+msgid "This text will be displayed as the first option in the iDEAL issuers drop down, if nothing is entered, \"Select your bank\" will be shown. Only if the above 'Show iDEAL banks dropdown' is enabled."
+msgstr "Deze tekst wordt weergegeven als eerste optie in de KBC/CBC-uitgevers drop-down, als er niets wordt ingevoerd, wordt \"Selecteer je bank\" weergegeven. Alleen als het bovenstaande ''Toon KBC/CBC-banken dropdown'' is geactiveerd."
+
+#: src/Mollie/WC/Gateway/Ideal.php:34
+msgid "If you disable this, a dropdown with various iDEAL banks will not be shown in the WooCommerce checkout, so users will select a iDEAL bank on the Mollie payment page after checkout."
+msgstr "Als je dit deactiveert, zal een dropdown bij verschillende iDEAL-banken niet in de WooCommerce- checkout worden getoond, dus gebruikers zullen een iDEAL-bank selecteren op de Mollie-betaalpagina na het afrekenen."
+
+#: src/Mollie/WC/Gateway/Ideal.php:32
+msgid "Show iDEAL banks dropdown"
+msgstr "Toon iDEAL-banken dropdown"
+
+#: src/Mollie/WC/Gateway/Giftcard.php:40
+msgid "This text will be displayed as the first option in the gift card dropdown, but only if the above 'Show gift cards dropdown' is enabled."
+msgstr "Deze tekst wordt weergegeven als eerste optie in de cadeaubon-dropdown, maar alleen als het bovenstaande 'Toon cadeaubon dropdown' is geactiveerd."
+
+#: src/Mollie/WC/Gateway/Giftcard.php:33
+msgid "If you disable this, a dropdown with various gift cards will not be shown in the WooCommerce checkout, so users will select a gift card on the Mollie payment page after checkout."
+msgstr "Als je dit deactiveert, zal een dropdown met verschillende cadeaubonnen niet in de WooCommerce- checkout worden getoond, dus gebruikers zullen een cadeaubon selecteren op de Mollie-betaalpagina na het afrekenen."
+
+#: src/Mollie/WC/Gateway/Giftcard.php:31
+msgid "Show gift cards dropdown"
+msgstr "Toon cadeaubonnen-dropdown"
+
+#: src/Mollie/WC/Gateway/Abstract.php:457
+msgid "Order completed internally because of an existing valid mandate at Mollie."
+msgstr "Bestelling intern voltooid wegens een bestaand geldig mandaat bij Mollie."
+
+#: mollie-payments-for-WooCommerce.php:149
+msgid "%1$sMollie Payments for WooCommerce is inactive.%2$s This version requires WooCommerce 2.2 or newer. Please %3$supdate WooCommerce to version 2.2 or newer &raquo;%4$s"
+msgstr "%1$sMollie-betalingen voor WooCommerce is niet actief.%2$s Deze versie vereist WooCommerce 2.2  of hoger. %3$sUpdate WooCommerce naar versie 2.2 of hoger &raquo;%4$s"
+
+#: mollie-payments-for-WooCommerce.php:131
+msgid "%1$sMollie Payments for WooCommerce is inactive.%2$s The %3$sWooCommerce plugin%4$s must be active for it to work. Please %5$sinstall & activate WooCommerce &raquo;%6$s"
+msgstr "%1$sMollie-betalingen voor WooCommerce is niet actief.%2$s De %3$sWooCommerce-plugin%4$s moet actief zijn om te werken. Installeer %5$s& activeer WooCommerce &raquo;%6$s"
+
+#: src/Mollie/WC/Helper/Settings.php:415
+msgid "Cancelled"
+msgstr "Geannuleerd"
+
+#: src/Mollie/WC/Helper/Settings.php:414
+msgid "Pending"
+msgstr "In behandeling"
+
+#: src/Mollie/WC/Helper/Settings.php:411
+msgid "Order status after cancelled payment"
+msgstr "Bestelstatus na geannuleerde betaling"
+
+#. translators: Placeholder 1: consumer name, placeholder 2: consumer IBAN,
+#. placeholder 3: consumer BIC
+#: src/Mollie/WC/Gateway/Sofort.php:64 src/Mollie/WC/Gateway/Ideal.php:121
+#: src/Mollie/WC/Gateway/DirectDebit.php:80
+#: src/Mollie/WC/Gateway/BankTransfer.php:172
+msgid "Payment completed by <strong>%s</strong> (IBAN (last 4 digits): %s, BIC: %s)"
+msgstr "Betaling voltooid met <strong>%s</strong> (IBAN (ten minste 4 cijfers): %s, BIC: %s)"
+
+#: src/Mollie/WC/Gateway/Abstract.php:1635
+msgid "Your order has been cancelled."
+msgstr "Je bestelling is geannuleerd."
+
+#: src/Mollie/WC/Gateway/Abstract.php:1604
+msgid ", payment pending."
+msgstr ", betaling in behandeling."
+
+#: src/Mollie/WC/Gateway/Abstract.php:1564
+msgid "Order cancelled"
+msgstr "Bestelling geannuleerd"
+
+#. translators: Placeholder 1: payment method title, placeholder 2: payment
+#. status, placeholder 3: payment ID
+#: src/Mollie/WC/Gateway/Abstract.php:935
+msgid "%s payment %s (%s), not processed."
+msgstr "%s betaling %s (%s), niet verwerkt."
+
+#. translators: Default gift card dropdown description, displayed above issuer
+#. drop down
+#: src/Mollie/WC/Gateway/Giftcard.php:76
+msgid "Select your gift card"
+msgstr "Selecteer je cadeaubon"
+
+#: src/Mollie/WC/Gateway/Giftcard.php:60
+msgid "Gift cards"
+msgstr "Cadeaubonnen"
+
+#: src/Mollie/WC/Gateway/DirectDebit.php:49
+msgid "SEPA Direct Debit is used for recurring payments with WooCommerce Subscriptions, and will not be shown in the WooCommerce checkout for regular payments! You also need to enable iDEAL and/or other \"first\" payment methods if you want to use SEPA Direct Debit."
+msgstr "SEPA-incasso wordt gebruikt voor terugkerende betalingen met WooCommerce-abonnementen, en wordt niet getoond in de WooCommerce kassa voor reguliere betalingen! Je moet ook iDEAL en/of andere \"eerste\" betaalmethoden activeren als je SEPA-incasso wilt gebruiken"
+
+#. translators: Placeholder 1: Payment method title, placeholder 2: payment ID
+#: src/Mollie/WC/Gateway/AbstractSubscription.php:190
+msgid "Updated subscription from 'On hold' to 'Active' until payment fails, because a SEPA Direct Debit payment takes some time to process."
+msgstr "Bijgewerkt abonnement van 'Wachtend' naar 'Actief' tot de betaling mislukt, omdat voor het verwerken van een SEPA-incassobetaling enige tijd nodig is."
+
+#. translators: Placeholder 1: payment method title, placeholder 2: payment ID
+#: src/Mollie/WC/Payment/Payment.php:472
+msgid "%s payment expired (%s) but order not cancelled because of another pending payment (%s)."
+msgstr "%s betaling verlopen (%s) maar bestelling niet geannuleerd wegens een andere hangende betaling (%s)."
+
+#: src/subscriptions_status_check_functions.php:195
+msgid "There are still some subscriptions left, use the tool again!"
+msgstr "Er zijn nog abonnementen over, gebruik de tool opnieuw!"
+
+#: src/subscriptions_status_check_functions.php:193
+msgid "No more subscriptions left to process!"
+msgstr "Geen abonnementen over om te verwerken!"
+
+#: src/subscriptions_status_check_functions.php:180
+msgid "No subscriptions updated in this batch."
+msgstr "Geen abonnementen geüpdatet in deze batch."
+
+#: src/subscriptions_status_check_functions.php:156
+msgid "Subscription not updated because there was no valid mandate at Mollie. Processed by 'Mollie Subscriptions Status' tool."
+msgstr "Abonnement niet geüpdatet omdat er geen geldig mandaat was bij Mollie. Verwerkt door 'Mollie-abonnementenstatus' tool."
+
+#: src/subscriptions_status_check_functions.php:142
+msgid "Subscription updated to Automated renewal via Mollie, status set to Active. Processed by 'Mollie Subscriptions Status' tool."
+msgstr "Abonnement geüpdatet naar Geautomatiseerde vernieuwing via Mollie, status ingesteld op Actief. Verwerkt door 'Mollie-abonnementenstatus' tool."
+
+#: src/subscriptions_status_check_functions.php:36
+msgid "Check subscriptions status"
+msgstr "Controleer abonnementenstatus"
+
+#: src/subscriptions_status_check_functions.php:35
+msgid "Mollie Subscriptions Status"
+msgstr "Mollie-abonnementenstatus"
+
+#: src/subscriptions_status_check_functions.php:30
+msgid "Checks for subscriptions that are incorrectly set to 'Manual renewal'. First read the "
+msgstr "Controles op abonnementen die verkeerd zijn ingesteld op 'Handmatige vernieuwing'. Lees eerst de"
+
+#: src/Mollie/WC/Helper/Settings.php:464
+msgid "Store customer details at Mollie"
+msgstr "Klantgegevens opslaan bij Mollie"
+
+#. translators: Placeholder 1: payment method title, placeholder 2: payment ID
+#: src/Mollie/WC/Plugin.php:134
+msgid "%s payment failed (%s)."
+msgstr "%s betaling mislukt (%s)."
+
+#: src/Mollie/WC/Gateway/Kbc.php:61
+msgid "KBC/CBC Payment Button"
+msgstr "KBC/CBC Betaalknop"
+
+#: src/Mollie/WC/Gateway/Ideal.php:39 src/Mollie/WC/Gateway/Giftcard.php:38
+#: src/Mollie/WC/Gateway/Kbc.php:39
+msgid "Issuers empty option"
+msgstr "Optie uitgevers leeg"
+
+#: src/Mollie/WC/Gateway/BankTransfer.php:48
+msgid "Enable this option if you want to skip redirecting your user to the Mollie payment screen, instead this will redirect your user directly to the WooCommerce order received page displaying instructions how to complete the Bank Transfer payment."
+msgstr "Activeer deze optie als je het doorsturen van je gebruiker naar het Mollie-betaalscherm wil overslaan. In plaats daarvan stuurt dit je gebruiker rechtstreeks naar de WooCommerce-pagina bestelling ontvangen met instructies voor het voltooien van de betaling via bankoverschrijving."
+
+#: src/Mollie/WC/Gateway/BankTransfer.php:47
+msgid "Skip Mollie payment screen when Bank Transfer is selected"
+msgstr "Sla Mollie-betaalscherm over wanneer bankoverschrijving is geselecteerd"
+
+#: src/Mollie/WC/Gateway/BankTransfer.php:46
+msgid "Skip Mollie payment screen"
+msgstr "Mollie-betaalscherm overslaan"
+
+#. Description of the plugin
+msgid "Accept payments in WooCommerce with the official Mollie plugin"
+msgstr "Accepteer betalingen in WooCommerce met de officiële Mollie-plugin"
+
+#. Plugin URI of the plugin
+#. Author URI of the plugin
+msgid "https://www.mollie.com"
+msgstr "https://www.mollie.com"
+
+#. Author of the plugin
+msgid "Mollie"
+msgstr "Mollie"
+
+#. Plugin Name of the plugin
+msgid "Mollie Payments for WooCommerce"
+msgstr "Mollie-betalingen voor WooCommerce"
+
+#: src/Mollie/WC/Plugin.php:780
+msgid "Logs"
+msgstr "Logs"
+
+#: src/Mollie/WC/Helper/Status.php:123
+msgid "Mollie Payments for WooCommerce requires the PHP extension cURL to be enabled. Please enable the 'curl' extension in your PHP configuration."
+msgstr "Mollie-betalingen voor WooCommerce vereisen dat de PHP-extensie cURL geactiveerd is. Activeer de 'curl' extensie in je PHP-configuratie"
+
+#: src/Mollie/WC/Helper/Status.php:116
+msgid "Mollie Payments for WooCommerce requires the PHP extension JSON to be enabled. Please enable the 'json' extension in your PHP configuration."
+msgstr "Mollie-betalingen voor WooCommerce vereisen dat de PHP-extensie JSON geactiveerd is. Activeer de 'json' extensie in je PHP-configuratie."
+
+#: src/Mollie/WC/Helper/Status.php:80
+msgid "Mollie API client not installed. Please make sure the plugin is installed correctly."
+msgstr "Mollie API client niet geïnstalleerd. Controleer of de plugin correct is geïnstalleerd."
+
+#. translators: Placeholder 1: Plugin name, placeholder 2: required WooCommerce
+#. version, placeholder 3: used WooCommerce version
+#: src/Mollie/WC/Helper/Status.php:67
+msgid "The %s plugin requires at least WooCommerce version %s, you are using version %s. Please update your WooCommerce plugin."
+msgstr "De %s plugin vereist ten minste WooCommerce versie %s, je gebruikt versie %s. Update je WooCommerce plugin."
+
+#: src/Mollie/WC/Helper/Settings.php:473
+msgid "Debug Log"
+msgstr "Debug-log"
+
+#: src/Mollie/WC/Helper/Settings.php:437
+msgid "French (Belgium)"
+msgstr "Frans (België)"
+
+#: src/Mollie/WC/Helper/Settings.php:436
+msgid "French"
+msgstr "Frans"
+
+#: src/Mollie/WC/Helper/Settings.php:441
+msgid "Spanish"
+msgstr "Spaans"
+
+#: src/Mollie/WC/Helper/Settings.php:438
+msgid "German"
+msgstr "Duits"
+
+#: src/Mollie/WC/Helper/Settings.php:433
+msgid "English"
+msgstr "Engels"
+
+#: src/Mollie/WC/Helper/Settings.php:435
+msgid "Flemish (Belgium)"
+msgstr "Vlaams (België)"
+
+#: src/Mollie/WC/Helper/Settings.php:434
+msgid "Dutch"
+msgstr "Nederlands"
+
+#: src/Mollie/WC/Helper/Settings.php:429
+msgid "Detect using browser language"
+msgstr "Detecteren met gebruik van browser-taal"
+
+#: src/Mollie/WC/Helper/Settings.php:422
+msgid "Payment screen language"
+msgstr "Taal van betaalscherm"
+
+#: src/Mollie/WC/Helper/Settings.php:403
+msgid "Test API key should start with test_"
+msgstr "Test API-sleutel moet beginnen met test_"
+
+#: src/Mollie/WC/Helper/Settings.php:392
+msgid "Test API key"
+msgstr "Test API-sleutel"
+
+#: src/Mollie/WC/Helper/Settings.php:388
+msgid "Enable test mode if you want to test the plugin without using real payments."
+msgstr "Activeer de testmodus als je de plugin wil testen zonder echte betalingen te gebruiken."
+
+#: src/Mollie/WC/Helper/Settings.php:385
+msgid "Enable test mode"
+msgstr "Activeer de testmodus"
+
+#: src/Mollie/WC/Helper/Settings.php:377
+msgid "Live API key should start with live_"
+msgstr "Live API-sleutel moet beginnen met live_"
+
+#. translators: Placeholder 1: API key mode (live or test). The surrounding
+#. %s's Will be replaced by a link to the Mollie profile
+#: src/Mollie/WC/Helper/Settings.php:371 src/Mollie/WC/Helper/Settings.php:397
+msgid "The API key is used to connect to Mollie. You can find your <strong>%s</strong> API key in your %sMollie profile%s"
+msgstr "De API-sleutel wordt gebruikt om verbinding te maken met Mollie. Je vindt je <strong>%s</strong> API-sleutel in je %sMollie-profiel%s"
+
+#: src/Mollie/WC/Helper/Settings.php:366
+msgid "Live API key"
+msgstr "Live API-sleutel"
+
+#: src/Mollie/WC/Helper/Settings.php:362
+msgid "The following options are required to use the plugin and are used by all Mollie payment methods"
+msgstr "De volgende opties zijn vereist om de plugin te gebruiken en worden door alle Mollie-betaalmethoden gebruikt"
+
+#: src/Mollie/WC/Helper/Settings.php:359 src/Mollie/WC/Plugin.php:773
+msgid "Mollie settings"
+msgstr "Mollie-instellingen"
+
+#. translators: Placeholder 1: Location of the log files
+#: src/Mollie/WC/Helper/Settings.php:352
+msgid "Log files are saved to <code>%s</code>"
+msgstr "Logbestanden worden opgeslagen in <code>%s</code>"
+
+#: src/Mollie/WC/Helper/Settings.php:346
+msgid "View logs"
+msgstr "Bekijk logs"
+
+#: src/Mollie/WC/Helper/Settings.php:341
+msgid "Log plugin events."
+msgstr "Log plugin-gebeurtenissen"
+
+#: src/Mollie/WC/Helper/Settings.php:301
+msgid "Edit"
+msgstr "Bewerken"
+
+#: src/Mollie/WC/Helper/Settings.php:270
+msgid "Refresh"
+msgstr "Vernieuwen"
+
+#. translators: The surrounding %s's Will be replaced by a link to the Mollie
+#. profile
+#: src/Mollie/WC/Helper/Settings.php:261
+msgid "The following payment methods are activated in your %sMollie profile%s:"
+msgstr "De volgende betaalmethoden zijn geactiveerd in je %sMollie-profiel%s:"
+
+#: src/Mollie/WC/Helper/Settings.php:251
+msgid "Gateway disabled"
+msgstr "Gateway gedeactiveerd"
+
+#. translators: Placeholder 1: enabled or disabled
+#: src/Mollie/WC/Helper/Settings.php:250 src/Mollie/WC/Helper/Settings.php:466
+msgid "Enabled"
+msgstr "Geactiveerd"
+
+#: src/Mollie/WC/Helper/Settings.php:250
+msgid "Gateway enabled"
+msgstr "Gateway geactiveerd"
+
+#: src/Mollie/WC/Helper/Settings.php:207
+msgid "Connected"
+msgstr "Verbonden"
+
+#: src/Mollie/WC/Helper/Settings.php:206
+msgid "Mollie status:"
+msgstr "Mollie-status:"
+
+#: src/Mollie/WC/Helper/Settings.php:193
+msgid "Error"
+msgstr "Fout"
+
+#: src/Mollie/WC/Helper/Data.php:613
+msgid "Item #%s stock incremented from %s to %s."
+msgstr "Item #%s voorraad verhoogd van %s naar %s."
+
+#: src/Mollie/WC/Gateway/Sofort.php:33
+msgid "SOFORT Banking"
+msgstr "SOFORT Banking"
+
+#: src/Mollie/WC/Gateway/Paysafecard.php:20
+msgid "paysafecard"
+msgstr "paysafecard"
+
+#. translators: Placeholder 1: PayPal consumer name, placeholder 2: PayPal
+#. email, placeholder 3: PayPal transaction ID
+#: src/Mollie/WC/Gateway/PayPal.php:64
+msgid "Payment completed by <strong>%s</strong> - %s (PayPal transaction ID: %s)"
+msgstr "Betaling voltooid met <strong>%s</strong> - %s (PayPal transactie-ID: %s)"
+
+#: src/Mollie/WC/Gateway/PayPal.php:33
+msgid "PayPal"
+msgstr "PayPal"
+
+#. translators: Default iDEAL description, displayed above issuer drop down
+#. translators: Default KBC/CBC dropdown description, displayed above issuer
+#. drop down
+#: src/Mollie/WC/Gateway/Ideal.php:77 src/Mollie/WC/Gateway/Kbc.php:77
+msgid "Select your bank"
+msgstr "Selecteer je bank"
+
+#: src/Mollie/WC/Gateway/Ideal.php:61
+msgid "iDEAL"
+msgstr "iDEAL"
+
+#: src/Mollie/WC/Gateway/DirectDebit.php:42
+msgid "SEPA Direct Debit"
+msgstr "SEPA-incasso"
+
+#. translators: Placeholder 1: card holder
+#: src/Mollie/WC/Gateway/Creditcard.php:85
+msgid "Payment completed by <strong>%s</strong>"
+msgstr "Betaling voltooid met <strong>%s</strong>."
+
+#: src/Mollie/WC/Gateway/Creditcard.php:34
+msgid "Credit card"
+msgstr "Creditcard"
+
+#: src/Mollie/WC/Gateway/Belfius.php:33
+msgid "Belfius Direct Net"
+msgstr "Belfius Direct Net"
+
+#: src/Mollie/WC/Gateway/BankTransfer.php:220
+msgid "The payment will expire on <strong>%s</strong>. Please make sure you transfer the total amount before this date."
+msgstr "De betaling vervalt op <strong>%s</strong>. Zorg ervoor dat je vóór deze datum het totale bedrag overmaakt."
+
+#: src/Mollie/WC/Gateway/BankTransfer.php:213
+msgid "The payment will expire on <strong>%s</strong>."
+msgstr "De betaling vervalt op <strong>%s</strong>."
+
+#. translators: Placeholder 1: Payment reference e.g. RF49-0000-4716-6216
+#. (SEPA) or +++513/7587/59959+++ (Belgium)
+#: src/Mollie/WC/Gateway/BankTransfer.php:198
+msgid "Please provide the payment reference <strong>%s</strong>"
+msgstr "Vermeld de betalingsreferentie <strong>%s</strong>"
+
+#. translators: Placeholder 1: Payment reference e.g. RF49-0000-4716-6216
+#. (SEPA) or +++513/7587/59959+++ (Belgium)
+#: src/Mollie/WC/Gateway/BankTransfer.php:193
+msgid "Payment reference: %s"
+msgstr "Betalingsreferentie: %s."
+
+#: src/Mollie/WC/Gateway/BankTransfer.php:188
+msgid "BIC: %s"
+msgstr "BIC: %s"
+
+#: src/Mollie/WC/Gateway/BankTransfer.php:187
+msgid "IBAN: <strong>%s</strong>"
+msgstr "IBAN: <strong>%s</strong>"
+
+#. translators: Placeholder 1: 'Stichting Mollie Payments'
+#: src/Mollie/WC/Gateway/BankTransfer.php:186
+msgid "Beneficiary: %s"
+msgstr "Begunstigde: %s"
+
+#: src/Mollie/WC/Gateway/BankTransfer.php:182
+msgid "Please complete your payment by transferring the total amount to the following bank account:"
+msgstr "Voltooi je betaling door het totale bedrag over te maken naar de volgende bankrekening:"
+
+#: src/Mollie/WC/Gateway/BankTransfer.php:122
+msgid "Bank Transfer"
+msgstr "Bankoverdracht"
+
+#: src/Mollie/WC/Helper/Settings.php:251
+msgid "Disabled"
+msgstr "Uitgeschakeld"
+
+#: src/Mollie/WC/Gateway/BankTransfer.php:37
+msgid "Number of days after the payment will expire. Default <code>%d</code> days"
+msgstr "Aantal dagen nadat de betaling vervalt. Standaard <code>%d</code> dagen"
+
+#: src/Mollie/WC/Gateway/BankTransfer.php:35
+msgid "Expiry date"
+msgstr "Vervaldatum"
+
+#. translators: Placeholder 1: payment method
+#: src/Mollie/WC/Gateway/Abstract.php:1508
+msgid "Payment completed with <strong>%s</strong>"
+msgstr "Betaling voltooid met <strong>%s</strong>"
+
+#: src/Mollie/WC/Gateway/Abstract.php:1501
+msgid "We have not received a definite payment status. You will receive an email as soon as we receive a confirmation of the bank/merchant."
+msgstr "We hebben geen definitieve betalingsstatus ontvangen. Je ontvangt een e-mail zodra we een bevestiging van de bank/handelaar ontvangen."
+
+#: src/Mollie/WC/Gateway/Abstract.php:1496
+msgid "We have not received a definite payment status."
+msgstr "We hebben geen definitieve betalingsstatus ontvangen."
+
+#: src/Mollie/WC/Gateway/Abstract.php:1271
+msgid "You have cancelled your payment. Please complete your order with a different payment method."
+msgstr "Je hebt je betaling geannuleerd. Vervolledig je bestelling met een andere betaalmethode."
+
+#. translators: Placeholder 1: payment method title, placeholder 2: payment ID
+#: src/Mollie/WC/Payment/Payment.php:513
+msgid "%s payment expired (%s)."
+msgstr "%s betaling verlopen (%s)."
+
+#. translators: Placeholder 1: payment method title, placeholder 2: payment ID
+#: src/Mollie/WC/Payment/Order.php:295 src/Mollie/WC/Payment/Payment.php:241
+msgid "Order completed using %s payment (%s)."
+msgstr "Bestelling voltooid met gebruik van %s betaling (%s)."
+
+#. translators: Placeholder 1: Payment method title
+#: src/Mollie/WC/Gateway/Abstract.php:678
+msgid "Could not create %s payment."
+msgstr "Kon geen %s betaling aanmaken."
+
+#: src/Mollie/WC/Payment/Order.php:297 src/Mollie/WC/Payment/Order.php:368
+#: src/Mollie/WC/Payment/Order.php:440 src/Mollie/WC/Payment/Order.php:550
+#: src/Mollie/WC/Payment/Order.php:608 src/Mollie/WC/Payment/Order.php:632
+#: src/Mollie/WC/Payment/Order.php:669 src/Mollie/WC/Payment/Order.php:710
+#: src/Mollie/WC/Payment/Payment.php:243 src/Mollie/WC/Payment/Payment.php:353
+#: src/Mollie/WC/Payment/Payment.php:411 src/Mollie/WC/Payment/Payment.php:434
+#: src/Mollie/WC/Payment/Payment.php:474 src/Mollie/WC/Payment/Payment.php:515
+#: src/Mollie/WC/Gateway/AbstractSepaRecurring.php:73
+#: src/Mollie/WC/Gateway/AbstractSepaRecurring.php:153
+#: src/Mollie/WC/Gateway/Abstract.php:656
+#: src/Mollie/WC/Gateway/Abstract.php:938
+#: src/Mollie/WC/Gateway/Abstract.php:1167
+#: src/Mollie/WC/Gateway/Abstract.php:1208
+#: src/Mollie/WC/Gateway/Abstract.php:1597
+#: src/Mollie/WC/Gateway/AbstractSubscription.php:466
+msgid "test mode"
+msgstr "testmodus"
+
+#. translators: Placeholder 1: Payment method title, placeholder 2: payment ID
+#: src/Mollie/WC/Gateway/AbstractSepaRecurring.php:71
+#: src/Mollie/WC/Gateway/Abstract.php:654
+#: src/Mollie/WC/Gateway/AbstractSubscription.php:464
+msgid "%s payment started (%s)."
+msgstr "%s betaling gestart (%s)."
+
+#: src/Mollie/WC/Gateway/AbstractSepaRecurring.php:63
+#: src/Mollie/WC/Gateway/Abstract.php:644
+#: src/Mollie/WC/Gateway/AbstractSubscription.php:457
+msgid "Awaiting payment confirmation."
+msgstr "In afwachting van betalingsbevestiging"
+
+#: src/Mollie/WC/Gateway/Abstract.php:402
+msgid "Could not load order %s"
+msgstr "Kon bestelling %s niet laden"
+
+#. translators: Placeholder 1: payment method title. The surrounding %s's Will
+#. be replaced by a link to the Mollie profile
+#: src/Mollie/WC/Gateway/Abstract.php:238
+msgid "%s not enabled in your Mollie profile. You can enable it by editing your %sMollie profile%s."
+msgstr "%s niet geactiveerd in je Mollie-profiel. Je kunt het activeren door je %sMollie profiel%s te bewerken."
+
+#. translators: The surrounding %s's Will be replaced by a link to the global
+#. setting page
+#: src/Mollie/WC/Gateway/Abstract.php:226
+msgid "No API key provided. Please %sset you Mollie API key%s first."
+msgstr "Geen API key ingevuld. %sPlaats eerst je Mollie API-sleutel%s."
+
+#: src/Mollie/WC/Gateway/Abstract.php:181
+msgid "Gateway Disabled"
+msgstr "Gateway gedeactiveerd"
+
+#: src/Mollie/WC/Helper/Settings.php:256 src/Mollie/WC/Gateway/Abstract.php:224
+msgid "Test mode enabled."
+msgstr "Testmodus geactiveerd."
+
+#: src/Mollie/WC/Gateway/Abstract.php:143
+msgid "Hold Stock (minutes)"
+msgstr "Houd voorraad aan (minuten)"
+
+#: src/Mollie/WC/Gateway/Abstract.php:141
+msgid "Some payment methods take longer than a few hours to complete. The initial order state is then set to '%s'. This ensures the order is not cancelled when the setting %s is used."
+msgstr "Sommige betaalmethoden duren langer dan een paar uur om te voltooien. De initiële bestelstatus is dan ingesteld op '%s'. Dit zorgt ervoor dat de bestelling niet wordt geannuleerd wanneer de instelling %s wordt gebruikt."
+
+#: src/Mollie/WC/Helper/Settings.php:428 src/Mollie/WC/Gateway/Abstract.php:135
+msgid "default"
+msgstr "standaard"
+
+#: src/Mollie/WC/Gateway/Abstract.php:132
+msgid "Initial order status"
+msgstr "Initiële bestelstatus"
+
+#: src/Mollie/WC/Gateway/Abstract.php:123
+msgid "Payment method description that the customer will see on your checkout. Default <code>%s</code>"
+msgstr "Beschrijving van de betaalmethode die de klant bij je betaalpagina zal zien. Standaard <code>%s</code>"
+
+#: src/Mollie/WC/Gateway/Abstract.php:121
+msgid "Description"
+msgstr "Beschrijving"
+
+#: src/Mollie/WC/Gateway/Abstract.php:117
+msgid "Display logo on checkout page. Default <code>enabled</code>"
+msgstr "Toon logo op de betaalpagina. Standaard <code>ingeschakeld</code>"
+
+#: src/Mollie/WC/Gateway/Abstract.php:115
+msgid "Display logo"
+msgstr "Toon logo"
+
+#: src/Mollie/WC/Gateway/Abstract.php:110
+msgid "This controls the title which the user sees during checkout. Default <code>%s</code>"
+msgstr "Dit controleert de titel die de gebruiker ziet tijdens het betalen. Standaard <code>%s</code>"
+
+#: src/Mollie/WC/Gateway/Abstract.php:108
+msgid "Title"
+msgstr "Titel"
+
+#: src/Mollie/WC/Gateway/Abstract.php:104
+msgid "Enable %s"
+msgstr "Geactiveerd %s"
+
+#: src/Mollie/WC/Gateway/Abstract.php:102
+msgid "Enable/Disable"
+msgstr "Activeren/Deactiveren"

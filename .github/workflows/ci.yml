@@ -1,0 +1,36 @@
+name: Continuous Integration
+
+on: [push]
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php-versions: ['5.6', '7.0', '7.1','7.2','7.3']
+
+    name: PHP ${{ matrix.php-versions }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          coverage: none
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+
+      - name: install dependencies
+        run: composer install --no-interaction --optimize-autoloader
+
+      - name: dump autoload
+        run: composer dump-autoload
+
+      - name: check syntax
+        run: find src -name '*.php' | xargs -n 1 -P4 php -l
+
+      - name: Run PHPUnit
+        run: ./vendor/bin/phpunit

@@ -318,18 +318,15 @@ class Mollie_WC_Helper_Data
 
 		try {
 
-			$transient_id = Mollie_WC_Plugin::getDataHelper()->getTransientId( md5(http_build_query($filters_key))  );
+			$transient_id = Mollie_WC_Plugin::getDataHelper()->getTransientId( md5(http_build_query($filters_key)));
 
 			if ($use_cache) {
 				// When no cache exists $methods will be `false`
-				$methods = unserialize( get_transient( $transient_id ) );
+				$methods =  get_transient( $transient_id );
 			}
 
 			// No cache exists, call the API and cache the result
 			if ( $methods === false ) {
-
-				// Remove existing expired transients
-				delete_transient( $transient_id );
 
 				$filters['resource'] = 'orders';
 				$filters['includeWallets'] = 'applepay';
@@ -347,12 +344,9 @@ class Mollie_WC_Helper_Data
 				$methods = $methods_cleaned;
 
 				// Set new transients (as cache)
-				try {
-					set_transient( $transient_id, serialize( $methods ), MINUTE_IN_SECONDS * 5 );
-				}
-				catch ( Exception $e ) {
-					Mollie_WC_Plugin::debug( __FUNCTION__ . ": No caching because serialization failed." );
-				}
+                if($use_cache){
+                    set_transient( $transient_id, $methods, HOUR_IN_SECONDS );
+                }
 			}
 
 			return $methods;
@@ -400,27 +394,18 @@ class Mollie_WC_Helper_Data
 			$transient_id = Mollie_WC_Plugin::getDataHelper()->getTransientId( $method . '_issuers_' . ( $test_mode ? 'test' : 'live' ) );
 
 			// When no cache exists $cached_issuers will be `false`
-			$issuers = unserialize( get_transient( $transient_id ) );
+			$issuers = get_transient( $transient_id );
 
 			if ( $issuers === false ) {
-
-				// Remove existing expired transients
-				delete_transient( $transient_id );
 
 				$method  = $this->api_helper->getApiClient( $test_mode )->methods->get( "$method", array ( "include" => "issuers" ) );
 				$issuers = $method->issuers;
 
 				// Set new transients (as cache)
-				try {
-					set_transient( $transient_id, serialize( $issuers ), MINUTE_IN_SECONDS * 5 );
-				}
-				catch ( Exception $e ) {
-					Mollie_WC_Plugin::debug( __FUNCTION__ . ": No caching because serialization failed." );
-				}
+                set_transient( $transient_id, $issuers, HOUR_IN_SECONDS );
 			}
 
 			return $issuers;
-
 		}
 		catch ( \Mollie\Api\Exceptions\ApiException $e ) {
 			Mollie_WC_Plugin::debug( __FUNCTION__ . ": Could not load " . $method . " issuers (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class( $e ) . ')' );

@@ -204,6 +204,9 @@ class Mollie_WC_Plugin_Test extends TestCase
         expect('wp_doing_ajax')
             ->once()
             ->andReturn(false);
+        expect('is_wc_endpoint_url')
+            ->once()
+            ->andReturn(false);
 
         /*
          * Execute Test

@@ -102,7 +102,7 @@ class Mollie_WC_Helper_Status
                     $error = sprintf(
                     /* translators: Placeholder 1: Required PHP version, placeholder 2: current PHP version */
                         __(
-                            'Mollie Payments for WooCommerce requires PHP %s or higher, you have PHP %s. Please upgrade and view %sthis FAQ%s',
+                            'Mollie Payments for WooCommerce require PHP %s or higher, you have PHP %s. Please upgrade and view %sthis FAQ%s',
                             'mollie-payments-for-woocommerce'
                         ),
                         CompatibilityChecker::MIN_PHP_VERSION,
@@ -129,7 +129,7 @@ class Mollie_WC_Helper_Status
                 case IncompatiblePlatform::INCOMPATIBLE_CURL_FUNCTION:
                     $error =
                         __(
-                            'Mollie Payments for WooCommerce requires PHP cURL functions to be available. Please make sure all of these functions are available.',
+                            'Mollie Payments for WooCommerce require PHP cURL functions to be available. Please make sure all of these functions are available.',
                             'mollie-payments-for-woocommerce'
                         );
                     break;

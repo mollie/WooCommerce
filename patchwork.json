@@ -1,7 +1,7 @@
 {
-    "redefinable-internals": [
-        "filter_input",
-        "filemtime",
-      "idn_to_ascii"
-    ]
+  "redefinable-internals": [
+    "filter_input",
+    "filemtime",
+    "idn_to_ascii"
+  ]
 }

@@ -19,12 +19,14 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
     }
 
     public function get_icon() {
+        $output = $this->icon ? '<img src="' . WC_HTTPS::force_https_url(
+                $this->icon
+            ) . '" alt="' . esc_attr($this->get_title()) . '" />' : '';
+
         if ($this->enabledCreditcards()
             && !is_admin()
         ) {
             $output = $this->buildSvgComposed() ?: '';
-        } else{
-            $output = $this->icon ? '<img src="' . WC_HTTPS::force_https_url( $this->icon ) . '" alt="' . esc_attr( $this->get_title() ) . '" />' : '';
         }
 
         return apply_filters( 'woocommerce_gateway_icon', $output, $this->id );
@@ -122,22 +124,24 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
      */
     protected function enabledCreditcards()
     {
+        $optionLexem = Mollie_WC_Helper_PaymentMethodsIconUrl::MOLLIE_CREDITCARD_ICONS;
+        $creditcardsAvailable = Mollie_WC_Helper_PaymentMethodsIconUrl::AVAILABLE_CREDITCARD_ICONS;
+        $svgFileName = Mollie_WC_Helper_PaymentMethodsIconUrl::SVG_FILE_EXTENSION;
+        $iconEnabledOption = Mollie_WC_Helper_PaymentMethodsIconUrl::MOLLIE_CREDITCARD_ICONS_ENABLER;
         $creditCardSettings = get_option('mollie_wc_gateway_creditcard_settings', false) ?: [];
-        $enabled = isset($creditCardSettings[Mollie_WC_Helper_PaymentMethodsIconUrl::MOLLIE_CREDITCARD_ICONS_ENABLER])
-            ? wc_string_to_bool($creditCardSettings[Mollie_WC_Helper_PaymentMethodsIconUrl::MOLLIE_CREDITCARD_ICONS_ENABLER])
+        $enabled = isset($creditCardSettings[$iconEnabledOption])
+            ? wc_string_to_bool($creditCardSettings[$iconEnabledOption])
             : false;
 
         if (!$enabled) {
             return [];
         }
-        $optionLexem = Mollie_WC_Helper_PaymentMethodsIconUrl::MOLLIE_CREDITCARD_ICONS;
-        $creditcardsAvailable = Mollie_WC_Helper_PaymentMethodsIconUrl::AVAILABLE_CREDITCARD_ICONS;
-        $svgFileName = Mollie_WC_Helper_PaymentMethodsIconUrl::SVG_FILE_EXTENSION;
+
         $enabledCreditcards = [];
 
-        $creditcardSettings = get_option('mollie_wc_gateway_creditcard_settings');
+        $creditcardSettings = get_option('mollie_wc_gateway_creditcard_settings', []) ?: [];
         foreach ($creditcardsAvailable as $card) {
-            if ($creditcardSettings[$optionLexem . $card] === 'yes') {
+            if (wc_string_to_bool($creditcardSettings[$optionLexem . $card])) {
                 $enabledCreditcards[] = $card . $svgFileName;
             }
         }
@@ -154,23 +158,28 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
         $enabledCreditCards = $this->enabledCreditcards();
 
         $assetsImagesPath
-            = dirname(plugin_dir_path( __FILE__ ), 4).'/public/images/Creditcard_issuers/';
+            = Mollie_WC_Plugin::getPluginPath('public/images/Creditcard_issuers/');
         $cardWidth = Mollie_WC_Helper_PaymentMethodsIconUrl::CREDIT_CARD_ICON_WIDTH;
         $cardsNumber = count($enabledCreditCards);
         $cardsWidth = $cardWidth * $cardsNumber;
         $cardPositionX = 0;
-        $actual
-            = "<svg width=\"{$cardsWidth}\" height=\"24\" style=\"float:right\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">";
-        foreach ($enabledCreditCards as $creditCard) {
-            $actual .= $this->positionSvgOnX(
-                $cardPositionX,
-                file_get_contents(
-                    $assetsImagesPath . $creditCard
-                )
-            );
-            $cardPositionX += $cardWidth;
+        $actual = get_transient('svg_creditcards_string');
+        if(!$actual){
+            $actual
+                = "<svg width=\"{$cardsWidth}\" height=\"24\" style=\"float:right\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">";
+            foreach ($enabledCreditCards as $creditCard) {
+                $actual .= $this->positionSvgOnX(
+                    $cardPositionX,
+                    file_get_contents(
+                        $assetsImagesPath . $creditCard
+                    )
+                );
+                $cardPositionX += $cardWidth;
+            }
+            $actual .= "</svg>";
+            set_transient( 'svg_creditcards_string', $actual, DAY_IN_SECONDS );
         }
-        $actual .= "</svg>";
+
 
         return $actual;
     }

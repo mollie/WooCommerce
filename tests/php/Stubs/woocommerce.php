@@ -82,3 +82,10 @@ class WC_Order_Item
     {
     }
 }
+class WC_HTTPS
+{
+    public static function force_https_url($string)
+    {
+    }
+}
+define( 'DAY_IN_SECONDS', 24 * 60 *60 );

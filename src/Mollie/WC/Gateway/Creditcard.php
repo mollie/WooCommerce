@@ -168,13 +168,16 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
             $actual
                 = "<svg width=\"{$cardsWidth}\" height=\"24\" style=\"float:right\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">";
             foreach ($enabledCreditCards as $creditCard) {
-                $actual .= $this->positionSvgOnX(
-                    $cardPositionX,
-                    file_get_contents(
-                        $assetsImagesPath . $creditCard
-                    )
+                $svgString = file_get_contents(
+                    $assetsImagesPath . $creditCard
                 );
-                $cardPositionX += $cardWidth;
+                if ($svgString) {
+                    $actual .= $this->positionSvgOnX(
+                        $cardPositionX,
+                        $svgString
+                    );
+                    $cardPositionX += $cardWidth;
+                }
             }
             $actual .= "</svg>";
             set_transient( 'svg_creditcards_string', $actual, DAY_IN_SECONDS );

@@ -36,9 +36,9 @@ class Mollie_WC_Helper_Api {
 		}
 
 		if ( empty( $api_key ) ) {
-			throw new \Mollie\Api\Exceptions\ApiException( __( 'No API key provided. Please set you Mollie API keys below.', 'mollie-payments-for-woocommerce' ) );
+			throw new \Mollie\Api\Exceptions\ApiException( __( 'No API key provided. Please set your Mollie API keys below.', 'mollie-payments-for-woocommerce' ) );
 		} elseif ( ! preg_match( '/^(live|test)_\w{30,}$/', $api_key ) ) {
-			throw new \Mollie\Api\Exceptions\ApiException( sprintf(__( "Invalid API key(s). Get them on the %sDevelopers page in the Mollie dashboard%s. The API key(s) must start with 'live_' or 'test_', be at least 30 characters and can't further contain any special characters.", 'mollie-payments-for-woocommerce' ), '<a href="https://www.mollie.com/dashboard/developers/api-keys" target="_blank">', '</a>' ) );
+			throw new \Mollie\Api\Exceptions\ApiException( sprintf(__( "Invalid API key(s). Get them on the %sDevelopers page in the Mollie dashboard%s. The API key(s) must start with 'live_' or 'test_', be at least 30 characters and must not contain any special characters.", 'mollie-payments-for-woocommerce' ), '<a href="https://www.mollie.com/dashboard/developers/api-keys" target="_blank">', '</a>' ) );
 		}
 
         if (empty(self::$api_client)) {

@@ -219,7 +219,7 @@ class Mollie_WC_Payment_OrderItemsRefunder_Test extends TestCase
          */
         $this->expectException(UnexpectedValueException::class);
         $this->expectExceptionMessage(
-            'One of the WooCommerce order items does not have the refund item id meta value associated to Mollie Order item.'
+            'One of the WooCommerce order items does not have the refund item ID meta value associated to Mollie Order item.'
         );
 
         /*
@@ -264,7 +264,7 @@ class Mollie_WC_Payment_OrderItemsRefunder_Test extends TestCase
         */
         $this->expectException(UnexpectedValueException::class);
         $this->expectExceptionMessage(
-            "Impossible to retrieve the order item id related to the remote item: {$orderLineItem->id}. Try to do a refund by amount."
+            "Impossible to retrieve the order item ID related to the remote item: {$orderLineItem->id}. Try to do a refund by amount."
         );
 
         /*
@@ -300,7 +300,7 @@ class Mollie_WC_Payment_OrderItemsRefunder_Test extends TestCase
         * Expectations
         */
         $this->expectException(UnexpectedValueException::class);
-        $this->expectExceptionMessage('Empty woocommerce order items or mollie order lines.');
+        $this->expectExceptionMessage('Empty WooCommerce order items or mollie order lines.');
 
         /*
          * Execute Test

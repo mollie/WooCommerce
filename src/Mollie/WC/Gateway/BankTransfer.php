@@ -19,8 +19,6 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
         );
 
         parent::__construct();
-
-        add_filter('woocommerce_' . $this->id . '_args', array($this, 'addPaymentArguments'), 10, 2);
     }
 
     /**
@@ -31,17 +29,6 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
         parent::init_form_fields();
 
         $this->form_fields = array_merge($this->form_fields, array(
-            'expiry_days' => array(
-                'title'             => __('Expiry date', 'mollie-payments-for-woocommerce'),
-                'type'              => 'number',
-                'description'       => sprintf(__('Number of days after the payment will expire. Default <code>%d</code> days', 'mollie-payments-for-woocommerce'), self::EXPIRY_DEFAULT_DAYS),
-                'default'           => self::EXPIRY_DEFAULT_DAYS,
-                'custom_attributes' => array(
-                    'min'  => self::EXPIRY_MIN_DAYS,
-                    'max'  => self::EXPIRY_MAX_DAYS,
-                    'step' => 1,
-                ),
-            ),
             'skip_mollie_payment_screen' => array(
                 'title'             => __('Skip Mollie payment screen', 'mollie-payments-for-woocommerce'),
                 'label'             => __('Skip Mollie payment screen when Bank Transfer is selected', 'mollie-payments-for-woocommerce'),
@@ -51,32 +38,6 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
             ),
         ));
     }
-
-	/**
-	 * @param array    $args
-	 * @param WC_Order $order
-	 *
-	 * @return array
-	 */
-	public function addPaymentArguments( array $args, WC_Order $order ) {
-		// Expiry date
-		$expiry_days = (int) $this->get_option( 'expiry_days', self::EXPIRY_DEFAULT_DAYS );
-
-		if ( $expiry_days >= self::EXPIRY_MIN_DAYS && $expiry_days <= self::EXPIRY_MAX_DAYS ) {
-			$expiry_date = date( "Y-m-d", strtotime( "+$expiry_days days" ) );
-
-			// Add dueDate at the correct location
-			if ( isset( $args['payment'] ) ) {
-				$args['payment']['dueDate'] = $expiry_date;
-			} else {
-				$args['dueDate'] = $expiry_date;
-			}
-		}
-
-		// Billing email is now required
-
-		return $args;
-	}
 
 	/**
 	 * {@inheritdoc}

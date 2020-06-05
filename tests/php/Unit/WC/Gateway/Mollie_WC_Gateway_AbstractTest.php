@@ -8,9 +8,12 @@ use Mollie\Api\Resources\MethodCollection;
 use Mollie\WooCommerceTests\Stubs\varPolylangTestsStubs;
 use Mollie\WooCommerceTests\TestCase;
 use Mollie_WC_Gateway_Abstract as Testee;
+use UnexpectedValueException;
 use WooCommerce;
 
+
 use function Brain\Monkey\Functions\expect;
+use function Brain\Monkey\Actions\expectDone;
 
 /**
  * Class Mollie_WC_Helper_Settings_Test
@@ -250,6 +253,8 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         /*
         * Expectations
         */
+        expect('get_home_url')
+            ->andReturn($varStubs->homeUrl);
         //get url from request
         expect('WC')
             ->andReturn($wcUrl);
@@ -274,7 +279,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         $testee
             ->expects($this->once())
             ->method('getSiteUrlWithLanguage')
-            ->willReturn("{$varStubs->apiRequestUrl}/nl");
+            ->willReturn("{$varStubs->afterLangUrl}");
 
         expect('mollieWooCommerceDebug')
             ->withAnyArgs();
@@ -284,7 +289,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
          */
         $result = $testee->getReturnUrl($wcOrder);
 
-        self::assertEquals($varStubs->urlWithParams, $result);
+        self::assertEquals($varStubs->result, $result);
     }
 
     /* -----------------------------------------------------------------
@@ -353,7 +358,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         $result = $testee->getWebhookUrl($wcOrder);
 
         self::assertEquals(
-            "{$varStubs->homeUrl}/nl/wc-api/mollie_return/?order_id={$varStubs->orderId}&key=wc_order_{$varStubs->orderKey}",
+            "{$varStubs->homeUrl}/nl/wc-api/mollie_return?order_id={$varStubs->orderId}&key=wc_order_{$varStubs->orderKey}",
             $result
         );
     }
@@ -396,5 +401,122 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             $urlWithParams,
             $untrailedWithParams
         );
+    }
+
+    /* -----------------------------------------------------------------
+      getReturnRedirectUrlForOrder Tests
+      -------------------------------------------------------------- */
+    /**
+     * Test getReturnRedirectUrlForOrder
+     * given order does NOT need payment
+     * then will fire
+     * do_action('mollie-payments-for-woocommerce_customer_return_payment_success', $order)
+     *
+     * @throws \Brain\Monkey\Expectation\Exception\ExpectationArgsRequired
+     */
+    public function testgetReturnRedirectUrlForOrderHookIsSuccessWhenNeedPaymentFalse()
+    {
+        /*
+         * Setup Testee
+         */
+        $testee = $this->buildTesteeMock(
+            Testee::class,
+            [],
+            ['orderNeedsPayment', 'get_return_url']
+        )->getMockForAbstractClass();
+        $testee = $this->proxyFor($testee);
+
+        /*
+        * Setup Stubs
+        */
+        $order = $this->createMock(\WC_Order::class);
+
+        /*
+        * Expectations
+        */
+        expect('mollieWooCommerceOrderId')
+            ->once()
+            ->with($order);
+        expect('mollieWooCommerceDebug')
+            ->once();
+        $testee
+            ->expects($this->once())
+            ->method('orderNeedsPayment')
+            ->with($order)
+            ->willReturn(false);
+        expectDone('mollie-payments-for-woocommerce_customer_return_payment_success')
+            ->once()
+            ->with($order);
+        $testee
+            ->expects($this->once())
+            ->method('get_return_url')
+            ->with($order);
+        /*
+         * Execute test
+         */
+        $testee->getReturnRedirectUrlForOrder($order);
+    }
+
+    /**
+     * Test getReturnRedirectUrlForOrder
+     * given order does need payment
+     * When there is exception thrown
+     * then will fire
+     * do_action('mollie-payments-for-woocommerce_customer_return_payment_failed', $order)
+     *
+     * @throws \Brain\Monkey\Expectation\Exception\ExpectationArgsRequired
+     */
+    public function testgetReturnRedirectUrlForOrderHookIsFailedWhenNeedPaymentException()
+    {
+        /*
+         * Setup Testee
+         */
+        $testee = $this->buildTesteeMock(
+            Testee::class,
+            [],
+            ['orderNeedsPayment', 'get_return_url', 'paymentObject', 'activePaymentObject']
+        )->getMockForAbstractClass();
+        $testee = $this->proxyFor($testee);
+
+        /*
+        * Setup Stubs
+        */
+        $order = $this->createMock(\WC_Order::class);
+        $payment = $this->createMock(\Mollie_WC_Payment_Object::class);
+
+        /*
+        * Expectations
+        */
+        expect('mollieWooCommerceOrderId')
+            ->once()
+            ->with($order);
+        expect('mollieWooCommerceDebug')
+            ->twice();
+        $testee
+            ->expects($this->once())
+            ->method('orderNeedsPayment')
+            ->with($order)
+            ->willReturn(true);
+        $testee
+            ->expects($this->once())
+            ->method('paymentObject')
+            ->willReturn($payment);
+        $testee
+            ->expects($this->once())
+            ->method('activePaymentObject')
+            ->willThrowException(new UnexpectedValueException());
+        expect('mollieWooCommerceNotice')
+            ->once();
+        expectDone('mollie-payments-for-woocommerce_customer_return_payment_failed')
+            ->once()
+            ->with($order);
+        $testee
+            ->expects($this->once())
+            ->method('get_return_url')
+            ->with($order);
+        /*
+         * Execute test
+         */
+        $testee->getReturnRedirectUrlForOrder($order);
     }
 }

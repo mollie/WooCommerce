@@ -1,6 +1,6 @@
 {
   "name": "mollie-payments-for-woocommerce",
-  "version": "5.5.1",
+  "version": "5.6.1",
   "license": "GPL-2.0-or-later",
   "description": "Accept payments in WooCommerce with the official Mollie plugin",
   "keywords": [
@@ -37,7 +37,7 @@
     "gulp-help-doc": "^1.1.1",
     "gulp-phpunit": "^0.26.0",
     "gulp-zip": "^4.2.0",
-    "minimist": "^1.2.2",
+    "minimist": "^1.2.3",
     "node-sass": "^4.13.0",
     "pump": "^3.0.0",
     "sass-loader": "^7.0.1"

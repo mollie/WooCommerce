@@ -2165,10 +2165,15 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         <div class="mollie-components"></div>
         <p class="mollie-components-description">
             <?php
-            echo $this->lockIcon();
-            esc_html_e('Secure payments provided by ');
-            // TODO Check if possible to make svg accessible so we can show `mollie` text
-            echo $this->mollieLogo();
+            printf(
+                    esc_html_x(
+                            '%1$s Secure payments provided by %2$s',
+                            'Placeholder 1: lock icon, Placeholder 2: mollie logo',
+                            'mollie-payments-for-woocommerce'
+                    ),
+                    $this->lockIcon(),
+                    $this->mollieLogo()
+            );
             ?>
         </p>
         <?php

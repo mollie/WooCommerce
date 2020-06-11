@@ -1818,7 +1818,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function getReturnUrl (WC_Order $order)
     {
-        $siteUrl    = get_home_url();
         $returnUrl = WC()->api_request_url( 'mollie_return' );
 	    $returnUrl = untrailingslashit($returnUrl);
         if (function_exists('idn_to_ascii')) {
@@ -1837,17 +1836,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             $returnUrl
         );
 	    $returnUrl = untrailingslashit($returnUrl);
-        $langUrl   = $this->getSiteUrlWithLanguage();
-
-        // Make sure there aren't any double /? in the URL (some (multilanguage) plugins will add this)
-        if ( strpos( $langUrl, '/?' ) !== false ) {
-            $langUrlParams = substr( $langUrl, strpos( $langUrl, "/?" ) + 2 );
-            $returnUrl = $returnUrl . '&' . $langUrlParams;
-        } else {
-            $returnUrl = str_replace( $siteUrl, $langUrl, $returnUrl );
-        }
-        // Some (multilanguage) plugins will add a extra slash to the url (/nl//) causing the URL to redirect and lose it's data.
-        $returnUrl = preg_replace('/([^:])(\/{2,})/', '$1/', $returnUrl);
+        $returnUrl   = apply_filters('mollie_for_polylang_get_correct_url', $returnUrl);
         mollieWooCommerceDebug("{$this->id} : Order {$orderId} returnUrl: {$returnUrl}", true);
 
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_return_url', $returnUrl, $order);
@@ -1883,20 +1872,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             $webhookUrl
         );
         $webhookUrl = untrailingslashit($webhookUrl);
-
-        $langUrl    = $this->getSiteUrlWithLanguage();
-
-	    // Make sure there aren't any double /? in the URL (some (multilanguage) plugins will add this)
-        if ( strpos( $langUrl, '/?' ) !== false ) {
-            $langUrlParams = substr( $langUrl, strpos( $langUrl, "/?" ) + 2 );
-            $webhookUrl = $webhookUrl . '&' . $langUrlParams;
-        } else {
-            $webhookUrl = str_replace( $siteUrl, $langUrl, $webhookUrl );
-        }
-
-        // Some (multilanguage) plugins will add a extra slash to the url (/nl//) causing the URL to redirect and lose it's data.
-	    // Status updates via webhook will therefor not be processed. The below regex will find and remove those double slashes.
-	    $webhookUrl = preg_replace('/([^:])(\/{2,})/', '$1/', $webhookUrl);
+        $webhookUrl   = apply_filters('mollie_for_polylang_get_correct_url', $webhookUrl);
         mollieWooCommerceDebug("{$this->id} : Order {$orderId} webhookUrl: {$webhookUrl}", true);
 
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_webhook_url', $webhookUrl, $order);

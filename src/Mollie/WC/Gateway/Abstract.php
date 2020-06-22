@@ -548,7 +548,18 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 					Mollie_WC_Plugin::debug( 'Creating payment object: type Order, first try creating a Mollie Order.' );
 
 					// Only enable this for hardcore debugging!
-					// Mollie_WC_Plugin::debug( $data );
+                    $apiCallLog = [
+                            'amount'=>$data['amount'],
+                            'redirectUrl'=>$data['redirectUrl'],
+                            'webhookUrl'=>$data['webhookUrl'],
+                            'method'=>$data['method'],
+                            'payment'=>$data['payment'],
+                            'locale'=>$data['locale'],
+                            'metadata'=>$data['metadata'],
+                            'orderNumber'=>$data['orderNumber']
+                    ];
+
+                    Mollie_WC_Plugin::debug( $apiCallLog );
 
 					$payment_object = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->create( $data );
 				}
@@ -605,7 +616,18 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				try {
 
 					// Only enable this for hardcore debugging!
-					// Mollie_WC_Plugin::debug( $data );
+                    $apiCallLog = [
+                            'amount'=>$data['amount'],
+                            'redirectUrl'=>$data['redirectUrl'],
+                            'webhookUrl'=>$data['webhookUrl'],
+                            'method'=>$data['method'],
+                            'payment'=>$data['payment'],
+                            'locale'=>$data['locale'],
+                            'metadata'=>$data['metadata'],
+                            'orderNumber'=>$data['orderNumber']
+                    ];
+
+                    Mollie_WC_Plugin::debug( $apiCallLog );
 
 					// Try as simple payment
 					$payment_object = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->create( $data );

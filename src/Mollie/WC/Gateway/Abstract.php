@@ -549,14 +549,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 					// Only enable this for hardcore debugging!
                     $apiCallLog = [
-                            'amount'=>isset($data['amount'])?:'',
-                            'redirectUrl'=>isset($data['redirectUrl'])?:'',
-                            'webhookUrl'=>isset($data['webhookUrl'])?:'',
-                            'method'=>isset($data['method'])?:'',
-                            'payment'=>isset($data['payment'])?:'',
-                            'locale'=>isset($data['locale'])?:'',
-                            'metadata'=>isset($data['metadata'])?:'',
-                            'orderNumber'=>isset($data['orderNumber'])?:''
+                            'amount'=>isset($data['amount'])?$data['amount']:'',
+                            'redirectUrl'=>isset($data['redirectUrl'])?$data['redirectUrl']:'',
+                            'webhookUrl'=>isset($data['webhookUrl'])?$data['webhookUrl']:'',
+                            'method'=>isset($data['method'])?$data['method']:'',
+                            'payment'=>isset($data['payment'])?$data['payment']:'',
+                            'locale'=>isset($data['locale'])?$data['locale']:'',
+                            'metadata'=>isset($data['metadata'])?$data['metadata']:'',
+                            'orderNumber'=>isset($data['orderNumber'])?$data['orderNumber']:''
                     ];
 
                     Mollie_WC_Plugin::debug( $apiCallLog );
@@ -617,14 +617,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 					// Only enable this for hardcore debugging!
                     $apiCallLog = [
-                            'amount'=>isset($data['amount'])?:'',
-                            'description'=>isset($data['description'])?:'',
-                            'redirectUrl'=>isset($data['redirectUrl'])?:'',
-                            'webhookUrl'=>isset($data['webhookUrl'])?:'',
-                            'method'=>isset($data['method'])?:'',
-                            'issuer'=>isset($data['issuer'])?:'',
-                            'locale'=>isset($data['locale'])?:'',
-                            'metadata'=>isset($data['metadata'])?:''
+                            'amount'=>isset($data['amount'])?$data['amount']:'',
+                            'description'=>isset($data['description'])?$data['description']:'',
+                            'redirectUrl'=>isset($data['redirectUrl'])?$data['redirectUrl']:'',
+                            'webhookUrl'=>isset($data['webhookUrl'])?$data['webhookUrl']:'',
+                            'method'=>isset($data['method'])?$data['method']:'',
+                            'issuer'=>isset($data['issuer'])?$data['issuer']:'',
+                            'locale'=>isset($data['locale'])?$data['locale']:'',
+                            'metadata'=>isset($data['metadata'])?$data['metadata']:''
                     ];
 
                     Mollie_WC_Plugin::debug( $apiCallLog );

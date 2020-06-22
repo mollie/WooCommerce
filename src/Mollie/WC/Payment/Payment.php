@@ -125,6 +125,12 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
             $paymentRequestData['cardToken'] = $cardToken;
         }
 
+        $applePayToken = $_POST['token'];
+        if($applePayToken){
+            $encodedApplePayToken = json_encode($applePayToken);
+            $paymentRequestData['applePayPaymentToken'] = $encodedApplePayToken;
+        }
+
 		return $paymentRequestData;
 
 	}

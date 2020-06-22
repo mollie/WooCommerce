@@ -149,4 +149,15 @@ function mollieWooCommerceGetDataHelper()
     return Mollie_WC_Plugin::getDataHelper();
 }
 
+/**
+ * @return bool
+ */
+function mollieWooCommerceisApplePayDirectEnabled()
+{
+    $applePaySettings = get_option('mollie_wc_gateway_applepay_settings');
+    return wc_string_to_bool(
+        $applePaySettings['mollie_apple_pay_button_enabled']
+    );
+}
+
 

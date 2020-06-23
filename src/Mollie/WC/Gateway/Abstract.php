@@ -1878,47 +1878,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_webhook_url', $webhookUrl, $order);
     }
 
-	/**
-	 * Check if any multi language plugins are enabled and return the correct site url.
-	 *
-	 * @return string
-	 */
-	protected function getSiteUrlWithLanguage() {
-		/**
-		 * function is_plugin_active() is not available. Lets include it to use it.
-		 */
-		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
-
-		$site_url          = get_home_url();
-		$polylang_fallback = false;
-
-		if ( is_plugin_active( 'polylang/polylang.php' ) || is_plugin_active( 'polylang-pro/polylang.php' ) ) {
-
-			$lang = PLL()->model->get_language( pll_current_language() );
-
-			if ( empty ( $lang->search_url ) ) {
-				$polylang_fallback = true;
-			} else {
-				$polylang_url = $lang->search_url;
-				$site_url     = str_replace( $site_url, $polylang_url, $site_url );
-			}
-		}
-
-		if ( $polylang_fallback == true || is_plugin_active( 'mlang/mlang.php' ) || is_plugin_active( 'mlanguage/mlanguage.php' ) ) {
-
-			$slug = get_bloginfo( 'language' );
-			$pos  = strpos( $slug, '-' );
-			if ( $pos !== false ) {
-				$slug = substr( $slug, 0, $pos );
-			}
-			$slug     = '/' . $slug;
-			$site_url = str_replace( $site_url, $site_url . $slug, $site_url );
-
-		}
-
-		return $site_url;
-	}
-
     /**
      * @return string|NULL
      */

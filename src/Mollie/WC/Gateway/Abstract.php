@@ -1852,8 +1852,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function getWebhookUrl (WC_Order $order)
     {
-        $siteUrl    = get_home_url();
-
         $webhookUrl = WC()->api_request_url(strtolower(get_class($this)));
         $webhookUrl = untrailingslashit($webhookUrl);
         if (function_exists('idn_to_ascii')) {

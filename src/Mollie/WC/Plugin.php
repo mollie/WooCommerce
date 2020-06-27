@@ -290,6 +290,32 @@ class Mollie_WC_Plugin
 
 		// Mark plugin initiated
 		self::$initiated = true;
+		add_action('woocommerce_review_order_before_payment', function (){
+            ?>
+            <script>
+
+                jQuery( 'body' )
+                        .on( 'updated_checkout', function() {
+                            jQuery('input[name="payment_method"]').change(function(){
+                                //esto podría ser una función a parte checkingGateway()
+                                if(jQuery('form[name="checkout"] input[name="payment_method"]:checked').val() === 'mollie_wc_gateway_mealvoucher'){
+                                    //esta comparación debería ser con un mollie type
+                                    console.log("Using my gateway");
+                                    //ajax call to function that decides if notice
+
+                                }else{
+                                    console.log("Not using my gateway. Proceed as usual");
+                                    //call to delete notice and enable as usual
+                                }
+
+                            });
+                        });
+                console.log('lo veo')
+            </script>
+            <?php
+        });
+
+
 	}
 
     /**

@@ -1,16 +1,9 @@
-function createAppleErrors(errors) {
-    let errorList = []
-    for (let error of errors) {
-        let appleError = error.contactField ? new ApplePayError(error.code, error.contactField, error.message) : new ApplePayError(error.code)
-        errorList.push(appleError)
-    }
-
-    return errorList
-}
+import {createAppleErrors} from './applePayError.js';
+import {request} from "./applePayRequest";
+import {maybeShowButton} from './maybeShowApplePayButton.js';
 
 (
     function ({_, mollieApplePayDirectDataCart, jQuery}) {
-
         if (_.isEmpty(mollieApplePayDirectDataCart)) {
             return
         }
@@ -26,27 +19,7 @@ function createAppleErrors(errors) {
         let selectedShippingMethod = []
         let redirectionUrl = ''
         let applePaySession = () => {
-            const request = {
-                countryCode: countryCode,
-                currencyCode: currencyCode,
-                supportedNetworks: ['amex', 'maestro', 'masterCard', 'visa', 'vPay'],
-                merchantCapabilities: ['supports3DS'],
-                shippingType: "shipping",
-                requiredBillingContactFields: [
-                    "postalAddress",
-                    "email"
-                ],
-                requiredShippingContactFields: [
-                    "postalAddress",
-                    "email"
-                ],
-                total: {
-                    label: totalLabel,
-                    amount: subtotal,
-                    type: "pending"
-                },
-            }
-            const session = new ApplePaySession(3, request)
+            const session = new ApplePaySession(3, request(countryCode, currencyCode, totalLabel, subtotal))
             session.begin()
             session.onshippingmethodselected = function (event) {
                 jQuery.ajax({
@@ -56,7 +29,7 @@ function createAppleErrors(errors) {
                         action: 'mollie_apple_pay_update_shipping_method',
                         shippingMethod: event.shippingMethod,
                         callerPage: 'cart',
-                        contact: updatedContactInfo,
+                        simplifiedContact: updatedContactInfo,
                         nonce: nonce,
                     },
                     complete: (jqXHR, textStatus) => {
@@ -65,12 +38,13 @@ function createAppleErrors(errors) {
                         let response = applePayShippingMethodUpdate.data
                         selectedShippingMethod = event.shippingMethod
                         if (applePayShippingMethodUpdate.success === false) {
-                            response.errors =  createAppleErrors(response.errors)
+                            response.errors = createAppleErrors(response.errors)
                         }
                         this.completeShippingMethodSelection(response)
                     },
                     error: (jqXHR, textStatus, errorThrown) => {
-                        console.log(textStatus, errorThrown)
+                        console.warn(textStatus, errorThrown)
+                        session.abort()
                     },
                 })
             }
@@ -80,7 +54,7 @@ function createAppleErrors(errors) {
                     method: 'POST',
                     data: {
                         action: 'mollie_apple_pay_update_shipping_contact',
-                        contact: event.shippingContact,
+                        simplifiedContact: event.shippingContact,
                         callerPage: 'cart',
                         needShipping: needShipping,
                         nonce: nonce,
@@ -99,7 +73,8 @@ function createAppleErrors(errors) {
                         this.completeShippingContactSelection(response)
                     },
                     error: (jqXHR, textStatus, errorThrown) => {
-                        console.log(textStatus, errorThrown)
+                        console.warn(textStatus, errorThrown)
+                        session.abort()
                     },
                 })
             }
@@ -118,12 +93,13 @@ function createAppleErrors(errors) {
                         if (merchantSession.success === true) {
                             session.completeMerchantValidation(JSON.parse(merchantSession.data))
                         } else {
-                            console.log(merchantSession.data)
+                            console.warn(merchantSession.data)
                             session.abort()
                         }
                     },
                     error: (jqXHR, textStatus, errorThrown) => {
-                        console.log(textStatus, errorThrown)
+                        console.warn(textStatus, errorThrown)
+                        session.abort()
                     },
                 })
             }
@@ -148,43 +124,26 @@ function createAppleErrors(errors) {
                         if (authorizationResult.success === true) {
                             redirectionUrl = result['returnUrl'];
                             session.completePayment(result['responseToApple'])
-                            makeRedirection()
+                            window.location.href = redirectionUrl
                         } else {
                             result.errors = createAppleErrors(result.errors)
                             session.completePayment(result)
                         }
                     },
                     error: (jqXHR, textStatus, errorThrown) => {
-                        console.log(jqXHR)
-                        console.log(textStatus, errorThrown)
+                        console.warn(textStatus, errorThrown)
+                        session.abort()
                     },
                 })
             }
-            const makeRedirection = function () {
-                window.location.href = redirectionUrl
-            }
         }
 
-        let maybeShowButton = () => {
-            if (window.ApplePaySession || window.ApplePaySession.canMakePayments()) {
-                let applePayMethodElement = document.querySelector(
-                    '#mollie-applepayDirect-button',
-                )
-                if (!applePayMethodElement) {
-                    return
-                }
-                let button = document.createElement("button")
-                button.setAttribute('id', 'mollie_applepay_button')
-                button.setAttribute('class', 'apple-pay-button apple-pay-button-black')
-                applePayMethodElement.appendChild(button)
-            }
-        }
         maybeShowButton()
 
         jQuery(document.body).on('updated_cart_totals', function (event) {
             maybeShowButton()
             document.querySelector('#mollie_applepay_button').addEventListener('click', (evt) => {
-                applePaySession()
+                //applePaySession()
             })
 
         })

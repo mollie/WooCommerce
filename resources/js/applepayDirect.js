@@ -1,54 +1,36 @@
-function createAppleErrors(errors) {
-    let errorList = []
-    for (let error of errors) {
-        let appleError = error.contactField ? new ApplePayError(error.code, error.contactField, error.message) : new ApplePayError(error.code)
-        errorList.push(appleError)
-    }
-
-    return errorList
-}
+import {createAppleErrors} from './applePayError.js';
+import {maybeShowButton} from './maybeShowApplePayButton.js';
+import {request} from './applePayRequest.js';
 
 (
     function ({_, mollieApplePayDirectData, jQuery}) {
         if (_.isEmpty(mollieApplePayDirectData)) {
             return
         }
-        let {product: {id, needShipping = true, isVariation = false, price}, shop: {countryCode, currencyCode = 'EUR', totalLabel = ''}, ajaxUrl} = mollieApplePayDirectData
+        const {product: {id, needShipping = true, isVariation = false, price}, shop: {countryCode, currencyCode = 'EUR', totalLabel = ''}, ajaxUrl} = mollieApplePayDirectData
 
         if (!id || !price || !countryCode || !ajaxUrl) {
             return
         }
-        let applePayMethodElement = document.querySelector(
-            '#mollie-applepayDirect-button',
-        )
-        if (window.ApplePaySession || window.ApplePaySession.canMakePayments()) {
-            if (!applePayMethodElement) {
-                return
-            }
-            let button = document.createElement("button");
-            button.setAttribute('id', 'mollie_applepay_button')
-            button.setAttribute('class', 'apple-pay-button apple-pay-button-black')
-            applePayMethodElement.appendChild(button)
-        }
+        maybeShowButton()
 
-        let variationIdValue = false
-        const nonce = document.getElementById("_wpnonce").value
+        const nonce = document.getElementById('_wpnonce').value
+        let productId = id
         let productQuantity = 1
         let updatedContactInfo = []
         let selectedShippingMethod = []
         let redirectionUrl = ''
-        jQuery(document).on("change", "input.qty", function () {
-            productQuantity = this.value
+        document.querySelector('input.qty').addEventListener('change', event => {
+            productQuantity = event.currentTarget.value
         })
+
         if (isVariation) {
             let appleButton = document.querySelector('#mollie_applepay_button');
-            jQuery(".single_variation_wrap").on("show_variation", function (event, variation) {
+            jQuery('.single_variation_wrap').on('show_variation', function (event, variation) {
                 // Fired when the user selects all the required dropdowns / attributes
                 // and a final variation is selected / shown
                 if (variation.variation_id) {
-                    id = variation.variation_id
-                    variationIdValue = true;
-                    console.log('id dentro', id)
+                    productId = variation.variation_id
                 }
                 appleButton.disabled = false;
                 appleButton.classList.remove("buttonDisabled");
@@ -58,27 +40,7 @@ function createAppleErrors(errors) {
         }
         const amountWithoutTax = productQuantity * price
         document.querySelector('#mollie_applepay_button').addEventListener('click', (evt) => {
-            const request = {
-                countryCode: countryCode,
-                currencyCode: currencyCode,
-                supportedNetworks: ['amex', 'maestro', 'masterCard', 'visa', 'vPay'],
-                merchantCapabilities: ['supports3DS'],
-                shippingType: "shipping",
-                requiredBillingContactFields: [
-                    "postalAddress",
-                    "email"
-                ],
-                requiredShippingContactFields: [
-                    "postalAddress",
-                    "email"
-                ],
-                total: {
-                    label: totalLabel,
-                    amount: amountWithoutTax,
-                    type: "pending"
-                },
-            }
-            const session = new ApplePaySession(3, request)
+            const session = new ApplePaySession(3, request(countryCode, currencyCode, totalLabel, amountWithoutTax))
             session.begin()
             session.onshippingmethodselected = function (event) {
                 jQuery.ajax({
@@ -104,7 +66,8 @@ function createAppleErrors(errors) {
                         this.completeShippingMethodSelection(response)
                     },
                     error: (jqXHR, textStatus, errorThrown) => {
-                        console.log(textStatus, errorThrown)
+                        console.warning(textStatus, errorThrown)
+                        session.abort()
                     },
                 })
             }
@@ -135,7 +98,8 @@ function createAppleErrors(errors) {
                         this.completeShippingContactSelection(response)
                     },
                     error: (jqXHR, textStatus, errorThrown) => {
-                        console.log(textStatus, errorThrown)
+                        console.warning(textStatus, errorThrown)
+                        session.abort()
                     },
                 })
             }
@@ -160,7 +124,8 @@ function createAppleErrors(errors) {
 
                     },
                     error: (jqXHR, textStatus, errorThrown) => {
-                        console.log(textStatus, errorThrown)
+                        console.warning(textStatus, errorThrown)
+                        session.abort()
                     },
                 })
             }
@@ -170,7 +135,7 @@ function createAppleErrors(errors) {
                     method: 'POST',
                     data: {
                         action: 'mollie_apple_pay_create_order',
-                        productId: id,
+                        productId: productId,
                         productQuantity: productQuantity,
                         shippingContact: ApplePayPayment.payment.shippingContact,
                         billingContact: ApplePayPayment.payment.billingContact,
@@ -187,20 +152,17 @@ function createAppleErrors(errors) {
                         if (authorizationResult.success === true) {
                             redirectionUrl = result['returnUrl'];
                             session.completePayment(result['responseToApple'])
-                            makeRedirection()
+                            window.location.href = redirectionUrl
                         } else {
                             result.errors = createAppleErrors(result.errors)
                             session.completePayment(result)
                         }
                     },
                     error: (jqXHR, textStatus, errorThrown) => {
-                        console.log(jqXHR)
-                        console.log(textStatus, errorThrown)
+                        console.warning(textStatus, errorThrown)
+                        session.abort()
                     },
                 })
-            }
-            const makeRedirection = function () {
-                window.location.href = redirectionUrl
             }
         })
     }

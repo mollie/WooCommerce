@@ -1,17 +1,18 @@
 <?php
 
-namespace Mollie\WooCommerceTests\Functional\Helper;
+namespace Mollie\WooCommerceTests\Functional\ApplePayButton;
 
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mollie\WooCommerceTests\Stubs\postDTOTestsStubs;
 use Mollie\WooCommerceTests\TestCase;
-use Mollie_WC_Helper_ApplePayDataObjectHttp;
+use Mollie_WC_ApplePayButton_ApplePayDataObjectHttp;
+
 
 use function Brain\Monkey\Functions\expect;
 use function Brain\Monkey\Functions\when;
 
 
-class Mollie_WC_Helper_ApplePayDataObject_Test extends TestCase
+class Mollie_WC_ApplePayButton_ApplePayDataObject_Test extends TestCase
 {
     use MockeryPHPUnitIntegration;
 
@@ -82,7 +83,7 @@ class Mollie_WC_Helper_ApplePayDataObject_Test extends TestCase
         /*
          * Sut
          */
-        $dataObject = new Mollie_WC_Helper_ApplePayDataObjectHttp();
+        $dataObject = new Mollie_WC_ApplePayButton_ApplePayDataObjectHttp();
         $dataObject->validationData($postValidation);
 
         $nonce = $dataObject->nonce;
@@ -156,7 +157,7 @@ class Mollie_WC_Helper_ApplePayDataObject_Test extends TestCase
         /*
          * Sut
          */
-        $dataObject = new Mollie_WC_Helper_ApplePayDataObjectHttp();
+        $dataObject = new Mollie_WC_ApplePayButton_ApplePayDataObjectHttp();
         expect('mollieWooCommerceDebug')
             ->withAnyArgs();
         $dataObject->validationData($postMissingIndex);

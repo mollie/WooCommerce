@@ -156,8 +156,13 @@ function mollieWooCommerceisApplePayDirectEnabled()
 {
     $applePaySettings = get_option('mollie_wc_gateway_applepay_settings');
     return wc_string_to_bool(
-        $applePaySettings['mollie_apple_pay_button_enabled']
+        checkIndexExistOrDefault($applePaySettings, 'mollie_apple_pay_button_enabled', 'no')
     );
+}
+
+function checkIndexExistOrDefault($array, $key, $default)
+{
+    return isset($array[$key]) ? $array[$key] : $default;
 }
 
 

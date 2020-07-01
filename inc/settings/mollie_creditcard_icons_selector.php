@@ -37,6 +37,11 @@ return [
         'type' => 'checkbox',
         'default' => 'no',
     ],
+    'mollie_creditcard_icons_mastercard' => [
+        'label'       => __('Show Mastercard Icon', 'mollie-payments-for-woocommerce'),
+        'type' => 'checkbox',
+        'default' => 'no',
+    ],
     'mollie_creditcard_icons_visa' => [
         'label'       => __('Show Visa Icon', 'mollie-payments-for-woocommerce'),
         'type' => 'checkbox',

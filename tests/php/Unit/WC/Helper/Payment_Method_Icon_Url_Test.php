@@ -52,7 +52,7 @@ class Payment_Method_Icon_Url_Test extends TestCase
         /*
          * Setup stubs
          */
-        $paymentMethod = 'creditcard';
+        $paymentMethod = 'ideal';
         $paymentMethodsList = [];
 
         /*
@@ -61,17 +61,9 @@ class Payment_Method_Icon_Url_Test extends TestCase
         $testee = new Testee($paymentMethodsList);
 
         /*
-         * Expect to call is_admin() function and return false
-         */
-        expect('is_admin')
-            ->once()
-            ->withNoArgs()
-            ->andReturn(false);
-
-        /*
          * Execute Test
          */
         $result = $testee->svgUrlForPaymentMethod($paymentMethod);
-        self::assertStringEndsWith('public/images/creditcards.svg', $result);
+        self::assertStringEndsWith('public/images/ideal.svg', $result);
     }
 }

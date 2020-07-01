@@ -45,7 +45,7 @@ International payment methods:
 
 Pay after delivery payment methods:
 
-* Klarna Pay later (Netherlands, Germany, Austria, Finland)
+* Klarna Pay later (Netherlands, Belgium, Germany, Austria, Finland)
 * Klarna Slice it (Germany, Austria, Finland)
 
 Please go to the [signup page](https://www.mollie.com/signup) to create a new Mollie account and start receiving payments in a couple of minutes. Contact info@mollie.com if you have any questions or comments about this plugin.

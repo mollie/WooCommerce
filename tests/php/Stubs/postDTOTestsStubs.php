@@ -77,8 +77,8 @@ class postDTOTestsStubs
             'emailAddress' => $this->faker->email,
             'phoneNumber' => $this->faker->phoneNumber,
             'addressLines' => [
-                0 => [$this->faker->address],
-                1 => [$this->faker->address]
+                0 => $this->faker->address,
+                1 => $this->faker->address
             ],
             'locality' => $this->faker->word,
             'administrativeArea' => $this->faker->word,

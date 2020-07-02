@@ -340,16 +340,15 @@ class Mollie_WC_ApplePayButton_ApplePayDataObjectHttp
         }
         $filter = FILTER_SANITIZE_STRING;
 
-
         return [
             'first_name' => filter_var($data['givenName'], $filter),
             'last_name' => filter_var($data['familyName'], $filter),
             'email' => filter_var($data['emailAddress'], $filter),
             'phone' => filter_var($data['phoneNumber'], $filter),
             'address_1' => isset($data['addressLines'][0])
-                ? $data['addressLines'][0] : '',
+                ? filter_var($data['addressLines'][0], $filter) : '',
             'address_2' => isset($data['addressLines'][1])
-                ? $data['addressLines'][1] : '',
+                ? filter_var($data['addressLines'][1], $filter) : '',
             'city' => filter_var($data['locality'], $filter),
             'state' => filter_var($data['administrativeArea'], $filter),
             'postcode' => filter_var($data['postalCode'], $filter),

@@ -109,6 +109,8 @@ class Mollie_WC_ApplePayButton_ApplePayDataObject_Test extends TestCase
         $dataObject->orderData($postOrder, 'productDetail');
 
         $shippingAddress = $dataObject->shippingAddress;
+        $shippingAddress['address_1'] = htmlspecialchars_decode($shippingAddress['address_1'], ENT_QUOTES);
+        $shippingAddress['address_2'] = htmlspecialchars_decode($shippingAddress['address_2'], ENT_QUOTES);
 
         self::assertEquals($expectedAddress, $shippingAddress);
     }

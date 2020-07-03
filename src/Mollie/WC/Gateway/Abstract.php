@@ -548,7 +548,18 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 					Mollie_WC_Plugin::debug( 'Creating payment object: type Order, first try creating a Mollie Order.' );
 
 					// Only enable this for hardcore debugging!
-					// Mollie_WC_Plugin::debug( $data );
+                    $apiCallLog = [
+                            'amount'=>isset($data['amount'])?$data['amount']:'',
+                            'redirectUrl'=>isset($data['redirectUrl'])?$data['redirectUrl']:'',
+                            'webhookUrl'=>isset($data['webhookUrl'])?$data['webhookUrl']:'',
+                            'method'=>isset($data['method'])?$data['method']:'',
+                            'payment'=>isset($data['payment'])?$data['payment']:'',
+                            'locale'=>isset($data['locale'])?$data['locale']:'',
+                            'metadata'=>isset($data['metadata'])?$data['metadata']:'',
+                            'orderNumber'=>isset($data['orderNumber'])?$data['orderNumber']:''
+                    ];
+
+                    Mollie_WC_Plugin::debug( $apiCallLog );
 
 					$payment_object = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->create( $data );
 				}
@@ -605,7 +616,18 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				try {
 
 					// Only enable this for hardcore debugging!
-					// Mollie_WC_Plugin::debug( $data );
+                    $apiCallLog = [
+                            'amount'=>isset($data['amount'])?$data['amount']:'',
+                            'description'=>isset($data['description'])?$data['description']:'',
+                            'redirectUrl'=>isset($data['redirectUrl'])?$data['redirectUrl']:'',
+                            'webhookUrl'=>isset($data['webhookUrl'])?$data['webhookUrl']:'',
+                            'method'=>isset($data['method'])?$data['method']:'',
+                            'issuer'=>isset($data['issuer'])?$data['issuer']:'',
+                            'locale'=>isset($data['locale'])?$data['locale']:'',
+                            'metadata'=>isset($data['metadata'])?$data['metadata']:''
+                    ];
+
+                    Mollie_WC_Plugin::debug( $apiCallLog );
 
 					// Try as simple payment
 					$payment_object = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->create( $data );
@@ -2165,10 +2187,15 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         <div class="mollie-components"></div>
         <p class="mollie-components-description">
             <?php
-            echo $this->lockIcon();
-            esc_html_e('Secure payments provided by ');
-            // TODO Check if possible to make svg accessible so we can show `mollie` text
-            echo $this->mollieLogo();
+            printf(
+                    esc_html_x(
+                            '%1$s Secure payments provided by %2$s',
+                            'Placeholder 1: lock icon, Placeholder 2: mollie logo',
+                            'mollie-payments-for-woocommerce'
+                    ),
+                    $this->lockIcon(),
+                    $this->mollieLogo()
+            );
             ?>
         </p>
         <?php

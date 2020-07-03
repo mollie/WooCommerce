@@ -2,21 +2,15 @@
 
 function wc_string_to_bool($string)
 {
-    return is_bool($string)
-        ? $string
-        : ('yes' === strtolower(
-                $string
-            )
-            || 1 === $string
-            || 'true' === strtolower($string)
-            || '1' === $string);
+    return is_bool($string) ? $string : ('yes' === strtolower(
+            $string
+        ) || 1 === $string || 'true' === strtolower($string) || '1' === $string);
 }
 
 /**
  * Converts a bool to a 'yes' or 'no'.
  *
  * @param bool $bool String to convert.
- *
  * @return string
  * @since 3.0.0
  */
@@ -147,7 +141,6 @@ class WC_Shipping_Rate
 class WC_Payment_Gateway
 {
     public $id;
-
     public function __construct($id = 1)
     {
         $this->id = $id;
@@ -159,7 +152,6 @@ class Mollie_WC_Helper_Data
     public function getWcOrder()
     {
     }
-
     public function getWcPaymentGatewayByOrder()
     {
     }
@@ -177,15 +169,12 @@ class WC_Order
     public function get_order_key()
     {
     }
-
     public function get_id()
     {
     }
-
     public function add_order_note($note)
     {
     }
-
     public function key_is_valid()
     {
     }
@@ -222,6 +211,13 @@ class WC_Order_Item
     {
     }
 }
+class WC_HTTPS
+{
+    public static function force_https_url($string)
+    {
+    }
+}
+define( 'DAY_IN_SECONDS', 24 * 60 *60 );
 
 class WC_Product
 {

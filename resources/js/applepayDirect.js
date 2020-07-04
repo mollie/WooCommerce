@@ -66,7 +66,7 @@ import {request} from './applePayRequest.js';
                         this.completeShippingMethodSelection(response)
                     },
                     error: (jqXHR, textStatus, errorThrown) => {
-                        console.warning(textStatus, errorThrown)
+                        console.warn(textStatus, errorThrown)
                         session.abort()
                     },
                 })
@@ -98,7 +98,7 @@ import {request} from './applePayRequest.js';
                         this.completeShippingContactSelection(response)
                     },
                     error: (jqXHR, textStatus, errorThrown) => {
-                        console.warning(textStatus, errorThrown)
+                        console.warn(textStatus, errorThrown)
                         session.abort()
                     },
                 })
@@ -118,13 +118,13 @@ import {request} from './applePayRequest.js';
                         if (merchantSession.success === true) {
                             session.completeMerchantValidation(JSON.parse(merchantSession.data))
                         } else {
-                            console.log(merchantSession.data)
+                            console.warn(merchantSession.data)
                             session.abort()
                         }
 
                     },
                     error: (jqXHR, textStatus, errorThrown) => {
-                        console.warning(textStatus, errorThrown)
+                        console.warn(textStatus, errorThrown)
                         session.abort()
                     },
                 })
@@ -159,7 +159,7 @@ import {request} from './applePayRequest.js';
                         }
                     },
                     error: (jqXHR, textStatus, errorThrown) => {
-                        console.warning(textStatus, errorThrown)
+                        console.warn(textStatus, errorThrown)
                         session.abort()
                     },
                 })

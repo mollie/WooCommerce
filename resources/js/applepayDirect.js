@@ -40,83 +40,8 @@ import {request} from './applePayRequest.js';
         }
         const amountWithoutTax = productQuantity * price
         document.querySelector('#mollie_applepay_button').addEventListener('click', (evt) => {
-            let shippingContact = {'locality' : 'Como',
-                'postalCode' : '22100',
-                'countryCode' : 'IT'
-            }
-            let shippingMethod = {'label' : "Flat Rate Peso",
-                'detail' : "",
-                'amount' : "0.00",
-                'identifier' : "flat_rate:1"}
-console.log(shippingContact)
-            jQuery.ajax({
-                url: ajaxUrl,
-                method: 'POST',
-                data: {
-                    action: 'mollie_apple_pay_update_shipping_contact',
-                    productId: id,
-                    shippingMethod: shippingMethod,
-                    callerPage: 'productDetail',
-                    productQuantity: productQuantity,
-                    simplifiedContact: shippingContact,
-                    needShipping: needShipping,
-                    nonce: nonce,
-                },
-                complete: (jqXHR, textStatus) => {
-                },
-                success: (applePayShippingContactUpdate, textStatus, jqXHR) => {
-                    let response = applePayShippingContactUpdate.data
-                    updatedContactInfo = shippingContact
-                    if (applePayShippingContactUpdate.success === false) {
-                        response.errors = createAppleErrors(response.errors)
-                    }
-                    if (response.newShippingMethods) {
-                        selectedShippingMethod = response.newShippingMethods[0]
-                    }
-                    console.log(response)
-                    method()
-                },
-                error: (jqXHR, textStatus, errorThrown) => {
-                    console.warn(textStatus, errorThrown)
 
-                },
-            })
-            const method = ()=>{
-                jQuery.ajax({
-                    url: ajaxUrl,
-                    method: 'POST',
-                    data: {
-                        action: 'mollie_apple_pay_update_shipping_method',
-                        productId: id,
-                        shippingMethod: shippingMethod,
-                        callerPage: 'productDetail',
-                        productQuantity: productQuantity,
-                        simplifiedContact: shippingContact,
-                        needShipping: needShipping,
-                        nonce: nonce,
-                    },
-                    complete: (jqXHR, textStatus) => {
-                    },
-                    success: (applePayShippingContactUpdate, textStatus, jqXHR) => {
-                        console.log('en el segundo')
-                        let response = applePayShippingContactUpdate.data
-                        updatedContactInfo = shippingContact
-                        if (applePayShippingContactUpdate.success === false) {
-                            response.errors = createAppleErrors(response.errors)
-                        }
-                        if (response.newShippingMethods) {
-                            selectedShippingMethod = response.newShippingMethods[0]
-                        }
-                        console.log(response)
-
-                    },
-                    error: (jqXHR, textStatus, errorThrown) => {
-                        console.warn(textStatus, errorThrown)
-
-                    },
-                })
-            }
-            /*const session = new ApplePaySession(3, request(countryCode, currencyCode, totalLabel, amountWithoutTax))
+            const session = new ApplePaySession(3, request(countryCode, currencyCode, totalLabel, amountWithoutTax))
             session.begin()
             if(needShipping){
             session.onshippingmethodselected = function (event) {
@@ -241,10 +166,9 @@ console.log(shippingContact)
                         session.abort()
                     },
                 })
-            }*/
+            }
         })
     }
-
 )
 (
     window

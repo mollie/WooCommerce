@@ -475,6 +475,7 @@ class Mollie_WC_Plugin
             'mollie_wc_gateway_mealvoucher',
             'mealvoucherSettings',
             [
+                'message'=> __('Some products in the cart cannot be purchased with the selected gateway. Please, select another gateway'),
                 'productsWithCategory' => $enableButtonHelper->numberProductsWithCategory()
 
             ]

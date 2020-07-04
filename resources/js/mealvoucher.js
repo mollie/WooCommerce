@@ -8,10 +8,7 @@
 
         let eventName = 'updated_checkout'
         const $document = jQuery(document)
-        const { productsWithCategory = 0} = mealvoucherSettings
-
-console.log(productsWithCategory)
-        let message = 'text message that they have to remove or change gateway'
+        const {message, productsWithCategory = 0} = mealvoucherSettings
 
         jQuery('body')
             .on('updated_checkout', function () {

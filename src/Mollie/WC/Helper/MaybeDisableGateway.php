@@ -15,17 +15,14 @@ class Mollie_WC_Helper_MaybeDisableGateway
 
 
         $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_STRING);
-        $wooCommerceSession = mollieWooCommerceSession();
-
 
         /*
          * There is only one case where we want to filter the gateway and it's when the checkout
          * page render the available payments methods.
          *
-         * For any other case we want to be sure apple pay gateway is included.
+         * For any other case we want to be sure mealvoucher gateway is included.
          */
         if ($isWcApiRequest ||
-            !$wooCommerceSession instanceof WC_Session ||
             !doing_action('woocommerce_payment_gateways') ||
             !wp_doing_ajax() ||
             is_admin()

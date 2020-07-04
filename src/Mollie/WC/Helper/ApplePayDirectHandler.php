@@ -59,7 +59,6 @@ class Mollie_WC_Helper_ApplePayDirectHandler
             );
 
             $this->adminNotice->addAdminNotice('error', $message);
-            return;
         }
         add_action(
                 'woocommerce_after_add_to_cart_form',

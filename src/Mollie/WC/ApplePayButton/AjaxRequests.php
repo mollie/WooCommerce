@@ -108,7 +108,7 @@ class Mollie_WC_ApplePayButton_AjaxRequests
      * On error returns an array of errors to be handled by the script
      * On success returns the new contact data
      */
-    public function updateShippingContact()
+    public function  updateShippingContact()
     {
         $applePayRequestDataObject = $this->applePayDataObjectHttp();
         $applePayRequestDataObject->updateContactData($_POST);
@@ -206,11 +206,13 @@ class Mollie_WC_ApplePayButton_AjaxRequests
         );
         $order = $this->addAddressesToOrder($applePayRequestDataObject, $order);
 
-        $order = $this->addShippingMethodsToOrder(
-            $applePayRequestDataObject->shippingMethod,
-            $applePayRequestDataObject->shippingAddress,
-            $order
-        );
+        if(isset($applePayRequestDataObject->shippingMethod)){
+            $order = $this->addShippingMethodsToOrder(
+                $applePayRequestDataObject->shippingMethod,
+                $applePayRequestDataObject->shippingAddress,
+                $order
+            );
+        }
 
         $orderId = $order->get_id();
 

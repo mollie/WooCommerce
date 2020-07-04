@@ -16,8 +16,7 @@ export const request = (countryCode, currencyCode, totalLabel, subtotal) => {
         total: {
             label: totalLabel,
             amount: subtotal,
-            type: 'pending'
+            type: 'final'
         }
     }
 }
-

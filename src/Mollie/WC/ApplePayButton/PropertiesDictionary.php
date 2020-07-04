@@ -14,7 +14,6 @@ class Mollie_WC_ApplePayButton_PropertiesDictionary
             Mollie_WC_ApplePayButton_PropertiesDictionary::NONCE,
             Mollie_WC_ApplePayButton_PropertiesDictionary::PRODUCT_ID,
             self::PRODUCT_QUANTITY,
-            Mollie_WC_ApplePayButton_PropertiesDictionary::SHIPPING_METHOD,
             self::BILLING_CONTACT,
             Mollie_WC_ApplePayButton_PropertiesDictionary::SHIPPING_CONTACT
         ];
@@ -61,7 +60,6 @@ class Mollie_WC_ApplePayButton_PropertiesDictionary
     const CREATE_ORDER_CART_REQUIRED_FIELDS
         = [
             Mollie_WC_ApplePayButton_PropertiesDictionary::NONCE,
-            Mollie_WC_ApplePayButton_PropertiesDictionary::SHIPPING_METHOD,
             Mollie_WC_ApplePayButton_PropertiesDictionary::BILLING_CONTACT,
             Mollie_WC_ApplePayButton_PropertiesDictionary::SHIPPING_CONTACT
         ];
@@ -74,4 +72,5 @@ class Mollie_WC_ApplePayButton_PropertiesDictionary
     const VALIDATION = 'mollie_apple_pay_validation';
     const CREATE_ORDER = 'mollie_apple_pay_create_order';
     const CREATE_ORDER_CART = 'mollie_apple_pay_create_order_cart';
+    const REDIRECT = 'mollie_apple_pay_redirect';
 }

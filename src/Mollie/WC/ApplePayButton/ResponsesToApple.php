@@ -2,6 +2,39 @@
 
 class Mollie_WC_ApplePayButton_ResponsesToApple
 {
+
+    /**
+     * Returns the authorization response with according success/fail status
+     * Adds the error list if provided to be handled by the script
+     * On success it adds the redirection url
+     *
+     * @param        $status 0 => success, 1 => error
+     * @param string $orderId
+     * @param array  $errorList
+     *
+     * @return array
+     */
+    public function authorizationResultResponse(
+        $status,
+        $orderId = '',
+        $errorList = []
+    ) {
+        $response = [];
+        if ($status === 'STATUS_SUCCESS') {
+            $response['returnUrl'] = $this->redirectUrlOnSuccessfulPayment(
+                $orderId
+            );
+            $response['responseToApple'] = ['status' => 0];
+        } else {
+            $response = [
+                'status' => 1,
+                'errors' => $this->applePayError($errorList)
+            ];
+        }
+
+        return $response;
+    }
+
     /**
      * Returns an error response to be handled by the script
      *
@@ -21,6 +54,41 @@ class Mollie_WC_ApplePayButton_ResponsesToApple
     }
 
     /**
+     * Creates a response formatted for ApplePay
+     *
+     * @param array $paymentDetails
+     *
+     * @return array
+     */
+    public function appleFormattedResponse(array $paymentDetails)
+    {
+        $response = [];
+        if ($paymentDetails['shippingMethods']) {
+            $response['newShippingMethods']
+                = $paymentDetails['shippingMethods'];
+        }
+
+        $response['newLineItems'] = $this->appleNewLineItemsResponse(
+            $paymentDetails
+        );
+
+        $response['newTotal'] = $this->appleNewTotalResponse(
+            $paymentDetails['total']
+        );
+        return $response;
+    }
+
+    /**
+     * Returns a success response to be handled by the script
+     *
+     * @param array $response
+     */
+    public function responseSuccess(array $response)
+    {
+        wp_send_json_success($response);
+    }
+
+    /**
      * Creates an array of errors formatted
      *
      * @param array $errorList
@@ -28,7 +96,7 @@ class Mollie_WC_ApplePayButton_ResponsesToApple
      *
      * @return array
      */
-    public function applePayError($errorList, $errors = [])
+    protected function applePayError($errorList, $errors = [])
     {
         foreach ($errorList as $error) {
             array_push(
@@ -83,31 +151,6 @@ class Mollie_WC_ApplePayButton_ResponsesToApple
     }
 
     /**
-     * Creates a response formatted for ApplePay
-     *
-     * @param array $paymentDetails
-     *
-     * @return array
-     */
-    public function appleFormattedResponse(array $paymentDetails)
-    {
-        $response = [];
-        if ($paymentDetails['shippingMethods']) {
-            $response['newShippingMethods']
-                = $paymentDetails['shippingMethods'];
-        }
-
-        $response['newLineItems'] = $this->appleNewLineItemsResponse(
-            $paymentDetails
-        );
-
-        $response['newTotal'] = $this->appleNewTotalResponse(
-            $paymentDetails['total']
-        );
-        return $response;
-    }
-
-    /**
      * Creates NewLineItems line
      *
      * @param array $paymentDetails
@@ -118,76 +161,30 @@ class Mollie_WC_ApplePayButton_ResponsesToApple
     {
         $type = 'final';
         $response = [];
-        array_push(
-            $response,
-            $this->appleItemFormat(
-                'Subtotal',
-                $paymentDetails['subtotal'],
-                $type
-            )
+        $response[] =  $this->appleItemFormat(
+            'Subtotal',
+            $paymentDetails['subtotal'],
+            $type
         );
-        if ($paymentDetails['shipping']) {
-            array_push(
-                $response,
-                $this->appleItemFormat(
-                    $paymentDetails['shipping']['label'],
-                    $paymentDetails['shipping']['amount'],
-                    $type
-                )
+
+        if ($paymentDetails['shipping']['amount']) {
+            $response[]
+                = $this->appleItemFormat(
+                $paymentDetails['shipping']['label'] ?: '',
+                $paymentDetails['shipping']['amount'],
+                $type
             );
         }
-        array_push(
-            $response,
-            $this->appleItemFormat(
-                'Estimated Tax',
-                $paymentDetails['taxes'],
-                $type
-            )
+        $response[]
+            = $this->appleItemFormat(
+            'Estimated Tax',
+            $paymentDetails['taxes'],
+            $type
+
         );
         return $response;
     }
 
-    /**
-     * Returns a success response to be handled by the script
-     *
-     * @param array $response
-     */
-    public function responseSuccess(array $response)
-    {
-        wp_send_json_success($response);
-    }
-
-    /**
-     * Returns the authorization response with according success/fail status
-     * Adds the error list if provided to be handled by the script
-     * On success it adds the redirection url
-     *
-     * @param        $status 0 => success, 1 => error
-     * @param string $orderId
-     * @param array  $errorList
-     *
-     * @return array
-     */
-    public function authorizationResultResponse(
-        $status,
-        $orderId = '',
-        $errorList = []
-    ) {
-        $response = [];
-        if ($status === 'STATUS_SUCCESS') {
-            $response['returnUrl'] = $this->redirectUrlOnSuccessfulPayment(
-                $orderId
-            );
-            $response['responseToApple'] = ['status' => 0];
-        } else {
-            $response = [
-                'status' => 1,
-                'errors' => $this->applePayError($errorList)
-            ];
-        }
-
-        return $response;
-    }
     /**
      * Returns the redirect url to use on successful payment
      *
@@ -195,7 +192,7 @@ class Mollie_WC_ApplePayButton_ResponsesToApple
      *
      * @return string
      */
-    public function redirectUrlOnSuccessfulPayment($orderId)
+    protected function redirectUrlOnSuccessfulPayment($orderId)
     {
         $gateway = new Mollie_WC_Gateway_Applepay();
         $order = wc_get_order($orderId);

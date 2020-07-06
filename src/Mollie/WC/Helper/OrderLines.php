@@ -405,7 +405,7 @@ class Mollie_WC_Helper_OrderLines {
         $defaultCategory = $mealvoucherSettings['mealvoucher_category_default'];
         $category = $defaultCategory;
         if ( $product) {
-            $productPostMeta = get_post_meta($product['product_id']);
+            $productPostMeta = get_post_meta($product->id);
             $localCategory = $productPostMeta['_mollie_voucher_category'];
             $category = $localCategory? $localCategory: $defaultCategory;
         }

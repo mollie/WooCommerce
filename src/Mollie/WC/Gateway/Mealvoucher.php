@@ -1,7 +1,5 @@
 <?php
 
-use Mollie\Api\Types\PaymentMethod;
-
 class Mollie_WC_Gateway_Mealvoucher extends Mollie_WC_Gateway_Abstract
 {
     const FOOD_AND_DRINKS = 'food_and_drinks';
@@ -55,7 +53,7 @@ class Mollie_WC_Gateway_Mealvoucher extends Mollie_WC_Gateway_Abstract
      */
     public function getMollieMethodId ()
     {
-        return PaymentMethod::IDEAL;
+        return 'mealvoucher';
     }
 
     /**

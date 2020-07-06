@@ -248,6 +248,7 @@ class Mollie_WC_Plugin
         // Enqueue Scripts
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueFrontendScripts']);
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueComponentsAssets']);
+        add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueMealvoucherAssets']);
 
         add_action(
             Mollie_WC_Payment_OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS,
@@ -470,15 +471,23 @@ class Mollie_WC_Plugin
         wp_enqueue_script('mollie_wc_gateway_applepay');
         wp_enqueue_script('mollie_wc_gateway_mealvoucher');
         wp_enqueue_style('unabledButton');
+
+    }
+
+    public static function enqueueMealvoucherAssets()
+    {
+        if (is_admin() || !mollieWooCommerceIsCheckoutContext()) {
+            return;
+        }
         $enableButtonHelper = new Mollie_WC_Helper_MaybeDisableGateway();
         wp_localize_script(
-            'mollie_wc_gateway_mealvoucher',
-            'mealvoucherSettings',
-            [
-                'message'=> __('Some products in the cart cannot be purchased with the selected gateway. Please, select another gateway'),
-                'productsWithCategory' => $enableButtonHelper->numberProductsWithCategory()
+                'mollie_wc_gateway_mealvoucher',
+                'mealvoucherSettings',
+                [
+                        'message'=> __('Some products in the cart cannot be purchased with the selected gateway. Please, select another gateway'),
+                        'productsWithCategory' => $enableButtonHelper->numberProductsWithCategory()
 
-            ]
+                ]
         );
     }
 

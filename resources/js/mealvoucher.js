@@ -11,7 +11,6 @@
                 let button = document.getElementById("place_order");
                 const element = document.getElementById("payment");
                 jQuery('input[name="payment_method"]').change(function () {
-                    //esto podría ser una función a parte checkingGateway()
                     if (jQuery('form[name="checkout"] input[name="payment_method"]:checked').val() === 'mollie_wc_gateway_mealvoucher') {
                         if (productsWithCategory === '1') {
                             button.disabled = true;

@@ -2,7 +2,7 @@
 
 class Mollie_WC_Helper_OrderLines {
 
-	/**
+    /**
 	 * Formatted order lines.
 	 *
 	 * @var $order_lines
@@ -405,8 +405,9 @@ class Mollie_WC_Helper_OrderLines {
         $defaultCategory = $mealvoucherSettings['mealvoucher_category_default'];
         $category = $defaultCategory;
         if ( $product) {
-            $productPostMeta = get_post_meta($product->id);
-            $localCategory = $productPostMeta['_mollie_voucher_category'];
+            //$productPostMeta = get_post_meta($product->id);
+            $localCategory = get_post_meta($product->get_id(),
+                                           Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION, true);
             $category = $localCategory? $localCategory: $defaultCategory;
         }
 

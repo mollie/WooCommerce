@@ -6,6 +6,7 @@ class Mollie_WC_Gateway_Mealvoucher extends Mollie_WC_Gateway_Abstract
     const HOME_AND_GARDEN = 'home_and_garden';
     const GIFTS_AND_FLOWERS = 'gifts_and_flowers';
     const NO_CATEGORY = 'no_category';
+    const MOLLIE_VOUCHER_CATEGORY_OPTION = '_mollie_voucher_category';
 
     /**
      *

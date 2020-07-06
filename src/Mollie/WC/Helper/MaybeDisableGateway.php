@@ -70,9 +70,9 @@ class Mollie_WC_Helper_MaybeDisableGateway
             $postmeta = get_post_meta($product['product_id']);
 
             $localCategory = array_key_exists(
-                '_mollie_voucher_category',
+                Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
                 $postmeta
-            ) ? $postmeta['_mollie_voucher_category'][0] : '';
+            ) ? $postmeta[Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION][0] : '';
 
             if ($this->productHasVoucherCategory(
                 $defaultCategory,

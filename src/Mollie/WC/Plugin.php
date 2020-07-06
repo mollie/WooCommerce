@@ -309,7 +309,7 @@ class Mollie_WC_Plugin
 
         woocommerce_wp_select(
                 array(
-                        'id' => '_mollie_voucher_category',
+                        'id' => Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
                         'title' => __(
                                 'Select the default products category',
                                 'mollie-payments-for-woocommerce'
@@ -345,16 +345,22 @@ class Mollie_WC_Plugin
 
     /**
      * Save the product voucher local category option.
+     *
+     * @param $post_id
      */
     public static function saveProductVoucherOptionFields($post_id)
     {
-        $voucherCategory = isset($_POST['_mollie_voucher_category'])
-                ? $_POST['_mollie_voucher_category'] : '';
+        $option = filter_input(
+            INPUT_POST,
+            Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+            FILTER_SANITIZE_STRING
+        );
+        $voucherCategory = isset($option) ? $option : '';
 
         update_post_meta(
-                $post_id,
-                '_mollie_voucher_category',
-                filter_var($voucherCategory, FILTER_SANITIZE_STRING)
+            $post_id,
+            Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+            $voucherCategory
         );
     }
 

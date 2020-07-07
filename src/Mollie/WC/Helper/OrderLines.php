@@ -399,16 +399,20 @@ class Mollie_WC_Helper_OrderLines {
      *
      * @return string $category Product voucher category.
      */
-    private function get_item_category( $product ) {
-        //Find the product meta and there return the category
-        $mealvoucherSettings = get_option('mollie_wc_gateway_mealvoucher_settings');
+    private function get_item_category($product)
+    {
+        $mealvoucherSettings = get_option(
+            'mollie_wc_gateway_mealvoucher_settings'
+        );
         $defaultCategory = $mealvoucherSettings['mealvoucher_category_default'];
         $category = $defaultCategory;
-        if ( $product) {
-            //$productPostMeta = get_post_meta($product->id);
-            $localCategory = get_post_meta($product->get_id(),
-                                           Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION, true);
-            $category = $localCategory? $localCategory: $defaultCategory;
+        if ($product) {
+            $localCategory = get_post_meta(
+                $product->get_id(),
+                Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+                true
+            );
+            $category = $localCategory ? $localCategory : $defaultCategory;
         }
 
         return $category;

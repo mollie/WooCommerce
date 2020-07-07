@@ -3,6 +3,7 @@
 namespace Mollie\WooCommerceTests\Functional\WC\Helper;
 
 use Mollie\WooCommerceTests\TestCase;
+use Mollie_WC_Gateway_Mealvoucher;
 use Mollie_WC_Helper_MaybeDisableGateway;
 use PHPUnit_Framework_Exception;
 use PHPUnit_Framework_MockObject_MockObject;
@@ -25,7 +26,7 @@ class Mollie_WC_Helper_MaybeDisableGateway_Test extends TestCase
         stubs(
             [
                 'get_option' => ['mealvoucher_category_default' => ''],
-                'get_post_meta' => ['_mollie_voucher_category'=>[0=>'no_category']],
+                'get_post_meta' => [Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION=>[0=>'no_category']],
                 'WC' => $this->wooCommerce()
 
             ]
@@ -54,7 +55,7 @@ class Mollie_WC_Helper_MaybeDisableGateway_Test extends TestCase
         stubs(
             [
                 'get_option' => ['mealvoucher_category_default' => 'food_and_drinks'],
-                'get_post_meta' => ['_mollie_voucher_category'=>[0=>'food_and_drinks']],
+                'get_post_meta' => [Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION=>[0=>'food_and_drinks']],
                 'WC' => $this->wooCommerce()
 
             ]
@@ -92,8 +93,8 @@ class Mollie_WC_Helper_MaybeDisableGateway_Test extends TestCase
             ->times(2)
             ->withAnyArgs()
             ->andReturn(
-                            ['_mollie_voucher_category'=>[0=>'food_and_drinks']],
-                            ['_mollie_voucher_category'=>[0=>'no_category']]
+                            [Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION=>[0=>'food_and_drinks']],
+                            [Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION=>[0=>'no_category']]
                         );
 
 

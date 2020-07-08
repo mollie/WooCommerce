@@ -143,7 +143,7 @@ import {maybeShowButton} from './maybeShowApplePayButton.js';
         jQuery(document.body).on('updated_cart_totals', function (event) {
             maybeShowButton()
             document.querySelector('#mollie_applepay_button').addEventListener('click', (evt) => {
-                //applePaySession()
+                applePaySession()
             })
 
         })

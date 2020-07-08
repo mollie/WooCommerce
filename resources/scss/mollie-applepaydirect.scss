@@ -1,0 +1,20 @@
+.buttonDisabled {
+  opacity: .2;
+}
+.apple-pay-button {
+  display: inline-block;
+  -webkit-appearance: -apple-pay-button;
+  -apple-pay-button-type: checkout; /* also: check-out, book, or subscribe */
+}
+
+.apple-pay-button-black {
+  -apple-pay-button-style: black;
+}
+
+.apple-pay-button-white {
+  -apple-pay-button-style: white;
+}
+
+.apple-pay-button-white-with-line {
+  -apple-pay-button-style: white-outline;
+}

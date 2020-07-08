@@ -7,8 +7,12 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
     const ACTION_AFTER_REFUND_AMOUNT_CREATED = Mollie_WC_Plugin::PLUGIN_ID . '_refund_amount_created';
     const ACTION_AFTER_REFUND_ORDER_CREATED = Mollie_WC_Plugin::PLUGIN_ID . '_refund_order_created';
+    const MAXIMAL_LENGHT_ADDRESS = 100;
+    const MAXIMAL_LENGHT_POSTALCODE = 20;
+    const MAXIMAL_LENGHT_CITY = 200;
+    const MAXIMAL_LENGHT_REGION = 200;
 
-	public static $paymentId;
+    static $paymentId;
 	public static $customerId;
 	public static $order;
 	public static $payment;
@@ -1077,5 +1081,12 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
             $payment->metadata = ['order_id' => $orderId];
             $payment->update();
         }
+    }
+
+    protected function maximalfieldLengths($field, $maximalLength){
+        if(strlen($field)>$maximalLength){
+            $field = substr($field, 0,$maximalLength);
+        }
+        return $field;
     }
 }

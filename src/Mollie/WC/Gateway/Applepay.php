@@ -20,6 +20,15 @@ class Mollie_WC_Gateway_Applepay extends Mollie_WC_Gateway_Abstract
 
         parent::__construct();
     }
+    /**
+     * @inheritDoc
+     */
+    public function init_form_fields()
+    {
+        parent::init_form_fields();
+
+        $this->includeApplePayButton();
+    }
 
     /**
      * @return string
@@ -82,5 +91,14 @@ class Mollie_WC_Gateway_Applepay extends Mollie_WC_Gateway_Abstract
         }
 
         return parent::getInstructions($order, $payment, $admin_instructions, $plain_text);
+    }
+
+    protected function includeApplePayButton()
+    {
+        $fields = include Mollie_WC_Plugin::getPluginPath(
+            '/inc/settings/mollie_apple_pay_button_enabler.php'
+        );
+
+        $this->form_fields = array_merge($this->form_fields, $fields);
     }
 }

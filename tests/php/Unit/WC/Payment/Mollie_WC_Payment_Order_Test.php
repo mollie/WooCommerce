@@ -2,8 +2,8 @@
 
 namespace Mollie\WooCommerceTests\Unit\WC\Payment;
 
-use Mollie_WC_Payment_Order;
 use Mollie\WooCommerceTests\TestCase;
+use Mollie_WC_Payment_Order;
 
 /**
  * Class Mollie_WC_Payment_Order_Test
@@ -37,7 +37,7 @@ class Mollie_WC_Payment_Order_Test extends TestCase
          * Execute Test
          */
         $result = $testee->maximalFieldLengths($field, $maximalLength);
-        self::assertEquals($expectedResult, $result );
+        self::assertEquals($expectedResult, $result);
     }
 
     /**
@@ -68,7 +68,7 @@ class Mollie_WC_Payment_Order_Test extends TestCase
          * Execute Test
          */
         $result = $testee->maximalFieldLengths($field, $maximalLength);
-        self::assertEquals($expectedResult, $result );
-        self::assertTrue(strlen($result)==$maximalLength);
+        self::assertEquals($expectedResult, $result);
+        self::assertTrue(strlen($result) === $maximalLength);
     }
 }

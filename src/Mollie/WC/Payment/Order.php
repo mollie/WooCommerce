@@ -1094,13 +1094,16 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
     /**
      * Method that shortens the field to a certain length
      *
-     * @param $field
-     * @param int $maximalLength
+     * @param string $field
+     * @param int    $maximalLength
      *
      * @return false|string
      */
     protected function maximalFieldLengths($field, $maximalLength)
     {
+        if (!is_string($field)) {
+            return null;
+        }
         if (is_int($maximalLength) && strlen($field) > $maximalLength) {
             $field = substr($field, 0, $maximalLength);
         }

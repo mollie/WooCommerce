@@ -37,7 +37,7 @@ class Mollie_WC_Payment_Order_Test extends TestCase
          * Execute Test
          */
         $result = $testee->maximalFieldLengths($field, $maximalLength);
-        self::assertEquals($expectedResult, $result);
+        self::assertSame($expectedResult, $result);
     }
 
     /**
@@ -68,7 +68,7 @@ class Mollie_WC_Payment_Order_Test extends TestCase
          * Execute Test
          */
         $result = $testee->maximalFieldLengths($field, $maximalLength);
-        self::assertEquals($expectedResult, $result);
+        self::assertSame($expectedResult, $result);
         self::assertTrue(strlen($result) === $maximalLength);
     }
 }

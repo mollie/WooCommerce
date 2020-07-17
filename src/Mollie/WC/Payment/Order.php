@@ -1097,7 +1097,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
      * @param string $field
      * @param int    $maximalLength
      *
-     * @return false|string
+     * @return null|string
      */
     protected function maximalFieldLengths($field, $maximalLength)
     {
@@ -1106,7 +1106,9 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
         }
         if (is_int($maximalLength) && strlen($field) > $maximalLength) {
             $field = substr($field, 0, $maximalLength);
+            $field = !$field ? null : $field;
         }
+
         return $field;
     }
 }

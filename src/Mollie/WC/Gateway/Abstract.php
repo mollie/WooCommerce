@@ -1411,6 +1411,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                         return $order->get_checkout_payment_url( false );
                     }
                 }
+                if ($payment->method === "giftcard") {
+                    $this->debugGiftcardDetails($payment, $order);
+                }
+
             } catch (UnexpectedValueException $exc) {
                 mollieWooCommerceNotice(__('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ));
                 $exceptionMessage = $exc->getMessage();
@@ -2371,5 +2375,47 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $note = $payment->mode === 'test' ? " - {$note}" : '';
 
         return $note;
+    }
+
+    /**
+     * Method to print the giftcard payment details on debug and order note
+     *
+     * @param Mollie\Api\Resources\Payment $payment
+     * @param WC_Order                     $order
+     *
+     */
+    protected function debugGiftcardDetails(
+            Mollie\Api\Resources\Payment $payment,
+            WC_Order $order
+    ) {
+        $details = $payment->details;
+        $debugLine = "";
+        foreach ($details->giftcards as $giftcard) {
+            $debugLine .= sprintf(
+                    esc_html_x(
+                            'Mollie - Giftcard details: %1$s %2$s %3$s.',
+                            'Placeholder 1: giftcard issuer, Placeholder 2: amount value, Placeholder 3: currency',
+                            'mollie-payments-for-woocommerce'
+                    ),
+                    $giftcard->issuer,
+                    $giftcard->amount->value,
+                    $giftcard->amount->currency
+            );
+        }
+        if ($details->remainderMethod) {
+            $debugLine .= sprintf(
+                    esc_html_x(
+                            ' Remainder: %1$s %2$s %3$s.',
+                            'Placeholder 1: remainder method, Placeholder 2: amount value, Placeholder 3: currency',
+                            'mollie-payments-for-woocommerce'
+                    ),
+                    $details->remainderMethod,
+                    $details->remainderAmount->value,
+                    $details->remainderAmount->currency
+            );
+        }
+
+        mollieWooCommerceDebug($debugLine);
+        $order->add_order_note($debugLine);
     }
 }

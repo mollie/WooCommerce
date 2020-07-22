@@ -2389,6 +2389,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             WC_Order $order
     ) {
         $details = $payment->details;
+        if (!$details) {
+            return;
+        }
         $debugLine = "";
         foreach ($details->giftcards as $giftcard) {
             $debugLine .= sprintf(

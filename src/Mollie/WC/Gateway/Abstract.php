@@ -631,10 +631,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 					// Try as simple payment
 					$payment_object = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->create( $data );
-				}
-				catch ( Mollie\Api\Exceptions\ApiException $e ) {
-					throw $e;
-				}
+				} catch (Mollie\Api\Exceptions\ApiException $e) {
+                    $message = $e->getMessage();
+                    Mollie_WC_Plugin::debug($message);
+                    throw $e;
+                }
 			}
 
 			$this->saveMollieInfo( $order, $payment_object );

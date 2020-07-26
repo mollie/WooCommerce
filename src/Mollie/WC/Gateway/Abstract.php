@@ -2207,7 +2207,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             ? $this->settings['mollie_components_enabled']
             : 'no';
 
-        $option = wc_string_to_bool($option);
+        $option = mollieWooCommerceStringToBoolOption($option);
 
         return $option;
     }

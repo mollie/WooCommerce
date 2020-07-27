@@ -2392,9 +2392,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         if (!$details) {
             return;
         }
-        $debugLine = "";
+        $orderNoteLine = "";
         foreach ($details->giftcards as $giftcard) {
-            $debugLine .= sprintf(
+            $orderNoteLine .= sprintf(
                     esc_html_x(
                             'Mollie - Giftcard details: %1$s %2$s %3$s.',
                             'Placeholder 1: giftcard issuer, Placeholder 2: amount value, Placeholder 3: currency',
@@ -2406,7 +2406,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             );
         }
         if ($details->remainderMethod) {
-            $debugLine .= sprintf(
+            $orderNoteLine .= sprintf(
                     esc_html_x(
                             ' Remainder: %1$s %2$s %3$s.',
                             'Placeholder 1: remainder method, Placeholder 2: amount value, Placeholder 3: currency',
@@ -2418,7 +2418,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             );
         }
 
-        mollieWooCommerceDebug($debugLine);
-        $order->add_order_note($debugLine);
+        $order->add_order_note($orderNoteLine);
     }
 }

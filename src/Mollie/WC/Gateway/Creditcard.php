@@ -19,10 +19,7 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
     }
 
     public function get_icon() {
-        $output = $this->icon ? '<img src="' . WC_HTTPS::force_https_url(
-                $this->icon
-            ) . '" alt="' . esc_attr($this->get_title()) . '" />' : '';
-
+        $output = $this->icon ? $this->icon : '';
         if ($this->enabledCreditcards()
             && !is_admin()
         ) {

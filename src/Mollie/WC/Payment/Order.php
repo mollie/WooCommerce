@@ -189,7 +189,15 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
             $paymentRequestData['payment']['cardToken'] = $cardToken;
         }
 
-		return $paymentRequestData;
+        $applePayToken = $_POST['token'];
+        $applePayToken = filter_var($applePayToken, FILTER_SANITIZE_STRING);
+        if($applePayToken && isset($paymentRequestData['payment'])){
+            $encodedApplePayToken = json_encode($applePayToken);
+            $paymentRequestData['payment']['applePayPaymentToken'] = $encodedApplePayToken;
+        }
+
+
+        return $paymentRequestData;
 
 	}
 
@@ -794,10 +802,10 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
                 $totals += $item_data->get_total() + $item_data->get_total_tax();
             }
 
-            $totals = number_format(abs($totals), 2); // WooCommerce - sum of all refund items
-            $amount = number_format($amount, 2); // WooCommerce - refund amount
+            $totals       = number_format(abs($totals), 2); // WooCommerce - sum of all refund items
+            $check_amount = number_format($amount, 2); // WooCommerce - refund amount
 
-            if ($amount !== $totals) {
+            if ($check_amount !== $totals) {
                 $error_message = "The sum of refunds for all order lines is not identical to the refund amount, so this refund will be processed as a payment amount refund, not an order line refund.";
                 $order->add_order_note($error_message);
                 Mollie_WC_Plugin::debug(__METHOD__ . ' - ' . $error_message);

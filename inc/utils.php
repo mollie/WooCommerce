@@ -150,14 +150,28 @@ function mollieWooCommerceGetDataHelper()
 }
 
 /**
+ * Check if the Apple Pay gateway is enabled and then if the button is enabled too.
+ *
  * @return bool
  */
 function mollieWooCommerceisApplePayDirectEnabled()
 {
     $applePaySettings = get_option('mollie_wc_gateway_applepay_settings');
-    return wc_string_to_bool(
-        checkIndexExistOrDefault($applePaySettings, 'mollie_apple_pay_button_enabled', 'no')
+    $applePayGatewayEnabled = wc_string_to_bool(
+        checkIndexExistOrDefault($applePaySettings, 'enabled', 'no')
     );
+    if (!$applePayGatewayEnabled) {
+        return false;
+    }
+    $applePayDirectEnabled = wc_string_to_bool(
+        checkIndexExistOrDefault(
+            $applePaySettings,
+            'mollie_apple_pay_button_enabled',
+            'no'
+        )
+    );
+
+    return $applePayDirectEnabled;
 }
 
 function checkIndexExistOrDefault($array, $key, $default)

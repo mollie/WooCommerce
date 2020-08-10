@@ -186,9 +186,6 @@ class Mollie_WC_Plugin
 		$settings_helper = self::getSettingsHelper();
 		$data_helper     = self::getDataHelper();
 
-		// Add global Mollie settings to 'WooCommerce -> Checkout -> Checkout Options'
-		add_filter( 'woocommerce_payment_gateways_settings', array ( $settings_helper, 'addGlobalSettingsFields' ) );
-
 		// When page 'WooCommerce -> Checkout -> Checkout Options' is saved
 		add_action( 'woocommerce_settings_save_checkout', array ( $data_helper, 'deleteTransients' ) );
 
@@ -260,7 +257,7 @@ class Mollie_WC_Plugin
         add_filter(
             'woocommerce_get_settings_pages',
             function ($settings) {
-                $settings[] = new Mollie_WC_Settings_Page_Components();
+                $settings[] = new Mollie_WC_Settings_Page_Mollie(self::getSettingsHelper());
 
                 return $settings;
             }

@@ -2,9 +2,9 @@
 
 class Mollie_WC_Gateway_Mealvoucher extends Mollie_WC_Gateway_Abstract
 {
-    const FOOD_AND_DRINKS = 'food_and_drinks';
-    const HOME_AND_GARDEN = 'home_and_garden';
-    const GIFTS_AND_FLOWERS = 'gifts_and_flowers';
+    const MEAL = 'meal';
+    const ECO = 'eco';
+    const GIFTS = 'gifts';
     const NO_CATEGORY = 'no_category';
     const MOLLIE_VOUCHER_CATEGORY_OPTION = '_mollie_voucher_category';
 
@@ -35,11 +35,11 @@ class Mollie_WC_Gateway_Mealvoucher extends Mollie_WC_Gateway_Abstract
 				'title'       => __('Select the default products category', 'mollie-payments-for-woocommerce'),
                 'type'        => 'select',
                 'options'     => array(
-                    self::FOOD_AND_DRINKS => $this->categoryName(self::FOOD_AND_DRINKS),
-                    self::HOME_AND_GARDEN => $this->categoryName(self::HOME_AND_GARDEN),
-                    self::GIFTS_AND_FLOWERS => $this->categoryName(self::GIFTS_AND_FLOWERS)
+                    self::MEAL => $this->categoryName(self::MEAL),
+                    self::ECO => $this->categoryName(self::ECO),
+                    self::GIFTS => $this->categoryName(self::GIFTS)
                 ),
-                'default'     => self::FOOD_AND_DRINKS,
+                'default'     => self::MEAL,
                 /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
                 'description' => sprintf(
                     __('In order to process it, all products in the order must have a category. This selector will assign the default category for the shop products', 'mollie-payments-for-woocommerce')
@@ -54,7 +54,7 @@ class Mollie_WC_Gateway_Mealvoucher extends Mollie_WC_Gateway_Abstract
      */
     public function getMollieMethodId ()
     {
-        return 'mealvoucher';
+        return 'voucher';
     }
 
     /**
@@ -62,7 +62,7 @@ class Mollie_WC_Gateway_Mealvoucher extends Mollie_WC_Gateway_Abstract
      */
     public function getDefaultTitle ()
     {
-        return __('Meal and Eco voucher', 'mollie-payments-for-woocommerce');
+        return __('Voucher', 'mollie-payments-for-woocommerce');
     }
 
 	/**

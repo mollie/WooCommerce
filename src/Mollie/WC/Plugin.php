@@ -323,12 +323,13 @@ class Mollie_WC_Plugin
 
                         'type' => 'select',
                         'options' => array(
+                                Mollie_WC_Gateway_Mealvoucher::NO_CATEGORY => 'No category',
                                 Mollie_WC_Gateway_Mealvoucher::MEAL => 'Meal',
                                 Mollie_WC_Gateway_Mealvoucher::ECO => 'Eco',
-                                Mollie_WC_Gateway_Mealvoucher::GIFTS => 'Gifts',
-                                Mollie_WC_Gateway_Mealvoucher::NO_CATEGORY => 'No category'
+                                Mollie_WC_Gateway_Mealvoucher::GIFTS => 'Gifts'
+                                
                         ),
-                        'default' => Mollie_WC_Gateway_Mealvoucher::MEAL,
+                        'default' => Mollie_WC_Gateway_Mealvoucher::NO_CATEGORY,
                     /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
                         'description' => sprintf(
                                 __(

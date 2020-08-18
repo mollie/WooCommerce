@@ -76,7 +76,7 @@ class Mollie_WC_Helper_OrderLines {
 	 */
 	private function process_items() {
         $mealvoucherSettings = get_option('mollie_wc_gateway_mealvoucher_settings');
-	    $isMealVoucherEnabled = $mealvoucherSettings? ($mealvoucherSettings['enabled'] == 'yes'): false;
+	    $isMealVoucherEnabled = $mealvoucherSettings? ($mealvoucherSettings['enabled'] == 'yes'): true;
 		foreach ( $this->order->get_items() as $cart_item ) {
 
 			if ( $cart_item['quantity'] ) {
@@ -121,9 +121,11 @@ class Mollie_WC_Helper_OrderLines {
 				);
 
                 if ($isMealVoucherEnabled) {
-                    $mollie_order_item['category'] = $this->get_item_category(
-                        $product
-                    );
+					if ($this->get_item_category($product) <> "no_category"){
+						$mollie_order_item['category'] = $this->get_item_category(
+							$product
+						);
+					}
                 }
 				$this->order_lines[] = $mollie_order_item;
 

@@ -35,11 +35,12 @@ class Mollie_WC_Gateway_Mealvoucher extends Mollie_WC_Gateway_Abstract
 				'title'       => __('Select the default products category', 'mollie-payments-for-woocommerce'),
                 'type'        => 'select',
                 'options'     => array(
+                    self::NO_CATEGORY => $this->categoryName(self::NO_CATEGORY),
                     self::MEAL => $this->categoryName(self::MEAL),
                     self::ECO => $this->categoryName(self::ECO),
                     self::GIFTS => $this->categoryName(self::GIFTS)
                 ),
-                'default'     => self::MEAL,
+                'default'     => self::NO_CATEGORY,
                 /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
                 'description' => sprintf(
                     __('In order to process it, all products in the order must have a category. This selector will assign the default category for the shop products', 'mollie-payments-for-woocommerce')

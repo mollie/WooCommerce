@@ -166,6 +166,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             $this->icon   = apply_filters($this->id . '_icon_url', $default_icon);
         }
     }
+    public function get_icon() {
+        $output = $this->icon ? $this->icon : '';
+
+        return apply_filters( 'woocommerce_gateway_icon', $output, $this->id );
+    }
 
     protected function _initDescription ()
     {

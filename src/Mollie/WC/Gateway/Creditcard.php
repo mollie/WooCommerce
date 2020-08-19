@@ -127,7 +127,7 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
         $iconEnabledOption = Mollie_WC_Helper_PaymentMethodsIconUrl::MOLLIE_CREDITCARD_ICONS_ENABLER;
         $creditCardSettings = get_option('mollie_wc_gateway_creditcard_settings', false) ?: [];
         $enabled = isset($creditCardSettings[$iconEnabledOption])
-            ? wc_string_to_bool($creditCardSettings[$iconEnabledOption])
+            ? mollieWooCommerceStringToBoolOption($creditCardSettings[$iconEnabledOption])
             : false;
 
         if (!$enabled) {
@@ -138,7 +138,7 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
 
         $creditcardSettings = get_option('mollie_wc_gateway_creditcard_settings', []) ?: [];
         foreach ($creditcardsAvailable as $card) {
-            if (wc_string_to_bool($creditcardSettings[$optionLexem . $card])) {
+            if (mollieWooCommerceStringToBoolOption($creditcardSettings[$optionLexem . $card])) {
                 $enabledCreditcards[] = $card . $svgFileName;
             }
         }

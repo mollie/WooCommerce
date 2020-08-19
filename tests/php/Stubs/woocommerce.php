@@ -21,6 +21,18 @@ function wc_bool_to_string($bool)
     }
     return true === $bool ? 'yes' : 'no';
 }
+/**
+ * Mimics wc_string_to_bool
+ * @param $string
+ *
+ * @return bool
+ */
+function mollieWooCommerceStringToBoolOption($string)
+{
+    return is_bool($string) ? $string : ('yes' === strtolower(
+            $string
+        ) || 1 === $string || 'true' === strtolower($string) || '1' === $string);
+}
 
 class WooCommerce
 {

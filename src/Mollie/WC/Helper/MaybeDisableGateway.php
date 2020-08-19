@@ -51,7 +51,7 @@ class Mollie_WC_Helper_MaybeDisableGateway
     /**
      * Compares the products in the cart with the categories associated with
      * every product in the cart. So it returns 0 if no products have category
-     * 1 if not all products in the cart have category, and 2 if all products
+     * and 2 if all products
      * in the cart have a category associated.
      *
      * @return int
@@ -86,10 +86,7 @@ class Mollie_WC_Helper_MaybeDisableGateway
         if ($productsWithCategory === 0) {
             return 0;
         }
-        if ($productsWithCategory === $numberOfProducts) {
-            return 2;
-        }
-        return 1;
+        return 2;
     }
 
     /**

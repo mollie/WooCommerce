@@ -4,7 +4,7 @@ class Mollie_WC_Gateway_Mealvoucher extends Mollie_WC_Gateway_Abstract
 {
     const MEAL = 'meal';
     const ECO = 'eco';
-    const GIFTS = 'gifts';
+    const GIFT = 'gift';
     const NO_CATEGORY = 'no_category';
     const MOLLIE_VOUCHER_CATEGORY_OPTION = '_mollie_voucher_category';
 
@@ -38,7 +38,7 @@ class Mollie_WC_Gateway_Mealvoucher extends Mollie_WC_Gateway_Abstract
                     self::NO_CATEGORY => $this->categoryName(self::NO_CATEGORY),
                     self::MEAL => $this->categoryName(self::MEAL),
                     self::ECO => $this->categoryName(self::ECO),
-                    self::GIFTS => $this->categoryName(self::GIFTS)
+                    self::GIFT => $this->categoryName(self::GIFT)
                 ),
                 'default'     => self::NO_CATEGORY,
                 /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */

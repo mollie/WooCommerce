@@ -467,6 +467,11 @@ class Mollie_WC_Plugin
         }
 
         $locale = get_locale();
+        $locale =  str_replace('_formal', '', $locale);
+        $allowedLocaleValues = Mollie_WC_Components_AcceptedLocaleValuesDictionary::ALLOWED_LOCALES_KEYS_MAP;
+        if(!in_array($locale, $allowedLocaleValues)){
+            $locale = Mollie_WC_Components_AcceptedLocaleValuesDictionary::DEFAULT_LOCALE_VALUE;
+        }
 
         wp_enqueue_style('mollie-components');
         wp_enqueue_script('mollie-components');

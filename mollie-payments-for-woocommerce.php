@@ -54,6 +54,39 @@ function mollie_wc_plugin_activation_hook()
         wp_die($message, $title, array('back_link' => true));
         return;
     }
+
+    deleteWPTranslationFiles();
+}
+
+function deleteWPTranslationFiles()
+{
+    WP_Filesystem();
+    global $wp_filesystem;
+
+    $remote_destination = $wp_filesystem->find_folder(WP_LANG_DIR);
+    if (!$wp_filesystem->exists($remote_destination)) {
+        return;
+    }
+    $languageExtensions = [
+        'de_DE',
+        'de_DE_formal',
+        'es_ES',
+        'fr_FR',
+        'it_IT',
+        'nl_BE',
+        'nl_NL',
+        'nl_NL_formal'
+    ];
+    $translationExtensions = ['.mo', '.po'];
+    $destination = WP_LANG_DIR
+        . '/plugins/mollie-payments-for-woocommerce-';
+    foreach ($languageExtensions as $languageExtension) {
+        foreach ($translationExtensions as $translationExtension) {
+            $file = $destination . $languageExtension
+                . $translationExtension;
+            $wp_filesystem->delete($file, false);
+        }
+    }
 }
 
 function isWooCommerceCompatible()
@@ -205,6 +238,8 @@ $bootstrap = Closure::bind(
                         Mollie_WC_Plugin::init();
                     }
                 );
+                
+                add_action( 'core_upgrade_preamble', 'deleteWPTranslationFiles' );
             }
         );
     },

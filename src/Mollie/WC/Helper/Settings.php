@@ -784,7 +784,7 @@ class Mollie_WC_Helper_Settings
      *
      * @return array
      */
-    public function svgAllowedTags ($tags) {
+    public static function svgAllowedTags ($tags) {
         $tags['svg'] = [
             'xmlns' => [],
             'width'=>[],

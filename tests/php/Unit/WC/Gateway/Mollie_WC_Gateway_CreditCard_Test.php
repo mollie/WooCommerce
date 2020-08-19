@@ -41,10 +41,6 @@ class Mollie_WC_Gateway_CreditCard_Test extends TestCase
         /*
          * Expect to call is_admin() function and return false
          */
-        expect('esc_attr')
-            ->once()
-            ->withAnyArgs()
-            ->andReturn('creditcard');
 
         expect('is_admin')
             ->once()
@@ -55,10 +51,7 @@ class Mollie_WC_Gateway_CreditCard_Test extends TestCase
             ->expects($this->exactly(2))
             ->method('enabledCreditcards')
             ->willReturn(['cartasi.svg']);
-        $testee
-            ->expects($this->once())
-            ->method('get_title')
-            ->willReturn(['creditcard']);
+
         expect('get_transient')
             ->once()
             ->withAnyArgs()

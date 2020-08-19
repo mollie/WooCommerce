@@ -263,6 +263,13 @@ class Mollie_WC_Helper_Data
 		$result                  = $this->getRegularPaymentMethods( $test_mode, $use_cache );
 		$recurringPaymentMethods = $this->getRecurringPaymentMethods( $test_mode, $use_cache );
 
+        if(!is_array($result)){
+            $result = unserialize($result);
+        }
+        if(!is_array($recurringPaymentMethods)){
+            $recurringPaymentMethods = unserialize($recurringPaymentMethods);
+        }
+
 		foreach ( $recurringPaymentMethods as $recurringItem ) {
 			$notFound = true;
 			foreach ( $result as $item ) {
@@ -310,7 +317,7 @@ class Mollie_WC_Helper_Data
 
 	public function getApiPaymentMethods( $test_mode = false, $use_cache = true, $filters = array () ) {
 
-		$methods = false;
+        $methods = [];
 
 		$filters_key = $filters;
 		$filters_key['mode'] = ( $test_mode ? 'test' : 'live' );
@@ -326,7 +333,7 @@ class Mollie_WC_Helper_Data
 			}
 
 			// No cache exists, call the API and cache the result
-			if ( $methods === false ) {
+			if ( !$methods ) {
 
 				$filters['resource'] = 'orders';
 				$filters['includeWallets'] = 'applepay';

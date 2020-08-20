@@ -8,7 +8,7 @@ class Mollie_WC_Plugin
 {
     const PLUGIN_ID      = 'mollie-payments-for-woocommerce';
     const PLUGIN_TITLE   = 'Mollie Payments for WooCommerce';
-    const PLUGIN_VERSION = '5.8.1';
+    const PLUGIN_VERSION = '5.8.2';
 
     const DB_VERSION     = '1.0';
     const DB_VERSION_PARAM_NAME = 'mollie-db-version';
@@ -190,6 +190,7 @@ class Mollie_WC_Plugin
 
 		// Add global Mollie settings to 'WooCommerce -> Checkout -> Checkout Options'
 		add_filter( 'woocommerce_payment_gateways_settings', array ( $settings_helper, 'addGlobalSettingsFields' ) );
+        remove_filter('wp_kses_allowed_html', array ( $settings_helper, 'svgAllowedTags' ) , 10);
 
 		// When page 'WooCommerce -> Checkout -> Checkout Options' is saved
 		add_action( 'woocommerce_settings_save_checkout', array ( $data_helper, 'deleteTransients' ) );
@@ -596,6 +597,11 @@ class Mollie_WC_Plugin
         }
 
         $locale = get_locale();
+        $locale =  str_replace('_formal', '', $locale);
+        $allowedLocaleValues = Mollie_WC_Components_AcceptedLocaleValuesDictionary::ALLOWED_LOCALES_KEYS_MAP;
+        if(!in_array($locale, $allowedLocaleValues)){
+            $locale = Mollie_WC_Components_AcceptedLocaleValuesDictionary::DEFAULT_LOCALE_VALUE;
+        }
 
         wp_enqueue_style('mollie-components');
         wp_enqueue_script('mollie-components');

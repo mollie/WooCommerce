@@ -3,16 +3,16 @@
  * Plugin Name: Mollie Payments for WooCommerce
  * Plugin URI: https://www.mollie.com
  * Description: Accept payments in WooCommerce with the official Mollie plugin
- * Version: 5.8.1
+ * Version: 5.8.2
  * Author: Mollie
  * Author URI: https://www.mollie.com
  * Requires at least: 3.8
- * Tested up to: 5.3
+ * Tested up to: 5.5
  * Text Domain: mollie-payments-for-woocommerce
  * Domain Path: /languages
  * License: GPLv2 or later
  * WC requires at least: 2.2.0
- * WC tested up to: 4.1
+ * WC tested up to: 4.4
  */
 
 use Mollie\Api\CompatibilityChecker;
@@ -53,6 +53,39 @@ function mollie_wc_plugin_activation_hook()
 
         wp_die($message, $title, array('back_link' => true));
         return;
+    }
+
+    deleteWPTranslationFiles();
+}
+
+function deleteWPTranslationFiles()
+{
+    WP_Filesystem();
+    global $wp_filesystem;
+
+    $remote_destination = $wp_filesystem->find_folder(WP_LANG_DIR);
+    if (!$wp_filesystem->exists($remote_destination)) {
+        return;
+    }
+    $languageExtensions = [
+        'de_DE',
+        'de_DE_formal',
+        'es_ES',
+        'fr_FR',
+        'it_IT',
+        'nl_BE',
+        'nl_NL',
+        'nl_NL_formal'
+    ];
+    $translationExtensions = ['.mo', '.po'];
+    $destination = WP_LANG_DIR
+        . '/plugins/mollie-payments-for-woocommerce-';
+    foreach ($languageExtensions as $languageExtension) {
+        foreach ($translationExtensions as $translationExtension) {
+            $file = $destination . $languageExtension
+                . $translationExtension;
+            $wp_filesystem->delete($file, false);
+        }
     }
 }
 
@@ -205,6 +238,8 @@ $bootstrap = Closure::bind(
                         Mollie_WC_Plugin::init();
                     }
                 );
+                
+                add_action( 'core_upgrade_preamble', 'deleteWPTranslationFiles' );
             }
         );
     },

@@ -166,6 +166,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             $this->icon   = apply_filters($this->id . '_icon_url', $default_icon);
         }
     }
+    public function get_icon() {
+        $output = $this->icon ? $this->icon : '';
+
+        return apply_filters( 'woocommerce_gateway_icon', $output, $this->id );
+    }
 
     protected function _initDescription ()
     {
@@ -631,10 +636,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 					// Try as simple payment
 					$payment_object = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->create( $data );
-				}
-				catch ( Mollie\Api\Exceptions\ApiException $e ) {
-					throw $e;
-				}
+				} catch (Mollie\Api\Exceptions\ApiException $e) {
+                    $message = $e->getMessage();
+                    Mollie_WC_Plugin::debug($message);
+                    throw $e;
+                }
 			}
 
 			$this->saveMollieInfo( $order, $payment_object );
@@ -1411,6 +1417,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                         return $order->get_checkout_payment_url( false );
                     }
                 }
+                if ($payment->method === "giftcard") {
+                    $this->debugGiftcardDetails($payment, $order);
+                }
+
             } catch (UnexpectedValueException $exc) {
                 mollieWooCommerceNotice(__('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ));
                 $exceptionMessage = $exc->getMessage();
@@ -2207,7 +2217,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             ? $this->settings['mollie_components_enabled']
             : 'no';
 
-        $option = wc_string_to_bool($option);
+        $option = mollieWooCommerceStringToBoolOption($option);
 
         return $option;
     }
@@ -2371,5 +2381,49 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $note = $payment->mode === 'test' ? " - {$note}" : '';
 
         return $note;
+    }
+
+    /**
+     * Method to print the giftcard payment details on debug and order note
+     *
+     * @param Mollie\Api\Resources\Payment $payment
+     * @param WC_Order                     $order
+     *
+     */
+    protected function debugGiftcardDetails(
+            Mollie\Api\Resources\Payment $payment,
+            WC_Order $order
+    ) {
+        $details = $payment->details;
+        if (!$details) {
+            return;
+        }
+        $orderNoteLine = "";
+        foreach ($details->giftcards as $giftcard) {
+            $orderNoteLine .= sprintf(
+                    esc_html_x(
+                            'Mollie - Giftcard details: %1$s %2$s %3$s.',
+                            'Placeholder 1: giftcard issuer, Placeholder 2: amount value, Placeholder 3: currency',
+                            'mollie-payments-for-woocommerce'
+                    ),
+                    $giftcard->issuer,
+                    $giftcard->amount->value,
+                    $giftcard->amount->currency
+            );
+        }
+        if ($details->remainderMethod) {
+            $orderNoteLine .= sprintf(
+                    esc_html_x(
+                            ' Remainder: %1$s %2$s %3$s.',
+                            'Placeholder 1: remainder method, Placeholder 2: amount value, Placeholder 3: currency',
+                            'mollie-payments-for-woocommerce'
+                    ),
+                    $details->remainderMethod,
+                    $details->remainderAmount->value,
+                    $details->remainderAmount->currency
+            );
+        }
+
+        $order->add_order_note($orderNoteLine);
     }
 }

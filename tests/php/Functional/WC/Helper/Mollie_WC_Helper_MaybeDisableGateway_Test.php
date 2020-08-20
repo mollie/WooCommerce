@@ -36,12 +36,12 @@ class Mollie_WC_Helper_MaybeDisableGateway_Test extends TestCase
         /*
          * Sut
          */
-        $applePayDirectHandler = new Mollie_WC_Helper_MaybeDisableGateway();
+        $voucherGateway = new Mollie_WC_Helper_MaybeDisableGateway();
 
         /*
          * Execute Test
          */
-        $result = $applePayDirectHandler->numberProductsWithCategory();
+        $result = $voucherGateway->numberProductsWithCategory();
 
         self::assertEquals($expected, $result);
     }
@@ -65,12 +65,12 @@ class Mollie_WC_Helper_MaybeDisableGateway_Test extends TestCase
         /*
          * Sut
          */
-        $applePayDirectHandler = new Mollie_WC_Helper_MaybeDisableGateway();
+        $voucherGateway = new Mollie_WC_Helper_MaybeDisableGateway();
 
         /*
          * Execute Test
          */
-        $result = $applePayDirectHandler->numberProductsWithCategory();
+        $result = $voucherGateway->numberProductsWithCategory();
 
         self::assertEquals($expected, $result);
     }
@@ -81,7 +81,7 @@ class Mollie_WC_Helper_MaybeDisableGateway_Test extends TestCase
          * Stubs
          */
 
-        $expected = 1;
+        $expected = 2;
         stubs(
             [
                 'get_option' => ['mealvoucher_category_default' => 'food_and_drinks'],
@@ -101,12 +101,12 @@ class Mollie_WC_Helper_MaybeDisableGateway_Test extends TestCase
         /*
          * Sut
          */
-        $applePayDirectHandler = new Mollie_WC_Helper_MaybeDisableGateway();
+        $voucherGateway = new Mollie_WC_Helper_MaybeDisableGateway();
 
         /*
          * Execute Test
          */
-        $result = $applePayDirectHandler->numberProductsWithCategory();
+        $result = $voucherGateway->numberProductsWithCategory();
 
         self::assertEquals($expected, $result);
     }

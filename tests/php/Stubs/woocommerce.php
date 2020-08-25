@@ -22,6 +22,7 @@ function wc_bool_to_string($bool)
     return true === $bool ? 'yes' : 'no';
 }
 
+
 class WooCommerce
 {
     public $cart = null;

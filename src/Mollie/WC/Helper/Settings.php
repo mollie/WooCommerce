@@ -288,9 +288,8 @@ class Mollie_WC_Helper_Settings
 
 			if ( $gateway instanceof Mollie_WC_Gateway_Abstract ) {
 				$content .= '<li style="float: left; width: 33%;">';
-
-				$content .= '<img src="' . esc_attr( $gateway->getIconUrl() ) . '" alt="' . esc_attr( $gateway->getDefaultTitle() ) . '" title="' . esc_attr( $gateway->getDefaultTitle() ) . '" style="width: 25px; vertical-align: bottom;" />';
-				$content .= ' ' . esc_html( $gateway->getDefaultTitle() );
+                $content .= $this->getSvgIcon($gateway);
+                $content .= ' ' . esc_html( $gateway->getDefaultTitle() );
 
 				if ( $gateway->is_available() ) {
 					$content .= $icon_available;
@@ -693,5 +692,125 @@ class Mollie_WC_Helper_Settings
         }
 
         return self::SETTING_LOCALE_DEFAULT_LANGUAGE;
+    }
+
+    /**
+     * @param Mollie_WC_Gateway_Abstract $gateway
+     *
+     *
+     * @return string
+     */
+    protected function getSvgIcon(Mollie_WC_Gateway_Abstract $gateway)
+    {
+        add_filter(
+            'wp_kses_allowed_html',
+            array(__CLASS__, 'svgAllowedTags'),
+            10,
+            2
+        );
+        $svg = $gateway->getIconUrl();
+        $cleanNewLine = str_replace("\n", "", $svg);
+        $cleanNewLine = str_replace("\r", "", $cleanNewLine);
+
+        return $cleanNewLine;
+    }
+
+    /**
+     * Method to add svg tags to the allowed array used by wp_kses
+     *
+     * @param  array $tags
+     *
+     * @return array
+     */
+    public static function svgAllowedTags ($tags) {
+        $tags['svg'] = [
+            'xmlns' => [],
+            'width'=>[],
+            'height'=>[],
+            'fill' => [],
+            'viewbox' => [],
+            'enable-background' => [],
+            'version' => [],
+            'xml:space' => [],
+            'transform'=>[]
+        ];
+        $tags['path'] = [
+            'd' => [],
+            'fill' => [],
+            'stroke'=>[],
+            'fill-rule'=>[],
+            'fill-opacity'=>[],
+            'clip-rule'=>[],
+            'transform'=>[],
+            'opacity'=>[]
+        ];
+        $tags['rect'] = [
+            'width'=>[],
+            'height'=>[],
+            'rx'=>[],
+            'fill' => [],
+            'x'=>[],
+            'y'=>[],
+            'stroke'=>[],
+        ];
+        $tags['mask'] = [
+            'id'=>[],
+            'mask-type'=>[],
+            'maskUnits'=>[],
+            'x' => [],
+            'y' => [],
+            'width'=>[],
+            'height'=>[]
+        ];
+        $tags['g'] = [
+            'mask'=>[],
+            'filter'=>[],
+            'fill'=>[],
+            'fill-rule'=>[],
+        ];
+        $tags['feflood'] = [
+            'flood-opacity'=>[],
+            'result'=>[]
+        ];
+        $tags['fecolormatrix'] = [
+            'in'=>[],
+            'type'=>[],
+            'values'=>[]
+        ];
+        $tags['fegaussianblur'] = [
+            'stdDeviation'=>[]
+        ];
+        $tags['feblend'] = [
+            'mode'=>[],
+            'in2'=>[],
+            'result'=>[],
+            'in'=>[],
+        ];
+        $tags['feoffset'] = [
+            'dy'=>[],
+        ];
+        $tags['filter'] = [
+            'id'=>[],
+            'color-interpolation-filters'=>[],
+            'filterUnits'=>[],
+            'x' => [],
+            'y' => [],
+            'width'=>[],
+            'height'=>[]
+        ];
+        $tags['lineargradient'] = [
+            'id'=>[],
+            'gradientUnits'=>[],
+            'gradientTransform'=>[],
+            'x2' => []
+        ];
+        $tags['stop'] = [
+            'offset'=>[],
+            'stop-color'=>[],
+            'stop-opacity'=>[]
+        ];
+        $tags['defs'] = [];
+
+        return $tags;
     }
 }

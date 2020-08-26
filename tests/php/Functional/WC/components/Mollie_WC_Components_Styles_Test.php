@@ -9,6 +9,8 @@ use PHPUnit_Framework_MockObject_MockObject;
 use WC_Payment_Gateway;
 use WC_Payment_Gateways;
 
+use function Brain\Monkey\Functions\expect;
+
 class Mollie_WC_Components_Styles_Test extends TestCase
 {
     /**
@@ -39,6 +41,8 @@ class Mollie_WC_Components_Styles_Test extends TestCase
             $this->mollieComponentsSettings,
             $this->paymentGateways
         );
+        expect('mollieWooCommerceStringToBoolOption')
+            ->andReturn(true);
 
         /*
          * Expect to retrieve the information from the gateway instances
@@ -55,6 +59,7 @@ class Mollie_WC_Components_Styles_Test extends TestCase
             ->expects($this->once())
             ->method('styles')
             ->willReturn($styles);
+
 
         /*
          * Execute Test
@@ -85,6 +90,8 @@ class Mollie_WC_Components_Styles_Test extends TestCase
             $this->mollieComponentsSettings,
             $this->paymentGateways
         );
+        expect('mollieWooCommerceStringToBoolOption')
+            ->andReturn(true);
 
         /*
          * Expect to retrieve the information from the gateway instances
@@ -120,6 +127,8 @@ class Mollie_WC_Components_Styles_Test extends TestCase
             $this->mollieComponentsSettings,
             $this->paymentGateways
         );
+        expect('mollieWooCommerceStringToBoolOption')
+            ->andReturn(false);
 
         /*
          * Expect to retrieve the information from the gateway instances

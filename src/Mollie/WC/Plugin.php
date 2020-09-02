@@ -441,6 +441,10 @@ class Mollie_WC_Plugin
             return;
         }
 
+        if (!mollieWooCommerceisApplePayEnabled()) {
+            return;
+        }
+
         wp_enqueue_script('mollie_wc_gateway_applepay');
     }
 

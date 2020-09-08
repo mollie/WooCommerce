@@ -240,6 +240,24 @@ $bootstrap = Closure::bind(
                 );
                 
                 add_action( 'core_upgrade_preamble', 'deleteWPTranslationFiles' );
+                add_filter(
+                    'site_transient_update_plugins',
+                    function ($value) {
+                        if (isset($value->translations)) {
+                            $i = 0;
+                            foreach ($value->translations as $translation) {
+                                if ($translation["slug"]
+                                    == "mollie-payments-for-woocommerce"
+                                ) {
+                                    unset($value->translations[$i]);
+                                }
+                                $i++;
+                            }
+                        }
+
+                        return $value;
+                    }
+                );
             }
         );
     },

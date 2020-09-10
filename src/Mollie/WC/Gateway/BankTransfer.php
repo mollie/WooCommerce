@@ -19,6 +19,8 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
         );
 
         parent::__construct();
+        add_filter('woocommerce_' . $this->id . '_args', array($this, 'addPaymentArguments'), 10, 2);
+
     }
 
     /**
@@ -29,6 +31,24 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
         parent::init_form_fields();
 
         $this->form_fields = array_merge($this->form_fields, array(
+            'activate_expiry_days_setting' => array(
+                'title'             => __('Activate expiry date setting', 'mollie-payments-for-woocommerce'),
+                'label'             => __('', 'mollie-payments-for-woocommerce'),
+                'description'       => __('Enable this option if you want to be able to set the number of days after the payment will expire. This will turn all transactions into payments instead of orders', 'mollie-payments-for-woocommerce'),
+                'type'              => 'checkbox',
+                'default'           => 'no',
+            ),
+            'expiry_days' => array(
+                'title'             => __('Expiry date', 'mollie-payments-for-woocommerce'),
+                'type'              => 'number',
+                'description'       => sprintf(__('Number of days after the payment will expire. Default <code>%d</code> days', 'mollie-payments-for-woocommerce'), self::EXPIRY_DEFAULT_DAYS),
+                'default'           => self::EXPIRY_DEFAULT_DAYS,
+                'custom_attributes' => array(
+                    'min'  => self::EXPIRY_MIN_DAYS,
+                    'max'  => self::EXPIRY_MAX_DAYS,
+                    'step' => 1,
+                ),
+            ),
             'skip_mollie_payment_screen' => array(
                 'title'             => __('Skip Mollie payment screen', 'mollie-payments-for-woocommerce'),
                 'label'             => __('Skip Mollie payment screen when Bank Transfer is selected', 'mollie-payments-for-woocommerce'),
@@ -37,6 +57,35 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
                 'default'           => 'no',
             ),
         ));
+    }
+
+    /**
+     * @param array    $args
+     * @param WC_Order $order
+     *
+     * @return array
+     */
+    public function addPaymentArguments( array $args, WC_Order $order ) {
+        // Expiry date
+        $expiry_days = (int)$this->get_option(
+            'expiry_days',
+            self::EXPIRY_DEFAULT_DAYS
+        );
+
+        if ( $expiry_days >= self::EXPIRY_MIN_DAYS && $expiry_days <= self::EXPIRY_MAX_DAYS ) {
+            $expiry_date = date( "Y-m-d", strtotime( "+$expiry_days days" ) );
+
+            // Add dueDate at the correct location
+            if ( isset( $args['payment'] ) ) {
+                $args['payment']['dueDate'] = $expiry_date;
+            } else {
+                $args['dueDate'] = $expiry_date;
+            }
+        }
+
+        // Billing email is now required
+
+        return $args;
     }
 
 	/**
@@ -186,5 +235,14 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
         }
 
         return $instructions;
+    }
+
+    protected function isExpiredDateSettingActivated()
+    {
+        $expiry_days = $this->get_option(
+            'activate_expiry_days_setting',
+            'no'
+        );
+        return mollieWooCommerceStringToBoolOption($expiry_days);
     }
 }

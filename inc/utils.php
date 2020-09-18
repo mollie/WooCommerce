@@ -121,7 +121,7 @@ function mollieWooCommerceAvailablePaymentMethods()
 /**
  * Isolates static debug calls.
  *
- * @param  string $message
+ * @param  mixed $message
  * @param bool  $set_debug_header Set X-Mollie-Debug header (default false)
  */
 function mollieWooCommerceDebug($message, $set_debug_header = false)
@@ -147,6 +147,36 @@ function mollieWooCommerceNotice($message, $type = 'notice')
 function mollieWooCommerceGetDataHelper()
 {
     return Mollie_WC_Plugin::getDataHelper();
+}
+
+/**
+ * Isolates static getPaymentFactoryHelper calls.
+ *
+ * @return Mollie_WC_Helper_PaymentFactory
+ */
+function mollieWooCommerceGetPaymentFactoryHelper()
+{
+    return Mollie_WC_Plugin::getPaymentFactoryHelper();
+}
+
+/**
+ * Isolates static getSettingsHelper calls.
+ *
+ * @return Mollie_WC_Helper_Settings
+ */
+function mollieWooCommerceGetSettingsHelper()
+{
+    return Mollie_WC_Plugin::getSettingsHelper();
+}
+
+/**
+ * Isolates static getApiHelper calls.
+ *
+ * @return Mollie_WC_Helper_Api
+ */
+function mollieWooCommerceGetApiHelper()
+{
+    return Mollie_WC_Plugin::getApiHelper();
 }
 
 /**

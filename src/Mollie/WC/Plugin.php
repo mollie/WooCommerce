@@ -240,6 +240,13 @@ class Mollie_WC_Plugin
 		// Capture order at Mollie (for Orders API/Klarna)
 		add_action( 'woocommerce_order_status_completed', array( __CLASS__, 'shipAndCaptureOrderAtMollie' ) );
 
+        add_filter(
+            'woocommerce_cancel_unpaid_order',
+            array( __CLASS__, 'maybeLetWCCancelOrder' ),
+            90,
+            2
+        );
+
         // Enqueue Scripts
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueFrontendScripts']);
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueComponentsAssets']);
@@ -275,6 +282,30 @@ class Mollie_WC_Plugin
 		// Mark plugin initiated
 		self::$initiated = true;
 	}
+
+	public static function maybeLetWCCancelOrder($willCancel, $order) {
+        if (!empty($willCancel)) {
+            if ($order->get_payment_method()
+                !== 'mollie_wc_gateway_banktransfer'
+            ) {
+                return $willCancel;
+            }
+            //is banktransfer due date setting activated
+            $banktransferSettings = get_option(
+                'mollie_wc_gateway_banktransfer_settings'
+            );
+            $expiry_days
+                = $banktransferSettings['activate_expiry_days_setting'];
+
+            $dueDateActive = mollieWooCommerceStringToBoolOption(
+                $expiry_days
+            );
+            if ($dueDateActive) {
+                return false;
+            }
+        }
+        return $willCancel;
+    }
 
 
     /**

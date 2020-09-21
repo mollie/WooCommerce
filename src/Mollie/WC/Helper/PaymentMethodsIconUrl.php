@@ -77,7 +77,7 @@ class Mollie_WC_Helper_PaymentMethodsIconUrl
         );
 
         return '<img src="' . esc_attr($svgUrl)
-            . '" style="width: 25px; vertical-align: bottom;" />';
+            . '" style="width: 32px; vertical-align: bottom;" />';
     }
 
     /**

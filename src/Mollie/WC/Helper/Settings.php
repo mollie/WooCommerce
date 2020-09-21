@@ -251,6 +251,7 @@ class Mollie_WC_Helper_Settings
 		$icon_no_available = ' <span style="color: red; cursor: help;" title="' . __( 'Gateway disabled', 'mollie-payments-for-woocommerce' ) . '">' . strtolower( __( 'Disabled', 'mollie-payments-for-woocommerce' ) ) . '</span>';
 
 		$content .= '<br /><br />';
+        $content .= '<div style="width:1000px;height:350px; background:white; padding:10px; margin-top:10px;">';
 
 		if ( $test_mode ) {
 			$content .= '<strong>' . __( 'Test mode enabled.', 'mollie-payments-for-woocommerce' ) . '</strong> ';
@@ -269,7 +270,7 @@ class Mollie_WC_Helper_Settings
 
 		$content .= ' (<a href="' . esc_attr( $refresh_methods_url ) . '">' . strtolower( __( 'Refresh', 'mollie-payments-for-woocommerce' ) ) . '</a>)';
 
-		$content .= '<ul style="width: 1000px">';
+		$content .= '<ul style="width: 1000px; padding:10px 0 0 10px">';
 
 		foreach ( Mollie_WC_Plugin::$GATEWAYS as $gateway_classname ) {
 			$gateway = new $gateway_classname;
@@ -287,9 +288,9 @@ class Mollie_WC_Helper_Settings
 			}
 
 			if ( $gateway instanceof Mollie_WC_Gateway_Abstract ) {
-				$content .= '<li style="float: left; width: 33%;">';
+				$content .= '<li style="float: left; width: 30%;height:30px;  margin:0px; padding:5px">';
                 $content .= $this->getSvgIcon($gateway);
-                $content .= ' ' . esc_html( $gateway->getDefaultTitle() );
+                $content .= '   ' . esc_html( $gateway->getDefaultTitle() );
 
 				if ( $gateway->is_available() ) {
 					$content .= $icon_available;
@@ -303,7 +304,7 @@ class Mollie_WC_Helper_Settings
 			}
 		}
 
-		$content .= '</ul>';
+		$content .= '</ul></div>';
 		$content .= '<div class="clear"></div>';
 
 		// Make sure users also enable iDEAL when they enable SEPA Direct Debit
@@ -333,7 +334,23 @@ class Mollie_WC_Helper_Settings
         wp_register_script('mollie_wc_admin_settings', Mollie_WC_Plugin::getPluginUrl('/public/js/settings.min.js'), array('jquery'), Mollie_WC_Plugin::PLUGIN_VERSION);
         wp_enqueue_script('mollie_wc_admin_settings');
 
+        $presentationText = __('Quickly integrate all major payment methods in WooCommerce, wherever you need them.' );
+        $presentationText .= __(' Simply drop them ready-made into your WooCommerce webshop with this powerful plugin by Mollie.');
+        $presentationText .= __(' Mollie is dedicated to making payments better for WooCommerce. ');
+        $presentationText .='<p>Please go to <a href="https://mollie.inpsyde.com/" >the signup page </a>';
+        $presentationText .= __('to create a new Mollie account and start receiving payments in a couple of minutes. ');
+        $presentationText .= 'Contact <a href="mailto:info@mollie.com">info@mollie.com</a>';
+        $presentationText .= ' if you have any questions or comments about this plugin.</p>';
+        $presentationText .= '<p style="border-left: 4px solid black; padding-left: 4px;">Our pricing is always per transaction. No startup fees, no monthly fees, and no gateway fees. No hidden fees, period.</p>';
+
+
+        $presentation = ''
+            . '<div style="width:1000px"><div id="" class="" style=""><a href="https://mollie.inpsyde.com/" >Documentation</a> | <a href="https://mollie.inpsyde.com/" >Support</a></div></div>'
+            . '<span></span>'
+            . '<div id="" class=""><p>'.$presentationText.'</p></div>';
+
         $content = ''
+            . $presentation
             . $this->getPluginStatus()
             . $this->getMollieMethods();
 
@@ -355,7 +372,7 @@ class Mollie_WC_Helper_Settings
         $mollie_settings = array(
             array(
                 'id'    => $this->getSettingId('title'),
-                'title' => __('Mollie settings', 'mollie-payments-for-woocommerce'),
+                'title' => __('Mollie Settings', 'mollie-payments-for-woocommerce'),
                 'type'  => 'title',
                 'desc'  => '<p id="' . Mollie_WC_Plugin::PLUGIN_ID . '">' . $content . '</p>'
                     . '<p>' . __('The following options are required to use the plugin and are used by all Mollie payment methods', 'mollie-payments-for-woocommerce') . '</p>',

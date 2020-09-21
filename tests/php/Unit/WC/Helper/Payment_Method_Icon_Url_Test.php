@@ -82,7 +82,7 @@ class Payment_Method_Icon_Url_Test extends TestCase
          * Execute Test
          */
         $result = $testee->svgUrlForPaymentMethod($paymentMethod);
-        $expected = '<img src="/images/ideal.svg" style="width: 25px; vertical-align: bottom;" />';
+        $expected = '<img src="/images/ideal.svg" style="width: 32px; vertical-align: bottom;" />';
 
         self::assertStringEndsWith($expected, $result);
     }

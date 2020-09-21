@@ -81,9 +81,12 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
             } else {
                 $args['dueDate'] = $expiry_date;
             }
+            $email = (ctype_space($order->get_billing_email())) ? null
+                : $order->get_billing_email();
+            if ($email) {
+                $args['billingEmail'] = $email;
+            }
         }
-
-        // Billing email is now required
 
         return $args;
     }
@@ -208,27 +211,26 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
                 $instructions .= sprintf(__('Please provide the payment reference <strong>%s</strong>', 'mollie-payments-for-woocommerce'), $payment->details->transferReference) . "\n";
             }
 
-            if (!empty($payment->expiryPeriod)
+            if (!empty($payment->expiresAt)
                 && class_exists('DateTime')
                 && class_exists('DateInterval'))
             {
-                $expiry_date = DateTime::createFromFormat( 'U', time() );
-	            $expiry_date->add( new DateInterval( $payment->expiryPeriod ) );
-	            $expiry_date = $expiry_date->format( 'Y-m-d H:i:s' );
-	            $expiry_date = date_i18n( wc_date_format(), strtotime( $expiry_date ) );
+	            $expiryDate = $payment->expiresAt;
+                Mollie_WC_Plugin::debug("Due date assigned: {$expiryDate}");
+	            $expiryDate = date_i18n( wc_date_format(), strtotime( $expiryDate ) );
 
                 if ($admin_instructions)
                 {
                     $instructions .= "\n" . sprintf(
                         __('The payment will expire on <strong>%s</strong>.', 'mollie-payments-for-woocommerce'),
-                        $expiry_date
+                        $expiryDate
                     ) . "\n";
                 }
                 else
                 {
                     $instructions .= "\n" . sprintf(
                         __('The payment will expire on <strong>%s</strong>. Please make sure you transfer the total amount before this date.', 'mollie-payments-for-woocommerce'),
-                        $expiry_date
+                        $expiryDate
                     ) . "\n";
                 }
             }
@@ -239,10 +241,10 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
 
     protected function isExpiredDateSettingActivated()
     {
-        $expiry_days = $this->get_option(
+        $expiryDays = $this->get_option(
             'activate_expiry_days_setting',
             'no'
         );
-        return mollieWooCommerceStringToBoolOption($expiry_days);
+        return mollieWooCommerceStringToBoolOption($expiryDays);
     }
 }

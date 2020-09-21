@@ -2384,11 +2384,15 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                             ? $data['orderNumber'] : ''
             ];
 
-            Mollie_WC_Plugin::debug($apiCallLog);
-
-            $paymentObject = Mollie_WC_Plugin::getApiHelper()->getApiClient(
-                    $test_mode
-            )->orders->create($data);
+            mollieWooCommerceDebug($apiCallLog);
+            $paymentOrder = $paymentObject;
+            $paymentObject = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->create( $data );
+            $settingsHelper = Mollie_WC_Plugin::getSettingsHelper();
+            if($settingsHelper->getOrderStatusCancelledPayments() == 'cancelled'){
+                $orderId = mollieWooCommerceOrderId($order);
+                $orderWithPayments = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->get( $paymentObject->id, [ "embed" => "payments" ] );
+                $paymentOrder->updatePaymentDataWithOrderData($orderWithPayments, $orderId);
+            }
         } catch (Mollie\Api\Exceptions\ApiException $e) {
             // Don't try to create a Mollie Payment for Klarna payment methods
             $order_payment_method = (version_compare(WC_VERSION, '3.0', '<'))
@@ -2478,6 +2482,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                     'method' => isset($data['method']) ? $data['method'] : '',
                     'issuer' => isset($data['issuer']) ? $data['issuer'] : '',
                     'locale' => isset($data['locale']) ? $data['locale'] : '',
+                    'dueDate' => isset($data['dueDate']) ? $data['dueDate'] : '',
                     'metadata' => isset($data['metadata']) ? $data['metadata']
                             : ''
             ];
@@ -2515,7 +2520,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             $customer_id,
             $test_mode
     ) {
-//
+        //
         // PROCESS REGULAR PAYMENT AS MOLLIE ORDER
         //
         if ($molliePaymentType == self::PAYMENT_METHOD_TYPE_ORDER) {
@@ -2560,6 +2565,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $isBankTransferGateway = $this->id == 'mollie_wc_gateway_banktransfer';
         if($isBankTransferGateway && $this->isExpiredDateSettingActivated()){
             $paymentType = self::PAYMENT_METHOD_TYPE_PAYMENT;
+
         }
         return $paymentType;
     }

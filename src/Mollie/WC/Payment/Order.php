@@ -1081,7 +1081,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
      * @param Mollie\Api\Resources\Order $order
      * @param int                     $orderId
      */
-    protected function updatePaymentDataWithOrderData($order, $orderId)
+    public function updatePaymentDataWithOrderData($order, $orderId)
     {
         $paymentCollection = $order->payments();
         foreach ($paymentCollection as $payment) {

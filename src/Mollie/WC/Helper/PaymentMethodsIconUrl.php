@@ -68,9 +68,11 @@ class Mollie_WC_Helper_PaymentMethodsIconUrl
     protected function fallToAssets($paymentMethodName)
     {
         if ($paymentMethodName == PaymentMethod::CREDITCARD && !is_admin()) {
-            return Mollie_WC_Plugin::getPluginUrl(
-                "public/images/{$paymentMethodName}s.svg"
+            $svgUrl = Mollie_WC_Plugin::getPluginUrl(
+                "public/images/{$paymentMethodName}s". self::SVG_FILE_EXTENSION
             );
+            return '<img src="' . esc_attr($svgUrl)
+                . '" style="width: 85px; vertical-align: bottom;" />';
         }
         $svgUrl = Mollie_WC_Plugin::getPluginUrl(
             "public/images/{$paymentMethodName}" . self::SVG_FILE_EXTENSION

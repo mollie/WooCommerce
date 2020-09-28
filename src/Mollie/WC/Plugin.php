@@ -292,15 +292,7 @@ class Mollie_WC_Plugin
                 return $willCancel;
             }
             //is banktransfer due date setting activated
-            $banktransferSettings = get_option(
-                'mollie_wc_gateway_banktransfer_settings'
-            );
-            $expiry_days
-                = $banktransferSettings['activate_expiry_days_setting'];
-
-            $dueDateActive = mollieWooCommerceStringToBoolOption(
-                $expiry_days
-            );
+            $dueDateActive = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_banktransfer_settings', 'activate_expiry_days_setting');
             if ($dueDateActive) {
                 return false;
             }
@@ -471,8 +463,9 @@ class Mollie_WC_Plugin
         if (is_admin() || !mollieWooCommerceIsCheckoutContext()) {
             return;
         }
+        $applePayGatewayEnabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_applepay_settings', 'enabled');
 
-        if (!mollieWooCommerceisApplePayEnabled()) {
+        if (!$applePayGatewayEnabled) {
             return;
         }
 
@@ -755,7 +748,7 @@ class Mollie_WC_Plugin
         ) {
             return $gateways;
         }
-        $bankTransferGatewayClassName = 'Mollie_WC_Gateway_BankTransfer';
+        $bankTransferGatewayClassName = Mollie_WC_Gateway_BankTransfer::class;
         $bankTransferGatewayIndex = array_search($bankTransferGatewayClassName, $gateways, true);
         if ($bankTransferGatewayIndex !== false) {
             unset($gateways[$bankTransferGatewayIndex]);
@@ -793,7 +786,7 @@ class Mollie_WC_Plugin
             return $gateways;
         }
 
-        $applePayGatewayClassName = 'Mollie_WC_Gateway_Applepay';
+        $applePayGatewayClassName = Mollie_WC_Gateway_Applepay::class;
         $applePayGatewayIndex = array_search($applePayGatewayClassName, $gateways, true);
         $postData = (string)filter_input(
             INPUT_POST,

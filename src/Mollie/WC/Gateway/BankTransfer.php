@@ -33,7 +33,7 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
         $this->form_fields = array_merge($this->form_fields, array(
             'activate_expiry_days_setting' => array(
                 'title'             => __('Activate expiry date setting', 'mollie-payments-for-woocommerce'),
-                'label'             => __('', 'mollie-payments-for-woocommerce'),
+                'label'             => __('Enable de expiry date for payments', 'mollie-payments-for-woocommerce'),
                 'description'       => __('Enable this option if you want to be able to set the number of days after the payment will expire. This will turn all transactions into payments instead of orders', 'mollie-payments-for-woocommerce'),
                 'type'              => 'checkbox',
                 'default'           => 'no',

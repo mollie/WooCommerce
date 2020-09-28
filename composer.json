@@ -26,7 +26,12 @@
     "ptrofimov/xpmock": "^1",
     "johnpbloch/wordpress-core": "^3.8 || ^4.0 || ^5.0",
     "woocommerce/woocommerce": "^2.2 || ^3.0",
-    "fzaninotto/faker": "^1.9@dev"
+    "fzaninotto/faker": "^1.9@dev",
+    "roots/wordpress": "@stable",
+    "symfony/process": "^4.4",
+    "symfony/dotenv": "^4.4",
+    "globalis/wp-cli-bin": "^2.4",
+    "ext-dom": "*"
   },
   "autoload": {
     "psr-0": {
@@ -37,7 +42,8 @@
     "psr-4": {
       "Mollie\\WooCommerceTests\\": "tests/php",
       "Mollie\\WooCommerceTests\\Unit\\": "tests/php/Unit",
-      "Mollie\\WooCommerceTests\\Functional\\": "tests/php/Functional"
+      "Mollie\\WooCommerceTests\\Functional\\": "tests/php/Functional",
+      "Mollie\\WooCommerceTests\\Integration\\": "tests/php/Integration/"
     }
   },
   "repositories": [
@@ -48,5 +54,11 @@
   ],
   "extra": {
     "installer-disable": true
+  },
+  "scripts": {
+    "tests:integration": "@php ./vendor/phpunit/phpunit/phpunit --testsuite=integration --no-coverage",
+    "tests": [
+      "@tests:integration"
+    ]
   }
 }

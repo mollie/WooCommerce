@@ -399,7 +399,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 * @return array
 	 */
 	public function process_payment( $order_id ) {
-		$order = mollieWooCommerceGetDataHelper()->getWcOrder( $order_id );
+		$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
 
 		if ( ! $order ) {
 			Mollie_WC_Plugin::debug( $this->id . ': Could not process payment, order ' . $order_id . ' not found.' );
@@ -410,7 +410,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		}
 
 		$orderId = mollieWooCommerceOrderId($order);
-        mollieWooCommerceDebug( "{$this->id}: Start process_payment for order {$orderId}", true );
+        Mollie_WC_Plugin::debug( "{$this->id}: Start process_payment for order {$orderId}", true );
 
 		$initial_order_status = $this->getInitialOrderStatus();
 
@@ -484,7 +484,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		$molliePaymentType = $this->paymentTypeBasedOnProducts($order);
 		$molliePaymentType = $this->paymentTypeBasedOnGateway($molliePaymentType);
         try {
-            $paymentObject = mollieWooCommerceGetPaymentFactoryHelper()
+            $paymentObject = Mollie_WC_Plugin::getPaymentFactoryHelper()
                     ->getPaymentObject(
                             $molliePaymentType
                     );
@@ -2386,7 +2386,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
             mollieWooCommerceDebug($apiCallLog);
             $paymentOrder = $paymentObject;
-            $paymentObject = mollieWooCommerceGetApiHelper()->getApiClient( $test_mode )->orders->create( $data );
+            $paymentObject = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->create( $data );
+            $settingsHelper = Mollie_WC_Plugin::getSettingsHelper();
             if($settingsHelper->getOrderStatusCancelledPayments() == 'cancelled'){
                 $orderId = mollieWooCommerceOrderId($order);
                 $orderWithPayments = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->get( $paymentObject->id, [ "embed" => "payments" ] );
@@ -2564,6 +2565,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $isBankTransferGateway = $this->id == 'mollie_wc_gateway_banktransfer';
         if($isBankTransferGateway && $this->isExpiredDateSettingActivated()){
             $paymentType = self::PAYMENT_METHOD_TYPE_PAYMENT;
+
         }
         return $paymentType;
     }

@@ -215,22 +215,22 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
                 && class_exists('DateTime')
                 && class_exists('DateInterval'))
             {
-	            $expiry_date = $payment->expiresAt;
-                Mollie_WC_Plugin::debug("Due date assigned: {$expiry_date}");
-	            $expiry_date = date_i18n( wc_date_format(), strtotime( $expiry_date ) );
+	            $expiryDate = $payment->expiresAt;
+                Mollie_WC_Plugin::debug("Due date assigned: {$expiryDate}");
+	            $expiryDate = date_i18n( wc_date_format(), strtotime( $expiryDate ) );
 
                 if ($admin_instructions)
                 {
                     $instructions .= "\n" . sprintf(
                         __('The payment will expire on <strong>%s</strong>.', 'mollie-payments-for-woocommerce'),
-                        $expiry_date
+                        $expiryDate
                     ) . "\n";
                 }
                 else
                 {
                     $instructions .= "\n" . sprintf(
                         __('The payment will expire on <strong>%s</strong>. Please make sure you transfer the total amount before this date.', 'mollie-payments-for-woocommerce'),
-                        $expiry_date
+                        $expiryDate
                     ) . "\n";
                 }
             }

@@ -194,8 +194,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
         }
 
         if($_POST['token']){
-            $applePayToken = $_POST['token'];
-            $applePayToken = filter_var($applePayToken, FILTER_SANITIZE_STRING);
+            $applePayToken = filter_input(INPUT_POST, 'token', FILTER_SANITIZE_STRING);
             if($applePayToken && isset($paymentRequestData['payment'])){
                 $encodedApplePayToken = json_encode($applePayToken);
                 $paymentRequestData['payment']['applePayPaymentToken'] = $encodedApplePayToken;

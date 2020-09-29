@@ -34,8 +34,8 @@ class Mollie_WC_Settings_Page_Mollie extends WC_Settings_Page
         global $current_section;
 
         $settings = $this->get_settings($current_section);
-        if ('applepay_button' == $current_section) {
-            $data = $_POST;
+        if ('applepay_button' === $current_section) {
+            $data = filter_var_array($_POST,FILTER_SANITIZE_STRING);
 
             $applepaySettings = [];
             $data['enabled'] === '1' ? $applepaySettings['enabled'] = 'yes'
@@ -64,15 +64,15 @@ class Mollie_WC_Settings_Page_Mollie extends WC_Settings_Page
     {
         $mollieSettings = $this->settingsHelper->addGlobalSettingsFields([]);
 
-        if ('mollie_components' == $current_section) {
+        if ('mollie_components' === $current_section) {
             $mollieSettings = $this->sectionSettings(
                 $this->componentsFilePath()
             );
         }
-        if ('applepay_button' == $current_section) {
+        if ('applepay_button' === $current_section) {
             $mollieSettings = $this->sectionSettings($this->applePaySection());
         }
-        if ('advanced' == $current_section) {
+        if ('advanced' === $current_section) {
             $mollieSettings = $this->sectionSettings($this->advancedSectionFilePath());
         }
 

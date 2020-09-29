@@ -5,8 +5,7 @@ return [
         'id'    => $pluginName . '_' .'title',
         'title' => __('Mollie advanced settings', 'mollie-payments-for-woocommerce'),
         'type'  => 'title',
-        'desc'  => '<p id="' . Mollie_WC_Plugin::PLUGIN_ID . '">' . $content . '</p>'
-            . '<p>' . __('The following options are required to use the plugin and are used by all Mollie payment methods', 'mollie-payments-for-woocommerce') . '</p>',
+        'desc'  => '<p>' . __('The following options are required to use the plugin and are used by all Mollie payment methods', 'mollie-payments-for-woocommerce') . '</p>',
     ],
     [
         'id'      => $pluginName . '_' .'order_status_cancelled_payments',

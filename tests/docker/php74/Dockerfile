@@ -57,6 +57,9 @@ RUN set -eux; \
 
 RUN docker-php-ext-install mysqli
 RUN apk add --no-cache bash less mysql-client netcat-openbsd
+RUN apk update && apk add icu-dev \
+  && docker-php-ext-configure intl \
+  && docker-php-ext-install intl
 
 COPY ./wait-for.sh /usr/bin/wait-for.sh
 RUN chmod +x /usr/bin/wait-for.sh

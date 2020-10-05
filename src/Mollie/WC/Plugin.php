@@ -266,6 +266,7 @@ class Mollie_WC_Plugin
                 return $settings;
             }
         );
+        add_filter( Mollie_WC_Plugin::PLUGIN_ID . '_retrieve_payment_gateways', self::$GATEWAYS);
         self::mollieApplePayDirectHandling();
 
 		self::initDb();

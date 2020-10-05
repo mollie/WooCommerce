@@ -3,11 +3,11 @@ services:
     php74:
         build:
             context: ./php74
-        container_name: fasti-php-74
+        container_name: mollie-php-74
         depends_on:
             - mysql
         environment:
-            WORDPRESS_DB_HOST: fasti-mysql
+            WORDPRESS_DB_HOST: mollie-mysql
             WORDPRESS_DB_NAME: wordpress
             WORDPRESS_DB_USER: wordpress
             WORDPRESS_DB_PASSWORD: wordpress
@@ -18,11 +18,11 @@ services:
     php73:
         build:
             context: ./php73
-        container_name: fasti-php-73
+        container_name: mollie-php-73
         depends_on:
             - mysql
         environment:
-            WORDPRESS_DB_HOST: fasti-mysql
+            WORDPRESS_DB_HOST: mollie-mysql
             WORDPRESS_DB_NAME: wordpress
             WORDPRESS_DB_USER: wordpress
             WORDPRESS_DB_PASSWORD: wordpress
@@ -33,11 +33,11 @@ services:
     php72:
         build:
             context: ./php72
-        container_name: fasti-php-72
+        container_name: mollie-php-72
         depends_on:
             - mysql
         environment:
-            WORDPRESS_DB_HOST: fasti-mysql
+            WORDPRESS_DB_HOST: mollie-mysql
             WORDPRESS_DB_NAME: wordpress
             WORDPRESS_DB_USER: wordpress
             WORDPRESS_DB_PASSWORD: wordpress
@@ -47,7 +47,7 @@ services:
                 target: /app
     mysql:
         image: mysql:5.7
-        container_name: fasti-mysql
+        container_name: mollie-mysql
         environment:
             MYSQL_ROOT_PASSWORD: wordpress
             MYSQL_DATABASE: wordpress

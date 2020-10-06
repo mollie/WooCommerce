@@ -321,7 +321,10 @@ class Mollie_WC_Helper_Settings
 		// Warn users that at least WooCommerce 3.x is required to accept Klarna as payment method
 		$content = $this->warnWoo3xRequiredForKlarna( $content );
 
-		return $content;
+        // Warn users that testMode is enabled
+        $content = $this->testModeEnabledWarn( $content );
+
+        return $content;
 	}
 
     /**
@@ -874,5 +877,27 @@ class Mollie_WC_Helper_Settings
         $tags['defs'] = [];
 
         return $tags;
+    }
+
+    /**
+     * Shows a notice in settings page when testMode is active
+     *
+     * @param $content
+     *
+     * @return string
+     */
+    protected function testModeEnabledWarn($content)
+    {
+        if (mollieWooCommerceIsTestModeEnabled()) {
+            $content .= '<div class="notice notice-warning is-dismissible"><p>';
+            $content .= __(
+                'Testmode is enabled. Make sure to disable testMode before deploying into production',
+                'mollie-payments-for-woocommerce'
+            );
+            $content .= '</p></div> ';
+
+            return $content;
+        }
+        return $content;
     }
 }

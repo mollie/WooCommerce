@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-DB_SERVICE_NAME=fasti-mysql
+DB_SERVICE_NAME=mollie-mysql
 PHP_VERSIONS=('7.2' '7.3' '7.4')
 PHP_SERVICE_NAMES=('php72' 'php73' 'php74')
 PHP_VERSION_DEFAULT='7.4'

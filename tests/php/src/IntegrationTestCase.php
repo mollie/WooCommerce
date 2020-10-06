@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Inpsyde\Fasti\Tests;
+namespace Mollie\WooCommerceTests\Src;
 
 use Closure;
 use Exception;
@@ -10,6 +10,7 @@ use Inpsyde\Dbal\Dbal;
 use Inpsyde\Fasti\Application\Core\Bootstrap;
 use Inpsyde\Fasti\Application\Core\ContainerReadOnlySubset;
 use Inpsyde\Fasti\Application\Core\ServiceProvider;
+use Mollie\WooCommerceTests\TestCase;
 use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\Process\Process;
 

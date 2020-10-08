@@ -286,7 +286,7 @@ class Mollie_WC_Plugin
             $notice = new Mollie_WC_Notice_AdminNotice();
             $message = sprintf(
                 esc_html__(
-                    '%1$sMollie Payments for WooCommerce%2$s The testMode is active %3$s disable it%4$s before deploying into production.',
+                    '%1$sMollie Payments for WooCommerce%2$s The testMode is active, %3$s disable it%4$s before deploying into production.',
                     'mollie-payments-for-woocommerce'
                 ),
                 '<strong>',

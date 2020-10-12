@@ -23,36 +23,46 @@ class WooCommerceConstraint extends Constraint
 
     public function check()
     {
+        $classExists = class_exists(self::CLASS_NAME);
+        if (!$classExists) {
+            $message
+                = '%1$s%7$s%2$s The %3$sWooCommerce plugin%4$s must be active for it to work. Please %5$sinstall & activate WooCommerce &raquo;%6$s';
+            $this->maybeShowNotice($message);
+            return false;
+        }
+
         $WCCurrentVersion = get_option('woocommerce_version');
         $isWooCommerceVersionCompatible = version_compare(
             $WCCurrentVersion,
             $this->requiredVersion,
             '>='
         );
+        if (!$isWooCommerceVersionCompatible) {
+            $message
+                = '%1$s%7$s%2$s The %3$sWooCommerce plugin%4$s has to be version 3.0 or higher. Please %5$sinstall & activate WooCommerce &raquo;%6$s';
+            $this->maybeShowNotice($message);
+            return false;
+        }
 
-        $this->maybeShowNotice();
-
-        return class_exists(self::CLASS_NAME) && $isWooCommerceVersionCompatible;
+        return true;
     }
 
-    protected function maybeShowNotice()
+    protected function maybeShowNotice($message)
     {
-        if(!class_exists(self::CLASS_NAME)){
-            $notice = new AdminNotice();
-            $message = sprintf(
-                esc_html__(
-                    '%1$s%7$s%2$s The %3$sWooCommerce plugin%4$s must be active for it to work. Please %5$sinstall & activate WooCommerce &raquo;%6$s',
-                    'mollie-payments-for-woocommerce'
-                ),
-                '<strong>',
-                '</strong>',
-                '<a href="https://wordpress.org/plugins/woocommerce/">',
-                '</a>',
-                '<a href="' . esc_url(admin_url('plugins.php')) . '">',
-                '</a>',
-                $this->pluginName
-            );
-            $notice->addAdminNotice('error', $message);
-        }
+        $message = sprintf(
+            esc_html__(
+                $message,
+                'mollie-payments-for-woocommerce'
+            ),
+            '<strong>',
+            '</strong>',
+            '<a href="https://wordpress.org/plugins/woocommerce/">',
+            '</a>',
+            '<a href="' . esc_url(admin_url('plugins.php')) . '">',
+            '</a>',
+            $this->pluginName
+        );
+        $notice = new AdminNotice();
+        $notice->addAdminNotice('error', $message);
     }
 }

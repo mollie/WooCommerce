@@ -17,6 +17,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
     const PAYMENT_METHOD_TYPE_PAYMENT = 'payment';
     const PAYMENT_METHOD_TYPE_ORDER = 'order';
+    const PAYMENT_METHOD_TYPE_MANDATE = 'mandate';
 
     /**
      * @var string
@@ -399,7 +400,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 * @return array
 	 */
 	public function process_payment( $order_id ) {
-		$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+	    $dataHelper = Mollie_WC_Plugin::getDataHelper();
+		$order = $dataHelper->getWcOrder( $order_id );
 
 		if ( ! $order ) {
 			Mollie_WC_Plugin::debug( $this->id . ': Could not process payment, order ' . $order_id . ' not found.' );
@@ -648,6 +650,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			}
 
 			$this->saveMollieInfo( $order, $payment_object );
+
+            if ($dataHelper->isEcurSubscription()) {
+                $mandates = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers->get( $customer_id )->mandates();
+                $mandateId = $mandates[0];
+                do_action(Mollie_WC_Plugin::PLUGIN_ID . '_after_mandate_created', $payment_object, $order, $mandateId);
+            }
 
 			do_action( Mollie_WC_Plugin::PLUGIN_ID . '_payment_created', $payment_object, $order );
 

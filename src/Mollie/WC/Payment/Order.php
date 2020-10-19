@@ -177,6 +177,14 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 				}
 			}
 		}
+        $dataHelper = Mollie_WC_Plugin::getDataHelper();
+        if ($dataHelper->isEcurSubscription()) {
+            $supports_subscriptions     = $gateway->supports( 'subscriptions' );
+
+            if ( $supports_subscriptions == true ) {
+                $paymentRequestData['payment']['sequenceType'] = 'first';
+            }
+        }
 
 		// Only add shippingAddress if all required fields are set
 		if ( ! empty( $shippingAddress->streetAndNumber ) && ! empty( $shippingAddress->postalCode ) && ! empty( $shippingAddress->city ) && ! empty( $shippingAddress->country ) ) {

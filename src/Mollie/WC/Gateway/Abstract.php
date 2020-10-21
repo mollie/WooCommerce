@@ -565,8 +565,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                     ];
 
                     Mollie_WC_Plugin::debug( $apiCallLog );
-
+                    $paymentOrder = $payment_object;
 					$payment_object = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->create( $data );
+                    if($settings_helper->getOrderStatusCancelledPayments() == 'cancelled'){
+                        $orderWithPayments = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->get( $payment_object->id, [ "embed" => "payments" ] );
+                        $paymentOrder->updatePaymentDataWithOrderData($orderWithPayments, $order_id);
+                    }
 				}
 				catch ( Mollie\Api\Exceptions\ApiException $e ) {
 
@@ -1945,22 +1949,23 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		 */
 		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 
-		$site_url          = get_home_url();
-		$polylang_fallback = false;
+		$siteUrl          = get_home_url();
+		$polylangFallback = false;
 
 		if ( is_plugin_active( 'polylang/polylang.php' ) || is_plugin_active( 'polylang-pro/polylang.php' ) ) {
 
 			$lang = PLL()->model->get_language( pll_current_language() );
+			$checkoutUrl = $this->get_return_url(null);
+            $checkoutUrl = str_replace('order-received/','',$checkoutUrl);
 
 			if ( empty ( $lang->search_url ) ) {
-				$polylang_fallback = true;
+				$polylangFallback = true;
 			} else {
-				$polylang_url = $lang->search_url;
-				$site_url     = str_replace( $site_url, $polylang_url, $site_url );
+				$siteUrl     = str_replace( $siteUrl, $checkoutUrl, $siteUrl );
 			}
 		}
 
-		if ( $polylang_fallback == true || is_plugin_active( 'mlang/mlang.php' ) || is_plugin_active( 'mlanguage/mlanguage.php' ) ) {
+		if ( $polylangFallback == true || is_plugin_active( 'mlang/mlang.php' ) || is_plugin_active( 'mlanguage/mlanguage.php' ) ) {
 
 			$slug = get_bloginfo( 'language' );
 			$pos  = strpos( $slug, '-' );
@@ -1968,11 +1973,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				$slug = substr( $slug, 0, $pos );
 			}
 			$slug     = '/' . $slug;
-			$site_url = str_replace( $site_url, $site_url . $slug, $site_url );
-
+			$siteUrl = str_replace( $siteUrl, $siteUrl . $slug, $siteUrl );
 		}
 
-		return $site_url;
+		return $siteUrl;
 	}
 
     /**

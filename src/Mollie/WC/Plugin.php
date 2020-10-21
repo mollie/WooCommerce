@@ -8,7 +8,7 @@ class Mollie_WC_Plugin
 {
     const PLUGIN_ID      = 'mollie-payments-for-woocommerce';
     const PLUGIN_TITLE   = 'Mollie Payments for WooCommerce';
-    const PLUGIN_VERSION = '5.8.2';
+    const PLUGIN_VERSION = '5.9.0';
 
     const DB_VERSION     = '1.0';
     const DB_VERSION_PARAM_NAME = 'mollie-db-version';
@@ -266,6 +266,9 @@ class Mollie_WC_Plugin
                 return $settings;
             }
         );
+        add_filter( Mollie_WC_Plugin::PLUGIN_ID . '_retrieve_payment_gateways', function(){
+            return self::$GATEWAYS;
+        });
         self::mollieApplePayDirectHandling();
 
 		self::initDb();
@@ -438,6 +441,10 @@ class Mollie_WC_Plugin
     public static function enqueueFrontendScripts()
     {
         if (is_admin() || !mollieWooCommerceIsCheckoutContext()) {
+            return;
+        }
+
+        if (!mollieWooCommerceisApplePayEnabled()) {
             return;
         }
 

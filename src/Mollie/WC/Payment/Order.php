@@ -193,12 +193,14 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
             $paymentRequestData['payment']['cardToken'] = $cardToken;
         }
 
-        $applePayToken = $_POST['token'];
-        $applePayToken = filter_var($applePayToken, FILTER_SANITIZE_STRING);
-        if($applePayToken && isset($paymentRequestData['payment'])){
-            $encodedApplePayToken = json_encode($applePayToken);
-            $paymentRequestData['payment']['applePayPaymentToken'] = $encodedApplePayToken;
+        if($_POST['token']){
+            $applePayToken = filter_input(INPUT_POST, 'token', FILTER_SANITIZE_STRING);
+            if($applePayToken && isset($paymentRequestData['payment'])){
+                $encodedApplePayToken = json_encode($applePayToken);
+                $paymentRequestData['payment']['applePayPaymentToken'] = $encodedApplePayToken;
+            }
         }
+
 
 
         return $paymentRequestData;
@@ -1081,7 +1083,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
      * @param Mollie\Api\Resources\Order $order
      * @param int                     $orderId
      */
-    protected function updatePaymentDataWithOrderData($order, $orderId)
+    public function updatePaymentDataWithOrderData($order, $orderId)
     {
         $paymentCollection = $order->payments();
         foreach ($paymentCollection as $payment) {

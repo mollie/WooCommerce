@@ -7,6 +7,9 @@ import {request} from './applePayRequest.js';
         if (_.isEmpty(mollieApplePayDirectData)) {
             return
         }
+        if (!window.ApplePaySession || !window.ApplePaySession.canMakePayments()) {
+            return
+        }
         const {product: {id, needShipping = true, isVariation = false, price}, shop: {countryCode, currencyCode = 'EUR', totalLabel = ''}, ajaxUrl} = mollieApplePayDirectData
 
         if (!id || !price || !countryCode || !ajaxUrl) {

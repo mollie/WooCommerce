@@ -17,7 +17,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
     const PAYMENT_METHOD_TYPE_PAYMENT = 'payment';
     const PAYMENT_METHOD_TYPE_ORDER = 'order';
-    const PAYMENT_METHOD_TYPE_MANDATE = 'mandate';
 
     /**
      * @var string

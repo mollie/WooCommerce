@@ -59,11 +59,11 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	 * @return array
 	 */
 	public function getPaymentRequestData( $order, $customer_id ) {
-		$settings_helper     = Mollie_WC_Plugin::getSettingsHelper();
+		$settings_helper     = mollieWooCommerceGetSettingsHelper();
 		$payment_locale      = $settings_helper->getPaymentLocale();
 		$store_customer      = $settings_helper->shouldStoreCustomer();
 
-		$gateway = Mollie_WC_Plugin::getDataHelper()->getWcPaymentGatewayByOrder( $order );
+		$gateway = mollieWooCommerceGetDataHelper()->getWcPaymentGatewayByOrder( $order );
 
 		if ( ! $gateway || ! ( $gateway instanceof Mollie_WC_Gateway_Abstract ) ) {
 			return array ( 'result' => 'failure' );
@@ -78,8 +78,8 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 			$paymentRequestData = array (
 				'amount'      => array (
-					'currency' => Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
-					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order->get_total(), Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) )
+					'currency' => mollieWooCommerceGetDataHelper()->getOrderCurrency( $order ),
+					'value'    => mollieWooCommerceGetDataHelper()->formatCurrencyValue( $order->get_total(), mollieWooCommerceGetDataHelper()->getOrderCurrency( $order ) )
 				),
 				'redirectUrl' => $return_url,
 				'webhookUrl'  => $webhook_url,
@@ -93,7 +93,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 			// Add sequenceType for subscriptions first payments
 			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->id ) ) {
+				if ( mollieWooCommerceGetDataHelper()->isSubscription( $order->id ) ) {
 
 					// See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
 					$disable_automatic_payments = ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) ? true : false;
@@ -144,8 +144,8 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			// Build the Mollie order data
 			$paymentRequestData = array (
 				'amount'         => array (
-					'currency' => Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
-					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order->get_total(), Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) )
+					'currency' => mollieWooCommerceGetDataHelper()->getOrderCurrency( $order ),
+					'value'    => mollieWooCommerceGetDataHelper()->formatCurrencyValue( $order->get_total(), mollieWooCommerceGetDataHelper()->getOrderCurrency( $order ) )
 				),
 				'redirectUrl'    => $return_url,
 				'webhookUrl'     => $webhook_url,
@@ -165,7 +165,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 			// Add sequenceType for subscriptions first payments
 			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
+				if ( mollieWooCommerceGetDataHelper()->isSubscription( $order->get_id() ) ) {
 
 					// See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
 					$disable_automatic_payments = ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) ? true : false;

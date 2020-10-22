@@ -409,11 +409,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			return array ( 'result' => 'failure' );
 		}
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			Mollie_WC_Plugin::debug( $this->id . ': Start process_payment for order ' . $order->id, true );
-		} else {
-			Mollie_WC_Plugin::debug( $this->id . ': Start process_payment for order ' . $order->get_id(), true );
-		}
+		$orderId = mollieWooCommerceOrderId($order);
+        Mollie_WC_Plugin::debug( "{$this->id}: Start process_payment for order {$orderId}", true );
 
 		$initial_order_status = $this->getInitialOrderStatus();
 
@@ -437,10 +434,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		) {
 
             try {
-                $payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject(
+                $paymentObject = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject(
                     self::PAYMENT_METHOD_TYPE_PAYMENT
                 );
-                $paymentRequestData = $payment_object->getPaymentRequestData($order, $customer_id);
+                $paymentRequestData = $paymentObject->getPaymentRequestData($order, $customer_id);
                 $data = array_filter($paymentRequestData);
                 $data = apply_filters('woocommerce_' . $this->id . '_args', $data, $order);
 
@@ -484,183 +481,42 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		}
 
-		//
-		// CHECK WOOCOMMERCE PRODUCTS
-		// Make sure all cart items are real WooCommerce products,
-		// not removed products or virtual ones (by WooCommerce Events Manager etc).
-		// If products are virtual, use Payments API instead of Orders API
-		//
-
-        $molliePaymentType = 'order';
-
-		foreach ( $order->get_items() as $cart_item ) {
-
-			if ( $cart_item['quantity'] ) {
-
-				do_action( Mollie_WC_Plugin::PLUGIN_ID . '_orderlines_process_items_before_getting_product_id', $cart_item );
-
-				if ( $cart_item['variation_id'] ) {
-					$product = wc_get_product( $cart_item['variation_id'] );
-				} else {
-					$product = wc_get_product( $cart_item['product_id'] );
-				}
-
-				if ( $product == false ) {
-                    $molliePaymentType = self::PAYMENT_METHOD_TYPE_PAYMENT;
-					do_action( Mollie_WC_Plugin::PLUGIN_ID . '_orderlines_process_items_after_processing_item', $cart_item );
-					break;
-				}
-				do_action( Mollie_WC_Plugin::PLUGIN_ID . '_orderlines_process_items_after_processing_item', $cart_item );
-			}
-		}
+		$molliePaymentType = $this->paymentTypeBasedOnProducts($order);
+		$molliePaymentType = $this->paymentTypeBasedOnGateway($molliePaymentType);
+        try {
+            $paymentObject = Mollie_WC_Plugin::getPaymentFactoryHelper()
+                    ->getPaymentObject(
+                            $molliePaymentType
+                    );
+        } catch (ApiException $exception) {
+            Mollie_WC_Plugin::debug($exception->getMessage());
+            return array('result' => 'failure');
+        }
 
 		//
 		// TRY PROCESSING THE PAYMENT AS MOLLIE ORDER OR MOLLIE PAYMENT
 		//
 
 		try {
+            $paymentObject = $this->processPaymentForMollie(
+                    $molliePaymentType,
+                    $orderId,
+                    $paymentObject,
+                    $order,
+                    $customer_id,
+                    $test_mode
+            );
 
-			//
-			// PROCESS REGULAR PAYMENT AS MOLLIE ORDER
-			//
-            if ($molliePaymentType == self::PAYMENT_METHOD_TYPE_ORDER) {
+            $this->saveMollieInfo( $order, $paymentObject );
 
-				if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-					Mollie_WC_Plugin::debug( $this->id . ': Create Mollie payment object for order ' . $order->id, true );
-				} else {
-					Mollie_WC_Plugin::debug( $this->id . ': Create Mollie payment object for order ' . $order->get_id(), true );
-				}
+			do_action( Mollie_WC_Plugin::PLUGIN_ID . '_payment_created', $paymentObject, $order );
+            Mollie_WC_Plugin::debug( "{$this->id}: Mollie payment object {$paymentObject->id} ({$paymentObject->mode}) created for order {$orderId}" );
 
-                try {
-                    $payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject(
-                        self::PAYMENT_METHOD_TYPE_ORDER
-                    );
-                } catch (ApiException $exception) {
-                    Mollie_WC_Plugin::debug($exception->getMessage());
-                    return array('result' => 'failure');
-                }
-
-				$paymentRequestData = $payment_object->getPaymentRequestData( $order, $customer_id );
-
-				$data = array_filter( $paymentRequestData );
-
-				$data = apply_filters( 'woocommerce_' . $this->id . '_args', $data, $order );
-
-				do_action( Mollie_WC_Plugin::PLUGIN_ID . '_create_payment', $data, $order );
-
-				// Create Mollie payment with customer id.
-				try {
-					Mollie_WC_Plugin::debug( 'Creating payment object: type Order, first try creating a Mollie Order.' );
-
-					// Only enable this for hardcore debugging!
-                    $apiCallLog = [
-                            'amount'=>isset($data['amount'])?$data['amount']:'',
-                            'redirectUrl'=>isset($data['redirectUrl'])?$data['redirectUrl']:'',
-                            'webhookUrl'=>isset($data['webhookUrl'])?$data['webhookUrl']:'',
-                            'method'=>isset($data['method'])?$data['method']:'',
-                            'payment'=>isset($data['payment'])?$data['payment']:'',
-                            'locale'=>isset($data['locale'])?$data['locale']:'',
-                            'metadata'=>isset($data['metadata'])?$data['metadata']:'',
-                            'orderNumber'=>isset($data['orderNumber'])?$data['orderNumber']:''
-                    ];
-
-                    Mollie_WC_Plugin::debug( $apiCallLog );
-                    $paymentOrder = $payment_object;
-					$payment_object = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->create( $data );
-                    if($settings_helper->getOrderStatusCancelledPayments() == 'cancelled'){
-                        $orderWithPayments = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->get( $payment_object->id, [ "embed" => "payments" ] );
-                        $paymentOrder->updatePaymentDataWithOrderData($orderWithPayments, $order_id);
-                    }
-				}
-				catch ( Mollie\Api\Exceptions\ApiException $e ) {
-
-					// Don't try to create a Mollie Payment for Klarna payment methods
-					$order_payment_method = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $order->payment_method : $order->get_payment_method();
-
-					if ( $order_payment_method == 'mollie_wc_gateway_klarnapaylater' || $order_payment_method == 'mollie_wc_gateway_sliceit' ) {
-						Mollie_WC_Plugin::debug( 'Creating payment object: type Order, failed for Klarna payment, stopping process.' );
-						throw $e;
-					}
-
-					Mollie_WC_Plugin::debug( 'Creating payment object: type Order, first try failed: ' . $e->getMessage() );
-
-					// Unset missing customer ID
-                    unset($data['payment']['customerId']);
-
-					try {
-
-						if ( $e->getField() !== 'payment.customerId' ) {
-							Mollie_WC_Plugin::debug( 'Creating payment object: type Order, did not fail because of incorrect customerId, so trying Payment now.' );
-							throw $e;
-						}
-
-						// Retry without customer id.
-						Mollie_WC_Plugin::debug( 'Creating payment object: type Order, second try, creating a Mollie Order without a customerId.' );
-						$payment_object = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->create( $data );
-					}
-					catch ( Mollie\Api\Exceptions\ApiException $e ) {
-
-						// Set Mollie payment type to payment, when creating a Mollie Order has failed
-                        $molliePaymentType = self::PAYMENT_METHOD_TYPE_PAYMENT;
-					}
-				}
-			}
-
-			//
-			// PROCESS REGULAR PAYMENT AS MOLLIE PAYMENT
-			//
-
-            if ($molliePaymentType === self::PAYMENT_METHOD_TYPE_PAYMENT) {
-				Mollie_WC_Plugin::debug( 'Creating payment object: type Payment, creating a Payment.' );
-
-                $payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject(
-                    self::PAYMENT_METHOD_TYPE_PAYMENT
-                );
-				$paymentRequestData = $payment_object->getPaymentRequestData( $order, $customer_id );
-
-				$data = array_filter( $paymentRequestData );
-
-				$data = apply_filters( 'woocommerce_' . $this->id . '_args', $data, $order );
-
-				try {
-
-					// Only enable this for hardcore debugging!
-                    $apiCallLog = [
-                            'amount'=>isset($data['amount'])?$data['amount']:'',
-                            'description'=>isset($data['description'])?$data['description']:'',
-                            'redirectUrl'=>isset($data['redirectUrl'])?$data['redirectUrl']:'',
-                            'webhookUrl'=>isset($data['webhookUrl'])?$data['webhookUrl']:'',
-                            'method'=>isset($data['method'])?$data['method']:'',
-                            'issuer'=>isset($data['issuer'])?$data['issuer']:'',
-                            'locale'=>isset($data['locale'])?$data['locale']:'',
-                            'metadata'=>isset($data['metadata'])?$data['metadata']:''
-                    ];
-
-                    Mollie_WC_Plugin::debug( $apiCallLog );
-
-					// Try as simple payment
-					$payment_object = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->create( $data );
-				} catch (Mollie\Api\Exceptions\ApiException $e) {
-                    $message = $e->getMessage();
-                    Mollie_WC_Plugin::debug($message);
-                    throw $e;
-                }
-			}
-
-			$this->saveMollieInfo( $order, $payment_object );
-
-			do_action( Mollie_WC_Plugin::PLUGIN_ID . '_payment_created', $payment_object, $order );
-
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-				Mollie_WC_Plugin::debug( $this->id . ': Mollie payment object ' . $payment_object->id . ' (' . $payment_object->mode . ') created for order ' . $order->id );
-			} else {
-				Mollie_WC_Plugin::debug( $this->id . ': Mollie payment object ' . $payment_object->id . ' (' . $payment_object->mode . ') created for order ' . $order->get_id() );
-			}
 
 			// Update initial order status for payment methods where the payment status will be delivered after a couple of days.
 			// See: https://www.mollie.com/nl/docs/status#expiry-times-per-payment-method
 			// Status is only updated if the new status is not the same as the default order status (pending)
-			if ( ( $payment_object->method == 'banktransfer' ) || ( $payment_object->method == 'directdebit' ) ) {
+			if ( ( $paymentObject->method == 'banktransfer' ) || ( $paymentObject->method == 'directdebit' ) ) {
 
 				// Don't change the status of the order if it's Partially Paid
 				// This adds support for WooCommerce Deposits (by Webtomizer)
@@ -679,32 +535,25 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				}
 			}
 
-			$payment_method_title = $this->getPaymentMethodTitle($payment_object);
+			$paymentMethodTitle = $this->getPaymentMethodTitle($paymentObject);
 
 			$order->add_order_note( sprintf(
 			/* translators: Placeholder 1: Payment method title, placeholder 2: payment ID */
 				__( '%s payment started (%s).', 'mollie-payments-for-woocommerce' ),
-				$payment_method_title,
-				$payment_object->id . ( $payment_object->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
+				$paymentMethodTitle,
+				$paymentObject->id . ( $paymentObject->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
 			) );
 
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-				Mollie_WC_Plugin::debug( "For order " . $order->id . " redirect user to Mollie Checkout URL: " . $payment_object->getCheckoutUrl() );
-			} else {
-				Mollie_WC_Plugin::debug( "For order " . $order->get_id() . " redirect user to Mollie Checkout URL: " . $payment_object->getCheckoutUrl() );
-			}
+            Mollie_WC_Plugin::debug( "For order " . $orderId . " redirect user to Mollie Checkout URL: " . $paymentObject->getCheckoutUrl() );
+
 
 			return array (
 				'result'   => 'success',
-				'redirect' => $this->getProcessPaymentRedirect( $order, $payment_object ),
+				'redirect' => $this->getProcessPaymentRedirect( $order, $paymentObject ),
 			);
 		}
 		catch ( Mollie\Api\Exceptions\ApiException $e ) {
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-				Mollie_WC_Plugin::debug( $this->id . ': Failed to create Mollie payment object for order ' . $order->id . ': ' . $e->getMessage() );
-			} else {
-				Mollie_WC_Plugin::debug( $this->id . ': Failed to create Mollie payment object for order ' . $order->get_id() . ': ' . $e->getMessage() );
-			}
+            Mollie_WC_Plugin::debug( $this->id . ': Failed to create Mollie payment object for order ' . $orderId . ': ' . $e->getMessage() );
 
 			/* translators: Placeholder 1: Payment method title */
 			$message = sprintf( __( 'Could not create %s payment.', 'mollie-payments-for-woocommerce' ), $this->title );
@@ -2430,4 +2279,297 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
         $order->add_order_note($orderNoteLine);
     }
+
+    /**
+     * CHECK WOOCOMMERCE PRODUCTS
+     * Make sure all cart items are real WooCommerce products,
+     * not removed products or virtual ones (by WooCommerce Events Manager etc).
+     * If products are virtual, use Payments API instead of Orders API
+     *
+     * @param WC_Order $order
+     *
+     * @return string
+     */
+    protected function paymentTypeBasedOnProducts(WC_Order $order)
+    {
+        $molliePaymentType = 'order';
+        foreach ($order->get_items() as $cart_item) {
+            if ($cart_item['quantity']) {
+                do_action(
+                        Mollie_WC_Plugin::PLUGIN_ID
+                        . '_orderlines_process_items_before_getting_product_id',
+                        $cart_item
+                );
+
+                if ($cart_item['variation_id']) {
+                    $product = wc_get_product($cart_item['variation_id']);
+                } else {
+                    $product = wc_get_product($cart_item['product_id']);
+                }
+
+                if ($product == false) {
+                    $molliePaymentType = self::PAYMENT_METHOD_TYPE_PAYMENT;
+                    do_action(
+                            Mollie_WC_Plugin::PLUGIN_ID
+                            . '_orderlines_process_items_after_processing_item',
+                            $cart_item
+                    );
+                    break;
+                }
+                do_action(
+                        Mollie_WC_Plugin::PLUGIN_ID
+                        . '_orderlines_process_items_after_processing_item',
+                        $cart_item
+                );
+            }
+        }
+        return $molliePaymentType;
+    }
+
+    /**
+     * @param Mollie_WC_Payment_Order $paymentObject
+     * @param WC_Order                $order
+     * @param                         $customer_id
+     * @param                         $test_mode
+     *
+     * @return array
+     * @throws ApiException
+     */
+    protected function processAsMollieOrder(
+            Mollie_WC_Payment_Order $paymentObject,
+            WC_Order $order,
+            $customer_id,
+            $test_mode
+    ) {
+        $molliePaymentType = self::PAYMENT_METHOD_TYPE_ORDER;
+        $paymentRequestData = $paymentObject->getPaymentRequestData(
+                $order,
+                $customer_id
+        );
+
+        $data = array_filter($paymentRequestData);
+
+        $data = apply_filters(
+                'woocommerce_' . $this->id . '_args',
+                $data,
+                $order
+        );
+
+        do_action(
+                Mollie_WC_Plugin::PLUGIN_ID . '_create_payment',
+                $data,
+                $order
+        );
+
+        // Create Mollie payment with customer id.
+        try {
+            Mollie_WC_Plugin::debug(
+                    'Creating payment object: type Order, first try creating a Mollie Order.'
+            );
+
+            // Only enable this for hardcore debugging!
+            $apiCallLog = [
+                    'amount' => isset($data['amount']) ? $data['amount'] : '',
+                    'redirectUrl' => isset($data['redirectUrl'])
+                            ? $data['redirectUrl'] : '',
+                    'webhookUrl' => isset($data['webhookUrl'])
+                            ? $data['webhookUrl'] : '',
+                    'method' => isset($data['method']) ? $data['method'] : '',
+                    'payment' => isset($data['payment']) ? $data['payment']
+                            : '',
+                    'locale' => isset($data['locale']) ? $data['locale'] : '',
+                    'metadata' => isset($data['metadata']) ? $data['metadata']
+                            : '',
+                    'orderNumber' => isset($data['orderNumber'])
+                            ? $data['orderNumber'] : ''
+            ];
+
+            mollieWooCommerceDebug($apiCallLog);
+            $paymentOrder = $paymentObject;
+            $paymentObject = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->create( $data );
+            $settingsHelper = Mollie_WC_Plugin::getSettingsHelper();
+            if($settingsHelper->getOrderStatusCancelledPayments() == 'cancelled'){
+                $orderId = mollieWooCommerceOrderId($order);
+                $orderWithPayments = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->get( $paymentObject->id, [ "embed" => "payments" ] );
+                $paymentOrder->updatePaymentDataWithOrderData($orderWithPayments, $orderId);
+            }
+        } catch (Mollie\Api\Exceptions\ApiException $e) {
+            // Don't try to create a Mollie Payment for Klarna payment methods
+            $order_payment_method = (version_compare(WC_VERSION, '3.0', '<'))
+                    ? $order->payment_method : $order->get_payment_method();
+
+            if ($order_payment_method == 'mollie_wc_gateway_klarnapaylater'
+                    || $order_payment_method == 'mollie_wc_gateway_sliceit'
+            ) {
+                Mollie_WC_Plugin::debug(
+                        'Creating payment object: type Order, failed for Klarna payment, stopping process.'
+                );
+                throw $e;
+            }
+
+            Mollie_WC_Plugin::debug(
+                    'Creating payment object: type Order, first try failed: '
+                    . $e->getMessage()
+            );
+
+            // Unset missing customer ID
+            unset($data['payment']['customerId']);
+
+            try {
+                if ($e->getField() !== 'payment.customerId') {
+                    Mollie_WC_Plugin::debug(
+                            'Creating payment object: type Order, did not fail because of incorrect customerId, so trying Payment now.'
+                    );
+                    throw $e;
+                }
+
+                // Retry without customer id.
+                Mollie_WC_Plugin::debug(
+                        'Creating payment object: type Order, second try, creating a Mollie Order without a customerId.'
+                );
+                $paymentObject = Mollie_WC_Plugin::getApiHelper()->getApiClient(
+                        $test_mode
+                )->orders->create($data);
+            } catch (Mollie\Api\Exceptions\ApiException $e) {
+                // Set Mollie payment type to payment, when creating a Mollie Order has failed
+                $molliePaymentType = self::PAYMENT_METHOD_TYPE_PAYMENT;
+            }
+        }
+        return array(
+                $paymentObject,
+                $molliePaymentType
+        );
+    }
+
+    /**
+     * @param Mollie_WC_Payment_Payment $paymentObject
+     * @param WC_Order                $order
+     * @param                         $customer_id
+     * @param                         $test_mode
+     *
+     * @return Mollie\Api\Resources\Payment $paymentObject
+     * @throws ApiException
+     */
+    protected function processAsMolliePayment(
+            Mollie_WC_Payment_Payment $paymentObject,
+            WC_Order $order,
+            $customer_id,
+            $test_mode
+    ) {
+        $paymentRequestData = $paymentObject->getPaymentRequestData(
+                $order,
+                $customer_id
+        );
+
+        $data = array_filter($paymentRequestData);
+
+        $data = apply_filters(
+                'woocommerce_' . $this->id . '_args',
+                $data,
+                $order
+        );
+
+        try {
+            // Only enable this for hardcore debugging!
+            $apiCallLog = [
+                    'amount' => isset($data['amount']) ? $data['amount'] : '',
+                    'description' => isset($data['description'])
+                            ? $data['description'] : '',
+                    'redirectUrl' => isset($data['redirectUrl'])
+                            ? $data['redirectUrl'] : '',
+                    'webhookUrl' => isset($data['webhookUrl'])
+                            ? $data['webhookUrl'] : '',
+                    'method' => isset($data['method']) ? $data['method'] : '',
+                    'issuer' => isset($data['issuer']) ? $data['issuer'] : '',
+                    'locale' => isset($data['locale']) ? $data['locale'] : '',
+                    'dueDate' => isset($data['dueDate']) ? $data['dueDate'] : '',
+                    'metadata' => isset($data['metadata']) ? $data['metadata']
+                            : ''
+            ];
+
+            Mollie_WC_Plugin::debug($apiCallLog);
+
+            // Try as simple payment
+            $paymentObject = Mollie_WC_Plugin::getApiHelper()->getApiClient(
+                    $test_mode
+            )->payments->create($data);
+        } catch (Mollie\Api\Exceptions\ApiException $e) {
+            $message = $e->getMessage();
+            Mollie_WC_Plugin::debug($message);
+            throw $e;
+        }
+        return $paymentObject;
+    }
+
+    /**
+     * @param                         $molliePaymentType
+     * @param                         $orderId
+     * @param Mollie_WC_Payment_Order|Mollie_WC_Payment_Payment $paymentObject
+     * @param WC_Order                $order
+     * @param                         $customer_id
+     * @param                         $test_mode
+     *
+     * @return mixed|\Mollie\Api\Resources\Payment|Mollie_WC_Payment_Order
+     * @throws ApiException
+     */
+    protected function processPaymentForMollie(
+            $molliePaymentType,
+            $orderId,
+            $paymentObject,
+            WC_Order $order,
+            $customer_id,
+            $test_mode
+    ) {
+        //
+        // PROCESS REGULAR PAYMENT AS MOLLIE ORDER
+        //
+        if ($molliePaymentType == self::PAYMENT_METHOD_TYPE_ORDER) {
+            Mollie_WC_Plugin::debug(
+                    "{$this->id}: Create Mollie payment object for order {$orderId}",
+                    true
+            );
+
+            list(
+                    $paymentObject,
+                    $molliePaymentType
+                    )
+                    = $this->processAsMollieOrder(
+                    $paymentObject,
+                    $order,
+                    $customer_id,
+                    $test_mode
+            );
+        }
+
+        //
+        // PROCESS REGULAR PAYMENT AS MOLLIE PAYMENT
+        //
+
+        if ($molliePaymentType === self::PAYMENT_METHOD_TYPE_PAYMENT) {
+            Mollie_WC_Plugin::debug(
+                    'Creating payment object: type Payment, creating a Payment.'
+            );
+
+            $paymentObject = $this->processAsMolliePayment(
+                    $paymentObject,
+                    $order,
+                    $customer_id,
+                    $test_mode
+            );
+        }
+        return $paymentObject;
+    }
+
+    protected function paymentTypeBasedOnGateway($paymentType)
+    {
+        $isBankTransferGateway = $this->id == 'mollie_wc_gateway_banktransfer';
+        if($isBankTransferGateway && $this->isExpiredDateSettingActivated()){
+            $paymentType = self::PAYMENT_METHOD_TYPE_PAYMENT;
+
+        }
+        return $paymentType;
+    }
+
+
+
 }

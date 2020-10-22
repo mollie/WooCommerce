@@ -277,6 +277,7 @@ class Mollie_WC_Plugin
         add_filter( Mollie_WC_Plugin::PLUGIN_ID . '_retrieve_payment_gateways', function(){
             return self::$GATEWAYS;
         });
+        add_action('wp_loaded', [__CLASS__, 'maybeTestModeNotice']);
         self::mollieApplePayDirectHandling();
 
 		self::initDb();
@@ -286,6 +287,26 @@ class Mollie_WC_Plugin
 		// Mark plugin initiated
 		self::$initiated = true;
 	}
+
+    public static function maybeTestModeNotice()
+    {
+        if (mollieWooCommerceIsTestModeEnabled()) {
+            $notice = new Mollie_WC_Notice_AdminNotice();
+            $message = sprintf(
+                esc_html__(
+                    '%1$sMollie Payments for WooCommerce%2$s The test mode is active, %3$s disable it%4$s before deploying into production.',
+                    'mollie-payments-for-woocommerce'
+                ),
+                '<strong>',
+                '</strong>',
+                '<a href="' . esc_url(
+                    admin_url('admin.php?page=wc-settings&tab=checkout')
+                ) . '">',
+                '</a>'
+            );
+            $notice->addAdminNotice('notice-error', $message);
+        }
+    }
 
     public static function maybeLetWCCancelOrder($willCancel, $order) {
         if (!empty($willCancel)) {

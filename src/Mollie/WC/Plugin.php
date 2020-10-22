@@ -197,6 +197,7 @@ class Mollie_WC_Plugin
 		add_filter( 'woocommerce_payment_gateways', array ( __CLASS__, 'addGateways' ) );
 
         add_filter('woocommerce_payment_gateways', [__CLASS__, 'maybeDisableApplePayGateway'], 20);
+        add_filter('woocommerce_payment_gateways', [__CLASS__, 'maybeDisableBankTransferGateway'], 20);
         add_action(
             'woocommerce_after_order_object_save',
             function () {
@@ -240,6 +241,13 @@ class Mollie_WC_Plugin
 		// Capture order at Mollie (for Orders API/Klarna)
 		add_action( 'woocommerce_order_status_completed', array( __CLASS__, 'shipAndCaptureOrderAtMollie' ) );
 
+        add_filter(
+            'woocommerce_cancel_unpaid_order',
+            array( __CLASS__, 'maybeLetWCCancelOrder' ),
+            90,
+            2
+        );
+
         // Enqueue Scripts
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueFrontendScripts']);
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueComponentsAssets']);
@@ -279,6 +287,21 @@ class Mollie_WC_Plugin
 		self::$initiated = true;
 	}
 
+    public static function maybeLetWCCancelOrder($willCancel, $order) {
+        if (!empty($willCancel)) {
+            if ($order->get_payment_method()
+                !== 'mollie_wc_gateway_banktransfer'
+            ) {
+                return $willCancel;
+            }
+            //is banktransfer due date setting activated
+            $dueDateActive = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_banktransfer_settings', 'activate_expiry_days_setting');
+            if ($dueDateActive) {
+                return false;
+            }
+        }
+        return $willCancel;
+    }
 
     /**
      * Enqueues the ApplePay button scripts if enabled and in correct page
@@ -443,8 +466,9 @@ class Mollie_WC_Plugin
         if (is_admin() || !mollieWooCommerceIsCheckoutContext()) {
             return;
         }
+        $applePayGatewayEnabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_applepay_settings', 'enabled');
 
-        if (!mollieWooCommerceisApplePayEnabled()) {
+        if (!$applePayGatewayEnabled) {
             return;
         }
 
@@ -698,6 +722,44 @@ class Mollie_WC_Plugin
 	}
 
     /**
+     * Disable Bank Transfer Gateway
+     *
+     * @param array $gateways
+     * @return array
+     */
+    public static function maybeDisableBankTransferGateway(array $gateways)
+    {
+        $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_STRING);
+        $bankTransferSettings = get_option('mollie_wc_gateway_banktransfer_settings', false);
+        $isSettingActivated = false;
+        if($bankTransferSettings){
+            $expiryDays = $bankTransferSettings['activate_expiry_days_setting'];
+            $isSettingActivated = mollieWooCommerceStringToBoolOption($expiryDays);
+        }
+
+        /*
+         * There is only one case where we want to filter the gateway and it's when the
+         * pay-page render the available payments methods AND the setting is enabled
+         *
+         * For any other case we want to be sure bank transfer gateway is included.
+         */
+        if ($isWcApiRequest ||
+            !$isSettingActivated ||
+            is_checkout() && ! is_wc_endpoint_url( 'order-pay' )||
+            !wp_doing_ajax() && ! is_wc_endpoint_url( 'order-pay' )||
+            is_admin()
+        ) {
+            return $gateways;
+        }
+        $bankTransferGatewayClassName = Mollie_WC_Gateway_BankTransfer::class;
+        $bankTransferGatewayIndex = array_search($bankTransferGatewayClassName, $gateways, true);
+        if ($bankTransferGatewayIndex !== false) {
+            unset($gateways[$bankTransferGatewayIndex]);
+        }
+        return  $gateways;
+    }
+
+    /**
      * Disable Apple Pay Gateway
      *
      * @param array $gateways
@@ -727,7 +789,7 @@ class Mollie_WC_Plugin
             return $gateways;
         }
 
-        $applePayGatewayClassName = 'Mollie_WC_Gateway_Applepay';
+        $applePayGatewayClassName = Mollie_WC_Gateway_Applepay::class;
         $applePayGatewayIndex = array_search($applePayGatewayClassName, $gateways, true);
         $postData = (string)filter_input(
             INPUT_POST,

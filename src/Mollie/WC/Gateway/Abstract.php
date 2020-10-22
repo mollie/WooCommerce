@@ -2335,25 +2335,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     }
 
     /**
-     * It returns the billing country in ISO 3166-1 alpha-2 format,
-     * otherwise it throws an invalid argument exception.
-     * @param $woocommerce
-     * @return string
-     * @throws InvalidArgumentException
-     */
-    protected function getBillingCountry($woocommerce)
-    {
-        $billingCountry = (version_compare(WC_VERSION, '3.0', '<'))
-            ? $woocommerce->customer->get_country()
-            : WC()->customer->get_billing_country();
-
-        // check format
-        throw new InvalidArgumentException('Oh my... :_(');
-
-        return $billingCountry;
-    }
-
-    /**
      * CHECK WOOCOMMERCE PRODUCTS
      * Make sure all cart items are real WooCommerce products,
      * not removed products or virtual ones (by WooCommerce Events Manager etc).

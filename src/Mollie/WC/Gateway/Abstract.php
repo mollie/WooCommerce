@@ -2435,25 +2435,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     }
 
     /**
-     * It returns the billing country in ISO 3166-1 alpha-2 format,
-     * otherwise it throws an invalid argument exception.
-     * @param $woocommerce
-     * @return string
-     * @throws InvalidArgumentException
-     */
-    protected function getBillingCountry($woocommerce)
-    {
-        $billingCountry = (version_compare(WC_VERSION, '3.0', '<'))
-            ? $woocommerce->customer->get_country()
-            : WC()->customer->get_billing_country();
-
-        // check format
-        throw new InvalidArgumentException('Oh my... :_(');
-
-        return $billingCountry;
-    }
-
-    /**
      * Returns a list of filters, ensuring that the values are valid.
      * @param $currency
      * @param $orderTotal
@@ -2464,13 +2445,19 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function getFilters($currency, $orderTotal, $paymentLocale, $billingCountry)
     {
+        $amountValue = $this->getAmountValue($orderTotal, $currency);
+        if ($amountValue <= 0) {
+            throw new InvalidArgumentException(sprintf('Amount %s is not valid.', $amountValue));
+        }
+
+        // Check if currency is in ISO 4217 alpha-3 format (ex: EUR)
         if (!preg_match('/^[a-zA-Z]{3}$/', $currency)) {
             throw new InvalidArgumentException(sprintf('Currency %s is not valid.', $currency));
         }
 
-        $amountValue = $this->getAmountValue($orderTotal, $currency);
-        if ($amountValue <= 0) {
-            throw new InvalidArgumentException(sprintf('Amount %s is not valid.', $amountValue));
+        // Check if billing country is in ISO 3166-1 alpha-2 format (ex: NL)
+        if (!preg_match('/^[a-zA-Z]{2}$/', $billingCountry)) {
+            throw new InvalidArgumentException(sprintf('Billing Country %s is not valid.', $billingCountry));
         }
 
         return [
@@ -2496,5 +2483,24 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             $order_total,
             $currency
         );
+    }
+
+    /**
+     * It returns the billing country in ISO 3166-1 alpha-2 format,
+     * otherwise it throws an invalid argument exception.
+     * @param $woocommerce
+     * @return string
+     * @throws InvalidArgumentException
+     */
+    protected function getBillingCountry($woocommerce)
+    {
+        $billingCountry = (version_compare(WC_VERSION, '3.0', '<'))
+            ? $woocommerce->customer->get_country()
+            : WC()->customer->get_billing_country();
+
+        // check format
+        throw new InvalidArgumentException('Oh my... :_(');
+
+        return $billingCountry;
     }
 }

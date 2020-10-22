@@ -542,12 +542,12 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         $testee->getReturnRedirectUrlForOrder($order);
     }
 
-    public function testValidFilterAmount()
+    public function testValidFilters()
     {
         $currency = 'USD';
         $order_total = 42.0;
+        $billing_country = 'NL';
         $payment_locale = '';
-        $billing_country = '';
 
         list($sut, $sutReflection) = $this->createSutForFilters();
 
@@ -570,12 +570,12 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
                 'value' => '42.00',
             ],
             'locale' => '',
-            'billingCountry' => '',
+            'billingCountry' => 'NL',
             'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_ONEOFF,
             'resource' => 'orders',
         ];
 
-        self::assertSame($expected, $filters);
+        self::assertEquals($expected, $filters);
     }
 
     public function testInvalidFilterAmount() {
@@ -618,8 +618,30 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         );
     }
 
-    // TODO billingCountry
+    public function testInvalidFilterBillingCountry()
+    {
+        $this->expectException(InvalidArgumentException::class);
 
+        $currency = 'USD';
+        $order_total = 42.0;
+        $payment_locale = '';
+        $billing_country = 'Nederland';
+
+        list($sut, $sutReflection) = $this->createSutForFilters();
+
+        $sut
+            ->expects($this->once())
+            ->method('getAmountValue')
+            ->willReturn('42.00');
+
+        $sutReflection->invoke(
+            $sut,
+            $currency,
+            $order_total,
+            $payment_locale,
+            $billing_country
+        );
+    }
 
     /**
      * @return array

@@ -166,7 +166,7 @@ class Mollie_WC_Plugin_Test extends TestCase
             [
                 'is_admin' => false,
                 'mollieWooCommerceIsCheckoutContext' => true,
-                'mollieWooCommerceisApplePayEnabled' => true
+                'mollieWooCommerceIsGatewayEnabled' => true
             ]
         );
 

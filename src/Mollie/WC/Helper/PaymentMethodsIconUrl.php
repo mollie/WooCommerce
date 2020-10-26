@@ -43,22 +43,27 @@ class Mollie_WC_Helper_PaymentMethodsIconUrl
     public function svgUrlForPaymentMethod($paymentMethodName)
     {
         return isset($this->paymentMethodImages[$paymentMethodName]->svg)
-            ? $this->getSvgImageFromUrl($this->paymentMethodImages[$paymentMethodName]->svg)
+            ? $this->getSvgImageFromUrl($paymentMethodName)
             : $this->fallToAssets($paymentMethodName);
     }
 
     /**
      * Method to retrieve the Svg image from the url given and add the style
-     * @param $url
+     *
+     * @param $paymentMethodName
      *
      * @return string
      */
-    protected function getSvgImageFromUrl($url)
+    protected function getSvgImageFromUrl($paymentMethodName)
     {
-        $resource = file_get_contents($url);
-        $resource = $this->styleSvgImage($resource);
+        $request = wp_safe_remote_get($this->paymentMethodImages[$paymentMethodName]->svg);
+        if(is_wp_error($request)){
+            return $this->fallToAssets($paymentMethodName);
+        }
+        $svgString = wp_remote_retrieve_body($request);
+        $svgString = $this->styleSvgImage($svgString);
 
-        return $resource;
+        return $svgString;
     }
 
     /**

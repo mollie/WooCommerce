@@ -7,12 +7,15 @@ import {request} from './applePayRequest.js';
         if (_.isEmpty(mollieApplePayDirectData)) {
             return
         }
+
         const {product: {id, needShipping = true, isVariation = false, price}, shop: {countryCode, currencyCode = 'EUR', totalLabel = ''}, ajaxUrl} = mollieApplePayDirectData
 
         if (!id || !price || !countryCode || !ajaxUrl) {
             return
         }
-        maybeShowButton()
+        if(!maybeShowButton()){
+            return
+        }
 
         const nonce = document.getElementById('_wpnonce').value
         let productId = id

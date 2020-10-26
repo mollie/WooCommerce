@@ -38,7 +38,6 @@ class Mollie_WC_Payment_RefundLineItemsBuilder
     ) {
 
         $toCancel = [
-            'description' => $refundReason,
             'lines' => [],
         ];
         $toRefund = [

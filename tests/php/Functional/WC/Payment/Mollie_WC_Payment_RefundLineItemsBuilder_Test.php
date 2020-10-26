@@ -90,7 +90,6 @@ class Mollie_WC_Payment_RefundLineItemsBuilder_Test extends TestCase
         $this->assertEquals(
             [
                 'toCancel' => [
-                    'description' => $reason,
                     'lines' => [
                         [
                             'id' => $toCancelRemoteItem->id,

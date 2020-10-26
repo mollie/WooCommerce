@@ -138,7 +138,9 @@ import {maybeShowButton} from './maybeShowApplePayButton.js';
             }
         }
 
-        maybeShowButton()
+        if(!maybeShowButton()){
+            return
+        }
 
         jQuery(document.body).on('updated_cart_totals', function (event) {
             maybeShowButton()

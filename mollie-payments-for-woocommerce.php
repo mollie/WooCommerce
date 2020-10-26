@@ -3,7 +3,7 @@
  * Plugin Name: Mollie Payments for WooCommerce
  * Plugin URI: https://www.mollie.com
  * Description: Accept payments in WooCommerce with the official Mollie plugin
- * Version: 5.8.2
+ * Version: 5.9.0
  * Author: Mollie
  * Author URI: https://www.mollie.com
  * Requires at least: 3.8
@@ -12,7 +12,7 @@
  * Domain Path: /languages
  * License: GPLv2 or later
  * WC requires at least: 2.2.0
- * WC tested up to: 4.4
+ * WC tested up to: 4.5
  */
 
 use Mollie\Api\CompatibilityChecker;
@@ -35,7 +35,7 @@ function mollie_wc_plugin_activation_hook()
     require_once __DIR__ . '/inc/functions.php';
     require_once __DIR__ . '/src/subscriptions_status_check_functions.php';
 
-    if (!autoload()) {
+    if (!mollie_wc_plugin_autoload()) {
         return;
     }
 
@@ -193,7 +193,7 @@ function mollie_wc_plugin_inactive()
     }
 }
 
-function autoload()
+function mollie_wc_plugin_autoload()
 {
     $autoloader = __DIR__ . '/vendor/autoload.php';
     if (file_exists($autoloader)) {
@@ -212,7 +212,7 @@ $bootstrap = Closure::bind(
                 require_once __DIR__ . '/inc/functions.php';
                 require_once __DIR__ . '/src/subscriptions_status_check_functions.php';
 
-                if (!autoload()) {
+                if (!mollie_wc_plugin_autoload()) {
                     return;
                 }
 
@@ -240,6 +240,24 @@ $bootstrap = Closure::bind(
                 );
                 
                 add_action( 'core_upgrade_preamble', 'deleteWPTranslationFiles' );
+                add_filter(
+                    'site_transient_update_plugins',
+                    function ($value) {
+                        if (isset($value->translations)) {
+                            $i = 0;
+                            foreach ($value->translations as $translation) {
+                                if ($translation["slug"]
+                                    == "mollie-payments-for-woocommerce"
+                                ) {
+                                    unset($value->translations[$i]);
+                                }
+                                $i++;
+                            }
+                        }
+
+                        return $value;
+                    }
+                );
             }
         );
     },

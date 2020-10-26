@@ -321,7 +321,7 @@ class Mollie_WC_Helper_Settings
 		// Warn users that at least WooCommerce 3.x is required to accept Klarna as payment method
 		$content = $this->warnWoo3xRequiredForKlarna( $content );
 
-		return $content;
+        return $content;
 	}
 
     /**
@@ -875,4 +875,5 @@ class Mollie_WC_Helper_Settings
 
         return $tags;
     }
+
 }

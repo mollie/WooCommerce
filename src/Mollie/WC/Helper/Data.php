@@ -668,4 +668,10 @@ class Mollie_WC_Helper_Data
 		return ( function_exists( 'wcs_order_contains_subscription' ) && ( wcs_order_contains_subscription( $order_id ) || function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order_id ) || function_exists( 'wcs_order_contains_renewal' ) && wcs_order_contains_renewal( $order_id ) ) );
 	}
 
+    public function isEcurSubscription()
+    {
+        $isSubscription = false;
+        $isSubscription = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_is_subscription_payment', $isSubscription );
+        return $isSubscription;
+    }
 }

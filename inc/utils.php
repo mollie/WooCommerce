@@ -150,14 +150,34 @@ function mollieWooCommerceGetDataHelper()
 }
 
 /**
+ * Check if certain gateway setting is enabled.
+ *
+ * @param $gatewaySettingsName string
+ * @param $settingToCheck string
+ * @param bool $default
+ * @return bool
+ */
+function mollieWooCommerceIsGatewayEnabled($gatewaySettingsName, $settingToCheck, $default = false)
+{
+
+    $gatewaySettings = get_option($gatewaySettingsName);
+    return mollieWooCommerceStringToBoolOption(
+        checkIndexExistOrDefault($gatewaySettings, $settingToCheck, $default)
+    );
+}
+
+/**
+ * Check if the Apple Pay gateway is enabled and then if the button is enabled too.
+ *
  * @return bool
  */
 function mollieWooCommerceisApplePayDirectEnabled()
 {
-    $applePaySettings = get_option('mollie_wc_gateway_applepay_settings');
-    return mollieWooCommerceStringToBoolOption(
-        checkIndexExistOrDefault($applePaySettings, 'mollie_apple_pay_button_enabled', 'no')
-    );
+    $applePayGatewayEnabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_applepay_settings', 'enabled');
+    if (!$applePayGatewayEnabled) {
+        return false;
+    }
+    return mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_applepay_settings', 'mollie_apple_pay_button_enabled');
 }
 
 function checkIndexExistOrDefault($array, $key, $default)

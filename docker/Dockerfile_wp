@@ -88,6 +88,25 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
 RUN sed -i "s|#ServerName www.example.com|ServerName ${WP_DOMAIN}|" /etc/apache2/sites-available/*.conf
 RUN sed -i "s|#ServerName www.example.com|ServerName ${WP_DOMAIN}|" /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
+
+RUN apt-get update
+RUN apt-get install -y \
+    zip \
+    unzip \
+    curl \
+    # These are for extensions
+    zlib1g-dev \
+    libicu-dev \
+    g++
+
+RUN docker-php-ext-install pcntl posix intl json
+
+RUN apt-get remove -y \
+    # These are for extensions
+    zlib1g-dev \
+    libicu-dev \
+    g++
+
 WORKDIR ${DOCROOT_PATH}
 COPY --from=vendor-dev ${BUILD_ROOT_PATH} ${PROJECT_MOUNT_PATH}
 

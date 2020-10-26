@@ -7,12 +7,20 @@ FROM php:${PHP_BUILD_VERSION}-cli as build
 ARG BUILD_ROOT_PATH
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+
+RUN apt-get update
+RUN apt-get install -y gnupg apt-transport-https ca-certificates
+
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
+    echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+
 RUN apt-get update
 RUN apt-get install -y \
     zip \
     unzip \
     curl \
     git \
+    yarn \
     # These are for extensions
     zlib1g-dev \
     libicu-dev \

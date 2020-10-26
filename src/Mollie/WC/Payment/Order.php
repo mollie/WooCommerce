@@ -327,17 +327,17 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
             );
 
             // Subscription processing
-			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-				if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-					if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->id ) ) {
-						$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
-					}
-				} else {
-					if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
-						$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
-					}
-				}
-			}
+            if (class_exists('WC_Subscriptions')
+                && class_exists(
+                    'WC_Subscriptions_Admin'
+                )
+            ) {
+                $orderId = version_compare(WC_VERSION, '3.0', '<') ? $order->id
+                    : $order->get_id();
+                if (Mollie_WC_Plugin::getDataHelper()->isSubscription($orderId)) {
+                    $this->deleteSubscriptionOrderFromPendingPaymentQueue($order);
+                }
+            }
 
 		} else {
 

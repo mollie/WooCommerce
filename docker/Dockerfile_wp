@@ -42,7 +42,7 @@ WORKDIR ${BUILD_ROOT_PATH}
 COPY . ./
 
 
-FROM php:${PHP_BUILD_VERSION}-cli as test
+FROM php:${PHP_TEST_VERSION}-cli as test
 
 ARG BUILD_ROOT_PATH
 

@@ -4,7 +4,7 @@
         beStrictAboutOutputDuringTests="true"
         beStrictAboutChangesToGlobalState="true"
         backupGlobals="true"
-        backupStaticAttributes="true"
+        backupStaticAttributes="false"
         processIsolation="false"
         stopOnError="false"
         stopOnFailure="false"

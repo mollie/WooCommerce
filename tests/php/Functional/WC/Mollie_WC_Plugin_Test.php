@@ -3,6 +3,7 @@
 namespace Mollie\WooCommerceTests\Functional\WC;
 
 use Mollie\WooCommerceTests\TestCase;
+use Mollie_WC_Gateway_Abstract;
 use Mollie_WC_Plugin;
 use Mollie_WC_Helper_Data;
 use WC_Order;
@@ -293,8 +294,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         $gateway = $this->getMockBuilder(Mollie_WC_Gateway_Abstract::class)
             ->disableOriginalConstructor()
             ->setMethods(['getReturnRedirectUrlForOrder'])
-            ->setMockClassName('Mollie_WC_Gateway_Abstract')
-            ->getMock();
+            ->getMockForAbstractClass();
         $gateway->id = $gwId;
         $order = $this->createConfiguredMock(
             WC_Order::class,

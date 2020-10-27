@@ -11,7 +11,7 @@ use function Brain\Monkey\Functions\expect;
 /**
  * Class Mollie_WC_Helper_Settings_Test
  */
-class Mollie_WC_Gateway_CreditCard_Test extends TestCase
+class Mollie_WC_Gateway_Creditcard_Test extends TestCase
 {
     /**
      * Test get_icon returns svg composed image

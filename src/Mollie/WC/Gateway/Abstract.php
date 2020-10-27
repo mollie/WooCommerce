@@ -652,8 +652,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
             if ($dataHelper->isEcurSubscription()) {
                 $mandates = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers->get( $customer_id )->mandates();
-                $mandateId = $mandates[0];
-                do_action(Mollie_WC_Plugin::PLUGIN_ID . '_after_mandate_created', $payment_object, $order, $mandateId);
+                $mandate = $mandates[0];
+                $customerId = $mandate->customerId;
+                $mandateId = $mandate->id;
+                Mollie_WC_Plugin::debug("Mollie Subscription in the order: customer id {$customerId} and mandate id {$mandateId} ");
+                do_action(Mollie_WC_Plugin::PLUGIN_ID . '_after_mandate_created', $payment_object, $order, $customerId, $mandateId);
             }
 
 			do_action( Mollie_WC_Plugin::PLUGIN_ID . '_payment_created', $payment_object, $order );

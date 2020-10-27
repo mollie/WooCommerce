@@ -3,6 +3,7 @@
 namespace Mollie\WooCommerceTests;
 
 use function Brain\Monkey\Functions\stubs;
+use function Brain\Monkey\Functions\when;
 
 class Functions_Test extends TestCase
 {
@@ -67,7 +68,8 @@ class Functions_Test extends TestCase
          * Setup Stubs
          */
 
-        define('WC_VERSION', '3.0');
+        when('mollieWooCommerceWcVersion')
+            ->justReturn((string)(mt_rand(30, 39) / 10));
 
         $orderId = 1;
         $order = $this->createConfiguredMock(
@@ -92,8 +94,9 @@ class Functions_Test extends TestCase
         /*
          * Setup Stubs
          */
-        define('WC_VERSION', mt_rand(1, 2));
-        $orderId = mt_rand(1, 2);
+        when('mollieWooCommerceWcVersion')
+            ->justReturn((string)(mt_rand(10, 29) / 10));
+        $orderId = mt_rand(1, 999);
         $order = $this->getMockBuilder('\\WC_Order')->getMock();
         $order->id = $orderId;
 
@@ -113,7 +116,8 @@ class Functions_Test extends TestCase
          * Setup Stubs
          */
 
-        define('WC_VERSION', '3.0');
+        when('mollieWooCommerceWcVersion')
+            ->justReturn((string)(mt_rand(30, 39) / 10));
 
         $orderKey = 'eFZyH8jki6fge';
         $order = $this->createConfiguredMock(
@@ -138,7 +142,8 @@ class Functions_Test extends TestCase
         /*
          * Setup Stubs
          */
-        define('WC_VERSION', mt_rand(1, 2));
+        when('mollieWooCommerceWcVersion')
+            ->justReturn((string)(mt_rand(10, 29) / 10));
         $orderKey = 'eFZyH8jki6fge';
         $order = $this->getMockBuilder('\\WC_Order')->getMock();
         $order->order_key = $orderKey;

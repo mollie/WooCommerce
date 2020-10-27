@@ -69,7 +69,7 @@ class Functions_Test extends TestCase
          */
 
         when('mollieWooCommerceWcVersion')
-            ->justReturn((string)(mt_rand(30, 39) / 10));
+            ->justReturn(number_format(mt_rand(30, 39) / 10, 1));
 
         $orderId = 1;
         $order = $this->createConfiguredMock(
@@ -95,7 +95,7 @@ class Functions_Test extends TestCase
          * Setup Stubs
          */
         when('mollieWooCommerceWcVersion')
-            ->justReturn((string)(mt_rand(10, 29) / 10));
+            ->justReturn(number_format(mt_rand(10, 29) / 10, 1));
         $orderId = mt_rand(1, 999);
         $order = $this->getMockBuilder('\\WC_Order')->getMock();
         $order->id = $orderId;
@@ -117,7 +117,7 @@ class Functions_Test extends TestCase
          */
 
         when('mollieWooCommerceWcVersion')
-            ->justReturn((string)(mt_rand(30, 39) / 10));
+            ->justReturn(number_format(mt_rand(30, 39) / 10, 1));
 
         $orderKey = 'eFZyH8jki6fge';
         $order = $this->createConfiguredMock(
@@ -143,7 +143,7 @@ class Functions_Test extends TestCase
          * Setup Stubs
          */
         when('mollieWooCommerceWcVersion')
-            ->justReturn((string)(mt_rand(10, 29) / 10));
+            ->justReturn((string)(float)(mt_rand(10, 29) / 10));
         $orderKey = 'eFZyH8jki6fge';
         $order = $this->getMockBuilder('\\WC_Order')->getMock();
         $order->order_key = $orderKey;

@@ -5,7 +5,7 @@
         beStrictAboutChangesToGlobalState="true"
         backupGlobals="true"
         backupStaticAttributes="true"
-        processIsolation="true"
+        processIsolation="false"
         stopOnError="false"
         stopOnFailure="false"
         convertNoticesToExceptions="false"

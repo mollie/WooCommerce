@@ -29,7 +29,11 @@ class Mollie_WC_Payment_Payment_Test extends TestCase
         */
         $payment = $this->createMock(Payment::class);
         $order = $this->createMock(WC_Order::class);
-        $dataHelper = $this->createConfiguredMock(Mollie_WC_Helper_Data::class, ['getOrderStatus'=>'completed']);
+        $dataHelper = $this->getMockBuilder(Mollie_WC_Helper_Data::class)
+            ->setMethods(['getOrderStatus'])
+            ->getMock();
+        $dataHelper->method('getOrderStatus')
+            ->willReturn('completed');
         $payment_method_title = 'creditcard';
         $faker = Faker\Factory::create();
 
@@ -46,7 +50,7 @@ class Mollie_WC_Payment_Payment_Test extends TestCase
             ->justReturn($faker->randomNumber(2));
         when('mollieWooCommerceDebug')
             ->justReturn($faker->word);
-        when('getDataHelper')
+        when('mollieWooCommerceGetDataHelper')
             ->justReturn($dataHelper);
 
         /*

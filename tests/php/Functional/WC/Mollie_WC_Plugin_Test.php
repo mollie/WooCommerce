@@ -186,6 +186,7 @@ class Mollie_WC_Plugin_Test extends TestCase
 
     /**
      * @dataProvider frontendCheckoutContextDataProvider
+     * @runInSeparateProcess
      * @param $isAdmin
      * @param $isCheckoutContext
      */

@@ -2,7 +2,7 @@
         bootstrap="./tests/php/bootstrap.php"
         colors="true"
         beStrictAboutOutputDuringTests="true"
-        beStrictAboutChangesToGlobalState="true"
+        beStrictAboutChangesToGlobalState="false"
         backupGlobals="true"
         backupStaticAttributes="false"
         processIsolation="false"

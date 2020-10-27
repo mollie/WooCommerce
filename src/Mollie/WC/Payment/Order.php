@@ -332,8 +332,6 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
                     'WC_Subscriptions_Admin'
                 )
             ) {
-                $orderId = version_compare(WC_VERSION, '3.0', '<') ? $order->id
-                    : $order->get_id();
                 if (Mollie_WC_Plugin::getDataHelper()->isSubscription($orderId)) {
                     $this->deleteSubscriptionOrderFromPendingPaymentQueue($order);
                 }
@@ -356,15 +354,15 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 		// Get order ID in the correct way depending on WooCommerce version
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			$order_id = $order->id;
+			$orderId = $order->id;
 		} else {
-			$order_id = $order->get_id();
+			$orderId = $order->get_id();
 		}
 
 		if ( $payment->isAuthorized() ) {
 
 			// Add messages to log
-			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $orderId );
 
 			// WooCommerce 2.2.0 has the option to store the Payment transaction id.
 			$woo_version = get_option( 'woocommerce_version', 'Unknown' );
@@ -377,7 +375,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			}
 
 			// Add messages to log
-			Mollie_WC_Plugin::debug( __METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for order ' . $order_id );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for order ' . $orderId );
 
 			$order->add_order_note( sprintf(
 			/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
@@ -390,29 +388,22 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			$this->setOrderPaidAndProcessed( $order );
 
 			// Remove (old) cancelled payments from this order
-			$this->unsetCancelledMolliePaymentId( $order_id );
+			$this->unsetCancelledMolliePaymentId( $orderId );
 
 			// Add messages to log
-			Mollie_WC_Plugin::debug( __METHOD__ . ' processing order status update via Mollie plugin fully completed for order ' . $order_id );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' processing order status update via Mollie plugin fully completed for order ' . $orderId );
 
 			// Subscription processing
 			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-
-				if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-					if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->id ) ) {
-						$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
-					}
-				} else {
-					if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
-						$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
-					}
-				}
+                if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $orderId ) ) {
+                    $this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
+                }
 			}
 
 		} else {
 
 			// Add messages to log
-			Mollie_WC_Plugin::debug( __METHOD__ . ' order at Mollie not authorized, so no processing for order ' . $order_id );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' order at Mollie not authorized, so no processing for order ' . $orderId );
 
 		}
 	}
@@ -426,15 +417,15 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 		// Get order ID in the correct way depending on WooCommerce version
 		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			$order_id = $order->id;
+			$orderId = $order->id;
 		} else {
-			$order_id = $order->get_id();
+			$orderId = $order->get_id();
 		}
 
 		if ( $payment->isCompleted() ) {
 
 			// Add messages to log
-			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $orderId );
 
 			// WooCommerce 2.2.0 has the option to store the Payment transaction id.
 			$woo_version = get_option( 'woocommerce_version', 'Unknown' );
@@ -447,7 +438,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			}
 
 			// Add messages to log
-			Mollie_WC_Plugin::debug( __METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for order ' . $order_id );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for order ' . $orderId );
 
 			$order->add_order_note( sprintf(
 			/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
@@ -462,28 +453,22 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			$this->setOrderPaidAndProcessed( $order );
 
 			// Remove (old) cancelled payments from this order
-			$this->unsetCancelledMolliePaymentId( $order_id );
+			$this->unsetCancelledMolliePaymentId( $orderId );
 
 			// Add messages to log
-			Mollie_WC_Plugin::debug( __METHOD__ . ' processing order status update via Mollie plugin fully completed for order ' . $order_id );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' processing order status update via Mollie plugin fully completed for order ' . $orderId );
 
 			// Subscription processing
 			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-				if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-					if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->id ) ) {
-						$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
-					}
-				} else {
-					if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
-						$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
-					}
-				}
+                if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $orderId ) ) {
+                    $this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
+                }
 			}
 
 		} else {
 
 			// Add messages to log
-			Mollie_WC_Plugin::debug( __METHOD__ . ' order at Mollie not completed, so no further processing for order ' . $order_id );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' order at Mollie not completed, so no further processing for order ' . $orderId );
 
 		}
 	}

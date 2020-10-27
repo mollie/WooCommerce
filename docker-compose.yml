@@ -32,7 +32,6 @@ services:
     volumes:
       - wordpress:${DOCROOT_PATH}
       - ${BASE_PATH}:${PROJECT_MOUNT_PATH}
-      - ${BASE_PATH}/vendor/woocommerce/woocommerce:${DOCROOT_PATH}/wp-content/plugins/woocommerce
     ports:
       - 80:80
 

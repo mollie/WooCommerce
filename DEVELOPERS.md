@@ -29,3 +29,10 @@ steps described below to set everything up.
     ```
     docker-compose run php /opt/wp.sh
     ```
+7. Build assets.
+
+    This project does not commit the built assets, so in order to build them we use gulp
+    
+    ```
+    gulp buildAssets
+    ```

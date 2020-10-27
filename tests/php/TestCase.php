@@ -7,6 +7,7 @@ use Faker;
 use Mockery;
 use PHPUnit_Framework_MockObject_MockBuilder;
 use PHPUnit_Framework_MockObject_MockObject;
+use WP_Error;
 use function Brain\Monkey\Functions\when;
 use function Brain\Monkey\setUp;
 use function Brain\Monkey\tearDown;
@@ -108,5 +109,21 @@ class TestCase extends PhpUnitTestCase
     protected function proxyFor(PHPUnit_Framework_MockObject_MockObject $testee)
     {
         return $this->reflect($testee);
+    }
+
+    /**
+     * @param string $code
+     * @param string $message
+     * @param string $data
+     *
+     * @return PHPUnit_Framework_MockObject_MockObject&WP_Error
+     */
+    protected function createWpError($code = '', $message = '', $data = '')
+    {
+        $mock = $this->getMockBuilder('WP_Error')
+            ->setMethods(['get_error_code', 'get_error_message', 'get_error_data'])
+            ->getMock();
+
+        return $mock;
     }
 }

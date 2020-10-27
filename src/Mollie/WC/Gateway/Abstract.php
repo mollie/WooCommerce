@@ -508,7 +508,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                     $test_mode
             );
 
-			$this->saveMollieInfo( $order, $payment_object );
+			$this->saveMollieInfo( $order, $paymentObject );
 
             if ($dataHelper->isEcurSubscription()) {
                 $mandates = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers->get( $customer_id )->mandates();
@@ -516,16 +516,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 $customerId = $mandate->customerId;
                 $mandateId = $mandate->id;
                 Mollie_WC_Plugin::debug("Mollie Subscription in the order: customer id {$customerId} and mandate id {$mandateId} ");
-                do_action(Mollie_WC_Plugin::PLUGIN_ID . '_after_mandate_created', $payment_object, $order, $customerId, $mandateId);
+                do_action(Mollie_WC_Plugin::PLUGIN_ID . '_after_mandate_created', $paymentObject, $order, $customerId, $mandateId);
             }
 
-			do_action( Mollie_WC_Plugin::PLUGIN_ID . '_payment_created', $payment_object, $order );
-
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-				Mollie_WC_Plugin::debug( $this->id . ': Mollie payment object ' . $payment_object->id . ' (' . $payment_object->mode . ') created for order ' . $order->id );
-			} else {
-				Mollie_WC_Plugin::debug( $this->id . ': Mollie payment object ' . $payment_object->id . ' (' . $payment_object->mode . ') created for order ' . $order->get_id() );
-			}
+			do_action( Mollie_WC_Plugin::PLUGIN_ID . '_payment_created', $paymentObject, $order );
+            Mollie_WC_Plugin::debug( $this->id . ': Mollie payment object ' . $paymentObject->id . ' (' . $paymentObject->mode . ') created for order ' . $orderId );
 
 			// Update initial order status for payment methods where the payment status will be delivered after a couple of days.
 			// See: https://www.mollie.com/nl/docs/status#expiry-times-per-payment-method

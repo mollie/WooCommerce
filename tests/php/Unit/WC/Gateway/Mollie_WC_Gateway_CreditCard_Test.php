@@ -3,7 +3,7 @@
 namespace Mollie\WooCommerceTests\Unit\WC\Gateway;
 
 use Mollie\WooCommerceTests\TestCase;
-use Mollie_WC_Gateway_CreditCard as Testee;
+use Mollie_WC_Gateway_Creditcard as Testee;
 
 use function Brain\Monkey\Functions\expect;
 

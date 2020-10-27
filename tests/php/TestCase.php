@@ -10,14 +10,14 @@ use PHPUnit_Framework_MockObject_MockObject;
 use function Brain\Monkey\Functions\when;
 use function Brain\Monkey\setUp;
 use function Brain\Monkey\tearDown;
-use PHPUnit\Framework\TestCase as PhpUniTestCase;
+use PHPUnit\Framework\TestCase as PhpUnitTestCase;
 use Xpmock\Reflection;
 use Xpmock\TestCaseTrait;
 
 /**
  * Class Testcase
  */
-class TestCase extends PhpUniTestCase
+class TestCase extends PhpUnitTestCase
 {
     use TestCaseTrait;
     /**

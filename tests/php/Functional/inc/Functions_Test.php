@@ -53,8 +53,6 @@ class Functions_Test extends TestCase
     protected function setUp()
     {
         parent::setUp();
-
-        require_once PROJECT_DIR . '/inc/functions.php';
     }
 
     /* -----------------------------------------------------------------

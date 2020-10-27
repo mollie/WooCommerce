@@ -1,6 +1,6 @@
 <?php # -*- coding: utf-8 -*-
 
-namespace Mollie\WooCommerceTests\Functional\WC\Gateway;
+namespace Mollie\WooCommerceTests\Functional\WC\Payment;
 
 use Mollie\WooCommerceTests\TestCase;
 use Mollie_WC_Payment_Object;

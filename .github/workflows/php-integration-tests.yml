@@ -17,4 +17,4 @@ jobs:
                 working-directory: ./tests/docker
                 run: |
                   sleep 15
-                  docker-compose run php72 composer config --global --auth http-basic.repo.packagist.com token ${{ secrets.PACKAGIST_TOKEN }} && composer install -q -n -a --no-progress --prefer-dist && composer tests:integration"
+                  docker-compose run php72 composer config --global --auth http-basic.repo.packagist.com token ${{ secrets.PACKAGIST_TOKEN }} && composer install -q -n -a --no-progress --prefer-dist && composer tests:integration

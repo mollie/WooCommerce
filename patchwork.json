@@ -2,7 +2,6 @@
   "redefinable-internals": [
     "filter_input",
     "filemtime",
-    "file_get_contents",
-    "idn_to_ascii"
+    "file_get_contents"
   ]
 }

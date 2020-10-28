@@ -7,10 +7,6 @@ if (!file_exists($vendor . 'autoload.php')) {
     die('Please install via Composer before running tests.');
 }
 
-putenv('TESTS_DIR=' . __DIR__);
-putenv('LIB_DIR=' . $libPath);
-putenv("VENDOR_DIR={$libPath}/vendor");
-
 require_once __DIR__ . '/Stubs/stubs.php';
 require_once $vendor . 'brain/monkey/inc/patchwork-loader.php';
 require_once $vendor . 'autoload.php';
@@ -24,7 +20,5 @@ if (!defined('M4W_PLUGIN_DIR')) {
 if (!defined('M4W_PLUGIN_URL')) {
     define('M4W_PLUGIN_URL', PROJECT_DIR);
 }
-
-defined('ABSPATH') or define('ABSPATH', "{$libPath}/vendor/wordpress/wordpress/");
 
 unset($vendor, $projectDir);

@@ -54,7 +54,8 @@
     }
   ],
   "extra": {
-    "installer-disable": true
+    "installer-disable": true,
+    "wordpress-install-dir": "vendor/wordpress/wordpress"
   },
   "scripts": {
     "tests:integration": "@php ./vendor/phpunit/phpunit/phpunit --testsuite=integration --no-coverage",

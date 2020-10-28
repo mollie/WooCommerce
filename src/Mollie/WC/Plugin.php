@@ -753,7 +753,7 @@ class Mollie_WC_Plugin
         $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_STRING);
         $bankTransferSettings = get_option('mollie_wc_gateway_banktransfer_settings', false);
         $isSettingActivated = false;
-        if($bankTransferSettings){
+        if($bankTransferSettings && isset($bankTransferSettings['activate_expiry_days_setting'])){
             $expiryDays = $bankTransferSettings['activate_expiry_days_setting'];
             $isSettingActivated = mollieWooCommerceStringToBoolOption($expiryDays);
         }

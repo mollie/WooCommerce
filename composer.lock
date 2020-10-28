@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3b0f93f1090eabc22e1336b92a5197b5",
+    "content-hash": "f40f063006a29ee21fe58cf7aeb78aeb",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1201,16 +1201,16 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/fzaninotto/Faker.git",
-                "reference": "26c3c624bbfd3924e5a36a8c5a077a1fd7f167d3"
+                "reference": "ac73e5287024f5e98dd6d0bf10e6a6f7877b7513"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fzaninotto/Faker/zipball/26c3c624bbfd3924e5a36a8c5a077a1fd7f167d3",
-                "reference": "26c3c624bbfd3924e5a36a8c5a077a1fd7f167d3",
+                "url": "https://api.github.com/repos/fzaninotto/Faker/zipball/ac73e5287024f5e98dd6d0bf10e6a6f7877b7513",
+                "reference": "ac73e5287024f5e98dd6d0bf10e6a6f7877b7513",
                 "shasum": ""
             },
             "require": {
-                "php": "^5.3.3 || ^7.0"
+                "php": "^5.3.3 || ^7.0 || ^8.0"
             },
             "require-dev": {
                 "ext-intl": "*",
@@ -1248,7 +1248,7 @@
                 "issues": "https://github.com/fzaninotto/Faker/issues",
                 "source": "https://github.com/fzaninotto/Faker/tree/master"
             },
-            "time": "2020-10-23T12:58:11+00:00"
+            "time": "2020-10-27T14:15:58+00:00"
         },
         {
             "name": "hamcrest/hamcrest-php",
@@ -1308,12 +1308,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/johnpbloch/wordpress-core.git",
-                "reference": "516f11c1cf91c092553c42018c187971d1450654"
+                "reference": "4c4e172fbc08bca261cc999243d797b60b773241"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/johnpbloch/wordpress-core/zipball/516f11c1cf91c092553c42018c187971d1450654",
-                "reference": "516f11c1cf91c092553c42018c187971d1450654",
+                "url": "https://api.github.com/repos/johnpbloch/wordpress-core/zipball/4c4e172fbc08bca261cc999243d797b60b773241",
+                "reference": "4c4e172fbc08bca261cc999243d797b60b773241",
                 "shasum": ""
             },
             "require": {
@@ -1348,7 +1348,7 @@
                 "source": "https://core.trac.wordpress.org/browser",
                 "wiki": "https://codex.wordpress.org/"
             },
-            "time": "2020-10-26T23:09:11+00:00"
+            "time": "2020-10-27T19:09:11+00:00"
         },
         {
             "name": "mockery/mockery",

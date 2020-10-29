@@ -2442,7 +2442,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     }
 
     /**
-     * @param Mollie_WC_Payment_Payment $paymentObject
      * @param WC_Order                $order
      * @param                         $customer_id
      * @param                         $test_mode
@@ -2451,11 +2450,13 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      * @throws ApiException
      */
     protected function processAsMolliePayment(
-            Mollie_WC_Payment_Payment $paymentObject,
             WC_Order $order,
             $customer_id,
             $test_mode
     ) {
+        $paymentObject = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject(
+                self::PAYMENT_METHOD_TYPE_PAYMENT
+        );
         $paymentRequestData = $paymentObject->getPaymentRequestData(
                 $order,
                 $customer_id
@@ -2551,7 +2552,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             );
 
             $paymentObject = $this->processAsMolliePayment(
-                    $paymentObject,
                     $order,
                     $customer_id,
                     $test_mode

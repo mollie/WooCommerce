@@ -48,6 +48,8 @@ class Mollie_WC_Plugin
         'Mollie_WC_Gateway_Giftcard',
         'Mollie_WC_Gateway_Applepay',
         'Mollie_WC_Gateway_MyBank',
+        'Mollie_WC_Gateway_Mealvoucher',
+
     );
 
     private function __construct () {}
@@ -197,6 +199,10 @@ class Mollie_WC_Plugin
 		add_filter( 'woocommerce_payment_gateways', array ( __CLASS__, 'addGateways' ) );
 
         add_filter('woocommerce_payment_gateways', [__CLASS__, 'maybeDisableApplePayGateway'], 20);
+        add_filter('woocommerce_payment_gateways', function($gateways){
+            $maybeEnablegatewayHelper = new Mollie_WC_Helper_MaybeDisableGateway();
+            return $maybeEnablegatewayHelper->maybeDisableMealVoucherGateway($gateways);
+        });
         add_filter('woocommerce_payment_gateways', [__CLASS__, 'maybeDisableBankTransferGateway'], 20);
         add_action(
             'woocommerce_after_order_object_save',
@@ -251,6 +257,7 @@ class Mollie_WC_Plugin
         // Enqueue Scripts
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueFrontendScripts']);
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueComponentsAssets']);
+        add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueMealvoucherAssets']);
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueApplePayDirectScripts']);
 
         add_action(
@@ -274,6 +281,22 @@ class Mollie_WC_Plugin
                 return $settings;
             }
         );
+        add_filter(
+            'woocommerce_product_data_tabs',
+            function ($tabs) {
+                $tabs['Mollie'] = array(
+                    'label'		=> __( 'Mollie Settings', 'mollie-payments-for-woocommerce' ),
+                    'target'	=> 'mollie_options',
+                    'class'		=> array( 'show_if_simple', 'show_if_variable'  ),
+                );
+
+                return $tabs;
+            }
+        );
+        add_filter( 'woocommerce_product_data_panels', [__CLASS__, 'mollieOptionsProductTabContent'] );
+        add_action( 'woocommerce_process_product_meta_simple', [__CLASS__, 'saveProductVoucherOptionFields']  );
+        add_action( 'woocommerce_process_product_meta_variable', [__CLASS__, 'saveProductVoucherOptionFields']  );
+
         add_filter( Mollie_WC_Plugin::PLUGIN_ID . '_retrieve_payment_gateways', function(){
             return self::$GATEWAYS;
         });
@@ -286,7 +309,7 @@ class Mollie_WC_Plugin
 
 		// Mark plugin initiated
 		self::$initiated = true;
-	}
+    }
 
     public static function maybeTestModeNotice()
     {
@@ -323,6 +346,76 @@ class Mollie_WC_Plugin
         }
         return $willCancel;
     }
+    /**
+     * Contents of the Mollie options product tab.
+     */
+    public static function mollieOptionsProductTabContent()
+    {
+        ?>
+        <div id='mollie_options' class='panel woocommerce_options_panel'><?php
+
+        ?>
+        <div class='options_group'><?php
+
+        woocommerce_wp_select(
+                array(
+                        'id' => Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+                        'title' => __(
+                                'Select the default products category',
+                                'mollie-payments-for-woocommerce'
+                        ),
+                        'label' => __(
+                                'Products voucher category',
+                                'mollie-payments-for-woocommerce'
+                        ),
+
+                        'type' => 'select',
+                        'options' => array(
+                                Mollie_WC_Gateway_Mealvoucher::NO_CATEGORY => 'No category',
+                                Mollie_WC_Gateway_Mealvoucher::MEAL => 'Meal',
+                                Mollie_WC_Gateway_Mealvoucher::ECO => 'Eco',
+                                Mollie_WC_Gateway_Mealvoucher::GIFT => 'Gift'
+
+                        ),
+                        'default' => Mollie_WC_Gateway_Mealvoucher::NO_CATEGORY,
+                    /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
+                        'description' => sprintf(
+                                __(
+                                        'In order to process it, all products in the order must have a category. To disable the product from voucher selection select "No category" option.',
+                                        'mollie-payments-for-woocommerce'
+                                )
+                        ),
+                        'desc_tip' => true,
+                )
+        );
+
+        ?></div>
+
+        </div><?php
+    }
+
+    /**
+     * Save the product voucher local category option.
+     *
+     * @param $post_id
+     */
+    public static function saveProductVoucherOptionFields($post_id)
+    {
+        $option = filter_input(
+            INPUT_POST,
+            Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+            FILTER_SANITIZE_STRING
+        );
+        $voucherCategory = isset($option) ? $option : '';
+
+        update_post_meta(
+            $post_id,
+            Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+            $voucherCategory
+        );
+    }
+
+
 
     /**
      * Enqueues the ApplePay button scripts if enabled and in correct page
@@ -475,6 +568,21 @@ class Mollie_WC_Plugin
             filemtime(Mollie_WC_Plugin::getPluginPath('/public/js/mollie-components.min.js')),
             true
         );
+
+        wp_register_style(
+            'unabledButton',
+            Mollie_WC_Plugin::getPluginUrl('/public/css/unabledButton.min.css'),
+            [],
+            filemtime(Mollie_WC_Plugin::getPluginPath('/public/css/unabledButton.min.css')),
+            'screen'
+        );
+        wp_register_script(
+            'mollie_wc_gateway_mealvoucher',
+            Mollie_WC_Plugin::getPluginUrl('/public/js/mealvoucher.min.js'),
+            ['underscore', 'jquery'],
+            filemtime(Mollie_WC_Plugin::getPluginPath('/public/js/mealvoucher.min.js')),
+            true
+        );
     }
 
     /**
@@ -494,6 +602,26 @@ class Mollie_WC_Plugin
         }
 
         wp_enqueue_script('mollie_wc_gateway_applepay');
+        wp_enqueue_script('mollie_wc_gateway_mealvoucher');
+        wp_enqueue_style('unabledButton');
+
+    }
+
+    public static function enqueueMealvoucherAssets()
+    {
+        if (is_admin() || !mollieWooCommerceIsCheckoutContext()) {
+            return;
+        }
+        $enableButtonHelper = new Mollie_WC_Helper_MaybeDisableGateway();
+        wp_localize_script(
+                'mollie_wc_gateway_mealvoucher',
+                'mealvoucherSettings',
+                [
+                        'message'=> __('Some products in the cart cannot be purchased with the selected gateway. Please, select another gateway'),
+                        'productsWithCategory' => $enableButtonHelper->numberProductsWithCategory()
+
+                ]
+        );
     }
 
     /**

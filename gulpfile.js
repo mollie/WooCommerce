@@ -16,17 +16,102 @@ const TMP_DESTINATION_PATH = './dist'
 const PACKAGE_PATH = `${TMP_DESTINATION_PATH}/${PACKAGE_NAME}`
 
 const options = minimist(
-  process.argv.slice(2),
+  process.argv.slice(3),
   {
     string: [
       'packageVersion',
       'compressPath',
     ],
+    bools: [
+        'q',
+    ],
     default: {
       compressPath: process.compressPath || BASE_PATH,
+      q: false
     },
   }
 )
+
+log = (function (options) {
+
+    let out = function (text) {
+        if (!options.q) {
+            console.log(text);
+        }
+    };
+
+    let err = function (text) {
+        console.error(text);
+    }
+
+    let log = function (text) {
+        return out(text);
+    };
+
+    log.out = out;
+    log.err = err;
+
+    return log;
+})(options);
+
+let exec = (function (options) {
+    return function (cmd, args, settings, cb) {
+        args = args || []
+        settings = settings || {}
+        cb = cb || function () {}
+
+        let fullCmd = cmd + (args ? ' ' + args.join(' ') : '');
+        log(`exec: ${fullCmd}`);
+        let stdout = ''
+        let stderr = ''
+        let error = null;
+        let ps = proc.spawn(cmd, args, settings);
+
+        if (!options.q) {
+            ps.stdout.pipe(process.stdout)
+        }
+
+        ps.stderr.on('data', (data) => {
+            stderr += data.toString()
+        })
+
+        ps.stdout.on('data', (data) => {
+            stdout += data.toString()
+        })
+
+        ps.on('error', (err) => {
+            err = err.toString()
+            error = new Error(err);
+            cb(error, stdout, stderr);
+        });
+
+        ps.on('exit', (code) => {
+            if (code) {
+                error = new Error(`Subprocess exited with code ${code}\n${stderr}`);
+            }
+
+            cb(error, stdout, stderr);
+        });
+
+        return ps
+    }
+})(options)
+
+/**
+ * @param {Function<Function>[]} tasks The tasks to chain
+ * @param {Function} callback The function to run when all tasks complete
+ */
+chain = function (tasks, callback) {
+    let task = tasks.shift()
+
+    return task((error) => {
+        if (error || !tasks.length) {
+            return callback(error)
+        }
+
+        return chain(tasks, callback)
+    })
+}
 
 function setupCheckPackageVersion ({ packageVersion })
 {

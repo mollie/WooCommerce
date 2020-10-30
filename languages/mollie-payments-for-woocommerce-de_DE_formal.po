@@ -165,8 +165,8 @@ msgid "Base Styles"
 msgstr "Basisformat"
 
 #: src/Mollie/WC/Gateway/Abstract.php:2056
-msgid "Secure payments provided by "
-msgstr "Sichere Zahlungen bereitgestellt durch "
+msgid "%1$s Secure payments provided by %2$s"
+msgstr "%1$s Sichere Zahlungen bereitgestellt durch %2$s"
 
 #: src/Mollie/WC/Plugin.php:431
 msgid "An unknown error occurred, please check the card fields."

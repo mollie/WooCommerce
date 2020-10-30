@@ -130,25 +130,23 @@ function setupCheckPackageVersion ({ packageVersion })
 
 function setupComposer ({ environment, basePath })
 {
-  let parameters = ''
+  let parameters = ['install']
 
   if (environment === ENV_PRODUCTION) {
-    parameters = `--prefer-dist --optimize-autoloader --no-dev --working-dir=${basePath}`
+    parameters = parameters.concat(['--prefer-dist', '--optimize-autoloader', '--no-dev', `--working-dir=${basePath}`])
   }
 
   return function composer (done)
   {
-    return exec(
-      `composer install ${parameters}`,
-      (error, stdout, stderr) =>
-      {
-        if (error) {
-          throw new Error(error)
-        }
+      function config (done) {
+          return exec('composer', ['config', 'platform.php', '5.6.39'], {}, done);
+      }
 
-        done()
-      },
-    )
+      function install (done) {
+          return exec(`composer`, parameters, {}, done)
+      }
+
+      chain([config, install], done);
   }
 }
 
@@ -159,15 +157,10 @@ function setupEncore ({ environment, basePath })
     environment = (environment === ENV_DEVELOPMENT) ? 'dev' : environment
 
     exec(
-      `./node_modules/.bin/encore ${environment} --env.basePath ${basePath}`,
-      (error, stdout, stderr) =>
-      {
-        if (error) {
-          throw new Error(error)
-        }
-
-        done()
-      },
+      `./node_modules/.bin/encore`,
+      [environment, `--env.basePath ${basePath}`],
+      {},
+      done,
     )
   }
 }
@@ -273,7 +266,8 @@ function setupCompressPackage ({ packageVersion, compressPath, basePath })
     {
       exec(
         `git log -n 1 | head -n 1 | sed -e 's/^commit //' | head -c 8`,
-        {},
+        [],
+          {'shell': true},
         (error, stdout) =>
         {
           const shortHash = error ? timeStamp : stdout

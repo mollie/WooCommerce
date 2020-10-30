@@ -11,5 +11,6 @@
 /.idea/vagrant.xml
 /public/js/
 /public/css/
+/tools/
 
 .env

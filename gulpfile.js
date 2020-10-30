@@ -1,39 +1,56 @@
 const gulp = require('gulp')
-const gulpPhpUnit = require('gulp-phpunit')
-const gulpZip = require('gulp-zip')
-const gulpDel = require('del')
-const minimist = require('minimist')
-const fs = require('fs')
+const { series, parallel, src, dest } = gulp
+const del = require('del')
 const pump = require('pump')
+const minimist = require('minimist')
+const { spawn } = require('child_process')
 const usage = require('gulp-help-doc')
-const { exec } = require('child_process')
+const zip = require('gulp-zip')
+const rename = require('gulp-rename')
+const date = require('date-and-time')
 
-const ENV_PRODUCTION = 'production'
-const ENV_DEVELOPMENT = 'development'
-const PACKAGE_NAME = 'mollie-payments-for-woocommerce'
-const BASE_PATH = './'
-const TMP_DESTINATION_PATH = './dist'
-const PACKAGE_PATH = `${TMP_DESTINATION_PATH}/${PACKAGE_NAME}`
+const options = {
+    ...minimist(
+        process.argv,
+        {
+            string: [
+                'packageVersion',
+                'packageName',
+                'baseDir',
+                'buildDir',
+                'distDir',
+            ],
+            bools: [
+                'q',
+            ],
+            default: {
+                packageVersion: 'dev',
+                packageName: 'mollie-payments-for-woocommerce',
+                baseDir: __dirname,
+                buildDir: `${__dirname}/build`,
+                distDir: `${__dirname}/dist`,
+                q: false
+            },
+        }
+    )
+}
 
-const options = minimist(
-  process.argv.slice(3),
-  {
-    string: [
-      'packageVersion',
-      'compressPath',
-    ],
-    bools: [
-        'q',
-    ],
-    default: {
-      compressPath: process.compressPath || BASE_PATH,
-      q: false
-    },
-  }
-)
 
-log = (function (options) {
+// --------------------------------------------------------------------
+// CONSTANTS
+// --------------------------------------------------------------------
 
+
+// --------------------------------------------------------------------
+// FUNCTIONS
+// --------------------------------------------------------------------
+let log = (function (options) {
+
+    /**
+     * Logs text.
+     *
+     * @param text The text to lot.
+     */
     let out = function (text) {
         if (!options.q) {
             console.log(text);
@@ -44,6 +61,9 @@ log = (function (options) {
         console.error(text);
     }
 
+    /**
+     * @alias out()
+     */
     let log = function (text) {
         return out(text);
     };
@@ -55,6 +75,12 @@ log = (function (options) {
 })(options);
 
 let exec = (function (options) {
+    /**
+     * @param {string} cmd The command to run.
+     * @param {Array<string>} args A list of arguments to run the command with
+     * @param {Object} settings Any settings for the child process.
+     * @param {Function<Function>[]} tasks The tasks to chain.
+     */
     return function (cmd, args, settings, cb) {
         args = args || []
         settings = settings || {}
@@ -65,7 +91,7 @@ let exec = (function (options) {
         let stdout = ''
         let stderr = ''
         let error = null;
-        let ps = proc.spawn(cmd, args, settings);
+        let ps = spawn(cmd, args, settings);
 
         if (!options.q) {
             ps.stdout.pipe(process.stdout)
@@ -98,10 +124,10 @@ let exec = (function (options) {
 })(options)
 
 /**
- * @param {Function<Function>[]} tasks The tasks to chain
- * @param {Function} callback The function to run when all tasks complete
+ * @param {Function<Function>[]} tasks The tasks to chain.
+ * @param {Function} callback The callback that should run at the end of the chain.
  */
-chain = function (tasks, callback) {
+let chain = function (tasks, callback) {
     let task = tasks.shift()
 
     return task((error) => {
@@ -113,282 +139,187 @@ chain = function (tasks, callback) {
     })
 }
 
-function setupCheckPackageVersion ({ packageVersion })
-{
-  return function checkPackageVersion (done)
-  {
-    return new Promise((resolve, reject) =>
-    {
-      if (packageVersion) {
+// --------------------------------------------------------------------
+// TASKS
+// --------------------------------------------------------------------
+
+function _help() {
+    return function help(done) {
+        return usage(gulp)
+    }
+}
+
+function _clean({baseDir, buildDir}) {
+    return function clean(done) {
+        del.sync([buildDir], {force: true, cwd: baseDir})
         done()
-      }
-
-      reject('Missing --packageVersion option with a semver value.')
-    })
-  }
+    }
 }
 
-function setupComposer ({ environment, basePath })
-{
-  let parameters = ['install']
-
-  if (environment === ENV_PRODUCTION) {
-    parameters = parameters.concat(['--prefer-dist', '--optimize-autoloader', '--no-dev', `--working-dir=${basePath}`])
-  }
-
-  return function composer (done)
-  {
-      function config (done) {
-          return exec('composer', ['config', 'platform.php', '5.6.39'], {}, done);
-      }
-
-      function install (done) {
-          return exec(`composer`, parameters, {}, done)
-      }
-
-      chain([config, install], done);
-  }
+function _copy({baseDir, buildDir}) {
+    return function copy(done) {
+        pump(
+            src([`**/*.*`, `!${buildDir}/**/*.*`, '!.git/**/*.*', '!vendor/**/*.*', '!node_modules/**/*.*'], {base: baseDir, cwd: baseDir, dot: true}),
+            dest(buildDir),
+            done
+        )
+    }
 }
 
-function setupEncore ({ environment, basePath })
-{
-  return function encore (done)
-  {
-    environment = (environment === ENV_DEVELOPMENT) ? 'dev' : environment
-
-    exec(
-      `./node_modules/.bin/encore`,
-      [environment, `--env.basePath ${basePath}`],
-      {},
-      done,
-    )
-  }
+function _installPhp({buildDir}) {
+    return function installPhp(done) {
+        chain([
+            (done) => { return exec('composer', ['config', 'platform.php', '5.6.39'], {}, done)},
+            (done) => { return exec(`composer`, ['install', '--prefer-dist', '--optimize-autoloader', '--no-dev'], {cwd: buildDir}, done) },
+        ], done);
+    }
 }
 
-function setupPhpunit ()
-{
-  return function phpunit (done)
-  {
-    return new Promise(() =>
-    {
-      pump(
-        gulp.src('./phpunit.xml.dist'),
-        gulpPhpUnit(
-          './vendor/bin/phpunit',
-          {
-            debug: false,
-            clear: false,
-            notify: false,
-            statusLine: false,
-          },
-        ),
-        done,
-      )
-    })
-  }
+function _installJs({buildDir}) {
+    return function installJs(done) {
+        chain([
+            (done) => { return exec('npm', ['install', '--production'], {cwd: buildDir}, done) },
+        ], done);
+    }
 }
 
-function setupCopyFiles ({ sources, destination, basePath })
-{
-  return function copyPackageFiles (done)
-  {
-    return new Promise(() =>
-    {
-      pump(
-        gulp.src(
-          sources,
-          {
-            base: basePath,
-          }
-        ),
-        gulp.dest(destination),
-        done,
-      )
-    })
-  }
-}
-
-function deleteTemporaryFiles ()
-{
-  if (!fs.existsSync(TMP_DESTINATION_PATH)) {
-    throw new Error(`Cannot create package, ${TMP_DESTINATION_PATH} doesn't exists.`)
-  }
-
-  gulpDel.sync(
-    [
-      `${PACKAGE_PATH}/public/css/entrypoints.json`,
-      `${PACKAGE_PATH}/public/css/manifest.json`,
-      `${PACKAGE_PATH}/public/css/runtime.js`,
-      `${PACKAGE_PATH}/public/js/entrypoints.json`,
-      `${PACKAGE_PATH}/public/js/runtime.js`,
-      `${PACKAGE_PATH}/public/js/manifest.json`,
-      `${TMP_DESTINATION_PATH}/**/.gitignore`,
-      `${TMP_DESTINATION_PATH}/**/.gitattributes`,
-      `${TMP_DESTINATION_PATH}/**/.travis.yml`,
-      `${TMP_DESTINATION_PATH}/**/.scrutinizer.yml`,
-      `${TMP_DESTINATION_PATH}/**/.gitattributes`,
-      `${TMP_DESTINATION_PATH}/**/.git`,
-      `${TMP_DESTINATION_PATH}/**/changelog.txt`,
-      `${TMP_DESTINATION_PATH}/**/changelog.md`,
-      `${TMP_DESTINATION_PATH}/**/CHANGELOG.md`,
-      `${TMP_DESTINATION_PATH}/**/CHANGELOG`,
-      `${TMP_DESTINATION_PATH}/**/README`,
-      `${TMP_DESTINATION_PATH}/**/README.md`,
-      `${TMP_DESTINATION_PATH}/**/readme.md`,
-      `${TMP_DESTINATION_PATH}/**/readme.txt`,
-      `${TMP_DESTINATION_PATH}/**/CONTRIBUTING.md`,
-      `${TMP_DESTINATION_PATH}/**/CONTRIBUTING`,
-      `${TMP_DESTINATION_PATH}/**/composer.json`,
-      `${TMP_DESTINATION_PATH}/**/composer.lock`,
-      `${TMP_DESTINATION_PATH}/**/phpcs.xml`,
-      `${TMP_DESTINATION_PATH}/**/phpcs.xml.dist`,
-      `${TMP_DESTINATION_PATH}/**/phpunit.xml`,
-      `${TMP_DESTINATION_PATH}/**/phpunit.xml.dist`,
-      `${TMP_DESTINATION_PATH}/**/bitbucket-pipelines.yml`,
-      `${TMP_DESTINATION_PATH}/**/test`,
-      `${TMP_DESTINATION_PATH}/**/tests`,
-      `${TMP_DESTINATION_PATH}/**/bin`,
-      `${TMP_DESTINATION_PATH}/**/Dockerfile`,
-      `${TMP_DESTINATION_PATH}/**/Makefile`,
-    ],
-  )
-}
-
-function setupCompressPackage ({ packageVersion, compressPath, basePath })
-{
-  return function compressPackage (done)
-  {
-    const timeStamp = new Date().getTime()
-
-    deleteTemporaryFiles()
-
-    return new Promise(() =>
-    {
-      exec(
-        `git log -n 1 | head -n 1 | sed -e 's/^commit //' | head -c 8`,
-        [],
-          {'shell': true},
-        (error, stdout) =>
-        {
-          const shortHash = error ? timeStamp : stdout
-
-          pump(
-            gulp.src(`${TMP_DESTINATION_PATH}/**/*`, {
-              base: TMP_DESTINATION_PATH,
-            }),
-            gulpZip(`${PACKAGE_NAME}-${packageVersion}-${shortHash}.zip`),
-            gulp.dest(
-              compressPath,
-              {
-                base: TMP_DESTINATION_PATH,
-                cwd: basePath,
-              },
-            ),
+function _processAssets({baseDir, buildDir}) {
+    return function processAssets(done) {
+        exec(
+            `node_modules/.bin/encore`,
+            ['production', `--env.basePath="${buildDir}"`],
+            {cwd: baseDir},
             done,
-          )
-        },
-      )
-    })
-  }
+        )
+    }
 }
 
-function setupCleanDist ()
-{
-  return async function cleanDist ()
-  {
-    await gulpDel(TMP_DESTINATION_PATH)
-  }
+function _archive({baseDir, buildDir, distDir, packageVersion, packageName}) {
+    return function archive(done) {
+        return new Promise(() =>
+        {
+            exec(
+                `git log -n 1 | head -n 1 | sed -e 's/^commit //' | head -c 8`,
+                [],
+                {'shell': true},
+                (error, stdout) =>
+                {
+                    if (error) {
+                        done(new Error(error));
+                    }
+
+                    let commit = stdout;
+                    let timestamp =  date.format(new Date(), 'YYYY-MM-DD.HH-mm-ss', true)
+
+                    pump(
+                        gulp.src([
+                            'inc/**/*.*',
+                            'languages/**/*.*',
+                            'public/**/*.*',
+                            'src/**/*.*',
+                            'vendor/**/*.*',
+                            'node_modules/**/*.*',
+                            '!node_modules/.package.lock.json',
+                            'license.txt',
+                            'mollie-payments-for-woocommerce.php',
+
+                            // Cleanup
+                            '!**/README',
+                            '!**/readme',
+                            '!**/README.md',
+                            '!**/readme.md',
+                            '!**/readme.txt',
+                            '!**/readme.txt',
+                            '!**/DEVELOPERS',
+                            '!**/developers',
+                            '!**/DEVELOPERS.md',
+                            '!**/developers.md',
+                            '!**/DEVELOPERS.txt',
+                            '!**/developers.txt',
+                            '!**/composer.json',
+                            '!**/composer.lock',
+                            '!**/package.json',
+                            '!**/package-lock.json',
+                            '!**/yarn.lock',
+                            '!**/phpunit.xml.dist',
+                            '!**/webpack.config.js',
+                            '!**/.github',
+                            '!**/.git',
+                            '!**/.gitignore',
+                            '!**/.gitattributes',
+                            '!**/Makefile',
+                            '!**/bitbucket-pipelines.yml',
+                            '!**/bin.yml',
+                            '!**/test.yml',
+                            '!**/tests.yml',
+                        ], {
+                            base: buildDir,
+                            cwd: buildDir,
+                            dot: true,
+                        }),
+                        rename((path) => { path.dirname = `${packageName}/` + path.dirname }),
+                        zip(`${packageName}_${packageVersion}+${commit}.${timestamp}.zip`),
+                        gulp.dest(distDir),
+                        done,
+                    )
+                }
+            )
+        })
+    }
 }
 
-function help ()
-{
-  return usage(gulp)
-}
-
-const cleanDist = setupCleanDist()
-
-const buildAssetsTask = gulp.series(
-  setupEncore({
-    ...options,
-    basePath: BASE_PATH,
-    environment: ENV_DEVELOPMENT
-  }),
+// --------------------------------------------------------------------
+// TARGETS
+// --------------------------------------------------------------------
+exports.help = series(
+    _help(options),
 )
 
-const testsTask = gulp.series(
-  setupPhpunit(),
+exports.clean = series(
+    _clean(options),
 )
 
-/**
- * Create the plugin package distribution.
- *
- * @task {dist}
- * @arg {packageVersion} Package version, the version must to be conformed to semver.
- * @arg {compressPath} Where the resulting package zip have to be stored.
- */
-exports.dist = gulp.series(
-  setupCheckPackageVersion({
-    ...options,
-    environment: ENV_PRODUCTION
-  }),
-  cleanDist,
-  setupCopyFiles({
-    ...options,
-    environment: ENV_PRODUCTION,
-    basePath: BASE_PATH,
-    sources: [
-      './public/**/*',
-      '!./public/{css,css/**,js,js/**}',
-      './inc/**/*',
-      './src/**/*',
-      './license.txt',
-      './mollie-payments-for-woocommerce.php',
-      './composer.json',
-      './composer.lock',
-      './languages/*'
-    ],
-    destination: PACKAGE_PATH,
-  }),
-  setupEncore({
-    ...options,
-    basePath: PACKAGE_PATH,
-    environment: ENV_PRODUCTION
-  }),
-  setupComposer({
-    ...options,
-    basePath: PACKAGE_PATH,
-    environment: ENV_PRODUCTION
-  }),
-  setupCompressPackage({
-    ...options,
-    environment: ENV_PRODUCTION
-  }),
-  cleanDist
+exports.copy = series(
+    _copy(options)
 )
 
-/**
- * Setup the Development Environment, usually for the first time
- *
- * @task {setup}
- */
-exports.setup = gulp.series(
-  buildAssetsTask,
-  setupComposer({ environment: ENV_DEVELOPMENT }),
+exports.installPhp = series(
+    _installPhp(options)
 )
 
-exports.help = help
-exports.default = help
+exports.installJs = series(
+    _installJs(options)
+)
 
-/**
- * Build the assets for development
- *
- * @task {buildAssets}
- */
-exports.buildAssets = buildAssetsTask
+exports.processAssets = series(
+    _processAssets(options)
+)
 
-/**
- * Run Tests
- *
- * @task {tests}
- */
-exports.tests = testsTask
+exports.archive = series(
+    _archive(options)
+)
+
+exports.install = parallel(
+    exports.installJs,
+    exports.installPhp,
+)
+
+exports.process = series(
+    exports.processAssets,
+)
+
+exports.build = series(
+    exports.clean,
+    exports.copy,
+    exports.install,
+    exports.process,
+)
+
+exports.dist = series(
+    exports.build,
+    exports.archive,
+)
+
+exports.default = series(
+    exports.build
+)

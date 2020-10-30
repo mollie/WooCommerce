@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+chown -R $(id -u):$(id -g) ./
+
 if wait-for-it.sh "${WORDPRESS_DB_HOST}" -t 60; then
   docker-entrypoint.sh apache2 -v
   wp core install \

@@ -19,6 +19,7 @@ const options = {
                 'baseDir',
                 'buildDir',
                 'distDir',
+                'phpTmpDir',
             ],
             bools: [
                 'q',
@@ -29,6 +30,7 @@ const options = {
                 baseDir: __dirname,
                 buildDir: `${__dirname}/build`,
                 distDir: `${__dirname}/dist`,
+                phpTmpDir: `${__dirname}/build/php`,
                 q: false
             },
         }
@@ -202,6 +204,27 @@ function _processAssets({baseDir, buildDir}) {
     }
 }
 
+function _phpScoper({baseDir, buildDir, phpTmpDir}) {
+    return function phpScoper(done) {
+        let deleteTmpDir = function (done) {
+            del.sync([phpTmpDir], { cwd: buildDir, force: true, dot: true})
+            done()
+        }
+
+        chain([
+            // Delete PHP temporary processing dir
+            deleteTmpDir,
+            // Scope the code and put it into the PHP temporary processing dir
+            (done) => { return exec('tools/php-scoper', ['add-prefix', `--output-dir=${phpTmpDir}`], {cwd: buildDir}, done) },
+            // Copy the scoped files from tmp dir into build dir
+            // (done) => { return pump(src([`src/**/*.*`, `vendor/**/*.*`], {cwd: phpTmpDir, base: phpTmpDir}), gulp.dest(buildDir), done) },
+            // Delete PHP temporary processing dir
+            // (done) => { deleteTmpDir(done) },
+
+        ], done);
+    }
+}
+
 function _archive({baseDir, buildDir, distDir, packageVersion, packageName}) {
     return function archive(done) {
         return new Promise(() =>
@@ -307,6 +330,10 @@ exports.processAssets = series(
     _processAssets(options)
 )
 
+exports.processPhp = series(
+    _phpScoper(options)
+)
+
 exports.archive = series(
     _archive(options)
 )
@@ -319,6 +346,7 @@ exports.install = parallel(
 
 exports.process = series(
     exports.processAssets,
+    exports.processPhp
 )
 
 exports.build = series(

@@ -169,7 +169,7 @@ function _copy({baseDir, buildDir, distDir}) {
 function _installPhp({buildDir}) {
     return function installPhp(done) {
         chain([
-            (done) => { return exec('composer', ['config', 'platform.php', '5.6.39'], {}, done)},
+            (done) => { return exec('composer', ['config', 'platform.php', '5.6.39'], {cwd: buildDir}, done)},
             (done) => { return exec(`composer`, ['install', '--prefer-dist', '--optimize-autoloader', '--no-dev'], {cwd: buildDir}, done) },
         ], done);
     }

@@ -38,7 +38,7 @@ function mollie_wc_plugin_activation_hook()
     require_once __DIR__ . '/inc/functions.php';
     require_once __DIR__ . '/src/subscriptions_status_check_functions.php';
 
-    if (!autoload()) {
+    if (!mollie_wc_plugin_autoload()) {
         return;
     }
 
@@ -196,7 +196,7 @@ function mollie_wc_plugin_inactive()
     }
 }
 
-function autoload()
+function mollie_wc_plugin_autoload()
 {
     $autoloader = __DIR__ . '/vendor/autoload.php';
     if (file_exists($autoloader)) {
@@ -234,7 +234,7 @@ $bootstrap = Closure::bind(
                 require_once __DIR__ . '/inc/functions.php';
                 require_once __DIR__ . '/src/subscriptions_status_check_functions.php';
 
-                if (!autoload()) {
+                if (!mollie_wc_plugin_autoload()) {
                     return;
                 }
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace RequiredVersionDisabler;
+namespace RequiredVersionDisabler\Constraints;
 
 use RequiredVersionDisabler\Notice\AdminNotice;
 
@@ -21,6 +21,12 @@ class WooCommerceConstraint extends Constraint
         $this->pluginName = $pluginName;
     }
 
+    /**
+     * Check if the installation has the required WC version
+     * show notice if not.
+     *
+     * @return bool|mixed
+     */
     public function check()
     {
         $classExists = class_exists(self::CLASS_NAME);
@@ -39,7 +45,9 @@ class WooCommerceConstraint extends Constraint
         );
         if (!$isWooCommerceVersionCompatible) {
             $message
-                = '%1$s%7$s%2$s The %3$sWooCommerce plugin%4$s has to be version 3.0 or higher. Please %5$sinstall & activate WooCommerce &raquo;%6$s';
+                = '%1$s%7$s%2$s: Plugin disabled. The %3$sWooCommerce plugin%4$s has to be version '
+                . $this->requiredVersion
+                . ' or higher. Please %5$sinstall & activate WooCommerce &raquo;%6$s';
             $this->maybeShowNotice($message);
             return false;
         }
@@ -47,6 +55,11 @@ class WooCommerceConstraint extends Constraint
         return true;
     }
 
+    /**
+     * Show error notice
+     *
+     * @param $message
+     */
     protected function maybeShowNotice($message)
     {
         $message = sprintf(

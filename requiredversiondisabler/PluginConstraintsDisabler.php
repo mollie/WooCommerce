@@ -1,64 +1,86 @@
 <?php
 
-
 namespace RequiredVersionDisabler;
 
-
-use RequiredVersionDisabler\Notice\AdminNotice;
+use RequiredVersionDisabler\Constraints\ConstraintsCollection;
 
 class PluginConstraintsDisabler
 {
+
     /**
      * @var EnvironmentChecker
      */
     private $checker;
+    private $pluginSlug;
+    private $initFunctionName;
 
     /**
      * PluginConstraintsDisabler constructor.
      *
-     * @param Constraint[] $constraintsArray
+     * @param ConstraintsCollection $constraintsArray
+     * @param string                $pluginSlug
+     * @param string                $initFunctionName
      */
-    public function __construct(array $constraintsArray)
-    {
-        $this->checker = new EnvironmentChecker($constraintsArray);
+    public function __construct(
+        ConstraintsCollection $constraintsArray,
+        $pluginSlug,
+        $initFunctionName
+    ) {
+        $this->checker = new EnvironmentChecker(
+            $constraintsArray->constraints()
+        );
+        $this->pluginSlug = $pluginSlug;
+        $this->initFunctionName = $initFunctionName;
     }
 
+    /**
+     * Disable the plugin if conditions apply
+     */
     public function maybeDisable()
     {
         if ($this->checker->isCompatible()) {
             return;
         }
         $this->disableAutomaticUpdate();
-        $this->disablePluginActivation();
+        $this->disablePluginActivation($this->initFunctionName);
     }
 
-    private function disableAutomaticUpdate()
+    /**
+     * Disable automatic updates of this plugin
+     */
+    protected function disableAutomaticUpdate()
     {
-        //TODO disable update
-        //TODO show notice is disabled because of failed requirements
-    }
-
-    private function disablePluginActivation()
-    {
-        //TODO disable activation
-        //TODO show notice is disabled because of failed requirements
-    }
-    protected function maybeShowNotice($message)
-    {
-        $message = sprintf(
-            esc_html__(
-                $message,
-                'mollie-payments-for-woocommerce'
-            ),
-            '<strong>',
-            '</strong>',
-            '<a href="https://wordpress.org/plugins/woocommerce/">',
-            '</a>',
-            '<a href="' . esc_url(admin_url('plugins.php')) . '">',
-            '</a>',
-            $this->pluginName
+        add_filter(
+            'auto_update_plugin',
+            [__CLASS__, 'notAutoUpdateThisPlugin'],
+            10,
+            2
         );
-        $notice = new AdminNotice();
-        $notice->addAdminNotice('error', $message);
+    }
+
+    /**
+     * Disable this plugin by removing its init function
+     *
+     * @param string $initFunctionName Name of the method that initiates the plugin.
+     */
+    protected function disablePluginActivation($initFunctionName)
+    {
+        remove_action('init', $initFunctionName);
+    }
+
+    /**
+     * Remove the plugin from the auto-update list
+     * @param $update
+     * @param $item
+     *
+     * @return false
+     */
+    protected function notAutoUpdateThisPlugin($update, $item)
+    {
+        if ($item == $this->pluginSlug) {
+            return false;
+        } else {
+            return $update;
+        }
     }
 }

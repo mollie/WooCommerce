@@ -16,6 +16,9 @@
  */
 
 use Mollie\Api\CompatibilityChecker;
+use RequiredVersionDisabler\ConstraintsCollectionFactory;
+use RequiredVersionDisabler\PluginConstraintsDisabler;
+
 
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 
@@ -203,6 +206,25 @@ function autoload()
 
     return class_exists(Mollie_WC_Plugin::class);
 }
+function mollie_wc_plugin_init() {
+    load_plugin_textdomain('mollie-payments-for-woocommerce', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/');
+    Mollie_WC_Plugin::init();
+}
+function checkConstraints(){
+    $constraints = new ConstraintsCollectionFactory();
+    $constraintsCollection = $constraints->create(
+        [
+            ConstraintsCollectionFactory::WOOCOMMERCE_CONSTRAINT => '3.0'
+        ],
+        'Mollie Payments for WooCommerce'
+    );
+    $disabler = new PluginConstraintsDisabler(
+        $constraintsCollection,
+        'mollie-payments-for-woocommerce',
+        'mollie_wc_plugin_init'
+    );
+    $disabler->maybeDisable();
+}
 
 $bootstrap = Closure::bind(
     function () {
@@ -233,12 +255,9 @@ $bootstrap = Closure::bind(
 
                 add_action(
                     'init',
-                    function () {
-                        load_plugin_textdomain('mollie-payments-for-woocommerce', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/');
-                        Mollie_WC_Plugin::init();
-                    }
+                    'mollie_wc_plugin_init'
                 );
-                
+                checkConstraints();
                 add_action( 'core_upgrade_preamble', 'deleteWPTranslationFiles' );
                 add_filter(
                     'site_transient_update_plugins',

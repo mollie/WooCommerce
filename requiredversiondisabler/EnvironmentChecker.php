@@ -2,6 +2,8 @@
 
 namespace RequiredVersionDisabler;
 
+use RequiredVersionDisabler\Constraints\Constraint;
+
 class EnvironmentChecker {
 
     private $constraintsArray;
@@ -19,6 +21,7 @@ class EnvironmentChecker {
 	}
 
     /**
+     * Check if this installation meets all the requirements
      *
      * @return bool True if there are no restrictions or all the restrictions are true
      */

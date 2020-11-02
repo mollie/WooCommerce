@@ -74,133 +74,219 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 		$return_url      = $gateway->getReturnUrl( $order );
 		$webhook_url     = $gateway->getWebhookUrl( $order );
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 
-			$paymentRequestData = array (
-				'amount'      => array (
-					'currency' => mollieWooCommerceGetDataHelper()->getOrderCurrency( $order ),
-					'value'    => mollieWooCommerceGetDataHelper()->formatCurrencyValue( $order->get_total(), mollieWooCommerceGetDataHelper()->getOrderCurrency( $order ) )
-				),
-				'redirectUrl' => $return_url,
-				'webhookUrl'  => $webhook_url,
-				'method'      => $mollie_method,
-				'issuer'      => $selected_issuer,
-				'locale'      => $payment_locale,
-				'metadata'    => array (
-					'order_id' => $order->id,
-				),
-			);
+        // Setup billing and shipping objects
+        $billingAddress = new stdClass();
+        $shippingAddress = new stdClass();
 
-			// Add sequenceType for subscriptions first payments
-			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-				if ( mollieWooCommerceGetDataHelper()->isSubscription( $order->id ) ) {
+        // Get user details
+        $billingAddress->givenName = (ctype_space(
+            $order->get_billing_first_name()
+        )) ? null : $order->get_billing_first_name();
+        $billingAddress->familyName = (ctype_space(
+            $order->get_billing_last_name()
+        )) ? null : $order->get_billing_last_name();
+        $billingAddress->email = (ctype_space($order->get_billing_email()))
+            ? null : $order->get_billing_email();
 
-					// See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
-					$disable_automatic_payments = ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) ? true : false;
-					$supports_subscriptions     = $gateway->supports( 'subscriptions' );
+        // Get user details
+        $shippingAddress->givenName = (ctype_space(
+            $order->get_shipping_first_name()
+        )) ? null : $order->get_shipping_first_name();
+        $shippingAddress->familyName = (ctype_space(
+            $order->get_shipping_last_name()
+        )) ? null : $order->get_shipping_last_name();
+        $shippingAddress->email = (ctype_space($order->get_billing_email()))
+            ? null
+            : $order->get_billing_email(
+            ); // WooCommerce doesn't have a shipping email
 
-					if ( $supports_subscriptions == true && $disable_automatic_payments == false ) {
-						$paymentRequestData['payment']['sequenceType'] = 'first';
-					}
-				}
-			}
+        // Create billingAddress object
+        $billingAddress->streetAndNumber = (ctype_space(
+            $order->get_billing_address_1()
+        ))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_billing_address_1(),
+                self::MAXIMAL_LENGHT_ADDRESS
+            );
+        $billingAddress->streetAdditional = (ctype_space(
+            $order->get_billing_address_2()
+        ))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_billing_address_2(),
+                self::MAXIMAL_LENGHT_ADDRESS
+            );
+        $billingAddress->postalCode = (ctype_space(
+            $order->get_billing_postcode()
+        ))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_billing_postcode(),
+                self::MAXIMAL_LENGHT_POSTALCODE
+            );
+        $billingAddress->city = (ctype_space($order->get_billing_city()))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_billing_city(),
+                self::MAXIMAL_LENGHT_CITY
+            );
+        $billingAddress->region = (ctype_space($order->get_billing_state()))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_billing_state(),
+                self::MAXIMAL_LENGHT_REGION
+            );
+        $billingAddress->country = (ctype_space($order->get_billing_country()))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_billing_country(),
+                self::MAXIMAL_LENGHT_REGION
+            );
 
-		} else {
+        // Create shippingAddress object
+        $shippingAddress->streetAndNumber = (ctype_space(
+            $order->get_shipping_address_1()
+        ))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_shipping_address_1(),
+                self::MAXIMAL_LENGHT_ADDRESS
+            );
+        $shippingAddress->streetAdditional = (ctype_space(
+            $order->get_shipping_address_2()
+        ))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_shipping_address_2(),
+                self::MAXIMAL_LENGHT_ADDRESS
+            );
+        $shippingAddress->postalCode = (ctype_space(
+            $order->get_shipping_postcode()
+        ))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_shipping_postcode(),
+                self::MAXIMAL_LENGHT_POSTALCODE
+            );
+        $shippingAddress->city = (ctype_space($order->get_shipping_city()))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_shipping_city(),
+                self::MAXIMAL_LENGHT_CITY
+            );
+        $shippingAddress->region = (ctype_space($order->get_shipping_state()))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_shipping_state(),
+                self::MAXIMAL_LENGHT_REGION
+            );
+        $shippingAddress->country = (ctype_space(
+            $order->get_shipping_country()
+        ))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_shipping_country(),
+                self::MAXIMAL_LENGHT_REGION
+            );
 
-			// Setup billing and shipping objects
-			$billingAddress  = new stdClass();
-			$shippingAddress = new stdClass();
+        // Generate order lines for Mollie Orders
+        $order_lines_helper = Mollie_WC_Plugin::getOrderLinesHelper(
+            self::$shop_country,
+            $order
+        );
+        $order_lines = $order_lines_helper->order_lines();
 
-			// Get user details
-			$billingAddress->givenName  = ( ctype_space( $order->get_billing_first_name() ) ) ? null : $order->get_billing_first_name();
-			$billingAddress->familyName = ( ctype_space( $order->get_billing_last_name() ) ) ? null : $order->get_billing_last_name();
-			$billingAddress->email      = ( ctype_space( $order->get_billing_email() ) ) ? null : $order->get_billing_email();
+        // Build the Mollie order data
+        $paymentRequestData = array(
+            'amount' => array(
+                'currency' => mollieWooCommerceGetDataHelper(
+                )->getOrderCurrency($order),
+                'value' => mollieWooCommerceGetDataHelper(
+                )->formatCurrencyValue(
+                    $order->get_total(),
+                    mollieWooCommerceGetDataHelper()->getOrderCurrency($order)
+                )
+            ),
+            'redirectUrl' => $return_url,
+            'webhookUrl' => $webhook_url,
+            'method' => $mollie_method,
+            'payment' => array(
+                'issuer' => $selected_issuer
+            ),
+            'locale' => $payment_locale,
+            'billingAddress' => $billingAddress,
+            'metadata' => apply_filters(
+                Mollie_WC_Plugin::PLUGIN_ID . '_payment_object_metadata',
+                array(
+                    'order_id' => $order->get_id(),
+                    'order_number' => $order->get_order_number()
+                )
+            ),
+            'lines' => $order_lines['lines'],
+            'orderNumber' => $order->get_order_number(),
+            // TODO David: use order number or order id?
+        );
 
-			// Get user details
-			$shippingAddress->givenName  = ( ctype_space( $order->get_shipping_first_name() ) ) ? null : $order->get_shipping_first_name();
-			$shippingAddress->familyName = ( ctype_space( $order->get_shipping_last_name() ) ) ? null : $order->get_shipping_last_name();
-			$shippingAddress->email      = ( ctype_space( $order->get_billing_email() ) ) ? null : $order->get_billing_email(); // WooCommerce doesn't have a shipping email
+        // Add sequenceType for subscriptions first payments
+        if (class_exists('WC_Subscriptions')
+            && class_exists(
+                'WC_Subscriptions_Admin'
+            )
+        ) {
+            if (mollieWooCommerceGetDataHelper()->isSubscription(
+                $order->get_id()
+            )
+            ) {
+                // See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
+                $disable_automatic_payments = ('yes' == get_option(
+                        WC_Subscriptions_Admin::$option_prefix
+                        . '_turn_off_automatic_payments',
+                        'no'
+                    )) ? true : false;
+                $supports_subscriptions = $gateway->supports('subscriptions');
 
-			// Create billingAddress object
-			$billingAddress->streetAndNumber  = ( ctype_space( $order->get_billing_address_1() ) ) ? null : $this->maximalFieldLengths($order->get_billing_address_1(), self::MAXIMAL_LENGHT_ADDRESS);
-			$billingAddress->streetAdditional = ( ctype_space( $order->get_billing_address_2() ) ) ? null : $this->maximalFieldLengths($order->get_billing_address_2(), self::MAXIMAL_LENGHT_ADDRESS);
-			$billingAddress->postalCode       = ( ctype_space( $order->get_billing_postcode() ) ) ? null : $this->maximalFieldLengths($order->get_billing_postcode(), self::MAXIMAL_LENGHT_POSTALCODE);
-			$billingAddress->city             = ( ctype_space( $order->get_billing_city() ) ) ? null : $this->maximalFieldLengths($order->get_billing_city(), self::MAXIMAL_LENGHT_CITY);
-			$billingAddress->region           = ( ctype_space( $order->get_billing_state() ) ) ? null : $this->maximalFieldLengths($order->get_billing_state(), self::MAXIMAL_LENGHT_REGION);
-			$billingAddress->country          = ( ctype_space( $order->get_billing_country() ) ) ? null : $this->maximalFieldLengths($order->get_billing_country(), self::MAXIMAL_LENGHT_REGION);
+                if ($supports_subscriptions == true
+                    && $disable_automatic_payments == false
+                ) {
+                    $paymentRequestData['payment']['sequenceType'] = 'first';
+                }
+            }
+        }
 
-			// Create shippingAddress object
-			$shippingAddress->streetAndNumber  = ( ctype_space( $order->get_shipping_address_1() ) ) ? null : $this->maximalFieldLengths($order->get_shipping_address_1(), self::MAXIMAL_LENGHT_ADDRESS);
-			$shippingAddress->streetAdditional = ( ctype_space( $order->get_shipping_address_2() ) ) ? null : $this->maximalFieldLengths($order->get_shipping_address_2(), self::MAXIMAL_LENGHT_ADDRESS);
-			$shippingAddress->postalCode       = ( ctype_space( $order->get_shipping_postcode() ) ) ? null : $this->maximalFieldLengths($order->get_shipping_postcode(), self::MAXIMAL_LENGHT_POSTALCODE);
-			$shippingAddress->city             = ( ctype_space( $order->get_shipping_city() ) ) ? null : $this->maximalFieldLengths($order->get_shipping_city(), self::MAXIMAL_LENGHT_CITY);
-			$shippingAddress->region           = ( ctype_space( $order->get_shipping_state() ) ) ? null : $this->maximalFieldLengths($order->get_shipping_state(), self::MAXIMAL_LENGHT_REGION);
-			$shippingAddress->country          = ( ctype_space( $order->get_shipping_country() ) ) ? null : $this->maximalFieldLengths($order->get_shipping_country(), self::MAXIMAL_LENGHT_REGION);
 
-			// Generate order lines for Mollie Orders
-			$order_lines_helper = Mollie_WC_Plugin::getOrderLinesHelper( self::$shop_country, $order );
-			$order_lines        = $order_lines_helper->order_lines();
+        // Only add shippingAddress if all required fields are set
+        if (!empty($shippingAddress->streetAndNumber)
+            && !empty($shippingAddress->postalCode)
+            && !empty($shippingAddress->city)
+            && !empty($shippingAddress->country)
+        ) {
+            $paymentRequestData['shippingAddress'] = $shippingAddress;
+        }
 
-			// Build the Mollie order data
-			$paymentRequestData = array (
-				'amount'         => array (
-					'currency' => mollieWooCommerceGetDataHelper()->getOrderCurrency( $order ),
-					'value'    => mollieWooCommerceGetDataHelper()->formatCurrencyValue( $order->get_total(), mollieWooCommerceGetDataHelper()->getOrderCurrency( $order ) )
-				),
-				'redirectUrl'    => $return_url,
-				'webhookUrl'     => $webhook_url,
-				'method'         => $mollie_method,
-				'payment'        => array (
-					'issuer' => $selected_issuer
-				),
-				'locale'         => $payment_locale,
-				'billingAddress' => $billingAddress,
-				'metadata'       => apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_payment_object_metadata', array (
-					'order_id'     => $order->get_id(),
-					'order_number' => $order->get_order_number()
-				) ),
-				'lines'          => $order_lines['lines'],
-				'orderNumber'    => $order->get_order_number(), // TODO David: use order number or order id?
-			);
-
-			// Add sequenceType for subscriptions first payments
-			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-				if ( mollieWooCommerceGetDataHelper()->isSubscription( $order->get_id() ) ) {
-
-					// See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
-					$disable_automatic_payments = ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) ? true : false;
-					$supports_subscriptions     = $gateway->supports( 'subscriptions' );
-
-					if ( $supports_subscriptions == true && $disable_automatic_payments == false ) {
-						$paymentRequestData['payment']['sequenceType'] = 'first';
-					}
-				}
-			}
-		}
-
-		// Only add shippingAddress if all required fields are set
-		if ( ! empty( $shippingAddress->streetAndNumber ) && ! empty( $shippingAddress->postalCode ) && ! empty( $shippingAddress->city ) && ! empty( $shippingAddress->country ) ) {
-			$paymentRequestData['shippingAddress'] = $shippingAddress;
-		}
-
-		// Only store customer at Mollie if setting is enabled
-		if ( $store_customer ) {
-			$paymentRequestData['payment']['customerId'] = $customer_id;
-		}
+        // Only store customer at Mollie if setting is enabled
+        if ($store_customer) {
+            $paymentRequestData['payment']['customerId'] = $customer_id;
+        }
 
         $cardToken = mollieWooCommerceCardToken();
         if ($cardToken && isset($paymentRequestData['payment'])) {
             $paymentRequestData['payment']['cardToken'] = $cardToken;
         }
 
-        if($_POST['token']){
-            $applePayToken = filter_input(INPUT_POST, 'token', FILTER_SANITIZE_STRING);
-            if($applePayToken && isset($paymentRequestData['payment'])){
+        if ($_POST['token']) {
+            $applePayToken = filter_input(
+                INPUT_POST,
+                'token',
+                FILTER_SANITIZE_STRING
+            );
+            if ($applePayToken && isset($paymentRequestData['payment'])) {
                 $encodedApplePayToken = json_encode($applePayToken);
-                $paymentRequestData['payment']['applePayPaymentToken'] = $encodedApplePayToken;
+                $paymentRequestData['payment']['applePayPaymentToken']
+                    = $encodedApplePayToken;
             }
         }
-
 
 
         return $paymentRequestData;
@@ -280,26 +366,13 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	 */
 	public function onWebhookPaid( WC_Order $order, $payment, $paymentMethodTitle ) {
 
-		// Get order ID in the correct way depending on WooCommerce version
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			$orderId = $order->id;
-		} else {
-			$orderId = $order->get_id();
-		}
-
+        $orderId = $order->get_id();
 		if ( $payment->isPaid() ) {
 
 			// Add messages to log
 			Mollie_WC_Plugin::debug( __METHOD__ . " called for order {$orderId}" );
 
-			// WooCommerce 2.2.0 has the option to store the Payment transaction id.
-			$wooVersion = get_option( 'woocommerce_version', 'Unknown' );
-
-			if ( version_compare( $wooVersion, '2.2.0', '>=' ) ) {
-				$order->payment_complete( $payment->id );
-			} else {
-				$order->payment_complete();
-			}
+            $order->payment_complete();
 
 			// Add messages to log
 			Mollie_WC_Plugin::debug( __METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . " for order {$orderId}" );
@@ -328,24 +401,14 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
             // Subscription processing
 			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-				if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-					if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->id ) ) {
-						$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
-						WC_Subscriptions_Manager::activate_subscriptions_for_order( $order );
-					}
-				} else {
-					if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
-						$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
-						WC_Subscriptions_Manager::activate_subscriptions_for_order( $order );
-					}
-				}
+                if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
+                    $this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
+                    WC_Subscriptions_Manager::activate_subscriptions_for_order( $order );
+                }
 			}
-
 		} else {
-
 			// Add messages to log
 			Mollie_WC_Plugin::debug( __METHOD__ . " payment at Mollie not paid, so no processing for order {$orderId}" );
-
 		}
 	}
 
@@ -357,11 +420,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	public function onWebhookAuthorized( WC_Order $order, $payment, $payment_method_title ) {
 
 		// Get order ID in the correct way depending on WooCommerce version
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			$order_id = $order->id;
-		} else {
-			$order_id = $order->get_id();
-		}
+        $order_id = $order->get_id();
 
 		if ( $payment->isAuthorized() ) {
 
@@ -369,14 +428,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id );
 
 			// WooCommerce 2.2.0 has the option to store the Payment transaction id.
-			$woo_version = get_option( 'woocommerce_version', 'Unknown' );
-
-			// TODO David: Keep WooCommerce payment_complete() here?
-			if ( version_compare( $woo_version, '2.2.0', '>=' ) ) {
-				$order->payment_complete( $payment->id );
-			} else {
-				$order->payment_complete();
-			}
+            $order->payment_complete();
 
 			// Add messages to log
 			Mollie_WC_Plugin::debug( __METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for order ' . $order_id );
@@ -399,25 +451,15 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 			// Subscription processing
 			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-
-				if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-					if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->id ) ) {
-						$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
-						WC_Subscriptions_Manager::activate_subscriptions_for_order( $order );
-					}
-				} else {
-					if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
-						$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
-						WC_Subscriptions_Manager::activate_subscriptions_for_order( $order );
-					}
-				}
+                if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
+                    $this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
+                    WC_Subscriptions_Manager::activate_subscriptions_for_order( $order );
+                }
 			}
 
 		} else {
-
 			// Add messages to log
 			Mollie_WC_Plugin::debug( __METHOD__ . ' order at Mollie not authorized, so no processing for order ' . $order_id );
-
 		}
 	}
 
@@ -428,28 +470,14 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	 */
 	public function onWebhookCompleted( WC_Order $order, $payment, $payment_method_title ) {
 
-		// Get order ID in the correct way depending on WooCommerce version
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			$order_id = $order->id;
-		} else {
-			$order_id = $order->get_id();
-		}
+        $order_id = $order->get_id();
 
 		if ( $payment->isCompleted() ) {
 
 			// Add messages to log
 			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id );
 
-			// WooCommerce 2.2.0 has the option to store the Payment transaction id.
-			$woo_version = get_option( 'woocommerce_version', 'Unknown' );
-
-			// TODO David: Keep WooCommerce payment_complete() here?
-			if ( version_compare( $woo_version, '2.2.0', '>=' ) ) {
-				$order->payment_complete( $payment->id );
-			} else {
-				$order->payment_complete();
-			}
-
+            $order->payment_complete();
 			// Add messages to log
 			Mollie_WC_Plugin::debug( __METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for order ' . $order_id );
 
@@ -473,24 +501,14 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 			// Subscription processing
 			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-				if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-					if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->id ) ) {
-						$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
-						WC_Subscriptions_Manager::activate_subscriptions_for_order( $order );
-					}
-				} else {
-					if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
-						$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
-						WC_Subscriptions_Manager::activate_subscriptions_for_order( $order );
-					}
-				}
+                if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
+                    $this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
+                    WC_Subscriptions_Manager::activate_subscriptions_for_order( $order );
+                }
 			}
-
 		} else {
-
 			// Add messages to log
 			Mollie_WC_Plugin::debug( __METHOD__ . ' order at Mollie not completed, so no further processing for order ' . $order_id );
-
 		}
 	}
 
@@ -503,7 +521,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	public function onWebhookCanceled( WC_Order $order, $payment, $payment_method_title ) {
 
 		// Get order ID in the correct way depending on WooCommerce version
-        $order_id = mollieWooCommerceOrderId($order);
+        $order_id = $order->get_id();;
 
 		// Add messages to log
 		mollieWooCommerceDebug(__METHOD__ . " called for order {$order_id}" );
@@ -572,15 +590,9 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 		// Subscription processing
 		if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->id ) ) {
-					$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
-				}
-			} else {
-				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
-					$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
-				}
-			}
+            if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
+                $this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
+            }
 		}
 	}
 
@@ -591,12 +603,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	 */
 	public function onWebhookFailed( WC_Order $order, $payment, $payment_method_title ) {
 
-		// Get order ID in the correct way depending on WooCommerce version
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			$order_id = $order->id;
-		} else {
-			$order_id = $order->get_id();
-		}
+        $order_id = $order->get_id();
 
 		// Add messages to log
 		Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id );
@@ -641,7 +648,6 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 		} else {
 
 			if ( $gateway || ( $gateway instanceof Mollie_WC_Gateway_Abstract ) ) {
-
 				$gateway->updateOrderStatus(
 					$order,
 					$new_order_status,
@@ -666,14 +672,8 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	 */
 	public function onWebhookExpired( WC_Order $order, $payment, $payment_method_title ) {
 
-		// Get order ID in correct way depending on WooCommerce version
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			$order_id          = $order->id;
-			$mollie_payment_id = get_post_meta( $order_id, '_mollie_order_id', $single = true );
-		} else {
-			$order_id          = $order->get_id();
-			$mollie_payment_id = $order->get_meta( '_mollie_order_id', true );
-		}
+        $order_id          = $order->get_id();
+        $mollie_payment_id = $order->get_meta( '_mollie_order_id', true );
 
 		// Add messages to log
 		Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $order_id );
@@ -735,16 +735,9 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 		// Subscription processing
 		if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->id ) ) {
-					$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
-				}
-			} else {
-				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
-					$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
-				}
-			}
+            if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
+                $this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
+            }
 		}
 	}
 
@@ -1017,7 +1010,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	 */
     public function refund_amount($order, $amount, $payment_object, $reason)
     {
-        $orderId = version_compare(WC_VERSION, '3.0', '<') ? $order->id : $order->get_id();
+        $orderId = $order->get_id();
 
 		Mollie_WC_Plugin::debug( 'Try to process an amount refund (not individual order line)' );
 

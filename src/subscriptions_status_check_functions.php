@@ -62,22 +62,13 @@ class WC_Tools_Subscriptions_Status_Button {
 		// Loop through all subscriptions
 		foreach ( $subscriptions as $subscription ) {
 
-			// Get all data in the correct way for WooCommerce 3.x or lower
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-				$subscription_is_manual = get_post_meta( $subscription->id, '_requires_manual_renewal', true );
-				$subscription_status    = $subscription->status;
+            $subscription = new WC_Subscription( $subscription->ID );
 
-				$mollie_customer_id = get_post_meta( $subscription->id, '_mollie_customer_id', true );
-				$subscription_id    = $subscription->id;
-			} else {
-				$subscription = new WC_Subscription( $subscription->ID );
+            $subscription_is_manual = $subscription->is_manual();
+            $subscription_status    = $subscription->get_status();
 
-				$subscription_is_manual = $subscription->is_manual();
-				$subscription_status    = $subscription->get_status();
-
-				$mollie_customer_id = $subscription->get_meta( '_mollie_customer_id' );
-				$subscription_id    = $subscription->get_id();
-			}
+            $mollie_customer_id = $subscription->get_meta( '_mollie_customer_id' );
+            $subscription_id    = $subscription->get_id();
 
 			// Only continue if the subscription is set to require manual renewal and status is On-Hold
 			if ( ( $subscription_is_manual ) && ( $subscription_status == 'on-hold' ) ) {

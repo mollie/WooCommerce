@@ -186,7 +186,7 @@ class Mollie_WC_Helper_Data
             }
         }
 
-	    $order_payment_method = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $order->payment_method : $order->get_payment_method();
+	    $order_payment_method = $order->get_payment_method();
 
 	    return isset($payment_gateways[$order_payment_method]) ? $payment_gateways[$order_payment_method] : false;
     }
@@ -429,20 +429,16 @@ class Mollie_WC_Helper_Data
 	 */
 	public function setUserMollieCustomerId( $user_id, $customer_id ) {
 		if ( ! empty( $customer_id ) ) {
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-				update_user_meta( $user_id, 'mollie_customer_id', $customer_id );
-			} else {
-				try {
-					$customer = new WC_Customer( $user_id );
-					$customer->update_meta_data( 'mollie_customer_id', $customer_id );
-					$customer->save();
-					Mollie_WC_Plugin::debug( __FUNCTION__ . ": Stored Mollie customer ID " . $customer_id . " with user " . $user_id );
-				}
-				catch ( Exception $e ) {
-					Mollie_WC_Plugin::debug( __FUNCTION__ . ": Couldn't load (and save) WooCommerce customer based on user ID " . $user_id );
+            try {
+                $customer = new WC_Customer( $user_id );
+                $customer->update_meta_data( 'mollie_customer_id', $customer_id );
+                $customer->save();
+                Mollie_WC_Plugin::debug( __FUNCTION__ . ": Stored Mollie customer ID " . $customer_id . " with user " . $user_id );
+            }
+            catch ( Exception $e ) {
+                Mollie_WC_Plugin::debug( __FUNCTION__ . ": Couldn't load (and save) WooCommerce customer based on user ID " . $user_id );
 
-				}
-			}
+            }
 		}
 
 		return $this;
@@ -457,13 +453,9 @@ class Mollie_WC_Helper_Data
 	{
 		if (!empty($customer_id))
 		{
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-				update_post_meta( $orderId, '_mollie_customer_id', $customer_id );
-			} else {
-				$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $orderId );
-				$order->update_meta_data( '_mollie_customer_id', $customer_id );
-				$order->save();
-			}
+            $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $orderId );
+            $order->update_meta_data( '_mollie_customer_id', $customer_id );
+            $order->save();
 		}
 
 		return $this;
@@ -483,31 +475,27 @@ class Mollie_WC_Helper_Data
             return NULL;
         }
 
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    $customer_id = get_user_meta( $user_id, 'mollie_customer_id', $single = true );
-	    } else {
-		    $customer    = new WC_Customer( $user_id );
-		    $customer_id = $customer->get_meta( 'mollie_customer_id' );
+        $customer    = new WC_Customer( $user_id );
+        $customer_id = $customer->get_meta( 'mollie_customer_id' );
 
-		    // If there is no Mollie Customer ID set, check the most recent active subscription
-		    if ( empty( $customer_id ) ) {
+        // If there is no Mollie Customer ID set, check the most recent active subscription
+        if ( empty( $customer_id ) ) {
 
-			    $customer_latest_subscription = wc_get_orders( array (
-				    'limit'    => 1,
-				    'customer' => $user_id,
-				    'type'     => 'shop_subscription',
-				    'status'   => 'wc-active',
-			    ) );
+            $customer_latest_subscription = wc_get_orders( array (
+                                                               'limit'    => 1,
+                                                               'customer' => $user_id,
+                                                               'type'     => 'shop_subscription',
+                                                               'status'   => 'wc-active',
+                                                           ) );
 
-			    if ( ! empty( $customer_latest_subscription ) ) {
-				    $customer_id = get_post_meta( $customer_latest_subscription[0]->get_id(), '_mollie_customer_id', $single = true );
+            if ( ! empty( $customer_latest_subscription ) ) {
+                $customer_id = get_post_meta( $customer_latest_subscription[0]->get_id(), '_mollie_customer_id', $single = true );
 
-				    // Store this customer ID as user meta too
-				    $this->setUserMollieCustomerId( $user_id, $customer_id );
-			    }
+                // Store this customer ID as user meta too
+                $this->setUserMollieCustomerId( $user_id, $customer_id );
+            }
 
-		    }
-	    }
+        }
 
 	    // If there is a Mollie Customer ID set, check that customer ID is valid for this API key
 	    if ( ! empty( $customer_id ) ) {
@@ -570,12 +558,8 @@ class Mollie_WC_Helper_Data
      */
     public function getActiveMolliePaymentMode ($order_id)
     {
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    $mollie_payment_mode = get_post_meta( $order_id, '_mollie_payment_mode', $single = true );
-	    } else {
-		    $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
-		    $mollie_payment_mode = $order->get_meta( '_mollie_payment_mode', true );
-	    }
+        $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+        $mollie_payment_mode = $order->get_meta( '_mollie_payment_mode', true );
 
 	    return $mollie_payment_mode;
     }
@@ -589,15 +573,15 @@ class Mollie_WC_Helper_Data
         {
             if ($item['product_id'] > 0)
             {
-	            $product = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $order->get_product_from_item($item) : $item->get_product();
+	            $product = $item->get_product();
 
 	            if ($product && $product->exists() && $product->managing_stock())
                 {
-	                $old_stock = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $product->stock : $product->get_stock_quantity();
+	                $old_stock =$product->get_stock_quantity();
 
                     $qty = apply_filters( 'woocommerce_order_item_quantity', $item['qty'], $order, $item);
 
-	                $new_quantity = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $product->increase_stock( $qty ) : wc_update_product_stock( $product, $qty, 'increase');
+	                $new_quantity =  wc_update_product_stock( $product, $qty, 'increase');
 
                     do_action('woocommerce_auto_stock_restored', $product, $item);
 
@@ -607,21 +591,13 @@ class Mollie_WC_Helper_Data
                         $old_stock,
                         $new_quantity
                     ));
-
-	                if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		                $order->send_stock_notifications( $product, $new_quantity, $item['qty'] );
-	                }
                 }
             }
         }
 
         // Mark order stock as not-reduced
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    delete_post_meta($order->id, '_order_stock_reduced');
-	    } else {
-		    $order->delete_meta_data( '_order_stock_reduced' );
-		    $order->save();
-	    }
+        $order->delete_meta_data( '_order_stock_reduced' );
+        $order->save();
     }
 
 
@@ -633,11 +609,7 @@ class Mollie_WC_Helper_Data
 	 * @return string $value
 	 */
 	public function getOrderCurrency( WC_Order $order ) {
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			return $order->get_order_currency();
-		} else {
-			return $order->get_currency();
-		}
+        return $order->get_currency();
 	}
 
 	/**

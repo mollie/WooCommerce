@@ -279,13 +279,6 @@ class Mollie_WC_Helper_Settings
 				continue;
 			}
 
-			// Remove Klarna from list if not at least WooCommerce 3.x is used
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-				if ( $gateway->id == 'mollie_wc_gateway_klarnapaylater' || $gateway->id == 'mollie_wc_gateway_klarnasliceit' ) {
-					continue;
-				}
-			}
-
 			if ( $gateway instanceof Mollie_WC_Gateway_Abstract ) {
 				$content .= '<li style="float: left; width: 33%;">';
                 $content .= $this->getSvgIcon($gateway);
@@ -318,9 +311,6 @@ class Mollie_WC_Helper_Settings
 		// are required to accept Klarna as payment method
 		$content = $this->warnAboutRequiredCheckoutFieldForKlarna( $content );
 
-		// Warn users that at least WooCommerce 3.x is required to accept Klarna as payment method
-		$content = $this->warnWoo3xRequiredForKlarna( $content );
-
         return $content;
 	}
 
@@ -339,17 +329,18 @@ class Mollie_WC_Helper_Settings
 
         $debug_desc = __('Log plugin events.', 'mollie-payments-for-woocommerce');
 
-        // For WooCommerce 2.2.0+ display view logs link
-        if (version_compare(Mollie_WC_Plugin::getStatusHelper()->getWooCommerceVersion(), '2.2.0', ">="))
-        {
-            $debug_desc .= ' <a href="' . $this->getLogsUrl() . '">' . __('View logs', 'mollie-payments-for-woocommerce') . '</a>';
-        }
         // Display location of log files
-        else
-        {
-            /* translators: Placeholder 1: Location of the log files */
-            $debug_desc .= ' ' . sprintf(__('Log files are saved to <code>%s</code>', 'mollie-payments-for-woocommerce'), defined('WC_LOG_DIR') ? WC_LOG_DIR : WC()->plugin_path() . '/logs/');
-        }
+
+        /* translators: Placeholder 1: Location of the log files */
+        $debug_desc .= ' ' . sprintf(
+                __(
+                    'Log files are saved to <code>%s</code>',
+                    'mollie-payments-for-woocommerce'
+                ),
+                defined('WC_LOG_DIR') ? WC_LOG_DIR
+                    : WC()->plugin_path() . '/logs/'
+            );
+
 
         // Global Mollie settings
         $mollie_settings = array(
@@ -621,31 +612,6 @@ class Mollie_WC_Helper_Settings
 
 				$content .= '<div class="notice notice-warning is-dismissible"><p>';
 				$content .= __( 'To accept Klarna payments via Mollie, all default WooCommerce checkout fields should be enabled and required. Please ensure that is the case.', 'mollie-payments-for-woocommerce' );
-				$content .= '</p></div> ';
-
-				return $content;
-			}
-		}
-
-		return $content;
-	}
-
-	/**
-	 * @param $content
-	 *
-	 * @return string
-	 */
-	protected function warnWoo3xRequiredForKlarna( $content ) {
-
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-
-			$woocommerce_klarnapaylater_gateway = new Mollie_WC_Gateway_KlarnaPayLater();
-			$woocommerce_klarnasliceit_gateway  = new Mollie_WC_Gateway_KlarnaSliceIt();
-
-			if ( $woocommerce_klarnapaylater_gateway->is_available() || $woocommerce_klarnasliceit_gateway->is_available() ) {
-
-				$content .= '<div class="notice notice-warning is-dismissible"><p>';
-				$content .= sprintf(__( 'To accept Klarna payments via Mollie, you need to use WooCommerce 3.0 or higher, you are now using version %s.', 'mollie-payments-for-woocommerce' ), WC_VERSION);
 				$content .= '</p></div> ';
 
 				return $content;

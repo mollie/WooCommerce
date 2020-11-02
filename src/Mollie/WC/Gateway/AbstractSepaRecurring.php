@@ -94,25 +94,13 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
         $confirmationDate = new DateTime();
         $period = 'P'.self::WAITING_CONFIRMATION_PERIOD_DAYS . 'D';
         $confirmationDate->add(new DateInterval($period));
-
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-		    $wpdb->insert(
-			    $wpdb->mollie_pending_payment,
-			    array(
-				    'post_id' => $renewal_order->id,
-				    'expired_time' => $confirmationDate->getTimestamp(),
-			    )
-		    );
-	    } else {
-		    $wpdb->insert(
-			    $wpdb->mollie_pending_payment,
-			    array(
-				    'post_id' => $renewal_order->get_id(),
-				    'expired_time' => $confirmationDate->getTimestamp(),
-			    )
-		    );
-	    }
-
+        $wpdb->insert(
+            $wpdb->mollie_pending_payment,
+            array(
+                'post_id' => $renewal_order->get_id(),
+                'expired_time' => $confirmationDate->getTimestamp(),
+            )
+        );
     }
 
     /**
@@ -136,9 +124,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
      */
     protected function handlePaidOrderWebhook($order, $payment)
     {
-        $orderId = version_compare(WC_VERSION, '3.0', '<')
-            ? $order->id
-            : $order->get_id();
+        $orderId = $order->get_id();
 
         // Duplicate webhook call
         if (Mollie_WC_Plugin::getDataHelper()->isSubscription($orderId)

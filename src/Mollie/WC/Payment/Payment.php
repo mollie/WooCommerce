@@ -35,88 +35,74 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 	 * @return array
 	 */
 	public function getPaymentRequestData( $order, $customer_id ) {
-		$settings_helper     = Mollie_WC_Plugin::getSettingsHelper();
-		$payment_description = __( 'Order', 'woocommerce' ) . ' ' . $order->get_order_number();
-		$payment_locale      = $settings_helper->getPaymentLocale();
-		$store_customer      = $settings_helper->shouldStoreCustomer();
+        $settings_helper = Mollie_WC_Plugin::getSettingsHelper();
+        $payment_description = __('Order', 'woocommerce') . ' '
+            . $order->get_order_number();
+        $payment_locale = $settings_helper->getPaymentLocale();
+        $store_customer = $settings_helper->shouldStoreCustomer();
 
-		$gateway = Mollie_WC_Plugin::getDataHelper()->getWcPaymentGatewayByOrder( $order );
+        $gateway = Mollie_WC_Plugin::getDataHelper()
+            ->getWcPaymentGatewayByOrder($order);
 
-		if ( ! $gateway || ! ( $gateway instanceof Mollie_WC_Gateway_Abstract ) ) {
-			return array ( 'result' => 'failure' );
-		}
+        if (!$gateway || !($gateway instanceof Mollie_WC_Gateway_Abstract)) {
+            return array('result' => 'failure');
+        }
 
-		$mollie_method   = $gateway->getMollieMethodId();
-		$selected_issuer = $gateway->getSelectedIssuer();
-		$return_url      = $gateway->getReturnUrl( $order );
-		$webhook_url     = $gateway->getWebhookUrl( $order );
+        $mollie_method = $gateway->getMollieMethodId();
+        $selected_issuer = $gateway->getSelectedIssuer();
+        $return_url = $gateway->getReturnUrl($order);
+        $webhook_url = $gateway->getWebhookUrl($order);
+        $orderId = mollieWooCommerceOrderId($order);
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 
-			$paymentRequestData = array (
-				'amount'      => array (
-					'currency' => Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
-					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order->get_total(), Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) )
-				),
-				'description' => $payment_description,
-				'redirectUrl' => $return_url,
-				'webhookUrl'  => $webhook_url,
-				'method'      => $mollie_method,
-				'issuer'      => $selected_issuer,
-				'locale'      => $payment_locale,
-				'metadata'    => array (
-					'order_id' => $order->id,
-				),
-			);
+        $paymentRequestData = array(
+            'amount' => array(
+                'currency' => Mollie_WC_Plugin::getDataHelper()
+                    ->getOrderCurrency($order),
+                'value' => Mollie_WC_Plugin::getDataHelper()
+                    ->formatCurrencyValue(
+                        $order->get_total(),
+                        Mollie_WC_Plugin::getDataHelper()->getOrderCurrency(
+                            $order
+                        )
+                    )
+            ),
+            'description' => $payment_description,
+            'redirectUrl' => $return_url,
+            'webhookUrl' => $webhook_url,
+            'method' => $mollie_method,
+            'issuer' => $selected_issuer,
+            'locale' => $payment_locale,
+            'metadata' => array(
+                'order_id' => $orderId,
+            ),
+        );
 
-			// Add sequenceType for subscriptions first payments
-			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->id ) ) {
+        // Add sequenceType for subscriptions first payments
+        if (class_exists('WC_Subscriptions')
+            && class_exists(
+                'WC_Subscriptions_Admin'
+            )
+        ) {
+            if (Mollie_WC_Plugin::getDataHelper()->isSubscription($orderId)) {
+                // See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
+                $disable_automatic_payments = ('yes' == get_option(
+                        WC_Subscriptions_Admin::$option_prefix
+                        . '_turn_off_automatic_payments',
+                        'no'
+                    )) ? true : false;
+                $supports_subscriptions = $gateway->supports('subscriptions');
 
-					// See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
-					$disable_automatic_payments = ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) ? true : false;
-					$supports_subscriptions     = $gateway->supports( 'subscriptions' );
+                if ($supports_subscriptions == true
+                    && $disable_automatic_payments == false
+                ) {
+                    $paymentRequestData['sequenceType'] = 'first';
+                }
+            }
+        }
 
-					if ( $supports_subscriptions == true && $disable_automatic_payments == false ) {
-						$paymentRequestData['sequenceType'] = 'first';
-					}
-				}
-			}
 
-		} else {
-
-			$paymentRequestData = array (
-				'amount'      => array (
-					'currency' => Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ),
-					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order->get_total(), Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order ) )
-				),
-				'description' => $payment_description,
-				'redirectUrl' => $return_url,
-				'webhookUrl'  => $webhook_url,
-				'method'      => $mollie_method,
-				'issuer'      => $selected_issuer,
-				'locale'      => $payment_locale,
-				'metadata'       => apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_payment_object_metadata', array (
-					'order_id'     => $order->get_id(),
-				) ),
-			);
-
-			// Add sequenceType for subscriptions first payments
-			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
-
-					// See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
-					$disable_automatic_payments = ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) ? true : false;
-					$supports_subscriptions     = $gateway->supports( 'subscriptions' );
-
-					if ( $supports_subscriptions == true && $disable_automatic_payments == false ) {
-						$paymentRequestData['sequenceType'] = 'first';
-					}
-				}
-			}
-		}
-
-		if ( $store_customer ) {
+        if ( $store_customer ) {
 			$paymentRequestData['customerId'] = $customer_id;
 		}
 
@@ -124,6 +110,8 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
         if ($cardToken) {
             $paymentRequestData['cardToken'] = $cardToken;
         }
+
+
 
         $applePayToken = $_POST['token'];
         $applePayToken = filter_var($applePayToken, FILTER_SANITIZE_STRING);

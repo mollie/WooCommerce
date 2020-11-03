@@ -433,7 +433,7 @@ class Mollie_WC_Plugin_Test extends TestCase
     {
         $mock = $this->getMockBuilder(Mollie_WC_Helper_Data::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getWcOrder', 'getWcPaymentGatewayByOrder'])
+            ->setMethods(['getWcOrder'])
             ->getMock();
 
         return $mock;

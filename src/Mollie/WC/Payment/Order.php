@@ -34,19 +34,19 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
         $this->orderItemsRefunder = $orderItemsRefunder;
     }
 
-	public function getPaymentObject( $payment_id, $test_mode = false, $use_cache = true ) {
+	public function getPaymentObject( $paymentId, $testMode = false, $useCache = true ) {
 		try {
 
 			// Is test mode enabled?
-			$settings_helper = Mollie_WC_Plugin::getSettingsHelper();
-			$test_mode       = $settings_helper->isTestModeEnabled();
+			$settingsHelper = Mollie_WC_Plugin::getSettingsHelper();
+			$testMode       = $settingsHelper->isTestModeEnabled();
 
-			self::$payment = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->orders->get( $payment_id, [ "embed" => "payments" ] );
+			self::$payment = Mollie_WC_Plugin::getApiHelper()->getApiClient($testMode )->orders->get($paymentId, [ "embed" => "payments" ] );
 
-			return parent::getPaymentObject( $payment_id, $test_mode = false, $use_cache = true );
+			return parent::getPaymentObject($paymentId, $testMode = false, $useCache = true );
 		}
 		catch ( ApiException $e ) {
-			Mollie_WC_Plugin::debug( __CLASS__ . __FUNCTION__ . ": Could not load payment $payment_id (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class( $e ) . ')' );
+			Mollie_WC_Plugin::debug( __CLASS__ . __FUNCTION__ . ": Could not load payment $paymentId (" . ( $testMode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e ) . ')' );
 		}
 
 		return null;
@@ -54,16 +54,16 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 	/**
 	 * @param $order
-	 * @param $customer_id
+	 * @param $customerId
 	 *
 	 * @return array
 	 */
-	public function getPaymentRequestData( $order, $customer_id ) {
+	public function getPaymentRequestData( $order, $customerId ) {
         $settings_helper     = Mollie_WC_Plugin::getSettingsHelper();
 		$payment_locale      = $settings_helper->getPaymentLocale();
 		$store_customer      = $settings_helper->shouldStoreCustomer();
 
-		$gateway = mollieWooCommerceGetDataHelper()->getWcPaymentGatewayByOrder( $order );
+		$gateway = wc_get_payment_gateway_by_order( $order );
 
 		if ( ! $gateway || ! ( $gateway instanceof Mollie_WC_Gateway_Abstract ) ) {
 			return array ( 'result' => 'failure' );
@@ -267,7 +267,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
         // Only store customer at Mollie if setting is enabled
         if ($store_customer) {
-            $paymentRequestData['payment']['customerId'] = $customer_id;
+            $paymentRequestData['payment']['customerId'] = $customerId;
         }
 
         $cardToken = mollieWooCommerceCardToken();
@@ -293,16 +293,16 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 	}
 
-	public function setActiveMolliePayment( $order_id ) {
+	public function setActiveMolliePayment( $orderId ) {
 
 		self::$paymentId  = $this->getMolliePaymentIdFromPaymentObject();
 		self::$customerId = $this->getMollieCustomerIdFromPaymentObject();
 
-		self::$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+		self::$order = wc_get_order($orderId );
 		self::$order->update_meta_data( '_mollie_order_id', $this->data->id );
 		self::$order->save();
 
-		return parent::setActiveMolliePayment( $order_id );
+		return parent::setActiveMolliePayment($orderId );
 	}
 
     public function getMolliePaymentIdFromPaymentObject()
@@ -516,9 +516,9 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	/**
 	 * @param WC_Order                   $order
 	 * @param Mollie\Api\Resources\Order $payment
-	 * @param string                     $payment_method_title
+	 * @param string                     $paymentMethodTitle
 	 */
-	public function onWebhookCanceled( WC_Order $order, $payment, $payment_method_title ) {
+	public function onWebhookCanceled( WC_Order $order, $payment, $paymentMethodTitle ) {
 
 		// Get order ID in the correct way depending on WooCommerce version
         $order_id = $order->get_id();;
@@ -560,7 +560,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 		// Update order status, but only if there is no payment started by another gateway
 		if ( ! $this->isOrderPaymentStartedByOtherGateway( $order ) ) {
 
-			$gateway = Mollie_WC_Plugin::getDataHelper()->getWcPaymentGatewayByOrder( $order );
+			$gateway = wc_get_payment_gateway_by_order( $order );
 
 			if ( $gateway || ( $gateway instanceof Mollie_WC_Gateway_Abstract ) ) {
 				$gateway->updateOrderStatus( $order, $new_order_status );
@@ -583,9 +583,9 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 		// User cancelled payment on Mollie or issuer page, add a cancel note.. do not cancel order.
 		$order->add_order_note( sprintf(
 		/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-			__( '%s order (%s) cancelled .', 'mollie-payments-for-woocommerce' ),
-			$payment_method_title,
-			$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
+                                    __( '%s order (%s) cancelled .', 'mollie-payments-for-woocommerce' ),
+                                    $paymentMethodTitle,
+                                    $payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
 		) );
 
 		// Subscription processing
@@ -599,9 +599,9 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	/**
 	 * @param WC_Order                   $order
 	 * @param Mollie\Api\Resources\Order $payment
-	 * @param string                     $payment_method_title
+	 * @param string                     $paymentMethodTitle
 	 */
-	public function onWebhookFailed( WC_Order $order, $payment, $payment_method_title ) {
+	public function onWebhookFailed( WC_Order $order, $payment, $paymentMethodTitle ) {
 
         $order_id = $order->get_id();
 
@@ -617,7 +617,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 		// Overwrite gateway-wide
 		$new_order_status = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_failed_' . $this->id, $new_order_status );
 
-		$gateway = Mollie_WC_Plugin::getDataHelper()->getWcPaymentGatewayByOrder( $order );
+		$gateway = wc_get_payment_gateway_by_order( $order );
 
 
 		// If WooCommerce Subscriptions is installed, process this failure as a subscription, otherwise as a regular order
@@ -630,9 +630,9 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 					$new_order_status,
 					sprintf(
 					/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-						__( '%s renewal payment failed via Mollie (%s). You will need to manually review the payment and adjust product stocks if you use them.', 'mollie-payments-for-woocommerce' ),
-						$payment_method_title,
-						$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
+                        __( '%s renewal payment failed via Mollie (%s). You will need to manually review the payment and adjust product stocks if you use them.', 'mollie-payments-for-woocommerce' ),
+                        $paymentMethodTitle,
+                        $payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
 					),
 					$restore_stock = false
 				);
@@ -653,9 +653,9 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 					$new_order_status,
 					sprintf(
 					/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-						__( '%s payment failed via Mollie (%s).', 'mollie-payments-for-woocommerce' ),
-						$payment_method_title,
-						$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
+                        __( '%s payment failed via Mollie (%s).', 'mollie-payments-for-woocommerce' ),
+                        $paymentMethodTitle,
+                        $payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
 					)
 				);
 			}
@@ -668,9 +668,9 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	/**
 	 * @param WC_Order                   $order
 	 * @param Mollie\Api\Resources\Order $payment
-	 * @param string                     $payment_method_title
+	 * @param string                     $paymentMethodTitle
 	 */
-	public function onWebhookExpired( WC_Order $order, $payment, $payment_method_title ) {
+	public function onWebhookExpired( WC_Order $order, $payment, $paymentMethodTitle ) {
 
         $order_id          = $order->get_id();
         $mollie_payment_id = $order->get_meta( '_mollie_order_id', true );
@@ -684,10 +684,10 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 			$order->add_order_note( sprintf(
 			/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-				__( '%s order expired (%s) but not cancelled because of another pending payment (%s).', 'mollie-payments-for-woocommerce' ),
-				$payment_method_title,
-				$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' ),
-				$mollie_payment_id
+                                        __( '%s order expired (%s) but not cancelled because of another pending payment (%s).', 'mollie-payments-for-woocommerce' ),
+                                        $paymentMethodTitle,
+                                        $payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' ),
+                                        $mollie_payment_id
 			) );
 
 			return;
@@ -704,7 +704,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 		// Update order status, but only if there is no payment started by another gateway
 		if ( ! $this->isOrderPaymentStartedByOtherGateway( $order ) ) {
-			$gateway = Mollie_WC_Plugin::getDataHelper()->getWcPaymentGatewayByOrder( $order );
+			$gateway = wc_get_payment_gateway_by_order( $order );
 
 			if ( $gateway || ( $gateway instanceof Mollie_WC_Gateway_Abstract ) ) {
 				$gateway->updateOrderStatus( $order, $new_order_status );
@@ -725,9 +725,9 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 		$order->add_order_note( sprintf(
 		/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-			__( '%s order (%s) expired .', 'mollie-payments-for-woocommerce' ),
-			$payment_method_title,
-			$payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
+                                    __( '%s order (%s) expired .', 'mollie-payments-for-woocommerce' ),
+                                    $paymentMethodTitle,
+                                    $payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
 		) );
 
 		// Remove (old) cancelled payments from this order
@@ -745,32 +745,32 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	 * Process a payment object refund
 	 *
 	 * @param WC_Order $order
-	 * @param int    $order_id
-	 * @param object $payment_object
-	 * @param null   $amount
-	 * @param string $reason
+	 * @param int      $orderId
+	 * @param object   $paymentObject
+	 * @param null     $amount
+	 * @param string   $reason
 	 *
 	 * @return bool|\WP_Error
 	 */
-	public function refund( WC_Order $order, $order_id, $payment_object, $amount = null, $reason = '' ) {
+	public function refund( WC_Order $order, $orderId, $paymentObject, $amount = null, $reason = '' ) {
 
-		Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Try to process refunds or cancels.' );
+		Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $orderId . ' - Try to process refunds or cancels.' );
 
 		try {
-			$payment_object = $this->getPaymentObject( $payment_object->data );
+			$paymentObject = $this->getPaymentObject($paymentObject->data );
 
-			if ( ! $payment_object ) {
+			if ( ! $paymentObject ) {
 
-				$error_message = "Could not find active Mollie order for WooCommerce order ' . $order_id";
+				$error_message = "Could not find active Mollie order for WooCommerce order ' . $orderId";
 
 				Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $error_message );
 
 				throw new Exception ( $error_message );
 			}
 
-			if ( ! ( $payment_object->isPaid() || $payment_object->isAuthorized() || $payment_object->isCompleted() ) ) {
+			if ( ! ( $paymentObject->isPaid() || $paymentObject->isAuthorized() || $paymentObject->isCompleted() ) ) {
 
-				$error_message = "Can not cancel or refund $payment_object->id as order $order_id has status " . ucfirst( $payment_object->status ) . ", it should be at least Paid, Authorized or Completed.";
+				$error_message = "Can not cancel or refund $paymentObject->id as order $orderId has status " . ucfirst($paymentObject->status ) . ", it should be at least Paid, Authorized or Completed.";
 
 				Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $error_message );
 
@@ -787,7 +787,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			$items = $woocommerce_refund->get_items( array ( 'line_item', 'fee', 'shipping' ) );
 
             if (empty ($items)) {
-                return $this->refund_amount($order, $amount, $payment_object, $reason);
+                return $this->refund_amount($order, $amount, $paymentObject, $reason);
             }
 
             // Compare total amount of the refund to the combined totals of all refunded items,
@@ -809,7 +809,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
                 $order->add_order_note($error_message);
                 Mollie_WC_Plugin::debug(__METHOD__ . ' - ' . $error_message);
 
-                return $this->refund_amount($order, $amount, $payment_object, $reason);
+                return $this->refund_amount($order, $amount, $paymentObject, $reason);
             }
 
             Mollie_WC_Plugin::debug('Try to process individual order item refunds or cancels.');
@@ -818,7 +818,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
                 return $this->orderItemsRefunder->refund(
                     $order,
                     $items,
-                    $payment_object,
+                    $paymentObject,
                     $reason
                 );
             } catch (Mollie_WC_Payment_PartialRefundException $exception) {
@@ -826,7 +826,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
                 return $this->refund_amount(
                     $order,
                     $amount,
-                    $payment_object,
+                    $paymentObject,
                     $reason
                 );
             }

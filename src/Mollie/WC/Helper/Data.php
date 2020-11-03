@@ -83,115 +83,6 @@ class Mollie_WC_Helper_Data
     }
 
     /**
-     * Get WooCommerce order
-     *
-     * @param int $order_id Order ID
-     * @return WC_Order|bool
-     */
-    public function getWcOrder ($order_id)
-    {
-        if (function_exists('wc_get_order'))
-        {
-            /**
-             * @since WooCommerce 2.2
-             */
-            return wc_get_order($order_id);
-        }
-
-        $order = new WC_Order();
-
-        if ($order->get_order($order_id))
-        {
-            return $order;
-        }
-
-        return false;
-    }
-
-    /**
-     * @param WC_Order $order
-     * @return string
-     */
-    public function getOrderStatus (WC_Order $order)
-    {
-        if (method_exists($order, 'get_status'))
-        {
-            /**
-             * @since WooCommerce 2.2
-             */
-            return $order->get_status();
-        }
-
-        return $order->status;
-    }
-
-    /**
-     * Check if a order has a status
-     *
-     * @param string|string[] $status
-     * @return bool
-     */
-    public function hasOrderStatus (WC_Order $order, $status)
-    {
-        if (method_exists($order, 'has_status'))
-        {
-            /**
-             * @since WooCommerce 2.2
-             */
-            return $order->has_status($status);
-        }
-
-        if (!is_array($status))
-        {
-            $status = array($status);
-        }
-
-        return in_array($this->getOrderStatus($order), $status);
-    }
-
-    /**
-     * Get payment gateway class by order data.
-     *
-     * @param int|WC_Order $order
-     * @return WC_Payment_Gateway|bool
-     */
-    public function getWcPaymentGatewayByOrder ($order)
-    {
-        if (function_exists('wc_get_payment_gateway_by_order'))
-        {
-            /**
-             * @since WooCommerce 2.2
-             */
-            return wc_get_payment_gateway_by_order($order);
-        }
-
-        if (WC()->payment_gateways())
-        {
-            $payment_gateways = WC()
-                ->payment_gateways
-                ->payment_gateways();
-        }
-        else
-        {
-            $payment_gateways = array();
-        }
-
-        if (!($order instanceof WC_Order))
-        {
-            $order = $this->getWcOrder($order);
-
-            if (!$order)
-            {
-                return false;
-            }
-        }
-
-	    $order_payment_method = $order->get_payment_method();
-
-	    return isset($payment_gateways[$order_payment_method]) ? $payment_gateways[$order_payment_method] : false;
-    }
-
-    /**
      * Called when page 'WooCommerce -> Checkout -> Checkout Options' is saved
      *
      * @see \Mollie_WC_Plugin::init
@@ -238,10 +129,7 @@ class Mollie_WC_Helper_Data
     {
         try
         {
-
-            $payment = $this->api_helper->getApiClient($test_mode)->payments->get($payment_id);
-
-            return $payment;
+            return $this->api_helper->getApiClient($test_mode)->payments->get($payment_id);
         }
         catch ( \Mollie\Api\Exceptions\ApiException $e )
         {
@@ -453,7 +341,7 @@ class Mollie_WC_Helper_Data
 	{
 		if (!empty($customer_id))
 		{
-            $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $orderId );
+            $order = wc_get_order( $orderId );
             $order->update_meta_data( '_mollie_customer_id', $customer_id );
             $order->save();
 		}
@@ -558,7 +446,7 @@ class Mollie_WC_Helper_Data
      */
     public function getActiveMolliePaymentMode ($order_id)
     {
-        $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+        $order = wc_get_order( $order_id );
         $mollie_payment_mode = $order->get_meta( '_mollie_payment_mode', true );
 
 	    return $mollie_payment_mode;

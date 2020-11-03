@@ -290,7 +290,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			global $wp;
 			if ( ! empty( $wp->query_vars['order-pay'] ) ) {
 				$order_id = $wp->query_vars['order-pay'];
-				$order    = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+				$order    = wc_get_order( $order_id );
 
 				$currency = Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order );
 			} else {
@@ -399,7 +399,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 * @return array
 	 */
 	public function process_payment( $order_id ) {
-		$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+		$order = wc_get_order( $order_id );
 
 		if ( ! $order ) {
 			Mollie_WC_Plugin::debug( $this->id . ': Could not process payment, order ' . $order_id . ' not found.' );
@@ -674,7 +674,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	    $key      = sanitize_text_field( $_GET['key'] );
 
         $data_helper = Mollie_WC_Plugin::getDataHelper();
-        $order       = $data_helper->getWcOrder($order_id);
+        $order       = wc_get_order($order_id);
 
         if (!$order)
         {
@@ -779,7 +779,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		// Duplicate webhook call
 		Mollie_WC_Plugin::setHttpResponseCode( 204 );
 
-        $order    = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order );
+        $order    = wc_get_order( $order );
         $order_id = $order->get_id();
 
 		Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $this->id . ": Order $order_id does not need a payment by Mollie (payment {$payment->id}).", true );
@@ -865,7 +865,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             }
 
             $dataHelper = Mollie_WC_Plugin::getDataHelper();
-            $order = $dataHelper->getWcOrder($orderId);
+            $order = wc_get_order($orderId);
 
             foreach ($refundsToProcess as $refundToProcess) {
                 Mollie_WC_Plugin::debug(
@@ -1000,7 +1000,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             }
 
             $dataHelper = Mollie_WC_Plugin::getDataHelper();
-            $order = $dataHelper->getWcOrder($orderId);
+            $order = wc_get_order($orderId);
 
             // Update order notes, add message about chargeback
             foreach ($chargebacksToProcess as $chargebackToProcess) {
@@ -1268,7 +1268,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
 
 		// Get the WooCommerce order
-		$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+		$order = wc_get_order( $order_id );
 
 		// WooCommerce order not found
 		if ( ! $order ) {
@@ -1325,7 +1325,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function thankyou_page ($order_id)
     {
-        $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder($order_id);
+        $order = wc_get_order($order_id);
 
         // Order not found
         if (!$order)
@@ -1450,7 +1450,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				return $title;
 			}
 
-			$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order );
+			$order = wc_get_order( $order );
 
             $order_payment_method = $order->get_payment_method();
 
@@ -1563,7 +1563,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		}
 
 		// Has initial order status 'on-hold'
-		if ( $this->getInitialOrderStatus() === self::STATUS_ON_HOLD && Mollie_WC_Plugin::getDataHelper()->hasOrderStatus( $order, self::STATUS_ON_HOLD ) ) {
+		if ( $this->getInitialOrderStatus() === self::STATUS_ON_HOLD && $order->has_status( self::STATUS_ON_HOLD ) ) {
 			Mollie_WC_Plugin::debug( __METHOD__ . ' ' . $this->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, has status On-Hold. ', true );
 
 			return true;

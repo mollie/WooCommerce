@@ -114,7 +114,7 @@ class Mollie_WC_Plugin
         $currentDate = new DateTime();
         $items = $wpdb->get_results("SELECT * FROM {$wpdb->mollie_pending_payment} WHERE expired_time < {$currentDate->getTimestamp()};");
         foreach ($items as $item){
-	        $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $item->post_id );
+	        $order = wc_get_order( $item->post_id );
 
 	        // Check that order actually exists
 	        if ( $order == false ) {
@@ -689,10 +689,10 @@ class Mollie_WC_Plugin
 
         $orderId = filter_input(INPUT_GET, 'order_id', FILTER_SANITIZE_NUMBER_INT) ?: null;
         $key = filter_input(INPUT_GET, 'key', FILTER_SANITIZE_STRING) ?: null;
-        $order = $dataHelper->getWcOrder($orderId);
+        $order = wc_get_order($orderId);
 
         if (!$order) {
-            $order = $dataHelper->getWcOrder(wc_get_order_id_by_order_key($key));
+            $order = wc_get_order(wc_get_order_id_by_order_key($key));
         }
 
         if (!$order) {
@@ -726,7 +726,7 @@ class Mollie_WC_Plugin
             return;
         }
 
-        $gateway = $dataHelper->getWcPaymentGatewayByOrder($order);
+        $gateway = wc_get_payment_gateway_by_order($order);
         $orderId = $order->get_id();
 
         if (!$gateway) {
@@ -771,7 +771,7 @@ class Mollie_WC_Plugin
             return;
         }
 
-        $gateway = Mollie_WC_Plugin::getDataHelper()->getWcPaymentGatewayByOrder($order);
+        $gateway = wc_get_payment_gateway_by_order($order);
 
         if (!$gateway || !($gateway instanceof Mollie_WC_Gateway_Abstract))
         {
@@ -1141,7 +1141,7 @@ class Mollie_WC_Plugin
 	 */
 	public static function shipAndCaptureOrderAtMollie( $order_id ) {
 
-		$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+		$order = wc_get_order( $order_id );
 
 		// Does WooCommerce order contain a Mollie payment?
 		if ( strstr( $order->get_payment_method(), 'mollie_wc_gateway_') == FALSE ) {
@@ -1217,7 +1217,7 @@ class Mollie_WC_Plugin
 	 */
 	public static function cancelOrderAtMollie( $order_id ) {
 
-		$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+		$order = wc_get_order( $order_id );
 
 		// Does WooCommerce order contain a Mollie payment?
 		if ( strstr( $order->get_payment_method(), 'mollie_wc_gateway_') == FALSE ) {

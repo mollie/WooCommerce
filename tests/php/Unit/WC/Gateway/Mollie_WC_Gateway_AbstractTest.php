@@ -472,9 +472,6 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         /*
         * Expectations
         */
-        expect('mollieWooCommerceOrderId')
-            ->once()
-            ->with($order);
         expect('mollieWooCommerceDebug')
             ->once();
         $testee
@@ -525,9 +522,6 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         /*
         * Expectations
         */
-        expect('mollieWooCommerceOrderId')
-            ->once()
-            ->with($order);
         expect('mollieWooCommerceDebug')
             ->twice();
         $testee

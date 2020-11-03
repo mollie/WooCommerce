@@ -303,8 +303,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         $dataHelper = $this->createConfiguredMock(
             Mollie_WC_Helper_Data::class,
             [
-                'getWcOrder' => $order,
-                'getWcPaymentGatewayByOrder' => $gateway
+                'getWcOrder' => $order
             ]
         );
 

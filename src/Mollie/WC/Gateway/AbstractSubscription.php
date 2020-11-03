@@ -109,7 +109,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 		if ( wcs_order_contains_renewal( $renewal_order_id ) ) {
 
 			// Get required information about order and subscription
-			$renewal_order     = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $renewal_order_id );
+			$renewal_order     = wc_get_order( $renewal_order_id );
 			$mollie_payment_id = $renewal_order->get_meta( '_mollie_payment_id', $single = true );
 			$subscription_id   = $renewal_order->get_meta( '_subscription_renewal', $single = true );
 			$subscription      = wcs_get_subscription( $subscription_id );
@@ -485,7 +485,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
      */
     public function update_failing_payment_method( $subscription, $renewal_order )
     {
-        $subscription = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $subscription->id );
+        $subscription = wc_get_order( $subscription->id );
         $subscription->update_meta_data( '_mollie_customer_id', $renewal_order->mollie_customer_id );
         $subscription->update_meta_data( '_mollie_payment_id', $renewal_order->mollie_payment_id );
         $subscription->save();
@@ -555,7 +555,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			$test_mode       = $settings_helper->isTestModeEnabled();
 
 			// Get the WooCommerce payment gateway for this subscription
-			$gateway = Mollie_WC_Plugin::getDataHelper()->getWcPaymentGatewayByOrder( $subscription );
+			$gateway = wc_get_payment_gateway_by_order( $subscription );
 
 			if ( ! $gateway || ! ( $gateway instanceof Mollie_WC_Gateway_Abstract ) ) {
 				Mollie_WC_Plugin::debug( __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: stopped processing, not a Mollie payment gateway, could not restore customer ID.' );

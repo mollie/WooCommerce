@@ -104,9 +104,6 @@ class Mollie_WC_Helper_Data
     public function getWcOrder()
     {
     }
-    public function getWcPaymentGatewayByOrder()
-    {
-    }
 }
 
 class Mollie_WC_Helper_Api

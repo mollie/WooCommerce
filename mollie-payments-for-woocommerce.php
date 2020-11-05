@@ -58,6 +58,32 @@ function mollie_wc_plugin_activation_hook()
     deleteWPTranslationFiles();
 }
 
+function showWcDroppingNotice()
+{
+    if (get_option('mollie-payments-for-woocommerce-wc-drop')) {
+        return false;
+    }
+    $notice = new Mollie_WC_Notice_AdminNotice();
+    $message = sprintf(
+        esc_html__(
+            '%1$sMollie Payments for WooCommerce is dropping WooCommerce support for version 2.x.%2$s Please %3$supdate WooCommerce to version 3.0 or newer &raquo;%4$s',
+            'mollie-payments-for-woocommerce'
+        ),
+        '<strong>',
+        '</strong>',
+        '<a href="' . esc_url(admin_url('plugins.php')) . '">',
+        '</a>'
+    );
+    if (version_compare(get_option('woocommerce_version'), '3.0', '<')) {
+        $notice->addAdminNotice('notice-error', $message);
+        return false;
+    }
+
+    $notice->addAdminNotice('notice-warning is-dismissible', $message);
+    update_option('mollie-payments-for-woocommerce-wc-drop', 'yes', true);
+    return false;
+}
+
 function deleteWPTranslationFiles()
 {
     WP_Filesystem();
@@ -230,6 +256,7 @@ $bootstrap = Closure::bind(
                     add_action('admin_notices', 'mollie_wc_plugin_inactive');
                     return;
                 }
+                showWcDroppingNotice();
 
                 add_action(
                     'init',

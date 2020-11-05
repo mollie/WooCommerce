@@ -39,10 +39,11 @@ class PluginConstraintsDisabler
     public function maybeDisable()
     {
         if ($this->checker->isCompatible()) {
-            return;
+            return true;
         }
         $this->disableAutomaticUpdate();
         $this->disablePluginActivation($this->initFunctionName);
+        return false;
     }
 
     /**
@@ -52,7 +53,7 @@ class PluginConstraintsDisabler
     {
         add_filter(
             'auto_update_plugin',
-            [__CLASS__, 'notAutoUpdateThisPlugin'],
+            [$this, 'notAutoUpdateThisPlugin'],
             10,
             2
         );
@@ -75,7 +76,7 @@ class PluginConstraintsDisabler
      *
      * @return false
      */
-    protected function notAutoUpdateThisPlugin($update, $item)
+    public function notAutoUpdateThisPlugin($update, $item)
     {
         if ($item == $this->pluginSlug) {
             return false;

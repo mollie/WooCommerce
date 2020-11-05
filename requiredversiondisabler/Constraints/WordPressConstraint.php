@@ -36,10 +36,17 @@ class WordPressConstraint extends Constraint
         );
 
         if (!$isWordPressVersionCompatible) {
-            $message
-                = '%1$s%3$s%2$s: Plugin disabled. WordPress version has to be '
-                . $this->requiredVersion
-                . ' or higher. Please update your WordPress version';
+            $message = sprintf(
+                esc_html__(
+                    '%1$s%3$s%2$s: Plugin disabled. WordPress version has to be '
+                    . $this->requiredVersion
+                    . ' or higher. Please update your WordPress version',
+                    'mollie-payments-for-woocommerce'
+                ),
+                '<strong>',
+                '</strong>',
+                $this->pluginName
+            );
             $this->showNotice($message);
             return false;
         }
@@ -47,23 +54,4 @@ class WordPressConstraint extends Constraint
         return true;
     }
 
-    /**
-     * Show error notice
-     *
-     * @param $message
-     */
-    protected function showNotice($message)
-    {
-        $message = sprintf(
-            esc_html__(
-                $message,
-                'mollie-payments-for-woocommerce'
-            ),
-            '<strong>',
-            '</strong>',
-            $this->pluginName
-        );
-        $notice = new AdminNotice();
-        $notice->addAdminNotice('error', $message);
-    }
 }

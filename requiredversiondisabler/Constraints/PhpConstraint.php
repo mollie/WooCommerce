@@ -33,34 +33,21 @@ class PhpConstraint extends Constraint
             '>='
         );
         if (!$isPhpVersionCompatible) {
-            $message
-                = '%1$s%3$s%2$s: Plugin disabled. PHP version has to be '
-                . $this->requiredVersion
-                . ' or higher. Please update your PHP version';
+            $message = sprintf(
+                esc_html__(
+                    '%1$s%3$s%2$s: Plugin disabled. PHP version has to be '
+                    . $this->requiredVersion
+                    . ' or higher. Please update your PHP version',
+                    'mollie-payments-for-woocommerce'
+                ),
+                '<strong>',
+                '</strong>',
+                $this->pluginName
+            );
             $this->showNotice($message);
             return false;
         }
 
         return true;
-    }
-
-    /**
-     * Show error notice
-     *
-     * @param $message
-     */
-    protected function showNotice($message)
-    {
-        $message = sprintf(
-            esc_html__(
-                $message,
-                'mollie-payments-for-woocommerce'
-            ),
-            '<strong>',
-            '</strong>',
-            $this->pluginName
-        );
-        $notice = new AdminNotice();
-        $notice->addAdminNotice('error', $message);
     }
 }

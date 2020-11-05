@@ -32,8 +32,20 @@ class WooCommerceConstraint extends Constraint
         $classExists = class_exists(self::CLASS_NAME);
         if (!$classExists) {
             $message
-                = '%1$s%7$s%2$s The %3$sWooCommerce plugin%4$s must be active for it to work. Please %5$sinstall & activate WooCommerce &raquo;%6$s';
-            $this->maybeShowNotice($message);
+                = sprintf(
+                esc_html__(
+                    '%1$s%7$s%2$s The %3$sWooCommerce plugin%4$s must be active for it to work. Please %5$sinstall & activate WooCommerce &raquo;%6$s',
+                    'mollie-payments-for-woocommerce'
+                ),
+                '<strong>',
+                '</strong>',
+                '<a href="https://wordpress.org/plugins/woocommerce/">',
+                '</a>',
+                '<a href="' . esc_url(admin_url('plugins.php')) . '">',
+                '</a>',
+                $this->pluginName
+            );
+            $this->showNotice($message);
             return false;
         }
 
@@ -45,37 +57,25 @@ class WooCommerceConstraint extends Constraint
         );
         if (!$isWooCommerceVersionCompatible) {
             $message
-                = '%1$s%7$s%2$s: Plugin disabled. The %3$sWooCommerce plugin%4$s has to be version '
-                . $this->requiredVersion
-                . ' or higher. Please %5$sinstall & activate WooCommerce &raquo;%6$s';
-            $this->maybeShowNotice($message);
+                = sprintf(
+                esc_html__(
+                    '%1$s%7$s%2$s: Plugin disabled. The %3$sWooCommerce plugin%4$s has to be version '
+                    . $this->requiredVersion
+                    . ' or higher. Please %5$sinstall & activate WooCommerce &raquo;%6$s',
+                    'mollie-payments-for-woocommerce'
+                ),
+                '<strong>',
+                '</strong>',
+                '<a href="https://wordpress.org/plugins/woocommerce/">',
+                '</a>',
+                '<a href="' . esc_url(admin_url('plugins.php')) . '">',
+                '</a>',
+                $this->pluginName
+            );
+            $this->showNotice($message);
             return false;
         }
 
         return true;
-    }
-
-    /**
-     * Show error notice
-     *
-     * @param $message
-     */
-    protected function maybeShowNotice($message)
-    {
-        $message = sprintf(
-            esc_html__(
-                $message,
-                'mollie-payments-for-woocommerce'
-            ),
-            '<strong>',
-            '</strong>',
-            '<a href="https://wordpress.org/plugins/woocommerce/">',
-            '</a>',
-            '<a href="' . esc_url(admin_url('plugins.php')) . '">',
-            '</a>',
-            $this->pluginName
-        );
-        $notice = new AdminNotice();
-        $notice->addAdminNotice('error', $message);
     }
 }

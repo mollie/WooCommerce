@@ -7,13 +7,14 @@ namespace RequiredVersionDisabler;
 use InvalidArgumentException;
 use RequiredVersionDisabler\Constraints\ConstraintsCollection;
 
+
 class ConstraintsCollectionFactory
 {
 
     const WORDPRESS_CONSTRAINT = 'WordPressConstraint';
     const WOOCOMMERCE_CONSTRAINT = 'WooCommerceConstraint';
     const PHP_CONSTRAINT = 'PhpConstraint';
-    private $availableConstraints;
+    protected $availableConstraints;
 
     /**
      * ConstraintsCollectionFactory constructor.
@@ -43,7 +44,7 @@ class ConstraintsCollectionFactory
                     'Contraint provided is not withing the available ones'
                 );
             }
-            $className = '\\RequiredVersionDisabler\\' . $constraintClass;
+            $className = '\\RequiredVersionDisabler\\Constraints\\' . $constraintClass;
             $constraints[] = new $className($constraintVersion, $pluginName);
         }
 

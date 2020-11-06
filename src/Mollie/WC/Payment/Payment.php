@@ -267,9 +267,6 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
         }
 
         //status is Pending|Failed|Processing|On-hold so Cancel
-		// Get current gateway
-		$gateway = wc_get_payment_gateway_by_order( $order );
-
 		$this->unsetActiveMolliePayment( $orderId, $payment->id );
 		$this->setCancelledMolliePaymentId( $orderId, $payment->id );
 
@@ -283,7 +280,8 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 		} elseif ( $orderStatusCancelledPayments == 'cancelled' ) {
 			$newOrderStatus = Mollie_WC_Gateway_Abstract::STATUS_CANCELLED;
 		}
-
+        // Get current gateway
+        $gateway = wc_get_payment_gateway_by_order( $order );
 		// Overwrite plugin-wide
 		$newOrderStatus = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_cancelled', $newOrderStatus );
 
@@ -291,25 +289,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 		$newOrderStatus = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_cancelled_' . $gateway->id, $newOrderStatus );
 
 		// Update order status, but only if there is no payment started by another gateway
-		if ( ! $this->isOrderPaymentStartedByOtherGateway( $order ) ) {
-
-			if ( $gateway || ( $gateway instanceof Mollie_WC_Gateway_Abstract ) ) {
-				$gateway->updateOrderStatus( $order, $newOrderStatus );
-			}
-
-		} else {
-			$orderPaymentMethodTitle = get_post_meta( $orderId, '_payment_method_title', $single = true );
-
-			// Add message to log
-			Mollie_WC_Plugin::debug( $gateway->id . ': Order ' . $order->get_id() . ' webhook called, but payment also started via ' . $orderPaymentMethodTitle . ', so order status not updated.', true );
-
-			// Add order note
-			$order->add_order_note( sprintf(
-			/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-				__( 'Mollie webhook called, but payment also started via %s, so the order status is not updated.', 'mollie-payments-for-woocommerce' ),
-				$orderPaymentMethodTitle
-			) );
-		}
+        $this->maybeUpdateStatus($order, $gateway, $newOrderStatus, $orderId);
 
 		// User cancelled payment on Mollie or issuer page, add a cancel note.. do not cancel order.
 		$order->add_order_note( sprintf(
@@ -320,11 +300,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 		) );
 
 		// Subscription processing
-		if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-            if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
-                $this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
-            }
-		}
+        $this->deleteSubscriptionFromPending($order);
 	}
 
 	/**
@@ -353,46 +329,16 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 
 		// If WooCommerce Subscriptions is installed, process this failure as a subscription, otherwise as a regular order
 		// Update order status for order with failed payment, don't restore stock
-		if ( function_exists( 'wcs_order_contains_renewal' ) && wcs_order_contains_renewal( $orderId ) ) {
+        $this->failedSubscriptionProcess(
+            $orderId,
+            $gateway,
+            $order,
+            $newOrderStatus,
+            $paymentMethodTitle,
+            $payment
+        );
 
-			if ( $gateway || ( $gateway instanceof Mollie_WC_Gateway_Abstract ) ) {
-				$gateway->updateOrderStatus(
-					$order,
-					$newOrderStatus,
-					sprintf(
-					/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-                        __( '%s renewal payment failed via Mollie (%s). You will need to manually review the payment and adjust product stocks if you use them.', 'mollie-payments-for-woocommerce' ),
-                        $paymentMethodTitle,
-                        $payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
-					),
-					$restoreStock = false
-				);
-			}
-
-			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', renewal order payment failed, order set to ' . $newOrderStatus . ' for shop-owner review.' );
-
-			// Send a "Failed order" email to notify the admin
-			$emails = WC()->mailer()->get_emails();
-			if ( ! empty( $emails ) && ! empty( $orderId ) && ! empty( $emails['WC_Email_Failed_Order'] ) ) {
-				$emails['WC_Email_Failed_Order']->trigger( $orderId );
-			}
-		} else {
-
-			if ( $gateway || ( $gateway instanceof Mollie_WC_Gateway_Abstract ) ) {
-				$gateway->updateOrderStatus(
-					$order,
-					$newOrderStatus,
-					sprintf(
-					/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-                        __( '%s payment failed via Mollie (%s).', 'mollie-payments-for-woocommerce' ),
-                        $paymentMethodTitle,
-                        $payment->id . ( $payment->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
-					)
-				);
-			}
-		}
-
-		Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', regular payment failed.' );
+        Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', regular payment failed.' );
 
 	}
 
@@ -437,27 +383,9 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 		$newOrderStatus = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_expired_' . $gateway->id, $newOrderStatus );
 
 		// Update order status, but only if there is no payment started by another gateway
-		if ( ! $this->isOrderPaymentStartedByOtherGateway( $order ) ) {
+        $this->maybeUpdateStatus($order, $gateway, $newOrderStatus, $orderId);
 
-			if ( $gateway || ( $gateway instanceof Mollie_WC_Gateway_Abstract ) ) {
-				$gateway->updateOrderStatus( $order, $newOrderStatus );
-			}
-
-		} else {
-			$orderPaymentMethodTitle = get_post_meta( $orderId, '_payment_method_title', $single = true );
-
-			// Add message to log
-			Mollie_WC_Plugin::debug( $gateway->id . ': Order ' . $order->get_id() . ' webhook called, but payment also started via ' . $orderPaymentMethodTitle . ', so order status not updated.', true );
-
-			// Add order note
-			$order->add_order_note( sprintf(
-			/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-				__( 'Mollie webhook called, but payment also started via %s, so the order status is not updated.', 'mollie-payments-for-woocommerce' ),
-				$orderPaymentMethodTitle
-			) );
-		}
-
-		$order->add_order_note( sprintf(
+        $order->add_order_note( sprintf(
 		/* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
                                     __( '%s payment expired (%s).', 'mollie-payments-for-woocommerce' ),
                                     $paymentMethodTitle,
@@ -556,5 +484,51 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 			return new WP_Error( 1, $e->getMessage() );
 		}
 	}
+
+    /**
+     * @param WC_Order $order
+     * @param WC_Payment_Gateway $gateway
+     * @param                    $newOrderStatus
+     * @param                    $orderId
+     */
+    protected function maybeUpdateStatus(
+        WC_Order $order,
+        WC_Payment_Gateway $gateway,
+        $newOrderStatus,
+        $orderId
+    ) {
+        if (!$this->isOrderPaymentStartedByOtherGateway($order)) {
+            if ($gateway || ($gateway instanceof Mollie_WC_Gateway_Abstract)) {
+                $gateway->updateOrderStatus($order, $newOrderStatus);
+            }
+        } else {
+            $orderPaymentMethodTitle = get_post_meta(
+                $orderId,
+                '_payment_method_title',
+                $single = true
+            );
+
+            // Add message to log
+            Mollie_WC_Plugin::debug(
+                $gateway->id . ': Order ' . $order->get_id()
+                . ' webhook called, but payment also started via '
+                . $orderPaymentMethodTitle . ', so order status not updated.',
+                true
+            );
+
+            // Add order note
+            $order->add_order_note(
+                sprintf(
+                /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+                    __(
+                        'Mollie webhook called, but payment also started via %s, so the order status is not updated.',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                    $orderPaymentMethodTitle
+                )
+            );
+        }
+    }
+
 
 }

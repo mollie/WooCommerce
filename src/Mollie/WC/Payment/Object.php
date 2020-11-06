@@ -503,6 +503,24 @@ class Mollie_WC_Payment_Object {
 		return false;
 
 	}
+    /**
+     * @param WC_Order $order
+     */
+    public function deleteSubscriptionFromPending(WC_Order $order)
+    {
+        if (class_exists('WC_Subscriptions')
+            && class_exists(
+                'WC_Subscriptions_Admin'
+            )
+        ) {
+            if (Mollie_WC_Plugin::getDataHelper()->isSubscription(
+                $order->get_id()
+            )
+            ) {
+                $this->deleteSubscriptionOrderFromPendingPaymentQueue($order);
+            }
+        }
+    }
 
 	/**
 	 * @param $order
@@ -533,6 +551,79 @@ class Mollie_WC_Payment_Object {
         );
 
         return $isFinalOrderStatus;
+    }
+    /**
+     * @param                               $orderId
+     * @param WC_Payment_Gateway            $gateway
+     * @param WC_Order                      $order
+     * @param                               $newOrderStatus
+     * @param                               $paymentMethodTitle
+     * @param \Mollie\Api\Resources\Payment|Mollie\Api\Resources\Order $payment
+     */
+    protected function failedSubscriptionProcess(
+        $orderId,
+        WC_Payment_Gateway $gateway,
+        WC_Order $order,
+        $newOrderStatus,
+        $paymentMethodTitle,
+        $payment
+    ) {
+        if (function_exists('wcs_order_contains_renewal')
+            && wcs_order_contains_renewal($orderId)
+        ) {
+            if ($gateway || ($gateway instanceof Mollie_WC_Gateway_Abstract)) {
+                $gateway->updateOrderStatus(
+                    $order,
+                    $newOrderStatus,
+                    sprintf(
+                    /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+                        __(
+                            '%s renewal payment failed via Mollie (%s). You will need to manually review the payment and adjust product stocks if you use them.',
+                            'mollie-payments-for-woocommerce'
+                        ),
+                        $paymentMethodTitle,
+                        $payment->id . ($payment->mode == 'test' ? (' - ' . __(
+                                'test mode',
+                                'mollie-payments-for-woocommerce'
+                            )) : '')
+                    ),
+                    $restoreStock = false
+                );
+            }
+
+            Mollie_WC_Plugin::debug(
+                __METHOD__ . ' called for order ' . $orderId . ' and payment '
+                . $payment->id . ', renewal order payment failed, order set to '
+                . $newOrderStatus . ' for shop-owner review.'
+            );
+
+            // Send a "Failed order" email to notify the admin
+            $emails = WC()->mailer()->get_emails();
+            if (!empty($emails) && !empty($orderId)
+                && !empty($emails['WC_Email_Failed_Order'])
+            ) {
+                $emails['WC_Email_Failed_Order']->trigger($orderId);
+            }
+        } else {
+            if ($gateway || ($gateway instanceof Mollie_WC_Gateway_Abstract)) {
+                $gateway->updateOrderStatus(
+                    $order,
+                    $newOrderStatus,
+                    sprintf(
+                    /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+                        __(
+                            '%s payment failed via Mollie (%s).',
+                            'mollie-payments-for-woocommerce'
+                        ),
+                        $paymentMethodTitle,
+                        $payment->id . ($payment->mode == 'test' ? (' - ' . __(
+                                'test mode',
+                                'mollie-payments-for-woocommerce'
+                            )) : '')
+                    )
+                );
+            }
+        }
     }
 
 }

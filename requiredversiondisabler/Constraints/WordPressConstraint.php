@@ -2,8 +2,6 @@
 
 namespace RequiredVersionDisabler\Constraints;
 
-use RequiredVersionDisabler\Notice\AdminNotice;
-
 class WordPressConstraint extends Constraint
 {
 

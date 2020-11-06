@@ -1,8 +1,6 @@
 <?php
 
-
 namespace RequiredVersionDisabler\Constraints;
-
 
 use RequiredVersionDisabler\Notice\AdminNotice;
 use RequiredVersionDisabler\ValidateInterface;

@@ -2,8 +2,6 @@
 
 namespace RequiredVersionDisabler\Constraints;
 
-use RequiredVersionDisabler\Notice\AdminNotice;
-
 class WooCommerceConstraint extends Constraint
 {
     const CLASS_NAME = 'WooCommerce';

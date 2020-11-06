@@ -16,7 +16,6 @@ class AdminNotice
      */
     public function addAdminNotice($level, $message)
     {
-
         add_action(
             'admin_notices',
             function() use ($level, $message) {

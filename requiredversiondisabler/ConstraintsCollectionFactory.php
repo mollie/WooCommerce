@@ -1,16 +1,12 @@
 <?php
 
-
 namespace RequiredVersionDisabler;
-
 
 use InvalidArgumentException;
 use RequiredVersionDisabler\Constraints\ConstraintsCollection;
 
-
 class ConstraintsCollectionFactory
 {
-
     const WORDPRESS_CONSTRAINT = 'WordPressConstraint';
     const WOOCOMMERCE_CONSTRAINT = 'WooCommerceConstraint';
     const PHP_CONSTRAINT = 'PhpConstraint';
@@ -47,7 +43,6 @@ class ConstraintsCollectionFactory
             $className = '\\RequiredVersionDisabler\\Constraints\\' . $constraintClass;
             $constraints[] = new $className($constraintVersion, $pluginName);
         }
-
 
         return new ConstraintsCollection(...$constraints);
     }

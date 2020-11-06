@@ -1,8 +1,6 @@
 <?php
 
-
 namespace RequiredVersionDisabler\Constraints;
-
 
 class ConstraintsCollection
 {

@@ -165,8 +165,8 @@ msgid "Base Styles"
 msgstr "Basisstijlen"
 
 #: src/Mollie/WC/Gateway/Abstract.php:2056
-msgid "Secure payments provided by "
-msgstr "Beveiligde betalingen verschaft door"
+msgid "%1$s Secure payments provided by %2$s"
+msgstr "%1$s Beveiligde betalingen verschaft door %2$s"
 
 #: src/Mollie/WC/Plugin.php:431
 msgid "An unknown error occurred, please check the card fields."

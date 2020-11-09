@@ -37,55 +37,6 @@ class WooCommerce
 
 }
 
-class WC_Cart
-{
-    public function needs_shipping()
-    {
-    }
-
-    public function get_subtotal()
-    {
-    }
-
-    public function is_empty()
-    {
-    }
-
-    public function get_shipping_total()
-    {
-    }
-
-    public function add_to_cart()
-    {
-    }
-
-    public function get_total_tax()
-    {
-    }
-
-    public function get_total()
-    {
-    }
-
-    public function remove_cart_item()
-    {
-    }
-
-    public function calculate_shipping()
-    {
-    }
-
-    public function calculate_fees()
-    {
-    }
-
-    public function calculate_totals()
-    {
-    }
-
-
-}
-
 class WC_Customer
 {
     public function set_shipping_country()
@@ -211,6 +162,57 @@ class WC_Order_Item
     public function get_meta()
     {
     }
+}
+class WC_Cart
+{
+    public function needs_shipping()
+    {
+    }
+
+    public function get_subtotal()
+    {
+    }
+
+    public function is_empty()
+    {
+    }
+
+    public function get_shipping_total()
+    {
+    }
+
+    public function add_to_cart()
+    {
+    }
+
+    public function get_total_tax()
+    {
+    }
+
+    public function get_total()
+    {
+    }
+
+    public function remove_cart_item()
+    {
+    }
+
+    public function calculate_shipping()
+    {
+    }
+
+    public function calculate_fees()
+    {
+    }
+
+    public function calculate_totals()
+    {
+    }
+    public function get_cart_contents()
+    {
+    }
+
+
 }
 class WC_HTTPS
 {

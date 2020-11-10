@@ -364,8 +364,12 @@ exports.processAssets = series(
     _processAssets(options)
 )
 
+exports.phpScoper = series(
+    _phpScoper(options),
+)
+
 exports.processPhp = series(
-    _phpScoper(options)
+    exports.phpScoper
 )
 
 exports.archive = series(

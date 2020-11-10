@@ -217,9 +217,9 @@ function _phpScoper({baseDir, buildDir, phpTmpDir}) {
             // Scope the code and put it into the PHP temporary processing dir
             (done) => { return exec('tools/php-scoper', ['add-prefix', `--output-dir=${phpTmpDir}`], {cwd: buildDir}, done) },
             // Copy the scoped files from tmp dir into build dir
-            // (done) => { return pump(src([`src/**/*.*`, `vendor/**/*.*`], {cwd: phpTmpDir, base: phpTmpDir}), gulp.dest(buildDir), done) },
+            (done) => { return pump(src([`src/**/*.*`, `vendor/**/*.*`], {cwd: phpTmpDir, base: phpTmpDir}), gulp.dest(buildDir), done) },
             // Delete PHP temporary processing dir
-            // (done) => { deleteTmpDir(done) },
+            (done) => { deleteTmpDir(done) },
 
         ], done);
     }

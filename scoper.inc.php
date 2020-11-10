@@ -2,7 +2,15 @@
 
 declare(strict_types=1);
 
+require_once sprintf('%1$s/tests/stub/external/IdentifierExtractor.php', __DIR__);
+require_once sprintf('%1$s/tests/stub/external/RemovePrefixPatcher.php', __DIR__);
+
+use pxlrbt\PhpScoper\PrefixRemover\IdentifierExtractor;
+use pxlrbt\PhpScoper\PrefixRemover\RemovePrefixPatcher;
 use Isolated\Symfony\Component\Finder\Finder;
+
+// Will likely need updating if a different version of PHPScoper is used
+class_alias('_HumbugBoxb6056d4e1e8c\PhpParser\ParserFactory', 'PhpParser\ParserFactory');
 
 return [
     // The prefix configuration. If a non null value will be used, a random prefix will be generated.
@@ -49,6 +57,7 @@ return [
 
             return $contents;
         },
+        new RemovePrefixPatcher((new IdentifierExtractor())->addStub(__DIR__ . '/tests/stub/external/wordpress-stubs.php')->extract()),
     ],
 
     // PHP-Scoper's goal is to make sure that all code for a project lies in a distinct PHP namespace. However, you

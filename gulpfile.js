@@ -8,6 +8,8 @@ const usage = require('gulp-help-doc')
 const zip = require('gulp-zip')
 const rename = require('gulp-rename')
 const date = require('date-and-time')
+const download = require('gulp-download-files')
+const fs = require('fs')
 
 const options = {
     ...minimist(
@@ -140,6 +142,38 @@ let chain = function (tasks, callback) {
         return chain(tasks, callback)
     })
 }
+
+let ensureFile = (function (exists, log, dest, download) {
+    /**
+     * Downloads the file from the specified URL if it does not yet exist in the destination directory.
+     *
+     * @param {string} url The URL to download the file from.
+     * @param {string} dir The path to the directory where to save the file.
+     * @param {string} fileName The name to save the file as. If empty will be determined from the URL.
+     * @param {Function} done The callback to invoke when the download ends. A standard error-first callback.
+     */
+    return function (url, dir, fileName, done) {
+        url = new URL(url)
+        fileName = fileName || url.pathname.split('/').pop()
+        let filePath = `${dir}/${fileName}`
+
+        if (exists(filePath)) {
+            log(`${filePath} already exists`)
+            done()
+
+            return
+        }
+
+        log(`${filePath} does not exist`)
+        download({[fileName]: url}).pipe(
+            dest(dir)
+        ).on('finish', function (err) {
+            done(err)
+        }).on('error', function (err) {
+            done(err)
+        });
+    }
+})(fs.existsSync, log, gulp.dest, download)
 
 // --------------------------------------------------------------------
 // TASKS

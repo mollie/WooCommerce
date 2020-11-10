@@ -22,6 +22,10 @@ const options = {
                 'buildDir',
                 'distDir',
                 'phpTmpDir',
+                'stubsDir',
+                'wpStubsUrl',
+                'phpIdExtractorUrl',
+                'phpPrefixRemoverPatcherUrl',
             ],
             bools: [
                 'q',
@@ -33,7 +37,11 @@ const options = {
                 buildDir: `${__dirname}/build`,
                 distDir: `${__dirname}/dist`,
                 phpTmpDir: `${__dirname}/build/php`,
-                q: false
+                stubsDir: `${__dirname}/tests/stub/external`,
+                wpStubsUrl: 'https://raw.githack.com/php-stubs/wordpress-stubs/v5.5.3/wordpress-stubs.php',
+                phpIdExtractorUrl: 'https://raw.githack.com/pxlrbt/php-scoper-prefix-remover/main/src/IdentifierExtractor.php',
+                phpPrefixRemoverPatcherUrl: 'https://raw.githack.com/pxlrbt/php-scoper-prefix-remover/main/src/RemovePrefixPatcher.php',
+                q: false,
             },
         }
     )
@@ -238,6 +246,26 @@ function _processAssets({baseDir, buildDir}) {
     }
 }
 
+function _ensureWpStubs({stubsDir, wpStubsUrl})
+{
+    return function ensureWpStubs(done) {
+        ensureFile(wpStubsUrl, stubsDir, null, done)
+    }
+}
+
+function _ensurePhpIdExtractor({stubsDir, phpIdExtractorUrl})
+{
+    return function ensureIdentifierExtractor(done) {
+        ensureFile(phpIdExtractorUrl, stubsDir, null, done)
+    }
+}
+
+function _ensurePrefixRemoverPatcher({stubsDir, phpPrefixRemoverPatcherUrl}) {
+    return function ensurePrefixRemoverPatcher(done) {
+        ensureFile(phpPrefixRemoverPatcherUrl, stubsDir, null, done)
+    }
+}
+
 function _phpScoper({baseDir, buildDir, phpTmpDir}) {
     return function phpScoper(done) {
         let deleteTmpDir = function (done) {
@@ -364,11 +392,32 @@ exports.processAssets = series(
     _processAssets(options)
 )
 
+exports.ensureWpStubs = series(
+    _ensureWpStubs(options),
+)
+
+exports.ensurePhpIdExtractor = series(
+    _ensurePhpIdExtractor(options),
+)
+
+exports.ensurePhpPrefixRemoverPatcher = series(
+    _ensurePrefixRemoverPatcher(options),
+)
+
+// At least some of these are likely to be a temporary measure.
+// See https://github.com/humbug/php-scoper/issues/303
+exports.preparePhpScoper = series(
+    exports.ensureWpStubs,
+    exports.ensurePhpIdExtractor,
+    exports.ensurePhpPrefixRemoverPatcher,
+)
+
 exports.phpScoper = series(
     _phpScoper(options),
 )
 
 exports.processPhp = series(
+    exports.preparePhpScoper,
     exports.phpScoper
 )
 

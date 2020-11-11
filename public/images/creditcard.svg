@@ -1,56 +1,56 @@
-<svg width="32" height="24" viewBox="0 0 32 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<mask id="mask0" mask-type="alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="24">
-<path d="M28 0H4C1.79086 0 0 1.79086 0 4V20C0 22.2091 1.79086 24 4 24H28C30.2091 24 32 22.2091 32 20V4C32 1.79086 30.2091 0 28 0Z" fill="white"/>
-</mask>
-<g mask="url(#mask0)">
-<path d="M28 0H4C1.79086 0 0 1.79086 0 4V20C0 22.2091 1.79086 24 4 24H28C30.2091 24 32 22.2091 32 20V4C32 1.79086 30.2091 0 28 0Z" fill="url(#paint0_linear)"/>
-<path opacity="0.1" d="M31.5 63C48.897 63 63 48.897 63 31.5C63 14.103 48.897 0 31.5 0C14.103 0 0 14.103 0 31.5C0 48.897 14.103 63 31.5 63Z" transform="translate(6 6)" fill="url(#paint1_linear)"/>
-<path opacity="0.1" d="M16.5 33C25.6127 33 33 25.6127 33 16.5C33 7.3873 25.6127 0 16.5 0C7.3873 0 0 7.3873 0 16.5C0 25.6127 7.3873 33 16.5 33Z" transform="translate(-10 12)" fill="url(#paint2_linear)"/>
-<path opacity="0.1" d="M26.5 53C41.1355 53 53 41.1355 53 26.5C53 11.8645 41.1355 0 26.5 0C11.8645 0 0 11.8645 0 26.5C0 41.1355 11.8645 53 26.5 53Z" transform="translate(16 -31)" fill="url(#paint3_linear)"/>
-<g filter="url(#filter0_d)">
-<path d="M6 0H1C0.447715 0 0 0.447715 0 1V4C0 4.55228 0.447715 5 1 5H6C6.55228 5 7 4.55228 7 4V1C7 0.447715 6.55228 0 6 0Z" transform="translate(4 7)" fill="black"/>
-</g>
-<path d="M6 0H1C0.447715 0 0 0.447715 0 1V4C0 4.55228 0.447715 5 1 5H6C6.55228 5 7 4.55228 7 4V1C7 0.447715 6.55228 0 6 0Z" transform="translate(4 7)" fill="url(#paint4_linear)"/>
-<path opacity="0.3" d="M1 0H0V3H1V0Z" transform="translate(5 8)" fill="#7A3802"/>
-<path opacity="0.3" d="M1 0H0V3H1V0Z" transform="translate(7 8)" fill="#7A3802"/>
-<path opacity="0.3" d="M1 0H0V3H1V0Z" transform="translate(9 8)" fill="#7A3802"/>
-<path d="M5 0H0V1H5V0Z" transform="translate(4 15)" fill="white" fill-opacity="0.8"/>
-<path d="M3 0H0V1H3V0Z" transform="translate(4 17)" fill="white" fill-opacity="0.8"/>
-<path d="M3 0H0V1H3V0Z" transform="translate(8 17)" fill="white" fill-opacity="0.8"/>
-<path d="M3 0H0V1H3V0Z" transform="translate(12 17)" fill="white" fill-opacity="0.8"/>
-<path d="M5 0H0V1H5V0Z" transform="translate(10 15)" fill="white" fill-opacity="0.8"/>
-<path d="M5 0H0V1H5V0Z" transform="translate(16 15)" fill="white" fill-opacity="0.8"/>
-<path d="M5 0H0V1H5V0Z" transform="translate(22 15)" fill="white" fill-opacity="0.8"/>
-</g>
-<defs>
-<filter id="filter0_d" x="3" y="7" width="9" height="7" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 255 0"/>
-<feOffset dy="1"/>
-<feGaussianBlur stdDeviation="0.5"/>
-<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"/>
-<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
-<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
-</filter>
-<linearGradient id="paint0_linear" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(-16 12) scale(45.2548 33.9411) rotate(-45)">
-<stop stop-color="#060B0E"/>
-<stop offset="1" stop-color="#254764"/>
-</linearGradient>
-<linearGradient id="paint1_linear" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(13.0557 17.6392) scale(9.27096) rotate(-110.052)">
-<stop stop-color="white" stop-opacity="0"/>
-<stop offset="1" stop-color="white"/>
-</linearGradient>
-<linearGradient id="paint2_linear" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(9.16207 34.8244) scale(15.1227) rotate(-103.962)">
-<stop stop-color="white" stop-opacity="0"/>
-<stop offset="1" stop-color="white"/>
-</linearGradient>
-<linearGradient id="paint3_linear" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(32.4248 26.4995) scale(24.2879) rotate(76.0375)">
-<stop stop-color="white" stop-opacity="0"/>
-<stop offset="1" stop-color="white"/>
-</linearGradient>
-<linearGradient id="paint4_linear" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(7) scale(7 5) rotate(90)">
-<stop stop-color="#FAD961"/>
-<stop offset="1" stop-color="#F7955D"/>
-</linearGradient>
-</defs>
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="24" viewBox="0 0 32 24" fill="none">
+    <mask id="mask0" mask-type="alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="24">
+        <path d="M28 0H4C1.79086 0 0 1.79086 0 4V20C0 22.2091 1.79086 24 4 24H28C30.2091 24 32 22.2091 32 20V4C32 1.79086 30.2091 0 28 0Z" fill="white"/>
+    </mask>
+    <g mask="url(#mask0)">
+        <path d="M28 0H4C1.79086 0 0 1.79086 0 4V20C0 22.2091 1.79086 24 4 24H28C30.2091 24 32 22.2091 32 20V4C32 1.79086 30.2091 0 28 0Z" fill="url(#paint0_linear)"/>
+        <path opacity="0.1" d="M31.5 63C48.897 63 63 48.897 63 31.5C63 14.103 48.897 0 31.5 0C14.103 0 0 14.103 0 31.5C0 48.897 14.103 63 31.5 63Z" transform="translate(6 6)" fill="url(#paint1_linear)"/>
+        <path opacity="0.1" d="M16.5 33C25.6127 33 33 25.6127 33 16.5C33 7.3873 25.6127 0 16.5 0C7.3873 0 0 7.3873 0 16.5C0 25.6127 7.3873 33 16.5 33Z" transform="translate(-10 12)" fill="url(#paint2_linear)"/>
+        <path opacity="0.1" d="M26.5 53C41.1355 53 53 41.1355 53 26.5C53 11.8645 41.1355 0 26.5 0C11.8645 0 0 11.8645 0 26.5C0 41.1355 11.8645 53 26.5 53Z" transform="translate(16 -31)" fill="url(#paint3_linear)"/>
+        <g filter="url(#filter0_d)">
+            <path d="M6 0H1C0.447715 0 0 0.447715 0 1V4C0 4.55228 0.447715 5 1 5H6C6.55228 5 7 4.55228 7 4V1C7 0.447715 6.55228 0 6 0Z" transform="translate(4 7)" fill="black"/>
+        </g>
+        <path d="M6 0H1C0.447715 0 0 0.447715 0 1V4C0 4.55228 0.447715 5 1 5H6C6.55228 5 7 4.55228 7 4V1C7 0.447715 6.55228 0 6 0Z" transform="translate(4 7)" fill="url(#paint4_linear)"/>
+        <path opacity="0.3" d="M1 0H0V3H1V0Z" transform="translate(5 8)" fill="#7A3802"/>
+        <path opacity="0.3" d="M1 0H0V3H1V0Z" transform="translate(7 8)" fill="#7A3802"/>
+        <path opacity="0.3" d="M1 0H0V3H1V0Z" transform="translate(9 8)" fill="#7A3802"/>
+        <path d="M5 0H0V1H5V0Z" transform="translate(4 15)" fill="white" fill-opacity="0.8"/>
+        <path d="M3 0H0V1H3V0Z" transform="translate(4 17)" fill="white" fill-opacity="0.8"/>
+        <path d="M3 0H0V1H3V0Z" transform="translate(8 17)" fill="white" fill-opacity="0.8"/>
+        <path d="M3 0H0V1H3V0Z" transform="translate(12 17)" fill="white" fill-opacity="0.8"/>
+        <path d="M5 0H0V1H5V0Z" transform="translate(10 15)" fill="white" fill-opacity="0.8"/>
+        <path d="M5 0H0V1H5V0Z" transform="translate(16 15)" fill="white" fill-opacity="0.8"/>
+        <path d="M5 0H0V1H5V0Z" transform="translate(22 15)" fill="white" fill-opacity="0.8"/>
+    </g>
+    <defs>
+        <filter id="filter0_d" x="3" y="7" width="9" height="7" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 255 0"/>
+            <feOffset dy="1"/>
+            <feGaussianBlur stdDeviation="0.5"/>
+            <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"/>
+            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
+            <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
+        </filter>
+        <linearGradient id="paint0_linear" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(-16 12) scale(45.2548 33.9411) rotate(-45)">
+            <stop stop-color="#060B0E"/>
+            <stop offset="1" stop-color="#254764"/>
+        </linearGradient>
+        <linearGradient id="paint1_linear" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(13.0557 17.6392) scale(9.27096) rotate(-110.052)">
+            <stop stop-color="white" stop-opacity="0"/>
+            <stop offset="1" stop-color="white"/>
+        </linearGradient>
+        <linearGradient id="paint2_linear" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(9.16207 34.8244) scale(15.1227) rotate(-103.962)">
+            <stop stop-color="white" stop-opacity="0"/>
+            <stop offset="1" stop-color="white"/>
+        </linearGradient>
+        <linearGradient id="paint3_linear" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(32.4248 26.4995) scale(24.2879) rotate(76.0375)">
+            <stop stop-color="white" stop-opacity="0"/>
+            <stop offset="1" stop-color="white"/>
+        </linearGradient>
+        <linearGradient id="paint4_linear" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(7) scale(7 5) rotate(90)">
+            <stop stop-color="#FAD961"/>
+            <stop offset="1" stop-color="#F7955D"/>
+        </linearGradient>
+    </defs>
 </svg>

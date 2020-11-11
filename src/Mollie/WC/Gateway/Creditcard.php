@@ -19,7 +19,12 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
     }
 
     public function get_icon() {
-        $output = $this->icon ? $this->icon : '';
+        $url = Mollie_WC_Plugin::getPluginUrl(
+            "public/images/creditcard.svg"
+        );
+        $localAsset = '<img src="' . esc_attr($url)
+            . '" style="width: 32px; vertical-align: bottom;" />';
+        $output = $this->icon ? $localAsset : '';
         if ($this->enabledCreditcards()
             && !is_admin()
         ) {

@@ -12,7 +12,7 @@
  * Domain Path: /languages
  * License: GPLv2 or later
  * WC requires at least: 2.2.0
- * WC tested up to: 4.6
+ * WC tested up to: 4.7
  */
 
 use Mollie\Api\CompatibilityChecker;

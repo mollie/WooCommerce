@@ -104,6 +104,9 @@ class Mollie_WC_Helper_Data
     public function getWcOrder()
     {
     }
+    public function getOrderStatus()
+    {
+    }
 }
 
 class Mollie_WC_Helper_Api
@@ -119,6 +122,9 @@ class WC_Order
     {
     }
     public function get_id()
+    {
+    }
+    public function get_status()
     {
     }
     public function add_order_note($note)

@@ -306,12 +306,9 @@ class Mollie_WC_Plugin_Test extends TestCase
         $order = $this->mockOrder();
 
         //functions called
-        expect('mollieWooCommerceGetDataHelper')
-            ->andReturn($dataHelper);
-
-        $dataHelper
-            ->method('getWcOrder')
-            ->willReturn($order);
+        expect('wc_get_order')
+            ->once()
+            ->andReturn($order);
         $order
             ->method('key_is_valid')
             ->willReturn(true);
@@ -341,17 +338,14 @@ class Mollie_WC_Plugin_Test extends TestCase
         $key = $faker->word;
 
         //functions called
-        expect('mollieWooCommerceGetDataHelper')
-            ->andReturn($dataHelper);
         when('wc_get_order_id_by_order_key')
             ->justReturn($key);
 
         //so first time id retrieving fails
         //and we pass key to retrieve order
-        $dataHelper
-            ->method('getWcOrder')
-            ->withConsecutive([$id], [$key])
-            ->willReturn(false, $order);
+        expect('wc_get_order')
+            ->with([$id], [$key])
+            ->andReturn(false, $order);
 
         $order
             ->method('key_is_valid')
@@ -390,16 +384,13 @@ class Mollie_WC_Plugin_Test extends TestCase
         }
 
         //functions called
-        expect('mollieWooCommerceGetDataHelper')
-            ->andReturn($dataHelper);
         when('wc_get_order_id_by_order_key')
             ->justReturn($key);
 
         // retrieving fails
-        $dataHelper
-            ->method('getWcOrder')
-            ->withConsecutive([$id], [$key])
-            ->willReturn(false, $returned);
+        expect('wc_get_order')
+            ->with([$id], [$key])
+            ->andReturn(false, $returned);
 
         $order
             ->method('key_is_valid')

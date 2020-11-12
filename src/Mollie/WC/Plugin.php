@@ -685,8 +685,6 @@ class Mollie_WC_Plugin
      */
     public static function orderByRequest()
     {
-        $dataHelper = mollieWooCommerceGetDataHelper();
-
         $orderId = filter_input(INPUT_GET, 'order_id', FILTER_SANITIZE_NUMBER_INT) ?: null;
         $key = filter_input(INPUT_GET, 'key', FILTER_SANITIZE_STRING) ?: null;
         $order = wc_get_order($orderId);

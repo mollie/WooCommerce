@@ -46,6 +46,10 @@ class Mollie_WC_Gateway_CreditCard_Test extends TestCase
             ->once()
             ->withNoArgs()
             ->andReturn(false);
+        expect('esc_attr')
+            ->once()
+            ->withAnyArgs()
+            ->andReturn("public/images/creditcard.svg");
         
         $testee
             ->expects($this->exactly(2))

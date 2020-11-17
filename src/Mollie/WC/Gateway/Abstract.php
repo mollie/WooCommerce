@@ -411,7 +411,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		}
 
 		$orderId = $order->get_id();
-        Mollie_WC_Plugin::debug( "{$this->id}: Start process_payment for order {$orderId}", true );
+        mollieWooCommerceDebug( "{$this->id}: Start process_payment for order {$orderId}", true );
 
 		$initial_order_status = $this->getInitialOrderStatus();
 
@@ -545,7 +545,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				$paymentObject->id . ( $paymentObject->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
 			) );
 
-            Mollie_WC_Plugin::debug( "For order " . $orderId . " redirect user to Mollie Checkout URL: " . $paymentObject->getCheckoutUrl() );
+            mollieWooCommerceDebug( "For order " . $orderId . " redirect user to Mollie Checkout URL: " . $paymentObject->getCheckoutUrl() );
 
 
 			return array (

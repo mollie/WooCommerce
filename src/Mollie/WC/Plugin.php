@@ -55,7 +55,7 @@ class Mollie_WC_Plugin
     private function __construct () {}
 
     /**
-     *
+     * WCSubscription related.
      */
     public static function schedulePendingPaymentOrdersExpirationCheck()
     {
@@ -714,8 +714,6 @@ class Mollie_WC_Plugin
      */
     public static function onMollieReturn ()
     {
-        $dataHelper = mollieWooCommerceGetDataHelper();
-
         try {
             $order = self::orderByRequest();
         } catch (RuntimeException $exc) {

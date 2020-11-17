@@ -1,5 +1,8 @@
 <?php
 
+use Mollie\Api\Endpoints\OrderEndpoint;
+use Mollie\WooCommerceTests\TestCase;
+
 function wc_string_to_bool($string)
 {
     return is_bool($string) ? $string : ('yes' === strtolower(
@@ -90,13 +93,24 @@ class WC_Shipping_Rate
 
 }
 
-class WC_Payment_Gateway
+class WC_Payment_Gateway extends WC_Settings_API
 {
     public $id;
+    public $enabled;
     public function __construct($id = 1)
     {
         $this->id = $id;
+        $this->enabled = 'yes';
     }
+    public function init_settings() {
+    }
+}
+class WC_Settings_API {
+    public function get_option(){
+
+    }
+    public function process_admin_options() {}
+
 }
 
 class Mollie_WC_Helper_Data
@@ -104,8 +118,24 @@ class Mollie_WC_Helper_Data
     public function getWcOrder()
     {
     }
+
     public function getOrderStatus()
     {
+    }
+
+    public function isSubscription($order)
+    {
+        if ($order == 'subs') {
+            return true;
+        }
+        return false;
+    }
+
+    public function getUserMollieCustomerId()
+    {
+    }
+    public function getOrderCurrency(){
+        return 'EUR';
     }
 }
 
@@ -113,8 +143,27 @@ class Mollie_WC_Helper_Api
 {
     public function getApiClient()
     {
+        return new MollieApiClient();
     }
 }
+class MollieApiClient{
+    public $orders;
+    public function __construct()
+    {
+        $this->orders = $this->mockApiEndpoint();
+    }
+    public function mockApiEndpoint(){
+        $testCase = new TestCase();
+        $mockBuilder = new PHPUnit_Framework_MockObject_MockBuilder($testCase, OrderEndpoint::class);
+        $mock = $mockBuilder
+            ->disableOriginalConstructor()
+            ->setMethods(['get', 'create'])
+            ->getMock();
+
+        return $mock;
+    }
+}
+
 
 class WC_Order
 {
@@ -145,7 +194,90 @@ class WC_Order
     public function payment_complete()
     {
     }
+    public function get_customer_id()
+    {
 
+    }
+
+    public function get_total()
+    {
+    }
+
+    public function get_user_id()
+    {
+    }
+
+    public function get_items()
+    {
+    }
+
+    public function get_billing_first_name()
+    {
+    }
+
+    public function get_billing_last_name()
+    {
+    }
+
+    public function get_billing_email()
+    {
+    }
+
+    public function get_shipping_first_name()
+    {
+    }
+
+    public function get_shipping_last_name()
+    {
+    }
+
+    public function get_billing_address_1()
+    {
+    }
+
+    public function get_billing_address_2()
+    {
+    }
+
+    public function get_billing_postcode()
+    {
+    }
+
+    public function get_billing_city()
+    {
+    }
+
+    public function get_billing_state()
+    {
+    }
+
+    public function get_billing_country()
+    {
+    }
+
+    public function get_shipping_address_1()
+    {
+    }
+
+    public function get_shipping_address_2()
+    {
+    }
+
+    public function get_shipping_postcode()
+    {
+    }
+
+    public function get_shipping_city()
+    {
+    }
+
+    public function get_shipping_state()
+    {
+    }
+
+    public function get_shipping_country()
+    {
+    }
 }
 
 class WC_Order_Item

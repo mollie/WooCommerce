@@ -48,12 +48,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             ->once()
             ->withAnyArgs()
             ->andReturn("/images/ideal.svg");
-        expect('wp_safe_remote_get')
-            ->once()
-            ->withAnyArgs()
-            ->andReturn($this->createWpError('Cannot use i/o in test'));
-
-
+        
         /*
          * Setup Testee
          */

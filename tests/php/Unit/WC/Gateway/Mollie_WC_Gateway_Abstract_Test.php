@@ -14,6 +14,8 @@ use UnexpectedValueException;
 use WooCommerce;
 
 
+use WP_Error;
+
 use function Brain\Monkey\Functions\expect;
 use function Brain\Monkey\Actions\expectDone;
 
@@ -36,18 +38,17 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
     {
 
         /*
-        * Expect to call availablePaymentMethods() function and return false from the API
-        */
+         * Expect to call availablePaymentMethods() function and return false from the API
+         */
         expect('mollieWooCommerceAvailablePaymentMethods')
-            ->once()
+            ->zeroOrMoreTimes()
             ->withNoArgs()
             ->andReturn(false);
         expect('esc_attr')
             ->once()
             ->withAnyArgs()
             ->andReturn("/images/ideal.svg");
-
-
+        
         /*
          * Setup Testee
          */

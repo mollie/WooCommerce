@@ -112,7 +112,7 @@ class Mollie_WC_Payment_Object {
 
 		// Do extra checks if WooCommerce Subscriptions is installed
 		if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-			if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order_id ) ) {
+			if ( Mollie_WC_Plugin::getDataHelper()->isWcSubscription($order_id ) ) {
 				return $this->setActiveMolliePaymentForSubscriptions( $order_id );
 			}
 		}
@@ -257,7 +257,7 @@ class Mollie_WC_Payment_Object {
 
 		// Do extra checks if WooCommerce Subscriptions is installed
 		if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-			if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order_id ) ) {
+			if ( Mollie_WC_Plugin::getDataHelper()->isWcSubscription($order_id ) ) {
 				return $this->unsetActiveMolliePaymentForSubscriptions( $order_id );
 			}
 		}

@@ -190,7 +190,6 @@ class Mollie_WC_Plugin
 
 		// Add global Mollie settings to 'WooCommerce -> Checkout -> Checkout Options'
 		add_filter( 'woocommerce_payment_gateways_settings', array ( $settings_helper, 'addGlobalSettingsFields' ) );
-        remove_filter('wp_kses_allowed_html', array ( $settings_helper, 'svgAllowedTags' ) , 10);
 
 		// When page 'WooCommerce -> Checkout -> Checkout Options' is saved
 		add_action( 'woocommerce_settings_save_checkout', array ( $data_helper, 'deleteTransients' ) );

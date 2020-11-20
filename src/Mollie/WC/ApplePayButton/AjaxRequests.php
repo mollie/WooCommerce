@@ -454,16 +454,24 @@ class Mollie_WC_ApplePayButton_AjaxRequests
         $base_location = wc_get_base_location();
         $shopCountryCode = $base_location['country'];
         WC()->customer->set_shipping_country(
-            $address['country'] ?: $shopCountryCode
+            isset($address['country'])
+                ? $address['country']
+                : $shopCountryCode
         );
         WC()->customer->set_billing_country(
-            $address['country'] ?: $shopCountryCode
+            isset($address['country'])
+                ? $address['country']
+                : $shopCountryCode
         );
         WC()->customer->set_shipping_postcode(
-            $address['postcode'] ?: ''
+            isset($address['postcode'])
+                ? $address['postcode']
+                : $shopCountryCode
         );
         WC()->customer->set_shipping_city(
-            $address['city'] ?: ''
+            isset($address['city'])
+                ? $address['city']
+                : $shopCountryCode
         );
     }
 

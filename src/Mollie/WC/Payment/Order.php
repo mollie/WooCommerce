@@ -74,7 +74,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 		$return_url      = $gateway->getReturnUrl( $order );
 		$webhook_url     = $gateway->getWebhookUrl( $order );
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 
 			$paymentRequestData = array (
 				'amount'      => array (
@@ -281,7 +281,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	public function onWebhookPaid( WC_Order $order, $payment, $paymentMethodTitle ) {
 
 		// Get order ID in the correct way depending on WooCommerce version
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$orderId = $order->id;
 		} else {
 			$orderId = $order->get_id();
@@ -353,7 +353,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	public function onWebhookAuthorized( WC_Order $order, $payment, $payment_method_title ) {
 
 		// Get order ID in the correct way depending on WooCommerce version
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$orderId = $order->id;
 		} else {
 			$orderId = $order->get_id();
@@ -416,7 +416,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	public function onWebhookCompleted( WC_Order $order, $payment, $payment_method_title ) {
 
 		// Get order ID in the correct way depending on WooCommerce version
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$orderId = $order->id;
 		} else {
 			$orderId = $order->get_id();
@@ -551,7 +551,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 		// Subscription processing
 		if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->id ) ) {
 					$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
 				}
@@ -571,7 +571,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	public function onWebhookFailed( WC_Order $order, $payment, $payment_method_title ) {
 
 		// Get order ID in the correct way depending on WooCommerce version
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$order_id = $order->id;
 		} else {
 			$order_id = $order->get_id();
@@ -646,7 +646,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	public function onWebhookExpired( WC_Order $order, $payment, $payment_method_title ) {
 
 		// Get order ID in correct way depending on WooCommerce version
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$order_id          = $order->id;
 			$mollie_payment_id = get_post_meta( $order_id, '_mollie_order_id', $single = true );
 		} else {
@@ -715,7 +715,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 		// Subscription processing
 		if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
 
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->id ) ) {
 					$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
 				}
@@ -996,7 +996,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	 */
     public function refund_amount($order, $amount, $payment_object, $reason)
     {
-        $orderId = version_compare(WC_VERSION, '3.0', '<') ? $order->id : $order->get_id();
+        $orderId = version_compare(mollieWooCommerceWcVersion(), '3.0', '<') ? $order->id : $order->get_id();
 
 		Mollie_WC_Plugin::debug( 'Try to process an amount refund (not individual order line)' );
 

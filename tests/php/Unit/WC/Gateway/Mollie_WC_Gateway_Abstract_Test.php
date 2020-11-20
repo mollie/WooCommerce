@@ -14,6 +14,8 @@ use UnexpectedValueException;
 use WooCommerce;
 
 
+use WP_Error;
+
 use function Brain\Monkey\Functions\expect;
 use function Brain\Monkey\Actions\expectDone;
 
@@ -42,7 +44,6 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             ->once()
             ->withAnyArgs()
             ->andReturn("/images/ideal.svg");
-
 
         /*
          * Setup Testee

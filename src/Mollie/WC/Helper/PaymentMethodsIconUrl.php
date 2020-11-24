@@ -37,15 +37,6 @@ class Mollie_WC_Helper_PaymentMethodsIconUrl
      */
     public function svgUrlForPaymentMethod($paymentMethodName)
     {
-        return $this->fallToAssets($paymentMethodName);
-    }
-
-    /**
-     * @param string $paymentMethodName
-     * @return string
-     */
-    protected function fallToAssets($paymentMethodName)
-    {
         if ($paymentMethodName == PaymentMethod::CREDITCARD && !is_admin()) {
             return Mollie_WC_Plugin::getPluginUrl(
                 "public/images/{$paymentMethodName}s.svg"

@@ -124,6 +124,13 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 'default'     => $this->getDefaultDescription(),
                 'desc_tip'    => true,
             ),
+            'allowed_countries' =>    array(
+                 'title'   => __( 'Sell to specific countries', 'woocommerce' ),
+                 'desc'    => '',
+                 'css'     => 'min-width: 350px;',
+                 'default' => [],
+                 'type'    => 'multi_select_countries',
+            ),
         );
 
         if ($this->paymentConfirmationAfterCoupleOfDays())
@@ -179,19 +186,84 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $this->description = $description;
     }
 
-    public function admin_options ()
+    public function admin_options()
     {
-        if (!$this->enabled && count($this->errors))
-        {
+        if (!$this->enabled && count($this->errors)) {
             echo '<div class="inline error"><p><strong>' . __('Gateway Disabled', 'mollie-payments-for-woocommerce') . '</strong>: '
-                . implode('<br/>', $this->errors)
-                . '</p></div>';
+                    . implode('<br/>', $this->errors)
+                    . '</p></div>';
 
             return;
         }
 
-        parent::admin_options();
+        $html = '';
+        foreach ($this->get_form_fields() as $k => $v) {
+            $type = $this->get_field_type($v);
+
+            if ($type === 'multi_select_countries') {
+                $html .= $this->multiSelectCountry();
+            } else {
+                if (method_exists($this, 'generate_' . $type . '_html')) {
+                    $html .= $this->{'generate_' . $type . '_html'}($k, $v);
+                } else {
+                    $html .= $this->generate_text_html($k, $v);
+                }
+            }
+        }
+
+        echo '<h2>' . esc_html($this->get_method_title());
+        wc_back_link(__('Return to payments', 'woocommerce'), admin_url('admin.php?page=wc-settings&tab=checkout'));
+        echo '</h2>';
+        echo wp_kses_post(wpautop($this->get_method_description()));
+        echo '<table class="form-table">'
+                .
+                $html
+                .
+                '</table>';
     }
+
+    public function multiSelectCountry()
+    {
+
+        $selections = (array)$this->get_option('allowed_countries', []);
+        $gatewayId = $this->getMollieMethodId();
+        $id = 'mollie_wc_gateway_'.$gatewayId.'_allowed_countries';
+        $title = __('Sell to specific countries', 'woocommerce');
+        $description = '<span class="description">' . wp_kses_post($this->get_option('description', '')) . '</span>';
+        $countries = WC()->countries->countries;
+        asort($countries);
+        ob_start();
+        ?>
+        <tr valign="top">
+            <th scope="row" class="titledesc">
+                <label for="<?php echo esc_attr($id); ?>"><?php echo esc_html($title); ?> </label>
+            </th>
+            <td class="forminp">
+                <select multiple="multiple" name="<?php echo esc_attr($id); ?>[]" style="width:350px"
+                        data-placeholder="<?php esc_attr_e('Choose countries&hellip;', 'woocommerce'); ?>"
+                        aria-label="<?php esc_attr_e('Country', 'woocommerce'); ?>" class="wc-enhanced-select">
+                    <?php
+                    if (!empty($countries)) {
+                        foreach ($countries as $key => $val) {
+                            echo '<option value="' . esc_attr($key) . '"' . wc_selected($key, $selections) . '>' . esc_html($val) . '</option>';
+                        }
+                    }
+                    ?>
+                </select> <?php echo ($description) ? $description : ''; ?> <br/><a class="select_all button"
+                                                                                    href="#"><?php esc_html_e('Select all', 'woocommerce'); ?></a>
+                <a class="select_none button" href="#"><?php esc_html_e('Select none', 'woocommerce'); ?></a>
+            </td>
+        </tr>
+        <?php
+
+        return ob_get_clean();
+    }
+
+    public function validate_multi_select_countries_field($key, $value)
+    {
+        return is_array($value) ? array_map('wc_clean', array_map('stripslashes', $value)) : '';
+    }
+
 
     /**
      * Check if this gateway can be used
@@ -323,7 +395,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
             // For regular payments, check available payment methods, but ignore SSD gateway (not shown in checkout)
             $status = ($this->id !== 'mollie_wc_gateway_directdebit') ? $this->isAvailableMethodInCheckout($filters) : false;
-
+            $allowedCountries = $this->get_option('allowed_countries', []);
+            //if no country is selected then this does not apply
+            $bCountryIsAllowed = empty($allowedCountries) ? true : in_array($billing_country, $allowedCountries);
+            if (!$bCountryIsAllowed) {
+                $status = false;
+            }
             // Do extra checks if WooCommerce Subscriptions is installed
             if (class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin')) {
 

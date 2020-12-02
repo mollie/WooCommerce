@@ -151,11 +151,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function getIconUrl()
     {
-        $svg = $this->iconFactory()->svgUrlForPaymentMethod(
+        return $this->iconFactory()->svgUrlForPaymentMethod(
             $this->getMollieMethodId()
         );
-
-        return $svg;
     }
 
     protected function _initIcon ()
@@ -2100,28 +2098,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         static $factory = null;
         if ($factory === null){
-            $paymentMethods = array_filter((array)mollieWooCommerceAvailablePaymentMethods());
-            $paymentMethodsImages = $this->associativePaymentMethodsImages($paymentMethods);
-            $factory = new Mollie_WC_Helper_PaymentMethodsIconUrl($paymentMethodsImages);
+            $factory = new Mollie_WC_Helper_PaymentMethodsIconUrl();
         }
 
         return $factory;
-    }
-
-    /**
-     * @param $paymentMethods
-     * @return array
-     */
-    protected function associativePaymentMethodsImages(array $paymentMethods)
-    {
-        $list = [];
-        if($paymentMethods){
-            $listIds = array_column($paymentMethods, 'id');
-            $listImg = array_column($paymentMethods, 'image');
-            $list = array_combine($listIds, $listImg);
-        }
-
-        return $list;
     }
 
     /**

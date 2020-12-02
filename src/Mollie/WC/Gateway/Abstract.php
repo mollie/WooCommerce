@@ -151,11 +151,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function getIconUrl()
     {
-        $svg = $this->iconFactory()->svgUrlForPaymentMethod(
+        return $this->iconFactory()->svgUrlForPaymentMethod(
             $this->getMollieMethodId()
         );
-
-        return $svg;
     }
 
     protected function _initIcon ()
@@ -294,35 +292,41 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 				$currency = Mollie_WC_Plugin::getDataHelper()->getOrderCurrency( $order );
 			} else {
-				$currency = get_woocommerce_currency();
-			}
+                $currency = get_woocommerce_currency();
+            }
 
 			global $woocommerce;
-			$billing_country = ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) ? $woocommerce->customer->get_country() : WC()->customer->get_billing_country();
-			$billing_country = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_is_available_billing_country_for_payment_gateways', $billing_country );
+            $billing_country = version_compare(mollieWooCommerceWcVersion(), '3.0', '<')
+                ? $woocommerce->customer->get_country()
+                : WC()->customer->get_billing_country();
+            $billing_country = apply_filters(
+                Mollie_WC_Plugin::PLUGIN_ID . '_is_available_billing_country_for_payment_gateways',
+                $billing_country
+            );
 
-			// Get current locale for this user
-			$payment_locale     = Mollie_WC_Plugin::getSettingsHelper()->getPaymentLocale();
+            // Get current locale for this user
+            $payment_locale = Mollie_WC_Plugin::getSettingsHelper()->getPaymentLocale();
 
-			$filters = array (
-				'amount'         => array (
-					'currency' => $currency,
-					'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $order_total, $currency )
-				),
-				'resource'       => 'orders',
-				'locale'         => $payment_locale,
-				'billingCountry' => $billing_country,
-				'sequenceType'   => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_ONEOFF
-			);
+            try {
+                $filters = $this->getFilters(
+                    $currency,
+                    $order_total,
+                    $payment_locale,
+                    $billing_country
+                );
+            } catch (InvalidArgumentException $exception) {
+                Mollie_WC_Plugin::debug($exception->getMessage());
+                return false;
+            }
 
-			// For regular payments, check available payment methods, but ignore SSD gateway (not shown in checkout)
-			$status = ( $this->id !== 'mollie_wc_gateway_directdebit' ) ? $this->isAvailableMethodInCheckout( $filters ) : false;
+            // For regular payments, check available payment methods, but ignore SSD gateway (not shown in checkout)
+            $status = ($this->id !== 'mollie_wc_gateway_directdebit') ? $this->isAvailableMethodInCheckout($filters) : false;
 
-			// Do extra checks if WooCommerce Subscriptions is installed
-			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
+            // Do extra checks if WooCommerce Subscriptions is installed
+            if (class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin')) {
 
-				// Check recurring totals against recurring payment methods for future renewal payments
-				$recurring_totals = $this->get_recurring_total();
+                // Check recurring totals against recurring payment methods for future renewal payments
+                $recurring_totals = $this->get_recurring_total();
 
 				// See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
 				$accept_manual_renewals = ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals', 'no' ) ) ? true : false;
@@ -1707,7 +1711,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $returnUrl = WC()->api_request_url( 'mollie_return' );
 	    $returnUrl = untrailingslashit($returnUrl);
         if (function_exists('idn_to_ascii')) {
-        	
+
         	if (defined('IDNA_NONTRANSITIONAL_TO_ASCII') && defined('INTL_IDNA_VARIANT_UTS46')) {
         		$returnUrl = idn_to_ascii($returnUrl, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
         	} else {
@@ -2051,11 +2055,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         <p class="mollie-components-description">
             <?php
             printf(
-                    esc_html_x(
-                            '%1$s Secure payments provided by %2$s',
-                            'Placeholder 1: lock icon, Placeholder 2: mollie logo',
-                            'mollie-payments-for-woocommerce'
-                    ),
+                    __(esc_html('%1$s Secure payments provided by %2$s'),
+                       'mollie-payments-for-woocommerce'),
                     $this->lockIcon(),
                     $this->mollieLogo()
             );
@@ -2097,28 +2098,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         static $factory = null;
         if ($factory === null){
-            $paymentMethods = array_filter((array)mollieWooCommerceAvailablePaymentMethods());
-            $paymentMethodsImages = $this->associativePaymentMethodsImages($paymentMethods);
-            $factory = new Mollie_WC_Helper_PaymentMethodsIconUrl($paymentMethodsImages);
+            $factory = new Mollie_WC_Helper_PaymentMethodsIconUrl();
         }
 
         return $factory;
-    }
-
-    /**
-     * @param $paymentMethods
-     * @return array
-     */
-    protected function associativePaymentMethodsImages(array $paymentMethods)
-    {
-        $list = [];
-        if($paymentMethods){
-            $listIds = array_column($paymentMethods, 'id');
-            $listImg = array_column($paymentMethods, 'image');
-            $list = array_combine($listIds, $listImg);
-        }
-
-        return $list;
     }
 
     /**
@@ -2266,18 +2249,69 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         }
         if ($details->remainderMethod) {
             $orderNoteLine .= sprintf(
-                    esc_html_x(
-                            ' Remainder: %1$s %2$s %3$s.',
-                            'Placeholder 1: remainder method, Placeholder 2: amount value, Placeholder 3: currency',
-                            'mollie-payments-for-woocommerce'
-                    ),
-                    $details->remainderMethod,
-                    $details->remainderAmount->value,
-                    $details->remainderAmount->currency
+                esc_html_x(
+                    ' Remainder: %1$s %2$s %3$s.',
+                    'Placeholder 1: remainder method, Placeholder 2: amount value, Placeholder 3: currency',
+                    'mollie-payments-for-woocommerce'
+                ),
+                $details->remainderMethod,
+                $details->remainderAmount->value,
+                $details->remainderAmount->currency
             );
         }
 
         $order->add_order_note($orderNoteLine);
+    }
+
+    /**
+     * Returns a list of filters, ensuring that the values are valid.
+     * @param $currency
+     * @param $orderTotal
+     * @param $paymentLocale
+     * @param $billingCountry
+     * @return array
+     * @throws InvalidArgumentException
+     */
+    protected function getFilters($currency, $orderTotal, $paymentLocale, $billingCountry)
+    {
+        $amountValue = $this->getAmountValue($orderTotal, $currency);
+        if ($amountValue <= 0) {
+            throw new InvalidArgumentException(sprintf('Amount %s is not valid.', $amountValue));
+        }
+
+        // Check if currency is in ISO 4217 alpha-3 format (ex: EUR)
+        if (!preg_match('/^[a-zA-Z]{3}$/', $currency)) {
+            throw new InvalidArgumentException(sprintf('Currency %s is not valid.', $currency));
+        }
+
+        // Check if billing country is in ISO 3166-1 alpha-2 format (ex: NL)
+        if (!preg_match('/^[a-zA-Z]{2}$/', $billingCountry)) {
+            throw new InvalidArgumentException(sprintf('Billing Country %s is not valid.', $billingCountry));
+        }
+
+        return [
+            'amount' => [
+                'currency' => $currency,
+                'value' => $amountValue,
+            ],
+            'locale' => $paymentLocale,
+            'billingCountry' => $billingCountry,
+            'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_ONEOFF,
+            'resource' => 'orders',
+        ];
+    }
+
+    /**
+     * @param $order_total
+     * @param $currency
+     * @return int
+     */
+    protected function getAmountValue($order_total, $currency)
+    {
+        return Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue(
+            $order_total,
+            $currency
+        );
     }
 
     /**
@@ -2442,7 +2476,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     }
 
     /**
-     * @param Mollie_WC_Payment_Payment $paymentObject
      * @param WC_Order                $order
      * @param                         $customer_id
      * @param                         $test_mode
@@ -2451,11 +2484,13 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      * @throws ApiException
      */
     protected function processAsMolliePayment(
-            Mollie_WC_Payment_Payment $paymentObject,
             WC_Order $order,
             $customer_id,
             $test_mode
     ) {
+        $paymentObject = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject(
+                self::PAYMENT_METHOD_TYPE_PAYMENT
+        );
         $paymentRequestData = $paymentObject->getPaymentRequestData(
                 $order,
                 $customer_id
@@ -2551,7 +2586,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             );
 
             $paymentObject = $this->processAsMolliePayment(
-                    $paymentObject,
                     $order,
                     $customer_id,
                     $test_mode

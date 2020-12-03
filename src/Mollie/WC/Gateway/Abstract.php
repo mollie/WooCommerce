@@ -125,7 +125,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 'desc_tip'    => true,
             ),
             'allowed_countries' =>    array(
-                 'title'   => __( 'Sell to specific countries', 'woocommerce' ),
+                 'title'   => __( 'Sell to specific countries', 'mollie-payments-for-woocommerce' ),
                  'desc'    => '',
                  'css'     => 'min-width: 350px;',
                  'default' => [],
@@ -212,7 +212,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         }
 
         echo '<h2>' . esc_html($this->get_method_title());
-        wc_back_link(__('Return to payments', 'woocommerce'), admin_url('admin.php?page=wc-settings&tab=checkout'));
+        wc_back_link(__('Return to payments', 'mollie-payments-for-woocommerce'), admin_url('admin.php?page=wc-settings&tab=checkout'));
         echo '</h2>';
         echo wp_kses_post(wpautop($this->get_method_description()));
         echo '<table class="form-table">'
@@ -228,7 +228,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $selections = (array)$this->get_option('allowed_countries', []);
         $gatewayId = $this->getMollieMethodId();
         $id = 'mollie_wc_gateway_'.$gatewayId.'_allowed_countries';
-        $title = __('Sell to specific countries', 'woocommerce');
+        $title = __('Sell to specific countries', 'mollie-payments-for-woocommerce');
         $description = '<span class="description">' . wp_kses_post($this->get_option('description', '')) . '</span>';
         $countries = WC()->countries->countries;
         asort($countries);
@@ -240,8 +240,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             </th>
             <td class="forminp">
                 <select multiple="multiple" name="<?php echo esc_attr($id); ?>[]" style="width:350px"
-                        data-placeholder="<?php esc_attr_e('Choose countries&hellip;', 'woocommerce'); ?>"
-                        aria-label="<?php esc_attr_e('Country', 'woocommerce'); ?>" class="wc-enhanced-select">
+                        data-placeholder="<?php esc_attr_e('Choose countries&hellip;', 'mollie-payments-for-woocommerce'); ?>"
+                        aria-label="<?php esc_attr_e('Country', 'mollie-payments-for-woocommerce'); ?>" class="wc-enhanced-select">
                     <?php
                     if (!empty($countries)) {
                         foreach ($countries as $key => $val) {
@@ -250,8 +250,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                     }
                     ?>
                 </select> <?php echo ($description) ? $description : ''; ?> <br/><a class="select_all button"
-                                                                                    href="#"><?php esc_html_e('Select all', 'woocommerce'); ?></a>
-                <a class="select_none button" href="#"><?php esc_html_e('Select none', 'woocommerce'); ?></a>
+                                                                                    href="#"><?php esc_html_e('Select all', 'mollie-payments-for-woocommerce'); ?></a>
+                <a class="select_none button" href="#"><?php esc_html_e('Select none', 'mollie-payments-for-woocommerce'); ?></a>
             </td>
         </tr>
         <?php
@@ -259,6 +259,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         return ob_get_clean();
     }
 
+    /**
+     * Validates the multiselect country field.
+     * Overrides the one called by get_field_value() on WooCommerce abstract-wc-settings-api.php
+     *
+     * @param $key
+     * @param $value
+     * @return array|string
+     */
     public function validate_multi_select_countries_field($key, $value)
     {
         return is_array($value) ? array_map('wc_clean', array_map('stripslashes', $value)) : '';

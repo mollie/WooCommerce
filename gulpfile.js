@@ -19,6 +19,7 @@ const options = {
                 'baseDir',
                 'buildDir',
                 'distDir',
+                'depsVersionPhp'
             ],
             bools: [
                 'q',
@@ -29,7 +30,8 @@ const options = {
                 baseDir: __dirname,
                 buildDir: `${__dirname}/build`,
                 distDir: `${__dirname}/dist`,
-                q: false
+                q: false,
+                depsVersionPhp: '5.6.39',
             },
         }
     )
@@ -166,10 +168,10 @@ function _copy({baseDir, buildDir, distDir}) {
     }
 }
 
-function _installPhp({buildDir}) {
+function _installPhp({buildDir, depsVersionPhp}) {
     return function installPhp(done) {
         chain([
-            (done) => { return exec('composer', ['config', 'platform.php', '5.6.39'], {cwd: buildDir}, done)},
+            (done) => { return exec('composer', ['config', 'platform.php', depsVersionPhp], {cwd: buildDir}, done)},
             (done) => { return exec(`composer`, ['install', '--prefer-dist', '--optimize-autoloader', '--no-dev'], {cwd: buildDir}, done) },
         ], done);
     }

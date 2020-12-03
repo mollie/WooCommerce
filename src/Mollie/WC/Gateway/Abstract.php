@@ -151,11 +151,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function getIconUrl()
     {
-        $svg = $this->iconFactory()->svgUrlForPaymentMethod(
+        return $this->iconFactory()->svgUrlForPaymentMethod(
             $this->getMollieMethodId()
         );
-
-        return $svg;
     }
 
     protected function _initIcon ()
@@ -297,11 +295,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 $currency = get_woocommerce_currency();
             }
 
-            global $woocommerce;
-            $billing_country = (version_compare(WC_VERSION, '3.0',
-                '<')) ? $woocommerce->customer->get_country() : WC()->customer->get_billing_country();
-            $billing_country = apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_is_available_billing_country_for_payment_gateways',
-                $billing_country);
+			global $woocommerce;
+            $billing_country = version_compare(mollieWooCommerceWcVersion(), '3.0', '<')
+                ? $woocommerce->customer->get_country()
+                : WC()->customer->get_billing_country();
+            $billing_country = apply_filters(
+                Mollie_WC_Plugin::PLUGIN_ID . '_is_available_billing_country_for_payment_gateways',
+                $billing_country
+            );
 
             // Get current locale for this user
             $payment_locale = Mollie_WC_Plugin::getSettingsHelper()->getPaymentLocale();
@@ -534,7 +535,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				// This adds support for WooCommerce Deposits (by Webtomizer)
 				// See https://github.com/mollie/WooCommerce/issues/138
 
-				$order_status = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $order->status : $order->get_status();
+				$order_status = ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) ? $order->status : $order->get_status();
 
 				if ( $order_status != 'wc-partially-paid ' ) {
 
@@ -585,7 +586,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 * @param $payment
 	 */
 	protected function saveMollieInfo( $order, $payment ) {
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			// Get correct Mollie Payment Object
 			$payment_object = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject( $payment );
 
@@ -619,7 +620,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function getUserMollieCustomerId($order, $test_mode)
     {
-	    $order_customer_id = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $order->customer_user : $order->get_customer_id();
+	    $order_customer_id = ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) ? $order->customer_user : $order->get_customer_id();
 
 	    return  Mollie_WC_Plugin::getDataHelper()->getUserMollieCustomerId($order_customer_id, $test_mode);
     }
@@ -650,7 +651,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         $order->update_status($new_status, $note);
 
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+	    if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 
 		    switch ($new_status)
 		    {
@@ -791,7 +792,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         }
 
         // Log a message that webhook was called, doesn't mean the payment is actually processed
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+	    if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 		    Mollie_WC_Plugin::debug($this->id . ": Mollie payment object {$payment->id} (" . $payment->mode . ") webhook call for order {$order->id}.", true);
 	    } else {
 		    Mollie_WC_Plugin::debug($this->id . ": Mollie payment object {$payment->id} (" . $payment->mode . ") webhook call for order {$order->get_id()}.", true);
@@ -843,7 +844,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		// Duplicate webhook call
 		Mollie_WC_Plugin::setHttpResponseCode( 204 );
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$order_id = $order->id;
 		} else {
 			$order    = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order );
@@ -861,7 +862,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     protected function processRefunds(WC_Order $order, $payment)
     {
         // Get order ID in the correct way depending on WooCommerce version
-        if (version_compare(WC_VERSION, '3.0', '<')) {
+        if (version_compare(mollieWooCommerceWcVersion(), '3.0', '<')) {
             $orderId = $order->id;
         } else {
             $orderId = $order->get_id();
@@ -997,7 +998,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     protected function processChargebacks(WC_Order $order, $payment)
     {
         // Get order ID in the correct way depending on WooCommerce version
-        if (version_compare(WC_VERSION, '3.0', '<')) {
+        if (version_compare(mollieWooCommerceWcVersion(), '3.0', '<')) {
             $orderId = $order->id;
         } else {
             $orderId = $order->get_id();
@@ -1432,7 +1433,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	public function displayInstructions( WC_Order $order, $admin_instructions = false, $plain_text = false ) {
 
 		if ( ! self::$alreadyDisplayedInstructions ) {
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 				$order_payment_method = $order->payment_method;
 			} else {
 				$order_payment_method = $order->get_payment_method();
@@ -1443,7 +1444,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 				return;
 			}
 
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 				$payment = Mollie_WC_Plugin::getPaymentObject()->getActiveMolliePayment( $order->id );
 			} else {
 				$payment = Mollie_WC_Plugin::getPaymentObject()->getActiveMolliePayment( $order->get_id() );
@@ -1525,7 +1526,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 					return $title;
 				}
 
-				if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+				if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 					$order_key_db = $order->order_key;
 				} else {
 					$order_key_db = $order->get_order_key();
@@ -1542,7 +1543,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 			$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order );
 
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 				$order_payment_method = $order->payment_method;
 			} else {
 				$order_payment_method = $order->get_payment_method();
@@ -1561,7 +1562,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			}
 
 			// Checks and title for pending/open orders
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 				$payment = Mollie_WC_Plugin::getPaymentObject()->getActiveMolliePayment( $order->id );
 			} else {
 				$payment = Mollie_WC_Plugin::getPaymentObject()->getActiveMolliePayment( $order->get_id() );
@@ -1614,7 +1615,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 			return $text;
 		}
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$order_payment_method = $order->payment_method;
 		} else {
 			$order_payment_method = $order->get_payment_method();
@@ -1642,7 +1643,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 */
 	protected function orderNeedsPayment( WC_Order $order ) {
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$order_id = $order->id;
 		} else {
 			$order_id = $order->get_id();
@@ -1914,7 +1915,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 */
 	protected function isOrderPaidAndProcessed( WC_Order $order ) {
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$order_id           = $order->id;
 			$paid_and_processed = get_post_meta( $order_id, '_mollie_paid_and_processed', $single = true );
 		} else {
@@ -1930,7 +1931,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 */
 	protected function isOrderPaidByOtherGateway( WC_Order $order ) {
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$order_id           = $order->id;
 			$paid_by_other_gateway = get_post_meta( $order_id, '_mollie_paid_by_other_gateway', $single = true );
 		} else {
@@ -2027,7 +2028,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	public function get_transaction_url( $order ) {
 
 		// Get order ID in the correct way depending on WooCommerce version
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$resource = (get_post_meta( $order->id, '_mollie_order_id', true )) ? 'orders' : 'payments';
 		} else {
 			$resource = ($order->get_meta( '_mollie_order_id', true )) ? 'orders' : 'payments';
@@ -2106,28 +2107,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         static $factory = null;
         if ($factory === null){
-            $paymentMethods = array_filter((array)mollieWooCommerceAvailablePaymentMethods());
-            $paymentMethodsImages = $this->associativePaymentMethodsImages($paymentMethods);
-            $factory = new Mollie_WC_Helper_PaymentMethodsIconUrl($paymentMethodsImages);
+            $factory = new Mollie_WC_Helper_PaymentMethodsIconUrl();
         }
 
         return $factory;
-    }
-
-    /**
-     * @param $paymentMethods
-     * @return array
-     */
-    protected function associativePaymentMethodsImages(array $paymentMethods)
-    {
-        $list = [];
-        if($paymentMethods){
-            $listIds = array_column($paymentMethods, 'id');
-            $listImg = array_column($paymentMethods, 'image');
-            $list = array_combine($listIds, $listImg);
-        }
-
-        return $list;
     }
 
     /**
@@ -2455,7 +2438,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             }
         } catch (Mollie\Api\Exceptions\ApiException $e) {
             // Don't try to create a Mollie Payment for Klarna payment methods
-            $order_payment_method = (version_compare(WC_VERSION, '3.0', '<'))
+            $order_payment_method = (version_compare(mollieWooCommerceWcVersion(), '3.0', '<'))
                     ? $order->payment_method : $order->get_payment_method();
 
             if ($order_payment_method == 'mollie_wc_gateway_klarnapaylater'

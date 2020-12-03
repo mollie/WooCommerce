@@ -280,7 +280,7 @@ class Mollie_WC_Helper_Settings
 			}
 
 			// Remove Klarna from list if not at least WooCommerce 3.x is used
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 				if ( $gateway->id == 'mollie_wc_gateway_klarnapaylater' || $gateway->id == 'mollie_wc_gateway_klarnasliceit' ) {
 					continue;
 				}
@@ -288,7 +288,7 @@ class Mollie_WC_Helper_Settings
 
 			if ( $gateway instanceof Mollie_WC_Gateway_Abstract ) {
 				$content .= '<li style="float: left; width: 33%;">';
-                $content .= $this->getSvgIcon($gateway);
+                $content .= $gateway->getIconUrl();
                 $content .= ' ' . esc_html( $gateway->getDefaultTitle() );
 
 				if ( $gateway->is_available() ) {
@@ -612,7 +612,7 @@ class Mollie_WC_Helper_Settings
 	 */
 	protected function warnAboutRequiredCheckoutFieldForKlarna( $content ) {
 
-		if ( version_compare( WC_VERSION, '3.0', '>=' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '>=' ) ) {
 
 			$woocommerce_klarnapaylater_gateway = new Mollie_WC_Gateway_KlarnaPayLater();
 			$woocommerce_klarnasliceit_gateway  = new Mollie_WC_Gateway_KlarnaSliceIt();
@@ -637,7 +637,7 @@ class Mollie_WC_Helper_Settings
 	 */
 	protected function warnWoo3xRequiredForKlarna( $content ) {
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 
 			$woocommerce_klarnapaylater_gateway = new Mollie_WC_Gateway_KlarnaPayLater();
 			$woocommerce_klarnasliceit_gateway  = new Mollie_WC_Gateway_KlarnaSliceIt();
@@ -645,7 +645,7 @@ class Mollie_WC_Helper_Settings
 			if ( $woocommerce_klarnapaylater_gateway->is_available() || $woocommerce_klarnasliceit_gateway->is_available() ) {
 
 				$content .= '<div class="notice notice-warning is-dismissible"><p>';
-				$content .= sprintf(__( 'To accept Klarna payments via Mollie, you need to use WooCommerce 3.0 or higher, you are now using version %s.', 'mollie-payments-for-woocommerce' ), WC_VERSION);
+				$content .= sprintf(__( 'To accept Klarna payments via Mollie, you need to use WooCommerce 3.0 or higher, you are now using version %s.', 'mollie-payments-for-woocommerce' ), mollieWooCommerceWcVersion());
 				$content .= '</p></div> ';
 
 				return $content;
@@ -755,125 +755,4 @@ class Mollie_WC_Helper_Settings
 
         return self::SETTING_LOCALE_DEFAULT_LANGUAGE;
     }
-
-    /**
-     * @param Mollie_WC_Gateway_Abstract $gateway
-     *
-     *
-     * @return string
-     */
-    protected function getSvgIcon(Mollie_WC_Gateway_Abstract $gateway)
-    {
-        add_filter(
-            'wp_kses_allowed_html',
-            array(__CLASS__, 'svgAllowedTags'),
-            10,
-            2
-        );
-        $svg = $gateway->getIconUrl();
-        $cleanNewLine = str_replace("\n", "", $svg);
-        $cleanNewLine = str_replace("\r", "", $cleanNewLine);
-
-        return $cleanNewLine;
-    }
-
-    /**
-     * Method to add svg tags to the allowed array used by wp_kses
-     *
-     * @param  array $tags
-     *
-     * @return array
-     */
-    public static function svgAllowedTags ($tags) {
-        $tags['svg'] = [
-            'xmlns' => [],
-            'width'=>[],
-            'height'=>[],
-            'fill' => [],
-            'viewbox' => [],
-            'enable-background' => [],
-            'version' => [],
-            'xml:space' => [],
-            'transform'=>[]
-        ];
-        $tags['path'] = [
-            'd' => [],
-            'fill' => [],
-            'stroke'=>[],
-            'fill-rule'=>[],
-            'fill-opacity'=>[],
-            'clip-rule'=>[],
-            'transform'=>[],
-            'opacity'=>[]
-        ];
-        $tags['rect'] = [
-            'width'=>[],
-            'height'=>[],
-            'rx'=>[],
-            'fill' => [],
-            'x'=>[],
-            'y'=>[],
-            'stroke'=>[],
-        ];
-        $tags['mask'] = [
-            'id'=>[],
-            'mask-type'=>[],
-            'maskUnits'=>[],
-            'x' => [],
-            'y' => [],
-            'width'=>[],
-            'height'=>[]
-        ];
-        $tags['g'] = [
-            'mask'=>[],
-            'filter'=>[],
-            'fill'=>[],
-            'fill-rule'=>[],
-        ];
-        $tags['feflood'] = [
-            'flood-opacity'=>[],
-            'result'=>[]
-        ];
-        $tags['fecolormatrix'] = [
-            'in'=>[],
-            'type'=>[],
-            'values'=>[]
-        ];
-        $tags['fegaussianblur'] = [
-            'stdDeviation'=>[]
-        ];
-        $tags['feblend'] = [
-            'mode'=>[],
-            'in2'=>[],
-            'result'=>[],
-            'in'=>[],
-        ];
-        $tags['feoffset'] = [
-            'dy'=>[],
-        ];
-        $tags['filter'] = [
-            'id'=>[],
-            'color-interpolation-filters'=>[],
-            'filterUnits'=>[],
-            'x' => [],
-            'y' => [],
-            'width'=>[],
-            'height'=>[]
-        ];
-        $tags['lineargradient'] = [
-            'id'=>[],
-            'gradientUnits'=>[],
-            'gradientTransform'=>[],
-            'x2' => []
-        ];
-        $tags['stop'] = [
-            'offset'=>[],
-            'stop-color'=>[],
-            'stop-opacity'=>[]
-        ];
-        $tags['defs'] = [];
-
-        return $tags;
-    }
-
 }

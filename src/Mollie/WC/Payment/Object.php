@@ -131,7 +131,7 @@ class Mollie_WC_Payment_Object {
 	public function setActiveMolliePaymentForOrders( $order_id ) {
 
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			update_post_meta( $order_id, '_mollie_order_id', $this->data->id, $single = true );
 			update_post_meta( $order_id, '_mollie_payment_id', static::$paymentId, $single = true );
 			update_post_meta( $order_id, '_mollie_payment_mode', $this->data->mode, $single = true );
@@ -172,7 +172,7 @@ class Mollie_WC_Payment_Object {
 	public function setActiveMolliePaymentForSubscriptions( $order_id ) {
 
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 
 			add_post_meta( $order_id, '_mollie_payment_id', static::$paymentId, $single = true );
 			add_post_meta( $order_id, '_mollie_payment_mode', $this->data->mode, $single = true );
@@ -276,7 +276,7 @@ class Mollie_WC_Payment_Object {
 	 */
 	public function unsetActiveMolliePaymentForOrders( $order_id ) {
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 
 			// Only remove Mollie payment details if they belong to this payment, not when a new payment was already placed
 			$mollie_payment_id = get_post_meta( $order_id, '_mollie_payment_id', $single = true );
@@ -311,7 +311,7 @@ class Mollie_WC_Payment_Object {
 	 */
 	public function unsetActiveMolliePaymentForSubscriptions( $order_id ) {
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			delete_post_meta( $order_id, '_mollie_payment_id' );
 			delete_post_meta( $order_id, '_mollie_payment_mode' );
 		} else {
@@ -332,7 +332,7 @@ class Mollie_WC_Payment_Object {
 	 * @return string
 	 */
 	public function getActiveMolliePaymentId( $order_id ) {
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$mollie_payment_id = get_post_meta( $order_id, '_mollie_payment_id', $single = true );
 		} else {
 			$order             = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
@@ -350,7 +350,7 @@ class Mollie_WC_Payment_Object {
 	 * @return string
 	 */
 	public function getActiveMollieOrderId( $order_id ) {
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$mollie_payment_id = get_post_meta( $order_id, '_mollie_order_id', $single = true );
 		} else {
 			$order             = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
@@ -368,7 +368,7 @@ class Mollie_WC_Payment_Object {
 	 * @return string test or live
 	 */
 	public function getActiveMolliePaymentMode( $order_id ) {
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$mollie_payment_mode = get_post_meta( $order_id, '_mollie_payment_mode', $single = true );
 		} else {
 			$order               = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
@@ -451,7 +451,7 @@ class Mollie_WC_Payment_Object {
 	 * @return $this
 	 */
 	public function setCancelledMolliePaymentId( $order_id, $payment_id ) {
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			add_post_meta( $order_id, '_mollie_cancelled_payment_id', $payment_id, $single = true );
 		} else {
 			$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
@@ -470,7 +470,7 @@ class Mollie_WC_Payment_Object {
 	public function unsetCancelledMolliePaymentId( $order_id ) {
 
 		// If this order contains a cancelled (previous) payment, remove it.
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$mollie_cancelled_payment_id = get_post_meta( $order_id, '_mollie_cancelled_payment_id', $single = true );
 
 			if ( ! empty( $mollie_cancelled_payment_id ) ) {
@@ -497,7 +497,7 @@ class Mollie_WC_Payment_Object {
 	 * @return string|false
 	 */
 	public function getCancelledMolliePaymentId( $order_id ) {
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$mollie_cancelled_payment_id = get_post_meta( $order_id, '_mollie_cancelled_payment_id', $single = true );
 		} else {
 			$order                       = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
@@ -585,7 +585,7 @@ class Mollie_WC_Payment_Object {
 	 */
 	protected function setOrderPaidAndProcessed( WC_Order $order ) {
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$order_id = $order->id;
 			update_post_meta( $order_id, '_mollie_paid_and_processed', '1' );
 		} else {
@@ -601,7 +601,7 @@ class Mollie_WC_Payment_Object {
 	 */
 	protected function isOrderPaymentStartedByOtherGateway( WC_Order $order ) {
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$order_id = $order->id;
 		} else {
 			$order_id = $order->get_id();
@@ -626,7 +626,7 @@ class Mollie_WC_Payment_Object {
 	public function deleteSubscriptionOrderFromPendingPaymentQueue( $order ) {
 		global $wpdb;
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$wpdb->delete(
 				$wpdb->mollie_pending_payment,
 				array (

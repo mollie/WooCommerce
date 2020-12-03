@@ -1,6 +1,6 @@
 <?php
 
-namespace Mollie\WooCommerceTests\Functional\Payment;
+namespace Mollie\WooCommerceTests\Functional\WC\Payment;
 
 use Mollie\WooCommerceTests\TestCase;
 

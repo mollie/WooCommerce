@@ -148,6 +148,15 @@ class Mollie_WC_Helper_Settings
         return admin_url('admin.php?page=wc-status&tab=logs');
     }
 
+
+    /**
+     * Update the profileId option on update keys or on changing live/test mode
+     *
+     * @param $optionValue
+     * @param $optionName
+     *
+     * @return mixed
+     */
     public function updateMerchantIdOnApiKeyChanges($optionValue, $optionName)
     {
         $optionId = isset($optionName['id']) ? $optionName['id'] : '';
@@ -172,6 +181,19 @@ class Mollie_WC_Helper_Settings
         update_option($merchantProfileIdOptionKey, $merchantProfileId);
 
         return $optionValue;
+    }
+
+    /**
+     * Called after the api keys are updated so we can update the profile Id
+     *
+     * @param $oldValue
+     * @param $value
+     * @param $optionName
+     */
+    public function updateMerchantIdAfterApiKeyChanges($oldValue, $value, $optionName)
+    {
+        $option = ['id'=>$optionName];
+        $this->updateMerchantIdOnApiKeyChanges($value, $option);
     }
 
     /**

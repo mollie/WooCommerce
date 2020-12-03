@@ -218,6 +218,18 @@ class Mollie_WC_Plugin
             10,
             2
         );
+        add_action(
+            'update_option_mollie-payments-for-woocommerce_live_api_key',
+            [$settings_helper, 'updateMerchantIdAfterApiKeyChanges'],
+            10,
+            3
+        );
+        add_action(
+            'update_option_mollie-payments-for-woocommerce_test_api_key',
+            [$settings_helper, 'updateMerchantIdAfterApiKeyChanges'],
+            10,
+            3
+        );
 
 		// Add settings link to plugins page
 		add_filter( 'plugin_action_links_' . $plugin_basename, array ( __CLASS__, 'addPluginActionLinks' ) );

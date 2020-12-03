@@ -48,6 +48,11 @@
       <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php70" />
       <path value="$PROJECT_DIR$/vendor/symfony/polyfill-intl-idn" />
       <path value="$PROJECT_DIR$/vendor/paragonie/random_compat" />
+      <path value="$PROJECT_DIR$/vendor/woocommerce/woocommerce-rest-api" />
+      <path value="$PROJECT_DIR$/vendor/woocommerce/woocommerce-blocks" />
+      <path value="$PROJECT_DIR$/vendor/maxmind-db/reader" />
+      <path value="$PROJECT_DIR$/vendor/automattic/jetpack-autoloader" />
+      <path value="$PROJECT_DIR$/vendor/inpsyde/environment-validator" />
     </include_path>
   </component>
   <component name="PhpInterpreters">

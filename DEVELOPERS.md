@@ -25,6 +25,10 @@ template package [`wp-oop/plugin-boilerplate`][].
    
    Use the PHPStorm integration, or CLI. Either way, All operations with Yarn
    have to be done in the `build` service.
+   
+5. Install Tools with Phive
+   
+   Run `phive install --force-accept-unsigned` in the `build` service.
 
 6. Process the assets.
 

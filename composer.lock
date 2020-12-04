@@ -1308,12 +1308,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/johnpbloch/wordpress-core.git",
-                "reference": "4c4e172fbc08bca261cc999243d797b60b773241"
+                "reference": "baf43970aa2bdcb01f2e6825258d85311be7f18f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/johnpbloch/wordpress-core/zipball/4c4e172fbc08bca261cc999243d797b60b773241",
-                "reference": "4c4e172fbc08bca261cc999243d797b60b773241",
+                "url": "https://api.github.com/repos/johnpbloch/wordpress-core/zipball/baf43970aa2bdcb01f2e6825258d85311be7f18f",
+                "reference": "baf43970aa2bdcb01f2e6825258d85311be7f18f",
                 "shasum": ""
             },
             "require": {
@@ -1348,7 +1348,7 @@
                 "source": "https://core.trac.wordpress.org/browser",
                 "wiki": "https://codex.wordpress.org/"
             },
-            "time": "2020-10-27T19:09:11+00:00"
+            "time": "2020-10-29T21:05:03+00:00"
         },
         {
             "name": "mockery/mockery",

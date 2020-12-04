@@ -296,6 +296,13 @@ class Mollie_WC_Plugin
         add_filter( 'woocommerce_product_data_panels', [__CLASS__, 'mollieOptionsProductTabContent'] );
         add_action( 'woocommerce_process_product_meta_simple', [__CLASS__, 'saveProductVoucherOptionFields']  );
         add_action( 'woocommerce_process_product_meta_variable', [__CLASS__, 'saveProductVoucherOptionFields']  );
+        add_action( 'woocommerce_product_after_variable_attributes', [__CLASS__,'voucherFieldInVariations'], 10, 3 );
+        add_action( 'woocommerce_save_product_variation', [__CLASS__,'saveVoucherFieldVariations'], 10, 2 );
+        add_filter( 'woocommerce_available_variation', [__CLASS__,'addVoucherVariationData'] );
+        //if woo subscriptions is on
+        add_action( 'woocommerce_subscriptions_product_options_pricing', [__CLASS__,'voucherFieldInSubscriptions'], 10 );
+        add_action( 'save_post', [__CLASS__,'saveVoucherFieldSubscription'], 11 );
+        //add_action( 'save_post', [__CLASS__,'saveVoucherFieldVariableSubscription'], 11 );
 
         add_filter( Mollie_WC_Plugin::PLUGIN_ID . '_retrieve_payment_gateways', function(){
             return self::$GATEWAYS;
@@ -309,6 +316,57 @@ class Mollie_WC_Plugin
 
 		// Mark plugin initiated
 		self::$initiated = true;
+    }
+
+    public static function voucherFieldInVariations( $loop, $variation_data, $variation ) {
+        woocommerce_wp_select(
+                array(
+                        'id'          => 'voucher[' . $variation->ID . ']',
+                        'label'       => __( 'Mollie Voucher category', 'mollie-payments-for-woocommerce' ),
+                        'value'       => get_post_meta( $variation->ID, 'voucher', true ),
+                        'options' => array(
+                                Mollie_WC_Gateway_Mealvoucher::NO_CATEGORY => __( 'No Category', 'mollie-payments-for-woocommerce' ),
+                                Mollie_WC_Gateway_Mealvoucher::MEAL => __( 'Meal', 'mollie-payments-for-woocommerce' ),
+                                Mollie_WC_Gateway_Mealvoucher::ECO => __( 'Eco', 'mollie-payments-for-woocommerce' ),
+                                Mollie_WC_Gateway_Mealvoucher::GIFT => __( 'Gift', 'mollie-payments-for-woocommerce' )
+                        )
+                )
+        );
+    }
+    public static function voucherFieldInSubscriptions( ) {
+        global $post;
+        $optionName = 'voucher';
+        $optionValue = get_post_meta( $post->ID, $optionName, true );
+        woocommerce_wp_select(
+                array(
+                        'id'          => $optionName,
+                        'label'       => __( 'Mollie Voucher category', 'mollie-payments-for-woocommerce' ),
+                        'value'       => $optionValue,
+                        'options' => array(
+                                Mollie_WC_Gateway_Mealvoucher::NO_CATEGORY => __( 'No Category', 'mollie-payments-for-woocommerce' ),
+                                Mollie_WC_Gateway_Mealvoucher::MEAL => __( 'Meal', 'mollie-payments-for-woocommerce' ),
+                                Mollie_WC_Gateway_Mealvoucher::ECO => __( 'Eco', 'mollie-payments-for-woocommerce' ),
+                                Mollie_WC_Gateway_Mealvoucher::GIFT => __( 'Gift', 'mollie-payments-for-woocommerce' )
+                        )
+                )
+        );
+    }
+    public static function saveVoucherFieldVariations( $variation_id, $i ) {
+	    $optionName = 'voucher';
+        $voucherCategory = $_POST[$optionName][$variation_id]?$_POST[$optionName][$variation_id]:null;
+
+        if ( isset( $voucherCategory ) ) update_post_meta( $variation_id, $optionName, esc_attr( $voucherCategory ) );
+    }
+    public static function addVoucherVariationData( $variations ) {
+        $optionName = 'voucher';
+        $variations[$optionName] = get_post_meta( $variations[ 'variation_id' ], $optionName, true );
+        return $variations;
+    }
+    public static function saveVoucherFieldSubscription( $postId) {
+        $optionName = 'voucher';
+        $voucherCategory = isset( $_REQUEST[$optionName] ) ? $_REQUEST[$optionName] : '';
+
+        if ( isset( $voucherCategory ) ) update_post_meta( $postId, $optionName, esc_attr( $voucherCategory ) );
     }
 
     public static function maybeTestModeNotice()

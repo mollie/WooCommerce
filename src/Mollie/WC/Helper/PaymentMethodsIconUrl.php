@@ -17,18 +17,13 @@ class Mollie_WC_Helper_PaymentMethodsIconUrl
     const SVG_FILE_EXTENSION = '.svg';
     const CREDIT_CARD_ICON_WIDTH = 33;
     const MOLLIE_CREDITCARD_ICONS_ENABLER = 'mollie_creditcard_icons_enabler';
-    /**
-     * @var array
-     */
-    private $paymentMethodImages;
 
     /**
      * PaymentMethodIconUrl constructor.
-     * @param array $paymentMethodImages
+     *
      */
-    public function __construct(array $paymentMethodImages)
+    public function __construct()
     {
-        $this->paymentMethodImages = $paymentMethodImages;
     }
 
     /**
@@ -42,31 +37,6 @@ class Mollie_WC_Helper_PaymentMethodsIconUrl
      */
     public function svgUrlForPaymentMethod($paymentMethodName)
     {
-        return isset($this->paymentMethodImages[$paymentMethodName]->svg)
-            ? $this->getSvgImageFromUrl($this->paymentMethodImages[$paymentMethodName]->svg)
-            : $this->fallToAssets($paymentMethodName);
-    }
-
-    /**
-     * Method to retrieve the Svg image from the url given and add the style
-     * @param $url
-     *
-     * @return string
-     */
-    protected function getSvgImageFromUrl($url)
-    {
-        $resource = file_get_contents($url);
-        $resource = $this->styleSvgImage($resource);
-
-        return $resource;
-    }
-
-    /**
-     * @param string $paymentMethodName
-     * @return string
-     */
-    protected function fallToAssets($paymentMethodName)
-    {
         if ($paymentMethodName == PaymentMethod::CREDITCARD && !is_admin()) {
             return Mollie_WC_Plugin::getPluginUrl(
                 "public/images/{$paymentMethodName}s.svg"
@@ -78,19 +48,6 @@ class Mollie_WC_Helper_PaymentMethodsIconUrl
 
         return '<img src="' . esc_attr($svgUrl)
             . '" style="width: 32px; vertical-align: bottom;" />';
-    }
-
-    /**
-     * @param string $resource
-     *
-     * @return string
-     */
-    protected function styleSvgImage($resource)
-    {
-        if (!is_string($resource)) {
-            return '';
-        }
-        return substr_replace($resource, " style=\"float:right\" ", 4, 0);
     }
 }
 

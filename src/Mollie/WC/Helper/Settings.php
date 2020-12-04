@@ -148,6 +148,15 @@ class Mollie_WC_Helper_Settings
         return admin_url('admin.php?page=wc-status&tab=logs');
     }
 
+
+    /**
+     * Update the profileId option on update keys or on changing live/test mode
+     *
+     * @param $optionValue
+     * @param $optionName
+     *
+     * @return mixed
+     */
     public function updateMerchantIdOnApiKeyChanges($optionValue, $optionName)
     {
         $optionId = isset($optionName['id']) ? $optionName['id'] : '';
@@ -172,6 +181,19 @@ class Mollie_WC_Helper_Settings
         update_option($merchantProfileIdOptionKey, $merchantProfileId);
 
         return $optionValue;
+    }
+
+    /**
+     * Called after the api keys are updated so we can update the profile Id
+     *
+     * @param $oldValue
+     * @param $value
+     * @param $optionName
+     */
+    public function updateMerchantIdAfterApiKeyChanges($oldValue, $value, $optionName)
+    {
+        $option = ['id'=>$optionName];
+        $this->updateMerchantIdOnApiKeyChanges($value, $option);
     }
 
     /**
@@ -270,7 +292,7 @@ class Mollie_WC_Helper_Settings
 
 		$content .= ' (<a href="' . esc_attr( $refresh_methods_url ) . '">' . strtolower( __( 'Refresh', 'mollie-payments-for-woocommerce' ) ) . '</a>)';
 
-		$content .= '<ul style="width: 1000px; padding:10px 0 0 10px">';
+		$content .= '<ul style="width: 1000px; padding:20px 0 0 10px">';
 
 		foreach ( Mollie_WC_Plugin::$GATEWAYS as $gateway_classname ) {
 			$gateway = new $gateway_classname;
@@ -281,16 +303,16 @@ class Mollie_WC_Helper_Settings
 			}
 
 			// Remove Klarna from list if not at least WooCommerce 3.x is used
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 				if ( $gateway->id == 'mollie_wc_gateway_klarnapaylater' || $gateway->id == 'mollie_wc_gateway_klarnasliceit' ) {
 					continue;
 				}
 			}
 
 			if ( $gateway instanceof Mollie_WC_Gateway_Abstract ) {
-				$content .= '<li style="float: left; width: 30%;height:30px;  margin:0px; padding:5px">';
-                $content .= $this->getSvgIcon($gateway);
-                $content .= '   ' . esc_html( $gateway->getDefaultTitle() );
+				$content .= '<li style="float: left; width: 32%; height:32px;">';
+                $content .= $gateway->getIconUrl();
+                $content .= ' ' . esc_html( $gateway->getDefaultTitle() );
 
 				if ( $gateway->is_available() ) {
 					$content .= $icon_available;
@@ -322,7 +344,7 @@ class Mollie_WC_Helper_Settings
 		// Warn users that at least WooCommerce 3.x is required to accept Klarna as payment method
 		$content = $this->warnWoo3xRequiredForKlarna( $content );
 
-		return $content;
+        return $content;
 	}
 
     /**
@@ -341,13 +363,13 @@ class Mollie_WC_Helper_Settings
         $presentationText .= __('to create a new Mollie account and start receiving payments in a couple of minutes. ');
         $presentationText .= 'Contact <a href="mailto:info@mollie.com">info@mollie.com</a>';
         $presentationText .= ' if you have any questions or comments about this plugin.</p>';
-        $presentationText .= '<p style="border-left: 4px solid black; padding-left: 4px;">Our pricing is always per transaction. No startup fees, no monthly fees, and no gateway fees. No hidden fees, period.</p>';
+        $presentationText .= '<p style="border-left: 4px solid black; padding: 8px; height:32px; font-weight:bold; font-size: medium;">Our pricing is always per transaction. No startup fees, no monthly fees, and no gateway fees. No hidden fees, period.</p>';
 
 
         $presentation = ''
             . '<div style="width:1000px"><div id="" class="" style=""><a href="https://mollie.inpsyde.com/" >Documentation</a> | <a href="https://mollie.inpsyde.com/" >Support</a></div></div>'
             . '<span></span>'
-            . '<div id="" class=""><p>'.$presentationText.'</p></div>';
+            . '<div id="" class="" style="width: 1000px; padding:5px 0 0 10px"><p>'.$presentationText.'</p></div>';
 
         $content = ''
             . $presentation
@@ -567,7 +589,7 @@ class Mollie_WC_Helper_Settings
 	 */
 	protected function warnAboutRequiredCheckoutFieldForKlarna( $content ) {
 
-		if ( version_compare( WC_VERSION, '3.0', '>=' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '>=' ) ) {
 
 			$woocommerce_klarnapaylater_gateway = new Mollie_WC_Gateway_KlarnaPayLater();
 			$woocommerce_klarnasliceit_gateway  = new Mollie_WC_Gateway_KlarnaSliceIt();
@@ -592,7 +614,7 @@ class Mollie_WC_Helper_Settings
 	 */
 	protected function warnWoo3xRequiredForKlarna( $content ) {
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 
 			$woocommerce_klarnapaylater_gateway = new Mollie_WC_Gateway_KlarnaPayLater();
 			$woocommerce_klarnasliceit_gateway  = new Mollie_WC_Gateway_KlarnaSliceIt();
@@ -600,7 +622,7 @@ class Mollie_WC_Helper_Settings
 			if ( $woocommerce_klarnapaylater_gateway->is_available() || $woocommerce_klarnasliceit_gateway->is_available() ) {
 
 				$content .= '<div class="notice notice-warning is-dismissible"><p>';
-				$content .= sprintf(__( 'To accept Klarna payments via Mollie, you need to use WooCommerce 3.0 or higher, you are now using version %s.', 'mollie-payments-for-woocommerce' ), WC_VERSION);
+				$content .= sprintf(__( 'To accept Klarna payments via Mollie, you need to use WooCommerce 3.0 or higher, you are now using version %s.', 'mollie-payments-for-woocommerce' ), mollieWooCommerceWcVersion());
 				$content .= '</p></div> ';
 
 				return $content;
@@ -709,125 +731,5 @@ class Mollie_WC_Helper_Settings
         }
 
         return self::SETTING_LOCALE_DEFAULT_LANGUAGE;
-    }
-
-    /**
-     * @param Mollie_WC_Gateway_Abstract $gateway
-     *
-     *
-     * @return string
-     */
-    protected function getSvgIcon(Mollie_WC_Gateway_Abstract $gateway)
-    {
-        add_filter(
-            'wp_kses_allowed_html',
-            array(__CLASS__, 'svgAllowedTags'),
-            10,
-            2
-        );
-        $svg = $gateway->getIconUrl();
-        $cleanNewLine = str_replace("\n", "", $svg);
-        $cleanNewLine = str_replace("\r", "", $cleanNewLine);
-
-        return $cleanNewLine;
-    }
-
-    /**
-     * Method to add svg tags to the allowed array used by wp_kses
-     *
-     * @param  array $tags
-     *
-     * @return array
-     */
-    public static function svgAllowedTags ($tags) {
-        $tags['svg'] = [
-            'xmlns' => [],
-            'width'=>[],
-            'height'=>[],
-            'fill' => [],
-            'viewbox' => [],
-            'enable-background' => [],
-            'version' => [],
-            'xml:space' => [],
-            'transform'=>[]
-        ];
-        $tags['path'] = [
-            'd' => [],
-            'fill' => [],
-            'stroke'=>[],
-            'fill-rule'=>[],
-            'fill-opacity'=>[],
-            'clip-rule'=>[],
-            'transform'=>[],
-            'opacity'=>[]
-        ];
-        $tags['rect'] = [
-            'width'=>[],
-            'height'=>[],
-            'rx'=>[],
-            'fill' => [],
-            'x'=>[],
-            'y'=>[],
-            'stroke'=>[],
-        ];
-        $tags['mask'] = [
-            'id'=>[],
-            'mask-type'=>[],
-            'maskUnits'=>[],
-            'x' => [],
-            'y' => [],
-            'width'=>[],
-            'height'=>[]
-        ];
-        $tags['g'] = [
-            'mask'=>[],
-            'filter'=>[],
-            'fill'=>[],
-            'fill-rule'=>[],
-        ];
-        $tags['feflood'] = [
-            'flood-opacity'=>[],
-            'result'=>[]
-        ];
-        $tags['fecolormatrix'] = [
-            'in'=>[],
-            'type'=>[],
-            'values'=>[]
-        ];
-        $tags['fegaussianblur'] = [
-            'stdDeviation'=>[]
-        ];
-        $tags['feblend'] = [
-            'mode'=>[],
-            'in2'=>[],
-            'result'=>[],
-            'in'=>[],
-        ];
-        $tags['feoffset'] = [
-            'dy'=>[],
-        ];
-        $tags['filter'] = [
-            'id'=>[],
-            'color-interpolation-filters'=>[],
-            'filterUnits'=>[],
-            'x' => [],
-            'y' => [],
-            'width'=>[],
-            'height'=>[]
-        ];
-        $tags['lineargradient'] = [
-            'id'=>[],
-            'gradientUnits'=>[],
-            'gradientTransform'=>[],
-            'x2' => []
-        ];
-        $tags['stop'] = [
-            'offset'=>[],
-            'stop-color'=>[],
-            'stop-opacity'=>[]
-        ];
-        $tags['defs'] = [];
-
-        return $tags;
     }
 }

@@ -42,21 +42,24 @@ function mollieWooCommerceIsTestModeEnabled()
 }
 
 /**
+ * If we are calling this the api key has been updated, we need a new api object
+ * to retrieve a new profile id
+ *
  * @return CurrentProfile
  * @throws ApiException
  */
 function mollieWooCommerceMerchantProfile()
 {
-    static $profile = null;
+    $isTestMode = mollieWooCommerceIsTestModeEnabled();
 
-    if ($profile === null) {
-        $isTestMode = mollieWooCommerceIsTestModeEnabled();
+    $apiHelper = new Mollie_WC_Helper_Api(
+        Mollie_WC_Plugin::getSettingsHelper()
+    );
 
-        $apiHelper = Mollie_WC_Plugin::getApiHelper();
-        $profile = $apiHelper->getApiClient($isTestMode)->profiles->getCurrent();
-    }
-
-    return $profile;
+    return $apiHelper->getApiClient(
+        $isTestMode,
+        true
+    )->profiles->getCurrent();
 }
 
 /**
@@ -150,18 +153,20 @@ function mollieWooCommerceGetDataHelper()
 }
 
 /**
- * Check if the Apple Pay gateway is enabled.
+ * Check if certain gateway setting is enabled.
  *
+ * @param $gatewaySettingsName string
+ * @param $settingToCheck string
+ * @param bool $default
  * @return bool
  */
-function mollieWooCommerceisApplePayEnabled()
+function mollieWooCommerceIsGatewayEnabled($gatewaySettingsName, $settingToCheck, $default = false)
 {
-    $applePaySettings = get_option('mollie_wc_gateway_applepay_settings');
-    $applePayGatewayEnabled = mollieWooCommerceStringToBoolOption(
-        checkIndexExistOrDefault($applePaySettings, 'enabled', 'no')
-    );
 
-    return $applePayGatewayEnabled;
+    $gatewaySettings = get_option($gatewaySettingsName);
+    return mollieWooCommerceStringToBoolOption(
+        checkIndexExistOrDefault($gatewaySettings, $settingToCheck, $default)
+    );
 }
 
 /**
@@ -171,20 +176,11 @@ function mollieWooCommerceisApplePayEnabled()
  */
 function mollieWooCommerceisApplePayDirectEnabled()
 {
-    $applePaySettings = get_option('mollie_wc_gateway_applepay_settings');
-    $applePayGatewayEnabled = mollieWooCommerceisApplePayEnabled();
+    $applePayGatewayEnabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_applepay_settings', 'enabled');
     if (!$applePayGatewayEnabled) {
         return false;
     }
-    $applePayDirectEnabled = mollieWooCommerceStringToBoolOption(
-        checkIndexExistOrDefault(
-            $applePaySettings,
-            'mollie_apple_pay_button_enabled',
-            'no'
-        )
-    );
-
-    return $applePayDirectEnabled;
+    return mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_applepay_settings', 'mollie_apple_pay_button_enabled');
 }
 
 function checkIndexExistOrDefault($array, $key, $default)

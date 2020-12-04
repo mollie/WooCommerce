@@ -8,7 +8,7 @@ class Mollie_WC_Plugin
 {
     const PLUGIN_ID      = 'mollie-payments-for-woocommerce';
     const PLUGIN_TITLE   = 'Mollie Payments for WooCommerce';
-    const PLUGIN_VERSION = '5.9.0';
+    const PLUGIN_VERSION = '5.11.0';
 
     const DB_VERSION     = '1.0';
     const DB_VERSION_PARAM_NAME = 'mollie-db-version';
@@ -48,6 +48,8 @@ class Mollie_WC_Plugin
         'Mollie_WC_Gateway_Giftcard',
         'Mollie_WC_Gateway_Applepay',
         'Mollie_WC_Gateway_MyBank',
+        'Mollie_WC_Gateway_Mealvoucher',
+
     );
 
     private function __construct () {}
@@ -122,7 +124,7 @@ class Mollie_WC_Plugin
             if ($order->get_status() == Mollie_WC_Gateway_Abstract::STATUS_COMPLETED){
 
                 $new_order_status = Mollie_WC_Gateway_Abstract::STATUS_FAILED;
-	            if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+	            if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 		            $paymentMethodId = get_post_meta( $order->id, '_payment_method_title', true );
 		            $molliePaymentId = get_post_meta( $order->id, '_mollie_payment_id', true );
 	            } else {
@@ -137,7 +139,7 @@ class Mollie_WC_Plugin
 
                 $order->update_status($new_order_status, '');
 
-	            if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+	            if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 		            if ( get_post_meta( $order->id, '_order_stock_reduced', $single = true ) ) {
 			            // Restore order stock
 			            Mollie_WC_Plugin::getDataHelper()->restoreOrderStock( $order );
@@ -186,8 +188,6 @@ class Mollie_WC_Plugin
 		$settings_helper = self::getSettingsHelper();
 		$data_helper     = self::getDataHelper();
 
-        remove_filter('wp_kses_allowed_html', array ( $settings_helper, 'svgAllowedTags' ) , 10);
-
 		// When page 'WooCommerce -> Checkout -> Checkout Options' is saved
 		add_action( 'woocommerce_settings_save_checkout', array ( $data_helper, 'deleteTransients' ) );
 
@@ -195,6 +195,11 @@ class Mollie_WC_Plugin
 		add_filter( 'woocommerce_payment_gateways', array ( __CLASS__, 'addGateways' ) );
 
         add_filter('woocommerce_payment_gateways', [__CLASS__, 'maybeDisableApplePayGateway'], 20);
+        add_filter('woocommerce_payment_gateways', function($gateways){
+            $maybeEnablegatewayHelper = new Mollie_WC_Helper_MaybeDisableGateway();
+            return $maybeEnablegatewayHelper->maybeDisableMealVoucherGateway($gateways);
+        });
+        add_filter('woocommerce_payment_gateways', [__CLASS__, 'maybeDisableBankTransferGateway'], 20);
         add_action(
             'woocommerce_after_order_object_save',
             function () {
@@ -209,6 +214,18 @@ class Mollie_WC_Plugin
             [$settings_helper, 'updateMerchantIdOnApiKeyChanges'],
             10,
             2
+        );
+        add_action(
+            'update_option_mollie-payments-for-woocommerce_live_api_key',
+            [$settings_helper, 'updateMerchantIdAfterApiKeyChanges'],
+            10,
+            3
+        );
+        add_action(
+            'update_option_mollie-payments-for-woocommerce_test_api_key',
+            [$settings_helper, 'updateMerchantIdAfterApiKeyChanges'],
+            10,
+            3
         );
 
 		// Add settings link to plugins page
@@ -238,9 +255,17 @@ class Mollie_WC_Plugin
 		// Capture order at Mollie (for Orders API/Klarna)
 		add_action( 'woocommerce_order_status_completed', array( __CLASS__, 'shipAndCaptureOrderAtMollie' ) );
 
+        add_filter(
+            'woocommerce_cancel_unpaid_order',
+            array( __CLASS__, 'maybeLetWCCancelOrder' ),
+            90,
+            2
+        );
+
         // Enqueue Scripts
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueFrontendScripts']);
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueComponentsAssets']);
+        add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueMealvoucherAssets']);
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueApplePayDirectScripts']);
 
         add_action(
@@ -264,6 +289,26 @@ class Mollie_WC_Plugin
                 return $settings;
             }
         );
+        add_filter(
+            'woocommerce_product_data_tabs',
+            function ($tabs) {
+                $tabs['Mollie'] = array(
+                    'label'		=> __( 'Mollie Settings', 'mollie-payments-for-woocommerce' ),
+                    'target'	=> 'mollie_options',
+                    'class'		=> array( 'show_if_simple', 'show_if_variable'  ),
+                );
+
+                return $tabs;
+            }
+        );
+        add_filter( 'woocommerce_product_data_panels', [__CLASS__, 'mollieOptionsProductTabContent'] );
+        add_action( 'woocommerce_process_product_meta_simple', [__CLASS__, 'saveProductVoucherOptionFields']  );
+        add_action( 'woocommerce_process_product_meta_variable', [__CLASS__, 'saveProductVoucherOptionFields']  );
+
+        add_filter( Mollie_WC_Plugin::PLUGIN_ID . '_retrieve_payment_gateways', function(){
+            return self::$GATEWAYS;
+        });
+        add_action('wp_loaded', [__CLASS__, 'maybeTestModeNotice']);
         self::mollieApplePayDirectHandling();
 
 		self::initDb();
@@ -272,7 +317,112 @@ class Mollie_WC_Plugin
 
 		// Mark plugin initiated
 		self::$initiated = true;
-	}
+    }
+
+    public static function maybeTestModeNotice()
+    {
+        if (mollieWooCommerceIsTestModeEnabled()) {
+            $notice = new Mollie_WC_Notice_AdminNotice();
+            $message = sprintf(
+                esc_html__(
+                    '%1$sMollie Payments for WooCommerce%2$s The test mode is active, %3$s disable it%4$s before deploying into production.',
+                    'mollie-payments-for-woocommerce'
+                ),
+                '<strong>',
+                '</strong>',
+                '<a href="' . esc_url(
+                    admin_url('admin.php?page=wc-settings&tab=checkout')
+                ) . '">',
+                '</a>'
+            );
+            $notice->addAdminNotice('notice-error', $message);
+        }
+    }
+
+    public static function maybeLetWCCancelOrder($willCancel, $order) {
+        if (!empty($willCancel)) {
+            if ($order->get_payment_method()
+                !== 'mollie_wc_gateway_banktransfer'
+            ) {
+                return $willCancel;
+            }
+            //is banktransfer due date setting activated
+            $dueDateActive = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_banktransfer_settings', 'activate_expiry_days_setting');
+            if ($dueDateActive) {
+                return false;
+            }
+        }
+        return $willCancel;
+    }
+    /**
+     * Contents of the Mollie options product tab.
+     */
+    public static function mollieOptionsProductTabContent()
+    {
+        ?>
+        <div id='mollie_options' class='panel woocommerce_options_panel'><?php
+
+        ?>
+        <div class='options_group'><?php
+
+        woocommerce_wp_select(
+                array(
+                        'id' => Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+                        'title' => __(
+                                'Select the default products category',
+                                'mollie-payments-for-woocommerce'
+                        ),
+                        'label' => __(
+                                'Products voucher category',
+                                'mollie-payments-for-woocommerce'
+                        ),
+
+                        'type' => 'select',
+                        'options' => array(
+                                Mollie_WC_Gateway_Mealvoucher::NO_CATEGORY => 'No category',
+                                Mollie_WC_Gateway_Mealvoucher::MEAL => 'Meal',
+                                Mollie_WC_Gateway_Mealvoucher::ECO => 'Eco',
+                                Mollie_WC_Gateway_Mealvoucher::GIFT => 'Gift'
+
+                        ),
+                        'default' => Mollie_WC_Gateway_Mealvoucher::NO_CATEGORY,
+                    /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
+                        'description' => sprintf(
+                                __(
+                                        'In order to process it, all products in the order must have a category. To disable the product from voucher selection select "No category" option.',
+                                        'mollie-payments-for-woocommerce'
+                                )
+                        ),
+                        'desc_tip' => true,
+                )
+        );
+
+        ?></div>
+
+        </div><?php
+    }
+
+    /**
+     * Save the product voucher local category option.
+     *
+     * @param $post_id
+     */
+    public static function saveProductVoucherOptionFields($post_id)
+    {
+        $option = filter_input(
+            INPUT_POST,
+            Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+            FILTER_SANITIZE_STRING
+        );
+        $voucherCategory = isset($option) ? $option : '';
+
+        update_post_meta(
+            $post_id,
+            Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+            $voucherCategory
+        );
+    }
+
 
 
     /**
@@ -426,6 +576,21 @@ class Mollie_WC_Plugin
             filemtime(Mollie_WC_Plugin::getPluginPath('/public/js/mollie-components.min.js')),
             true
         );
+
+        wp_register_style(
+            'unabledButton',
+            Mollie_WC_Plugin::getPluginUrl('/public/css/unabledButton.min.css'),
+            [],
+            filemtime(Mollie_WC_Plugin::getPluginPath('/public/css/unabledButton.min.css')),
+            'screen'
+        );
+        wp_register_script(
+            'mollie_wc_gateway_mealvoucher',
+            Mollie_WC_Plugin::getPluginUrl('/public/js/mealvoucher.min.js'),
+            ['underscore', 'jquery'],
+            filemtime(Mollie_WC_Plugin::getPluginPath('/public/js/mealvoucher.min.js')),
+            true
+        );
     }
 
     /**
@@ -438,12 +603,33 @@ class Mollie_WC_Plugin
         if (is_admin() || !mollieWooCommerceIsCheckoutContext()) {
             return;
         }
+        $applePayGatewayEnabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_applepay_settings', 'enabled');
 
-        if (!mollieWooCommerceisApplePayEnabled()) {
+        if (!$applePayGatewayEnabled) {
             return;
         }
 
         wp_enqueue_script('mollie_wc_gateway_applepay');
+        wp_enqueue_script('mollie_wc_gateway_mealvoucher');
+        wp_enqueue_style('unabledButton');
+
+    }
+
+    public static function enqueueMealvoucherAssets()
+    {
+        if (is_admin() || !mollieWooCommerceIsCheckoutContext()) {
+            return;
+        }
+        $enableButtonHelper = new Mollie_WC_Helper_MaybeDisableGateway();
+        wp_localize_script(
+                'mollie_wc_gateway_mealvoucher',
+                'mealvoucherSettings',
+                [
+                        'message'=> __('Some products in the cart cannot be purchased with the selected gateway. Please, select another gateway'),
+                        'productsWithCategory' => $enableButtonHelper->numberProductsWithCategory()
+
+                ]
+        );
     }
 
     /**
@@ -678,7 +864,7 @@ class Mollie_WC_Plugin
 		}
 
 		// Remove Klarna if WooCommerce is not version 3.0 or higher
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			if ( is_admin() && ! empty( $current_screen->base ) && $current_screen->base == 'woocommerce_page_wc-settings' ) {
 				if ( ( $key = array_search( 'Mollie_WC_Gateway_KlarnaPayLater', $gateways ) ) !== false ) {
 					unset( $gateways[ $key ] );
@@ -691,6 +877,44 @@ class Mollie_WC_Plugin
 
 		return $gateways;
 	}
+
+    /**
+     * Disable Bank Transfer Gateway
+     *
+     * @param array $gateways
+     * @return array
+     */
+    public static function maybeDisableBankTransferGateway(array $gateways)
+    {
+        $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_STRING);
+        $bankTransferSettings = get_option('mollie_wc_gateway_banktransfer_settings', false);
+        $isSettingActivated = false;
+        if($bankTransferSettings && isset($bankTransferSettings['activate_expiry_days_setting'])){
+            $expiryDays = $bankTransferSettings['activate_expiry_days_setting'];
+            $isSettingActivated = mollieWooCommerceStringToBoolOption($expiryDays);
+        }
+
+        /*
+         * There is only one case where we want to filter the gateway and it's when the
+         * pay-page render the available payments methods AND the setting is enabled
+         *
+         * For any other case we want to be sure bank transfer gateway is included.
+         */
+        if ($isWcApiRequest ||
+            !$isSettingActivated ||
+            is_checkout() && ! is_wc_endpoint_url( 'order-pay' )||
+            !wp_doing_ajax() && ! is_wc_endpoint_url( 'order-pay' )||
+            is_admin()
+        ) {
+            return $gateways;
+        }
+        $bankTransferGatewayClassName = Mollie_WC_Gateway_BankTransfer::class;
+        $bankTransferGatewayIndex = array_search($bankTransferGatewayClassName, $gateways, true);
+        if ($bankTransferGatewayIndex !== false) {
+            unset($gateways[$bankTransferGatewayIndex]);
+        }
+        return  $gateways;
+    }
 
     /**
      * Disable Apple Pay Gateway
@@ -722,7 +946,7 @@ class Mollie_WC_Plugin
             return $gateways;
         }
 
-        $applePayGatewayClassName = 'Mollie_WC_Gateway_Applepay';
+        $applePayGatewayClassName = Mollie_WC_Gateway_Applepay::class;
         $applePayGatewayIndex = array_search($applePayGatewayClassName, $gateways, true);
         $postData = (string)filter_input(
             INPUT_POST,
@@ -783,7 +1007,7 @@ class Mollie_WC_Plugin
         // Convert message to string
         if (!is_string($message))
         {
-            $message = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? print_r($message, true) : wc_print_r($message, true);
+            $message = ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) ? print_r($message, true) : wc_print_r($message, true);
         }
 
         // Set debug header
@@ -795,7 +1019,7 @@ class Mollie_WC_Plugin
 	    // Log message
 	    if ( self::getSettingsHelper()->isDebugEnabled() ) {
 
-		    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 
 			    static $logger;
 
@@ -977,7 +1201,7 @@ class Mollie_WC_Plugin
 	public static function shipAndCaptureOrderAtMollie( $order_id ) {
 
 		// If this is an older WooCommerce version, don't run.
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			return;
 		}
 
@@ -997,15 +1221,11 @@ class Mollie_WC_Plugin
 		Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Try to process completed order for a potential capture at Mollie.' );
 
 		// Does WooCommerce order contain a Mollie Order?
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
-			$mollie_order_id = ( $mollie_order_id = get_post_meta( $order->id, '_mollie_order_id', true ) ) ? $mollie_order_id : false;
-		} else {
-			$mollie_order_id = ( $mollie_order_id = $order->get_meta( '_mollie_order_id', true ) ) ? $mollie_order_id : false;
-		}
-
-		if ( $mollie_order_id == false ) {
-			$order->add_order_note( 'Order contains Mollie payment method, but not a valid Mollie Order ID. Processing capture canceled.' );
-			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Order contains Mollie payment method, but not a valid Mollie Order ID. Processing capture cancelled.' );
+        $mollie_order_id = ( $mollie_order_id = $order->get_meta( '_mollie_order_id', true ) ) ? $mollie_order_id : false;
+        // Is it a payment? you cannot ship a payment
+		if ( $mollie_order_id == false || substr($mollie_order_id,0,3) == 'tr_') {
+			$order->add_order_note( 'Order contains Mollie payment method, but not a Mollie Order ID. Processing capture canceled.' );
+			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Order contains Mollie payment method, but not a Mollie Order ID. Processing capture cancelled.' );
 
 			return;
 		}
@@ -1062,7 +1282,7 @@ class Mollie_WC_Plugin
 	public static function cancelOrderAtMollie( $order_id ) {
 
 		// If this is an older WooCommerce version, don't run.
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			return;
 		}
 
@@ -1082,7 +1302,7 @@ class Mollie_WC_Plugin
 		Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Try to process cancelled order at Mollie.' );
 
 		// Does WooCommerce order contain a Mollie Order?
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$mollie_order_id = ( $mollie_order_id = get_post_meta( $order->id, '_mollie_order_id', true ) ) ? $mollie_order_id : false;
 		} else {
 			$mollie_order_id = ( $mollie_order_id = $order->get_meta( '_mollie_order_id', true ) ) ? $mollie_order_id : false;
@@ -1189,7 +1409,7 @@ class Mollie_WC_Plugin
 
 		$order = wc_get_order( $order_id );
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 
 			$mollie_payment_id    = get_post_meta( $order_id, '_mollie_payment_id', $single = true );
 			$order_payment_method = get_post_meta( $order_id, '_payment_method', $single = true );

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PHPUnit">
+    <option name="directories">
+      <list>
+        <option value="$PROJECT_DIR$/tests/php/Unit" />
+        <option value="$PROJECT_DIR$/tests/php/Functional" />
+      </list>
+    </option>
+  </component>
+</project>

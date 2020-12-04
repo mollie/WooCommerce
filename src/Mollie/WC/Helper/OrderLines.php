@@ -2,7 +2,7 @@
 
 class Mollie_WC_Helper_OrderLines {
 
-	/**
+    /**
 	 * Formatted order lines.
 	 *
 	 * @var $order_lines
@@ -75,6 +75,8 @@ class Mollie_WC_Helper_OrderLines {
 	 * @access private
 	 */
 	private function process_items() {
+        $mealvoucherSettings = get_option('mollie_wc_gateway_mealvoucher_settings');
+	    $isMealVoucherEnabled = $mealvoucherSettings? ($mealvoucherSettings['enabled'] == 'yes'): true;
 		foreach ( $this->order->get_items() as $cart_item ) {
 
 			if ( $cart_item['quantity'] ) {
@@ -118,9 +120,15 @@ class Mollie_WC_Helper_OrderLines {
 						),
 				);
 
-				// TODO David: Continue testing adding WooCommerce images to Mollie Orders
-
+                if ($isMealVoucherEnabled) {
+					if ($this->get_item_category($product) <> "no_category"){
+						$mollie_order_item['category'] = $this->get_item_category(
+							$product
+						);
+					}
+                }
 				$this->order_lines[] = $mollie_order_item;
+
 
 				do_action( Mollie_WC_Plugin::PLUGIN_ID . '_orderlines_process_items_after_processing_item', $cart_item );
 			}
@@ -380,6 +388,37 @@ class Mollie_WC_Helper_OrderLines {
 
 		return $item_total_amount;
 	}
+
+    /**
+     * Get cart item Category.
+     *
+     * Returns selected or default product category.
+     *
+     * @since  5.6
+     * @access private
+     *
+     * @param  object $product Product object.
+     *
+     * @return string $category Product voucher category.
+     */
+    private function get_item_category($product)
+    {
+        $mealvoucherSettings = get_option(
+            'mollie_wc_gateway_mealvoucher_settings'
+        );
+        $defaultCategory = $mealvoucherSettings['mealvoucher_category_default'];
+        $category = $defaultCategory;
+        if ($product) {
+            $localCategory = get_post_meta(
+                $product->get_id(),
+                Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+                true
+            );
+            $category = $localCategory ? $localCategory : $defaultCategory;
+        }
+
+        return $category;
+    }
 
 	/**
 	 * Get shipping method name.

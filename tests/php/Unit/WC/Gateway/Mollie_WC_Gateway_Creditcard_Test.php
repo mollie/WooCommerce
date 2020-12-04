@@ -3,7 +3,7 @@
 namespace Mollie\WooCommerceTests\Unit\WC\Gateway;
 
 use Mollie\WooCommerceTests\TestCase;
-use Mollie_WC_Gateway_CreditCard as Testee;
+use Mollie_WC_Gateway_Creditcard as Testee;
 
 use function Brain\Monkey\Functions\expect;
 
@@ -11,7 +11,7 @@ use function Brain\Monkey\Functions\expect;
 /**
  * Class Mollie_WC_Helper_Settings_Test
  */
-class Mollie_WC_Gateway_CreditCard_Test extends TestCase
+class Mollie_WC_Gateway_Creditcard_Test extends TestCase
 {
     /**
      * Test get_icon returns svg composed image
@@ -46,6 +46,10 @@ class Mollie_WC_Gateway_CreditCard_Test extends TestCase
             ->once()
             ->withNoArgs()
             ->andReturn(false);
+        expect('esc_attr')
+            ->once()
+            ->withAnyArgs()
+            ->andReturn("public/images/creditcard.svg");
         
         $testee
             ->expects($this->exactly(2))

@@ -42,7 +42,7 @@ function mollieWooCommerceSession()
  */
 function mollieWooCommerceOrderId(WC_Order $order)
 {
-    return version_compare(WC_VERSION, '3.0', '<')
+    return version_compare(mollieWooCommerceWcVersion(), '3.0', '<')
         ? $order->id
         : $order->get_id();
 }
@@ -54,9 +54,19 @@ function mollieWooCommerceOrderId(WC_Order $order)
  */
 function mollieWooCommerceOrderKey(WC_Order $order)
 {
-    return version_compare(WC_VERSION, '3.0', '<')
+    return version_compare(mollieWooCommerceWcVersion(), '3.0', '<')
         ? $order->order_key
         : $order->get_order_key();
+}
+
+/**
+ * Retrieve the version of WooCommerce currently active.
+ *
+ * @return string The version number.
+ */
+function mollieWooCommerceWcVersion()
+{
+    return (string) WC_VERSION;
 }
 
 /**

@@ -63,7 +63,6 @@
       <path value="$PROJECT_DIR$/vendor/automattic/jetpack-constants" />
       <path value="$PROJECT_DIR$/vendor/pelago/emogrifier" />
       <path value="$PROJECT_DIR$/vendor/sebastian/object-reflector" />
-      <path value="$PROJECT_DIR$/vendor/woocommerce/woocommerce-rest-api" />
     </include_path>
   </component>
   <component name="PhpInterpreters">

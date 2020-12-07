@@ -403,7 +403,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 * @return array
 	 */
 	public function process_payment( $order_id ) {
-		$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+	    $dataHelper = Mollie_WC_Plugin::getDataHelper();
+		$order = $dataHelper->getWcOrder( $order_id );
 
 		if ( ! $order ) {
 			Mollie_WC_Plugin::debug( $this->id . ': Could not process payment, order ' . $order_id . ' not found.' );
@@ -433,7 +434,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		//
 		// PROCESS SUBSCRIPTION SWITCH - If this is a subscription switch and customer has a valid mandate, process the order internally
 		//
-		if ( ( '0.00' === $order->get_total() ) && ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order_id ) == true ) &&
+		if ( ( '0.00' === $order->get_total() ) && ( Mollie_WC_Plugin::getDataHelper()->isWcSubscription($order_id ) == true ) &&
 		     0 != $order->get_user_id() && ( wcs_order_contains_switch( $order ) )
 		) {
 
@@ -511,11 +512,19 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                     $test_mode
             );
 
-            $this->saveMollieInfo( $order, $paymentObject );
+			$this->saveMollieInfo( $order, $paymentObject );
+
+            if ($dataHelper->isSubscription($orderId)) {
+                $mandates = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->customers->get( $customer_id )->mandates();
+                $mandate = $mandates[0];
+                $customerId = $mandate->customerId;
+                $mandateId = $mandate->id;
+                Mollie_WC_Plugin::debug("Mollie Subscription in the order: customer id {$customerId} and mandate id {$mandateId} ");
+                do_action(Mollie_WC_Plugin::PLUGIN_ID . '_after_mandate_created', $paymentObject, $order, $customerId, $mandateId);
+            }
 
 			do_action( Mollie_WC_Plugin::PLUGIN_ID . '_payment_created', $paymentObject, $order );
-            Mollie_WC_Plugin::debug( "{$this->id}: Mollie payment object {$paymentObject->id} ({$paymentObject->mode}) created for order {$orderId}" );
-
+            Mollie_WC_Plugin::debug( $this->id . ': Mollie payment object ' . $paymentObject->id . ' (' . $paymentObject->mode . ') created for order ' . $orderId );
 
 			// Update initial order status for payment methods where the payment status will be delivered after a couple of days.
 			// See: https://www.mollie.com/nl/docs/status#expiry-times-per-payment-method

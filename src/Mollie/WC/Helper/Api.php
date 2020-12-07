@@ -20,13 +20,14 @@ class Mollie_WC_Helper_Api {
 		$this->settings_helper = $settings_helper;
 	}
 
-	/**
-	 * @param bool $test_mode
-	 *
-	 * @return \Mollie\Api\MollieApiClient
-	 * @throws \Mollie\Api\Exceptions\ApiException
-	 */
-	public function getApiClient( $test_mode = false ) {
+    /**
+     * @param bool $test_mode
+     * @param bool $needToUpdateApiKey If the apiKey was updated discard the old instance, and create a new one with the new key.
+     *
+     * @return \Mollie\Api\MollieApiClient
+     * @throws \Mollie\Api\Exceptions\ApiException
+     */
+	public function getApiClient( $test_mode = false, $needToUpdateApiKey = false ) {
 		global $wp_version;
 
 		$api_key = $this->settings_helper->getApiKey( $test_mode );
@@ -41,7 +42,7 @@ class Mollie_WC_Helper_Api {
 			throw new \Mollie\Api\Exceptions\ApiException( sprintf(__( "Invalid API key(s). Get them on the %sDevelopers page in the Mollie dashboard%s. The API key(s) must start with 'live_' or 'test_', be at least 30 characters and must not contain any special characters.", 'mollie-payments-for-woocommerce' ), '<a href="https://www.mollie.com/dashboard/developers/api-keys" target="_blank">', '</a>' ) );
 		}
 
-        if (empty(self::$api_client)) {
+        if (empty(self::$api_client) || $needToUpdateApiKey) {
             $client = new MollieApiClient();
             $client->setApiKey( $api_key );
             $client->setApiEndpoint( self::getApiEndpoint() );

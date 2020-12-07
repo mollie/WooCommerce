@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "529815be7df2928fb20308367bca08e9",
+    "content-hash": "f40f063006a29ee21fe58cf7aeb78aeb",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -64,7 +64,7 @@
             "support": {
                 "irc": "irc://irc.freenode.org/composer",
                 "issues": "https://github.com/composer/ca-bundle/issues",
-                "source": "https://github.com/composer/ca-bundle/tree/master"
+                "source": "https://github.com/composer/ca-bundle/tree/1.2.8"
             },
             "funding": [
                 {
@@ -308,16 +308,16 @@
         },
         {
             "name": "mollie/mollie-api-php",
-            "version": "v2.26.0",
+            "version": "v2.24.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mollie/mollie-api-php.git",
-                "reference": "eed0a326bba2bf198cd8bff0c4cf7ba2f7a2395a"
+                "reference": "52bd606724109906d61226698c8b031ccae9e637"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mollie/mollie-api-php/zipball/eed0a326bba2bf198cd8bff0c4cf7ba2f7a2395a",
-                "reference": "eed0a326bba2bf198cd8bff0c4cf7ba2f7a2395a",
+                "url": "https://api.github.com/repos/mollie/mollie-api-php/zipball/52bd606724109906d61226698c8b031ccae9e637",
+                "reference": "52bd606724109906d61226698c8b031ccae9e637",
                 "shasum": ""
             },
             "require": {
@@ -330,7 +330,7 @@
             },
             "require-dev": {
                 "eloquent/liberator": "^2.0",
-                "phpunit/phpunit": "^5.7 || ^6.5 || ^7.1 || ^8.5"
+                "phpunit/phpunit": "^5.7 || ^6.5 || ^7.1"
             },
             "suggest": {
                 "mollie/oauth2-mollie-php": "Use OAuth to authenticate with the Mollie API. This is needed for some endpoints. Visit https://docs.mollie.com/ for more information."
@@ -392,9 +392,9 @@
             ],
             "support": {
                 "issues": "https://github.com/mollie/mollie-api-php/issues",
-                "source": "https://github.com/mollie/mollie-api-php/tree/v2.26.0"
+                "source": "https://github.com/mollie/mollie-api-php/tree/v2.24.0"
             },
-            "time": "2020-12-03T09:47:21+00:00"
+            "time": "2020-10-15T12:55:48+00:00"
         },
         {
             "name": "paragonie/random_compat",
@@ -1248,7 +1248,6 @@
                 "issues": "https://github.com/fzaninotto/Faker/issues",
                 "source": "https://github.com/fzaninotto/Faker/tree/master"
             },
-            "abandoned": true,
             "time": "2020-10-27T14:15:58+00:00"
         },
         {
@@ -1305,16 +1304,16 @@
         },
         {
             "name": "johnpbloch/wordpress-core",
-            "version": "5.6.x-dev",
+            "version": "5.5.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/johnpbloch/wordpress-core.git",
-                "reference": "d95e314517ba659a167d01b6661d00ac0372ff3a"
+                "reference": "baf43970aa2bdcb01f2e6825258d85311be7f18f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/johnpbloch/wordpress-core/zipball/d95e314517ba659a167d01b6661d00ac0372ff3a",
-                "reference": "d95e314517ba659a167d01b6661d00ac0372ff3a",
+                "url": "https://api.github.com/repos/johnpbloch/wordpress-core/zipball/baf43970aa2bdcb01f2e6825258d85311be7f18f",
+                "reference": "baf43970aa2bdcb01f2e6825258d85311be7f18f",
                 "shasum": ""
             },
             "require": {
@@ -1322,7 +1321,7 @@
                 "php": ">=5.6.20"
             },
             "provide": {
-                "wordpress/core-implementation": "5.6.x-dev"
+                "wordpress/core-implementation": "5.5.x-dev"
             },
             "type": "wordpress-core",
             "notification-url": "https://packagist.org/downloads/",
@@ -1349,7 +1348,7 @@
                 "source": "https://core.trac.wordpress.org/browser",
                 "wiki": "https://codex.wordpress.org/"
             },
-            "time": "2020-12-01T22:09:36+00:00"
+            "time": "2020-10-29T21:05:03+00:00"
         },
         {
             "name": "mockery/mockery",
@@ -2156,23 +2155,23 @@
         },
         {
             "name": "sebastian/code-unit-reverse-lookup",
-            "version": "1.0.x-dev",
+            "version": "1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/code-unit-reverse-lookup.git",
-                "reference": "1de8cd5c010cb153fcd68b8d0f64606f523f7619"
+                "reference": "4419fcdb5eabb9caa61a27c7a1db532a6b55dd18"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/code-unit-reverse-lookup/zipball/1de8cd5c010cb153fcd68b8d0f64606f523f7619",
-                "reference": "1de8cd5c010cb153fcd68b8d0f64606f523f7619",
+                "url": "https://api.github.com/repos/sebastianbergmann/code-unit-reverse-lookup/zipball/4419fcdb5eabb9caa61a27c7a1db532a6b55dd18",
+                "reference": "4419fcdb5eabb9caa61a27c7a1db532a6b55dd18",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.6"
+                "php": "^5.6 || ^7.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^8.5"
+                "phpunit/phpunit": "^5.7 || ^6.0"
             },
             "type": "library",
             "extra": {
@@ -2199,15 +2198,9 @@
             "homepage": "https://github.com/sebastianbergmann/code-unit-reverse-lookup/",
             "support": {
                 "issues": "https://github.com/sebastianbergmann/code-unit-reverse-lookup/issues",
-                "source": "https://github.com/sebastianbergmann/code-unit-reverse-lookup/tree/1.0"
+                "source": "https://github.com/sebastianbergmann/code-unit-reverse-lookup/tree/master"
             },
-            "funding": [
-                {
-                    "url": "https://github.com/sebastianbergmann",
-                    "type": "github"
-                }
-            ],
-            "time": "2020-11-30T08:15:22+00:00"
+            "time": "2017-03-04T06:30:41+00:00"
         },
         {
             "name": "sebastian/comparator",

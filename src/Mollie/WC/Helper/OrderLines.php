@@ -408,14 +408,24 @@ class Mollie_WC_Helper_OrderLines {
         );
         $defaultCategory = $mealvoucherSettings['mealvoucher_category_default'];
         $category = $defaultCategory;
-        if ($product) {
-            $localCategory = get_post_meta(
-                $product->get_id(),
-                Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
-                true
-            );
-            $category = $localCategory ? $localCategory : $defaultCategory;
+
+        if (!$product) {
+            return $category;
         }
+
+        $localCategory = get_post_meta(
+            $product->get_id(),
+            Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+            false
+        );
+        $category = $localCategory[0] ? $localCategory[0] : $defaultCategory;
+
+        $simpleVariationCategory = get_post_meta(
+            $product->get_id(),
+            'voucher',
+            false
+        );
+        $category = $simpleVariationCategory ? $simpleVariationCategory[0] : $category;
 
         return $category;
     }

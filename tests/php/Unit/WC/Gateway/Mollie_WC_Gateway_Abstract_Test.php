@@ -286,10 +286,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             ->with($varStubs->orderId, $varStubs->orderKey, $varStubs->untrailedUrl)
             ->willReturn($varStubs->urlWithParams);
         //check for multilanguage plugin enabled, receives url and adds it
-        $testee
-            ->expects($this->once())
-            ->method('getSiteUrlWithLanguage')
-            ->willReturn("{$varStubs->homeUrl}/nl");
+
         expect('mollieWooCommerceDebug')
             ->withAnyArgs();
 
@@ -299,7 +296,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         $result = $testee->getWebhookUrl($wcOrder);
 
         self::assertEquals(
-            "{$varStubs->homeUrl}/nl/wc-api/mollie_return?order_id={$varStubs->orderId}&key=wc_order_{$varStubs->orderKey}",
+            "{$varStubs->homeUrl}/wc-api/mollie_return?order_id={$varStubs->orderId}&key=wc_order_{$varStubs->orderKey}",
             $result
         );
     }

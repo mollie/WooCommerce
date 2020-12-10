@@ -18,6 +18,7 @@ use WP_Error;
 
 use function Brain\Monkey\Functions\expect;
 use function Brain\Monkey\Actions\expectDone;
+use function Brain\Monkey\Functions\stubs;
 
 /**
  * Class Mollie_WC_Helper_Settings_Test
@@ -38,17 +39,13 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
     {
 
         /*
-         * Expect to call availablePaymentMethods() function and return false from the API
-         */
-        expect('mollieWooCommerceAvailablePaymentMethods')
-            ->zeroOrMoreTimes()
-            ->withNoArgs()
-            ->andReturn(false);
+        * Expect to call availablePaymentMethods() function and return false from the API
+        */
         expect('esc_attr')
             ->once()
             ->withAnyArgs()
             ->andReturn("/images/ideal.svg");
-        
+
         /*
          * Setup Testee
          */
@@ -77,90 +74,6 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         self::assertStringEndsWith($expected, $result);
 
     }
-
-    /**
-     * Test associativePaymentMethodsImages returns associative array
-     * ordered by id (method name) of image urls
-     *
-     * @test
-     */
-    public function associativePaymentMethodsImagesReturnsArrayOrderedById()
-    {
-        /*
-         * Setup stubs
-         */
-        $links = new \stdClass();
-        $methods = new MethodCollection(13, $links);
-        $client = $this
-            ->buildTesteeMock(
-                MollieApiClient::class,
-                [],
-                []
-            )
-            ->getMock();
-        $methodIdeal = new Method($client);
-        $methodIdeal->id = "ideal";
-        $methodIdeal->image = json_decode('{
-                            "size1x": "https://mollie.com/external/icons/payment-methods/ideal.png",
-                            "size2x": "https://mollie.com/external/icons/payment-methods/ideal%402x.png",
-                            "svg": "https://mollie.com/external/icons/payment-methods/ideal.svg"
-                            }');
-        $methods[] = $methodIdeal;
-        $methods_cleaned = array();
-        foreach ( $methods as $method ) {
-            $public_properties = get_object_vars( $method ); // get only the public properties of the object
-            $methods_cleaned[] = $public_properties;
-        }
-        $methods = $methods_cleaned;
-        $paymentMethodsImagesResult = [
-            "ideal" => $methodIdeal->image
-        ];
-        /*
-         * Setup Testee
-         */
-        $testee = $this->buildTesteeMock(
-            Testee::class,
-            [],
-            []
-        )
-            ->getMockForAbstractClass();
-        $testee = $this->proxyFor($testee);
-
-        /*
-         * Execute Test
-         */
-        $result = $testee->associativePaymentMethodsImages($methods);
-
-        self::assertEquals($paymentMethodsImagesResult,$result );
-    }
-
-    /**
-     * Test associativePaymentMethodsImages returns array ordered by id of payment method to access images directly
-     *
-     * @test
-     */
-    public function associativePaymentMethodsImagesReturnsEmptyArrayIfApiFails()
-    {
-        /*
-         * Setup Testee
-         */
-        $testee = $this->buildTesteeMock(
-            Testee::class,
-            [],
-            []
-        )
-            ->getMockForAbstractClass();
-        $testee = $this->proxyFor($testee);
-
-        /*
-         * Execute Test
-         */
-        $emptyArr = [];
-        $result = $testee->associativePaymentMethodsImages($emptyArr);
-
-        self::assertEquals($emptyArr, $result);
-    }
-
     /* -----------------------------------------------------------------
      getReturnUrl Tests
      -------------------------------------------------------------- */
@@ -583,5 +496,246 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         $sutReflection->setAccessible(true);
 
         return array($sut, $sutReflection);
+    }
+
+    /* -----------------------------------------------------------------
+      is_available Tests
+      -------------------------------------------------------------- */
+
+    /**
+     * Scenario: when not enabled, gateway is not available to show
+     * @test
+     */
+    public function isNotAvailable_WhenNotEnabledGateway()
+    {
+        $expected = false;
+
+        /*
+         * Setup Testee
+         */
+        $testee = $this->buildTesteeMock(
+            Testee::class,
+            [],
+            []
+        )->getMockForAbstractClass();
+        $testee = $this->proxyFor($testee);
+        $testee->enabled = 'no';
+
+        $result = $testee->is_available();
+
+        self::assertEquals($expected, $result);
+
+    }
+    /**
+     * Scenario: when in cart but quantity zero, gateway is available to show
+     * @test
+     */
+    public function isAvailable_WhenQuantityZero()
+    {
+        $expected = true;
+        stubs(
+            [
+                'WC' => $this->wooCommerce(),
+            ]
+        );
+
+        /*
+         * Setup Testee
+         */
+        $testee = $this->buildTesteeMock(
+            Testee::class,
+            [],
+            ['get_order_total']
+        )->getMockForAbstractClass();
+        $testee = $this->proxyFor($testee);
+        $testee->enabled = 'yes';
+        $testee
+            ->expects($this->once())
+            ->method('get_order_total')
+            ->willReturn(0);
+
+        $result = $testee->is_available();
+
+        self::assertEquals($expected, $result);
+    }
+    /**
+     * Scenario: gateway is available if allowed from the api and allowed_countries option is empty
+     * @test
+     */
+    public function isAvailable_WhenEmptyAllowedCountries()
+    {
+
+        $expected = true;
+        stubs(
+            [
+                'WC' => $this->wooCommerce(),
+                'get_woocommerce_currency'=>'EUR',
+                'mollieWooCommerceWcVersion'=>4,
+                'get_option'=>'IT'
+            ]
+        );
+
+        /*
+         * Setup Testee
+         */
+        $testee = $this->buildTesteeMock(
+            Testee::class,
+            [],
+            ['get_order_total', 'getAmountValue', 'isAvailableMethodInCheckout','get_option']
+        )->getMockForAbstractClass();
+        $testee = $this->proxyFor($testee);
+        $testee->enabled = 'yes';
+        $testee
+            ->expects($this->exactly(2))
+            ->method('get_order_total')
+            ->willReturn(1);
+        $testee
+            ->expects($this->once())
+            ->method('getAmountValue')
+            ->willReturn(1);
+        $testee
+            ->expects($this->once())
+            ->method('isAvailableMethodInCheckout')
+            ->willReturn(true);
+        $testee
+            ->expects($this->once())
+            ->method('get_option')
+            ->willReturn([]);
+
+        $result = $testee->is_available();
+
+        self::assertEquals($expected, $result);
+    }
+    /**
+     * Scenario: gateway is NOT available if allowed from the api
+     * but billing country is not in the Allowed countries option
+     * @test
+     */
+    public function isNOTAvailable_WhenNotInAllowedCountries()
+    {
+
+        $expected = false;
+        stubs(
+            [
+                'WC' => $this->wooCommerce(),
+                'get_woocommerce_currency'=>'EUR',
+                'mollieWooCommerceWcVersion'=>4,
+                'get_option'=>'IT'
+            ]
+        );
+
+        /*
+         * Setup Testee
+         */
+        $testee = $this->buildTesteeMock(
+            Testee::class,
+            [],
+            ['get_order_total', 'getAmountValue', 'isAvailableMethodInCheckout','get_option']
+        )->getMockForAbstractClass();
+        $testee = $this->proxyFor($testee);
+        $testee->enabled = 'yes';
+        $testee
+            ->expects($this->exactly(2))
+            ->method('get_order_total')
+            ->willReturn(1);
+        $testee
+            ->expects($this->once())
+            ->method('getAmountValue')
+            ->willReturn(1);
+        $testee
+            ->expects($this->once())
+            ->method('isAvailableMethodInCheckout')
+            ->willReturn(true);
+        $testee
+            ->expects($this->once())
+            ->method('get_option')
+            ->willReturn(['ES']);
+
+        $result = $testee->is_available();
+
+        self::assertEquals($expected, $result);
+    }
+    /**
+     * Scenario: gateway is available if allowed from the api
+     * AND billing country is in the Allowed countries option
+     * @test
+     */
+    public function isAvailable_WhenInAllowedCountries()
+    {
+
+        $expected = true;
+        stubs(
+            [
+                'WC' => $this->wooCommerce(),
+                'get_woocommerce_currency'=>'EUR',
+                'mollieWooCommerceWcVersion'=>4,
+                'get_option'=>'IT'
+            ]
+        );
+
+        /*
+         * Setup Testee
+         */
+        $testee = $this->buildTesteeMock(
+            Testee::class,
+            [],
+            ['get_order_total', 'getAmountValue', 'isAvailableMethodInCheckout','get_option']
+        )->getMockForAbstractClass();
+        $testee = $this->proxyFor($testee);
+        $testee->enabled = 'yes';
+        $testee
+            ->expects($this->exactly(2))
+            ->method('get_order_total')
+            ->willReturn(1);
+        $testee
+            ->expects($this->once())
+            ->method('getAmountValue')
+            ->willReturn(1);
+        $testee
+            ->expects($this->once())
+            ->method('isAvailableMethodInCheckout')
+            ->willReturn(true);
+        $testee
+            ->expects($this->once())
+            ->method('get_option')
+            ->willReturn(['IT']);
+
+        $result = $testee->is_available();
+
+        self::assertEquals($expected, $result);
+    }
+    /**
+     *
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     * @throws PHPUnit_Framework_Exception
+     */
+    private function wooCommerce() {
+        $item = $this->createConfiguredMock(
+            'WooCommerce',
+            [
+
+            ]
+        );
+        $item->cart = true;
+        $item->customer = $this->wcCustomer();
+
+        return $item;
+    }
+    /**
+     *
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     * @throws PHPUnit_Framework_Exception
+     */
+    private function wcCustomer()
+    {
+        $item = $this->createConfiguredMock(
+            'WC_Customer',
+            [
+                'get_billing_country' => 'IT'
+
+            ]
+        );
+
+        return $item;
     }
 }

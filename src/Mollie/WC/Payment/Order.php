@@ -59,7 +59,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 	 * @return array
 	 */
 	public function getPaymentRequestData( $order, $customer_id ) {
-        $settings_helper     = Mollie_WC_Plugin::getSettingsHelper();
+		$settings_helper     = Mollie_WC_Plugin::getSettingsHelper();
 		$payment_locale      = $settings_helper->getPaymentLocale();
 		$store_customer      = $settings_helper->shouldStoreCustomer();
 
@@ -93,7 +93,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 			// Add sequenceType for subscriptions first payments
 			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-				if ( mollieWooCommerceGetDataHelper()->isSubscription( $order->id ) ) {
+				if ( mollieWooCommerceGetDataHelper()->isWcSubscription($order->id ) ) {
 
 					// See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
 					$disable_automatic_payments = ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) ? true : false;
@@ -165,7 +165,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 			// Add sequenceType for subscriptions first payments
 			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-				if ( mollieWooCommerceGetDataHelper()->isSubscription( $order->get_id() ) ) {
+				if ( mollieWooCommerceGetDataHelper()->isWcSubscription($order->get_id() ) ) {
 
 					// See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
 					$disable_automatic_payments = ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) ? true : false;
@@ -177,6 +177,15 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 				}
 			}
 		}
+        $dataHelper = Mollie_WC_Plugin::getDataHelper();
+		$orderId = mollieWooCommerceOrderId($order);
+        if ($dataHelper->isSubscription($orderId)) {
+            $supports_subscriptions     = $gateway->supports( 'subscriptions' );
+
+            if ( $supports_subscriptions == true ) {
+                $paymentRequestData['payment']['sequenceType'] = 'first';
+            }
+        }
 
 		// Only add shippingAddress if all required fields are set
 		if ( ! empty( $shippingAddress->streetAndNumber ) && ! empty( $shippingAddress->postalCode ) && ! empty( $shippingAddress->city ) && ! empty( $shippingAddress->country ) ) {
@@ -332,7 +341,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
                     'WC_Subscriptions_Admin'
                 )
             ) {
-                if (Mollie_WC_Plugin::getDataHelper()->isSubscription($orderId)) {
+                if (Mollie_WC_Plugin::getDataHelper()->isWcSubscription($orderId)) {
                     $this->deleteSubscriptionOrderFromPendingPaymentQueue($order);
                 }
             }
@@ -395,7 +404,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 			// Subscription processing
 			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-                if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $orderId ) ) {
+                if ( Mollie_WC_Plugin::getDataHelper()->isWcSubscription($orderId ) ) {
                     $this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
                 }
 			}
@@ -460,7 +469,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 			// Subscription processing
 			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-                if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $orderId ) ) {
+                if ( Mollie_WC_Plugin::getDataHelper()->isWcSubscription($orderId ) ) {
                     $this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
                 }
 			}
@@ -556,7 +565,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 					$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
 				}
 			} else {
-				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
+				if ( Mollie_WC_Plugin::getDataHelper()->isWcSubscription($order->get_id() ) ) {
 					$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
 				}
 			}
@@ -714,13 +723,12 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
 		// Subscription processing
 		if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-
 			if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->id ) ) {
 					$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
 				}
 			} else {
-				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
+				if ( Mollie_WC_Plugin::getDataHelper()->isWcSubscription($order->get_id() ) ) {
 					$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
 				}
 			}

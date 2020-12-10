@@ -63,7 +63,12 @@ class Mollie_WC_Helper_MaybeDisableGateway
         $mealvoucherSettings = get_option(
             'mollie_wc_gateway_mealvoucher_settings'
         );
-        $defaultCategory = $mealvoucherSettings? $mealvoucherSettings['mealvoucher_category_default']:false;
+        //Check if mealvoucherSettings is an array as to prevent notice from being thrown for PHP 7.4 and up.
+        if (is_array($mealvoucherSettings)) {
+            $defaultCategory = $mealvoucherSettings['mealvoucher_category_default'];
+        } else {
+            $defaultCategory = false;
+        }
         $numberOfProducts = 0;
         $productsWithCategory = 0;
         $variationCategory = false;

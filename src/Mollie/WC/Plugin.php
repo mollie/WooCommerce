@@ -188,10 +188,6 @@ class Mollie_WC_Plugin
 		$settings_helper = self::getSettingsHelper();
 		$data_helper     = self::getDataHelper();
 
-		// Add global Mollie settings to 'WooCommerce -> Checkout -> Checkout Options'
-		add_filter( 'woocommerce_payment_gateways_settings', array ( $settings_helper, 'addGlobalSettingsFields' ) );
-        remove_filter('wp_kses_allowed_html', array ( $settings_helper, 'svgAllowedTags' ) , 10);
-
 		// When page 'WooCommerce -> Checkout -> Checkout Options' is saved
 		add_action( 'woocommerce_settings_save_checkout', array ( $data_helper, 'deleteTransients' ) );
 
@@ -218,6 +214,18 @@ class Mollie_WC_Plugin
             [$settings_helper, 'updateMerchantIdOnApiKeyChanges'],
             10,
             2
+        );
+        add_action(
+            'update_option_mollie-payments-for-woocommerce_live_api_key',
+            [$settings_helper, 'updateMerchantIdAfterApiKeyChanges'],
+            10,
+            3
+        );
+        add_action(
+            'update_option_mollie-payments-for-woocommerce_test_api_key',
+            [$settings_helper, 'updateMerchantIdAfterApiKeyChanges'],
+            10,
+            3
         );
 
 		// Add settings link to plugins page
@@ -275,7 +283,7 @@ class Mollie_WC_Plugin
         add_filter(
             'woocommerce_get_settings_pages',
             function ($settings) {
-                $settings[] = new Mollie_WC_Settings_Page_Components();
+                $settings[] = new Mollie_WC_Settings_Page_Mollie(self::getSettingsHelper());
 
                 return $settings;
             }

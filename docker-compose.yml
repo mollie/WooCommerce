@@ -8,6 +8,7 @@ services:
       args:
         PHP_BUILD_VERSION: $PHP_BUILD_VERSION
         PHP_TEST_VERSION: $PHP_TEST_VERSION
+        PHP_DEPS_VERSION: $PHP_DEPS_VERSION
         PROJECT_MOUNT_PATH: $PROJECT_MOUNT_PATH
         BUILD_ROOT_PATH: $BUILD_ROOT_PATH
         DOCROOT_PATH: $DOCROOT_PATH
@@ -62,12 +63,26 @@ services:
   #    volumes:
   #    - db_admin
 
+  composer:
+    build:
+      context: ./
+      dockerfile: docker/Dockerfile_wp
+      target: composer
+      args:
+        PHP_DEPS_VERSION: $PHP_DEPS_VERSION
+        BUILD_ROOT_PATH: $BUILD_ROOT_PATH
+    container_name: "${PROJECT_NAME}_composer"
+    working_dir: ${BUILD_ROOT_PATH}
+    volumes:
+      -  ${BASE_PATH}:${BUILD_ROOT_PATH}
+
   build:
     build:
       context: ./
       dockerfile: docker/Dockerfile_wp
       target: build
       args:
+        PHP_DEPS_VERSION: $PHP_DEPS_VERSION
         PHP_BUILD_VERSION: $PHP_BUILD_VERSION
         BUILD_ROOT_PATH: $BUILD_ROOT_PATH
     container_name: "${PROJECT_NAME}_build"
@@ -83,6 +98,7 @@ services:
       dockerfile: docker/Dockerfile_wp
       target: test
       args:
+        PHP_DEPS_VERSION: $PHP_DEPS_VERSION
         BUILD_ROOT_PATH: $BUILD_ROOT_PATH
         PHP_BUILD_VERSION: $PHP_BUILD_VERSION
         PHP_TEST_VERSION: $PHP_TEST_VERSION

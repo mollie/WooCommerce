@@ -437,7 +437,7 @@ class Mollie_WC_Plugin
         $voucherSettings = get_option(
                 'mollie_wc_gateway_mealvoucher_settings'
         );
-        $defaultCategory = mealvoucherSettings? $voucherSettings['mealvoucher_category_default']:Mollie_WC_Gateway_Mealvoucher::NO_CATEGORY;
+        $defaultCategory = $voucherSettings? $voucherSettings['mealvoucher_category_default']:Mollie_WC_Gateway_Mealvoucher::NO_CATEGORY;
         woocommerce_wp_select(
                 array(
                         'id'          => 'voucher[' . $variation->ID . ']',
@@ -461,7 +461,9 @@ class Mollie_WC_Plugin
      */
     public static function saveVoucherFieldVariations($variation_id, $i ) {
         $optionName = 'voucher';
-        $voucherCategory = $_POST[$optionName][$variation_id]?$_POST[$optionName][$variation_id]:null;
+        $args = [$optionName => ['filter' => FILTER_SANITIZE_STRING, 'flags'=>FILTER_REQUIRE_ARRAY]];
+        $option = filter_input_array(INPUT_POST, $args);
+        $voucherCategory = $option[$optionName][$variation_id] ? $option[$optionName][$variation_id] : null;
 
         if ( isset( $voucherCategory ) ) update_post_meta( $variation_id, $optionName, esc_attr( $voucherCategory ) );
     }

@@ -21,7 +21,6 @@ function configJavaScript ({ basePath })
     .addEntry('applepayDirectCart.min', './resources/js/applepayDirectCart.js')
     .addEntry('settings.min', './resources/js/settings.js')
     .addEntry('mollie-components.min', './resources/js/mollie-components.js')
-    .addEntry('mealvoucher.min', './resources/js/mealvoucher.js')
     .enableSourceMaps(!Encore.isProduction())
 
   return extractEncoreConfig('javascript-configuration')

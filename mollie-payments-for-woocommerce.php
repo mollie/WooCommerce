@@ -39,7 +39,7 @@ function mollie_wc_plugin_activation_hook()
         return;
     }
 
-    if (!isWooCommerceCompatible()) {
+    if (!mollieIsWooCommerceCompatible()) {
         add_action('admin_notices', 'mollie_wc_plugin_inactive');
         return;
     }
@@ -55,8 +55,9 @@ function mollie_wc_plugin_activation_hook()
         return;
     }
 
-    deleteWPTranslationFiles();
+    mollieDeleteWPTranslationFiles();
 }
+
 
 function showWcDroppingNotice()
 {
@@ -84,7 +85,8 @@ function showWcDroppingNotice()
     return false;
 }
 
-function deleteWPTranslationFiles()
+
+function mollieDeleteWPTranslationFiles()
 {
     WP_Filesystem();
     global $wp_filesystem;
@@ -115,7 +117,7 @@ function deleteWPTranslationFiles()
     }
 }
 
-function isWooCommerceCompatible()
+function mollieIsWooCommerceCompatible()
 {
     $wooCommerceVersion = get_option('woocommerce_version');
     $isWooCommerceVersionCompatible = version_compare(
@@ -252,7 +254,7 @@ $bootstrap = Closure::bind(
                     return;
                 }
 
-                if (!isWooCommerceCompatible()) {
+                if (!mollieIsWooCommerceCompatible()) {
                     add_action('admin_notices', 'mollie_wc_plugin_inactive');
                     return;
                 }
@@ -266,7 +268,7 @@ $bootstrap = Closure::bind(
                     }
                 );
                 
-                add_action( 'core_upgrade_preamble', 'deleteWPTranslationFiles' );
+                add_action( 'core_upgrade_preamble', 'mollieDeleteWPTranslationFiles' );
                 add_filter(
                     'site_transient_update_plugins',
                     function ($value) {

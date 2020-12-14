@@ -124,7 +124,7 @@ class Mollie_WC_Plugin
             if ($order->get_status() == Mollie_WC_Gateway_Abstract::STATUS_COMPLETED){
 
                 $new_order_status = Mollie_WC_Gateway_Abstract::STATUS_FAILED;
-	            if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+	            if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 		            $paymentMethodId = get_post_meta( $order->id, '_payment_method_title', true );
 		            $molliePaymentId = get_post_meta( $order->id, '_mollie_payment_id', true );
 	            } else {
@@ -139,7 +139,7 @@ class Mollie_WC_Plugin
 
                 $order->update_status($new_order_status, '');
 
-	            if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+	            if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 		            if ( get_post_meta( $order->id, '_order_stock_reduced', $single = true ) ) {
 			            // Restore order stock
 			            Mollie_WC_Plugin::getDataHelper()->restoreOrderStock( $order );
@@ -188,10 +188,6 @@ class Mollie_WC_Plugin
 		$settings_helper = self::getSettingsHelper();
 		$data_helper     = self::getDataHelper();
 
-		// Add global Mollie settings to 'WooCommerce -> Checkout -> Checkout Options'
-		add_filter( 'woocommerce_payment_gateways_settings', array ( $settings_helper, 'addGlobalSettingsFields' ) );
-        remove_filter('wp_kses_allowed_html', array ( $settings_helper, 'svgAllowedTags' ) , 10);
-
 		// When page 'WooCommerce -> Checkout -> Checkout Options' is saved
 		add_action( 'woocommerce_settings_save_checkout', array ( $data_helper, 'deleteTransients' ) );
 
@@ -218,6 +214,18 @@ class Mollie_WC_Plugin
             [$settings_helper, 'updateMerchantIdOnApiKeyChanges'],
             10,
             2
+        );
+        add_action(
+            'update_option_mollie-payments-for-woocommerce_live_api_key',
+            [$settings_helper, 'updateMerchantIdAfterApiKeyChanges'],
+            10,
+            3
+        );
+        add_action(
+            'update_option_mollie-payments-for-woocommerce_test_api_key',
+            [$settings_helper, 'updateMerchantIdAfterApiKeyChanges'],
+            10,
+            3
         );
 
 		// Add settings link to plugins page
@@ -276,7 +284,7 @@ class Mollie_WC_Plugin
         add_filter(
             'woocommerce_get_settings_pages',
             function ($settings) {
-                $settings[] = new Mollie_WC_Settings_Page_Components();
+                $settings[] = new Mollie_WC_Settings_Page_Mollie(self::getSettingsHelper());
 
                 return $settings;
             }
@@ -856,7 +864,7 @@ class Mollie_WC_Plugin
 		}
 
 		// Remove Klarna if WooCommerce is not version 3.0 or higher
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			if ( is_admin() && ! empty( $current_screen->base ) && $current_screen->base == 'woocommerce_page_wc-settings' ) {
 				if ( ( $key = array_search( 'Mollie_WC_Gateway_KlarnaPayLater', $gateways ) ) !== false ) {
 					unset( $gateways[ $key ] );
@@ -999,7 +1007,7 @@ class Mollie_WC_Plugin
         // Convert message to string
         if (!is_string($message))
         {
-            $message = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? print_r($message, true) : wc_print_r($message, true);
+            $message = ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) ? print_r($message, true) : wc_print_r($message, true);
         }
 
         // Set debug header
@@ -1011,7 +1019,7 @@ class Mollie_WC_Plugin
 	    // Log message
 	    if ( self::getSettingsHelper()->isDebugEnabled() ) {
 
-		    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		    if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 
 			    static $logger;
 
@@ -1193,7 +1201,7 @@ class Mollie_WC_Plugin
 	public static function shipAndCaptureOrderAtMollie( $order_id ) {
 
 		// If this is an older WooCommerce version, don't run.
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			return;
 		}
 
@@ -1274,7 +1282,7 @@ class Mollie_WC_Plugin
 	public static function cancelOrderAtMollie( $order_id ) {
 
 		// If this is an older WooCommerce version, don't run.
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			return;
 		}
 
@@ -1294,7 +1302,7 @@ class Mollie_WC_Plugin
 		Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Try to process cancelled order at Mollie.' );
 
 		// Does WooCommerce order contain a Mollie Order?
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$mollie_order_id = ( $mollie_order_id = get_post_meta( $order->id, '_mollie_order_id', true ) ) ? $mollie_order_id : false;
 		} else {
 			$mollie_order_id = ( $mollie_order_id = $order->get_meta( '_mollie_order_id', true ) ) ? $mollie_order_id : false;
@@ -1401,7 +1409,7 @@ class Mollie_WC_Plugin
 
 		$order = wc_get_order( $order_id );
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 
 			$mollie_payment_id    = get_post_meta( $order_id, '_mollie_payment_id', $single = true );
 			$order_payment_method = get_post_meta( $order_id, '_payment_method', $single = true );

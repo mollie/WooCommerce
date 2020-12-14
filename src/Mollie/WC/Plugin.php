@@ -367,7 +367,10 @@ class Mollie_WC_Plugin
 
         ?>
         <div class='options_group'><?php
-
+            $voucherSettings = get_option(
+                    'mollie_wc_gateway_mealvoucher_settings'
+            );
+            $defaultCategory = $voucherSettings? $voucherSettings['mealvoucher_category_default']:Mollie_WC_Gateway_Mealvoucher::NO_CATEGORY;
         woocommerce_wp_select(
                 array(
                         'id' => Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
@@ -382,13 +385,14 @@ class Mollie_WC_Plugin
 
                         'type' => 'select',
                         'options' => array(
+                                $defaultCategory => __( 'Same as default category', 'mollie-payments-for-woocommerce' ),
                                 Mollie_WC_Gateway_Mealvoucher::NO_CATEGORY => 'No category',
                                 Mollie_WC_Gateway_Mealvoucher::MEAL => 'Meal',
                                 Mollie_WC_Gateway_Mealvoucher::ECO => 'Eco',
                                 Mollie_WC_Gateway_Mealvoucher::GIFT => 'Gift'
 
                         ),
-                        'default' => Mollie_WC_Gateway_Mealvoucher::NO_CATEGORY,
+                        'default' => $defaultCategory,
                     /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
                         'description' => sprintf(
                                 __(

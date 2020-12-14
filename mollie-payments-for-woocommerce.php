@@ -58,6 +58,34 @@ function mollie_wc_plugin_activation_hook()
     mollieDeleteWPTranslationFiles();
 }
 
+
+function showWcDroppingNotice()
+{
+    if (get_option('mollie-payments-for-woocommerce-wc-drop')) {
+        return false;
+    }
+    $notice = new Mollie_WC_Notice_AdminNotice();
+    $message = sprintf(
+        esc_html__(
+            '%1$sMollie Payments for WooCommerce is dropping WooCommerce support for version 2.x.%2$s Please %3$supdate WooCommerce to version 3.0 or newer &raquo;%4$s. %5$sContact our support team if any questions remain%6$s',
+            'mollie-payments-for-woocommerce'
+        ),
+        '<strong>',
+        '</strong>',
+        '<a href="' . esc_url(admin_url('plugins.php')) . '">',
+        '</a>',
+        '<a href="' . esc_url('https://mollie.inpsyde.com/docs/how-to-request-support-via-website-widget/') . '">',
+        '</a>'
+    );
+    if (version_compare(get_option('woocommerce_version'), '3.0', '<')) {
+        $notice->addAdminNotice('notice-error is-dismissible', $message);
+    }
+
+    update_option('mollie-payments-for-woocommerce-wc-drop', 'yes', true);
+    return false;
+}
+
+
 function mollieDeleteWPTranslationFiles()
 {
     WP_Filesystem();
@@ -230,6 +258,7 @@ $bootstrap = Closure::bind(
                     add_action('admin_notices', 'mollie_wc_plugin_inactive');
                     return;
                 }
+                showWcDroppingNotice();
 
                 add_action(
                     'init',

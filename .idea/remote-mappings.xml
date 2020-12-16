@@ -3,21 +3,21 @@
   <component name="RemoteMappingsManager">
     <list>
       <list>
-        <remote-mappings server-id="php@f1005aaf-a644-432c-a85d-947c3fdd412f">
+        <remote-mappings server-id="php@8f0b2e44-e5c3-431d-a0ad-af5bef4aab76">
           <settings>
             <list>
-              <mapping local-root="$PROJECT_DIR$" remote-root="/var/www/html/wp-content/plugins/mollie-wc" />
+              <mapping local-root="$PROJECT_DIR$" remote-root="/app" />
             </list>
           </settings>
         </remote-mappings>
-        <remote-mappings server-id="php@1a7c9c7a-54e9-4ae4-bba8-93c8ae09a71d">
+        <remote-mappings server-id="php@7b6aef9f-b42c-4cab-adac-ef810fc4dedb">
           <settings>
             <list>
-              <mapping local-root="$PROJECT_DIR$" remote-root="/var/www/html/wp-content/plugins/mollie-wc" />
+              <mapping local-root="$PROJECT_DIR$" remote-root="/app" />
             </list>
           </settings>
         </remote-mappings>
-        <remote-mappings server-id="php@aa1dd573-7f42-45b7-adca-c81cb15fbe04">
+        <remote-mappings server-id="php@0b1f2bc9-5400-4ee0-bafd-5fc7c081b741">
           <settings>
             <list>
               <mapping local-root="$PROJECT_DIR$" remote-root="/app" />

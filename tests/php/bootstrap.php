@@ -22,3 +22,6 @@ if (!defined('M4W_PLUGIN_URL')) {
 }
 
 unset($vendor, $projectDir);
+
+
+require_once PROJECT_DIR . '/inc/functions.php';

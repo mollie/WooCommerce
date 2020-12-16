@@ -84,7 +84,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
                 'WC_Subscriptions_Admin'
             )
         ) {
-            if (Mollie_WC_Plugin::getDataHelper()->isSubscription($orderId)) {
+            if (Mollie_WC_Plugin::getDataHelper()->isWcSubscription($orderId)) {
                 // See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
                 $disable_automatic_payments = ('yes' == get_option(
                         WC_Subscriptions_Admin::$option_prefix
@@ -129,7 +129,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 		self::$customerId = $this->getMollieCustomerIdFromPaymentObject();
 		self::$order      = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			update_post_meta( self::$order, '_mollie_paid_by_other_gateway', $this->data->id );
 		} else {
 			self::$order->update_meta_data( '_mollie_payment_id', $this->data->id );
@@ -207,7 +207,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 	public function onWebhookPaid( WC_Order $order, $payment, $payment_method_title ) {
 
 		// Get order ID in the correct way depending on WooCommerce version
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$orderId = $order->id;
 		} else {
 			$orderId = $order->get_id();
@@ -248,7 +248,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 
 			// Subscription processing
 			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-                if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $orderId ) ) {
+                if ( Mollie_WC_Plugin::getDataHelper()->isWcSubscription($orderId ) ) {
                     $this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
                 }
 			}
@@ -340,12 +340,12 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 
 		// Subscription processing
 		if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->id ) ) {
 					$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
 				}
 			} else {
-				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
+				if ( Mollie_WC_Plugin::getDataHelper()->isWcSubscription($order->get_id() ) ) {
 					$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
 				}
 			}
@@ -360,7 +360,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 	public function onWebhookFailed( WC_Order $order, $payment, $payment_method_title ) {
 
 		// Get order ID in the correct way depending on WooCommerce version
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$order_id = $order->id;
 		} else {
 			$order_id = $order->get_id();
@@ -434,7 +434,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 	public function onWebhookExpired( WC_Order $order, $payment, $payment_method_title ) {
 
 		// Get order ID in correct way depending on WooCommerce version
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$order_id          = $order->id;
 			$mollie_payment_id = get_post_meta( $order_id, '_mollie_payment_id', $single = true );
 		} else {

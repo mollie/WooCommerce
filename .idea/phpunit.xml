@@ -3,8 +3,7 @@
   <component name="PHPUnit">
     <option name="directories">
       <list>
-        <option value="$PROJECT_DIR$/tests/php/Unit" />
-        <option value="$PROJECT_DIR$/tests/php/Functional" />
+        <option value="$PROJECT_DIR$/tests" />
       </list>
     </option>
   </component>

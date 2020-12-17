@@ -42,21 +42,24 @@ function mollieWooCommerceIsTestModeEnabled()
 }
 
 /**
+ * If we are calling this the api key has been updated, we need a new api object
+ * to retrieve a new profile id
+ *
  * @return CurrentProfile
  * @throws ApiException
  */
 function mollieWooCommerceMerchantProfile()
 {
-    static $profile = null;
+    $isTestMode = mollieWooCommerceIsTestModeEnabled();
 
-    if ($profile === null) {
-        $isTestMode = mollieWooCommerceIsTestModeEnabled();
+    $apiHelper = new Mollie_WC_Helper_Api(
+        Mollie_WC_Plugin::getSettingsHelper()
+    );
 
-        $apiHelper = Mollie_WC_Plugin::getApiHelper();
-        $profile = $apiHelper->getApiClient($isTestMode)->profiles->getCurrent();
-    }
-
-    return $profile;
+    return $apiHelper->getApiClient(
+        $isTestMode,
+        true
+    )->profiles->getCurrent();
 }
 
 /**

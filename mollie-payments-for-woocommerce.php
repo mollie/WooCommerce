@@ -3,16 +3,16 @@
  * Plugin Name: Mollie Payments for WooCommerce
  * Plugin URI: https://www.mollie.com
  * Description: Accept payments in WooCommerce with the official Mollie plugin
- * Version: 5.11.0
+ * Version: 6.0
  * Author: Mollie
  * Author URI: https://www.mollie.com
  * Requires at least: 3.8
- * Tested up to: 5.5
+ * Tested up to: 5.6
  * Text Domain: mollie-payments-for-woocommerce
  * Domain Path: /languages
  * License: GPLv2 or later
  * WC requires at least: 2.2.0
- * WC tested up to: 4.7
+ * WC tested up to: 4.8
  */
 
 use Mollie\Api\CompatibilityChecker;
@@ -39,7 +39,7 @@ function mollie_wc_plugin_activation_hook()
         return;
     }
 
-    if (!isWooCommerceCompatible()) {
+    if (!mollieIsWooCommerceCompatible()) {
         add_action('admin_notices', 'mollie_wc_plugin_inactive');
         return;
     }
@@ -55,10 +55,38 @@ function mollie_wc_plugin_activation_hook()
         return;
     }
 
-    deleteWPTranslationFiles();
+    mollieDeleteWPTranslationFiles();
 }
 
-function deleteWPTranslationFiles()
+
+function showWcDroppingNotice()
+{
+    if (get_option('mollie-payments-for-woocommerce-wc-drop')) {
+        return false;
+    }
+    $notice = new Mollie_WC_Notice_AdminNotice();
+    $message = sprintf(
+        esc_html__(
+            '%1$sMollie Payments for WooCommerce is dropping WooCommerce support for version 2.x.%2$s Please %3$supdate WooCommerce to version 3.0 or newer &raquo;%4$s. %5$sContact our support team if any questions remain%6$s',
+            'mollie-payments-for-woocommerce'
+        ),
+        '<strong>',
+        '</strong>',
+        '<a href="' . esc_url(admin_url('plugins.php')) . '">',
+        '</a>',
+        '<a href="' . esc_url('https://mollie.inpsyde.com/docs/how-to-request-support-via-website-widget/') . '">',
+        '</a>'
+    );
+    if (version_compare(get_option('woocommerce_version'), '3.0', '<')) {
+        $notice->addAdminNotice('notice-error is-dismissible', $message);
+    }
+
+    update_option('mollie-payments-for-woocommerce-wc-drop', 'yes', true);
+    return false;
+}
+
+
+function mollieDeleteWPTranslationFiles()
 {
     WP_Filesystem();
     global $wp_filesystem;
@@ -89,7 +117,7 @@ function deleteWPTranslationFiles()
     }
 }
 
-function isWooCommerceCompatible()
+function mollieIsWooCommerceCompatible()
 {
     $wooCommerceVersion = get_option('woocommerce_version');
     $isWooCommerceVersionCompatible = version_compare(
@@ -226,10 +254,11 @@ $bootstrap = Closure::bind(
                     return;
                 }
 
-                if (!isWooCommerceCompatible()) {
+                if (!mollieIsWooCommerceCompatible()) {
                     add_action('admin_notices', 'mollie_wc_plugin_inactive');
                     return;
                 }
+                showWcDroppingNotice();
 
                 add_action(
                     'init',
@@ -239,7 +268,7 @@ $bootstrap = Closure::bind(
                     }
                 );
                 
-                add_action( 'core_upgrade_preamble', 'deleteWPTranslationFiles' );
+                add_action( 'core_upgrade_preamble', 'mollieDeleteWPTranslationFiles' );
                 add_filter(
                     'site_transient_update_plugins',
                     function ($value) {

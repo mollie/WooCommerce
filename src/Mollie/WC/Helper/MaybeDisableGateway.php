@@ -63,20 +63,33 @@ class Mollie_WC_Helper_MaybeDisableGateway
         $mealvoucherSettings = get_option(
             'mollie_wc_gateway_mealvoucher_settings'
         );
-        $defaultCategory = $mealvoucherSettings['mealvoucher_category_default'];
+        //Check if mealvoucherSettings is an array as to prevent notice from being thrown for PHP 7.4 and up.
+        if (is_array($mealvoucherSettings)) {
+            $defaultCategory = $mealvoucherSettings['mealvoucher_category_default'];
+        } else {
+            $defaultCategory = false;
+        }
         $numberOfProducts = 0;
         $productsWithCategory = 0;
+        $variationCategory = false;
         foreach ($products as $product) {
             $postmeta = get_post_meta($product['product_id']);
-
             $localCategory = array_key_exists(
                 Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
                 $postmeta
-            ) ? $postmeta[Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION][0] : '';
+            ) ? $postmeta[Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION][0] : false;
+            if ( $product['variation_id'] ) {
+                $postmeta = get_post_meta($product['variation_id']);
+                $variationCategory = array_key_exists(
+                    'voucher',
+                    $postmeta
+                ) ? $postmeta['voucher'][0] : false;
+            }
 
             if ($this->productHasVoucherCategory(
                 $defaultCategory,
-                $localCategory
+                $localCategory,
+                $variationCategory
             )
             ) {
                 $productsWithCategory++;
@@ -96,20 +109,30 @@ class Mollie_WC_Helper_MaybeDisableGateway
      * @param string $defaultCategory
      * @param string $localCategory
      *
+     * @param bool|string $variationCategory
      * @return bool false if no category
      */
-    public function productHasVoucherCategory($defaultCategory, $localCategory)
+    public function productHasVoucherCategory($defaultCategory, $localCategory, $variationCategory = false)
     {
-        if ($defaultCategory
-            && ($localCategory !== Mollie_WC_Gateway_Mealvoucher::NO_CATEGORY)
-        ) {
+        $defaultCatIsSet = $defaultCategory && ($defaultCategory !== Mollie_WC_Gateway_Mealvoucher::NO_CATEGORY);
+        $localCatIsNoCat = $localCategory && $localCategory === Mollie_WC_Gateway_Mealvoucher::NO_CATEGORY;
+        $localCatIsSet = $localCategory && $localCategory !== Mollie_WC_Gateway_Mealvoucher::NO_CATEGORY;
+        $variationCatIsNoCat = $variationCategory && $variationCategory === Mollie_WC_Gateway_Mealvoucher::NO_CATEGORY;
+        $variationCatIsSet = $variationCategory && $variationCategory !== Mollie_WC_Gateway_Mealvoucher::NO_CATEGORY;
+        //In importance order variations ->local product (var, simple, subs) -> general
+        if($variationCatIsNoCat){
+            return false;
+        }
+        if($variationCatIsSet){
             return true;
         }
-        if (!$defaultCategory && $localCategory
-            && ($localCategory !== Mollie_WC_Gateway_Mealvoucher::NO_CATEGORY)
-        ) {
+        if($localCatIsNoCat){
+            return false;
+        }
+        if($localCatIsSet || $defaultCatIsSet){
             return true;
         }
+
         return false;
     }
 

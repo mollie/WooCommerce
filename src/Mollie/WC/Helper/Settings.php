@@ -137,7 +137,7 @@ class Mollie_WC_Helper_Settings
      */
     public function getGlobalSettingsUrl ()
     {
-        return admin_url('admin.php?page=wc-settings&tab=checkout#' . Mollie_WC_Plugin::PLUGIN_ID);
+        return admin_url('admin.php?page=wc-settings&tab=mollie_settings#' . Mollie_WC_Plugin::PLUGIN_ID);
     }
 
     /**
@@ -148,6 +148,15 @@ class Mollie_WC_Helper_Settings
         return admin_url('admin.php?page=wc-status&tab=logs');
     }
 
+
+    /**
+     * Update the profileId option on update keys or on changing live/test mode
+     *
+     * @param $optionValue
+     * @param $optionName
+     *
+     * @return mixed
+     */
     public function updateMerchantIdOnApiKeyChanges($optionValue, $optionName)
     {
         $optionId = isset($optionName['id']) ? $optionName['id'] : '';
@@ -172,6 +181,19 @@ class Mollie_WC_Helper_Settings
         update_option($merchantProfileIdOptionKey, $merchantProfileId);
 
         return $optionValue;
+    }
+
+    /**
+     * Called after the api keys are updated so we can update the profile Id
+     *
+     * @param $oldValue
+     * @param $value
+     * @param $optionName
+     */
+    public function updateMerchantIdAfterApiKeyChanges($oldValue, $value, $optionName)
+    {
+        $option = ['id'=>$optionName];
+        $this->updateMerchantIdOnApiKeyChanges($value, $option);
     }
 
     /**
@@ -251,6 +273,7 @@ class Mollie_WC_Helper_Settings
 		$icon_no_available = ' <span style="color: red; cursor: help;" title="' . __( 'Gateway disabled', 'mollie-payments-for-woocommerce' ) . '">' . strtolower( __( 'Disabled', 'mollie-payments-for-woocommerce' ) ) . '</span>';
 
 		$content .= '<br /><br />';
+        $content .= '<div style="width:1000px;height:350px; background:white; padding:10px; margin-top:10px;">';
 
 		if ( $test_mode ) {
 			$content .= '<strong>' . __( 'Test mode enabled.', 'mollie-payments-for-woocommerce' ) . '</strong> ';
@@ -269,7 +292,7 @@ class Mollie_WC_Helper_Settings
 
 		$content .= ' (<a href="' . esc_attr( $refresh_methods_url ) . '">' . strtolower( __( 'Refresh', 'mollie-payments-for-woocommerce' ) ) . '</a>)';
 
-		$content .= '<ul style="width: 1000px">';
+		$content .= '<ul style="width: 1000px; padding:20px 0 0 10px">';
 
 		foreach ( Mollie_WC_Plugin::$GATEWAYS as $gateway_classname ) {
 			$gateway = new $gateway_classname;
@@ -280,8 +303,8 @@ class Mollie_WC_Helper_Settings
 			}
 
 			if ( $gateway instanceof Mollie_WC_Gateway_Abstract ) {
-				$content .= '<li style="float: left; width: 33%;">';
-                $content .= $this->getSvgIcon($gateway);
+				$content .= '<li style="float: left; width: 32%; height:32px;">';
+                $content .= $gateway->getIconUrl();
                 $content .= ' ' . esc_html( $gateway->getDefaultTitle() );
 
 				if ( $gateway->is_available() ) {
@@ -296,7 +319,7 @@ class Mollie_WC_Helper_Settings
 			}
 		}
 
-		$content .= '</ul>';
+		$content .= '</ul></div>';
 		$content .= '<div class="clear"></div>';
 
 		// Make sure users also enable iDEAL when they enable SEPA Direct Debit
@@ -323,7 +346,23 @@ class Mollie_WC_Helper_Settings
         wp_register_script('mollie_wc_admin_settings', Mollie_WC_Plugin::getPluginUrl('/public/js/settings.min.js'), array('jquery'), Mollie_WC_Plugin::PLUGIN_VERSION);
         wp_enqueue_script('mollie_wc_admin_settings');
 
+        $presentationText = __('Quickly integrate all major payment methods in WooCommerce, wherever you need them.' );
+        $presentationText .= __(' Simply drop them ready-made into your WooCommerce webshop with this powerful plugin by Mollie.');
+        $presentationText .= __(' Mollie is dedicated to making payments better for WooCommerce. ');
+        $presentationText .='<p>Please go to <a href="https://mollie.inpsyde.com/" >the signup page </a>';
+        $presentationText .= __('to create a new Mollie account and start receiving payments in a couple of minutes. ');
+        $presentationText .= 'Contact <a href="mailto:info@mollie.com">info@mollie.com</a>';
+        $presentationText .= ' if you have any questions or comments about this plugin.</p>';
+        $presentationText .= '<p style="border-left: 4px solid black; padding: 8px; height:32px; font-weight:bold; font-size: medium;">Our pricing is always per transaction. No startup fees, no monthly fees, and no gateway fees. No hidden fees, period.</p>';
+
+
+        $presentation = ''
+            . '<div style="width:1000px"><div id="" class="" style=""><a href="https://mollie.inpsyde.com/" >Documentation</a> | <a href="https://mollie.inpsyde.com/" >Support</a></div></div>'
+            . '<span></span>'
+            . '<div id="" class="" style="width: 1000px; padding:5px 0 0 10px"><p>'.$presentationText.'</p></div>';
+
         $content = ''
+            . $presentation
             . $this->getPluginStatus()
             . $this->getMollieMethods();
 
@@ -346,10 +385,10 @@ class Mollie_WC_Helper_Settings
         $mollie_settings = array(
             array(
                 'id'    => $this->getSettingId('title'),
-                'title' => __('Mollie settings', 'mollie-payments-for-woocommerce'),
+                'title' => __('Mollie Settings', 'mollie-payments-for-woocommerce'),
                 'type'  => 'title',
                 'desc'  => '<p id="' . Mollie_WC_Plugin::PLUGIN_ID . '">' . $content . '</p>'
-                         . '<p>' . __('The following options are required to use the plugin and are used by all Mollie payment methods', 'mollie-payments-for-woocommerce') . '</p>',
+                    . '<p>' . __('The following options are required to use the plugin and are used by all Mollie payment methods', 'mollie-payments-for-woocommerce') . '</p>',
             ),
             array(
                 'id'                => $this->getSettingId('live_api_key'),
@@ -357,7 +396,7 @@ class Mollie_WC_Helper_Settings
                 'default'           => '',
                 'type'              => 'text',
                 'desc'              => sprintf(
-                    /* translators: Placeholder 1: API key mode (live or test). The surrounding %s's Will be replaced by a link to the Mollie profile */
+                /* translators: Placeholder 1: API key mode (live or test). The surrounding %s's Will be replaced by a link to the Mollie profile */
                     __('The API key is used to connect to Mollie. You can find your <strong>%s</strong> API key in your %sMollie profile%s', 'mollie-payments-for-woocommerce'),
                     'live',
                     '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
@@ -383,7 +422,7 @@ class Mollie_WC_Helper_Settings
                 'default'           => '',
                 'type'              => 'text',
                 'desc'              => sprintf(
-                    /* translators: Placeholder 1: API key mode (live or test). The surrounding %s's Will be replaced by a link to the Mollie profile */
+                /* translators: Placeholder 1: API key mode (live or test). The surrounding %s's Will be replaced by a link to the Mollie profile */
                     __('The API key is used to connect to Mollie. You can find your <strong>%s</strong> API key in your %sMollie profile%s', 'mollie-payments-for-woocommerce'),
                     'test',
                     '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
@@ -396,75 +435,13 @@ class Mollie_WC_Helper_Settings
                     'pattern'     => '^test_\w{30,}$',
                 ),
             ),
-	        array(
-		        'id'      => $this->getSettingId('order_status_cancelled_payments'),
-		        'title'   => __('Order status after cancelled payment', 'mollie-payments-for-woocommerce'),
-		        'type'    => 'select',
-		        'options' => array(
-			        'pending'          => __('Pending', 'woocommerce'),
-			        'cancelled'     => __('Cancelled', 'woocommerce'),
-		        ),
-		        'desc'    => __('Status for orders when a payment (not a Mollie order via the Orders API) is cancelled. Default: pending. Orders with status Pending can be paid with another payment method, customers can try again. Cancelled orders are final. Set this to Cancelled if you only have one payment method or don\'t want customers to re-try paying with a different payment method. This doesn\'t apply to payments for orders via the new Orders API and Klarna payments.', 'mollie-payments-for-woocommerce'),
-		        'default' => 'pending',
-	        ),
-	        array(
-                'id' => $this->getSettingId(self::SETTING_NAME_PAYMENT_LOCALE),
-                'title'   => __('Payment screen language', 'mollie-payments-for-woocommerce'),
-                'type'    => 'select',
-                'options' => array(
-                    self::SETTING_LOCALE_WP_LANGUAGE => __(
-                            'Automatically send WordPress language',
-                            'mollie-payments-for-woocommerce'
-                        ) . ' (' . __('default', 'mollie-payments-for-woocommerce') . ')',
-                    self::SETTING_LOCALE_DETECT_BY_BROWSER => __(
-                        'Detect using browser language',
-                        'mollie-payments-for-woocommerce'
-                    ),
-                    'en_US' => __('English', 'mollie-payments-for-woocommerce'),
-                    'nl_NL' => __('Dutch', 'mollie-payments-for-woocommerce'),
-                    'nl_BE' => __('Flemish (Belgium)', 'mollie-payments-for-woocommerce'),
-                    'fr_FR' => __('French', 'mollie-payments-for-woocommerce'),
-                    'fr_BE' => __('French (Belgium)', 'mollie-payments-for-woocommerce'),
-                    'de_DE' => __('German', 'mollie-payments-for-woocommerce'),
-                    'de_AT' => __('Austrian German', 'mollie-payments-for-woocommerce'),
-                    'de_CH' => __('Swiss German', 'mollie-payments-for-woocommerce'),
-                    'es_ES' => __('Spanish', 'mollie-payments-for-woocommerce'),
-                    'ca_ES' => __('Catalan', 'mollie-payments-for-woocommerce'),
-                    'pt_PT' => __('Portuguese', 'mollie-payments-for-woocommerce'),
-                    'it_IT' => __('Italian', 'mollie-payments-for-woocommerce'),
-                    'nb_NO' => __('Norwegian', 'mollie-payments-for-woocommerce'),
-                    'sv_SE' => __('Swedish', 'mollie-payments-for-woocommerce'),
-                    'fi_FI' => __('Finnish', 'mollie-payments-for-woocommerce'),
-                    'da_DK' => __('Danish', 'mollie-payments-for-woocommerce'),
-                    'is_IS' => __('Icelandic', 'mollie-payments-for-woocommerce'),
-                    'hu_HU' => __('Hungarian', 'mollie-payments-for-woocommerce'),
-                    'pl_PL' => __('Polish', 'mollie-payments-for-woocommerce'),
-                    'lv_LV' => __('Latvian', 'mollie-payments-for-woocommerce'),
-                    'lt_LT' => __('Lithuanian', 'mollie-payments-for-woocommerce'),
-                ),
-                'desc'    => sprintf(
-                	__('Sending a language (or locale) is required. The option \'Automatically send WordPress language\' will try to get the customer\'s language in WordPress (and respects multilanguage plugins) and convert it to a format Mollie understands. If this fails, or if the language is not supported, it will fall back to American English. You can also select one of the locales currently supported by Mollie, that will then be used for all customers.', 'mollie-payments-for-woocommerce'),
-	                '<a href="https://www.mollie.com/nl/docs/reference/payments/create" target="_blank">',
-	                '</a>'
-                ),
-                'default' => self::SETTING_LOCALE_WP_LANGUAGE,
-            ),
-            array(
-                'id'                => $this->getSettingId('customer_details'),
-                'title'             => __('Store customer details at Mollie', 'mollie-payments-for-woocommerce'),
-                /* translators: Placeholder 1: enabled or disabled */
-                'desc'              => sprintf(__('Should Mollie store customers name and email address for Single Click Payments? Default <code>%s</code>. Required if WooCommerce Subscriptions is being used!', 'mollie-payments-for-woocommerce'), strtolower(__('Enabled', 'mollie-payments-for-woocommerce'))),
-                'type'              => 'checkbox',
-                'default'           => 'yes',
-
-            ),
-            array(
+            [
                 'id'      => $this->getSettingId('debug'),
                 'title'   => __('Debug Log', 'mollie-payments-for-woocommerce'),
                 'type'    => 'checkbox',
                 'desc'    => $debug_desc,
                 'default' => 'yes',
-            ),
+            ],
             array(
                 'id'   => $this->getSettingId('sectionend'),
                 'type' => 'sectionend',
@@ -603,7 +580,7 @@ class Mollie_WC_Helper_Settings
 	 */
 	protected function warnAboutRequiredCheckoutFieldForKlarna( $content ) {
 
-		if ( version_compare( WC_VERSION, '3.0', '>=' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '>=' ) ) {
 
 			$woocommerce_klarnapaylater_gateway = new Mollie_WC_Gateway_KlarnaPayLater();
 			$woocommerce_klarnasliceit_gateway  = new Mollie_WC_Gateway_KlarnaSliceIt();
@@ -721,125 +698,4 @@ class Mollie_WC_Helper_Settings
 
         return self::SETTING_LOCALE_DEFAULT_LANGUAGE;
     }
-
-    /**
-     * @param Mollie_WC_Gateway_Abstract $gateway
-     *
-     *
-     * @return string
-     */
-    protected function getSvgIcon(Mollie_WC_Gateway_Abstract $gateway)
-    {
-        add_filter(
-            'wp_kses_allowed_html',
-            array(__CLASS__, 'svgAllowedTags'),
-            10,
-            2
-        );
-        $svg = $gateway->getIconUrl();
-        $cleanNewLine = str_replace("\n", "", $svg);
-        $cleanNewLine = str_replace("\r", "", $cleanNewLine);
-
-        return $cleanNewLine;
-    }
-
-    /**
-     * Method to add svg tags to the allowed array used by wp_kses
-     *
-     * @param  array $tags
-     *
-     * @return array
-     */
-    public static function svgAllowedTags ($tags) {
-        $tags['svg'] = [
-            'xmlns' => [],
-            'width'=>[],
-            'height'=>[],
-            'fill' => [],
-            'viewbox' => [],
-            'enable-background' => [],
-            'version' => [],
-            'xml:space' => [],
-            'transform'=>[]
-        ];
-        $tags['path'] = [
-            'd' => [],
-            'fill' => [],
-            'stroke'=>[],
-            'fill-rule'=>[],
-            'fill-opacity'=>[],
-            'clip-rule'=>[],
-            'transform'=>[],
-            'opacity'=>[]
-        ];
-        $tags['rect'] = [
-            'width'=>[],
-            'height'=>[],
-            'rx'=>[],
-            'fill' => [],
-            'x'=>[],
-            'y'=>[],
-            'stroke'=>[],
-        ];
-        $tags['mask'] = [
-            'id'=>[],
-            'mask-type'=>[],
-            'maskUnits'=>[],
-            'x' => [],
-            'y' => [],
-            'width'=>[],
-            'height'=>[]
-        ];
-        $tags['g'] = [
-            'mask'=>[],
-            'filter'=>[],
-            'fill'=>[],
-            'fill-rule'=>[],
-        ];
-        $tags['feflood'] = [
-            'flood-opacity'=>[],
-            'result'=>[]
-        ];
-        $tags['fecolormatrix'] = [
-            'in'=>[],
-            'type'=>[],
-            'values'=>[]
-        ];
-        $tags['fegaussianblur'] = [
-            'stdDeviation'=>[]
-        ];
-        $tags['feblend'] = [
-            'mode'=>[],
-            'in2'=>[],
-            'result'=>[],
-            'in'=>[],
-        ];
-        $tags['feoffset'] = [
-            'dy'=>[],
-        ];
-        $tags['filter'] = [
-            'id'=>[],
-            'color-interpolation-filters'=>[],
-            'filterUnits'=>[],
-            'x' => [],
-            'y' => [],
-            'width'=>[],
-            'height'=>[]
-        ];
-        $tags['lineargradient'] = [
-            'id'=>[],
-            'gradientUnits'=>[],
-            'gradientTransform'=>[],
-            'x2' => []
-        ];
-        $tags['stop'] = [
-            'offset'=>[],
-            'stop-color'=>[],
-            'stop-opacity'=>[]
-        ];
-        $tags['defs'] = [];
-
-        return $tags;
-    }
-
 }

@@ -5,14 +5,13 @@
 /vendor/
 /coverage/
 /node_modules/
-/.idea
-/.idea.example/dictionaries/
-/.idea.example/workspace.xml
-/.idea.example/tasks.xml
-/.idea.example/deployment.xml
-/.idea.example/vagrant.xml
-/.idea.example/codeStyles/
+/.idea/dictionaries/
+/.idea/workspace.xml
+/.idea/tasks.xml
+/.idea/vagrant.xml
 /public/js/
 /public/css/
+/tools/
+/build/
 
 .env

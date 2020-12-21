@@ -61,6 +61,9 @@ class WC_Customer
     public function get_shipping_country()
     {
     }
+    public function get_billing_country()
+    {
+    }
 
 }
 
@@ -97,10 +100,10 @@ class WC_Payment_Gateway extends WC_Settings_API
 {
     public $id;
     public $enabled;
-    public function __construct($id = 1)
+    public function __construct($id = 1, $enabled = 'yes')
     {
         $this->id = $id;
-        $this->enabled = 'yes';
+        $this->enabled = $enabled;
     }
     public function init_settings() {
     }

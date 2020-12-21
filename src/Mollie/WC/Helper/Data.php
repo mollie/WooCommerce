@@ -369,19 +369,19 @@ class Mollie_WC_Helper_Data
         // If there is no Mollie Customer ID set, check the most recent active subscription
         if ( empty( $customer_id ) ) {
 
-            $customer_latest_subscription = wc_get_orders( array (
-                                                               'limit'    => 1,
-                                                               'customer' => $user_id,
-                                                               'type'     => 'shop_subscription',
-                                                               'status'   => 'wc-active',
-                                                           ) );
+			    $customer_latest_subscription = wc_get_orders( array (
+				    'limit'    => 1,
+				    'customer' => $user_id,
+				    'type'     => 'shop_subscription',
+				    'status'   => 'wc-active',
+			    ) );
 
-            if ( ! empty( $customer_latest_subscription ) ) {
-                $customer_id = get_post_meta( $customer_latest_subscription[0]->get_id(), '_mollie_customer_id', $single = true );
+			    if ( ! empty( $customer_latest_subscription ) ) {
+				    $customer_id = get_post_meta( $customer_latest_subscription[0]->get_id(), '_mollie_customer_id', $single = true );
 
-                // Store this customer ID as user meta too
-                $this->setUserMollieCustomerId( $user_id, $customer_id );
-            }
+				    // Store this customer ID as user meta too
+				    $this->setUserMollieCustomerId( $user_id, $customer_id );
+			    }
 
         }
 
@@ -524,14 +524,14 @@ class Mollie_WC_Helper_Data
 	 *
 	 * @return bool
 	 */
-	public function isSubscription( $order_id ) {
+	public function isWcSubscription( $order_id ) {
 		return ( function_exists( 'wcs_order_contains_subscription' ) && ( wcs_order_contains_subscription( $order_id ) || function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order_id ) || function_exists( 'wcs_order_contains_renewal' ) && wcs_order_contains_renewal( $order_id ) ) );
 	}
 
-    public function isEcurSubscription()
+    public function isSubscription($orderId)
     {
         $isSubscription = false;
-        $isSubscription = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_is_subscription_payment', $isSubscription );
+        $isSubscription = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_is_subscription_payment', $isSubscription, $orderId );
         return $isSubscription;
     }
 }

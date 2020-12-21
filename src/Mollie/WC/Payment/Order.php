@@ -229,32 +229,29 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
             // TODO David: use order number or order id?
         );
 
-        // Add sequenceType for subscriptions first payments
-        if (class_exists('WC_Subscriptions')
-            && class_exists(
-                'WC_Subscriptions_Admin'
-            )
-        ) {
-            if (mollieWooCommerceGetDataHelper()->isSubscription(
-                $order->get_id()
-            )
-            ) {
-                // See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
-                $disableAutomaticPayments = ('yes' == get_option(
-                        WC_Subscriptions_Admin::$option_prefix
-                        . '_turn_off_automatic_payments',
-                        'no'
-                    )) ? true : false;
-                $supports_subscriptions = $gateway->supports('subscriptions');
+			// Add sequenceType for subscriptions first payments
+			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
+				if ( mollieWooCommerceGetDataHelper()->isWcSubscription($order->get_id() ) ) {
 
-                if ($supports_subscriptions == true
-                    && $disableAutomaticPayments == false
-                ) {
-                    $paymentRequestData['payment']['sequenceType'] = 'first';
-                }
+					// See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
+					$disable_automatic_payments = ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) ? true : false;
+					$supports_subscriptions     = $gateway->supports( 'subscriptions' );
+
+					if ( $supports_subscriptions == true && $disable_automatic_payments == false ) {
+						$paymentRequestData['payment']['sequenceType'] = 'first';
+					}
+				}
+			}
+		}
+        $dataHelper = Mollie_WC_Plugin::getDataHelper();
+		$orderId = mollieWooCommerceOrderId($order);
+        if ($dataHelper->isSubscription($orderId)) {
+            $supports_subscriptions     = $gateway->supports( 'subscriptions' );
+
+            if ( $supports_subscriptions == true ) {
+                $paymentRequestData['payment']['sequenceType'] = 'first';
             }
         }
-
 
         // Only add shippingAddress if all required fields are set
         if (!empty($shippingAddress->streetAndNumber)

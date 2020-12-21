@@ -3,6 +3,7 @@
 namespace Mollie\WooCommerceTests;
 
 use function Brain\Monkey\Functions\stubs;
+use function Brain\Monkey\Functions\when;
 
 class Functions_Test extends TestCase
 {
@@ -53,8 +54,6 @@ class Functions_Test extends TestCase
     protected function setUp()
     {
         parent::setUp();
-
-        require_once PROJECT_DIR . '/inc/functions.php';
     }
 
 }

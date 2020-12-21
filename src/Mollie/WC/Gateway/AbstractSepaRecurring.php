@@ -111,7 +111,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     {
         $payment_method_title = parent::getPaymentMethodTitle($payment);
         $orderId = $payment->metadata->order_id;
-        if ($orderId && Mollie_WC_Plugin::getDataHelper()->isSubscription($orderId) && $payment->method == $this->getRecurringMollieMethodId()){
+        if ($orderId && Mollie_WC_Plugin::getDataHelper()->isWcSubscription($orderId) && $payment->method == $this->getRecurringMollieMethodId()){
             $payment_method_title = $this->getRecurringMollieMethodTitle();
         }
 
@@ -127,7 +127,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
         $orderId = $order->get_id();
 
         // Duplicate webhook call
-        if (Mollie_WC_Plugin::getDataHelper()->isSubscription($orderId)
+        if (Mollie_WC_Plugin::getDataHelper()->isWcSubscription($orderId)
             && isset($payment->sequenceType)
             && $payment->sequenceType == SequenceType::SEQUENCETYPE_RECURRING
         ) {

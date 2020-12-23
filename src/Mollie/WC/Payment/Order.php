@@ -73,123 +73,8 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 		$selectedIssuer = $gateway->getSelectedIssuer();
 		$returnUrl      = $gateway->getReturnUrl( $order );
 		$webhookUrl     = $gateway->getWebhookUrl( $order );
-
-
-        // Setup billing and shipping objects
-        $billingAddress = new stdClass();
-        $shippingAddress = new stdClass();
-
-        // Get user details
-        $billingAddress->givenName = (ctype_space(
-            $order->get_billing_first_name()
-        )) ? null : $order->get_billing_first_name();
-        $billingAddress->familyName = (ctype_space(
-            $order->get_billing_last_name()
-        )) ? null : $order->get_billing_last_name();
-        $billingAddress->email = (ctype_space($order->get_billing_email()))
-            ? null : $order->get_billing_email();
-
-        // Get user details
-        $shippingAddress->givenName = (ctype_space(
-            $order->get_shipping_first_name()
-        )) ? null : $order->get_shipping_first_name();
-        $shippingAddress->familyName = (ctype_space(
-            $order->get_shipping_last_name()
-        )) ? null : $order->get_shipping_last_name();
-        $shippingAddress->email = (ctype_space($order->get_billing_email()))
-            ? null
-            : $order->get_billing_email(
-            ); // WooCommerce doesn't have a shipping email
-
-        // Create billingAddress object
-        $billingAddress->streetAndNumber = (ctype_space(
-            $order->get_billing_address_1()
-        ))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_billing_address_1(),
-                self::MAXIMAL_LENGHT_ADDRESS
-            );
-        $billingAddress->streetAdditional = (ctype_space(
-            $order->get_billing_address_2()
-        ))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_billing_address_2(),
-                self::MAXIMAL_LENGHT_ADDRESS
-            );
-        $billingAddress->postalCode = (ctype_space(
-            $order->get_billing_postcode()
-        ))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_billing_postcode(),
-                self::MAXIMAL_LENGHT_POSTALCODE
-            );
-        $billingAddress->city = (ctype_space($order->get_billing_city()))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_billing_city(),
-                self::MAXIMAL_LENGHT_CITY
-            );
-        $billingAddress->region = (ctype_space($order->get_billing_state()))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_billing_state(),
-                self::MAXIMAL_LENGHT_REGION
-            );
-        $billingAddress->country = (ctype_space($order->get_billing_country()))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_billing_country(),
-                self::MAXIMAL_LENGHT_REGION
-            );
-
-        // Create shippingAddress object
-        $shippingAddress->streetAndNumber = (ctype_space(
-            $order->get_shipping_address_1()
-        ))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_shipping_address_1(),
-                self::MAXIMAL_LENGHT_ADDRESS
-            );
-        $shippingAddress->streetAdditional = (ctype_space(
-            $order->get_shipping_address_2()
-        ))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_shipping_address_2(),
-                self::MAXIMAL_LENGHT_ADDRESS
-            );
-        $shippingAddress->postalCode = (ctype_space(
-            $order->get_shipping_postcode()
-        ))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_shipping_postcode(),
-                self::MAXIMAL_LENGHT_POSTALCODE
-            );
-        $shippingAddress->city = (ctype_space($order->get_shipping_city()))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_shipping_city(),
-                self::MAXIMAL_LENGHT_CITY
-            );
-        $shippingAddress->region = (ctype_space($order->get_shipping_state()))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_shipping_state(),
-                self::MAXIMAL_LENGHT_REGION
-            );
-        $shippingAddress->country = (ctype_space(
-            $order->get_shipping_country()
-        ))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_shipping_country(),
-                self::MAXIMAL_LENGHT_REGION
-            );
+        $billingAddress = $this->createBillingAddress($order);
+        $shippingAddress = $this->createShippingAddress($order);
 
         // Generate order lines for Mollie Orders
         $orderLinesHelper = Mollie_WC_Plugin::getOrderLinesHelper(
@@ -1072,5 +957,136 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
                     )) : '')
             )
         );
+    }
+
+    /**
+     * @param $order
+     * @return stdClass
+     */
+    protected function createBillingAddress($order)
+    {
+        // Setup billing and shipping objects
+        $billingAddress = new stdClass();
+
+        // Get user details
+        $billingAddress->givenName = (ctype_space(
+            $order->get_billing_first_name()
+        )) ? null : $order->get_billing_first_name();
+        $billingAddress->familyName = (ctype_space(
+            $order->get_billing_last_name()
+        )) ? null : $order->get_billing_last_name();
+        $billingAddress->email = (ctype_space($order->get_billing_email()))
+            ? null : $order->get_billing_email();
+        // Create billingAddress object
+        $billingAddress->streetAndNumber = (ctype_space(
+            $order->get_billing_address_1()
+        ))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_billing_address_1(),
+                self::MAXIMAL_LENGHT_ADDRESS
+            );
+        $billingAddress->streetAdditional = (ctype_space(
+            $order->get_billing_address_2()
+        ))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_billing_address_2(),
+                self::MAXIMAL_LENGHT_ADDRESS
+            );
+        $billingAddress->postalCode = (ctype_space(
+            $order->get_billing_postcode()
+        ))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_billing_postcode(),
+                self::MAXIMAL_LENGHT_POSTALCODE
+            );
+        $billingAddress->city = (ctype_space($order->get_billing_city()))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_billing_city(),
+                self::MAXIMAL_LENGHT_CITY
+            );
+        $billingAddress->region = (ctype_space($order->get_billing_state()))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_billing_state(),
+                self::MAXIMAL_LENGHT_REGION
+            );
+        $billingAddress->country = (ctype_space($order->get_billing_country()))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_billing_country(),
+                self::MAXIMAL_LENGHT_REGION
+            );
+        return $billingAddress;
+    }
+
+    /**
+     * @param $order
+     * @return stdClass
+     */
+    protected function createShippingAddress($order)
+    {
+        $shippingAddress = new stdClass();
+        // Get user details
+        $shippingAddress->givenName = (ctype_space(
+            $order->get_shipping_first_name()
+        )) ? null : $order->get_shipping_first_name();
+        $shippingAddress->familyName = (ctype_space(
+            $order->get_shipping_last_name()
+        )) ? null : $order->get_shipping_last_name();
+        $shippingAddress->email = (ctype_space($order->get_billing_email()))
+            ? null
+            : $order->get_billing_email(); // WooCommerce doesn't have a shipping email
+
+
+        // Create shippingAddress object
+        $shippingAddress->streetAndNumber = (ctype_space(
+            $order->get_shipping_address_1()
+        ))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_shipping_address_1(),
+                self::MAXIMAL_LENGHT_ADDRESS
+            );
+        $shippingAddress->streetAdditional = (ctype_space(
+            $order->get_shipping_address_2()
+        ))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_shipping_address_2(),
+                self::MAXIMAL_LENGHT_ADDRESS
+            );
+        $shippingAddress->postalCode = (ctype_space(
+            $order->get_shipping_postcode()
+        ))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_shipping_postcode(),
+                self::MAXIMAL_LENGHT_POSTALCODE
+            );
+        $shippingAddress->city = (ctype_space($order->get_shipping_city()))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_shipping_city(),
+                self::MAXIMAL_LENGHT_CITY
+            );
+        $shippingAddress->region = (ctype_space($order->get_shipping_state()))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_shipping_state(),
+                self::MAXIMAL_LENGHT_REGION
+            );
+        $shippingAddress->country = (ctype_space(
+            $order->get_shipping_country()
+        ))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_shipping_country(),
+                self::MAXIMAL_LENGHT_REGION
+            );
+        return $shippingAddress;
     }
 }

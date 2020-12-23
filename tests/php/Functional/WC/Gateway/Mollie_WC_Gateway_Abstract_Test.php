@@ -41,7 +41,8 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         /*
         * Sut
         */
-        $issuer_id = Mollie_WC_Plugin::PLUGIN_ID . '_issuer_' . PaymentMethod::IDEAL;
+        $gatewayId = 'mollie_wc_gateway_ideal';
+        $issuer_id = Mollie_WC_Plugin::PLUGIN_ID . '_issuer_'. $gatewayId;
         $_POST[$issuer_id]= 'ideal_INGBNL2A';
         stubs(
             [
@@ -53,7 +54,6 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         /*
          * Stubs
          */
-
         $fakeFactory = new Faker\Factory();
         $this->faker = $fakeFactory->create();
         $wcOrderId = 1;
@@ -99,6 +99,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
 
     protected function setUp()
     {
+        $_POST = [];
         parent::setUp();
 
         when('__')->returnArg(1);
@@ -219,16 +220,13 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
                 'ideal',
             'payment' =>
                 [
-                    'issuer' =>
-                        null
+                    'issuer' => 'ideal_INGBNL2A'
                 ],
-            'locale' =>
-                'en_US',
+            'locale' => 'en_US',
             'billingAddress' =>'billingAddressHere',
             'metadata' =>
                 [
-                    'order_id' =>
-                        1,
+                    'order_id' => 1,
                     'order_number' => 1
                 ],
             'lines' =>

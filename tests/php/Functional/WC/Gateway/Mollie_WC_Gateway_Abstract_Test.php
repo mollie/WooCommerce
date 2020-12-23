@@ -92,11 +92,9 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         /*
          *  Expectations
          */
-        expect('mollieWooCommerceDebug')
-            ->once()
-            ->with("{$testee->id}: Start process_payment for order {$wcOrderId}");
+        when('mollieWooCommerceDebug')
+            ->justReturn('');
         expect('get_option')
-            ->once()
             ->andReturn(false);
         expect('wc_get_product')
             ->andReturn($this->wcProduct());

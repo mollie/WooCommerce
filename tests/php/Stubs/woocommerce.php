@@ -479,6 +479,10 @@ class WC_Product
     {
     }
 
+    public function get_id()
+    {
+    }
+
     public function get_price()
     {
     }

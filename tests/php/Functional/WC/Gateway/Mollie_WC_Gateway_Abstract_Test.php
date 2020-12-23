@@ -3,14 +3,11 @@
 namespace Mollie\WooCommerceTests\Functional\WC\Gateway;
 
 use Faker;
-use Mollie\Api\Types\PaymentMethod;
 use Mollie\WooCommerceTests\TestCase;
 use Mollie_WC_Gateway_Ideal;
 use Mollie_WC_Plugin;
 use PHPUnit_Framework_Exception;
 use PHPUnit_Framework_MockObject_MockObject;
-
-use stdClass;
 
 use function Brain\Monkey\Actions\expectDone as expectedActionDone;
 use function Brain\Monkey\Functions\expect;
@@ -85,8 +82,11 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             ->justReturn('');
         expect('get_option')
             ->andReturn(false);
+        expect('get_post_meta')
+            ->andReturn(false);
         expect('wc_get_product')
             ->andReturn($this->wcProduct());
+
         expectedActionDone(Mollie_WC_Plugin::PLUGIN_ID . '_create_payment')
             ->once()
             ->with($this->expectedRequestData(), $wcOrder);
@@ -171,6 +171,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             'WC_Product',
             [
                 'get_price' => '1',
+                'get_id'=>'1',
                 'get_type' => 'simple',
                 'needs_shipping' => true,
                 'get_sku'=>5,
@@ -187,18 +188,18 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
      */
     private function wcOrderItem()
     {
-        $item = $this->createConfiguredMock(
-            'WC_Order_Item_Product',
-            [
-                'get_name'=>'itemName',
-                'get_item_quantity'=>1,
-                'get_id'=>1
-            ]
-        );
+        $item = new \WC_Order_Item_Product();
+
         $item['quantity'] = 1;
         $item['variation_id'] = null;
         $item['product_id'] = 1;
         $item['line_subtotal_tax']= 0;
+        $item['line_total']= 20;
+        $item['line_subtotal']= 20;
+        $item['line_tax']= 0;
+        $item['tax_status']= '';
+        $item['total']= 20;
+        $item['name']= 'productName';
 
 
         return $item;
@@ -223,7 +224,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
                     'issuer' => 'ideal_INGBNL2A'
                 ],
             'locale' => 'en_US',
-            'billingAddress' =>'billingAddressHere',
+            'billingAddress' => 'billingAddressHere',
             'metadata' =>
                 [
                     'order_id' => 1,
@@ -232,19 +233,50 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             'lines' =>
                 [
                     [
+                        "sku" => "5",
+                        "name" => "",
+                        "quantity" => 1,
+                        "vatRate" => 0,
+                        "unitPrice" =>
+                            [
+                                "currency" => "EUR",
+                                "value" => 20
+                            ],
+                        "totalAmount" =>
+                            [
+                                "currency" => "EUR",
+                                "value" => 20
+                            ],
+                        "vatAmount" =>
+                            [
+                                "currency" => "EUR",
+                                "value" => 0
+                            ],
+                        "discountAmount" =>
+                            [
+                                "currency" => "EUR",
+                                "value" => 0
+                            ],
+                        "metadata" =>
+                            [
+                                "order_item_id" => null
+                            ],
+                        "category" => null
+                    ],
+                    [
                         'type' => 'surcharge',
-                        'name' => null,
+                        'name' => 'productName',
                         'quantity' => 1,
                         'vatRate' => 0,
                         'unitPrice' =>
                             [
                                 'currency' => 'EUR',
-                                'value' => null,
+                                'value' => 20,
                             ],
                         'totalAmount' =>
                             [
                                 'currency' => 'EUR',
-                                'value' => null
+                                'value' => 20
                             ],
                         'vatAmount' =>
                             [
@@ -253,7 +285,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
                             ],
                         'metadata' =>
                             [
-                                'order_item_id' => 1
+                                'order_item_id' => null
                             ]
                     ]
                 ],

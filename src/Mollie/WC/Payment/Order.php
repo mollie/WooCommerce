@@ -242,9 +242,9 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 					}
 				}
 			}
-		}
+
         $dataHelper = Mollie_WC_Plugin::getDataHelper();
-		$orderId = mollieWooCommerceOrderId($order);
+		$orderId = $order->get_id();
         if ($dataHelper->isSubscription($orderId)) {
             $supports_subscriptions     = $gateway->supports( 'subscriptions' );
 
@@ -272,7 +272,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
             $paymentRequestData['payment']['cardToken'] = $cardToken;
         }
 
-        if ($_POST['token']) {
+        if (isset($_POST['token'])) {
             $applePayToken = filter_input(
                 INPUT_POST,
                 'token',

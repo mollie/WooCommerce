@@ -2,6 +2,7 @@
 
 namespace Mollie\WooCommerceTests\Functional\WC\Gateway;
 
+use Mollie\Api\Types\PaymentMethod;
 use Mollie\WooCommerceTests\TestCase;
 
 use Mollie_WC_Gateway_Ideal;
@@ -40,7 +41,8 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         /*
         * Sut
         */
-
+        $issuer_id = Mollie_WC_Plugin::PLUGIN_ID . '_issuer_' . PaymentMethod::IDEAL;
+        $_POST[$issuer_id]= 'ideal_INGBNL2A';
         stubs(
             [
                 'wc_get_order_status_name' => 'wc-on-hold',
@@ -97,7 +99,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             ->once()
             ->andReturn(false);
         expect('wc_get_product')
-            ->andReturn(true);
+            ->andReturn($this->wcProduct());
         expectedActionDone(Mollie_WC_Plugin::PLUGIN_ID . '_create_payment')
             ->once()
             ->with($expectedPaymentRequestData);
@@ -128,7 +130,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
                 'get_id' => $id,
                 'get_order_key'=>$orderKey,
                 'get_total'=>'20',
-                'get_items'=> [['quantity'=>1, 'product_id'=>1, 'variation_id'=>null]],
+                'get_items'=> [$this->wcOrderItem()],
                 'get_billing_first_name'=>'billingName',
                 'get_billing_last_name'=>'billingLastName',
                 'get_billing_email'=>'bill_email@email.com',
@@ -146,10 +148,8 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
                 'get_shipping_city'=>'shipcity',
                 'get_shipping_state'=>'shipstate',
                 'get_shipping_country'=>'shipcountry',
-
-
-
-
+                'get_shipping_methods'=>false,
+                'get_order_number'=>1,
             ]
         );
 
@@ -169,6 +169,49 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
                 'api_request_url' => 'https://webshop.example.org/wc-api/mollie_return'
             ]
         );
+
+        return $item;
+    }
+    /**
+     *
+     * @return PHPUnit_Framework_MockObject_MockObject
+     * @throws PHPUnit_Framework_Exception
+     */
+    private function wcProduct()
+    {
+        $item = $this->createConfiguredMock(
+            'WC_Product',
+            [
+                'get_price' => '1',
+                'get_type' => 'simple',
+                'needs_shipping' => true,
+                'get_sku'=>5,
+                'is_taxable'=>true,
+            ]
+        );
+
+        return $item;
+    }
+    /**
+     *
+     * @return PHPUnit_Framework_MockObject_MockObject
+     * @throws PHPUnit_Framework_Exception
+     */
+    private function wcOrderItem()
+    {
+        $item = $this->createConfiguredMock(
+            'WC_Order_Item_Product',
+            [
+                'get_name'=>'itemName',
+                'get_item_quantity'=>1,
+                'get_id'=>1
+            ]
+        );
+        $item['quantity'] = 1;
+        $item['variation_id'] = null;
+        $item['product_id'] = 1;
+        $item['line_subtotal_tax']= 0;
+
 
         return $item;
     }

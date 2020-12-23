@@ -126,7 +126,7 @@ class Mollie_WC_Helper_Data
     {
     }
 
-    public function isSubscription($order)
+    public function isWcSubscription($order)
     {
         if ($order == 'subs') {
             return true;
@@ -137,9 +137,14 @@ class Mollie_WC_Helper_Data
     public function getUserMollieCustomerId()
     {
     }
+    public function setUserMollieCustomerId()
+    {
+    }
     public function getOrderCurrency(){
         return 'EUR';
     }
+    public function formatCurrencyValue($value){return $value;}
+    public function isSubscription(){return false;}
 }
 
 class Mollie_WC_Helper_Api
@@ -149,24 +154,59 @@ class Mollie_WC_Helper_Api
         return new MollieApiClient();
     }
 }
-class MollieApiClient{
+
+class MollieApiClient
+{
     public $orders;
+
     public function __construct()
     {
         $this->orders = $this->mockApiEndpoint();
     }
-    public function mockApiEndpoint(){
+
+    public function mockApiEndpoint()
+    {
         $testCase = new TestCase();
         $mockBuilder = new PHPUnit_Framework_MockObject_MockBuilder($testCase, OrderEndpoint::class);
         $mock = $mockBuilder
             ->disableOriginalConstructor()
             ->setMethods(['get', 'create'])
             ->getMock();
+        $mock->method('create')->willReturn(new MollieOrder());
 
         return $mock;
     }
+
 }
 
+class MollieOrder
+{
+    public $resource;
+    public $id;
+    public $mode;
+    public $method;
+    public $metadata;
+
+    /**
+     * MollieOrder constructor.
+     * @param $resource
+     */
+    public function __construct($resource = 'order')
+    {
+        $this->resource = $resource;
+        $this->id = 'mollieOrderId';
+        $this->mode = 'test';
+        $this->method = 'ideal';
+        $this->metadata = new stdClass();
+        $this->metadata->order_id = $this->id;
+    }
+
+    public function getCheckoutUrl()
+    {
+        return 'https://www.mollie.com/payscreen/order/checkout/wvndyu';
+    }
+
+}
 
 class WC_Order
 {
@@ -281,6 +321,13 @@ class WC_Order
     public function get_shipping_country()
     {
     }
+    public function get_shipping_methods()
+    {
+    }
+    public function get_order_number(){}
+    public function update_meta_data(){}
+    public function delete_meta_data(){}
+    public function save(){}
 }
 
 class WC_Order_Item
@@ -300,6 +347,23 @@ class WC_Order_Item
     public function get_meta()
     {
     }
+    public function get_name()
+    {
+    }
+}
+class WC_Order_Item_Product extends ArrayObject{
+    protected $data=array();
+
+    public function __construct()
+    {
+
+
+    }
+    public function get_item_quantity(){}
+    public function get_name()
+    {
+    }
+    public function get_id(){}
 }
 class WC_Cart
 {
@@ -369,10 +433,14 @@ class WC_Product
     public function get_price()
     {
     }
+    public function get_sku()
+    {
+    }
 
     public function needs_shipping()
     {
     }
+    public function is_taxable(){}
 
 }
 
@@ -401,3 +469,4 @@ class WC_Session
     {
     }
 }
+

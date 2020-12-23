@@ -2,15 +2,15 @@
 
 namespace Mollie\WooCommerceTests\Functional\WC\Gateway;
 
+use Faker;
 use Mollie\Api\Types\PaymentMethod;
 use Mollie\WooCommerceTests\TestCase;
-
 use Mollie_WC_Gateway_Ideal;
 use Mollie_WC_Plugin;
 use PHPUnit_Framework_Exception;
 use PHPUnit_Framework_MockObject_MockObject;
-use Faker;
-use Faker\Generator;
+
+use stdClass;
 
 use function Brain\Monkey\Actions\expectDone as expectedActionDone;
 use function Brain\Monkey\Functions\expect;
@@ -56,7 +56,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
 
         $fakeFactory = new Faker\Factory();
         $this->faker = $fakeFactory->create();
-        $wcOrderId = $this->faker->uuid;
+        $wcOrderId = 1;
         $wcOrderKey = 'wc_order_hxZniP1zDcnM8';
         $mollieOrderId = 'wvndyu';//ord_wvndyu
         $processPaymentRedirect = 'https://www.mollie.com/payscreen/order/checkout/'. $mollieOrderId;
@@ -64,9 +64,10 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             'result'   => 'success',
             'redirect' => $processPaymentRedirect,
         );
+        $wcOrder = $this->wcOrder($wcOrderId, $wcOrderKey);
         stubs(
             [
-                'wc_get_order' => $this->wcOrder($wcOrderId, $wcOrderKey),
+                'wc_get_order' => $wcOrder,
                 'get_locale' => 'en_US',
                 'wc_get_payment_gateway_by_order' => $testee,
                 'get_home_url' => 'https://webshop.example.org',
@@ -75,18 +76,6 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
                 'is_plugin_active' => false
             ]
         );
-        $expectedPaymentRequestData = [
-            "amount" => [
-                "currency" => "EUR",
-                "value" => "20.00" // You must send the correct number of decimals, thus we enforce the use of strings
-            ],
-            "description" => "Order #12345",
-            "redirectUrl" => "https://webshop.example.org/order/12345/",
-            "webhookUrl" => "https://webshop.example.org/payments/webhook/",
-            "metadata" => [
-                "order_id" => $wcOrderId,
-            ],
-        ];
 
 
         /*
@@ -100,7 +89,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             ->andReturn($this->wcProduct());
         expectedActionDone(Mollie_WC_Plugin::PLUGIN_ID . '_create_payment')
             ->once()
-            ->with($expectedPaymentRequestData);
+            ->with($this->expectedRequestData(), $wcOrder);
         /*
         * Execute Test
         */
@@ -129,23 +118,23 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
                 'get_order_key'=>$orderKey,
                 'get_total'=>'20',
                 'get_items'=> [$this->wcOrderItem()],
-                'get_billing_first_name'=>'billingName',
-                'get_billing_last_name'=>'billingLastName',
-                'get_billing_email'=>'bill_email@email.com',
-                'get_shipping_first_name'=>'shipName',
-                'get_shipping_last_name'=>'shipLastName',
-                'get_billing_address_1'=>'address1',
-                'get_billing_address_2'=>'address2',
-                'get_billing_postcode'=>'postCode',
-                'get_billing_city'=>'city',
-                'get_billing_state'=>'state',
-                'get_billing_country'=>'country',
-                'get_shipping_address_1'=>'shipaddress1',
-                'get_shipping_address_2'=>'shipaddress2',
-                'get_shipping_postcode'=>'shippostCode',
-                'get_shipping_city'=>'shipcity',
-                'get_shipping_state'=>'shipstate',
-                'get_shipping_country'=>'shipcountry',
+                'get_billing_first_name'=>'billingggivenName',
+                'get_billing_last_name'=>'billingfamilyName',
+                'get_billing_email'=>'billingemail',
+                'get_shipping_first_name'=>'shippinggivenName',
+                'get_shipping_last_name'=>'shippingfamilyName',
+                'get_billing_address_1'=>'shippingstreetAndNumber',
+                'get_billing_address_2'=>'billingstreetAdditional',
+                'get_billing_postcode'=>'billingpostalCode',
+                'get_billing_city'=>'billingcity',
+                'get_billing_state'=>'billingregion',
+                'get_billing_country'=>'billingcountry',
+                'get_shipping_address_1'=>'shippingstreetAndNumber',
+                'get_shipping_address_2'=>'shippingstreetAdditional',
+                'get_shipping_postcode'=>'shippingpostalCode',
+                'get_shipping_city'=>'shippingcity',
+                'get_shipping_state'=>'shippingregion',
+                'get_shipping_country'=>'shippingcountry',
                 'get_shipping_methods'=>false,
                 'get_order_number'=>1,
             ]
@@ -212,5 +201,65 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
 
 
         return $item;
+    }
+    private function expectedRequestData(){
+
+        //we are not adding shipping address cause as not all fields are set(is mocked)
+        // it will not show in the expected behavior
+        return [
+            'amount' => [
+                'currency' => 'EUR',
+                'value' => '20'
+            ],
+            'redirectUrl' =>
+                'https://webshop.example.org/wc-api/mollie_return?order_id=1&key=wc_order_hxZniP1zDcnM8',
+            'webhookUrl' =>
+                'https://webshop.example.org/wc-api/mollie_return?order_id=1&key=wc_order_hxZniP1zDcnM8',
+            'method' =>
+                'ideal',
+            'payment' =>
+                [
+                    'issuer' =>
+                        null
+                ],
+            'locale' =>
+                'en_US',
+            'billingAddress' =>'billingAddressHere',
+            'metadata' =>
+                [
+                    'order_id' =>
+                        1,
+                    'order_number' => 1
+                ],
+            'lines' =>
+                [
+                    [
+                        'type' => 'surcharge',
+                        'name' => null,
+                        'quantity' => 1,
+                        'vatRate' => 0,
+                        'unitPrice' =>
+                            [
+                                'currency' => 'EUR',
+                                'value' => null,
+                            ],
+                        'totalAmount' =>
+                            [
+                                'currency' => 'EUR',
+                                'value' => null
+                            ],
+                        'vatAmount' =>
+                            [
+                                'currency' => 'EUR',
+                                'value' => 0
+                            ],
+                        'metadata' =>
+                            [
+                                'order_item_id' => 1
+                            ]
+                    ]
+                ],
+            'orderNumber' => 1
+        ];
     }
 }

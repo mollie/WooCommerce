@@ -61,6 +61,7 @@ class WC_Customer
     public function get_shipping_country()
     {
     }
+
     public function get_billing_country()
     {
     }
@@ -100,19 +101,27 @@ class WC_Payment_Gateway extends WC_Settings_API
 {
     public $id;
     public $enabled;
+
     public function __construct($id = 1, $enabled = 'yes')
     {
         $this->id = $id;
         $this->enabled = $enabled;
     }
-    public function init_settings() {
+
+    public function init_settings()
+    {
     }
 }
-class WC_Settings_API {
-    public function get_option(){
 
+class WC_Settings_API
+{
+    public function get_option()
+    {
     }
-    public function process_admin_options() {}
+
+    public function process_admin_options()
+    {
+    }
 
 }
 
@@ -137,14 +146,25 @@ class Mollie_WC_Helper_Data
     public function getUserMollieCustomerId()
     {
     }
+
     public function setUserMollieCustomerId()
     {
     }
-    public function getOrderCurrency(){
+
+    public function getOrderCurrency()
+    {
         return 'EUR';
     }
-    public function formatCurrencyValue($value){return $value;}
-    public function isSubscription(){return false;}
+
+    public function formatCurrencyValue($value)
+    {
+        return $value;
+    }
+
+    public function isSubscription()
+    {
+        return false;
+    }
 }
 
 class Mollie_WC_Helper_Api
@@ -213,15 +233,19 @@ class WC_Order
     public function get_order_key()
     {
     }
+
     public function get_id()
     {
     }
+
     public function get_status()
     {
     }
+
     public function add_order_note($note)
     {
     }
+
     public function key_is_valid()
     {
     }
@@ -237,9 +261,9 @@ class WC_Order
     public function payment_complete()
     {
     }
+
     public function get_customer_id()
     {
-
     }
 
     public function get_total()
@@ -321,13 +345,26 @@ class WC_Order
     public function get_shipping_country()
     {
     }
+
     public function get_shipping_methods()
     {
     }
-    public function get_order_number(){}
-    public function update_meta_data(){}
-    public function delete_meta_data(){}
-    public function save(){}
+
+    public function get_order_number()
+    {
+    }
+
+    public function update_meta_data()
+    {
+    }
+
+    public function delete_meta_data()
+    {
+    }
+
+    public function save()
+    {
+    }
 }
 
 class WC_Order_Item
@@ -347,24 +384,33 @@ class WC_Order_Item
     public function get_meta()
     {
     }
+
     public function get_name()
     {
     }
 }
-class WC_Order_Item_Product extends ArrayObject{
-    protected $data=array();
+
+class WC_Order_Item_Product extends ArrayObject
+{
+    protected $data = array();
 
     public function __construct()
     {
-
-
     }
-    public function get_item_quantity(){}
+
+    public function get_item_quantity()
+    {
+    }
+
     public function get_name()
     {
     }
-    public function get_id(){}
+
+    public function get_id()
+    {
+    }
 }
+
 class WC_Cart
 {
     public function needs_shipping()
@@ -410,19 +456,22 @@ class WC_Cart
     public function calculate_totals()
     {
     }
+
     public function get_cart_contents()
     {
     }
 
 
 }
+
 class WC_HTTPS
 {
     public static function force_https_url($string)
     {
     }
 }
-define( 'DAY_IN_SECONDS', 24 * 60 *60 );
+
+define('DAY_IN_SECONDS', 24 * 60 * 60);
 
 class WC_Product
 {
@@ -433,6 +482,7 @@ class WC_Product
     public function get_price()
     {
     }
+
     public function get_sku()
     {
     }
@@ -440,7 +490,10 @@ class WC_Product
     public function needs_shipping()
     {
     }
-    public function is_taxable(){}
+
+    public function is_taxable()
+    {
+    }
 
 }
 
@@ -467,6 +520,40 @@ class WC_Session
 {
     public function set()
     {
+    }
+}
+/**
+ * This class is a partial mock to create an order
+ * the order created is also partially mocked
+ */
+class Mollie_WC_Helper_PaymentFactory
+{
+    public function getPaymentObject($data)
+    {
+        $dataHelper = Mollie_WC_Plugin::getDataHelper();
+        $refundLineItemsBuilder = new Mollie_WC_Payment_RefundLineItemsBuilder($dataHelper);
+        $apiHelper = Mollie_WC_Plugin::getApiHelper();
+        $settingsHelper = Mollie_WC_Plugin::getSettingsHelper();
+
+        $orderItemsRefunded = new Mollie_WC_Payment_OrderItemsRefunder(
+            $refundLineItemsBuilder,
+            $dataHelper,
+            $apiHelper->getApiClient($settingsHelper->isTestModeEnabled())->orders
+        );
+        return $this->pluginOrder($orderItemsRefunded,$data);
+    }
+
+    public function pluginOrder($orderItemsRefunded,$data)
+    {
+        $testCase = new TestCase();
+        $mockBuilder = new PHPUnit_Framework_MockObject_MockBuilder($testCase, Mollie_WC_Payment_Order::class);
+        $mock = $mockBuilder
+            ->setConstructorArgs([$orderItemsRefunded, $data])
+            ->setMethods(['createShippingAddress', 'createBillingAddress'])
+            ->getMock();
+        $mock->method('createShippingAddress')->willReturn('shippingAddressHere');
+        $mock->method('createBillingAddress')->willReturn('billingAddressHere');
+        return $mock;
     }
 }
 

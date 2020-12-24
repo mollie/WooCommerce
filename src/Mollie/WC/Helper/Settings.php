@@ -579,23 +579,22 @@ class Mollie_WC_Helper_Settings
 	 * @return string
 	 */
 	protected function warnAboutRequiredCheckoutFieldForKlarna( $content ) {
+        $woocommerce_klarnapaylater_gateway = new Mollie_WC_Gateway_KlarnaPayLater();
+        $woocommerce_klarnasliceit_gateway = new Mollie_WC_Gateway_KlarnaSliceIt();
 
-		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '>=' ) ) {
+        if ($woocommerce_klarnapaylater_gateway->is_available() || $woocommerce_klarnasliceit_gateway->is_available()) {
+            $content .= '<div class="notice notice-warning is-dismissible"><p>';
+            $content .= __(
+                'To accept Klarna payments via Mollie, all default WooCommerce checkout fields should be enabled and required. Please ensure that is the case.',
+                'mollie-payments-for-woocommerce'
+            );
+            $content .= '</p></div> ';
 
-			$woocommerce_klarnapaylater_gateway = new Mollie_WC_Gateway_KlarnaPayLater();
-			$woocommerce_klarnasliceit_gateway  = new Mollie_WC_Gateway_KlarnaSliceIt();
+            return $content;
+        }
 
-			if ( $woocommerce_klarnapaylater_gateway->is_available() || $woocommerce_klarnasliceit_gateway->is_available() ) {
 
-				$content .= '<div class="notice notice-warning is-dismissible"><p>';
-				$content .= __( 'To accept Klarna payments via Mollie, all default WooCommerce checkout fields should be enabled and required. Please ensure that is the case.', 'mollie-payments-for-woocommerce' );
-				$content .= '</p></div> ';
-
-				return $content;
-			}
-		}
-
-		return $content;
+        return $content;
 	}
 
     /**

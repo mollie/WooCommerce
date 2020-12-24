@@ -569,7 +569,6 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             [
                 'WC' => $this->wooCommerce(),
                 'get_woocommerce_currency'=>'EUR',
-                'mollieWooCommerceWcVersion'=>4,
                 'get_option'=>'IT'
             ]
         );
@@ -618,7 +617,6 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             [
                 'WC' => $this->wooCommerce(),
                 'get_woocommerce_currency'=>'EUR',
-                'mollieWooCommerceWcVersion'=>4,
                 'get_option'=>'IT'
             ]
         );
@@ -667,7 +665,6 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             [
                 'WC' => $this->wooCommerce(),
                 'get_woocommerce_currency'=>'EUR',
-                'mollieWooCommerceWcVersion'=>4,
                 'get_option'=>'IT'
             ]
         );

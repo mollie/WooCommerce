@@ -367,7 +367,7 @@ class Mollie_WC_Helper_Settings
 
 
         $presentation = ''
-            . '<div style="width:1000px"><div id="" class="" style=""><a href="https://mollie.inpsyde.com/" >Documentation</a> | <a href="https://mollie.inpsyde.com/" >Support</a></div></div>'
+            . '<div style="width:1000px"><div style="font-weight:bold;"><a href="https://mollie.inpsyde.com/">'.__('Plugin Documentation').'</a> | <a href="https://mollie.inpsyde.com/">'.__('Contact Support').'</a></div></div>'
             . '<span></span>'
             . '<div id="" class="" style="width: 1000px; padding:5px 0 0 10px"><p>'.$presentationText.'</p></div>';
 

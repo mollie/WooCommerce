@@ -421,6 +421,8 @@ class Mollie_WC_Plugin
      * Show voucher selector on edit product category page.
      */
     public static function voucherTaxonomyFieldOnEditPage($term) {
+        $term_id = $term->term_id;
+        $savedCategory = get_term_meta($term_id, '_mollie_voucher_category', true);
 
         ?>
         <tr class="form-field">
@@ -428,10 +430,10 @@ class Mollie_WC_Plugin
             <td>
                 <select name="_mollie_voucher_category" id="_mollie_voucher_category" class="select">
                     <option value=""><?php _e( '--Please choose an option--', 'mollie-payments-for-woocommerce' ); ?></option>
-                    <option value="no_category"> <?php _e( 'No Category', 'mollie-payments-for-woocommerce' ); ?></option>
-                    <option value="meal"><?php _e( 'Meal', 'mollie-payments-for-woocommerce' ); ?></option>
-                    <option value="eco"><?php _e( 'Eco', 'mollie-payments-for-woocommerce' ); ?></option>
-                    <option value="gift"><?php _e( 'Gift', 'mollie-payments-for-woocommerce' ); ?></option>
+                    <option value="no_category" <?php selected( $savedCategory, 'no_category' ); ?>> <?php _e( 'No Category', 'mollie-payments-for-woocommerce' ); ?></option>
+                    <option value="meal" <?php selected( $savedCategory, 'meal' ); ?>><?php _e( 'Meal', 'mollie-payments-for-woocommerce' ); ?></option>
+                    <option value="eco" <?php selected( $savedCategory, 'eco' ); ?>><?php _e( 'Eco', 'mollie-payments-for-woocommerce' ); ?></option>
+                    <option value="gift" <?php selected( $savedCategory, 'gift' ); ?>><?php _e( 'Gift', 'mollie-payments-for-woocommerce' ); ?></option>
                 </select>
                 <p class="description"><?php _e('Select a voucher category to apply to all products with this category', 'mollie-payments-for-woocommerce'); ?></p>
             </td>

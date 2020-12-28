@@ -288,31 +288,7 @@ class Mollie_WC_Plugin
                 return $settings;
             }
         );
-        add_filter(
-            'woocommerce_product_data_tabs',
-            function ($tabs) {
-                $tabs['Mollie'] = array(
-                    'label'		=> __( 'Mollie Settings', 'mollie-payments-for-woocommerce' ),
-                    'target'	=> 'mollie_options',
-                    'class'		=> array( 'show_if_simple', 'show_if_variable'  ),
-                );
-
-                return $tabs;
-            }
-        );
-        add_filter( 'woocommerce_product_data_panels', [__CLASS__, 'mollieOptionsProductTabContent'] );
-        add_action( 'woocommerce_process_product_meta_simple', [__CLASS__, 'saveProductVoucherOptionFields']  );
-        add_action( 'woocommerce_process_product_meta_variable', [__CLASS__, 'saveProductVoucherOptionFields']  );
-        add_action( 'woocommerce_product_after_variable_attributes', [__CLASS__,'voucherFieldInVariations'], 10, 3 );
-        add_action( 'woocommerce_save_product_variation', [__CLASS__,'saveVoucherFieldVariations'], 10, 2 );
-        add_filter( 'woocommerce_available_variation', [__CLASS__,'addVoucherVariationData'] );
-        add_action( 'woocommerce_product_bulk_edit_start', [__CLASS__,'voucherBulkEditInput'] );
-        add_action( 'woocommerce_product_bulk_edit_save', [__CLASS__,'voucherBulkEditSave'] );
-        add_action('product_cat_add_form_fields',[__CLASS__, 'voucherTaxonomyFieldOnCreatePage'], 10, 1);
-        add_action('product_cat_edit_form_fields',[__CLASS__, 'voucherTaxonomyFieldOnEditPage'], 10, 1);
-        add_action('edited_product_cat',[__CLASS__, 'voucherTaxonomyCustomMetaSave'], 10, 1);
-        add_action('create_product_cat',[__CLASS__, 'voucherTaxonomyCustomMetaSave'], 10, 1);
-
+        self::voucherEnabledHooks();
         add_filter( Mollie_WC_Plugin::PLUGIN_ID . '_retrieve_payment_gateways', function(){
             return self::$GATEWAYS;
         });
@@ -362,6 +338,37 @@ class Mollie_WC_Plugin
             }
         }
         return $willCancel;
+    }
+
+    public static function voucherEnabledHooks(){
+        if(mollieWooCommerceIsVoucherEnabled()){
+            add_filter(
+                    'woocommerce_product_data_tabs',
+                    function ($tabs) {
+                        $tabs['Mollie'] = array(
+                                'label'		=> __( 'Mollie Settings', 'mollie-payments-for-woocommerce' ),
+                                'target'	=> 'mollie_options',
+                                'class'		=> array( 'show_if_simple', 'show_if_variable'  ),
+                        );
+
+                        return $tabs;
+                    }
+            );
+            add_filter( 'woocommerce_product_data_panels', [__CLASS__, 'mollieOptionsProductTabContent'] );
+            add_action( 'woocommerce_process_product_meta_simple', [__CLASS__, 'saveProductVoucherOptionFields']  );
+            add_action( 'woocommerce_process_product_meta_variable', [__CLASS__, 'saveProductVoucherOptionFields']  );
+            add_action( 'woocommerce_product_after_variable_attributes', [__CLASS__,'voucherFieldInVariations'], 10, 3 );
+            add_action( 'woocommerce_save_product_variation', [__CLASS__,'saveVoucherFieldVariations'], 10, 2 );
+            add_filter( 'woocommerce_available_variation', [__CLASS__,'addVoucherVariationData'] );
+
+            add_action( 'woocommerce_product_bulk_edit_start', [__CLASS__,'voucherBulkEditInput'] );
+            add_action( 'woocommerce_product_bulk_edit_save', [__CLASS__,'voucherBulkEditSave'] );
+
+            add_action('product_cat_add_form_fields',[__CLASS__, 'voucherTaxonomyFieldOnCreatePage'], 10, 1);
+            add_action('product_cat_edit_form_fields',[__CLASS__, 'voucherTaxonomyFieldOnEditPage'], 10, 1);
+            add_action('edited_product_cat',[__CLASS__, 'voucherTaxonomyCustomMetaSave'], 10, 1);
+            add_action('create_product_cat',[__CLASS__, 'voucherTaxonomyCustomMetaSave'], 10, 1);
+        }
     }
 
     /**

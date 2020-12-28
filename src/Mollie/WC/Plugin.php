@@ -306,6 +306,8 @@ class Mollie_WC_Plugin
         add_action( 'woocommerce_product_after_variable_attributes', [__CLASS__,'voucherFieldInVariations'], 10, 3 );
         add_action( 'woocommerce_save_product_variation', [__CLASS__,'saveVoucherFieldVariations'], 10, 2 );
         add_filter( 'woocommerce_available_variation', [__CLASS__,'addVoucherVariationData'] );
+        add_action( 'woocommerce_product_bulk_edit_start', [__CLASS__,'voucherBulkEditInput'] );
+        add_action( 'woocommerce_product_bulk_edit_save', [__CLASS__,'voucherBulkEditSave'] );
 
         add_filter( Mollie_WC_Plugin::PLUGIN_ID . '_retrieve_payment_gateways', function(){
             return self::$GATEWAYS;
@@ -356,6 +358,32 @@ class Mollie_WC_Plugin
             }
         }
         return $willCancel;
+    }
+    public static function voucherBulkEditInput() {
+        ?>
+        <div class="inline-edit-group">
+            <label class="alignleft">
+                <span class="title"><?php _e( 'Mollie Voucher Category', 'mollie-payments-for-woocommerce' ); ?></span>
+                <span class="input-text-wrap">
+                <select name="_mollie_voucher_category" class="select">
+                   <option value=""><?php _e( '--Please choose an option--', 'mollie-payments-for-woocommerce' ); ?></option>
+                   <option value="no_category"> <?php _e( 'No Category', 'mollie-payments-for-woocommerce' ); ?></option>
+                   <option value="meal"><?php _e( 'Meal', 'mollie-payments-for-woocommerce' ); ?></option>
+                   <option value="eco"><?php _e( 'Eco', 'mollie-payments-for-woocommerce' ); ?></option>
+                   <option value="gift"><?php _e( 'Gift', 'mollie-payments-for-woocommerce' ); ?></option>
+                </select>
+         </span>
+            </label>
+        </div>
+        <?php
+    }
+    public static function voucherBulkEditSave( $product ) {
+        $post_id = $product->get_id();
+        $optionName = Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION;
+        if ( isset( $_REQUEST[$optionName] ) ) {
+            $option = $_REQUEST[$optionName];
+            update_post_meta( $post_id, $optionName, wc_clean( $option ) );
+        }
     }
     /**
      * Contents of the Mollie options product tab.

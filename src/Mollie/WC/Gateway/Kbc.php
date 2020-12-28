@@ -15,7 +15,7 @@ class Mollie_WC_Gateway_Kbc extends Mollie_WC_Gateway_AbstractSepaRecurring
         );
 
 	    /* Has issuers dropdown */
-	    $this->has_fields = TRUE;
+	    $this->has_fields = mollieWooCommerceIsDropdownEnabled('mollie_wc_gateway_kbc_settings');
 
         parent::__construct();
     }
@@ -84,6 +84,10 @@ class Mollie_WC_Gateway_Kbc extends Mollie_WC_Gateway_AbstractSepaRecurring
 	{
 		// Display description above issuers
 		parent::payment_fields();
+
+        if(!mollieWooCommerceIsDropdownEnabled('mollie_wc_gateway_kbc_settings')){
+            return;
+        }
 
 		$test_mode = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
 

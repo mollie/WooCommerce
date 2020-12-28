@@ -75,8 +75,7 @@ class Mollie_WC_Helper_OrderLines {
 	 * @access private
 	 */
 	private function process_items() {
-        $mealvoucherSettings = get_option('mollie_wc_gateway_mealvoucher_settings');
-	    $isMealVoucherEnabled = $mealvoucherSettings? ($mealvoucherSettings['enabled'] == 'yes'): true;
+	    $isMealVoucherEnabled = mollieWooCommerceIsVoucherEnabled();
 		foreach ( $this->order->get_items() as $cart_item ) {
 
 			if ( $cart_item['quantity'] ) {

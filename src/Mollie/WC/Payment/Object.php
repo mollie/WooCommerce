@@ -626,4 +626,38 @@ class Mollie_WC_Payment_Object {
         }
     }
 
+    /**
+     * @param $orderId
+     * @param string $gatewayId
+     * @param WC_Order $order
+     */
+    protected function informNotUpdatingStatus($orderId, $gatewayId, WC_Order $order)
+    {
+        $orderPaymentMethodTitle = get_post_meta(
+            $orderId,
+            '_payment_method_title',
+            $single = true
+        );
+
+        // Add message to log
+        Mollie_WC_Plugin::debug(
+            $gatewayId . ': Order ' . $order->get_id()
+            . ' webhook called, but payment also started via '
+            . $orderPaymentMethodTitle . ', so order status not updated.',
+            true
+        );
+
+        // Add order note
+        $order->add_order_note(
+            sprintf(
+            /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+                __(
+                    'Mollie webhook called, but payment also started via %s, so the order status is not updated.',
+                    'mollie-payments-for-woocommerce'
+                ),
+                $orderPaymentMethodTitle
+            )
+        );
+    }
+
 }

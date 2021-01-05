@@ -896,51 +896,26 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 
     /**
      * @param WC_Order                    $order
-     * @param                             $new_order_status
-     * @param                             $order_id
+     * @param                             $newOrderStatus
+     * @param                             $orderId
      * @param                             $paymentMethodTitle
      * @param \Mollie\Api\Resources\Order $payment
      */
     protected function maybeUpdateStatus(
         WC_Order $order,
-        $new_order_status,
-        $order_id,
+        $newOrderStatus,
+        $orderId,
         $paymentMethodTitle,
         \Mollie\Api\Resources\Order $payment
     ) {
         if (!$this->isOrderPaymentStartedByOtherGateway($order)) {
             $gateway = wc_get_payment_gateway_by_order($order);
 
-            if ($gateway || ($gateway instanceof Mollie_WC_Gateway_Abstract)) {
-                $gateway->updateOrderStatus($order, $new_order_status);
+            if ($gateway) {
+                $gateway->updateOrderStatus($order, $newOrderStatus);
             }
         } else {
-            $order_payment_method_title = get_post_meta(
-                $order_id,
-                '_payment_method_title',
-                $single = true
-            );
-
-            // Add message to log
-            Mollie_WC_Plugin::debug(
-                $this->id . ': Order ' . $order->get_id()
-                . ' webhook called, but payment also started via '
-                . $order_payment_method_title
-                . ', so order status not updated.',
-                true
-            );
-
-            // Add order note
-            $order->add_order_note(
-                sprintf(
-                /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-                    __(
-                        'Mollie webhook called, but payment also started via %s, so the order status is not updated.',
-                        'mollie-payments-for-woocommerce'
-                    ),
-                    $order_payment_method_title
-                )
-            );
+            $this->informNotUpdatingStatus($orderId, $this->id, $order);
         }
 
         $order->add_order_note(

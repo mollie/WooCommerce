@@ -76,7 +76,7 @@ class Mollie_WC_ApplePayButton_AjaxRequests
             return;
         }
         $validationUrl = $applePayRequestDataObject->validationUrl;
-        $completeDomain = get_site_url(); //https://www.example.com/bla/bla
+        $completeDomain = parse_url(get_site_url(), PHP_URL_HOST); //https://www.example.com/bla/bla
         $removeHttp = ["https://", "http://"];
         $regex = '/.+\.\w+\/?((\w*\/*)*)/i';//captures in $1 strings with the form bla or bla/ or bla/bla
         $domain = str_replace($removeHttp, "", $completeDomain);//www.example.com/bla/bla

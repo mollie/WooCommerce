@@ -1,9 +1,9 @@
 <?php
 
-namespace RequiredVersionDisabler;
+namespace EnvironmentChecker;
 
 use InvalidArgumentException;
-use RequiredVersionDisabler\Constraints\ConstraintsCollection;
+use EnvironmentChecker\Constraints\ConstraintsCollection;
 
 class ConstraintsCollectionFactory
 {

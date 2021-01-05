@@ -1,8 +1,8 @@
 <?php
 
-namespace RequiredVersionDisabler\Constraints;
+namespace EnvironmentChecker\Constraints;
 
-class PhpConstraint extends Constraint
+class WordPressConstraint extends Constraint
 {
 
     /**
@@ -18,24 +18,27 @@ class PhpConstraint extends Constraint
     }
 
     /**
-     * Check if the installation has the required PHP version
+     * Check if the installation has the required WP version
      * show notice if not.
      *
      * @return bool|mixed
      */
     public function check()
     {
-        $isPhpVersionCompatible = version_compare(
-            PHP_VERSION,
+        $WPCurrentVersion = get_bloginfo('version');
+
+        $isWordPressVersionCompatible = version_compare(
+            $WPCurrentVersion,
             $this->requiredVersion,
             '>='
         );
-        if (!$isPhpVersionCompatible) {
+
+        if (!$isWordPressVersionCompatible) {
             $message = sprintf(
                 esc_html__(
-                    '%1$s%3$s%2$s: Plugin disabled. PHP version has to be '
+                    '%1$s%3$s%2$s: Plugin disabled. WordPress version has to be '
                     . $this->requiredVersion
-                    . ' or higher. Please update your PHP version',
+                    . ' or higher. Please update your WordPress version',
                     'mollie-payments-for-woocommerce'
                 ),
                 '<strong>',
@@ -48,4 +51,5 @@ class PhpConstraint extends Constraint
 
         return true;
     }
+
 }

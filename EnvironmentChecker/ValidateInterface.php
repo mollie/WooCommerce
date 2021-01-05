@@ -1,6 +1,6 @@
 <?php
 
-namespace RequiredVersionDisabler;
+namespace EnvironmentChecker;
 
 /**
  * Interface ValidateInterface

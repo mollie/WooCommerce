@@ -15,7 +15,7 @@
  * WC tested up to: 4.5
  */
 
-use RequiredVersionDisabler\ConstraintsCollectionFactory;
+use EnvironmentChecker\ConstraintsCollectionFactory;
 
 
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');

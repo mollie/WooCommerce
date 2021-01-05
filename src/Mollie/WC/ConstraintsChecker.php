@@ -1,7 +1,7 @@
 <?php
 
-use RequiredVersionDisabler\ConstraintsCollectionFactory;
-use RequiredVersionDisabler\PluginConstraintsDisabler;
+use EnvironmentChecker\ConstraintsCollectionFactory;
+use EnvironmentChecker\PluginConstraintsDisabler;
 
 class Mollie_WC_ConstraintsChecker
 {

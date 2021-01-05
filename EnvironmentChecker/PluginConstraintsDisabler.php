@@ -1,8 +1,8 @@
 <?php
 
-namespace RequiredVersionDisabler;
+namespace EnvironmentChecker;
 
-use RequiredVersionDisabler\Constraints\ConstraintsCollection;
+use EnvironmentChecker\Constraints\ConstraintsCollection;
 
 class PluginConstraintsDisabler
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace RequiredVersionDisabler\Constraints;
+namespace EnvironmentChecker\Constraints;
 
 class WooCommerceConstraint extends Constraint
 {

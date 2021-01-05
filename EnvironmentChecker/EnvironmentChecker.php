@@ -1,8 +1,8 @@
 <?php
 
-namespace RequiredVersionDisabler;
+namespace EnvironmentChecker;
 
-use RequiredVersionDisabler\Constraints\Constraint;
+use EnvironmentChecker\Constraints\Constraint;
 
 class EnvironmentChecker {
 

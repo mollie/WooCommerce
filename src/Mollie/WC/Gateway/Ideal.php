@@ -28,10 +28,6 @@ class Mollie_WC_Gateway_Ideal extends Mollie_WC_Gateway_AbstractSepaRecurring
 	{
 		parent::init_form_fields();
 
-        if(!mollieWooCommerceIsDropdownEnabled('mollie_wc_gateway_ideal_settings')){
-            return;
-        }
-
 		$this->form_fields = array_merge($this->form_fields, array(
 			'issuers_dropdown_shown' => array(
 				'title'       => __('Show iDEAL banks dropdown', 'mollie-payments-for-woocommerce'),
@@ -89,6 +85,10 @@ class Mollie_WC_Gateway_Ideal extends Mollie_WC_Gateway_AbstractSepaRecurring
     {
         // Display description above issuers
         parent::payment_fields();
+
+        if(!mollieWooCommerceIsDropdownEnabled('mollie_wc_gateway_ideal_settings')){
+            return;
+        }
 
         $test_mode = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
 

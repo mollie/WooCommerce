@@ -11,7 +11,7 @@
  * Text Domain: mollie-payments-for-woocommerce
  * Domain Path: /languages
  * License: GPLv2 or later
- * WC requires at least: 2.2.0
+ * WC requires at least: 3.0
  * WC tested up to: 4.8
  */
 
@@ -204,11 +204,11 @@ function mollie_wc_plugin_inactive()
         return false;
     }
 
-    if (version_compare(get_option('woocommerce_version'), '2.2', '<')) {
+    if (version_compare(get_option('woocommerce_version'), '3.0', '<')) {
         echo '<div class="error"><p>';
         echo sprintf(
             esc_html__(
-                '%1$sMollie Payments for WooCommerce is inactive.%2$s This version requires WooCommerce 2.2 or newer. Please %3$supdate WooCommerce to version 2.2 or newer &raquo;%4$s',
+                '%1$sMollie Payments for WooCommerce is inactive.%2$s This version requires WooCommerce 3.0 or newer. Please %3$supdate WooCommerce to version 2.2 or newer &raquo;%4$s',
                 'mollie-payments-for-woocommerce'
             ),
             '<strong>',

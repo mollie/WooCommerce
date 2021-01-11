@@ -199,7 +199,10 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             ->with($varStubs->orderId, $varStubs->orderKey, $varStubs->untrailedUrl)
             ->willReturn($varStubs->urlWithParams);
         //check for multilanguage plugin enabled, receives url and adds it
-
+        $testee
+            ->expects($this->once())
+            ->method('getSiteUrlWithLanguage')
+            ->willReturn("{$varStubs->homeUrl}");
         expect('mollieWooCommerceDebug')
             ->withAnyArgs();
 

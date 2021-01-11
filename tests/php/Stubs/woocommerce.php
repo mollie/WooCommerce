@@ -475,6 +475,9 @@ define('DAY_IN_SECONDS', 24 * 60 * 60);
 
 class WC_Product
 {
+    public function get_id()
+    {
+    }
     public function get_type()
     {
     }

@@ -200,4 +200,14 @@ function mollieWooCommerceIsDropdownEnabled($gatewaySettingsName)
     return $optionValue == 'yes';
 }
 
+/**
+ * Check if the Voucher gateway is enabled.
+ *
+ * @return bool
+ */
+function mollieWooCommerceIsVoucherEnabled(){
+    $voucherSettings = get_option('mollie_wc_gateway_mealvoucher_settings');
+    return $voucherSettings? ($voucherSettings['enabled'] == 'yes'): false;
+}
+
 

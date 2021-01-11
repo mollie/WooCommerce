@@ -187,5 +187,17 @@ function checkIndexExistOrDefault($array, $key, $default)
 {
     return isset($array[$key]) ? $array[$key] : $default;
 }
+/**
+ * Check if the issuers dropdown for this gateway is enabled.
+ *
+ * @param string $gatewaySettingsName mollie_wc_gateway_xxxx_settings
+ * @return bool
+ */
+function mollieWooCommerceIsDropdownEnabled($gatewaySettingsName)
+{
+    $gatewaySettings = get_option($gatewaySettingsName);
+    $optionValue = checkIndexExistOrDefault($gatewaySettings, 'issuers_dropdown_shown', false);
+    return $optionValue == 'yes';
+}
 
 

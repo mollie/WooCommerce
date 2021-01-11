@@ -14,7 +14,7 @@ class Mollie_WC_Gateway_Giftcard extends Mollie_WC_Gateway_Abstract
         );
 
 	    /* Has issuers dropdown */
-	    $this->has_fields = TRUE;
+	    $this->has_fields = mollieWooCommerceIsDropdownEnabled('mollie_wc_gateway_giftcard_settings');
 
         parent::__construct();
     }
@@ -83,6 +83,10 @@ class Mollie_WC_Gateway_Giftcard extends Mollie_WC_Gateway_Abstract
 
 		// Display description above issuers
 		parent::payment_fields();
+
+        if(!mollieWooCommerceIsDropdownEnabled('mollie_wc_gateway_giftcard_settings')){
+            return;
+        }
 
 		$test_mode = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
 

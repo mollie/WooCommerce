@@ -15,7 +15,6 @@
  * WC tested up to: 4.5
  */
 
-use EnvironmentChecker\ConstraintsCollectionFactory;
 
 
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
@@ -130,14 +129,9 @@ $bootstrap = Closure::bind(
                     'init',
                     'mollie_wc_plugin_init'
                 );
-                $checker = new Mollie_WC_ConstraintsChecker(
-                    [
-                        ConstraintsCollectionFactory::PHP_CONSTRAINT => '5.6',
-                        ConstraintsCollectionFactory::WORDPRESS_CONSTRAINT => '3.8',
-                        ConstraintsCollectionFactory::WOOCOMMERCE_CONSTRAINT => '3.0',
-                    ]
-                );
-                $meetRequirements = $checker->checkConstraints();
+
+                $checker = new Mollie_WC_ActivationHandle_ConstraintsChecker();
+                $meetRequirements = $checker->handleActivation();
                 if(!$meetRequirements){
                     $nextScheduledTime = wp_next_scheduled('pending_payment_confirmation_check');
                     if ($nextScheduledTime) {

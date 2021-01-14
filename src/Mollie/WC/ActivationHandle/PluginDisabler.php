@@ -1,34 +1,23 @@
 <?php
 
-namespace EnvironmentChecker;
-
-use EnvironmentChecker\Constraints\ConstraintsCollection;
-
-class PluginConstraintsDisabler
+class Mollie_WC_ActivationHandle_PluginDisabler
 {
 
-    /**
-     * @var EnvironmentChecker
-     */
-    private $checker;
+
     private $pluginSlug;
     private $initFunctionName;
 
     /**
      * PluginConstraintsDisabler constructor.
      *
-     * @param ConstraintsCollection $constraintsArray
      * @param string                $pluginSlug
      * @param string                $initFunctionName
      */
     public function __construct(
-        ConstraintsCollection $constraintsArray,
         $pluginSlug,
         $initFunctionName
     ) {
-        $this->checker = new EnvironmentChecker(
-            $constraintsArray->constraints()
-        );
+
         $this->pluginSlug = $pluginSlug;
         $this->initFunctionName = $initFunctionName;
     }
@@ -36,20 +25,16 @@ class PluginConstraintsDisabler
     /**
      * Disable the plugin if conditions apply
      */
-    public function maybeDisable()
+    public function disableAll()
     {
-        if ($this->checker->isCompatible()) {
-            return true;
-        }
         $this->disableAutomaticUpdate();
         $this->disablePluginActivation($this->initFunctionName);
-        return false;
     }
 
     /**
      * Disable automatic updates of this plugin
      */
-    protected function disableAutomaticUpdate()
+    public function disableAutomaticUpdate()
     {
         add_filter(
             'auto_update_plugin',
@@ -64,7 +49,7 @@ class PluginConstraintsDisabler
      *
      * @param string $initFunctionName Name of the method that initiates the plugin.
      */
-    protected function disablePluginActivation($initFunctionName)
+    public function disablePluginActivation($initFunctionName)
     {
         remove_action('init', $initFunctionName);
     }

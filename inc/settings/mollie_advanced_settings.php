@@ -64,9 +64,17 @@ return [
         'id'                => $pluginName . '_' .'customer_details',
         'title'             => __('Store customer details at Mollie', 'mollie-payments-for-woocommerce'),
         /* translators: Placeholder 1: enabled or disabled */
-        'desc'              => sprintf(__('Should Mollie store customers name and email address for Single Click Payments? Default <code>%s</code>. Required if WooCommerce Subscriptions is being used!', 'mollie-payments-for-woocommerce'), strtolower(__('Enabled', 'mollie-payments-for-woocommerce'))),
+        'desc' => sprintf(
+            __(
+                'Should Mollie store customers name and email address for Single Click Payments? Default <code>%1$s</code>. Required if WooCommerce Subscriptions is being used! Read more about <a href="https://help.mollie.com/hc/en-us/articles/115000671249-What-are-single-click-payments-and-how-does-it-work-">%2$s</a> and how it improves your conversion.',
+                'mollie-payments-for-woocommerce'
+            ),
+            strtolower(__('Enabled', 'mollie-payments-for-woocommerce')),
+            __('Single Click Payments', 'mollie-payments-for-woocommerce')
+        ),
         'type'              => 'checkbox',
         'default'           => 'yes',
+
 
     ],
 

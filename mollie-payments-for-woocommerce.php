@@ -59,7 +59,7 @@ function mollie_wc_plugin_activation_hook()
 }
 
 
-function showWcDroppingNotice()
+function mollieWcShowWcDroppingNotice()
 {
     if (get_option('mollie-payments-for-woocommerce-wc-drop')) {
         return false;
@@ -221,6 +221,30 @@ function mollie_wc_plugin_inactive()
     }
 }
 
+function mollieWcNoticeApiKeyMissing(){
+    //if test/live keys are in db return
+    $liveKeySet = get_option('mollie-payments-for-woocommerce_live_api_key');
+    $testKeySet = get_option('mollie-payments-for-woocommerce_test_api_key');
+    $apiKeysSetted = $liveKeySet || $testKeySet;
+    if ($apiKeysSetted) {
+        return;
+    }
+
+    $notice = new Mollie_WC_Notice_AdminNotice();
+    $message = sprintf(
+        esc_html__(
+            '%1$sMollie Payments for WooCommerce: API keys missing%2$s Please%3$s set your API keys here%4$s.',
+            'mollie-payments-for-woocommerce'
+        ),
+        '<strong>',
+        '</strong>',
+        '<a href="' . esc_url(admin_url('admin.php?page=wc-settings&tab=mollie_settings')) . '">',
+        '</a>'
+    );
+
+    $notice->addAdminNotice('notice-error is-dismissible', $message);
+}
+
 function mollie_wc_plugin_autoload()
 {
     $autoloader = __DIR__ . '/vendor/autoload.php';
@@ -258,7 +282,7 @@ $bootstrap = Closure::bind(
                     add_action('admin_notices', 'mollie_wc_plugin_inactive');
                     return;
                 }
-                showWcDroppingNotice();
+                mollieWcShowWcDroppingNotice();
 
                 add_action(
                     'init',
@@ -287,6 +311,7 @@ $bootstrap = Closure::bind(
                         return $value;
                     }
                 );
+                mollieWcNoticeApiKeyMissing();
             }
         );
     },

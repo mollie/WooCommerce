@@ -42,7 +42,7 @@ class Mollie_WC_Helper_ApplePayDirectHandler
                     '<a href="https://developer.apple.com/documentation/apple_pay_on_the_web/setting_up_your_server">',
                     '</a>'
             );
-            $this->adminNotice->addAdminNotice('error', $message);
+            $this->adminNotice->addNotice('error', $message);
             return;
         }
 
@@ -58,7 +58,7 @@ class Mollie_WC_Helper_ApplePayDirectHandler
                     '</a>'
             );
 
-            $this->adminNotice->addAdminNotice('error', $message);
+            $this->adminNotice->addNotice('error', $message);
         }
         add_action(
                 'woocommerce_after_add_to_cart_form',

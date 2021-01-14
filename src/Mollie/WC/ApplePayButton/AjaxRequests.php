@@ -76,9 +76,13 @@ class Mollie_WC_ApplePayButton_AjaxRequests
             return;
         }
         $validationUrl = $applePayRequestDataObject->validationUrl;
-        $completeDomain = get_site_url();
-        $removeHttp = ["https://", "http://", "/"];
-        $domain = str_replace($removeHttp, "", $completeDomain);
+        $completeDomain = parse_url(get_site_url(), PHP_URL_HOST); //https://www.example.com/bla/bla
+        $removeHttp = ["https://", "http://"];
+        $regex = '/.+\.\w+\/?((\w*\/*)*)/i';//captures in $1 strings with the form bla or bla/ or bla/bla
+        $domain = str_replace($removeHttp, "", $completeDomain);//www.example.com/bla/bla
+        $ending = preg_replace($regex, '$1', $domain);
+        $domain = str_replace($ending, "", $domain);//www.example.com/
+        $domain = str_replace("/", "", $domain);//www.example.com
 
         try {
             $json = $this->validationApiWalletsEndpointCall(
@@ -454,16 +458,24 @@ class Mollie_WC_ApplePayButton_AjaxRequests
         $base_location = wc_get_base_location();
         $shopCountryCode = $base_location['country'];
         WC()->customer->set_shipping_country(
-            $address['country'] ?: $shopCountryCode
+            isset($address['country'])
+                ? $address['country']
+                : $shopCountryCode
         );
         WC()->customer->set_billing_country(
-            $address['country'] ?: $shopCountryCode
+            isset($address['country'])
+                ? $address['country']
+                : $shopCountryCode
         );
         WC()->customer->set_shipping_postcode(
-            $address['postcode'] ?: ''
+            isset($address['postcode'])
+                ? $address['postcode']
+                : $shopCountryCode
         );
         WC()->customer->set_shipping_city(
-            $address['city'] ?: ''
+            isset($address['city'])
+                ? $address['city']
+                : $shopCountryCode
         );
     }
 

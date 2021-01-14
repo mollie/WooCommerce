@@ -42,21 +42,24 @@ function mollieWooCommerceIsTestModeEnabled()
 }
 
 /**
+ * If we are calling this the api key has been updated, we need a new api object
+ * to retrieve a new profile id
+ *
  * @return CurrentProfile
  * @throws ApiException
  */
 function mollieWooCommerceMerchantProfile()
 {
-    static $profile = null;
+    $isTestMode = mollieWooCommerceIsTestModeEnabled();
 
-    if ($profile === null) {
-        $isTestMode = mollieWooCommerceIsTestModeEnabled();
+    $apiHelper = new Mollie_WC_Helper_Api(
+        Mollie_WC_Plugin::getSettingsHelper()
+    );
 
-        $apiHelper = Mollie_WC_Plugin::getApiHelper();
-        $profile = $apiHelper->getApiClient($isTestMode)->profiles->getCurrent();
-    }
-
-    return $profile;
+    return $apiHelper->getApiClient(
+        $isTestMode,
+        true
+    )->profiles->getCurrent();
 }
 
 /**
@@ -183,6 +186,28 @@ function mollieWooCommerceisApplePayDirectEnabled()
 function checkIndexExistOrDefault($array, $key, $default)
 {
     return isset($array[$key]) ? $array[$key] : $default;
+}
+/**
+ * Check if the issuers dropdown for this gateway is enabled.
+ *
+ * @param string $gatewaySettingsName mollie_wc_gateway_xxxx_settings
+ * @return bool
+ */
+function mollieWooCommerceIsDropdownEnabled($gatewaySettingsName)
+{
+    $gatewaySettings = get_option($gatewaySettingsName);
+    $optionValue = checkIndexExistOrDefault($gatewaySettings, 'issuers_dropdown_shown', false);
+    return $optionValue == 'yes';
+}
+
+/**
+ * Check if the Voucher gateway is enabled.
+ *
+ * @return bool
+ */
+function mollieWooCommerceIsVoucherEnabled(){
+    $voucherSettings = get_option('mollie_wc_gateway_mealvoucher_settings');
+    return $voucherSettings? ($voucherSettings['enabled'] == 'yes'): false;
 }
 
 

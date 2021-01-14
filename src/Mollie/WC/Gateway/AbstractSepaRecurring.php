@@ -95,7 +95,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
         $period = 'P'.self::WAITING_CONFIRMATION_PERIOD_DAYS . 'D';
         $confirmationDate->add(new DateInterval($period));
 
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+	    if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 		    $wpdb->insert(
 			    $wpdb->mollie_pending_payment,
 			    array(
@@ -123,7 +123,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     {
         $payment_method_title = parent::getPaymentMethodTitle($payment);
         $orderId = $payment->metadata->order_id;
-        if ($orderId && Mollie_WC_Plugin::getDataHelper()->isSubscription($orderId) && $payment->method == $this->getRecurringMollieMethodId()){
+        if ($orderId && Mollie_WC_Plugin::getDataHelper()->isWcSubscription($orderId) && $payment->method == $this->getRecurringMollieMethodId()){
             $payment_method_title = $this->getRecurringMollieMethodTitle();
         }
 
@@ -136,12 +136,12 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
      */
     protected function handlePaidOrderWebhook($order, $payment)
     {
-        $orderId = version_compare(WC_VERSION, '3.0', '<')
+        $orderId = version_compare(mollieWooCommerceWcVersion(), '3.0', '<')
             ? $order->id
             : $order->get_id();
 
         // Duplicate webhook call
-        if (Mollie_WC_Plugin::getDataHelper()->isSubscription($orderId)
+        if (Mollie_WC_Plugin::getDataHelper()->isWcSubscription($orderId)
             && isset($payment->sequenceType)
             && $payment->sequenceType == SequenceType::SEQUENCETYPE_RECURRING
         ) {

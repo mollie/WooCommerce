@@ -63,7 +63,7 @@ class WC_Tools_Subscriptions_Status_Button {
 		foreach ( $subscriptions as $subscription ) {
 
 			// Get all data in the correct way for WooCommerce 3.x or lower
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 				$subscription_is_manual = get_post_meta( $subscription->id, '_requires_manual_renewal', true );
 				$subscription_status    = $subscription->status;
 

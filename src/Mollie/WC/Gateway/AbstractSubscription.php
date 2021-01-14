@@ -76,7 +76,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 		$return_url          = $this->getReturnUrl( $order );
 		$webhook_url         = $this->getWebhookUrl( $order );
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 
 			$data = array_filter( array (
 				'amount'       => array (
@@ -127,17 +127,17 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 	public function update_subscription_status_for_direct_debit( $renewal_order ) {
 
 		// Get renewal order id
-		$renewal_order_id  = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $renewal_order->id : $renewal_order->get_id();
+		$renewal_order_id  = ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) ? $renewal_order->id : $renewal_order->get_id();
 
 		// Make sure order is a renewal order with subscription
 		if ( wcs_order_contains_renewal( $renewal_order_id ) ) {
 
 			// Get required information about order and subscription
 			$renewal_order     = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $renewal_order_id );
-			$mollie_payment_id = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? get_post_meta( $renewal_order_id, '_mollie_payment_id', $single = true ) : $renewal_order->get_meta( '_mollie_payment_id', $single = true );
-			$subscription_id   = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? get_post_meta( $renewal_order_id, '_subscription_renewal', $single = true ) : $renewal_order->get_meta( '_subscription_renewal', $single = true );
+			$mollie_payment_id = ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) ? get_post_meta( $renewal_order_id, '_mollie_payment_id', $single = true ) : $renewal_order->get_meta( '_mollie_payment_id', $single = true );
+			$subscription_id   = ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) ? get_post_meta( $renewal_order_id, '_subscription_renewal', $single = true ) : $renewal_order->get_meta( '_subscription_renewal', $single = true );
 			$subscription      = wcs_get_subscription( $subscription_id );
-			$current_method    = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? get_post_meta( $renewal_order_id, '_payment_method', $single = true ) : $subscription->get_payment_method();
+			$current_method    = ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) ? get_post_meta( $renewal_order_id, '_payment_method', $single = true ) : $subscription->get_payment_method();
 
 			// Check that subscription status isn't already active
 			if ( $subscription->get_status() == 'active' ) {
@@ -212,7 +212,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 		    return array ( 'result' => 'failure' );
 	    }
 
-	    $renewal_order_id 	= ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $renewal_order->id : $renewal_order->get_id();
+	    $renewal_order_id 	= ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) ? $renewal_order->id : $renewal_order->get_id();
 
 	    // Allow developers to hook into the subscription renewal payment before it processed
 	    do_action(Mollie_WC_Plugin::PLUGIN_ID . '_before_renewal_payment_created', $renewal_order);
@@ -234,8 +234,8 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
 	    $subscriptions                  = wcs_get_subscriptions_for_renewal_order( $renewal_order->get_id() );
 	    $subscription                   = array_pop( $subscriptions ); // Just need one valid subscription
-	    $subscription_id                = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $subscription->id : $subscription->get_id();
-	    $subscription_mollie_payment_id = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? get_post_meta( $subscription_id, '_mollie_payment_id', $single = true ) : $subscription->get_meta( '_mollie_payment_id' );
+	    $subscription_id                = ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) ? $subscription->id : $subscription->get_id();
+	    $subscription_mollie_payment_id = ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) ? get_post_meta( $subscription_id, '_mollie_payment_id', $single = true ) : $subscription->get_meta( '_mollie_payment_id' );
 
 	    if ( ! empty( $subscription_mollie_payment_id ) && ! empty( $subscription )  ) {
 		    $customer_id = $this->restore_mollie_customer_id_and_mandate( $customer_id, $subscription_mollie_payment_id, $subscription );
@@ -335,7 +335,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
     {
         $result = false;
         $subscriptions = array();
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+	    if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 		    if ( wcs_order_contains_renewal( $order->id) ) {
 			    $subscriptions = wcs_get_subscriptions_for_renewal_order( $order->id );
 		    }
@@ -404,7 +404,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
 		$current_method = get_post_meta( $renewal_order_id, '_payment_method', $single = true );
 		if ( in_array( $current_method, $methods_needing_update ) && $payment->method == 'directdebit' ) {
-			if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 				update_post_meta( $renewal_order_id, '_payment_method', 'mollie_wc_gateway_directdebit' );
 				update_post_meta( $renewal_order_id, '_payment_method_title', 'SEPA Direct Debit' );
 			} else {
@@ -435,7 +435,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
      */
     public function getOrderMollieCustomerId($order)
     {
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+	    if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 		    $customerId = get_post_meta( $order->id, '_mollie_customer_id', true );
 	    } else {
 		    $customerId = $order->get_meta( '_mollie_customer_id', true );
@@ -481,7 +481,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
      */
     public function delete_renewal_meta( $renewal_order )
     {
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+	    if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 		    delete_post_meta( $renewal_order->id, '_mollie_payment_id' );
 		    delete_post_meta( $renewal_order->id, '_mollie_cancelled_payment_id' );
 	    } else {
@@ -502,7 +502,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 	 */
 	public function add_subscription_payment_meta( $payment_meta, $subscription ) {
 
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 			$mollie_payment_id   = get_post_meta( $subscription->id, '_mollie_payment_id', true );
 			$mollie_payment_mode = get_post_meta( $subscription->id, '_mollie_payment_mode', true );
 			$mollie_customer_id  = get_post_meta( $subscription->id, '_mollie_customer_id', true );
@@ -554,7 +554,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
      */
     public function update_failing_payment_method( $subscription, $renewal_order )
     {
-	    if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+	    if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
 		    update_post_meta( $subscription->id, '_mollie_customer_id', $renewal_order->mollie_customer_id );
 		    update_post_meta( $subscription->id, '_mollie_payment_id', $renewal_order->mollie_payment_id );
 	    } else {
@@ -574,7 +574,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 	 */
     public function process_payment ($order_id)
     {
-        $isSubscription = Mollie_WC_Plugin::getDataHelper()->isSubscription($order_id);
+        $isSubscription = Mollie_WC_Plugin::getDataHelper()->isWcSubscription($order_id);
         if ($isSubscription){
             $result = $this->process_subscription_payment($order_id);
             return $result;
@@ -596,7 +596,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 
 		try {
 			// Get subscription ID
-			$subscription_id = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $subscription->id : $subscription->get_id();
+			$subscription_id = ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) ? $subscription->id : $subscription->get_id();
 
 			// Get full payment object from Mollie API
 			$payment_object_resource = Mollie_WC_Plugin::getPaymentFactoryHelper()->getPaymentObject( $mollie_payment_id );
@@ -682,8 +682,8 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 				// consumerName can be empty for Bancontact payments, in that case use the WooCommerce customer name
 				if ( empty( $options['consumerName'] ) ) {
 
-					$billing_first_name = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $subscription->billing_first_name : $subscription->get_billing_first_name();
-					$billing_last_name  = ( version_compare( WC_VERSION, '3.0', '<' ) ) ? $subscription->billing_last_name : $subscription->get_billing_last_name();
+					$billing_first_name = ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) ? $subscription->billing_first_name : $subscription->get_billing_first_name();
+					$billing_last_name  = ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) ? $subscription->billing_last_name : $subscription->get_billing_last_name();
 
 					$options['consumerName'] = $billing_first_name . ' ' . $billing_last_name;
 				}

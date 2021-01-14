@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
+    <data-source source="LOCAL" name="mollie-wc.myhost" uuid="2713ed1e-46ee-4482-af43-45c7d5c53ab1">
+      <driver-ref>mariadb</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.mariadb.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mariadb://mollie-wc.myhost:3306/wordpress</jdbc-url>
+    </data-source>
+  </component>
+</project>

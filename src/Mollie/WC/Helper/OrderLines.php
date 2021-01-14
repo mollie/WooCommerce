@@ -75,8 +75,7 @@ class Mollie_WC_Helper_OrderLines {
 	 * @access private
 	 */
 	private function process_items() {
-        $mealvoucherSettings = get_option('mollie_wc_gateway_mealvoucher_settings');
-	    $isMealVoucherEnabled = $mealvoucherSettings? ($mealvoucherSettings['enabled'] == 'yes'): true;
+	    $isMealVoucherEnabled = mollieWooCommerceIsVoucherEnabled();
 		foreach ( $this->order->get_items() as $cart_item ) {
 
 			if ( $cart_item['quantity'] ) {
@@ -408,14 +407,34 @@ class Mollie_WC_Helper_OrderLines {
         );
         $defaultCategory = $mealvoucherSettings['mealvoucher_category_default'];
         $category = $defaultCategory;
-        if ($product) {
-            $localCategory = get_post_meta(
-                $product->get_id(),
-                Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
-                true
-            );
-            $category = $localCategory ? $localCategory : $defaultCategory;
+
+        if (!$product) {
+            return $category;
         }
+
+        //if product has taxonomy associated, retrieve voucher cat from there.
+        $catTerms = get_the_terms( $product->get_id(), 'product_cat' );
+        foreach ($catTerms as $term){
+            $term_id = $term->term_id;
+            $metaVoucher = get_term_meta($term_id, '_mollie_voucher_category', true);
+            $category =$metaVoucher? $metaVoucher : $category;
+        }
+
+        //local product voucher category
+        $localCategory = get_post_meta(
+            $product->get_id(),
+            Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+            false
+        );
+        $category = $localCategory[0] ? $localCategory[0] : $category;
+
+        //if product is a single variation could have a voucher meta associated
+        $simpleVariationCategory = get_post_meta(
+            $product->get_id(),
+            'voucher',
+            false
+        );
+        $category = $simpleVariationCategory ? $simpleVariationCategory[0] : $category;
 
         return $category;
     }

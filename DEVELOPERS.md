@@ -1,4 +1,4 @@
-# Developers
+cd# Developers
 This is a guide for software engineers who wish to take part in the development of this product.
 
 ## Environment Setup
@@ -19,7 +19,7 @@ template package [`wp-oop/plugin-boilerplate`][].
 4. Install PHP dependencies with Composer.
    
    Use the PHPStorm integration, or CLI. Either way, All operations with Composer
-   have to be done in the `build` service and the corresponding PHPStorm remote interpreter.
+   have to be done in the `composer` service and the corresponding PHPStorm remote interpreter.
    
 5. Install JS dependencies with Yarn.
    

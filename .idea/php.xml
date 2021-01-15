@@ -1,70 +1,75 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PhpIncludePathManager">
-    <include_path>
-      <path value="$PROJECT_DIR$/vendor/phpdocumentor/reflection-docblock" />
-      <path value="$PROJECT_DIR$/vendor/phpdocumentor/reflection-common" />
-      <path value="$PROJECT_DIR$/vendor/phpdocumentor/type-resolver" />
-      <path value="$PROJECT_DIR$/vendor/woocommerce/woocommerce" />
-      <path value="$PROJECT_DIR$/vendor/guzzlehttp/guzzle" />
-      <path value="$PROJECT_DIR$/vendor/johnpbloch/wordpress-core" />
-      <path value="$PROJECT_DIR$/vendor/guzzlehttp/promises" />
-      <path value="$PROJECT_DIR$/vendor/guzzlehttp/psr7" />
-      <path value="$PROJECT_DIR$/vendor/fzaninotto/faker" />
-      <path value="$PROJECT_DIR$/vendor/webmozart/assert" />
-      <path value="$PROJECT_DIR$/vendor/antecedent/patchwork" />
-      <path value="$PROJECT_DIR$/vendor/sebastian/version" />
-      <path value="$PROJECT_DIR$/vendor/sebastian/code-unit-reverse-lookup" />
-      <path value="$PROJECT_DIR$/vendor/sebastian/environment" />
-      <path value="$PROJECT_DIR$/vendor/sebastian/comparator" />
-      <path value="$PROJECT_DIR$/vendor/sebastian/exporter" />
-      <path value="$PROJECT_DIR$/vendor/sebastian/object-enumerator" />
-      <path value="$PROJECT_DIR$/vendor/sebastian/global-state" />
-      <path value="$PROJECT_DIR$/vendor/sebastian/diff" />
-      <path value="$PROJECT_DIR$/vendor/sebastian/resource-operations" />
-      <path value="$PROJECT_DIR$/vendor/sebastian/recursion-context" />
-      <path value="$PROJECT_DIR$/vendor/ptrofimov/xpmock" />
-      <path value="$PROJECT_DIR$/vendor/ralouphie/getallheaders" />
-      <path value="$PROJECT_DIR$/vendor/doctrine/instantiator" />
-      <path value="$PROJECT_DIR$/vendor/hamcrest/hamcrest-php" />
-      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-ctype" />
-      <path value="$PROJECT_DIR$/vendor/phpunit/php-code-coverage" />
-      <path value="$PROJECT_DIR$/vendor/phpunit/phpunit" />
-      <path value="$PROJECT_DIR$/vendor/phpunit/php-file-iterator" />
-      <path value="$PROJECT_DIR$/vendor/phpunit/php-text-template" />
-      <path value="$PROJECT_DIR$/vendor/phpunit/php-timer" />
-      <path value="$PROJECT_DIR$/vendor/phpspec/prophecy" />
-      <path value="$PROJECT_DIR$/vendor/phpunit/php-token-stream" />
-      <path value="$PROJECT_DIR$/vendor/mockery/mockery" />
-      <path value="$PROJECT_DIR$/vendor/myclabs/deep-copy" />
-      <path value="$PROJECT_DIR$/vendor/brain/monkey" />
-      <path value="$PROJECT_DIR$/vendor/mollie/mollie-api-php" />
-      <path value="$PROJECT_DIR$/vendor/psr/http-message" />
-      <path value="$PROJECT_DIR$/vendor/composer" />
-      <path value="$PROJECT_DIR$/vendor/symfony/yaml" />
-      <path value="$PROJECT_DIR$/vendor/phpunit/phpunit-mock-objects" />
-      <path value="$PROJECT_DIR$/vendor/automattic/jetpack-autoloader" />
-      <path value="$PROJECT_DIR$/vendor/theseer/tokenizer" />
-      <path value="$PROJECT_DIR$/vendor/maxmind-db/reader" />
-      <path value="$PROJECT_DIR$/vendor/woocommerce/action-scheduler" />
-      <path value="$PROJECT_DIR$/vendor/woocommerce/woocommerce-admin" />
-      <path value="$PROJECT_DIR$/vendor/woocommerce/woocommerce-blocks" />
-      <path value="$PROJECT_DIR$/vendor/symfony/css-selector" />
-      <path value="$PROJECT_DIR$/vendor/league/container" />
-      <path value="$PROJECT_DIR$/vendor/psr/http-client" />
-      <path value="$PROJECT_DIR$/vendor/psr/container" />
-      <path value="$PROJECT_DIR$/vendor/phar-io/manifest" />
-      <path value="$PROJECT_DIR$/vendor/phar-io/version" />
-      <path value="$PROJECT_DIR$/vendor/automattic/jetpack-constants" />
-      <path value="$PROJECT_DIR$/vendor/pelago/emogrifier" />
-      <path value="$PROJECT_DIR$/vendor/sebastian/object-reflector" />
-      <path value="$PROJECT_DIR$/vendor/woocommerce/woocommerce-rest-api" />
-      <path value="$PROJECT_DIR$/vendor/inpsyde/plugin-environment-checker" />
-    </include_path>
-  </component>
-  <component name="PhpUnit">
-    <phpunit_settings>
-      <PhpUnitSettings configuration_file_path="$PROJECT_DIR$/phpunit.xml.dist" custom_loader_path="$PROJECT_DIR$/vendor/autoload.php" use_configuration_file="true" />
-    </phpunit_settings>
-  </component>
+    <component name="PhpIncludePathManager">
+        <include_path>
+            <path value="$PROJECT_DIR$/vendor/phpdocumentor/reflection-docblock" />
+            <path value="$PROJECT_DIR$/vendor/phpdocumentor/reflection-common" />
+            <path value="$PROJECT_DIR$/vendor/phpdocumentor/type-resolver" />
+            <path value="$PROJECT_DIR$/vendor/woocommerce/woocommerce" />
+            <path value="$PROJECT_DIR$/vendor/guzzlehttp/guzzle" />
+            <path value="$PROJECT_DIR$/vendor/johnpbloch/wordpress-core" />
+            <path value="$PROJECT_DIR$/vendor/guzzlehttp/promises" />
+            <path value="$PROJECT_DIR$/vendor/guzzlehttp/psr7" />
+            <path value="$PROJECT_DIR$/vendor/fzaninotto/faker" />
+            <path value="$PROJECT_DIR$/vendor/webmozart/assert" />
+            <path value="$PROJECT_DIR$/vendor/antecedent/patchwork" />
+            <path value="$PROJECT_DIR$/vendor/sebastian/version" />
+            <path value="$PROJECT_DIR$/vendor/sebastian/code-unit-reverse-lookup" />
+            <path value="$PROJECT_DIR$/vendor/sebastian/environment" />
+            <path value="$PROJECT_DIR$/vendor/sebastian/comparator" />
+            <path value="$PROJECT_DIR$/vendor/sebastian/exporter" />
+            <path value="$PROJECT_DIR$/vendor/sebastian/object-enumerator" />
+            <path value="$PROJECT_DIR$/vendor/sebastian/global-state" />
+            <path value="$PROJECT_DIR$/vendor/sebastian/diff" />
+            <path value="$PROJECT_DIR$/vendor/sebastian/resource-operations" />
+            <path value="$PROJECT_DIR$/vendor/sebastian/recursion-context" />
+            <path value="$PROJECT_DIR$/vendor/ptrofimov/xpmock" />
+            <path value="$PROJECT_DIR$/vendor/ralouphie/getallheaders" />
+            <path value="$PROJECT_DIR$/vendor/doctrine/instantiator" />
+            <path value="$PROJECT_DIR$/vendor/hamcrest/hamcrest-php" />
+            <path value="$PROJECT_DIR$/vendor/symfony/polyfill-ctype" />
+            <path value="$PROJECT_DIR$/vendor/phpunit/php-code-coverage" />
+            <path value="$PROJECT_DIR$/vendor/phpunit/phpunit" />
+            <path value="$PROJECT_DIR$/vendor/phpunit/php-file-iterator" />
+            <path value="$PROJECT_DIR$/vendor/phpunit/php-text-template" />
+            <path value="$PROJECT_DIR$/vendor/phpunit/php-timer" />
+            <path value="$PROJECT_DIR$/vendor/phpspec/prophecy" />
+            <path value="$PROJECT_DIR$/vendor/phpunit/php-token-stream" />
+            <path value="$PROJECT_DIR$/vendor/mockery/mockery" />
+            <path value="$PROJECT_DIR$/vendor/myclabs/deep-copy" />
+            <path value="$PROJECT_DIR$/vendor/brain/monkey" />
+            <path value="$PROJECT_DIR$/vendor/mollie/mollie-api-php" />
+            <path value="$PROJECT_DIR$/vendor/psr/http-message" />
+            <path value="$PROJECT_DIR$/vendor/composer" />
+            <path value="$PROJECT_DIR$/vendor/symfony/yaml" />
+            <path value="$PROJECT_DIR$/vendor/phpunit/phpunit-mock-objects" />
+            <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php72" />
+            <path value="$PROJECT_DIR$/vendor/symfony/polyfill-intl-normalizer" />
+            <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php70" />
+            <path value="$PROJECT_DIR$/vendor/symfony/polyfill-intl-idn" />
+            <path value="$PROJECT_DIR$/vendor/paragonie/random_compat" />
+            <path value="$PROJECT_DIR$/vendor/automattic/jetpack-autoloader" />
+            <path value="$PROJECT_DIR$/vendor/theseer/tokenizer" />
+            <path value="$PROJECT_DIR$/vendor/maxmind-db/reader" />
+            <path value="$PROJECT_DIR$/vendor/woocommerce/action-scheduler" />
+            <path value="$PROJECT_DIR$/vendor/woocommerce/woocommerce-admin" />
+            <path value="$PROJECT_DIR$/vendor/woocommerce/woocommerce-blocks" />
+            <path value="$PROJECT_DIR$/vendor/symfony/css-selector" />
+            <path value="$PROJECT_DIR$/vendor/league/container" />
+            <path value="$PROJECT_DIR$/vendor/psr/http-client" />
+            <path value="$PROJECT_DIR$/vendor/psr/container" />
+            <path value="$PROJECT_DIR$/vendor/phar-io/manifest" />
+            <path value="$PROJECT_DIR$/vendor/phar-io/version" />
+            <path value="$PROJECT_DIR$/vendor/automattic/jetpack-constants" />
+            <path value="$PROJECT_DIR$/vendor/pelago/emogrifier" />
+            <path value="$PROJECT_DIR$/vendor/sebastian/object-reflector" />
+            <path value="$PROJECT_DIR$/vendor/woocommerce/woocommerce-rest-api" />
+            <path value="$PROJECT_DIR$/vendor/inpsyde/environment-validator" />
+        </include_path>
+    </component>
+    <component name="PhpUnit">
+        <phpunit_settings>
+            <PhpUnitSettings configuration_file_path="$PROJECT_DIR$/phpunit.xml.dist" custom_loader_path="$PROJECT_DIR$/vendor/autoload.php" use_configuration_file="true" />
+        </phpunit_settings>
+    </component>
 </project>

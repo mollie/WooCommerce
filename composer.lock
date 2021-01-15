@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "529815be7df2928fb20308367bca08e9",
+    "content-hash": "c401eb086a4799d4d1dd1c7cf9671ad7",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -287,6 +287,52 @@
                 "url"
             ],
             "time": "2020-12-08T11:45:39+00:00"
+        },
+        {
+            "name": "inpsyde/plugin-environment-checker",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/inpsyde/plugin-environment-checker.git",
+                "reference": "13bf7329502325448004035a55df23fbf213648f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/inpsyde/plugin-environment-checker/zipball/13bf7329502325448004035a55df23fbf213648f",
+                "reference": "13bf7329502325448004035a55df23fbf213648f",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.2"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "EnvironmentChecker\\": "src/"
+                }
+            },
+            "license": [
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Inpsyde GmbH",
+                    "email": "hello@inpsyde.com",
+                    "homepage": "http://inpsyde.com",
+                    "role": "Company"
+                },
+                {
+                    "name": "Carmen Maymo",
+                    "email": "c.maymo@inpsyde.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Wordpress package to be used by plugins to check certain environment requirements.",
+            "support": {
+                "source": "https://github.com/inpsyde/plugin-environment-checker/tree/main",
+                "issues": "https://github.com/inpsyde/plugin-environment-checker/issues"
+            },
+            "time": "2021-01-14T12:30:51+00:00"
         },
         {
             "name": "mollie/mollie-api-php",
@@ -3222,6 +3268,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
+        "inpsyde/plugin-environment-checker": 20,
         "fzaninotto/faker": 20
     },
     "prefer-stable": false,

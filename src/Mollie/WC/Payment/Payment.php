@@ -36,8 +36,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 	 */
 	public function getPaymentRequestData( $order, $customer_id ) {
         $settings_helper = Mollie_WC_Plugin::getSettingsHelper();
-        $payment_description = __('Order', 'woocommerce') . ' '
-            . $order->get_order_number();
+        $payment_description = 'Order ' . $order->get_order_number();
         $payment_locale = $settings_helper->getPaymentLocale();
         $store_customer = $settings_helper->shouldStoreCustomer();
 

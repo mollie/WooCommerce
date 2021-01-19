@@ -202,7 +202,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         $testee
             ->expects($this->once())
             ->method('getSiteUrlWithLanguage')
-            ->willReturn("{$varStubs->homeUrl}/nl");
+            ->willReturn("{$varStubs->homeUrl}");
         expect('mollieWooCommerceDebug')
             ->withAnyArgs();
 
@@ -212,7 +212,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         $result = $testee->getWebhookUrl($wcOrder);
 
         self::assertEquals(
-            "{$varStubs->homeUrl}/nl/wc-api/mollie_return?order_id={$varStubs->orderId}&key=wc_order_{$varStubs->orderKey}",
+            "{$varStubs->homeUrl}/wc-api/mollie_return?order_id={$varStubs->orderId}&key=wc_order_{$varStubs->orderKey}",
             $result
         );
     }

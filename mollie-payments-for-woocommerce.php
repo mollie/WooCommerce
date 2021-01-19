@@ -39,7 +39,7 @@ function mollie_wc_plugin_activation_hook()
         return;
     }
 
-    deleteWPTranslationFiles();
+    mollieDeleteWPTranslationFiles();
 }
 
 

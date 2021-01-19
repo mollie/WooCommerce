@@ -19,7 +19,7 @@
     "mollie/mollie-api-php": "^2.21",
     "ext-intl": "*",
     "ext-json": "*",
-    "inpsyde/plugin-environment-checker": "dev-main"
+    "inpsyde/plugin-environment-checker": "^0.1"
   },
   "require-dev": {
     "phpunit/phpunit": "^5 || ^7.1",

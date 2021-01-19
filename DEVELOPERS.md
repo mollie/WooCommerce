@@ -1,4 +1,4 @@
-cd# Developers
+# Developers
 This is a guide for software engineers who wish to take part in the development of this product.
 
 ## Environment Setup

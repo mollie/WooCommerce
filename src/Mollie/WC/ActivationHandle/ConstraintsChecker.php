@@ -10,12 +10,12 @@ class Mollie_WC_ActivationHandle_ConstraintsChecker
     /**
      * @var EnvironmentChecker
      */
-    private $checker;
+    protected $checker;
 
     /**
      * @var Mollie_WC_Notice_NoticeInterface
      */
-    private $notice;
+    protected $notice;
 
 
     /**
@@ -45,7 +45,7 @@ class Mollie_WC_ActivationHandle_ConstraintsChecker
      * Deactivates the plugin if needed by not met constraint
      * prevents updates
      *
-     * @param array $constraints
+     * @return bool
      */
     public function handleActivation()
     {
@@ -62,7 +62,7 @@ class Mollie_WC_ActivationHandle_ConstraintsChecker
         return false;
     }
 
-    private function showNotice(array $errors)
+    protected function showNotice(array $errors)
     {
         $message = '%1$sMollie Payments for WooCommerce is inactive.%2$s';
         foreach ($errors as $error) {

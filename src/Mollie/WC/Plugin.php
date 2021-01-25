@@ -608,7 +608,6 @@ class Mollie_WC_Plugin
 
     /**
      * Bootstrap the ApplePay button logic if feature enabled
-     * Serves the validation string required by Apple when the known url is called
      */
     public static function mollieApplePayDirectHandling()
     {

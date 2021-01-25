@@ -1773,7 +1773,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		return Mollie_WC_Plugin::getDataHelper()->getPaymentMethod(
 			$this->getMollieMethodId(),
-            $test_mode,
+            $test_mode
 		);
 
 	}

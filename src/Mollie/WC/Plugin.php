@@ -8,7 +8,7 @@ class Mollie_WC_Plugin
 {
     const PLUGIN_ID      = 'mollie-payments-for-woocommerce';
     const PLUGIN_TITLE   = 'Mollie Payments for WooCommerce';
-    const PLUGIN_VERSION = '6.0';
+    const PLUGIN_VERSION = '6.1.0';
 
     const DB_VERSION     = '1.0';
     const DB_VERSION_PARAM_NAME = 'mollie-db-version';
@@ -288,25 +288,7 @@ class Mollie_WC_Plugin
                 return $settings;
             }
         );
-        add_filter(
-            'woocommerce_product_data_tabs',
-            function ($tabs) {
-                $tabs['Mollie'] = array(
-                    'label'		=> __( 'Mollie Settings', 'mollie-payments-for-woocommerce' ),
-                    'target'	=> 'mollie_options',
-                    'class'		=> array( 'show_if_simple', 'show_if_variable'  ),
-                );
-
-                return $tabs;
-            }
-        );
-        add_filter( 'woocommerce_product_data_panels', [__CLASS__, 'mollieOptionsProductTabContent'] );
-        add_action( 'woocommerce_process_product_meta_simple', [__CLASS__, 'saveProductVoucherOptionFields']  );
-        add_action( 'woocommerce_process_product_meta_variable', [__CLASS__, 'saveProductVoucherOptionFields']  );
-        add_action( 'woocommerce_product_after_variable_attributes', [__CLASS__,'voucherFieldInVariations'], 10, 3 );
-        add_action( 'woocommerce_save_product_variation', [__CLASS__,'saveVoucherFieldVariations'], 10, 2 );
-        add_filter( 'woocommerce_available_variation', [__CLASS__,'addVoucherVariationData'] );
-
+        self::voucherEnabledHooks();
         add_filter( Mollie_WC_Plugin::PLUGIN_ID . '_retrieve_payment_gateways', function(){
             return self::$GATEWAYS;
         });
@@ -357,6 +339,125 @@ class Mollie_WC_Plugin
         }
         return $willCancel;
     }
+
+    public static function voucherEnabledHooks(){
+        if(mollieWooCommerceIsVoucherEnabled()){
+            add_filter(
+                    'woocommerce_product_data_tabs',
+                    function ($tabs) {
+                        $tabs['Mollie'] = array(
+                                'label'		=> __( 'Mollie Settings', 'mollie-payments-for-woocommerce' ),
+                                'target'	=> 'mollie_options',
+                                'class'		=> array( 'show_if_simple', 'show_if_variable'  ),
+                        );
+
+                        return $tabs;
+                    }
+            );
+            add_filter( 'woocommerce_product_data_panels', [__CLASS__, 'mollieOptionsProductTabContent'] );
+            add_action( 'woocommerce_process_product_meta_simple', [__CLASS__, 'saveProductVoucherOptionFields']  );
+            add_action( 'woocommerce_process_product_meta_variable', [__CLASS__, 'saveProductVoucherOptionFields']  );
+            add_action( 'woocommerce_product_after_variable_attributes', [__CLASS__,'voucherFieldInVariations'], 10, 3 );
+            add_action( 'woocommerce_save_product_variation', [__CLASS__,'saveVoucherFieldVariations'], 10, 2 );
+            add_filter( 'woocommerce_available_variation', [__CLASS__,'addVoucherVariationData'] );
+
+            add_action( 'woocommerce_product_bulk_edit_start', [__CLASS__,'voucherBulkEditInput'] );
+            add_action( 'woocommerce_product_bulk_edit_save', [__CLASS__,'voucherBulkEditSave'] );
+
+            add_action('product_cat_add_form_fields',[__CLASS__, 'voucherTaxonomyFieldOnCreatePage'], 10, 1);
+            add_action('product_cat_edit_form_fields',[__CLASS__, 'voucherTaxonomyFieldOnEditPage'], 10, 1);
+            add_action('edited_product_cat',[__CLASS__, 'voucherTaxonomyCustomMetaSave'], 10, 1);
+            add_action('create_product_cat',[__CLASS__, 'voucherTaxonomyCustomMetaSave'], 10, 1);
+        }
+    }
+
+    /**
+     * Show voucher selector on product edit bulk action
+     */
+    public static function voucherBulkEditInput() {
+        ?>
+        <div class="inline-edit-group">
+            <label class="alignleft">
+                <span class="title"><?php _e( 'Mollie Voucher Category', 'mollie-payments-for-woocommerce' ); ?></span>
+                <span class="input-text-wrap">
+                <select name="_mollie_voucher_category" class="select">
+                   <option value=""><?php _e( '--Please choose an option--', 'mollie-payments-for-woocommerce' ); ?></option>
+                   <option value="no_category"> <?php _e( 'No Category', 'mollie-payments-for-woocommerce' ); ?></option>
+                   <option value="meal"><?php _e( 'Meal', 'mollie-payments-for-woocommerce' ); ?></option>
+                   <option value="eco"><?php _e( 'Eco', 'mollie-payments-for-woocommerce' ); ?></option>
+                   <option value="gift"><?php _e( 'Gift', 'mollie-payments-for-woocommerce' ); ?></option>
+                </select>
+         </span>
+            </label>
+        </div>
+        <?php
+    }
+
+    /**
+     * Save value entered on product edit bulk action.
+     */
+    public static function voucherBulkEditSave( $product ) {
+        $post_id = $product->get_id();
+        $optionName = Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION;
+        if ( isset( $_REQUEST[$optionName] ) ) {
+            $option = $_REQUEST[$optionName];
+            update_post_meta( $post_id, $optionName, wc_clean( $option ) );
+        }
+    }
+
+    /**
+     * Show voucher selector on create product category page.
+     */
+    public static function voucherTaxonomyFieldOnCreatePage() {
+        ?>
+        <div class="form-field">
+            <label for="_mollie_voucher_category"><?php _e('Mollie Voucher Category', 'mollie-payments-for-woocommerce'); ?></label>
+            <select name="_mollie_voucher_category" id="_mollie_voucher_category" class="select">
+                <option value=""><?php _e( '--Please choose an option--', 'mollie-payments-for-woocommerce' ); ?></option>
+                <option value="no_category"> <?php _e( 'No Category', 'mollie-payments-for-woocommerce' ); ?></option>
+                <option value="meal"><?php _e( 'Meal', 'mollie-payments-for-woocommerce' ); ?></option>
+                <option value="eco"><?php _e( 'Eco', 'mollie-payments-for-woocommerce' ); ?></option>
+                <option value="gift"><?php _e( 'Gift', 'mollie-payments-for-woocommerce' ); ?></option>
+            </select>
+            <p class="description"><?php _e('Select a voucher category to apply to all products with this category', 'mollie-payments-for-woocommerce'); ?></p>
+        </div>
+        <?php
+    }
+
+    /**
+     * Show voucher selector on edit product category page.
+     */
+    public static function voucherTaxonomyFieldOnEditPage($term) {
+        $term_id = $term->term_id;
+        $savedCategory = get_term_meta($term_id, '_mollie_voucher_category', true);
+
+        ?>
+        <tr class="form-field">
+            <th scope="row" valign="top"><label for="_mollie_voucher_category"><?php _e('Mollie Voucher Category', 'mollie-payments-for-woocommerce'); ?></label></th>
+            <td>
+                <select name="_mollie_voucher_category" id="_mollie_voucher_category" class="select">
+                    <option value=""><?php _e( '--Please choose an option--', 'mollie-payments-for-woocommerce' ); ?></option>
+                    <option value="no_category" <?php selected( $savedCategory, 'no_category' ); ?>> <?php _e( 'No Category', 'mollie-payments-for-woocommerce' ); ?></option>
+                    <option value="meal" <?php selected( $savedCategory, 'meal' ); ?>><?php _e( 'Meal', 'mollie-payments-for-woocommerce' ); ?></option>
+                    <option value="eco" <?php selected( $savedCategory, 'eco' ); ?>><?php _e( 'Eco', 'mollie-payments-for-woocommerce' ); ?></option>
+                    <option value="gift" <?php selected( $savedCategory, 'gift' ); ?>><?php _e( 'Gift', 'mollie-payments-for-woocommerce' ); ?></option>
+                </select>
+                <p class="description"><?php _e('Select a voucher category to apply to all products with this category', 'mollie-payments-for-woocommerce'); ?></p>
+            </td>
+        </tr>
+        <?php
+    }
+
+    /**
+     * Save voucher category on product category meta term.
+     */
+    public static function voucherTaxonomyCustomMetaSave($term_id) {
+
+        $metaOption = filter_input(INPUT_POST, '_mollie_voucher_category');
+
+        update_term_meta($term_id, '_mollie_voucher_category', $metaOption);
+    }
+
     /**
      * Contents of the Mollie options product tab.
      */

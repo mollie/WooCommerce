@@ -1772,8 +1772,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		$test_mode = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
 
 		return Mollie_WC_Plugin::getDataHelper()->getPaymentMethod(
-			$test_mode,
-			$this->getMollieMethodId()
+			$this->getMollieMethodId(),
+            $test_mode
 		);
 
 	}

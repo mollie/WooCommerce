@@ -42,34 +42,6 @@ function mollie_wc_plugin_activation_hook()
     mollieDeleteWPTranslationFiles();
 }
 
-
-function mollieWcShowWcDroppingNotice()
-{
-    if (get_option('mollie-payments-for-woocommerce-wc-drop')) {
-        return false;
-    }
-    $notice = new Mollie_WC_Notice_AdminNotice();
-    $message = sprintf(
-        esc_html__(
-            '%1$sMollie Payments for WooCommerce is dropping WooCommerce support for version 2.x.%2$s Please %3$supdate WooCommerce to version 3.0 or newer &raquo;%4$s. %5$sContact our support team if any questions remain%6$s',
-            'mollie-payments-for-woocommerce'
-        ),
-        '<strong>',
-        '</strong>',
-        '<a href="' . esc_url(admin_url('plugins.php')) . '">',
-        '</a>',
-        '<a href="' . esc_url('https://mollie.inpsyde.com/docs/how-to-request-support-via-website-widget/') . '">',
-        '</a>'
-    );
-    if (version_compare(get_option('woocommerce_version'), '3.0', '<')) {
-        $notice->addAdminNotice('notice-error is-dismissible', $message);
-    }
-
-    update_option('mollie-payments-for-woocommerce-wc-drop', 'yes', true);
-    return false;
-}
-
-
 function mollieDeleteWPTranslationFiles()
 {
     WP_Filesystem();
@@ -100,28 +72,6 @@ function mollieDeleteWPTranslationFiles()
         }
     }
 }
-
-function mollie_wc_plugin_inactive_json_extension()
-{
-    $nextScheduledTime = wp_next_scheduled('pending_payment_confirmation_check');
-    if ($nextScheduledTime) {
-        wp_unschedule_event($nextScheduledTime, 'pending_payment_confirmation_check');
-    }
-
-    if (!is_admin()) {
-        return false;
-    }
-
-    echo '<div class="error"><p>';
-    echo esc_html__(
-        'Mollie Payments for WooCommerce requires the JSON extension for PHP. Enable it in your server or ask your webhoster to enable it for you.',
-        'mollie-payments-for-woocommerce'
-    );
-    echo '</p></div>';
-
-    return false;
-}
-
 
 function mollieWcNoticeApiKeyMissing(){
     //if test/live keys are in db return
@@ -174,25 +124,19 @@ $bootstrap = Closure::bind(
                     return;
                 }
 
-                if (function_exists('extension_loaded') && !extension_loaded('json')) {
-                    add_action('admin_notices', 'mollie_wc_plugin_inactive_json_extension');
-                    return;
-                }
-
-                add_action(
-                    'init',
-                    'mollie_wc_plugin_init'
-                );
-
                 $checker = new Mollie_WC_ActivationHandle_ConstraintsChecker();
                 $meetRequirements = $checker->handleActivation();
-                if(!$meetRequirements){
+                if (!$meetRequirements) {
                     $nextScheduledTime = wp_next_scheduled('pending_payment_confirmation_check');
                     if ($nextScheduledTime) {
                         wp_unschedule_event($nextScheduledTime, 'pending_payment_confirmation_check');
                     }
                 }
 
+                add_action(
+                    'init',
+                    'mollie_wc_plugin_init'
+                );
                 add_action( 'core_upgrade_preamble', 'deleteWPTranslationFiles' );
                 add_filter(
                     'site_transient_update_plugins',

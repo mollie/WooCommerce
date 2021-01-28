@@ -1,7 +1,12 @@
 <?php
 
-use EnvironmentChecker\ConstraintsCollectionFactory;
-use EnvironmentChecker\EnvironmentChecker;
+use Inpsyde\EnvironmentChecker\Constraints\ExtensionConstraint;
+use Inpsyde\EnvironmentChecker\Constraints\PhpConstraint;
+use Inpsyde\EnvironmentChecker\Constraints\PluginConstraint;
+use Inpsyde\EnvironmentChecker\Constraints\WordPressConstraint;
+use Inpsyde\EnvironmentChecker\ConstraintsCollectionFactory;
+use Inpsyde\EnvironmentChecker\EnvironmentChecker;
+use Inpsyde\EnvironmentChecker\Exception\ConstraintFailedException;
 
 
 class Mollie_WC_ActivationHandle_ConstraintsChecker
@@ -25,19 +30,21 @@ class Mollie_WC_ActivationHandle_ConstraintsChecker
      */
     public function __construct()
     {
-        $collectionFactory = new ConstraintsCollectionFactory(
-            [
-                ConstraintsCollectionFactory::PHP_CONSTRAINT => '5.6',
-                ConstraintsCollectionFactory::WORDPRESS_CONSTRAINT => '3.8',
-                ConstraintsCollectionFactory::WOOCOMMERCE_CONSTRAINT => '3.0',
-            ],
-            'Mollie Payments for WooCommerce'
+        $wpConstraint = new WordPressConstraint('3.8');
+        $wcConstraint = new PluginConstraint('3.0', 'woocommerce');
+        $phpConstraint = new PhpConstraint('5.6');
+        $jsonConstraint = new ExtensionConstraint('json');
+        $collectionFactory = new ConstraintsCollectionFactory();
+        $constraintsCollection = $collectionFactory->create(
+            $wpConstraint,
+            $wcConstraint,
+            $phpConstraint,
+            $jsonConstraint
         );
-        $constraintsCollection = $collectionFactory->create();
         $this->checker = new EnvironmentChecker(
             $constraintsCollection->constraints()
         );
-        $this->notice =  new Mollie_WC_Notice_AdminNotice();
+        $this->notice = new Mollie_WC_Notice_AdminNotice();
     }
 
     /**
@@ -46,29 +53,36 @@ class Mollie_WC_ActivationHandle_ConstraintsChecker
      * prevents updates
      *
      * @return bool
+     * @throws Exception
      */
     public function handleActivation()
     {
-        if($this->checker->checkEnvironment()){
+        try {
+            $this->checker->check();
             return true;
+        } catch (ConstraintFailedException $exception) {
+            $mainException = $exception->getValidationErrors();
+            $errors = [];
+            foreach ($mainException as $error) {
+                $errors[] = $error->getMessage();
+            }
+            $this->showNotice($errors);
+            $disabler = new Mollie_WC_ActivationHandle_PluginDisabler(
+                'mollie-payments-for-woocommerce',
+                'mollie_wc_plugin_init'
+            );
+            $disabler->disableAll();
+            return false;
         }
-        $errors = $this->checker->getErrors();
-        $this->showNotice($errors);
-        $disabler = new Mollie_WC_ActivationHandle_PluginDisabler(
-            'mollie-payments-for-woocommerce',
-            'mollie_wc_plugin_init'
-        );
-        $disabler->disableAll();
-        return false;
     }
 
     protected function showNotice(array $errors)
     {
         $message = '%1$sMollie Payments for WooCommerce is inactive.%2$s';
         foreach ($errors as $error) {
-            $message .= $error.'\n';
+            $message .= $error . '\n';
         }
-        $message =  __( $message, 'mollie-payments-for-woocommerce' );
+        $message = __($message, 'mollie-payments-for-woocommerce');
         $errorLevel = 'notice-error';
         $this->notice->addNotice($errorLevel, $message);
     }

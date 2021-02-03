@@ -367,7 +367,7 @@ class Mollie_WC_Helper_Settings
 
 
         $presentation = ''
-            . '<div style="width:1000px"><div style="font-weight:bold;"><a href=https://github.com/mollie/WooCommerce/wiki">'.__('Plugin Documentation', 'mollie-payments-for-woocommerce').'</a> | <a href="https://mollie.inpsyde.com/docs/how-to-request-support-via-website-widget/">'.__('Contact Support', 'mollie-payments-for-woocommerce').'</a></div></div>'
+            . '<div style="width:1000px"><div style="font-weight:bold;"><a href="https://github.com/mollie/WooCommerce/wiki">'.__('Plugin Documentation', 'mollie-payments-for-woocommerce').'</a> | <a href="https://mollie.inpsyde.com/docs/how-to-request-support-via-website-widget/">'.__('Contact Support', 'mollie-payments-for-woocommerce').'</a></div></div>'
             . '<span></span>'
             . '<div id="" class="" style="width: 1000px; padding:5px 0 0 10px"><p>'.$presentationText.'</p></div>';
 

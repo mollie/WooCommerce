@@ -359,7 +359,7 @@ class Mollie_WC_Helper_Settings
         $presentationText = __('Quickly integrate all major payment methods in WooCommerce, wherever you need them.', 'mollie-payments-for-woocommerce' );
         $presentationText .= __(' Simply drop them ready-made into your WooCommerce webshop with this powerful plugin by Mollie.', 'mollie-payments-for-woocommerce');
         $presentationText .= __(' Mollie is dedicated to making payments better for WooCommerce. ', 'mollie-payments-for-woocommerce');
-        $presentationText .='<p>Please go to <a href="https://mollie.inpsyde.com/" >the signup page </a>';
+        $presentationText .='<p>Please go to <a href="https://www.mollie.com/dashboard/signup" >the signup page </a>';
         $presentationText .= __('to create a new Mollie account and start receiving payments in a couple of minutes. ', 'mollie-payments-for-woocommerce');
         $presentationText .= 'Contact <a href="mailto:info@mollie.com">info@mollie.com</a>';
         $presentationText .= ' if you have any questions or comments about this plugin.</p>';
@@ -367,7 +367,7 @@ class Mollie_WC_Helper_Settings
 
 
         $presentation = ''
-            . '<div style="width:1000px"><div style="font-weight:bold;"><a href="https://mollie.inpsyde.com/">'.__('Plugin Documentation', 'mollie-payments-for-woocommerce').'</a> | <a href="https://mollie.inpsyde.com/">'.__('Contact Support', 'mollie-payments-for-woocommerce').'</a></div></div>'
+            . '<div style="width:1000px"><div style="font-weight:bold;"><a href=https://github.com/mollie/WooCommerce/wiki">'.__('Plugin Documentation', 'mollie-payments-for-woocommerce').'</a> | <a href="https://mollie.inpsyde.com/docs/how-to-request-support-via-website-widget/">'.__('Contact Support', 'mollie-payments-for-woocommerce').'</a></div></div>'
             . '<span></span>'
             . '<div id="" class="" style="width: 1000px; padding:5px 0 0 10px"><p>'.$presentationText.'</p></div>';
 

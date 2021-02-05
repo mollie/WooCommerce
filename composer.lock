@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c401eb086a4799d4d1dd1c7cf9671ad7",
+    "content-hash": "705c9889e9143d10c8de23abf6a28125",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/ca-bundle.git",
-                "reference": "78a0e288fdcebf92aa2318a8d3656168da6ac1a5"
+                "reference": "9dea32b6bb602918b0144d4784b166cb95d45099"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/78a0e288fdcebf92aa2318a8d3656168da6ac1a5",
-                "reference": "78a0e288fdcebf92aa2318a8d3656168da6ac1a5",
+                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/9dea32b6bb602918b0144d4784b166cb95d45099",
+                "reference": "9dea32b6bb602918b0144d4784b166cb95d45099",
                 "shasum": ""
             },
             "require": {
@@ -75,7 +75,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-01-12T12:10:35+00:00"
+            "time": "2021-02-01T12:43:46+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -294,21 +294,36 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/inpsyde/plugin-environment-checker.git",
-                "reference": "13bf7329502325448004035a55df23fbf213648f"
+                "reference": "0ceb42c2fcf51640acb8802988955e97699256f2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/inpsyde/plugin-environment-checker/zipball/13bf7329502325448004035a55df23fbf213648f",
-                "reference": "13bf7329502325448004035a55df23fbf213648f",
+                "url": "https://api.github.com/repos/inpsyde/plugin-environment-checker/zipball/0ceb42c2fcf51640acb8802988955e97699256f2",
+                "reference": "0ceb42c2fcf51640acb8802988955e97699256f2",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.2"
+                "php": ">=5.6"
+            },
+            "require-dev": {
+                "antecedent/patchwork": " ^2.1",
+                "brain/monkey": "^2.4",
+                "phpunit/phpunit": "^5 || ^7.1"
             },
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "0.1.x-dev"
+                }
+            },
             "autoload": {
                 "psr-4": {
-                    "EnvironmentChecker\\": "src/"
+                    "Inpsyde\\EnvironmentChecker\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Inpsyde\\EnvironmentCheckerTests\\": "tests"
                 }
             },
             "license": [
@@ -332,20 +347,20 @@
                 "source": "https://github.com/inpsyde/plugin-environment-checker/tree/main",
                 "issues": "https://github.com/inpsyde/plugin-environment-checker/issues"
             },
-            "time": "2021-01-14T12:30:51+00:00"
+            "time": "2021-02-04T09:28:28+00:00"
         },
         {
             "name": "mollie/mollie-api-php",
-            "version": "v2.27.2",
+            "version": "v2.29.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mollie/mollie-api-php.git",
-                "reference": "e8db8cd08e3754b31dd355b07525cce8733a0ec6"
+                "reference": "619349868112df2825d7a225d4e92f9fb7e9f2d8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mollie/mollie-api-php/zipball/e8db8cd08e3754b31dd355b07525cce8733a0ec6",
-                "reference": "e8db8cd08e3754b31dd355b07525cce8733a0ec6",
+                "url": "https://api.github.com/repos/mollie/mollie-api-php/zipball/619349868112df2825d7a225d4e92f9fb7e9f2d8",
+                "reference": "619349868112df2825d7a225d4e92f9fb7e9f2d8",
                 "shasum": ""
             },
             "require": {
@@ -419,7 +434,7 @@
                 "sofortbanking",
                 "subscriptions"
             ],
-            "time": "2021-01-13T09:49:36+00:00"
+            "time": "2021-01-27T10:05:15+00:00"
         },
         {
             "name": "paragonie/random_compat",
@@ -960,16 +975,16 @@
         },
         {
             "name": "automattic/jetpack-constants",
-            "version": "v1.6.0",
+            "version": "v1.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-constants.git",
-                "reference": "a160dcb0083746578d0efcf78dc276ceb60a0ae8"
+                "reference": "4177e55eef1706dac67705c9ada61be283e4aa8d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-constants/zipball/a160dcb0083746578d0efcf78dc276ceb60a0ae8",
-                "reference": "a160dcb0083746578d0efcf78dc276ceb60a0ae8",
+                "url": "https://api.github.com/repos/Automattic/jetpack-constants/zipball/4177e55eef1706dac67705c9ada61be283e4aa8d",
+                "reference": "4177e55eef1706dac67705c9ada61be283e4aa8d",
                 "shasum": ""
             },
             "require-dev": {
@@ -977,6 +992,9 @@
                 "yoast/phpunit-polyfills": "0.2.0"
             },
             "type": "library",
+            "extra": {
+                "mirror-repo": "Automattic/jetpack-constants"
+            },
             "autoload": {
                 "classmap": [
                     "src/"
@@ -987,7 +1005,7 @@
                 "GPL-2.0-or-later"
             ],
             "description": "A wrapper for defining constants in a more testable way.",
-            "time": "2020-12-14T08:16:40+00:00"
+            "time": "2021-01-19T14:25:13+00:00"
         },
         {
             "name": "brain/monkey",
@@ -1335,12 +1353,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/johnpbloch/wordpress-core.git",
-                "reference": "b458c3314d81d31425a2bff57d57cb0a2f148627"
+                "reference": "70481724c192a992e65c9fc567f5c047799fb0e9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/johnpbloch/wordpress-core/zipball/b458c3314d81d31425a2bff57d57cb0a2f148627",
-                "reference": "b458c3314d81d31425a2bff57d57cb0a2f148627",
+                "url": "https://api.github.com/repos/johnpbloch/wordpress-core/zipball/70481724c192a992e65c9fc567f5c047799fb0e9",
+                "reference": "70481724c192a992e65c9fc567f5c047799fb0e9",
                 "shasum": ""
             },
             "require": {
@@ -1368,7 +1386,7 @@
                 "cms",
                 "wordpress"
             ],
-            "time": "2020-12-22T21:10:56+00:00"
+            "time": "2021-02-03T21:41:23+00:00"
         },
         {
             "name": "maxmind-db/reader",
@@ -1436,12 +1454,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/mockery/mockery.git",
-                "reference": "937a86b3ba04ea2195c96d8e31d5c2d23a7e7fc6"
+                "reference": "dd9d724537922398dccb359dee74cc1f6bf3fc0a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mockery/mockery/zipball/937a86b3ba04ea2195c96d8e31d5c2d23a7e7fc6",
-                "reference": "937a86b3ba04ea2195c96d8e31d5c2d23a7e7fc6",
+                "url": "https://api.github.com/repos/mockery/mockery/zipball/dd9d724537922398dccb359dee74cc1f6bf3fc0a",
+                "reference": "dd9d724537922398dccb359dee74cc1f6bf3fc0a",
                 "shasum": ""
             },
             "require": {
@@ -1493,7 +1511,7 @@
                 "test double",
                 "testing"
             ],
-            "time": "2020-12-17T10:56:03+00:00"
+            "time": "2021-01-26T14:26:09+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -3268,7 +3286,6 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "inpsyde/plugin-environment-checker": 20,
         "fzaninotto/faker": 20
     },
     "prefer-stable": false,

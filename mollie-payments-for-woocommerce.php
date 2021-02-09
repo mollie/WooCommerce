@@ -94,7 +94,7 @@ function mollieWcNoticeApiKeyMissing(){
         '</a>'
     );
 
-    $notice->addAdminNotice('notice-error is-dismissible', $message);
+    $notice->addNotice('notice-error is-dismissible', $message);
 }
 
 function mollie_wc_plugin_autoload()
@@ -131,6 +131,7 @@ $bootstrap = Closure::bind(
                     if ($nextScheduledTime) {
                         wp_unschedule_event($nextScheduledTime, 'pending_payment_confirmation_check');
                     }
+                    return;
                 }
 
                 add_action(

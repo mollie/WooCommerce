@@ -78,11 +78,11 @@ class Mollie_WC_ActivationHandle_ConstraintsChecker
 
     protected function showNotice(array $errors)
     {
-        $message = '%1$sMollie Payments for WooCommerce is inactive.%2$s';
+        $message = '%1$sMollie Payments for WooCommerce is inactive:%2$s';
         foreach ($errors as $error) {
-            $message .= $error . '\n';
+            $message .= "<p>{$error}</p>";
         }
-        $message = __($message, 'mollie-payments-for-woocommerce');
+        $message = sprintf(__($message, 'mollie-payments-for-woocommerce'), '<p><strong>', '</strong></p>');
         $errorLevel = 'notice-error';
         $this->notice->addNotice($errorLevel, $message);
     }

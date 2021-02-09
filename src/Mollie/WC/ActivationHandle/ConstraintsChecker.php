@@ -31,7 +31,7 @@ class Mollie_WC_ActivationHandle_ConstraintsChecker
     public function __construct()
     {
         $wpConstraint = new WordPressConstraint('3.8');
-        $wcConstraint = new PluginConstraint('3.0', 'woocommerce');
+        $wcConstraint = new PluginConstraint('3.0', 'woocommerce', 'WooCommerce');
         $phpConstraint = new PhpConstraint('5.6');
         $jsonConstraint = new ExtensionConstraint('json');
         $collectionFactory = new ConstraintsCollectionFactory();

@@ -294,12 +294,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/inpsyde/plugin-environment-checker.git",
-                "reference": "0ceb42c2fcf51640acb8802988955e97699256f2"
+                "reference": "20169871970f6dbc3a1457c138311c4ca37eb000"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/inpsyde/plugin-environment-checker/zipball/0ceb42c2fcf51640acb8802988955e97699256f2",
-                "reference": "0ceb42c2fcf51640acb8802988955e97699256f2",
+                "url": "https://api.github.com/repos/inpsyde/plugin-environment-checker/zipball/20169871970f6dbc3a1457c138311c4ca37eb000",
+                "reference": "20169871970f6dbc3a1457c138311c4ca37eb000",
                 "shasum": ""
             },
             "require": {
@@ -342,12 +342,12 @@
                     "role": "Developer"
                 }
             ],
-            "description": "Wordpress package to be used by plugins to check certain environment requirements.",
+            "description": "WordPress package to be used by plugins to check certain environment requirements.",
             "support": {
                 "source": "https://github.com/inpsyde/plugin-environment-checker/tree/main",
                 "issues": "https://github.com/inpsyde/plugin-environment-checker/issues"
             },
-            "time": "2021-02-04T09:28:28+00:00"
+            "time": "2021-02-09T10:58:28+00:00"
         },
         {
             "name": "mollie/mollie-api-php",
@@ -1353,12 +1353,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/johnpbloch/wordpress-core.git",
-                "reference": "70481724c192a992e65c9fc567f5c047799fb0e9"
+                "reference": "9ae72d062a8d279094b97871ade45d595fa910c4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/johnpbloch/wordpress-core/zipball/70481724c192a992e65c9fc567f5c047799fb0e9",
-                "reference": "70481724c192a992e65c9fc567f5c047799fb0e9",
+                "url": "https://api.github.com/repos/johnpbloch/wordpress-core/zipball/9ae72d062a8d279094b97871ade45d595fa910c4",
+                "reference": "9ae72d062a8d279094b97871ade45d595fa910c4",
                 "shasum": ""
             },
             "require": {
@@ -1386,7 +1386,7 @@
                 "cms",
                 "wordpress"
             ],
-            "time": "2021-02-03T21:41:23+00:00"
+            "time": "2021-02-05T04:10:38+00:00"
         },
         {
             "name": "maxmind-db/reader",
@@ -2996,12 +2996,12 @@
             "version": "1.9.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/webmozart/assert.git",
+                "url": "https://github.com/webmozarts/assert.git",
                 "reference": "bafc69caeb4d49c39fd0779086c03a3738cbb389"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webmozart/assert/zipball/bafc69caeb4d49c39fd0779086c03a3738cbb389",
+                "url": "https://api.github.com/repos/webmozarts/assert/zipball/bafc69caeb4d49c39fd0779086c03a3738cbb389",
                 "reference": "bafc69caeb4d49c39fd0779086c03a3738cbb389",
                 "shasum": ""
             },

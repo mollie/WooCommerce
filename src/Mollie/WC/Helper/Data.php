@@ -371,7 +371,7 @@ class Mollie_WC_Helper_Data
 	 *
 	 * @return mixed|\Mollie\Api\Resources\Method|null
 	 */
-    public function getPaymentMethod ($test_mode = false, $method)
+    public function getPaymentMethod ($method, $test_mode = false)
     {
         $payment_methods = $this->getAllPaymentMethods($test_mode);
 
@@ -664,14 +664,14 @@ class Mollie_WC_Helper_Data
 	 *
 	 * @return bool
 	 */
-	public function isSubscription( $order_id ) {
+	public function isWcSubscription( $order_id ) {
 		return ( function_exists( 'wcs_order_contains_subscription' ) && ( wcs_order_contains_subscription( $order_id ) || function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order_id ) || function_exists( 'wcs_order_contains_renewal' ) && wcs_order_contains_renewal( $order_id ) ) );
 	}
 
-    public function isEcurSubscription()
+    public function isSubscription($orderId)
     {
         $isSubscription = false;
-        $isSubscription = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_is_subscription_payment', $isSubscription );
+        $isSubscription = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_is_subscription_payment', $isSubscription, $orderId );
         return $isSubscription;
     }
 }

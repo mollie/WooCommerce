@@ -21,6 +21,7 @@ const options = {
                 'baseDir',
                 'buildDir',
                 'distDir',
+                'depsVersionPhp',
                 'phpTmpDir',
                 'stubsDir',
                 'wpStubsUrl',
@@ -36,12 +37,13 @@ const options = {
                 baseDir: __dirname,
                 buildDir: `${__dirname}/build`,
                 distDir: `${__dirname}/dist`,
+                q: false,
+                depsVersionPhp: '5.6.39',
                 phpTmpDir: `${__dirname}/build/php`,
                 stubsDir: `${__dirname}/tests/stub/external`,
                 wpStubsUrl: 'https://raw.githack.com/php-stubs/wordpress-stubs/v5.5.3/wordpress-stubs.php',
                 phpIdExtractorUrl: 'https://raw.githack.com/pxlrbt/php-scoper-prefix-remover/main/src/IdentifierExtractor.php',
                 phpPrefixRemoverPatcherUrl: 'https://raw.githack.com/pxlrbt/php-scoper-prefix-remover/main/src/RemovePrefixPatcher.php',
-                q: false,
             },
         }
     )
@@ -210,10 +212,10 @@ function _copy({baseDir, buildDir, distDir}) {
     }
 }
 
-function _installPhp({buildDir}) {
+function _installPhp({buildDir, depsVersionPhp}) {
     return function installPhp(done) {
         chain([
-            (done) => { return exec('composer', ['config', 'platform.php', '5.6.39'], {cwd: buildDir}, done)},
+            (done) => { return exec('composer', ['config', 'platform.php', depsVersionPhp], {cwd: buildDir}, done)},
             (done) => { return exec(`composer`, ['install', '--prefer-dist', '--optimize-autoloader', '--no-dev'], {cwd: buildDir}, done) },
         ], done);
     }

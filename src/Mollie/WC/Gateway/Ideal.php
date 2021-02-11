@@ -15,7 +15,8 @@ class Mollie_WC_Gateway_Ideal extends Mollie_WC_Gateway_AbstractSepaRecurring
         );
 
         /* Has issuers dropdown */
-        $this->has_fields = TRUE;
+        $this->has_fields = mollieWooCommerceIsDropdownEnabled('mollie_wc_gateway_ideal_settings');
+
 
         parent::__construct();
     }
@@ -32,15 +33,13 @@ class Mollie_WC_Gateway_Ideal extends Mollie_WC_Gateway_AbstractSepaRecurring
 				'title'       => __('Show iDEAL banks dropdown', 'mollie-payments-for-woocommerce'),
 				'type'        => 'checkbox',
 				'description' => sprintf(__('If you disable this, a dropdown with various iDEAL banks will not be shown in the WooCommerce checkout, so users will select a iDEAL bank on the Mollie payment page after checkout.', 'mollie-payments-for-woocommerce'), $this->getDefaultTitle()),
-				'default'     => 'yes',
-				'desc_tip'    => true,
+				'default'     => 'yes'
 			),
 			'issuers_empty_option' => array(
 				'title'       => __('Issuers empty option', 'mollie-payments-for-woocommerce'),
 				'type'        => 'text',
 				'description' => sprintf(__('This text will be displayed as the first option in the iDEAL issuers drop down, if nothing is entered, "Select your bank" will be shown. Only if the above \'Show iDEAL banks dropdown\' is enabled.', 'mollie-payments-for-woocommerce'), $this->getDefaultTitle()),
-				'default'     => 'Select your bank',
-				'desc_tip'    => true,
+				'default'     => 'Select your bank'
 			),
 		));
 	}
@@ -84,6 +83,10 @@ class Mollie_WC_Gateway_Ideal extends Mollie_WC_Gateway_AbstractSepaRecurring
     {
         // Display description above issuers
         parent::payment_fields();
+
+        if(!mollieWooCommerceIsDropdownEnabled('mollie_wc_gateway_ideal_settings')){
+            return;
+        }
 
         $test_mode = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
 

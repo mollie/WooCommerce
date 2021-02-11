@@ -36,8 +36,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 	 */
 	public function getPaymentRequestData( $order, $customer_id ) {
         $settings_helper = Mollie_WC_Plugin::getSettingsHelper();
-        $payment_description = __('Order', 'woocommerce') . ' '
-            . $order->get_order_number();
+        $payment_description = 'Order ' . $order->get_order_number();
         $payment_locale = $settings_helper->getPaymentLocale();
         $store_customer = $settings_helper->shouldStoreCustomer();
 
@@ -84,7 +83,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
                 'WC_Subscriptions_Admin'
             )
         ) {
-            if (Mollie_WC_Plugin::getDataHelper()->isSubscription($orderId)) {
+            if (Mollie_WC_Plugin::getDataHelper()->isWcSubscription($orderId)) {
                 // See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
                 $disable_automatic_payments = ('yes' == get_option(
                         WC_Subscriptions_Admin::$option_prefix
@@ -248,7 +247,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 
 			// Subscription processing
 			if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-                if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $orderId ) ) {
+                if ( Mollie_WC_Plugin::getDataHelper()->isWcSubscription($orderId ) ) {
                     $this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
                 }
 			}
@@ -345,7 +344,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 					$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
 				}
 			} else {
-				if ( Mollie_WC_Plugin::getDataHelper()->isSubscription( $order->get_id() ) ) {
+				if ( Mollie_WC_Plugin::getDataHelper()->isWcSubscription($order->get_id() ) ) {
 					$this->deleteSubscriptionOrderFromPendingPaymentQueue( $order );
 				}
 			}

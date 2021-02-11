@@ -58,6 +58,9 @@ class WC_Customer
     public function get_shipping_country()
     {
     }
+    public function get_billing_country()
+    {
+    }
 
 }
 
@@ -93,9 +96,11 @@ class WC_Shipping_Rate
 class WC_Payment_Gateway
 {
     public $id;
-    public function __construct($id = 1)
+    public $enabled;
+    public function __construct($id = 1, $enabled = 'yes')
     {
         $this->id = $id;
+        $this->enabled = $enabled;
     }
 }
 
@@ -224,6 +229,9 @@ define( 'DAY_IN_SECONDS', 24 * 60 *60 );
 
 class WC_Product
 {
+    public function get_id()
+    {
+    }
     public function get_type()
     {
     }

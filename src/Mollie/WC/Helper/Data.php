@@ -403,7 +403,7 @@ class Mollie_WC_Helper_Data
 			// When no cache exists $cached_issuers will be `false`
 			$issuers = get_transient( $transient_id );
 
-			if ( $issuers === false ) {
+			if ( !$issuers || !is_array($issuers) ) {
 
 				$method  = $this->api_helper->getApiClient( $test_mode )->methods->get( "$method", array ( "include" => "issuers" ) );
 				$issuers = $method->issuers;

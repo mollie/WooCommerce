@@ -2233,19 +2233,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function processUpdateStateRefund(WC_Order $order, $payment)
     {
-        $this->isPartialRefund($payment)
-            ? $this->updateStateRefund(
-            $order,
-            $payment,
-            self::STATUS_ON_HOLD,
-            '_order_status_partially_refunded'
-        )
-            : $this->updateStateRefund(
-            $order,
-            $payment,
-            self::STATUS_REFUNDED,
-            '_order_status_refunded'
-        );
+        if (!$this->isPartialRefund($payment)) {
+            $this->updateStateRefund(
+                    $order,
+                    $payment,
+                    self::STATUS_REFUNDED,
+                    '_order_status_refunded'
+            );
+        }
     }
 
     /**

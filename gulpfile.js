@@ -8,6 +8,8 @@ const usage = require('gulp-help-doc')
 const zip = require('gulp-zip')
 const rename = require('gulp-rename')
 const date = require('date-and-time')
+const download = require('gulp-download-files')
+const fs = require('fs')
 
 const options = {
     ...minimist(
@@ -19,7 +21,12 @@ const options = {
                 'baseDir',
                 'buildDir',
                 'distDir',
-                'depsVersionPhp'
+                'depsVersionPhp',
+                'phpTmpDir',
+                'stubsDir',
+                'wpStubsUrl',
+                'phpIdExtractorUrl',
+                'phpPrefixRemoverPatcherUrl',
             ],
             bools: [
                 'q',
@@ -32,6 +39,11 @@ const options = {
                 distDir: `${__dirname}/dist`,
                 q: false,
                 depsVersionPhp: '5.6.39',
+                phpTmpDir: `${__dirname}/build/php`,
+                stubsDir: `${__dirname}/tests/stub/external`,
+                wpStubsUrl: 'https://raw.githack.com/php-stubs/wordpress-stubs/v5.5.3/wordpress-stubs.php',
+                phpIdExtractorUrl: 'https://raw.githack.com/pxlrbt/php-scoper-prefix-remover/main/src/IdentifierExtractor.php',
+                phpPrefixRemoverPatcherUrl: 'https://raw.githack.com/pxlrbt/php-scoper-prefix-remover/main/src/RemovePrefixPatcher.php',
             },
         }
     )
@@ -141,6 +153,38 @@ let chain = function (tasks, callback) {
     })
 }
 
+let ensureFile = (function (exists, log, dest, download) {
+    /**
+     * Downloads the file from the specified URL if it does not yet exist in the destination directory.
+     *
+     * @param {string} url The URL to download the file from.
+     * @param {string} dir The path to the directory where to save the file.
+     * @param {string} fileName The name to save the file as. If empty will be determined from the URL.
+     * @param {Function} done The callback to invoke when the download ends. A standard error-first callback.
+     */
+    return function (url, dir, fileName, done) {
+        url = new URL(url)
+        fileName = fileName || url.pathname.split('/').pop()
+        let filePath = `${dir}/${fileName}`
+
+        if (exists(filePath)) {
+            log(`${filePath} already exists`)
+            done()
+
+            return
+        }
+
+        log(`${filePath} does not exist`)
+        download({[fileName]: url}).pipe(
+            dest(dir)
+        ).on('finish', function (err) {
+            done(err)
+        }).on('error', function (err) {
+            done(err)
+        });
+    }
+})(fs.existsSync, log, gulp.dest, download)
+
 // --------------------------------------------------------------------
 // TASKS
 // --------------------------------------------------------------------
@@ -201,6 +245,47 @@ function _processAssets({baseDir, buildDir}) {
             {cwd: baseDir},
             done,
         )
+    }
+}
+
+function _ensureWpStubs({stubsDir, wpStubsUrl})
+{
+    return function ensureWpStubs(done) {
+        ensureFile(wpStubsUrl, stubsDir, null, done)
+    }
+}
+
+function _ensurePhpIdExtractor({stubsDir, phpIdExtractorUrl})
+{
+    return function ensureIdentifierExtractor(done) {
+        ensureFile(phpIdExtractorUrl, stubsDir, null, done)
+    }
+}
+
+function _ensurePrefixRemoverPatcher({stubsDir, phpPrefixRemoverPatcherUrl}) {
+    return function ensurePrefixRemoverPatcher(done) {
+        ensureFile(phpPrefixRemoverPatcherUrl, stubsDir, null, done)
+    }
+}
+
+function _phpScoper({baseDir, buildDir, phpTmpDir}) {
+    return function phpScoper(done) {
+        let deleteTmpDir = function (done) {
+            del.sync([phpTmpDir], { cwd: buildDir, force: true, dot: true})
+            done()
+        }
+
+        chain([
+            // Delete PHP temporary processing dir
+            deleteTmpDir,
+            // Scope the code and put it into the PHP temporary processing dir
+            (done) => { return exec('tools/php-scoper', ['add-prefix', `--output-dir=${phpTmpDir}`], {cwd: buildDir}, done) },
+            // Copy the scoped files from tmp dir into build dir
+            (done) => { return pump(src([`src/**/*.*`, `vendor/**/*.*`], {cwd: phpTmpDir, base: phpTmpDir}), gulp.dest(buildDir), done) },
+            // Delete PHP temporary processing dir
+            (done) => { deleteTmpDir(done) },
+
+        ], done);
     }
 }
 
@@ -309,6 +394,35 @@ exports.processAssets = series(
     _processAssets(options)
 )
 
+exports.ensureWpStubs = series(
+    _ensureWpStubs(options),
+)
+
+exports.ensurePhpIdExtractor = series(
+    _ensurePhpIdExtractor(options),
+)
+
+exports.ensurePhpPrefixRemoverPatcher = series(
+    _ensurePrefixRemoverPatcher(options),
+)
+
+// At least some of these are likely to be a temporary measure.
+// See https://github.com/humbug/php-scoper/issues/303
+exports.preparePhpScoper = series(
+    exports.ensureWpStubs,
+    exports.ensurePhpIdExtractor,
+    exports.ensurePhpPrefixRemoverPatcher,
+)
+
+exports.phpScoper = series(
+    _phpScoper(options),
+)
+
+exports.processPhp = series(
+    exports.preparePhpScoper,
+    exports.phpScoper
+)
+
 exports.archive = series(
     _archive(options)
 )
@@ -321,6 +435,7 @@ exports.install = parallel(
 
 exports.process = series(
     exports.processAssets,
+    exports.processPhp
 )
 
 exports.build = series(

@@ -47,6 +47,9 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
                 'admin_url' => 'admin.php?page=wc-settings&tab=products&section=inventory',
             ]
         );
+        expect('get_option')
+            ->andReturn(false);
+
         $testee = new Mollie_WC_Gateway_Ideal();
         /*
          * Stubs
@@ -80,8 +83,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
          */
         when('mollieWooCommerceDebug')
             ->justReturn('');
-        expect('get_option')
-            ->andReturn(false);
+
         expect('get_post_meta')
             ->andReturn(false);
         expect('wc_get_product')

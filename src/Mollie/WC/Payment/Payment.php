@@ -37,8 +37,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
     public function getPaymentRequestData($order, $customerId)
     {
         $settingsHelper = Mollie_WC_Plugin::getSettingsHelper();
-        $paymentDescription = __('Order', 'woocommerce') . ' '
-            . $order->get_order_number();
+        $paymentDescription = 'Order ' . $order->get_order_number();
         $paymentLocale = $settingsHelper->getPaymentLocale();
         $storeCustomer = $settingsHelper->shouldStoreCustomer();
 
@@ -110,9 +109,9 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
             $paymentRequestData['cardToken'] = $cardToken;
         }
 
-        $applePayToken = $_POST['token'];
-        $applePayToken = filter_var($applePayToken, FILTER_SANITIZE_STRING);
-        if ($applePayToken) {
+        if(isset($_POST['token'])){
+            $applePayToken = $_POST['token'];
+            $applePayToken = filter_var($applePayToken, FILTER_SANITIZE_STRING);
             $encodedApplePayToken = json_encode($applePayToken);
             $paymentRequestData['applePayPaymentToken'] = $encodedApplePayToken;
         }

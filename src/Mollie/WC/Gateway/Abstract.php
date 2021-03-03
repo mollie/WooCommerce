@@ -1676,8 +1676,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		$test_mode = Mollie_WC_Plugin::getSettingsHelper()->isTestModeEnabled();
 
 		return Mollie_WC_Plugin::getDataHelper()->getPaymentMethod(
-			$test_mode,
-			$this->getMollieMethodId()
+			$this->getMollieMethodId(),
+            $test_mode
 		);
 
 	}
@@ -1770,10 +1770,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             $webhookUrl
         );
         $webhookUrl = untrailingslashit($webhookUrl);
-
         $langUrl    = $this->getSiteUrlWithLanguage();
 
-	    // Make sure there aren't any double /? in the URL (some (multilanguage) plugins will add this)
+        // Make sure there aren't any double /? in the URL (some (multilanguage) plugins will add this)
         if ( strpos( $langUrl, '/?' ) !== false ) {
             $langUrlParams = substr( $langUrl, strpos( $langUrl, "/?" ) + 2 );
             $webhookUrl = $webhookUrl . '&' . $langUrlParams;
@@ -1782,8 +1781,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         }
 
         // Some (multilanguage) plugins will add a extra slash to the url (/nl//) causing the URL to redirect and lose it's data.
-	    // Status updates via webhook will therefor not be processed. The below regex will find and remove those double slashes.
-	    $webhookUrl = preg_replace('/([^:])(\/{2,})/', '$1/', $webhookUrl);
+        // Status updates via webhook will therefor not be processed. The below regex will find and remove those double slashes.
+        $webhookUrl = preg_replace('/([^:])(\/{2,})/', '$1/', $webhookUrl);
+
         mollieWooCommerceDebug("{$this->id} : Order {$orderId} webhookUrl: {$webhookUrl}", true);
 
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_webhook_url', $webhookUrl, $order);
@@ -1806,13 +1806,13 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		if ( is_plugin_active( 'polylang/polylang.php' ) || is_plugin_active( 'polylang-pro/polylang.php' ) ) {
 
 			$lang = PLL()->model->get_language( pll_current_language() );
-			$checkoutUrl = $this->get_return_url(null);
-            $checkoutUrl = str_replace('order-received/','',$checkoutUrl);
+
 
 			if ( empty ( $lang->search_url ) ) {
 				$polylangFallback = true;
 			} else {
-				$siteUrl     = str_replace( $siteUrl, $checkoutUrl, $siteUrl );
+                $polylangUrl = $lang->search_url;
+                $siteUrl     = str_replace( $siteUrl,$polylangUrl, $siteUrl );
 			}
 		}
 
@@ -2116,19 +2116,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function processUpdateStateRefund(WC_Order $order, $payment)
     {
-        $this->isPartialRefund($payment)
-            ? $this->updateStateRefund(
-            $order,
-            $payment,
-            self::STATUS_ON_HOLD,
-            '_order_status_partially_refunded'
-        )
-            : $this->updateStateRefund(
-            $order,
-            $payment,
-            self::STATUS_REFUNDED,
-            '_order_status_refunded'
-        );
+        if (!$this->isPartialRefund($payment)) {
+            $this->updateStateRefund(
+                    $order,
+                    $payment,
+                    self::STATUS_REFUNDED,
+                    '_order_status_refunded'
+            );
+        }
     }
 
     /**

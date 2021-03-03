@@ -259,7 +259,7 @@ class Mollie_WC_Helper_Data
 	 *
 	 * @return mixed|\Mollie\Api\Resources\Method|null
 	 */
-    public function getPaymentMethod ($test_mode = false, $method)
+    public function getPaymentMethod ($method, $test_mode = false)
     {
         $payment_methods = $this->getAllPaymentMethods($test_mode);
 
@@ -291,7 +291,7 @@ class Mollie_WC_Helper_Data
 			// When no cache exists $cached_issuers will be `false`
 			$issuers = get_transient( $transient_id );
 
-			if ( $issuers === false ) {
+			if ( !$issuers || !is_array($issuers) ) {
 
 				$method  = $this->api_helper->getApiClient( $test_mode )->methods->get( "$method", array ( "include" => "issuers" ) );
 				$issuers = $method->issuers;

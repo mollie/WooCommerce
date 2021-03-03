@@ -235,14 +235,18 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
                 Mollie_WC_Plugin::debug($this->id . ': Try to get all mandates for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id );
                 $mandates =  Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode)->customers->get($customer_id)->mandates();
                 $validMandate = false;
+                $renewalOrderMethod = $renewal_order->get_payment_method();
+                $renewalOrderMethod = str_replace("mollie_wc_gateway_", "", $renewalOrderMethod);
                 foreach ($mandates as $mandate) {
                     if ($mandate->status == 'valid') {
                         $validMandate = true;
                         $data['method'] = $mandate->method;
-                        break;
+                        if($mandate->method == $renewalOrderMethod){
+                            $data['method'] = $mandate->method;
+                            break;
+                        }
                     }
                 }
-
             }
             catch ( Mollie\Api\Exceptions\ApiException $e ) {
 	            throw new \Mollie\Api\Exceptions\ApiException( sprintf( __( 'The customer (%s) could not be used or found. ' . $e->getMessage(), 'mollie-payments-for-woocommerce-mandate-problem' ), $customer_id ) );

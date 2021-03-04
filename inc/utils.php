@@ -182,6 +182,48 @@ function mollieWooCommerceisApplePayDirectEnabled()
     }
     return mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_applepay_settings', 'mollie_apple_pay_button_enabled');
 }
+/**
+ * Check if the PayPal gateway is enabled and then if the button is enabled too.
+ *
+ * @param $page string setting to check between cart or product
+ *
+ * @return bool
+ */
+function mollieWooCommerceIsPayPalButtonEnabled($page)
+{
+    $payPalGatewayEnabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_paypal_settings', 'enabled');
+
+    if (!$payPalGatewayEnabled) {
+        return false;
+    }
+    $settingToCheck = 'mollie_paypal_button_enabled_'.$page;
+    return mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_paypal_settings', $settingToCheck);
+}
+
+/**
+ * Check if the product needs shipping
+ *
+ * @param $product
+ *
+ * @return bool
+ */
+function mollieWooCommerceCheckIfNeedShipping($product)
+{
+    if (!wc_shipping_enabled()
+        || 0 === wc_get_shipping_method_count(
+            true
+        )
+    ) {
+        return false;
+    }
+    $needs_shipping = false;
+
+    if ($product->needs_shipping()) {
+        $needs_shipping = true;
+    }
+
+    return $needs_shipping;
+}
 
 function checkIndexExistOrDefault($array, $key, $default)
 {

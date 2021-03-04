@@ -266,6 +266,7 @@ class Mollie_WC_Plugin
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueFrontendScripts']);
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueComponentsAssets']);
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueApplePayDirectScripts']);
+        add_action('wp_enqueue_scripts', [__CLASS__, 'enqueuePayPalButtonScripts']);
 
         add_action(
             Mollie_WC_Payment_OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS,
@@ -294,6 +295,7 @@ class Mollie_WC_Plugin
         });
         add_action('wp_loaded', [__CLASS__, 'maybeTestModeNotice']);
         self::mollieApplePayDirectHandling();
+        self::molliePayPalButtonHandling();
 
 		self::initDb();
 		self::schedulePendingPaymentOrdersExpirationCheck();
@@ -607,6 +609,33 @@ class Mollie_WC_Plugin
     }
 
     /**
+     * Enqueues the ApplePay button scripts if enabled and in correct page
+     */
+    public static function enqueuePayPalButtonScripts()
+    {
+
+        if (mollieWooCommerceIsPayPalButtonEnabled('product') && is_product()) {
+            $dataToScripts = new Mollie_WC_PayPalButton_DataToPayPalScripts();
+            wp_enqueue_style('unabledButton');
+            wp_enqueue_script('mollie_paypalButton');
+            wp_localize_script(
+                    'mollie_paypalButton',
+                    'molliepaypalbutton',
+                    $dataToScripts->paypalbuttonScriptData()
+            );
+        }
+        if (mollieWooCommerceIsPayPalButtonEnabled('cart') && is_cart()) {
+            $dataToScripts = new Mollie_WC_PayPalButton_DataToPayPalScripts();
+            wp_enqueue_script('mollie_paypalButtonCart');
+            wp_localize_script(
+                    'mollie_paypalButtonCart',
+                    'molliepaypalButtonCart',
+                    $dataToScripts->paypalbuttonScriptData()
+            );
+        }
+    }
+
+    /**
      * Bootstrap the ApplePay button logic if feature enabled
      */
     public static function mollieApplePayDirectHandling()
@@ -620,7 +649,21 @@ class Mollie_WC_Plugin
         }
     }
 
+    /**
+     * Bootstrap the PayPal button logic if feature enabled
+     */
+    public static function molliePayPalButtonHandling()
+    {
+        $shouldBuildIt = (mollieWooCommerceIsPayPalButtonEnabled('product'))
+                || (mollieWooCommerceIsPayPalButtonEnabled('cart'));
 
+        if ($shouldBuildIt) {
+            $ajaxRequests = new Mollie_WC_PayPalButton_AjaxRequests();
+            $payPalHandler = new Mollie_WC_Helper_PayPalButtonHandler( $ajaxRequests);
+            $payPalHandler->bootstrap();
+
+        }
+    }
 
     /**
      * @param Refund $refund
@@ -706,6 +749,20 @@ class Mollie_WC_Plugin
             ['underscore', 'jquery'],
             filemtime(Mollie_WC_Plugin::getPluginPath('/public/js/applepayDirect.min.js')),
             true
+        );
+        wp_register_script(
+                'mollie_paypalButton',
+                Mollie_WC_Plugin::getPluginUrl('/resources/js/paypalButton.js'),
+                ['underscore', 'jquery'],
+                filemtime(Mollie_WC_Plugin::getPluginPath('/resources/js/paypalButton.js')),
+                true
+        );
+        wp_register_script(
+                'mollie_paypalButtonCart',
+                Mollie_WC_Plugin::getPluginUrl('/resources/js/paypalButtonCart.js'),
+                ['underscore', 'jquery'],
+                filemtime(Mollie_WC_Plugin::getPluginPath('/resources/js/paypalButtonCart.js')),
+                true
         );
         wp_register_script(
             'mollie_applepaydirectCart',

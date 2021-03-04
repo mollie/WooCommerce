@@ -18,6 +18,16 @@ class Mollie_WC_Gateway_PayPal extends Mollie_WC_Gateway_Abstract
     }
 
     /**
+     * @inheritDoc
+     */
+    public function init_form_fields()
+    {
+        parent::init_form_fields();
+
+        $this->includePayPalButton();
+    }
+
+    /**
      * @return string
      */
     public function getMollieMethodId ()
@@ -70,5 +80,15 @@ class Mollie_WC_Gateway_PayPal extends Mollie_WC_Gateway_Abstract
 
 	    return parent::getInstructions($order, $payment, $admin_instructions, $plain_text);
 
+    }
+
+
+    protected function includePayPalButton()
+    {
+        $fields = include Mollie_WC_Plugin::getPluginPath(
+            '/inc/settings/mollie_paypal_button_enabler.php'
+        );
+
+        $this->form_fields = array_merge($this->form_fields, $fields);
     }
 }

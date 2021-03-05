@@ -409,6 +409,10 @@ class WC_Order_Item_Product extends ArrayObject
     public function get_id()
     {
     }
+
+    public function get_amount()
+    {
+    }
 }
 
 class WC_Cart

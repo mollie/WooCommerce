@@ -19,7 +19,7 @@
     "mollie/mollie-api-php": "^2.21",
     "ext-intl": "*",
     "ext-json": "*",
-    "inpsyde/plugin-environment-checker": "^0.1"
+    "inpsyde/plugin-environment-checker": "dev-main"
   },
   "require-dev": {
     "phpunit/phpunit": "^5 || ^7.1",
@@ -44,11 +44,10 @@
   "repositories": [
     {
       "type": "composer",
-      "url": "https://wpackagist.org"
+      "url": "https://repo.packagist.com/inpsyde/"
     },
     {
-      "type": "vcs",
-      "url": "https://github.com/inpsyde/plugin-environment-checker"
+      "packagist.org": false
     }
   ],
   "extra": {

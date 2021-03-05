@@ -88,7 +88,6 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             ->andReturn(false);
         expect('wc_get_product')
             ->andReturn($this->wcProduct());
-
         expectedActionDone(Mollie_WC_Plugin::PLUGIN_ID . '_create_payment')
             ->once()
             ->with($this->expectedRequestData(), $wcOrder);
@@ -262,8 +261,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
                         "metadata" =>
                             [
                                 "order_item_id" => null
-                            ],
-                        "category" => null
+                            ]
                     ],
                     [
                         'type' => 'surcharge',
@@ -288,6 +286,27 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
                         'metadata' =>
                             [
                                 'order_item_id' => null
+                            ]
+                    ],
+                    [
+                        'type' => 'gift_card',
+                        'name' => NULL,
+                        'unitPrice' =>
+                            [
+                                'currency' => 'EUR',
+                                'value' => 0,
+                            ],
+                        'vatRate' => 0,
+                        'quantity' => 1,
+                        'totalAmount' =>
+                            [
+                                'currency' => 'EUR',
+                                'value' => 0
+                            ],
+                        'vatAmount' =>
+                            [
+                                'currency' => 'EUR',
+                                'value' => 0
                             ]
                     ]
                 ],

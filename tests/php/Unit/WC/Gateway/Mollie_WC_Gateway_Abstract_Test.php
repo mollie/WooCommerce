@@ -101,7 +101,13 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             WooCommerce::class,
             ['api_request_url' => $varStubs->apiRequestUrl]
         );
-        $wcOrder = $this->createMock('WC_Order');
+        $wcOrder = $this->createConfiguredMock(
+            \WC_Order::class,
+            [
+                'get_id' => $varStubs->orderId,
+                'get_order_key' => $varStubs->orderKey,
+            ]
+        );
 
 
         /*
@@ -119,10 +125,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         expect('idn_to_ascii')
             ->andReturn($varStubs->untrailedUrl);
         //get order id and key and append to the the url
-        expect('mollieWooCommerceOrderId')
-            ->andReturn($varStubs->orderId);
-        expect('mollieWooCommerceOrderKey')
-            ->andReturn($varStubs->orderKey);
+
         $testee
             ->expects($this->once())
             ->method('appendOrderArgumentsToUrl')
@@ -171,7 +174,13 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             WooCommerce::class,
             ['api_request_url' => $varStubs->apiRequestUrl]
         );
-        $wcOrder = $this->createMock('WC_Order');
+        $wcOrder = $this->createConfiguredMock(
+            \WC_Order::class,
+            [
+                'get_id' => $varStubs->orderId,
+                'get_order_key' => $varStubs->orderKey,
+            ]
+        );
 
 
         /*
@@ -189,10 +198,6 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         expect('idn_to_ascii')
             ->andReturn($varStubs->untrailedUrl);
         //get order id and key and append to the the url
-        expect('mollieWooCommerceOrderId')
-            ->andReturn($varStubs->orderId);
-        expect('mollieWooCommerceOrderKey')
-            ->andReturn($varStubs->orderKey);
         $testee
             ->expects($this->once())
             ->method('appendOrderArgumentsToUrl')
@@ -288,9 +293,6 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         /*
         * Expectations
         */
-        expect('mollieWooCommerceOrderId')
-            ->once()
-            ->with($order);
         expect('mollieWooCommerceDebug')
             ->once();
         $testee
@@ -341,9 +343,6 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         /*
         * Expectations
         */
-        expect('mollieWooCommerceOrderId')
-            ->once()
-            ->with($order);
         expect('mollieWooCommerceDebug')
             ->twice();
         $testee
@@ -570,7 +569,6 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             [
                 'WC' => $this->wooCommerce(),
                 'get_woocommerce_currency'=>'EUR',
-                'mollieWooCommerceWcVersion'=>4,
                 'get_option'=>'IT'
             ]
         );
@@ -619,7 +617,6 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             [
                 'WC' => $this->wooCommerce(),
                 'get_woocommerce_currency'=>'EUR',
-                'mollieWooCommerceWcVersion'=>4,
                 'get_option'=>'IT'
             ]
         );
@@ -668,7 +665,6 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             [
                 'WC' => $this->wooCommerce(),
                 'get_woocommerce_currency'=>'EUR',
-                'mollieWooCommerceWcVersion'=>4,
                 'get_option'=>'IT'
             ]
         );

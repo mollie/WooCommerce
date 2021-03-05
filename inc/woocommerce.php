@@ -35,41 +35,6 @@ function mollieWooCommerceSession()
 }
 
 /**
- * Get order ID in the correct way depending on WooCommerce version
- *
- * @param WC_Order $order
- * @return int
- */
-function mollieWooCommerceOrderId(WC_Order $order)
-{
-    return version_compare(mollieWooCommerceWcVersion(), '3.0', '<')
-        ? $order->id
-        : $order->get_id();
-}
-/**
- * Get order key in the correct way depending on WooCommerce version
- *
- * @param WC_Order $order
- * @return string
- */
-function mollieWooCommerceOrderKey(WC_Order $order)
-{
-    return version_compare(mollieWooCommerceWcVersion(), '3.0', '<')
-        ? $order->order_key
-        : $order->get_order_key();
-}
-
-/**
- * Retrieve the version of WooCommerce currently active.
- *
- * @return string The version number.
- */
-function mollieWooCommerceWcVersion()
-{
-    return (string) WC_VERSION;
-}
-
-/**
  * Mimics wc_string_to_bool
  * @param $string
  *

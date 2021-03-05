@@ -82,6 +82,7 @@ class Mollie_WC_ActivationHandle_ConstraintsChecker
         foreach ($errors as $error) {
             $message .= "<p>{$error}</p>";
         }
+        $message .= "<p>Correct the above errors to use Mollie Payments for Woocommerce</p>";
         $message = sprintf(__($message, 'mollie-payments-for-woocommerce'), '<p><strong>', '</strong></p>');
         $errorLevel = 'notice-error';
         $this->notice->addNotice($errorLevel, $message);

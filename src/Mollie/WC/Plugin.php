@@ -55,7 +55,7 @@ class Mollie_WC_Plugin
     private function __construct () {}
 
     /**
-     *
+     * WCSubscription related.
      */
     public static function schedulePendingPaymentOrdersExpirationCheck()
     {
@@ -114,7 +114,7 @@ class Mollie_WC_Plugin
         $currentDate = new DateTime();
         $items = $wpdb->get_results("SELECT * FROM {$wpdb->mollie_pending_payment} WHERE expired_time < {$currentDate->getTimestamp()};");
         foreach ($items as $item){
-	        $order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $item->post_id );
+	        $order = wc_get_order( $item->post_id );
 
 	        // Check that order actually exists
 	        if ( $order == false ) {
@@ -124,13 +124,8 @@ class Mollie_WC_Plugin
             if ($order->get_status() == Mollie_WC_Gateway_Abstract::STATUS_COMPLETED){
 
                 $new_order_status = Mollie_WC_Gateway_Abstract::STATUS_FAILED;
-	            if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
-		            $paymentMethodId = get_post_meta( $order->id, '_payment_method_title', true );
-		            $molliePaymentId = get_post_meta( $order->id, '_mollie_payment_id', true );
-	            } else {
-		            $paymentMethodId = $order->get_meta( '_payment_method_title', true );
-		            $molliePaymentId = $order->get_meta( '_mollie_payment_id', true );
-	            }
+                $paymentMethodId = $order->get_meta( '_payment_method_title', true );
+                $molliePaymentId = $order->get_meta( '_mollie_payment_id', true );
                 $order->add_order_note(sprintf(
                 /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
                     __('%s payment failed (%s).', 'mollie-payments-for-woocommerce'),
@@ -138,36 +133,19 @@ class Mollie_WC_Plugin
                 ));
 
                 $order->update_status($new_order_status, '');
+                if ( $order->get_meta( '_order_stock_reduced', $single = true ) ) {
+                    // Restore order stock
+                    Mollie_WC_Plugin::getDataHelper()->restoreOrderStock( $order );
 
-	            if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
-		            if ( get_post_meta( $order->id, '_order_stock_reduced', $single = true ) ) {
-			            // Restore order stock
-			            Mollie_WC_Plugin::getDataHelper()->restoreOrderStock( $order );
+                    Mollie_WC_Plugin::debug( __METHOD__ . " Stock for order {$order->get_id()} restored." );
+                }
 
-			            Mollie_WC_Plugin::debug( __METHOD__ . " Stock for order {$order->id} restored." );
-		            }
-
-		            $wpdb->delete(
-			            $wpdb->mollie_pending_payment,
-			            array(
-				            'post_id' => $order->id,
-			            )
-		            );
-	            } else {
-		            if ( $order->get_meta( '_order_stock_reduced', $single = true ) ) {
-			            // Restore order stock
-			            Mollie_WC_Plugin::getDataHelper()->restoreOrderStock( $order );
-
-			            Mollie_WC_Plugin::debug( __METHOD__ . " Stock for order {$order->get_id()} restored." );
-		            }
-
-		            $wpdb->delete(
-			            $wpdb->mollie_pending_payment,
-			            array(
-				            'post_id' => $order->get_id(),
-			            )
-		            );
-	            }
+                $wpdb->delete(
+                        $wpdb->mollie_pending_payment,
+                        array(
+                                'post_id' => $order->get_id(),
+                        )
+                );
             }
         }
 
@@ -891,14 +869,12 @@ class Mollie_WC_Plugin
      */
     public static function orderByRequest()
     {
-        $dataHelper = mollieWooCommerceGetDataHelper();
-
         $orderId = filter_input(INPUT_GET, 'order_id', FILTER_SANITIZE_NUMBER_INT) ?: null;
         $key = filter_input(INPUT_GET, 'key', FILTER_SANITIZE_STRING) ?: null;
-        $order = $dataHelper->getWcOrder($orderId);
+        $order = wc_get_order($orderId);
 
         if (!$order) {
-            $order = $dataHelper->getWcOrder(wc_get_order_id_by_order_key($key));
+            $order = wc_get_order(wc_get_order_id_by_order_key($key));
         }
 
         if (!$order) {
@@ -922,8 +898,6 @@ class Mollie_WC_Plugin
      */
     public static function onMollieReturn ()
     {
-        $dataHelper = mollieWooCommerceGetDataHelper();
-
         try {
             $order = self::orderByRequest();
         } catch (RuntimeException $exc) {
@@ -932,8 +906,8 @@ class Mollie_WC_Plugin
             return;
         }
 
-        $gateway = $dataHelper->getWcPaymentGatewayByOrder($order);
-        $orderId = mollieWooCommerceOrderId($order);
+        $gateway = wc_get_payment_gateway_by_order($order);
+        $orderId = $order->get_id();
 
         if (!$gateway) {
             $gatewayName = $order->get_payment_method();
@@ -977,7 +951,7 @@ class Mollie_WC_Plugin
             return;
         }
 
-        $gateway = Mollie_WC_Plugin::getDataHelper()->getWcPaymentGatewayByOrder($order);
+        $gateway = wc_get_payment_gateway_by_order($order);
 
         if (!$gateway || !($gateway instanceof Mollie_WC_Gateway_Abstract))
         {
@@ -1036,18 +1010,6 @@ class Mollie_WC_Plugin
 		if ( is_admin() && ! empty( $current_screen->base ) && $current_screen->base == 'woocommerce_page_wc-settings' ) {
 			if ( ( $key = array_search( 'Mollie_WC_Gateway_MisterCash', $gateways ) ) !== false ) {
 				unset( $gateways[ $key ] );
-			}
-		}
-
-		// Remove Klarna if WooCommerce is not version 3.0 or higher
-		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
-			if ( is_admin() && ! empty( $current_screen->base ) && $current_screen->base == 'woocommerce_page_wc-settings' ) {
-				if ( ( $key = array_search( 'Mollie_WC_Gateway_KlarnaPayLater', $gateways ) ) !== false ) {
-					unset( $gateways[ $key ] );
-				}
-				if ( ( $key = array_search( 'Mollie_WC_Gateway_KlarnaSliceIt', $gateways ) ) !== false ) {
-					unset( $gateways[ $key ] );
-				}
 			}
 		}
 
@@ -1183,7 +1145,7 @@ class Mollie_WC_Plugin
         // Convert message to string
         if (!is_string($message))
         {
-            $message = ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) ? print_r($message, true) : wc_print_r($message, true);
+            $message = wc_print_r($message, true);
         }
 
         // Set debug header
@@ -1194,27 +1156,11 @@ class Mollie_WC_Plugin
 
 	    // Log message
 	    if ( self::getSettingsHelper()->isDebugEnabled() ) {
+            $logger = wc_get_logger();
 
-		    if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
+            $context = array ( 'source' => self::PLUGIN_ID . '-' . date( 'Y-m-d' ) );
 
-			    static $logger;
-
-			    if ( empty( $logger ) ) {
-				    $logger = new WC_Logger();
-			    }
-
-			    $logger->add( self::PLUGIN_ID . '-' . date( 'Y-m-d' ), $message );
-
-		    } else {
-
-			    $logger = wc_get_logger();
-
-			    $context = array ( 'source' => self::PLUGIN_ID . '-' . date( 'Y-m-d' ) );
-
-			    $logger->debug( $message, $context );
-
-		    }
-
+            $logger->debug( $message, $context );
 	    }
     }
 
@@ -1256,12 +1202,11 @@ class Mollie_WC_Plugin
             '<a href="' . self::getSettingsHelper()->getGlobalSettingsUrl() . '">' . __('Mollie settings', 'mollie-payments-for-woocommerce') . '</a>',
         );
 
-        // Add link to log files viewer for WooCommerce >= 2.2.0
-        if (version_compare(self::getStatusHelper()->getWooCommerceVersion(), '2.2.0', ">="))
-        {
-            // Add link to WooCommerce logs
-            $action_links[] = '<a href="' . self::getSettingsHelper()->getLogsUrl() . '">' . __('Logs', 'mollie-payments-for-woocommerce') . '</a>';
-        }
+
+        // Add link to WooCommerce logs
+        $action_links[] = '<a href="' . self::getSettingsHelper()->getLogsUrl()
+                . '">' . __('Logs', 'mollie-payments-for-woocommerce') . '</a>';
+
 
         return array_merge($action_links, $links);
     }
@@ -1376,12 +1321,7 @@ class Mollie_WC_Plugin
 	 */
 	public static function shipAndCaptureOrderAtMollie( $order_id ) {
 
-		// If this is an older WooCommerce version, don't run.
-		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
-			return;
-		}
-
-		$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+		$order = wc_get_order( $order_id );
 
 		// Does WooCommerce order contain a Mollie payment?
 		if ( strstr( $order->get_payment_method(), 'mollie_wc_gateway_') == FALSE ) {
@@ -1457,12 +1397,7 @@ class Mollie_WC_Plugin
 	 */
 	public static function cancelOrderAtMollie( $order_id ) {
 
-		// If this is an older WooCommerce version, don't run.
-		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
-			return;
-		}
-
-		$order = Mollie_WC_Plugin::getDataHelper()->getWcOrder( $order_id );
+		$order = wc_get_order( $order_id );
 
 		// Does WooCommerce order contain a Mollie payment?
 		if ( strstr( $order->get_payment_method(), 'mollie_wc_gateway_') == FALSE ) {
@@ -1477,14 +1412,9 @@ class Mollie_WC_Plugin
 
 		Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Try to process cancelled order at Mollie.' );
 
-		// Does WooCommerce order contain a Mollie Order?
-		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
-			$mollie_order_id = ( $mollie_order_id = get_post_meta( $order->id, '_mollie_order_id', true ) ) ? $mollie_order_id : false;
-		} else {
-			$mollie_order_id = ( $mollie_order_id = $order->get_meta( '_mollie_order_id', true ) ) ? $mollie_order_id : false;
-		}
+        $mollie_order_id = ( $mollie_order_id = $order->get_meta( '_mollie_order_id', true ) ) ? $mollie_order_id : false;
 
-		if ( $mollie_order_id == false ) {
+        if ( $mollie_order_id == false ) {
 			$order->add_order_note( 'Order contains Mollie payment method, but not a valid Mollie Order ID. Canceling order failed.' );
 			Mollie_WC_Plugin::debug( __METHOD__ . ' - ' . $order_id . ' - Order contains Mollie payment method, but not a valid Mollie Order ID. Canceling order failed.' );
 
@@ -1585,26 +1515,14 @@ class Mollie_WC_Plugin
 
 		$order = wc_get_order( $order_id );
 
-		if ( version_compare( mollieWooCommerceWcVersion(), '3.0', '<' ) ) {
+        $mollie_payment_id    = $order->get_meta( '_mollie_payment_id', $single = true );
+        $order_payment_method = $order->get_payment_method();
 
-			$mollie_payment_id    = get_post_meta( $order_id, '_mollie_payment_id', $single = true );
-			$order_payment_method = get_post_meta( $order_id, '_payment_method', $single = true );
+        if ( $mollie_payment_id !== '' && ( strpos( $order_payment_method, 'mollie' ) === false ) ) {
 
-			if ( $mollie_payment_id !== '' && ( strpos( $order_payment_method, 'mollie' ) === false ) ) {
-				update_post_meta( $order->id, '_mollie_paid_by_other_gateway', '1' );
-			}
-
-		} else {
-
-			$mollie_payment_id    = $order->get_meta( '_mollie_payment_id', $single = true );
-			$order_payment_method = $order->get_payment_method();
-
-			if ( $mollie_payment_id !== '' && ( strpos( $order_payment_method, 'mollie' ) === false ) ) {
-
-				$order->update_meta_data( '_mollie_paid_by_other_gateway', '1' );
-				$order->save();
-			}
-		}
+            $order->update_meta_data( '_mollie_paid_by_other_gateway', '1' );
+            $order->save();
+        }
 
 		return true;
 

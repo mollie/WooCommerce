@@ -423,6 +423,22 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			// Add messages to log
 			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $orderId );
 
+            if($payment->method === 'paypal'){
+                $address = $payment->shippingAddress;
+                $filter = FILTER_SANITIZE_STRING;
+                $shippingAddress = [
+                    'first_name' => filter_var($address->givenName, $filter),
+                    'last_name' => filter_var($address->familyName, $filter),
+                    'email' => filter_var($address->email, $filter),
+                    'postcode' => filter_var($address->postalCode, $filter),
+                    'country' => strtoupper(filter_var($address->country, $filter)),
+                    'city' => filter_var($address->city, $filter),
+                    'address_1' => filter_var($address->streetAndNumber, $filter)
+                ];
+
+                $order->set_address($shippingAddress, 'shipping');
+            }
+
 			// WooCommerce 2.2.0 has the option to store the Payment transaction id.
 			$woo_version = get_option( 'woocommerce_version', 'Unknown' );
 

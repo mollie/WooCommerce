@@ -3,17 +3,6 @@
 class Mollie_WC_PayPalButton_AjaxRequests
 {
 
-
-    /**
-     * Mollie_WC_PayPalButton_AjaxRequests constructor.
-     *
-     *
-     */
-    public function __construct()
-    {
-
-    }
-
     /**
      * Adds all the Ajax actions to perform the whole workflow
      */
@@ -168,9 +157,7 @@ class Mollie_WC_PayPalButton_AjaxRequests
         $item = new WC_Order_Item_Shipping();
         $shippingMethod = new Mollie_WC_PayPalButton_CustomShippingMethod();
         $shippingMethod->calculate_shipping();
-        //OJO QUE ESTO LO TENGO QUE QUITAR!!!
 
-        WC()->initialize_session();
         $shippingMethodId = $shippingMethod->id;
         WC()->session->set(
             'chosen_shipping_methods',
@@ -178,7 +165,7 @@ class Mollie_WC_PayPalButton_AjaxRequests
         );
         $item->set_props(
             array(
-                'method_title' => 'PayPalButton Fixed Shipping',
+                'method_title' => __('PayPalButton Fixed Shipping', 'mollie-payments-for-woocommerce'),
                 'total' => wc_format_decimal(
                     $shippingMethod->rates['PayPalButtonFixedShipping']->get_cost(
                     )

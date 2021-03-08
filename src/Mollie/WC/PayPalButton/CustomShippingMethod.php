@@ -13,11 +13,11 @@ class Mollie_WC_PayPalButton_CustomShippingMethod extends WC_Shipping_Method
     {
         $this->id = 'PayPalButtonFixedShipping';
         $this->instance_id           = absint( $instance_id );
-        $this->method_title = __('PayPal Button Fixed Shipping');
-        $this->method_description = __('Description of your shipping method');
+        $this->method_title = __('PayPal Button Fixed Shipping', 'mollie-payments-for-woocommerce');
+        $this->method_description = __('Description of your shipping method', 'mollie-payments-for-woocommerce');
 
         $this->enabled = "yes";
-        $this->title = "PayPal Button Fixed Shipping";
+        $this->title = __('PayPal Button Fixed Shipping', 'mollie-payments-for-woocommerce');
 
         $this->init();
     }

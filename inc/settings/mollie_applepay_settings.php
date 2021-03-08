@@ -84,18 +84,33 @@ return [
         'desc'  => '<p>' . __('The following options are required to use the Apple Pay Direct Button', 'mollie-payments-for-woocommerce') . '</p>',
     ],
     [
-        'id'                => 'mollie_apple_pay_button_enabled',
-        'title'             => __('Enable Apple Pay Button', 'mollie-payments-for-woocommerce'),
+        'id'                => 'mollie_apple_pay_button_enabled_cart',
+        'title'             => __('Enable Apple Pay Button on Cart page', 'mollie-payments-for-woocommerce'),
         /* translators: Placeholder 1: enabled or disabled */
         'desc'              => sprintf(
             __(
-                'Enable the Apple Pay direct buy button',
+                'Enable the Apple Pay direct buy button on the Cart page',
                 'mollie-payments-for-woocommerce'
             ),
             $description),
         'type'              => 'checkbox',
         'default'           => 'no',
-        'value'             => $applePayOption['mollie_apple_pay_button_enabled']
+        'value'             => $applePayOption['mollie_apple_pay_button_enabled_cart']
+
+    ],
+    [
+        'id'                => 'mollie_apple_pay_button_enabled_product',
+        'title'             => __('Enable Apple Pay Button on Product page', 'mollie-payments-for-woocommerce'),
+        /* translators: Placeholder 1: enabled or disabled */
+        'desc'              => sprintf(
+            __(
+                'Enable the Apple Pay direct buy button on the Product page',
+                'mollie-payments-for-woocommerce'
+            ),
+            $description),
+        'type'              => 'checkbox',
+        'default'           => 'no',
+        'value'             => $applePayOption['mollie_apple_pay_button_enabled_product']
 
     ],
     [

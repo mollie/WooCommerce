@@ -21,26 +21,27 @@ class Mollie_WC_Helper_PayPalButtonHandler
      * Initial method that puts the button in place
      * and adds all the necessary actions
      */
-    public function bootstrap()
+    public function bootstrap($enabledInProduct, $enabledInCart)
     {
-
-        add_action(
-                'woocommerce_after_add_to_cart_form',
-                function () {
-                    $this->renderPayPalButton();
-                }
-        );
-        add_action(
-                'woocommerce_cart_totals_after_order_total',
-                function () {
-                    $this->renderPayPalButton();
-                }
-        );
+        if($enabledInProduct){
+            add_action(
+                    'woocommerce_after_add_to_cart_form',
+                    function () {
+                        $this->renderPayPalButton();
+                    }
+            );
+        }
+        if($enabledInCart){
+            add_action(
+                    'woocommerce_cart_totals_after_order_total',
+                    function () {
+                        $this->renderPayPalButton();
+                    }
+            );
+        }
 
         admin_url('admin-ajax.php');
         $this->ajaxRequests->bootstrapAjaxRequest();
-
-
     }
 
     /**

@@ -632,14 +632,14 @@ class Mollie_WC_Plugin
      */
     public static function molliePayPalButtonHandling()
     {
-        $shouldBuildIt = (mollieWooCommerceIsPayPalButtonEnabled('product'))
-                || (mollieWooCommerceIsPayPalButtonEnabled('cart'));
+        $enabledInProduct = (mollieWooCommerceIsPayPalButtonEnabled('product'));
+        $enabledInCart = (mollieWooCommerceIsPayPalButtonEnabled('cart'));
+        $shouldBuildIt = $enabledInProduct || $enabledInCart;
 
         if ($shouldBuildIt) {
             $ajaxRequests = new Mollie_WC_PayPalButton_AjaxRequests();
-            $payPalHandler = new Mollie_WC_Helper_PayPalButtonHandler( $ajaxRequests);
-            $payPalHandler->bootstrap();
-
+            $payPalHandler = new Mollie_WC_Helper_PayPalButtonHandler($ajaxRequests);
+            $payPalHandler->bootstrap($enabledInProduct, $enabledInCart);
         }
     }
 

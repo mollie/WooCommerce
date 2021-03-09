@@ -49,18 +49,20 @@ class Mollie_WC_Helper_PayPalButtonHandler
     protected function renderPayPalButton()
     {
         $whichPayPalButton = $this->whichPayPalButton();
-
-        $product = wc_get_product(get_the_id());
-        $needsShipping = mollieWooCommerceCheckIfNeedShipping($product);
         $assetsImagesUrl
                 = Mollie_WC_Plugin::getPluginUrl($whichPayPalButton);
         $shippingWarningText = '';
-        if($needsShipping){
-            $paypalSettings = get_option('mollie_wc_gateway_paypal_settings');
-            $cost = $paypalSettings['mollie_paypal_button_fixed_shipping_amount']?$paypalSettings['mollie_paypal_button_fixed_shipping_amount']:0;
-            $currency = get_woocommerce_currency();
-            $message = "This payment method will apply a fixed rate of {$cost}{$currency} as shipping fee";
-            $shippingWarningText = _x($message, 'PayPal Button Shipping Text', 'mollie-payments-for-woocommerce');
+        $product = wc_get_product(get_the_id());
+        if($product){
+            $needsShipping = mollieWooCommerceCheckIfNeedShipping($product);
+
+            if($needsShipping){
+                $paypalSettings = get_option('mollie_wc_gateway_paypal_settings');
+                $cost = $paypalSettings['mollie_paypal_button_fixed_shipping_amount']?$paypalSettings['mollie_paypal_button_fixed_shipping_amount']:0;
+                $currency = get_woocommerce_currency();
+                $message = "This payment method will apply a fixed rate of {$cost}{$currency} as shipping fee";
+                $shippingWarningText = _x($message, 'PayPal Button Shipping Text', 'mollie-payments-for-woocommerce');
+            }
         }
 
         ?>

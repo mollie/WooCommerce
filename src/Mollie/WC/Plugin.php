@@ -298,7 +298,7 @@ class Mollie_WC_Plugin
                 ) . '">',
                 '</a>'
             );
-            $notice->addAdminNotice('notice-error', $message);
+            $notice->addNotice('notice-error', $message);
         }
     }
 

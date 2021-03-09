@@ -730,16 +730,16 @@ class Mollie_WC_Plugin
         );
         wp_register_script(
                 'mollie_paypalButton',
-                Mollie_WC_Plugin::getPluginUrl('/resources/js/paypalButton.js'),
+                Mollie_WC_Plugin::getPluginUrl('/public/js/paypalButton.min.js'),
                 ['underscore', 'jquery'],
-                filemtime(Mollie_WC_Plugin::getPluginPath('/resources/js/paypalButton.js')),
+                filemtime(Mollie_WC_Plugin::getPluginPath('/public/js/paypalButton.min.js')),
                 true
         );
         wp_register_script(
                 'mollie_paypalButtonCart',
-                Mollie_WC_Plugin::getPluginUrl('/resources/js/paypalButtonCart.js'),
+                Mollie_WC_Plugin::getPluginUrl('/public/js/paypalButtonCart.min.js'),
                 ['underscore', 'jquery'],
-                filemtime(Mollie_WC_Plugin::getPluginPath('/resources/js/paypalButtonCart.js')),
+                filemtime(Mollie_WC_Plugin::getPluginPath('/public/js/paypalButtonCart.min.js')),
                 true
         );
         wp_register_script(

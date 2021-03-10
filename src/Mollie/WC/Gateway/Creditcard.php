@@ -23,7 +23,7 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
             "public/images/creditcard.svg"
         );
         $localAsset = '<img src="' . esc_attr($url)
-            . '" style="width: 32px; vertical-align: bottom;" />';
+            . '" class="mollie-gateway-icon" />';
         $output = $this->icon ? $localAsset : '';
         if ($this->enabledCreditcards()
             && !is_admin()

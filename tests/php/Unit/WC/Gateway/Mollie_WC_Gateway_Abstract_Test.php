@@ -69,7 +69,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
          * Execute test
          */
         $result = $testee->getIconUrl();
-        $expected = '<img src="/images/ideal.svg" style="width: 32px; vertical-align: bottom;" />';
+        $expected = '<img src="/images/ideal.svg" class="mollie-gateway-icon" />';
 
         self::assertStringEndsWith($expected, $result);
 

@@ -33,7 +33,6 @@ class Mollie_WC_Plugin
         'Mollie_WC_Gateway_EPS',
         'Mollie_WC_Gateway_Giropay',
         'Mollie_WC_Gateway_Ideal',
-        'Mollie_WC_Gateway_IngHomePay',
         'Mollie_WC_Gateway_Kbc',
         'Mollie_WC_Gateway_KlarnaPayLater',
         'Mollie_WC_Gateway_KlarnaSliceIt',
@@ -298,7 +297,7 @@ class Mollie_WC_Plugin
                 ) . '">',
                 '</a>'
             );
-            $notice->addAdminNotice('notice-error', $message);
+            $notice->addNotice('notice-error', $message);
         }
     }
 

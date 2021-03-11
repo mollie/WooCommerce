@@ -38,20 +38,20 @@ class Mollie_WC_Settings_Page_Mollie extends WC_Settings_Page
             $data = filter_var_array($_POST,FILTER_SANITIZE_STRING);
 
             $applepaySettings = [];
-            $data['enabled'] === '1' ? $applepaySettings['enabled'] = 'yes'
+            isset($data['enabled']) &&($data['enabled'] === '1') ? $applepaySettings['enabled'] = 'yes'
                 : $applepaySettings['enabled'] = 'no';
-            $data['display_logo'] === '1' ?
+            isset($data['display_logo'])&&($data['display_logo'] === '1') ?
                 $applepaySettings['display_logo'] = 'yes'
                 : $applepaySettings['display_logo'] = 'no';
-            $data['mollie_apple_pay_button_enabled_cart'] === '1' ?
+            isset($data['mollie_apple_pay_button_enabled_cart']) && ($data['mollie_apple_pay_button_enabled_cart'] === '1') ?
                 $applepaySettings['mollie_apple_pay_button_enabled_cart'] = 'yes'
                 : $applepaySettings['mollie_apple_pay_button_enabled_cart'] = 'no';
-            $data['mollie_apple_pay_button_enabled_product'] === '1' ?
+            isset($data['mollie_apple_pay_button_enabled_product']) && ($data['mollie_apple_pay_button_enabled_product'] === '1') ?
                 $applepaySettings['mollie_apple_pay_button_enabled_product'] = 'yes'
                 : $applepaySettings['mollie_apple_pay_button_enabled_product'] = 'no';
-            $data['title'] ? $applepaySettings['title'] = $data['title']
+            isset($data['title']) ? $applepaySettings['title'] = $data['title']
                 : $applepaySettings['title'] = '';
-            $data['description'] ?
+            isset($data['description']) ?
                 $applepaySettings['description'] = $data['description']
                 : $applepaySettings['description'] = '';
             update_option(

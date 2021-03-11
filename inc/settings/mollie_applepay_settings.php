@@ -21,7 +21,7 @@ return [
         'desc'              => sprintf(__('Enable %s', 'mollie-payments-for-woocommerce'), $title),
         'type'              => 'checkbox',
         'default'           =>  'yes',
-        'value'             => $applePayOption['enabled']
+        'value'             => isset($applePayOption['enabled'])?$applePayOption['enabled']:'yes'
 
     ],
     [
@@ -37,7 +37,7 @@ return [
         'desc_tip' => true,
         'type'              => 'text',
         'default'           =>  $title,
-        'value'             => $applePayOption['title']
+        'value'             => isset($applePayOption['title'])?$applePayOption['title']:$title
 
     ],
     [
@@ -52,7 +52,7 @@ return [
         'desc_tip'          => true,
         'type'              => 'checkbox',
         'default'           => 'yes',
-        'value'             => $applePayOption['display_logo']
+        'value'             => isset($applePayOption['display_logo'])?$applePayOption['display_logo']:'yes'
 
     ],
     [
@@ -68,7 +68,7 @@ return [
         'desc_tip'          => true,
         'type'              => 'text',
         'default'           => $description,
-        'value'             => $applePayOption['description']
+        'value'             => isset($applePayOption['description'])?$applePayOption['description']:$description
     ],
     [
         'id' => $pluginId . '_' . 'sectionend',
@@ -95,7 +95,7 @@ return [
             $description),
         'type'              => 'checkbox',
         'default'           => 'no',
-        'value'             => $applePayOption['mollie_apple_pay_button_enabled_cart']
+        'value'             => isset($applePayOption['mollie_apple_pay_button_enabled_cart'])?$applePayOption['mollie_apple_pay_button_enabled_cart']:'no'
 
     ],
     [
@@ -110,7 +110,7 @@ return [
             $description),
         'type'              => 'checkbox',
         'default'           => 'no',
-        'value'             => $applePayOption['mollie_apple_pay_button_enabled_product']
+        'value'             => isset($applePayOption['mollie_apple_pay_button_enabled_product'])?$applePayOption['mollie_apple_pay_button_enabled_product']:'no'
 
     ],
     [

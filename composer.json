@@ -31,14 +31,16 @@
   "autoload": {
     "psr-0": {
       "Mollie_WC_": "./src"
+    },
+    "psr-4": {
+      "Inpsyde\\EnvironmentChecker\\": "pluginEnvironmentChecker"
     }
   },
   "autoload-dev": {
     "psr-4": {
       "Mollie\\WooCommerceTests\\": "tests/php",
       "Mollie\\WooCommerceTests\\Unit\\": "tests/php/Unit",
-      "Mollie\\WooCommerceTests\\Functional\\": "tests/php/Functional",
-      "Inpsyde\\EnvironmentChecker\\": "pluginEnvironmentChecker"
+      "Mollie\\WooCommerceTests\\Functional\\": "tests/php/Functional"
     }
   },
   "repositories": [

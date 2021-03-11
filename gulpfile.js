@@ -225,6 +225,7 @@ function _archive({baseDir, buildDir, distDir, packageVersion, packageName}) {
                         gulp.src([
                             'inc/**/*.*',
                             'languages/**/*.*',
+                            'pluginEnvironmentChecker/**/*.*',
                             'public/**/*.*',
                             'src/**/*.*',
                             'vendor/**/*.*',

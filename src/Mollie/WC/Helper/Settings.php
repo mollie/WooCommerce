@@ -295,11 +295,17 @@ class Mollie_WC_Helper_Settings
 		$content .= '<ul style="width: 1000px; padding:20px 0 0 10px">';
 
         $settings_initialized = get_option('mollie_wc_gateway_settings_initialized');
+        $apiKeysSet = true;
+        if(!$settings_initialized){
+            $liveKeySet = get_option('mollie-payments-for-woocommerce_live_api_key');
+            $testKeySet = get_option('mollie-payments-for-woocommerce_test_api_key');
+            $apiKeysSet = $liveKeySet || $testKeySet;
+        }
 
 		foreach ( Mollie_WC_Plugin::$GATEWAYS as $gateway_classname ) {
 			$gateway = new $gateway_classname;
 
-            if (!$settings_initialized) {
+            if (!$settings_initialized && $apiKeysSet) {
                 $this->updateGatewaySettings($gateway);
             }
 
@@ -325,7 +331,7 @@ class Mollie_WC_Helper_Settings
 			}
 		}
 
-        if (!$settings_initialized) {
+        if (!$settings_initialized && $apiKeysSet) {
             update_option(
                 "mollie_wc_gateway_settings_initialized",
                 true

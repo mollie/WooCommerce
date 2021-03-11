@@ -275,6 +275,7 @@ class Mollie_WC_Plugin
 		self::initDb();
 		self::schedulePendingPaymentOrdersExpirationCheck();
         self::registerFrontendScripts();
+        wp_enqueue_style('mollie-gateway-icons');
 
 		// Mark plugin initiated
 		self::$initiated = true;
@@ -665,7 +666,13 @@ class Mollie_WC_Plugin
             filemtime(Mollie_WC_Plugin::getPluginPath('/public/js/applepay.min.js')),
             true
         );
-
+        wp_register_style(
+                'mollie-gateway-icons',
+                Mollie_WC_Plugin::getPluginUrl('/public/css/mollie-gateway-icons.min.css'),
+                [],
+                filemtime(Mollie_WC_Plugin::getPluginPath('/public/css/mollie-gateway-icons.min.css')),
+                'screen'
+        );
         wp_register_style(
             'mollie-components',
             Mollie_WC_Plugin::getPluginUrl('/public/css/mollie-components.min.css'),

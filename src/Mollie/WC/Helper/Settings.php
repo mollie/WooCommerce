@@ -294,8 +294,20 @@ class Mollie_WC_Helper_Settings
 
 		$content .= '<ul style="width: 1000px; padding:20px 0 0 10px">';
 
+        $settings_initialized = get_option('mollie_wc_gateway_settings_initialized');
+        $apiKeysSet = true;
+        if(!$settings_initialized){
+            $liveKeySet = get_option('mollie-payments-for-woocommerce_live_api_key');
+            $testKeySet = get_option('mollie-payments-for-woocommerce_test_api_key');
+            $apiKeysSet = $liveKeySet || $testKeySet;
+        }
+
 		foreach ( Mollie_WC_Plugin::$GATEWAYS as $gateway_classname ) {
 			$gateway = new $gateway_classname;
+
+            if (!$settings_initialized && $apiKeysSet) {
+                $this->updateGatewaySettings($gateway);
+            }
 
 			// Remove MisterCash from list as it's renamed Bancontact
 			if ( $gateway->id == 'mollie_wc_gateway_mistercash' ) {
@@ -318,6 +330,13 @@ class Mollie_WC_Helper_Settings
 				$content .= '</li>';
 			}
 		}
+
+        if (!$settings_initialized && $apiKeysSet) {
+            update_option(
+                "mollie_wc_gateway_settings_initialized",
+                true
+            );
+        }
 
 		$content .= '</ul></div>';
 		$content .= '<div class="clear"></div>';
@@ -696,5 +715,18 @@ class Mollie_WC_Helper_Settings
         }
 
         return self::SETTING_LOCALE_DEFAULT_LANGUAGE;
+    }
+
+    /**
+     * Init all the gateways and add to the db for the first time
+     * @param $gateway
+     */
+    protected function updateGatewaySettings($gateway)
+    {
+        $gateway->settings['enabled'] = $gateway->is_available() ? 'yes' : 'no';
+        update_option(
+            $gateway->id . "_settings",
+            $gateway->settings
+        );
     }
 }

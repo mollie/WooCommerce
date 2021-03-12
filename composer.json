@@ -16,7 +16,6 @@
   ],
   "require": {
     "php": "^5.6.39 | ^7.0",
-    "mollie/mollie-api-php": "^2.21",
     "ext-intl": "*",
     "ext-json": "*"
   },

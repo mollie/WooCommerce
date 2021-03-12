@@ -97,60 +97,13 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function init_form_fields()
     {
-        $this->form_fields = array(
-            'enabled' => array(
-                'title'       => __('Enable/Disable', 'mollie-payments-for-woocommerce'),
-                'type'        => 'checkbox',
-                'label'       => sprintf(__('Enable %s', 'mollie-payments-for-woocommerce'), $this->getDefaultTitle()),
-                'default'     => 'yes'
-            ),
-            'title' => array(
-                'title'       => __('Title', 'mollie-payments-for-woocommerce'),
-                'type'        => 'text',
-                'description' => sprintf(__('This controls the title which the user sees during checkout. Default <code>%s</code>', 'mollie-payments-for-woocommerce'), $this->getDefaultTitle()),
-                'default'     => $this->getDefaultTitle(),
-                'desc_tip'    => true,
-            ),
-            'display_logo' => array(
-                'title'       => __('Display logo', 'mollie-payments-for-woocommerce'),
-                'type'        => 'checkbox',
-                'label'       => __('Display logo on checkout page. Default <code>enabled</code>', 'mollie-payments-for-woocommerce'),
-                'default'     => 'yes'
-            ),
-            'description' => array(
-                'title'       => __('Description', 'mollie-payments-for-woocommerce'),
-                'type'        => 'textarea',
-                'description' => sprintf(__('Payment method description that the customer will see on your checkout. Default <code>%s</code>', 'mollie-payments-for-woocommerce'), $this->getDefaultDescription()),
-                'default'     => $this->getDefaultDescription(),
-                'desc_tip'    => true,
-            ),
-            'allowed_countries' =>    array(
-                 'title'   => __( 'Sell to specific countries', 'mollie-payments-for-woocommerce' ),
-                 'desc'    => '',
-                 'css'     => 'min-width: 350px;',
-                 'default' => [],
-                 'type'    => 'multi_select_countries',
-            ),
+        $settingsHelper = Mollie_WC_Plugin::getSettingsHelper();
+        $this->form_fields = $settingsHelper->gatewayFormFields(
+                $this->getDefaultTitle(),
+                $this->getDefaultDescription(),
+                $this->paymentConfirmationAfterCoupleOfDays()
         );
 
-        if ($this->paymentConfirmationAfterCoupleOfDays())
-        {
-            $this->form_fields['initial_order_status'] = array(
-                'title'       => __('Initial order status', 'mollie-payments-for-woocommerce'),
-                'type'        => 'select',
-                'options'     => array(
-                    self::STATUS_ON_HOLD => wc_get_order_status_name(self::STATUS_ON_HOLD) . ' (' . __('default', 'mollie-payments-for-woocommerce') . ')',
-                    self::STATUS_PENDING => wc_get_order_status_name(self::STATUS_PENDING),
-                ),
-                'default'     => self::STATUS_ON_HOLD,
-                /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
-                'description' => sprintf(
-                    __('Some payment methods take longer than a few hours to complete. The initial order state is then set to \'%s\'. This ensures the order is not cancelled when the setting %s is used.', 'mollie-payments-for-woocommerce'),
-                    wc_get_order_status_name(self::STATUS_ON_HOLD),
-                    '<a href="' . admin_url( 'admin.php?page=wc-settings&tab=products&section=inventory') . '" target="_blank">' . __('Hold Stock (minutes)', 'woocommerce') . '</a>'
-                ),
-            );
-        }
     }
 
     /**
@@ -569,8 +522,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		}
 
-		$molliePaymentType = $this->paymentTypeBasedOnProducts($order);
-		$molliePaymentType = $this->paymentTypeBasedOnGateway($molliePaymentType);
+		$molliePaymentType = $this->paymentTypeBasedOnGateway();
+        $molliePaymentType = $this->paymentTypeBasedOnProducts($order,$molliePaymentType);
         try {
             $paymentObject = Mollie_WC_Plugin::getPaymentFactoryHelper()
                     ->getPaymentObject(
@@ -2294,11 +2247,12 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      *
      * @param WC_Order $order
      *
+     * @param  string  $molliePaymentType
+     *
      * @return string
      */
-    protected function paymentTypeBasedOnProducts(WC_Order $order)
+    protected function paymentTypeBasedOnProducts(WC_Order $order, $molliePaymentType)
     {
-        $molliePaymentType = 'order';
         foreach ($order->get_items() as $cart_item) {
             if ($cart_item['quantity']) {
                 do_action(
@@ -2565,13 +2519,16 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         return $paymentObject;
     }
 
-    protected function paymentTypeBasedOnGateway($paymentType)
+    protected function paymentTypeBasedOnGateway()
     {
+        $optionName = Mollie_WC_Plugin::PLUGIN_ID . '_' .'api_switch';
+        $apiSwitchOption = get_option($optionName);
+        $paymentType = isset($apiSwitchOption)? $apiSwitchOption : self::PAYMENT_METHOD_TYPE_ORDER;
         $isBankTransferGateway = $this->id == 'mollie_wc_gateway_banktransfer';
         if($isBankTransferGateway && $this->isExpiredDateSettingActivated()){
             $paymentType = self::PAYMENT_METHOD_TYPE_PAYMENT;
-
         }
+
         return $paymentType;
     }
 

@@ -2523,7 +2523,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         $optionName = Mollie_WC_Plugin::PLUGIN_ID . '_' .'api_switch';
         $apiSwitchOption = get_option($optionName);
-        $paymentType = isset($apiSwitchOption)? $apiSwitchOption : self::PAYMENT_METHOD_TYPE_ORDER;
+        $paymentType = $apiSwitchOption? $apiSwitchOption : self::PAYMENT_METHOD_TYPE_ORDER;
         $isBankTransferGateway = $this->id == 'mollie_wc_gateway_banktransfer';
         if($isBankTransferGateway && $this->isExpiredDateSettingActivated()){
             $paymentType = self::PAYMENT_METHOD_TYPE_PAYMENT;

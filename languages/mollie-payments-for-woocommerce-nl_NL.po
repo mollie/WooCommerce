@@ -617,7 +617,7 @@ msgstr "Moet Mollie klantennaam en e-mailadres opslaan voor Single Click Payment
 #: src/Mollie/WC/Gateway/Abstract.php:1270
 #: src/Mollie/WC/Gateway/Abstract.php:1281
 msgid "Your payment was not successful. Please complete your order with a different payment method."
-msgstr "Je betaling is niet gelukt. Rond uw bestelling af met een andere betaalmethode."
+msgstr "Je betaling is niet gelukt. Rond je bestelling af met een andere betaalmethode."
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
 #: src/Mollie/WC/Payment/Order.php:605 src/Mollie/WC/Payment/Payment.php:394

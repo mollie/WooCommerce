@@ -14,17 +14,27 @@ return [
             ) . '</p>',
     ],
 
-    'mollie_apple_pay_button_enabled' => [
-        'type' => 'checkbox',
-        'title' => __(
-            'Enable Apple Pay Button',
-            'mollie-payments-for-woocommerce'
-        ),
-        'description' => __(
-            'Enable the Apple Pay direct buy button',
-            'mollie-payments-for-woocommerce'
-        ),
-        'default' => 'no',
+    'mollie_apple_pay_button_enabled_cart'=>[
+        'title'             => __('Enable Apple Pay Button on Cart page', 'mollie-payments-for-woocommerce'),
+        /* translators: Placeholder 1: enabled or disabled */
+        'desc'              => sprintf(
+            __(
+                'Enable the Apple Pay direct buy button on the Cart page',
+                'mollie-payments-for-woocommerce'
+            )),
+        'type'              => 'checkbox',
+        'default'           => 'no'
+    ],
+    'mollie_apple_pay_button_enabled_product'=>[
+        'title'             => __('Enable Apple Pay Button on Product page', 'mollie-payments-for-woocommerce'),
+        /* translators: Placeholder 1: enabled or disabled */
+        'desc'              => sprintf(
+            __(
+                'Enable the Apple Pay direct buy button on the Product page',
+                'mollie-payments-for-woocommerce'
+            )),
+        'type'              => 'checkbox',
+        'default'           => 'no'
     ]
 
 ];

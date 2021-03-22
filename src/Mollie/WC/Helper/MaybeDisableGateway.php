@@ -78,8 +78,9 @@ class Mollie_WC_Helper_MaybeDisableGateway
                 Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
                 $postmeta
             ) ? $postmeta[Mollie_WC_Gateway_Mealvoucher::MOLLIE_VOUCHER_CATEGORY_OPTION][0] : false;
-            if ( $product['variation_id'] ) {
+            if ( isset($product['variation_id']) ) {
                 $postmeta = get_post_meta($product['variation_id']);
+                $postmeta = is_array($postmeta)?$postmeta:[];
                 $variationCategory = array_key_exists(
                     'voucher',
                     $postmeta

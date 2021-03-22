@@ -53,6 +53,7 @@ class Mollie_WC_Helper_OrderLines {
 		$this->process_items();
 		$this->process_shipping();
 		$this->process_fees();
+		$this->process_gift_cards();
 
 		return array (
 			'lines' => $this->get_order_lines(),
@@ -225,6 +226,37 @@ class Mollie_WC_Helper_OrderLines {
 				$this->order_lines[] = $fee;
 			} // End foreach().
 		} // End if().
+	}
+
+	/**
+	 * Process Gift Cards
+	 *
+	 * @access private
+	*/
+	private function process_gift_cards() {
+		if (!empty($this->order->get_items('gift_card'))) {
+			foreach ($this->order->get_items('gift_card') as $cart_gift_card) {
+				$gift_card = array(
+					'type' => 'gift_card',
+					'name' => $cart_gift_card->get_name(),
+					'unitPrice' => array(
+						'currency' => $this->currency,
+						'value' =>  Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue(-$cart_gift_card->get_amount(), $this->currency)
+					),
+					'vatRate' => 0,
+					'quantity' => 1,
+					'totalAmount' => array(
+						'currency' => $this->currency,
+						'value' =>  Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue(-$cart_gift_card->get_amount(), $this->currency)
+					),
+					'vatAmount' => array(
+						'currency' => $this->currency,
+						'value' => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue(0, $this->currency)
+					)
+				);
+				$this->order_lines[] = $gift_card;
+			}
+		}
 	}
 
 	// Helpers.

@@ -12,7 +12,7 @@ class Mollie_WC_Helper_Status
      *
      * @var string
      */
-    const MIN_WOOCOMMERCE_VERSION = '2.2.0';
+    const MIN_WOOCOMMERCE_VERSION = '3.0';
 
     /**
      * @var string[]

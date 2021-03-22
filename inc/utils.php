@@ -172,15 +172,14 @@ function mollieWooCommerceIsGatewayEnabled($gatewaySettingsName, $settingToCheck
 /**
  * Check if the Apple Pay gateway is enabled and then if the button is enabled too.
  *
+ * @param $page
+ *
  * @return bool
  */
-function mollieWooCommerceisApplePayDirectEnabled()
+function mollieWooCommerceisApplePayDirectEnabled($page)
 {
-    $applePayGatewayEnabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_applepay_settings', 'enabled');
-    if (!$applePayGatewayEnabled) {
-        return false;
-    }
-    return mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_applepay_settings', 'mollie_apple_pay_button_enabled');
+    $pageToCheck = 'mollie_apple_pay_button_enabled_'.$page;
+    return mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_applepay_settings', $pageToCheck);
 }
 
 function checkIndexExistOrDefault($array, $key, $default)
@@ -196,7 +195,7 @@ function checkIndexExistOrDefault($array, $key, $default)
 function mollieWooCommerceIsDropdownEnabled($gatewaySettingsName)
 {
     $gatewaySettings = get_option($gatewaySettingsName);
-    $optionValue = checkIndexExistOrDefault($gatewaySettings, 'issuers_dropdown_shown', false);
+    $optionValue = checkIndexExistOrDefault($gatewaySettings, 'issuers_dropdown_shown', 'yes');
     return $optionValue == 'yes';
 }
 

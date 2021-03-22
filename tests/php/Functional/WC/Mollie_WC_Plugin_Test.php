@@ -301,23 +301,14 @@ class Mollie_WC_Plugin_Test extends TestCase
             WC_Order::class,
             ['key_is_valid' => true]
         );
-        $dataHelper = $this->createConfiguredMock(
-            Mollie_WC_Helper_Data::class,
-            [
-                'getWcOrder' => $order,
-                'getWcPaymentGatewayByOrder' => $gateway
-            ]
-        );
 
         /*
         * Expectations
         */
-        expect('mollieWooCommerceGetDataHelper')
-            ->andReturn($dataHelper);
-        when('wc_get_order_id_by_order_key')
-            ->justReturn($id);
-        when('mollieWooCommerceOrderId')
-            ->justReturn($id);
+        when('wc_get_order')
+            ->justReturn($order);
+        when('wc_get_payment_gateway_by_order')
+            ->justReturn($gateway);
         $gateway
             ->expects($this->once())
             ->method('getReturnRedirectUrlForOrder')

@@ -188,7 +188,7 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
                 $payment->details->consumerBic
             );
         }
-        elseif ($data_helper->hasOrderStatus($order, 'on-hold') || $data_helper->hasOrderStatus($order, 'pending') )
+        elseif ($order->has_status('on-hold') || $order->has_status('pending') )
         {
             if (!$admin_instructions)
             {

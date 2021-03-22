@@ -3,16 +3,16 @@
  * Plugin Name: Mollie Payments for WooCommerce
  * Plugin URI: https://www.mollie.com
  * Description: Accept payments in WooCommerce with the official Mollie plugin
- * Version: 6.1.0
+ * Version: 6.2.0
  * Author: Mollie
  * Author URI: https://www.mollie.com
  * Requires at least: 3.8
- * Tested up to: 5.6
+ * Tested up to: 5.7
  * Text Domain: mollie-payments-for-woocommerce
  * Domain Path: /languages
  * License: GPLv2 or later
  * WC requires at least: 3.0
- * WC tested up to: 4.9
+ * WC tested up to: 5.1
  */
 
 
@@ -101,11 +101,16 @@ function mollieWcNoticeApiKeyMissing(){
 function mollie_wc_plugin_autoload()
 {
     $autoloader = __DIR__ . '/vendor/autoload.php';
+    $mollieSdkAutoload = __DIR__ . '/vendor/mollie/mollie-api-php/vendor/autoload.php';
     if (file_exists($autoloader)) {
         /** @noinspection PhpIncludeInspection */
         require $autoloader;
     }
 
+    if (file_exists($mollieSdkAutoload)) {
+        /** @noinspection PhpIncludeInspection */
+        require $mollieSdkAutoload;
+    }
     return class_exists(Mollie_WC_Plugin::class);
 }
 function mollie_wc_plugin_init() {

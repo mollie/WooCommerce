@@ -195,7 +195,7 @@ function checkIndexExistOrDefault($array, $key, $default)
 function mollieWooCommerceIsDropdownEnabled($gatewaySettingsName)
 {
     $gatewaySettings = get_option($gatewaySettingsName);
-    $optionValue = checkIndexExistOrDefault($gatewaySettings, 'issuers_dropdown_shown', false);
+    $optionValue = checkIndexExistOrDefault($gatewaySettings, 'issuers_dropdown_shown', 'yes');
     return $optionValue == 'yes';
 }
 

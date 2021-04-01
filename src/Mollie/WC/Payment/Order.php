@@ -245,7 +245,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			// Add messages to log
 			Mollie_WC_Plugin::debug( __METHOD__ . " called for order {$orderId}" );
 
-            $order->payment_complete();
+            $order->payment_complete($payment->id);
 
 			// Add messages to log
 			Mollie_WC_Plugin::debug( __METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . " for order {$orderId}" );
@@ -296,7 +296,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $orderId );
 
 			// WooCommerce 2.2.0 has the option to store the Payment transaction id.
-            $order->payment_complete();
+            $order->payment_complete($payment->id);
 
 			// Add messages to log
 			Mollie_WC_Plugin::debug( __METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for order ' . $orderId );
@@ -340,7 +340,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			// Add messages to log
 			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $orderId );
 
-            $order->payment_complete();
+            $order->payment_complete($payment->id);
 			// Add messages to log
 			Mollie_WC_Plugin::debug( __METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for order ' . $orderId );
 

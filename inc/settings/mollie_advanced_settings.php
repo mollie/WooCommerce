@@ -114,12 +114,9 @@ return [
         'options' => [
             '{orderNumber}' => '{orderNumber}',
             '{storeName}' => '{storeName}',
-            '{cart.id}' => '{cart.id}',
-            '{order.reference}' => '{order.reference}',
             '{customer.firstname}' => '{customer.firstname}',
             '{customer.lastname}' => '{customer.lastname}',
-            '{customer.company}' => '{customer.company}',
-            '{storename}' => '{storename}',
+            '{customer.company}' => '{customer.company}'
         ],
         'default' => '{orderNumber}',
         /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */

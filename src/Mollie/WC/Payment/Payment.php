@@ -38,7 +38,8 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
     {
         $settingsHelper = Mollie_WC_Plugin::getSettingsHelper();
         $optionName = Mollie_WC_Plugin::PLUGIN_ID . '_' .'api_payment_description';
-        $paymentDescription = get_option($optionName);
+        $option = get_option($optionName);
+        $paymentDescription = $this->getPaymentDescription($order, $option);
         $paymentLocale = $settingsHelper->getPaymentLocale();
         $storeCustomer = $settingsHelper->shouldStoreCustomer();
 
@@ -117,6 +118,33 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
             $paymentRequestData['applePayPaymentToken'] = $encodedApplePayToken;
         }
         return $paymentRequestData;
+    }
+
+    protected function getPaymentDescription($order, $option)
+    {
+        switch ($option) {
+            case '{orderNumber}':
+                $description = 'Order ' . $order->get_order_number();
+                break;
+            case '{storeName}':
+                $description = 'StoreName ' . get_bloginfo('name');
+                break;
+            case '{customer.firstname}':
+                $description = 'Customer Firstname '
+                    . $order->get_billing_first_name();
+                break;
+            case '{customer.lastname}':
+                $description = 'Customer Lastname '
+                    . $order->get_billing_last_name();
+                break;
+            case '{customer.company}':
+                $description = 'Customer Company '
+                    . $order->get_billing_company();
+                break;
+            default:
+                $description = 'Order ' . $order->get_order_number();
+        }
+        return $description;
     }
 
     public function setActiveMolliePayment($orderId)

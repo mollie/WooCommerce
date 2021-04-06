@@ -100,6 +100,11 @@ class Mollie_WC_Payment_RefundLineItemsBuilder
             ? $toRefundRemoteItem->unitPrice->value
             : 0;
 
+        //as in Woo if the quantity is 0 but there is an amount, then quantity is 1
+        if($toRefundItemQuantity < 1 && $toRefundItemAmount > 0){
+            $toRefundItemQuantity = 1;
+        }
+
         if ($toRefundItemAmount <= 0 || $toRefundItemQuantity < 1 || $toRefundRemoteItemPrice <= 0) {
             return [];
         }

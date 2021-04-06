@@ -81,6 +81,18 @@ class Mollie_WC_Helper_Settings
                 ),
                 'default' => 'yes'
             ],
+            'upload_logo' => [
+                'title' => __(
+                    'Upload custom logo',
+                    'mollie-payments-for-woocommerce'
+                ),
+                'type' => 'file',
+                'custom_attributes'=>['accept'=>'.png, .jpeg, .svg, image/png, image/jpeg'],
+                'label' => __(
+                    'Upload a custom logo for this gateway',
+                    'mollie-payments-for-woocommerce'
+                )
+            ],
             'description' => [
                 'title' => __('Description', 'mollie-payments-for-woocommerce'),
                 'type' => 'textarea',

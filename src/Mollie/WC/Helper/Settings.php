@@ -116,6 +116,73 @@ class Mollie_WC_Helper_Settings
                 'default' => [],
                 'type' => 'multi_select_countries',
             ],
+            'payment_surcharge' => [
+                'title' => __(
+                    'Payment Surcharge',
+                    'mollie-payments-for-woocommerce'
+                ),
+                'type' => 'select',
+                'options' => [
+                    'no_fee' => __(
+                        'No fee',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                    'fixed_fee' => __(
+                        'Fixed fee',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                    'percentage' => __(
+                        'Percentage',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                    'fixed_fee_percentage' => __(
+                        'Fixed fee and percentage',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                ],
+                'default' => 'no_fee',
+                'description' => __(
+                    'Choose a payment surcharge for this gateway',
+                    'mollie-payments-for-woocommerce'
+                ),
+                'desc_tip' => true,
+            ],
+            'fixed_fee' => [
+                'title' => __('Payment surcharge fixed amount', 'mollie-payments-for-woocommerce'),
+                'type' => 'number',
+                'description' => sprintf(
+                    __(
+                        'This controls the fee added on checkout. Default 0',
+                        'mollie-payments-for-woocommerce'
+                    )
+                ),
+                'default' => 0,
+                'desc_tip' => true,
+            ],
+            'percentage' => [
+                'title' => __('Payment surcharge percentage amount', 'mollie-payments-for-woocommerce'),
+                'type' => 'number',
+                'description' => sprintf(
+                    __(
+                        'This controls the percentage fee added on checkout. Default 0',
+                        'mollie-payments-for-woocommerce'
+                    )
+                ),
+                'default' => 0,
+                'desc_tip' => true,
+            ],
+            'surcharge_limit' => [
+                'title' => __('Payment surcharge limit', 'mollie-payments-for-woocommerce'),
+                'type' => 'number',
+                'description' => sprintf(
+                    __(
+                        'This limits the fee added on checkout. Default 0',
+                        'mollie-payments-for-woocommerce'
+                    )
+                ),
+                'default' => 0,
+                'desc_tip' => true,
+            ],
         ];
 
         if ($paymentConfirmation) {

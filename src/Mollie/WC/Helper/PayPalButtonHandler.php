@@ -52,29 +52,11 @@ class Mollie_WC_Helper_PayPalButtonHandler
         $whichPayPalButton = $this->whichPayPalButton();
         $assetsImagesUrl
                 = Mollie_WC_Plugin::getPluginUrl($whichPayPalButton);
-        $shippingWarningText = '';
-        $product = wc_get_product(get_the_id());
-        if($product){
-            $needsShipping = mollieWooCommerceCheckIfNeedShipping($product);
-
-            if($needsShipping){
-                $paypalSettings = get_option('mollie_wc_gateway_paypal_settings');
-                $cost = $paypalSettings['mollie_paypal_button_fixed_shipping_amount']?$paypalSettings['mollie_paypal_button_fixed_shipping_amount']:0;
-                $currency = get_woocommerce_currency();
-                $message = "This payment method will apply a fixed rate of {$cost}{$currency} as shipping fee";
-                $shippingWarningText = _x($message, 'PayPal Button Shipping Text', 'mollie-payments-for-woocommerce');
-            }
-        }
 
         ?>
         <div id="mollie-PayPal-button">
             <?php wp_nonce_field('mollie_PayPal_button'); ?>
             <input type="image" src="<?php echo $assetsImagesUrl?>" alt="PayPal Button">
-            <div id="paypal_shipping_warning">
-                <p>
-                    <?php echo $shippingWarningText?>
-                </p>
-            </div>
         </div>
         <?php
     }

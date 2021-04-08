@@ -38,14 +38,53 @@ return [
         ),
         'default' => 'no',
     ],
-    'mollie_paypal_button_fixed_shipping_amount' => [
+    'mollie_paypal_button_minimum_amount' => [
         'type' => 'number',
         'title' => __(
-            'Fixed shipping amount',
+            'Minimum amount to show the button',
             'mollie-payments-for-woocommerce'
         ),
         'description' => __(
-            'All PayPal Button transactions must have shipping costs set to a flat rate. The flat rate will not apply to products that need no shipping.',
+            'If the product or the cart total amount is under this number, then the button will not show up.',
+            'mollie-payments-for-woocommerce'
+        ),
+        'default' => 0,
+        'desc_tip' => true,
+    ],
+    'mollie_paypal_button_max_fixed_fee' => [
+        'type' => 'number',
+        'title' => __(
+            'Max amount to apply the fixed fee',
+            'mollie-payments-for-woocommerce'
+        ),
+        'description' => __(
+            'If the product or the cart total amount is under this number but over the Minimum amount (see the previous setting), then the fixed fee will apply.',
+            'mollie-payments-for-woocommerce'
+        ),
+        'default' => 0,
+        'desc_tip' => true,
+    ],
+    'mollie_paypal_button_no_fee_amount' => [
+        'type' => 'number',
+        'title' => __(
+            'Amount for free shipping',
+            'mollie-payments-for-woocommerce'
+        ),
+        'description' => __(
+            'If the product or the cart total amount is over this number, then the fixed fee will not apply.',
+            'mollie-payments-for-woocommerce'
+        ),
+        'default' => 0,
+        'desc_tip' => true,
+    ],
+    'mollie_paypal_button_fixed_shipping_amount' => [
+        'type' => 'number',
+        'title' => __(
+            'Fixed shipping fee amount',
+            'mollie-payments-for-woocommerce'
+        ),
+        'description' => __(
+            'All PayPal Button transactions must have shipping costs set to this flat rate. The flat rate will not apply to products that need no shipping, like virtual products.',
             'mollie-payments-for-woocommerce'
         ),
         'default' => 'no',

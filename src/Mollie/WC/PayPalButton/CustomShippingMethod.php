@@ -3,14 +3,16 @@
 
 class Mollie_WC_PayPalButton_CustomShippingMethod extends WC_Shipping_Method
 {
+    public $shippingCost;
     /**
      * Constructor for the PayPal shipping method
      *
      * @access public
      * @return void
      */
-    public function __construct($instance_id = 0)
+    public function __construct($shippingCost = 0, $instance_id = 0)
     {
+        $this->shippingCost = $shippingCost;
         $this->id = 'PayPalButtonFixedShipping';
         $this->instance_id           = absint( $instance_id );
         $this->method_title = __('PayPal Button Fixed Shipping', 'mollie-payments-for-woocommerce');
@@ -45,12 +47,10 @@ class Mollie_WC_PayPalButton_CustomShippingMethod extends WC_Shipping_Method
      */
     public function calculate_shipping($package = [])
     {
-        $paypalSettings = get_option('mollie_wc_gateway_paypal_settings');
-        $cost = $paypalSettings['mollie_paypal_button_fixed_shipping_amount'];
         $rate = array(
             'id' => $this->id,
             'label' => $this->title,
-            'cost' => $cost? $cost: 0,
+            'cost' => $this->shippingCost,
         );
 
         $this->add_rate($rate);

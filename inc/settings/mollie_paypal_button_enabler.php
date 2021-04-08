@@ -51,19 +51,6 @@ return [
         'default' => 0,
         'desc_tip' => true,
     ],
-    'mollie_paypal_button_max_fixed_fee' => [
-        'type' => 'number',
-        'title' => __(
-            'Max amount to apply the fixed fee',
-            'mollie-payments-for-woocommerce'
-        ),
-        'description' => __(
-            'If the product or the cart total amount is under this number but over the Minimum amount (see the previous setting), then the fixed fee will apply.',
-            'mollie-payments-for-woocommerce'
-        ),
-        'default' => 0,
-        'desc_tip' => true,
-    ],
     'mollie_paypal_button_no_fee_amount' => [
         'type' => 'number',
         'title' => __(

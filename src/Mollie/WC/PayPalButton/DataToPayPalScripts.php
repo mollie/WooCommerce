@@ -79,8 +79,13 @@ class Mollie_WC_PayPalButton_DataToPayPalScripts
      */
     protected function dataForCartPage()
     {
+        $cart = WC()->cart;
         return [
+            'product' => [
+                'needShipping' => $cart->needs_shipping(),
+                'subtotal' => $cart->get_subtotal(),
 
+            ],
             'ajaxUrl' => admin_url('admin-ajax.php')
         ];
     }

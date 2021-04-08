@@ -54,6 +54,7 @@ class Mollie_WC_PayPalButton_AjaxRequests
         $needsShipping
             = $payPalRequestDataObject->needShipping === 'true';
         if ($needsShipping) {
+            $order->calculate_totals();
             $order = $this->addShippingMethodsToOrder(
                 $order
             );
@@ -62,6 +63,7 @@ class Mollie_WC_PayPalButton_AjaxRequests
         $orderId = $order->get_id();
         $order->calculate_totals();
         $this->updateOrderPostMeta($orderId, $order);
+
         $result = $this->processOrderPayment($orderId);
 
         if (isset($result['result'])
@@ -102,10 +104,14 @@ class Mollie_WC_PayPalButton_AjaxRequests
         }
 
         list($cart, $order) = $this->createOrderFromCart();
-
-        $order = $this->addShippingMethodsToOrder(
-            $order
-        );
+        $needsShipping
+            = $payPalRequestDataObject->needShipping === 'true';
+        if ($needsShipping) {
+            $order->calculate_totals();
+            $order = $this->addShippingMethodsToOrder(
+                $order
+            );
+        }
         $orderId = $order->get_id();
         $order->calculate_totals();
         $this->updateOrderPostMeta($orderId, $order);
@@ -123,7 +129,7 @@ class Mollie_WC_PayPalButton_AjaxRequests
                     'Could not create %s payment.',
                     'mollie-payments-for-woocommerce'
                 ),
-                'ApplePay'
+                'PayPal'
             );
 
             Mollie_WC_Plugin::addNotice($message, 'error');
@@ -145,8 +151,6 @@ class Mollie_WC_PayPalButton_AjaxRequests
     /**
      * Add shipping methods to order
      *
-     * @param array $shippingMethod
-     * @param array $shippingAddress
      * @param       $order
      *
      * @return mixed
@@ -154,8 +158,14 @@ class Mollie_WC_PayPalButton_AjaxRequests
     protected function addShippingMethodsToOrder(
         $order
     ) {
+        $paypalSettings = get_option('mollie_wc_gateway_paypal_settings');
+        $shippingCost = $this->findSettingRangeApplied($paypalSettings, $order->get_total());
+        if($shippingCost == 0){
+            return $order;
+        }
+
         $item = new WC_Order_Item_Shipping();
-        $shippingMethod = new Mollie_WC_PayPalButton_CustomShippingMethod();
+        $shippingMethod = new Mollie_WC_PayPalButton_CustomShippingMethod($shippingCost);
         $shippingMethod->calculate_shipping();
 
         $shippingMethodId = $shippingMethod->id;
@@ -176,6 +186,21 @@ class Mollie_WC_PayPalButton_AjaxRequests
         $order->add_item($item);
 
         return $order;
+    }
+
+    /**
+     * If the amount total is over a certain range, taken from the settings, no fees apply
+     *
+     * @param $paypalSettings
+     * @param $amount
+     *
+     * @return int|mixed
+     */
+    protected function findSettingRangeApplied($paypalSettings, $amount)
+    {
+        $cost = $paypalSettings['mollie_paypal_button_fixed_shipping_amount'];
+        $noFeeAmount = $paypalSettings['mollie_paypal_button_no_fee_amount'];
+        return $amount >= $noFeeAmount? 0: $cost;
     }
 
     /**

@@ -70,8 +70,10 @@
             if (!isButtonVisible) {
                 return
             }
+
             document.querySelector('#mollie-PayPal-button').addEventListener('click', (evt) => {
-                console.log(isButtonVisible)
+                payPalButton.disabled = true;
+                payPalButton.classList.add("buttonDisabled");
                 if (!isButtonVisible) {
                     return
                 }
@@ -87,8 +89,8 @@
                     complete: (jqXHR, textStatus) => {
                     },
                     success: (authorizationResult, textStatus, jqXHR) => {
-                        payPalButton.disabled = true;
-                        payPalButton.classList.add("buttonDisabled");
+                        payPalButton.disabled = false;
+                        payPalButton.classList.remove("buttonDisabled");
                         let result = authorizationResult.data
 
                         if (authorizationResult.success === true) {

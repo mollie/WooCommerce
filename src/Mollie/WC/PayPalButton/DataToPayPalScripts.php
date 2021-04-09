@@ -10,11 +10,13 @@ class Mollie_WC_PayPalButton_DataToPayPalScripts
      */
     public function paypalbuttonScriptData()
     {
+        $paypalSettings = get_option('mollie_wc_gateway_paypal_settings');
+        $minAmount = $paypalSettings['mollie_paypal_button_minimum_amount'];
         if (is_product()) {
-            return $this->dataForProductPage();
+            return $this->dataForProductPage($minAmount);
         }
         if (is_cart()) {
-            return $this->dataForCartPage();
+            return $this->dataForCartPage($minAmount);
         }
         return [];
     }
@@ -46,10 +48,13 @@ class Mollie_WC_PayPalButton_DataToPayPalScripts
 
     /**
      *
+     * @param $minAmount
+     *
      * @return array|bool
      */
-    protected function dataForProductPage()
+    protected function dataForProductPage($minAmount)
     {
+
         $product = wc_get_product(get_the_id());
         if (!$product) {
             return false;
@@ -68,6 +73,7 @@ class Mollie_WC_PayPalButton_DataToPayPalScripts
                 'id' => $productId,
                 'price' => $productPrice,
                 'isVariation' => $isVariation,
+                'minFee' =>$minAmount
             ],
             'ajaxUrl' => admin_url('admin-ajax.php')
         ];
@@ -75,15 +81,17 @@ class Mollie_WC_PayPalButton_DataToPayPalScripts
 
     /**
      *
+     * @param $minAmount
+     *
      * @return array
      */
-    protected function dataForCartPage()
+    protected function dataForCartPage($minAmount)
     {
         $cart = WC()->cart;
         return [
             'product' => [
                 'needShipping' => $cart->needs_shipping(),
-                'subtotal' => $cart->get_subtotal(),
+                'minFee' =>$minAmount
 
             ],
             'ajaxUrl' => admin_url('admin-ajax.php')

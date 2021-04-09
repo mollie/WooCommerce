@@ -20,5 +20,6 @@ class Mollie_WC_PayPalButton_PropertiesDictionary
     const NEED_SHIPPING = 'needShipping';
     const CREATE_ORDER = 'mollie_paypal_create_order';
     const CREATE_ORDER_CART = 'mollie_paypal_create_order_cart';
+    const UPDATE_AMOUNT = 'mollie_paypal_update_amount';
     const REDIRECT = 'mollie_paypal_redirect';
 }

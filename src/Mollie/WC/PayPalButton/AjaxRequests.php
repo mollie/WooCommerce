@@ -25,6 +25,14 @@ class Mollie_WC_PayPalButton_AjaxRequests
             'wp_ajax_nopriv_' . Mollie_WC_PayPalButton_PropertiesDictionary::CREATE_ORDER_CART,
             array($this, 'createWcOrderFromCart')
         );
+        add_action(
+            'wp_ajax_' . Mollie_WC_PayPalButton_PropertiesDictionary::UPDATE_AMOUNT,
+            array($this, 'updateAmount')
+        );
+        add_action(
+            'wp_ajax_nopriv_' . Mollie_WC_PayPalButton_PropertiesDictionary::UPDATE_AMOUNT,
+            array($this, 'updateAmount')
+        );
 
     }
 
@@ -136,6 +144,29 @@ class Mollie_WC_PayPalButton_AjaxRequests
             wp_send_json_error($message);
         }
     }
+
+    public function updateAmount(){
+        $payPalRequestDataObject = $this->payPalDataObjectHttp();
+        $payPalRequestDataObject->orderData($_POST, 'productDetail');
+
+        if (!$this->isNonceValid($payPalRequestDataObject)) {
+            wp_send_json_error('no nonce');
+        }
+
+        $order = new Mollie_WC_PayPalButton_WCOrderCalculator();
+        $order->set_currency( get_woocommerce_currency() );
+        $order->set_prices_include_tax( 'yes' === get_option( 'woocommerce_prices_include_tax' ) );
+        $order->add_product(
+            wc_get_product($payPalRequestDataObject->productId),
+            $payPalRequestDataObject->productQuantity
+        );
+
+        $updatedAmount = $order->calculate_totals();
+
+        wp_send_json_success($updatedAmount);
+    }
+
+
 
     /**
      * Data Object to collect and validate all needed data collected

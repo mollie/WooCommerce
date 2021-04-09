@@ -49,7 +49,7 @@ class Mollie_WC_PayPalButton_PayPalDataObjectHttp
 
 
     /**
-     * Set the object with the data relevant to ApplePay on authorized order
+     * Set the object with the data relevant to PayPal
      * Required data depends on callerPage
      *
      * @param array $data

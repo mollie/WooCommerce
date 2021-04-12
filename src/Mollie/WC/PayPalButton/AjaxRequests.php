@@ -77,7 +77,7 @@ class Mollie_WC_PayPalButton_AjaxRequests
         if (isset($result['result'])
             && 'success' === $result['result']
         ) {
-
+            $order->payment_complete();
             wp_send_json_success($result);
         } else {
             /* translators: Placeholder 1: Payment method title */

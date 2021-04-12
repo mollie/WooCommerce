@@ -31,6 +31,13 @@
             </list>
           </settings>
         </remote-mappings>
+        <remote-mappings server-id="php@eb3b218d-51e3-4fa9-bc88-0c447953a742">
+          <settings>
+            <list>
+              <mapping local-root="$PROJECT_DIR$" remote-root="/app" />
+            </list>
+          </settings>
+        </remote-mappings>
       </list>
     </list>
   </component>

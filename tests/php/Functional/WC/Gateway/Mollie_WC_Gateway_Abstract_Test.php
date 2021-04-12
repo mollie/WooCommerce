@@ -139,6 +139,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
                 'get_shipping_country'=>'shippingcountry',
                 'get_shipping_methods'=>false,
                 'get_order_number'=>1,
+                'get_payment_method'=>'mollie_wc_gateway_ideal'
             ]
         );
 

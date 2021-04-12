@@ -28,8 +28,11 @@ class Mollie_WC_Helper_ApplePayDirectHandler
      * Initial method that checks if the device is compatible
      * if so puts the button in place
      * and adds all the necessary actions
+     *
+     * @param bool $buttonEnabledProduct
+     * @param bool $buttonEnabledCart
      */
-    public function bootstrap()
+    public function bootstrap($buttonEnabledProduct, $buttonEnabledCart)
     {
         if (!$this->isApplePayCompatible()) {
             $message = sprintf(
@@ -42,7 +45,7 @@ class Mollie_WC_Helper_ApplePayDirectHandler
                     '<a href="https://developer.apple.com/documentation/apple_pay_on_the_web/setting_up_your_server">',
                     '</a>'
             );
-            $this->adminNotice->addAdminNotice('error', $message);
+            $this->adminNotice->addNotice('error', $message);
             return;
         }
 
@@ -58,20 +61,27 @@ class Mollie_WC_Helper_ApplePayDirectHandler
                     '</a>'
             );
 
-            $this->adminNotice->addAdminNotice('error', $message);
+            $this->adminNotice->addNotice('error', $message);
         }
-        add_action(
-                'woocommerce_after_add_to_cart_form',
-                function () {
-                    $this->applePayDirectButton();
-                }
-        );
-        add_action(
-                'woocommerce_cart_totals_after_order_total',
-                function () {
-                    $this->applePayDirectButton();
-                }
-        );
+
+
+        if($buttonEnabledProduct){
+            add_action(
+                    'woocommerce_after_add_to_cart_form',
+                    function () {
+                        $this->applePayDirectButton();
+                    }
+            );
+        }
+        if($buttonEnabledCart){
+            add_action(
+                    'woocommerce_cart_totals_after_order_total',
+                    function () {
+                        $this->applePayDirectButton();
+                    }
+            );
+        }
+
         admin_url('admin-ajax.php');
         $this->ajaxRequests->bootstrapAjaxRequest();
     }

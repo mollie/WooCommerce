@@ -1,8 +1,8 @@
 <?php
 
-class Mollie_WC_Notice_AdminNotice
+class Mollie_WC_Notice_AdminNotice implements Mollie_WC_Notice_NoticeInterface
 {
-    public function addAdminNotice($level, $message)
+    public function addNotice($level, $message)
     {
         add_action(
                 'admin_notices',

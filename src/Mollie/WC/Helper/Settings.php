@@ -38,6 +38,116 @@ class Mollie_WC_Helper_Settings
         'lt_LT',
     ];
 
+    public function gatewayFormFields(
+        $defaultTitle,
+        $defaultDescription,
+        $paymentConfirmation
+    ) {
+        $formFields = [
+            'enabled' => [
+                'title' => __(
+                    'Enable/Disable',
+                    'mollie-payments-for-woocommerce'
+                ),
+                'type' => 'checkbox',
+                'label' => sprintf(
+                    __('Enable %s', 'mollie-payments-for-woocommerce'),
+                    $defaultTitle
+                ),
+                'default' => 'yes'
+            ],
+            'title' => [
+                'title' => __('Title', 'mollie-payments-for-woocommerce'),
+                'type' => 'text',
+                'description' => sprintf(
+                    __(
+                        'This controls the title which the user sees during checkout. Default <code>%s</code>',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                    $defaultTitle
+                ),
+                'default' => $defaultTitle,
+                'desc_tip' => true,
+            ],
+            'display_logo' => [
+                'title' => __(
+                    'Display logo',
+                    'mollie-payments-for-woocommerce'
+                ),
+                'type' => 'checkbox',
+                'label' => __(
+                    'Display logo on checkout page. Default <code>enabled</code>',
+                    'mollie-payments-for-woocommerce'
+                ),
+                'default' => 'yes'
+            ],
+            'description' => [
+                'title' => __('Description', 'mollie-payments-for-woocommerce'),
+                'type' => 'textarea',
+                'description' => sprintf(
+                    __(
+                        'Payment method description that the customer will see on your checkout. Default <code>%s</code>',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                    $defaultDescription
+                ),
+                'default' => $defaultDescription,
+                'desc_tip' => true,
+            ],
+            'allowed_countries' => [
+                'title' => __(
+                    'Sell to specific countries',
+                    'mollie-payments-for-woocommerce'
+                ),
+                'desc' => '',
+                'css' => 'min-width: 350px;',
+                'default' => [],
+                'type' => 'multi_select_countries',
+            ],
+        ];
+
+        if ($paymentConfirmation) {
+            $formFields['initial_order_status'] = [
+                'title' => __(
+                    'Initial order status',
+                    'mollie-payments-for-woocommerce'
+                ),
+                'type' => 'select',
+                'options' => [
+                    Mollie_WC_Gateway_Abstract::STATUS_ON_HOLD => wc_get_order_status_name(
+                            Mollie_WC_Gateway_Abstract::STATUS_ON_HOLD
+                        ) . ' (' . __(
+                            'default',
+                            'mollie-payments-for-woocommerce'
+                        ) . ')',
+                    Mollie_WC_Gateway_Abstract::STATUS_PENDING => wc_get_order_status_name(
+                        Mollie_WC_Gateway_Abstract::STATUS_PENDING
+                    ),
+                ],
+                'default' => Mollie_WC_Gateway_Abstract::STATUS_ON_HOLD,
+                /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
+                'description' => sprintf(
+                    __(
+                        'Some payment methods take longer than a few hours to complete. The initial order state is then set to \'%s\'. This ensures the order is not cancelled when the setting %s is used.',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                    wc_get_order_status_name(
+                        Mollie_WC_Gateway_Abstract::STATUS_ON_HOLD
+                    ),
+                    '<a href="' . admin_url(
+                        'admin.php?page=wc-settings&tab=products&section=inventory'
+                    ) . '" target="_blank">' . __(
+                        'Hold Stock (minutes)',
+                        'woocommerce'
+                    ) . '</a>'
+                ),
+            ];
+        }
+
+
+        return $formFields;
+    }
+
     /**
      * @return bool
      */
@@ -696,5 +806,18 @@ class Mollie_WC_Helper_Settings
         }
 
         return self::SETTING_LOCALE_DEFAULT_LANGUAGE;
+    }
+
+    /**
+     * Init all the gateways and add to the db for the first time
+     * @param $gateway
+     */
+    protected function updateGatewaySettings($gateway)
+    {
+        $gateway->settings['enabled'] = $gateway->is_available() ? 'yes' : 'no';
+        update_option(
+            $gateway->id . "_settings",
+            $gateway->settings
+        );
     }
 }

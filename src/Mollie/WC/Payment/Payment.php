@@ -37,7 +37,9 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
     public function getPaymentRequestData($order, $customerId)
     {
         $settingsHelper = Mollie_WC_Plugin::getSettingsHelper();
-        $paymentDescription = 'Order ' . $order->get_order_number();
+        $optionName = Mollie_WC_Plugin::PLUGIN_ID . '_' .'api_payment_description';
+        $option = get_option($optionName);
+        $paymentDescription = $this->getPaymentDescription($order, $option);
         $paymentLocale = $settingsHelper->getPaymentLocale();
         $storeCustomer = $settingsHelper->shouldStoreCustomer();
 
@@ -116,6 +118,33 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
             $paymentRequestData['applePayPaymentToken'] = $encodedApplePayToken;
         }
         return $paymentRequestData;
+    }
+
+    protected function getPaymentDescription($order, $option)
+    {
+        switch ($option) {
+            case '{orderNumber}':
+                $description = 'Order ' . $order->get_order_number();
+                break;
+            case '{storeName}':
+                $description = 'StoreName ' . get_bloginfo('name');
+                break;
+            case '{customer.firstname}':
+                $description = 'Customer Firstname '
+                    . $order->get_billing_first_name();
+                break;
+            case '{customer.lastname}':
+                $description = 'Customer Lastname '
+                    . $order->get_billing_last_name();
+                break;
+            case '{customer.company}':
+                $description = 'Customer Company '
+                    . $order->get_billing_company();
+                break;
+            default:
+                $description = 'Order ' . $order->get_order_number();
+        }
+        return $description;
     }
 
     public function setActiveMolliePayment($orderId)
@@ -204,7 +233,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 			Mollie_WC_Plugin::debug( __METHOD__ . ' called for payment ' . $orderId );
 
 			// WooCommerce 2.2.0 has the option to store the Payment transaction id.
-            $order->payment_complete();
+            $order->payment_complete($payment->id);
 
 			// Add messages to log
 			Mollie_WC_Plugin::debug( __METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for payment ' . $orderId );

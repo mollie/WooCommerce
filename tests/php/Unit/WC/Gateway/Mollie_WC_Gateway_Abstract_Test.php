@@ -3,9 +3,6 @@
 namespace Mollie\WooCommerceTests\Unit\WC\Gateway;
 
 use InvalidArgumentException;
-use Mollie\Api\MollieApiClient;
-use Mollie\Api\Resources\Method;
-use Mollie\Api\Resources\MethodCollection;
 use Mollie\WooCommerceTests\Stubs\varPolylangTestsStubs;
 use Mollie\WooCommerceTests\TestCase;
 use Mollie_WC_Gateway_Abstract as Testee;
@@ -13,12 +10,10 @@ use ReflectionMethod;
 use UnexpectedValueException;
 use WooCommerce;
 
-
-use WP_Error;
-
-use function Brain\Monkey\Functions\expect;
 use function Brain\Monkey\Actions\expectDone;
+use function Brain\Monkey\Functions\expect;
 use function Brain\Monkey\Functions\stubs;
+
 
 /**
  * Class Mollie_WC_Helper_Settings_Test
@@ -69,7 +64,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
          * Execute test
          */
         $result = $testee->getIconUrl();
-        $expected = '<img src="/images/ideal.svg" style="width: 32px; vertical-align: bottom;" />';
+        $expected = '<img src="/images/ideal.svg" class="mollie-gateway-icon" />';
 
         self::assertStringEndsWith($expected, $result);
 
@@ -699,6 +694,53 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         $result = $testee->is_available();
 
         self::assertEquals($expected, $result);
+    }
+
+    /**
+     * Scenario: payment type depends on setting,
+     * Then will check if is banktransfer and has a different setting
+     * Default is order
+     *
+     * @test
+     * @dataProvider paymentTypeDataProvider
+     * @param string $expected payment type
+     * @param string|boolean $option setting saved
+     * @param string $id of the gateway
+     */
+    public function paymentTypeBasedOnGateway_settingPayment($expected, $option, $id)
+    {
+        expect('get_option')->times(1)->andReturn($option);
+        /*
+         * Setup Testee
+         */
+        $testee = $this->buildTesteeMock(
+            Testee::class,
+            [],
+            ['isExpiredDateSettingActivated']
+        )->getMockForAbstractClass();
+        $testee = $this->proxyFor($testee);
+
+        $testee->id = $id;
+        $testee->expects($this->any())->method('isExpiredDateSettingActivated')->willReturn(true);
+
+        $result = $testee->paymentTypeBasedOnGateway();
+        self::assertEquals($expected, $result);
+    }
+
+    /**
+     * Data Provider for testMaybeDisableApplePayGateway
+     *
+     * @return array
+     */
+    public function paymentTypeDataProvider()
+    {
+        return [
+            ['payment', 'payment', 'mollie_wc_gateway_ideal'],
+            ['order', 'order', 'mollie_wc_gateway_ideal'],
+            ['order', false, 'mollie_wc_gateway_ideal'],
+            ['payment', 'order', 'mollie_wc_gateway_banktransfer'],
+
+        ];
     }
     /**
      *

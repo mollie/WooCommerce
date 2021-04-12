@@ -77,7 +77,58 @@ return [
 
 
     ],
-
+    [
+        'id'                => $pluginName . '_' .'api_switch',
+        'title' => __(
+            'Select API Method',
+            'mollie-payments-for-woocommerce'
+        ),
+        'type' => 'select',
+        'options' => [
+            Mollie_WC_Gateway_Abstract::PAYMENT_METHOD_TYPE_ORDER => ucfirst(
+                    Mollie_WC_Gateway_Abstract::PAYMENT_METHOD_TYPE_ORDER
+                ) . ' (' . __('default', 'mollie-payments-for-woocommerce')
+                . ')',
+            Mollie_WC_Gateway_Abstract::PAYMENT_METHOD_TYPE_PAYMENT => ucfirst(
+                Mollie_WC_Gateway_Abstract::PAYMENT_METHOD_TYPE_PAYMENT
+            ),
+        ],
+        'default' => Mollie_WC_Gateway_Abstract::PAYMENT_METHOD_TYPE_ORDER,
+        /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
+        'desc' => sprintf(
+            __(
+                'Click %shere%s to read more about the differences between the Payments and Orders API',
+                'mollie-payments-for-woocommerce'
+            ),
+            '<a href="https://docs.mollie.com/orders/why-use-orders" target="_blank">',
+            '</a>'
+        )
+    ],
+    [
+        'id' => $pluginName . '_' . 'api_payment_description',
+        'title' => __(
+            'API Payment Description',
+            'mollie-payments-for-woocommerce'
+        ),
+        'type' => 'select',
+        'options' => [
+            '{orderNumber}' => '{orderNumber}',
+            '{storeName}' => '{storeName}',
+            '{customer.firstname}' => '{customer.firstname}',
+            '{customer.lastname}' => '{customer.lastname}',
+            '{customer.company}' => '{customer.company}'
+        ],
+        'default' => '{orderNumber}',
+        /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
+        'desc' => sprintf(
+            __(
+                'Select among the available variables the description to be used for this transaction.%s(Note: this only works when the method is set to Payments API)%s',
+                'mollie-payments-for-woocommerce'
+            ),
+            '<p>',
+            '</p>'
+        )
+    ],
     [
         'id'   => $pluginName . '_' .'sectionend',
         'type' => 'sectionend',

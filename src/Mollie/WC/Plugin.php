@@ -8,7 +8,7 @@ class Mollie_WC_Plugin
 {
     const PLUGIN_ID      = 'mollie-payments-for-woocommerce';
     const PLUGIN_TITLE   = 'Mollie Payments for WooCommerce';
-    const PLUGIN_VERSION = '6.1.0';
+    const PLUGIN_VERSION = '6.2.1';
 
     const DB_VERSION     = '1.0';
     const DB_VERSION_PARAM_NAME = 'mollie-db-version';
@@ -33,7 +33,6 @@ class Mollie_WC_Plugin
         'Mollie_WC_Gateway_EPS',
         'Mollie_WC_Gateway_Giropay',
         'Mollie_WC_Gateway_Ideal',
-        'Mollie_WC_Gateway_IngHomePay',
         'Mollie_WC_Gateway_Kbc',
         'Mollie_WC_Gateway_KlarnaPayLater',
         'Mollie_WC_Gateway_KlarnaSliceIt',
@@ -279,6 +278,7 @@ class Mollie_WC_Plugin
 		self::initDb();
 		self::schedulePendingPaymentOrdersExpirationCheck();
         self::registerFrontendScripts();
+        wp_enqueue_style('mollie-gateway-icons');
 
 		// Mark plugin initiated
 		self::$initiated = true;
@@ -301,7 +301,7 @@ class Mollie_WC_Plugin
                 ) . '">',
                 '</a>'
             );
-            $notice->addAdminNotice('notice-error', $message);
+            $notice->addNotice('notice-error', $message);
         }
     }
 
@@ -565,7 +565,7 @@ class Mollie_WC_Plugin
      */
     public static function enqueueApplePayDirectScripts()
     {
-        if (mollieWooCommerceIsApplePayDirectEnabled() && is_product()) {
+        if (mollieWooCommerceIsApplePayDirectEnabled('product') && is_product()) {
             $dataToScripts = new Mollie_WC_ApplePayButton_DataToAppleButtonScripts();
             wp_enqueue_style('mollie-applepaydirect');
             wp_enqueue_script('mollie_applepaydirect');
@@ -575,7 +575,7 @@ class Mollie_WC_Plugin
                 $dataToScripts->applePayScriptData()
             );
         }
-        if (mollieWooCommerceIsApplePayDirectEnabled() && is_cart()) {
+        if (mollieWooCommerceIsApplePayDirectEnabled('cart') && is_cart()) {
             $dataToScripts = new Mollie_WC_ApplePayButton_DataToAppleButtonScripts();
             wp_enqueue_style('mollie-applepaydirect');
             wp_enqueue_script('mollie_applepaydirectCart');
@@ -620,12 +620,15 @@ class Mollie_WC_Plugin
      */
     public static function mollieApplePayDirectHandling()
     {
-        if (mollieWooCommerceIsApplePayDirectEnabled()) {
+        $buttonEnabledCart = mollieWooCommerceIsApplePayDirectEnabled('cart');
+        $buttonEnabledProduct = mollieWooCommerceIsApplePayDirectEnabled('product');
+
+        if ($buttonEnabledCart || $buttonEnabledProduct) {
             $notices = new Mollie_WC_Notice_AdminNotice();
             $responseTemplates = new Mollie_WC_ApplePayButton_ResponsesToApple();
             $ajaxRequests = new Mollie_WC_ApplePayButton_AjaxRequests( $responseTemplates);
             $applePayHandler = new Mollie_WC_Helper_ApplePayDirectHandler($notices, $ajaxRequests);
-            $applePayHandler->bootstrap();
+            $applePayHandler->bootstrap($buttonEnabledProduct, $buttonEnabledCart);
         }
     }
 
@@ -708,7 +711,13 @@ class Mollie_WC_Plugin
             filemtime(Mollie_WC_Plugin::getPluginPath('/public/js/applepay.min.js')),
             true
         );
-
+        wp_register_style(
+                'mollie-gateway-icons',
+                Mollie_WC_Plugin::getPluginUrl('/public/css/mollie-gateway-icons.min.css'),
+                [],
+                filemtime(Mollie_WC_Plugin::getPluginPath('/public/css/mollie-gateway-icons.min.css')),
+                'screen'
+        );
         wp_register_style(
             'mollie-components',
             Mollie_WC_Plugin::getPluginUrl('/public/css/mollie-components.min.css'),

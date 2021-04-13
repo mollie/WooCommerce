@@ -51,7 +51,7 @@ class Mollie_WC_Helper_PaymentMethodsIconUrl
             $svgUrl =  $gatewaySettings["iconFileUrl"]?$gatewaySettings["iconFileUrl"]:false;
         }
 
-        if(! file_exists( $svgPath )){
+        if(! file_exists( $svgPath ) || !$svgUrl){
             $svgUrl = Mollie_WC_Plugin::getPluginUrl(
                 "public/images/{$paymentMethodName}" . self::SVG_FILE_EXTENSION
             );

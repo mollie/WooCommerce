@@ -120,17 +120,37 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         wp_mkdir_p( $mollieUploadDirectory );
         $targetLocation = $mollieUploadDirectory . '/';
         $fileOptionName = $this->id . '_upload_logo';
+        $enabledLogoOptionName = $this->id . '_enable_custom_logo';
+        if (isset($_POST['save']) && !isset($_POST[$enabledLogoOptionName])) {
+            $gatewaySettings = get_option("{$this->id}_settings", false);
+            if ($gatewaySettings) {
+                $gatewaySettings["iconFileUrl"] = null;
+                $gatewaySettings["iconFilePath"] = null;
+                update_option("{$this->id}_settings", $gatewaySettings);
+            }
+            return;
+        }
 
-        if ( isset( $_POST['save'] ) && isset( $_FILES[$fileOptionName] ) ) {
-            if($_FILES[$fileOptionName]['size'] <= 500000){
-                $fileName = preg_replace('/\s+/', '_', $_FILES[$fileOptionName]['name']);
+        if (isset($_POST['save']) && isset($_FILES[$fileOptionName])) {
+            if ($_FILES[$fileOptionName]['size'] <= 500000) {
+                $fileName = preg_replace(
+                        '/\s+/',
+                        '_',
+                        $_FILES[$fileOptionName]['name']
+                );
                 $tempName = $_FILES[$fileOptionName]['tmp_name'];
-                move_uploaded_file( $tempName, $targetLocation . $fileName);
+                move_uploaded_file($tempName, $targetLocation . $fileName);
 
                 $gatewaySettings = get_option("{$this->id}_settings", false);
-                $gatewaySettings["iconFileUrl"] = trailingslashit( wp_upload_dir()['baseurl'] ) . 'mollie-uploads/'. $fileName;
-                $gatewaySettings["iconFilePath"] = trailingslashit( wp_upload_dir()['basedir'] ) . 'mollie-uploads/'. $fileName;
-                update_option("{$this->id}_settings", $gatewaySettings);
+                if ($gatewaySettings) {
+                    $gatewaySettings["iconFileUrl"] = trailingslashit(
+                                    wp_upload_dir()['baseurl']
+                            ) . 'mollie-uploads/' . $fileName;
+                    $gatewaySettings["iconFilePath"] = trailingslashit(
+                                    wp_upload_dir()['basedir']
+                            ) . 'mollie-uploads/' . $fileName;
+                    update_option("{$this->id}_settings", $gatewaySettings);
+                }
             }
         }
     }

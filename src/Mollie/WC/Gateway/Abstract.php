@@ -151,6 +151,17 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                             ) . 'mollie-uploads/' . $fileName;
                     update_option("{$this->id}_settings", $gatewaySettings);
                 }
+            }else{
+                $notice = new Mollie_WC_Notice_AdminNotice();
+                $message = sprintf(
+                        esc_html__(
+                                '%1$sMollie Payments for WooCommerce%2$s Unable to upload the file. Size must be under 500kb.',
+                                'mollie-payments-for-woocommerce'
+                        ),
+                        '<strong>',
+                        '</strong>'
+                );
+                $notice->addNotice('notice-error is-dismissible', $message);
             }
         }
     }

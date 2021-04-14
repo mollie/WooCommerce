@@ -114,7 +114,7 @@ class Mollie_WC_Payment_Object {
 
 		// Do extra checks if WooCommerce Subscriptions is installed
 		if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-			if ( Mollie_WC_Plugin::getDataHelper()->isSubscription($orderId ) ) {
+			if ( Mollie_WC_Plugin::getDataHelper()->isWcSubscription($orderId ) ) {
 				return $this->setActiveMolliePaymentForSubscriptions($orderId );
 			}
 		}

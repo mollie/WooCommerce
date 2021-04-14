@@ -97,7 +97,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function init_form_fields()
     {
-        wp_register_script('mollie_wc_admin_settings', Mollie_WC_Plugin::getPluginUrl('/resources/js/settings.js'), array('underscore','jquery'), Mollie_WC_Plugin::PLUGIN_VERSION);
+        wp_register_script('mollie_wc_admin_settings', Mollie_WC_Plugin::getPluginUrl('/public/js/settings.min.js'), array('underscore','jquery'), Mollie_WC_Plugin::PLUGIN_VERSION);
         wp_enqueue_script('mollie_wc_admin_settings');
         global $current_section;
 

@@ -123,19 +123,19 @@ class Mollie_WC_Helper_Settings
                 ),
                 'type' => 'select',
                 'options' => [
-                    'no_fee' => __(
+                    Mollie_WC_Helper_GatewaySurchargeHandler::NO_FEE => __(
                         'No fee',
                         'mollie-payments-for-woocommerce'
                     ),
-                    'fixed_fee' => __(
+                    Mollie_WC_Helper_GatewaySurchargeHandler::FIXED_FEE => __(
                         'Fixed fee',
                         'mollie-payments-for-woocommerce'
                     ),
-                    'percentage' => __(
+                    Mollie_WC_Helper_GatewaySurchargeHandler::PERCENTAGE => __(
                         'Percentage',
                         'mollie-payments-for-woocommerce'
                     ),
-                    'fixed_fee_percentage' => __(
+                    Mollie_WC_Helper_GatewaySurchargeHandler::FIXED_AND_PERCENTAGE => __(
                         'Fixed fee and percentage',
                         'mollie-payments-for-woocommerce'
                     ),

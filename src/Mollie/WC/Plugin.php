@@ -271,6 +271,7 @@ class Mollie_WC_Plugin
         });
         add_action('wp_loaded', [__CLASS__, 'maybeTestModeNotice']);
         self::mollieApplePayDirectHandling();
+        self::gatewaySurchargeHandling();
 
 		self::initDb();
 		self::schedulePendingPaymentOrdersExpirationCheck();
@@ -281,6 +282,11 @@ class Mollie_WC_Plugin
 		self::$initiated = true;
     }
 
+    public static function gatewaySurchargeHandling(){
+        $notices = new Mollie_WC_Notice_AdminNotice();
+        $gatewaSurchargeHandler = new Mollie_WC_Helper_GatewaySurchargeHandler($notices);
+
+    }
 
     public static function maybeTestModeNotice()
     {
@@ -716,6 +722,13 @@ class Mollie_WC_Plugin
             [],
             filemtime(Mollie_WC_Plugin::getPluginPath('/public/css/unabledButton.min.css')),
             'screen'
+        );
+        wp_register_script(
+                'gatewaySurcharge',
+                Mollie_WC_Plugin::getPluginUrl('/resources/js/gatewaySurcharge.js'),
+                ['underscore', 'jquery'],
+                filemtime(Mollie_WC_Plugin::getPluginPath('/resources/js/gatewaySurcharge.js')),
+                true
         );
     }
 

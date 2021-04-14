@@ -62,7 +62,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $this->init_form_fields();
         $this->init_settings();
 
-        $this->title        = $this->get_option('title');
+        $this->buildTitleWithSurcharge();
         $this->display_logo = $this->get_option('display_logo') == 'yes';
 
         $this->_initDescription();
@@ -2561,6 +2561,45 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         return $paymentType;
     }
 
+    protected function buildTitleWithSurcharge()
+    {
+        if(is_admin()){
+            $this->title = $this->get_option('title');
+            return;
+        }
+        if (!$this->settings['payment_surcharge']
+                || $this->settings['payment_surcharge']
+                === Mollie_WC_Helper_GatewaySurchargeHandler::NO_FEE
+        ){
+            $this->title = $this->get_option('title');
+            return;
+        }
 
+        $surgargeType = $this->settings['payment_surcharge'];
+        $methodName = "name_{$surgargeType}";
+        $feeName = $this->$methodName();
+        $this->title = $this->get_option('title') . $feeName;
+    }
+
+    protected function name_fixed_fee()
+    {
+        $amountFee = $this->settings[Mollie_WC_Helper_GatewaySurchargeHandler::FIXED_FEE];
+        $currency = get_woocommerce_currency();
+        return __(" +{$amountFee}{$currency} Fee", 'mollie-payments-for-woocommerce');
+    }
+
+    protected function name_percentage()
+    {
+        $amountFee = $this->settings[Mollie_WC_Helper_GatewaySurchargeHandler::PERCENTAGE];
+        return __(" +{$amountFee}% Fee", 'mollie-payments-for-woocommerce');
+    }
+
+    protected function name_fixed_fee_percentage()
+    {
+        $amountFix = $this->settings[Mollie_WC_Helper_GatewaySurchargeHandler::FIXED_FEE];
+        $currency = get_woocommerce_currency();
+        $amountPercent = $this->settings[Mollie_WC_Helper_GatewaySurchargeHandler::PERCENTAGE];
+        return __(" {$amountFix}{$currency} + {$amountPercent}% Fee", 'mollie-payments-for-woocommerce');
+    }
 
 }

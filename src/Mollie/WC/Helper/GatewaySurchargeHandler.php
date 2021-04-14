@@ -49,17 +49,14 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
         if (!$gatewaySettings['payment_surcharge'] || $gatewaySettings['payment_surcharge'] == self::NO_FEE) {
             return;
         }
-        // ! empty( $cart->recurring_cart_key ) es recurring no quiero  WC_Subscriptions_Cart::cart_contains_subscription();
+
         $isRecurringCart = ! empty( $cart->recurring_cart_key );
         if ($isRecurringCart) {
             return;
         }
+
         $amount = $this->calculteFeeAmount($cart, $gatewaySettings);
-
-
-        // el nombre es el de la gateway mas surcharge fee
         $surchargeName = $this->buildFeeName($gateway);
-        //en el notice creo que puedo enseñar lo que añadirá, cuando lo selecciona o en todos?si lo hago con js seguro
         $cart->add_fee( $surchargeName, $amount );
     }
 
@@ -110,12 +107,12 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
 
     protected function calculate_fixed_fee($cart, $gatewaySettings)
     {
-        return $gatewaySettings['fixed_fee'];
+        return $gatewaySettings[self::FIXED_FEE];
     }
 
     protected function calculate_percentage($cart, $gatewaySettings)
     {
-        $percentageFee = $gatewaySettings['percentage'];
+        $percentageFee = $gatewaySettings[self::PERCENTAGE];
         $subtotal = $cart->get_subtotal() + $cart->get_shipping_total() - $cart->get_discount_total();
         $taxes = $cart->get_subtotal_tax() + $cart->get_shipping_total() - $cart->get_discount_tax();
         $total = $subtotal + $taxes;

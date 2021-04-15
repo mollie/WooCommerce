@@ -131,7 +131,9 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             return;
         }
 
-        if (isset($_POST['save']) && isset($_FILES[$fileOptionName])) {
+        if (isset($_POST['save']) && isset($_FILES[$fileOptionName])
+                && $_FILES[$fileOptionName]['size'] > 0
+        ) {
             if ($_FILES[$fileOptionName]['size'] <= 500000) {
                 $fileName = preg_replace(
                         '/\s+/',

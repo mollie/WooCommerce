@@ -28,6 +28,7 @@ class Mollie_WC_PayPalButton_PayPalDataObject_Test extends TestCase
             'nonce' => $postDummyData->nonce,
             'productId' => $postDummyData->productId,
             'productQuantity' => $postDummyData->productQuantity,
+            'malicious'=>'not supposed to exist'
         ];
 
         /*
@@ -40,6 +41,7 @@ class Mollie_WC_PayPalButton_PayPalDataObject_Test extends TestCase
         self::assertEquals($postOrder['nonce'], $dataObject->nonce);
         self::assertEquals($postOrder['productId'], $dataObject->productId);
         self::assertEquals($postOrder['productQuantity'], $dataObject->productQuantity);
+        self::assertFalse(isset($dataObject->malicious));
     }
 
 

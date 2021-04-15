@@ -105,9 +105,17 @@ class Mollie_WC_PayPalButton_PayPalDataObjectHttp
      */
     protected function assignDataObjectValues(array $data)
     {
+        $allowedKeys = [
+            Mollie_WC_PayPalButton_PropertiesDictionary::NONCE,
+            Mollie_WC_PayPalButton_PropertiesDictionary::PRODUCT_QUANTITY,
+            Mollie_WC_PayPalButton_PropertiesDictionary::PRODUCT_ID,
+            Mollie_WC_PayPalButton_PropertiesDictionary::NEED_SHIPPING
+        ];
         foreach ($data as $key => $value) {
-            $filterType = $this->filterType($value);
-            $this->$key = filter_var($value, $filterType);
+            if(in_array($key, $allowedKeys)){
+                $filterType = $this->filterType($key);
+                $this->$key = filter_var($value, $filterType);
+            }
         }
     }
 

@@ -22,31 +22,6 @@ class Mollie_WC_PayPalButton_DataToPayPalScripts
     }
 
     /**
-     * Check if the product needs shipping
-     *
-     * @param $product
-     *
-     * @return bool
-     */
-    protected function checkIfNeedShipping($product)
-    {
-        if (!wc_shipping_enabled()
-            || 0 === wc_get_shipping_method_count(
-                true
-            )
-        ) {
-            return false;
-        }
-        $needs_shipping = false;
-
-        if ($product->needs_shipping()) {
-            $needs_shipping = true;
-        }
-
-        return $needs_shipping;
-    }
-
-    /**
      *
      * @param $minAmount
      *
@@ -63,7 +38,7 @@ class Mollie_WC_PayPalButton_DataToPayPalScripts
         if ($product->get_type() === 'variable') {
             $isVariation = true;
         }
-        $productNeedShipping = $this->checkIfNeedShipping($product);
+        $productNeedShipping = mollieWooCommerceCheckIfNeedShipping($product);
         $productId = get_the_id();
         $productPrice = $product->get_price();
 

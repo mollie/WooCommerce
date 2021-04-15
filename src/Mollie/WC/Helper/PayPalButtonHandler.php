@@ -56,7 +56,7 @@ class Mollie_WC_Helper_PayPalButtonHandler
         ?>
         <div id="mollie-PayPal-button">
             <?php wp_nonce_field('mollie_PayPal_button'); ?>
-            <input type="image" src="<?php echo $assetsImagesUrl?>" alt="PayPal Button">
+            <input type="image" src="<?php echo esc_url( $assetsImagesUrl)?>" alt="PayPal Button">
         </div>
         <?php
     }

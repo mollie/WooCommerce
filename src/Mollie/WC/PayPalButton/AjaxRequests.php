@@ -60,7 +60,7 @@ class Mollie_WC_PayPalButton_AjaxRequests
         );
 
         $needsShipping
-            = $payPalRequestDataObject->needShipping === 'true';
+            = $payPalRequestDataObject->needShipping === true;
         if ($needsShipping) {
             $order->calculate_totals();
             $order = $this->addShippingMethodsToOrder(

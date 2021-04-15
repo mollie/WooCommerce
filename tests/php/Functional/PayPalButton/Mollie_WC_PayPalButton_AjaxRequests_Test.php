@@ -47,7 +47,7 @@ class Mollie_WC_PayPalButton_AjaxRequests_Test extends TestCase
 
         $_POST = [
             'nonce' => $postDummyData->nonce,
-            'needShipping' => 'true',
+            'needShipping' => true,
             'productId' => $postDummyData->productId,
             'productQuantity' => $postDummyData->productQuantity,
         ];

@@ -1,5 +1,4 @@
 <?php
-use Automattic\WooCommerce\Utilities\NumberUtil;
 
 class Mollie_WC_PayPalButton_WCOrderCalculator extends WC_Order
 {
@@ -23,7 +22,7 @@ class Mollie_WC_PayPalButton_WCOrderCalculator extends WC_Order
 
         // Sum shipping costs.
        foreach ( $this->get_shipping_methods() as $shipping ) {
-            $shipping_total += NumberUtil::round( $shipping->get_total(), wc_get_price_decimals() );
+            $shipping_total += $this->round( $shipping->get_total(), wc_get_price_decimals() );
         }
 
         $this->set_shipping_total( $shipping_total );
@@ -33,7 +32,7 @@ class Mollie_WC_PayPalButton_WCOrderCalculator extends WC_Order
             $fee_total = $item->get_total();
 
             if ( 0 > $fee_total ) {
-                $max_discount = NumberUtil::round( $cart_total + $fees_total + $shipping_total, wc_get_price_decimals() ) * -1;
+                $max_discount = $this->round( $cart_total + $fees_total + $shipping_total, wc_get_price_decimals() ) * -1;
 
                 if ( $fee_total < $max_discount && 0 > $max_discount ) {
                     $item->set_total( $max_discount );
@@ -60,9 +59,9 @@ class Mollie_WC_PayPalButton_WCOrderCalculator extends WC_Order
               }
           }
 
-          $this->set_discount_total( NumberUtil::round( $cart_subtotal - $cart_total, wc_get_price_decimals() ) );
+          $this->set_discount_total( $this->round( $cart_subtotal - $cart_total, wc_get_price_decimals() ) );
           $this->set_discount_tax( wc_round_tax_total( $cart_subtotal_tax - $cart_total_tax ) );
-          $this->set_total( NumberUtil::round( $cart_total + $fees_total + $this->get_shipping_total() + $this->get_cart_tax() + $this->get_shipping_tax(), wc_get_price_decimals() ) );
+          $this->set_total( $this->round( $cart_total + $fees_total + $this->get_shipping_total() + $this->get_cart_tax() + $this->get_shipping_tax(), wc_get_price_decimals() ) );
 
           do_action( 'woocommerce_order_after_calculate_totals', $and_taxes, $this );
 
@@ -171,5 +170,13 @@ class Mollie_WC_PayPalButton_WCOrderCalculator extends WC_Order
         wc_do_deprecated_action( 'woocommerce_order_add_product', array( $this->get_id(), $item->get_id(), $product, $qty, $args ), '3.0', 'woocommerce_new_order_item action instead' );
         delete_transient( 'wc_order_' . $this->get_id() . '_needs_processing' );
         return $item->get_id();
+    }
+
+    protected function round( $val, $precision = 0, $mode = PHP_ROUND_HALF_UP )
+    {
+        if ( ! is_numeric( $val ) ) {
+            $val = floatval( $val );
+        }
+        return round( $val, $precision, $mode );
     }
 }

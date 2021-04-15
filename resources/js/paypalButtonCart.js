@@ -34,10 +34,7 @@
         }
 
         const extractValue = (path) => {
-            let updatedPrice = path.textContent
-            updatedPrice = updatedPrice.replace(/(€|$|£)/g, '');
-            updatedPrice = parseFloat(updatedPrice).toFixed(2);
-            return updatedPrice
+            return parseFloat(path.textContent).toFixed(2);
         }
 
         const calculateTaxes = () => {
@@ -47,14 +44,14 @@
             }
             let total = 0.00;
             for (let tax of taxesPath) {
-                let taxPath = tax.getElementsByClassName('woocommerce-Price-amount')[0]
+                let taxPath = tax.getElementsByClassName('woocommerce-Price-amount')[0].lastChild
                 total += parseFloat(extractValue(taxPath))
             }
             return total
         }
 
         const calculateTotal = () => {
-            let subtotalPath = document.getElementsByClassName('cart-subtotal')[0].getElementsByClassName('woocommerce-Price-amount')[0]
+            let subtotalPath = document.getElementsByClassName('cart-subtotal')[0].getElementsByClassName('woocommerce-Price-amount')[0].childNodes[0].lastChild
             let total = parseFloat(extractValue(subtotalPath));
             total += calculateTaxes()
 

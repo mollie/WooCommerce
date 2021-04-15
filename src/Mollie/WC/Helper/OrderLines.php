@@ -564,7 +564,7 @@ class Mollie_WC_Helper_OrderLines {
      * @since  1.0
      * @access private
      *
-     * @return integer $shipping_amount Amount for selected shipping method.
+     * @return string $shipping_amount Amount for selected shipping method.
      */
     private function get_shipping_amount_paypal() {
         $paypalSettings = get_option('mollie_wc_gateway_paypal_settings');

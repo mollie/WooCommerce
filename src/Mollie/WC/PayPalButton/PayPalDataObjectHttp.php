@@ -58,14 +58,11 @@ class Mollie_WC_PayPalButton_PayPalDataObjectHttp
     public function orderData(array $data, $callerPage)
     {
         $data[Mollie_WC_PayPalButton_PropertiesDictionary::CALLER_PAGE] = $callerPage;
-        $result = $this->updateRequiredData(
+        $this->updateRequiredData(
             $data,
             Mollie_WC_PayPalButton_PropertiesDictionary::CREATE_ORDER_SINGLE_PROD_REQUIRED_FIELDS,
             Mollie_WC_PayPalButton_PropertiesDictionary::CREATE_ORDER_CART_REQUIRED_FIELDS
         );
-        if (!$result) {
-            return;
-        }
     }
 
     /**

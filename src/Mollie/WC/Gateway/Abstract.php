@@ -114,7 +114,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             wp_register_script(
                     'mollie_wc_gateway_settings',
                     Mollie_WC_Plugin::getPluginUrl(
-                            '/resources/js/gatewaySettings.js'
+                            '/public/js/gatewaySettings.min.js'
                     ),
                     ['underscore', 'jquery'],
                     Mollie_WC_Plugin::PLUGIN_VERSION

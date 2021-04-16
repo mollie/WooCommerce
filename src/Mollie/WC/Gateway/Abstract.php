@@ -126,7 +126,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             $gatewaySettings = get_option($settingsName, false);
             $isEnabled = $gatewaySettings
                     ? $gatewaySettings['enable_custom_logo'] === 'yes' : false;
-            $fieldName = "{$current_section}_upload_logo";
+            $uploadFieldName = "{$current_section}_upload_logo";
+            $enabledFieldName = "{$current_section}_enable_custom_logo";
             $gatewayIconUrl = '';
             if($gatewaySettings){
                 $gatewayIconUrl = $gatewaySettings['iconFileUrl']?$gatewaySettings['iconFileUrl']:'';
@@ -137,7 +138,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                     'gatewaySettingsData',
                     [
                             'isEnabledIcon' => $isEnabled,
-                            'fieldName' => $fieldName,
+                            'uploadFieldName' => $uploadFieldName,
+                            'enableFieldName' => $enabledFieldName,
                             'iconUrl' => $gatewayIconUrl
                     ]
             );

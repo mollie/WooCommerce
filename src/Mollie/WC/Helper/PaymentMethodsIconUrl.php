@@ -47,8 +47,8 @@ class Mollie_WC_Helper_PaymentMethodsIconUrl
         $gatewaySettings = get_option("mollie_wc_gateway_{$paymentMethodName}_settings", false);
 
         if($gatewaySettings){
-            $svgPath = $gatewaySettings["iconFilePath"]?$gatewaySettings["iconFilePath"]:false;
-            $svgUrl =  $gatewaySettings["iconFileUrl"]?$gatewaySettings["iconFileUrl"]:false;
+            $svgPath = isset($gatewaySettings["iconFilePath"])?$gatewaySettings["iconFilePath"]:false;
+            $svgUrl =  isset($gatewaySettings["iconFileUrl"])?$gatewaySettings["iconFileUrl"]:false;
         }
 
         if(! file_exists( $svgPath ) || !$svgUrl){

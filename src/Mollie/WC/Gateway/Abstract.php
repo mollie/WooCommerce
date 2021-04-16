@@ -105,6 +105,46 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         );
 
     }
+
+    public function init_settings()
+    {
+        parent::init_settings();
+        if(is_admin()){
+            global $current_section;
+            wp_register_script(
+                    'mollie_wc_gateway_settings',
+                    Mollie_WC_Plugin::getPluginUrl(
+                            '/resources/js/gatewaySettings.js'
+                    ),
+                    ['underscore', 'jquery'],
+                    Mollie_WC_Plugin::PLUGIN_VERSION
+            );
+
+            wp_enqueue_script('mollie_wc_gateway_settings');
+            wp_enqueue_style('mollie-gateway-icons');
+            $settingsName = "{$current_section}_settings";
+            $gatewaySettings = get_option($settingsName, false);
+            $isEnabled = $gatewaySettings
+                    ? $gatewaySettings['enable_custom_logo'] === 'yes' : false;
+            $fieldName = "{$current_section}_upload_logo";
+            $gatewayIconUrl = '';
+            if($gatewaySettings){
+                $gatewayIconUrl = $gatewaySettings['iconFileUrl']?$gatewaySettings['iconFileUrl']:'';
+            }
+
+            wp_localize_script(
+                    'mollie_wc_gateway_settings',
+                    'gatewaySettingsData',
+                    [
+                            'isEnabledIcon' => $isEnabled,
+                            'fieldName' => $fieldName,
+                            'iconUrl' => $gatewayIconUrl
+                    ]
+            );
+        }
+
+
+    }
     /**
      * Save settings
      *

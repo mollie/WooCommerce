@@ -88,7 +88,7 @@ class Mollie_WC_Helper_Settings
                 ),
                 'type' => 'checkbox',
                 'label' => __(
-                    'Enable the feature to add a custom logo for this gateway',
+                    'Enable the feature to add a custom logo for this gateway. This feature will have precedence over other logo options.',
                     'mollie-payments-for-woocommerce'
                 )
             ],

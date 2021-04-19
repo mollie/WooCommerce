@@ -1,7 +1,7 @@
 (
     function ({_, gatewaySettingsData, jQuery }) {
         const { isEnabledIcon, uploadFieldName, enableFieldName, iconUrl } = gatewaySettingsData
-        console.log(gatewaySettingsData)
+
         if (_.isEmpty(gatewaySettingsData)) {
             return
         }

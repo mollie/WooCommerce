@@ -124,13 +124,15 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             wp_enqueue_style('mollie-gateway-icons');
             $settingsName = "{$current_section}_settings";
             $gatewaySettings = get_option($settingsName, false);
-            $isEnabled = $gatewaySettings
-                    ? $gatewaySettings['enable_custom_logo'] === 'yes' : false;
+            $isEnabled = false;
+            if($gatewaySettings && isset($gatewaySettings['enable_custom_logo'])){
+                $isEnabled = $gatewaySettings['enable_custom_logo'] === 'yes';
+            }
             $uploadFieldName = "{$current_section}_upload_logo";
             $enabledFieldName = "{$current_section}_enable_custom_logo";
             $gatewayIconUrl = '';
-            if($gatewaySettings){
-                $gatewayIconUrl = $gatewaySettings['iconFileUrl']?$gatewaySettings['iconFileUrl']:'';
+            if($gatewaySettings && isset($gatewaySettings['iconFileUrl'])){
+                $gatewayIconUrl = $gatewaySettings['iconFileUrl'];
             }
 
             wp_localize_script(

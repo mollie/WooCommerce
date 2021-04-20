@@ -366,6 +366,7 @@ class WC_Order
     {
     }
     public function get_checkout_payment_url(){}
+    public function get_meta(){}
 }
 
 class WC_Order_Item

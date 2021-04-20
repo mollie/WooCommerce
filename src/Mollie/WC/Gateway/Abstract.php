@@ -1204,54 +1204,54 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 *
 	 * @return string
 	 */
-	public function getReturnRedirectUrlForOrder( WC_Order $order )
+    public function getReturnRedirectUrlForOrder( WC_Order $order )
     {
         $order_id = $order->get_id();
         $debugLine = __METHOD__ . " {$order_id}: Determine what the redirect URL in WooCommerce should be.";
         mollieWooCommerceDebug($debugLine);
         $hookReturnPaymentStatus = 'success';
-
+        $returnRedirectMeta = $order->get_meta('_mollie_return_redirect');
+        $returnRedirect = $returnRedirectMeta? $returnRedirectMeta:$this->get_return_url( $order );
+        $failedRedirectMeta = $order->get_meta('_mollie_failed_redirect');
+        $failedRedirect = $failedRedirectMeta? $failedRedirectMeta:$order->get_checkout_payment_url( false );
         if ( $this->orderNeedsPayment( $order ) ) {
 
-			$hasCancelledMolliePayment = $this->paymentObject()->getCancelledMolliePaymentId( $order_id );
+            $hasCancelledMolliePayment = $this->paymentObject()->getCancelledMolliePaymentId( $order_id );
 
-			if ( $hasCancelledMolliePayment ) {
+            if ( $hasCancelledMolliePayment ) {
 
-				$settings_helper                 = Mollie_WC_Plugin::getSettingsHelper();
-				$order_status_cancelled_payments = $settings_helper->getOrderStatusCancelledPayments();
+                $settings_helper                 = Mollie_WC_Plugin::getSettingsHelper();
+                $order_status_cancelled_payments = $settings_helper->getOrderStatusCancelledPayments();
 
-				// If user set all cancelled payments to also cancel the order,
-				// redirect to /checkout/order-received/ with a message about the
-				// order being cancelled. Otherwise redirect to /checkout/order-pay/ so
-				// customers can try to pay with another payment method.
-				if ( $order_status_cancelled_payments == 'cancelled' ) {
+                // If user set all cancelled payments to also cancel the order,
+                // redirect to /checkout/order-received/ with a message about the
+                // order being cancelled. Otherwise redirect to /checkout/order-pay/ so
+                // customers can try to pay with another payment method.
+                if ( $order_status_cancelled_payments == 'cancelled' ) {
+                    return $returnRedirect;
 
-					return $this->get_return_url( $order );
+                } else {
+                    Mollie_WC_Plugin::addNotice(
+                            __(
+                                    'You have cancelled your payment. Please complete your order with a different payment method.',
+                                    'mollie-payments-for-woocommerce'
+                            )
+                    );
 
-				} else {
-					Mollie_WC_Plugin::addNotice( __( 'You have cancelled your payment. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ) );
+                    // Return to order payment page
+                    return $failedRedirect;
+                }
 
-					// Return to order payment page
-					if ( method_exists( $order, 'get_checkout_payment_url' ) ) {
-						return $order->get_checkout_payment_url( false );
-					}
-				}
-
-				// Return to order payment page
-				if ( method_exists( $order, 'get_checkout_payment_url' ) ) {
-					return $order->get_checkout_payment_url( false );
-				}
-
-			}
+                // Return to order payment page
+                return $failedRedirect;
+            }
 
             try {
                 $payment = $this->activePaymentObject($order_id, false);
                 if ( ! $payment->isOpen() && ! $payment->isPending() && ! $payment->isPaid() && ! $payment->isAuthorized() ) {
                     mollieWooCommerceNotice(__('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'));
                     // Return to order payment page
-                    if ( method_exists( $order, 'get_checkout_payment_url' ) ) {
-                        return $order->get_checkout_payment_url( false );
-                    }
+                    return $failedRedirect;
                 }
                 if ($payment->method === "giftcard") {
                     $this->debugGiftcardDetails($payment, $order);
@@ -1264,14 +1264,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 mollieWooCommerceDebug($debugLine);
                 $hookReturnPaymentStatus = 'failed';
             }
-		}
+        }
         do_action( Mollie_WC_Plugin::PLUGIN_ID . '_customer_return_payment_' . $hookReturnPaymentStatus, $order );
 
-		/*
-		 * Return to order received page
-		 */
-		return $this->get_return_url( $order );
-	}
+        /*
+         * Return to order received page
+         */
+        return $returnRedirect;
+    }
     /**
      * Retrieve the payment object
      *
@@ -1650,6 +1650,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
     /**
      * Get the url to return to on Mollie return
+     * saves the return redirect and failed redirect, so we save the page language in case there is one set
      * For example 'http://mollie-wc.docker.myhost/wc-api/mollie_return/?order_id=89&key=wc_order_eFZyH8jki6fge'
      *
      * @param WC_Order $order The order processed
@@ -1658,36 +1659,26 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function getReturnUrl (WC_Order $order)
     {
-        $siteUrl    = get_home_url();
+        $this->saveReturnRedirectUrls($order);
         $returnUrl = WC()->api_request_url( 'mollie_return' );
-	    $returnUrl = untrailingslashit($returnUrl);
+        $returnUrl = untrailingslashit($returnUrl);
         if (function_exists('idn_to_ascii')) {
 
-        	if (defined('IDNA_NONTRANSITIONAL_TO_ASCII') && defined('INTL_IDNA_VARIANT_UTS46')) {
-        		$returnUrl = idn_to_ascii($returnUrl, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
-        	} else {
-            	$returnUrl = idn_to_ascii($returnUrl);
-        	}
+            if (defined('IDNA_NONTRANSITIONAL_TO_ASCII') && defined('INTL_IDNA_VARIANT_UTS46')) {
+                $returnUrl = idn_to_ascii($returnUrl, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
+            } else {
+                $returnUrl = idn_to_ascii($returnUrl);
+            }
         }
         $orderId = $order->get_id();
         $orderKey = $order->get_order_key();
         $returnUrl = $this->appendOrderArgumentsToUrl(
-            $orderId,
-            $orderKey,
-            $returnUrl
+                $orderId,
+                $orderKey,
+                $returnUrl
         );
-	    $returnUrl = untrailingslashit($returnUrl);
-        $langUrl   = $this->getSiteUrlWithLanguage();
+        $returnUrl = untrailingslashit($returnUrl);
 
-        // Make sure there aren't any double /? in the URL (some (multilanguage) plugins will add this)
-        if ( strpos( $langUrl, '/?' ) !== false ) {
-            $langUrlParams = substr( $langUrl, strpos( $langUrl, "/?" ) + 2 );
-            $returnUrl = $returnUrl . '&' . $langUrlParams;
-        } else {
-            $returnUrl = str_replace( $siteUrl, $langUrl, $returnUrl );
-        }
-        // Some (multilanguage) plugins will add a extra slash to the url (/nl//) causing the URL to redirect and lose it's data.
-        $returnUrl = preg_replace('/([^:])(\/{2,})/', '$1/', $returnUrl);
         mollieWooCommerceDebug("{$this->id} : Order {$orderId} returnUrl: {$returnUrl}", true);
 
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_return_url', $returnUrl, $order);
@@ -1703,85 +1694,29 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function getWebhookUrl (WC_Order $order)
     {
-        $siteUrl    = get_home_url();
-
         $webhookUrl = WC()->api_request_url(strtolower(get_class($this)));
         $webhookUrl = untrailingslashit($webhookUrl);
         if (function_exists('idn_to_ascii')) {
 
-        	if (defined('IDNA_NONTRANSITIONAL_TO_ASCII') && defined('INTL_IDNA_VARIANT_UTS46')) {
-        		$webhookUrl = idn_to_ascii($webhookUrl, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
-        	} else {
-            	$webhookUrl = idn_to_ascii($webhookUrl);
-        	}
+            if (defined('IDNA_NONTRANSITIONAL_TO_ASCII') && defined('INTL_IDNA_VARIANT_UTS46')) {
+                $webhookUrl = idn_to_ascii($webhookUrl, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
+            } else {
+                $webhookUrl = idn_to_ascii($webhookUrl);
+            }
         }
         $orderId = $order->get_id();
         $orderKey = $order->get_order_key();
         $webhookUrl = $this->appendOrderArgumentsToUrl(
-            $orderId,
-            $orderKey,
-            $webhookUrl
+                $orderId,
+                $orderKey,
+                $webhookUrl
         );
         $webhookUrl = untrailingslashit($webhookUrl);
-        $langUrl    = $this->getSiteUrlWithLanguage();
-
-        // Make sure there aren't any double /? in the URL (some (multilanguage) plugins will add this)
-        if ( strpos( $langUrl, '/?' ) !== false ) {
-            $langUrlParams = substr( $langUrl, strpos( $langUrl, "/?" ) + 2 );
-            $webhookUrl = $webhookUrl . '&' . $langUrlParams;
-        } else {
-            $webhookUrl = str_replace( $siteUrl, $langUrl, $webhookUrl );
-        }
-
-        // Some (multilanguage) plugins will add a extra slash to the url (/nl//) causing the URL to redirect and lose it's data.
-        // Status updates via webhook will therefor not be processed. The below regex will find and remove those double slashes.
-        $webhookUrl = preg_replace('/([^:])(\/{2,})/', '$1/', $webhookUrl);
 
         mollieWooCommerceDebug("{$this->id} : Order {$orderId} webhookUrl: {$webhookUrl}", true);
 
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_webhook_url', $webhookUrl, $order);
     }
-
-	/**
-	 * Check if any multi language plugins are enabled and return the correct site url.
-	 *
-	 * @return string
-	 */
-	protected function getSiteUrlWithLanguage() {
-		/**
-		 * function is_plugin_active() is not available. Lets include it to use it.
-		 */
-		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
-
-		$siteUrl          = get_home_url();
-		$polylangFallback = false;
-
-		if ( is_plugin_active( 'polylang/polylang.php' ) || is_plugin_active( 'polylang-pro/polylang.php' ) ) {
-
-			$lang = PLL()->model->get_language( pll_current_language() );
-
-
-			if ( empty ( $lang->search_url ) ) {
-				$polylangFallback = true;
-			} else {
-                $polylangUrl = $lang->search_url;
-                $siteUrl     = str_replace( $siteUrl,$polylangUrl, $siteUrl );
-			}
-		}
-
-		if ( $polylangFallback == true || is_plugin_active( 'mlang/mlang.php' ) || is_plugin_active( 'mlanguage/mlanguage.php' ) ) {
-
-			$slug = get_bloginfo( 'language' );
-			$pos  = strpos( $slug, '-' );
-			if ( $pos !== false ) {
-				$slug = substr( $slug, 0, $pos );
-			}
-			$slug     = '/' . $slug;
-			$siteUrl = str_replace( $siteUrl, $siteUrl . $slug, $siteUrl );
-		}
-
-		return $siteUrl;
-	}
 
     /**
      * @return string|NULL
@@ -2532,6 +2467,16 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         return $paymentType;
     }
 
-
-
+    /**
+     * saves the return redirect and failed redirect, so we save the page language in case there is one set
+     * @param WC_Order $order
+     */
+    protected function saveReturnRedirectUrls(WC_Order $order)
+    {
+        $returnRedirect = $this->get_return_url($order);
+        $failedRedirect = $order->get_checkout_payment_url(false);
+        $order->update_meta_data('_mollie_return_redirect', $returnRedirect);
+        $order->update_meta_data('_mollie_failed_redirect', $failedRedirect);
+        $order->save();
+    }
 }

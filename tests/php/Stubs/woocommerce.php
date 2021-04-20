@@ -25,7 +25,6 @@ function wc_bool_to_string($bool)
     return true === $bool ? 'yes' : 'no';
 }
 
-
 class WooCommerce
 {
     public $cart = null;
@@ -111,6 +110,7 @@ class WC_Payment_Gateway extends WC_Settings_API
     public function init_settings()
     {
     }
+    public function get_return_url(){}
 }
 
 class WC_Settings_API
@@ -365,6 +365,7 @@ class WC_Order
     public function save()
     {
     }
+    public function get_checkout_payment_url(){}
 }
 
 class WC_Order_Item

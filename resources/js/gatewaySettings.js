@@ -1,6 +1,6 @@
 (
     function ({_, gatewaySettingsData, jQuery }) {
-        const { isEnabledIcon, uploadFieldName, enableFieldName, iconUrl } = gatewaySettingsData
+        const { isEnabledIcon, uploadFieldName, enableFieldName, iconUrl, message } = gatewaySettingsData
 
         if (_.isEmpty(gatewaySettingsData)) {
             return
@@ -13,7 +13,11 @@
 
             let uploadField = document.querySelector('#'+uploadFieldName)
 
-            uploadField.insertAdjacentHTML('afterend', '<div class="mollie_custom_icon"><img src="'+iconUrl+'" alt="custom icon image" width="100px"></div>');
+            if (_.isEmpty(iconUrl)) {
+                uploadField.insertAdjacentHTML('afterend', '<div class="mollie_custom_icon"><p>' + message + '</p></div>');
+            } else {
+                uploadField.insertAdjacentHTML('afterend', '<div class="mollie_custom_icon"><img src="' + iconUrl + '" alt="custom icon image" width="100px"></div>');
+            }
 
         });
         jQuery(function($) {

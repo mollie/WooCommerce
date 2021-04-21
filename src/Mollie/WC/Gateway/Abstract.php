@@ -162,7 +162,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     public function process_admin_options()
     {
         parent::process_admin_options();
-        $mollieUploadDirectory = trailingslashit( wp_upload_dir()['basedir'] ) . 'mollie-uploads';
+        $mollieUploadDirectory = trailingslashit( wp_upload_dir()['basedir'] ) . 'mollie-uploads/' . $this->id;
         wp_mkdir_p( $mollieUploadDirectory );
         $targetLocation = $mollieUploadDirectory . '/';
         $fileOptionName = $this->id . '_upload_logo';

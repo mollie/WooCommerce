@@ -148,26 +148,28 @@ class Mollie_WC_Helper_Settings
                 'desc_tip' => true,
             ],
             'fixed_fee' => [
-                'title' => __('Payment surcharge fixed amount', 'mollie-payments-for-woocommerce'),
+                'title' => sprintf(__('Payment surcharge fixed amount in %s', 'mollie-payments-for-woocommerce'), html_entity_decode( get_woocommerce_currency_symbol() )),
                 'type' => 'number',
                 'description' => sprintf(
                     __(
-                        'This controls the fee added on checkout. Default 0',
+                        'Control the fee added on checkout. Default 0',
                         'mollie-payments-for-woocommerce'
                     )
                 ),
+                'custom_attributes'=>['step'=>'0.01', 'min'=>'0', 'max'=>'100000000'],
                 'default' => 0,
                 'desc_tip' => true,
             ],
             'percentage' => [
-                'title' => __('Payment surcharge percentage amount', 'mollie-payments-for-woocommerce'),
+                'title' => __('Payment surcharge percentage amount %', 'mollie-payments-for-woocommerce'),
                 'type' => 'number',
                 'description' => sprintf(
                     __(
-                        'This controls the percentage fee added on checkout. Default 0',
+                        'Control the percentage fee added on checkout. Default 0',
                         'mollie-payments-for-woocommerce'
                     )
                 ),
+                'custom_attributes'=>['step'=>'0.01', 'min'=>'0', 'max'=>'100000000'],
                 'default' => 0,
                 'desc_tip' => true,
             ],
@@ -176,10 +178,11 @@ class Mollie_WC_Helper_Settings
                 'type' => 'number',
                 'description' => sprintf(
                     __(
-                        'This limits the fee added on checkout. Default 0',
+                        'Limit the maximum fee added on checkout. Default 0',
                         'mollie-payments-for-woocommerce'
                     )
                 ),
+                'custom_attributes'=>['step'=>'0.01', 'min'=>'0', 'max'=>'100000000'],
                 'default' => 0,
                 'desc_tip' => true,
             ],

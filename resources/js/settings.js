@@ -33,7 +33,7 @@
                     case 'fixed_fee':
                         fixedField.show()
                         percentField.hide()
-                        limitField.show()
+                        limitField.hide()
                         break
                     case 'percentage':
                         fixedField.hide()

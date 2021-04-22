@@ -42,9 +42,20 @@ class Mollie_WC_Helper_PaymentMethodsIconUrl
                 "public/images/{$paymentMethodName}s.svg"
             );
         }
-        $svgUrl = Mollie_WC_Plugin::getPluginUrl(
-            "public/images/{$paymentMethodName}" . self::SVG_FILE_EXTENSION
-        );
+
+        $svgPath = false;
+        $gatewaySettings = get_option("mollie_wc_gateway_{$paymentMethodName}_settings", false);
+
+        if($gatewaySettings){
+            $svgPath = isset($gatewaySettings["iconFilePath"])?$gatewaySettings["iconFilePath"]:false;
+            $svgUrl =  isset($gatewaySettings["iconFileUrl"])?$gatewaySettings["iconFileUrl"]:false;
+        }
+
+        if(! file_exists( $svgPath ) || !$svgUrl){
+            $svgUrl = Mollie_WC_Plugin::getPluginUrl(
+                "public/images/{$paymentMethodName}" . self::SVG_FILE_EXTENSION
+            );
+        }
 
         return '<img src="' . esc_attr($svgUrl)
             . '" class="mollie-gateway-icon" />';

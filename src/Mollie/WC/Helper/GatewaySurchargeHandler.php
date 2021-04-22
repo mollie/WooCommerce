@@ -114,7 +114,7 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
     {
         $percentageFee = $gatewaySettings[self::PERCENTAGE];
         $subtotal = $cart->get_subtotal() + $cart->get_shipping_total() - $cart->get_discount_total();
-        $taxes = $cart->get_subtotal_tax() + $cart->get_shipping_total() - $cart->get_discount_tax();
+        $taxes = $cart->get_subtotal_tax() + $cart->get_shipping_tax() - $cart->get_discount_tax();
         $total = $subtotal + $taxes;
 
         return $total * ($percentageFee / 100);

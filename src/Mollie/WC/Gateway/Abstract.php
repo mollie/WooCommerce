@@ -1210,10 +1210,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $debugLine = __METHOD__ . " {$order_id}: Determine what the redirect URL in WooCommerce should be.";
         mollieWooCommerceDebug($debugLine);
         $hookReturnPaymentStatus = 'success';
-        $returnRedirectMeta = $order->get_meta('_mollie_return_redirect');
-        $returnRedirect = $returnRedirectMeta? $returnRedirectMeta:$this->get_return_url( $order );
-        $failedRedirectMeta = $order->get_meta('_mollie_failed_redirect');
-        $failedRedirect = $failedRedirectMeta? $failedRedirectMeta:$order->get_checkout_payment_url( false );
+        $returnRedirect = $this->get_return_url( $order );
+        $failedRedirect = $order->get_checkout_payment_url( false );
         if ( $this->orderNeedsPayment( $order ) ) {
 
             $hasCancelledMolliePayment = $this->paymentObject()->getCancelledMolliePaymentId( $order_id );
@@ -1659,8 +1657,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function getReturnUrl (WC_Order $order)
     {
-        $this->saveReturnRedirectUrls($order);
-        $returnUrl = WC()->api_request_url( 'mollie_return' );
+        $returnUrl = $this->get_return_url($order);
         $returnUrl = untrailingslashit($returnUrl);
         if (function_exists('idn_to_ascii')) {
 
@@ -1672,12 +1669,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         }
         $orderId = $order->get_id();
         $orderKey = $order->get_order_key();
+        $onMollieReturn = 'onMollieReturn';
         $returnUrl = $this->appendOrderArgumentsToUrl(
                 $orderId,
                 $orderKey,
-                $returnUrl
+                $returnUrl,
+                $onMollieReturn
         );
-        $returnUrl = untrailingslashit($returnUrl);
+	    $returnUrl = untrailingslashit($returnUrl);
 
         mollieWooCommerceDebug("{$this->id} : Order {$orderId} returnUrl: {$returnUrl}", true);
 
@@ -1973,20 +1972,22 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      * @param $order_id
      * @param $order_key
      * @param $webhook_url
+     * @param string $filterFlag
      *
      * @return string
      */
-    protected function appendOrderArgumentsToUrl($order_id, $order_key, $webhook_url)
+    protected function appendOrderArgumentsToUrl($order_id, $order_key, $webhook_url, $filterFlag='')
     {
         $webhook_url = add_query_arg(
-            array(
-                'order_id' => $order_id,
-                'key' => $order_key,
-            ),
-            $webhook_url
+                array(
+                        'order_id' => $order_id,
+                        'key' => $order_key,
+                        'filter_flag' => $filterFlag
+                ),
+                $webhook_url
         );
         return $webhook_url;
-}
+    }
 
     /**
      * @param Mollie\Api\Resources\Payment|Mollie\Api\Resources\Order $payment
@@ -2465,18 +2466,5 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         }
 
         return $paymentType;
-    }
-
-    /**
-     * saves the return redirect and failed redirect, so we save the page language in case there is one set
-     * @param WC_Order $order
-     */
-    protected function saveReturnRedirectUrls(WC_Order $order)
-    {
-        $returnRedirect = $this->get_return_url($order);
-        $failedRedirect = $order->get_checkout_payment_url(false);
-        $order->update_meta_data('_mollie_return_redirect', $returnRedirect);
-        $order->update_meta_data('_mollie_failed_redirect', $failedRedirect);
-        $order->save();
     }
 }

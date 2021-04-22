@@ -283,9 +283,7 @@ class Mollie_WC_Plugin
     }
 
     public static function gatewaySurchargeHandling(){
-        $notices = new Mollie_WC_Notice_AdminNotice();
-        $gatewaSurchargeHandler = new Mollie_WC_Helper_GatewaySurchargeHandler($notices);
-
+        $gatewaSurchargeHandler = new Mollie_WC_Helper_GatewaySurchargeHandler();
     }
 
     public static function maybeTestModeNotice()

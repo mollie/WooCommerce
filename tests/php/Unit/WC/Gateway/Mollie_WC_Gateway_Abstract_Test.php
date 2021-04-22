@@ -40,6 +40,10 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             ->once()
             ->withAnyArgs()
             ->andReturn("/images/ideal.svg");
+        expect('get_option')
+            ->once()
+            ->withAnyArgs()
+            ->andReturn(false);
 
         /*
          * Setup Testee

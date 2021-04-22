@@ -18,7 +18,8 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
         $this->hasFieldsIfMollieComponentsIsEnabled();
     }
 
-    public function get_icon() {
+    public function get_icon()
+    {
         $url = Mollie_WC_Plugin::getPluginUrl(
             "public/images/creditcard.svg"
         );
@@ -30,8 +31,41 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
         ) {
             $output = $this->buildSvgComposed() ?: '';
         }
+        $gatewaySettings = $this->settings;
+        if ($this->canShowCustomLogo($gatewaySettings)) {
+            $url =  $gatewaySettings["iconFileUrl"];
+            $output = '<img src="' . esc_attr($url)
+                . '" class="mollie-gateway-icon" />';
+        }
 
-        return apply_filters( 'woocommerce_gateway_icon', $output, $this->id );
+        return apply_filters('woocommerce_gateway_icon', $output, $this->id);
+    }
+
+    protected function canShowCustomLogo($gatewaySettings)
+    {
+        if (!$gatewaySettings) {
+            return false;
+        }
+        if (!isset($gatewaySettings['enable_custom_logo'])
+            || $gatewaySettings['enable_custom_logo'] !== 'yes'
+        ) {
+            return false;
+        }
+        if (!isset($gatewaySettings['iconFileUrl'])
+            && !is_string(
+                $gatewaySettings['iconFileUrl']
+            )
+        ) {
+            return false;
+        }
+        if(!isset($gatewaySettings["iconFilePath"])){
+            return false;
+        }
+        $svgPath = $gatewaySettings["iconFilePath"];
+        if(! file_exists( $svgPath )){
+           return false;
+        }
+        return true;
     }
 
     /**

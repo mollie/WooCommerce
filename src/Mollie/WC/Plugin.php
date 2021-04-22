@@ -210,7 +210,7 @@ class Mollie_WC_Plugin
 
 		// Listen to return URL call
 		add_action( 'woocommerce_api_mollie_return', array ( __CLASS__, 'onMollieReturn' ) );
-        add_action( 'template_redirect', 'mollieReturnRedirect' );
+        add_action( 'template_redirect', array ( __CLASS__, 'mollieReturnRedirect' ) );
 
 		// Show Mollie instructions on order details page
 		add_action( 'woocommerce_order_details_after_order_table', array ( __CLASS__, 'onOrderDetails' ), 10, 1 );

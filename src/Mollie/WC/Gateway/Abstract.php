@@ -172,57 +172,11 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function process_admin_options()
     {
+        if (isset($_POST['save']) ) {
+            $this->processAdminOptionCustomLogo();
+            $this->processAdminOptionSurcharge();
+        }
         parent::process_admin_options();
-        $mollieUploadDirectory = trailingslashit( wp_upload_dir()['basedir'] ) . 'mollie-uploads/' . $this->id;
-        wp_mkdir_p( $mollieUploadDirectory );
-        $targetLocation = $mollieUploadDirectory . '/';
-        $fileOptionName = $this->id . '_upload_logo';
-        $enabledLogoOptionName = $this->id . '_enable_custom_logo';
-        if (isset($_POST['save']) && !isset($_POST[$enabledLogoOptionName])) {
-            $gatewaySettings = get_option("{$this->id}_settings", false);
-            if ($gatewaySettings) {
-                $gatewaySettings["iconFileUrl"] = null;
-                $gatewaySettings["iconFilePath"] = null;
-                update_option("{$this->id}_settings", $gatewaySettings);
-            }
-            return;
-        }
-
-        if (isset($_POST['save']) && isset($_FILES[$fileOptionName])
-                && $_FILES[$fileOptionName]['size'] > 0
-        ) {
-            if ($_FILES[$fileOptionName]['size'] <= 500000) {
-                $fileName = preg_replace(
-                        '/\s+/',
-                        '_',
-                        $_FILES[$fileOptionName]['name']
-                );
-                $tempName = $_FILES[$fileOptionName]['tmp_name'];
-                move_uploaded_file($tempName, $targetLocation . $fileName);
-
-                $gatewaySettings = get_option("{$this->id}_settings", false);
-                if ($gatewaySettings) {
-                    $gatewaySettings["iconFileUrl"] = trailingslashit(
-                                    wp_upload_dir()['baseurl']
-                            ) . 'mollie-uploads/' . $fileName;
-                    $gatewaySettings["iconFilePath"] = trailingslashit(
-                                    wp_upload_dir()['basedir']
-                            ) . 'mollie-uploads/' . $fileName;
-                    update_option("{$this->id}_settings", $gatewaySettings);
-                }
-            }else{
-                $notice = new Mollie_WC_Notice_AdminNotice();
-                $message = sprintf(
-                        esc_html__(
-                                '%1$sMollie Payments for WooCommerce%2$s Unable to upload the file. Size must be under 500kb.',
-                                'mollie-payments-for-woocommerce'
-                        ),
-                        '<strong>',
-                        '</strong>'
-                );
-                $notice->addNotice('notice-error is-dismissible', $message);
-            }
-        }
     }
 
     /**
@@ -2668,13 +2622,13 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $surgargeType = $this->settings['payment_surcharge'];
         $methodName = "name_{$surgargeType}";
         $feeName = $this->$methodName();
-        $this->title = $this->get_option('title') . $feeName;
+        $this->title = $this->get_option('title') . '<span class="mollie-gateway-fee">' . $feeName . '</span>';
     }
 
     protected function name_fixed_fee()
     {
         $amountFee = $this->settings[Mollie_WC_Helper_GatewaySurchargeHandler::FIXED_FEE];
-        $currency = get_woocommerce_currency();
+        $currency = get_woocommerce_currency_symbol();
         return __(" +{$amountFee}{$currency} Fee", 'mollie-payments-for-woocommerce');
     }
 
@@ -2687,9 +2641,82 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     protected function name_fixed_fee_percentage()
     {
         $amountFix = $this->settings[Mollie_WC_Helper_GatewaySurchargeHandler::FIXED_FEE];
-        $currency = get_woocommerce_currency();
+        $currency = get_woocommerce_currency_symbol();
         $amountPercent = $this->settings[Mollie_WC_Helper_GatewaySurchargeHandler::PERCENTAGE];
         return __(" {$amountFix}{$currency} + {$amountPercent}% Fee", 'mollie-payments-for-woocommerce');
+    }
+
+    protected function processAdminOptionCustomLogo()
+    {
+        $mollieUploadDirectory = trailingslashit(wp_upload_dir()['basedir'])
+                . 'mollie-uploads/' . $this->id;
+        wp_mkdir_p($mollieUploadDirectory);
+        $targetLocation = $mollieUploadDirectory . '/';
+        $fileOptionName = $this->id . '_upload_logo';
+        $enabledLogoOptionName = $this->id . '_enable_custom_logo';
+        $gatewaySettings = get_option("{$this->id}_settings", []);
+        if (!isset($_POST[$enabledLogoOptionName])) {
+            $gatewaySettings["iconFileUrl"] = null;
+            $gatewaySettings["iconFilePath"] = null;
+            update_option("{$this->id}_settings", $gatewaySettings);
+        }
+        if (isset($_POST[$enabledLogoOptionName])
+                && isset($_FILES[$fileOptionName])
+                && $_FILES[$fileOptionName]['size'] > 0
+        ) {
+            if ($_FILES[$fileOptionName]['size'] <= 500000) {
+                $fileName = preg_replace(
+                        '/\s+/',
+                        '_',
+                        $_FILES[$fileOptionName]['name']
+                );
+                $tempName = $_FILES[$fileOptionName]['tmp_name'];
+                move_uploaded_file($tempName, $targetLocation . $fileName);
+                $gatewaySettings["iconFileUrl"] = trailingslashit(
+                                wp_upload_dir()['baseurl']
+                        ) . 'mollie-uploads/' . $fileName;
+                $gatewaySettings["iconFilePath"] = trailingslashit(
+                                wp_upload_dir()['basedir']
+                        ) . 'mollie-uploads/' . $fileName;
+                update_option("{$this->id}_settings", $gatewaySettings);
+            } else {
+                $notice = new Mollie_WC_Notice_AdminNotice();
+                $message = sprintf(
+                        esc_html__(
+                                '%1$sMollie Payments for WooCommerce%2$s Unable to upload the file. Size must be under 500kb.',
+                                'mollie-payments-for-woocommerce'
+                        ),
+                        '<strong>',
+                        '</strong>'
+                );
+                $notice->addNotice('notice-error is-dismissible', $message);
+            }
+        }
+    }
+
+    protected function processAdminOptionSurcharge()
+    {
+        $paymentSurcharge = $this->id . '_payment_surcharge';
+
+        if (isset($_POST[$paymentSurcharge])
+                && $_POST[$paymentSurcharge]
+                !== Mollie_WC_Helper_GatewaySurchargeHandler::NO_FEE
+        ) {
+            $surchargeFields = [
+                    '_fixed_fee',
+                    '_percentage',
+                    '_surcharge_limit'
+            ];
+            foreach ($surchargeFields as $field) {
+                $optionName = $this->id . $field;
+                $validatedValue = isset($_POST[$optionName])
+                        && $_POST[$optionName] > 0
+                        && $_POST[$optionName] < 100000000;
+                if (!$validatedValue) {
+                    unset($_POST[$optionName]);
+                }
+            }
+        }
     }
 
 }

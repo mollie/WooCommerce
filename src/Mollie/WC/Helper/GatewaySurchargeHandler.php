@@ -6,24 +6,14 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
     const FIXED_FEE = 'fixed_fee';
     const PERCENTAGE = 'percentage';
     const FIXED_AND_PERCENTAGE = 'fixed_fee_percentage';
-    /**
-     * @var Mollie_WC_Notice_AdminNotice
-     */
-    private $adminNotice;
-
 
     /**
      * Mollie_WC_Helper_ApplePayDirectHandler constructor.
-     *
-     * @param Mollie_WC_Notice_AdminNotice              $notice
-     *
      */
-    public function __construct(Mollie_WC_Notice_AdminNotice $notice)
+    public function __construct()
     {
-        $this->adminNotice = $notice;
         add_filter( 'woocommerce_cart_calculate_fees', [$this, 'add_engraving_fees'], 10, 1 );
         add_action( 'wp_enqueue_scripts', [$this, 'enqueueSurchargeScript' ]);
-
     }
 
     public function enqueueSurchargeScript()

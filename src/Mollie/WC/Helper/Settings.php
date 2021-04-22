@@ -174,7 +174,7 @@ class Mollie_WC_Helper_Settings
                 'desc_tip' => true,
             ],
             'surcharge_limit' => [
-                'title' => __('Payment surcharge limit', 'mollie-payments-for-woocommerce'),
+                'title' => sprintf(__('Payment surcharge limit in %s', 'mollie-payments-for-woocommerce'), html_entity_decode( get_woocommerce_currency_symbol())),
                 'type' => 'number',
                 'description' => sprintf(
                     __(

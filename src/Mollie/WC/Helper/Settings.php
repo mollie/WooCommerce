@@ -81,6 +81,17 @@ class Mollie_WC_Helper_Settings
                 ),
                 'default' => 'yes'
             ],
+            'enable_custom_logo' => [
+                'title' => __(
+                    'Enable custom logo',
+                    'mollie-payments-for-woocommerce'
+                ),
+                'type' => 'checkbox',
+                'label' => __(
+                    'Enable the feature to add a custom logo for this gateway. This feature will have precedence over other logo options.',
+                    'mollie-payments-for-woocommerce'
+                )
+            ],
             'upload_logo' => [
                 'title' => __(
                     'Upload custom logo',
@@ -88,10 +99,13 @@ class Mollie_WC_Helper_Settings
                 ),
                 'type' => 'file',
                 'custom_attributes'=>['accept'=>'.png, .jpeg, .svg, image/png, image/jpeg'],
-                'label' => __(
-                    'Upload a custom logo for this gateway',
-                    'mollie-payments-for-woocommerce'
-                )
+                'description' => sprintf(
+                    __(
+                        'Upload a custom icon for this gateway. The feature must be enabled.',
+                        'mollie-payments-for-woocommerce'
+                    )
+                ),
+                'desc_tip' => true,
             ],
             'description' => [
                 'title' => __('Description', 'mollie-payments-for-woocommerce'),

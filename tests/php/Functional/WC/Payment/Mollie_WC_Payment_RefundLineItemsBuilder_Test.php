@@ -170,7 +170,7 @@ class Mollie_WC_Payment_RefundLineItemsBuilder_Test extends TestCase
      * @throws Mollie_WC_Payment_PartialRefundException
      * @throws UnexpectedValueException
      */
-    public function testBuildLineItemsSkipItemBecauseNoRefundItemQuantity()
+    public function testBuildLineItemsNOTSkipItemBecauseNoRefundItemQuantity()
     {
         /*
          * Stubs
@@ -208,7 +208,7 @@ class Mollie_WC_Payment_RefundLineItemsBuilder_Test extends TestCase
             $reason
         );
 
-        $this->assertEquals(true, empty($result['toRefund']['lines']));
+        $this->assertEquals(false, empty($result['toRefund']['lines']));
     }
 
     /**

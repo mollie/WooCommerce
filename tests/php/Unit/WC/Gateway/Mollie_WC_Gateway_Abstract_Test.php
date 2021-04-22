@@ -378,6 +378,13 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         $order_total = 42.0;
         $billing_country = 'NL';
         $payment_locale = '';
+        stubs(
+            [
+                'wp_localize_script' => '',
+                'get_woocommerce_currency_symbol'=>'$',
+                'is_admin'=>false
+            ]
+        );
 
         list($sut, $sutReflection) = $this->createSutForFilters();
 
@@ -416,6 +423,13 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         $order_total = 0.0;
         $payment_locale = '';
         $billing_country = '';
+        stubs(
+            [
+                'wp_localize_script' => '',
+                'get_woocommerce_currency_symbol'=>'$',
+                'is_admin'=>false
+            ]
+        );
 
         list($sut, $sutReflection) = $this->createSutForFilters();
 
@@ -437,6 +451,13 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         $payment_locale = '';
         $billing_country = '';
 
+        stubs(
+            [
+                'wp_localize_script' => '',
+                'get_woocommerce_currency_symbol'=>'$',
+                'is_admin'=>false
+            ]
+        );
         list($sut, $sutReflection) = $this->createSutForFilters();
 
         $sutReflection->invoke(
@@ -456,6 +477,13 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         $order_total = 42.0;
         $payment_locale = '';
         $billing_country = 'Nederland';
+        stubs(
+            [
+                'wp_localize_script' => '',
+                'get_woocommerce_currency_symbol'=>'$',
+                'is_admin'=>false
+            ]
+        );
 
         list($sut, $sutReflection) = $this->createSutForFilters();
 

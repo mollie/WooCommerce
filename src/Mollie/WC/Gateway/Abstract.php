@@ -1659,14 +1659,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         $returnUrl = $this->get_return_url($order);
         $returnUrl = untrailingslashit($returnUrl);
-        if (function_exists('idn_to_ascii')) {
-
-            if (defined('IDNA_NONTRANSITIONAL_TO_ASCII') && defined('INTL_IDNA_VARIANT_UTS46')) {
-                $returnUrl = idn_to_ascii($returnUrl, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
-            } else {
-                $returnUrl = idn_to_ascii($returnUrl);
-            }
-        }
+        $returnUrl = $this->asciiDomainName($returnUrl);
         $orderId = $order->get_id();
         $orderKey = $order->get_order_key();
         $onMollieReturn = 'onMollieReturn';
@@ -1695,14 +1688,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         $webhookUrl = WC()->api_request_url(strtolower(get_class($this)));
         $webhookUrl = untrailingslashit($webhookUrl);
-        if (function_exists('idn_to_ascii')) {
-
-            if (defined('IDNA_NONTRANSITIONAL_TO_ASCII') && defined('INTL_IDNA_VARIANT_UTS46')) {
-                $webhookUrl = idn_to_ascii($webhookUrl, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
-            } else {
-                $webhookUrl = idn_to_ascii($webhookUrl);
-            }
-        }
+        $webhookUrl = $this->asciiDomainName($webhookUrl);
         $orderId = $order->get_id();
         $orderKey = $order->get_order_key();
         $webhookUrl = $this->appendOrderArgumentsToUrl(
@@ -2466,5 +2452,30 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         }
 
         return $paymentType;
+    }
+
+    /**
+     * @param $url
+     * @return string
+     */
+    protected function asciiDomainName($url)
+    {
+        if (function_exists('idn_to_ascii')) {
+            $parsed = parse_url($url);
+            $query = $parsed['query'];
+            $url = str_replace('?' . $query, '', $url);
+            if (defined('IDNA_NONTRANSITIONAL_TO_ASCII') && defined('INTL_IDNA_VARIANT_UTS46')) {
+                $url = idn_to_ascii($url, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46) ? idn_to_ascii(
+                        $url,
+                        IDNA_NONTRANSITIONAL_TO_ASCII,
+                        INTL_IDNA_VARIANT_UTS46
+                ) : $url;
+            } else {
+                $url = idn_to_ascii($url) ? idn_to_ascii($url) : $url;
+            }
+            $url = $url . '?' . $query;
+        }
+
+        return $url;
     }
 }

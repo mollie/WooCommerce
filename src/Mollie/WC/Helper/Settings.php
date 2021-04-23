@@ -56,6 +56,14 @@ class Mollie_WC_Helper_Settings
                 ),
                 'default' => 'yes'
             ],
+            [
+                'id' => $defaultTitle . '_' . 'title',
+                'title' => sprintf(__(
+                    '%s display settings',
+                    'mollie-payments-for-woocommerce'
+                ), $defaultTitle),
+                'type' => 'title'
+            ],
             'title' => [
                 'title' => __('Title', 'mollie-payments-for-woocommerce'),
                 'type' => 'text',
@@ -67,6 +75,19 @@ class Mollie_WC_Helper_Settings
                     $defaultTitle
                 ),
                 'default' => $defaultTitle,
+                'desc_tip' => true,
+            ],
+            'description' => [
+                'title' => __('Description', 'mollie-payments-for-woocommerce'),
+                'type' => 'textarea',
+                'description' => sprintf(
+                    __(
+                        'Payment method description that the customer will see on your checkout. Default <code>%s</code>',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                    $defaultDescription
+                ),
+                'default' => $defaultDescription,
                 'desc_tip' => true,
             ],
             'display_logo' => [
@@ -81,18 +102,13 @@ class Mollie_WC_Helper_Settings
                 ),
                 'default' => 'yes'
             ],
-            'description' => [
-                'title' => __('Description', 'mollie-payments-for-woocommerce'),
-                'type' => 'textarea',
-                'description' => sprintf(
-                    __(
-                        'Payment method description that the customer will see on your checkout. Default <code>%s</code>',
-                        'mollie-payments-for-woocommerce'
-                    ),
-                    $defaultDescription
-                ),
-                'default' => $defaultDescription,
-                'desc_tip' => true,
+            [
+                'id' => $defaultTitle . '_' . 'title',
+                'title' => sprintf(__(
+                                       'Sales countries',
+                                       'mollie-payments-for-woocommerce'
+                                   )),
+                'type' => 'title'
             ],
             'allowed_countries' => [
                 'title' => __(

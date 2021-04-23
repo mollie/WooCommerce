@@ -4,24 +4,23 @@ return [
     [
         'id' => $pluginName . '_' . 'title',
         'title' => __(
-            'PayPay button settings',
+            'PayPay button display settings',
             'mollie-payments-for-woocommerce'
         ),
         'type' => 'title',
-        'desc' => '<p>' . __(
-                'The following options are required to use the PayPal button',
+        'description' => '<p>' . __(
+                'The PayPal button is optimised for digital goods.',
                 'mollie-payments-for-woocommerce'
             ) . '</p>',
     ],
-
     'mollie_paypal_button_enabled_cart' => [
         'type' => 'checkbox',
         'title' => __(
-            'Enable on cart page',
+            'Display on cart page',
             'mollie-payments-for-woocommerce'
         ),
         'description' => __(
-            'Enable the PayPal button to be used in the cart page',
+            'Enable the PayPal button to be used in the cart page.',
             'mollie-payments-for-woocommerce'
         ),
         'default' => 'no',
@@ -29,19 +28,58 @@ return [
     'mollie_paypal_button_enabled_product' => [
         'type' => 'checkbox',
         'title' => __(
-            'Enable on product page',
+            'Display on product page',
             'mollie-payments-for-woocommerce'
         ),
         'description' => __(
-            'Enable the PayPal button to be sued in the product page',
+            'Enable the PayPal button to be used in the product page.',
             'mollie-payments-for-woocommerce'
         ),
         'default' => 'no',
     ],
+    'color' => [
+        'type' => 'select',
+        'id' => 'mollie_paypal_buttton_color',
+        'title' => _x('Button text and color', 'Mollie PayPal Button Settings', 'mollie-payments-for-woocommerce'),
+        'description' => sprintf(
+            _x(
+                'Select the text and the colour of the button.',
+                'Mollie PayPal Button Settings',
+                'mollie-payments-for-woocommerce'
+            )
+        ),
+        'default' => 'buy-gold',
+        'options' => [
+            'buy-gold' => _x('Buy with PayPal - Gold', 'Mollie PayPal button Settings', 'mollie-payments-for-woocommerce'),
+            'checkout-gold' => _x('Checkout with PayPal - Gold', 'Mollie PayPal button Settings', 'mollie-payments-for-woocommerce'),
+            'checkout-silver' => _x('Checkout with PayPal - Silver', 'Mollie PayPal button Settings', 'mollie-payments-for-woocommerce'),
+        ],
+    ],
+    'language' => [
+        'type' => 'select',
+        'id' => 'mollie_paypal_buttton_language',
+        'title' => _x('Translate button text into:', 'Mollie PayPal Button Settings', 'mollie-payments-for-woocommerce'),
+        'description' => sprintf(
+            _x(
+                'Choose the language for the text in the button.',
+                'Mollie PayPal Button Settings',
+                'mollie-payments-for-woocommerce'
+            )
+        ),
+        'default' => 'en',
+        'options' => [
+            'en' => _x('English', 'Mollie PayPal button Settings', 'mollie-payments-for-woocommerce'),
+            'nl' => _x('Dutch', 'Mollie PayPal button Settings', 'mollie-payments-for-woocommerce'),
+            'fr' => _x('French', 'Mollie PayPal button Settings', 'mollie-payments-for-woocommerce'),
+            'de' => _x('German', 'Mollie PayPal button Settings', 'mollie-payments-for-woocommerce'),
+            'pl' => _x('Polish', 'Mollie PayPal button Settings', 'mollie-payments-for-woocommerce'),
+        ],
+
+    ],
     'mollie_paypal_button_minimum_amount' => [
         'type' => 'number',
         'title' => __(
-            'Minimum amount to show the button',
+            'Minimum amount to display button',
             'mollie-payments-for-woocommerce'
         ),
         'description' => __(
@@ -50,6 +88,19 @@ return [
         ),
         'default' => 0,
         'desc_tip' => true,
+    ],
+    [
+        'id' => $pluginName . '_' . 'title',
+        'title' => __(
+            'PayPay button shipping costs',
+            'mollie-payments-for-woocommerce'
+        ),
+        'type' => 'title',
+        'description' => '<p>' . __(
+                'A disadvantage of the PayPal button is that it does not allow automatic calculation of shipping costs and taxes for physical goods shipped to a specific delivery address. 
+The settings below enable you to specify additional costs manually. ',
+                'mollie-payments-for-woocommerce'
+            ) . '</p>',
     ],
     'mollie_paypal_button_no_fee_amount' => [
         'type' => 'number',
@@ -76,51 +127,7 @@ return [
         ),
         'default' => 'no',
     ],
-    [
-        'id' => $pluginName . '_' . 'title',
-        'title' => __(
-            'PayPay button styles',
-            'mollie-payments-for-woocommerce'
-        ),
-        'type' => 'title',
-    ],
-    'language' => [
-        'type' => 'select',
-        'id' => 'mollie_paypal_buttton_language',
-        'title' => _x('Language', 'Mollie PayPal Button Settings', 'mollie-payments-for-woocommerce'),
-        'description' => sprintf(
-            _x(
-                'Choose the language for the text in the button',
-                'Mollie PayPal Button Settings',
-                'mollie-payments-for-woocommerce'
-            )
-        ),
-        'default' => 'en',
-        'options' => [
-            'en' => _x('English', 'Mollie PayPal button Settings', 'mollie-payments-for-woocommerce'),
-            'nl' => _x('Dutch', 'Mollie PayPal button Settings', 'mollie-payments-for-woocommerce'),
-            'fr' => _x('French', 'Mollie PayPal button Settings', 'mollie-payments-for-woocommerce'),
-            'de' => _x('German', 'Mollie PayPal button Settings', 'mollie-payments-for-woocommerce'),
-            'pl' => _x('Polish', 'Mollie PayPal button Settings', 'mollie-payments-for-woocommerce'),
-        ],
 
-    ],
-    'color' => [
-        'type' => 'select',
-        'id' => 'mollie_paypal_buttton_color',
-        'title' => _x('Label Text and Color', 'Mollie PayPal Button Settings', 'mollie-payments-for-woocommerce'),
-        'description' => sprintf(
-            _x(
-                'Select the text and the colour of the button',
-                'Mollie PayPal Button Settings',
-                'mollie-payments-for-woocommerce'
-            )
-        ),
-        'default' => 'buy-gold',
-        'options' => [
-            'buy-gold' => _x('Buy with PayPal - Gold', 'Mollie PayPal button Settings', 'mollie-payments-for-woocommerce'),
-            'checkout-gold' => _x('Checkout with PayPal - Gold', 'Mollie PayPal button Settings', 'mollie-payments-for-woocommerce'),
-            'checkout-silver' => _x('Checkout with PayPal - Silver', 'Mollie PayPal button Settings', 'mollie-payments-for-woocommerce'),
-        ],
-    ]
+
+
 ];

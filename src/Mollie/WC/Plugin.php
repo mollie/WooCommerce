@@ -286,24 +286,8 @@ class Mollie_WC_Plugin
      * See MOL-322
      */
     public static function maybeFixSubscriptions(){
-        $fixSubscriptionsProcess = get_option('mollie_wc_fix_subscriptions', false);
-        $hasSubscriptionPlugin = class_exists( 'WC_Subscriptions_Order' );
-        if (!$fixSubscriptionsProcess && $hasSubscriptionPlugin) {
-            $subscriptions = wcs_get_subscriptions([]);
-            foreach ($subscriptions as $subscription) {
-                $customer = $subscription->get_meta('_mollie_customer_id');
-                //cst_*
-                if (strlen($customer) < 5) {
-                    $parent = $subscription->get_parent();
-                    $subscription->update_meta_data('_mollie_customer_id', $parent->get_meta('_mollie_customer_id'));
-                    $subscription->update_meta_data('_mollie_order_id', $parent->get_meta('_mollie_order_id'));
-                    $subscription->update_meta_data('_mollie_payment_id', $parent->get_meta('_mollie_payment_id'));
-                    $subscription->update_meta_data('_mollie_payment_mode', $parent->get_meta('_mollie_payment_mode'));
-                    $subscription->save();
-                }
-            }
-            update_option('mollie_wc_fix_subscriptions', true);
-        }
+        $fixer = new Mollie_WC_Helper_MaybeFixSubscription();
+        $fixer->maybeFix();
     }
 
 

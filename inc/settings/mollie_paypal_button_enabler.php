@@ -86,6 +86,7 @@ return [
             'If the product or the cart total amount is under this number, then the button will not show up.',
             'mollie-payments-for-woocommerce'
         ),
+        'custom_attributes'=>['step'=>'0.01', 'min'=>'0', 'max'=>'100000000'],
         'default' => 0,
         'desc_tip' => true,
     ],
@@ -113,6 +114,7 @@ The settings below enable you to specify additional costs manually. ',
             'mollie-payments-for-woocommerce'
         ),
         'default' => 0,
+        'custom_attributes'=>['step'=>'0.01', 'min'=>'0', 'max'=>'100000000'],
         'desc_tip' => true,
     ],
     'mollie_paypal_button_fixed_shipping_amount' => [
@@ -126,6 +128,7 @@ The settings below enable you to specify additional costs manually. ',
             'mollie-payments-for-woocommerce'
         ),
         'default' => 'no',
+        'custom_attributes'=>['step'=>'0.01', 'min'=>'0', 'max'=>'100000000']
     ],
 
 

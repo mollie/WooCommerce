@@ -36,7 +36,7 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
         }
 
         $gatewaySettings = $this->gatewaySettings($gateway);
-        if (!$gatewaySettings['payment_surcharge'] || $gatewaySettings['payment_surcharge'] == self::NO_FEE) {
+        if (!isset($gatewaySettings['payment_surcharge']) || $gatewaySettings['payment_surcharge'] == self::NO_FEE) {
             return;
         }
 

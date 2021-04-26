@@ -2611,7 +2611,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             $this->title = $this->get_option('title');
             return;
         }
-        if (!$this->settings['payment_surcharge']
+        if (!isset($this->settings['payment_surcharge'])
                 || $this->settings['payment_surcharge']
                 === Mollie_WC_Helper_GatewaySurchargeHandler::NO_FEE
         ){

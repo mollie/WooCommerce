@@ -22,6 +22,7 @@ function configJavaScript ({ basePath })
     .addEntry('paypalButton.min', './resources/js/paypalButton.js')
     .addEntry('paypalButtonCart.min', './resources/js/paypalButtonCart.js')
     .addEntry('settings.min', './resources/js/settings.js')
+    .addEntry('gatewaySettings.min', './resources/js/gatewaySettings.js')
     .addEntry('mollie-components.min', './resources/js/mollie-components.js')
     .enableSourceMaps(!Encore.isProduction())
 

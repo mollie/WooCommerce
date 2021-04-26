@@ -8,7 +8,7 @@ class Mollie_WC_Plugin
 {
     const PLUGIN_ID      = 'mollie-payments-for-woocommerce';
     const PLUGIN_TITLE   = 'Mollie Payments for WooCommerce';
-    const PLUGIN_VERSION = '6.2.1';
+    const PLUGIN_VERSION = '6.2.2';
 
     const DB_VERSION     = '1.0';
     const DB_VERSION_PARAM_NAME = 'mollie-db-version';
@@ -210,6 +210,7 @@ class Mollie_WC_Plugin
 
 		// Listen to return URL call
 		add_action( 'woocommerce_api_mollie_return', array ( __CLASS__, 'onMollieReturn' ) );
+        add_action( 'template_redirect', array ( __CLASS__, 'mollieReturnRedirect' ) );
 
 		// Show Mollie instructions on order details page
 		add_action( 'woocommerce_order_details_after_order_table', array ( __CLASS__, 'onOrderDetails' ), 10, 1 );
@@ -904,8 +905,10 @@ class Mollie_WC_Plugin
 
         return $order;
     }
+
     /**
-     * Payment return url callback
+     * Old Payment return url callback
+     *
      */
     public static function onMollieReturn ()
     {
@@ -944,6 +947,21 @@ class Mollie_WC_Plugin
         mollieWooCommerceDebug(__METHOD__ . ": Redirect url on return order {$gateway->id}, order {$orderId}: {$redirect_url}");
 
         wp_safe_redirect($redirect_url);
+        die;
+    }
+
+    /**
+     * New Payment return url callback
+     *
+     */
+    public static function mollieReturnRedirect()
+    {
+        if (isset($_GET['filter_flag'])) {
+            $filterFlag = filter_input(INPUT_GET, 'filter_flag', FILTER_SANITIZE_STRING);
+            if ($filterFlag === 'onMollieReturn') {
+                self::onMollieReturn();
+            }
+        }
     }
 
     /**

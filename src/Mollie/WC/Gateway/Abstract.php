@@ -106,6 +106,114 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
     }
 
+    public function init_settings()
+    {
+        parent::init_settings();
+        if(is_admin()){
+            global $current_section;
+            wp_register_script(
+                    'mollie_wc_gateway_settings',
+                    Mollie_WC_Plugin::getPluginUrl(
+                            '/public/js/gatewaySettings.min.js'
+                    ),
+                    ['underscore', 'jquery'],
+                    Mollie_WC_Plugin::PLUGIN_VERSION
+            );
+
+            wp_enqueue_script('mollie_wc_gateway_settings');
+            wp_enqueue_style('mollie-gateway-icons');
+            $settingsName = "{$current_section}_settings";
+            $gatewaySettings = get_option($settingsName, false);
+            $message = __('No custom logo selected', 'mollie-payments-for-woocommerce');
+            $isEnabled = false;
+            if($gatewaySettings && isset($gatewaySettings['enable_custom_logo'])){
+                $isEnabled = $gatewaySettings['enable_custom_logo'] === 'yes';
+            }
+            $uploadFieldName = "{$current_section}_upload_logo";
+            $enabledFieldName = "{$current_section}_enable_custom_logo";
+            $gatewayIconUrl = '';
+            if($gatewaySettings && isset($gatewaySettings['iconFileUrl'])){
+                $gatewayIconUrl = $gatewaySettings['iconFileUrl'];
+            }
+
+            wp_localize_script(
+                    'mollie_wc_gateway_settings',
+                    'gatewaySettingsData',
+                    [
+                            'isEnabledIcon' => $isEnabled,
+                            'uploadFieldName' => $uploadFieldName,
+                            'enableFieldName' => $enabledFieldName,
+                            'iconUrl' => $gatewayIconUrl,
+                            'message'=>$message
+                    ]
+            );
+        }
+
+
+    }
+    /**
+     * Save settings
+     *
+     * @since 1.0
+     */
+    /**
+     * Save options in admin.
+     */
+    public function process_admin_options()
+    {
+        parent::process_admin_options();
+        $mollieUploadDirectory = trailingslashit( wp_upload_dir()['basedir'] ) . 'mollie-uploads/' . $this->id;
+        wp_mkdir_p( $mollieUploadDirectory );
+        $targetLocation = $mollieUploadDirectory . '/';
+        $fileOptionName = $this->id . '_upload_logo';
+        $enabledLogoOptionName = $this->id . '_enable_custom_logo';
+        if (isset($_POST['save']) && !isset($_POST[$enabledLogoOptionName])) {
+            $gatewaySettings = get_option("{$this->id}_settings", false);
+            if ($gatewaySettings) {
+                $gatewaySettings["iconFileUrl"] = null;
+                $gatewaySettings["iconFilePath"] = null;
+                update_option("{$this->id}_settings", $gatewaySettings);
+            }
+            return;
+        }
+
+        if (isset($_POST['save']) && isset($_FILES[$fileOptionName])
+                && $_FILES[$fileOptionName]['size'] > 0
+        ) {
+            if ($_FILES[$fileOptionName]['size'] <= 500000) {
+                $fileName = preg_replace(
+                        '/\s+/',
+                        '_',
+                        $_FILES[$fileOptionName]['name']
+                );
+                $tempName = $_FILES[$fileOptionName]['tmp_name'];
+                move_uploaded_file($tempName, $targetLocation . $fileName);
+
+                $gatewaySettings = get_option("{$this->id}_settings", false);
+                if ($gatewaySettings) {
+                    $gatewaySettings["iconFileUrl"] = trailingslashit(
+                                    wp_upload_dir()['baseurl']
+                            ) . 'mollie-uploads/' . $fileName;
+                    $gatewaySettings["iconFilePath"] = trailingslashit(
+                                    wp_upload_dir()['basedir']
+                            ) . 'mollie-uploads/' . $fileName;
+                    update_option("{$this->id}_settings", $gatewaySettings);
+                }
+            }else{
+                $notice = new Mollie_WC_Notice_AdminNotice();
+                $message = sprintf(
+                        esc_html__(
+                                '%1$sMollie Payments for WooCommerce%2$s Unable to upload the file. Size must be under 500kb.',
+                                'mollie-payments-for-woocommerce'
+                        ),
+                        '<strong>',
+                        '</strong>'
+                );
+                $notice->addNotice('notice-error is-dismissible', $message);
+            }
+        }
+    }
+
     /**
      * @return string
      */
@@ -1204,54 +1312,52 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 *
 	 * @return string
 	 */
-	public function getReturnRedirectUrlForOrder( WC_Order $order )
+    public function getReturnRedirectUrlForOrder( WC_Order $order )
     {
         $order_id = $order->get_id();
         $debugLine = __METHOD__ . " {$order_id}: Determine what the redirect URL in WooCommerce should be.";
         mollieWooCommerceDebug($debugLine);
         $hookReturnPaymentStatus = 'success';
-
+        $returnRedirect = $this->get_return_url( $order );
+        $failedRedirect = $order->get_checkout_payment_url( false );
         if ( $this->orderNeedsPayment( $order ) ) {
 
-			$hasCancelledMolliePayment = $this->paymentObject()->getCancelledMolliePaymentId( $order_id );
+            $hasCancelledMolliePayment = $this->paymentObject()->getCancelledMolliePaymentId( $order_id );
 
-			if ( $hasCancelledMolliePayment ) {
+            if ( $hasCancelledMolliePayment ) {
 
-				$settings_helper                 = Mollie_WC_Plugin::getSettingsHelper();
-				$order_status_cancelled_payments = $settings_helper->getOrderStatusCancelledPayments();
+                $settings_helper                 = Mollie_WC_Plugin::getSettingsHelper();
+                $order_status_cancelled_payments = $settings_helper->getOrderStatusCancelledPayments();
 
-				// If user set all cancelled payments to also cancel the order,
-				// redirect to /checkout/order-received/ with a message about the
-				// order being cancelled. Otherwise redirect to /checkout/order-pay/ so
-				// customers can try to pay with another payment method.
-				if ( $order_status_cancelled_payments == 'cancelled' ) {
+                // If user set all cancelled payments to also cancel the order,
+                // redirect to /checkout/order-received/ with a message about the
+                // order being cancelled. Otherwise redirect to /checkout/order-pay/ so
+                // customers can try to pay with another payment method.
+                if ( $order_status_cancelled_payments == 'cancelled' ) {
+                    return $returnRedirect;
 
-					return $this->get_return_url( $order );
+                } else {
+                    Mollie_WC_Plugin::addNotice(
+                            __(
+                                    'You have cancelled your payment. Please complete your order with a different payment method.',
+                                    'mollie-payments-for-woocommerce'
+                            )
+                    );
 
-				} else {
-					Mollie_WC_Plugin::addNotice( __( 'You have cancelled your payment. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce' ) );
+                    // Return to order payment page
+                    return $failedRedirect;
+                }
 
-					// Return to order payment page
-					if ( method_exists( $order, 'get_checkout_payment_url' ) ) {
-						return $order->get_checkout_payment_url( false );
-					}
-				}
-
-				// Return to order payment page
-				if ( method_exists( $order, 'get_checkout_payment_url' ) ) {
-					return $order->get_checkout_payment_url( false );
-				}
-
-			}
+                // Return to order payment page
+                return $failedRedirect;
+            }
 
             try {
                 $payment = $this->activePaymentObject($order_id, false);
                 if ( ! $payment->isOpen() && ! $payment->isPending() && ! $payment->isPaid() && ! $payment->isAuthorized() ) {
                     mollieWooCommerceNotice(__('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'));
                     // Return to order payment page
-                    if ( method_exists( $order, 'get_checkout_payment_url' ) ) {
-                        return $order->get_checkout_payment_url( false );
-                    }
+                    return $failedRedirect;
                 }
                 if ($payment->method === "giftcard") {
                     $this->debugGiftcardDetails($payment, $order);
@@ -1264,14 +1370,14 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 mollieWooCommerceDebug($debugLine);
                 $hookReturnPaymentStatus = 'failed';
             }
-		}
+        }
         do_action( Mollie_WC_Plugin::PLUGIN_ID . '_customer_return_payment_' . $hookReturnPaymentStatus, $order );
 
-		/*
-		 * Return to order received page
-		 */
-		return $this->get_return_url( $order );
-	}
+        /*
+         * Return to order received page
+         */
+        return $returnRedirect;
+    }
     /**
      * Retrieve the payment object
      *
@@ -1650,6 +1756,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
     /**
      * Get the url to return to on Mollie return
+     * saves the return redirect and failed redirect, so we save the page language in case there is one set
      * For example 'http://mollie-wc.docker.myhost/wc-api/mollie_return/?order_id=89&key=wc_order_eFZyH8jki6fge'
      *
      * @param WC_Order $order The order processed
@@ -1658,36 +1765,20 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function getReturnUrl (WC_Order $order)
     {
-        $siteUrl    = get_home_url();
-        $returnUrl = WC()->api_request_url( 'mollie_return' );
-	    $returnUrl = untrailingslashit($returnUrl);
-        if (function_exists('idn_to_ascii')) {
-
-        	if (defined('IDNA_NONTRANSITIONAL_TO_ASCII') && defined('INTL_IDNA_VARIANT_UTS46')) {
-        		$returnUrl = idn_to_ascii($returnUrl, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
-        	} else {
-            	$returnUrl = idn_to_ascii($returnUrl);
-        	}
-        }
+        $returnUrl = $this->get_return_url($order);
+        $returnUrl = untrailingslashit($returnUrl);
+        $returnUrl = $this->asciiDomainName($returnUrl);
         $orderId = $order->get_id();
         $orderKey = $order->get_order_key();
+        $onMollieReturn = 'onMollieReturn';
         $returnUrl = $this->appendOrderArgumentsToUrl(
-            $orderId,
-            $orderKey,
-            $returnUrl
+                $orderId,
+                $orderKey,
+                $returnUrl,
+                $onMollieReturn
         );
 	    $returnUrl = untrailingslashit($returnUrl);
-        $langUrl   = $this->getSiteUrlWithLanguage();
 
-        // Make sure there aren't any double /? in the URL (some (multilanguage) plugins will add this)
-        if ( strpos( $langUrl, '/?' ) !== false ) {
-            $langUrlParams = substr( $langUrl, strpos( $langUrl, "/?" ) + 2 );
-            $returnUrl = $returnUrl . '&' . $langUrlParams;
-        } else {
-            $returnUrl = str_replace( $siteUrl, $langUrl, $returnUrl );
-        }
-        // Some (multilanguage) plugins will add a extra slash to the url (/nl//) causing the URL to redirect and lose it's data.
-        $returnUrl = preg_replace('/([^:])(\/{2,})/', '$1/', $returnUrl);
         mollieWooCommerceDebug("{$this->id} : Order {$orderId} returnUrl: {$returnUrl}", true);
 
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_return_url', $returnUrl, $order);
@@ -1703,85 +1794,22 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     public function getWebhookUrl (WC_Order $order)
     {
-        $siteUrl    = get_home_url();
-
         $webhookUrl = WC()->api_request_url(strtolower(get_class($this)));
         $webhookUrl = untrailingslashit($webhookUrl);
-        if (function_exists('idn_to_ascii')) {
-
-        	if (defined('IDNA_NONTRANSITIONAL_TO_ASCII') && defined('INTL_IDNA_VARIANT_UTS46')) {
-        		$webhookUrl = idn_to_ascii($webhookUrl, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
-        	} else {
-            	$webhookUrl = idn_to_ascii($webhookUrl);
-        	}
-        }
+        $webhookUrl = $this->asciiDomainName($webhookUrl);
         $orderId = $order->get_id();
         $orderKey = $order->get_order_key();
         $webhookUrl = $this->appendOrderArgumentsToUrl(
-            $orderId,
-            $orderKey,
-            $webhookUrl
+                $orderId,
+                $orderKey,
+                $webhookUrl
         );
         $webhookUrl = untrailingslashit($webhookUrl);
-        $langUrl    = $this->getSiteUrlWithLanguage();
-
-        // Make sure there aren't any double /? in the URL (some (multilanguage) plugins will add this)
-        if ( strpos( $langUrl, '/?' ) !== false ) {
-            $langUrlParams = substr( $langUrl, strpos( $langUrl, "/?" ) + 2 );
-            $webhookUrl = $webhookUrl . '&' . $langUrlParams;
-        } else {
-            $webhookUrl = str_replace( $siteUrl, $langUrl, $webhookUrl );
-        }
-
-        // Some (multilanguage) plugins will add a extra slash to the url (/nl//) causing the URL to redirect and lose it's data.
-        // Status updates via webhook will therefor not be processed. The below regex will find and remove those double slashes.
-        $webhookUrl = preg_replace('/([^:])(\/{2,})/', '$1/', $webhookUrl);
 
         mollieWooCommerceDebug("{$this->id} : Order {$orderId} webhookUrl: {$webhookUrl}", true);
 
         return apply_filters(Mollie_WC_Plugin::PLUGIN_ID . '_webhook_url', $webhookUrl, $order);
     }
-
-	/**
-	 * Check if any multi language plugins are enabled and return the correct site url.
-	 *
-	 * @return string
-	 */
-	protected function getSiteUrlWithLanguage() {
-		/**
-		 * function is_plugin_active() is not available. Lets include it to use it.
-		 */
-		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
-
-		$siteUrl          = get_home_url();
-		$polylangFallback = false;
-
-		if ( is_plugin_active( 'polylang/polylang.php' ) || is_plugin_active( 'polylang-pro/polylang.php' ) ) {
-
-			$lang = PLL()->model->get_language( pll_current_language() );
-
-
-			if ( empty ( $lang->search_url ) ) {
-				$polylangFallback = true;
-			} else {
-                $polylangUrl = $lang->search_url;
-                $siteUrl     = str_replace( $siteUrl,$polylangUrl, $siteUrl );
-			}
-		}
-
-		if ( $polylangFallback == true || is_plugin_active( 'mlang/mlang.php' ) || is_plugin_active( 'mlanguage/mlanguage.php' ) ) {
-
-			$slug = get_bloginfo( 'language' );
-			$pos  = strpos( $slug, '-' );
-			if ( $pos !== false ) {
-				$slug = substr( $slug, 0, $pos );
-			}
-			$slug     = '/' . $slug;
-			$siteUrl = str_replace( $siteUrl, $siteUrl . $slug, $siteUrl );
-		}
-
-		return $siteUrl;
-	}
 
     /**
      * @return string|NULL
@@ -2038,20 +2066,22 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      * @param $order_id
      * @param $order_key
      * @param $webhook_url
+     * @param string $filterFlag
      *
      * @return string
      */
-    protected function appendOrderArgumentsToUrl($order_id, $order_key, $webhook_url)
+    protected function appendOrderArgumentsToUrl($order_id, $order_key, $webhook_url, $filterFlag='')
     {
         $webhook_url = add_query_arg(
-            array(
-                'order_id' => $order_id,
-                'key' => $order_key,
-            ),
-            $webhook_url
+                array(
+                        'order_id' => $order_id,
+                        'key' => $order_key,
+                        'filter_flag' => $filterFlag
+                ),
+                $webhook_url
         );
         return $webhook_url;
-}
+    }
 
     /**
      * @param Mollie\Api\Resources\Payment|Mollie\Api\Resources\Order $payment
@@ -2532,6 +2562,28 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         return $paymentType;
     }
 
+    /**
+     * @param $url
+     * @return string
+     */
+    protected function asciiDomainName($url)
+    {
+        if (function_exists('idn_to_ascii')) {
+            $parsed = parse_url($url);
+            $query = $parsed['query'];
+            $url = str_replace('?' . $query, '', $url);
+            if (defined('IDNA_NONTRANSITIONAL_TO_ASCII') && defined('INTL_IDNA_VARIANT_UTS46')) {
+                $url = idn_to_ascii($url, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46) ? idn_to_ascii(
+                        $url,
+                        IDNA_NONTRANSITIONAL_TO_ASCII,
+                        INTL_IDNA_VARIANT_UTS46
+                ) : $url;
+            } else {
+                $url = idn_to_ascii($url) ? idn_to_ascii($url) : $url;
+            }
+            $url = $url . '?' . $query;
+        }
 
-
+        return $url;
+    }
 }

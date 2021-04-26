@@ -76,6 +76,30 @@ class Mollie_WC_ActivationHandle_ConstraintsChecker
         }
     }
 
+    public function maybeShowWarning($constraint, $warning){
+        $collectionFactory = new ConstraintsCollectionFactory();
+        $constraintsCollection = $collectionFactory->create(
+            $constraint
+        );
+        $result = new EnvironmentChecker(
+            $constraintsCollection->constraints()
+        );
+        try {
+            $result->check();
+            return true;
+        } catch (ConstraintFailedException $exception) {
+            $mainException = $exception->getValidationErrors();
+            $errors = [];
+            foreach ($mainException as $error) {
+                $errors[] = $error->getMessage();
+            }
+
+            $this->notice->addNotice('notice-warning is-dismissible', $warning);
+            return false;
+        }
+
+    }
+
     protected function showNotice(array $errors)
     {
         $message = '%1$sMollie Payments for WooCommerce is inactive:%2$s';

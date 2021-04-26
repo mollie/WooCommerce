@@ -51,12 +51,10 @@ class varPolylangTestsStubs
         $this->orderKey = $this->faker->word;
         $this->homeUrl = rtrim($this->faker->url, '/\\');
         $this->apiRequestUrl = "{$this->homeUrl}/wc-api/mollie_return";
-        $this->afterLangUrl = "{$this->homeUrl}/en/";
-        $this->untrailedAfterLangUrl = "{$this->homeUrl}/en";
         $this->untrailedUrl = rtrim($this->apiRequestUrl, '/\\');
         $this->urlWithParams
             = "{$this->untrailedUrl}?order_id={$this->orderId}&key=wc_order_{$this->orderKey}";
         $this->untrailedWithParams = rtrim($this->urlWithParams, '/\\');
-        $this->result = "{$this->afterLangUrl}wc-api/mollie_return?order_id={$this->orderId}&key=wc_order_{$this->orderKey}";
+        $this->result = "{$this->apiRequestUrl}?order_id={$this->orderId}&key=wc_order_{$this->orderKey}";
     }
 }

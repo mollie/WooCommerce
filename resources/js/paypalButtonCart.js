@@ -10,7 +10,7 @@
         if (!ajaxUrl) {
             return
         }
-        const nonce = document.getElementById('_wpnonce').value
+
         let redirectionUrl = ''
         let isButtonVisible = true;
         let payPalButton = document.getElementById('mollie-PayPal-button');
@@ -67,10 +67,11 @@
             if (!isButtonVisible) {
                 return
             }
-
+            const nonce = payPalButton.children[0].value
             document.querySelector('#mollie-PayPal-button').addEventListener('click', (evt) => {
-                payPalButton.disabled = true;
-                payPalButton.classList.add("buttonDisabled");
+                let button = document.getElementById('mollie-PayPal-button')
+                button.disabled = true;
+                button.classList.add("buttonDisabled")
                 if (!isButtonVisible) {
                     return
                 }
@@ -101,6 +102,9 @@
             })
         }
 
+        if(payPalButton == null || payPalButton.parentNode == null){
+            return
+        }
         maybeShowButton(underRange())
         jQuery(document.body).on('updated_cart_totals', function (event) {
             maybeShowButton(underRange())

@@ -51,7 +51,7 @@
             const parent = elements[0]
             parent.appendChild(payPalButton)
         }
-        const nonce = document.getElementById('_wpnonce').value
+        const nonce = payPalButton.children[0].value
         let productId = id
         let productQuantity = 1
         let redirectionUrl = ''

@@ -77,7 +77,7 @@
             return
         }
         document.querySelector('#mollie-PayPal-button').addEventListener('click', (evt) => {
-            if(!isButtonVisible){
+            if(!(payPalButton.parentNode !== null)){
                 return
             }
             payPalButton.disabled = true;
@@ -93,18 +93,14 @@
                     'mollie-payments-for-woocommerce_issuer_paypal_button': 'paypal',
                     nonce: nonce,
                 },
-                complete: (jqXHR, textStatus) => {
-                },
-                success: (authorizationResult, textStatus, jqXHR) => {
-                    payPalButton.disabled = false;
-                    payPalButton.classList.remove("buttonDisabled");
-                    let result = authorizationResult.data
+                success: (response) => {
+                    let result = response.data
 
-                    if (authorizationResult.success === true) {
+                    if (response.success === true) {
                         redirectionUrl = result['redirect'];
                         window.location.href = redirectionUrl
                     } else {
-                        console.log(result.error)
+                        console.log(response.data)
                     }
                 },
                 error: (jqXHR, textStatus, errorThrown) => {

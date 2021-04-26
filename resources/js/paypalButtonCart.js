@@ -83,18 +83,13 @@
                         needShipping: needShipping,
                         nonce: nonce,
                     },
-                    complete: (jqXHR, textStatus) => {
-                    },
-                    success: (authorizationResult, textStatus, jqXHR) => {
-                        payPalButton.disabled = false;
-                        payPalButton.classList.remove("buttonDisabled");
-                        let result = authorizationResult.data
-
-                        if (authorizationResult.success === true) {
+                    success: (response) => {
+                        let result = response.data
+                        if (response.success === true) {
                             redirectionUrl = result['redirect'];
                             window.location.href = redirectionUrl
                         } else {
-                            console.log(result.error)
+                            console.log(response.data)
                         }
                     },
                     error: (jqXHR, textStatus, errorThrown) => {

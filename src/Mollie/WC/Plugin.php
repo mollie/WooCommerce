@@ -723,9 +723,9 @@ class Mollie_WC_Plugin
         );
         wp_register_script(
                 'gatewaySurcharge',
-                Mollie_WC_Plugin::getPluginUrl('/resources/js/gatewaySurcharge.js'),
+                Mollie_WC_Plugin::getPluginUrl('/public/js/gatewaySurcharge.min.js'),
                 ['underscore', 'jquery'],
-                filemtime(Mollie_WC_Plugin::getPluginPath('/resources/js/gatewaySurcharge.js')),
+                filemtime(Mollie_WC_Plugin::getPluginPath('/public/js/gatewaySurcharge.min.js')),
                 true
         );
     }

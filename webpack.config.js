@@ -21,6 +21,7 @@ function configJavaScript ({ basePath })
     .addEntry('applepayDirectCart.min', './resources/js/applepayDirectCart.js')
     .addEntry('settings.min', './resources/js/settings.js')
     .addEntry('gatewaySettings.min', './resources/js/gatewaySettings.js')
+    .addEntry('gatewaySurcharge.min', './resources/js/gatewaySurcharge.js')
     .addEntry('mollie-components.min', './resources/js/mollie-components.js')
     .enableSourceMaps(!Encore.isProduction())
 

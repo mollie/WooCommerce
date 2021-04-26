@@ -113,7 +113,7 @@ class Mollie_WC_PayPalButton_AjaxRequests
 
         list($cart, $order) = $this->createOrderFromCart();
         $needsShipping
-            = $payPalRequestDataObject->needShipping === 'true';
+            = $payPalRequestDataObject->needShipping === true;
         if ($needsShipping) {
             $order->calculate_totals();
             $order = $this->addShippingMethodsToOrder(

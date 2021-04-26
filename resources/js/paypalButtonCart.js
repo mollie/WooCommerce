@@ -16,7 +16,7 @@
         let payPalButton = document.getElementById('mollie-PayPal-button');
 
         const maybeShowButton = (underRange) => {
-            if (underRange && isButtonVisible) {
+            if (underRange) {
                 hideButton()
                 isButtonVisible = false
             }

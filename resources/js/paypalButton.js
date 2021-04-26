@@ -12,14 +12,12 @@
             return
         }
         const payPalButton = document.querySelector('#mollie-PayPal-button');
-        let isButtonVisible = true;
+
         const maybeShowButton = (underRange) => {
-            if(underRange && isButtonVisible){
+            if(underRange){
                 hideButton()
-                isButtonVisible = false
             }else{
                 showButton()
-                isButtonVisible = true
             }
         }
         const checkPriceRange = (productQuantity) => {
@@ -34,8 +32,8 @@
                     nonce: nonce,
                 },
                 success: (response) => {
-                    updatedPrice = response.data
-                    const underRange = minFee > updatedPrice
+                    updatedPrice = parseFloat(response.data)
+                    const underRange = parseFloat(minFee) > updatedPrice
                     maybeShowButton(underRange)
                 },
                 error: (response) => {
@@ -75,7 +73,7 @@
             payPalButton.disabled = true;
             payPalButton.classList.add("buttonDisabled");
         }
-        if(!isButtonVisible){
+        if(payPalButton.parentNode == null){
             return
         }
         document.querySelector('#mollie-PayPal-button').addEventListener('click', (evt) => {

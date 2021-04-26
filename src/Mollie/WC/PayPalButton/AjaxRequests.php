@@ -225,13 +225,23 @@ class Mollie_WC_PayPalButton_AjaxRequests
      * @param $paypalSettings
      * @param $amount
      *
-     * @return int|mixed
+     * @return int
      */
     protected function findSettingRangeApplied($paypalSettings, $amount)
     {
-        $cost = $paypalSettings['mollie_paypal_button_fixed_shipping_amount'];
-        $noFeeAmount = $paypalSettings['mollie_paypal_button_no_fee_amount'];
-        return $amount >= $noFeeAmount? 0: $cost;
+        $cost
+            = isset($paypalSettings['mollie_paypal_button_fixed_shipping_amount'])
+        && $paypalSettings['mollie_paypal_button_fixed_shipping_amount'] > 0
+            ? $paypalSettings['mollie_paypal_button_fixed_shipping_amount'] : 0;
+        $noFeeAmount
+            = isset($paypalSettings['mollie_paypal_button_no_fee_amount'])
+        && $paypalSettings['mollie_paypal_button_no_fee_amount'] > 0
+            ? $paypalSettings['mollie_paypal_button_no_fee_amount'] : 0;
+        if (!$noFeeAmount) {
+            return $cost;
+        }
+
+        return $amount >= $noFeeAmount ? 0 : $cost;
     }
 
     /**

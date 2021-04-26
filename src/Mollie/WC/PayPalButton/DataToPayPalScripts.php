@@ -10,8 +10,15 @@ class Mollie_WC_PayPalButton_DataToPayPalScripts
      */
     public function paypalbuttonScriptData()
     {
-        $paypalSettings = get_option('mollie_wc_gateway_paypal_settings');
-        $minAmount = $paypalSettings['mollie_paypal_button_minimum_amount'];
+        $paypalSettings = get_option('mollie_wc_gateway_paypal_settings', false);
+        $minAmount = 0;
+        if ($paypalSettings) {
+            $minAmount
+                = isset($paypalSettings['mollie_paypal_button_minimum_amount'])
+            && $paypalSettings['mollie_paypal_button_minimum_amount'] > 0
+                ? $paypalSettings['mollie_paypal_button_minimum_amount'] : 0;
+        }
+
         if (is_product()) {
             return $this->dataForProductPage($minAmount);
         }

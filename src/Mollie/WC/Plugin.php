@@ -277,9 +277,18 @@ class Mollie_WC_Plugin
 		self::schedulePendingPaymentOrdersExpirationCheck();
         self::registerFrontendScripts();
         wp_enqueue_style('mollie-gateway-icons');
+        self::maybeFixSubscriptions();
 
 		// Mark plugin initiated
 		self::$initiated = true;
+    }
+
+    /**
+     * See MOL-322
+     */
+    public static function maybeFixSubscriptions(){
+        $fixer = new Mollie_WC_Helper_MaybeFixSubscription();
+        $fixer->maybeFix();
     }
 
 

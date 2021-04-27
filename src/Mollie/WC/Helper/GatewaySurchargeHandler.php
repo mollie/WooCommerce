@@ -89,32 +89,35 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
     {
         $surgargeType = $gatewaySettings['payment_surcharge'];
         $methodName = "calculate_{$surgargeType}";
-        $fee = $this->$methodName($cart, $gatewaySettings);
-        $fee = $this->addMaxLimit($fee, $gatewaySettings);
 
-        return $fee;
+        return $this->$methodName($cart, $gatewaySettings);
     }
 
     protected function calculate_fixed_fee($cart, $gatewaySettings)
     {
-        return $gatewaySettings[self::FIXED_FEE];
+        return isset($gatewaySettings[self::FIXED_FEE])?$gatewaySettings[self::FIXED_FEE]:0;
     }
 
     protected function calculate_percentage($cart, $gatewaySettings)
     {
+        if(!isset($gatewaySettings[self::PERCENTAGE])){
+            return 0;
+        }
         $percentageFee = $gatewaySettings[self::PERCENTAGE];
         $subtotal = $cart->get_subtotal() + $cart->get_shipping_total() - $cart->get_discount_total();
         $taxes = $cart->get_subtotal_tax() + $cart->get_shipping_tax() - $cart->get_discount_tax();
         $total = $subtotal + $taxes;
+        $fee = $total * ($percentageFee / 100);
 
-        return $total * ($percentageFee / 100);
+        return $this->addMaxLimit($fee, $gatewaySettings);
     }
 
     protected function calculate_fixed_fee_percentage($cart, $gatewaySettings){
         $fixedFee = $this->calculate_fixed_fee($cart, $gatewaySettings);
         $percentageFee = $this->calculate_percentage($cart, $gatewaySettings);
+        $fee = $fixedFee + $percentageFee;
 
-        return $fixedFee + $percentageFee;
+        return $this->addMaxLimit($fee, $gatewaySettings);
     }
 
     /**
@@ -133,6 +136,11 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
 
     protected function addMaxLimit($fee, $gatewaySettings)
     {
+        if (!isset($gatewaySettings['surcharge_limit'])
+            || $gatewaySettings['surcharge_limit'] == 0
+        ) {
+            return $fee;
+        }
         $maxLimit = $gatewaySettings['surcharge_limit'];
         if ($fee > $maxLimit) {
             return $maxLimit;

@@ -2727,7 +2727,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 $optionName = $this->id . $field;
                 $validatedValue = isset($_POST[$optionName])
                         && $_POST[$optionName] > 0
-                        && $_POST[$optionName] < 100000000;
+                        && $_POST[$optionName] < 999;
                 if (!$validatedValue) {
                     unset($_POST[$optionName]);
                 }

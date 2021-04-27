@@ -170,7 +170,7 @@ class Mollie_WC_Helper_Settings
                         'mollie-payments-for-woocommerce'
                     )
                 ),
-                'custom_attributes'=>['step'=>'0.01', 'min'=>'0', 'max'=>'100000000'],
+                'custom_attributes'=>['step'=>'0.01', 'min'=>'0', 'max'=>'999'],
                 'default' => 0,
                 'desc_tip' => true,
             ],
@@ -183,7 +183,7 @@ class Mollie_WC_Helper_Settings
                         'mollie-payments-for-woocommerce'
                     )
                 ),
-                'custom_attributes'=>['step'=>'0.01', 'min'=>'0', 'max'=>'100000000'],
+                'custom_attributes'=>['step'=>'0.01', 'min'=>'0', 'max'=>'999'],
                 'default' => 0,
                 'desc_tip' => true,
             ],
@@ -196,7 +196,7 @@ class Mollie_WC_Helper_Settings
                         'mollie-payments-for-woocommerce'
                     )
                 ),
-                'custom_attributes'=>['step'=>'0.01', 'min'=>'0', 'max'=>'100000000'],
+                'custom_attributes'=>['step'=>'0.01', 'min'=>'0', 'max'=>'999'],
                 'default' => 0,
                 'desc_tip' => true,
             ],

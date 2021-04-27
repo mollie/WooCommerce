@@ -62,7 +62,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $this->init_form_fields();
         $this->init_settings();
 
-        $this->buildTitleWithSurcharge();
+        $this->title        = $this->get_option('title');
         $this->display_logo = $this->get_option('display_logo') == 'yes';
 
         $this->_initDescription();
@@ -205,7 +205,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
     protected function _initDescription ()
     {
-        $description = $this->get_option('description', '');
+        $description = $this->buildTitleWithSurcharge();
 
         $this->description = $description;
     }
@@ -2608,15 +2608,15 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     protected function buildTitleWithSurcharge()
     {
         if(!mollieWooCommerceIsCheckoutContext()){
-            $this->title = $this->get_option('title');
-            return;
+
+            return $this->get_option('description', '');
         }
         if (!isset($this->settings['payment_surcharge'])
                 || $this->settings['payment_surcharge']
                 === Mollie_WC_Helper_GatewaySurchargeHandler::NO_FEE
         ){
-            $this->title = $this->get_option('title');
-            return;
+
+            return $this->get_option('description', '');
         }
 
         $surchargeType = $this->settings['payment_surcharge'];
@@ -2624,10 +2624,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $feeText = $this->$methodName();
         if($feeText){
             $feeLabel = '<span class="mollie-gateway-fee">' . $feeText . '</span>';
-            $this->title = $this->get_option('title') . $feeLabel;
-            return;
+
+            return $this->get_option('description', '') . $feeLabel;
         }
-        $this->title = $this->get_option('title');
+        return $this->get_option('description', '');
     }
 
     protected function name_fixed_fee()

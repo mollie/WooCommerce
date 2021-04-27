@@ -2553,7 +2553,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
     protected function name_fixed_fee()
     {
-        if(!isset($this->settings[Mollie_WC_Helper_GatewaySurchargeHandler::FIXED_FEE])){
+        if (!isset($this->settings[Mollie_WC_Helper_GatewaySurchargeHandler::FIXED_FEE])
+                || $this->settings[Mollie_WC_Helper_GatewaySurchargeHandler::FIXED_FEE] <= 0) {
             return false;
         }
         $amountFee = $this->settings[Mollie_WC_Helper_GatewaySurchargeHandler::FIXED_FEE];
@@ -2563,7 +2564,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
     protected function name_percentage()
     {
-        if(!isset($this->settings[Mollie_WC_Helper_GatewaySurchargeHandler::PERCENTAGE])){
+        if(!isset($this->settings[Mollie_WC_Helper_GatewaySurchargeHandler::PERCENTAGE])
+                || $this->settings[Mollie_WC_Helper_GatewaySurchargeHandler::PERCENTAGE] <= 0){
             return false;
         }
         $amountFee = $this->settings[Mollie_WC_Helper_GatewaySurchargeHandler::PERCENTAGE];

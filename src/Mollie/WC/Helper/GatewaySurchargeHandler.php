@@ -45,7 +45,7 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
     }
 
     public function updateSurchargeOrderPay(){
-        $orderId = isset($_POST['orderId'])?filter_var($_POST['orderId'], FILTER_SANITIZE_STRING):false;
+        $orderId = isset($_POST['orderId'])?filter_var($_POST['orderId'], FILTER_SANITIZE_NUMBER_INT):false;
         if(!$orderId){
             return;
         }
@@ -231,8 +231,10 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
         $gatewayName = strtoupper(
                 str_replace('mollie_wc_gateway_', '', $gateway)
         );
+        $notTranslated = "Mollie_WC_{$gatewayName} ";
+        $translated = __("Fee");
 
-        return "{$gatewayName} Gateway Fee";
+        return $notTranslated.$translated;
     }
 
     protected function addMaxLimit($fee, $gatewaySettings)
@@ -258,7 +260,7 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
         foreach ($fees as $fee){
             $feeName = $fee->get_name();
             $feeId = $fee->get_id();
-            if(strpos($feeName, 'Gateway Fee')){
+            if(strpos($feeName, 'Mollie_WC_') !== false){
                 $order->remove_item($feeId);
                 wc_delete_order_item( $feeId );
                 $order->calculate_totals();

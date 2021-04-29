@@ -166,7 +166,7 @@ class Mollie_WC_Helper_Settings
                 'type' => 'number',
                 'description' => sprintf(
                     __(
-                        'Control the fee added on checkout. Default 0',
+                        'Control the fee added on checkout. Default 0.01',
                         'mollie-payments-for-woocommerce'
                     )
                 ),
@@ -179,7 +179,7 @@ class Mollie_WC_Helper_Settings
                 'type' => 'number',
                 'description' => sprintf(
                     __(
-                        'Control the percentage fee added on checkout. Default 0',
+                        'Control the percentage fee added on checkout. Default 0.01',
                         'mollie-payments-for-woocommerce'
                     )
                 ),

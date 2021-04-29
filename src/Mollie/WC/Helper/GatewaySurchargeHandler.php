@@ -232,7 +232,7 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
                 str_replace('mollie_wc_gateway_', '', $gateway)
         );
         $notTranslated = "Mollie_WC_{$gatewayName} ";
-        $translated = __("Fee");
+        $translated = __("Fee", 'mollie-payments-for-woocommerce');
 
         return $notTranslated.$translated;
     }

@@ -200,7 +200,8 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             [
                 'wp_localize_script' => '',
                 'get_woocommerce_currency_symbol'=>'$',
-                'is_admin'=>false
+                'is_admin'=>false,
+                'is_checkout'=>true
             ]
         );
 
@@ -245,7 +246,8 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             [
                 'wp_localize_script' => '',
                 'get_woocommerce_currency_symbol'=>'$',
-                'is_admin'=>false
+                'is_admin'=>false,
+                'is_checkout'=>true
             ]
         );
 
@@ -273,7 +275,8 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             [
                 'wp_localize_script' => '',
                 'get_woocommerce_currency_symbol'=>'$',
-                'is_admin'=>false
+                'is_admin'=>false,
+                'is_checkout'=>true
             ]
         );
         list($sut, $sutReflection) = $this->createSutForFilters();
@@ -299,7 +302,8 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             [
                 'wp_localize_script' => '',
                 'get_woocommerce_currency_symbol'=>'$',
-                'is_admin'=>false
+                'is_admin'=>false,
+                'is_checkout'=>true
             ]
         );
 

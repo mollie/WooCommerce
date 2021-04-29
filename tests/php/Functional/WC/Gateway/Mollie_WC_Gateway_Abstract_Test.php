@@ -48,6 +48,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
                 'is_admin'=>false,
                 'wp_localize_script' => '',
                 'get_woocommerce_currency_symbol'=>'$',
+                'is_checkout'=>true
             ]
         );
         expect('get_option')

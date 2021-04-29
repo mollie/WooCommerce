@@ -45,7 +45,10 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             [
                 'wc_get_order_status_name' => 'wc-on-hold',
                 'admin_url' => 'admin.php?page=wc-settings&tab=products&section=inventory',
-                'is_admin'=>false
+                'is_admin'=>false,
+                'wp_localize_script' => '',
+                'get_woocommerce_currency_symbol'=>'$',
+                'is_checkout'=>true
             ]
         );
         expect('get_option')

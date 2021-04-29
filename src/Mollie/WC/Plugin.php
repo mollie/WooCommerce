@@ -272,6 +272,7 @@ class Mollie_WC_Plugin
         });
         add_action('wp_loaded', [__CLASS__, 'maybeTestModeNotice']);
         self::mollieApplePayDirectHandling();
+        self::gatewaySurchargeHandling();
 
 		self::initDb();
 		self::schedulePendingPaymentOrdersExpirationCheck();
@@ -283,6 +284,9 @@ class Mollie_WC_Plugin
 		self::$initiated = true;
     }
 
+    public static function gatewaySurchargeHandling(){
+        $gatewaSurchargeHandler = new Mollie_WC_Helper_GatewaySurchargeHandler();
+    }
     /**
      * See MOL-322
      */
@@ -726,6 +730,13 @@ class Mollie_WC_Plugin
             [],
             filemtime(Mollie_WC_Plugin::getPluginPath('/public/css/unabledButton.min.css')),
             'screen'
+        );
+        wp_register_script(
+                'gatewaySurcharge',
+                Mollie_WC_Plugin::getPluginUrl('/public/js/gatewaySurcharge.min.js'),
+                ['underscore', 'jquery'],
+                filemtime(Mollie_WC_Plugin::getPluginPath('/public/js/gatewaySurcharge.min.js')),
+                true
         );
     }
 

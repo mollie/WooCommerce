@@ -2628,10 +2628,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 move_uploaded_file($tempName, $targetLocation . $fileName);
                 $gatewaySettings["iconFileUrl"] = trailingslashit(
                                 wp_upload_dir()['baseurl']
-                        ) . 'mollie-uploads/' . $fileName;
+                        ) . 'mollie-uploads/'. $this->id .'/'. $fileName;
                 $gatewaySettings["iconFilePath"] = trailingslashit(
                                 wp_upload_dir()['basedir']
-                        ) . 'mollie-uploads/' . $fileName;
+                        ) . 'mollie-uploads/'. $this->id .'/'. $fileName;
                 update_option("{$this->id}_settings", $gatewaySettings);
             } else {
                 $notice = new Mollie_WC_Notice_AdminNotice();

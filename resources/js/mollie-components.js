@@ -355,33 +355,57 @@ function initializeComponents (
 }
 
 (
-  function ({ _, Mollie, mollieComponentsSettings, jQuery })
-  {
-    if (_.isEmpty(mollieComponentsSettings) || !_.isFunction(Mollie)) {
-      return
+    function ({ _, Mollie, mollieComponentsSettings, jQuery })
+    {
+        if (_.isEmpty(mollieComponentsSettings) || !_.isFunction(Mollie)) {
+            return
+        }
+
+        let eventName = 'updated_checkout'
+        const mollieComponentsMap = new Map()
+        const $document = jQuery(document)
+        const { merchantProfileId, options, isCheckoutPayPage } = mollieComponentsSettings
+        const mollie = new Mollie(merchantProfileId, options)
+        if (isCheckoutPayPage) {
+            eventName = 'payment_method_selected'
+            $document.on(
+                eventName,
+                () => initializeComponents(
+                    jQuery,
+                    mollie,
+                    mollieComponentsSettings,
+                    mollieComponentsMap
+                )
+            )
+            return
+        }
+
+        $document.on(
+            eventName,
+            function (){
+                let copySettings = JSON.parse(JSON.stringify(mollieComponentsSettings))
+                mollieComponentsSettings.enabledGateways.forEach(function(gateway, index){
+                    const gatewayContainer = containerForGateway(gateway, document)
+                    if (!gatewayContainer) {
+                        copySettings.enabledGateways.splice(index,1)
+                        const $form = jQuery('form[name="checkout"]')
+                        $form.on('checkout_place_order', returnTrue)
+                    }
+
+                })
+                if(_.isEmpty(copySettings.enabledGateways)){
+                    return
+                }
+                initializeComponents(
+                    jQuery,
+                    mollie,
+                    copySettings,
+                    mollieComponentsMap
+                )
+            }
+        )
     }
-
-    let eventName = 'updated_checkout'
-    const mollieComponentsMap = new Map()
-    const $document = jQuery(document)
-    const { merchantProfileId, options, isCheckoutPayPage } = mollieComponentsSettings
-    const mollie = new Mollie(merchantProfileId, options)
-
-    if (isCheckoutPayPage) {
-      eventName = 'payment_method_selected'
-    }
-
-    $document.on(
-      eventName,
-      () => initializeComponents(
-        jQuery,
-        mollie,
-        mollieComponentsSettings,
-        mollieComponentsMap
-      )
-    )
-  }
 )
 (
-  window
+    window
 )

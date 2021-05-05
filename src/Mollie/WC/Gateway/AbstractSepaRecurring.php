@@ -110,7 +110,7 @@ abstract class Mollie_WC_Gateway_AbstractSepaRecurring extends Mollie_WC_Gateway
     protected function getPaymentMethodTitle($payment)
     {
         $payment_method_title = parent::getPaymentMethodTitle($payment);
-        $orderId = $payment->metadata->order_id;
+        $orderId = isset($payment->metadata) ? $payment->metadata->order_id : false;
         if ($orderId && Mollie_WC_Plugin::getDataHelper()->isWcSubscription($orderId) && $payment->method == $this->getRecurringMollieMethodId()){
             $payment_method_title = $this->getRecurringMollieMethodTitle();
         }

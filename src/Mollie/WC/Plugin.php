@@ -8,7 +8,7 @@ class Mollie_WC_Plugin
 {
     const PLUGIN_ID      = 'mollie-payments-for-woocommerce';
     const PLUGIN_TITLE   = 'Mollie Payments for WooCommerce';
-    const PLUGIN_VERSION = '6.2.2';
+    const PLUGIN_VERSION = '6.3.0';
 
     const DB_VERSION     = '1.0';
     const DB_VERSION_PARAM_NAME = 'mollie-db-version';
@@ -272,6 +272,7 @@ class Mollie_WC_Plugin
         });
         add_action('wp_loaded', [__CLASS__, 'maybeTestModeNotice']);
         self::mollieApplePayDirectHandling();
+        self::gatewaySurchargeHandling();
 
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueuePayPalButtonScripts']);
         self::molliePayPalButtonHandling();
@@ -280,9 +281,21 @@ class Mollie_WC_Plugin
 		self::schedulePendingPaymentOrdersExpirationCheck();
         self::registerFrontendScripts();
         wp_enqueue_style('mollie-gateway-icons');
+        self::maybeFixSubscriptions();
 
 		// Mark plugin initiated
 		self::$initiated = true;
+    }
+
+    public static function gatewaySurchargeHandling(){
+        $gatewaSurchargeHandler = new Mollie_WC_Helper_GatewaySurchargeHandler();
+    }
+    /**
+     * See MOL-322
+     */
+    public static function maybeFixSubscriptions(){
+        $fixer = new Mollie_WC_Helper_MaybeFixSubscription();
+        $fixer->maybeFix();
     }
 
 
@@ -776,6 +789,13 @@ class Mollie_WC_Plugin
             [],
             filemtime(Mollie_WC_Plugin::getPluginPath('/public/css/unabledButton.min.css')),
             'screen'
+        );
+        wp_register_script(
+                'gatewaySurcharge',
+                Mollie_WC_Plugin::getPluginUrl('/public/js/gatewaySurcharge.min.js'),
+                ['underscore', 'jquery'],
+                filemtime(Mollie_WC_Plugin::getPluginPath('/public/js/gatewaySurcharge.min.js')),
+                true
         );
     }
 

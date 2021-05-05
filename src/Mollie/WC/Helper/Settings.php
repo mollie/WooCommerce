@@ -120,6 +120,14 @@ class Mollie_WC_Helper_Settings
                 'default' => [],
                 'type' => 'multi_select_countries',
             ],
+            [
+                'id' => $defaultTitle . '_' . 'custom_logo',
+                'title' => sprintf(__(
+                                       '%s custom logo',
+                                       'mollie-payments-for-woocommerce'
+                                   ), $defaultTitle),
+                'type' => 'title'
+            ],
             'enable_custom_logo' => [
                 'title' => __(
                     'Enable custom logo',
@@ -145,6 +153,14 @@ class Mollie_WC_Helper_Settings
                     )
                 ),
                 'desc_tip' => true,
+            ],
+            [
+                'id' => $defaultTitle . '_' . 'surcharge',
+                'title' => sprintf(__(
+                                       '%s surcharge',
+                                       'mollie-payments-for-woocommerce'
+                                   ), $defaultTitle),
+                'type' => 'title'
             ],
             'payment_surcharge' => [
                 'title' => __(

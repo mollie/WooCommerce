@@ -9,7 +9,7 @@ return [
         ),
         'type' => 'title',
         'description' => '<p>' . __(
-                'The PayPal button is optimised for digital goods.',
+                'The PayPal button is optimized for digital goods. And will only appear if the product has no shipping.',
                 'mollie-payments-for-woocommerce'
             ) . '</p>',
     ],
@@ -89,48 +89,5 @@ return [
         'custom_attributes'=>['step'=>'0.01', 'min'=>'0', 'max'=>'100000000'],
         'default' => 0,
         'desc_tip' => true,
-    ],
-    [
-        'id' => $pluginName . '_' . 'title',
-        'title' => __(
-            'PayPay button shipping costs',
-            'mollie-payments-for-woocommerce'
-        ),
-        'type' => 'title',
-        'description' => '<p>' . __(
-                'A disadvantage of the PayPal button is that it does not allow automatic calculation of shipping costs and taxes for physical goods shipped to a specific delivery address. 
-The settings below enable you to specify additional costs manually. ',
-                'mollie-payments-for-woocommerce'
-            ) . '</p>',
-    ],
-    'mollie_paypal_button_no_fee_amount' => [
-        'type' => 'number',
-        'title' => __(
-            'Amount for free shipping',
-            'mollie-payments-for-woocommerce'
-        ),
-        'description' => __(
-            'If the product or the cart total amount is over this number, then the fixed fee will not apply.',
-            'mollie-payments-for-woocommerce'
-        ),
-        'default' => 0,
-        'custom_attributes'=>['step'=>'0.01', 'min'=>'0', 'max'=>'100000000'],
-        'desc_tip' => true,
-    ],
-    'mollie_paypal_button_fixed_shipping_amount' => [
-        'type' => 'number',
-        'title' => __(
-            'Fixed shipping fee amount',
-            'mollie-payments-for-woocommerce'
-        ),
-        'description' => __(
-            'All PayPal Button transactions must have shipping costs set to this flat rate. The flat rate will not apply to products that need no shipping, like virtual products.',
-            'mollie-payments-for-woocommerce'
-        ),
-        'default' => 'no',
-        'custom_attributes'=>['step'=>'0.01', 'min'=>'0', 'max'=>'100000000']
-    ],
-
-
-
+    ]
 ];

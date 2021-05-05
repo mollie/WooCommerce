@@ -59,14 +59,8 @@ class Mollie_WC_PayPalButton_AjaxRequests
             $payPalRequestDataObject->productQuantity
         );
 
-        $needsShipping
-            = $payPalRequestDataObject->needShipping === true;
-        if ($needsShipping) {
-            $order->calculate_totals();
-            $order = $this->addShippingMethodsToOrder(
-                $order
-            );
-        }
+        $surchargeHandler = new Mollie_WC_Helper_GatewaySurchargeHandler();
+        $order = $surchargeHandler->addSurchargeFeeProductPage($order, 'mollie_wc_gateway_paypal');
 
         $orderId = $order->get_id();
         $order->calculate_totals();
@@ -111,16 +105,10 @@ class Mollie_WC_PayPalButton_AjaxRequests
         }
 
         list($cart, $order) = $this->createOrderFromCart();
-        $needsShipping
-            = $payPalRequestDataObject->needShipping === true;
-        if ($needsShipping) {
-            $order->calculate_totals();
-            $order = $this->addShippingMethodsToOrder(
-                $order
-            );
-        }
         $orderId = $order->get_id();
         $order->calculate_totals();
+        $surchargeHandler = new Mollie_WC_Helper_GatewaySurchargeHandler();
+        $order = $surchargeHandler->addSurchargeFeeProductPage($order, 'mollie_wc_gateway_paypal');
         $this->updateOrderPostMeta($orderId, $order);
         $result = $this->processOrderPayment($orderId);
         if (isset($result['result'])

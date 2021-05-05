@@ -8,6 +8,10 @@ function returnFalse ()
 {
   return false
 }
+function returnTrue ()
+{
+    return true
+}
 
 /* -------------------------------------------------------------------
    Containers
@@ -391,7 +395,6 @@ function initializeComponents (
                         const $form = jQuery('form[name="checkout"]')
                         $form.on('checkout_place_order', returnTrue)
                     }
-
                 })
                 if(_.isEmpty(copySettings.enabledGateways)){
                     return

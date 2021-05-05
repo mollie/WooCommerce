@@ -608,24 +608,34 @@ class Mollie_WC_Plugin
     {
 
         if (mollieWooCommerceIsPayPalButtonEnabled('product') && is_product()) {
-            $dataToScripts = new Mollie_WC_PayPalButton_DataToPayPalScripts();
-            wp_enqueue_style('unabledButton');
-            wp_enqueue_script('mollie_paypalButton');
-            wp_localize_script(
-                    'mollie_paypalButton',
-                    'molliepaypalbutton',
-                    $dataToScripts->paypalbuttonScriptData()
-            );
+            $product = wc_get_product(get_the_id());
+            if (!$product) {
+                return;
+            }
+            $productNeedShipping = mollieWooCommerceCheckIfNeedShipping($product);
+            if(!$productNeedShipping){
+                $dataToScripts = new Mollie_WC_PayPalButton_DataToPayPalScripts();
+                wp_enqueue_style('unabledButton');
+                wp_enqueue_script('mollie_paypalButton');
+                wp_localize_script(
+                        'mollie_paypalButton',
+                        'molliepaypalbutton',
+                        $dataToScripts->paypalbuttonScriptData()
+                );
+            }
         }
         if (mollieWooCommerceIsPayPalButtonEnabled('cart') && is_cart()) {
-            $dataToScripts = new Mollie_WC_PayPalButton_DataToPayPalScripts();
-            wp_enqueue_style('unabledButton');
-            wp_enqueue_script('mollie_paypalButtonCart');
-            wp_localize_script(
-                    'mollie_paypalButtonCart',
-                    'molliepaypalButtonCart',
-                    $dataToScripts->paypalbuttonScriptData()
-            );
+            $cart = WC()->cart;
+            if(!$cart->needs_shipping()){
+                $dataToScripts = new Mollie_WC_PayPalButton_DataToPayPalScripts();
+                wp_enqueue_style('unabledButton');
+                wp_enqueue_script('mollie_paypalButtonCart');
+                wp_localize_script(
+                        'mollie_paypalButtonCart',
+                        'molliepaypalButtonCart',
+                        $dataToScripts->paypalbuttonScriptData()
+                );
+            }
         }
     }
 

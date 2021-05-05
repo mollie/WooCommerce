@@ -23,11 +23,20 @@ class Mollie_WC_Helper_PayPalButtonHandler
      */
     public function bootstrap($enabledInProduct, $enabledInCart)
     {
+        //y no hay shipping enseño, luego ya la cantidad en js
+
         if($enabledInProduct){
             add_action(
                     'woocommerce_after_add_to_cart_form',
                     function () {
-                        $this->renderPayPalButton();
+                        $product = wc_get_product(get_the_id());
+                        if (!$product) {
+                            return;
+                        }
+                        $productNeedShipping = mollieWooCommerceCheckIfNeedShipping($product);
+                        if(!$productNeedShipping){
+                            $this->renderPayPalButton();
+                        }
                     }
             );
         }
@@ -35,7 +44,10 @@ class Mollie_WC_Helper_PayPalButtonHandler
             add_action(
                     'woocommerce_cart_totals_after_order_total',
                     function () {
-                        $this->renderPayPalButton();
+                        $cart = WC()->cart;
+                        if(!$cart->needs_shipping()){
+                            $this->renderPayPalButton();
+                        }
                     }
             );
         }

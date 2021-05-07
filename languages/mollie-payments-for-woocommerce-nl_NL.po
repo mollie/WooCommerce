@@ -2,14 +2,17 @@
 # This file is distributed under the same license as the Plugins - Mollie Payments for WooCommerce - Stable (latest release) package.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2021-02-01 14:16+0100\n"
+"PO-Revision-Date: 2021-04-12 15:32+0200\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: GlotPress/3.0.0-alpha.2\n"
+"X-Generator: Poedit 2.4.2\n"
 "Language: nl\n"
 "Project-Id-Version: Plugins - Mollie Payments for WooCommerce - Stable (latest release)\n"
+"POT-Creation-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
 
 #: src/Mollie/WC/Plugin.php:620
 msgid "Some products in the cart cannot be purchased with the selected gateway. Please, select another gateway"
@@ -713,7 +716,7 @@ msgstr "Bestelstatus na geannuleerde betaling"
 #: src/Mollie/WC/Gateway/BankTransfer.php:185
 #: src/Mollie/WC/Gateway/DirectDebit.php:80 src/Mollie/WC/Gateway/Ideal.php:121
 msgid "Payment completed by <strong>%s</strong> (IBAN (last 4 digits): %s, BIC: %s)"
-msgstr "Betaling voltooid met <strong>%s</strong> (IBAN (ten minste 4 cijfers): %s, BIC: %s)"
+msgstr "Betaling voltooid met <strong>%s</strong> (IBAN (laatste 4 cijfers): %s, BIC: %s)"
 
 #: src/Mollie/WC/Gateway/Abstract.php:1620
 msgid "Your order has been cancelled."

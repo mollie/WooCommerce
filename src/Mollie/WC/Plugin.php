@@ -308,7 +308,7 @@ class Mollie_WC_Plugin
                 '<strong>',
                 '</strong>',
                 '<a href="' . esc_url(
-                    admin_url('admin.php?page=wc-settings&tab=checkout')
+                    admin_url('admin.php?page=wc-settings&tab=mollie_settings')
                 ) . '">',
                 '</a>'
             );

@@ -76,12 +76,17 @@
         if(payPalButton.parentNode == null){
             return
         }
+        let preventSpam = false
         document.querySelector('#mollie-PayPal-button').addEventListener('click', (evt) => {
             if(!(payPalButton.parentNode !== null)){
                 return
             }
             payPalButton.disabled = true;
             payPalButton.classList.add("buttonDisabled");
+            if(preventSpam){
+                return
+            }
+            preventSpam = true
             jQuery.ajax({
                 url: ajaxUrl,
                 method: 'POST',

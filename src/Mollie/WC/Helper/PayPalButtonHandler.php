@@ -27,7 +27,7 @@ class Mollie_WC_Helper_PayPalButtonHandler
 
         if($enabledInProduct){
             add_action(
-                    'woocommerce_after_add_to_cart_form',
+                    'woocommerce_after_single_product',
                     function () {
                         $product = wc_get_product(get_the_id());
                         if (!$product) {

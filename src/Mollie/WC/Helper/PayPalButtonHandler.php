@@ -84,11 +84,17 @@ class Mollie_WC_Helper_PayPalButtonHandler
         if(!$paypalSettings){
             return "";
         }
-        $colorSetting = $paypalSettings['color'];
-        $languageSetting = $paypalSettings['language'];
+        $colorSetting = $paypalSettings['color']?$paypalSettings['color']:"en-checkout-pill-golden";
+        $dataArray = explode('-', $colorSetting);//[0]lang [1]folder [2]first part filename [3] second part filename
         $fixPath = 'public/images/PayPal_Buttons/';
-        $buildButtonName = "{$colorSetting}-{$languageSetting}.png";
-        return "{$fixPath}{$buildButtonName}";
+        $buildButtonName = "{$dataArray[0]}/{$dataArray[1]}/{$dataArray[2]}-{$dataArray[3]}.png";
+        $path = "{$fixPath}{$buildButtonName}";
+        if(file_exists(M4W_PLUGIN_DIR . '/'. $path)){
+            return "{$fixPath}{$buildButtonName}";
+        }else{
+            return "{$fixPath}/en/checkout/pill-golden.png";
+        }
+
     }
 }
 

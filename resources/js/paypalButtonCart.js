@@ -12,17 +12,11 @@
         }
 
         let redirectionUrl = ''
-        let isButtonVisible = true;
         let payPalButton = document.getElementById('mollie-PayPal-button');
 
         const maybeShowButton = (underRange) => {
             if (underRange) {
                 hideButton()
-                isButtonVisible = false
-            }
-            if (!underRange && !isButtonVisible) {
-                //woo reloads that part and renders the button
-                isButtonVisible = true
             }
         }
 
@@ -44,15 +38,21 @@
             }
             let total = 0.00;
             for (let tax of taxesPath) {
-                let taxPath = tax.getElementsByClassName('woocommerce-Price-amount')[0].lastChild
-                total += parseFloat(extractValue(taxPath))
+                let taxPath = tax.getElementsByClassName('woocommerce-Price-amount')[0]
+                let workingNode = taxPath.cloneNode(true);
+                let currency = workingNode.lastChild
+                workingNode.removeChild(currency)
+                total += parseFloat(extractValue(workingNode))
             }
             return total
         }
 
         const calculateTotal = () => {
-            let subtotalPath = document.getElementsByClassName('cart-subtotal')[0].getElementsByClassName('woocommerce-Price-amount')[0].childNodes[0].lastChild
-            let total = parseFloat(extractValue(subtotalPath));
+            let subtotalPath = document.getElementsByClassName('cart-subtotal')[0].getElementsByClassName('woocommerce-Price-amount')[0].childNodes[0]
+            let workingNode = subtotalPath.cloneNode(true);
+            let currency = workingNode.lastChild
+            workingNode.removeChild(currency)
+            let total = parseFloat(extractValue(workingNode));
             total += calculateTaxes()
 
             return total
@@ -64,17 +64,24 @@
         }
 
         const ajaxCallToOrder = () => {
-            if (!isButtonVisible) {
+            let button = document.getElementById('mollie-PayPal-button')
+
+            if(!button){
                 return
             }
+
+            let preventSpam = false
             const nonce = payPalButton.children[0].value
             document.querySelector('#mollie-PayPal-button').addEventListener('click', (evt) => {
-                let button = document.getElementById('mollie-PayPal-button')
-                button.disabled = true;
-                button.classList.add("buttonDisabled")
-                if (!isButtonVisible) {
+                if(!button){
                     return
                 }
+                button.disabled = true;
+                button.classList.add("buttonDisabled");
+                if(preventSpam){
+                    return
+                }
+                preventSpam = true
                 jQuery.ajax({
                     url: ajaxUrl,
                     method: 'POST',

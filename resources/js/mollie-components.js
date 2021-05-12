@@ -384,19 +384,18 @@ function initializeComponents (
             return
         }
 
-        $document.on(
-            eventName,
-            function (){
+        function checkInit() {
+            return function () {
                 let copySettings = JSON.parse(JSON.stringify(mollieComponentsSettings))
-                mollieComponentsSettings.enabledGateways.forEach(function(gateway, index){
+                mollieComponentsSettings.enabledGateways.forEach(function (gateway, index) {
                     const gatewayContainer = containerForGateway(gateway, document)
                     if (!gatewayContainer) {
-                        copySettings.enabledGateways.splice(index,1)
+                        copySettings.enabledGateways.splice(index, 1)
                         const $form = jQuery('form[name="checkout"]')
                         $form.on('checkout_place_order', returnTrue)
                     }
                 })
-                if(_.isEmpty(copySettings.enabledGateways)){
+                if (_.isEmpty(copySettings.enabledGateways)) {
                     return
                 }
                 initializeComponents(
@@ -405,7 +404,16 @@ function initializeComponents (
                     copySettings,
                     mollieComponentsMap
                 )
-            }
+            };
+        }
+
+        $document.on(
+            eventName,
+            checkInit()
+        )
+        $document.on(
+            'update_checkout',
+            checkInit()
         )
     }
 )

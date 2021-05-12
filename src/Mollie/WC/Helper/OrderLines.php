@@ -51,11 +51,7 @@ class Mollie_WC_Helper_OrderLines {
 	public function order_lines() {
 
 		$this->process_items();
-        if($this->order->get_payment_method() === 'mollie_wc_gateway_paypal'){
-            $this->process_shipping_PayPal_Button();
-        }else{
-            $this->process_shipping();
-        }
+        $this->process_shipping();
 		$this->process_fees();
 		$this->process_gift_cards();
 
@@ -173,39 +169,6 @@ class Mollie_WC_Helper_OrderLines {
 		}
 	}
 
-    /**
-     * Process WooCommerce shipping to Mollie Orders API - order lines.
-     *
-     * @access private
-     */
-    private function process_shipping_PayPal_Button() {
-        if ( $this->order->get_shipping_methods() && WC()->session->get( 'chosen_shipping_methods' ) ) {
-
-            $shipping = array (
-                'type'        => 'shipping_fee',
-                'name'        => $this->get_shipping_name(),
-                'quantity'    => 1,
-                'vatRate'     => $this->get_shipping_vat_rate(),
-                'unitPrice'   => array (
-                    'currency' => $this->currency,
-                    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $this->get_shipping_amount_paypal(), $this->currency ),
-                ),
-                'totalAmount' => array (
-                    'currency' => $this->currency,
-                    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( $this->get_shipping_amount_paypal(), $this->currency ),
-                ),
-                'vatAmount'   => array (
-                    'currency' => $this->currency,
-                    'value'    => Mollie_WC_Plugin::getDataHelper()->formatCurrencyValue( 0, $this->currency ),
-                ),
-                'metadata'    => array (
-                    'order_item_id' => $this->get_shipping_id(),
-                ),
-            );
-
-            $this->order_lines[] = $shipping;
-        }
-    }
 	/**
 	 * Process fees.
 	 *
@@ -557,20 +520,6 @@ class Mollie_WC_Helper_OrderLines {
 
 		return (string) $shipping_id;
 	}
-
-    /**
-     * Get shipping method amount from paypal option.
-     *
-     * @since  1.0
-     * @access private
-     *
-     * @return string $shipping_amount Amount for selected shipping method.
-     */
-    private function get_shipping_amount_paypal() {
-        $paypalSettings = get_option('mollie_wc_gateway_paypal_settings');
-        $cost = $paypalSettings['mollie_paypal_button_fixed_shipping_amount']?$paypalSettings['mollie_paypal_button_fixed_shipping_amount']:0;
-        return number_format($cost, 2, '.', '' );
-    }
 
 	/**
 	 * Get shipping method amount.

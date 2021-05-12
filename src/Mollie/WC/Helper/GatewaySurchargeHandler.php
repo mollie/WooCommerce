@@ -53,6 +53,7 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
 
         if($amount > 0){
             $surchargeName = $this->buildFeeName($gateway);
+            $this->orderRemoveFee($order);
             $this->orderAddFee($order, $amount, $surchargeName);
             $order->calculate_totals();
         }
@@ -290,6 +291,7 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
         $item_fee->set_name( $surchargeName );
         $item_fee->set_amount( $amount );
         $item_fee->set_total( $amount );
+        $item_fee->set_tax_status('none');
         $order->add_item( $item_fee );
         $order->calculate_totals();
     }

@@ -2703,10 +2703,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     }
 
     /**
-     * @param \Mollie\Api\Resources\Payment $payment
+     * @param \Mollie\Api\Resources\Payment|\Mollie\Api\Resources\Order $payment
      * @param WC_Order $order
      */
-    protected function setBillingAddressAfterPayment(\Mollie\Api\Resources\Payment $payment, WC_Order $order)
+    protected function setBillingAddressAfterPayment( $payment, $order)
     {
         $billingAddress = $payment->billingAddress;
         $wooBillingAddress = [

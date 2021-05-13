@@ -609,7 +609,7 @@ class Mollie_WC_Plugin
 
         if (mollieWooCommerceIsPayPalButtonEnabled('product') && is_product()) {
             $product = wc_get_product(get_the_id());
-            if (!$product) {
+            if (!$product || $product->is_type('subscription')) {
                 return;
             }
             $productNeedShipping = mollieWooCommerceCheckIfNeedShipping($product);

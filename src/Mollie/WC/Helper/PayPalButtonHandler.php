@@ -84,7 +84,7 @@ class Mollie_WC_Helper_PayPalButtonHandler
         if(!$paypalSettings){
             return "";
         }
-        $colorSetting = $paypalSettings['color']?$paypalSettings['color']:"en-checkout-pill-golden";
+        $colorSetting = isset( $paypalSettings['color']) ? $paypalSettings['color'] : "en-checkout-pill-golden";
         $dataArray = explode('-', $colorSetting);//[0]lang [1]folder [2]first part filename [3] second part filename
         $fixPath = 'public/images/PayPal_Buttons/';
         $buildButtonName = "{$dataArray[0]}/{$dataArray[1]}/{$dataArray[2]}-{$dataArray[3]}.png";

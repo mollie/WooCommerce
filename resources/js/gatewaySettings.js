@@ -1,6 +1,6 @@
 (
     function ({_, gatewaySettingsData, jQuery }) {
-        const { isEnabledIcon, uploadFieldName, enableFieldName, iconUrl, message } = gatewaySettingsData
+        const { isEnabledIcon, uploadFieldName, enableFieldName, iconUrl, message, pluginUrlImages } = gatewaySettingsData
 
         if (_.isEmpty(gatewaySettingsData)) {
             return
@@ -20,6 +20,12 @@
             }
 
         });
+
+        function iconName(val) {
+            const res = val.split("-");
+            return res[0]+"/"+res[1]+"/"+res[2]+"-"+res[3]
+        }
+
         jQuery(function($) {
 
             $('#'+enableFieldName).change(function() {
@@ -33,7 +39,18 @@
                 }
             }).change();
 
+            const payPalIconSelectorElement = $('#mollie_wc_gateway_paypal_color')
+            payPalIconSelectorElement.change(function() {
+                const fixedPath = pluginUrlImages + "/PayPal_Buttons/"
+                let buttonIcon = iconName(payPalIconSelectorElement.val())+".png"
+                let url = fixedPath + buttonIcon
+                const iconImageElement = $('#mol-paypal-settings-icon')
+                if(iconImageElement.length){
+                    iconImageElement.remove()
+                }
+                payPalIconSelectorElement.after("<img id='mol-paypal-settings-icon' width='200px' src="+url+" alt='PayPal_Icon'/>")
 
+            }).change();
         });
     }
 )

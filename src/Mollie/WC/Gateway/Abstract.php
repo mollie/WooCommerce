@@ -155,7 +155,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                             'uploadFieldName' => $uploadFieldName,
                             'enableFieldName' => $enabledFieldName,
                             'iconUrl' => $gatewayIconUrl,
-                            'message'=>$message
+                            'message'=>$message,
+                            'pluginUrlImages'=>plugins_url( 'public/images', M4W_FILE )
                     ]
             );
         }

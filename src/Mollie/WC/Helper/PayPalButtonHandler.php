@@ -66,7 +66,7 @@ class Mollie_WC_Helper_PayPalButtonHandler
                 = Mollie_WC_Plugin::getPluginUrl($whichPayPalButton);
 
         ?>
-        <div id="mollie-PayPal-button" class="mol-PayPal>
+        <div id="mollie-PayPal-button" class="mol-PayPal">
             <?php wp_nonce_field('mollie_PayPal_button'); ?>
             <input type="image" src="<?php echo esc_url( $assetsImagesUrl)?>" alt="PayPal Button">
         </div>

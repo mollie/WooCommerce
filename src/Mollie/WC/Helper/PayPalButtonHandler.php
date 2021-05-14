@@ -30,7 +30,7 @@ class Mollie_WC_Helper_PayPalButtonHandler
                     'woocommerce_after_single_product',
                     function () {
                         $product = wc_get_product(get_the_id());
-                        if (!$product) {
+                        if (!$product || $product->is_type('subscription')) {
                             return;
                         }
                         $productNeedShipping = mollieWooCommerceCheckIfNeedShipping($product);
@@ -45,6 +45,11 @@ class Mollie_WC_Helper_PayPalButtonHandler
                     'woocommerce_cart_totals_after_order_total',
                     function () {
                         $cart = WC()->cart;
+                        foreach ($cart->get_cart_contents() as $product){
+                            if($product['data']->is_type('subscription')){
+                                return;
+                            }
+                        }
                         if(!$cart->needs_shipping()){
                             $this->renderPayPalButton();
                         }

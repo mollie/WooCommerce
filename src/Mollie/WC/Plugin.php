@@ -626,6 +626,11 @@ class Mollie_WC_Plugin
         }
         if (mollieWooCommerceIsPayPalButtonEnabled('cart') && is_cart()) {
             $cart = WC()->cart;
+            foreach ($cart->get_cart_contents() as $product){
+                if($product['data']->is_type('subscription')){
+                    return;
+                }
+            }
             if(!$cart->needs_shipping()){
                 $dataToScripts = new Mollie_WC_PayPalButton_DataToPayPalScripts();
                 wp_enqueue_style('unabledButton');

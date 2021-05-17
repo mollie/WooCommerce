@@ -10,9 +10,9 @@ return [
         ),
         'type' => 'title',
         'description' =>  sprintf(__(
-                                      '%1sThe PayPal button is optimized for digital goods. And will only appear if the product has no shipping. It will only retrieve the customers address if transaction is done with the %2sOrders API%3s.%4s',
+                                      '%1sThe PayPal button is optimized for digital goods. And will only appear if the product has no shipping. %2sThe customer\'s address information can only be retrieved if the transaction has been done with the %3sOrders API%4s.%5s%6s',
                                       'mollie-payments-for-woocommerce'
-                                  ),'<p>','<a href="' . esc_url(admin_url('admin.php?page=wc-settings&tab=mollie_settings&section=advanced')) . '">','</a>', '</p>') ,
+                                  ),'<p>','<p>','<a href="' . esc_url(admin_url('admin.php?page=wc-settings&tab=mollie_settings&section=advanced')) . '">','</a>','</p>','</p>') ,
     ],
     'mollie_paypal_button_enabled_cart' => [
         'type' => 'checkbox',

@@ -25,7 +25,8 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
         add_action( 'woocommerce_order_item_meta_end',[$this, 'setHiddenOrderId'], 10, 4);
     }
 
-    public function setHiddenOrderId($item_id, $item, $order, $bool){
+    public function setHiddenOrderId($item_id, $item, $order, $bool = false)
+    {
         ?>
         <input type="hidden" name="mollie-woocommerce-orderId" value="<?php echo $order->get_id() ?>">
         <?php

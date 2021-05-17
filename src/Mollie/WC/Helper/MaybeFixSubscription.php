@@ -22,7 +22,6 @@ class Mollie_WC_Helper_MaybeFixSubscription
             [
                 'subscriptions_per_page' => '-1',
                 'meta_query' => [
-                    'relation' => 'OR',
                     [
                         'key' => '_mollie_customer_id',
                         'value' => '',
@@ -36,11 +35,13 @@ class Mollie_WC_Helper_MaybeFixSubscription
             //cst_*
             if (strlen($customer) < 5) {
                 $parent = $subscription->get_parent();
-                $subscription->update_meta_data('_mollie_customer_id', $parent->get_meta('_mollie_customer_id'));
-                $subscription->update_meta_data('_mollie_order_id', $parent->get_meta('_mollie_order_id'));
-                $subscription->update_meta_data('_mollie_payment_id', $parent->get_meta('_mollie_payment_id'));
-                $subscription->update_meta_data('_mollie_payment_mode', $parent->get_meta('_mollie_payment_mode'));
-                $subscription->save();
+                if($parent){
+                    $subscription->update_meta_data('_mollie_customer_id', $parent->get_meta('_mollie_customer_id'));
+                    $subscription->update_meta_data('_mollie_order_id', $parent->get_meta('_mollie_order_id'));
+                    $subscription->update_meta_data('_mollie_payment_id', $parent->get_meta('_mollie_payment_id'));
+                    $subscription->update_meta_data('_mollie_payment_mode', $parent->get_meta('_mollie_payment_mode'));
+                    $subscription->save();
+                }
             }
         }
         update_option('mollie_wc_fix_subscriptions', true);

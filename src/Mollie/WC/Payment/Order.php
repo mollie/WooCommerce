@@ -73,8 +73,11 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 		$selectedIssuer = $gateway->getSelectedIssuer();
 		$returnUrl      = $gateway->getReturnUrl( $order );
 		$webhookUrl     = $gateway->getWebhookUrl( $order );
-        $billingAddress = $this->createBillingAddress($order);
-        $shippingAddress = $this->createShippingAddress($order);
+        if($mollieMethod !== 'paypal' || ($mollieMethod === 'paypal' && $order->get_billing_first_name() !== '')){
+            $billingAddress = $this->createBillingAddress($order);
+            $shippingAddress = $this->createShippingAddress($order);
+        }
+
 
         // Generate order lines for Mollie Orders
         $orderLinesHelper = Mollie_WC_Plugin::getOrderLinesHelper(
@@ -101,7 +104,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
                 'issuer' => $selectedIssuer
             ),
             'locale' => $paymentLocale,
-            'billingAddress' => $billingAddress,
+            'billingAddress' => $billingAddress? $billingAddress: null,
             'metadata' => apply_filters(
                 Mollie_WC_Plugin::PLUGIN_ID . '_payment_object_metadata',
                 array(
@@ -111,7 +114,6 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
             ),
             'lines' => $orderLines['lines'],
             'orderNumber' => $order->get_order_number(),
-            // TODO David: use order number or order id?
         );
 
 			// Add sequenceType for subscriptions first payments
@@ -245,6 +247,22 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			// Add messages to log
 			Mollie_WC_Plugin::debug( __METHOD__ . " called for order {$orderId}" );
 
+            if($payment->method === 'paypal'){
+                $address = $payment->shippingAddress;
+                $filter = FILTER_SANITIZE_STRING;
+                $shippingAddress = [
+                    'first_name' => filter_var($address->givenName, $filter),
+                    'last_name' => filter_var($address->familyName, $filter),
+                    'email' => filter_var($address->email, $filter),
+                    'postcode' => filter_var($address->postalCode, $filter),
+                    'country' => strtoupper(filter_var($address->country, $filter)),
+                    'city' => filter_var($address->city, $filter),
+                    'address_1' => filter_var($address->streetAndNumber, $filter)
+                ];
+
+                $order->set_address($shippingAddress, 'shipping');
+            }
+
             $order->payment_complete($payment->id);
 
 			// Add messages to log
@@ -340,6 +358,21 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			// Add messages to log
 			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $orderId );
 
+			if($payment->method === 'paypal'){
+                $address = $payment->shippingAddress;
+                $filter = FILTER_SANITIZE_STRING;
+                $shippingAddress = [
+                    'first_name' => filter_var($address->givenName, $filter),
+                    'last_name' => filter_var($address->familyName, $filter),
+                    'email' => filter_var($address->email, $filter),
+                    'postcode' => filter_var($address->postalCode, $filter),
+                    'country' => strtoupper(filter_var($address->country, $filter)),
+                    'city' => filter_var($address->city, $filter),
+                    'address_1' => filter_var($address->streetAndNumber, $filter)
+                ];
+
+                $order->set_address($shippingAddress, 'shipping');
+            }
             $order->payment_complete($payment->id);
 			// Add messages to log
 			Mollie_WC_Plugin::debug( __METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for order ' . $orderId );

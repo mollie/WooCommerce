@@ -45,6 +45,23 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
         );
     }
 
+    public function addSurchargeFeeProductPage($order, $gateway){
+        $gatewaySettings = $this->gatewaySettings($gateway);
+        if (!isset($gatewaySettings['payment_surcharge']) || $gatewaySettings['payment_surcharge'] == self::NO_FEE) {
+           return $order;
+        }
+        $order->calculate_totals();
+        $amount = $this->calculteFeeAmountOrder($order, $gatewaySettings);
+
+        if($amount > 0){
+            $surchargeName = $this->buildFeeName($gateway);
+            $this->orderRemoveFee($order);
+            $this->orderAddFee($order, $amount, $surchargeName);
+            $order->calculate_totals();
+        }
+        return $order;
+    }
+
     public function updateSurchargeOrderPay(){
         $orderId = isset($_POST['orderId'])?filter_var($_POST['orderId'], FILTER_SANITIZE_NUMBER_INT):false;
         if(!$orderId){
@@ -77,7 +94,7 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
         $surchargeName = $this->buildFeeName($gateway);
 
 
-        if($amount >0){
+        if($amount > 0){
             $this->orderAddFee($order, $amount, $surchargeName);
             $order->calculate_totals();
             $newTotal = $order->get_total();
@@ -276,6 +293,7 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
         $item_fee->set_name( $surchargeName );
         $item_fee->set_amount( $amount );
         $item_fee->set_total( $amount );
+        $item_fee->set_tax_status('none');
         $order->add_item( $item_fee );
         $order->calculate_totals();
     }

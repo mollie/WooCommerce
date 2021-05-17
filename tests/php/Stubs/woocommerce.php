@@ -365,6 +365,10 @@ class WC_Order
     public function save()
     {
     }
+
+    public function get_payment_method()
+    {
+    }
     public function get_checkout_payment_url(){}
     public function get_meta(){}
 }

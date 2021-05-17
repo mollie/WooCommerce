@@ -56,6 +56,14 @@ class Mollie_WC_Helper_Settings
                 ),
                 'default' => 'yes'
             ],
+            [
+                'id' => $defaultTitle . '_' . 'title',
+                'title' => sprintf(__(
+                    '%s display settings',
+                    'mollie-payments-for-woocommerce'
+                ), $defaultTitle),
+                'type' => 'title'
+            ],
             'title' => [
                 'title' => __('Title', 'mollie-payments-for-woocommerce'),
                 'type' => 'text',
@@ -69,6 +77,19 @@ class Mollie_WC_Helper_Settings
                 'default' => $defaultTitle,
                 'desc_tip' => true,
             ],
+            'description' => [
+                'title' => __('Description', 'mollie-payments-for-woocommerce'),
+                'type' => 'textarea',
+                'description' => sprintf(
+                    __(
+                        'Payment method description that the customer will see on your checkout. Default <code>%s</code>',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                    $defaultDescription
+                ),
+                'default' => $defaultDescription,
+                'desc_tip' => true,
+            ],
             'display_logo' => [
                 'title' => __(
                     'Display logo',
@@ -80,6 +101,32 @@ class Mollie_WC_Helper_Settings
                     'mollie-payments-for-woocommerce'
                 ),
                 'default' => 'yes'
+            ],
+            [
+                'id' => $defaultTitle . '_' . 'title',
+                'title' => sprintf(__(
+                                       'Sales countries',
+                                       'mollie-payments-for-woocommerce'
+                                   )),
+                'type' => 'title'
+            ],
+            'allowed_countries' => [
+                'title' => __(
+                    'Sell to specific countries',
+                    'mollie-payments-for-woocommerce'
+                ),
+                'desc' => '',
+                'css' => 'min-width: 350px;',
+                'default' => [],
+                'type' => 'multi_select_countries',
+            ],
+            [
+                'id' => $defaultTitle . '_' . 'custom_logo',
+                'title' => sprintf(__(
+                                       '%s custom logo',
+                                       'mollie-payments-for-woocommerce'
+                                   ), $defaultTitle),
+                'type' => 'title'
             ],
             'enable_custom_logo' => [
                 'title' => __(
@@ -107,28 +154,13 @@ class Mollie_WC_Helper_Settings
                 ),
                 'desc_tip' => true,
             ],
-            'description' => [
-                'title' => __('Description', 'mollie-payments-for-woocommerce'),
-                'type' => 'textarea',
-                'description' => sprintf(
-                    __(
-                        'Payment method description that the customer will see on your checkout. Default <code>%s</code>',
-                        'mollie-payments-for-woocommerce'
-                    ),
-                    $defaultDescription
-                ),
-                'default' => $defaultDescription,
-                'desc_tip' => true,
-            ],
-            'allowed_countries' => [
-                'title' => __(
-                    'Sell to specific countries',
-                    'mollie-payments-for-woocommerce'
-                ),
-                'desc' => '',
-                'css' => 'min-width: 350px;',
-                'default' => [],
-                'type' => 'multi_select_countries',
+            [
+                'id' => $defaultTitle . '_' . 'surcharge',
+                'title' => sprintf(__(
+                                       '%s surcharge',
+                                       'mollie-payments-for-woocommerce'
+                                   ), $defaultTitle),
+                'type' => 'title'
             ],
             'payment_surcharge' => [
                 'title' => __(
@@ -199,7 +231,7 @@ class Mollie_WC_Helper_Settings
                 'custom_attributes'=>['step'=>'0.01', 'min'=>'0.01', 'max'=>'999'],
                 'default' => '0.01',
                 'desc_tip' => true,
-            ],
+            ]
         ];
 
         if ($paymentConfirmation) {

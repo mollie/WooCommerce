@@ -155,7 +155,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                             'uploadFieldName' => $uploadFieldName,
                             'enableFieldName' => $enabledFieldName,
                             'iconUrl' => $gatewayIconUrl,
-                            'message'=>$message
+                            'message'=>$message,
+                            'pluginUrlImages'=>plugins_url( 'public/images', M4W_FILE )
                     ]
             );
         }
@@ -868,6 +869,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
 		    return;
 	    }
+
+	    if($payment->method == 'paypal' && $payment->billingAddress){
+            $this->setBillingAddressAfterPayment($payment, $order);
+        }
 
 	    // Get payment method title
 	    $payment_method_title = $this->getPaymentMethodTitle( $payment );
@@ -2696,5 +2701,27 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         }
 
         return $url;
+    }
+
+    /**
+     * @param \Mollie\Api\Resources\Payment|\Mollie\Api\Resources\Order $payment
+     * @param WC_Order $order
+     */
+    protected function setBillingAddressAfterPayment( $payment, $order)
+    {
+        $billingAddress = $payment->billingAddress;
+        $wooBillingAddress = [
+                'first_name' => $billingAddress->givenName,
+                'last_name' => $billingAddress->familyName,
+                'email' => $billingAddress->email,
+                'phone' => null,
+                'address_1' => $billingAddress->streetAndNumber,
+                'address_2' => null,
+                'city' => $billingAddress->city,
+                'state' => null,
+                'postcode' => $billingAddress->postalCode,
+                'country' => $billingAddress->country,
+        ];
+        $order->set_address($wooBillingAddress, 'billing');
     }
 }

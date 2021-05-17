@@ -51,7 +51,7 @@ class Mollie_WC_Helper_OrderLines {
 	public function order_lines() {
 
 		$this->process_items();
-		$this->process_shipping();
+        $this->process_shipping();
 		$this->process_fees();
 		$this->process_gift_cards();
 

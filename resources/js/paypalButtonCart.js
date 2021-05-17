@@ -71,8 +71,8 @@
             }
 
             let preventSpam = false
-            const nonce = payPalButton.children[0].value
-            document.querySelector('#mollie-PayPal-button').addEventListener('click', (evt) => {
+            const nonce = button.children[0].value
+            button.addEventListener('click', (evt) => {
                 if(!button){
                     return
                 }
@@ -108,15 +108,18 @@
                 })
             })
         }
-
+        jQuery(document.body).on('updated_cart_totals', function (event) {
+            let payPalButton = document.getElementById('mollie-PayPal-button')
+            if(payPalButton == null || payPalButton.parentNode == null){
+                return
+            }
+            maybeShowButton(underRange())
+            ajaxCallToOrder()
+        })
         if(payPalButton == null || payPalButton.parentNode == null){
             return
         }
         maybeShowButton(underRange())
-        jQuery(document.body).on('updated_cart_totals', function (event) {
-            maybeShowButton(underRange())
-            ajaxCallToOrder()
-        })
         ajaxCallToOrder()
     }
 )

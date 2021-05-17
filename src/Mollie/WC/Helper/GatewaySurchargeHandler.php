@@ -49,6 +49,7 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
         if (!isset($gatewaySettings['payment_surcharge']) || $gatewaySettings['payment_surcharge'] == self::NO_FEE) {
            return $order;
         }
+        $order->calculate_totals();
         $amount = $this->calculteFeeAmountOrder($order, $gatewaySettings);
 
         if($amount > 0){

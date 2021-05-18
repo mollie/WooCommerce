@@ -632,7 +632,7 @@ class Mollie_WC_Helper_Settings
                 'id'                => $this->getSettingId('live_api_key'),
                 'title'             => __('Live API key', 'mollie-payments-for-woocommerce'),
                 'default'           => '',
-                'type'              => 'text',
+                'type'              => 'password',
                 'desc'              => sprintf(
                 /* translators: Placeholder 1: API key mode (live or test). The surrounding %s's Will be replaced by a link to the Mollie profile */
                     __('The API key is used to connect to Mollie. You can find your <strong>%s</strong> API key in your %sMollie profile%s', 'mollie-payments-for-woocommerce'),
@@ -658,7 +658,7 @@ class Mollie_WC_Helper_Settings
                 'id'                => $this->getSettingId('test_api_key'),
                 'title'             => __('Test API key', 'mollie-payments-for-woocommerce'),
                 'default'           => '',
-                'type'              => 'text',
+                'type'              => 'password',
                 'desc'              => sprintf(
                 /* translators: Placeholder 1: API key mode (live or test). The surrounding %s's Will be replaced by a link to the Mollie profile */
                     __('The API key is used to connect to Mollie. You can find your <strong>%s</strong> API key in your %sMollie profile%s', 'mollie-payments-for-woocommerce'),

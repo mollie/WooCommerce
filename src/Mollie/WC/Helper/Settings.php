@@ -822,9 +822,15 @@ class Mollie_WC_Helper_Settings
 
         if ($woocommerce_klarnapaylater_gateway->is_available() || $woocommerce_klarnasliceit_gateway->is_available()) {
             $content .= '<div class="notice notice-warning is-dismissible"><p>';
-            $content .= __(
-                'To accept Klarna payments via Mollie, all default WooCommerce checkout fields should be enabled and required. Please ensure that is the case.',
-                'mollie-payments-for-woocommerce'
+            $content .= sprintf(
+                __(
+                    'You have activated Klarna. To accept payments, please make sure all default WooCommerce checkout fields are enabled and required. For more information, go to %1sKlarna Pay Later documentation%2s or  %3sKlarna Slice it documentation%4s',
+                    'mollie-payments-for-woocommerce'
+                ),
+                '<a href="https://github.com/mollie/WooCommerce/wiki/Setting-up-Klarna-Pay-later-gateway">',
+                '</a>',
+                '<a href=" https://github.com/mollie/WooCommerce/wiki/Setting-up-Klarna-Slice-it-gateway">',
+                '</a>'
             );
             $content .= '</p></div> ';
 

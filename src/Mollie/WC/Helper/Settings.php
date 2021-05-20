@@ -231,7 +231,28 @@ class Mollie_WC_Helper_Settings
                 'custom_attributes'=>['step'=>'0.01', 'min'=>'0.01', 'max'=>'999'],
                 'default' => '0.01',
                 'desc_tip' => true,
-            ]
+            ],
+            [
+                'id' => $defaultTitle . '_' . 'advanced',
+                'title' => sprintf(__(
+                                       '%s advanced',
+                                       'mollie-payments-for-woocommerce'
+                                   ), $defaultTitle),
+                'type' => 'title'
+            ],
+            'order_dueDate' => [
+                'title' => sprintf(__('Expiry date', 'mollie-payments-for-woocommerce')),
+                'type' => 'number',
+                'description' => sprintf(
+                    __(
+                        'Cancel in Mollie and WooCommerce unpaid orders made with this gateway when passes at least the minutes in the "expiry date" setting. A value of 0 means no expiry date will be considered.',
+                        'mollie-payments-for-woocommerce'
+                    )
+                ),
+                'custom_attributes'=>['step'=>'1', 'min'=>'0', 'max'=>'526000'],
+                'default' => '0',
+                'desc_tip' => true,
+            ],
         ];
 
         if ($paymentConfirmation) {

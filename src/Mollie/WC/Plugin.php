@@ -242,8 +242,7 @@ class Mollie_WC_Plugin
         add_action(
                 'woocommerce_cancel_unpaid_orders',
                 array( __CLASS__, 'cancelOrderOnExpiryDate' ),
-                11,
-                2
+                11
         );
 
         // Enqueue Scripts
@@ -373,7 +372,10 @@ class Mollie_WC_Plugin
             if ( $unpaid_orders ) {
                 foreach ( $unpaid_orders as $unpaid_order ) {
                     $order = wc_get_order( $unpaid_order );
-                    $order->update_status( 'cancelled', __( 'Unpaid order cancelled - time limit reached.', 'woocommerce' ) );
+                    add_filter('mollie-payments-for-woocommerce_order_status_cancelled', function($newOrderStatus){
+                        return Mollie_WC_Gateway_Abstract::STATUS_CANCELLED;
+                    });
+                    $order->update_status( 'cancelled', __( 'Unpaid order cancelled - time limit reached.', 'woocommerce' ), true );
                     self::cancelOrderAtMollie( $order->get_id() );
                 }
             }

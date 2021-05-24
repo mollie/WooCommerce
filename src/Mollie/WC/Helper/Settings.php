@@ -240,12 +240,19 @@ class Mollie_WC_Helper_Settings
                                    ), $defaultTitle),
                 'type' => 'title'
             ],
+            'activate_expiry_days_setting' => array(
+                'title'             => __('Activate expiry date setting', 'mollie-payments-for-woocommerce'),
+                'label'             => __('Enable expiry date for payments', 'mollie-payments-for-woocommerce'),
+                'description'       => __('Enable this option if you want to be able to set the number of days after the order will expire.', 'mollie-payments-for-woocommerce'),
+                'type'              => 'checkbox',
+                'default'           => 'no',
+            ),
             'order_dueDate' => [
                 'title' => sprintf(__('Expiry date', 'mollie-payments-for-woocommerce')),
                 'type' => 'number',
                 'description' => sprintf(
                     __(
-                        'Cancel in Mollie and WooCommerce unpaid orders made with this gateway when passes at least the minutes in the "expiry date" setting. A value of 0 means no expiry date will be considered.',
+                        'Number of MINUTES after the order will expire and will be canceled at Mollie and WooCommerce. A value of 0 means no expiry date will be considered.',
                         'mollie-payments-for-woocommerce'
                     )
                 ),

@@ -251,4 +251,18 @@ function mollieWooCommerceIsVoucherEnabled(){
     return $voucherSettings? ($voucherSettings['enabled'] == 'yes'): false;
 }
 
+/**
+ * Check if is a Mollie gateway
+ * @param $gateway string
+ *
+ * @return bool
+*/
+function mollieWooCommerceIsMollieGateway($gateway)
+{
+    if (strpos($gateway, 'mollie_wc_gateway_') !== false) {
+        return true;
+    }
+    return false;
+}
+
 

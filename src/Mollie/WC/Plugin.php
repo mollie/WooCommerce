@@ -236,8 +236,14 @@ class Mollie_WC_Plugin
         add_filter(
             'woocommerce_cancel_unpaid_order',
             array( __CLASS__, 'maybeLetWCCancelOrder' ),
-            90,
+            9,
             2
+        );
+        add_action(
+                'woocommerce_cancel_unpaid_orders',
+                array( __CLASS__, 'cancelOrderOnExpiryDate' ),
+                11,
+                2
         );
 
         // Enqueue Scripts
@@ -321,18 +327,61 @@ class Mollie_WC_Plugin
 
     public static function maybeLetWCCancelOrder($willCancel, $order) {
         if (!empty($willCancel)) {
-            if ($order->get_payment_method()
-                !== 'mollie_wc_gateway_banktransfer'
+            $isMollieGateway = mollieWooCommerceIsMollieGateway($order->get_payment_method(
+            ));
+
+            $mollieDueDateEnabled = mollieWooCommerceIsGatewayEnabled($order->get_payment_method(
+            ), 'activate_expiry_days_setting');
+            if (!$isMollieGateway || !$mollieDueDateEnabled
             ) {
                 return $willCancel;
             }
-            //is banktransfer due date setting activated
-            $dueDateActive = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_banktransfer_settings', 'activate_expiry_days_setting');
-            if ($dueDateActive) {
-                return false;
-            }
+
+            return false;
         }
         return $willCancel;
+    }
+
+    public static function cancelOrderOnExpiryDate ()
+    {
+        $minHeldDuration = PHP_INT_MAX;
+        foreach (self::$GATEWAYS as $gateway){
+            $gatewayName = strtolower($gateway).'_settings';
+            $gatewayWooMethod = str_replace('mollie_wc_gateway_', '', $gateway);
+            $gatewaySettings = get_option( $gatewayName );
+            $heldDuration = isset($gatewaySettings['order_dueDate'])?$gatewaySettings['order_dueDate']:0;
+
+            if ( $heldDuration < 1 ) {
+                continue;
+            }
+            if($heldDuration < $minHeldDuration){
+                $minHeldDuration = $heldDuration;
+            }
+            $heldDurationInSeconds = $heldDuration*60;
+            if($gateway == 'Mollie_WC_Gateway_BankTransfer'){
+                $durationInHours = absint( $heldDuration )*24;
+                $durationInMinutes = $durationInHours*60;
+                $heldDurationInSeconds = $durationInMinutes*60;
+            }
+            $args = [
+                    'limit' => -1,
+                    'status' => 'pending',
+                    'payment_method' => $gatewayWooMethod,
+                    'date_modified' => '<' . (time() - $heldDurationInSeconds),
+            ];
+            $unpaid_orders =wc_get_orders( $args );
+
+            if ( $unpaid_orders ) {
+                foreach ( $unpaid_orders as $unpaid_order ) {
+                    $order = wc_get_order( $unpaid_order );
+                    $order->update_status( 'cancelled', __( 'Unpaid order cancelled - time limit reached.', 'woocommerce' ) );
+                    self::cancelOrderAtMollie( $order->get_id() );
+                }
+            }
+        }
+
+        wp_clear_scheduled_hook( 'woocommerce_cancel_unpaid_orders' );
+        wp_schedule_single_event( time() + ( absint( $minHeldDuration ) * 60 ), 'woocommerce_cancel_unpaid_orders' );
     }
 
     public static function voucherEnabledHooks(){
@@ -1091,9 +1140,8 @@ class Mollie_WC_Plugin
         $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_STRING);
         $bankTransferSettings = get_option('mollie_wc_gateway_banktransfer_settings', false);
         $isSettingActivated = false;
-        if($bankTransferSettings && isset($bankTransferSettings['activate_expiry_days_setting'])){
-            $expiryDays = $bankTransferSettings['activate_expiry_days_setting'];
-            $isSettingActivated = mollieWooCommerceStringToBoolOption($expiryDays);
+        if($bankTransferSettings && isset($bankTransferSettings['order_dueDate'])){
+            $isSettingActivated = $bankTransferSettings['order_dueDate']>0;
         }
 
         /*

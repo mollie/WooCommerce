@@ -347,7 +347,6 @@ class Mollie_WC_Plugin
         $minHeldDuration = PHP_INT_MAX;
         foreach (self::$GATEWAYS as $gateway){
             $gatewayName = strtolower($gateway).'_settings';
-            $gatewayWooMethod = str_replace('mollie_wc_gateway_', '', $gateway);
             $gatewaySettings = get_option( $gatewayName );
             $heldDuration = isset($gatewaySettings['order_dueDate'])?$gatewaySettings['order_dueDate']:0;
 
@@ -366,7 +365,7 @@ class Mollie_WC_Plugin
             $args = [
                     'limit' => -1,
                     'status' => 'pending',
-                    'payment_method' => $gatewayWooMethod,
+                    'payment_method' => strtolower($gateway),
                     'date_modified' => '<' . (time() - $heldDurationInSeconds),
             ];
             $unpaid_orders =wc_get_orders( $args );

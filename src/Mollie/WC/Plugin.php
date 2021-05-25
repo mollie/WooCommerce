@@ -343,7 +343,6 @@ class Mollie_WC_Plugin
         $minHeldDuration = 526000;
         foreach (self::$GATEWAYS as $gateway){
             $gatewayName = strtolower($gateway).'_settings';
-            $gatewayWooMethod = str_replace('mollie_wc_gateway_', '', $gateway);
             $gatewaySettings = get_option( $gatewayName );
             $heldDuration = isset($gatewaySettings['order_dueDate'])?$gatewaySettings['order_dueDate']:0;
 
@@ -362,7 +361,7 @@ class Mollie_WC_Plugin
             $args = [
                     'limit' => -1,
                     'status' => 'pending',
-                    'payment_method' => $gatewayWooMethod,
+                    'payment_method' => strtolower($gateway),
                     'date_modified' => '<' . (time() - $heldDurationInSeconds),
                     'return'=>'ids'
             ];
@@ -371,7 +370,10 @@ class Mollie_WC_Plugin
             if ( $unpaid_orders ) {
                 foreach ( $unpaid_orders as $unpaid_order ) {
                     $order = wc_get_order( $unpaid_order );
-                    $order->update_status( 'cancelled', __( 'Unpaid order cancelled - time limit reached.', 'woocommerce' ) );
+                    add_filter('mollie-payments-for-woocommerce_order_status_cancelled', function($newOrderStatus){
+                        return Mollie_WC_Gateway_Abstract::STATUS_CANCELLED;
+                    });
+                    $order->update_status( 'cancelled', __( 'Unpaid order cancelled - time limit reached.', 'woocommerce' ), true );
                     self::cancelOrderAtMollie( $order->get_id() );
                 }
             }

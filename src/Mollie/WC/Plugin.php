@@ -239,12 +239,8 @@ class Mollie_WC_Plugin
             9,
             2
         );
-        add_action(
-                'woocommerce_cancel_unpaid_orders',
-                array( __CLASS__, 'cancelOrderOnExpiryDate' ),
-                11,
-                2
-        );
+
+        self::handleExpiryDateCancelation();
 
         // Enqueue Scripts
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueFrontendScripts']);
@@ -344,7 +340,7 @@ class Mollie_WC_Plugin
 
     public static function cancelOrderOnExpiryDate ()
     {
-        $minHeldDuration = PHP_INT_MAX;
+        $minHeldDuration = 526000;
         foreach (self::$GATEWAYS as $gateway){
             $gatewayName = strtolower($gateway).'_settings';
             $gatewayWooMethod = str_replace('mollie_wc_gateway_', '', $gateway);
@@ -368,6 +364,7 @@ class Mollie_WC_Plugin
                     'status' => 'pending',
                     'payment_method' => $gatewayWooMethod,
                     'date_modified' => '<' . (time() - $heldDurationInSeconds),
+                    'return'=>'ids'
             ];
             $unpaid_orders =wc_get_orders( $args );
 
@@ -380,8 +377,8 @@ class Mollie_WC_Plugin
             }
         }
 
-        wp_clear_scheduled_hook( 'woocommerce_cancel_unpaid_orders' );
-        wp_schedule_single_event( time() + ( absint( $minHeldDuration ) * 60 ), 'woocommerce_cancel_unpaid_orders' );
+        wp_clear_scheduled_hook( 'mollie_woocommerce_cancel_unpaid_orders' );
+        wp_schedule_single_event( time() + ( absint( $minHeldDuration ) * 60 ), 'mollie_woocommerce_cancel_unpaid_orders' );
     }
 
     public static function voucherEnabledHooks(){
@@ -1647,6 +1644,21 @@ class Mollie_WC_Plugin
         }
 
         return implode(',', wp_list_pluck($data['lines'], 'id'));
+    }
+
+    public static function handleExpiryDateCancelation()
+    {
+        $canSchedule = function_exists('as_schedule_single_action');
+        if ($canSchedule) {
+            as_schedule_single_action(time(), 'mollie_woocommerce_cancel_unpaid_orders');
+            add_action(
+                    'mollie_woocommerce_cancel_unpaid_orders',
+                    array(__CLASS__, 'cancelOrderOnExpiryDate'),
+                    11,
+                    2
+            );
+        }
+
     }
 }
 

@@ -1,8 +1,10 @@
 .mollie-gateway-icon {
-  width: 32px;
   vertical-align: bottom;
 }
 label .mollie-gateway-icon{
+  float:right;
+}
+.mollie-gateway-icon svg{
   float:right;
 }
 .mollie_custom_icon{

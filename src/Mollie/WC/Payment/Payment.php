@@ -310,6 +310,11 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 		} elseif ( $orderStatusCancelledPayments == 'cancelled' ) {
 			$newOrderStatus = Mollie_WC_Gateway_Abstract::STATUS_CANCELLED;
 		}
+        // if I cancel manually the order is canceled in Woo before calling Mollie
+        if($order->get_status() == 'cancelled'){
+            $newOrderStatus = Mollie_WC_Gateway_Abstract::STATUS_CANCELLED;
+        }
+
         // Get current gateway
         $gateway = wc_get_payment_gateway_by_order( $order );
 		// Overwrite plugin-wide

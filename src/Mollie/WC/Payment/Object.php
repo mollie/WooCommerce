@@ -17,7 +17,6 @@ class Mollie_WC_Payment_Object {
 
 		$base_location        = wc_get_base_location();
 		static::$shop_country = $base_location['country'];
-        add_action( 'woocommerce_order_edit_status', [$this, 'cancelOrderOnManualUpdate'] );
 	}
 
 
@@ -425,11 +424,6 @@ class Mollie_WC_Payment_Object {
 
 	}
 
-	public function cancelOrderOnManualUpdate($orderId, $status){
-        add_filter( Mollie_WC_Plugin::PLUGIN_ID . '_order_status_cancelled', function(){
-            return Mollie_WC_Gateway_Abstract::STATUS_CANCELLED;
-        } );
-    }
 
 	/**
 	 * @param WC_Order                     $order

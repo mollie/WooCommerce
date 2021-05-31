@@ -176,6 +176,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         if (isset($_POST['save']) ) {
             $this->processAdminOptionCustomLogo();
             $this->processAdminOptionSurcharge();
+            //only credit cards have a selector
+            if ($this->id == 'mollie_wc_gateway_creditcard') {
+                $this->processAdminOptionCreditcardSelector();
+            }
         }
         parent::process_admin_options();
     }

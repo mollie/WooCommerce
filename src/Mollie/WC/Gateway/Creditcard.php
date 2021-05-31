@@ -239,4 +239,13 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
 
         return substr_replace($svgString, $positionString, $positionAfterSvgWord, 0);
     }
+
+    /**
+     * Deletes the selector transient when the Admin option changes
+     *
+     */
+    protected function processAdminOptionCreditcardSelector()
+    {
+        delete_transient('svg_creditcards_string');
+    }
 }

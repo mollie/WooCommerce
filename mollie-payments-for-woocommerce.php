@@ -6,13 +6,14 @@
  * Version: 6.4.0
  * Author: Mollie
  * Author URI: https://www.mollie.com
- * Requires at least: 3.8
+ * Requires at least: 5.0
  * Tested up to: 5.7
  * Text Domain: mollie-payments-for-woocommerce
  * Domain Path: /languages
  * License: GPLv2 or later
  * WC requires at least: 3.0
  * WC tested up to: 5.3
+ * Requires PHP: 7.2
  */
 
 
@@ -141,30 +142,6 @@ $bootstrap = Closure::bind(
                     }
                     return;
                 }
-                $checker->maybeShowWarning(
-                    new WordPressConstraint('5.0'),
-                    sprintf(
-                        __(
-                            'Mollie Payments for WooCommerce is dropping support for WordPress versions less than 5.0. Please update WordPress to the latest version.</br> Without an update, you will not receive any new features. 
-Contact our support team %1$shere%2$s if any questions remain.',
-                            'mollie-payments-for-woocommerce'
-                        ),
-                        '<a href="https://mollie.inpsyde.com/" target="_blank">',
-                        '</a>'
-                    )
-                );
-                $checker->maybeShowWarning(
-                    new PhpConstraint('7.2'),
-                    sprintf(
-                        __(
-                            'Mollie Payments for WooCommerce is dropping support for PHP versions less than 7.2. As such, using outdated and unsupported versions of PHP may expose your site to security vulnerabilities. Please update PHP to the latest version.
-For further informations see %1$shere%2$s and if any questions remain contact our support team.',
-                            'mollie-payments-for-woocommerce'
-                        ),
-                        '<a href="https://mollie.inpsyde.com/docs/php-7-2-update/" target="_blank">',
-                        '</a>'
-                    )
-                );
 
                 add_action(
                     'init',

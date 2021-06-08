@@ -1304,7 +1304,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                 // order being cancelled. Otherwise redirect to /checkout/order-pay/ so
                 // customers can try to pay with another payment method.
                 if ( $order_status_cancelled_payments == 'cancelled' ) {
-                    return $returnRedirect;
+                    return $this->get_return_url( $order );
 
                 } else {
                     Mollie_WC_Plugin::addNotice(
@@ -1346,7 +1346,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         /*
          * Return to order received page
          */
-        return $returnRedirect;
+        return $this->get_return_url( $order );
     }
     /**
      * Retrieve the payment object

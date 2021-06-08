@@ -1317,9 +1317,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
                     // Return to order payment page
                     return $failedRedirect;
                 }
-
-                // Return to order payment page
-                return $failedRedirect;
             }
 
             try {

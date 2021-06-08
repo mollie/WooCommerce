@@ -210,6 +210,8 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 	    $subscriptions                  = wcs_get_subscriptions_for_renewal_order( $renewal_order->get_id() );
 	    $subscription                   = array_pop( $subscriptions ); // Just need one valid subscription
 	    $subscription_mollie_payment_id = $subscription->get_meta( '_mollie_payment_id' );
+	    $subcriptionParentOrder = $subscription->get_parent();
+        $mandateId = isset($subcriptionParentOrder)? $subcriptionParentOrder->get_meta('_mollie_mandate_id') : null;
 
 	    if ( ! empty( $subscription_mollie_payment_id ) && ! empty( $subscription )  ) {
 		    $customer_id = $this->restore_mollie_customer_id_and_mandate( $customer_id, $subscription_mollie_payment_id, $subscription );
@@ -224,25 +226,34 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
         // Create a renewal payment
         try
         {
-
             do_action(Mollie_WC_Plugin::PLUGIN_ID . '_create_payment', $data, $renewal_order);
             $payment = null;
-
-	        // Get all mandates for the customer ID
+            $mollieApiClient = Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode);
+            $validMandate = false;
             try
             {
-                Mollie_WC_Plugin::debug($this->id . ': Try to get all mandates for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id );
-                $mandates =  Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode)->customers->get($customer_id)->mandates();
-                $validMandate = false;
-                $renewalOrderMethod = $renewal_order->get_payment_method();
-                $renewalOrderMethod = str_replace("mollie_wc_gateway_", "", $renewalOrderMethod);
-                foreach ($mandates as $mandate) {
+                if (isset($mandateId)) {
+                    Mollie_WC_Plugin::debug($this->id . ': Found mandate ID for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id );
+                    $mandate =  $mollieApiClient->customers->get($customer_id)->getMandate($mandateId);
                     if ($mandate->status == 'valid') {
-                        $validMandate = true;
                         $data['method'] = $mandate->method;
-                        if($mandate->method == $renewalOrderMethod){
+                        $data['mandateId'] = $mandateId;
+                        $validMandate = true;
+                    }
+                } else {
+                    // Get all mandates for the customer ID
+                    Mollie_WC_Plugin::debug($this->id . ': Try to get all mandates for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id );
+                    $mandates =  $mollieApiClient->customers->get($customer_id)->mandates();
+                    $renewalOrderMethod = $renewal_order->get_payment_method();
+                    $renewalOrderMethod = str_replace("mollie_wc_gateway_", "", $renewalOrderMethod);
+                    foreach ($mandates as $mandate) {
+                        if ($mandate->status == 'valid') {
+                            $validMandate = true;
                             $data['method'] = $mandate->method;
-                            break;
+                            if($mandate->method == $renewalOrderMethod){
+                                $data['method'] = $mandate->method;
+                                break;
+                            }
                         }
                     }
                 }

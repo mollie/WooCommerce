@@ -291,6 +291,7 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
             );
 
             // Subscription processing
+            $this->addMandateIdMetaToFirstPaymentSubscriptionOrder($order, $payment);
             $this->deleteSubscriptionFromPending($order);
 		} else {
 			// Add messages to log

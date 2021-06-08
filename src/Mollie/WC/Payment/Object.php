@@ -1,6 +1,8 @@
 <?php
 
 use Mollie\Api\Exceptions\ApiException;
+use Mollie\Api\Resources\Order;
+use Mollie\Api\Resources\Payment;
 
 class Mollie_WC_Payment_Object {
 
@@ -522,6 +524,27 @@ class Mollie_WC_Payment_Object {
         }
     }
 
+    /**
+     * @param WC_Order       $order
+     * @param Order| Payment $payment
+     */
+    protected function addMandateIdMetaToFirstPaymentSubscriptionOrder(
+        WC_Order $order,
+        $payment
+    ) {
+        if (class_exists('WC_Subscriptions')) {
+            $payment = $payment->_embedded->payments[0];
+            if ($payment && $payment->sequenceType == 'first'
+                && isset($payment->mandateId)) {
+                $order->update_meta_data(
+                    '_mollie_mandate_id',
+                    $payment->mandateId
+                );
+                $order->save();
+            }
+        }
+    }
+
 	/**
 	 * @param $order
 	 */
@@ -558,7 +581,7 @@ class Mollie_WC_Payment_Object {
      * @param WC_Order                      $order
      * @param                               $newOrderStatus
      * @param                               $paymentMethodTitle
-     * @param \Mollie\Api\Resources\Payment|Mollie\Api\Resources\Order $payment
+     * @param Payment|Mollie\Api\Resources\Order $payment
      */
     protected function failedSubscriptionProcess(
         $orderId,

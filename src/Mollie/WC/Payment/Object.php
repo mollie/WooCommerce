@@ -533,8 +533,8 @@ class Mollie_WC_Payment_Object {
         $payment
     ) {
         if (class_exists('WC_Subscriptions')) {
-            $payment = $payment->_embedded->payments[0];
-            if ($payment && $payment->sequenceType == 'first'
+            $payment = isset($payment->_embedded->payments[0])? $payment->_embedded->payments[0] : false;
+            if ($payment && $payment->sequenceType === 'first'
                 && isset($payment->mandateId)) {
                 $order->update_meta_data(
                     '_mollie_mandate_id',

@@ -235,7 +235,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
                 if (isset($mandateId)) {
                     Mollie_WC_Plugin::debug($this->id . ': Found mandate ID for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id );
                     $mandate =  $mollieApiClient->customers->get($customer_id)->getMandate($mandateId);
-                    if ($mandate->status == 'valid') {
+                    if ($mandate->status === 'valid') {
                         $data['method'] = $mandate->method;
                         $data['mandateId'] = $mandateId;
                         $validMandate = true;
@@ -247,10 +247,10 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
                     $renewalOrderMethod = $renewal_order->get_payment_method();
                     $renewalOrderMethod = str_replace("mollie_wc_gateway_", "", $renewalOrderMethod);
                     foreach ($mandates as $mandate) {
-                        if ($mandate->status == 'valid') {
+                        if ($mandate->status === 'valid') {
                             $validMandate = true;
                             $data['method'] = $mandate->method;
-                            if($mandate->method == $renewalOrderMethod){
+                            if($mandate->method === $renewalOrderMethod){
                                 $data['method'] = $mandate->method;
                                 break;
                             }

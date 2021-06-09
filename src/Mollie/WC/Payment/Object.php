@@ -17,7 +17,6 @@ class Mollie_WC_Payment_Object {
 
 		$base_location        = wc_get_base_location();
 		static::$shop_country = $base_location['country'];
-
 	}
 
 
@@ -424,6 +423,7 @@ class Mollie_WC_Payment_Object {
 
 
 	}
+
 
 	/**
 	 * @param WC_Order                     $order

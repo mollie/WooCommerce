@@ -76,13 +76,7 @@ class Mollie_WC_ApplePayButton_AjaxRequests
             return;
         }
         $validationUrl = $applePayRequestDataObject->validationUrl;
-        $completeDomain = parse_url(get_site_url(), PHP_URL_HOST); //https://www.example.com/bla/bla
-        $removeHttp = ["https://", "http://"];
-        $regex = '/.+\.\w+\/?((\w*\/*)*)/i';//captures in $1 strings with the form bla or bla/ or bla/bla
-        $domain = str_replace($removeHttp, "", $completeDomain);//www.example.com/bla/bla
-        $ending = preg_replace($regex, '$1', $domain);
-        $domain = str_replace($ending, "", $domain);//www.example.com/
-        $domain = str_replace("/", "", $domain);//www.example.com
+        $domain = $this->extractDomainFromSiteUrl();
 
         try {
             $json = $this->validationApiWalletsEndpointCall(
@@ -90,7 +84,7 @@ class Mollie_WC_ApplePayButton_AjaxRequests
                 $validationUrl
             );
         } catch (\Mollie\Api\Exceptions\ApiException $exc) {
-            update_option('mollie_wc_applepay_validated', 'no');
+            update_option('mollie_wc_applepay_validated', false);
 
             wp_send_json_error(
                 sprintf(
@@ -101,7 +95,7 @@ class Mollie_WC_ApplePayButton_AjaxRequests
                 )
             );
         }
-        update_option('mollie_wc_applepay_validated', 'yes');
+        update_option('mollie_wc_applepay_validated', $domain);
 
         wp_send_json_success($json);
     }
@@ -802,6 +796,29 @@ class Mollie_WC_ApplePayButton_AjaxRequests
                 $validationUrl
             );
         return $json;
+    }
+
+    /**
+     * @return array|string|string[]
+     */
+    public function extractDomainFromSiteUrl()
+    {
+        $completeDomain = parse_url(
+            get_site_url(),
+            PHP_URL_HOST
+        ); //https://www.example.com/bla/bla
+        $removeHttp = ["https://", "http://"];
+        $regex
+            = '/.+\.\w+\/?((\w*\/*)*)/i';//captures in $1 strings with the form bla or bla/ or bla/bla
+        $domain = str_replace(
+            $removeHttp,
+            "",
+            $completeDomain
+        );//www.example.com/bla/bla
+        $ending = preg_replace($regex, '$1', $domain);
+        $domain = str_replace($ending, "", $domain);//www.example.com/
+        $domain = str_replace("/", "", $domain);
+        return $domain;//www.example.com
     }
 
 }

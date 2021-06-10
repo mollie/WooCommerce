@@ -102,9 +102,10 @@ class Mollie_WC_Helper_ApplePayDirectHandler
      */
     protected function merchantValidated()
     {
-        $option = get_option('mollie_wc_applepay_validated', 'yes');
+        $option = get_option('mollie_wc_applepay_validated', false);
+        $domain = $this->ajaxRequests->extractDomainFromSiteUrl();
 
-        return $option == 'yes';
+        return $option == $domain;
     }
 
     /**

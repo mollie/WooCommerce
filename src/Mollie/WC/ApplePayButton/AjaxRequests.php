@@ -803,22 +803,10 @@ class Mollie_WC_ApplePayButton_AjaxRequests
      */
     public function extractDomainFromSiteUrl()
     {
-        $completeDomain = parse_url(
+        return parse_url(
             get_site_url(),
             PHP_URL_HOST
-        ); //https://www.example.com/bla/bla
-        $removeHttp = ["https://", "http://"];
-        $regex
-            = '/.+\.\w+\/?((\w*\/*)*)/i';//captures in $1 strings with the form bla or bla/ or bla/bla
-        $domain = str_replace(
-            $removeHttp,
-            "",
-            $completeDomain
-        );//www.example.com/bla/bla
-        $ending = preg_replace($regex, '$1', $domain);
-        $domain = str_replace($ending, "", $domain);//www.example.com/
-        $domain = str_replace("/", "", $domain);
-        return $domain;//www.example.com
+        );
     }
 
 }

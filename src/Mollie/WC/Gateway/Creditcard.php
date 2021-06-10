@@ -202,7 +202,7 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
         $actual = get_transient('svg_creditcards_string');
         if(!$actual){
             $actual
-                = "<svg width=\"{$cardsWidth}\" height=\"24\" style=\"float:right\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">";
+                = "<svg width=\"{$cardsWidth}\" height=\"24\" class=\"mollie-gateway-icon\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">";
             foreach ($enabledCreditCards as $creditCard) {
                 $svgString = file_get_contents(
                     $assetsImagesPath . $creditCard
@@ -238,5 +238,14 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
         $positionAfterSvgWord = 4;
 
         return substr_replace($svgString, $positionString, $positionAfterSvgWord, 0);
+    }
+
+    /**
+     * Deletes the selector transient when the Admin option changes
+     *
+     */
+    protected function processAdminOptionCreditcardSelector()
+    {
+        delete_transient('svg_creditcards_string');
     }
 }

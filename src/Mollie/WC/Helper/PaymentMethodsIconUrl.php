@@ -44,6 +44,7 @@ class Mollie_WC_Helper_PaymentMethodsIconUrl
         }
 
         $svgPath = false;
+        $svgUrl = false;
         $gatewaySettings = get_option("mollie_wc_gateway_{$paymentMethodName}_settings", false);
 
         if($gatewaySettings){

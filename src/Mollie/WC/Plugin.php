@@ -280,7 +280,6 @@ class Mollie_WC_Plugin
 		self::initDb();
 		self::schedulePendingPaymentOrdersExpirationCheck();
         self::registerFrontendScripts();
-        wp_enqueue_style('mollie-gateway-icons');
         self::maybeFixSubscriptions();
 
 		// Mark plugin initiated
@@ -824,6 +823,8 @@ class Mollie_WC_Plugin
         if (is_admin() || !mollieWooCommerceIsCheckoutContext()) {
             return;
         }
+        wp_enqueue_style('mollie-gateway-icons');
+
         $applePayGatewayEnabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_applepay_settings', 'enabled');
 
         if (!$applePayGatewayEnabled) {

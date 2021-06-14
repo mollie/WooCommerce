@@ -133,8 +133,8 @@ function applePayValidationRewriteRule()
     add_action(
         'template_include',
         function ($template) {
-            if (get_query_var('appleparam') == false
-                || get_query_var('appleparam') == ''
+            if (get_query_var('appleparam') === false
+                || get_query_var('appleparam') === ''
             ) {
                 return $template;
             }

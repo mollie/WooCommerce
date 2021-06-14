@@ -105,7 +105,7 @@ class Mollie_WC_Helper_ApplePayDirectHandler
         $option = get_option('mollie_wc_applepay_validated', false);
         $domain = $this->ajaxRequests->extractDomainFromSiteUrl();
 
-        return $option == $domain;
+        return $option === $domain;
     }
 
     /**

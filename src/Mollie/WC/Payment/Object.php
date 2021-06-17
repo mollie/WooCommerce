@@ -660,4 +660,20 @@ class Mollie_WC_Payment_Object {
         );
     }
 
+    protected function addPaypalTransactionIdToOrder(
+        WC_Order $order
+    ) {
+        $payment = Mollie_WC_Plugin::getPaymentObject()->getActiveMolliePayment( $order->get_id() );
+
+        if($payment->isPaid() && $payment->details){
+            update_post_meta($order->get_id(), '_paypal_transaction_id', $payment->details->paypalReference);
+            $order->add_order_note(sprintf(
+                                   /* translators: Placeholder 1: PayPal consumer name, placeholder 2: PayPal email, placeholder 3: PayPal transaction ID */
+                                       __("Payment completed by <strong>%s</strong> - %s (PayPal transaction ID: %s)", 'mollie-payments-for-woocommerce'),
+                                       $payment->details->consumerName,
+                                       $payment->details->consumerAccount,
+                                       $payment->details->paypalReference
+                                   ));
+        }
+    }
 }

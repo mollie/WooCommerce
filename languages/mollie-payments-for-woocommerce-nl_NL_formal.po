@@ -462,7 +462,7 @@ msgstr "Verzending"
 
 #: src/Mollie/WC/Gateway/KlarnaSliceIt.php:33
 msgid "Klarna Slice it"
-msgstr "Klarna Slice it"
+msgstr "Betaal in 3 termijnen met creditcard"
 
 #: src/Mollie/WC/Gateway/KlarnaPayLater.php:40
 #: src/Mollie/WC/Gateway/KlarnaSliceIt.php:40

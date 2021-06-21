@@ -468,7 +468,7 @@ msgstr "Pour accepter les paiements via Klarna, tous les champs de paiement par 
 
 #: src/Mollie/WC/Gateway/KlarnaPayLater.php:33
 msgid "Klarna Pay later"
-msgstr "Klarna Pay Later"
+msgstr "Paiement en 3 fois sans frais"
 
 #: src/Mollie/WC/Helper/Status.php:131
 msgid "Mollie Payments for WooCommerce require PHP cURL functions to be available. Please make sure all of these functions are available."

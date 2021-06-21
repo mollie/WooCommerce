@@ -88,7 +88,7 @@
         }
         let preventSpam = false
         document.querySelector('#mollie-PayPal-button').addEventListener('click', (evt) => {
-            if(!(payPalButton.parentNode !== null)){
+            if(!(payPalButton.parentNode !== null) || payPalButton.disabled){
                 return
             }
             payPalButton.disabled = true;

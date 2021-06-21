@@ -660,7 +660,7 @@ class Mollie_WC_Helper_Settings
                 'id'                => $this->getSettingId('live_api_key'),
                 'title'             => __('Live API key', 'mollie-payments-for-woocommerce'),
                 'default'           => '',
-                'type'              => 'password',
+                'type'              => 'text',
                 'desc'              => sprintf(
                 /* translators: Placeholder 1: API key mode (live or test). The surrounding %s's Will be replaced by a link to the Mollie profile */
                     __('The API key is used to connect to Mollie. You can find your <strong>%s</strong> API key in your %sMollie profile%s', 'mollie-payments-for-woocommerce'),
@@ -670,10 +670,6 @@ class Mollie_WC_Helper_Settings
                 ),
                 'css'               => 'width: 350px',
                 'placeholder'       => $live_placeholder = __('Live API key should start with live_', 'mollie-payments-for-woocommerce'),
-                'custom_attributes' => array(
-                    'placeholder' => $live_placeholder,
-                    'pattern'     => '^live_\w{30,}$',
-                ),
             ),
             array(
                 'id'                => $this->getSettingId('test_mode_enabled'),
@@ -686,7 +682,7 @@ class Mollie_WC_Helper_Settings
                 'id'                => $this->getSettingId('test_api_key'),
                 'title'             => __('Test API key', 'mollie-payments-for-woocommerce'),
                 'default'           => '',
-                'type'              => 'password',
+                'type'              => 'text',
                 'desc'              => sprintf(
                 /* translators: Placeholder 1: API key mode (live or test). The surrounding %s's Will be replaced by a link to the Mollie profile */
                     __('The API key is used to connect to Mollie. You can find your <strong>%s</strong> API key in your %sMollie profile%s', 'mollie-payments-for-woocommerce'),
@@ -696,10 +692,6 @@ class Mollie_WC_Helper_Settings
                 ),
                 'css'               => 'width: 350px',
                 'placeholder'       => $test_placeholder = __('Test API key should start with test_', 'mollie-payments-for-woocommerce'),
-                'custom_attributes' => array(
-                    'placeholder' => $test_placeholder,
-                    'pattern'     => '^test_\w{30,}$',
-                ),
             ),
             [
                 'id'      => $this->getSettingId('debug'),

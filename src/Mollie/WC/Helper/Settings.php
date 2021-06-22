@@ -231,7 +231,35 @@ class Mollie_WC_Helper_Settings
                 'custom_attributes'=>['step'=>'0.01', 'min'=>'0.01', 'max'=>'999'],
                 'default' => '0.01',
                 'desc_tip' => true,
-            ]
+            ],
+            [
+                'id' => $defaultTitle . '_' . 'advanced',
+                'title' => sprintf(__(
+                                       '%s advanced',
+                                       'mollie-payments-for-woocommerce'
+                                   ), $defaultTitle),
+                'type' => 'title'
+            ],
+            'activate_expiry_days_setting' => array(
+                'title'             => __('Activate expiry date setting', 'mollie-payments-for-woocommerce'),
+                'label'             => __('Enable expiry date for payments', 'mollie-payments-for-woocommerce'),
+                'description'       => __('Enable this option if you want to be able to set the number of days after the order will expire.', 'mollie-payments-for-woocommerce'),
+                'type'              => 'checkbox',
+                'default'           => 'no',
+            ),
+            'order_dueDate' => [
+                'title' => sprintf(__('Expiry date', 'mollie-payments-for-woocommerce')),
+                'type' => 'number',
+                'description' => sprintf(
+                    __(
+                        'Number of MINUTES after the order will expire and will be canceled at Mollie and WooCommerce. A value of 0 means no expiry date will be considered.',
+                        'mollie-payments-for-woocommerce'
+                    )
+                ),
+                'custom_attributes'=>['step'=>'1', 'min'=>'0', 'max'=>'526000'],
+                'default' => '0',
+                'desc_tip' => true,
+            ],
         ];
 
         if ($paymentConfirmation) {
@@ -642,10 +670,6 @@ class Mollie_WC_Helper_Settings
                 ),
                 'css'               => 'width: 350px',
                 'placeholder'       => $live_placeholder = __('Live API key should start with live_', 'mollie-payments-for-woocommerce'),
-                'custom_attributes' => array(
-                    'placeholder' => $live_placeholder,
-                    'pattern'     => '^live_\w{30,}$',
-                ),
             ),
             array(
                 'id'                => $this->getSettingId('test_mode_enabled'),
@@ -668,10 +692,6 @@ class Mollie_WC_Helper_Settings
                 ),
                 'css'               => 'width: 350px',
                 'placeholder'       => $test_placeholder = __('Test API key should start with test_', 'mollie-payments-for-woocommerce'),
-                'custom_attributes' => array(
-                    'placeholder' => $test_placeholder,
-                    'pattern'     => '^test_\w{30,}$',
-                ),
             ),
             [
                 'id'      => $this->getSettingId('debug'),

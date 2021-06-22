@@ -22,6 +22,8 @@ class Mollie_WC_Settings_Page_Mollie extends WC_Settings_Page
     {
         global $current_section;
         $settings = $this->get_settings($current_section);
+        $settings = $this->hideKeysIntoStars($settings);
+
         WC_Admin_Settings::output_fields($settings);
     }
     /**
@@ -35,30 +37,9 @@ class Mollie_WC_Settings_Page_Mollie extends WC_Settings_Page
 
         $settings = $this->get_settings($current_section);
         if ('applepay_button' === $current_section) {
-            $data = filter_var_array($_POST,FILTER_SANITIZE_STRING);
-
-            $applepaySettings = [];
-            isset($data['enabled']) &&($data['enabled'] === '1') ? $applepaySettings['enabled'] = 'yes'
-                : $applepaySettings['enabled'] = 'no';
-            isset($data['display_logo'])&&($data['display_logo'] === '1') ?
-                $applepaySettings['display_logo'] = 'yes'
-                : $applepaySettings['display_logo'] = 'no';
-            isset($data['mollie_apple_pay_button_enabled_cart']) && ($data['mollie_apple_pay_button_enabled_cart'] === '1') ?
-                $applepaySettings['mollie_apple_pay_button_enabled_cart'] = 'yes'
-                : $applepaySettings['mollie_apple_pay_button_enabled_cart'] = 'no';
-            isset($data['mollie_apple_pay_button_enabled_product']) && ($data['mollie_apple_pay_button_enabled_product'] === '1') ?
-                $applepaySettings['mollie_apple_pay_button_enabled_product'] = 'yes'
-                : $applepaySettings['mollie_apple_pay_button_enabled_product'] = 'no';
-            isset($data['title']) ? $applepaySettings['title'] = $data['title']
-                : $applepaySettings['title'] = '';
-            isset($data['description']) ?
-                $applepaySettings['description'] = $data['description']
-                : $applepaySettings['description'] = '';
-            update_option(
-                'mollie_wc_gateway_applepay_settings',
-                $applepaySettings
-            );
+            $this->saveApplePaySettings();
         } else {
+            $settings = $this->saveApiKeys($settings);
             WC_Admin_Settings::save_fields($settings);
         }
     }
@@ -170,5 +151,126 @@ class Mollie_WC_Settings_Page_Mollie extends WC_Settings_Page
             'woocommerce_get_sections_' . $this->id,
             $sections
         );
+    }
+
+    /**
+     * @param $settings
+     *
+     * @return array
+     */
+    protected function hideKeysIntoStars($settings)
+    {
+        $liveKeyName = 'mollie-payments-for-woocommerce_live_api_key';
+        $testKeyName = 'mollie-payments-for-woocommerce_test_api_key';
+        $liveValue = get_option($liveKeyName);
+        $testValue = get_option($testKeyName);
+
+        foreach ($settings as $key => $setting) {
+            if (($setting['id']
+                    === $liveKeyName
+                    && $liveValue)
+                || ($setting['id']
+                    === $testKeyName
+                    && $testValue)
+            ) {
+                $settings[$key]['value'] = '**********';
+            }
+        }
+        return $settings;
+    }
+
+    /**
+     * @param $settings
+     *
+     * @return array
+     */
+    protected function saveApiKeys($settings)
+    {
+
+        $liveKeyName = 'mollie-payments-for-woocommerce_live_api_key';
+        $testKeyName = 'mollie-payments-for-woocommerce_test_api_key';
+        $liveValueInDb = get_option($liveKeyName);
+        $testValueInDb = get_option($testKeyName);
+        $postedLiveValue = isset($_POST[$liveKeyName])? sanitize_text_field( $_POST[$liveKeyName] ):'';
+        $postedTestValue = isset($_POST[$testKeyName])? sanitize_text_field( $_POST[$testKeyName] ):'';
+
+        foreach ($settings as $setting) {
+            if ($setting['id']
+                === $liveKeyName
+                && $liveValueInDb
+            ) {
+                if ($postedLiveValue === '**********') {
+                    $_POST[$liveKeyName] = $liveValueInDb;
+                }else {
+                    $pattern = '/^live_\w{30,}$/';
+                    $this->validateApiKeyOrRemove(
+                        $pattern,
+                        $postedLiveValue,
+                        $liveKeyName
+                    );
+                }
+            } elseif ($setting['id']
+                === $testKeyName
+                && $testValueInDb
+            ) {
+                if ($postedTestValue === '**********') {
+                    $_POST[$testKeyName] = $testValueInDb;
+                }else {
+                    $pattern = '/^test_\w{30,}$/';
+                    $this->validateApiKeyOrRemove(
+                        $pattern,
+                        $postedTestValue,
+                        $testKeyName
+                    );
+                }
+            }
+        }
+        return $settings;
+    }
+
+    protected function saveApplePaySettings()
+    {
+        $data = filter_var_array($_POST, FILTER_SANITIZE_STRING);
+
+        $applepaySettings = [];
+        isset($data['enabled']) && ($data['enabled'] === '1') ?
+            $applepaySettings['enabled'] = 'yes'
+            : $applepaySettings['enabled'] = 'no';
+        isset($data['display_logo']) && ($data['display_logo'] === '1') ?
+            $applepaySettings['display_logo'] = 'yes'
+            : $applepaySettings['display_logo'] = 'no';
+        isset($data['mollie_apple_pay_button_enabled_cart'])
+        && ($data['mollie_apple_pay_button_enabled_cart'] === '1') ?
+            $applepaySettings['mollie_apple_pay_button_enabled_cart'] = 'yes'
+            : $applepaySettings['mollie_apple_pay_button_enabled_cart'] = 'no';
+        isset($data['mollie_apple_pay_button_enabled_product'])
+        && ($data['mollie_apple_pay_button_enabled_product'] === '1')
+            ?
+            $applepaySettings['mollie_apple_pay_button_enabled_product'] = 'yes'
+            :
+            $applepaySettings['mollie_apple_pay_button_enabled_product'] = 'no';
+        isset($data['title']) ? $applepaySettings['title'] = $data['title']
+            : $applepaySettings['title'] = '';
+        isset($data['description']) ?
+            $applepaySettings['description'] = $data['description']
+            : $applepaySettings['description'] = '';
+        update_option(
+            'mollie_wc_gateway_applepay_settings',
+            $applepaySettings
+        );
+    }
+
+    /**
+     * @param       $pattern
+     * @param       $value
+     * @param       $keyName
+     *
+     */
+    protected function validateApiKeyOrRemove($pattern, $value, $keyName)
+    {
+        $hasApiFormat = preg_match($pattern, $value);
+        if (!$hasApiFormat) {
+            unset($_POST[$keyName]);
+        }
     }
 }

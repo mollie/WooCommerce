@@ -7,6 +7,7 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
     const EXPIRY_DEFAULT_DAYS = 12;
     const EXPIRY_MIN_DAYS     = 5;
     const EXPIRY_MAX_DAYS     = 60;
+    const EXPIRY_DAYS_OPTION = 'order_dueDate';
 
     /**
      *
@@ -29,6 +30,8 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
     public function init_form_fields()
     {
         parent::init_form_fields();
+        unset($this->form_fields['activate_expiry_days_setting']);
+        unset($this->form_fields['order_dueDate']);
 
         $this->form_fields = array_merge($this->form_fields, array(
             'activate_expiry_days_setting' => array(
@@ -38,10 +41,10 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
                 'type'              => 'checkbox',
                 'default'           => 'no',
             ),
-            'expiry_days' => array(
+            'order_dueDate' => array(
                 'title'             => __('Expiry date', 'mollie-payments-for-woocommerce'),
                 'type'              => 'number',
-                'description'       => sprintf(__('Number of days after the payment will expire. Default <code>%d</code> days', 'mollie-payments-for-woocommerce'), self::EXPIRY_DEFAULT_DAYS),
+                'description'       => sprintf(__('Number of DAYS after the payment will expire. Default <code>%d</code> days', 'mollie-payments-for-woocommerce'), self::EXPIRY_DEFAULT_DAYS),
                 'default'           => self::EXPIRY_DEFAULT_DAYS,
                 'custom_attributes' => array(
                     'min'  => self::EXPIRY_MIN_DAYS,
@@ -68,7 +71,7 @@ class Mollie_WC_Gateway_BankTransfer extends Mollie_WC_Gateway_Abstract
     public function addPaymentArguments( array $args, WC_Order $order ) {
         // Expiry date
         $expiry_days = (int)$this->get_option(
-            'expiry_days',
+            self::EXPIRY_DAYS_OPTION,
             self::EXPIRY_DEFAULT_DAYS
         );
 

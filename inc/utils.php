@@ -216,6 +216,9 @@ function mollieWooCommerceCheckIfNeedShipping($product)
         return false;
     }
     $needs_shipping = false;
+    if ($product->is_type('variable')){
+        return false;
+    }
 
     if ($product->needs_shipping()) {
         $needs_shipping = true;

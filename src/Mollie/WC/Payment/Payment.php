@@ -234,6 +234,10 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
 			// Add messages to log
 			Mollie_WC_Plugin::debug( __METHOD__ . ' called for payment ' . $orderId );
 
+            if($payment->method === 'paypal'){
+                $this->addPaypalTransactionIdToOrder($order);
+            }
+
 			// WooCommerce 2.2.0 has the option to store the Payment transaction id.
             $order->payment_complete($payment->id);
 

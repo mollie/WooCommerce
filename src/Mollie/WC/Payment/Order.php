@@ -248,19 +248,8 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			Mollie_WC_Plugin::debug( __METHOD__ . " called for order {$orderId}" );
 
             if($payment->method === 'paypal'){
-                $address = $payment->shippingAddress;
-                $filter = FILTER_SANITIZE_STRING;
-                $shippingAddress = [
-                    'first_name' => filter_var($address->givenName, $filter),
-                    'last_name' => filter_var($address->familyName, $filter),
-                    'email' => filter_var($address->email, $filter),
-                    'postcode' => filter_var($address->postalCode, $filter),
-                    'country' => strtoupper(filter_var($address->country, $filter)),
-                    'city' => filter_var($address->city, $filter),
-                    'address_1' => filter_var($address->streetAndNumber, $filter)
-                ];
-
-                $order->set_address($shippingAddress, 'shipping');
+                $this->addAddressToPaypalOrder($payment, $order);
+                $this->addPaypalTransactionIdToOrder($order);
             }
 
             $order->payment_complete($payment->id);
@@ -360,19 +349,8 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
 			Mollie_WC_Plugin::debug( __METHOD__ . ' called for order ' . $orderId );
 
 			if($payment->method === 'paypal'){
-                $address = $payment->shippingAddress;
-                $filter = FILTER_SANITIZE_STRING;
-                $shippingAddress = [
-                    'first_name' => filter_var($address->givenName, $filter),
-                    'last_name' => filter_var($address->familyName, $filter),
-                    'email' => filter_var($address->email, $filter),
-                    'postcode' => filter_var($address->postalCode, $filter),
-                    'country' => strtoupper(filter_var($address->country, $filter)),
-                    'city' => filter_var($address->city, $filter),
-                    'address_1' => filter_var($address->streetAndNumber, $filter)
-                ];
-
-                $order->set_address($shippingAddress, 'shipping');
+                $this->addAddressToPaypalOrder($payment, $order);
+                $this->addPaypalTransactionIdToOrder($order);
             }
             $order->payment_complete($payment->id);
 			// Add messages to log
@@ -1092,5 +1070,28 @@ class Mollie_WC_Payment_Order extends Mollie_WC_Payment_Object {
                 self::MAXIMAL_LENGHT_REGION
             );
         return $shippingAddress;
+    }
+
+    /**
+     * @param \Mollie\Api\Resources\Order $payment
+     * @param WC_Order                    $order
+     */
+    protected function addAddressToPaypalOrder(
+        \Mollie\Api\Resources\Order $payment,
+        WC_Order $order
+    ) {
+        $address = $payment->shippingAddress;
+        $filter = FILTER_SANITIZE_STRING;
+        $shippingAddress = [
+            'first_name' => filter_var($address->givenName, $filter),
+            'last_name' => filter_var($address->familyName, $filter),
+            'email' => filter_var($address->email, $filter),
+            'postcode' => filter_var($address->postalCode, $filter),
+            'country' => strtoupper(filter_var($address->country, $filter)),
+            'city' => filter_var($address->city, $filter),
+            'address_1' => filter_var($address->streetAndNumber, $filter)
+        ];
+
+        $order->set_address($shippingAddress, 'shipping');
     }
 }

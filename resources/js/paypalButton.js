@@ -60,25 +60,35 @@
             checkPriceRange(productQuantity)
         })
         checkPriceRange(productQuantity)
+
+        const fadeButton = () => {
+            payPalButton.disabled = true;
+            payPalButton.classList.add("buttonDisabled");
+        }
+
         if (isVariation) {
             jQuery('.single_variation_wrap').on('show_variation', function (event, variation) {
                 // Fired when the user selects all the required dropdowns / attributes
                 // and a final variation is selected / shown
-                if (variation.variation_id) {
+                if (variation.is_virtual && variation.variation_id) {
                     productId = variation.variation_id
+                    payPalButton.disabled = false;
+                    payPalButton.classList.remove("buttonDisabled");
                 }
-                payPalButton.disabled = false;
-                payPalButton.classList.remove("buttonDisabled");
             });
-            payPalButton.disabled = true;
-            payPalButton.classList.add("buttonDisabled");
+            jQuery('.reset_variations').on('click.wc-variation-form', function (event) {
+                productId = ''
+                fadeButton();
+
+            });
+            fadeButton();
         }
         if(payPalButton.parentNode == null){
             return
         }
         let preventSpam = false
         document.querySelector('#mollie-PayPal-button').addEventListener('click', (evt) => {
-            if(!(payPalButton.parentNode !== null)){
+            if(!(payPalButton.parentNode !== null) || payPalButton.disabled){
                 return
             }
             payPalButton.disabled = true;

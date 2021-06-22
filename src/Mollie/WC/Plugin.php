@@ -89,7 +89,7 @@ class Mollie_WC_Plugin
                     id int(11) NOT NULL AUTO_INCREMENT,
                     post_id bigint NOT NULL,
                     expired_time int NOT NULL,
-                    UNIQUE KEY id (id)
+                    PRIMARY KEY id (id)
                 );";
                 dbDelta($sql);
 

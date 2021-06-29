@@ -7,9 +7,9 @@ use Mollie\Api\Endpoints\OrderEndpoint;
 use Mollie\WooCommerceTests\Stubs\postDTOTestsStubs;
 use Mollie\WooCommerceTests\TestCase;
 use Mollie_WC_ApplePayButton_DataObjectHttp;
-use Mollie_WC_Helper_Data;
+use Data;
 use Mollie_WC_Payment_RefundLineItemsBuilder;
-use Mollie_WC_PayPalButton_AjaxRequests;
+use AjaxRequests;
 use PHPUnit_Framework_Exception;
 use PHPUnit_Framework_MockObject_MockObject;
 
@@ -27,7 +27,7 @@ class Mollie_WC_PayPalButton_AjaxRequests_Test extends TestCase
     private $refundLineItemsBuilder;
 
     /**
-     * @var Mollie_WC_Helper_Data
+     * @var Data
      */
     private $dataHelper;
 
@@ -66,9 +66,9 @@ class Mollie_WC_PayPalButton_AjaxRequests_Test extends TestCase
          * Sut
          */
         $testee = $this->buildTesteeMock(
-            Mollie_WC_PayPalButton_AjaxRequests::class,
-            [],
-            [
+	        AjaxRequests::class,
+	        [],
+	        [
                 'updateOrderPostMeta',
                 'processOrderPayment',
                 'addShippingMethodsToOrder',

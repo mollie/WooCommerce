@@ -1,6 +1,8 @@
 <?php
 
 use Mollie\Api\Endpoints\OrderEndpoint;
+use Mollie\WooCommerce\Payment\OrderItemsRefunder;
+use Mollie\WooCommerce\Plugin;
 use Mollie\WooCommerceTests\TestCase;
 
 function wc_string_to_bool($string)
@@ -125,7 +127,7 @@ class WC_Settings_API
 
 }
 
-class Mollie_WC_Helper_Data
+class Data
 {
     public function getWcOrder()
     {
@@ -167,7 +169,7 @@ class Mollie_WC_Helper_Data
     }
 }
 
-class Mollie_WC_Helper_Api
+class Api
 {
     public function getApiClient()
     {
@@ -543,12 +545,12 @@ class Mollie_WC_Helper_PaymentFactory
 {
     public function getPaymentObject($data)
     {
-        $dataHelper = Mollie_WC_Plugin::getDataHelper();
+        $dataHelper = Plugin::getDataHelper();
         $refundLineItemsBuilder = new Mollie_WC_Payment_RefundLineItemsBuilder($dataHelper);
-        $apiHelper = Mollie_WC_Plugin::getApiHelper();
-        $settingsHelper = Mollie_WC_Plugin::getSettingsHelper();
+        $apiHelper = Plugin::getApiHelper();
+        $settingsHelper = Plugin::getSettingsHelper();
 
-        $orderItemsRefunded = new Mollie_WC_Payment_OrderItemsRefunder(
+        $orderItemsRefunded = new OrderItemsRefunder(
             $refundLineItemsBuilder,
             $dataHelper,
             $apiHelper->getApiClient($settingsHelper->isTestModeEnabled())->orders

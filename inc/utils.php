@@ -2,6 +2,10 @@
 
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\CurrentProfile;
+use Mollie\WooCommerce\Components\ComponentsStyles;
+use Mollie\WooCommerce\Plugin;
+use Mollie\WooCommerce\SDK\Api;
+use Mollie\WooCommerce\Settings\SettingsComponents;
 
 /**
  * Check if the current page context is for checkout
@@ -14,14 +18,14 @@ function mollieWooCommerceIsCheckoutContext()
 }
 
 /**
- * Mollie_WC_Components_Styles Factory
+ * ComponentsStyles Factory
  *
  * @return array
  */
 function mollieWooCommerceComponentsStylesForAvailableGateways()
 {
-    $mollieComponentsStyles = new Mollie_WC_Components_Styles(
-        new Mollie_WC_Settings_Components(),
+    $mollieComponentsStyles = new ComponentsStyles(
+        new SettingsComponents(),
         WC()->payment_gateways()
     );
 
@@ -29,13 +33,13 @@ function mollieWooCommerceComponentsStylesForAvailableGateways()
 }
 
 /**
- * Is Mollie Test Mode enabled?
+ * Is MollieSettingsPage Test Mode enabled?
  *
  * @return bool
  */
 function mollieWooCommerceIsTestModeEnabled()
 {
-    $settingsHelper = Mollie_WC_Plugin::getSettingsHelper();
+    $settingsHelper = Plugin::getSettingsHelper();
     $isTestModeEnabled = $settingsHelper->isTestModeEnabled();
 
     return $isTestModeEnabled;
@@ -52,8 +56,8 @@ function mollieWooCommerceMerchantProfile()
 {
     $isTestMode = mollieWooCommerceIsTestModeEnabled();
 
-    $apiHelper = new Mollie_WC_Helper_Api(
-        Mollie_WC_Plugin::getSettingsHelper()
+    $apiHelper = new Api(
+        Plugin::getSettingsHelper()
     );
 
     return $apiHelper->getApiClient(
@@ -71,7 +75,7 @@ function mollieWooCommerceMerchantProfile()
 function mollieWooCommerceMerchantProfileId()
 {
     static $merchantProfileId = null;
-    $merchantProfileIdOptionKey = Mollie_WC_Plugin::PLUGIN_ID . '_profile_merchant_id';
+    $merchantProfileIdOptionKey = Plugin::PLUGIN_ID . '_profile_merchant_id';
 
     if ($merchantProfileId === null) {
         $merchantProfileId = get_option($merchantProfileIdOptionKey, '');
@@ -115,7 +119,7 @@ function mollieWooCommerceCardToken()
 function mollieWooCommerceAvailablePaymentMethods()
 {
     $testMode = mollieWooCommerceIsTestModeEnabled();
-    $dataHelper = Mollie_WC_Plugin::getDataHelper();
+    $dataHelper = Plugin::getDataHelper();
     $methods = $dataHelper->getApiPaymentMethods($testMode, $use_cache = true);
 
     return $methods;
@@ -125,11 +129,11 @@ function mollieWooCommerceAvailablePaymentMethods()
  * Isolates static debug calls.
  *
  * @param  string $message
- * @param bool  $set_debug_header Set X-Mollie-Debug header (default false)
+ * @param bool  $set_debug_header Set X-MollieSettingsPage-Debug header (default false)
  */
 function mollieWooCommerceDebug($message, $set_debug_header = false)
 {
-    Mollie_WC_Plugin::debug($message, $set_debug_header);
+    Plugin::debug($message, $set_debug_header);
 }
 
 /**
@@ -140,16 +144,16 @@ function mollieWooCommerceDebug($message, $set_debug_header = false)
  */
 function mollieWooCommerceNotice($message, $type = 'notice')
 {
-    Mollie_WC_Plugin::addNotice($message, $type);
+    Plugin::addNotice($message, $type);
 }
 /**
  * Isolates static getDataHelper calls.
  *
- * @return Mollie_WC_Helper_Data
+ * @return \Mollie\WooCommerce\Utils\Data
  */
 function mollieWooCommerceGetDataHelper()
 {
-    return Mollie_WC_Plugin::getDataHelper();
+    return Plugin::getDataHelper();
 }
 
 /**

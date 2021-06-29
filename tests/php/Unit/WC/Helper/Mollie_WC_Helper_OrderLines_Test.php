@@ -41,7 +41,7 @@ class Mollie_WC_Helper_OrderLines_Test extends TestCase
             ]
         );
         /*
-         * Setup Mollie_WC_Helper_Settings
+         * Setup Settings
          */
         $testee = $this->buildTesteeMethodMock(
             \Mollie_WC_Helper_OrderLines::class,

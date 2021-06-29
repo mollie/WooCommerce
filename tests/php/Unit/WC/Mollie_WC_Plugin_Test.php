@@ -7,7 +7,7 @@ use Mollie\Api\MollieApiClient;
 use Mollie\Api\Resources\Method;
 use Mollie\Api\Resources\MethodCollection;
 use Mollie\WooCommerceTests\TestCase;
-use Mollie_WC_Plugin;
+use Plugin;
 use PHPUnit_Framework_MockObject_MockObject;
 use PHPUnit_Framework_MockObject_RuntimeException;
 use RuntimeException;
@@ -16,7 +16,7 @@ use function Brain\Monkey\Functions\expect;
 use function Brain\Monkey\Functions\when;
 use Faker;
 
-class Mollie_WC_Plugin_Test extends TestCase
+class Plugin_Test extends TestCase
 {
     /**
      * @param $allowed
@@ -30,9 +30,9 @@ class Mollie_WC_Plugin_Test extends TestCase
         /*
          * Setup stubs
          */
-        $postData = Mollie_WC_Plugin::APPLE_PAY_METHOD_ALLOWED_KEY . "={$allowed}";
+        $postData = Plugin::APPLE_PAY_METHOD_ALLOWED_KEY . "={$allowed}";
         $gateways = [
-            'Mollie_WC_Gateway_Applepay',
+            'Applepay',
             new stdClass(),
         ];
 
@@ -63,7 +63,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         $wooCommerceSession
             ->expects($this->once())
             ->method('get')
-            ->with(Mollie_WC_Plugin::APPLE_PAY_METHOD_ALLOWED_KEY, false)
+            ->with(Plugin::APPLE_PAY_METHOD_ALLOWED_KEY, false)
             ->willReturn(false);
 
         /*
@@ -71,20 +71,20 @@ class Mollie_WC_Plugin_Test extends TestCase
          */
         expect('filter_input')
             ->once()
-            ->with(INPUT_POST, Mollie_WC_Plugin::POST_DATA_KEY, FILTER_SANITIZE_STRING)
+            ->with(INPUT_POST, Plugin::POST_DATA_KEY, FILTER_SANITIZE_STRING)
             ->andReturn($postData);
 
         $wooCommerceSession
             ->expects($allowed ? $this->once() : $this->never())
             ->method('set')
-            ->with(Mollie_WC_Plugin::APPLE_PAY_METHOD_ALLOWED_KEY, true);
+            ->with(Plugin::APPLE_PAY_METHOD_ALLOWED_KEY, true);
 
         /*
          * Execute Test
          */
-        $result = Mollie_WC_Plugin::maybeDisableApplePayGateway($gateways);
+        $result = Plugin::maybeDisableApplePayGateway($gateways);
 
-        self::assertEquals($expected, in_array('Mollie_WC_Gateway_Applepay', $result, true));
+        self::assertEquals($expected, in_array('Applepay', $result, true));
     }
 
     /**
@@ -98,7 +98,7 @@ class Mollie_WC_Plugin_Test extends TestCase
          * Stubs
          */
         $gateways = [
-            'Mollie_WC_Gateway_Applepay',
+            'Applepay',
             new stdClass(),
         ];
 
@@ -122,7 +122,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         /*
          * Execute Test
          */
-        $result = Mollie_WC_Plugin::maybeDisableApplePayGateway($gateways);
+        $result = Plugin::maybeDisableApplePayGateway($gateways);
 
         self::assertEquals($result, $gateways);
     }
@@ -137,7 +137,7 @@ class Mollie_WC_Plugin_Test extends TestCase
          * Stubs
          */
         $gateways = [
-            'Mollie_WC_Gateway_Applepay',
+            'Applepay',
             new stdClass(),
         ];
 
@@ -163,7 +163,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         /*
          * Execute Test
          */
-        $result = Mollie_WC_Plugin::maybeDisableApplePayGateway($gateways);
+        $result = Plugin::maybeDisableApplePayGateway($gateways);
 
         self::assertEquals($result, $gateways);
     }
@@ -178,7 +178,7 @@ class Mollie_WC_Plugin_Test extends TestCase
          * Stubs
          */
         $gateways = [
-            'Mollie_WC_Gateway_Applepay',
+            'Applepay',
             new stdClass(),
         ];
 
@@ -211,7 +211,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         /*
          * Execute Test
          */
-        $result = Mollie_WC_Plugin::maybeDisableApplePayGateway($gateways);
+        $result = Plugin::maybeDisableApplePayGateway($gateways);
 
         self::assertEquals($result, $gateways);
     }
@@ -225,7 +225,7 @@ class Mollie_WC_Plugin_Test extends TestCase
          * Stubs
          */
         $gateways = [
-            'Mollie_WC_Gateway_Applepay',
+            'Applepay',
             new stdClass(),
         ];
 
@@ -258,7 +258,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         /*
          * Execute Test
          */
-        $result = Mollie_WC_Plugin::maybeDisableApplePayGateway($gateways);
+        $result = Plugin::maybeDisableApplePayGateway($gateways);
 
         self::assertEquals($result, $gateways);
     }
@@ -315,7 +315,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         /*
          * Execute Test
          */
-        $result = Mollie_WC_Plugin::orderByRequest();
+        $result = Plugin::orderByRequest();
         self::assertEquals($order, $result);
     }
 
@@ -353,7 +353,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         /*
          * Execute Test
          */
-        $result = Mollie_WC_Plugin::orderByRequest();
+        $result = Plugin::orderByRequest();
         self::assertEquals($order, $result);
     }
 
@@ -398,7 +398,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         /*
          * Execute Test
          */
-        Mollie_WC_Plugin::orderByRequest();
+        Plugin::orderByRequest();
 
         self::expectExceptionMessage($message);
         self::expectExceptionCode($code);
@@ -422,7 +422,7 @@ class Mollie_WC_Plugin_Test extends TestCase
      */
     private function mockDataHelper()
     {
-        $mock = $this->getMockBuilder(Mollie_WC_Helper_Data::class)
+        $mock = $this->getMockBuilder(Data::class)
             ->disableOriginalConstructor()
             ->setMethods(['getWcOrder'])
             ->getMock();

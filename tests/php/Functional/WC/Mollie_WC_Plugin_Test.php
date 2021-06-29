@@ -3,9 +3,9 @@
 namespace Mollie\WooCommerceTests\Functional\WC;
 
 use Mollie\WooCommerceTests\TestCase;
-use Mollie_WC_Gateway_Abstract;
-use Mollie_WC_Plugin;
-use Mollie_WC_Helper_Data;
+use Mollie\WooCommerce\Gateway\AbstractGateway;
+use Mollie\WooCommerce\Plugin;
+use Mollie\WooCommerce\Utils\Data;
 use WC_Order;
 use WpScriptsStub;
 use function Brain\Monkey\Functions\expect;
@@ -14,9 +14,9 @@ use function Brain\Monkey\Functions\when;
 use Faker;
 
 /**
- * Class Mollie_WC_Plugin_Test
+ * Class Plugin_Test
  */
-class Mollie_WC_Plugin_Test extends TestCase
+class Plugin_Test extends TestCase
 {
     private $fileMTime;
 
@@ -33,15 +33,15 @@ class Mollie_WC_Plugin_Test extends TestCase
          */
         self::assertEquals(
             M4W_PLUGIN_URL . '/',
-            Mollie_WC_Plugin::getPluginPath()
+            Plugin::getPluginPath()
         );
         self::assertEquals(
             M4W_PLUGIN_URL . "/{$path}",
-            Mollie_WC_Plugin::getPluginPath("/{$path}")
+            Plugin::getPluginPath("/{$path}")
         );
         self::assertEquals(
             M4W_PLUGIN_URL . '/',
-            Mollie_WC_Plugin::getPluginPath('/')
+            Plugin::getPluginPath('/')
         );
     }
 
@@ -58,15 +58,15 @@ class Mollie_WC_Plugin_Test extends TestCase
          */
         self::assertEquals(
             M4W_PLUGIN_DIR . '/',
-            Mollie_WC_Plugin::getPluginPath()
+            Plugin::getPluginPath()
         );
         self::assertEquals(
             M4W_PLUGIN_DIR . "/{$path}",
-            Mollie_WC_Plugin::getPluginPath("/{$path}")
+            Plugin::getPluginPath("/{$path}")
         );
         self::assertEquals(
             M4W_PLUGIN_DIR . '/',
-            Mollie_WC_Plugin::getPluginPath('/')
+            Plugin::getPluginPath('/')
         );
     }
 
@@ -75,7 +75,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         /*
          * Execute Test
          */
-        Mollie_WC_Plugin::registerFrontendScripts();
+        Plugin::registerFrontendScripts();
 
         $wpScriptsStub = WpScriptsStub::instance();
 
@@ -94,7 +94,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         /*
          * Execute Test
          */
-        Mollie_WC_Plugin::registerFrontendScripts();
+        Plugin::registerFrontendScripts();
 
         $wpScriptsStub = WpScriptsStub::instance();
 
@@ -114,12 +114,12 @@ class Mollie_WC_Plugin_Test extends TestCase
         /*
          * Execute Test
          */
-        Mollie_WC_Plugin::registerFrontendScripts();
+        Plugin::registerFrontendScripts();
 
         $wpScriptsStub = WpScriptsStub::instance();
 
         /*
-        * Mollie JS
+        * MollieSettingsPage JS
         */
         $mollieScript = $wpScriptsStub->registered('script', 'mollie');
         self::assertEquals('mollie', $mollieScript[0]);
@@ -129,7 +129,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         self::assertEquals(true, $mollieScript[4]);
 
         /*
-         * Mollie Components Css
+         * MollieSettingsPage Components Css
          */
         $mollieComponentsStyle = $wpScriptsStub->registered('style', 'mollie-components');
         self::assertEquals('mollie-components', $mollieComponentsStyle[0]);
@@ -142,7 +142,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         self::assertEquals('screen', $mollieComponentsStyle[4]);
 
         /*
-         * Mollie Components Js
+         * MollieSettingsPage Components Js
          */
         $mollieComponentsScript = $wpScriptsStub->registered('script', 'mollie-components');
         self::assertEquals('mollie-components', $mollieComponentsScript[0]);
@@ -174,7 +174,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         /*
          * Execute Test
          */
-        Mollie_WC_Plugin::enqueueFrontendScripts();
+        Plugin::enqueueFrontendScripts();
 
         $wpScriptsStub = WpScriptsStub::instance();
 
@@ -208,7 +208,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         /*
          * Execute Test
          */
-        Mollie_WC_Plugin::enqueueFrontendScripts();
+        Plugin::enqueueFrontendScripts();
 
         self::assertEquals(true, empty(WpScriptsStub::instance()->allEnqueued('script')));
     }
@@ -245,7 +245,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         /*
          * Execute Test
          */
-        Mollie_WC_Plugin::enqueueComponentsAssets();
+        Plugin::enqueueComponentsAssets();
 
         $wpScriptsStub = WpScriptsStub::instance();
 
@@ -292,7 +292,7 @@ class Mollie_WC_Plugin_Test extends TestCase
         /*
          * Setup Stubs to mock the external dependencies and its methods
          */
-        $gateway = $this->getMockBuilder(Mollie_WC_Gateway_Abstract::class)
+        $gateway = $this->getMockBuilder(AbstractGateway::class)
             ->disableOriginalConstructor()
             ->setMethods(['getReturnRedirectUrlForOrder'])
             ->getMockForAbstractClass();
@@ -326,6 +326,6 @@ class Mollie_WC_Plugin_Test extends TestCase
         /*
          * Execute Test
          */
-        Mollie_WC_Plugin::onMollieReturn();
+        Plugin::onMollieReturn();
     }
 }

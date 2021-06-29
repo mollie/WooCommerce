@@ -11,10 +11,10 @@ use Mollie\WooCommerceTests\TestCase;
 use Mollie_WC_ApplePayButton_AjaxRequests;
 use Mollie_WC_ApplePayButton_ApplePayDataObjectHttp;
 use Mollie_WC_ApplePayButton_ResponsesToApple;
-use Mollie_WC_Helper_Api;
+use Mollie\WooCommerce\SDK\Api;
 use Mollie_WC_ApplePayButton_DataObjectHttp;
 use Mollie_WC_Helper_ApplePayDirectHandler;
-use Mollie_WC_Helper_Data;
+use Mollie\WooCommerce\Utils\Data;
 use Mollie_WC_Payment_RefundLineItemsBuilder;
 use PHPUnit_Framework_Exception;
 use PHPUnit_Framework_MockObject_MockObject;
@@ -34,7 +34,7 @@ class Mollie_WC_ApplePayButton_AjaxRequests_Test extends TestCase
     private $refundLineItemsBuilder;
 
     /**
-     * @var Mollie_WC_Helper_Data
+     * @var Data
      */
     private $dataHelper;
 
@@ -54,7 +54,7 @@ class Mollie_WC_ApplePayButton_AjaxRequests_Test extends TestCase
             'nonce' => $postDummyData->nonce
 
         ];
-        $responseFromMollie = ["response from Mollie"];
+        $responseFromMollie = ["response from MollieSettingsPage"];
         stubs(
             [
                 'get_site_url' => 'http://www.testdomain.com',

@@ -10,7 +10,7 @@ use function Brain\Monkey\Functions\when;
 class Mollie_WC_Payment_Object_Test extends TestCase
 {
     /**
-     * Test paymentObject return a valid Mollie_WC_Payment_Object instance
+     * Test paymentObject return a valid Object instance
      * @throws PHPUnit_Framework_Exception
      */
     public function testPaymentObject()
@@ -25,7 +25,7 @@ class Mollie_WC_Payment_Object_Test extends TestCase
                 ]
             );
 
-        $result = \Mollie_WC_Plugin::getPaymentObject();
+        $result = \Plugin::getPaymentObject();
 
         self::assertInstanceOf(
             Mollie_WC_Payment_Object::class,

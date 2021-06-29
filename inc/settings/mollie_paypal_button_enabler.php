@@ -1,5 +1,8 @@
 <?php
-$pluginName = Mollie_WC_Plugin::PLUGIN_ID;
+
+use Mollie\WooCommerce\Plugin;
+
+$pluginName = Plugin::PLUGIN_ID;
 
 return [
     [

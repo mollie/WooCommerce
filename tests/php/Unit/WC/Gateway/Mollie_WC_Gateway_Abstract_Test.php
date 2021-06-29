@@ -5,7 +5,7 @@ namespace Mollie\WooCommerceTests\Unit\WC\Gateway;
 use InvalidArgumentException;
 use Mollie\WooCommerceTests\Stubs\varPolylangTestsStubs;
 use Mollie\WooCommerceTests\TestCase;
-use Mollie_WC_Gateway_Abstract as Testee;
+use Mollie\WooCommerce\Gateway\AbstractGateway as Testee;
 use ReflectionMethod;
 use UnexpectedValueException;
 use WooCommerce;
@@ -16,7 +16,7 @@ use function Brain\Monkey\Functions\stubs;
 
 
 /**
- * Class Mollie_WC_Helper_Settings_Test
+ * Class Settings_Test
  */
 class Mollie_WC_Gateway_Abstract_Test extends TestCase
 {

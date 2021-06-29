@@ -12,7 +12,7 @@ use function Brain\Monkey\Functions\stubs;
 use function Brain\Monkey\Functions\when;
 
 /**
- * Class Mollie_WC_Plugin_Test
+ * Class Plugin_Test
  */
 class Mollie_WC_Helper_MaybeDisableGateway_Test extends TestCase
 {

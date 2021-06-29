@@ -301,7 +301,7 @@ function initializeComponents (
 
   /*
    * WooCommerce update the DOM when something on checkout page happen.
-   * Mollie does not allow to keep a copy of the mounted components.
+   * MollieSettingsPage does not allow to keep a copy of the mounted components.
    *
    * We have to mount every time the components but we cannot recreate them.
    */

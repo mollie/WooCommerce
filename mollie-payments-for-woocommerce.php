@@ -2,9 +2,9 @@
 /**
  * Plugin Name: Mollie Payments for WooCommerce
  * Plugin URI: https://www.mollie.com
- * Description: Accept payments in WooCommerce with the official Mollie plugin
+ * Description: Refactor Accept payments in WooCommerce with the official Mollie plugin
  * Version: 6.4.0
- * Author: Mollie
+ * Author: MollieSettingsPage
  * Author URI: https://www.mollie.com
  * Requires at least: 5.0
  * Tested up to: 5.7
@@ -19,6 +19,9 @@
 
 use Inpsyde\EnvironmentChecker\Constraints\PhpConstraint;
 use Inpsyde\EnvironmentChecker\Constraints\WordPressConstraint;
+use Mollie\WooCommerce\Activation\ConstraintsChecker;
+use Mollie\WooCommerce\Notice\AdminNotice;
+use Mollie\WooCommerce\Plugin;
 
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 
@@ -86,7 +89,7 @@ function mollieWcNoticeApiKeyMissing(){
         return;
     }
 
-    $notice = new Mollie_WC_Notice_AdminNotice();
+    $notice = new AdminNotice();
     $message = sprintf(
         esc_html__(
             '%1$sMollie Payments for WooCommerce: API keys missing%2$s Please%3$s set your API keys here%4$s.',
@@ -114,11 +117,11 @@ function mollie_wc_plugin_autoload()
         /** @noinspection PhpIncludeInspection */
         require $mollieSdkAutoload;
     }
-    return class_exists(Mollie_WC_Plugin::class);
+    return class_exists(Plugin::class);
 }
 function mollie_wc_plugin_init() {
     load_plugin_textdomain('mollie-payments-for-woocommerce', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/');
-    Mollie_WC_Plugin::init();
+    Plugin::init();
 }
 
 $bootstrap = Closure::bind(
@@ -127,13 +130,14 @@ $bootstrap = Closure::bind(
             'plugins_loaded',
             function () {
                 require_once __DIR__ . '/inc/functions.php';
-                require_once __DIR__ . '/src/subscriptions_status_check_functions.php';
+                require_once __DIR__
+	                . '/src/Subscription/WCToolsSubscriptionsStatusButton.php';
 
                 if (!mollie_wc_plugin_autoload()) {
                     return;
                 }
 
-                $checker = new Mollie_WC_ActivationHandle_ConstraintsChecker();
+                $checker = new ConstraintsChecker();
                 $meetRequirements = $checker->handleActivation();
                 if (!$meetRequirements) {
                     $nextScheduledTime = wp_next_scheduled('pending_payment_confirmation_check');

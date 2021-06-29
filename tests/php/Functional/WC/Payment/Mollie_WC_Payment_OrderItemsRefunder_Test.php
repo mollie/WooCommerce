@@ -10,8 +10,8 @@ use Mollie\Api\Endpoints\OrderEndpoint;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Refund;
-use Mollie_WC_Helper_Data;
-use Mollie_WC_Payment_OrderItemsRefunder;
+use Data;
+use Mollie\WooCommerce\Payment\OrderItemsRefunder;
 use Mollie_WC_Payment_RefundLineItemsBuilder;
 use PHPUnit_Framework_Exception;
 use PHPUnit_Framework_MockObject_MockObject;
@@ -23,7 +23,7 @@ use WC_Order_Item;
 use function Brain\Monkey\Actions\expectDone as expectedActionDone;
 use function Brain\Monkey\Functions\when;
 
-class Mollie_WC_Payment_OrderItemsRefunder_Test extends TestCase
+class OrderItemsRefunder_Test extends TestCase
 {
     use MockeryPHPUnitIntegration;
 
@@ -33,7 +33,7 @@ class Mollie_WC_Payment_OrderItemsRefunder_Test extends TestCase
     private $refundLineItemsBuilder;
 
     /**
-     * @var Mollie_WC_Helper_Data
+     * @var Data
      */
     private $dataHelper;
 
@@ -71,7 +71,7 @@ class Mollie_WC_Payment_OrderItemsRefunder_Test extends TestCase
         /*
          * Sut
          */
-        $orderItemsRefunder = new Mollie_WC_Payment_OrderItemsRefunder(
+        $orderItemsRefunder = new OrderItemsRefunder(
             $this->refundLineItemsBuilder,
             $this->dataHelper,
             $this->ordersApiClient
@@ -102,11 +102,11 @@ class Mollie_WC_Payment_OrderItemsRefunder_Test extends TestCase
             ->with($lineItems['toRefund'])
             ->willReturn($refund);
 
-        expectedActionDone(Mollie_WC_Payment_OrderItemsRefunder::ACTION_AFTER_CANCELED_ORDER_ITEMS)
+        expectedActionDone(OrderItemsRefunder::ACTION_AFTER_CANCELED_ORDER_ITEMS)
             ->once()
             ->with($lineItems['toCancel'], $order);
 
-        expectedActionDone(Mollie_WC_Payment_OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS)
+        expectedActionDone(OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS)
             ->once()
             ->with($refund, $order, $lineItems['toRefund']);
 
@@ -143,7 +143,7 @@ class Mollie_WC_Payment_OrderItemsRefunder_Test extends TestCase
         /*
          * Sut
          */
-        $orderItemsRefunder = new Mollie_WC_Payment_OrderItemsRefunder(
+        $orderItemsRefunder = new OrderItemsRefunder(
             $this->refundLineItemsBuilder,
             $this->dataHelper,
             $this->ordersApiClient
@@ -170,10 +170,10 @@ class Mollie_WC_Payment_OrderItemsRefunder_Test extends TestCase
         $remoteOrder->expects($this->never())->method('refund');
 
         expectedActionDone(
-            Mollie_WC_Payment_OrderItemsRefunder::ACTION_AFTER_CANCELED_ORDER_ITEMS
+            OrderItemsRefunder::ACTION_AFTER_CANCELED_ORDER_ITEMS
         )->never();
         expectedActionDone(
-            Mollie_WC_Payment_OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS
+            OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS
         )->never();
 
         /*
@@ -208,7 +208,7 @@ class Mollie_WC_Payment_OrderItemsRefunder_Test extends TestCase
         /*
          * Sut
          */
-        $orderItemsRefunder = new Mollie_WC_Payment_OrderItemsRefunder(
+        $orderItemsRefunder = new OrderItemsRefunder(
             $this->refundLineItemsBuilder,
             $this->dataHelper,
             $this->ordersApiClient
@@ -219,7 +219,7 @@ class Mollie_WC_Payment_OrderItemsRefunder_Test extends TestCase
          */
         $this->expectException(UnexpectedValueException::class);
         $this->expectExceptionMessage(
-            'One of the WooCommerce order items does not have the refund item ID meta value associated to Mollie Order item.'
+            'One of the WooCommerce order items does not have the refund item ID meta value associated to MollieSettingsPage Order item.'
         );
 
         /*
@@ -253,7 +253,7 @@ class Mollie_WC_Payment_OrderItemsRefunder_Test extends TestCase
         /*
          * Sut
          */
-        $orderItemsRefunder = new Mollie_WC_Payment_OrderItemsRefunder(
+        $orderItemsRefunder = new OrderItemsRefunder(
             $this->refundLineItemsBuilder,
             $this->dataHelper,
             $this->ordersApiClient
@@ -290,7 +290,7 @@ class Mollie_WC_Payment_OrderItemsRefunder_Test extends TestCase
         /*
          * Sut
          */
-        $orderItemsRefunder = new Mollie_WC_Payment_OrderItemsRefunder(
+        $orderItemsRefunder = new OrderItemsRefunder(
             $this->refundLineItemsBuilder,
             $this->dataHelper,
             $this->ordersApiClient
@@ -415,7 +415,7 @@ class Mollie_WC_Payment_OrderItemsRefunder_Test extends TestCase
     private function dataHelper()
     {
         $mock = $this
-            ->getMockBuilder(Mollie_WC_Helper_Data::class)
+            ->getMockBuilder(Data::class)
             ->disableOriginalConstructor()
             ->setMethods(['getOrderCurrency'])
             ->getMock();

@@ -5,7 +5,7 @@ namespace Mollie\WooCommerceTests\Functional\WC\Gateway;
 use Faker;
 use Mollie\WooCommerceTests\TestCase;
 use Mollie_WC_Gateway_Ideal;
-use Mollie_WC_Plugin;
+use Plugin;
 use PHPUnit_Framework_Exception;
 use PHPUnit_Framework_MockObject_MockObject;
 
@@ -15,7 +15,7 @@ use function Brain\Monkey\Functions\stubs;
 use function Brain\Monkey\Functions\when;
 
 /**
- * Class Mollie_WC_Plugin_Test
+ * Class Plugin_Test
  */
 class Mollie_WC_Gateway_Abstract_Test extends TestCase
 {
@@ -39,7 +39,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
         * Sut
         */
         $gatewayId = 'mollie_wc_gateway_ideal';
-        $issuer_id = Mollie_WC_Plugin::PLUGIN_ID . '_issuer_'. $gatewayId;
+        $issuer_id = Plugin::PLUGIN_ID . '_issuer_'. $gatewayId;
         $_POST[$issuer_id]= 'ideal_INGBNL2A';
         stubs(
             [
@@ -92,7 +92,7 @@ class Mollie_WC_Gateway_Abstract_Test extends TestCase
             ->andReturn(false);
         expect('wc_get_product')
             ->andReturn($this->wcProduct());
-        expectedActionDone(Mollie_WC_Plugin::PLUGIN_ID . '_create_payment')
+        expectedActionDone(Plugin::PLUGIN_ID . '_create_payment')
             ->once()
             ->with($this->expectedRequestData(), $wcOrder);
         /*

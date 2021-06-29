@@ -3,7 +3,7 @@
 namespace Mollie\WooCommerceTests\Functional\WC\Payment;
 
 use Mollie\WooCommerceTests\TestCase;
-use Mollie_WC_Helper_Data;
+use Data;
 use Mollie_WC_OrderLineStatus;
 use Mollie_WC_Payment_PartialRefundException;
 use Mollie_WC_Payment_RefundLineItemsBuilder;
@@ -17,7 +17,7 @@ use function Brain\Monkey\Functions\when;
 class Mollie_WC_Payment_RefundLineItemsBuilder_Test extends TestCase
 {
     /**
-     * @var PHPUnit_Framework_MockObject_MockObject|Mollie_WC_Helper_Data
+     * @var PHPUnit_Framework_MockObject_MockObject|Data
      */
     private $dataHelper;
 
@@ -258,8 +258,8 @@ class Mollie_WC_Payment_RefundLineItemsBuilder_Test extends TestCase
     }
 
     /**
-     * When a refund for order items is performed Mollie need to have a match against the refunded
-     * item value and the order item price stored in the Mollie service.
+     * When a refund for order items is performed MollieSettingsPage need to have a match against the refunded
+     * item value and the order item price stored in the MollieSettingsPage service.
      *
      * If this value does not match a PartialRefundException is thrown
      *
@@ -297,7 +297,7 @@ class Mollie_WC_Payment_RefundLineItemsBuilder_Test extends TestCase
 
         $this->expectException(Mollie_WC_Payment_PartialRefundException::class);
         $this->expectExceptionMessage(
-            'Mollie doesn\'t allow a partial refund of the full amount or quantity of at least one order line. Trying to process this as an amount refund instead.'
+            'MollieSettingsPage doesn\'t allow a partial refund of the full amount or quantity of at least one order line. Trying to process this as an amount refund instead.'
         );
 
         /*
@@ -313,7 +313,7 @@ class Mollie_WC_Payment_RefundLineItemsBuilder_Test extends TestCase
 
     /**
      * When performing a refund for order items should there be a match against the refunding items
-     * and the order items retrieved by Mollie service.
+     * and the order items retrieved by MollieSettingsPage service.
      *
      * If the refunding item does not exists in mollie service an UnexpectedValueException is thrown
      *
@@ -352,7 +352,7 @@ class Mollie_WC_Payment_RefundLineItemsBuilder_Test extends TestCase
 
         $this->expectException(UnexpectedValueException::class);
         $this->expectExceptionMessage(
-            "Cannot refund {$toRefundItemId} item because it was not found in Mollie order. Aborting refund process. Try to do a refund by amount."
+            "Cannot refund {$toRefundItemId} item because it was not found in MollieSettingsPage order. Aborting refund process. Try to do a refund by amount."
         );
 
         /*
@@ -432,7 +432,7 @@ class Mollie_WC_Payment_RefundLineItemsBuilder_Test extends TestCase
     private function dataHelper()
     {
         $mock = $this
-            ->getMockBuilder(Mollie_WC_Helper_Data::class)
+            ->getMockBuilder(Data::class)
             ->disableOriginalConstructor()
             ->setMethods(['formatCurrencyValue'])
             ->getMock();

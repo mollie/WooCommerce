@@ -9,7 +9,7 @@ use function Brain\Monkey\Functions\expect;
 
 
 /**
- * Class Mollie_WC_Helper_Settings_Test
+ * Class Settings_Test
  */
 class Mollie_WC_Gateway_Creditcard_Test extends TestCase
 {

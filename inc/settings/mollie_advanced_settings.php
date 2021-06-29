@@ -1,5 +1,10 @@
 <?php
-$pluginName = Mollie_WC_Plugin::PLUGIN_ID;
+
+use Mollie\WooCommerce\Gateway\AbstractGateway;
+use Mollie\WooCommerce\Plugin;
+use Mollie\WooCommerce\Settings\Settings;
+
+$pluginName = Plugin::PLUGIN_ID;
 return [
     [
         'id'    => $pluginName . '_' .'title',
@@ -19,15 +24,15 @@ return [
         'default' => 'pending',
     ],
     [
-        'id' =>$pluginName . '_' .Mollie_WC_Helper_Settings::SETTING_NAME_PAYMENT_LOCALE,
+        'id' =>$pluginName . '_' .Settings::SETTING_NAME_PAYMENT_LOCALE,
         'title'   => __('Payment screen language', 'mollie-payments-for-woocommerce'),
         'type'    => 'select',
         'options' => array(
-            Mollie_WC_Helper_Settings::SETTING_LOCALE_WP_LANGUAGE => __(
+            Settings::SETTING_LOCALE_WP_LANGUAGE => __(
                     'Automatically send WordPress language',
                     'mollie-payments-for-woocommerce'
                 ) . ' (' . __('default', 'mollie-payments-for-woocommerce') . ')',
-            Mollie_WC_Helper_Settings::SETTING_LOCALE_DETECT_BY_BROWSER => __(
+            Settings::SETTING_LOCALE_DETECT_BY_BROWSER => __(
                 'Detect using browser language',
                 'mollie-payments-for-woocommerce'
             ),
@@ -58,7 +63,7 @@ return [
             '<a href="https://www.mollie.com/nl/docs/reference/payments/create" target="_blank">',
             '</a>'
         ),
-        'default' => Mollie_WC_Helper_Settings::SETTING_LOCALE_WP_LANGUAGE,
+        'default' => Settings::SETTING_LOCALE_WP_LANGUAGE,
     ],
     [
         'id'                => $pluginName . '_' .'customer_details',
@@ -85,15 +90,15 @@ return [
         ),
         'type' => 'select',
         'options' => [
-            Mollie_WC_Gateway_Abstract::PAYMENT_METHOD_TYPE_ORDER => ucfirst(
-                    Mollie_WC_Gateway_Abstract::PAYMENT_METHOD_TYPE_ORDER
+            AbstractGateway::PAYMENT_METHOD_TYPE_ORDER => ucfirst(
+                    AbstractGateway::PAYMENT_METHOD_TYPE_ORDER
                 ) . ' (' . __('default', 'mollie-payments-for-woocommerce')
                 . ')',
-            Mollie_WC_Gateway_Abstract::PAYMENT_METHOD_TYPE_PAYMENT => ucfirst(
-                Mollie_WC_Gateway_Abstract::PAYMENT_METHOD_TYPE_PAYMENT
+            AbstractGateway::PAYMENT_METHOD_TYPE_PAYMENT => ucfirst(
+                AbstractGateway::PAYMENT_METHOD_TYPE_PAYMENT
             ),
         ],
-        'default' => Mollie_WC_Gateway_Abstract::PAYMENT_METHOD_TYPE_ORDER,
+        'default' => AbstractGateway::PAYMENT_METHOD_TYPE_ORDER,
         /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
         'desc' => sprintf(
             __(

@@ -1,9 +1,13 @@
 <?php
-$pluginName = Mollie_WC_Plugin::PLUGIN_ID;
-$gateway = new Mollie_WC_Gateway_Applepay();
+
+use Mollie\WooCommerce\Gateway\ApplePay\Applepay;
+use Mollie\WooCommerce\Plugin;
+
+$pluginName = Plugin::PLUGIN_ID;
+$gateway = new Applepay();
 $title = $gateway->method_title;
 $description = $gateway->method_description;
-$pluginId = Mollie_WC_Plugin::PLUGIN_ID;
+$pluginId = Plugin::PLUGIN_ID;
 $applePayOption = get_option('mollie_wc_gateway_applepay_settings');
 
 return [

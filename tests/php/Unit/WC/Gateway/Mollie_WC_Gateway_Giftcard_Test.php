@@ -7,7 +7,7 @@ use Mollie_WC_Gateway_Giftcard as Testee;
 
 
 /**
- * Class Mollie_WC_Helper_Settings_Test
+ * Class Settings_Test
  */
 class Mollie_WC_Gateway_Giftcard_Test extends TestCase
 {

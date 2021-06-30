@@ -3,12 +3,12 @@
 namespace Mollie\WooCommerce\Utils;
 
 
-use Mollie\WooCommerce\Gateway\Voucher\Voucher;
+use Mollie\WooCommerce\Gateway\Voucher\Mollie_WC_Gateway_Voucher;
 
 class MaybeDisableGateway
 {
     /**
-     * Disable Meal Voucher Gateway if no categories associated with any product
+     * Disable Meal Mollie_WC_Gateway_Voucher Gateway if no categories associated with any product
      * in the cart
      *
      * @param array $gateways
@@ -36,7 +36,7 @@ class MaybeDisableGateway
             return $gateways;
         }
 
-        $mealvoucherGatewayClassName = 'Voucher';
+        $mealvoucherGatewayClassName = 'Mollie_WC_Gateway_Voucher';
         $mealVoucherGatewayIndex = array_search(
             $mealvoucherGatewayClassName,
             $gateways,
@@ -79,9 +79,9 @@ class MaybeDisableGateway
         foreach ($products as $product) {
             $postmeta = get_post_meta($product['product_id']);
             $localCategory = array_key_exists(
-                Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+                Mollie_WC_Gateway_Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
                 $postmeta
-            ) ? $postmeta[Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION][0] : false;
+            ) ? $postmeta[Mollie_WC_Gateway_Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION][0] : false;
             if ( isset($product['variation_id']) ) {
                 $postmeta = get_post_meta($product['variation_id']);
                 $postmeta = is_array($postmeta)?$postmeta:[];
@@ -119,11 +119,11 @@ class MaybeDisableGateway
      */
     public function productHasVoucherCategory($defaultCategory, $localCategory, $variationCategory = false)
     {
-        $defaultCatIsSet = $defaultCategory && ($defaultCategory !== Voucher::NO_CATEGORY);
-        $localCatIsNoCat = $localCategory && $localCategory === Voucher::NO_CATEGORY;
-        $localCatIsSet = $localCategory && $localCategory !== Voucher::NO_CATEGORY;
-        $variationCatIsNoCat = $variationCategory && $variationCategory === Voucher::NO_CATEGORY;
-        $variationCatIsSet = $variationCategory && $variationCategory !== Voucher::NO_CATEGORY;
+        $defaultCatIsSet = $defaultCategory && ($defaultCategory !== Mollie_WC_Gateway_Voucher::NO_CATEGORY);
+        $localCatIsNoCat = $localCategory && $localCategory === Mollie_WC_Gateway_Voucher::NO_CATEGORY;
+        $localCatIsSet = $localCategory && $localCategory !== Mollie_WC_Gateway_Voucher::NO_CATEGORY;
+        $variationCatIsNoCat = $variationCategory && $variationCategory === Mollie_WC_Gateway_Voucher::NO_CATEGORY;
+        $variationCatIsSet = $variationCategory && $variationCategory !== Mollie_WC_Gateway_Voucher::NO_CATEGORY;
         //In importance order variations ->local product (var, simple, subs) -> general
         if($variationCatIsNoCat){
             return false;

@@ -6,7 +6,7 @@ use Mollie\Api\Types\PaymentMethod;
 use Mollie\WooCommerce\Plugin;
 use Mollie\WooCommerce\Subscription\AbstractSepaRecurring;
 
-class Kbc extends AbstractSepaRecurring
+class Mollie_WC_Gateway_Kbc extends AbstractSepaRecurring
 {
     /**
      *

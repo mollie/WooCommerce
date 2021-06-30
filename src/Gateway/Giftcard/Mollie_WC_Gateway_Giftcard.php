@@ -6,7 +6,7 @@ use Mollie\Api\Types\PaymentMethod;
 use Mollie\WooCommerce\Gateway\AbstractGateway;
 use Mollie\WooCommerce\Plugin;
 
-class Giftcard extends AbstractGateway
+class Mollie_WC_Gateway_Giftcard extends AbstractGateway
 {
     /**
      *

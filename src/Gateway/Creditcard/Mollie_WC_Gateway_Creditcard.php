@@ -9,7 +9,7 @@ use Mollie\WooCommerce\Subscription\AbstractSubscription;
 use Mollie\WooCommerce\Utils\PaymentMethodsIconUrl;
 use WC_Order;
 
-class Creditcard extends AbstractSubscription
+class Mollie_WC_Gateway_Creditcard extends AbstractSubscription
 {
     public function __construct()
     {

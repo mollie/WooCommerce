@@ -5,7 +5,7 @@ namespace Mollie\WooCommerce\Gateway\KlarnaSliceIt;
 use Mollie\Api\Types\PaymentMethod;
 use Mollie\WooCommerce\Gateway\AbstractGateway;
 
-class KlarnaSliceIt extends AbstractGateway
+class Mollie_WC_Gateway_KlarnaSliceIt extends AbstractGateway
 {
 	/**
 	 *

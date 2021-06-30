@@ -5,7 +5,7 @@ namespace Mollie\WooCommerce\Gateway\Bancontact;
 use Mollie\Api\Types\PaymentMethod;
 use Mollie\WooCommerce\Subscription\AbstractSepaRecurring;
 
-class Bancontact extends AbstractSepaRecurring {
+class Mollie_WC_Gateway_Bancontact extends AbstractSepaRecurring {
 	/**
 	 *
 	 */

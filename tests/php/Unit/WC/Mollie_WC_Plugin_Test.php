@@ -32,7 +32,7 @@ class Plugin_Test extends TestCase
          */
         $postData = Plugin::APPLE_PAY_METHOD_ALLOWED_KEY . "={$allowed}";
         $gateways = [
-            'Applepay',
+            'Mollie_WC_Gateway_ApplePay',
             new stdClass(),
         ];
 
@@ -84,7 +84,7 @@ class Plugin_Test extends TestCase
          */
         $result = Plugin::maybeDisableApplePayGateway($gateways);
 
-        self::assertEquals($expected, in_array('Applepay', $result, true));
+        self::assertEquals($expected, in_array('Mollie_WC_Gateway_ApplePay', $result, true));
     }
 
     /**
@@ -98,7 +98,7 @@ class Plugin_Test extends TestCase
          * Stubs
          */
         $gateways = [
-            'Applepay',
+            'Mollie_WC_Gateway_ApplePay',
             new stdClass(),
         ];
 
@@ -137,7 +137,7 @@ class Plugin_Test extends TestCase
          * Stubs
          */
         $gateways = [
-            'Applepay',
+            'Mollie_WC_Gateway_ApplePay',
             new stdClass(),
         ];
 
@@ -178,7 +178,7 @@ class Plugin_Test extends TestCase
          * Stubs
          */
         $gateways = [
-            'Applepay',
+            'Mollie_WC_Gateway_ApplePay',
             new stdClass(),
         ];
 
@@ -225,7 +225,7 @@ class Plugin_Test extends TestCase
          * Stubs
          */
         $gateways = [
-            'Applepay',
+            'Mollie_WC_Gateway_ApplePay',
             new stdClass(),
         ];
 

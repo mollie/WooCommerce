@@ -8,7 +8,7 @@ use Mollie\WooCommerce\Plugin;
 use Mollie\WooCommerce\Subscription\AbstractSepaRecurring;
 use WC_Order;
 
-class Ideal extends AbstractSepaRecurring
+class Mollie_WC_Gateway_Ideal extends AbstractSepaRecurring
 {
     /**
      *
@@ -19,6 +19,7 @@ class Ideal extends AbstractSepaRecurring
             'products',
             'refunds',
         );
+        $this->id = 'mollie_wc_gateway_ideal';
 
         /* Has issuers dropdown */
         $this->has_fields = mollieWooCommerceIsDropdownEnabled('mollie_wc_gateway_ideal_settings');

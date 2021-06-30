@@ -5,16 +5,16 @@ namespace Mollie\WooCommerce\Gateway\MisterCash;
 use Mollie\WooCommerce\Subscription\AbstractSepaRecurring;
 
 /**
- * Class MisterCash
+ * Class Mollie_WC_Gateway_MisterCash
  *
  * LEGACY - DO NOT REMOVE!
- * MisterCash was renamed to Bancontact, but this class should stay available for
+ * Mollie_WC_Gateway_MisterCash was renamed to Mollie_WC_Gateway_Bancontact, but this class should stay available for
  * old orders and subscriptions!
  *
- * @deprecated Replaced by Bancontact
+ * @deprecated Replaced by Mollie_WC_Gateway_Bancontact
  */
 
-class MisterCash extends AbstractSepaRecurring
+class Mollie_WC_Gateway_MisterCash extends AbstractSepaRecurring
 {
     /**
      *

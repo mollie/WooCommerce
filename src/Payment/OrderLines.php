@@ -1,7 +1,7 @@
 <?php
 
 namespace Mollie\WooCommerce\Payment;
-use Mollie\WooCommerce\Gateway\Voucher\Voucher;
+use Mollie\WooCommerce\Gateway\Voucher\Mollie_WC_Gateway_Voucher;
 use Mollie\WooCommerce\Plugin;
 use WC_Order;
 use WC_Order_Item;
@@ -462,7 +462,7 @@ class OrderLines {
         //local product voucher category
         $localCategory = get_post_meta(
             $product->get_id(),
-            Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+            Mollie_WC_Gateway_Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
             false
         );
         $category = $localCategory[0] ? $localCategory[0] : $category;

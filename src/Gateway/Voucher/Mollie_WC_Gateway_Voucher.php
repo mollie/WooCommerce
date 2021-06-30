@@ -4,7 +4,7 @@ namespace Mollie\WooCommerce\Gateway\Voucher;
 
 use Mollie\WooCommerce\Gateway\AbstractGateway;
 
-class Voucher extends AbstractGateway
+class Mollie_WC_Gateway_Voucher extends AbstractGateway
 {
     const MEAL = 'meal';
     const ECO = 'eco';

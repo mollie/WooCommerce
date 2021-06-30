@@ -5,7 +5,7 @@ namespace Mollie\WooCommerce\Gateway\Paysafecard;
 use Mollie\Api\Types\PaymentMethod;
 use Mollie\WooCommerce\Gateway\AbstractGateway;
 
-class Paysafecard extends AbstractGateway
+class Mollie_WC_Gateway_Paysafecard extends AbstractGateway
 {
     /**
      * @return string

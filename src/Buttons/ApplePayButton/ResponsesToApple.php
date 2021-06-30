@@ -2,7 +2,7 @@
 
 namespace Mollie\WooCommerce\Buttons\ApplePayButton;
 
-use Mollie\WooCommerce\Gateway\ApplePay\Applepay;
+use Mollie\WooCommerce\Gateway\ApplePay\Mollie_WC_Gateway_ApplePay;
 
 class ResponsesToApple
 {
@@ -198,7 +198,7 @@ class ResponsesToApple
      */
     protected function redirectUrlOnSuccessfulPayment($orderId)
     {
-        $gateway = new Applepay();
+        $gateway = new Mollie_WC_Gateway_ApplePay();
         $order = wc_get_order($orderId);
         $redirect_url = $gateway->getReturnRedirectUrlForOrder($order);
         // Add utm_nooverride query string

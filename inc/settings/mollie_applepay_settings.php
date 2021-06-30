@@ -1,10 +1,10 @@
 <?php
 
-use Mollie\WooCommerce\Gateway\ApplePay\Applepay;
+use Mollie\WooCommerce\Gateway\ApplePay\Mollie_WC_Gateway_ApplePay;
 use Mollie\WooCommerce\Plugin;
 
 $pluginName = Plugin::PLUGIN_ID;
-$gateway = new Applepay();
+$gateway = new Mollie_WC_Gateway_ApplePay();
 $title = $gateway->method_title;
 $description = $gateway->method_description;
 $pluginId = Plugin::PLUGIN_ID;

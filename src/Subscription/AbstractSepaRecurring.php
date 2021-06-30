@@ -6,7 +6,7 @@ use DateInterval;
 use DateTime;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Types\SequenceType;
-use Mollie\WooCommerce\Gateway\DirectDebit\DirectDebit;
+use Mollie\WooCommerce\Gateway\DirectDebit\Mollie_WC_Gateway_DirectDebit;
 use Mollie\WooCommerce\Plugin;
 
 abstract class AbstractSepaRecurring extends AbstractSubscription
@@ -23,7 +23,7 @@ abstract class AbstractSepaRecurring extends AbstractSubscription
     public function __construct ()
     {
         parent::__construct();
-        $directDebit = new DirectDebit();
+        $directDebit = new Mollie_WC_Gateway_DirectDebit();
         if ($directDebit->enabled == 'yes' ) {
             $this->initSubscriptionSupport();
             $this->recurringMollieMethod = $directDebit;

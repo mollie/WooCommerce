@@ -7,7 +7,7 @@ use Mollie\Api\Types\PaymentMethod;
 use Mollie\WooCommerce\Gateway\AbstractGateway;
 use WC_Order;
 
-class Przelewy24 extends AbstractGateway
+class Mollie_WC_Gateway_Przelewy24 extends AbstractGateway
 {
 	/**
 	 *

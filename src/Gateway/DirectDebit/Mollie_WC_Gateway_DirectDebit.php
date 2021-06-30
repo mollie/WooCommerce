@@ -7,7 +7,7 @@ use Mollie\Api\Types\PaymentMethod;
 use Mollie\WooCommerce\Gateway\AbstractGateway;
 use WC_Order;
 
-class DirectDebit extends AbstractGateway {
+class Mollie_WC_Gateway_DirectDebit extends AbstractGateway {
 	/**
 	 *
 	 */

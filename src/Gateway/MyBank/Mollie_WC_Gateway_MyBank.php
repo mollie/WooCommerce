@@ -7,12 +7,12 @@ use Mollie\WooCommerce\Gateway\AbstractGateway;
 use WC_Order;
 
 /**
- * Class MyBank
+ * Class Mollie_WC_Gateway_MyBank
  */
-class MyBank extends AbstractGateway
+class Mollie_WC_Gateway_MyBank extends AbstractGateway
 {
     /**
-     * MyBank constructor.
+     * Mollie_WC_Gateway_MyBank constructor.
      */
     public function __construct()
     {
@@ -75,7 +75,7 @@ class MyBank extends AbstractGateway
         if ($payment->isPaid() && $payment->details) {
             return sprintf(
                 __(
-                    /* translators: Placeholder 1: MyBank consumer name, placeholder 2: Consumer Account number */
+                    /* translators: Placeholder 1: Mollie_WC_Gateway_MyBank consumer name, placeholder 2: Consumer Account number */
                     'Payment completed by <strong>%1$s</strong> - %2$s',
                     'mollie-payments-for-woocommerce'
                 ),

@@ -8,7 +8,7 @@ use Mollie\WooCommerce\Gateway\AbstractGateway;
 use Mollie\WooCommerce\Plugin;
 use WC_Order;
 
-class PayPal extends AbstractGateway
+class Mollie_WC_Gateway_PayPal extends AbstractGateway
 {
     /**
      *

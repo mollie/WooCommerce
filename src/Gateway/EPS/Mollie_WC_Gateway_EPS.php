@@ -5,7 +5,7 @@ namespace Mollie\WooCommerce\Gateway\EPS;
 use Mollie\Api\Types\PaymentMethod;
 use Mollie\WooCommerce\Subscription\AbstractSepaRecurring;
 
-class EPS extends AbstractSepaRecurring {
+class Mollie_WC_Gateway_EPS extends AbstractSepaRecurring {
 	/**
 	 *
 	 */

@@ -68,7 +68,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
         // No plugin id, gateway id is unique enough
         $this->plugin_id    = '';
         // Use gateway class name as gateway id
-        $this->id           = strtolower(get_class($this));
+        $this->gatewayId();
         // Set gateway title (visible in admin)
         $this->method_title = 'Mollie - ' . $this->getDefaultTitle();
         $this->method_description = $this->getSettingsDescription();
@@ -2739,5 +2739,12 @@ abstract class AbstractGateway extends WC_Payment_Gateway
                 'country' => $billingAddress->country,
         ];
         $order->set_address($wooBillingAddress, 'billing');
+    }
+
+    protected function gatewayId(): void
+    {
+        $fullGatewayClassname = get_class($this);
+        preg_match('/\w*$/', $fullGatewayClassname, $matches );
+        $this->id = strtolower($matches[0]);
     }
 }

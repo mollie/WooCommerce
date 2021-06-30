@@ -9,12 +9,12 @@ use Mollie\WooCommerce\Plugin;
 use WC_Order;
 
 /**
- * Class applepay
+ * Class Mollie_WC_Gateway_ApplePay
  */
-class Applepay extends AbstractGateway
+class Mollie_WC_Gateway_ApplePay extends AbstractGateway
 {
     /**
-     * Applepay constructor.
+     * Mollie_WC_Gateway_ApplePay constructor.
      */
     public function __construct()
     {

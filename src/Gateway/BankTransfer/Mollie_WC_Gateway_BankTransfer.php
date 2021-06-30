@@ -10,7 +10,7 @@ use Mollie\WooCommerce\Payment\MolliePayment;
 use Mollie\WooCommerce\Plugin;
 use WC_Order;
 
-class BankTransfer extends AbstractGateway
+class Mollie_WC_Gateway_BankTransfer extends AbstractGateway
 {
     const EXPIRY_DEFAULT_DAYS = 12;
     const EXPIRY_MIN_DAYS     = 5;

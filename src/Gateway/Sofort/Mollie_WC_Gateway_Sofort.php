@@ -7,7 +7,7 @@ use Mollie\Api\Types\PaymentMethod;
 use Mollie\WooCommerce\Subscription\AbstractSepaRecurring;
 use WC_Order;
 
-class Sofort extends AbstractSepaRecurring
+class Mollie_WC_Gateway_Sofort extends AbstractSepaRecurring
 {
     /**
      *

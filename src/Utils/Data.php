@@ -45,6 +45,19 @@ class Data
         $this->api_helper = $api_helper;
     }
 
+    public function gatewaysWithNamespace (): array
+    {
+        $gatewayClassnames = Plugin::$GATEWAY_CLASSNAMES;
+        $gatewayWithNamespace = [];
+        $gatewayNamespace = 'Mollie\\WooCommerce\\Gateway\\';
+        $gatewayNamePrefix = "Mollie_WC_Gateway_";
+        foreach ($gatewayClassnames as $gatewayClassname){
+            $dirname = str_replace($gatewayNamePrefix, "", $gatewayClassname);
+            $gatewayWithNamespace[] = $gatewayNamespace . $dirname . "\\" . $gatewayClassname;
+        }
+        return $gatewayWithNamespace;
+    }
+
     /**
      * Get current locale
      *

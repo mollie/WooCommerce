@@ -2,7 +2,7 @@
 
 namespace Mollie\WooCommerce\Buttons\PayPalButton;
 
-use Mollie\WooCommerce\Gateway\PayPal\PayPal;
+use Mollie\WooCommerce\Gateway\PayPal\Mollie_WC_Gateway_PayPal;
 use Mollie\WooCommerce\Plugin;
 use Mollie\WooCommerce\Utils\GatewaySurchargeHandler;
 use WC_Data_Exception;
@@ -204,7 +204,7 @@ class PayPalAjaxRequests
      */
     protected function processOrderPayment($orderId)
     {
-        $gateway = new PayPal();
+        $gateway = new Mollie_WC_Gateway_PayPal();
 
         $result = $gateway->process_payment($orderId);
         return $result;

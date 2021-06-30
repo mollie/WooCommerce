@@ -4,7 +4,7 @@ namespace Mollie\WooCommerce\Gateway\Belfius;
 use Mollie\Api\Types\PaymentMethod;
 use Mollie\WooCommerce\Subscription\AbstractSepaRecurring;
 
-class Belfius extends AbstractSepaRecurring
+class Mollie_WC_Gateway_Belfius extends AbstractSepaRecurring
 {
     /**
      *

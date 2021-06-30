@@ -5,7 +5,7 @@ namespace Mollie\WooCommerce\Gateway\Giropay;
 use Mollie\Api\Types\PaymentMethod;
 use Mollie\WooCommerce\Subscription\AbstractSepaRecurring;
 
-class Giropay extends AbstractSepaRecurring {
+class Mollie_WC_Gateway_Giropay extends AbstractSepaRecurring {
 	/**
 	 *
 	 */

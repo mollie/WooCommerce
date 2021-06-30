@@ -6,13 +6,13 @@ use DateInterval;
 use DateTime;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Gateway\AbstractGateway;
-use Mollie\WooCommerce\Gateway\DirectDebit\DirectDebit;
-use Mollie\WooCommerce\Gateway\Ideal\Ideal;
-use Mollie\WooCommerce\Gateway\KlarnaPayLater\KlarnaPayLater;
-use Mollie\WooCommerce\Gateway\KlarnaSliceIt\KlarnaSliceIt;
+use Mollie\WooCommerce\Gateway\DirectDebit\Mollie_WC_Gateway_DirectDebit;
+use Mollie\WooCommerce\Gateway\Ideal\Mollie_WC_Gateway_Ideal;
+use Mollie\WooCommerce\Gateway\KlarnaPayLater\Mollie_WC_Gateway_KlarnaPayLater;
+use Mollie\WooCommerce\Gateway\KlarnaSliceIt\Mollie_WC_Gateway_KlarnaSliceIt;
 use Mollie\WooCommerce\Plugin;
 use Mollie\WooCommerce\Utils\GatewaySurchargeHandler;
-use Mollie\WooCommerce\Gateway\BankTransfer\BankTransfer;
+use Mollie\WooCommerce\Gateway\BankTransfer\Mollie_WC_Gateway_BankTransfer;
 use WC_Gateway_BACS;
 
 class Settings
@@ -572,11 +572,11 @@ class Settings
 		$content .= ' (<a href="' . esc_attr( $refresh_methods_url ) . '">' . strtolower( __( 'Refresh', 'mollie-payments-for-woocommerce' ) ) . '</a>)';
 
 		$content .= '<ul style="width: 1000px; padding:20px 0 0 10px">';
-
-		foreach ( Plugin::$GATEWAYS as $gateway_classname ) {
+        $mollieGateways = $data_helper->gatewaysWithNamespace();
+		foreach ( $mollieGateways as $gateway_classname ) {
 			$gateway = new $gateway_classname;
 
-			// Remove MisterCash from list as it's renamed Bancontact
+			// Remove Mollie_WC_Gateway_MisterCash from list as it's renamed Mollie_WC_Gateway_Bancontact
 			if ( $gateway->id == 'mollie_wc_gateway_mistercash' ) {
 				continue;
 			}
@@ -806,8 +806,8 @@ class Settings
 	 */
 	protected function checkDirectDebitStatus( $content ) {
 
-		$ideal_gateway = new Ideal();
-		$sepa_gateway  = new DirectDebit();
+		$ideal_gateway = new Mollie_WC_Gateway_Ideal();
+		$sepa_gateway  = new Mollie_WC_Gateway_DirectDebit();
 
 		if ( ( class_exists( 'WC_Subscription' ) ) && ( $ideal_gateway->is_available() ) && ( ! $sepa_gateway->is_available() ) ) {
 
@@ -850,8 +850,8 @@ class Settings
 	 * @return string
 	 */
 	protected function warnAboutRequiredCheckoutFieldForKlarna( $content ) {
-        $woocommerce_klarnapaylater_gateway = new KlarnaPayLater();
-        $woocommerce_klarnasliceit_gateway = new KlarnaSliceIt();
+        $woocommerce_klarnapaylater_gateway = new Mollie_WC_Gateway_KlarnaPayLater();
+        $woocommerce_klarnasliceit_gateway = new Mollie_WC_Gateway_KlarnaSliceIt();
 
         if ($woocommerce_klarnapaylater_gateway->is_available() || $woocommerce_klarnasliceit_gateway->is_available()) {
             $content .= '<div class="notice notice-warning is-dismissible"><p>';

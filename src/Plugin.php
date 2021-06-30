@@ -15,25 +15,8 @@ use Mollie\WooCommerce\Buttons\PayPalButton\PayPalButtonHandler;
 use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPalScripts;
 use Mollie\WooCommerce\Components\AcceptedLocaleValuesDictionary;
 use Mollie\WooCommerce\Gateway\AbstractGateway;
-use Mollie\WooCommerce\Gateway\ApplePay\Applepay;
-use Mollie\WooCommerce\Gateway\Bancontact\Bancontact;
-use Mollie\WooCommerce\Gateway\Belfius\Belfius;
-use Mollie\WooCommerce\Gateway\Creditcard\Creditcard;
-use Mollie\WooCommerce\Gateway\DirectDebit\DirectDebit;
-use Mollie\WooCommerce\Gateway\EPS\EPS;
-use Mollie\WooCommerce\Gateway\Giftcard\Giftcard;
-use Mollie\WooCommerce\Gateway\Giropay\Giropay;
-use Mollie\WooCommerce\Gateway\Ideal\Ideal;
-use Mollie\WooCommerce\Gateway\Kbc\Kbc;
-use Mollie\WooCommerce\Gateway\KlarnaPayLater\KlarnaPayLater;
-use Mollie\WooCommerce\Gateway\KlarnaSliceIt\KlarnaSliceIt;
-use Mollie\WooCommerce\Gateway\MisterCash\MisterCash;
-use Mollie\WooCommerce\Gateway\MyBank\MyBank;
-use Mollie\WooCommerce\Gateway\PayPal\PayPal;
-use Mollie\WooCommerce\Gateway\Paysafecard\Paysafecard;
-use Mollie\WooCommerce\Gateway\Przelewy24\Przelewy24;
-use Mollie\WooCommerce\Gateway\Sofort\Sofort;
-use Mollie\WooCommerce\Gateway\Voucher\Voucher;
+use Mollie\WooCommerce\Gateway\ApplePay\Mollie_WC_Gateway_ApplePay;
+use Mollie\WooCommerce\Gateway\Voucher\Mollie_WC_Gateway_Voucher;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\OrderItemsRefunder;
@@ -47,7 +30,7 @@ use Mollie\WooCommerce\Utils\GatewaySurchargeHandler;
 use Mollie\WooCommerce\Utils\MaybeDisableGateway;
 use Mollie\WooCommerce\Utils\MaybeFixSubscription;
 use Mollie\WooCommerce\Utils\Status;
-use Mollie\WooCommerce\Gateway\BankTransfer\BankTransfer;
+use Mollie\WooCommerce\Gateway\BankTransfer\Mollie_WC_Gateway_BankTransfer;
 use RuntimeException;
 use WC_Order;
 use WC_Session;
@@ -73,29 +56,29 @@ class Plugin
     /**
      * @var array
      */
-    public static $GATEWAYS = array(
-        'Mollie\WooCommerce\Gateway\BankTransfer\BankTransfer',
-        'Mollie\WooCommerce\Gateway\Belfius\Belfius',
-        'Mollie\WooCommerce\Gateway\CreditCard\Creditcard',
-        'Mollie\WooCommerce\Gateway\DirectDebit\DirectDebit',
-        'Mollie\WooCommerce\Gateway\EPS\EPS',
-        'Mollie\WooCommerce\Gateway\Giropay\Giropay',
-        'Mollie\WooCommerce\Gateway\Ideal\Ideal',
-        'Mollie\WooCommerce\Gateway\Kbc\Kbc',
-        'Mollie\WooCommerce\Gateway\KlarnaPayLater\KlarnaPayLater',
-        'Mollie\WooCommerce\Gateway\KlarnaSliceIt\KlarnaSliceIt',
-        'Mollie\WooCommerce\Gateway\Bancontact\Bancontact',
+    public static $GATEWAY_CLASSNAMES = array(
+        'Mollie_WC_Gateway_BankTransfer',
+        'Mollie_WC_Gateway_Belfius',
+        'Mollie_WC_Gateway_Creditcard',
+        'Mollie_WC_Gateway_DirectDebit',
+        'Mollie_WC_Gateway_EPS',
+        'Mollie_WC_Gateway_Giropay',
+        'Mollie_WC_Gateway_Ideal',
+        'Mollie_WC_Gateway_Kbc',
+        'Mollie_WC_Gateway_KlarnaPayLater',
+        'Mollie_WC_Gateway_KlarnaSliceIt',
+        'Mollie_WC_Gateway_Bancontact',
 	    // LEGACY - DO NOT REMOVE!
-        // MisterCash was renamed to Bancontact, but this class should stay available for old orders and subscriptions!
-        'Mollie\WooCommerce\Gateway\MisterCash\MisterCash',
-        'Mollie\WooCommerce\Gateway\PayPal\PayPal',
-        'Mollie\WooCommerce\Gateway\Paysafecard\Paysafecard',
-        'Mollie\WooCommerce\Gateway\Przelewy24\Przelewy24',
-        'Mollie\WooCommerce\Gateway\Sofort\Sofort',
-        'Mollie\WooCommerce\Gateway\Giftcard\Giftcard',
-        'Mollie\WooCommerce\Gateway\Applepay\Applepay',
-        'Mollie\WooCommerce\Gateway\MyBank\MyBank',
-        'Mollie\WooCommerce\Gateway\Voucher\Voucher',
+        // Mollie_WC_Gateway_MisterCash was renamed to Mollie_WC_Gateway_Bancontact, but this class should stay available for old orders and subscriptions!
+        'Mollie_WC_Gateway_MisterCash',
+        'Mollie_WC_Gateway_PayPal',
+        'Mollie_WC_Gateway_Paysafecard',
+        'Mollie_WC_Gateway_Przelewy24',
+        'Mollie_WC_Gateway_Sofort',
+        'Mollie_WC_Gateway_Giftcard',
+        'Mollie_WC_Gateway_ApplePay',
+        'Mollie_WC_Gateway_MyBank',
+        'Mollie_WC_Gateway_Voucher',
 
     );
 
@@ -266,7 +249,7 @@ class Plugin
 		// Disable SEPA as payment option in WooCommerce checkout
 		add_filter( 'woocommerce_available_payment_gateways', array ( __CLASS__, 'disableSEPAInCheckout' ), 10, 1 );
 
-		// Disable old MisterCash as payment option in WooCommerce checkout
+		// Disable old Mollie_WC_Gateway_MisterCash as payment option in WooCommerce checkout
 		add_filter( 'woocommerce_available_payment_gateways', array ( __CLASS__, 'disableMisterCashInCheckout' ), 10, 1 );
 
 		// Disable Mollie methods on some pages
@@ -318,7 +301,7 @@ class Plugin
         );
         self::voucherEnabledHooks();
         add_filter(Plugin::PLUGIN_ID . '_retrieve_payment_gateways', function(){
-            return self::$GATEWAYS;
+            return self::$GATEWAY_CLASSNAMES;
         });
         add_action('wp_loaded', [__CLASS__, 'maybeTestModeNotice']);
         self::mollieApplePayDirectHandling();
@@ -388,7 +371,7 @@ class Plugin
     public static function cancelOrderOnExpiryDate ()
     {
         $minHeldDuration = 526000;
-        foreach (self::$GATEWAYS as $gateway){
+        foreach (self::$GATEWAY_CLASSNAMES as $gateway){
             $gatewayName = strtolower($gateway).'_settings';
             $gatewaySettings = get_option( $gatewayName );
             $heldDuration = isset($gatewaySettings['order_dueDate'])?$gatewaySettings['order_dueDate']:0;
@@ -400,7 +383,7 @@ class Plugin
                 $minHeldDuration = $heldDuration;
             }
             $heldDurationInSeconds = $heldDuration*60;
-            if($gateway == 'Mollie\WooCommerce\Gateway\BankTransfer\BankTransfer'){
+            if($gateway == 'Mollie_WC_Gateway_BankTransfer'){
                 $durationInHours = absint( $heldDuration )*24;
                 $durationInMinutes = $durationInHours*60;
                 $heldDurationInSeconds = $durationInMinutes*60;
@@ -488,7 +471,7 @@ class Plugin
      */
     public static function voucherBulkEditSave( $product ) {
         $post_id = $product->get_id();
-        $optionName = Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION;
+        $optionName = Mollie_WC_Gateway_Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION;
         if ( isset( $_REQUEST[$optionName] ) ) {
             $option = $_REQUEST[$optionName];
             update_post_meta( $post_id, $optionName, wc_clean( $option ) );
@@ -561,10 +544,10 @@ class Plugin
             $voucherSettings = get_option(
                     'mollie_wc_gateway_mealvoucher_settings'
             );
-            $defaultCategory = $voucherSettings? $voucherSettings['mealvoucher_category_default']:Voucher::NO_CATEGORY;
+            $defaultCategory = $voucherSettings? $voucherSettings['mealvoucher_category_default']:Mollie_WC_Gateway_Voucher::NO_CATEGORY;
         woocommerce_wp_select(
                 array(
-                        'id' => Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+                        'id' => Mollie_WC_Gateway_Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
                         'title' => __(
                                 'Select the default products category',
                                 'mollie-payments-for-woocommerce'
@@ -577,10 +560,10 @@ class Plugin
                         'type' => 'select',
                         'options' => array(
                                 $defaultCategory => __( 'Same as default category', 'mollie-payments-for-woocommerce' ),
-                                Voucher::NO_CATEGORY => 'No category',
-                                Voucher::MEAL => 'Meal',
-                                Voucher::ECO => 'Eco',
-                                Voucher::GIFT => 'Gift'
+                                Mollie_WC_Gateway_Voucher::NO_CATEGORY => 'No category',
+                                Mollie_WC_Gateway_Voucher::MEAL => 'Meal',
+                                Mollie_WC_Gateway_Voucher::ECO => 'Eco',
+                                Mollie_WC_Gateway_Voucher::GIFT => 'Gift'
 
                         ),
                         'default' => $defaultCategory,
@@ -608,16 +591,16 @@ class Plugin
     public static function saveProductVoucherOptionFields($post_id)
     {
         $option = filter_input(
-            INPUT_POST,
-            Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
-            FILTER_SANITIZE_STRING
+                INPUT_POST,
+                Mollie_WC_Gateway_Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+                FILTER_SANITIZE_STRING
         );
         $voucherCategory = isset($option) ? $option : '';
 
         update_post_meta(
-            $post_id,
-            Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
-            $voucherCategory
+                $post_id,
+                Mollie_WC_Gateway_Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+                $voucherCategory
         );
     }
 
@@ -640,10 +623,10 @@ class Plugin
                         'value'       => get_post_meta( $variation->ID, 'voucher', true ),
                         'options' => array(
                                 $defaultCategory => __( 'Same as default category', 'mollie-payments-for-woocommerce' ),
-                                Voucher::NO_CATEGORY => __( 'No Category', 'mollie-payments-for-woocommerce' ),
-                                Voucher::MEAL => __( 'Meal', 'mollie-payments-for-woocommerce' ),
-                                Voucher::ECO => __( 'Eco', 'mollie-payments-for-woocommerce' ),
-                                Voucher::GIFT => __( 'Gift', 'mollie-payments-for-woocommerce' )
+                                Mollie_WC_Gateway_Voucher::NO_CATEGORY => __('No Category', 'mollie-payments-for-woocommerce' ),
+                                Mollie_WC_Gateway_Voucher::MEAL => __('Meal', 'mollie-payments-for-woocommerce' ),
+                                Mollie_WC_Gateway_Voucher::ECO => __('Eco', 'mollie-payments-for-woocommerce' ),
+                                Mollie_WC_Gateway_Voucher::GIFT => __('Gift', 'mollie-payments-for-woocommerce' )
                         ),
                 )
         );
@@ -757,7 +740,7 @@ class Plugin
     }
 
     /**
-     * Bootstrap the PayPal button logic if feature enabled
+     * Bootstrap the Mollie_WC_Gateway_PayPal button logic if feature enabled
      */
     public static function molliePayPalButtonHandling()
     {
@@ -1152,7 +1135,9 @@ class Plugin
      */
 	public static function addGateways( array $gateways ) {
 
-		$gateways = array_merge( $gateways, self::$GATEWAYS );
+        $dataHelper = self::getDataHelper();
+        $mollieGateways = $dataHelper->gatewaysWithNamespace();
+		$gateways = array_merge( $gateways, $mollieGateways );
 
 		// Return if function get_current_screen() is not defined
 		if ( ! function_exists( 'get_current_screen' ) ) {
@@ -1167,9 +1152,9 @@ class Plugin
 			return $gateways;
 		}
 
-		// Remove old MisterCash (only) from WooCommerce Payment settings
+		// Remove old Mollie_WC_Gateway_MisterCash (only) from WooCommerce Payment settings
 		if ( is_admin() && ! empty( $current_screen->base ) && $current_screen->base == 'woocommerce_page_wc-settings' ) {
-			if ( ( $key = array_search( 'MisterCash', $gateways ) ) !== false ) {
+			if ( ( $key = array_search( 'Mollie_WC_Gateway_MisterCash', $gateways ) ) !== false ) {
 				unset( $gateways[ $key ] );
 			}
 		}
@@ -1206,7 +1191,7 @@ class Plugin
         ) {
             return $gateways;
         }
-        $bankTransferGatewayClassName = BankTransfer::class;
+        $bankTransferGatewayClassName = Mollie_WC_Gateway_BankTransfer::class;
         $bankTransferGatewayIndex = array_search($bankTransferGatewayClassName, $gateways, true);
         if ($bankTransferGatewayIndex !== false) {
             unset($gateways[$bankTransferGatewayIndex]);
@@ -1244,7 +1229,7 @@ class Plugin
             return $gateways;
         }
 
-        $applePayGatewayClassName = Applepay::class;
+        $applePayGatewayClassName = Mollie_WC_Gateway_ApplePay::class;
         $applePayGatewayIndex = array_search($applePayGatewayClassName, $gateways, true);
         $postData = (string)filter_input(
             INPUT_POST,
@@ -1631,7 +1616,7 @@ class Plugin
 	}
 
 	/**
-	 * Don't show old MisterCash in WooCommerce Checkout
+	 * Don't show old Mollie_WC_Gateway_MisterCash in WooCommerce Checkout
 	 */
 	public static function disableMisterCashInCheckout( $available_gateways ) {
 

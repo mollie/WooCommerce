@@ -1780,7 +1780,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
      */
     public function getWebhookUrl (WC_Order $order)
     {
-        $webhookUrl = WC()->api_request_url(strtolower(get_class($this)));
+        $webhookUrl = WC()->api_request_url($this->gatewayId());
         $webhookUrl = untrailingslashit($webhookUrl);
         $webhookUrl = $this->asciiDomainName($webhookUrl);
         $orderId = $order->get_id();
@@ -2741,10 +2741,11 @@ abstract class AbstractGateway extends WC_Payment_Gateway
         $order->set_address($wooBillingAddress, 'billing');
     }
 
-    protected function gatewayId(): void
+    protected function gatewayId()
     {
         $fullGatewayClassname = get_class($this);
         preg_match('/\w*$/', $fullGatewayClassname, $matches );
         $this->id = strtolower($matches[0]);
+        return $this->id;
     }
 }

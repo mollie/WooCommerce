@@ -2725,4 +2725,27 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         ];
         $order->set_address($wooBillingAddress, 'billing');
     }
+
+    /**
+	 * Get help text to display during onboarding setup.
+	 *
+	 * @return string
+	 */
+	public function get_setup_help_text() {
+		return sprintf(
+			/* translators: $1. Mollie account URL. $2. Settings URL. */
+			__( 'Create a <a href="%1$s" target="_blank">Mollie account</a> and finish the configuration in the <a href="%2$s" target="_blank">Mollie settings.</a>', 'mollie-payments-for-woocommerce' ),
+			'https://www.mollie.com/dashboard/signup',
+			$this->get_settings_url()
+		);
+	}
+
+    /**
+	 * Get the settings URL for onboarding configuration.
+	 *
+	 * @return string
+	 */
+	public function get_settings_url() {
+		return admin_url( 'admin.php?page=wc-settings&tab=mollie_settings' );
+	}
 }

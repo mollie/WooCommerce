@@ -17,7 +17,8 @@
   "require": {
     "php": "^7.2",
     "ext-intl": "*",
-    "ext-json": "*"
+    "ext-json": "*",
+    "inpsyde/modularity": "@stable"
   },
   "require-dev": {
     "phpunit/phpunit": "^7.1",
@@ -26,7 +27,10 @@
     "johnpbloch/wordpress-core": " ^5.0",
     "woocommerce/woocommerce": "^2.2 || ^3.0 || ^4.0",
     "fzaninotto/faker": "^1.9@dev",
-    "mollie/mollie-api-php": "^2.21"
+    "mollie/mollie-api-php": "^2.21",
+    "inpsyde/php-coding-standards": "@stable",
+    "php-stubs/wordpress-stubs": "^5.7",
+    "vimeo/psalm": "^4.8"
   },
   "autoload": {
     "psr-4": {
@@ -40,6 +44,14 @@
       "Mollie\\WooCommerceTests\\Unit\\": "tests/php/Unit",
       "Mollie\\WooCommerceTests\\Functional\\": "tests/php/Functional"
     }
+  },
+  "scripts": {
+    "check-coding-standards": "vendor/bin/phpcs",
+    "fix-coding-standards": "vendor/bin/phpcbf",
+    "tests": "@php ./vendor/phpunit/phpunit/phpunit --coverage-text",
+    "tests:no-cov": "@php ./vendor/phpunit/phpunit/phpunit --no-coverage",
+    "check-psalm": "vendor/bin/psalm",
+    "check-psalm:no-cache": "vendor/bin/psalm --no-cache"
   },
   "repositories": [
     {

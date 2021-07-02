@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<ruleset name="Mollie">
+
+    <description>Mollie</description>
+
+    <file>./inc</file>
+    <file>./src</file>
+    <exclude-pattern>./tests/</exclude-pattern>
+
+    <config name="testVersion" value="7.2"/>
+    <config name="ignore_warnings_on_exit" value="1"/>
+<rule ref="Inpsyde">
+
+    </rule>
+
+
+</ruleset>

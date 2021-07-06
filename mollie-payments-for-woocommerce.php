@@ -23,6 +23,7 @@ use Inpsyde\Modularity\Package;
 use Inpsyde\Modularity\Properties\PluginProperties;
 use Mollie\WooCommerce\Activation\ActivationModule;
 use Mollie\WooCommerce\Activation\ConstraintsChecker;
+use Mollie\WooCommerce\Gateway\Voucher\VoucherModule;
 use Throwable;
 
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
@@ -169,7 +170,8 @@ function initialize()
         $properties = PluginProperties::new(__FILE__);
         $bootstrap = Package::new($properties);
         $bootstrap->boot(
-            new ActivationModule()
+            new ActivationModule(),
+            new VoucherModule()
         );
     } catch (Throwable $throwable) {
         handleException($throwable);

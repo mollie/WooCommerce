@@ -9,9 +9,7 @@
 
     <config name="testVersion" value="7.2"/>
     <config name="ignore_warnings_on_exit" value="1"/>
-<rule ref="Inpsyde">
 
-    </rule>
 
 
 </ruleset>

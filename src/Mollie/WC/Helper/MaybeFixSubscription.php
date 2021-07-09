@@ -6,7 +6,7 @@ class Mollie_WC_Helper_MaybeFixSubscription
 
     public function maybeFix()
     {
-        $fixSubscriptionsProcess = get_option('mollie_wc_fix_subscriptions', false);
+        $fixSubscriptionsProcess = get_option('mollie_wc_fix_subscriptions2', false);
 
         $hasSubscriptionPlugin = function_exists('wcs_get_subscriptions');
         $canSchedule = function_exists('as_schedule_single_action');
@@ -44,7 +44,7 @@ class Mollie_WC_Helper_MaybeFixSubscription
                 }
             }
         }
-        update_option('mollie_wc_fix_subscriptions', true);
+        update_option('mollie_wc_fix_subscriptions2', true);
     }
 }
 

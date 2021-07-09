@@ -1952,7 +1952,8 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 	 */
 	public function get_transaction_url( $order ) {
 
-        $resource = ($order->get_meta( '_mollie_order_id', true )) ? 'orders' : 'payments';
+        $isPaymentApi = substr($order->get_meta( '_mollie_order_id', true ), 0, 3) === 'tr_'  ;
+        $resource = ($order->get_meta( '_mollie_order_id', true ) && !$isPaymentApi) ? 'orders' : 'payments';
 
 		$this->view_transaction_url = 'https://www.mollie.com/dashboard/' . $resource . '/%s';
 

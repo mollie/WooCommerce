@@ -292,7 +292,7 @@ class Mollie_WC_Plugin
         $gatewaSurchargeHandler = new Mollie_WC_Helper_GatewaySurchargeHandler();
     }
     /**
-     * See MOL-322
+     * See MOL-322, 405
      */
     public static function maybeFixSubscriptions(){
         $fixer = new Mollie_WC_Helper_MaybeFixSubscription();

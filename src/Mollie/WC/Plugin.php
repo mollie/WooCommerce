@@ -1653,7 +1653,10 @@ class Mollie_WC_Plugin
     {
         $canSchedule = function_exists('as_schedule_single_action');
         if ($canSchedule) {
-            as_schedule_single_action(time(), 'mollie_woocommerce_cancel_unpaid_orders');
+            if ( false === as_next_scheduled_action( 'mollie_woocommerce_cancel_unpaid_orders' ) ) {
+                as_schedule_recurring_action( time(), 600, 'mollie_woocommerce_cancel_unpaid_orders');
+            }
+
             add_action(
                     'mollie_woocommerce_cancel_unpaid_orders',
                     array(__CLASS__, 'cancelOrderOnExpiryDate'),

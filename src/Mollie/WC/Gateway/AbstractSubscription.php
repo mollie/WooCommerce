@@ -232,28 +232,20 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
             $validMandate = false;
             try
             {
-                if (isset($mandateId)) {
-                    Mollie_WC_Plugin::debug($this->id . ': Found mandate ID for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id );
-                    $mandate =  $mollieApiClient->customers->get($customer_id)->getMandate($mandateId);
+                // Get all mandates for the customer ID
+                Mollie_WC_Plugin::debug(
+                    $this->id . ': Try to get all mandates for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id
+                );
+                $mandates = $mollieApiClient->customers->get($customer_id)->mandates();
+                $renewalOrderMethod = $renewal_order->get_payment_method();
+                $renewalOrderMethod = str_replace("mollie_wc_gateway_", "", $renewalOrderMethod);
+                foreach ($mandates as $mandate) {
                     if ($mandate->status === 'valid') {
-                        $data['method'] = $mandate->method;
-                        $data['mandateId'] = $mandateId;
                         $validMandate = true;
-                    }
-                } else {
-                    // Get all mandates for the customer ID
-                    Mollie_WC_Plugin::debug($this->id . ': Try to get all mandates for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id );
-                    $mandates =  $mollieApiClient->customers->get($customer_id)->mandates();
-                    $renewalOrderMethod = $renewal_order->get_payment_method();
-                    $renewalOrderMethod = str_replace("mollie_wc_gateway_", "", $renewalOrderMethod);
-                    foreach ($mandates as $mandate) {
-                        if ($mandate->status === 'valid') {
-                            $validMandate = true;
+                        $data['method'] = $mandate->method;
+                        if ($mandate->method === $renewalOrderMethod) {
                             $data['method'] = $mandate->method;
-                            if($mandate->method === $renewalOrderMethod){
-                                $data['method'] = $mandate->method;
-                                break;
-                            }
+                            break;
                         }
                     }
                 }

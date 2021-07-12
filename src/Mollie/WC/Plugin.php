@@ -292,7 +292,7 @@ class Mollie_WC_Plugin
         $gatewaSurchargeHandler = new Mollie_WC_Helper_GatewaySurchargeHandler();
     }
     /**
-     * See MOL-322
+     * See MOL-322, 405
      */
     public static function maybeFixSubscriptions(){
         $fixer = new Mollie_WC_Helper_MaybeFixSubscription();
@@ -339,7 +339,6 @@ class Mollie_WC_Plugin
 
     public static function cancelOrderOnExpiryDate ()
     {
-        $minHeldDuration = 526000;
         foreach (self::$GATEWAYS as $gateway){
             $gatewayName = strtolower($gateway).'_settings';
             $gatewaySettings = get_option( $gatewayName );
@@ -347,9 +346,6 @@ class Mollie_WC_Plugin
 
             if ( $heldDuration < 1 ) {
                 continue;
-            }
-            if($heldDuration < $minHeldDuration){
-                $minHeldDuration = $heldDuration;
             }
             $heldDurationInSeconds = $heldDuration*60;
             if($gateway == 'Mollie_WC_Gateway_BankTransfer'){
@@ -377,9 +373,6 @@ class Mollie_WC_Plugin
                 }
             }
         }
-
-        wp_clear_scheduled_hook( 'mollie_woocommerce_cancel_unpaid_orders' );
-        wp_schedule_single_event( time() + ( absint( $minHeldDuration ) * 60 ), 'mollie_woocommerce_cancel_unpaid_orders' );
     }
 
     public static function voucherEnabledHooks(){
@@ -1653,7 +1646,10 @@ class Mollie_WC_Plugin
     {
         $canSchedule = function_exists('as_schedule_single_action');
         if ($canSchedule) {
-            as_schedule_single_action(time(), 'mollie_woocommerce_cancel_unpaid_orders');
+            if ( false === as_next_scheduled_action( 'mollie_woocommerce_cancel_unpaid_orders' ) ) {
+                as_schedule_recurring_action( time(), 600, 'mollie_woocommerce_cancel_unpaid_orders');
+            }
+
             add_action(
                     'mollie_woocommerce_cancel_unpaid_orders',
                     array(__CLASS__, 'cancelOrderOnExpiryDate'),
@@ -1661,7 +1657,6 @@ class Mollie_WC_Plugin
                     2
             );
         }
-
     }
 }
 

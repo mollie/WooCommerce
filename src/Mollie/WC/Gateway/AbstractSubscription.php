@@ -210,8 +210,6 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 	    $subscriptions                  = wcs_get_subscriptions_for_renewal_order( $renewal_order->get_id() );
 	    $subscription                   = array_pop( $subscriptions ); // Just need one valid subscription
 	    $subscription_mollie_payment_id = $subscription->get_meta( '_mollie_payment_id' );
-	    $subcriptionParentOrder = $subscription->get_parent();
-        $mandateId = isset($subcriptionParentOrder)? $subcriptionParentOrder->get_meta('_mollie_mandate_id') : null;
 
 	    if ( ! empty( $subscription_mollie_payment_id ) && ! empty( $subscription )  ) {
 		    $customer_id = $this->restore_mollie_customer_id_and_mandate( $customer_id, $subscription_mollie_payment_id, $subscription );
@@ -227,7 +225,6 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
         try
         {
             do_action(Mollie_WC_Plugin::PLUGIN_ID . '_create_payment', $data, $renewal_order);
-            $payment = null;
             $mollieApiClient = Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode);
             $validMandate = false;
             try

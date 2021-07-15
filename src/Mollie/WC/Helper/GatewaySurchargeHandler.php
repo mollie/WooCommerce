@@ -6,12 +6,16 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
     const FIXED_FEE = 'fixed_fee';
     const PERCENTAGE = 'percentage';
     const FIXED_AND_PERCENTAGE = 'fixed_fee_percentage';
+    const DEFAULT_FEE_LABEL = 'Gateway Fee';
+    protected $gatewayFeeLabel;
 
     /**
      * Mollie_WC_Helper_ApplePayDirectHandler constructor.
      */
     public function __construct()
     {
+        $this->gatewayFeeLabel = get_option('mollie-payments-for-woocommerce_gatewayFeeLabel', __(self::DEFAULT_FEE_LABEL, 'mollie-payments-for-woocommerce'));
+
         add_filter( 'woocommerce_cart_calculate_fees', [$this, 'add_engraving_fees'], 10, 1 );
         add_action( 'wp_enqueue_scripts', [$this, 'enqueueSurchargeScript' ]);
         add_action(
@@ -41,7 +45,10 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
         wp_localize_script(
             'gatewaySurcharge',
             'surchargeData',
-            ['ajaxUrl' => admin_url('admin-ajax.php')]
+            [
+                    'ajaxUrl' => admin_url('admin-ajax.php'),
+                    'gatewayFeeLabel' => $this->gatewayFeeLabel
+            ]
         );
     }
 
@@ -246,13 +253,8 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
      */
     protected function buildFeeName($gateway)
     {
-        $gatewayName = strtoupper(
-                str_replace('mollie_wc_gateway_', '', $gateway)
-        );
-        $notTranslated = "Mollie_WC_{$gatewayName} ";
-        $translated = __("Fee", 'mollie-payments-for-woocommerce');
 
-        return $notTranslated.$translated;
+        return __($this->gatewayFeeLabel, 'mollie-payments-for-woocommerce');
     }
 
     protected function addMaxLimit($fee, $gatewaySettings)
@@ -278,13 +280,12 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
         foreach ($fees as $fee){
             $feeName = $fee->get_name();
             $feeId = $fee->get_id();
-            if(strpos($feeName, 'Mollie_WC_') !== false){
+            if(strpos($feeName, $this->gatewayFeeLabel) !== false){
                 $order->remove_item($feeId);
                 wc_delete_order_item( $feeId );
                 $order->calculate_totals();
             }
         }
-
     }
 
     protected function orderAddFee($order, $amount, $surchargeName)

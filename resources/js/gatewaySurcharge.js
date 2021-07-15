@@ -18,6 +18,7 @@
                 if(hiddenField.length){
                     orderId = hiddenField.val()
                 }
+                const gatewayLabel = surchargeData.gatewayFeeLabel
 
                 $('body').on('change', 'input[name="payment_method"]', function() {
                     jQuery.ajax({
@@ -35,14 +36,14 @@
                                 const productTotal = "</th><td class='product-total'><span class='woocommerce-Price-amount amount'><bdi><span class='woocommerce-Price-currencySymbol'>"+ result.currency +"</span>"+ result.newTotal +"</bdi></span></td>"
 
                                 if(!result.amount){
-                                    if($('#order_review table:first-child tfoot tr').text().indexOf('Mollie_WC_') !== -1){
-                                        $('#order_review table:first-child tfoot tr:contains("Mollie_WC_")').remove()
+                                    if($('#order_review table:first-child tfoot tr').text().indexOf(gatewayLabel) !== -1){
+                                        $('#order_review table:first-child tfoot tr:contains("' +  gatewayLabel + '")').remove()
                                         $('#order_review table:first-child tfoot tr:last td').replaceWith(productTotal)
                                     }
                                 }else{
                                     const tableRow = "<tr><th scope='row' colspan='2'>"+ result.name + "</th><td class='product-total'><span class='woocommerce-Price-amount amount'><bdi><span class='woocommerce-Price-currencySymbol'>"+ result.currency +"</span>"+ (result.amount).toFixed(2) +"</bdi></span></td></tr>"
-                                    if($('#order_review table:first-child tfoot tr').text().indexOf('Mollie_WC_') !== -1){
-                                        $('#order_review table:first-child tfoot tr:contains("Mollie_WC_")').replaceWith(tableRow)
+                                    if($('#order_review table:first-child tfoot tr').text().indexOf(gatewayLabel) !== -1){
+                                        $('#order_review table:first-child tfoot tr:contains("' +  gatewayLabel + '")').replaceWith(tableRow)
                                         $('#order_review table:first-child tfoot tr:last td').replaceWith(productTotal)
                                     }else{
                                         $('#order_review table:first-child tfoot tr:first').after(tableRow)

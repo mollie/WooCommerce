@@ -198,12 +198,12 @@ class Mollie_WC_Helper_Settings
                 'type' => 'number',
                 'description' => sprintf(
                     __(
-                        'Control the fee added on checkout. Default 0.01',
+                        'Control the fee added on checkout. Default 0.00',
                         'mollie-payments-for-woocommerce'
                     )
                 ),
-                'custom_attributes'=>['step'=>'0.01', 'min'=>'0.01', 'max'=>'999'],
-                'default' => '0.01',
+                'custom_attributes'=>['step'=>'0.01', 'min'=>'0.00', 'max'=>'999'],
+                'default' => '0.00',
                 'desc_tip' => true,
             ],
             'percentage' => [
@@ -211,12 +211,12 @@ class Mollie_WC_Helper_Settings
                 'type' => 'number',
                 'description' => sprintf(
                     __(
-                        'Control the percentage fee added on checkout. Default 0.01',
+                        'Control the percentage fee added on checkout. Default 0.00',
                         'mollie-payments-for-woocommerce'
                     )
                 ),
-                'custom_attributes'=>['step'=>'0.01', 'min'=>'0.01', 'max'=>'999'],
-                'default' => '0.01',
+                'custom_attributes'=>['step'=>'0.01', 'min'=>'0.00', 'max'=>'999'],
+                'default' => '0.00',
                 'desc_tip' => true,
             ],
             'surcharge_limit' => [
@@ -228,8 +228,8 @@ class Mollie_WC_Helper_Settings
                         'mollie-payments-for-woocommerce'
                     )
                 ),
-                'custom_attributes'=>['step'=>'0.01', 'min'=>'0.01', 'max'=>'999'],
-                'default' => '0.01',
+                'custom_attributes'=>['step'=>'0.01', 'min'=>'0.00', 'max'=>'999'],
+                'default' => '0.00',
                 'desc_tip' => true,
             ],
             [

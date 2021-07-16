@@ -178,8 +178,8 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
 
     protected function calculteFeeAmount($cart, $gatewaySettings)
     {
-        $surgargeType = $gatewaySettings['payment_surcharge'];
-        $methodName = "calculate_{$surgargeType}";
+        $surchargeType = $gatewaySettings['payment_surcharge'];
+        $methodName = "calculate_{$surchargeType}";
 
         return $this->$methodName($cart, $gatewaySettings);
     }
@@ -201,12 +201,12 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
 
     protected function calculate_fixed_fee($cart, $gatewaySettings)
     {
-        return isset($gatewaySettings[self::FIXED_FEE])?(float) $gatewaySettings[self::FIXED_FEE]:0;
+        return !empty($gatewaySettings[self::FIXED_FEE])?(float) $gatewaySettings[self::FIXED_FEE]:0;
     }
 
     protected function calculate_percentage($cart, $gatewaySettings)
     {
-        if(!isset($gatewaySettings[self::PERCENTAGE])){
+        if(empty($gatewaySettings[self::PERCENTAGE])){
             return 0;
         }
         $percentageFee = $gatewaySettings[self::PERCENTAGE];
@@ -220,7 +220,7 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
 
     protected function calculate_percentage_order($order, $gatewaySettings)
     {
-        if(!isset($gatewaySettings[self::PERCENTAGE])){
+        if(empty($gatewaySettings[self::PERCENTAGE])){
             return 0;
         }
         $percentageFee = $gatewaySettings[self::PERCENTAGE];
@@ -259,9 +259,7 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
 
     protected function addMaxLimit($fee, $gatewaySettings)
     {
-        if (!isset($gatewaySettings['surcharge_limit'])
-            || $gatewaySettings['surcharge_limit'] == 0
-        ) {
+        if (empty($gatewaySettings['surcharge_limit'])) {
             return $fee;
         }
         $maxLimit = $gatewaySettings['surcharge_limit'];

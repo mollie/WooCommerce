@@ -268,4 +268,22 @@ function mollieWooCommerceIsMollieGateway($gateway)
     return false;
 }
 
+function mollieWooCommercIsExpiryDateEnabled()
+{
+    global $wpdb;
+    $option = 'mollie_wc_gateway_%_settings';
+    $gatewaySettings = $wpdb->get_results($wpdb->prepare( "SELECT option_value FROM $wpdb->options WHERE option_name LIKE %s", $option));
+    $expiryDateEnabled = false;
+    foreach($gatewaySettings as $gatewaySetting){
+        $values = unserialize($gatewaySetting->option_value);
+        if($values['enabled'] !== 'yes'){
+            continue;
+        }
+        if (!empty($values["activate_expiry_days_setting"]) && $values["activate_expiry_days_setting"] === 'yes'){
+            $expiryDateEnabled = true;
+        }
+    }
+    return $expiryDateEnabled;
+}
+
 

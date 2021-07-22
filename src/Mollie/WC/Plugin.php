@@ -1644,6 +1644,10 @@ class Mollie_WC_Plugin
 
     public static function handleExpiryDateCancelation()
     {
+        if(!mollieWooCommercIsExpiryDateEnabled()){
+            as_unschedule_action( 'mollie_woocommerce_cancel_unpaid_orders' );
+            return;
+        }
         $canSchedule = function_exists('as_schedule_single_action');
         if ($canSchedule) {
             if ( false === as_next_scheduled_action( 'mollie_woocommerce_cancel_unpaid_orders' ) ) {

@@ -19,8 +19,7 @@
                     orderId = hiddenField.val()
                 }
                 const gatewayLabel = surchargeData.gatewayFeeLabel
-
-                $('body').on('change', 'input[name="payment_method"]', function() {
+                const updateSurcharge = () => {
                     jQuery.ajax({
                         url: surchargeData.ajaxUrl,
                         method: 'POST',
@@ -56,6 +55,10 @@
                             console.warn(textStatus, errorThrown)
                         },
                     })
+                }
+                updateSurcharge()
+                $('body').on('change', 'input[name="payment_method"]', function() {
+                    updateSurcharge()
                 });
             });
         }

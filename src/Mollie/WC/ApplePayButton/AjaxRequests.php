@@ -217,6 +217,8 @@ class Mollie_WC_ApplePayButton_AjaxRequests
                 $order
             );
         }
+        $surchargeHandler = new Mollie_WC_Helper_GatewaySurchargeHandler();
+        $order = $surchargeHandler->addSurchargeFeeProductPage($order, 'mollie_wc_gateway_applepay');
 
         $orderId = $order->get_id();
 
@@ -277,6 +279,9 @@ class Mollie_WC_ApplePayButton_AjaxRequests
             $applePayRequestDataObject->shippingAddress,
             $order
         );
+        $surchargeHandler = new Mollie_WC_Helper_GatewaySurchargeHandler();
+        $order = $surchargeHandler->addSurchargeFeeProductPage($order, 'mollie_wc_gateway_applepay');
+
         $orderId = $order->get_id();
         $order->calculate_totals();
         $this->updateOrderPostMeta($orderId, $order);

@@ -54,7 +54,7 @@ import {request} from './applePayRequest.js';
                     data: {
                         action: 'mollie_apple_pay_update_shipping_method',
                         shippingMethod: event.shippingMethod,
-                        productId: id,
+                        productId: productId,
                         callerPage: 'productDetail',
                         productQuantity: productQuantity,
                         simplifiedContact: updatedContactInfo,
@@ -82,7 +82,7 @@ import {request} from './applePayRequest.js';
                     method: 'POST',
                     data: {
                         action: 'mollie_apple_pay_update_shipping_contact',
-                        productId: id,
+                        productId: productId,
                         callerPage: 'productDetail',
                         productQuantity: productQuantity,
                         simplifiedContact: event.shippingContact,

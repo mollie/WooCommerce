@@ -224,7 +224,20 @@ class Mollie_WC_Helper_Settings
                 'type' => 'number',
                 'description' => sprintf(
                     __(
-                        'Limit the maximum fee added on checkout. Default 0',
+                        'Limit the maximum fee added on checkout. Default 0, means no limit',
+                        'mollie-payments-for-woocommerce'
+                    )
+                ),
+                'custom_attributes'=>['step'=>'0.01', 'min'=>'0.00', 'max'=>'999'],
+                'default' => '0.00',
+                'desc_tip' => true,
+            ],
+            'maximum_limit' => [
+                'title' => sprintf(__('Surcharge only under this limit, in %s', 'mollie-payments-for-woocommerce'), html_entity_decode( get_woocommerce_currency_symbol())),
+                'type' => 'number',
+                'description' => sprintf(
+                    __(
+                        'Maximum order amount to apply surcharge. If the order is above this number the surcharge will not apply. Default 0',
                         'mollie-payments-for-woocommerce'
                     )
                 ),

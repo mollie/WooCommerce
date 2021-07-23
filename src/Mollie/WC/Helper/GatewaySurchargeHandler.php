@@ -91,6 +91,7 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
             return;
         }
         $this->orderRemoveFee($order);
+        $orderAmount = $order->get_total();
         $gatewaySettings = $this->gatewaySettings($gateway);
 
         if($this->aboveMaxLimit($orderAmount, $gatewaySettings)){
@@ -151,6 +152,18 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
         $amount = $this->calculteFeeAmount($cart, $gatewaySettings);
         $surchargeName = $this->buildFeeName($gateway);
         $cart->add_fee( $surchargeName, $amount );
+    }
+
+    public function aboveMaxLimit($totalAmount, $gatewaySettings)
+    {
+        $maxLimit = !empty($gatewaySettings['maximum_limit'])?$gatewaySettings['maximum_limit']:0;
+        if ($maxLimit <= 0) {
+            return false;
+        }
+        if($totalAmount > $maxLimit){
+            return true;
+        }
+        return false;
     }
 
     protected function chosenGateway()

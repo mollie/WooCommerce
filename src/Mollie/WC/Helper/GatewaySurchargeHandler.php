@@ -7,7 +7,7 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
     const PERCENTAGE = 'percentage';
     const FIXED_AND_PERCENTAGE = 'fixed_fee_percentage';
     const DEFAULT_FEE_LABEL = 'Gateway Fee';
-    protected $gatewayFeeLabel;
+    public $gatewayFeeLabel;
 
     /**
      * Mollie_WC_Helper_ApplePayDirectHandler constructor.
@@ -176,7 +176,7 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
         return $allSettings;
     }
 
-    protected function calculteFeeAmount($cart, $gatewaySettings)
+    public function calculteFeeAmount($cart, $gatewaySettings)
     {
         $surchargeType = $gatewaySettings['payment_surcharge'];
         $methodName = "calculate_{$surchargeType}";
@@ -196,6 +196,11 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
                 return $this->calculate_fixed_fee_percentage_order($cart, $gatewaySettings);
         }
 
+        return 0;
+    }
+
+    protected function calculate_no_fee($cart, $gatewaySettings)
+    {
         return 0;
     }
 

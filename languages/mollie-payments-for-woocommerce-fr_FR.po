@@ -757,38 +757,6 @@ msgstr "Mise à jour de l'abonnement de « En attente » à « Actif » jusq
 msgid "%s payment expired (%s) but not cancelled because of another pending payment (%s)."
 msgstr "Paiement %s expiré (%s) mais n’a pas été annulé en raison d’un autre paiement en attente (%s)."
 
-#: src/subscriptions_status_check_functions.php:195
-msgid "There are still some subscriptions left, use the tool again!"
-msgstr "Il reste encore des abonnements, utilisez à nouveau l'outil !"
-
-#: src/subscriptions_status_check_functions.php:193
-msgid "No more subscriptions left to process!"
-msgstr "Plus d'abonnements à traiter !"
-
-#: src/subscriptions_status_check_functions.php:180
-msgid "No subscriptions updated in this batch."
-msgstr "Aucun abonnement mis à jour dans ce lot."
-
-#: src/subscriptions_status_check_functions.php:156
-msgid "Subscription not updated because there was no valid mandate at Mollie. Processed by 'Mollie Subscriptions Status' tool."
-msgstr "Abonnement non mis à jour car il n'y avait pas de mandat valide chez Mollie. Traitée par l'outil « État des abonnements Mollie »."
-
-#: src/subscriptions_status_check_functions.php:142
-msgid "Subscription updated to Automated renewal via Mollie, status set to Active. Processed by 'Mollie Subscriptions Status' tool."
-msgstr "Abonnement mis à jour à Renouvellement automatisé via Mollie, état activé. Traité par l'outil « État des abonnements Mollie »."
-
-#: src/subscriptions_status_check_functions.php:36
-msgid "Check subscriptions status"
-msgstr "Vérifier l'état des abonnements"
-
-#: src/subscriptions_status_check_functions.php:35
-msgid "Mollie Subscriptions Status"
-msgstr "État des abonnements Mollie"
-
-#: src/subscriptions_status_check_functions.php:30
-msgid "Checks for subscriptions that are incorrectly set to 'Manual renewal'. First read the "
-msgstr "Vérification des abonnements dont la valeur « Renouvellement manuel » est incorrecte. Lisez d'abord le"
-
 #: src/Mollie/WC/Helper/Settings.php:463
 msgid "Store customer details at Mollie"
 msgstr "Enregistrer les détails du client chez Mollie"

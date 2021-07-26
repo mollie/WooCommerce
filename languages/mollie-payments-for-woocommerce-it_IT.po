@@ -757,38 +757,6 @@ msgstr "Aggiornamento dell'abbonamento da 'In attesa' to 'Attivo' fino a quando 
 msgid "%s payment expired (%s) but not cancelled because of another pending payment (%s)."
 msgstr "%s pagamento scaduto (%s) ma non annullato perché c’è un altro pagamento in sospeso (%s)."
 
-#: src/subscriptions_status_check_functions.php:195
-msgid "There are still some subscriptions left, use the tool again!"
-msgstr "Ci sono ancora degli abbonamenti, utilizza lo strumento di nuovo!"
-
-#: src/subscriptions_status_check_functions.php:193
-msgid "No more subscriptions left to process!"
-msgstr "Non ci sono più abbonamenti per l’elaborazione!"
-
-#: src/subscriptions_status_check_functions.php:180
-msgid "No subscriptions updated in this batch."
-msgstr "Nessun abbonamento aggiornato in questo batch."
-
-#: src/subscriptions_status_check_functions.php:156
-msgid "Subscription not updated because there was no valid mandate at Mollie. Processed by 'Mollie Subscriptions Status' tool."
-msgstr "Abbonamento non aggiornato perché su Mollie non era presente un mandato valido. Elaborato dallo strumento 'Stato degli abbonamenti Mollie'."
-
-#: src/subscriptions_status_check_functions.php:142
-msgid "Subscription updated to Automated renewal via Mollie, status set to Active. Processed by 'Mollie Subscriptions Status' tool."
-msgstr "Abbonamento aggiornato su rinnovo Automatico tramite Mollie, stato impostato su Attivo. Elaborato dallo strumento 'Stato degli abbonamenti Mollie'."
-
-#: src/subscriptions_status_check_functions.php:36
-msgid "Check subscriptions status"
-msgstr "Controlla stato degli abbonamenti"
-
-#: src/subscriptions_status_check_functions.php:35
-msgid "Mollie Subscriptions Status"
-msgstr "Stato degli abbonamenti Mollie"
-
-#: src/subscriptions_status_check_functions.php:30
-msgid "Checks for subscriptions that are incorrectly set to 'Manual renewal'. First read the "
-msgstr "Controlla gli abbonamenti impostati in modo errato su 'Rinnovo manuale'. Leggi prima il "
-
 #: src/Mollie/WC/Helper/Settings.php:463
 msgid "Store customer details at Mollie"
 msgstr "Memorizza dettagli cliente su Mollie"

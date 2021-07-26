@@ -36,7 +36,6 @@ if (!defined('M4W_PLUGIN_URL')) {
 function mollie_wc_plugin_activation_hook()
 {
     require_once __DIR__ . '/inc/functions.php';
-    require_once __DIR__ . '/src/subscriptions_status_check_functions.php';
 
     if (!mollie_wc_plugin_autoload()) {
         return;
@@ -127,7 +126,6 @@ $bootstrap = Closure::bind(
             'plugins_loaded',
             function () {
                 require_once __DIR__ . '/inc/functions.php';
-                require_once __DIR__ . '/src/subscriptions_status_check_functions.php';
 
                 if (!mollie_wc_plugin_autoload()) {
                     return;

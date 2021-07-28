@@ -757,38 +757,6 @@ msgstr "Das Abonnement wird von ‚ausstehend‘ auf ‚aktiv‘ aktualisiert, b
 msgid "%s payment expired (%s) but not cancelled because of another pending payment (%s)."
 msgstr "%s-Zahlung (%s) abgelaufen, wegen einer weiteren offenen Zahlung (%s) jedoch nicht abgebrochen."
 
-#: src/subscriptions_status_check_functions.php:195
-msgid "There are still some subscriptions left, use the tool again!"
-msgstr "Es sind noch Abonnements übrig, verwenden Sie das Tool erneut."
-
-#: src/subscriptions_status_check_functions.php:193
-msgid "No more subscriptions left to process!"
-msgstr "Keine zu verarbeitenden Abonnements übrig."
-
-#: src/subscriptions_status_check_functions.php:180
-msgid "No subscriptions updated in this batch."
-msgstr "In dieser Charge wurden keine Abonnements aktualisiert."
-
-#: src/subscriptions_status_check_functions.php:156
-msgid "Subscription not updated because there was no valid mandate at Mollie. Processed by 'Mollie Subscriptions Status' tool."
-msgstr "Die Abonnements wurden nicht aktualisiert, da Mollie kein gültiges Mandat vorliegt. Verarbeitet durch das Tool ‚Mollie-Abonnementstatus‘."
-
-#: src/subscriptions_status_check_functions.php:142
-msgid "Subscription updated to Automated renewal via Mollie, status set to Active. Processed by 'Mollie Subscriptions Status' tool."
-msgstr "Abonnement auf automatisierte Erneuerung über Mollie aktualisiert, Status auf aktiv gesetzt. Verarbeitet durch das Tool ‚Mollie-Abonnementstatus‘."
-
-#: src/subscriptions_status_check_functions.php:36
-msgid "Check subscriptions status"
-msgstr "Abonnementstatus überprüfen"
-
-#: src/subscriptions_status_check_functions.php:35
-msgid "Mollie Subscriptions Status"
-msgstr "Mollie-Abonnementstatus"
-
-#: src/subscriptions_status_check_functions.php:30
-msgid "Checks for subscriptions that are incorrectly set to 'Manual renewal'. First read the "
-msgstr "Überprüft auf fälschlicherweise auf ‚manuelle Erneuerung‘ gesetzte Abonnements. Lesen Sie zunächst die "
-
 #: src/Mollie/WC/Helper/Settings.php:463
 msgid "Store customer details at Mollie"
 msgstr "Kundendetails des Geschäfts bei Mollie"

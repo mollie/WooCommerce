@@ -757,38 +757,6 @@ msgstr "Suscripción actualizada de «En espera» a «Activa» hasta que el pago
 msgid "%s payment expired (%s) but not cancelled because of another pending payment (%s)."
 msgstr "Pago %s caducado (%s), pero no cancelado a causa de otro pago pendiente (%s)."
 
-#: src/subscriptions_status_check_functions.php:195
-msgid "There are still some subscriptions left, use the tool again!"
-msgstr "Todavía quedan algunas suscripciones, ¡usa la herramienta de nuevo!"
-
-#: src/subscriptions_status_check_functions.php:193
-msgid "No more subscriptions left to process!"
-msgstr "¡No quedan más subscripciones por procesar!"
-
-#: src/subscriptions_status_check_functions.php:180
-msgid "No subscriptions updated in this batch."
-msgstr "No hay suscripciones actualizadas en este lote."
-
-#: src/subscriptions_status_check_functions.php:156
-msgid "Subscription not updated because there was no valid mandate at Mollie. Processed by 'Mollie Subscriptions Status' tool."
-msgstr "La suscripción no se ha actualizado porque no había una orden válida en Mollie. Procesado por la herramienta «Estado de suscripciones de Mollie»."
-
-#: src/subscriptions_status_check_functions.php:142
-msgid "Subscription updated to Automated renewal via Mollie, status set to Active. Processed by 'Mollie Subscriptions Status' tool."
-msgstr "La suscripción se ha actualizado a «Renovación automática» a través de Mollie, el estado se ha cambiado a «Activo». Procesado por la herramienta «Estado de suscripciones de Mollie»."
-
-#: src/subscriptions_status_check_functions.php:36
-msgid "Check subscriptions status"
-msgstr "Comprobar el estado de las suscripciones"
-
-#: src/subscriptions_status_check_functions.php:35
-msgid "Mollie Subscriptions Status"
-msgstr "Estado de suscripciones de Mollie"
-
-#: src/subscriptions_status_check_functions.php:30
-msgid "Checks for subscriptions that are incorrectly set to 'Manual renewal'. First read the "
-msgstr "Controla las suscripciones que están incorrectamente configuradas a «Renovación manual». Primero lee el"
-
 #: src/Mollie/WC/Helper/Settings.php:463
 msgid "Store customer details at Mollie"
 msgstr "Almacenar los detalles del cliente en Mollie"

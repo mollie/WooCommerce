@@ -757,38 +757,6 @@ msgstr "Bijgewerkt abonnement van 'Wachtend' naar 'Actief' tot de betaling mislu
 msgid "%s payment expired (%s) but not cancelled because of another pending payment (%s)."
 msgstr "%s betaling verlopen (%s) maar niet geannuleerd wegens een andere hangende betaling (%s)."
 
-#: src/subscriptions_status_check_functions.php:195
-msgid "There are still some subscriptions left, use the tool again!"
-msgstr "Er zijn nog enkele abonnementen over, gebruik de tool opnieuw!"
-
-#: src/subscriptions_status_check_functions.php:193
-msgid "No more subscriptions left to process!"
-msgstr "Geen abonnementen over om te verwerken!"
-
-#: src/subscriptions_status_check_functions.php:180
-msgid "No subscriptions updated in this batch."
-msgstr "Geen abonnementen geüpdatet in deze batch."
-
-#: src/subscriptions_status_check_functions.php:156
-msgid "Subscription not updated because there was no valid mandate at Mollie. Processed by 'Mollie Subscriptions Status' tool."
-msgstr "Abonnement niet geüpdatet omdat er geen geldig mandaat was bij Mollie. Verwerkt door 'Mollie-abonnementenstatus' tool."
-
-#: src/subscriptions_status_check_functions.php:142
-msgid "Subscription updated to Automated renewal via Mollie, status set to Active. Processed by 'Mollie Subscriptions Status' tool."
-msgstr "Abonnement geüpdatet naar Geautomatiseerde vernieuwing via Mollie, status ingesteld op Actief. Verwerkt door 'Mollie-abonnementenstatus' tool."
-
-#: src/subscriptions_status_check_functions.php:36
-msgid "Check subscriptions status"
-msgstr "Controleer abonnementenstatus"
-
-#: src/subscriptions_status_check_functions.php:35
-msgid "Mollie Subscriptions Status"
-msgstr "Mollie-abonnementenstatus"
-
-#: src/subscriptions_status_check_functions.php:30
-msgid "Checks for subscriptions that are incorrectly set to 'Manual renewal'. First read the "
-msgstr "Controles op abonnementen die verkeerd zijn ingesteld op 'Handmatige vernieuwing'. Lees eerst de "
-
 #: src/Mollie/WC/Helper/Settings.php:463
 msgid "Store customer details at Mollie"
 msgstr "Klantgegevens opslaan bij Mollie"

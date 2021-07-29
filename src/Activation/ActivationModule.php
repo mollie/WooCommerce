@@ -34,6 +34,10 @@ class ActivationModule implements ExecutableModule
 {
     use ModuleClassNameIdTrait;
 
+    public const DB_VERSION_PARAM_NAME = 'mollie-db-version';
+    public const PENDING_PAYMENT_DB_TABLE_NAME = 'mollie_pending_payment';
+    public const DB_VERSION     = '1.0';
+
     /**
      * @param ContainerInterface $container
      *
@@ -45,11 +49,44 @@ class ActivationModule implements ExecutableModule
             'init',
             [$this, 'pluginInit']
         );
+
         $this->handleTranslations();
         $this->mollieWcNoticeApiKeyMissing();
         $this->appleValidationFileRewriteRules();
         return true;
     }
+
+    /**
+     *
+     */
+    public function initDb()
+    {
+        global $wpdb;
+        $wpdb->mollie_pending_payment = $wpdb->prefix . self::PENDING_PAYMENT_DB_TABLE_NAME;
+        if (get_option(self::DB_VERSION_PARAM_NAME, '') != self::DB_VERSION) {
+            global $wpdb;
+            $pendingPaymentConfirmTable = $wpdb->prefix . self::PENDING_PAYMENT_DB_TABLE_NAME;
+            require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+            if ($wpdb->get_var("show tables like '$pendingPaymentConfirmTable'") != $pendingPaymentConfirmTable) {
+                $sql = "
+					CREATE TABLE " . $pendingPaymentConfirmTable . " (
+                    id int(11) NOT NULL AUTO_INCREMENT,
+                    post_id bigint NOT NULL,
+                    expired_time int NOT NULL,
+                    PRIMARY KEY id (id)
+                );";
+                dbDelta($sql);
+
+                /**
+                 * Remove redundant 'DESCRIBE *__mollie_pending_payment' error so it doesn't show up in error logs
+                 */
+                global $EZSQL_ERROR;
+                array_pop($EZSQL_ERROR);
+            }
+            update_option(self::DB_VERSION_PARAM_NAME, self::DB_VERSION);
+        }
+    }
+
 
 
     /**
@@ -156,6 +193,6 @@ class ActivationModule implements ExecutableModule
             false,
             dirname(plugin_basename(__FILE__)) . '/languages/'
         );
-        Plugin::init();
+        $this->initDb();
     }
 }

@@ -23,7 +23,13 @@ use Inpsyde\Modularity\Package;
 use Inpsyde\Modularity\Properties\PluginProperties;
 use Mollie\WooCommerce\Activation\ActivationModule;
 use Mollie\WooCommerce\Activation\ConstraintsChecker;
+use Mollie\WooCommerce\Assets\AssetsModule;
+use Mollie\WooCommerce\Core\CoreModule;
+use Mollie\WooCommerce\Gateway\GatewayModule;
 use Mollie\WooCommerce\Gateway\Voucher\VoucherModule;
+use Mollie\WooCommerce\Log\LogModule;
+use Mollie\WooCommerce\Notice\NoticeModule;
+use Mollie\WooCommerce\Settings\SettingsModule;
 use Throwable;
 
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
@@ -171,6 +177,12 @@ function initialize()
         $bootstrap = Package::new($properties);
         $bootstrap->boot(
             new ActivationModule(),
+            new CoreModule(),
+            new AssetsModule(),
+            new GatewayModule(),
+            new SettingsModule(),
+            new LogModule('mollie-payments-for-woocommerce-'),
+            new NoticeModule(),
             new VoucherModule()
         );
     } catch (Throwable $throwable) {

@@ -50,6 +50,30 @@ class Settings
         'lv_LV',
         'lt_LT',
     ];
+    protected $pluginId;
+    protected $pluginVersion;
+    protected $pluginUrl;
+    protected $statusHelper;
+
+    protected $gatewaysWithNamespace;
+
+    /**
+     * Settings constructor.
+     */
+    public function __construct(
+        $pluginId,
+        $statusHelper,
+        $pluginVersion,
+        $pluginUrl,
+        $gatewaysWithNamespace
+    ) {
+        $this->pluginId = $pluginId;
+        $this->pluginVersion = $pluginVersion;
+        $this->pluginUrl = $pluginUrl;
+        $this->statusHelper = $statusHelper;
+        $this->gatewaysWithNamespace = $gatewaysWithNamespace;
+    }
+
 
     public function gatewayFormFields(
         $defaultTitle,
@@ -414,14 +438,6 @@ class Settings
     /**
      * @return string
      */
-    public function getGlobalSettingsUrl ()
-    {
-        return admin_url('admin.php?page=wc-settings&tab=mollie_settings#' . Plugin::PLUGIN_ID);
-    }
-
-    /**
-     * @return string
-     */
     public function getLogsUrl()
     {
         return admin_url('admin.php?page=wc-status&tab=logs');
@@ -448,7 +464,7 @@ class Settings
             return $optionValue;
         }
 
-        $merchantProfileIdOptionKey = Plugin::PLUGIN_ID . '_profile_merchant_id';
+        $merchantProfileIdOptionKey = $this->pluginId . '_profile_merchant_id';
 
         try {
             $merchantProfile = mollieWooCommerceMerchantProfile();
@@ -485,7 +501,7 @@ class Settings
      */
     protected function getPluginStatus()
     {
-        $status = Plugin::getStatusHelper();
+        $status = $this->statusHelper;
 
         if (!$status->isCompatible()) {
             // Just stop here!
@@ -538,10 +554,9 @@ class Settings
 		$content = '';
 
 		$data_helper     = Plugin::getDataHelper();
-		$settings_helper = Plugin::getSettingsHelper();
 
 		// Is Test mode enabled?
-		$test_mode = $settings_helper->isTestModeEnabled();
+		$test_mode = $this->isTestModeEnabled();
 
 		if ( isset( $_GET['refresh-methods'] ) && wp_verify_nonce( $_GET['nonce_mollie_refresh_methods'], 'nonce_mollie_refresh_methods' ) ) {
 			/* Reload active Mollie methods */
@@ -572,7 +587,8 @@ class Settings
 		$content .= ' (<a href="' . esc_attr( $refresh_methods_url ) . '">' . strtolower( __( 'Refresh', 'mollie-payments-for-woocommerce' ) ) . '</a>)';
 
 		$content .= '<ul style="width: 1000px; padding:20px 0 0 10px">';
-        $mollieGateways = $data_helper->gatewaysWithNamespace();
+
+        $mollieGateways = $this->gatewaysWithNamespace;
 		foreach ( $mollieGateways as $gateway_classname ) {
 			$gateway = new $gateway_classname;
 
@@ -622,7 +638,7 @@ class Settings
      */
     public function addGlobalSettingsFields (array $settings)
     {
-        wp_register_script('mollie_wc_admin_settings', Plugin::getPluginUrl('/public/js/settings.min.js'), array('jquery'), Plugin::PLUGIN_VERSION);
+        wp_register_script('mollie_wc_admin_settings', $this->pluginUrl . '/public/js/settings.min.js', array('jquery'), $this->pluginVersion);
         wp_enqueue_script('mollie_wc_admin_settings');
 
         $presentationText = __('Quickly integrate all major payment methods in WooCommerce, wherever you need them.', 'mollie-payments-for-woocommerce' );
@@ -666,7 +682,7 @@ class Settings
                 'id'    => $this->getSettingId('title'),
                 'title' => __('Mollie Settings', 'mollie-payments-for-woocommerce'),
                 'type'  => 'title',
-                'desc'  => '<p id="' . Plugin::PLUGIN_ID . '">' . $content . '</p>'
+                'desc'  => '<p id="' . $this->pluginId . '">' . $content . '</p>'
                     . '<p>' . __('The following options are required to use the plugin and are used by all Mollie payment methods', 'mollie-payments-for-woocommerce') . '</p>',
             ),
             array(
@@ -746,7 +762,7 @@ class Settings
     {
         global $wp_version;
 
-        $setting_id        = Plugin::PLUGIN_ID . '_' . trim($setting);
+        $setting_id        = $this->pluginId . '_' . trim($setting);
         $setting_id_length = strlen($setting_id);
 
         $max_option_name_length = 191;

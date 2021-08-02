@@ -246,23 +246,9 @@ abstract class AbstractGateway extends WC_Payment_Gateway
         parent::process_admin_options();
     }
 
-    /**
-     * @return string
-     */
-    public function getIconUrl()
-    {
-        return $this->iconFactory()->svgUrlForPaymentMethod(
-            $this->getMollieMethodId()
-        );
-    }
-
     protected function _initIcon ()
     {
-        if ($this->display_logo)
-        {
-            $default_icon = $this->getIconUrl();
-            $this->icon   = apply_filters($this->id . '_icon_url', $default_icon);
-        }
+        $this->iconFactory->initIcon($this, $this->display_logo);
     }
     public function get_icon() {
         $output = $this->icon ? $this->icon : '';
@@ -2081,19 +2067,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
         );
     }
 
-    /**
-     * Singleton of the class that handles icons (API/fallback)
-     * @return PaymentMethodsIconUrl|null
-     */
-    protected function iconFactory()
-    {
-        static $factory = null;
-        if ($factory === null){
-            $factory = new PaymentMethodsIconUrl();
-        }
 
-        return $factory;
-    }
 
     /**
      * @param $order_id

@@ -236,8 +236,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway
     public function process_admin_options()
     {
         if (isset($_POST['save']) ) {
-            $this->processAdminOptionCustomLogo();
-            $this->processAdminOptionSurcharge();
+            $this->iconFactory->processAdminOptionCustomLogo();
+            $this->surchargeService->processAdminOptionSurcharge($this);
             //only credit cards have a selector
             if ($this->id == 'mollie_wc_gateway_creditcard') {
                 $this->processAdminOptionCreditcardSelector();
@@ -258,7 +258,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
 
     protected function _initDescription ()
     {
-        $description = $this->buildDescriptionWithSurcharge();
+        $description = $this->surchargeService->buildDescriptionWithSurcharge($this);
 
         $this->description = $description;
     }
@@ -2567,152 +2567,6 @@ abstract class AbstractGateway extends WC_Payment_Gateway
         }
 
         return $paymentType;
-    }
-
-    protected function buildDescriptionWithSurcharge()
-    {
-        if(!mollieWooCommerceIsCheckoutContext()){
-
-            return $this->get_option('description', '');
-        }
-        if (!isset($this->settings['payment_surcharge'])
-                || $this->settings['payment_surcharge']
-                === GatewaySurchargeHandler::NO_FEE
-        ){
-            return $this->get_option('description', '');
-        }
-
-        $surchargeType = $this->settings['payment_surcharge'];
-        switch($surchargeType){
-            case 'fixed_fee':
-                $feeText = $this->name_fixed_fee();
-                break;
-            case 'percentage':
-                $feeText = $this->name_percentage();
-                break;
-            case 'fixed_fee_percentage':
-                $feeText = $this->name_fixed_fee_percentage();
-                break;
-            default:
-                $feeText = false;
-        }
-        if($feeText){
-            $feeLabel = '<span class="mollie-gateway-fee">' . $feeText . '</span>';
-
-            return $this->get_option('description', '') . $feeLabel;
-        }
-        return $this->get_option('description', '');
-    }
-
-    protected function name_fixed_fee()
-    {
-        if (!isset($this->settings[GatewaySurchargeHandler::FIXED_FEE])
-                || $this->settings[GatewaySurchargeHandler::FIXED_FEE] <= 0) {
-            return false;
-        }
-        $amountFee = $this->settings[GatewaySurchargeHandler::FIXED_FEE];
-        $currency = get_woocommerce_currency_symbol();
-        return sprintf(__(" +%1s%2s Fee", 'mollie-payments-for-woocommerce'), $amountFee, $currency);
-    }
-
-    protected function name_percentage()
-    {
-        if(!isset($this->settings[GatewaySurchargeHandler::PERCENTAGE])
-                || $this->settings[GatewaySurchargeHandler::PERCENTAGE] <= 0){
-            return false;
-        }
-        $amountFee = $this->settings[GatewaySurchargeHandler::PERCENTAGE];
-        return sprintf(__(' +%1s%% Fee', 'mollie-payments-for-woocommerce'), $amountFee);
-    }
-
-    protected function name_fixed_fee_percentage()
-    {
-        if (!isset($this->settings[GatewaySurchargeHandler::FIXED_FEE])
-                || !isset($this->settings[GatewaySurchargeHandler::PERCENTAGE])
-                || $this->settings[GatewaySurchargeHandler::FIXED_FEE] == ''
-                || $this->settings[GatewaySurchargeHandler::PERCENTAGE] == ''
-                || $this->settings[GatewaySurchargeHandler::PERCENTAGE] <= 0
-                || $this->settings[GatewaySurchargeHandler::FIXED_FEE] <= 0
-        ) {
-            return false;
-        }
-        $amountFix = $this->settings[GatewaySurchargeHandler::FIXED_FEE];
-        $currency = get_woocommerce_currency_symbol();
-        $amountPercent = $this->settings[GatewaySurchargeHandler::PERCENTAGE];
-        return sprintf(__(" +%1s%2s + %3s%% Fee", 'mollie-payments-for-woocommerce'), $amountFix, $currency, $amountPercent);
-    }
-
-    protected function processAdminOptionCustomLogo()
-    {
-        $mollieUploadDirectory = trailingslashit(wp_upload_dir()['basedir'])
-                . 'mollie-uploads/' . $this->id;
-        wp_mkdir_p($mollieUploadDirectory);
-        $targetLocation = $mollieUploadDirectory . '/';
-        $fileOptionName = $this->id . '_upload_logo';
-        $enabledLogoOptionName = $this->id . '_enable_custom_logo';
-        $gatewaySettings = get_option("{$this->id}_settings", []);
-        if (!isset($_POST[$enabledLogoOptionName])) {
-            $gatewaySettings["iconFileUrl"] = null;
-            $gatewaySettings["iconFilePath"] = null;
-            update_option("{$this->id}_settings", $gatewaySettings);
-        }
-        if (isset($_POST[$enabledLogoOptionName])
-                && isset($_FILES[$fileOptionName])
-                && $_FILES[$fileOptionName]['size'] > 0
-        ) {
-            if ($_FILES[$fileOptionName]['size'] <= 500000) {
-                $fileName = preg_replace(
-                        '/\s+/',
-                        '_',
-                        $_FILES[$fileOptionName]['name']
-                );
-                $tempName = $_FILES[$fileOptionName]['tmp_name'];
-                move_uploaded_file($tempName, $targetLocation . $fileName);
-                $gatewaySettings["iconFileUrl"] = trailingslashit(
-                                wp_upload_dir()['baseurl']
-                        ) . 'mollie-uploads/'. $this->id .'/'. $fileName;
-                $gatewaySettings["iconFilePath"] = trailingslashit(
-                                wp_upload_dir()['basedir']
-                        ) . 'mollie-uploads/'. $this->id .'/'. $fileName;
-                update_option("{$this->id}_settings", $gatewaySettings);
-            } else {
-                $notice = new AdminNotice();
-                $message = sprintf(
-                        esc_html__(
-                                '%1$sMollie Payments for WooCommerce%2$s Unable to upload the file. Size must be under 500kb.',
-                                'mollie-payments-for-woocommerce'
-                        ),
-                        '<strong>',
-                        '</strong>'
-                );
-                $notice->addNotice('notice-error is-dismissible', $message);
-            }
-        }
-    }
-
-    protected function processAdminOptionSurcharge()
-    {
-        $paymentSurcharge = $this->id . '_payment_surcharge';
-
-        if (isset($_POST[$paymentSurcharge])
-                && $_POST[$paymentSurcharge]
-                !== GatewaySurchargeHandler::NO_FEE
-        ) {
-            $surchargeFields = [
-                    '_fixed_fee',
-                    '_percentage',
-                    '_surcharge_limit'
-            ];
-            foreach ($surchargeFields as $field) {
-                $optionName = $this->id . $field;
-                $validatedValue = isset($_POST[$optionName])
-                        && $_POST[$optionName] > 0
-                        && $_POST[$optionName] < 999;
-                if (!$validatedValue) {
-                    unset($_POST[$optionName]);
-                }
-            }
-        }
     }
 
     /**

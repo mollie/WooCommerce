@@ -3,26 +3,38 @@
 namespace Mollie\WooCommerce\Gateway\Bancontact;
 
 use Mollie\Api\Types\PaymentMethod;
+use Mollie\WooCommerce\Gateway\PaymentService;
+use Mollie\WooCommerce\Gateway\SurchargeService;
+use Mollie\WooCommerce\Notice\NoticeInterface;
+use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Subscription\AbstractSepaRecurring;
+use Mollie\WooCommerce\Utils\IconFactory;
+use Psr\Log\LoggerInterface as Logger;
 
 class Mollie_WC_Gateway_Bancontact extends AbstractSepaRecurring {
 	/**
 	 *
 	 */
-	public function __construct() {
+    public function __construct(
+        IconFactory $iconFactory,
+        PaymentService $paymentService,
+        SurchargeService $surchargeService,
+        MollieOrderService $mollieOrderService,
+        Logger $logger,
+        NoticeInterface $notice
+    ) {
 		$this->supports = array (
 			'products',
 			'refunds',
 		);
-
-		// If there are still old MisterCash settings, copy them to Bancontact and remove MisterCash.
-		$mistercash_settings = get_option( 'mollie_wc_gateway_mistercash_settings' );
-		if ( $mistercash_settings != false ) {
-			add_option( 'mollie_wc_gateway_bancontact_settings', $mistercash_settings );
-			delete_option( 'mollie_wc_gateway_mistercash_settings' );
-		}
-
-		parent::__construct();
+        parent::__construct(
+            $iconFactory,
+            $paymentService,
+            $surchargeService,
+            $mollieOrderService,
+            $logger,
+            $notice
+        );
 	}
 
 	/**

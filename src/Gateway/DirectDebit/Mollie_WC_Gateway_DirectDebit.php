@@ -5,21 +5,39 @@ namespace Mollie\WooCommerce\Gateway\DirectDebit;
 use Mollie\Api\Resources\Payment;
 use Mollie\Api\Types\PaymentMethod;
 use Mollie\WooCommerce\Gateway\AbstractGateway;
+use Mollie\WooCommerce\Gateway\PaymentService;
+use Mollie\WooCommerce\Gateway\SurchargeService;
+use Mollie\WooCommerce\Notice\NoticeInterface;
+use Mollie\WooCommerce\Payment\MollieOrderService;
+use Mollie\WooCommerce\Utils\IconFactory;
+use Psr\Log\LoggerInterface as Logger;
 use WC_Order;
 
 class Mollie_WC_Gateway_DirectDebit extends AbstractGateway {
 	/**
 	 *
 	 */
-	public function __construct ()
-	{
-
+    public function __construct(
+        IconFactory $iconFactory,
+        PaymentService $paymentService,
+        SurchargeService $surchargeService,
+        MollieOrderService $mollieOrderService,
+        Logger $logger,
+        NoticeInterface $notice
+    ) {
 		$this->supports = array(
 			'products',
 			'refunds',
 		);
 
-		parent::__construct();
+        parent::__construct(
+            $iconFactory,
+            $paymentService,
+            $surchargeService,
+            $mollieOrderService,
+            $logger,
+            $notice
+        );
 	}
 
 	/**

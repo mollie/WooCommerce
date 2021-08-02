@@ -2,6 +2,10 @@
 
 namespace Mollie\WooCommerce\Gateway;
 
+use Mollie\WooCommerce\Notice\NoticeInterface;
+use Mollie\WooCommerce\Payment\MollieOrderService;
+use Mollie\WooCommerce\Utils\IconFactory;
+use Psr\Log\LoggerInterface as Logger;
 use InvalidArgumentException;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Payment;
@@ -61,10 +65,56 @@ abstract class AbstractGateway extends WC_Payment_Gateway
 	public static $alreadyDisplayedInstructions = false;
 
     /**
+     * @var Logger
+     */
+    protected $logger;
+
+    /**
+     * @var NoticeInterface
+     */
+    protected $notice;
+
+    /**
+     * @var IconFactory
+     */
+    protected $iconFactory;
+
+    /**
+     * @var PaymentService
+     */
+    protected $paymentService;
+
+    /**
+     * @var SurchargeService
+     */
+    protected $surchargeService;
+
+    /**
+     * @var MollieOrderService
+     */
+    protected $mollieOrderService;
+
+
+
+    /**
      *
      */
-    public function __construct ()
+    public function __construct (
+            IconFactory $iconFactory,
+            PaymentService $paymentService,
+            SurchargeService $surchargeService,
+            MollieOrderService $mollieOrderService,
+            Logger $logger,
+            NoticeInterface $notice
+    )
     {
+        $this->logger = $logger;
+        $this->notice = $notice;
+        $this->iconFactory = $iconFactory;
+        $this->paymentService = $paymentService;
+        $this->surchargeService = $surchargeService;
+        $this->mollieOrderService = $mollieOrderService;
+
         // No plugin id, gateway id is unique enough
         $this->plugin_id    = '';
         // Use gateway class name as gateway id
@@ -129,7 +179,6 @@ abstract class AbstractGateway extends WC_Payment_Gateway
                 $this->getDefaultDescription(),
                 $this->paymentConfirmationAfterCoupleOfDays()
         );
-
     }
 
     public function init_settings()
@@ -175,8 +224,6 @@ abstract class AbstractGateway extends WC_Payment_Gateway
                     ]
             );
         }
-
-
     }
     /**
      * Save settings

@@ -589,13 +589,7 @@ class Settings
 		$content .= '<ul style="width: 1000px; padding:20px 0 0 10px">';
 
         $mollieGateways = $this->gatewaysWithNamespace;
-		foreach ( $mollieGateways as $gateway_classname ) {
-			$gateway = new $gateway_classname;
-
-			// Remove Mollie_WC_Gateway_MisterCash from list as it's renamed Mollie_WC_Gateway_Bancontact
-			if ( $gateway->id == 'mollie_wc_gateway_mistercash' ) {
-				continue;
-			}
+		foreach ( $mollieGateways as $gateway ) {
 
 			if ( $gateway instanceof AbstractGateway ) {
 				$content .= '<li style="float: left; width: 32%; height:32px;">';
@@ -608,7 +602,7 @@ class Settings
 					$content .= $icon_no_available;
 				}
 
-				$content .= ' <a href="' . $this->getGatewaySettingsUrl( $gateway_classname ) . '">' . strtolower( __( 'Edit', 'mollie-payments-for-woocommerce' ) ) . '</a>';
+				$content .= ' <a href="' . $this->getGatewaySettingsUrl( $gateway->id ) . '">' . strtolower( __( 'Edit', 'mollie-payments-for-woocommerce' ) ) . '</a>';
 
 				$content .= '</li>';
 			}
@@ -822,8 +816,8 @@ class Settings
 	 */
 	protected function checkDirectDebitStatus( $content ) {
 
-		$ideal_gateway = new Mollie_WC_Gateway_Ideal();
-		$sepa_gateway  = new Mollie_WC_Gateway_DirectDebit();
+		$ideal_gateway = $this->gatewaysWithNamespace["Mollie_WC_Gateway_Ideal"];
+		$sepa_gateway  = $this->gatewaysWithNamespace["Mollie_WC_Gateway_DirectDebit"];
 
 		if ( ( class_exists( 'WC_Subscription' ) ) && ( $ideal_gateway->is_available() ) && ( ! $sepa_gateway->is_available() ) ) {
 
@@ -866,8 +860,8 @@ class Settings
 	 * @return string
 	 */
 	protected function warnAboutRequiredCheckoutFieldForKlarna( $content ) {
-        $woocommerce_klarnapaylater_gateway = new Mollie_WC_Gateway_KlarnaPayLater();
-        $woocommerce_klarnasliceit_gateway = new Mollie_WC_Gateway_KlarnaSliceIt();
+        $woocommerce_klarnapaylater_gateway = $this->gatewaysWithNamespace["Mollie_WC_Gateway_KlarnaPayLater"];
+        $woocommerce_klarnasliceit_gateway = $this->gatewaysWithNamespace["Mollie_WC_Gateway_KlarnaSliceIt"];
 
         if ($woocommerce_klarnapaylater_gateway->is_available() || $woocommerce_klarnasliceit_gateway->is_available()) {
             $content .= '<div class="notice notice-warning is-dismissible"><p>';

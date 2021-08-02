@@ -33,11 +33,12 @@ use Mollie\WooCommerce\Buttons\PayPalButton\PayPalButtonHandler;
 use Mollie\WooCommerce\Gateway\ApplePay\Mollie_WC_Gateway_ApplePay;
 use Mollie\WooCommerce\Gateway\BankTransfer\Mollie_WC_Gateway_BankTransfer;
 use Mollie\WooCommerce\Notice\AdminNotice;
-use Mollie\WooCommerce\Plugin;
+use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Utils\GatewaySurchargeHandler;
+use Mollie\WooCommerce\Utils\IconFactory;
 use Mollie\WooCommerce\Utils\MaybeDisableGateway;
 use Psr\Container\ContainerInterface;
-use WC_Session;
+use Psr\Log\LoggerInterface as Logger;
 
 class GatewayModule implements ServiceModule, ExecutableModule
 {
@@ -81,9 +82,22 @@ class GatewayModule implements ServiceModule, ExecutableModule
                     'Mollie_WC_Gateway_Voucher',
                 ];
             },
-            'gateway.classname_with_namespace' => function (): array {
-                return $this->gatewaysWithNamespace();
+            'gateway.classname_with_namespace' => function (ContainerInterface $container): array {
+                return $this->gatewaysWithNamespace($container);
+            },
+            IconFactory::class => static function (ContainerInterface $container): IconFactory {
+                return new IconFactory();
+            },
+            PaymentService::class => static function (ContainerInterface $container): PaymentService {
+                return new PaymentService();
+            },
+            SurchargeService::class => static function (ContainerInterface $container): SurchargeService {
+                return new SurchargeService();
+            },
+            MollieOrderService::class => static function (ContainerInterface $container): MollieOrderService {
+                return new MollieOrderService();
             }
+
         ];
     }
 
@@ -95,7 +109,10 @@ class GatewayModule implements ServiceModule, ExecutableModule
             return $this->gatewayClassnames;
         });
 
-        add_filter('woocommerce_payment_gateways', array ($this, 'addGateways'));
+        add_filter('woocommerce_payment_gateways', function ($gateways) use ($container) {
+            $mollieGateways = $this->gatewaysWithNamespace($container);
+            return array_merge($gateways, $mollieGateways);
+        });
         add_filter('woocommerce_payment_gateways', [$this, 'maybeDisableApplePayGateway'], 20);
         add_filter('woocommerce_payment_gateways', function ($gateways) {
             $maybeEnablegatewayHelper = new MaybeDisableGateway();
@@ -148,39 +165,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
         return true;
     }
 
-    /**
-     * Add Mollie gateways
-     *
-     * @param array $gateways
-     * @return array
-     */
-    public function addGateways(array $gateways): array
-    {
-        $mollieGateways = $this->gatewaysWithNamespace();
-        $gateways = array_merge($gateways, $mollieGateways);
-
-        // Return if function get_current_screen() is not defined
-        if (! function_exists('get_current_screen')) {
-            return $gateways;
-        }
-
-        // Try getting get_current_screen()
-        $current_screen = get_current_screen();
-
-        // Return if get_current_screen() isn't set
-        if (! $current_screen) {
-            return $gateways;
-        }
-
-        // Remove old Mollie_WC_Gateway_MisterCash (only) from WooCommerce Payment settings
-        if (is_admin() && ! empty($current_screen->base) && $current_screen->base == 'woocommerce_page_wc-settings') {
-            if (($key = array_search('Mollie_WC_Gateway_MisterCash', $gateways)) !== false) {
-                unset($gateways[ $key ]);
-            }
-        }
-
-        return $gateways;
-    }
 
     /**
      * Disable Bank Transfer Gateway
@@ -383,17 +367,31 @@ class GatewayModule implements ServiceModule, ExecutableModule
         }
     }
 
-    public function gatewaysWithNamespace(): array
+    public function gatewaysWithNamespace(ContainerInterface $container): array
     {
+        $logger = $container->get(Logger::class);
+        $notice = $container->get(AdminNotice::class);
+        $iconFactory = $container->get(IconFactory::class);
+        $paymentService = $container->get(PaymentService::class);
+        $surchargeService = $container->get(SurchargeService::class);
+        $mollieOrderService = $container->get(MollieOrderService::class);
         $gatewayClassnames = $this->gatewayClassnames;
-        $gatewayWithNamespace = [];
+        $gateways = [];
         $gatewayNamespace = 'Mollie\\WooCommerce\\Gateway\\';
         $gatewayNamePrefix = "Mollie_WC_Gateway_";
         foreach ($gatewayClassnames as $gatewayClassname) {
             $dirname = str_replace($gatewayNamePrefix, "", $gatewayClassname);
-            $gatewayWithNamespace[] = $gatewayNamespace . $dirname . "\\" . $gatewayClassname;
+            $className = $gatewayNamespace . $dirname . "\\" . $gatewayClassname;
+            $gateways[$gatewayClassname] = new $className(
+                $iconFactory,
+                $paymentService,
+                $surchargeService,
+                $mollieOrderService,
+                $logger,
+                $notice
+            );
         }
-        return $gatewayWithNamespace;
+        return $gateways;
     }
 
 }

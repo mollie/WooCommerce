@@ -4,8 +4,14 @@ namespace Mollie\WooCommerce\Subscription;
 
 use Exception;
 use Mollie\WooCommerce\Gateway\AbstractGateway;
+use Mollie\WooCommerce\Gateway\PaymentService;
+use Mollie\WooCommerce\Gateway\SurchargeService;
+use Mollie\WooCommerce\Notice\NoticeInterface;
+use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Plugin;
 use Mollie\WooCommerce\SDK\InvalidApiKey;
+use Mollie\WooCommerce\Utils\IconFactory;
+use Psr\Log\LoggerInterface as Logger;
 
 abstract class AbstractSubscription extends AbstractGateway
 {
@@ -16,9 +22,22 @@ abstract class AbstractSubscription extends AbstractGateway
     /**
      * AbstractSubscription constructor.
      */
-    public function __construct ()
-    {
-        parent::__construct();
+    public function __construct(
+        IconFactory $iconFactory,
+        PaymentService $paymentService,
+        SurchargeService $surchargeService,
+        MollieOrderService $mollieOrderService,
+        Logger $logger,
+        NoticeInterface $notice
+    ) {
+        parent::__construct(
+            $iconFactory,
+            $paymentService,
+            $surchargeService,
+            $mollieOrderService,
+            $logger,
+            $notice
+        );
 
 
         if ( class_exists( 'WC_Subscriptions_Order' ) ) {

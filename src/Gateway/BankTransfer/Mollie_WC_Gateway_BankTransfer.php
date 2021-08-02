@@ -5,10 +5,16 @@ namespace Mollie\WooCommerce\Gateway\BankTransfer;
 use Mollie\Api\Types\PaymentMethod;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\Gateway\AbstractGateway;
+use Mollie\WooCommerce\Gateway\PaymentService;
+use Mollie\WooCommerce\Gateway\SurchargeService;
+use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieOrder;
+use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\MolliePayment;
 use Mollie\WooCommerce\Plugin;
+use Mollie\WooCommerce\Utils\IconFactory;
 use WC_Order;
+use Psr\Log\LoggerInterface as Logger;
 
 class Mollie_WC_Gateway_BankTransfer extends AbstractGateway
 {
@@ -20,14 +26,28 @@ class Mollie_WC_Gateway_BankTransfer extends AbstractGateway
     /**
      *
      */
-    public function __construct ()
+    public function __construct (
+        IconFactory $iconFactory,
+        PaymentService $paymentService,
+        SurchargeService $surchargeService,
+        MollieOrderService $mollieOrderService,
+        Logger $logger,
+        NoticeInterface $notice
+    )
     {
         $this->supports = array(
             'products',
             'refunds',
         );
 
-        parent::__construct();
+        parent::__construct(
+            $iconFactory,
+            $paymentService,
+            $surchargeService,
+            $mollieOrderService,
+            $logger,
+            $notice
+        );
         add_filter('woocommerce_' . $this->id . '_args', array($this, 'addPaymentArguments'), 10, 2);
 
     }

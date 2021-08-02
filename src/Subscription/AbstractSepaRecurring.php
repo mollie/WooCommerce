@@ -7,7 +7,13 @@ use DateTime;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Types\SequenceType;
 use Mollie\WooCommerce\Gateway\DirectDebit\Mollie_WC_Gateway_DirectDebit;
+use Mollie\WooCommerce\Gateway\PaymentService;
+use Mollie\WooCommerce\Gateway\SurchargeService;
+use Mollie\WooCommerce\Notice\NoticeInterface;
+use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Plugin;
+use Mollie\WooCommerce\Utils\IconFactory;
+use Psr\Log\LoggerInterface as Logger;
 
 abstract class AbstractSepaRecurring extends AbstractSubscription
 {
@@ -20,11 +26,31 @@ abstract class AbstractSepaRecurring extends AbstractSubscription
     /**
      * AbstractSepaRecurring constructor.
      */
-    public function __construct ()
-    {
-        parent::__construct();
-        $directDebit = new Mollie_WC_Gateway_DirectDebit();
-        if ($directDebit->enabled == 'yes' ) {
+    public function __construct(
+        IconFactory $iconFactory,
+        PaymentService $paymentService,
+        SurchargeService $surchargeService,
+        MollieOrderService $mollieOrderService,
+        Logger $logger,
+        NoticeInterface $notice
+    ) {
+        parent::__construct(
+            $iconFactory,
+            $paymentService,
+            $surchargeService,
+            $mollieOrderService,
+            $logger,
+            $notice
+        );
+        $directDebit = new Mollie_WC_Gateway_DirectDebit(
+            $iconFactory,
+            $paymentService,
+            $surchargeService,
+            $mollieOrderService,
+            $logger,
+            $notice
+        );
+        if ($directDebit->enabled == 'yes') {
             $this->initSubscriptionSupport();
             $this->recurringMollieMethod = $directDebit;
         }

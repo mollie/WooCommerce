@@ -25,6 +25,14 @@ class Mollie_WC_Gateway_Creditcard extends AbstractSubscription
         Logger $logger,
         NoticeInterface $notice
     ) {
+        parent::__construct(
+                $iconFactory,
+                $paymentService,
+                $surchargeService,
+                $mollieOrderService,
+                $logger,
+                $notice
+        );
         $this->supports = [
             'products',
             'refunds',
@@ -33,14 +41,6 @@ class Mollie_WC_Gateway_Creditcard extends AbstractSubscription
         $this->initSubscriptionSupport();
 
         $this->hasFieldsIfMollieComponentsIsEnabled();
-        parent::__construct(
-            $iconFactory,
-            $paymentService,
-            $surchargeService,
-            $mollieOrderService,
-            $logger,
-            $notice
-        );
     }
 
     public function get_icon()
@@ -273,4 +273,66 @@ class Mollie_WC_Gateway_Creditcard extends AbstractSubscription
     {
         delete_transient('svg_creditcards_string');
     }
+
+    protected function hasFieldsIfMollieComponentsIsEnabled()
+    {
+        $this->has_fields = $this->isMollieComponentsEnabled() ? true : false;
+    }
+
+    protected function includeMollieComponentsFields()
+    {
+        $fields = include Plugin::getPluginPath(
+            '/inc/settings/mollie_components_enabler.php'
+        );
+
+        $this->form_fields = array_merge($this->form_fields, $fields);
+    }
+
+    protected function mollieComponentsFields()
+    {
+        if (!$this->isMollieComponentsEnabled()) {
+            return;
+        }
+
+        ?>
+        <div class="mollie-components"></div>
+        <p class="mollie-components-description">
+            <?php
+            printf(
+                __(esc_html('%1$s Secure payments provided by %2$s'),
+                   'mollie-payments-for-woocommerce'),
+                $this->lockIcon(),
+                $this->mollieLogo()
+            );
+            ?>
+        </p>
+        <?php
+    }
+
+    protected function isMollieComponentsEnabled(): bool
+    {
+        $option = isset($this->settings['mollie_components_enabled'])
+            ? $this->settings['mollie_components_enabled']
+            : 'no';
+
+        $option = mollieWooCommerceStringToBoolOption($option);
+
+        return $option;
+    }
+
+    protected function lockIcon()
+    {
+        return file_get_contents(
+            Plugin::getPluginPath('public/images/lock-icon.svg')
+        );
+    }
+
+    protected function mollieLogo()
+    {
+        return file_get_contents(
+            Plugin::getPluginPath('public/images/mollie-logo.svg')
+        );
+    }
+
+
 }

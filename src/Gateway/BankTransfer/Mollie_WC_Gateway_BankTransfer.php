@@ -130,7 +130,7 @@ class Mollie_WC_Gateway_BankTransfer extends AbstractGateway
 	 *
 	 * @return string
 	 */
-    protected function getProcessPaymentRedirect(WC_Order $order, $payment_object)
+    public function getProcessPaymentRedirect(WC_Order $order, $payment_object)
     {
         if ($this->get_option('skip_mollie_payment_screen') === 'yes')
         {

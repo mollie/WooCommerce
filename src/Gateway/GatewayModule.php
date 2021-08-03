@@ -32,6 +32,7 @@ use Mollie\WooCommerce\Buttons\PayPalButton\PayPalAjaxRequests;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalButtonHandler;
 use Mollie\WooCommerce\Gateway\ApplePay\Mollie_WC_Gateway_ApplePay;
 use Mollie\WooCommerce\Gateway\BankTransfer\Mollie_WC_Gateway_BankTransfer;
+use Mollie\WooCommerce\Gateway\PayPal\Mollie_WC_Gateway_PayPal;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Utils\GatewaySurchargeHandler;
@@ -160,7 +161,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
         add_action('woocommerce_payment_complete', array ($this, 'setOrderPaidByOtherGateway'), 10, 1);
         $this->gatewaySurchargeHandling();
         $this->mollieApplePayDirectHandling();
-        $this->molliePayPalButtonHandling();
+        $paypalGateway = $container->get('gateway.classname_with_namespace')['Mollie_WC_Gateway_PayPal'];
+        $this->molliePayPalButtonHandling($paypalGateway);
 
         return true;
     }
@@ -354,7 +356,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
     /**
      * Bootstrap the Mollie_WC_Gateway_PayPal button logic if feature enabled
      */
-    public function molliePayPalButtonHandling()
+    public function molliePayPalButtonHandling(Mollie_WC_Gateway_PayPal $gateway)
     {
         $enabledInProduct = (mollieWooCommerceIsPayPalButtonEnabled('product'));
         $enabledInCart = (mollieWooCommerceIsPayPalButtonEnabled('cart'));
@@ -362,7 +364,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
 
         if ($shouldBuildIt) {
             $ajaxRequests = new PayPalAjaxRequests();
-            $payPalHandler = new PayPalButtonHandler($ajaxRequests);
+            $payPalHandler = new PayPalButtonHandler($ajaxRequests, $gateway);
             $payPalHandler->bootstrap($enabledInProduct, $enabledInCart);
         }
     }

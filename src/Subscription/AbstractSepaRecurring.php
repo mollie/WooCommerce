@@ -155,7 +155,7 @@ abstract class AbstractSepaRecurring extends AbstractSubscription
      * @param $order
      * @param $payment
      */
-    protected function handlePaidOrderWebhook($order, $payment)
+    public function handlePaidOrderWebhook($order, $payment)
     {
         $orderId = $order->get_id();
 

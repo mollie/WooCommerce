@@ -120,7 +120,7 @@ class WCOrderCalculator extends WC_Order
 
         // New taxes.
         foreach ( $new_rate_ids as $tax_rate_id ) {
-            $item = new WC_Order_Item_Tax();
+            $item = new \WC_Order_Item_Tax();
             $item->set_rate( $tax_rate_id );
             $item->set_tax_total( isset( $cart_taxes[ $tax_rate_id ] ) ? $cart_taxes[ $tax_rate_id ] : 0 );
             $item->set_shipping_tax_total( ! empty( $shipping_taxes[ $tax_rate_id ] ) ? $shipping_taxes[ $tax_rate_id ] : 0 );
@@ -166,7 +166,7 @@ class WCOrderCalculator extends WC_Order
             }
         }
 
-        $item = new WC_Order_Item_Product();
+        $item = new \WC_Order_Item_Product();
         $item->set_props( $args );
         $item->set_backorder_meta();
         $item->set_order_id( $this->get_id() );

@@ -9,11 +9,15 @@ use WC_Data_Exception;
 
 class PayPalAjaxRequests
 {
+    /**
+     * @var Mollie_WC_Gateway_PayPal
+     */
+    protected $gateway;
 
     /**
      * Adds all the Ajax actions to perform the whole workflow
      */
-    public function bootstrapAjaxRequest()
+    public function bootstrapAjaxRequest(Mollie_WC_Gateway_PayPal $gateway)
     {
 
         add_action(
@@ -40,7 +44,7 @@ class PayPalAjaxRequests
             'wp_ajax_nopriv_' . PropertiesDictionary::UPDATE_AMOUNT,
             array($this, 'updateAmount')
         );
-
+        $this->gateway = $gateway;
     }
 
     /**
@@ -75,7 +79,8 @@ class PayPalAjaxRequests
 
         $result = $this->processOrderPayment($orderId);
 
-        if (isset($result['result'])
+        if (
+            isset($result['result'])
             && 'success' === $result['result']
         ) {
             wp_send_json_success($result);
@@ -118,7 +123,8 @@ class PayPalAjaxRequests
         $order = $surchargeHandler->addSurchargeFeeProductPage($order, 'mollie_wc_gateway_paypal');
         $this->updateOrderPostMeta($orderId, $order);
         $result = $this->processOrderPayment($orderId);
-        if (isset($result['result'])
+        if (
+            isset($result['result'])
             && 'success' === $result['result']
         ) {
             $cart->empty_cart();
@@ -138,7 +144,8 @@ class PayPalAjaxRequests
         }
     }
 
-    public function updateAmount(){
+    public function updateAmount()
+    {
         $payPalRequestDataObject = $this->payPalDataObjectHttp();
         $payPalRequestDataObject->orderData($_POST, 'productDetail');
 
@@ -147,8 +154,8 @@ class PayPalAjaxRequests
         }
 
         $order = new WCOrderCalculator();
-        $order->set_currency( get_woocommerce_currency() );
-        $order->set_prices_include_tax( 'yes' === get_option( 'woocommerce_prices_include_tax' ) );
+        $order->set_currency(get_woocommerce_currency());
+        $order->set_prices_include_tax('yes' === get_option('woocommerce_prices_include_tax'));
         $order->add_product(
             wc_get_product($payPalRequestDataObject->productId),
             $payPalRequestDataObject->productQuantity
@@ -167,7 +174,7 @@ class PayPalAjaxRequests
      *
      * @return PayPalDataObjectHttp
      */
-    protected function PayPalDataObjectHttp()
+    protected function PayPalDataObjectHttp(): PayPalDataObjectHttp
     {
         return new PayPalDataObjectHttp();
     }
@@ -204,10 +211,7 @@ class PayPalAjaxRequests
      */
     protected function processOrderPayment($orderId)
     {
-        $gateway = new Mollie_WC_Gateway_PayPal();
-
-        $result = $gateway->process_payment($orderId);
-        return $result;
+        return $this->gateway->process_payment($orderId);
     }
 
     /**

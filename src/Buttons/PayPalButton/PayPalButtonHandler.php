@@ -2,6 +2,7 @@
 
 namespace Mollie\WooCommerce\Buttons\PayPalButton;
 
+use Mollie\WooCommerce\Gateway\PayPal\Mollie_WC_Gateway_PayPal;
 use Mollie\WooCommerce\Plugin;
 
 class PayPalButtonHandler
@@ -10,15 +11,20 @@ class PayPalButtonHandler
      * @var PayPalAjaxRequests
      */
     private $ajaxRequests;
+    /**
+     * @var Mollie_WC_Gateway_PayPal
+     */
+    protected $gateway;
 
     /**
      * PayPalHandler constructor.
      *
      * @param PayPalAjaxRequests $ajaxRequests
      */
-    public function __construct(PayPalAjaxRequests $ajaxRequests)
+    public function __construct(PayPalAjaxRequests $ajaxRequests, Mollie_WC_Gateway_PayPal $gateway)
     {
         $this->ajaxRequests = $ajaxRequests;
+        $this->gateway = $gateway;
     }
 
     /**
@@ -62,7 +68,7 @@ class PayPalButtonHandler
         }
 
         admin_url('admin-ajax.php');
-        $this->ajaxRequests->bootstrapAjaxRequest();
+        $this->ajaxRequests->bootstrapAjaxRequest($this->gateway);
     }
 
     /**

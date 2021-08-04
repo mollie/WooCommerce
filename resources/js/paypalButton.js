@@ -93,48 +93,37 @@
             }
             payPalButton.disabled = true;
             payPalButton.classList.add("buttonDisabled");
-            if(!preventSpam){
-                jQuery.ajax({
-                    url: ajaxUrl,
-                    method: 'POST',
-                    data: {
-                        action: 'mollie_paypal_create_order',
-                        productId: productId,
-                        productQuantity: productQuantity,
-                        needShipping: needShipping,
-                        'mollie-payments-for-woocommerce_issuer_paypal_button': 'paypal',
-                        nonce: nonce,
-                    },
-                    success: (response) => {
-                        let result = response.data
-
-                        if (response.success === true) {
-                            redirectionUrl = result['redirect'];
-                            window.location.href = redirectionUrl
-                        } else {
-                            console.log(response.data)
-                        }
-                    },
-                    error: (jqXHR, textStatus, errorThrown) => {
-                        payPalButton.disabled = false;
-                        payPalButton.classList.remove("buttonDisabled");
-                        console.warn(textStatus, errorThrown)
-                    },
-                })
+            if(preventSpam){
+                return
             }
             preventSpam = true
-            if(preventSpam){
-                let seconds = 3
-                let countdown = setInterval(function() {
-                    seconds--;
-                    if (seconds <= 0){
-                        clearInterval(countdown);
-                        payPalButton.disabled = false;
-                        payPalButton.classList.remove("buttonDisabled");
-                        preventSpam = false
+            jQuery.ajax({
+                url: ajaxUrl,
+                method: 'POST',
+                data: {
+                    action: 'mollie_paypal_create_order',
+                    productId: productId,
+                    productQuantity: productQuantity,
+                    needShipping: needShipping,
+                    'mollie-payments-for-woocommerce_issuer_paypal_button': 'paypal',
+                    nonce: nonce,
+                },
+                success: (response) => {
+                    let result = response.data
+
+                    if (response.success === true) {
+                        redirectionUrl = result['redirect'];
+                        window.location.href = redirectionUrl
+                    } else {
+                        console.log(response.data)
                     }
-                }, 1000);
-            }
+                },
+                error: (jqXHR, textStatus, errorThrown) => {
+                    payPalButton.disabled = false;
+                    payPalButton.classList.remove("buttonDisabled");
+                    console.warn(textStatus, errorThrown)
+                },
+            })
         })
     }
 )

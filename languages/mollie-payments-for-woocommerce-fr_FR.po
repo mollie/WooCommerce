@@ -390,7 +390,7 @@ msgid "%1sThe PayPal button is optimized for digital goods. And will only appear
 msgstr "%1sLe bouton PayPal est optimisé pour les produits numériques. Et n'apparaîtra que si le produit n'a pas d'expédition. %2sLes informations d'adresse du client ne peuvent être récupérées que si la transaction a été effectuée avec %3sl'API Orders%4s.%5s%6s"
 
 #: inc/settings/mollie_paypal_button_enabler.php:7
-msgid "PayPay button display settings"
+msgid "PayPal button display settings"
 msgstr "Réglages de l’affichage du bouton PayPal"
 
 #: src/Mollie/WC/Helper/Settings.php:159

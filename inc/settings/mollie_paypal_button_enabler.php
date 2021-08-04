@@ -5,7 +5,7 @@ return [
     [
         'id' => $pluginName . '_' . 'title',
         'title' => __(
-            'PayPay button display settings',
+            'PayPal button display settings',
             'mollie-payments-for-woocommerce'
         ),
         'type' => 'title',

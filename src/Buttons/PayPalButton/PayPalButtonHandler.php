@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Buttons\PayPalButton;
 
 use Mollie\WooCommerce\Gateway\PayPal\Mollie_WC_Gateway_PayPal;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Buttons\ApplePayButton;
 
 use Mollie\WooCommerce\Notice\AdminNotice;
@@ -25,7 +27,6 @@ class ApplePayDirectHandler
     {
         $this->adminNotice = $notice;
         $this->ajaxRequests = $ajaxRequests;
-
     }
 
     /**
@@ -40,14 +41,14 @@ class ApplePayDirectHandler
     {
         if (!$this->isApplePayCompatible()) {
             $message = sprintf(
-                    esc_html__(
-                            '%1$sServer not compliant with Apple requirements%2$s Check %3$sApple Server requirements page%4$s to fix it in order to make the Apple Pay button work',
-                            'mollie-payments-for-woocommerce'
-                    ),
-                    '<strong>',
-                    '</strong>',
-                    '<a href="https://developer.apple.com/documentation/apple_pay_on_the_web/setting_up_your_server">',
-                    '</a>'
+                esc_html__(
+                    '%1$sServer not compliant with Apple requirements%2$s Check %3$sApple Server requirements page%4$s to fix it in order to make the Apple Pay button work',
+                    'mollie-payments-for-woocommerce'
+                ),
+                '<strong>',
+                '</strong>',
+                '<a href="https://developer.apple.com/documentation/apple_pay_on_the_web/setting_up_your_server">',
+                '</a>'
             );
             $this->adminNotice->addNotice('error', $message);
             return;
@@ -55,34 +56,33 @@ class ApplePayDirectHandler
 
         if (!$this->merchantValidated()) {
             $message = sprintf(
-                    esc_html__(
-                            '%1$sApple Pay Validation Error%2$s Check %3$sApple Server requirements page%4$s to fix it in order to make the Apple Pay button work',
-                            'mollie-payments-for-woocommerce'
-                    ),
-                    '<strong>',
-                    '</strong>',
-                    '<a href="https://developer.apple.com/documentation/apple_pay_on_the_web/setting_up_your_server">',
-                    '</a>'
+                esc_html__(
+                    '%1$sApple Pay Validation Error%2$s Check %3$sApple Server requirements page%4$s to fix it in order to make the Apple Pay button work',
+                    'mollie-payments-for-woocommerce'
+                ),
+                '<strong>',
+                '</strong>',
+                '<a href="https://developer.apple.com/documentation/apple_pay_on_the_web/setting_up_your_server">',
+                '</a>'
             );
 
             $this->adminNotice->addNotice('error', $message);
         }
 
-
-        if($buttonEnabledProduct){
+        if ($buttonEnabledProduct) {
             add_action(
-                    'woocommerce_after_add_to_cart_form',
-                    function () {
-                        $this->applePayDirectButton();
-                    }
+                'woocommerce_after_add_to_cart_form',
+                function () {
+                    $this->applePayDirectButton();
+                }
             );
         }
-        if($buttonEnabledCart){
+        if ($buttonEnabledCart) {
             add_action(
-                    'woocommerce_cart_totals_after_order_total',
-                    function () {
-                        $this->applePayDirectButton();
-                    }
+                'woocommerce_cart_totals_after_order_total',
+                function () {
+                    $this->applePayDirectButton();
+                }
             );
         }
 

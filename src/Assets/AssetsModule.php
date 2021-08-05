@@ -80,14 +80,13 @@ class AssetsModule implements ExecutableModule
      */
     public static function enqueuePayPalButtonScripts()
     {
-
         if (mollieWooCommerceIsPayPalButtonEnabled('product') && is_product()) {
             $product = wc_get_product(get_the_id());
             if (!$product || $product->is_type('subscription')) {
                 return;
             }
             $productNeedShipping = mollieWooCommerceCheckIfNeedShipping($product);
-            if(!$productNeedShipping){
+            if (!$productNeedShipping) {
                 $dataToScripts = new DataToPayPalScripts();
                 wp_enqueue_style('unabledButton');
                 wp_enqueue_script('mollie_paypalButton');
@@ -100,12 +99,12 @@ class AssetsModule implements ExecutableModule
         }
         if (mollieWooCommerceIsPayPalButtonEnabled('cart') && is_cart()) {
             $cart = WC()->cart;
-            foreach ($cart->get_cart_contents() as $product){
-                if($product['data']->is_type('subscription')){
+            foreach ($cart->get_cart_contents() as $product) {
+                if ($product['data']->is_type('subscription')) {
                     return;
                 }
             }
-            if(!$cart->needs_shipping()){
+            if (!$cart->needs_shipping()) {
                 $dataToScripts = new DataToPayPalScripts();
                 wp_enqueue_style('unabledButton');
                 wp_enqueue_script('mollie_paypalButtonCart');
@@ -281,22 +280,22 @@ class AssetsModule implements ExecutableModule
                 'componentsAttributes' => [
                     [
                         'name' => 'cardHolder',
-                        'label' => esc_html__('Card Holder', 'mollie-payments-for-woocommerce')
+                        'label' => esc_html__('Card Holder', 'mollie-payments-for-woocommerce'),
                     ],
                     [
                         'name' => 'cardNumber',
-                        'label' => esc_html__('Card Number', 'mollie-payments-for-woocommerce')
+                        'label' => esc_html__('Card Number', 'mollie-payments-for-woocommerce'),
                     ],
                     [
                         'name' => 'expiryDate',
-                        'label' => esc_html__('Expiry Date', 'mollie-payments-for-woocommerce')
+                        'label' => esc_html__('Expiry Date', 'mollie-payments-for-woocommerce'),
                     ],
                     [
                         'name' => 'verificationCode',
                         'label' => esc_html__(
                             'Verification Code',
                             'mollie-payments-for-woocommerce'
-                        )
+                        ),
                     ],
                 ],
                 'messages' => [
@@ -306,7 +305,7 @@ class AssetsModule implements ExecutableModule
                     ),
                 ],
                 'isCheckout' => is_checkout(),
-                'isCheckoutPayPage' => is_checkout_pay_page()
+                'isCheckoutPayPage' => is_checkout_pay_page(),
             ]
         );
     }

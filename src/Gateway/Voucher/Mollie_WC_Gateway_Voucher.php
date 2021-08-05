@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Gateway\Voucher;
 
 use Mollie\WooCommerce\Gateway\AbstractGateway;
@@ -30,12 +32,12 @@ class Mollie_WC_Gateway_Voucher extends AbstractGateway
         NoticeInterface $notice
     ) {
 
-        $this->supports = array(
+        $this->supports = [
             'products',
-        );
+        ];
 
-	    /* Has issuers dropdown */
-	    //$this->has_fields = TRUE;
+        /* Has issuers dropdown */
+        //$this->has_fields = TRUE;
 
         parent::__construct(
             $iconFactory,
@@ -47,37 +49,37 @@ class Mollie_WC_Gateway_Voucher extends AbstractGateway
         );
     }
 
-	/**
-	 * Initialise Gateway Settings Form Fields
-	 */
-	public function init_form_fields()
-	{
-		parent::init_form_fields();
+    /**
+     * Initialise Gateway Settings Form Fields
+     */
+    public function init_form_fields()
+    {
+        parent::init_form_fields();
 
-		$this->form_fields = array_merge($this->form_fields, array(
-			'mealvoucher_category_default' => array(
-				'title'       => __('Select the default products category', 'mollie-payments-for-woocommerce'),
-                'type'        => 'select',
-                'options'     => array(
+        $this->form_fields = array_merge($this->form_fields, [
+            'mealvoucher_category_default' => [
+                'title' => __('Select the default products category', 'mollie-payments-for-woocommerce'),
+                'type' => 'select',
+                'options' => [
                     self::NO_CATEGORY => $this->categoryName(self::NO_CATEGORY),
                     self::MEAL => $this->categoryName(self::MEAL),
                     self::ECO => $this->categoryName(self::ECO),
-                    self::GIFT => $this->categoryName(self::GIFT)
-                ),
-                'default'     => self::NO_CATEGORY,
+                    self::GIFT => $this->categoryName(self::GIFT),
+                ],
+                'default' => self::NO_CATEGORY,
                 /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
                 'description' => sprintf(
                     __('In order to process it, all products in the order must have a category. This selector will assign the default category for the shop products', 'mollie-payments-for-woocommerce')
                 ),
-				'desc_tip'    => true,
-			),
-		));
-	}
+                'desc_tip' => true,
+            ],
+        ]);
+    }
 
     /**
      * @return string
      */
-    public function getMollieMethodId ()
+    public function getMollieMethodId()
     {
         return 'voucher';
     }
@@ -85,31 +87,30 @@ class Mollie_WC_Gateway_Voucher extends AbstractGateway
     /**
      * @return string
      */
-    public function getDefaultTitle ()
+    public function getDefaultTitle()
     {
         return __('Voucher', 'mollie-payments-for-woocommerce');
     }
 
-	/**
-	 * @return string
-	 */
-	protected function getSettingsDescription() {
-		return '';
-	}
-
-	/**
+    /**
      * @return string
      */
-    protected function getDefaultDescription ()
+    protected function getSettingsDescription()
     {
-	    /* translators: Default gift card dropdown description, displayed above issuer drop down */
-	    return __('voucher', 'mollie-payments-for-woocommerce');
+        return '';
     }
 
+    /**
+     * @return string
+     */
+    protected function getDefaultDescription()
+    {
+        /* translators: Default gift card dropdown description, displayed above issuer drop down */
+        return __('voucher', 'mollie-payments-for-woocommerce');
+    }
 
     private function categoryName($category)
     {
         return ucfirst(str_replace('_', ' ', $category));
     }
-
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Settings\Page;
 
 use Mollie\WooCommerce\Plugin;
@@ -20,7 +22,7 @@ class MollieSettingsPage extends WC_Settings_Page
 
         add_action(
             'woocommerce_sections_' . $this->id,
-            array($this, 'output_sections')
+            [$this, 'output_sections']
         );
         parent::__construct();
     }
@@ -141,7 +143,7 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     public function get_sections()
     {
-        $sections = array(
+        $sections = [
             '' => __('General', 'mollie-payments-for-woocommerce'),
             'mollie_components' => __(
                 'Mollie Components',
@@ -151,8 +153,8 @@ class MollieSettingsPage extends WC_Settings_Page
                 'Apple Pay Button',
                 'mollie-payments-for-woocommerce'
             ),
-            'advanced' => __('Advanced', 'mollie-payments-for-woocommerce')
-        );
+            'advanced' => __('Advanced', 'mollie-payments-for-woocommerce'),
+        ];
 
         return apply_filters(
             'woocommerce_get_sections_' . $this->id,
@@ -193,13 +195,12 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     protected function saveApiKeys($settings)
     {
-
         $liveKeyName = 'mollie-payments-for-woocommerce_live_api_key';
         $testKeyName = 'mollie-payments-for-woocommerce_test_api_key';
         $liveValueInDb = get_option($liveKeyName);
         $testValueInDb = get_option($testKeyName);
-        $postedLiveValue = isset($_POST[$liveKeyName])? sanitize_text_field( $_POST[$liveKeyName] ):'';
-        $postedTestValue = isset($_POST[$testKeyName])? sanitize_text_field( $_POST[$testKeyName] ):'';
+        $postedLiveValue = isset($_POST[$liveKeyName])? sanitize_text_field($_POST[$liveKeyName]):'';
+        $postedTestValue = isset($_POST[$testKeyName])? sanitize_text_field($_POST[$testKeyName]):'';
 
         foreach ($settings as $setting) {
             if ($setting['id']
@@ -208,7 +209,7 @@ class MollieSettingsPage extends WC_Settings_Page
             ) {
                 if ($postedLiveValue === '**********') {
                     $_POST[$liveKeyName] = $liveValueInDb;
-                }else {
+                } else {
                     $pattern = '/^live_\w{30,}$/';
                     $this->validateApiKeyOrRemove(
                         $pattern,
@@ -222,7 +223,7 @@ class MollieSettingsPage extends WC_Settings_Page
             ) {
                 if ($postedTestValue === '**********') {
                     $_POST[$testKeyName] = $testValueInDb;
-                }else {
+                } else {
                     $pattern = '/^test_\w{30,}$/';
                     $this->validateApiKeyOrRemove(
                         $pattern,

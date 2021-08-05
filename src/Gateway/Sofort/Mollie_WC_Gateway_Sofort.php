@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Gateway\Sofort;
 
 use Mollie\Api\Resources\Payment;
@@ -26,10 +28,11 @@ class Mollie_WC_Gateway_Sofort extends AbstractSepaRecurring
         Logger $logger,
         NoticeInterface $notice
     ) {
-        $this->supports = array(
+
+        $this->supports = [
             'products',
             'refunds',
-        );
+        ];
 
         parent::__construct(
             $iconFactory,
@@ -44,7 +47,7 @@ class Mollie_WC_Gateway_Sofort extends AbstractSepaRecurring
     /**
      * @return string
      */
-    public function getMollieMethodId ()
+    public function getMollieMethodId()
     {
         return PaymentMethod::SOFORT;
     }
@@ -52,22 +55,23 @@ class Mollie_WC_Gateway_Sofort extends AbstractSepaRecurring
     /**
      * @return string
      */
-    public function getDefaultTitle ()
+    public function getDefaultTitle()
     {
         return __('SOFORT Banking', 'mollie-payments-for-woocommerce');
     }
 
-	/**
-	 * @return string
-	 */
-	protected function getSettingsDescription() {
-		return '';
-	}
-
-	/**
+    /**
      * @return string
      */
-    protected function getDefaultDescription ()
+    protected function getSettingsDescription()
+    {
+        return '';
+    }
+
+    /**
+     * @return string
+     */
+    protected function getDefaultDescription()
     {
         return '';
     }
@@ -79,19 +83,18 @@ class Mollie_WC_Gateway_Sofort extends AbstractSepaRecurring
      * @param bool                      $plain_text
      * @return string|null
      */
-    protected function getInstructions (WC_Order $order, Payment $payment, $admin_instructions, $plain_text)
+    protected function getInstructions(WC_Order $order, Payment $payment, $admin_instructions, $plain_text)
     {
-        if ($payment->isPaid() && $payment->details)
-        {
-	        return sprintf(
+        if ($payment->isPaid() && $payment->details) {
+            return sprintf(
                 /* translators: Placeholder 1: consumer name, placeholder 2: consumer IBAN, placeholder 3: consumer BIC */
-                __('Payment completed by <strong>%s</strong> (IBAN (last 4 digits): %s, BIC: %s)', 'mollie-payments-for-woocommerce'),
+                __('Payment completed by <strong>%1$s</strong> (IBAN (last 4 digits): %2$s, BIC: %3$s)', 'mollie-payments-for-woocommerce'),
                 $payment->details->consumerName,
-		        substr($payment->details->consumerAccount, -4),
+                substr($payment->details->consumerAccount, -4),
                 $payment->details->consumerBic
             );
         }
 
-	    return parent::getInstructions($order, $payment, $admin_instructions, $plain_text);
+        return parent::getInstructions($order, $payment, $admin_instructions, $plain_text);
     }
 }

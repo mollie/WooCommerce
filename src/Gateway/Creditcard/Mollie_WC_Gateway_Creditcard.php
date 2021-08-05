@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Gateway\Creditcard;
 
 use Mollie\Api\Resources\Payment;

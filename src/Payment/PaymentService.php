@@ -1,8 +1,8 @@
 <?php
 
+declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Gateway;
-
 
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Payment;

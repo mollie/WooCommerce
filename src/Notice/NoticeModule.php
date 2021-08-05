@@ -37,7 +37,7 @@ class NoticeModule implements ServiceModule
         return [
             AdminNotice::class => static function (ContainerInterface $container): AdminNotice {
                 return new AdminNotice();
-            }
+            },
         ];
     }
 }

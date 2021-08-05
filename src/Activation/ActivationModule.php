@@ -36,7 +36,7 @@ class ActivationModule implements ExecutableModule
 
     public const DB_VERSION_PARAM_NAME = 'mollie-db-version';
     public const PENDING_PAYMENT_DB_TABLE_NAME = 'mollie_pending_payment';
-    public const DB_VERSION     = '1.0';
+    public const DB_VERSION = '1.0';
 
     /**
      * @param ContainerInterface $container
@@ -63,11 +63,11 @@ class ActivationModule implements ExecutableModule
     {
         global $wpdb;
         $wpdb->mollie_pending_payment = $wpdb->prefix . self::PENDING_PAYMENT_DB_TABLE_NAME;
-        if (get_option(self::DB_VERSION_PARAM_NAME, '') != self::DB_VERSION) {
+        if (get_option(self::DB_VERSION_PARAM_NAME, '') !== self::DB_VERSION) {
             global $wpdb;
             $pendingPaymentConfirmTable = $wpdb->prefix . self::PENDING_PAYMENT_DB_TABLE_NAME;
             require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-            if ($wpdb->get_var("show tables like '$pendingPaymentConfirmTable'") != $pendingPaymentConfirmTable) {
+            if ($wpdb->get_var("show tables like '$pendingPaymentConfirmTable'") !== $pendingPaymentConfirmTable) {
                 $sql = "
 					CREATE TABLE " . $pendingPaymentConfirmTable . " (
                     id int(11) NOT NULL AUTO_INCREMENT,
@@ -87,8 +87,6 @@ class ActivationModule implements ExecutableModule
         }
     }
 
-
-
     /**
      *
      */
@@ -101,8 +99,7 @@ class ActivationModule implements ExecutableModule
                 if (isset($value->translations)) {
                     $i = 0;
                     foreach ($value->translations as $translation) {
-                        if (
-                            $translation["slug"]
+                        if ($translation["slug"]
                             == "mollie-payments-for-woocommerce"
                         ) {
                             unset($value->translations[$i]);
@@ -131,9 +128,8 @@ class ActivationModule implements ExecutableModule
         add_action(
             'template_include',
             function ($template) {
-                if (
-                    get_query_var('appleparam') == false
-                    || get_query_var('appleparam') == ''
+                if (get_query_var('appleparam') === false
+                    || get_query_var('appleparam') === ''
                 ) {
                     return $template;
                 }

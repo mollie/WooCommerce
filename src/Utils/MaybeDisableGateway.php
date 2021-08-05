@@ -1,7 +1,8 @@
 <?php
 
-namespace Mollie\WooCommerce\Utils;
+declare(strict_types=1);
 
+namespace Mollie\WooCommerce\Utils;
 
 use Mollie\WooCommerce\Gateway\Voucher\Mollie_WC_Gateway_Voucher;
 
@@ -82,7 +83,7 @@ class MaybeDisableGateway
                 Mollie_WC_Gateway_Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
                 $postmeta
             ) ? $postmeta[Mollie_WC_Gateway_Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION][0] : false;
-            if ( isset($product['variation_id']) ) {
+            if (isset($product['variation_id'])) {
                 $postmeta = get_post_meta($product['variation_id']);
                 $postmeta = is_array($postmeta)?$postmeta:[];
                 $variationCategory = array_key_exists(
@@ -125,21 +126,19 @@ class MaybeDisableGateway
         $variationCatIsNoCat = $variationCategory && $variationCategory === Mollie_WC_Gateway_Voucher::NO_CATEGORY;
         $variationCatIsSet = $variationCategory && $variationCategory !== Mollie_WC_Gateway_Voucher::NO_CATEGORY;
         //In importance order variations ->local product (var, simple, subs) -> general
-        if($variationCatIsNoCat){
+        if ($variationCatIsNoCat) {
             return false;
         }
-        if($variationCatIsSet){
+        if ($variationCatIsSet) {
             return true;
         }
-        if($localCatIsNoCat){
+        if ($localCatIsNoCat) {
             return false;
         }
-        if($localCatIsSet || $defaultCatIsSet){
+        if ($localCatIsSet || $defaultCatIsSet) {
             return true;
         }
 
         return false;
     }
-
 }
-

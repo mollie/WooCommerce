@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Activation;
 
 class PluginDisabler
 {
-
 
     private $pluginSlug;
     private $initFunctionName;

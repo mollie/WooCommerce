@@ -1,7 +1,8 @@
 <?php
 
-namespace Mollie\WooCommerce\Components;
+declare(strict_types=1);
 
+namespace Mollie\WooCommerce\Components;
 
 use Mollie\WooCommerce\Settings\SettingsComponents;
 use WC_Payment_Gateway;

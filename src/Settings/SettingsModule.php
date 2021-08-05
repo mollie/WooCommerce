@@ -48,7 +48,6 @@ class SettingsModule implements ServiceModule, ExecutableModule
      */
     protected $dataHelper;
 
-
     public function services(): array
     {
         return [
@@ -62,7 +61,6 @@ class SettingsModule implements ServiceModule, ExecutableModule
                 return new Settings(
                     $pluginId,
                     $statusHelper,
-
                     $pluginVersion,
                     $pluginUrl,
                     $gatewayWithNamespace
@@ -89,7 +87,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
         $this->isTestModeEnabled = $container->get('settings.IsTestModeEnabled');
         $this->dataHelper = $container->get('core.data_helper');
         // Add settings link to plugins page
-        add_filter('plugin_action_links_' . $this->plugin_basename, array ($this, 'addPluginActionLinks'));
+        add_filter('plugin_action_links_' . $this->plugin_basename, [$this, 'addPluginActionLinks']);
 
         add_action('wp_loaded', function () {
             $this->maybeTestModeNotice($this->isTestModeEnabled);
@@ -122,7 +120,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
         );
 
         // When page 'WooCommerce -> Checkout -> Checkout Options' is saved
-        add_action('woocommerce_settings_save_checkout', array ($this->dataHelper, 'deleteTransients'));
+        add_action('woocommerce_settings_save_checkout', [$this->dataHelper, 'deleteTransients']);
 
         return true;
     }
@@ -134,12 +132,12 @@ class SettingsModule implements ServiceModule, ExecutableModule
      */
     public function addPluginActionLinks(array $links): array
     {
-        $action_links = array(
+        $action_links = [
             // Add link to global Mollie settings
             '<a href="' . $this->settingsHelper->getGlobalSettingsUrl()
             . '">' . __('Mollie settings', 'mollie-payments-for-woocommerce')
             . '</a>',
-        );
+        ];
 
         // Add link to WooCommerce logs
         $action_links[] = '<a href="' . $this->settingsHelper->getLogsUrl()
@@ -166,5 +164,4 @@ class SettingsModule implements ServiceModule, ExecutableModule
             $notice->addNotice('notice-error', $message);
         }
     }
-
 }

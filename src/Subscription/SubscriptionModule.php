@@ -59,7 +59,7 @@ class SubscriptionModule implements ExecutableModule
      */
     public function schedulePendingPaymentOrdersExpirationCheck()
     {
-        if (class_exists( 'WC_Subscriptions_Order')) {
+        if (class_exists('WC_Subscriptions_Order')) {
             $settings_helper = Plugin::getSettingsHelper();
             $time = $settings_helper->getPaymentConfirmationCheckTime();
             $nextScheduledTime = wp_next_scheduled('pending_payment_confirmation_check');
@@ -67,7 +67,7 @@ class SubscriptionModule implements ExecutableModule
                 wp_schedule_event($time, 'daily', 'pending_payment_confirmation_check');
             }
 
-            add_action('pending_payment_confirmation_check', array(__CLASS__, 'checkPendingPaymentOrdersExpiration'));
+            add_action('pending_payment_confirmation_check', [__CLASS__, 'checkPendingPaymentOrdersExpiration']);
         }
     }
 
@@ -79,41 +79,40 @@ class SubscriptionModule implements ExecutableModule
         global $wpdb;
         $currentDate = new DateTime();
         $items = $wpdb->get_results("SELECT * FROM {$wpdb->mollie_pending_payment} WHERE expired_time < {$currentDate->getTimestamp()};");
-        foreach ($items as $item){
-            $order = wc_get_order( $item->post_id );
+        foreach ($items as $item) {
+            $order = wc_get_order($item->post_id);
 
             // Check that order actually exists
-            if ( $order == false ) {
+            if ($order == false) {
                 return false;
             }
 
-            if ($order->get_status() == AbstractGateway::STATUS_COMPLETED){
-
+            if ($order->get_status() == AbstractGateway::STATUS_COMPLETED) {
                 $new_order_status = AbstractGateway::STATUS_FAILED;
-                $paymentMethodId = $order->get_meta( '_payment_method_title', true );
-                $molliePaymentId = $order->get_meta( '_mollie_payment_id', true );
+                $paymentMethodId = $order->get_meta('_payment_method_title', true);
+                $molliePaymentId = $order->get_meta('_mollie_payment_id', true);
                 $order->add_order_note(sprintf(
                                        /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-                                           __('%s payment failed (%s).', 'mollie-payments-for-woocommerce'),
-                                           $paymentMethodId,$molliePaymentId
-                                       ));
+                    __('%1$s payment failed (%2$s).', 'mollie-payments-for-woocommerce'),
+                    $paymentMethodId,
+                    $molliePaymentId
+                ));
 
                 $order->update_status($new_order_status, '');
-                if ( $order->get_meta( '_order_stock_reduced', $single = true ) ) {
+                if ($order->get_meta('_order_stock_reduced', $single = true)) {
                     // Restore order stock
-                    Plugin::getDataHelper()->restoreOrderStock($order );
+                    Plugin::getDataHelper()->restoreOrderStock($order);
 
-                    Plugin::debug(__METHOD__ . " Stock for order {$order->get_id()} restored." );
+                    Plugin::debug(__METHOD__ . " Stock for order {$order->get_id()} restored.");
                 }
 
                 $wpdb->delete(
                     $wpdb->mollie_pending_payment,
-                    array(
+                    [
                         'post_id' => $order->get_id(),
-                    )
+                    ]
                 );
             }
         }
-
     }
 }

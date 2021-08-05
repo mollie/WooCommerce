@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Log;
 
 use InvalidArgumentException;
@@ -54,6 +56,7 @@ class WcPsrLoggerAdapter extends AbstractLogger
         $loggerSource,
         string $loggingLevel = \WC_Log_Levels::INFO
     ) {
+
         $this->wcLogger = $wcLogger;
         \assert(in_array($loggingLevel, $this->psrWcLoggingLevels, true));
         $this->loggingLevel = $loggingLevel;
@@ -137,4 +140,3 @@ class WcPsrLoggerAdapter extends AbstractLogger
         return $replace;
     }
 }
-

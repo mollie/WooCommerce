@@ -1,27 +1,26 @@
 <?php
 
+declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Utils;
-
 
 use Mollie\WooCommerce\Notice\AdminNotice;
 
 class IconFactory
 {
 
-	/**
-	 * IconFactory constructor.
-	 */
-	public function __construct()
-	{
-	}
-
-    public function initIcon ($gateway, $displayLogo)
+    /**
+     * IconFactory constructor.
+     */
+    public function __construct()
     {
-        if ($displayLogo)
-        {
+    }
+
+    public function initIcon($gateway, $displayLogo)
+    {
+        if ($displayLogo) {
             $default_icon = $this->getIconUrl($gateway->getMollieMethodId());
-            $gateway->icon   = apply_filters($gateway->id . '_icon_url', $default_icon);
+            $gateway->icon = apply_filters($gateway->id . '_icon_url', $default_icon);
         }
     }
 
@@ -40,7 +39,7 @@ class IconFactory
     public function iconFactory()
     {
         static $factory = null;
-        if ($factory === null){
+        if ($factory === null) {
             $factory = new PaymentMethodsIconUrl();
         }
 
@@ -74,11 +73,11 @@ class IconFactory
                 $tempName = $_FILES[$fileOptionName]['tmp_name'];
                 move_uploaded_file($tempName, $targetLocation . $fileName);
                 $gatewaySettings["iconFileUrl"] = trailingslashit(
-                        wp_upload_dir()['baseurl']
-                    ) . 'mollie-uploads/'. $this->id .'/'. $fileName;
+                    wp_upload_dir()['baseurl']
+                ) . 'mollie-uploads/'. $this->id .'/'. $fileName;
                 $gatewaySettings["iconFilePath"] = trailingslashit(
-                        wp_upload_dir()['basedir']
-                    ) . 'mollie-uploads/'. $this->id .'/'. $fileName;
+                    wp_upload_dir()['basedir']
+                ) . 'mollie-uploads/'. $this->id .'/'. $fileName;
                 update_option("{$this->id}_settings", $gatewaySettings);
             } else {
                 $notice = new AdminNotice();

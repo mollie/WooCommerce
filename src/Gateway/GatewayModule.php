@@ -56,7 +56,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
      */
     protected $pluginId;
 
-
     public function services(): array
     {
         return [
@@ -97,7 +96,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
             },
             MollieOrderService::class => static function (ContainerInterface $container): MollieOrderService {
                 return new MollieOrderService();
-            }
+            },
 
         ];
     }
@@ -127,7 +126,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         // Disable SEPA as payment option in WooCommerce checkout
         add_filter(
             'woocommerce_available_payment_gateways',
-            array($this, 'disableSEPAInCheckout'),
+            [$this, 'disableSEPAInCheckout'],
             10,
             1
         );
@@ -135,7 +134,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         // Disable old Mollie_WC_Gateway_MisterCash as payment option in WooCommerce checkout
         add_filter(
             'woocommerce_available_payment_gateways',
-            array($this, 'disableMisterCashInCheckout'),
+            [$this, 'disableMisterCashInCheckout'],
             10,
             1
         );
@@ -143,7 +142,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         // Disable Mollie methods on some pages
         add_filter(
             'woocommerce_available_payment_gateways',
-            array($this, 'disableMollieOnPaymentMethodChange'),
+            [$this, 'disableMollieOnPaymentMethodChange'],
             10,
             1
         );
@@ -158,7 +157,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         );
 
         // Set order to paid and processed when eventually completed without Mollie
-        add_action('woocommerce_payment_complete', array ($this, 'setOrderPaidByOtherGateway'), 10, 1);
+        add_action('woocommerce_payment_complete', [$this, 'setOrderPaidByOtherGateway'], 10, 1);
         $this->gatewaySurchargeHandling();
         $this->mollieApplePayDirectHandling();
         $paypalGateway = $container->get('gateway.classname_with_namespace')['Mollie_WC_Gateway_PayPal'];
@@ -166,7 +165,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
 
         return true;
     }
-
 
     /**
      * Disable Bank Transfer Gateway
@@ -189,8 +187,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
          *
          * For any other case we want to be sure bank transfer gateway is included.
          */
-        if (
-            $isWcApiRequest ||
+        if ($isWcApiRequest ||
             !$isSettingActivated ||
             is_checkout() && ! is_wc_endpoint_url('order-pay') ||
             !wp_doing_ajax() && ! is_wc_endpoint_url('order-pay') ||
@@ -223,8 +220,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
          *
          * For any other case we want to be sure apple pay gateway is included.
          */
-        if (
-            $isWcApiRequest ||
+        if ($isWcApiRequest ||
             !$wooCommerceSession instanceof \WC_Session ||
             !doing_action('woocommerce_payment_gateways') ||
             !wp_doing_ajax() && ! is_wc_endpoint_url('order-pay') ||
@@ -294,7 +290,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
      */
     public function disableMollieOnPaymentMethodChange($available_gateways)
     {
-
         // Can't use $wp->request or is_wc_endpoint_url()
         // to check if this code only runs on /subscriptions and /view-subscriptions,
         // because slugs/endpoints can be translated (with WPML) and other plugins.
@@ -323,7 +318,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
      */
     public function setOrderPaidByOtherGateway($order_id)
     {
-
         $order = wc_get_order($order_id);
 
         $mollie_payment_id = $order->get_meta('_mollie_payment_id', $single = true);
@@ -395,5 +389,4 @@ class GatewayModule implements ServiceModule, ExecutableModule
         }
         return $gateways;
     }
-
 }

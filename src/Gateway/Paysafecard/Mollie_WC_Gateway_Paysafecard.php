@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Gateway\Paysafecard;
 
 use Mollie\Api\Types\PaymentMethod;
@@ -10,7 +12,7 @@ class Mollie_WC_Gateway_Paysafecard extends AbstractGateway
     /**
      * @return string
      */
-    public function getMollieMethodId ()
+    public function getMollieMethodId()
     {
         return PaymentMethod::PAYSAFECARD;
     }
@@ -18,22 +20,23 @@ class Mollie_WC_Gateway_Paysafecard extends AbstractGateway
     /**
      * @return string
      */
-    public function getDefaultTitle ()
+    public function getDefaultTitle()
     {
         return __('paysafecard', 'mollie-payments-for-woocommerce');
     }
 
-	/**
-	 * @return string
-	 */
-	protected function getSettingsDescription() {
-		return '';
-	}
-
-	/**
+    /**
      * @return string
      */
-    protected function getDefaultDescription ()
+    protected function getSettingsDescription()
+    {
+        return '';
+    }
+
+    /**
+     * @return string
+     */
+    protected function getDefaultDescription()
     {
         return '';
     }

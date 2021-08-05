@@ -1,7 +1,8 @@
 <?php
 
-namespace Mollie\WooCommerce\Payment;
+declare(strict_types=1);
 
+namespace Mollie\WooCommerce\Payment;
 
 use Mollie\Api\Endpoints\OrderEndpoint;
 use Mollie\Api\Exceptions\ApiException;

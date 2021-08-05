@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Buttons\PayPalButton;
 
 class PayPalDataObjectHttp
@@ -48,7 +50,6 @@ class PayPalDataObjectHttp
     {
         return !empty($this->errors);
     }
-
 
     /**
      * Set the object with the data relevant to PayPal
@@ -111,10 +112,10 @@ class PayPalDataObjectHttp
             PropertiesDictionary::NONCE,
             PropertiesDictionary::PRODUCT_QUANTITY,
             PropertiesDictionary::PRODUCT_ID,
-            PropertiesDictionary::NEED_SHIPPING
+            PropertiesDictionary::NEED_SHIPPING,
         ];
         foreach ($data as $key => $value) {
-            if(in_array($key, $allowedKeys)){
+            if (in_array($key, $allowedKeys)) {
                 $filterType = $this->filterType($key);
                 $this->$key = filter_var($value, $filterType);
             }
@@ -131,7 +132,7 @@ class PayPalDataObjectHttp
     {
         $filterInt = [
             PropertiesDictionary::PRODUCT_QUANTITY,
-            PropertiesDictionary::PRODUCT_ID
+            PropertiesDictionary::PRODUCT_ID,
         ];
         $filterBoolean = [PropertiesDictionary::NEED_SHIPPING];
         switch ($value) {
@@ -145,7 +146,6 @@ class PayPalDataObjectHttp
                 return FILTER_SANITIZE_STRING;
         }
     }
-
 
     /**
      * @param array $data

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Activation;
 
 use Inpsyde\EnvironmentChecker\Constraints\ExtensionConstraint;
@@ -11,7 +13,6 @@ use Inpsyde\EnvironmentChecker\EnvironmentChecker;
 use Inpsyde\EnvironmentChecker\Exception\ConstraintFailedException;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Notice\NoticeInterface;
-
 
 class ConstraintsChecker
 {
@@ -25,7 +26,6 @@ class ConstraintsChecker
      * @var NoticeInterface
      */
     protected $notice;
-
 
     /**
      * ConstraintsChecker constructor.
@@ -80,7 +80,8 @@ class ConstraintsChecker
         }
     }
 
-    public function maybeShowWarning($constraint, $warning){
+    public function maybeShowWarning($constraint, $warning)
+    {
         $collectionFactory = new ConstraintsCollectionFactory();
         $constraintsCollection = $collectionFactory->create(
             $constraint
@@ -101,7 +102,6 @@ class ConstraintsChecker
             $this->notice->addNotice('notice-warning is-dismissible', $warning);
             return false;
         }
-
     }
 
     protected function showNotice(array $errors)

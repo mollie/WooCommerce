@@ -1,20 +1,20 @@
 <?php
 
+declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Gateway;
-
 
 use Mollie\WooCommerce\Utils\GatewaySurchargeHandler;
 
 class SurchargeService
 {
 
-	/**
-	 * SurchargeService constructor.
-	 */
-	public function __construct()
-	{
-	}
+    /**
+     * SurchargeService constructor.
+     */
+    public function __construct()
+    {
+    }
 
     public function processAdminOptionSurcharge($gateway)
     {
@@ -27,7 +27,7 @@ class SurchargeService
             $surchargeFields = [
                 '_fixed_fee',
                 '_percentage',
-                '_surcharge_limit'
+                '_surcharge_limit',
             ];
             foreach ($surchargeFields as $field) {
                 $optionName = $gateway->id . $field;
@@ -43,19 +43,18 @@ class SurchargeService
 
     public function buildDescriptionWithSurcharge($gateway)
     {
-        if(!mollieWooCommerceIsCheckoutContext()){
-
+        if (!mollieWooCommerceIsCheckoutContext()) {
             return $gateway->get_option('description', '');
         }
         if (!isset($gateway->settings['payment_surcharge'])
             || $gateway->settings['payment_surcharge']
             === GatewaySurchargeHandler::NO_FEE
-        ){
+        ) {
             return $gateway->get_option('description', '');
         }
 
         $surchargeType = $gateway->settings['payment_surcharge'];
-        switch($surchargeType){
+        switch ($surchargeType) {
             case 'fixed_fee':
                 $feeText = $this->name_fixed_fee();
                 break;
@@ -68,7 +67,7 @@ class SurchargeService
             default:
                 $feeText = false;
         }
-        if($feeText){
+        if ($feeText) {
             $feeLabel = '<span class="mollie-gateway-fee">' . $feeText . '</span>';
 
             return $gateway->get_option('description', '') . $feeLabel;
@@ -84,13 +83,13 @@ class SurchargeService
         }
         $amountFee = $gateway->settings[GatewaySurchargeHandler::FIXED_FEE];
         $currency = get_woocommerce_currency_symbol();
-        return sprintf(__(" +%1s%2s Fee", 'mollie-payments-for-woocommerce'), $amountFee, $currency);
+        return sprintf(__(" +%1\$1s%2\$2s Fee", 'mollie-payments-for-woocommerce'), $amountFee, $currency);
     }
 
     protected function name_percentage()
     {
-        if(!isset($gateway->settings[GatewaySurchargeHandler::PERCENTAGE])
-            || $gateway->settings[GatewaySurchargeHandler::PERCENTAGE] <= 0){
+        if (!isset($gateway->settings[GatewaySurchargeHandler::PERCENTAGE])
+            || $gateway->settings[GatewaySurchargeHandler::PERCENTAGE] <= 0) {
             return false;
         }
         $amountFee = $gateway->settings[GatewaySurchargeHandler::PERCENTAGE];
@@ -111,7 +110,6 @@ class SurchargeService
         $amountFix = $gateway->settings[GatewaySurchargeHandler::FIXED_FEE];
         $currency = get_woocommerce_currency_symbol();
         $amountPercent = $gateway->settings[GatewaySurchargeHandler::PERCENTAGE];
-        return sprintf(__(" +%1s%2s + %3s%% Fee", 'mollie-payments-for-woocommerce'), $amountFix, $currency, $amountPercent);
+        return sprintf(__(" +%1\$1s%2\$2s + %3\$3s%% Fee", 'mollie-payments-for-woocommerce'), $amountFix, $currency, $amountPercent);
     }
-
 }

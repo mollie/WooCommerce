@@ -33,7 +33,6 @@ class LogModule implements ServiceModule
 
     private $loggerSource;
 
-
     /**
      * LogModule constructor.
      */
@@ -48,7 +47,7 @@ class LogModule implements ServiceModule
         return [
             Logger::class => static function (ContainerInterface $container) use ($source): WcPsrLoggerAdapter {
                 return new WcPsrLoggerAdapter(\wc_get_logger(), $source);
-            }
+            },
         ];
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Gateway\MyBank;
 
 use Mollie\Api\Resources\Payment;
@@ -28,6 +30,7 @@ class Mollie_WC_Gateway_MyBank extends AbstractGateway
         Logger $logger,
         NoticeInterface $notice
     ) {
+
         $this->supports = [
             'products',
             'refunds',

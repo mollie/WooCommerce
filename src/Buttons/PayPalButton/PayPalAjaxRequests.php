@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Buttons\PayPalButton;
 
 use Mollie\WooCommerce\Gateway\PayPal\Mollie_WC_Gateway_PayPal;
@@ -19,30 +21,29 @@ class PayPalAjaxRequests
      */
     public function bootstrapAjaxRequest(Mollie_WC_Gateway_PayPal $gateway)
     {
-
         add_action(
             'wp_ajax_' . PropertiesDictionary::CREATE_ORDER,
-            array($this, 'createWcOrder')
+            [$this, 'createWcOrder']
         );
         add_action(
             'wp_ajax_nopriv_' . PropertiesDictionary::CREATE_ORDER,
-            array($this, 'createWcOrder')
+            [$this, 'createWcOrder']
         );
         add_action(
             'wp_ajax_' . PropertiesDictionary::CREATE_ORDER_CART,
-            array($this, 'createWcOrderFromCart')
+            [$this, 'createWcOrderFromCart']
         );
         add_action(
             'wp_ajax_nopriv_' . PropertiesDictionary::CREATE_ORDER_CART,
-            array($this, 'createWcOrderFromCart')
+            [$this, 'createWcOrderFromCart']
         );
         add_action(
             'wp_ajax_' . PropertiesDictionary::UPDATE_AMOUNT,
-            array($this, 'updateAmount')
+            [$this, 'updateAmount']
         );
         add_action(
             'wp_ajax_nopriv_' . PropertiesDictionary::UPDATE_AMOUNT,
-            array($this, 'updateAmount')
+            [$this, 'updateAmount']
         );
         $this->gateway = $gateway;
     }
@@ -79,8 +80,7 @@ class PayPalAjaxRequests
 
         $result = $this->processOrderPayment($orderId);
 
-        if (
-            isset($result['result'])
+        if (isset($result['result'])
             && 'success' === $result['result']
         ) {
             wp_send_json_success($result);
@@ -123,8 +123,7 @@ class PayPalAjaxRequests
         $order = $surchargeHandler->addSurchargeFeeProductPage($order, 'mollie_wc_gateway_paypal');
         $this->updateOrderPostMeta($orderId, $order);
         $result = $this->processOrderPayment($orderId);
-        if (
-            isset($result['result'])
+        if (isset($result['result'])
             && 'success' === $result['result']
         ) {
             $cart->empty_cart();
@@ -165,8 +164,6 @@ class PayPalAjaxRequests
 
         wp_send_json_success($updatedAmount);
     }
-
-
 
     /**
      * Data Object to collect and validate all needed data collected
@@ -226,7 +223,7 @@ class PayPalAjaxRequests
         $checkout = WC()->checkout();
         $orderId = $checkout->create_order([]);
         $order = wc_get_order($orderId);
-        return array($cart, $order);
+        return [$cart, $order];
     }
 
     /**
@@ -239,11 +236,11 @@ class PayPalAjaxRequests
     protected function isNonceValid(
         PayPalDataObjectHttp $PayPalRequestDataObject
     ) {
+
         $isNonceValid = wp_verify_nonce(
             $PayPalRequestDataObject->nonce,
             'mollie_PayPal_button'
         );
         return $isNonceValid;
     }
-
 }

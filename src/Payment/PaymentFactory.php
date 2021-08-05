@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Payment;
 
 use Mollie\Api\Exceptions\ApiException;
@@ -43,4 +45,3 @@ class PaymentFactory
         return false;
     }
 }
-

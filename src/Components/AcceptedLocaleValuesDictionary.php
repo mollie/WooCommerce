@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Components;
 
 class AcceptedLocaleValuesDictionary
@@ -27,6 +29,6 @@ class AcceptedLocaleValuesDictionary
         'hu_HU',
         'pl_PL',
         'lv_LV',
-        'lt_LT'
+        'lt_LT',
     ];
 }

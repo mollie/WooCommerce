@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce;
 
 use DateTime;
@@ -37,17 +39,16 @@ use WC_Session;
 
 class Plugin
 {
-    const PLUGIN_ID      = 'mollie-payments-for-woocommerce';
-    const PLUGIN_TITLE   = 'Mollie Payments for WooCommerce';
+    const PLUGIN_ID = 'mollie-payments-for-woocommerce';
+    const PLUGIN_TITLE = 'Mollie Payments for WooCommerce';
     const PLUGIN_VERSION = '6.4.0';
 
-    const DB_VERSION     = '1.0';
-
+    const DB_VERSION = '1.0';
 
     /**
      * @var array
      */
-    public static $GATEWAY_CLASSNAMES = array(
+    public static $GATEWAY_CLASSNAMES = [
         'Mollie_WC_Gateway_BankTransfer',
         'Mollie_WC_Gateway_Belfius',
         'Mollie_WC_Gateway_Creditcard',
@@ -68,57 +69,56 @@ class Plugin
         'Mollie_WC_Gateway_MyBank',
         'Mollie_WC_Gateway_Voucher',
 
-    );
+    ];
 
-    private function __construct () {}
+    private function __construct()
+    {
+    }
 
     /**
      * Set HTTP status code
      *
      * @param int $status_code
      */
-    public static function setHttpResponseCode ($status_code)
+    public static function setHttpResponseCode($status_code)
     {
-        if (PHP_SAPI !== 'cli' && !headers_sent())
-        {
-            if (function_exists("http_response_code"))
-            {
+        if (PHP_SAPI !== 'cli' && !headers_sent()) {
+            if (function_exists("http_response_code")) {
                 http_response_code($status_code);
-            }
-            else
-            {
-                header(" ", TRUE, $status_code);
+            } else {
+                header(" ", true, $status_code);
             }
         }
     }
 
-	/**
-	 * Add a WooCommerce notification message
-	 *
-	 * @param string $message Notification message
-	 * @param string $type    One of notice, error or success (default notice)
-	 *
-	 * @return $this
-	 */
-	public static function addNotice( $message, $type = 'notice' ) {
-		$type = in_array( $type, array ( 'notice', 'error', 'success' ) ) ? $type : 'notice';
+    /**
+     * Add a WooCommerce notification message
+     *
+     * @param string $message Notification message
+     * @param string $type    One of notice, error or success (default notice)
+     *
+     * @return $this
+     */
+    public static function addNotice($message, $type = 'notice')
+    {
+        $type = in_array($type, [ 'notice', 'error', 'success' ]) ? $type : 'notice';
 
-		// Check for existence of new notification api (WooCommerce >= 2.1)
-		if ( function_exists( 'wc_add_notice' ) ) {
-			wc_add_notice( $message, $type );
-		} else {
-			$woocommerce = WooCommerce::instance();
+        // Check for existence of new notification api (WooCommerce >= 2.1)
+        if (function_exists('wc_add_notice')) {
+            wc_add_notice($message, $type);
+        } else {
+            $woocommerce = WooCommerce::instance();
 
-			switch ( $type ) {
-				case 'error' :
-					$woocommerce->add_error( $message );
-					break;
-				default :
-					$woocommerce->add_message( $message );
-					break;
-			}
-		}
-	}
+            switch ($type) {
+                case 'error':
+                    $woocommerce->add_error($message);
+                    break;
+                default:
+                    $woocommerce->add_message($message);
+                    break;
+            }
+        }
+    }
 
     /**
      * Log messages to WooCommerce log
@@ -126,30 +126,27 @@ class Plugin
      * @param mixed $message
      * @param bool  $set_debug_header Set X-Mollie-Debug header (default false)
      */
-    public static function debug ($message, $set_debug_header = false)
+    public static function debug($message, $set_debug_header = false)
     {
         // Convert message to string
-        if (!is_string($message))
-        {
+        if (!is_string($message)) {
             $message = wc_print_r($message, true);
         }
 
         // Set debug header
-        if ($set_debug_header && PHP_SAPI !== 'cli' && !headers_sent())
-        {
+        if ($set_debug_header && PHP_SAPI !== 'cli' && !headers_sent()) {
             header("X-Mollie-Debug: $message");
         }
 
-	    // Log message
-	    if ( self::getSettingsHelper()->isDebugEnabled() ) {
+        // Log message
+        if (self::getSettingsHelper()->isDebugEnabled()) {
             $logger = wc_get_logger();
 
-            $context = array ( 'source' => self::PLUGIN_ID . '-' . date( 'Y-m-d' ) );
+            $context =  [ 'source' => self::PLUGIN_ID . '-' . date('Y-m-d') ];
 
-            $logger->debug( $message, $context );
-	    }
+            $logger->debug($message, $context);
+        }
     }
-
 
     /**
      * Get plugin URL
@@ -157,7 +154,7 @@ class Plugin
      * @param string $path
      * @return string
      */
-    public static function getPluginUrl ($path = '')
+    public static function getPluginUrl($path = '')
     {
         return untrailingslashit(M4W_PLUGIN_URL) . '/' . ltrim($path, '/');
     }
@@ -167,17 +164,14 @@ class Plugin
         return untrailingslashit(M4W_PLUGIN_DIR) . '/' . ltrim($path, '/');
     }
 
-
-
     /**
      * @return Settings
      */
-    public static function getSettingsHelper ()
+    public static function getSettingsHelper()
     {
         static $settings_helper;
 
-        if (!$settings_helper)
-        {
+        if (!$settings_helper) {
             $settings_helper = new Settings(
                 self::PLUGIN_ID,
                 self::getStatusHelper(),
@@ -213,12 +207,11 @@ class Plugin
     /**
      * @return Api
      */
-    public static function getApiHelper ()
+    public static function getApiHelper()
     {
         static $api_helper;
 
-        if (!$api_helper)
-        {
+        if (!$api_helper) {
             $api_helper = new Api(self::getSettingsHelper());
         }
 
@@ -228,12 +221,11 @@ class Plugin
     /**
      * @return Data
      */
-    public static function getDataHelper ()
+    public static function getDataHelper()
     {
         static $data_helper;
 
-        if (!$data_helper)
-        {
+        if (!$data_helper) {
             $data_helper = new Data(self::getApiHelper());
         }
 
@@ -243,61 +235,56 @@ class Plugin
     /**
      * @return Status
      */
-    public static function getStatusHelper ()
+    public static function getStatusHelper()
     {
         static $status_helper;
 
-        if (!$status_helper)
-        {
+        if (!$status_helper) {
             $status_helper = new Status(new CompatibilityChecker());
         }
 
         return $status_helper;
     }
 
-	/**
-	 * @return PaymentFactory
-	 */
-	public static function getPaymentFactoryHelper() {
-		static $payment_helper;
+    /**
+     * @return PaymentFactory
+     */
+    public static function getPaymentFactoryHelper()
+    {
+        static $payment_helper;
 
-		if ( ! $payment_helper ) {
-			$payment_helper = new PaymentFactory();
-		}
+        if (! $payment_helper) {
+            $payment_helper = new PaymentFactory();
+        }
 
-		return $payment_helper;
+        return $payment_helper;
+    }
 
-	}
+    /**
+     * @return MollieObject
+     */
+    public static function getPaymentObject()
+    {
+        static $payment_parent;
 
-	/**
-	 * @return MollieObject
-	 */
-	public static function getPaymentObject() {
-		static $payment_parent;
+        if (! $payment_parent) {
+            $payment_parent = new MollieObject(null);
+        }
 
-		if ( ! $payment_parent ) {
-			$payment_parent = new MollieObject( null );
-		}
+        return $payment_parent;
+    }
 
-		return $payment_parent;
+    /**
+     * @return OrderLines
+     */
+    public static function getOrderLinesHelper($shop_country, WC_Order $order)
+    {
+        static $order_lines_helper;
 
-	}
+        if (!$order_lines_helper) {
+            $order_lines_helper = new OrderLines($shop_country, $order);
+        }
 
-	/**
-	 * @return OrderLines
-	 */
-	public static function getOrderLinesHelper ( $shop_country, WC_Order $order )
-	{
-		static $order_lines_helper;
-
-		if (!$order_lines_helper)
-		{
-
-			$order_lines_helper = new OrderLines( $shop_country, $order );
-		}
-
-		return $order_lines_helper;
-	}
-
+        return $order_lines_helper;
+    }
 }
-

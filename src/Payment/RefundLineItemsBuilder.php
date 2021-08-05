@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Payment;
 
 use Mollie\WooCommerce\Utils\Data;
@@ -110,7 +112,7 @@ class RefundLineItemsBuilder
             : 0;
 
         //as in Woo if the quantity is 0 but there is an amount, then quantity is 1
-        if($toRefundItemQuantity < 1 && $toRefundItemAmount > 0){
+        if ($toRefundItemQuantity < 1 && $toRefundItemAmount > 0) {
             $toRefundItemQuantity = 1;
         }
 

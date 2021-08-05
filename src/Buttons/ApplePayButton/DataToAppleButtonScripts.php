@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Buttons\ApplePayButton;
 
 class DataToAppleButtonScripts
@@ -70,6 +72,7 @@ class DataToAppleButtonScripts
         $currencyCode,
         $totalLabel
     ) {
+
         $product = wc_get_product(get_the_id());
         if (!$product) {
             return false;
@@ -92,9 +95,9 @@ class DataToAppleButtonScripts
             'shop' => [
                 'countryCode' => $shopCountryCode,
                 'currencyCode' => $currencyCode,
-                'totalLabel' => $totalLabel
+                'totalLabel' => $totalLabel,
             ],
-            'ajaxUrl' => admin_url('admin-ajax.php')
+            'ajaxUrl' => admin_url('admin-ajax.php'),
         ];
     }
 
@@ -110,6 +113,7 @@ class DataToAppleButtonScripts
         $currencyCode,
         $totalLabel
     ) {
+
         $cart = WC()->cart;
 
         return [
@@ -121,10 +125,9 @@ class DataToAppleButtonScripts
             'shop' => [
                 'countryCode' => $shopCountryCode,
                 'currencyCode' => $currencyCode,
-                'totalLabel' => $totalLabel
+                'totalLabel' => $totalLabel,
             ],
-            'ajaxUrl' => admin_url('admin-ajax.php')
+            'ajaxUrl' => admin_url('admin-ajax.php'),
         ];
     }
-
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Gateway\KlarnaPayLater;
 
 use Mollie\Api\Types\PaymentMethod;
@@ -13,9 +15,9 @@ use Psr\Log\LoggerInterface as Logger;
 
 class Mollie_WC_Gateway_KlarnaPayLater extends AbstractGateway
 {
-	/**
-	 *
-	 */
+    /**
+     *
+     */
     public function __construct(
         IconFactory $iconFactory,
         PaymentService $paymentService,
@@ -24,10 +26,11 @@ class Mollie_WC_Gateway_KlarnaPayLater extends AbstractGateway
         Logger $logger,
         NoticeInterface $notice
     ) {
-		$this->supports = array(
-			'products',
-			'refunds',
-		);
+
+        $this->supports = [
+            'products',
+            'refunds',
+        ];
 
         parent::__construct(
             $iconFactory,
@@ -37,36 +40,37 @@ class Mollie_WC_Gateway_KlarnaPayLater extends AbstractGateway
             $logger,
             $notice
         );
-	}
+    }
 
-	/**
-	 * @return string
-	 */
-	public function getMollieMethodId ()
-	{
-		return PaymentMethod::KLARNA_PAY_LATER;
-	}
+    /**
+     * @return string
+     */
+    public function getMollieMethodId()
+    {
+        return PaymentMethod::KLARNA_PAY_LATER;
+    }
 
-	/**
-	 * @return string
-	 */
-	public function getDefaultTitle ()
-	{
-		return __('Klarna Pay later', 'mollie-payments-for-woocommerce');
-	}
+    /**
+     * @return string
+     */
+    public function getDefaultTitle()
+    {
+        return __('Klarna Pay later', 'mollie-payments-for-woocommerce');
+    }
 
-	/**
-	 * @return string
-	 */
-	protected function getSettingsDescription() {
-		return __('To accept payments via Klarna, all default WooCommerce checkout fields should be enabled and required.', 'mollie-payments-for-woocommerce');
-	}
+    /**
+     * @return string
+     */
+    protected function getSettingsDescription()
+    {
+        return __('To accept payments via Klarna, all default WooCommerce checkout fields should be enabled and required.', 'mollie-payments-for-woocommerce');
+    }
 
-	/**
-	 * @return string
-	 */
-	protected function getDefaultDescription ()
-	{
-		return '';
-	}
+    /**
+     * @return string
+     */
+    protected function getDefaultDescription()
+    {
+        return '';
+    }
 }

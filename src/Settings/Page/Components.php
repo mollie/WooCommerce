@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Settings\Page;
 
 use Mollie\WooCommerce\Plugin;

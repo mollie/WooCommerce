@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Gateway\ApplePay;
 
 use Mollie\Api\Resources\Payment;
@@ -30,6 +32,7 @@ class Mollie_WC_Gateway_ApplePay extends AbstractGateway
         Logger $logger,
         NoticeInterface $notice
     ) {
+
         $this->supports = [
             'products',
             'refunds',
@@ -100,6 +103,7 @@ class Mollie_WC_Gateway_ApplePay extends AbstractGateway
         $admin_instructions,
         $plain_text
     ) {
+
         if ($payment->isPaid() && $payment->details) {
             return sprintf(
                 __(

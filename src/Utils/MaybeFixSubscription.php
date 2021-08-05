@@ -1,7 +1,8 @@
 <?php
 
-namespace Mollie\WooCommerce\Utils;
+declare(strict_types=1);
 
+namespace Mollie\WooCommerce\Utils;
 
 class MaybeFixSubscription
 {
@@ -27,9 +28,9 @@ class MaybeFixSubscription
                     [
                         'key' => '_mollie_customer_id',
                         'value' => '',
-                        'compare' => 'NOT EXISTS'
-                    ]
-                ]
+                        'compare' => 'NOT EXISTS',
+                    ],
+                ],
             ]
         );
         foreach ($subscriptions as $subscription) {
@@ -37,7 +38,7 @@ class MaybeFixSubscription
             //cst_*
             if (strlen($customer) < 5) {
                 $parent = $subscription->get_parent();
-                if($parent){
+                if ($parent) {
                     $subscription->update_meta_data('_mollie_customer_id', $parent->get_meta('_mollie_customer_id'));
                     $subscription->update_meta_data('_mollie_order_id', $parent->get_meta('_mollie_order_id'));
                     $subscription->update_meta_data('_mollie_payment_id', $parent->get_meta('_mollie_payment_id'));
@@ -49,4 +50,3 @@ class MaybeFixSubscription
         update_option('mollie_wc_fix_subscriptions', true);
     }
 }
-

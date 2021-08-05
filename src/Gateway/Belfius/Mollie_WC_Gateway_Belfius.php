@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Gateway\Belfius;
 
 use Mollie\Api\Types\PaymentMethod;
@@ -24,10 +27,10 @@ class Mollie_WC_Gateway_Belfius extends AbstractSepaRecurring
         NoticeInterface $notice
     ) {
 
-        $this->supports = array(
+        $this->supports = [
             'products',
             'refunds',
-        );
+        ];
         parent::__construct(
             $iconFactory,
             $paymentService,
@@ -41,7 +44,7 @@ class Mollie_WC_Gateway_Belfius extends AbstractSepaRecurring
     /**
      * @return string
      */
-    public function getMollieMethodId ()
+    public function getMollieMethodId()
     {
         return PaymentMethod::BELFIUS;
     }
@@ -49,22 +52,23 @@ class Mollie_WC_Gateway_Belfius extends AbstractSepaRecurring
     /**
      * @return string
      */
-    public function getDefaultTitle ()
+    public function getDefaultTitle()
     {
         return __('Belfius Direct Net', 'mollie-payments-for-woocommerce');
     }
 
-	/**
-	 * @return string
-	 */
-	protected function getSettingsDescription() {
-		return '';
-	}
+    /**
+     * @return string
+     */
+    protected function getSettingsDescription()
+    {
+        return '';
+    }
 
     /**
      * @return string
      */
-    protected function getDefaultDescription ()
+    protected function getDefaultDescription()
     {
         return '';
     }

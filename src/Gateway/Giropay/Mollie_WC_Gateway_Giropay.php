@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Gateway\Giropay;
 
 use Mollie\Api\Types\PaymentMethod;
@@ -11,10 +13,11 @@ use Mollie\WooCommerce\Subscription\AbstractSepaRecurring;
 use Mollie\WooCommerce\Utils\IconFactory;
 use Psr\Log\LoggerInterface as Logger;
 
-class Mollie_WC_Gateway_Giropay extends AbstractSepaRecurring {
-	/**
-	 *
-	 */
+class Mollie_WC_Gateway_Giropay extends AbstractSepaRecurring
+{
+    /**
+     *
+     */
     public function __construct(
         IconFactory $iconFactory,
         PaymentService $paymentService,
@@ -23,10 +26,11 @@ class Mollie_WC_Gateway_Giropay extends AbstractSepaRecurring {
         Logger $logger,
         NoticeInterface $notice
     ) {
-		$this->supports = array (
-			'products',
-			'refunds',
-		);
+
+        $this->supports =  [
+            'products',
+            'refunds',
+        ];
 
         parent::__construct(
             $iconFactory,
@@ -36,34 +40,37 @@ class Mollie_WC_Gateway_Giropay extends AbstractSepaRecurring {
             $logger,
             $notice
         );
-	}
+    }
 
-	/**
-	 * @return string
-	 */
-	public function getMollieMethodId() {
-		return PaymentMethod::GIROPAY;
-	}
+    /**
+     * @return string
+     */
+    public function getMollieMethodId()
+    {
+        return PaymentMethod::GIROPAY;
+    }
 
-	/**
-	 * @return string
-	 */
-	public function getDefaultTitle() {
-		return __( 'Giropay', 'mollie-payments-for-woocommerce' );
-	}
+    /**
+     * @return string
+     */
+    public function getDefaultTitle()
+    {
+        return __('Giropay', 'mollie-payments-for-woocommerce');
+    }
 
-	/**
-	 * @return string
-	 */
-	protected function getSettingsDescription() {
-		return '';
-	}
+    /**
+     * @return string
+     */
+    protected function getSettingsDescription()
+    {
+        return '';
+    }
 
-	/**
-	 * @return string
-	 */
-	protected function getDefaultDescription() {
-		return '';
-	}
-
+    /**
+     * @return string
+     */
+    protected function getDefaultDescription()
+    {
+        return '';
+    }
 }

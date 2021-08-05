@@ -40,8 +40,7 @@ class CoreModule implements ServiceModule
 {
     use ModuleClassNameIdTrait;
 
-    public const PLUGIN_ID      = 'mollie-payments-for-woocommerce';
-
+    public const PLUGIN_ID = 'mollie-payments-for-woocommerce';
 
     public function services(): array
     {
@@ -99,7 +98,7 @@ class CoreModule implements ServiceModule
                         header(" ", true, $status_code);
                     }
                 }
-            }
+            },
         ];
     }
 }

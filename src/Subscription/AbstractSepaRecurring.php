@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Subscription;
 
 use DateInterval;
@@ -22,7 +24,6 @@ abstract class AbstractSepaRecurring extends AbstractSubscription
 
     protected $recurringMollieMethod = null;
 
-
     /**
      * AbstractSepaRecurring constructor.
      */
@@ -34,6 +35,7 @@ abstract class AbstractSepaRecurring extends AbstractSubscription
         Logger $logger,
         NoticeInterface $notice
     ) {
+
         parent::__construct(
             $iconFactory,
             $paymentService,
@@ -63,7 +65,7 @@ abstract class AbstractSepaRecurring extends AbstractSubscription
     protected function getRecurringMollieMethodId()
     {
         $result = null;
-        if ($this->recurringMollieMethod){
+        if ($this->recurringMollieMethod) {
             $result = $this->recurringMollieMethod->getMollieMethodId();
         }
 
@@ -76,7 +78,7 @@ abstract class AbstractSepaRecurring extends AbstractSubscription
     protected function getRecurringMollieMethodTitle()
     {
         $result = null;
-        if ($this->recurringMollieMethod){
+        if ($this->recurringMollieMethod) {
             $result = $this->recurringMollieMethod->getDefaultTitle();
         }
 
@@ -90,18 +92,20 @@ abstract class AbstractSepaRecurring extends AbstractSubscription
      */
     protected function _updateScheduledPaymentOrder($renewal_order, $initial_order_status, $payment)
     {
-	    $this->updateOrderStatus(
-		    $renewal_order,
-		    $initial_order_status,
-		    sprintf( __( "Awaiting payment confirmation.", 'mollie-payments-for-woocommerce' ) . "\n",
-			    self::WAITING_CONFIRMATION_PERIOD_DAYS )
-	    );
+        $this->updateOrderStatus(
+            $renewal_order,
+            $initial_order_status,
+            sprintf(
+                __("Awaiting payment confirmation.", 'mollie-payments-for-woocommerce') . "\n",
+                self::WAITING_CONFIRMATION_PERIOD_DAYS
+            )
+        );
 
         $payment_method_title = $this->getPaymentMethodTitle($payment);
 
         $renewal_order->add_order_note(sprintf(
         /* translators: Placeholder 1: Payment method title, placeholder 2: payment ID */
-            __('%s payment started (%s).', 'mollie-payments-for-woocommerce'),
+            __('%1$s payment started (%2$s).', 'mollie-payments-for-woocommerce'),
             $payment_method_title,
             $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
         ));
@@ -109,13 +113,13 @@ abstract class AbstractSepaRecurring extends AbstractSubscription
         $this->addPendingPaymentOrder($renewal_order);
     }
 
-	/**
-	 * @return bool
-	 */
-	protected function paymentConfirmationAfterCoupleOfDays ()
-	{
-		return true;
-	}
+    /**
+     * @return bool
+     */
+    protected function paymentConfirmationAfterCoupleOfDays()
+    {
+        return true;
+    }
 
     /**
      * @param $renewal_order
@@ -129,10 +133,10 @@ abstract class AbstractSepaRecurring extends AbstractSubscription
         $confirmationDate->add(new DateInterval($period));
         $wpdb->insert(
             $wpdb->mollie_pending_payment,
-            array(
+            [
                 'post_id' => $renewal_order->get_id(),
                 'expired_time' => $confirmationDate->getTimestamp(),
-            )
+            ]
         );
     }
 
@@ -144,7 +148,7 @@ abstract class AbstractSepaRecurring extends AbstractSubscription
     {
         $payment_method_title = parent::getPaymentMethodTitle($payment);
         $orderId = isset($payment->metadata) ? $payment->metadata->order_id : false;
-        if ($orderId && Plugin::getDataHelper()->isWcSubscription($orderId) && $payment->method == $this->getRecurringMollieMethodId()){
+        if ($orderId && Plugin::getDataHelper()->isWcSubscription($orderId) && $payment->method == $this->getRecurringMollieMethodId()) {
             $payment_method_title = $this->getRecurringMollieMethodTitle();
         }
 

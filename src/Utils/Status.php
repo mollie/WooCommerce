@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\WooCommerce\Utils;
 
 use Mollie\Api\CompatibilityChecker;
@@ -7,7 +9,6 @@ use Mollie\Api\Exceptions\IncompatiblePlatform;
 use Mollie\Api\MollieApiClient;
 use Mollie\WooCommerce\Plugin;
 use WooCommerce;
-
 
 class Status
 {
@@ -21,7 +22,7 @@ class Status
     /**
      * @var string[]
      */
-    protected $errors = array();
+    protected $errors = [];
 
     /**
      * @var CompatibilityChecker
@@ -36,7 +37,7 @@ class Status
     /**
      * @return bool
      */
-    public function hasErrors ()
+    public function hasErrors()
     {
         return !empty($this->errors);
     }
@@ -44,7 +45,7 @@ class Status
     /**
      * @return string[]
      */
-    public function getErrors ()
+    public function getErrors()
     {
         return $this->errors;
     }
@@ -69,7 +70,7 @@ class Status
             $this->errors[] = sprintf(
             /* translators: Placeholder 1: Plugin name, placeholder 2: required WooCommerce version, placeholder 3: used WooCommerce version */
                 __(
-                    'The %s plugin requires at least WooCommerce version %s, you are using version %s. Please update your WooCommerce plugin.',
+                    'The %1$s plugin requires at least WooCommerce version %2$s, you are using version %3$s. Please update your WooCommerce plugin.',
                     'mollie-payments-for-woocommerce'
                 ),
                 Plugin::PLUGIN_TITLE,
@@ -106,7 +107,7 @@ class Status
                     $error = sprintf(
                     /* translators: Placeholder 1: Required PHP version, placeholder 2: current PHP version */
                         __(
-                            'Mollie Payments for WooCommerce require PHP %s or higher, you have PHP %s. Please upgrade and view %sthis FAQ%s',
+                            'Mollie Payments for WooCommerce require PHP %1$s or higher, you have PHP %2$s. Please upgrade and view %3$sthis FAQ%4$s',
                             'mollie-payments-for-woocommerce'
                         ),
                         CompatibilityChecker::MIN_PHP_VERSION,
@@ -154,7 +155,7 @@ class Status
     /**
      * @return string
      */
-    public function getWooCommerceVersion ()
+    public function getWooCommerceVersion()
     {
         return WooCommerce::instance()->version;
     }
@@ -162,7 +163,7 @@ class Status
     /**
      * @return bool
      */
-    public function hasCompatibleWooCommerceVersion ()
+    public function hasCompatibleWooCommerceVersion()
     {
         return (bool) version_compare($this->getWooCommerceVersion(), self::MIN_WOOCOMMERCE_VERSION, ">=");
     }
@@ -170,7 +171,7 @@ class Status
     /**
      * @return bool
      */
-    protected function isApiClientInstalled ()
+    protected function isApiClientInstalled()
     {
         return class_exists(MollieApiClient::class);
     }
@@ -178,27 +179,23 @@ class Status
     /**
      * @throws \Mollie\Api\Exceptions\ApiException
      */
-    public function getMollieApiStatus ()
+    public function getMollieApiStatus()
     {
-        try
-        {
+        try {
             // Is test mode enabled?
-            $test_mode  = Plugin::getSettingsHelper()->isTestModeEnabled();
+            $test_mode = Plugin::getSettingsHelper()->isTestModeEnabled();
 
             $api_helper = Plugin::getApiHelper();
             $api_client = $api_helper->getApiClient($test_mode);
 
             // Try to load Mollie issuers
             $api_client->methods->all();
-        }
-        catch ( \Mollie\Api\Exceptions\ApiException $e )
-        {
-
-	        if ( $e->getMessage() == 'Error executing API call (401: Unauthorized Request): Missing authentication, or failed to authenticate. Documentation: https://docs.mollie.com/guides/authentication') {
-		        throw new \Mollie\Api\Exceptions\ApiException(
-			        'incorrect API key or other authentication issue. Please check your API keys!'
-		        );
-	        }
+        } catch (\Mollie\Api\Exceptions\ApiException $e) {
+            if ($e->getMessage() == 'Error executing API call (401: Unauthorized Request): Missing authentication, or failed to authenticate. Documentation: https://docs.mollie.com/guides/authentication') {
+                throw new \Mollie\Api\Exceptions\ApiException(
+                    'incorrect API key or other authentication issue. Please check your API keys!'
+                );
+            }
 
             throw new \Mollie\Api\Exceptions\ApiException(
                 $e->getMessage()

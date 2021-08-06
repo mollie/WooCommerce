@@ -20,56 +20,6 @@ class Plugin_Test extends TestCase
 {
     private $fileMTime;
 
-    public function testGetPluginUrl()
-    {
-        /*
-         * Stubs
-         */
-        $path = uniqid();
-        when('untrailingslashit')->returnArg(1);
-
-        /*
-         * Execute test
-         */
-        self::assertEquals(
-            M4W_PLUGIN_URL . '/',
-            Plugin::getPluginPath()
-        );
-        self::assertEquals(
-            M4W_PLUGIN_URL . "/{$path}",
-            Plugin::getPluginPath("/{$path}")
-        );
-        self::assertEquals(
-            M4W_PLUGIN_URL . '/',
-            Plugin::getPluginPath('/')
-        );
-    }
-
-    public function testGetPluginDir()
-    {
-        /*
-         * Stubs
-         */
-        $path = uniqid();
-        when('untrailingslashit')->returnArg(1);
-
-        /*
-         * Execute test
-         */
-        self::assertEquals(
-            M4W_PLUGIN_DIR . '/',
-            Plugin::getPluginPath()
-        );
-        self::assertEquals(
-            M4W_PLUGIN_DIR . "/{$path}",
-            Plugin::getPluginPath("/{$path}")
-        );
-        self::assertEquals(
-            M4W_PLUGIN_DIR . '/',
-            Plugin::getPluginPath('/')
-        );
-    }
-
     public function testRegisterFrontendScriptsRegisterPolyfill()
     {
         /*

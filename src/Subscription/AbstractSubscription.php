@@ -33,7 +33,8 @@ abstract class AbstractSubscription extends AbstractGateway
         Logger $logger,
         NoticeInterface $notice,
         HttpResponse $httpResponse,
-        string $pluginUrl
+        string $pluginUrl,
+        string $pluginPath
     ) {
 
         parent::__construct(
@@ -44,7 +45,8 @@ abstract class AbstractSubscription extends AbstractGateway
             $logger,
             $notice,
             $httpResponse,
-            $pluginUrl
+            $pluginUrl,
+            $pluginPath
         );
 
         if (class_exists('WC_Subscriptions_Order')) {

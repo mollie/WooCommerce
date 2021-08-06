@@ -30,7 +30,8 @@ class Mollie_WC_Gateway_PayPal extends AbstractGateway
         Logger $logger,
         NoticeInterface $notice,
         HttpResponse $httpResponse,
-        string $pluginUrl
+        string $pluginUrl,
+        string $pluginPath
     ) {
 
         $this->supports = [
@@ -46,7 +47,8 @@ class Mollie_WC_Gateway_PayPal extends AbstractGateway
             $logger,
             $notice,
             $httpResponse,
-            $pluginUrl
+            $pluginUrl,
+            $pluginPath
         );
     }
 
@@ -116,9 +118,8 @@ class Mollie_WC_Gateway_PayPal extends AbstractGateway
 
     protected function includePayPalButton()
     {
-        $fields = include Plugin::getPluginPath(
-            '/inc/settings/mollie_paypal_button_enabler.php'
-        );
+        $fields = include $this->pluginPath . '/' .
+            '/inc/settings/mollie_paypal_button_enabler.php';
 
         $this->form_fields = array_merge($this->form_fields, $fields);
     }

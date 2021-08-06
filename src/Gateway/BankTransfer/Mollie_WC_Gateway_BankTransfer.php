@@ -37,7 +37,8 @@ class Mollie_WC_Gateway_BankTransfer extends AbstractGateway
         Logger $logger,
         NoticeInterface $notice,
         HttpResponse $httpResponse,
-        string $pluginUrl
+        string $pluginUrl,
+        string $pluginPath
     ) {
 
         $this->supports = [
@@ -53,7 +54,8 @@ class Mollie_WC_Gateway_BankTransfer extends AbstractGateway
             $logger,
             $notice,
             $httpResponse,
-            $pluginUrl
+            $pluginUrl,
+            $pluginPath
         );
         add_filter('woocommerce_' . $this->id . '_args', [$this, 'addPaymentArguments'], 10, 2);
     }

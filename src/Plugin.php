@@ -4,39 +4,14 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce;
 
-use DateTime;
 use Mollie\Api\CompatibilityChecker;
-use Mollie\Api\Exceptions\ApiException;
-use Mollie\Api\Resources\Refund;
-use Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDirectHandler;
-use Mollie\WooCommerce\Buttons\ApplePayButton\DataToAppleButtonScripts;
-use Mollie\WooCommerce\Buttons\ApplePayButton\ResponsesToApple;
-use Mollie\WooCommerce\Buttons\ApplePayButton\AppleAjaxRequests;
-use Mollie\WooCommerce\Buttons\PayPalButton\PayPalAjaxRequests;
-use Mollie\WooCommerce\Buttons\PayPalButton\PayPalButtonHandler;
-use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPalScripts;
-use Mollie\WooCommerce\Components\AcceptedLocaleValuesDictionary;
-use Mollie\WooCommerce\Gateway\AbstractGateway;
-use Mollie\WooCommerce\Gateway\ApplePay\Mollie_WC_Gateway_ApplePay;
-use Mollie\WooCommerce\Gateway\Voucher\Mollie_WC_Gateway_Voucher;
 use Mollie\WooCommerce\Log\WcPsrLoggerAdapter;
-use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Payment\MollieObject;
-use Mollie\WooCommerce\Payment\OrderItemsRefunder;
-use Mollie\WooCommerce\Payment\OrderLines;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\SDK\Api;
-use Mollie\WooCommerce\Settings\Page\MollieSettingsPage;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Utils\Data;
-use Mollie\WooCommerce\Utils\GatewaySurchargeHandler;
-use Mollie\WooCommerce\Utils\MaybeDisableGateway;
-use Mollie\WooCommerce\Utils\MaybeFixSubscription;
 use Mollie\WooCommerce\Utils\Status;
-use Mollie\WooCommerce\Gateway\BankTransfer\Mollie_WC_Gateway_BankTransfer;
-use RuntimeException;
-use WC_Order;
-use WC_Session;
 
 class Plugin
 {
@@ -74,11 +49,6 @@ class Plugin
 
     private function __construct()
     {
-    }
-
-    public static function getPluginPath($path = '')
-    {
-        return untrailingslashit(M4W_PLUGIN_DIR) . '/' . ltrim($path, '/');
     }
 
     /**

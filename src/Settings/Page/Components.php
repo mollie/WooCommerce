@@ -11,11 +11,16 @@ use WC_Settings_Page;
 class Components extends WC_Settings_Page
 {
     const FILTER_COMPONENTS_SETTINGS = 'components_settings';
+    /**
+     * @var string
+     */
+    protected $pluginPath;
 
-    public function __construct()
+    public function __construct(string $pluginPath)
     {
         $this->id = 'mollie_components';
         $this->label = __('Mollie Components', 'mollie-payments-for-woocommerce');
+        $this->pluginPath = $pluginPath;
 
         parent::__construct();
     }
@@ -59,8 +64,6 @@ class Components extends WC_Settings_Page
 
     protected function componentsFilePath()
     {
-        return Plugin::getPluginPath(
-            '/inc/settings/mollie_components.php'
-        );
+        return $this->pluginPath . '/' . '/inc/settings/mollie_components.php';
     }
 }

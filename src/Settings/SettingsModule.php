@@ -86,6 +86,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
         $this->settingsHelper = $container->get('settings.settings_helper');
         $this->isTestModeEnabled = $container->get('settings.IsTestModeEnabled');
         $this->dataHelper = $container->get('core.data_helper');
+        $pluginPath = $container->get('core.plugin_path');
         // Add settings link to plugins page
         add_filter('plugin_action_links_' . $this->plugin_basename, [$this, 'addPluginActionLinks']);
 
@@ -94,8 +95,8 @@ class SettingsModule implements ServiceModule, ExecutableModule
         });
         add_filter(
             'woocommerce_get_settings_pages',
-            function ($settings) {
-                $settings[] = new MollieSettingsPage($this->settingsHelper);
+            function ($settings) use ($pluginPath) {
+                $settings[] = new MollieSettingsPage($this->settingsHelper, $pluginPath);
 
                 return $settings;
             }

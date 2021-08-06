@@ -33,7 +33,8 @@ class Mollie_WC_Gateway_ApplePay extends AbstractGateway
         Logger $logger,
         NoticeInterface $notice,
         HttpResponse $httpResponse,
-        string $pluginUrl
+        string $pluginUrl,
+        string $pluginPath
     ) {
 
         $this->supports = [
@@ -48,7 +49,8 @@ class Mollie_WC_Gateway_ApplePay extends AbstractGateway
             $logger,
             $notice,
             $httpResponse,
-            $pluginUrl
+            $pluginUrl,
+            $pluginPath
         );
     }
     /**
@@ -127,9 +129,8 @@ class Mollie_WC_Gateway_ApplePay extends AbstractGateway
 
     protected function includeApplePayButton()
     {
-        $fields = include Plugin::getPluginPath(
-            '/inc/settings/mollie_apple_pay_button_enabler.php'
-        );
+        $fields = include $this->pluginPath . '/' .
+            '/inc/settings/mollie_apple_pay_button_enabler.php';
 
         $this->form_fields = array_merge($this->form_fields, $fields);
     }

@@ -14,11 +14,17 @@ class MollieSettingsPage extends WC_Settings_Page
     const FILTER_COMPONENTS_SETTINGS = 'mollie_settings';
     protected $settingsHelper;
 
-    public function __construct(Settings $settingsHelper)
+    /**
+     * @var string
+     */
+    protected $pluginPath;
+
+    public function __construct(Settings $settingsHelper, string $pluginPath)
     {
         $this->id = 'mollie_settings';
         $this->label = __('Mollie Settings', 'mollie-payments-for-woocommerce');
         $this->settingsHelper = $settingsHelper;
+        $this->pluginPath = $pluginPath;
 
         add_action(
             'woocommerce_sections_' . $this->id,
@@ -113,9 +119,7 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     protected function componentsFilePath()
     {
-        return Plugin::getPluginPath(
-            '/inc/settings/mollie_components.php'
-        );
+        return $this->pluginPath . '/' . '/inc/settings/mollie_components.php';
     }
 
     /**
@@ -123,9 +127,7 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     protected function applePaySection()
     {
-        return Plugin::getPluginPath(
-            '/inc/settings/mollie_applepay_settings.php'
-        );
+        return $this->pluginPath . '/' . '/inc/settings/mollie_applepay_settings.php';
     }
 
     /**
@@ -133,9 +135,7 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     protected function advancedSectionFilePath()
     {
-        return Plugin::getPluginPath(
-            '/inc/settings/mollie_advanced_settings.php'
-        );
+        return $this->pluginPath . '/' . '/inc/settings/mollie_advanced_settings.php';
     }
 
     /**

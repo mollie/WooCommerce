@@ -28,7 +28,8 @@ class Mollie_WC_Gateway_Giftcard extends AbstractGateway
         Logger $logger,
         NoticeInterface $notice,
         HttpResponse $httpResponse,
-        string $pluginUrl
+        string $pluginUrl,
+        string $pluginPath
     ) {
 
         $this->supports = [
@@ -46,7 +47,8 @@ class Mollie_WC_Gateway_Giftcard extends AbstractGateway
             $logger,
             $notice,
             $httpResponse,
-            $pluginUrl
+            $pluginUrl,
+            $pluginPath
         );
     }
 

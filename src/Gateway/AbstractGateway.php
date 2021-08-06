@@ -100,6 +100,10 @@ abstract class AbstractGateway extends WC_Payment_Gateway
      * @var string
      */
     protected $pluginUrl;
+    /**
+     * @var string
+     */
+    protected $pluginPath;
 
     /**
      *
@@ -112,7 +116,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway
         Logger $logger,
         NoticeInterface $notice,
         HttpResponse $httpResponse,
-        string $pluginUrl
+        string $pluginUrl,
+        string $pluginPath
     ) {
 
         $this->logger = $logger;
@@ -123,6 +128,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
         $this->mollieOrderService = $mollieOrderService;
         $this->httpResponse = $httpResponse;
         $this->pluginUrl = $pluginUrl;
+        $this->pluginPath = $pluginPath;
 
         // No plugin id, gateway id is unique enough
         $this->plugin_id = '';

@@ -28,7 +28,8 @@ class Mollie_WC_Gateway_Creditcard extends AbstractSubscription
         Logger $logger,
         NoticeInterface $notice,
         HttpResponse $httpResponse,
-        string $pluginUrl
+        string $pluginUrl,
+        string $pluginPath
     ) {
         parent::__construct(
                 $iconFactory,
@@ -38,7 +39,8 @@ class Mollie_WC_Gateway_Creditcard extends AbstractSubscription
                 $logger,
                 $notice,
                 $httpResponse,
-                $pluginUrl
+                $pluginUrl,
+                $pluginPath
         );
         $this->supports = [
             'products',
@@ -177,9 +179,7 @@ class Mollie_WC_Gateway_Creditcard extends AbstractSubscription
      */
     protected function includeCreditCardIconSelector()
     {
-        $fields = include Plugin::getPluginPath(
-            '/inc/settings/mollie_creditcard_icons_selector.php'
-        );
+        $fields = include $this->pluginPath . '/' . '/inc/settings/mollie_creditcard_icons_selector.php';
 
         $fields and $this->form_fields = array_merge($this->form_fields, $fields);
     }
@@ -224,7 +224,7 @@ class Mollie_WC_Gateway_Creditcard extends AbstractSubscription
         $enabledCreditCards = $this->enabledCreditcards();
 
         $assetsImagesPath
-            = Plugin::getPluginPath('public/images/Creditcard_issuers/');
+            = $this->pluginPath . '/' . 'public/images/Creditcard_issuers/';
         $cardWidth = PaymentMethodsIconUrl::CREDIT_CARD_ICON_WIDTH;
         $cardsNumber = count($enabledCreditCards);
         $cardsWidth = $cardWidth * $cardsNumber;
@@ -286,9 +286,7 @@ class Mollie_WC_Gateway_Creditcard extends AbstractSubscription
 
     protected function includeMollieComponentsFields()
     {
-        $fields = include Plugin::getPluginPath(
-            '/inc/settings/mollie_components_enabler.php'
-        );
+        $fields = include $this->pluginPath . '/' . '/inc/settings/mollie_components_enabler.php';
 
         $this->form_fields = array_merge($this->form_fields, $fields);
     }
@@ -328,14 +326,14 @@ class Mollie_WC_Gateway_Creditcard extends AbstractSubscription
     protected function lockIcon()
     {
         return file_get_contents(
-            Plugin::getPluginPath('public/images/lock-icon.svg')
+            $this->pluginPath . '/' .  'public/images/lock-icon.svg'
         );
     }
 
     protected function mollieLogo()
     {
         return file_get_contents(
-            Plugin::getPluginPath('public/images/mollie-logo.svg')
+            $this->pluginPath . '/' .  'public/images/mollie-logo.svg'
         );
     }
 

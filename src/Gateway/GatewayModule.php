@@ -381,6 +381,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $mollieOrderService = $container->get(MollieOrderService::class);
         $HttpResponseService = $container->get('SDK.HttpResponse');
         $pluginUrl = $container->get('core.plugin_url');
+        $pluginPath = $container->get('core.plugin_path');
         $gatewayClassnames = $this->gatewayClassnames;
         $gateways = [];
         $gatewayNamespace = 'Mollie\\WooCommerce\\Gateway\\';
@@ -396,7 +397,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $logger,
                 $notice,
                 $HttpResponseService,
-                $pluginUrl
+                $pluginUrl,
+                $pluginPath
             );
         }
         return $gateways;

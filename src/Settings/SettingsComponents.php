@@ -9,9 +9,22 @@ use Mollie\WooCommerce\Plugin;
 
 class SettingsComponents
 {
+
     const STYLE_KEY_PREFIXES = [
         'invalid_',
     ];
+    /**
+     * @var string
+     */
+    protected $pluginPath;
+
+    /**
+     * SettingsComponents constructor.
+     */
+    public function __construct(string $pluginPath)
+    {
+        $this->pluginPath = $pluginPath;
+    }
 
     public function styles()
     {
@@ -48,10 +61,7 @@ class SettingsComponents
 
     protected function defaultSettings()
     {
-        // TODO May be a function?
-        $mollieComponentsFilePath = Plugin::getPluginPath(
-            '/inc/settings/mollie_components.php'
-        );
+        $mollieComponentsFilePath = $this->pluginPath . '/inc/settings/mollie_components.php';
 
         if (!file_exists($mollieComponentsFilePath)) {
             return [];

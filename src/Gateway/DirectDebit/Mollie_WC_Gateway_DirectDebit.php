@@ -29,7 +29,8 @@ class Mollie_WC_Gateway_DirectDebit extends AbstractGateway
         Logger $logger,
         NoticeInterface $notice,
         HttpResponse $httpResponse,
-        string $pluginUrl
+        string $pluginUrl,
+        string $pluginPath
     ) {
 
         $this->supports = [
@@ -45,7 +46,8 @@ class Mollie_WC_Gateway_DirectDebit extends AbstractGateway
             $logger,
             $notice,
             $httpResponse,
-            $pluginUrl
+            $pluginUrl,
+            $pluginPath
         );
     }
 

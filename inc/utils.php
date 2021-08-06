@@ -24,8 +24,10 @@ function mollieWooCommerceIsCheckoutContext()
  */
 function mollieWooCommerceComponentsStylesForAvailableGateways()
 {
+    $pluginPath = untrailingslashit(M4W_PLUGIN_DIR) . '/';
+
     $mollieComponentsStyles = new ComponentsStyles(
-        new SettingsComponents(),
+        new SettingsComponents($pluginPath),
         WC()->payment_gateways()
     );
 

@@ -174,7 +174,7 @@ abstract class AbstractSubscription extends AbstractGateway
 
             // Check if WooCommerce Subscriptions Failed Recurring Payment Retry System is in-use, if it is, don't update subscription status
             if (class_exists('WCS_Retry_Manager') && WCS_Retry_Manager::is_retry_enabled() && $subscription->get_date('payment_retry') > 0) {
-                $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - WooCommerce Subscriptions Failed Recurring Payment Retry System in use, not updating subscription status to Active!');
+                $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - WooCommerce Subscriptions Failed Recurring Payment Retry System in use, not updating subscription status to Active!');
 
                 return;
             }
@@ -189,7 +189,7 @@ abstract class AbstractSubscription extends AbstractGateway
                 $subscription->update_status('active');
             } catch (Exception $e) {
                 // Already logged by WooCommerce Subscriptions
-                $this->logger->log( \WC_Log_Levels::DEBUG, 'Could not update subscription ' . $subscription_id . ' status:' . $e->getMessage());
+                $this->logger->log(\WC_Log_Levels::DEBUG, 'Could not update subscription ' . $subscription_id . ' status:' . $e->getMessage());
             }
 
             // Add order note to subscription explaining the change
@@ -211,7 +211,7 @@ abstract class AbstractSubscription extends AbstractGateway
     public function scheduled_subscription_payment($renewal_total, WC_Order $renewal_order)
     {
         if (! $renewal_order) {
-            $this->logger->log( \WC_Log_Levels::DEBUG, $this->id . ': Could not load renewal order or process renewal payment.');
+            $this->logger->log(\WC_Log_Levels::DEBUG, $this->id . ': Could not load renewal order or process renewal payment.');
 
             return  [ 'result' => 'failure' ];
         }
@@ -221,7 +221,7 @@ abstract class AbstractSubscription extends AbstractGateway
         // Allow developers to hook into the subscription renewal payment before it processed
         do_action(Plugin::PLUGIN_ID . '_before_renewal_payment_created', $renewal_order);
 
-        $this->logger->log( \WC_Log_Levels::DEBUG, $this->id . ': Try to create renewal payment for renewal order ' . $renewal_order_id);
+        $this->logger->log(\WC_Log_Levels::DEBUG, $this->id . ': Try to create renewal payment for renewal order ' . $renewal_order_id);
         $initial_order_status = $this->getInitialOrderStatus();
 
         // Overwrite plugin-wide
@@ -260,7 +260,7 @@ abstract class AbstractSubscription extends AbstractGateway
             $validMandate = false;
             try {
                 if (isset($mandateId)) {
-                    $this->logger->log( \WC_Log_Levels::DEBUG, $this->id . ': Found mandate ID for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id);
+                    $this->logger->log(\WC_Log_Levels::DEBUG, $this->id . ': Found mandate ID for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id);
                     $mandate =  $mollieApiClient->customers->get($customer_id)->getMandate($mandateId);
                     if ($mandate->status === 'valid') {
                         $data['method'] = $mandate->method;
@@ -269,7 +269,7 @@ abstract class AbstractSubscription extends AbstractGateway
                     }
                 } else {
                     // Get all mandates for the customer ID
-                    $this->logger->log( \WC_Log_Levels::DEBUG, $this->id . ': Try to get all mandates for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id);
+                    $this->logger->log(\WC_Log_Levels::DEBUG, $this->id . ': Try to get all mandates for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id);
                     $mandates =  $mollieApiClient->customers->get($customer_id)->mandates();
                     $renewalOrderMethod = $renewal_order->get_payment_method();
                     $renewalOrderMethod = str_replace("mollie_wc_gateway_", "", $renewalOrderMethod);
@@ -291,7 +291,7 @@ abstract class AbstractSubscription extends AbstractGateway
             // Check that there is at least one valid mandate
             try {
                 if ($validMandate) {
-                    $this->logger->log( \WC_Log_Levels::DEBUG, $this->id . ': Valid mandate found for renewal order ' . $renewal_order_id);
+                    $this->logger->log(\WC_Log_Levels::DEBUG, $this->id . ': Valid mandate found for renewal order ' . $renewal_order_id);
                     $payment = Plugin::getApiHelper()->getApiClient($test_mode)->payments->create($data);
                 } else {
                     throw new \Mollie\Api\Exceptions\ApiException(sprintf(__('The customer (%s) does not have a valid mandate.', 'mollie-payments-for-woocommerce-mandate-problem'), $customer_id));
@@ -304,7 +304,7 @@ abstract class AbstractSubscription extends AbstractGateway
             $this->updateFirstPaymentMethodToRecurringPaymentMethod($renewal_order, $renewal_order_id, $payment);
 
             // Log successful creation of payment
-            $this->logger->log( \WC_Log_Levels::DEBUG, $this->id . ': Renewal payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $renewal_order_id . ' payment json response: ' . json_encode($payment));
+            $this->logger->log(\WC_Log_Levels::DEBUG, $this->id . ': Renewal payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $renewal_order_id . ' payment json response: ' . json_encode($payment));
 
             // Unset & set active MollieSettingsPage payment
             // Get correct MollieSettingsPage Payment Object
@@ -331,7 +331,7 @@ abstract class AbstractSubscription extends AbstractGateway
                 'result' => 'success',
             ];
         } catch (Mollie\Api\Exceptions\ApiException $e) {
-            $this->logger->log( \WC_Log_Levels::DEBUG, $this->id . ': Failed to create payment for order ' . $renewal_order_id . ': ' . $e->getMessage());
+            $this->logger->log(\WC_Log_Levels::DEBUG, $this->id . ': Failed to create payment for order ' . $renewal_order_id . ': ' . $e->getMessage());
 
             /* translators: Placeholder 1: Payment method title */
             $message = sprintf(__('Could not create %s renewal payment.', 'mollie-payments-for-woocommerce'), $this->title);
@@ -398,7 +398,7 @@ abstract class AbstractSubscription extends AbstractGateway
                 $renewal_order->set_payment_method_title('SEPA Direct Debit');
                 $renewal_order->save();
             } catch (WC_Data_Exception $e) {
-                $this->logger->log( \WC_Log_Levels::DEBUG, 'Updating payment method to SEPA Direct Debit failed for renewal order: ' . $renewal_order_id);
+                $this->logger->log(\WC_Log_Levels::DEBUG, 'Updating payment method to SEPA Direct Debit failed for renewal order: ' . $renewal_order_id);
             }
         }
     }
@@ -563,18 +563,18 @@ abstract class AbstractSubscription extends AbstractGateway
             //
 
             if (empty($mollie_customer_id)) {
-                $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: no valid customer ID found, trying to restore from MollieSettingsPage API payment (' . $mollie_payment_id . ').');
+                $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: no valid customer ID found, trying to restore from MollieSettingsPage API payment (' . $mollie_payment_id . ').');
 
                 // Try to get the customer ID from the payment object
                 $mollie_customer_id = $payment_object_resource->getMollieCustomerIdFromPaymentObject($mollie_payment_id);
 
                 if (empty($mollie_customer_id)) {
-                    $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: stopped processing, no customer ID found for this customer/payment combination.');
+                    $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: stopped processing, no customer ID found for this customer/payment combination.');
 
                     return $mollie_customer_id;
                 }
 
-                $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: customer ID (' . $mollie_customer_id . ') found, verifying status of customer and mandate(s).');
+                $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: customer ID (' . $mollie_customer_id . ') found, verifying status of customer and mandate(s).');
             }
 
             //
@@ -588,7 +588,7 @@ abstract class AbstractSubscription extends AbstractGateway
             $gateway = wc_get_payment_gateway_by_order($subscription);
 
             if (! $gateway || ! ( $gateway instanceof AbstractGateway )) {
-                $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: stopped processing, not a MollieSettingsPage payment gateway, could not restore customer ID.');
+                $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: stopped processing, not a MollieSettingsPage payment gateway, could not restore customer ID.');
 
                 return $mollie_customer_id;
             }
@@ -616,7 +616,7 @@ abstract class AbstractSubscription extends AbstractGateway
 
             // Check credit card payments and mandates
             if ($mollie_method == 'creditcard' && ! $mandates->hasValidMandateForMethod($mollie_method)) {
-                $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: failed! No valid mandate for payment method ' . $mollie_method . ' found.');
+                $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: failed! No valid mandate for payment method ' . $mollie_method . ' found.');
 
                 return $mollie_customer_id;
             }
@@ -629,7 +629,7 @@ abstract class AbstractSubscription extends AbstractGateway
 
             // Check SEPA Direct Debit payments and mandates
             if ($mollie_method == 'directdebit' && ! $mandates->hasValidMandateForMethod($mollie_method) && $payment_object->isPaid() && $sequence_type == 'oneoff') {
-                $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: no valid mandate for payment method ' . $mollie_method . ' found, trying to create one.');
+                $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: no valid mandate for payment method ' . $mollie_method . ' found, trying to create one.');
 
                 $options = $payment_object_resource->getMollieCustomerIbanDetailsFromPaymentObject($mollie_payment_id);
 
@@ -647,14 +647,14 @@ abstract class AbstractSubscription extends AbstractGateway
                 $customer = Plugin::getApiHelper()->getApiClient($test_mode)->customers->get($mollie_customer_id);
                 Plugin::getApiHelper()->getApiClient($test_mode)->mandates->createFor($customer, $options);
 
-                $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: mandate created successfully, customer restored.');
+                $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: mandate created successfully, customer restored.');
             } else {
-                $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: the subscription doesn\'t meet the conditions for a mandate restore.');
+                $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: the subscription doesn\'t meet the conditions for a mandate restore.');
             }
 
             return $mollie_customer_id;
         } catch (Mollie\Api\Exceptions\ApiException $e) {
-            $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: customer id and mandate restore failed. ' . $e->getMessage());
+            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: customer id and mandate restore failed. ' . $e->getMessage());
 
             return $mollie_customer_id;
         }

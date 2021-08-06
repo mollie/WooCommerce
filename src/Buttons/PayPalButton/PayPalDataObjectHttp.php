@@ -48,7 +48,6 @@ class PayPalDataObjectHttp
         $this->logger = $logger;
     }
 
-
     /**
      * Resets the errors array
      */
@@ -98,7 +97,8 @@ class PayPalDataObjectHttp
     {
         foreach ($required as $requiredField) {
             if (!array_key_exists($requiredField, $data)) {
-                $this->logger->log( \WC_Log_Levels::DEBUG,
+                $this->logger->log(
+                    \WC_Log_Levels::DEBUG,
                     "PayPal Data Error: Missing index {$requiredField}"
                 );
 
@@ -106,7 +106,8 @@ class PayPalDataObjectHttp
                 continue;
             }
             if (!$data[$requiredField]) {
-                $this->logger->log( \WC_Log_Levels::DEBUG,
+                $this->logger->log(
+                    \WC_Log_Levels::DEBUG,
                     "PayPal Data Error: Missing value for {$requiredField}"
                 );
                 $this->errors[]= ['errorCode' => 'unknown'];

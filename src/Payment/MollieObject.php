@@ -74,7 +74,7 @@ class MollieObject
 
             return $payment;
         } catch (ApiException $e) {
-            $this->logger->log( \WC_Log_Levels::DEBUG, __FUNCTION__ . ": Could not load payment $payment_id (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Could not load payment $payment_id (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
 
         return null;
@@ -102,7 +102,7 @@ class MollieObject
 
             return $payment;
         } catch (ApiException $e) {
-            $this->logger->log( \WC_Log_Levels::DEBUG, __FUNCTION__ . ": Could not load order $payment_id (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Could not load order $payment_id (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
 
         return null;
@@ -331,7 +331,7 @@ class MollieObject
                     $mollie_order
                 );
             } catch (ApiException $exception) {
-                $this->logger->log( \WC_Log_Levels::DEBUG, $exception->getMessage());
+                $this->logger->log(\WC_Log_Levels::DEBUG, $exception->getMessage());
                 return;
             }
 
@@ -629,7 +629,8 @@ class MollieObject
                 );
             }
 
-            $this->logger->log( \WC_Log_Levels::DEBUG,
+            $this->logger->log(
+                \WC_Log_Levels::DEBUG,
                 __METHOD__ . ' called for order ' . $orderId . ' and payment '
                 . $payment->id . ', renewal order payment failed, order set to '
                 . $newOrderStatus . ' for shop-owner review.'
@@ -678,7 +679,8 @@ class MollieObject
         );
 
         // Add message to log
-        $this->logger->log( \WC_Log_Levels::DEBUG,
+        $this->logger->log(
+            \WC_Log_Levels::DEBUG,
             $gatewayId . ': Order ' . $order->get_id()
             . ' webhook called, but payment also started via '
             . $orderPaymentMethodTitle . ', so order status not updated.',

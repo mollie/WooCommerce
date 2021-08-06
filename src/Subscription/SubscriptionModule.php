@@ -110,7 +110,7 @@ class SubscriptionModule implements ExecutableModule
                     // Restore order stock
                     Plugin::getDataHelper()->restoreOrderStock($order);
 
-                    $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . " Stock for order {$order->get_id()} restored.");
+                    $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . " Stock for order {$order->get_id()} restored.");
                 }
 
                 $wpdb->delete(

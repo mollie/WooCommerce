@@ -118,7 +118,7 @@ class Data
      */
     public function deleteTransients()
     {
-        $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ': MollieSettingsPage settings saved, delete transients');
+        $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ': MollieSettingsPage settings saved, delete transients');
 
         $transient_names = [
             'api_methods_test',
@@ -157,7 +157,7 @@ class Data
         try {
             return $this->api_helper->getApiClient($test_mode)->payments->get($payment_id);
         } catch (\Mollie\Api\Exceptions\ApiException $e) {
-            $this->logger->log( \WC_Log_Levels::DEBUG, __FUNCTION__ . ": Could not load payment $payment_id (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Could not load payment $payment_id (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
 
         return null;
@@ -268,7 +268,7 @@ class Data
 
             return $methods;
         } catch (\Mollie\Api\Exceptions\ApiException $e) {
-            $this->logger->log( \WC_Log_Levels::DEBUG, __FUNCTION__ . ": Could not load Mollie methods (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Could not load Mollie methods (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
 
             return [];
         }
@@ -319,7 +319,7 @@ class Data
 
             return $issuers;
         } catch (\Mollie\Api\Exceptions\ApiException $e) {
-            $this->logger->log( \WC_Log_Levels::DEBUG, __FUNCTION__ . ": Could not load " . $method . " issuers (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Could not load " . $method . " issuers (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
 
         return  [];
@@ -338,9 +338,9 @@ class Data
                 $customer = new WC_Customer($user_id);
                 $customer->update_meta_data('mollie_customer_id', $customer_id);
                 $customer->save();
-                $this->logger->log( \WC_Log_Levels::DEBUG, __FUNCTION__ . ": Stored MollieSettingsPage customer ID " . $customer_id . " with user " . $user_id);
+                $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Stored MollieSettingsPage customer ID " . $customer_id . " with user " . $user_id);
             } catch (Exception $e) {
-                $this->logger->log( \WC_Log_Levels::DEBUG, __FUNCTION__ . ": Couldn't load (and save) WooCommerce customer based on user ID " . $user_id);
+                $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Couldn't load (and save) WooCommerce customer based on user ID " . $user_id);
             }
         }
 
@@ -401,7 +401,7 @@ class Data
             try {
                 $this->api_helper->getApiClient($test_mode)->customers->get($customer_id);
             } catch (\Mollie\Api\Exceptions\ApiException $e) {
-                $this->logger->log( \WC_Log_Levels::DEBUG, __FUNCTION__ . ": Mollie Customer ID ($customer_id) not valid for user $user_id on this API key, try to create a new one (" . ( $test_mode ? 'test' : 'live' ) . ").");
+                $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Mollie Customer ID ($customer_id) not valid for user $user_id on this API key, try to create a new one (" . ( $test_mode ? 'test' : 'live' ) . ").");
                 $customer_id = '';
             }
         }
@@ -429,14 +429,14 @@ class Data
 
                 $customer_id = $customer->id;
 
-                $this->logger->log( \WC_Log_Levels::DEBUG, __FUNCTION__ . ": Created a Mollie Customer ($customer_id) for WordPress user with ID $user_id (" . ( $test_mode ? 'test' : 'live' ) . ").");
+                $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Created a Mollie Customer ($customer_id) for WordPress user with ID $user_id (" . ( $test_mode ? 'test' : 'live' ) . ").");
 
                 return $customer_id;
             } catch (\Mollie\Api\Exceptions\ApiException $e) {
-                $this->logger->log( \WC_Log_Levels::DEBUG, __FUNCTION__ . ": Could not create Mollie Customer for WordPress user with ID $user_id (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+                $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Could not create Mollie Customer for WordPress user with ID $user_id (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
             }
         } else {
-            $this->logger->log( \WC_Log_Levels::DEBUG, __FUNCTION__ . ": Mollie Customer ID ($customer_id) found and valid for user $user_id on this API key. (" . ( $test_mode ? 'test' : 'live' ) . ").");
+            $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Mollie Customer ID ($customer_id) found and valid for user $user_id on this API key. (" . ( $test_mode ? 'test' : 'live' ) . ").");
         }
 
         return $customer_id;

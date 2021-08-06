@@ -247,7 +247,7 @@ class Mollie_WC_Gateway_BankTransfer extends AbstractGateway
                 && class_exists('DateTime')
                 && class_exists('DateInterval')) {
                 $expiryDate = $payment->expiresAt;
-                $this->logger->log(\WC_Log_Levels::DEBUG,"Due date assigned: {$expiryDate}");
+                $this->logger->log(\WC_Log_Levels::DEBUG, "Due date assigned: {$expiryDate}");
                 $expiryDate = date_i18n(wc_date_format(), strtotime($expiryDate));
 
                 if ($admin_instructions) {

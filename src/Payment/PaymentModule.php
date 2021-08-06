@@ -169,7 +169,7 @@ class PaymentModule implements ExecutableModule
         );
 
         $order->add_order_note($orderNote);
-        $this->logger->log( \WC_Log_Levels::DEBUG, $orderNote);
+        $this->logger->log(\WC_Log_Levels::DEBUG, $orderNote);
     }
 
     /**
@@ -187,7 +187,7 @@ class PaymentModule implements ExecutableModule
         );
 
         $order->add_order_note($orderNote);
-        $this->logger->log( \WC_Log_Levels::DEBUG, $orderNote);
+        $this->logger->log(\WC_Log_Levels::DEBUG, $orderNote);
     }
 
     /**
@@ -200,7 +200,7 @@ class PaymentModule implements ExecutableModule
             $order = self::orderByRequest();
         } catch (RuntimeException $exc) {
             $this->httpResponse->setHttpResponseCode($exc->getCode());
-            $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ":  {$exc->getMessage()}");
+            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ":  {$exc->getMessage()}");
             return;
         }
 
@@ -211,7 +211,8 @@ class PaymentModule implements ExecutableModule
             $gatewayName = $order->get_payment_method();
 
             $this->httpResponse->setHttpResponseCode(404);
-            $this->logger->log( \WC_Log_Levels::DEBUG,
+            $this->logger->log(
+                \WC_Log_Levels::DEBUG,
                 __METHOD__ . ":  Could not find gateway {$gatewayName} for order {$orderId}."
             );
             return;
@@ -219,7 +220,7 @@ class PaymentModule implements ExecutableModule
 
         if (!($gateway instanceof AbstractGateway)) {
             $this->httpResponse->setHttpResponseCode(400);
-            $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ": Invalid gateway {get_class($gateway)} for this plugin. Order {$orderId}.");
+            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ": Invalid gateway {get_class($gateway)} for this plugin. Order {$orderId}.");
             return;
         }
 
@@ -228,7 +229,7 @@ class PaymentModule implements ExecutableModule
         // Add utm_nooverride query string
         $redirect_url = add_query_arg(['utm_nooverride' => 1], $redirect_url);
 
-        $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ": Redirect url on return order {$gateway->id}, order {$orderId}: {$redirect_url}");
+        $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ": Redirect url on return order {$gateway->id}, order {$orderId}: {$redirect_url}");
 
         wp_safe_redirect($redirect_url);
         die;
@@ -292,14 +293,14 @@ class PaymentModule implements ExecutableModule
             return;
         }
 
-        $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Try to process completed order for a potential capture at Mollie.');
+        $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Try to process completed order for a potential capture at Mollie.');
 
         // Does WooCommerce order contain a Mollie Order?
         $mollie_order_id = ( $mollie_order_id = $order->get_meta('_mollie_order_id', true) ) ? $mollie_order_id : false;
         // Is it a payment? you cannot ship a payment
         if ($mollie_order_id == false || substr($mollie_order_id, 0, 3) == 'tr_') {
             $order->add_order_note('Order contains Mollie payment method, but not a Mollie Order ID. Processing capture canceled.');
-            $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order contains Mollie payment method, but not a Mollie Order ID. Processing capture cancelled.');
+            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order contains Mollie payment method, but not a Mollie Order ID. Processing capture cancelled.');
 
             return;
         }
@@ -314,14 +315,14 @@ class PaymentModule implements ExecutableModule
             // Check that order is Paid or Authorized and can be captured
             if ($mollie_order->isCanceled()) {
                 $order->add_order_note('Order already canceled at Mollie, can not be shipped/captured.');
-                $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order already canceled at Mollie, can not be shipped/captured.');
+                $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order already canceled at Mollie, can not be shipped/captured.');
 
                 return;
             }
 
             if ($mollie_order->isCompleted()) {
                 $order->add_order_note('Order already completed at Mollie, can not be shipped/captured.');
-                $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order already completed at Mollie, can not be shipped/captured.');
+                $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order already completed at Mollie, can not be shipped/captured.');
 
                 return;
             }
@@ -329,15 +330,15 @@ class PaymentModule implements ExecutableModule
             if ($mollie_order->isPaid() || $mollie_order->isAuthorized()) {
                 Plugin::getApiHelper()->getApiClient($test_mode)->orders->get($mollie_order_id)->shipAll();
                 $order->add_order_note('Order successfully updated to shipped at Mollie, capture of funds underway.');
-                $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order successfully updated to shipped at Mollie, capture of funds underway.');
+                $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order successfully updated to shipped at Mollie, capture of funds underway.');
 
                 return;
             }
 
             $order->add_order_note('Order not paid or authorized at Mollie yet, can not be shipped.');
-            $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order not paid or authorized at Mollie yet, can not be shipped.');
+            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order not paid or authorized at Mollie yet, can not be shipped.');
         } catch (Mollie\Api\Exceptions\ApiException $e) {
-            $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Processing shipment & capture failed, error: ' . $e->getMessage());
+            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Processing shipment & capture failed, error: ' . $e->getMessage());
         }
 
         return;
@@ -362,13 +363,13 @@ class PaymentModule implements ExecutableModule
             return;
         }
 
-        $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Try to process cancelled order at Mollie.');
+        $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Try to process cancelled order at Mollie.');
 
         $mollie_order_id = ( $mollie_order_id = $order->get_meta('_mollie_order_id', true) ) ? $mollie_order_id : false;
 
         if ($mollie_order_id == false) {
             $order->add_order_note('Order contains Mollie payment method, but not a valid Mollie Order ID. Canceling order failed.');
-            $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order contains Mollie payment method, but not a valid Mollie Order ID. Canceling order failed.');
+            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order contains Mollie payment method, but not a valid Mollie Order ID. Canceling order failed.');
 
             return;
         }
@@ -383,7 +384,7 @@ class PaymentModule implements ExecutableModule
             // Check that order is not already canceled at MollieSettingsPage
             if ($mollie_order->isCanceled()) {
                 $order->add_order_note('Order already canceled at Mollie, can not be canceled again.');
-                $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order already canceled at Mollie, can not be canceled again.');
+                $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order already canceled at Mollie, can not be canceled again.');
 
                 return;
             }
@@ -392,15 +393,15 @@ class PaymentModule implements ExecutableModule
             if ($mollie_order->isCreated() || $mollie_order->isAuthorized() || $mollie_order->isShipping()) {
                 Plugin::getApiHelper()->getApiClient($test_mode)->orders->get($mollie_order_id)->cancel();
                 $order->add_order_note('Order also cancelled at Mollie.');
-                $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order cancelled in WooCommerce, also cancelled at Mollie.');
+                $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order cancelled in WooCommerce, also cancelled at Mollie.');
 
                 return;
             }
 
             $order->add_order_note('Order could not be canceled at Mollie, because order status is ' . $mollie_order->status . '.');
-            $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order could not be canceled at Mollie, because order status is ' . $mollie_order->status . '.');
+            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order could not be canceled at Mollie, because order status is ' . $mollie_order->status . '.');
         } catch (Mollie\Api\Exceptions\ApiException $e) {
-            $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Updating order to canceled at Mollie failed, error: ' . $e->getMessage());
+            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Updating order to canceled at Mollie failed, error: ' . $e->getMessage());
         }
 
         return;

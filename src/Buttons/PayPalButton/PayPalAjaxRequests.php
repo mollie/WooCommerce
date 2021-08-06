@@ -38,7 +38,6 @@ class PayPalAjaxRequests
         $this->logger = $logger;
     }
 
-
     /**
      * Adds all the Ajax actions to perform the whole workflow
      */
@@ -116,7 +115,7 @@ class PayPalAjaxRequests
                 'PayPal'
             );
 
-            $this->logger->log( \WC_Log_Levels::DEBUG, $message, 'error');
+            $this->logger->log(\WC_Log_Levels::DEBUG, $message, 'error');
             wp_send_json_error($message);
         }
     }

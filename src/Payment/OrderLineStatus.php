@@ -11,11 +11,17 @@ use Mollie\Api\Types\OrderLineStatus as ApiOrderLineStatus;
  */
 class OrderLineStatus extends ApiOrderLineStatus
 {
+    /**
+     * @var string[]
+     */
     const CAN_BE_CANCELED = [
         self::STATUS_CREATED,
         self::STATUS_AUTHORIZED,
     ];
 
+    /**
+     * @var string[]
+     */
     const CAN_BE_REFUNDED = [
         self::STATUS_PAID,
         self::STATUS_SHIPPING,

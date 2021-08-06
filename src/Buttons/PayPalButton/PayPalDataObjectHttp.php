@@ -69,7 +69,6 @@ class PayPalDataObjectHttp
      * Set the object with the data relevant to PayPal
      * Required data depends on callerPage
      *
-     * @param array $data
      * @param       $callerPage
      */
     public function orderData(array $data, $callerPage)
@@ -88,8 +87,6 @@ class PayPalDataObjectHttp
      * If not it adds an unkown error to the object's error list, as this errors
      * are not supported by ApplePay
      *
-     * @param array $data
-     * @param array $required
      *
      * @return bool
      */
@@ -99,7 +96,7 @@ class PayPalDataObjectHttp
             if (!array_key_exists($requiredField, $data)) {
                 $this->logger->log(
                     \WC_Log_Levels::DEBUG,
-                    "PayPal Data Error: Missing index {$requiredField}"
+                    sprintf('PayPal Data Error: Missing index %s', $requiredField)
                 );
 
                 $this->errors[]= ['errorCode' => 'unknown'];
@@ -108,7 +105,7 @@ class PayPalDataObjectHttp
             if (!$data[$requiredField]) {
                 $this->logger->log(
                     \WC_Log_Levels::DEBUG,
-                    "PayPal Data Error: Missing value for {$requiredField}"
+                    sprintf('PayPal Data Error: Missing value for %s', $requiredField)
                 );
                 $this->errors[]= ['errorCode' => 'unknown'];
                 continue;
@@ -119,8 +116,6 @@ class PayPalDataObjectHttp
 
     /**
      * Sets the value to the appropriate field in the object
-     *
-     * @param array $data
      */
     protected function assignDataObjectValues(array $data)
     {
@@ -154,20 +149,16 @@ class PayPalDataObjectHttp
         switch ($value) {
             case in_array($value, $filterInt):
                 return FILTER_SANITIZE_NUMBER_INT;
-                break;
             case in_array($value, $filterBoolean):
                 return FILTER_VALIDATE_BOOLEAN;
-                break;
             default:
                 return FILTER_SANITIZE_STRING;
         }
     }
 
     /**
-     * @param array $data
      * @param       $requiredProductFields
      * @param       $requiredCartFields
-     *
      * @return bool
      */
     protected function updateRequiredData(array $data, $requiredProductFields, $requiredCartFields)

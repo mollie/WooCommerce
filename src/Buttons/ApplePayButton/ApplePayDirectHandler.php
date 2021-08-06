@@ -19,9 +19,6 @@ class ApplePayDirectHandler
 
     /**
      * ApplePayDirectHandler constructor.
-     *
-     * @param AdminNotice       $notice
-     * @param AppleAjaxRequests $ajaxRequests
      */
     public function __construct(AdminNotice $notice, AppleAjaxRequests $ajaxRequests)
     {

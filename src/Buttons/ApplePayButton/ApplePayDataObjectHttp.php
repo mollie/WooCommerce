@@ -40,11 +40,11 @@ class ApplePayDataObjectHttp
     /**
      * @var string[]
      */
-    public $billingAddress;
+    public $billingAddress = [];
     /**
      * @var string[]
      */
-    public $shippingAddress;
+    public $shippingAddress = [];
     /**
      * @var mixed
      */
@@ -87,8 +87,6 @@ class ApplePayDataObjectHttp
 
     /**
      * Set the object with the data relevant to ApplePay validation
-     *
-     * @param array $data
      */
     public function validationData(array $data)
     {
@@ -106,8 +104,6 @@ class ApplePayDataObjectHttp
     /**
      * Set the object with the data relevant to ApplePay on update shipping contact
      * Required data depends on callerPage
-     *
-     * @param array $data
      */
     public function updateContactData(array $data)
     {
@@ -125,8 +121,6 @@ class ApplePayDataObjectHttp
     /**
      * Set the object with the data relevant to ApplePay on update shipping method
      * Required data depends on callerPage
-     *
-     * @param array $data
      */
     public function updateMethodData(array $data)
     {
@@ -146,7 +140,6 @@ class ApplePayDataObjectHttp
      * Set the object with the data relevant to ApplePay on authorized order
      * Required data depends on callerPage
      *
-     * @param array $data
      * @param       $callerPage
      */
     public function orderData(array $data, $callerPage)
@@ -196,8 +189,6 @@ class ApplePayDataObjectHttp
      * If not it adds an unkown error to the object's error list, as this errors
      * are not supported by ApplePay
      *
-     * @param array $data
-     * @param array $required
      *
      * @return bool
      */
@@ -206,7 +197,7 @@ class ApplePayDataObjectHttp
         foreach ($required as $requiredField) {
             if (!array_key_exists($requiredField, $data)) {
                 $this->logger->log( \WC_Log_Levels::DEBUG,
-                    "ApplePay Data Error: Missing index {$requiredField}"
+                    sprintf('ApplePay Data Error: Missing index %s', $requiredField)
                 );
 
                 $this->errors[]= ['errorCode' => 'unknown'];
@@ -214,7 +205,7 @@ class ApplePayDataObjectHttp
             }
             if (!$data[$requiredField]) {
                 $this->logger->log( \WC_Log_Levels::DEBUG,
-                    "ApplePay Data Error: Missing value for {$requiredField}"
+                    sprintf('ApplePay Data Error: Missing value for %s', $requiredField)
                 );
                 $this->errors[]= ['errorCode' => 'unknown'];
                 continue;
@@ -225,8 +216,6 @@ class ApplePayDataObjectHttp
 
     /**
      * Sets the value to the appropriate field in the object
-     *
-     * @param array $data
      */
     protected function assignDataObjectValues(array $data)
     {
@@ -252,10 +241,8 @@ class ApplePayDataObjectHttp
         switch ($value) {
             case in_array($value, $filterInt):
                 return FILTER_SANITIZE_NUMBER_INT;
-                break;
             case in_array($value, $filterBoolean):
                 return FILTER_VALIDATE_BOOLEAN;
-                break;
             default:
                 return FILTER_SANITIZE_STRING;
         }
@@ -309,7 +296,7 @@ class ApplePayDataObjectHttp
         foreach ($required as $requiredField => $errorValue) {
             if (!array_key_exists($requiredField, $post)) {
                 $this->logger->log( \WC_Log_Levels::DEBUG,
-                    "ApplePay Data Error: Missing index {$requiredField}"
+                    sprintf('ApplePay Data Error: Missing index %s', $requiredField)
                 );
 
                 $this->errors[]= ['errorCode' => 'unknown'];
@@ -317,7 +304,7 @@ class ApplePayDataObjectHttp
             }
             if (!$post[$requiredField]) {
                 $this->logger->log( \WC_Log_Levels::DEBUG,
-                    "ApplePay Data Error: Missing value for {$requiredField}"
+                    sprintf('ApplePay Data Error: Missing value for %s', $requiredField)
                 );
                 $this->errors[]
                     = [
@@ -378,7 +365,6 @@ class ApplePayDataObjectHttp
     }
 
     /**
-     * @param array $data
      * @param       $requiredProductFields
      * @param       $requiredCartFields
      */
@@ -416,9 +402,6 @@ class ApplePayDataObjectHttp
         );
     }
 
-    /**
-     * @param array $data
-     */
     protected function updateShippingMethod(array $data)
     {
         if (array_key_exists(

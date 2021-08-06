@@ -64,8 +64,8 @@ class ConstraintsChecker
         try {
             $this->checker->check();
             return true;
-        } catch (ConstraintFailedException $exception) {
-            $mainException = $exception->getValidationErrors();
+        } catch (ConstraintFailedException $constraintFailedException) {
+            $mainException = $constraintFailedException->getValidationErrors();
             $errors = [];
             foreach ($mainException as $error) {
                 $errors[] = $error->getMessage();
@@ -108,7 +108,7 @@ class ConstraintsChecker
     {
         $message = '%1$sMollie Payments for WooCommerce is inactive:%2$s';
         foreach ($errors as $error) {
-            $message .= "<p>{$error}</p>";
+            $message .= sprintf('<p>%s</p>', $error);
         }
         $message .= "<p>Correct the above errors to use Mollie Payments for Woocommerce</p>";
         $message = sprintf(__($message, 'mollie-payments-for-woocommerce'), '<p><strong>', '</strong></p>');

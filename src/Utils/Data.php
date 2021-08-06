@@ -34,7 +34,7 @@ class Data
     /**
      * @var \Mollie\Api\Resources\MethodCollection[]
      */
-    protected static $method_issuers;
+    protected static $method_issuers = [];
 
     /**
      * @var Api
@@ -45,9 +45,6 @@ class Data
      */
     protected $logger;
 
-    /**
-     * @param Api $api_helper
-     */
     public function __construct(Api $api_helper, Logger $logger)
     {
         $this->api_helper = $api_helper;
@@ -105,7 +102,7 @@ class Data
         }
 
         if ($option_name_length > $max_option_name_length) {
-            trigger_error("Transient id $transient_id is to long. Option name $option_name ($option_name_length) will be to long for database column wp_options.option_name which is varchar($max_option_name_length).", E_USER_WARNING);
+            trigger_error(sprintf('Transient id %s is to long. Option name %s (%s) will be to long for database column wp_options.option_name which is varchar(%s).', $transient_id, $option_name, $option_name_length, $max_option_name_length), E_USER_WARNING);
         }
 
         return $transient_id;
@@ -138,7 +135,7 @@ class Data
 
         foreach ($transient_names as $transient_name) {
             foreach ($languages as $language) {
-                delete_transient($this->getTransientId($transient_name . "_$language"));
+                delete_transient($this->getTransientId($transient_name . sprintf('_%s', $language)));
             }
         }
     }
@@ -156,8 +153,8 @@ class Data
     {
         try {
             return $this->api_helper->getApiClient($test_mode)->payments->get($payment_id);
-        } catch (\Mollie\Api\Exceptions\ApiException $e) {
-            $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Could not load payment $payment_id (" . ($test_mode ? 'test' : 'live') . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+        } catch (\Mollie\Api\Exceptions\ApiException $apiException) {
+            $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . sprintf(': Could not load payment %s (', $payment_id) . ($test_mode ? 'test' : 'live') . "): " . $apiException->getMessage() . ' (' . get_class($apiException) . ')');
         }
 
         return null;
@@ -310,7 +307,7 @@ class Data
             $issuers = get_transient($transient_id);
 
             if (!$issuers || !is_array($issuers)) {
-                $method = $this->api_helper->getApiClient($test_mode)->methods->get("$method", [ "include" => "issuers" ]);
+                $method = $this->api_helper->getApiClient($test_mode)->methods->get(sprintf('%s', $method), [ "include" => "issuers" ]);
                 $issuers = $method->issuers;
 
                 // Set new transients (as cache)
@@ -339,7 +336,7 @@ class Data
                 $customer->update_meta_data('mollie_customer_id', $customer_id);
                 $customer->save();
                 $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Stored MollieSettingsPage customer ID " . $customer_id . " with user " . $user_id);
-            } catch (Exception $e) {
+            } catch (Exception $exception) {
                 $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Couldn't load (and save) WooCommerce customer based on user ID " . $user_id);
             }
         }
@@ -401,7 +398,7 @@ class Data
             try {
                 $this->api_helper->getApiClient($test_mode)->customers->get($customer_id);
             } catch (\Mollie\Api\Exceptions\ApiException $e) {
-                $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Mollie Customer ID ($customer_id) not valid for user $user_id on this API key, try to create a new one (" . ( $test_mode ? 'test' : 'live' ) . ").");
+                $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . sprintf(': Mollie Customer ID (%s) not valid for user %s on this API key, try to create a new one (', $customer_id, $user_id) . ( $test_mode ? 'test' : 'live' ) . ").");
                 $customer_id = '';
             }
         }
@@ -429,14 +426,14 @@ class Data
 
                 $customer_id = $customer->id;
 
-                $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Created a Mollie Customer ($customer_id) for WordPress user with ID $user_id (" . ( $test_mode ? 'test' : 'live' ) . ").");
+                $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . sprintf(': Created a Mollie Customer (%s) for WordPress user with ID %s (', $customer_id, $user_id) . ( $test_mode ? 'test' : 'live' ) . ").");
 
                 return $customer_id;
             } catch (\Mollie\Api\Exceptions\ApiException $e) {
-                $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Could not create Mollie Customer for WordPress user with ID $user_id (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+                $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . sprintf(': Could not create Mollie Customer for WordPress user with ID %s (', $user_id) . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
             }
         } else {
-            $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Mollie Customer ID ($customer_id) found and valid for user $user_id on this API key. (" . ( $test_mode ? 'test' : 'live' ) . ").");
+            $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . sprintf(': Mollie Customer ID (%s) found and valid for user %s on this API key. (', $customer_id, $user_id) . ( $test_mode ? 'test' : 'live' ) . ").");
         }
 
         return $customer_id;
@@ -451,9 +448,8 @@ class Data
     public function getActiveMolliePaymentMode($order_id)
     {
         $order = wc_get_order($order_id);
-        $mollie_payment_mode = $order->get_meta('_mollie_payment_mode', true);
 
-        return $mollie_payment_mode;
+        return $order->get_meta('_mollie_payment_mode', true);
     }
 
     /**
@@ -511,11 +507,7 @@ class Data
     public function formatCurrencyValue($value, $currency)
     {
         // Only the Japanese Yen has no decimals in the currency
-        if ($currency == "JPY") {
-            $value = number_format($value, 0, '.', '');
-        } else {
-            $value = number_format($value, 2, '.', '');
-        }
+        $value = $currency == "JPY" ? number_format($value, 0, '.', '') : number_format($value, 2, '.', '');
 
         return $value;
     }
@@ -533,7 +525,6 @@ class Data
     public function isSubscription($orderId)
     {
         $isSubscription = false;
-        $isSubscription = apply_filters(Plugin::PLUGIN_ID . '_is_subscription_payment', $isSubscription, $orderId);
-        return $isSubscription;
+        return apply_filters(Plugin::PLUGIN_ID . '_is_subscription_payment', $isSubscription, $orderId);
     }
 }

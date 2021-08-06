@@ -34,22 +34,13 @@ class OrderLines
     private $currency;
 
     /**
-     * Shop country.
-     *
-     * @var string
-     */
-    private $shop_country;
-
-    /**
      * Mollie_WC_Helper_Order_Lines constructor.
      *
      * @param bool|string $shop_country Shop country.
      * @param object      $order        WooCommerce Order
      */
-    public function __construct($shop_country, $order)
+    public function __construct($order)
     {
-        $this->shop_country = $shop_country;
-
         $this->order = $order;
         $this->currency = Plugin::getDataHelper()->getOrderCurrency($this->order);
     }
@@ -131,12 +122,10 @@ class OrderLines
                         ],
                 ];
 
-                if ($isMealVoucherEnabled) {
-                    if ($this->get_item_category($product) <> "no_category") {
-                        $mollie_order_item['category'] = $this->get_item_category(
-                            $product
-                        );
-                    }
+                if ($isMealVoucherEnabled && $this->get_item_category($product) != "no_category") {
+                    $mollie_order_item['category'] = $this->get_item_category(
+                        $product
+                    );
                 }
                 $this->order_lines[] = $mollie_order_item;
 
@@ -194,11 +183,7 @@ class OrderLines
                     $tmp_rates = $_tax::get_rates($cart_fee['tax_class']);
                     $vat = array_shift($tmp_rates);
 
-                    if (isset($vat['rate'])) {
-                        $cart_fee_vat_rate = $vat['rate'];
-                    } else {
-                        $cart_fee_vat_rate = 0;
-                    }
+                    $cart_fee_vat_rate = isset($vat['rate']) ? $vat['rate'] : 0;
 
                     $cart_fee_tax_amount = $cart_fee['total_tax'];
                     $cart_fee_total = ( $cart_fee['total'] + $cart_fee['total_tax'] );
@@ -298,9 +283,7 @@ class OrderLines
      */
     private function get_item_tax_amount($cart_item)
     {
-        $item_tax_amount = $cart_item['line_tax'];
-
-        return $item_tax_amount;
+        return $cart_item['line_tax'];
     }
 
     /**
@@ -323,11 +306,7 @@ class OrderLines
             $tmp_rates = $_tax->get_rates($product->get_tax_class());
             $vat = array_shift($tmp_rates);
 
-            if (isset($vat['rate'])) {
-                $item_vatRate = $vat['rate'];
-            } else {
-                $item_vatRate = 0;
-            }
+            $item_vatRate = isset($vat['rate']) ? $vat['rate'] : 0;
         } else {
             $item_vatRate = 0;
         }
@@ -348,9 +327,8 @@ class OrderLines
     private function get_item_price($cart_item)
     {
         $item_subtotal = $cart_item['line_subtotal'] + $cart_item['line_subtotal_tax'];
-        $item_price = $item_subtotal / $cart_item['quantity'];
 
-        return $item_price;
+        return $item_subtotal / $cart_item['quantity'];
     }
 
     /**
@@ -426,9 +404,7 @@ class OrderLines
      */
     private function get_item_total_amount($cart_item)
     {
-        $item_total_amount = ( ( $cart_item['line_total'] + $cart_item['line_tax'] ) );
-
-        return $item_total_amount;
+        return $cart_item['line_total'] + $cart_item['line_tax'];
     }
 
     /**
@@ -477,9 +453,8 @@ class OrderLines
             'voucher',
             false
         );
-        $category = $simpleVariationCategory ? $simpleVariationCategory[0] : $category;
 
-        return $category;
+        return $simpleVariationCategory ? $simpleVariationCategory[0] : $category;
     }
 
     /**
@@ -523,7 +498,7 @@ class OrderLines
     {
         $shipping_id = '';
 
-        foreach ($this->order->get_items('shipping') as $i => $package) {
+        foreach ($this->order->get_items('shipping') as $package) {
             $shipping_id = $package->get_id();
         }
 
@@ -540,9 +515,7 @@ class OrderLines
      */
     private function get_shipping_amount()
     {
-        $shipping_amount = number_format(( WC()->cart->shipping_total + WC()->cart->shipping_tax_total ), 2, '.', '');
-
-        return $shipping_amount;
+        return number_format(( WC()->cart->shipping_total + WC()->cart->shipping_tax_total ), 2, '.', '');
     }
 
     /**
@@ -573,8 +546,6 @@ class OrderLines
      */
     private function get_shipping_tax_amount()
     {
-        $shipping_tax_amount = WC()->cart->shipping_tax_total;
-
-        return $shipping_tax_amount;
+        return WC()->cart->shipping_tax_total;
     }
 }

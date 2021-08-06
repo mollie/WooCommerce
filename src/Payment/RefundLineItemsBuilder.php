@@ -23,7 +23,6 @@ class RefundLineItemsBuilder
 
     /**
      * RefundLineItemsBuilder constructor.
-     * @param Data $dataHelper
      */
     public function __construct(Data $dataHelper)
     {
@@ -31,8 +30,6 @@ class RefundLineItemsBuilder
     }
 
     /**
-     * @param array $toRefundRemoteItems
-     * @param array $toRefundItems
      * @param string $currency
      * @param string $refundReason
      *
@@ -62,7 +59,7 @@ class RefundLineItemsBuilder
 
             if ($toRefundRemoteItem === null) {
                 throw new UnexpectedValueException(
-                    "Cannot refund {$toRefundItemId} item because it was not found in Mollie order. Aborting refund process. Try to do a refund by amount."
+                    sprintf('Cannot refund %s item because it was not found in Mollie order. Aborting refund process. Try to do a refund by amount.', $toRefundItemId)
                 );
             }
 
@@ -72,7 +69,7 @@ class RefundLineItemsBuilder
                 $currency
             );
 
-            if (!$lineItem) {
+            if ($lineItem === []) {
                 continue;
             }
 
@@ -85,12 +82,11 @@ class RefundLineItemsBuilder
             }
         }
 
-        return compact('toCancel', 'toRefund');
+        return ['toCancel' => $toCancel, 'toRefund' => $toRefund];
     }
 
     /**
      * @param WC_Order_Item $toRefundItem
-     * @param stdClass $toRefundRemoteItem
      * @param string $currency
      *
      * @return array
@@ -107,7 +103,7 @@ class RefundLineItemsBuilder
             abs($toRefundItem->get_total() + $toRefundItem->get_total_tax()),
             2
         );
-        $toRefundRemoteItemPrice = isset($toRefundRemoteItem->unitPrice->value)
+        $toRefundRemoteItemPrice = property_exists($toRefundRemoteItem->unitPrice, 'value') && $toRefundRemoteItem->unitPrice->value !== null
             ? $toRefundRemoteItem->unitPrice->value
             : 0;
 
@@ -128,7 +124,7 @@ class RefundLineItemsBuilder
         if ($toRefundRemoteItemAmount !== $toRefundItemAmount) {
             throw new PartialRefundException(
                 __(
-                    'Mollie doesn\'t allow a partial refund of the full amount or quantity of at least one order line. Trying to process this as an amount refund instead.',
+                    "Mollie doesn't allow a partial refund of the full amount or quantity of at least one order line. Trying to process this as an amount refund instead.",
                     'mollie-payments-for-woocommerce'
                 )
             );

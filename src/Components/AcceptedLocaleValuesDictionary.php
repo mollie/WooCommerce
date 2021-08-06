@@ -6,8 +6,14 @@ namespace Mollie\WooCommerce\Components;
 
 class AcceptedLocaleValuesDictionary
 {
+    /**
+     * @var string
+     */
     const DEFAULT_LOCALE_VALUE = 'en_US';
 
+    /**
+     * @var string[]
+     */
     const ALLOWED_LOCALES_KEYS_MAP = [
         'en_US',
         'nl_NL',

@@ -22,7 +22,6 @@ class ComponentsStyles
 
     /**
      * ComponentsStyles constructor.
-     * @param SettingsComponents $mollieComponentsSettings
      * @param WC_Payment_Gateways $paymentGateways
      */
     public function __construct(
@@ -48,7 +47,7 @@ class ComponentsStyles
             $availablePaymentGateways
         );
 
-        if (!$gatewaysWithMollieComponentsEnabled) {
+        if ($gatewaysWithMollieComponentsEnabled === []) {
             return [];
         }
 
@@ -61,7 +60,6 @@ class ComponentsStyles
     /**
      * Retrieve the WooCommerce Gateways Which have the Mollie Components enabled
      *
-     * @param array $gateways
      * @return array
      */
     protected function gatewaysWithMollieComponentsEnabled(array $gateways)
@@ -97,8 +95,6 @@ class ComponentsStyles
     /**
      * Retrieve the mollie components styles associated to the given gateways
      *
-     * @param array $mollieComponentStyles
-     * @param array $gateways
      * @return array
      */
     protected function mollieComponentsStylesPerGateway(
@@ -124,7 +120,6 @@ class ComponentsStyles
     /**
      * Extract the name of the gateways from the given gateways instances
      *
-     * @param array $gateways
      * @return array
      */
     protected function gatewayNames(array $gateways)

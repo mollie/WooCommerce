@@ -9,13 +9,6 @@ use Mollie\WooCommerce\Utils\GatewaySurchargeHandler;
 class SurchargeService
 {
 
-    /**
-     * SurchargeService constructor.
-     */
-    public function __construct()
-    {
-    }
-
     public function processAdminOptionSurcharge($gateway)
     {
         $paymentSurcharge = $gateway->id . '_payment_surcharge';

@@ -19,7 +19,13 @@ use WC_Order_Item;
  */
 class OrderItemsRefunder
 {
+    /**
+     * @var string
+     */
     const ACTION_AFTER_REFUND_ORDER_ITEMS = Plugin::PLUGIN_ID . '_refund_items_created';
+    /**
+     * @var string
+     */
     const ACTION_AFTER_CANCELED_ORDER_ITEMS = Plugin::PLUGIN_ID . '_line_items_cancelled';
 
     /**
@@ -39,10 +45,6 @@ class OrderItemsRefunder
 
     /**
      * OrderItemsRefunder constructor.
-     *
-     * @param RefundLineItemsBuilder $refundLineItemsBuilder
-     * @param Data                   $dataHelper
-     * @param OrderEndpoint          $ordersApiClient
      */
     public function __construct(
         RefundLineItemsBuilder $refundLineItemsBuilder,
@@ -111,7 +113,7 @@ class OrderItemsRefunder
     {
         $toRefundItems = [];
         /** @var WC_Order_Item $item */
-        foreach ($items as $key => $item) {
+        foreach ($items as $item) {
             $toRefundItemId = $item->get_meta('_refunded_item_id', true);
 
             if (!$toRefundItemId) {
@@ -132,8 +134,6 @@ class OrderItemsRefunder
     /**
      * Given remote items of an order extract the ones for which the refund was requested
      *
-     * @param array $remoteItems
-     * @param array $toRefundItems
      * @return array
      * @throws UnexpectedValueException
      */
@@ -148,7 +148,6 @@ class OrderItemsRefunder
     /**
      * Normalized version of remote items where the key is the id of the item to refund
      *
-     * @param array $remoteItems
      * @return array
      * @throws UnexpectedValueException
      */
@@ -157,7 +156,7 @@ class OrderItemsRefunder
         $relatedRemoteItems = [];
 
         foreach ($remoteItems as $remoteItem) {
-            $orderItemId = isset($remoteItem->metadata->order_item_id)
+            $orderItemId = property_exists($remoteItem->metadata, 'order_item_id') && $remoteItem->metadata->order_item_id !== null
                 ? $remoteItem->metadata->order_item_id
                 : 0;
 
@@ -182,8 +181,6 @@ class OrderItemsRefunder
     /**
      * Throw an exception if one of the given items list is empty
      *
-     * @param array $items
-     * @param array $remoteItems
      * @throws UnexpectedValueException
      */
     private function bailIfNoItemsToRefund(array $items, array $remoteItems)
@@ -199,8 +196,6 @@ class OrderItemsRefunder
     }
 
     /**
-     * @param array $data
-     * @param Order $remoteOrder
      * @param WC_Order $order
      * @throws ApiException
      */
@@ -218,8 +213,6 @@ class OrderItemsRefunder
     }
 
     /**
-     * @param array $data
-     * @param Order $remoteOrder
      * @param WC_Order $order
      */
     private function refundOrderLines(array $data, Order $remoteOrder, WC_Order $order)

@@ -8,9 +8,21 @@ use WC_Order_Item_Fee;
 
 class GatewaySurchargeHandler
 {
+    /**
+     * @var string
+     */
     const NO_FEE = 'no_fee';
+    /**
+     * @var string
+     */
     const FIXED_FEE = 'fixed_fee';
+    /**
+     * @var string
+     */
     const PERCENTAGE = 'percentage';
+    /**
+     * @var string
+     */
     const FIXED_AND_PERCENTAGE = 'fixed_fee_percentage';
 
     /**
@@ -18,17 +30,27 @@ class GatewaySurchargeHandler
      */
     public function __construct()
     {
-        add_filter('woocommerce_cart_calculate_fees', [$this, 'add_engraving_fees'], 10, 1);
-        add_action('wp_enqueue_scripts', [$this, 'enqueueSurchargeScript' ]);
+        add_filter('woocommerce_cart_calculate_fees', function ($cart) {
+            return $this->add_engraving_fees($cart);
+        }, 10, 1);
+        add_action('wp_enqueue_scripts', function () {
+            return $this->enqueueSurchargeScript();
+        });
         add_action(
-            'wp_ajax_' . 'update_surcharge_order_pay',
-            [$this, 'updateSurchargeOrderPay']
+            'wp_ajax_update_surcharge_order_pay',
+            function () {
+                return $this->updateSurchargeOrderPay();
+            }
         );
         add_action(
-            'wp_ajax_nopriv_' . 'update_surcharge_order_pay',
-            [$this, 'updateSurchargeOrderPay']
+            'wp_ajax_nopriv_update_surcharge_order_pay',
+            function () {
+                return $this->updateSurchargeOrderPay();
+            }
         );
-        add_action('woocommerce_order_item_meta_end', [$this, 'setHiddenOrderId'], 10, 4);
+        add_action('woocommerce_order_item_meta_end', function ($item_id, $item, $order, $bool) {
+            return $this->setHiddenOrderId($item_id, $item, $order, $bool);
+        }, 10, 4);
     }
 
     public function setHiddenOrderId($item_id, $item, $order, $bool = false)
@@ -145,10 +167,10 @@ class GatewaySurchargeHandler
     {
         $gateway = WC()->session->chosen_payment_method;
         if ($gateway === '') {
-            $gateway = (!empty($_REQUEST['payment_method'])
-                    ? sanitize_text_field(
+            $gateway = (empty($_REQUEST['payment_method'])
+                    ? '' : sanitize_text_field(
                         wp_unslash($_REQUEST['payment_method'])
-                    ) : '');
+                    ));
         }
 
         if (!$this->isMollieGateway($gateway)) {
@@ -159,15 +181,12 @@ class GatewaySurchargeHandler
 
     protected function isMollieGateway($gateway)
     {
-        if (!empty($gateway) && strpos($gateway, 'mollie_wc_gateway_') !== false) {
-            return true;
-        }
-        return false;
+        return !empty($gateway) && strpos($gateway, 'mollie_wc_gateway_') !== false;
     }
 
     private function gatewaySettings($gateway)
     {
-        $optionName = "{$gateway}_settings";
+        $optionName = sprintf('%s_settings', $gateway);
         $allSettings = get_option($optionName, false);
         if (!$allSettings) {
             return false;
@@ -179,7 +198,7 @@ class GatewaySurchargeHandler
     protected function calculteFeeAmount($cart, $gatewaySettings)
     {
         $surgargeType = $gatewaySettings['payment_surcharge'];
-        $methodName = "calculate_{$surgargeType}";
+        $methodName = sprintf('calculate_%s', $surgargeType);
 
         return $this->$methodName($cart, $gatewaySettings);
     }
@@ -258,7 +277,7 @@ class GatewaySurchargeHandler
         $gatewayName = strtoupper(
             str_replace('mollie_wc_gateway_', '', $gateway)
         );
-        $notTranslated = "Mollie_WC_{$gatewayName} ";
+        $notTranslated = sprintf('Mollie_WC_%s ', $gatewayName);
         $translated = __("Fee", 'mollie-payments-for-woocommerce');
 
         return $notTranslated.$translated;
@@ -302,6 +321,7 @@ class GatewaySurchargeHandler
         $item_fee->set_amount($amount);
         $item_fee->set_total($amount);
         $item_fee->set_tax_status('none');
+
         $order->add_item($item_fee);
         $order->calculate_totals();
     }

@@ -20,9 +20,6 @@ class Api
      */
     protected $settings_helper;
 
-    /**
-     * @param Settings $settings_helper
-     */
     public function __construct(Settings $settings_helper)
     {
         $this->settings_helper = $settings_helper;
@@ -47,7 +44,7 @@ class Api
 
         if (empty($api_key)) {
             throw new \Mollie\Api\Exceptions\ApiException(__('No API key provided. Please set your Mollie API keys below.', 'mollie-payments-for-woocommerce'));
-        } elseif (! preg_match('/^(live|test)_\w{30,}$/', $api_key)) {
+        } elseif (! preg_match('#^(live|test)_\w{30,}$#', $api_key)) {
             throw new \Mollie\Api\Exceptions\ApiException(sprintf(__("Invalid API key(s). Get them on the %1\$sDevelopers page in the Mollie dashboard%2\$s. The API key(s) must start with 'live_' or 'test_', be at least 30 characters and must not contain any special characters.", 'mollie-payments-for-woocommerce'), '<a href="https://www.mollie.com/dashboard/developers/api-keys" target="_blank">', '</a>'));
         }
 

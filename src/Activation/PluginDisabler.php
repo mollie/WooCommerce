@@ -41,7 +41,9 @@ class PluginDisabler
     {
         add_filter(
             'auto_update_plugin',
-            [$this, 'notAutoUpdateThisPlugin'],
+            function ($update, $item) : bool {
+                return $this->notAutoUpdateThisPlugin($update, $item);
+            },
             10,
             2
         );

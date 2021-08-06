@@ -10,6 +10,9 @@ use Mollie\WooCommerce\Plugin;
 class SettingsComponents
 {
 
+    /**
+     * @var string[]
+     */
     const STYLE_KEY_PREFIXES = [
         'invalid_',
     ];
@@ -50,7 +53,7 @@ class SettingsComponents
         foreach ($group as $key) {
             $styleKey = str_replace(self::STYLE_KEY_PREFIXES, '', $key);
             $optionValue = get_option(
-                "mollie_components_{$key}",
+                sprintf('mollie_components_%s', $key),
                 $this->defaultOptionFor($defaults, $key)
             );
             $settings[$styleKey] = $optionValue;

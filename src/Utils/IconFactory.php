@@ -9,12 +9,7 @@ use Mollie\WooCommerce\Notice\AdminNotice;
 class IconFactory
 {
 
-    /**
-     * IconFactory constructor.
-     */
-    public function __construct()
-    {
-    }
+    public $id;
 
     public function initIcon($gateway, $displayLogo, string $pluginUrl)
     {
@@ -54,11 +49,11 @@ class IconFactory
         $targetLocation = $mollieUploadDirectory . '/';
         $fileOptionName = $this->id . '_upload_logo';
         $enabledLogoOptionName = $this->id . '_enable_custom_logo';
-        $gatewaySettings = get_option("{$this->id}_settings", []);
+        $gatewaySettings = get_option(sprintf('%s_settings', $this->id), []);
         if (!isset($_POST[$enabledLogoOptionName])) {
             $gatewaySettings["iconFileUrl"] = null;
             $gatewaySettings["iconFilePath"] = null;
-            update_option("{$this->id}_settings", $gatewaySettings);
+            update_option(sprintf('%s_settings', $this->id), $gatewaySettings);
         }
         if (isset($_POST[$enabledLogoOptionName])
             && isset($_FILES[$fileOptionName])
@@ -66,7 +61,7 @@ class IconFactory
         ) {
             if ($_FILES[$fileOptionName]['size'] <= 500000) {
                 $fileName = preg_replace(
-                    '/\s+/',
+                    '#\s+#',
                     '_',
                     $_FILES[$fileOptionName]['name']
                 );
@@ -78,7 +73,7 @@ class IconFactory
                 $gatewaySettings["iconFilePath"] = trailingslashit(
                     wp_upload_dir()['basedir']
                 ) . 'mollie-uploads/'. $this->id .'/'. $fileName;
-                update_option("{$this->id}_settings", $gatewaySettings);
+                update_option(sprintf('%s_settings', $this->id), $gatewaySettings);
             } else {
                 $notice = new AdminNotice();
                 $message = sprintf(

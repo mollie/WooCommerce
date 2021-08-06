@@ -16,6 +16,10 @@ use Psr\Log\LoggerInterface as Logger;
 class MollieObject
 {
 
+    public $data;
+    /**
+     * @var string[]
+     */
     const FINAL_STATUSES = ['completed', 'refunded', 'canceled'];
 
     public static $paymentId;
@@ -64,17 +68,15 @@ class MollieObject
      */
     public function getPaymentObjectPayment($payment_id, $test_mode = false, $use_cache = true)
     {
-        // TODO David: Duplicate, send to child class.
         try {
-            // Is test mode enabled?
             $settings_helper = Plugin::getSettingsHelper();
             $test_mode = $settings_helper->isTestModeEnabled();
 
             $payment = Plugin::getApiHelper()->getApiClient($test_mode)->payments->get($payment_id);
 
-            return $payment;
-        } catch (ApiException $e) {
-            $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Could not load payment $payment_id (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            return Plugin::getApiHelper()->getApiClient($test_mode)->payments->get($payment_id);
+        } catch (ApiException $apiException) {
+            $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . sprintf(': Could not load payment %s (', $payment_id) . ( $test_mode ? 'test' : 'live' ) . "): " . $apiException->getMessage() . ' (' . get_class($apiException) . ')');
         }
 
         return null;
@@ -98,11 +100,9 @@ class MollieObject
             $settings_helper = Plugin::getSettingsHelper();
             $test_mode = $settings_helper->isTestModeEnabled();
 
-            $payment = Plugin::getApiHelper()->getApiClient($test_mode)->orders->get($payment_id, [ "embed" => "payments" ]);
-
-            return $payment;
+            return Plugin::getApiHelper()->getApiClient($test_mode)->orders->get($payment_id, [ "embed" => "payments" ]);
         } catch (ApiException $e) {
-            $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Could not load order $payment_id (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . sprintf(': Could not load order %s (', $payment_id) . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
 
         return null;
@@ -127,10 +127,8 @@ class MollieObject
     public function setActiveMolliePayment($orderId)
     {
         // Do extra checks if WooCommerce Subscriptions is installed
-        if (class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin')) {
-            if (Plugin::getDataHelper()->isWcSubscription($orderId)) {
-                return $this->setActiveMolliePaymentForSubscriptions($orderId);
-            }
+        if (class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin') && Plugin::getDataHelper()->isWcSubscription($orderId)) {
+            return $this->setActiveMolliePaymentForSubscriptions($orderId);
         }
 
         return $this->setActiveMolliePaymentForOrders($orderId);
@@ -218,10 +216,8 @@ class MollieObject
     public function unsetActiveMolliePayment($order_id, $payment_id = null)
     {
         // Do extra checks if WooCommerce Subscriptions is installed
-        if (class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin')) {
-            if (Plugin::getDataHelper()->isWcSubscription($order_id)) {
-                return $this->unsetActiveMolliePaymentForSubscriptions($order_id);
-            }
+        if (class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin') && Plugin::getDataHelper()->isWcSubscription($order_id)) {
+            return $this->unsetActiveMolliePaymentForSubscriptions($order_id);
         }
 
         return $this->unsetActiveMolliePaymentForOrders($order_id);
@@ -509,13 +505,8 @@ class MollieObject
         $order_id = $order->get_id();
         // Get the current payment method id for the order
         $payment_method_id = get_post_meta($order_id, '_payment_method', $single = true);
-
         // If the current payment method id for the order is not Mollie, return true
-        if (( strpos($payment_method_id, 'mollie') === false )) {
-            return true;
-        }
-
-        return false;
+        return strpos($payment_method_id, 'mollie') === false;
     }
     /**
      * @param WC_Order $order
@@ -525,14 +516,11 @@ class MollieObject
         if (class_exists('WC_Subscriptions')
             && class_exists(
                 'WC_Subscriptions_Admin'
-            )
+            ) && Plugin::getDataHelper()->isSubscription(
+            $order->get_id()
+        )
         ) {
-            if (Plugin::getDataHelper()->isSubscription(
-                $order->get_id()
-            )
-            ) {
-                $this->deleteSubscriptionOrderFromPendingPaymentQueue($order);
-            }
+            $this->deleteSubscriptionOrderFromPendingPaymentQueue($order);
         }
     }
 
@@ -548,7 +536,7 @@ class MollieObject
         if (class_exists('WC_Subscriptions')) {
             $payment = isset($payment->_embedded->payments[0])? $payment->_embedded->payments[0] : false;
             if ($payment && $payment->sequenceType === 'first'
-                && isset($payment->mandateId)) {
+                && (property_exists($payment, 'mandateId') && $payment->mandateId !== null)) {
                 $order->update_meta_data(
                     '_mollie_mandate_id',
                     $payment->mandateId
@@ -581,13 +569,12 @@ class MollieObject
     protected function isFinalOrderStatus(WC_Order $order)
     {
         $orderStatus = $order->get_status();
-        $isFinalOrderStatus = in_array(
+
+        return in_array(
             $orderStatus,
             self::FINAL_STATUSES,
             true
         );
-
-        return $isFinalOrderStatus;
     }
     /**
      * @param                               $orderId
@@ -607,8 +594,7 @@ class MollieObject
     ) {
 
         if (function_exists('wcs_order_contains_renewal')
-            && wcs_order_contains_renewal($orderId)
-        ) {
+            && wcs_order_contains_renewal($orderId)) {
             if ($gateway || ($gateway instanceof AbstractGateway)) {
                 $gateway->updateOrderStatus(
                     $order,
@@ -628,14 +614,12 @@ class MollieObject
                     $restoreStock = false
                 );
             }
-
             $this->logger->log(
                 \WC_Log_Levels::DEBUG,
                 __METHOD__ . ' called for order ' . $orderId . ' and payment '
                 . $payment->id . ', renewal order payment failed, order set to '
                 . $newOrderStatus . ' for shop-owner review.'
             );
-
             // Send a "Failed order" email to notify the admin
             $emails = WC()->mailer()->get_emails();
             if (!empty($emails) && !empty($orderId)
@@ -643,25 +627,23 @@ class MollieObject
             ) {
                 $emails['WC_Email_Failed_Order']->trigger($orderId);
             }
-        } else {
-            if ($gateway || ($gateway instanceof AbstractGateway)) {
-                $gateway->updateOrderStatus(
-                    $order,
-                    $newOrderStatus,
-                    sprintf(
-                    /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-                        __(
-                            '%1$s payment failed via Mollie (%2$s).',
-                            'mollie-payments-for-woocommerce'
-                        ),
-                        $paymentMethodTitle,
-                        $payment->id . ($payment->mode == 'test' ? (' - ' . __(
-                            'test mode',
-                            'mollie-payments-for-woocommerce'
-                        )) : '')
-                    )
-                );
-            }
+        } elseif ($gateway || ($gateway instanceof AbstractGateway)) {
+            $gateway->updateOrderStatus(
+                $order,
+                $newOrderStatus,
+                sprintf(
+                /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+                    __(
+                        '%1$s payment failed via Mollie (%2$s).',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                    $paymentMethodTitle,
+                    $payment->id . ($payment->mode == 'test' ? (' - ' . __(
+                        'test mode',
+                        'mollie-payments-for-woocommerce'
+                    )) : '')
+                )
+            );
         }
     }
 

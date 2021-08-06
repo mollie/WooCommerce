@@ -26,7 +26,8 @@ class Mollie_WC_Gateway_Belfius extends AbstractSepaRecurring
         MollieOrderService $mollieOrderService,
         Logger $logger,
         NoticeInterface $notice,
-        HttpResponse $httpResponse
+        HttpResponse $httpResponse,
+        string $pluginUrl
     ) {
 
         $this->supports = [
@@ -40,7 +41,8 @@ class Mollie_WC_Gateway_Belfius extends AbstractSepaRecurring
             $mollieOrderService,
             $logger,
             $notice,
-            $httpResponse
+            $httpResponse,
+            $pluginUrl
         );
     }
 

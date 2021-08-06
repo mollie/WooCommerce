@@ -13,15 +13,20 @@ class PayPalButtonHandler
      * @var PayPalAjaxRequests
      */
     private $ajaxRequests;
+    /**
+     * @var string
+     */
+    protected $pluginUrl;
 
     /**
      * PayPalHandler constructor.
      *
      * @param PayPalAjaxRequests $ajaxRequests
      */
-    public function __construct(PayPalAjaxRequests $ajaxRequests)
+    public function __construct(PayPalAjaxRequests $ajaxRequests, string $pluginUrl)
     {
         $this->ajaxRequests = $ajaxRequests;
+        $this->pluginUrl = $pluginUrl;
     }
 
     /**
@@ -75,7 +80,7 @@ class PayPalButtonHandler
     {
         $whichPayPalButton = $this->whichPayPalButton();
         $assetsImagesUrl
-                = Plugin::getPluginUrl($whichPayPalButton);
+                = $this->pluginUrl . '/' . $whichPayPalButton;
 
         ?>
         <div id="mollie-PayPal-button" class="mol-PayPal">

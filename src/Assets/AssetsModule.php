@@ -24,7 +24,6 @@ namespace Mollie\WooCommerce\Assets;
 
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
-use Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Buttons\ApplePayButton\DataToAppleButtonScripts;
 use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPalScripts;
@@ -36,14 +35,81 @@ class AssetsModule implements ExecutableModule
 {
     use ModuleClassNameIdTrait;
 
+    /**
+     * @var mixed
+     */
+    protected $pluginUrl;
+    /**
+     * @var mixed
+     */
+    protected $pluginPath;
+
     public function run(ContainerInterface $container): bool
     {
+        $this->pluginUrl = $container->get('core.plugin_url');
+        $this->pluginPath = $container->get('core.plugin_path');
         // Enqueue Scripts
         add_action('wp_enqueue_scripts', [$this, 'enqueueFrontendScripts']);
         add_action('wp_enqueue_scripts', [$this, 'enqueueComponentsAssets']);
         add_action('wp_enqueue_scripts', [$this, 'enqueueApplePayDirectScripts']);
         add_action('wp_enqueue_scripts', [$this, 'enqueuePayPalButtonScripts']);
         self::registerFrontendScripts();
+        wp_register_script(
+            'mollie_wc_admin_settings',
+            $this->getPluginUrl('/public/js/settings.min.js'),
+            ['underscore', 'jquery'],
+            Plugin::PLUGIN_VERSION
+        );
+        wp_enqueue_script('mollie_wc_admin_settings');
+        global $current_section;
+
+        wp_localize_script(
+            'mollie_wc_admin_settings',
+            'mollieSettingsData',
+            [
+                'current_section'=>$current_section,
+            ]
+        );
+        if (is_admin()) {
+            global $current_section;
+            wp_register_script(
+                'mollie_wc_gateway_settings',
+                $this->getPluginUrl(
+                    '/public/js/gatewaySettings.min.js'
+                ),
+                ['underscore', 'jquery'],
+                Plugin::PLUGIN_VERSION
+            );
+
+            wp_enqueue_script('mollie_wc_gateway_settings');
+            wp_enqueue_style('mollie-gateway-icons');
+            $settingsName = "{$current_section}_settings";
+            $gatewaySettings = get_option($settingsName, false);
+            $message = __('No custom logo selected', 'mollie-payments-for-woocommerce');
+            $isEnabled = false;
+            if ($gatewaySettings && isset($gatewaySettings['enable_custom_logo'])) {
+                $isEnabled = $gatewaySettings['enable_custom_logo'] === 'yes';
+            }
+            $uploadFieldName = "{$current_section}_upload_logo";
+            $enabledFieldName = "{$current_section}_enable_custom_logo";
+            $gatewayIconUrl = '';
+            if ($gatewaySettings && isset($gatewaySettings['iconFileUrl'])) {
+                $gatewayIconUrl = $gatewaySettings['iconFileUrl'];
+            }
+
+            wp_localize_script(
+                'mollie_wc_gateway_settings',
+                'gatewaySettingsData',
+                [
+                    'isEnabledIcon' => $isEnabled,
+                    'uploadFieldName' => $uploadFieldName,
+                    'enableFieldName' => $enabledFieldName,
+                    'iconUrl' => $gatewayIconUrl,
+                    'message'=>$message,
+                    'pluginUrlImages'=>plugins_url('public/images', M4W_FILE),
+                ]
+            );
+        }
 
         return true;
     }
@@ -122,93 +188,93 @@ class AssetsModule implements ExecutableModule
      *
      * @return void
      */
-    public static function registerFrontendScripts()
+    public function registerFrontendScripts()
     {
         wp_register_script(
             'babel-polyfill',
-            Plugin::getPluginUrl('/public/js/babel-polyfill.min.js'),
+            $this->getPluginUrl('/public/js/babel-polyfill.min.js'),
             [],
-            filemtime(Plugin::getPluginPath('/public/js/babel-polyfill.min.js')),
+            filemtime($this->getPluginPath('/public/js/babel-polyfill.min.js')),
             true
         );
 
         wp_register_script(
             'mollie_wc_gateway_applepay',
-            Plugin::getPluginUrl('/public/js/applepay.min.js'),
+            $this->getPluginUrl('/public/js/applepay.min.js'),
             [],
-            filemtime(Plugin::getPluginPath('/public/js/applepay.min.js')),
+            filemtime($this->getPluginPath('/public/js/applepay.min.js')),
             true
         );
         wp_register_style(
             'mollie-gateway-icons',
-            Plugin::getPluginUrl('/public/css/mollie-gateway-icons.min.css'),
+            $this->getPluginUrl('/public/css/mollie-gateway-icons.min.css'),
             [],
-            filemtime(Plugin::getPluginPath('/public/css/mollie-gateway-icons.min.css')),
+            filemtime($this->getPluginPath('/public/css/mollie-gateway-icons.min.css')),
             'screen'
         );
         wp_register_style(
             'mollie-components',
-            Plugin::getPluginUrl('/public/css/mollie-components.min.css'),
+            $this->getPluginUrl('/public/css/mollie-components.min.css'),
             [],
-            filemtime(Plugin::getPluginPath('/public/css/mollie-components.min.css')),
+            filemtime($this->getPluginPath('/public/css/mollie-components.min.css')),
             'screen'
         );
         wp_register_style(
             'mollie-applepaydirect',
-            Plugin::getPluginUrl('/public/css/mollie-applepaydirect.min.css'),
+            $this->getPluginUrl('/public/css/mollie-applepaydirect.min.css'),
             [],
-            filemtime(Plugin::getPluginPath('/public/css/mollie-applepaydirect.min.css')),
+            filemtime($this->getPluginPath('/public/css/mollie-applepaydirect.min.css')),
             'screen'
         );
         wp_register_script(
             'mollie_applepaydirect',
-            Plugin::getPluginUrl('/public/js/applepayDirect.min.js'),
+            $this->getPluginUrl('/public/js/applepayDirect.min.js'),
             ['underscore', 'jquery'],
-            filemtime(Plugin::getPluginPath('/public/js/applepayDirect.min.js')),
+            filemtime($this->getPluginPath('/public/js/applepayDirect.min.js')),
             true
         );
         wp_register_script(
             'mollie_paypalButton',
-            Plugin::getPluginUrl('/resources/js/paypalButton.js'),
+            $this->getPluginUrl('/resources/js/paypalButton.js'),
             ['underscore', 'jquery'],
-            filemtime(Plugin::getPluginPath('/resources/js/paypalButton.js')),
+            filemtime($this->getPluginPath('/resources/js/paypalButton.js')),
             true
         );
         wp_register_script(
             'mollie_paypalButtonCart',
-            Plugin::getPluginUrl('/public/js/paypalButtonCart.min.js'),
+            $this->getPluginUrl('/public/js/paypalButtonCart.min.js'),
             ['underscore', 'jquery'],
-            filemtime(Plugin::getPluginPath('/public/js/paypalButtonCart.min.js')),
+            filemtime($this->getPluginPath('/public/js/paypalButtonCart.min.js')),
             true
         );
         wp_register_script(
             'mollie_applepaydirectCart',
-            Plugin::getPluginUrl('/public/js/applepayDirectCart.min.js'),
+            $this->getPluginUrl('/public/js/applepayDirectCart.min.js'),
             ['underscore', 'jquery'],
-            filemtime(Plugin::getPluginPath('/public/js/applepayDirectCart.min.js')),
+            filemtime($this->getPluginPath('/public/js/applepayDirectCart.min.js')),
             true
         );
         wp_register_script('mollie', 'https://js.mollie.com/v1/mollie.js', [], null, true);
         wp_register_script(
             'mollie-components',
-            Plugin::getPluginUrl('/public/js/mollie-components.min.js'),
+            $this->getPluginUrl('/public/js/mollie-components.min.js'),
             ['underscore', 'jquery', 'mollie', 'babel-polyfill'],
-            filemtime(Plugin::getPluginPath('/public/js/mollie-components.min.js')),
+            filemtime($this->getPluginPath('/public/js/mollie-components.min.js')),
             true
         );
 
         wp_register_style(
             'unabledButton',
-            Plugin::getPluginUrl('/public/css/unabledButton.min.css'),
+            $this->getPluginUrl('/public/css/unabledButton.min.css'),
             [],
-            filemtime(Plugin::getPluginPath('/public/css/unabledButton.min.css')),
+            filemtime($this->getPluginPath('/public/css/unabledButton.min.css')),
             'screen'
         );
         wp_register_script(
             'gatewaySurcharge',
-            Plugin::getPluginUrl('/public/js/gatewaySurcharge.min.js'),
+            $this->getPluginUrl('/public/js/gatewaySurcharge.min.js'),
             ['underscore', 'jquery'],
-            filemtime(Plugin::getPluginPath('/public/js/gatewaySurcharge.min.js')),
+            filemtime($this->getPluginPath('/public/js/gatewaySurcharge.min.js')),
             true
         );
     }
@@ -308,5 +374,15 @@ class AssetsModule implements ExecutableModule
                 'isCheckoutPayPage' => is_checkout_pay_page(),
             ]
         );
+    }
+
+    protected function getPluginUrl(string $path = '')
+    {
+        return $this->pluginUrl . '/' . ltrim($path, '/');
+    }
+
+    protected function getPluginPath(string $path = '')
+    {
+        return $this->pluginPath . '/' . ltrim($path, '/');
     }
 }

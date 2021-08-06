@@ -32,7 +32,8 @@ class Mollie_WC_Gateway_ApplePay extends AbstractGateway
         MollieOrderService $mollieOrderService,
         Logger $logger,
         NoticeInterface $notice,
-        HttpResponse $httpResponse
+        HttpResponse $httpResponse,
+        string $pluginUrl
     ) {
 
         $this->supports = [
@@ -46,7 +47,8 @@ class Mollie_WC_Gateway_ApplePay extends AbstractGateway
             $mollieOrderService,
             $logger,
             $notice,
-            $httpResponse
+            $httpResponse,
+            $pluginUrl
         );
     }
     /**

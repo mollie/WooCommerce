@@ -27,7 +27,8 @@ class Mollie_WC_Gateway_Creditcard extends AbstractSubscription
         MollieOrderService $mollieOrderService,
         Logger $logger,
         NoticeInterface $notice,
-        HttpResponse $httpResponse
+        HttpResponse $httpResponse,
+        string $pluginUrl
     ) {
         parent::__construct(
                 $iconFactory,
@@ -36,7 +37,8 @@ class Mollie_WC_Gateway_Creditcard extends AbstractSubscription
                 $mollieOrderService,
                 $logger,
                 $notice,
-                $httpResponse
+                $httpResponse,
+                $pluginUrl
         );
         $this->supports = [
             'products',
@@ -50,9 +52,7 @@ class Mollie_WC_Gateway_Creditcard extends AbstractSubscription
 
     public function get_icon()
     {
-        $url = Plugin::getPluginUrl(
-            "public/images/creditcard.svg"
-        );
+        $url = $this->pluginUrl . '/' . ltrim("public/images/creditcard.svg", '/');
         $localAsset = '<img src="' . esc_attr($url)
             . '" class="mollie-gateway-icon" />';
         $output = $this->icon ? $localAsset : '';

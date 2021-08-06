@@ -32,7 +32,8 @@ abstract class AbstractSubscription extends AbstractGateway
         MollieOrderService $mollieOrderService,
         Logger $logger,
         NoticeInterface $notice,
-        HttpResponse $httpResponse
+        HttpResponse $httpResponse,
+        string $pluginUrl
     ) {
 
         parent::__construct(
@@ -42,7 +43,8 @@ abstract class AbstractSubscription extends AbstractGateway
             $mollieOrderService,
             $logger,
             $notice,
-            $httpResponse
+            $httpResponse,
+            $pluginUrl
         );
 
         if (class_exists('WC_Subscriptions_Order')) {

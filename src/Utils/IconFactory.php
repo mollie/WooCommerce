@@ -16,10 +16,10 @@ class IconFactory
     {
     }
 
-    public function initIcon($gateway, $displayLogo)
+    public function initIcon($gateway, $displayLogo, string $pluginUrl)
     {
         if ($displayLogo) {
-            $default_icon = $this->getIconUrl($gateway->getMollieMethodId());
+            $default_icon = $this->getIconUrl($gateway->getMollieMethodId(), $pluginUrl);
             $gateway->icon = apply_filters($gateway->id . '_icon_url', $default_icon);
         }
     }
@@ -27,20 +27,20 @@ class IconFactory
     /**
      * @return string
      */
-    public function getIconUrl($gatewayId)
+    public function getIconUrl($gatewayId, $pluginUrl)
     {
-        return $this->iconFactory()->svgUrlForPaymentMethod($gatewayId);
+        return $this->iconFactory($pluginUrl)->svgUrlForPaymentMethod($gatewayId);
     }
 
     /**
      * Singleton of the class that handles icons (API/fallback)
      * @return PaymentMethodsIconUrl|null
      */
-    public function iconFactory()
+    public function iconFactory(string $pluginUrl)
     {
         static $factory = null;
         if ($factory === null) {
-            $factory = new PaymentMethodsIconUrl();
+            $factory = new PaymentMethodsIconUrl($pluginUrl);
         }
 
         return $factory;

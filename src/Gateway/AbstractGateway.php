@@ -96,6 +96,10 @@ abstract class AbstractGateway extends WC_Payment_Gateway
      * @var HttpResponse
      */
     protected $httpResponse;
+    /**
+     * @var string
+     */
+    protected $pluginUrl;
 
     /**
      *
@@ -107,7 +111,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway
         MollieOrderService $mollieOrderService,
         Logger $logger,
         NoticeInterface $notice,
-        HttpResponse $httpResponse
+        HttpResponse $httpResponse,
+        string $pluginUrl
     ) {
 
         $this->logger = $logger;
@@ -117,6 +122,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
         $this->surchargeService = $surchargeService;
         $this->mollieOrderService = $mollieOrderService;
         $this->httpResponse = $httpResponse;
+        $this->pluginUrl = $pluginUrl;
 
         // No plugin id, gateway id is unique enough
         $this->plugin_id = '';
@@ -165,17 +171,6 @@ abstract class AbstractGateway extends WC_Payment_Gateway
      */
     public function init_form_fields()
     {
-        wp_register_script('mollie_wc_admin_settings', Plugin::getPluginUrl('/public/js/settings.min.js'), ['underscore', 'jquery'], Plugin::PLUGIN_VERSION);
-        wp_enqueue_script('mollie_wc_admin_settings');
-        global $current_section;
-
-        wp_localize_script(
-            'mollie_wc_admin_settings',
-            'mollieSettingsData',
-            [
-                        'current_section'=>$current_section,
-                ]
-        );
         $settingsHelper = Plugin::getSettingsHelper();
         $this->form_fields = $settingsHelper->gatewayFormFields(
             $this->getDefaultTitle(),
@@ -187,46 +182,6 @@ abstract class AbstractGateway extends WC_Payment_Gateway
     public function init_settings()
     {
         parent::init_settings();
-        if (is_admin()) {
-            global $current_section;
-            wp_register_script(
-                'mollie_wc_gateway_settings',
-                Plugin::getPluginUrl(
-                    '/public/js/gatewaySettings.min.js'
-                ),
-                ['underscore', 'jquery'],
-                Plugin::PLUGIN_VERSION
-            );
-
-            wp_enqueue_script('mollie_wc_gateway_settings');
-            wp_enqueue_style('mollie-gateway-icons');
-            $settingsName = "{$current_section}_settings";
-            $gatewaySettings = get_option($settingsName, false);
-            $message = __('No custom logo selected', 'mollie-payments-for-woocommerce');
-            $isEnabled = false;
-            if ($gatewaySettings && isset($gatewaySettings['enable_custom_logo'])) {
-                $isEnabled = $gatewaySettings['enable_custom_logo'] === 'yes';
-            }
-            $uploadFieldName = "{$current_section}_upload_logo";
-            $enabledFieldName = "{$current_section}_enable_custom_logo";
-            $gatewayIconUrl = '';
-            if ($gatewaySettings && isset($gatewaySettings['iconFileUrl'])) {
-                $gatewayIconUrl = $gatewaySettings['iconFileUrl'];
-            }
-
-            wp_localize_script(
-                'mollie_wc_gateway_settings',
-                'gatewaySettingsData',
-                [
-                            'isEnabledIcon' => $isEnabled,
-                            'uploadFieldName' => $uploadFieldName,
-                            'enableFieldName' => $enabledFieldName,
-                            'iconUrl' => $gatewayIconUrl,
-                            'message'=>$message,
-                            'pluginUrlImages'=>plugins_url('public/images', M4W_FILE),
-                    ]
-            );
-        }
     }
     /**
      * Save settings
@@ -251,7 +206,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
 
     protected function _initIcon()
     {
-        $this->iconFactory->initIcon($this, $this->display_logo);
+        $this->iconFactory->initIcon($this, $this->display_logo, $this->pluginUrl);
     }
 
     public function get_icon()
@@ -262,7 +217,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
 
     public function getIconUrl(): string
     {
-        return $this->iconFactory->getIconUrl($this->getMollieMethodId());
+        return $this->iconFactory->getIconUrl($this->getMollieMethodId(), $this->pluginUrl);
     }
 
     protected function _initDescription()

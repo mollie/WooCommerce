@@ -165,10 +165,11 @@ class GatewayModule implements ServiceModule, ExecutableModule
         add_action('woocommerce_payment_complete', [$this, 'setOrderPaidByOtherGateway'], 10, 1);
         $notice = $container->get(AdminNotice::class);
         $logger = $container->get(Logger::class);
+        $pluginUrl = $container->get('core.plugin_path');
         $this->gatewaySurchargeHandling();
         $this->mollieApplePayDirectHandling($notice, $logger);
         $paypalGateway = $container->get('gateway.classname_with_namespace')['Mollie_WC_Gateway_PayPal'];
-        $this->molliePayPalButtonHandling($paypalGateway, $notice, $logger);
+        $this->molliePayPalButtonHandling($paypalGateway, $notice, $logger, $pluginUrl);
 
         return true;
     }
@@ -357,7 +358,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
     /**
      * Bootstrap the Mollie_WC_Gateway_PayPal button logic if feature enabled
      */
-    public function molliePayPalButtonHandling(Mollie_WC_Gateway_PayPal $gateway, NoticeInterface $notice, Logger $logger)
+    public function molliePayPalButtonHandling(Mollie_WC_Gateway_PayPal $gateway, NoticeInterface $notice, Logger $logger, string $pluginUrl)
     {
         $enabledInProduct = (mollieWooCommerceIsPayPalButtonEnabled('product'));
         $enabledInCart = (mollieWooCommerceIsPayPalButtonEnabled('cart'));
@@ -365,7 +366,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
 
         if ($shouldBuildIt) {
             $ajaxRequests = new PayPalAjaxRequests($gateway, $notice, $logger);
-            $payPalHandler = new PayPalButtonHandler($ajaxRequests);
+            $payPalHandler = new PayPalButtonHandler($ajaxRequests, $pluginUrl);
             $payPalHandler->bootstrap($enabledInProduct, $enabledInCart);
         }
     }
@@ -379,6 +380,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $surchargeService = $container->get(SurchargeService::class);
         $mollieOrderService = $container->get(MollieOrderService::class);
         $HttpResponseService = $container->get('SDK.HttpResponse');
+        $pluginUrl = $container->get('core.plugin_url');
         $gatewayClassnames = $this->gatewayClassnames;
         $gateways = [];
         $gatewayNamespace = 'Mollie\\WooCommerce\\Gateway\\';
@@ -393,7 +395,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $mollieOrderService,
                 $logger,
                 $notice,
-                $HttpResponseService
+                $HttpResponseService,
+                $pluginUrl
             );
         }
         return $gateways;

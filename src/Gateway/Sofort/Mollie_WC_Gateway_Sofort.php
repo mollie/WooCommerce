@@ -28,7 +28,8 @@ class Mollie_WC_Gateway_Sofort extends AbstractSepaRecurring
         MollieOrderService $mollieOrderService,
         Logger $logger,
         NoticeInterface $notice,
-        HttpResponse $httpResponse
+        HttpResponse $httpResponse,
+        string $pluginUrl
     ) {
 
         $this->supports = [
@@ -43,7 +44,8 @@ class Mollie_WC_Gateway_Sofort extends AbstractSepaRecurring
             $mollieOrderService,
             $logger,
             $notice,
-            $httpResponse
+            $httpResponse,
+            $pluginUrl
         );
     }
 

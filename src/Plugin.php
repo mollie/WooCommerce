@@ -76,17 +76,6 @@ class Plugin
     {
     }
 
-    /**
-     * Get plugin URL
-     *
-     * @param string $path
-     * @return string
-     */
-    public static function getPluginUrl($path = '')
-    {
-        return untrailingslashit(M4W_PLUGIN_URL) . '/' . ltrim($path, '/');
-    }
-
     public static function getPluginPath($path = '')
     {
         return untrailingslashit(M4W_PLUGIN_DIR) . '/' . ltrim($path, '/');
@@ -102,9 +91,9 @@ class Plugin
         if (!$settings_helper) {
             $settings_helper = new Settings(
                 self::PLUGIN_ID,
-                self::getStatusHelper(),
+                new Status(new CompatibilityChecker()),
                 self::PLUGIN_VERSION,
-                self::getPluginUrl(),
+                untrailingslashit(M4W_PLUGIN_URL) . '/' . ltrim('', '/'),
                 [
                     'Mollie\\WooCommerce\\Gateway\\Banktransfer\\Mollie_WC_Gateway_BankTransfer',
                     'Mollie\\WooCommerce\\Gateway\\Belfius\\Mollie_WC_Gateway_Belfius',
@@ -162,20 +151,6 @@ class Plugin
     }
 
     /**
-     * @return Status
-     */
-    public static function getStatusHelper()
-    {
-        static $status_helper;
-
-        if (!$status_helper) {
-            $status_helper = new Status(new CompatibilityChecker());
-        }
-
-        return $status_helper;
-    }
-
-    /**
      * @return PaymentFactory
      */
     public static function getPaymentFactoryHelper()
@@ -202,19 +177,5 @@ class Plugin
         }
 
         return $payment_parent;
-    }
-
-    /**
-     * @return OrderLines
-     */
-    public static function getOrderLinesHelper($shop_country, WC_Order $order)
-    {
-        static $order_lines_helper;
-
-        if (!$order_lines_helper) {
-            $order_lines_helper = new OrderLines($shop_country, $order);
-        }
-
-        return $order_lines_helper;
     }
 }

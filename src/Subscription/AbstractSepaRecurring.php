@@ -35,7 +35,8 @@ abstract class AbstractSepaRecurring extends AbstractSubscription
         MollieOrderService $mollieOrderService,
         Logger $logger,
         NoticeInterface $notice,
-        HttpResponse $httpResponse
+        HttpResponse $httpResponse,
+        string $pluginUrl
     ) {
 
         parent::__construct(
@@ -45,7 +46,8 @@ abstract class AbstractSepaRecurring extends AbstractSubscription
             $mollieOrderService,
             $logger,
             $notice,
-            $httpResponse
+            $httpResponse,
+            $pluginUrl
         );
         $directDebit = new Mollie_WC_Gateway_DirectDebit(
             $iconFactory,
@@ -54,7 +56,8 @@ abstract class AbstractSepaRecurring extends AbstractSubscription
             $mollieOrderService,
             $logger,
             $notice,
-            $httpResponse
+            $httpResponse,
+            $pluginUrl
         );
         if ($directDebit->enabled == 'yes') {
             $this->initSubscriptionSupport();

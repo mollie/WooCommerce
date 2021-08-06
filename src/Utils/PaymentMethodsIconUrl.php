@@ -22,13 +22,18 @@ class PaymentMethodsIconUrl
     const SVG_FILE_EXTENSION = '.svg';
     const CREDIT_CARD_ICON_WIDTH = 33;
     const MOLLIE_CREDITCARD_ICONS_ENABLER = 'mollie_creditcard_icons_enabler';
+    /**
+     * @var string
+     */
+    protected $pluginUrl;
 
     /**
      * PaymentMethodIconUrl constructor.
      *
      */
-    public function __construct()
+    public function __construct(string $pluginUrl)
     {
+        $this->pluginUrl = $pluginUrl;
     }
 
     /**
@@ -43,9 +48,7 @@ class PaymentMethodsIconUrl
     public function svgUrlForPaymentMethod($paymentMethodName)
     {
         if ($paymentMethodName == PaymentMethod::CREDITCARD && !is_admin()) {
-            return Plugin::getPluginUrl(
-                "public/images/{$paymentMethodName}s.svg"
-            );
+            return $this->pluginUrl . '/' . "public/images/{$paymentMethodName}s.svg";
         }
 
         $svgPath = false;
@@ -58,9 +61,7 @@ class PaymentMethodsIconUrl
         }
 
         if ($svgPath && !file_exists($svgPath) || !$svgUrl) {
-            $svgUrl = Plugin::getPluginUrl(
-                "public/images/{$paymentMethodName}" . self::SVG_FILE_EXTENSION
-            );
+            $svgUrl = $this->pluginUrl . '/' . "public/images/{$paymentMethodName}" . self::SVG_FILE_EXTENSION;
         }
 
         return '<img src="' . esc_attr($svgUrl)

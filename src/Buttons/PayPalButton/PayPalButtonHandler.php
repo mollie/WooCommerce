@@ -13,20 +13,15 @@ class PayPalButtonHandler
      * @var PayPalAjaxRequests
      */
     private $ajaxRequests;
-    /**
-     * @var Mollie_WC_Gateway_PayPal
-     */
-    protected $gateway;
 
     /**
      * PayPalHandler constructor.
      *
      * @param PayPalAjaxRequests $ajaxRequests
      */
-    public function __construct(PayPalAjaxRequests $ajaxRequests, Mollie_WC_Gateway_PayPal $gateway)
+    public function __construct(PayPalAjaxRequests $ajaxRequests)
     {
         $this->ajaxRequests = $ajaxRequests;
-        $this->gateway = $gateway;
     }
 
     /**
@@ -70,7 +65,7 @@ class PayPalButtonHandler
         }
 
         admin_url('admin-ajax.php');
-        $this->ajaxRequests->bootstrapAjaxRequest($this->gateway);
+        $this->ajaxRequests->bootstrapAjaxRequest();
     }
 
     /**

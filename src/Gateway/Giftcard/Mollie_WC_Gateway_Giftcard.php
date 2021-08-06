@@ -11,6 +11,7 @@ use Mollie\WooCommerce\Gateway\SurchargeService;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Plugin;
+use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Utils\IconFactory;
 use Psr\Log\LoggerInterface as Logger;
 
@@ -25,7 +26,8 @@ class Mollie_WC_Gateway_Giftcard extends AbstractGateway
         SurchargeService $surchargeService,
         MollieOrderService $mollieOrderService,
         Logger $logger,
-        NoticeInterface $notice
+        NoticeInterface $notice,
+        HttpResponse $httpResponse
     ) {
 
         $this->supports = [
@@ -41,7 +43,8 @@ class Mollie_WC_Gateway_Giftcard extends AbstractGateway
             $surchargeService,
             $mollieOrderService,
             $logger,
-            $notice
+            $notice,
+            $httpResponse
         );
     }
 

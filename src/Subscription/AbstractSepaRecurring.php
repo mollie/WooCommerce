@@ -14,6 +14,7 @@ use Mollie\WooCommerce\Gateway\SurchargeService;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Plugin;
+use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Utils\IconFactory;
 use Psr\Log\LoggerInterface as Logger;
 
@@ -33,7 +34,8 @@ abstract class AbstractSepaRecurring extends AbstractSubscription
         SurchargeService $surchargeService,
         MollieOrderService $mollieOrderService,
         Logger $logger,
-        NoticeInterface $notice
+        NoticeInterface $notice,
+        HttpResponse $httpResponse
     ) {
 
         parent::__construct(
@@ -42,7 +44,8 @@ abstract class AbstractSepaRecurring extends AbstractSubscription
             $surchargeService,
             $mollieOrderService,
             $logger,
-            $notice
+            $notice,
+            $httpResponse
         );
         $directDebit = new Mollie_WC_Gateway_DirectDebit(
             $iconFactory,
@@ -50,7 +53,8 @@ abstract class AbstractSepaRecurring extends AbstractSubscription
             $surchargeService,
             $mollieOrderService,
             $logger,
-            $notice
+            $notice,
+            $httpResponse
         );
         if ($directDebit->enabled == 'yes') {
             $this->initSubscriptionSupport();
@@ -193,7 +197,7 @@ abstract class AbstractSepaRecurring extends AbstractSubscription
                     $payment
                 );
             } catch (ApiException $exception) {
-                Plugin::debug($exception->getMessage());
+                $this->logger->log(\WC_Log_Levels::DEBUG, $exception->getMessage());
                 return;
             }
 

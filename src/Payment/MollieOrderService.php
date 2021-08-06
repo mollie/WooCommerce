@@ -9,16 +9,30 @@ use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\Gateway\AbstractGateway;
 use Mollie\WooCommerce\Plugin;
+use Mollie\WooCommerce\SDK\HttpResponse;
+use Psr\Log\LoggerInterface as Logger;
 
 class MollieOrderService
 {
 
     protected $gateway;
     /**
-     * MollieOrderService constructor.
+     * @var HttpResponse
      */
-    public function __construct()
+    private $httpResponse;
+    /**
+     * @var Logger
+     */
+    protected $logger;
+
+
+    /**
+     * PaymentService constructor.
+     */
+    public function __construct(HttpResponse $httpResponse, Logger $logger)
     {
+        $this->httpResponse = $httpResponse;
+        $this->logger = $logger;
     }
 
     public function setGateway($gateway)
@@ -30,13 +44,13 @@ class MollieOrderService
     {
         // Webhook test by Mollie
         if (isset($_GET['testByMollie'])) {
-            Plugin::debug(__METHOD__ . ': Webhook tested by MollieSettingsPage.', true);
+            $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ': Webhook tested by MollieSettingsPage.', true);
             return;
         }
 
         if (empty($_GET['order_id']) || empty($_GET['key'])) {
-            Plugin::setHttpResponseCode(400);
-            Plugin::debug(__METHOD__ . ":  No order ID or order key provided.");
+            $this->httpResponse->setHttpResponseCode(400);
+            $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ":  No order ID or order key provided.");
             return;
         }
 
@@ -47,21 +61,21 @@ class MollieOrderService
         $order = wc_get_order($order_id);
 
         if (!$order) {
-            Plugin::setHttpResponseCode(404);
-            Plugin::debug(__METHOD__ . ":  Could not find order $order_id.");
+            $this->httpResponse->setHttpResponseCode(404);
+            $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ":  Could not find order $order_id.");
             return;
         }
 
         if (!$order->key_is_valid($key)) {
-            Plugin::setHttpResponseCode(401);
-            Plugin::debug(__METHOD__ . ":  Invalid key $key for order $order_id.");
+            $this->httpResponse->setHttpResponseCode(401);
+            $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ":  Invalid key $key for order $order_id.");
             return;
         }
 
         // No MollieSettingsPage payment id provided
         if (empty($_POST['id'])) {
-            Plugin::setHttpResponseCode(400);
-            Plugin::debug(__METHOD__ . ': No payment object ID provided.', true);
+            $this->httpResponse->setHttpResponseCode(400);
+            $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ': No payment object ID provided.', true);
             return;
         }
 
@@ -74,8 +88,8 @@ class MollieOrderService
                 $payment_object_id
             );
         } catch (ApiException $exception) {
-            Plugin::setHttpResponseCode(400);
-            Plugin::debug($exception->getMessage());
+            $this->httpResponse->setHttpResponseCode(400);
+            $this->logger->log( \WC_Log_Levels::DEBUG, $exception->getMessage());
             return;
         }
 
@@ -83,19 +97,19 @@ class MollieOrderService
 
         // Payment not found
         if (!$payment) {
-            Plugin::setHttpResponseCode(404);
-            Plugin::debug(__METHOD__ . ": payment object $payment_object_id not found.", true);
+            $this->httpResponse->setHttpResponseCode(404);
+            $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ": payment object $payment_object_id not found.", true);
             return;
         }
 
         if ($order_id != $payment->metadata->order_id) {
-            Plugin::setHttpResponseCode(400);
-            Plugin::debug(__METHOD__ . ": Order ID does not match order_id in payment metadata. Payment ID {$payment->id}, order ID $order_id");
+            $this->httpResponse->setHttpResponseCode(400);
+            $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ": Order ID does not match order_id in payment metadata. Payment ID {$payment->id}, order ID $order_id");
             return;
         }
 
         // Log a message that webhook was called, doesn't mean the payment is actually processed
-        Plugin::debug($this->gateway->id . ": MollieSettingsPage payment object {$payment->id} (" . $payment->mode . ") webhook call for order {$order->get_id()}.", true);
+        $this->logger->log( \WC_Log_Levels::DEBUG, $this->gateway->id . ": MollieSettingsPage payment object {$payment->id} (" . $payment->mode . ") webhook call for order {$order->get_id()}.", true);
 
         // Order does not need a payment
         if (! $this->orderNeedsPayment($order)) {
@@ -145,27 +159,27 @@ class MollieOrderService
 
         // Check whether the order is processed and paid via another gateway
         if ($this->isOrderPaidByOtherGateway($order)) {
-            Plugin::debug(__METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: no, previously processed by other (non-Mollie) gateway.', true);
+            $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: no, previously processed by other (non-Mollie) gateway.', true);
 
             return false;
         }
 
         // Check whether the order is processed and paid via MollieSettingsPage
         if (! $this->isOrderPaidAndProcessed($order)) {
-            Plugin::debug(__METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, order not previously processed by Mollie gateway.', true);
+            $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, order not previously processed by Mollie gateway.', true);
 
             return true;
         }
 
         if ($order->needs_payment()) {
-            Plugin::debug(__METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, WooCommerce thinks order needs payment.', true);
+            $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, WooCommerce thinks order needs payment.', true);
 
             return true;
         }
 
         // Has initial order status 'on-hold'
         if ($this->gateway->getInitialOrderStatus() === self::STATUS_ON_HOLD && $order->has_status(self::STATUS_ON_HOLD)) {
-            Plugin::debug(__METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, has status On-Hold. ', true);
+            $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, has status On-Hold. ', true);
 
             return true;
         }
@@ -201,11 +215,11 @@ class MollieOrderService
         $logId = "order {$orderId} / payment{$payment->id}";
 
         // Add message to log
-        Plugin::debug(__METHOD__ . " called for {$logId}");
+        $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . " called for {$logId}");
 
         // Make sure there are refunds to process at all
         if (empty($payment->_links->refunds)) {
-            Plugin::debug(
+            $this->logger->log( \WC_Log_Levels::DEBUG,
                 __METHOD__ . ": No refunds to process for {$logId}",
                 true
             );
@@ -224,7 +238,7 @@ class MollieOrderService
                 $refundIds[] = $refund->id;
             }
 
-            Plugin::debug(
+            $this->logger->log( \WC_Log_Levels::DEBUG,
                 __METHOD__ . " All refund IDs for {$logId}: " . json_encode(
                     $refundIds
                 )
@@ -240,7 +254,7 @@ class MollieOrderService
                 $processedRefundIds = [];
             }
 
-            Plugin::debug(
+            $this->logger->log( \WC_Log_Levels::DEBUG,
                 __METHOD__ . " Already processed refunds for {$logId}: "
                 . json_encode($processedRefundIds)
             );
@@ -253,14 +267,14 @@ class MollieOrderService
             if ($refundIds != $processedRefundIds) {
                 // There are new refunds.
                 $refundsToProcess = array_diff($refundIds, $processedRefundIds);
-                Plugin::debug(
+                $this->logger->log( \WC_Log_Levels::DEBUG,
                     __METHOD__
                     . " Refunds that need to be processed for {$logId}: "
                     . json_encode($refundsToProcess)
                 );
             } else {
                 // No new refunds, stop processing.
-                Plugin::debug(
+                $this->logger->log( \WC_Log_Levels::DEBUG,
                     __METHOD__ . " No new refunds, stop processing for {$logId}"
                 );
 
@@ -271,7 +285,7 @@ class MollieOrderService
             $order = wc_get_order($orderId);
 
             foreach ($refundsToProcess as $refundToProcess) {
-                Plugin::debug(
+                $this->logger->log( \WC_Log_Levels::DEBUG,
                     __METHOD__
                     . " New refund {$refundToProcess} processed in Mollie Dashboard for {$logId} Order note added, but order not updated."
                 );
@@ -293,14 +307,14 @@ class MollieOrderService
                 '_mollie_processed_refund_ids',
                 $processedRefundIds
             );
-            Plugin::debug(
+            $this->logger->log( \WC_Log_Levels::DEBUG,
                 __METHOD__ . " Updated, all processed refunds for {$logId}: "
                 . json_encode($processedRefundIds)
             );
 
             $order->save();
             $this->processUpdateStateRefund($order, $payment);
-            Plugin::debug(
+            $this->logger->log( \WC_Log_Levels::DEBUG,
                 __METHOD__ . " Updated state for order {$orderId}"
             );
 
@@ -312,7 +326,7 @@ class MollieOrderService
 
             return;
         } catch (\Mollie\Api\Exceptions\ApiException $e) {
-            Plugin::debug(
+            $this->logger->log( \WC_Log_Levels::DEBUG,
                 __FUNCTION__
                 . " : Could not load refunds for {$payment->id}: {$e->getMessage()}"
                 . ' (' . get_class($e) . ')'
@@ -332,11 +346,11 @@ class MollieOrderService
         $logId = "order {$orderId} / payment {$payment->id}";
 
         // Add message to log
-        Plugin::debug(__METHOD__ . " called for {$logId}");
+        $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . " called for {$logId}");
 
         // Make sure there are chargebacks to process at all
         if (empty($payment->_links->chargebacks)) {
-            Plugin::debug(
+            $this->logger->log( \WC_Log_Levels::DEBUG,
                 __METHOD__ . ": No chargebacks to process for {$logId}",
                 true
             );
@@ -355,7 +369,7 @@ class MollieOrderService
                 $chargebackIds[] = $chargeback->id;
             }
 
-            Plugin::debug(
+            $this->logger->log( \WC_Log_Levels::DEBUG,
                 __METHOD__ . " All chargeback IDs for {$logId}: " . json_encode(
                     $chargebackIds
                 )
@@ -371,7 +385,7 @@ class MollieOrderService
                 $processedChargebackIds = [];
             }
 
-            Plugin::debug(
+            $this->logger->log( \WC_Log_Levels::DEBUG,
                 __METHOD__ . " Already processed chargebacks for {$logId}: "
                 . json_encode($processedChargebackIds)
             );
@@ -387,14 +401,14 @@ class MollieOrderService
                     $chargebackIds,
                     $processedChargebackIds
                 );
-                Plugin::debug(
+                $this->logger->log( \WC_Log_Levels::DEBUG,
                     __METHOD__
                     . " Chargebacks that need to be processed for {$logId}: "
                     . json_encode($chargebacksToProcess)
                 );
             } else {
                 // No new chargebacks, stop processing.
-                Plugin::debug(
+                $this->logger->log( \WC_Log_Levels::DEBUG,
                     __METHOD__
                     . " No new chargebacks, stop processing for {$logId}"
                 );
@@ -407,7 +421,7 @@ class MollieOrderService
 
             // Update order notes, add message about chargeback
             foreach ($chargebacksToProcess as $chargebackToProcess) {
-                Plugin::debug(
+                $this->logger->log( \WC_Log_Levels::DEBUG,
                     __METHOD__
                     . " New chargeback {$chargebackToProcess} for {$logId}. Order note and order status updated."
                 );
@@ -471,7 +485,7 @@ class MollieOrderService
                 '_mollie_processed_chargeback_ids',
                 $processedChargebackIds
             );
-            Plugin::debug(
+            $this->logger->log( \WC_Log_Levels::DEBUG,
                 __METHOD__
                 . " Updated, all processed chargebacks for {$logId}: "
                 . json_encode($processedChargebackIds)
@@ -530,7 +544,7 @@ class MollieOrderService
 
             return;
         } catch (\Mollie\Api\Exceptions\ApiException $e) {
-            Plugin::debug(
+            $this->logger->log( \WC_Log_Levels::DEBUG,
                 __FUNCTION__ . ": Could not load chargebacks for $payment->id: "
                 . $e->getMessage() . ' (' . get_class($e) . ')'
             );
@@ -682,7 +696,7 @@ class MollieOrderService
                         // Reduce order stock
                         wc_reduce_stock_levels($order->get_id());
 
-                        Plugin::debug(__METHOD__ . ":  Stock for order {$order->get_id()} reduced.");
+                        $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ":  Stock for order {$order->get_id()} reduced.");
                     }
                 }
 
@@ -695,7 +709,7 @@ class MollieOrderService
                     // Restore order stock
                     Plugin::getDataHelper()->restoreOrderStock($order);
 
-                    Plugin::debug(__METHOD__ . " Stock for order {$order->get_id()} restored.");
+                    $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . " Stock for order {$order->get_id()} restored.");
                 }
 
                 break;

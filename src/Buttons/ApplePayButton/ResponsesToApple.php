@@ -5,9 +5,23 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Buttons\ApplePayButton;
 
 use Mollie\WooCommerce\Gateway\ApplePay\Mollie_WC_Gateway_ApplePay;
+use Psr\Log\LoggerInterface as Logger;
 
 class ResponsesToApple
 {
+    /**
+     * @var Logger
+     */
+    protected $logger;
+
+    /**
+     * ResponsesToApple constructor.
+     */
+    public function __construct(Logger $logger)
+    {
+        $this->logger = $logger;
+    }
+
 
     /**
      * Returns the authorization response with according success/fail status
@@ -205,7 +219,7 @@ class ResponsesToApple
         $redirect_url = $gateway->getReturnRedirectUrlForOrder($order);
         // Add utm_nooverride query string
         $redirect_url = add_query_arg(['utm_nooverride' => 1], $redirect_url);
-        mollieWooCommerceDebug(
+        $this->logger->log( \WC_Log_Levels::DEBUG,
             __METHOD__
             . ": Redirect url on return order {$gateway->id}, order {$orderId}: {$redirect_url}"
         );

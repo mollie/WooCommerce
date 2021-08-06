@@ -11,6 +11,7 @@ use Mollie\WooCommerce\Gateway\SurchargeService;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Plugin;
+use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Subscription\AbstractSubscription;
 use Mollie\WooCommerce\Utils\IconFactory;
 use Mollie\WooCommerce\Utils\PaymentMethodsIconUrl;
@@ -25,7 +26,8 @@ class Mollie_WC_Gateway_Creditcard extends AbstractSubscription
         SurchargeService $surchargeService,
         MollieOrderService $mollieOrderService,
         Logger $logger,
-        NoticeInterface $notice
+        NoticeInterface $notice,
+        HttpResponse $httpResponse
     ) {
         parent::__construct(
                 $iconFactory,
@@ -33,7 +35,8 @@ class Mollie_WC_Gateway_Creditcard extends AbstractSubscription
                 $surchargeService,
                 $mollieOrderService,
                 $logger,
-                $notice
+                $notice,
+                $httpResponse
         );
         $this->supports = [
             'products',

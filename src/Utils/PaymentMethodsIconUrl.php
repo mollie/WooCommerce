@@ -57,7 +57,7 @@ class PaymentMethodsIconUrl
             $svgUrl =  isset($gatewaySettings["iconFileUrl"])?$gatewaySettings["iconFileUrl"]:false;
         }
 
-        if (! file_exists($svgPath) || !$svgUrl) {
+        if ($svgPath && !file_exists($svgPath) || !$svgUrl) {
             $svgUrl = Plugin::getPluginUrl(
                 "public/images/{$paymentMethodName}" . self::SVG_FILE_EXTENSION
             );

@@ -6,18 +6,32 @@ namespace Mollie\WooCommerce\Gateway;
 
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Payment;
+use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieOrder;
 use Mollie\WooCommerce\Payment\MolliePayment;
 use Mollie\WooCommerce\Plugin;
+use Psr\Log\LoggerInterface as Logger;
 
 class PaymentService
 {
     protected $gateway;
+    /**
+     * @var NoticeInterface
+     */
+    protected $notice;
+    /**
+     * @var Logger
+     */
+    protected $logger;
+
+
 	/**
 	 * PaymentService constructor.
 	 */
-	public function __construct()
+	public function __construct(NoticeInterface $notice, Logger $logger)
 	{
+	    $this->notice = $notice;
+	    $this->logger = $logger;
 	}
 
     public function setGateway($gateway)
@@ -31,15 +45,24 @@ class PaymentService
         $order = wc_get_order( $order_id );
 
         if ( ! $order ) {
-            Plugin::debug( $this->gateway->id . ': Could not process payment, order ' . $order_id . ' not found.' );
+            $this->logger->log( \WC_Log_Levels::DEBUG,  $this->gateway->id . ': Could not process payment, order ' . $order_id . ' not found.' );
 
-            Plugin::addNotice( sprintf( __( 'Could not load order %s', 'mollie-payments-for-woocommerce' ), $order_id ), 'error' );
+            $this->notice->addNotice(
+                'error',
+                sprintf(
+                    __(
+                        'Could not load order %s',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                    $order_id
+                )
+            );
 
             return array ( 'result' => 'failure' );
         }
 
         $orderId = $order->get_id();
-        mollieWooCommerceDebug( "{$this->gateway->id}: Start process_payment for order {$orderId}", true );
+        $this->logger->log( \WC_Log_Levels::DEBUG,  "{$this->gateway->id}: Start process_payment for order {$orderId}", true );
 
         $initial_order_status = $this->getInitialOrderStatus($paymentConfirmationAfterCoupleOfDays);
 
@@ -70,7 +93,7 @@ class PaymentService
                 $data = array_filter($paymentRequestData);
                 $data = apply_filters('woocommerce_' . $this->id . '_args', $data, $order);
 
-                Plugin::debug( $this->id . ': Subscription switch started, fetching mandate(s) for order #' . $order_id );
+                $this->logger->log( \WC_Log_Levels::DEBUG,  $this->id . ': Subscription switch started, fetching mandate(s) for order #' . $order_id );
                 $mandates = Plugin::getApiHelper()->getApiClient( $test_mode )->customers->get( $customer_id )->mandates();
                 $validMandate = false;
                 foreach ( $mandates as $mandate ) {
@@ -87,7 +110,7 @@ class PaymentService
                     $order->add_order_note( sprintf(
                                                 __( 'Order completed internally because of an existing valid mandate at Mollie.', 'mollie-payments-for-woocommerce' ) ) );
 
-                    Plugin::debug( $this->id . ': Subscription switch completed, valid mandate for order #' . $order_id );
+                    $this->logger->log( \WC_Log_Levels::DEBUG,  $this->id . ': Subscription switch completed, valid mandate for order #' . $order_id );
 
                     return array (
                         'result'   => 'success',
@@ -95,8 +118,14 @@ class PaymentService
                     );
 
                 } else {
-                    Plugin::debug( $this->id . ': Subscription switch failed, no valid mandate for order #' . $order_id );
-                    Plugin::addNotice( __( 'Subscription switch failed, no valid mandate found. Place a completely new order to change your subscription.', 'mollie-payments-for-woocommerce' ), 'error' );
+                    $this->logger->log( \WC_Log_Levels::DEBUG,  $this->id . ': Subscription switch failed, no valid mandate for order #' . $order_id );
+                    $this->notice->addNotice(
+                        'error',
+                        __(
+                            'Subscription switch failed, no valid mandate found. Place a completely new order to change your subscription.',
+                            'mollie-payments-for-woocommerce'
+                        )
+                    );
                     throw new Mollie\Api\Exceptions\ApiException( __( 'Failed switching subscriptions, no valid mandate.', 'mollie-payments-for-woocommerce' ) );
                 }
             }
@@ -118,7 +147,7 @@ class PaymentService
                     $molliePaymentType
                 );
         } catch (ApiException $exception) {
-            Plugin::debug($exception->getMessage());
+            $this->logger->log( \WC_Log_Levels::DEBUG, $exception->getMessage());
             return array('result' => 'failure');
         }
 
@@ -143,12 +172,12 @@ class PaymentService
                 $mandate = $mandates[0];
                 $customerId = $mandate->customerId;
                 $mandateId = $mandate->id;
-                Plugin::debug("MollieSettingsPage Subscription in the order: customer id {$customerId} and mandate id {$mandateId} ");
+                $this->logger->log( \WC_Log_Levels::DEBUG, "MollieSettingsPage Subscription in the order: customer id {$customerId} and mandate id {$mandateId} ");
                 do_action(Plugin::PLUGIN_ID . '_after_mandate_created', $paymentObject, $order, $customerId, $mandateId);
             }
 
             do_action( Plugin::PLUGIN_ID . '_payment_created', $paymentObject, $order );
-            Plugin::debug( $this->id . ': MollieSettingsPage payment object ' . $paymentObject->id . ' (' . $paymentObject->mode . ') created for order ' . $orderId );
+            $this->logger->log( \WC_Log_Levels::DEBUG,  $this->id . ': MollieSettingsPage payment object ' . $paymentObject->id . ' (' . $paymentObject->mode . ') created for order ' . $orderId );
 
             // Update initial order status for payment methods where the payment status will be delivered after a couple of days.
             // See: https://www.mollie.com/nl/docs/status#expiry-times-per-payment-method
@@ -181,7 +210,7 @@ class PaymentService
                                         $paymentObject->id . ( $paymentObject->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
                                     ) );
 
-            mollieWooCommerceDebug( "For order " . $orderId . " redirect user to Mollie Checkout URL: " . $paymentObject->getCheckoutUrl() );
+            $this->logger->log( \WC_Log_Levels::DEBUG,  "For order " . $orderId . " redirect user to Mollie Checkout URL: " . $paymentObject->getCheckoutUrl() );
 
 
             return array (
@@ -190,7 +219,7 @@ class PaymentService
             );
         }
         catch ( Mollie\Api\Exceptions\ApiException $e ) {
-            Plugin::debug( $this->id . ': Failed to create Mollie payment object for order ' . $orderId . ': ' . $e->getMessage() );
+            $this->logger->log( \WC_Log_Levels::DEBUG,  $this->id . ': Failed to create Mollie payment object for order ' . $orderId . ': ' . $e->getMessage() );
 
             /* translators: Placeholder 1: Payment method title */
             $message = sprintf( __( 'Could not create %s payment.', 'mollie-payments-for-woocommerce' ), $this->title );
@@ -199,7 +228,7 @@ class PaymentService
                 $message .= 'hii ' . $e->getMessage();
             }
 
-            Plugin::addNotice( $message, 'error' );
+            $this->notice->addNotice('error', $message);
         }
 
         return array ( 'result' => 'failure' );
@@ -324,7 +353,7 @@ class PaymentService
 
         // Create MollieSettingsPage payment with customer id.
         try {
-            Plugin::debug(
+            $this->logger->log( \WC_Log_Levels::DEBUG,
                 'Creating payment object: type Order, first try creating a MollieSettingsPage Order.'
             );
 
@@ -345,7 +374,7 @@ class PaymentService
                     ? $data['orderNumber'] : ''
             ];
 
-            mollieWooCommerceDebug($apiCallLog);
+            $this->logger->log( \WC_Log_Levels::DEBUG, $apiCallLog);
             $paymentOrder = $paymentObject;
             $paymentObject = Plugin::getApiHelper()->getApiClient( $test_mode )->orders->create( $data );
             $settingsHelper = Plugin::getSettingsHelper();
@@ -361,13 +390,13 @@ class PaymentService
             if ($order_payment_method == 'mollie_wc_gateway_klarnapaylater'
                 || $order_payment_method == 'mollie_wc_gateway_sliceit'
             ) {
-                Plugin::debug(
+                $this->logger->log( \WC_Log_Levels::DEBUG,
                     'Creating payment object: type Order, failed for Klarna payment, stopping process.'
                 );
                 throw $e;
             }
 
-            Plugin::debug(
+            $this->logger->log( \WC_Log_Levels::DEBUG,
                 'Creating payment object: type Order, first try failed: '
                 . $e->getMessage()
             );
@@ -377,14 +406,14 @@ class PaymentService
 
             try {
                 if ($e->getField() !== 'payment.customerId') {
-                    Plugin::debug(
+                    $this->logger->log( \WC_Log_Levels::DEBUG,
                         'Creating payment object: type Order, did not fail because of incorrect customerId, so trying Payment now.'
                     );
                     throw $e;
                 }
 
                 // Retry without customer id.
-                Plugin::debug(
+                $this->logger->log( \WC_Log_Levels::DEBUG,
                     'Creating payment object: type Order, second try, creating a Mollie Order without a customerId.'
                 );
                 $paymentObject = Plugin::getApiHelper()->getApiClient(
@@ -448,7 +477,7 @@ class PaymentService
                     : ''
             ];
 
-            Plugin::debug($apiCallLog);
+            $this->logger->log( \WC_Log_Levels::DEBUG, $apiCallLog);
 
             // Try as simple payment
             $paymentObject = Plugin::getApiHelper()->getApiClient(
@@ -456,7 +485,7 @@ class PaymentService
             )->payments->create($data);
         } catch (Mollie\Api\Exceptions\ApiException $e) {
             $message = $e->getMessage();
-            Plugin::debug($message);
+            $this->logger->log( \WC_Log_Levels::DEBUG, $message);
             throw $e;
         }
         return $paymentObject;
@@ -485,7 +514,7 @@ class PaymentService
         // PROCESS REGULAR PAYMENT AS MOLLIE ORDER
         //
         if ($molliePaymentType == AbstractGateway::PAYMENT_METHOD_TYPE_ORDER) {
-            Plugin::debug(
+            $this->logger->log( \WC_Log_Levels::DEBUG,
                 "{$this->gateway->id}: Create Mollie payment object for order {$orderId}",
                 true
             );
@@ -507,7 +536,7 @@ class PaymentService
         //
 
         if ($molliePaymentType === AbstractGateway::PAYMENT_METHOD_TYPE_PAYMENT) {
-            Plugin::debug(
+            $this->logger->log( \WC_Log_Levels::DEBUG,
                 'Creating payment object: type Payment, creating a Payment.'
             );
 
@@ -573,7 +602,7 @@ class PaymentService
                         // Reduce order stock
                         wc_reduce_stock_levels( $order->get_id() );
 
-                        Plugin::debug( __METHOD__ . ":  Stock for order {$order->get_id()} reduced." );
+                        $this->logger->log( \WC_Log_Levels::DEBUG,  __METHOD__ . ":  Stock for order {$order->get_id()} reduced." );
                     }
                 }
 
@@ -587,7 +616,7 @@ class PaymentService
                     // Restore order stock
                     Plugin::getDataHelper()->restoreOrderStock($order);
 
-                    Plugin::debug(__METHOD__ . " Stock for order {$order->get_id()} restored.");
+                    $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . " Stock for order {$order->get_id()} restored.");
                 }
 
                 break;

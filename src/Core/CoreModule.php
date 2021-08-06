@@ -35,6 +35,7 @@ use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Utils\Data;
 use Mollie\WooCommerce\Utils\Status;
 use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface as Logger;
 
 class CoreModule implements ServiceModule
 {
@@ -76,7 +77,8 @@ class CoreModule implements ServiceModule
             'core.data_helper' => function (ContainerInterface $container): Data {
                 /** @var Api $apiHelper */
                 $apiHelper = $container->get('core.api_helper');
-                return new Data($apiHelper);
+                $logger = $container->get(Logger::class);
+                return new Data($apiHelper, $logger);
             },
             'core.status_helper' => function (): Status {
                 return new Status(new CompatibilityChecker());

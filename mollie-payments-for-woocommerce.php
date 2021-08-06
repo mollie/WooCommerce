@@ -29,6 +29,7 @@ use Mollie\WooCommerce\Gateway\GatewayModule;
 use Mollie\WooCommerce\Gateway\Voucher\VoucherModule;
 use Mollie\WooCommerce\Log\LogModule;
 use Mollie\WooCommerce\Notice\NoticeModule;
+use Mollie\WooCommerce\Payment\SDKModule;
 use Mollie\WooCommerce\Settings\SettingsModule;
 use Throwable;
 
@@ -48,7 +49,6 @@ if (!defined('M4W_PLUGIN_URL')) {
 function mollie_wc_plugin_activation_hook()
 {
     require_once __DIR__ . '/inc/functions.php';
-    require_once __DIR__ . '/src/Subscription/WCToolsSubscriptionsStatusButton.php';
 
     if (!mollie_wc_plugin_autoload()) {
         return;
@@ -156,8 +156,6 @@ function initialize()
 {
     try {
         require_once __DIR__ . '/inc/functions.php';
-        require_once __DIR__
-            . '/src/Subscription/WCToolsSubscriptionsStatusButton.php';
 
         if (!mollie_wc_plugin_autoload()) {
             return;
@@ -177,12 +175,13 @@ function initialize()
         $bootstrap = Package::new($properties);
         $bootstrap->boot(
             new ActivationModule(),
+            new LogModule('mollie-payments-for-woocommerce-'),
+            new NoticeModule(),
             new CoreModule(),
             new AssetsModule(),
             new GatewayModule(),
             new SettingsModule(),
-            new LogModule('mollie-payments-for-woocommerce-'),
-            new NoticeModule(),
+            new SDKModule(),
             new VoucherModule()
         );
     } catch (Throwable $throwable) {

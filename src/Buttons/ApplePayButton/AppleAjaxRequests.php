@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Buttons\ApplePayButton;
 
+use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Plugin;
+use Psr\Log\LoggerInterface as Logger;
 use WC_Data_Exception;
 
 class AppleAjaxRequests
@@ -13,15 +15,26 @@ class AppleAjaxRequests
      * @var ResponsesToApple
      */
     private $responseTemplates;
+    /**
+     * @var NoticeInterface
+     */
+    protected $notice;
+    /**
+     * @var Logger
+     */
+    protected $logger;
+
 
     /**
      * AppleAjaxRequests constructor.
      *
      * @param ResponsesToApple $responseTemplates
      */
-    public function __construct(ResponsesToApple $responseTemplates)
+    public function __construct(ResponsesToApple $responseTemplates, NoticeInterface $notice, Logger $logger)
     {
         $this->responseTemplates = $responseTemplates;
+        $this->notice = $notice;
+        $this->logger = $logger;
     }
 
     /**
@@ -253,7 +266,7 @@ class AppleAjaxRequests
                 'ApplePay'
             );
 
-            mollieWooCommerceDebug($message, 'error');
+            $this->logger->log(\WC_Log_Levels::ERROR, $message);
             wp_send_json_error(
                 $this->responseTemplates->authorizationResultResponse('STATUS_FAILURE')
             );
@@ -309,7 +322,7 @@ class AppleAjaxRequests
                 'ApplePay'
             );
 
-            Plugin::addNotice($message, 'error');
+            $this->notice->addNotice('error', $message);
 
             wp_send_json_error(
                 $this->responseTemplates->authorizationResultResponse(
@@ -332,18 +345,18 @@ class AppleAjaxRequests
      */
     protected function applePayDataObjectHttp()
     {
-        return new ApplePayDataObjectHttp();
+        return new ApplePayDataObjectHttp($this->logger);
     }
 
 
     /**
      * Returns a WC_Countries instance to check shipping
      *
-     * @return WC_Countries
+     * @return \WC_Countries
      */
     protected function createWCCountries()
     {
-        $countries = new WC_Countries();
+        $countries = new \WC_Countries();
         return $countries;
     }
 

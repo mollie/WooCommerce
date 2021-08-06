@@ -33,13 +33,20 @@ use Mollie\WooCommerce\Settings\Page\MollieSettingsPage;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Utils\MaybeFixSubscription;
 use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface as Logger;
 
 class SubscriptionModule implements ExecutableModule
 {
     use ModuleClassNameIdTrait;
 
+    /**
+     * @var mixed
+     */
+    protected $logger;
+
     public function run(ContainerInterface $container): bool
     {
+        $this->logger = $container->get(Logger::class);
         $this->maybeFixSubscriptions();
         $this->schedulePendingPaymentOrdersExpirationCheck();
         return true;
@@ -67,14 +74,14 @@ class SubscriptionModule implements ExecutableModule
                 wp_schedule_event($time, 'daily', 'pending_payment_confirmation_check');
             }
 
-            add_action('pending_payment_confirmation_check', [__CLASS__, 'checkPendingPaymentOrdersExpiration']);
+            add_action('pending_payment_confirmation_check', [$this, 'checkPendingPaymentOrdersExpiration']);
         }
     }
 
     /**
      *
      */
-    public static function checkPendingPaymentOrdersExpiration()
+    public function checkPendingPaymentOrdersExpiration()
     {
         global $wpdb;
         $currentDate = new DateTime();
@@ -103,7 +110,7 @@ class SubscriptionModule implements ExecutableModule
                     // Restore order stock
                     Plugin::getDataHelper()->restoreOrderStock($order);
 
-                    Plugin::debug(__METHOD__ . " Stock for order {$order->get_id()} restored.");
+                    $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . " Stock for order {$order->get_id()} restored.");
                 }
 
                 $wpdb->delete(

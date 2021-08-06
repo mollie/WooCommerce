@@ -14,6 +14,7 @@ use Mollie\WooCommerce\Payment\MollieOrder;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\MolliePayment;
 use Mollie\WooCommerce\Plugin;
+use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Utils\IconFactory;
 use WC_Order;
 use Psr\Log\LoggerInterface as Logger;
@@ -34,7 +35,8 @@ class Mollie_WC_Gateway_BankTransfer extends AbstractGateway
         SurchargeService $surchargeService,
         MollieOrderService $mollieOrderService,
         Logger $logger,
-        NoticeInterface $notice
+        NoticeInterface $notice,
+        HttpResponse $httpResponse
     ) {
 
         $this->supports = [
@@ -48,7 +50,8 @@ class Mollie_WC_Gateway_BankTransfer extends AbstractGateway
             $surchargeService,
             $mollieOrderService,
             $logger,
-            $notice
+            $notice,
+            $httpResponse
         );
         add_filter('woocommerce_' . $this->id . '_args', [$this, 'addPaymentArguments'], 10, 2);
     }
@@ -240,7 +243,7 @@ class Mollie_WC_Gateway_BankTransfer extends AbstractGateway
                 && class_exists('DateTime')
                 && class_exists('DateInterval')) {
                 $expiryDate = $payment->expiresAt;
-                Plugin::debug("Due date assigned: {$expiryDate}");
+                $this->logger->log(\WC_Log_Levels::DEBUG,"Due date assigned: {$expiryDate}");
                 $expiryDate = date_i18n(wc_date_format(), strtotime($expiryDate));
 
                 if ($admin_instructions) {

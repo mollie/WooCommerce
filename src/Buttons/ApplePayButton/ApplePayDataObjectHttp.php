@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Buttons\ApplePayButton;
 
+use Psr\Log\LoggerInterface as Logger;
+
 class ApplePayDataObjectHttp
 {
 
@@ -52,6 +54,19 @@ class ApplePayDataObjectHttp
      * @var array
      */
     public $errors = [];
+    /**
+     * @var Logger
+     */
+    protected $logger;
+
+    /**
+     * ApplePayDataObjectHttp constructor.
+     */
+    public function __construct(Logger $logger)
+    {
+        $this->logger = $logger;
+    }
+
 
     /**
      * Resets the errors array
@@ -190,7 +205,7 @@ class ApplePayDataObjectHttp
     {
         foreach ($required as $requiredField) {
             if (!array_key_exists($requiredField, $data)) {
-                mollieWooCommerceDebug(
+                $this->logger->log( \WC_Log_Levels::DEBUG,
                     "ApplePay Data Error: Missing index {$requiredField}"
                 );
 
@@ -198,7 +213,7 @@ class ApplePayDataObjectHttp
                 continue;
             }
             if (!$data[$requiredField]) {
-                mollieWooCommerceDebug(
+                $this->logger->log( \WC_Log_Levels::DEBUG,
                     "ApplePay Data Error: Missing value for {$requiredField}"
                 );
                 $this->errors[]= ['errorCode' => 'unknown'];
@@ -293,7 +308,7 @@ class ApplePayDataObjectHttp
     ) {
         foreach ($required as $requiredField => $errorValue) {
             if (!array_key_exists($requiredField, $post)) {
-                mollieWooCommerceDebug(
+                $this->logger->log( \WC_Log_Levels::DEBUG,
                     "ApplePay Data Error: Missing index {$requiredField}"
                 );
 
@@ -301,7 +316,7 @@ class ApplePayDataObjectHttp
                 continue;
             }
             if (!$post[$requiredField]) {
-                mollieWooCommerceDebug(
+                $this->logger->log( \WC_Log_Levels::DEBUG,
                     "ApplePay Data Error: Missing value for {$requiredField}"
                 );
                 $this->errors[]

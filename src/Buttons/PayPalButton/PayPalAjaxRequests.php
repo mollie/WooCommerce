@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Buttons\PayPalButton;
 
 use Mollie\WooCommerce\Gateway\PayPal\Mollie_WC_Gateway_PayPal;
+use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Plugin;
 use Mollie\WooCommerce\Utils\GatewaySurchargeHandler;
+use Psr\Log\LoggerInterface as Logger;
 use WC_Data_Exception;
 
 class PayPalAjaxRequests
@@ -15,11 +17,32 @@ class PayPalAjaxRequests
      * @var Mollie_WC_Gateway_PayPal
      */
     protected $gateway;
+    /**
+     * @var NoticeInterface
+     */
+    protected $notice;
+    /**
+     * @var Logger
+     */
+    protected $logger;
+
+    /**
+     * PayPalAjaxRequests constructor.
+     *
+     * @param Mollie_WC_Gateway_PayPal $gateway
+     */
+    public function __construct(Mollie_WC_Gateway_PayPal $gateway, NoticeInterface $notice, Logger $logger)
+    {
+        $this->gateway = $gateway;
+        $this->notice = $notice;
+        $this->logger = $logger;
+    }
+
 
     /**
      * Adds all the Ajax actions to perform the whole workflow
      */
-    public function bootstrapAjaxRequest(Mollie_WC_Gateway_PayPal $gateway)
+    public function bootstrapAjaxRequest()
     {
         add_action(
             'wp_ajax_' . PropertiesDictionary::CREATE_ORDER,
@@ -45,7 +68,6 @@ class PayPalAjaxRequests
             'wp_ajax_nopriv_' . PropertiesDictionary::UPDATE_AMOUNT,
             [$this, 'updateAmount']
         );
-        $this->gateway = $gateway;
     }
 
     /**
@@ -94,7 +116,7 @@ class PayPalAjaxRequests
                 'PayPal'
             );
 
-            mollieWooCommerceDebug($message, 'error');
+            $this->logger->log( \WC_Log_Levels::DEBUG, $message, 'error');
             wp_send_json_error($message);
         }
     }
@@ -138,7 +160,7 @@ class PayPalAjaxRequests
                 'PayPal'
             );
 
-            Plugin::addNotice($message, 'error');
+            $this->notice->addNotice($message, 'error');
             wp_send_json_error($message);
         }
     }

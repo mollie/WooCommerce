@@ -126,27 +126,6 @@ function mollieWooCommerceAvailablePaymentMethods()
 }
 
 /**
- * Isolates static debug calls.
- *
- * @param  string $message
- * @param bool  $set_debug_header Set X-MollieSettingsPage-Debug header (default false)
- */
-function mollieWooCommerceDebug($message, $set_debug_header = false)
-{
-    Plugin::debug($message, $set_debug_header);
-}
-
-/**
- * Isolates static addNotice calls.
- *
- * @param  string $message
- * @param string $type    One of notice, error or success (default notice)
- */
-function mollieWooCommerceNotice($message, $type = 'notice')
-{
-    Plugin::addNotice($message, $type);
-}
-/**
  * Isolates static getDataHelper calls.
  *
  * @return \Mollie\WooCommerce\Utils\Data

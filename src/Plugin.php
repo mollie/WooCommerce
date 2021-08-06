@@ -19,6 +19,7 @@ use Mollie\WooCommerce\Components\AcceptedLocaleValuesDictionary;
 use Mollie\WooCommerce\Gateway\AbstractGateway;
 use Mollie\WooCommerce\Gateway\ApplePay\Mollie_WC_Gateway_ApplePay;
 use Mollie\WooCommerce\Gateway\Voucher\Mollie_WC_Gateway_Voucher;
+use Mollie\WooCommerce\Log\WcPsrLoggerAdapter;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\OrderItemsRefunder;
@@ -73,79 +74,6 @@ class Plugin
 
     private function __construct()
     {
-    }
-
-    /**
-     * Set HTTP status code
-     *
-     * @param int $status_code
-     */
-    public static function setHttpResponseCode($status_code)
-    {
-        if (PHP_SAPI !== 'cli' && !headers_sent()) {
-            if (function_exists("http_response_code")) {
-                http_response_code($status_code);
-            } else {
-                header(" ", true, $status_code);
-            }
-        }
-    }
-
-    /**
-     * Add a WooCommerce notification message
-     *
-     * @param string $message Notification message
-     * @param string $type    One of notice, error or success (default notice)
-     *
-     * @return $this
-     */
-    public static function addNotice($message, $type = 'notice')
-    {
-        $type = in_array($type, [ 'notice', 'error', 'success' ]) ? $type : 'notice';
-
-        // Check for existence of new notification api (WooCommerce >= 2.1)
-        if (function_exists('wc_add_notice')) {
-            wc_add_notice($message, $type);
-        } else {
-            $woocommerce = WooCommerce::instance();
-
-            switch ($type) {
-                case 'error':
-                    $woocommerce->add_error($message);
-                    break;
-                default:
-                    $woocommerce->add_message($message);
-                    break;
-            }
-        }
-    }
-
-    /**
-     * Log messages to WooCommerce log
-     *
-     * @param mixed $message
-     * @param bool  $set_debug_header Set X-Mollie-Debug header (default false)
-     */
-    public static function debug($message, $set_debug_header = false)
-    {
-        // Convert message to string
-        if (!is_string($message)) {
-            $message = wc_print_r($message, true);
-        }
-
-        // Set debug header
-        if ($set_debug_header && PHP_SAPI !== 'cli' && !headers_sent()) {
-            header("X-Mollie-Debug: $message");
-        }
-
-        // Log message
-        if (self::getSettingsHelper()->isDebugEnabled()) {
-            $logger = wc_get_logger();
-
-            $context =  [ 'source' => self::PLUGIN_ID . '-' . date('Y-m-d') ];
-
-            $logger->debug($message, $context);
-        }
     }
 
     /**
@@ -224,9 +152,10 @@ class Plugin
     public static function getDataHelper()
     {
         static $data_helper;
+        $logger = new WcPsrLoggerAdapter(\wc_get_logger(), 'mollie-payments-for-woocommerce-');
 
         if (!$data_helper) {
-            $data_helper = new Data(self::getApiHelper());
+            $data_helper = new Data(self::getApiHelper(), $logger);
         }
 
         return $data_helper;
@@ -266,9 +195,10 @@ class Plugin
     public static function getPaymentObject()
     {
         static $payment_parent;
+        $logger = new WcPsrLoggerAdapter(\wc_get_logger(), 'mollie-payments-for-woocommerce-');
 
         if (! $payment_parent) {
-            $payment_parent = new MollieObject(null);
+            $payment_parent = new MollieObject(null, $logger);
         }
 
         return $payment_parent;

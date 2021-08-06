@@ -4,20 +4,17 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Gateway;
 
-use Mollie\WooCommerce\Notice\NoticeInterface;
-use Mollie\WooCommerce\Payment\MollieOrderService;
-use Mollie\WooCommerce\Utils\IconFactory;
-use Psr\Log\LoggerInterface as Logger;
 use InvalidArgumentException;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Payment;
-use Mollie\Api\Resources\Order;
-use Mollie\WooCommerce\Notice\AdminNotice;
+use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieOrder;
+use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\MolliePayment;
 use Mollie\WooCommerce\Plugin;
-use Mollie\WooCommerce\Utils\GatewaySurchargeHandler;
-use Mollie\WooCommerce\Utils\PaymentMethodsIconUrl;
+use Mollie\WooCommerce\SDK\HttpResponse;
+use Mollie\WooCommerce\Utils\IconFactory;
+use Psr\Log\LoggerInterface as Logger;
 use UnexpectedValueException;
 use WC_Order;
 use WC_Payment_Gateway;
@@ -95,6 +92,10 @@ abstract class AbstractGateway extends WC_Payment_Gateway
      * @var MollieOrderService
      */
     protected $mollieOrderService;
+    /**
+     * @var HttpResponse
+     */
+    protected $httpResponse;
 
     /**
      *
@@ -105,7 +106,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway
         SurchargeService $surchargeService,
         MollieOrderService $mollieOrderService,
         Logger $logger,
-        NoticeInterface $notice
+        NoticeInterface $notice,
+        HttpResponse $httpResponse
     ) {
 
         $this->logger = $logger;
@@ -114,6 +116,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
         $this->paymentService = $paymentService;
         $this->surchargeService = $surchargeService;
         $this->mollieOrderService = $mollieOrderService;
+        $this->httpResponse = $httpResponse;
 
         // No plugin id, gateway id is unique enough
         $this->plugin_id = '';
@@ -472,7 +475,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
                     $billing_country
                 );
             } catch (InvalidArgumentException $exception) {
-                Plugin::debug($exception->getMessage());
+                $this->logger->log( \WC_Log_Levels::DEBUG, $exception->getMessage());
                 return false;
             }
 
@@ -586,12 +589,12 @@ abstract class AbstractGateway extends WC_Payment_Gateway
     public function handlePaidOrderWebhook($order, $payment)
     {
         // Duplicate webhook call
-        Plugin::setHttpResponseCode(204);
+        $this->httpResponse->setHttpResponseCode(204);
 
         $order = wc_get_order($order);
         $order_id = $order->get_id();
 
-        Plugin::debug(__METHOD__ . ' - ' . $this->id . ": Order $order_id does not need a payment by Mollie (payment {$payment->id}).", true);
+        $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $this->id . ": Order $order_id does not need a payment by Mollie (payment {$payment->id}).", true);
     }
 
     /**
@@ -603,7 +606,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
     {
         $order_id = $order->get_id();
         $debugLine = __METHOD__ . " {$order_id}: Determine what the redirect URL in WooCommerce should be.";
-        mollieWooCommerceDebug($debugLine);
+        $this->logger->log( \WC_Log_Levels::DEBUG, $debugLine);
         $hookReturnPaymentStatus = 'success';
         $returnRedirect = $this->get_return_url($order);
         $failedRedirect = $order->get_checkout_payment_url(false);
@@ -621,7 +624,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway
                 if ($order_status_cancelled_payments == 'cancelled') {
                     return $this->get_return_url($order);
                 } else {
-                    Plugin::addNotice(
+                    $this->notice->addNotice(
+                        'notice',
                         __(
                             'You have cancelled your payment. Please complete your order with a different payment method.',
                             'mollie-payments-for-woocommerce'
@@ -636,7 +640,13 @@ abstract class AbstractGateway extends WC_Payment_Gateway
             try {
                 $payment = $this->activePaymentObject($order_id, false);
                 if (! $payment->isOpen() && ! $payment->isPending() && ! $payment->isPaid() && ! $payment->isAuthorized()) {
-                    mollieWooCommerceNotice(__('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'));
+                    $this->notice->addNotice(
+                            'notice',
+                            __(
+                                    'Your payment was not successful. Please complete your order with a different payment method.',
+                                    'mollie-payments-for-woocommerce'
+                            )
+                    );
                     // Return to order payment page
                     return $failedRedirect;
                 }
@@ -644,10 +654,16 @@ abstract class AbstractGateway extends WC_Payment_Gateway
                     $this->debugGiftcardDetails($payment, $order);
                 }
             } catch (UnexpectedValueException $exc) {
-                mollieWooCommerceNotice(__('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'));
+                $this->notice->addNotice(
+                        'notice',
+                        __(
+                                'Your payment was not successful. Please complete your order with a different payment method.',
+                                'mollie-payments-for-woocommerce'
+                        )
+                );
                 $exceptionMessage = $exc->getMessage();
                 $debugLine = __METHOD__ . " Problem processing the payment. {$exceptionMessage}";
-                mollieWooCommerceDebug($debugLine);
+                $this->logger->log( \WC_Log_Levels::DEBUG, $debugLine);
                 $hookReturnPaymentStatus = 'failed';
             }
         }
@@ -709,7 +725,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
         if (! $order) {
             $error_message = "Could not find WooCommerce order $order_id.";
 
-            Plugin::debug(__METHOD__ . ' - ' . $error_message);
+            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $error_message);
 
             return new WP_Error('1', $error_message);
         }
@@ -726,7 +742,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
         if (! $payment_object_id) {
             $error_message = "Can\'t process refund. Could not find Mollie Payment object id for order $order_id.";
 
-            Plugin::debug(__METHOD__ . ' - ' . $error_message);
+            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $error_message);
 
             return new WP_Error('1', $error_message);
         }
@@ -737,14 +753,14 @@ abstract class AbstractGateway extends WC_Payment_Gateway
             );
         } catch (ApiException $exception) {
             $exceptionMessage = $exception->getMessage();
-            Plugin::debug($exceptionMessage);
+            $this->logger->log( \WC_Log_Levels::DEBUG, $exceptionMessage);
             return new WP_Error('error', $exceptionMessage);
         }
 
         if (! $payment_object) {
             $error_message = "Can\'t process refund. Could not find Mollie Payment object data for order $order_id.";
 
-            Plugin::debug(__METHOD__ . ' - ' . $error_message);
+            $this->logger->log( \WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $error_message);
 
             return new WP_Error('1', $error_message);
         }
@@ -905,7 +921,12 @@ abstract class AbstractGateway extends WC_Payment_Gateway
                     $payment_method_title = $this->getPaymentMethodTitle($payment);
 
                     // Add message to log
-                    Plugin::debug($this->id . ': Customer returned to store, but payment still pending for order #' . $order_id . '. Status should be updated automatically in the future, if it doesn\'t this might indicate a communication issue between the site and Mollie.');
+                    $this->logger->log(\WC_Log_Levels::DEBUG,
+                                       $this->id
+                                       . ': Customer returned to store, but payment still pending for order #'
+                                       . $order_id
+                                       . '. Status should be updated automatically in the future, if it doesn\'t this might indicate a communication issue between the site and Mollie.'
+                    );
 
                     // Add message to order as order note
                     $order->add_order_note(sprintf(
@@ -1003,7 +1024,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
         );
         $returnUrl = untrailingslashit($returnUrl);
 
-        mollieWooCommerceDebug("{$this->id} : Order {$orderId} returnUrl: {$returnUrl}", true);
+        $this->logger->log( \WC_Log_Levels::DEBUG, "{$this->id} : Order {$orderId} returnUrl: {$returnUrl}", true);
 
         return apply_filters(Plugin::PLUGIN_ID . '_return_url', $returnUrl, $order);
     }
@@ -1030,7 +1051,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
         );
         $webhookUrl = untrailingslashit($webhookUrl);
 
-        mollieWooCommerceDebug("{$this->id} : Order {$orderId} webhookUrl: {$webhookUrl}", true);
+        $this->logger->log( \WC_Log_Levels::DEBUG, "{$this->id} : Order {$orderId} webhookUrl: {$webhookUrl}", true);
 
         return apply_filters(Plugin::PLUGIN_ID . '_webhook_url', $webhookUrl, $order);
     }

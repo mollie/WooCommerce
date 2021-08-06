@@ -159,7 +159,7 @@ class GatewaySurchargeHandler
 
     protected function isMollieGateway($gateway)
     {
-        if (strpos($gateway, 'mollie_wc_gateway_') !== false) {
+        if (!empty($gateway) && strpos($gateway, 'mollie_wc_gateway_') !== false) {
             return true;
         }
         return false;

@@ -34,6 +34,8 @@ use Mollie\WooCommerce\Gateway\ApplePay\Mollie_WC_Gateway_ApplePay;
 use Mollie\WooCommerce\Gateway\BankTransfer\Mollie_WC_Gateway_BankTransfer;
 use Mollie\WooCommerce\Gateway\PayPal\Mollie_WC_Gateway_PayPal;
 use Mollie\WooCommerce\Notice\AdminNotice;
+use Mollie\WooCommerce\Notice\NoticeInterface;
+use Mollie\WooCommerce\Notice\NoticeModule;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Utils\GatewaySurchargeHandler;
 use Mollie\WooCommerce\Utils\IconFactory;
@@ -89,15 +91,18 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 return new IconFactory();
             },
             PaymentService::class => static function (ContainerInterface $container): PaymentService {
-                return new PaymentService();
+                $logger = $container->get(Logger::class);
+                $notice = $container->get(AdminNotice::class);
+                return new PaymentService($notice, $logger);
             },
             SurchargeService::class => static function (ContainerInterface $container): SurchargeService {
                 return new SurchargeService();
             },
             MollieOrderService::class => static function (ContainerInterface $container): MollieOrderService {
-                return new MollieOrderService();
+                $HttpResponseService = $container->get('SDK.HttpResponse');
+                $logger = $container->get(Logger::class);
+                return new MollieOrderService($HttpResponseService, $logger);
             },
-
         ];
     }
 
@@ -158,10 +163,12 @@ class GatewayModule implements ServiceModule, ExecutableModule
 
         // Set order to paid and processed when eventually completed without Mollie
         add_action('woocommerce_payment_complete', [$this, 'setOrderPaidByOtherGateway'], 10, 1);
+        $notice = $container->get(AdminNotice::class);
+        $logger = $container->get(Logger::class);
         $this->gatewaySurchargeHandling();
-        $this->mollieApplePayDirectHandling();
+        $this->mollieApplePayDirectHandling($notice, $logger);
         $paypalGateway = $container->get('gateway.classname_with_namespace')['Mollie_WC_Gateway_PayPal'];
-        $this->molliePayPalButtonHandling($paypalGateway);
+        $this->molliePayPalButtonHandling($paypalGateway, $notice, $logger);
 
         return true;
     }
@@ -333,15 +340,15 @@ class GatewayModule implements ServiceModule, ExecutableModule
     /**
      * Bootstrap the ApplePay button logic if feature enabled
      */
-    public function mollieApplePayDirectHandling()
+    public function mollieApplePayDirectHandling(NoticeInterface $notice, Logger $logger)
     {
         $buttonEnabledCart = mollieWooCommerceIsApplePayDirectEnabled('cart');
         $buttonEnabledProduct = mollieWooCommerceIsApplePayDirectEnabled('product');
 
         if ($buttonEnabledCart || $buttonEnabledProduct) {
             $notices = new AdminNotice();
-            $responseTemplates = new ResponsesToApple();
-            $ajaxRequests = new AppleAjaxRequests($responseTemplates);
+            $responseTemplates = new ResponsesToApple($logger);
+            $ajaxRequests = new AppleAjaxRequests($responseTemplates, $notice, $logger);
             $applePayHandler = new ApplePayDirectHandler($notices, $ajaxRequests);
             $applePayHandler->bootstrap($buttonEnabledProduct, $buttonEnabledCart);
         }
@@ -350,15 +357,15 @@ class GatewayModule implements ServiceModule, ExecutableModule
     /**
      * Bootstrap the Mollie_WC_Gateway_PayPal button logic if feature enabled
      */
-    public function molliePayPalButtonHandling(Mollie_WC_Gateway_PayPal $gateway)
+    public function molliePayPalButtonHandling(Mollie_WC_Gateway_PayPal $gateway, NoticeInterface $notice, Logger $logger)
     {
         $enabledInProduct = (mollieWooCommerceIsPayPalButtonEnabled('product'));
         $enabledInCart = (mollieWooCommerceIsPayPalButtonEnabled('cart'));
         $shouldBuildIt = $enabledInProduct || $enabledInCart;
 
         if ($shouldBuildIt) {
-            $ajaxRequests = new PayPalAjaxRequests();
-            $payPalHandler = new PayPalButtonHandler($ajaxRequests, $gateway);
+            $ajaxRequests = new PayPalAjaxRequests($gateway, $notice, $logger);
+            $payPalHandler = new PayPalButtonHandler($ajaxRequests);
             $payPalHandler->bootstrap($enabledInProduct, $enabledInCart);
         }
     }
@@ -371,6 +378,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $paymentService = $container->get(PaymentService::class);
         $surchargeService = $container->get(SurchargeService::class);
         $mollieOrderService = $container->get(MollieOrderService::class);
+        $HttpResponseService = $container->get('SDK.HttpResponse');
         $gatewayClassnames = $this->gatewayClassnames;
         $gateways = [];
         $gatewayNamespace = 'Mollie\\WooCommerce\\Gateway\\';
@@ -384,7 +392,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $surchargeService,
                 $mollieOrderService,
                 $logger,
-                $notice
+                $notice,
+                $HttpResponseService
             );
         }
         return $gateways;

@@ -237,7 +237,7 @@ class Mollie_WC_Helper_Settings
                 'type' => 'number',
                 'description' => sprintf(
                     __(
-                        'Maximum order amount to apply surcharge. If the order is above this number the surcharge will not apply. Default 0',
+                        'Maximum order amount to apply surcharge. If the order is above this number the surcharge will not apply. Default 0, means no maximum',
                         'mollie-payments-for-woocommerce'
                     )
                 ),

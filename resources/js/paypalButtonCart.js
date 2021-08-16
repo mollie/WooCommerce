@@ -104,16 +104,11 @@
                 })
                 preventSpam = true
                 if(preventSpam){
-                    let seconds = 3
-                    var countdown = setInterval(function() {
-                        seconds--;
-                        if (seconds <= 0){
-                            clearInterval(countdown);
-                            payPalButton.disabled = false;
-                            payPalButton.classList.remove("buttonDisabled");
-                            preventSpam = false
-                        }
-                    }, 1000);
+                    setTimeout(function() {
+                        payPalButton.disabled = false;
+                        payPalButton.classList.remove("buttonDisabled");
+                        preventSpam = false
+                    }, 3000);
                 }
             })
         }

@@ -65,9 +65,6 @@
             payPalButton.disabled = true;
             payPalButton.classList.add("buttonDisabled");
         }
-        jQuery(window).on('popstate', function(event) {
-            console.log('pop')
-        });
 
         if (isVariation) {
             jQuery('.single_variation_wrap').on('show_variation', function (event, variation) {
@@ -127,16 +124,11 @@
             }
             preventSpam = true
             if(preventSpam){
-                let seconds = 3
-                var countdown = setInterval(function() {
-                    seconds--;
-                    if (seconds <= 0){
-                        clearInterval(countdown);
-                        payPalButton.disabled = false;
-                        payPalButton.classList.remove("buttonDisabled");
-                        preventSpam = false
-                    }
-                }, 1000);
+                setTimeout(function() {
+                    payPalButton.disabled = false;
+                    payPalButton.classList.remove("buttonDisabled");
+                    preventSpam = false
+                }, 3000);
             }
         })
     }

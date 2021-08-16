@@ -136,6 +136,7 @@ return [
             'mollie-payments-for-woocommerce'
         ),
         'type' => 'text',
+        'custom_attributes'=>['maxlength'=>'30'],
         'default' => __('Gateway Fee', 'mollie-payments-for-woocommerce'),
         'desc' => sprintf(
             __(

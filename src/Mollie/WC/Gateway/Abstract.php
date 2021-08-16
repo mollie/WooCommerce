@@ -327,7 +327,6 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 		    return true;
 	    }
 
-	    // Remove old MisterCash (only) from WooCommerce Payment settings
 	    if ( is_admin() && ! empty( $current_screen->base ) && $current_screen->base == 'woocommerce_page_wc-settings' ) {
 
 		    $settings = Mollie_WC_Plugin::getSettingsHelper();

@@ -563,10 +563,6 @@ class Mollie_WC_Helper_Settings
 		foreach ( Mollie_WC_Plugin::$GATEWAYS as $gateway_classname ) {
 			$gateway = new $gateway_classname;
 
-			// Remove MisterCash from list as it's renamed Bancontact
-			if ( $gateway->id == 'mollie_wc_gateway_mistercash' ) {
-				continue;
-			}
 
 			if ( $gateway instanceof Mollie_WC_Gateway_Abstract ) {
 				$content .= '<li style="float: left; width: 32%; height:32px;">';

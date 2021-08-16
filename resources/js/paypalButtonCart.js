@@ -78,10 +78,6 @@
                 }
                 button.disabled = true;
                 button.classList.add("buttonDisabled");
-                if(preventSpam){
-                    return
-                }
-                preventSpam = true
                 jQuery.ajax({
                     url: ajaxUrl,
                     method: 'POST',
@@ -106,6 +102,14 @@
                         console.warn(textStatus, errorThrown)
                     },
                 })
+                preventSpam = true
+                if(preventSpam){
+                    setTimeout(function() {
+                        payPalButton.disabled = false;
+                        payPalButton.classList.remove("buttonDisabled");
+                        preventSpam = false
+                    }, 3000);
+                }
             })
         }
         jQuery(document.body).on('updated_cart_totals', function (event) {

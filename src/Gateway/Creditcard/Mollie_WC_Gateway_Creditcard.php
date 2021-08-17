@@ -179,7 +179,7 @@ class Mollie_WC_Gateway_Creditcard extends AbstractSubscription
      */
     protected function includeCreditCardIconSelector()
     {
-        $fields = include $this->pluginPath . '/' . '/inc/settings/mollie_creditcard_icons_selector.php';
+        $fields = include $this->pluginPath . '/inc/settings/mollie_creditcard_icons_selector.php';
 
         $fields and $this->form_fields = array_merge($this->form_fields, $fields);
     }
@@ -286,7 +286,7 @@ class Mollie_WC_Gateway_Creditcard extends AbstractSubscription
 
     protected function includeMollieComponentsFields()
     {
-        $fields = include $this->pluginPath . '/' . '/inc/settings/mollie_components_enabler.php';
+        $fields = include $this->pluginPath . '/inc/settings/mollie_components_enabler.php';
 
         $this->form_fields = array_merge($this->form_fields, $fields);
     }

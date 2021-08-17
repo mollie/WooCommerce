@@ -119,7 +119,7 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     protected function componentsFilePath()
     {
-        return $this->pluginPath . '/' . '/inc/settings/mollie_components.php';
+        return $this->pluginPath . '/inc/settings/mollie_components.php';
     }
 
     /**
@@ -127,7 +127,7 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     protected function applePaySection()
     {
-        return $this->pluginPath . '/' . '/inc/settings/mollie_applepay_settings.php';
+        return $this->pluginPath . '/inc/settings/mollie_applepay_settings.php';
     }
 
     /**
@@ -135,7 +135,7 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     protected function advancedSectionFilePath()
     {
-        return $this->pluginPath . '/' . '/inc/settings/mollie_advanced_settings.php';
+        return $this->pluginPath . '/inc/settings/mollie_advanced_settings.php';
     }
 
     /**

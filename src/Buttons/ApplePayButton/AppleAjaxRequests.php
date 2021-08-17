@@ -129,10 +129,10 @@ class AppleAjaxRequests
             );
         } catch (\Mollie\Api\Exceptions\ApiException $apiException) {
             update_option('mollie_wc_applepay_validated', 'no');
-
+            $errorMessage = $apiException->getMessage();
             wp_send_json_error(
                 __(
-                    $apiException->getMessage(),
+                    $errorMessage,
                     'mollie-payments-for-woocommerce'
                 )
             );

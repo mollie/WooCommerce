@@ -145,8 +145,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway
         $this->title = $this->get_option('title');
         $this->display_logo = $this->get_option('display_logo') == 'yes';
 
-        $this->_initDescription();
-        $this->_initIcon();
+        $this->initDescription();
+        $this->initIcon();
 
         if (!has_action('woocommerce_thankyou_' . $this->id)) {
             add_action('woocommerce_thankyou_' . $this->id, [$this, 'thankyou_page']);
@@ -210,7 +210,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
         parent::process_admin_options();
     }
 
-    protected function _initIcon()
+    protected function initIcon()
     {
         $this->iconFactory->initIcon($this, $this->display_logo, $this->pluginUrl);
     }
@@ -226,7 +226,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
         return $this->iconFactory->getIconUrl($this->getMollieMethodId(), $this->pluginUrl);
     }
 
-    protected function _initDescription()
+    protected function initDescription()
     {
         $description = $this->surchargeService->buildDescriptionWithSurcharge($this);
 

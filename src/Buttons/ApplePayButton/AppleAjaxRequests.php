@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Buttons\ApplePayButton;
 
+use Mollie\WooCommerce\Gateway\ApplePay\Mollie_WC_Gateway_ApplePay;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Plugin;
 use Psr\Log\LoggerInterface as Logger;
@@ -114,9 +115,14 @@ class AppleAjaxRequests
             return;
         }
         $validationUrl = $applePayRequestDataObject->validationUrl;
-        $completeDomain = parse_url(get_site_url(), PHP_URL_HOST); $removeHttp = ["https://", "http://"];
-        $regex = '/.+\.\w+\/?((\w*\/*)*)/i';$domain = str_replace($removeHttp, "", $completeDomain);$ending = preg_replace($regex, '$1', $domain);
-        $domain = str_replace($ending, "", $domain);$domain = str_replace("/", "", $domain);try {
+        $completeDomain = parse_url(get_site_url(), PHP_URL_HOST);
+        $removeHttp = ["https://", "http://"];
+        $regex = '/.+\.\w+\/?((\w*\/*)*)/i';
+        $domain = str_replace($removeHttp, "", $completeDomain);
+        $ending = preg_replace($regex, '$1', $domain);
+        $domain = str_replace($ending, "", $domain);
+        $domain = str_replace("/", "", $domain);
+        try {
             $json = $this->validationApiWalletsEndpointCall(
                 $domain,
                 $validationUrl
@@ -240,7 +246,7 @@ class AppleAjaxRequests
         );
         $order = $this->addAddressesToOrder($applePayRequestDataObject, $order);
 
-        if($applePayRequestDataObject->shippingMethod !== null){
+        if ($applePayRequestDataObject->shippingMethod !== null) {
             $order = $this->addShippingMethodsToOrder(
                 $applePayRequestDataObject->shippingMethod,
                 $applePayRequestDataObject->shippingAddress,
@@ -255,7 +261,8 @@ class AppleAjaxRequests
         $this->updateOrderPostMeta($orderId, $order);
         $result = $this->processOrderPayment($orderId);
 
-        if (isset($result['result'])
+        if (
+            isset($result['result'])
             && 'success' === $result['result']
         ) {
             $order->payment_complete();
@@ -311,7 +318,8 @@ class AppleAjaxRequests
         $order->calculate_totals();
         $this->updateOrderPostMeta($orderId, $order);
         $result = $this->processOrderPayment($orderId);
-        if (isset($result['result'])
+        if (
+            isset($result['result'])
             && 'success' === $result['result']
         ) {
             $order->payment_complete();
@@ -444,11 +452,11 @@ class AppleAjaxRequests
                     $shippingMethodsArray, $selectedShippingMethod
                     )
                     = $this->cartShippingMethods(
-                    $cart,
-                    $customerAddress,
-                    $shippingMethod,
-                    $shippingMethodId
-                );
+                        $cart,
+                        $customerAddress,
+                        $shippingMethod,
+                        $shippingMethodId
+                    );
             }
 
             $cart->calculate_shipping();
@@ -487,24 +495,16 @@ class AppleAjaxRequests
         $base_location = wc_get_base_location();
         $shopCountryCode = $base_location['country'];
         WC()->customer->set_shipping_country(
-            isset($address['country'])
-                ? $address['country']
-                : $shopCountryCode
+            $address['country'] ?? $shopCountryCode
         );
         WC()->customer->set_billing_country(
-            isset($address['country'])
-                ? $address['country']
-                : $shopCountryCode
+            $address['country'] ?? $shopCountryCode
         );
         WC()->customer->set_shipping_postcode(
-            isset($address['postcode'])
-                ? $address['postcode']
-                : $shopCountryCode
+            $address['postcode'] ?? $shopCountryCode
         );
         WC()->customer->set_shipping_city(
-            isset($address['city'])
-                ? $address['city']
-                : $shopCountryCode
+            $address['city'] ?? $shopCountryCode
         );
     }
 
@@ -586,14 +586,14 @@ class AppleAjaxRequests
     /**
      * Returns the formatted results of the cart calculations
      *
-     * @param WC_Cart $cart
+     * @param \WC_Cart $cart
      * @param         $selectedShippingMethod
      * @param         $shippingMethodsArray
      *
      * @return array
      */
     protected function cartCalculationResults(
-        WC_Cart $cart,
+        \WC_Cart $cart,
         $selectedShippingMethod,
         $shippingMethodsArray
     ) {
@@ -648,11 +648,11 @@ class AppleAjaxRequests
                     $shippingMethodsArray, $selectedShippingMethod
                     )
                     = $this->cartShippingMethods(
-                    $cart,
-                    $customerAddress,
-                    $shippingMethodId,
-                    $shippingMethodId['identifier']
-                );
+                        $cart,
+                        $customerAddress,
+                        $shippingMethodId,
+                        $shippingMethodId['identifier']
+                    );
             }
             $cart->calculate_shipping();
             $cart->calculate_fees();
@@ -711,7 +711,7 @@ class AppleAjaxRequests
                 'postcode' => $shippingAddress['postcode'],
                 'city' => $shippingAddress['city'],
             );
-            $item = new WC_Order_Item_Shipping();
+            $item = new \WC_Order_Item_Shipping();
             $ratesIds = explode(":", $shippingMethod['identifier']);
             $shippingMethodId = $ratesIds[0];
             $shippingInstanceId = $ratesIds[1];

@@ -243,9 +243,7 @@ class Mollie_WC_Gateway_BankTransfer extends AbstractGateway
                 $instructions .= sprintf(__('Please provide the payment reference <strong>%s</strong>', 'mollie-payments-for-woocommerce'), $payment->details->transferReference) . "\n";
             }
 
-            if (!empty($payment->expiresAt)
-                && class_exists('DateTime')
-                && class_exists('DateInterval')) {
+            if (!empty($payment->expiresAt)) {
                 $expiryDate = $payment->expiresAt;
                 $this->logger->log(\WC_Log_Levels::DEBUG, "Due date assigned: {$expiryDate}");
                 $expiryDate = date_i18n(wc_date_format(), strtotime($expiryDate));

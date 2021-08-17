@@ -93,14 +93,6 @@ class Data
 
         $max_option_name_length = 191;
 
-        /**
-         * Prior to WordPress version 4.4.0, the maximum length for wp_options.option_name is 64 characters.
-         * @see https://core.trac.wordpress.org/changeset/34030
-         */
-        if ($wp_version < '4.4.0') {
-            $max_option_name_length = 64;
-        }
-
         if ($option_name_length > $max_option_name_length) {
             trigger_error(sprintf('Transient id %s is to long. Option name %s (%s) will be to long for database column wp_options.option_name which is varchar(%s).', $transient_id, $option_name, $option_name_length, $max_option_name_length), E_USER_WARNING);
         }

@@ -748,20 +748,10 @@ class Settings
      */
     protected function getSettingId($setting)
     {
-        global $wp_version;
-
         $setting_id = $this->pluginId . '_' . trim($setting);
         $setting_id_length = strlen($setting_id);
 
         $max_option_name_length = 191;
-
-        /**
-         * Prior to WooPress version 4.4.0, the maximum length for wp_options.option_name is 64 characters.
-         * @see https://core.trac.wordpress.org/changeset/34030
-         */
-        if ($wp_version < '4.4.0') {
-            $max_option_name_length = 64;
-        }
 
         if ($setting_id_length > $max_option_name_length) {
             trigger_error("Setting id $setting_id ($setting_id_length) to long for database column wp_options.option_name which is varchar($max_option_name_length).", E_USER_WARNING);

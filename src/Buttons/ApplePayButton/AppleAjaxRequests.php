@@ -800,13 +800,13 @@ class AppleAjaxRequests
     }
 
     /**
-     * Calls MollieSettingsPage API wallets to validate merchant session
+     * Calls Mollie API wallets to validate merchant session
      *
      * @param string $domain
      * @param        $validationUrl
      *
      * @return false|string
-     * @throws \MollieSettingsPage\Api\Exceptions\ApiException
+     * @throws \Mollie\Api\Exceptions\ApiException
      */
     protected function validationApiWalletsEndpointCall(
         $domain,

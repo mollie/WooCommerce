@@ -4,7 +4,7 @@
  * Plugin URI: https://www.mollie.com
  * Description: Refactor Accept payments in WooCommerce with the official Mollie plugin
  * Version: 6.4.0
- * Author: MollieSettingsPage
+ * Author: Mollie
  * Author URI: https://www.mollie.com
  * Requires at least: 5.0
  * Tested up to: 5.7

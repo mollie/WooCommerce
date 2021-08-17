@@ -233,7 +233,7 @@ abstract class AbstractSubscription extends AbstractGateway
         // Check if test mode is enabled
         $test_mode = $this->isTestModeEnabledForRenewalOrder($renewal_order);
 
-        // Get MollieSettingsPage customer ID
+        // Get Mollie customer ID
         $customer_id = $this->getOrderMollieCustomerId($renewal_order);
 
         $subscriptions = wcs_get_subscriptions_for_renewal_order($renewal_order->get_id());
@@ -306,13 +306,13 @@ abstract class AbstractSubscription extends AbstractGateway
             // Log successful creation of payment
             $this->logger->log(\WC_Log_Levels::DEBUG, $this->id . ': Renewal payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $renewal_order_id . ' payment json response: ' . json_encode($payment));
 
-            // Unset & set active MollieSettingsPage payment
-            // Get correct MollieSettingsPage Payment Object
+            // Unset & set active Mollie payment
+            // Get correct Mollie Payment Object
             $payment_object = Plugin::getPaymentFactoryHelper()->getPaymentObject($payment);
             $payment_object->unsetActiveMolliePayment($renewal_order_id);
             $payment_object->setActiveMolliePayment($renewal_order_id, $payment);
 
-            // Set MollieSettingsPage customer
+            // Set Mollie customer
             Plugin::getDataHelper()->setUserMollieCustomerIdAtSubscription($renewal_order_id, $payment_object::$customerId);
 
             // Tell WooCommerce a new payment was created for the order/subscription
@@ -480,15 +480,15 @@ abstract class AbstractSubscription extends AbstractGateway
             'post_meta' =>  [
                 '_mollie_payment_id' =>  [
                     'value' => $mollie_payment_id,
-                    'label' => 'MollieSettingsPage Payment ID',
+                    'label' => 'Mollie Payment ID',
                 ],
                 '_mollie_payment_mode' =>  [
                     'value' => $mollie_payment_mode,
-                    'label' => 'MollieSettingsPage Payment Mode',
+                    'label' => 'Mollie Payment Mode',
                 ],
                 '_mollie_customer_id' =>  [
                     'value' => $mollie_customer_id,
-                    'label' => 'MollieSettingsPage Customer ID',
+                    'label' => 'Mollie Customer ID',
                 ],
             ],
         ];
@@ -504,7 +504,7 @@ abstract class AbstractSubscription extends AbstractGateway
     public function validate_subscription_payment_meta($payment_method_id, $payment_meta)
     {
         if ($this->id === $payment_method_id) {
-            // Check that a MollieSettingsPage Customer ID is entered
+            // Check that a Mollie Customer ID is entered
             if (! isset($payment_meta['post_meta']['_mollie_customer_id']['value']) || empty($payment_meta['post_meta']['_mollie_customer_id']['value'])) {
                 throw new Exception('A "_mollie_customer_id" value is required.');
             }
@@ -555,7 +555,7 @@ abstract class AbstractSubscription extends AbstractGateway
             // Get subscription ID
             $subscription_id = $subscription->get_id();
 
-            // Get full payment object from MollieSettingsPage API
+            // Get full payment object from Mollie API
             $payment_object_resource = Plugin::getPaymentFactoryHelper()->getPaymentObject($mollie_payment_id);
 
             //
@@ -563,7 +563,7 @@ abstract class AbstractSubscription extends AbstractGateway
             //
 
             if (empty($mollie_customer_id)) {
-                $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: no valid customer ID found, trying to restore from MollieSettingsPage API payment (' . $mollie_payment_id . ').');
+                $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: no valid customer ID found, trying to restore from Mollie API payment (' . $mollie_payment_id . ').');
 
                 // Try to get the customer ID from the payment object
                 $mollie_customer_id = $payment_object_resource->getMollieCustomerIdFromPaymentObject($mollie_payment_id);
@@ -588,7 +588,7 @@ abstract class AbstractSubscription extends AbstractGateway
             $gateway = wc_get_payment_gateway_by_order($subscription);
 
             if (! $gateway || ! ( $gateway instanceof AbstractGateway )) {
-                $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: stopped processing, not a MollieSettingsPage payment gateway, could not restore customer ID.');
+                $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: stopped processing, not a Mollie payment gateway, could not restore customer ID.');
 
                 return $mollie_customer_id;
             }
@@ -621,7 +621,7 @@ abstract class AbstractSubscription extends AbstractGateway
                 return $mollie_customer_id;
             }
 
-            // Get a Payment object from MollieSettingsPage to check for paid status
+            // Get a Payment object from Mollie to check for paid status
             $payment_object = $payment_object_resource->getPaymentObject($mollie_payment_id);
 
             // Extra check that first payment was not sequenceType first

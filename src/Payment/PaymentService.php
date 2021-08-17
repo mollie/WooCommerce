@@ -172,12 +172,12 @@ class PaymentService
                 $mandate = $mandates[0];
                 $customerId = $mandate->customerId;
                 $mandateId = $mandate->id;
-                $this->logger->log( \WC_Log_Levels::DEBUG, "MollieSettingsPage Subscription in the order: customer id {$customerId} and mandate id {$mandateId} ");
+                $this->logger->log( \WC_Log_Levels::DEBUG, "Mollie Subscription in the order: customer id {$customerId} and mandate id {$mandateId} ");
                 do_action(Plugin::PLUGIN_ID . '_after_mandate_created', $paymentObject, $order, $customerId, $mandateId);
             }
 
             do_action( Plugin::PLUGIN_ID . '_payment_created', $paymentObject, $order );
-            $this->logger->log( \WC_Log_Levels::DEBUG,  $this->id . ': MollieSettingsPage payment object ' . $paymentObject->id . ' (' . $paymentObject->mode . ') created for order ' . $orderId );
+            $this->logger->log( \WC_Log_Levels::DEBUG,  $this->id . ': Mollie payment object ' . $paymentObject->id . ' (' . $paymentObject->mode . ') created for order ' . $orderId );
 
             // Update initial order status for payment methods where the payment status will be delivered after a couple of days.
             // See: https://www.mollie.com/nl/docs/status#expiry-times-per-payment-method
@@ -351,10 +351,10 @@ class PaymentService
             $order
         );
 
-        // Create MollieSettingsPage payment with customer id.
+        // Create Mollie payment with customer id.
         try {
             $this->logger->log( \WC_Log_Levels::DEBUG,
-                'Creating payment object: type Order, first try creating a MollieSettingsPage Order.'
+                'Creating payment object: type Order, first try creating a Mollie Order.'
             );
 
             // Only enable this for hardcore debugging!
@@ -384,7 +384,7 @@ class PaymentService
                 $paymentOrder->updatePaymentDataWithOrderData($orderWithPayments, $orderId);
             }
         } catch (Mollie\Api\Exceptions\ApiException $e) {
-            // Don't try to create a MollieSettingsPage Payment for Klarna payment methods
+            // Don't try to create a Mollie Payment for Klarna payment methods
             $order_payment_method = $order->get_payment_method();
 
             if ($order_payment_method == 'mollie_wc_gateway_klarnapaylater'
@@ -420,7 +420,7 @@ class PaymentService
                     $test_mode
                 )->orders->create($data);
             } catch (Mollie\Api\Exceptions\ApiException $e) {
-                // Set MollieSettingsPage payment type to payment, when creating a MollieSettingsPage Order has failed
+                // Set Mollie payment type to payment, when creating a Mollie Order has failed
                 $molliePaymentType = AbstractGateway::PAYMENT_METHOD_TYPE_PAYMENT;
             }
         }
@@ -554,16 +554,16 @@ class PaymentService
      * @param $payment
      */
     protected function saveMollieInfo( $order, $payment ) {
-        // Get correct MollieSettingsPage Payment Object
+        // Get correct Mollie Payment Object
         $payment_object = Plugin::getPaymentFactoryHelper()->getPaymentObject( $payment );
 
-        // Set active MollieSettingsPage payment
+        // Set active Mollie payment
         $payment_object->setActiveMolliePayment( $order->get_id() );
 
-        // Get MollieSettingsPage Customer ID
+        // Get Mollie Customer ID
         $mollie_customer_id = $payment_object->getMollieCustomerIdFromPaymentObject( $payment_object->data->id );
 
-        // Set MollieSettingsPage customer
+        // Set Mollie customer
         Plugin::getDataHelper()->setUserMollieCustomerId( $order->get_customer_id(), $mollie_customer_id );
     }
 

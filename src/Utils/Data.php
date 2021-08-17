@@ -115,7 +115,7 @@ class Data
      */
     public function deleteTransients()
     {
-        $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ': MollieSettingsPage settings saved, delete transients');
+        $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ': Mollie settings saved, delete transients');
 
         $transient_names = [
             'api_methods_test',
@@ -147,7 +147,7 @@ class Data
      * @param string $payment_id
      * @param bool   $test_mode (default: false)
      * @param bool   $use_cache (default: true)
-     * @return MollieSettingsPage\Api\Resources\Payment|null
+     * @return Mollie\Api\Resources\Payment|null
      */
     public function getPayment($payment_id, $test_mode = false, $use_cache = true)
     {
@@ -296,7 +296,7 @@ class Data
      * @param bool        $test_mode (default: false)
      * @param string|null $method
      *
-     * @return array|\MollieSettingsPage\Api\Resources\Method||\MollieSettingsPage\Api\Resources\MethodCollection
+     * @return array|\Mollie\Api\Resources\Method||\Mollie\Api\Resources\MethodCollection
      */
     public function getMethodIssuers($test_mode = false, $method = null)
     {
@@ -335,7 +335,7 @@ class Data
                 $customer = new WC_Customer($user_id);
                 $customer->update_meta_data('mollie_customer_id', $customer_id);
                 $customer->save();
-                $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Stored MollieSettingsPage customer ID " . $customer_id . " with user " . $user_id);
+                $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Stored Mollie customer ID " . $customer_id . " with user " . $user_id);
             } catch (Exception $exception) {
                 $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Couldn't load (and save) WooCommerce customer based on user ID " . $user_id);
             }

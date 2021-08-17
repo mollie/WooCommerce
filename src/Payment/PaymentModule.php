@@ -309,7 +309,7 @@ class PaymentModule implements ExecutableModule
         $test_mode = mollieWooCommerceIsTestModeEnabled();
 
         try {
-            // Get the order from the MollieSettingsPage API
+            // Get the order from the Mollie API
             $mollie_order = Plugin::getApiHelper()->getApiClient($test_mode)->orders->get($mollie_order_id);
 
             // Check that order is Paid or Authorized and can be captured
@@ -345,14 +345,14 @@ class PaymentModule implements ExecutableModule
     }
 
     /**
-     * Cancel an order at MollieSettingsPage.
+     * Cancel an order at Mollie.
      *
      */
     public function cancelOrderAtMollie($order_id)
     {
         $order = wc_get_order($order_id);
 
-        // Does WooCommerce order contain a MollieSettingsPage payment?
+        // Does WooCommerce order contain a Mollie payment?
         if (strstr($order->get_payment_method(), 'mollie_wc_gateway_') == false) {
             return;
         }
@@ -378,10 +378,10 @@ class PaymentModule implements ExecutableModule
         $test_mode = mollieWooCommerceIsTestModeEnabled();
 
         try {
-            // Get the order from the MollieSettingsPage API
+            // Get the order from the Mollie API
             $mollie_order = Plugin::getApiHelper()->getApiClient($test_mode)->orders->get($mollie_order_id);
 
-            // Check that order is not already canceled at MollieSettingsPage
+            // Check that order is not already canceled at Mollie
             if ($mollie_order->isCanceled()) {
                 $order->add_order_note('Order already canceled at Mollie, can not be canceled again.');
                 $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order already canceled at Mollie, can not be canceled again.');

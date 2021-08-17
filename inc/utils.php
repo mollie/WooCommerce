@@ -35,7 +35,7 @@ function mollieWooCommerceComponentsStylesForAvailableGateways()
 }
 
 /**
- * Is MollieSettingsPage Test Mode enabled?
+ * Is Mollie Test Mode enabled?
  *
  * @return bool
  */

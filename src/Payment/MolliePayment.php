@@ -270,7 +270,7 @@ class MolliePayment extends MollieObject
             }
         } else {
             // Add messages to log
-            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' payment at MollieSettingsPage not paid, so no processing for order ' . $orderId);
+            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' payment at Mollie not paid, so no processing for order ' . $orderId);
         }
     }
 
@@ -312,7 +312,7 @@ class MolliePayment extends MollieObject
         } elseif ($orderStatusCancelledPayments == 'cancelled') {
             $newOrderStatus = AbstractGateway::STATUS_CANCELLED;
         }
-        // if I cancel manually the order is canceled in Woo before calling MollieSettingsPage
+        // if I cancel manually the order is canceled in Woo before calling Mollie
         if ($order->get_status() == 'cancelled') {
             $newOrderStatus = AbstractGateway::STATUS_CANCELLED;
         }
@@ -328,7 +328,7 @@ class MolliePayment extends MollieObject
         // Update order status, but only if there is no payment started by another gateway
         $this->maybeUpdateStatus($order, $gateway, $newOrderStatus, $orderId);
 
-        // User cancelled payment on MollieSettingsPage or issuer page, add a cancel note.. do not cancel order.
+        // User cancelled payment on Mollie or issuer page, add a cancel note.. do not cancel order.
         $order->add_order_note(sprintf(
         /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
             __('%1$s payment (%2$s) cancelled .', 'mollie-payments-for-woocommerce'),
@@ -394,7 +394,7 @@ class MolliePayment extends MollieObject
         // Get current gateway
         $gateway = wc_get_payment_gateway_by_order($order);
 
-        // Check that this payment is the most recent, based on MollieSettingsPage Payment ID from post meta, do not cancel the order if it isn't
+        // Check that this payment is the most recent, based on Mollie Payment ID from post meta, do not cancel the order if it isn't
         if ($molliePaymentId != $payment->id) {
             $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', not processed because of a newer pending payment ' . $molliePaymentId);
 
@@ -451,7 +451,7 @@ class MolliePayment extends MollieObject
             $paymentObject = Plugin::getPaymentObject()->getActiveMolliePayment($orderId);
 
             if (! $paymentObject) {
-                $errorMessage = "Could not find active MollieSettingsPage payment for WooCommerce order ' . $orderId";
+                $errorMessage = "Could not find active Mollie payment for WooCommerce order ' . $orderId";
 
                 $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $errorMessage);
 
@@ -473,7 +473,7 @@ class MolliePayment extends MollieObject
             // Is test mode enabled?
             $testMode = Plugin::getSettingsHelper()->isTestModeEnabled();
 
-            // Send refund to MollieSettingsPage
+            // Send refund to Mollie
             $refund = Plugin::getApiHelper()->getApiClient($testMode)->payments->refund($paymentObject, [
                 'amount' =>  [
                     'currency' => Plugin::getDataHelper()->getOrderCurrency($order),

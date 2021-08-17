@@ -325,7 +325,7 @@ class MollieOrder extends MollieObject
                 $payment->id . ( $payment->mode == 'test' ? ( ' - ' . __('test mode', 'mollie-payments-for-woocommerce') ) : '' )
             ));
 
-            // Mark the order as processed and paid via MollieSettingsPage
+            // Mark the order as processed and paid via Mollie
             $this->setOrderPaidAndProcessed($order);
 
             // Remove (old) cancelled payments from this order
@@ -370,7 +370,7 @@ class MollieOrder extends MollieObject
                 $payment->id . ( $payment->mode == 'test' ? ( ' - ' . __('test mode', 'mollie-payments-for-woocommerce') ) : '' )
             ));
 
-            // Mark the order as processed and paid via MollieSettingsPage
+            // Mark the order as processed and paid via Mollie
             $this->setOrderPaidAndProcessed($order);
 
             // Remove (old) cancelled payments from this order
@@ -425,7 +425,7 @@ class MollieOrder extends MollieObject
         } elseif ($orderStatusCancelledPayments == 'cancelled') {
             $newOrderStatus = AbstractGateway::STATUS_CANCELLED;
         }
-        // if I cancel manually the order is canceled in Woo before calling MollieSettingsPage
+        // if I cancel manually the order is canceled in Woo before calling Mollie
         if ($order->get_status() == 'cancelled') {
             $newOrderStatus = AbstractGateway::STATUS_CANCELLED;
         }
@@ -505,7 +505,7 @@ class MollieOrder extends MollieObject
         // Add messages to log
         $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' called for order ' . $orderId);
 
-        // Check that this payment is the most recent, based on MollieSettingsPage Payment ID from post meta, do not cancel the order if it isn't
+        // Check that this payment is the most recent, based on Mollie Payment ID from post meta, do not cancel the order if it isn't
         if ($molliePaymentId != $payment->id) {
             $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', not processed because of a newer pending payment ' . $molliePaymentId);
 
@@ -700,7 +700,7 @@ class MollieOrder extends MollieObject
                     // Is test mode enabled?
                     $testMode = Plugin::getSettingsHelper()->isTestModeEnabled();
 
-                    // Get the MollieSettingsPage order
+                    // Get the Mollie order
                     $mollieOrder = Plugin::getApiHelper()->getApiClient($testMode)->orders->get($paymentObject->id);
 
                     $itemTotalAmount = abs(number_format($item->get_total() + $item->get_total_tax(), 2));

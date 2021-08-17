@@ -60,7 +60,7 @@ class OrderItemsRefunder
     /**
      * @param WC_Order $order WooCommerce Order
      * @param array $items WooCommerce Order Items
-     * @param Order $remotePaymentObject MollieSettingsPage Order service
+     * @param Order $remotePaymentObject Mollie Order service
      * @param string $refundReason The reason of refunding
      * @return bool
      * @throws ApiException When the API call fails for any reason
@@ -119,7 +119,7 @@ class OrderItemsRefunder
             if (!$toRefundItemId) {
                 throw new UnexpectedValueException(
                     __(
-                        'One of the WooCommerce order items does not have the refund item ID meta value associated to MollieSettingsPage Order item.',
+                        'One of the WooCommerce order items does not have the refund item ID meta value associated to Mollie Order item.',
                         'mollie-payments-for-woocommerce'
                     )
                 );

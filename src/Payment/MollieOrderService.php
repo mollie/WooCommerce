@@ -43,7 +43,7 @@ class MollieOrderService
     {
         // Webhook test by Mollie
         if (isset($_GET['testByMollie'])) {
-            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ': Webhook tested by MollieSettingsPage.', true);
+            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ': Webhook tested by Mollie.', true);
             return;
         }
 
@@ -71,7 +71,7 @@ class MollieOrderService
             return;
         }
 
-        // No MollieSettingsPage payment id provided
+        // No Mollie payment id provided
         if (empty($_POST['id'])) {
             $this->httpResponse->setHttpResponseCode(400);
             $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ': No payment object ID provided.', true);
@@ -108,7 +108,7 @@ class MollieOrderService
         }
 
         // Log a message that webhook was called, doesn't mean the payment is actually processed
-        $this->logger->log(\WC_Log_Levels::DEBUG, $this->gateway->id . ": MollieSettingsPage payment object {$payment->id} (" . $payment->mode . ") webhook call for order {$order->get_id()}.", true);
+        $this->logger->log(\WC_Log_Levels::DEBUG, $this->gateway->id . ": Mollie payment object {$payment->id} (" . $payment->mode . ") webhook call for order {$order->get_id()}.", true);
 
         // Order does not need a payment
         if (! $this->orderNeedsPayment($order)) {
@@ -163,7 +163,7 @@ class MollieOrderService
             return false;
         }
 
-        // Check whether the order is processed and paid via MollieSettingsPage
+        // Check whether the order is processed and paid via Mollie
         if (! $this->isOrderPaidAndProcessed($order)) {
             $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, order not previously processed by Mollie gateway.', true);
 

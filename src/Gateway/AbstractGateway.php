@@ -691,7 +691,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
             return new WP_Error('1', $error_message);
         }
 
-        // Check if there is a MollieSettingsPage Payment Order object connected to this WooCommerce order
+        // Check if there is a Mollie Payment Order object connected to this WooCommerce order
         $payment_object_id = Plugin::getPaymentObject()->getActiveMollieOrderId($order_id);
 
         // If there is no Mollie Payment Order object, try getting a Mollie Payment Payment object
@@ -699,7 +699,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
             $payment_object_id = Plugin::getPaymentObject()->getActiveMolliePaymentId($order_id);
         }
 
-        // MollieSettingsPage Payment object not found
+        // Mollie Payment object not found
         if (! $payment_object_id) {
             $error_message = "Can\'t process refund. Could not find Mollie Payment object id for order $order_id.";
 

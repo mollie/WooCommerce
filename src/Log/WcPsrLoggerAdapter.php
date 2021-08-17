@@ -54,7 +54,7 @@ class WcPsrLoggerAdapter extends AbstractLogger
     public function __construct(
         \WC_Logger_Interface $wcLogger,
         $loggerSource,
-        string $loggingLevel = \WC_Log_Levels::INFO
+        string $loggingLevel = \WC_Log_Levels::DEBUG
     ) {
 
         $this->wcLogger = $wcLogger;

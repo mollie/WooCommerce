@@ -5,41 +5,81 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Payment;
 
 use Mollie\Api\Exceptions\ApiException;
-use Mollie\WooCommerce\Payment\OrderItemsRefunder;
 use Mollie\WooCommerce\Plugin;
+use Mollie\WooCommerce\SDK\Api;
+use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Utils\Data;
 
 class PaymentFactory
 {
+    /**
+     * @var Data
+     */
+    protected $dataHelper;
+    /**
+     * @var Api
+     */
+    protected $apiHelper;
+    protected $settingsHelper;
+    /**
+     * @var string
+     */
+    protected $pluginId;
+
+    /**
+     * PaymentFactory constructor.
+     */
+    public function __construct(Data $dataHelper, Api $apiHelper, Settings $settingsHelper, string $pluginId)
+    {
+        $this->dataHelper = $dataHelper;
+        $this->apiHelper = $apiHelper;
+        $this->settingsHelper = $settingsHelper;
+        $this->pluginId = $pluginId;
+    }
+
     /**
      * @param $data
      * @return bool|MollieOrder|MolliePayment
      * @throws ApiException
      */
-    public static function getPaymentObject($data)
+    public function getPaymentObject($data)
     {
-        if ((!is_object($data) && $data == 'order')
+        if (
+            (!is_object($data) && $data === 'order')
             || (!is_object($data) && strpos($data, 'ord_') !== false)
             || (is_object($data) && $data->resource == 'order')
         ) {
-            $dataHelper = Plugin::getDataHelper();
-            $refundLineItemsBuilder = new RefundLineItemsBuilder($dataHelper);
-            $apiHelper = Plugin::getApiHelper();
-            $settingsHelper = Plugin::getSettingsHelper();
-
+            $refundLineItemsBuilder = new RefundLineItemsBuilder($this->dataHelper);
+            $testMode = $this->settingsHelper->isTestModeEnabled();
+            $apiKey = $this->settingsHelper->getApiKey($testMode);
             $orderItemsRefunded = new OrderItemsRefunder(
                 $refundLineItemsBuilder,
-                $dataHelper,
-                $apiHelper->getApiClient($settingsHelper->isTestModeEnabled())->orders
+                $this->dataHelper,
+                $this->apiHelper->getApiClient($apiKey)->orders
             );
 
-            return new MollieOrder($orderItemsRefunded, $data);
+            return new MollieOrder(
+                $orderItemsRefunded,
+                $data,
+                $this->pluginId,
+                $this->apiHelper,
+                $this->settingsHelper,
+                $this->dataHelper
+            );
         }
 
-        if ((!is_object($data) && $data == 'payment')
+        if (
+            (!is_object($data) && $data === 'payment')
             || (!is_object($data) && strpos($data, 'tr_') !== false)
             || (is_object($data) && $data->resource == 'payment')
         ) {
-            return new MolliePayment($data);
+            return new MolliePayment(
+                $data,
+                $this->pluginId,
+                $this->apiHelper,
+                $this->settingsHelper,
+                $this->dataHelper
+            );
         }
 
         return false;

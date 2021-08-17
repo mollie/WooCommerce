@@ -76,7 +76,6 @@ class ResponsesToApple
     /**
      * Creates a response formatted for ApplePay
      *
-     * @param array $paymentDetails
      *
      * @return array
      */
@@ -100,8 +99,6 @@ class ResponsesToApple
 
     /**
      * Returns a success response to be handled by the script
-     *
-     * @param array $response
      */
     public function responseSuccess(array $response)
     {
@@ -119,16 +116,12 @@ class ResponsesToApple
     protected function applePayError($errorList, $errors = [])
     {
         foreach ($errorList as $error) {
-            array_push(
-                $errors,
-                [
-                    "code" => $error['errorCode'],
-                    "contactField" => array_key_exists('contactField', $error)
-                        ? $error['contactField'] : null,
-                    "message" => array_key_exists('contactField', $error)
-                        ? "Missing {$error['contactField']}" : "",
-                ]
-            );
+            $errors[] = [
+                "code" => $error['errorCode'],
+                "contactField" => $error['contactField'] ?? null,
+                "message" => array_key_exists('contactField', $error)
+                    ? sprintf('Missing %s', $error['contactField']) : "",
+            ];
         }
 
         return $errors;
@@ -173,7 +166,6 @@ class ResponsesToApple
     /**
      * Creates NewLineItems line
      *
-     * @param array $paymentDetails
      *
      * @return array[]
      */
@@ -219,9 +211,10 @@ class ResponsesToApple
         $redirect_url = $gateway->getReturnRedirectUrlForOrder($order);
         // Add utm_nooverride query string
         $redirect_url = add_query_arg(['utm_nooverride' => 1], $redirect_url);
+
         $this->logger->log( \WC_Log_Levels::DEBUG,
             __METHOD__
-            . ": Redirect url on return order {$gateway->id}, order {$orderId}: {$redirect_url}"
+            . sprintf(': Redirect url on return order %s, order %s: %s', $gateway->id, $orderId, $redirect_url)
         );
 
         return $redirect_url;

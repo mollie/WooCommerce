@@ -128,7 +128,7 @@
 * Fix - WooCommerce Subscriptions: improve support for options "Accept Manual Renewals" and "Turn off Automatic Payments"
 * Fix - Update Refunds and Chargebacks processing to support Orders and Payments API
 * Fix - Remove option to set a description for payments, the new Orders API does not support this
-* Fix - Update is_available to use billing country, and add filter Plugin::PLUGIN_ID . '_is_available_billing_country_for_payment_gateways'
+* Fix - Update is_available to use billing country, and add filter Mollie_WC_Plugin::PLUGIN_ID . '_is_available_billing_country_for_payment_gateways'
 * Fix - Add new hook after renewal payment is created: mollie-payments-for-woocommerce_after_renewal_payment_created
 * Fix - Improve warnings in WooCommerce > Settings > Payments so they are less confusing to users (and really dismissable)
 * Fix - Simplify log messages in shipAndCaptureOrderAtMollie, cancelOrderAtMollie

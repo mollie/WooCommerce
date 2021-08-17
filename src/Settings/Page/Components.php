@@ -64,6 +64,6 @@ class Components extends WC_Settings_Page
 
     protected function componentsFilePath()
     {
-        return $this->pluginPath . '/' . '/inc/settings/mollie_components.php';
+        return $this->pluginPath . '/inc/settings/mollie_components.php';
     }
 }

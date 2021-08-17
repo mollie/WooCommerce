@@ -9,31 +9,6 @@ use Mollie\WooCommerce\Utils\GatewaySurchargeHandler;
 class SurchargeService
 {
 
-    public function processAdminOptionSurcharge($gateway)
-    {
-        $paymentSurcharge = $gateway->id . '_payment_surcharge';
-
-        if (isset($_POST[$paymentSurcharge])
-            && $_POST[$paymentSurcharge]
-            !== GatewaySurchargeHandler::NO_FEE
-        ) {
-            $surchargeFields = [
-                '_fixed_fee',
-                '_percentage',
-                '_surcharge_limit',
-            ];
-            foreach ($surchargeFields as $field) {
-                $optionName = $gateway->id . $field;
-                $validatedValue = isset($_POST[$optionName])
-                    && $_POST[$optionName] > 0
-                    && $_POST[$optionName] < 999;
-                if (!$validatedValue) {
-                    unset($_POST[$optionName]);
-                }
-            }
-        }
-    }
-
     public function buildDescriptionWithSurcharge($gateway)
     {
         if (!mollieWooCommerceIsCheckoutContext()) {

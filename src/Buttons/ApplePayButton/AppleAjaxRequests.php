@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Buttons\ApplePayButton;
 
+use Exception;
 use Mollie\WooCommerce\Notice\NoticeInterface;
-use Mollie\WooCommerce\Plugin;
+use Mollie\WooCommerce\SDK\Api;
+use Mollie\WooCommerce\Settings\Settings;
 use Psr\Log\LoggerInterface as Logger;
+use WC_Cart;
 use WC_Data_Exception;
 
 class AppleAjaxRequests
@@ -23,16 +26,28 @@ class AppleAjaxRequests
      * @var Logger
      */
     protected $logger;
+    protected $apiHelper;
+    /**
+     * @var Settings
+     */
+    protected $settingsHelper;
 
 
     /**
      * AppleAjaxRequests constructor.
      */
-    public function __construct(ResponsesToApple $responseTemplates, NoticeInterface $notice, Logger $logger)
-    {
+    public function __construct(
+        ResponsesToApple $responseTemplates,
+        NoticeInterface $notice,
+        Logger $logger,
+        Api $apiHelper,
+        Settings $settingsHelper
+    ) {
         $this->responseTemplates = $responseTemplates;
         $this->notice = $notice;
         $this->logger = $logger;
+        $this->apiHelper = $apiHelper;
+        $this->settingsHelper = $settingsHelper;
     }
 
     /**
@@ -113,20 +128,27 @@ class AppleAjaxRequests
         if (!$this->isNonceValid($applePayRequestDataObject)) {
             return;
         }
+        $apiKey = $this->settingsHelper->getApiKey($this->settingsHelper->isTestModeEnabled());
         $validationUrl = $applePayRequestDataObject->validationUrl;
-        $completeDomain = parse_url(get_site_url(), PHP_URL_HOST); $removeHttp = ["https://", "http://"];
-        $regex = '/.+\.\w+\/?((\w*\/*)*)/i';$domain = str_replace($removeHttp, "", $completeDomain);$ending = preg_replace($regex, '$1', $domain);
-        $domain = str_replace($ending, "", $domain);$domain = str_replace("/", "", $domain);try {
+        $completeDomain = parse_url(get_site_url(), PHP_URL_HOST);
+        $removeHttp = ["https://", "http://"];
+        $regex = '/.+\.\w+\/?((\w*\/*)*)/i';
+        $domain = str_replace($removeHttp, "", $completeDomain);
+        $ending = preg_replace($regex, '$1', $domain);
+        $domain = str_replace($ending, "", $domain);
+        $domain = str_replace("/", "", $domain);
+        try {
             $json = $this->validationApiWalletsEndpointCall(
                 $domain,
-                $validationUrl
+                $validationUrl,
+                $apiKey
             );
         } catch (\Mollie\Api\Exceptions\ApiException $apiException) {
             update_option('mollie_wc_applepay_validated', 'no');
-
+            $errorMessage = $apiException->getMessage();
             wp_send_json_error(
                 __(
-                    $apiException->getMessage(),
+                    $errorMessage,
                     'mollie-payments-for-woocommerce'
                 )
             );
@@ -142,7 +164,7 @@ class AppleAjaxRequests
      * On error returns an array of errors to be handled by the script
      * On success returns the new contact data
      */
-    public function  updateShippingContact()
+    public function updateShippingContact()
     {
         $applePayRequestDataObject = $this->applePayDataObjectHttp();
         $applePayRequestDataObject->updateContactData($_POST);
@@ -240,7 +262,7 @@ class AppleAjaxRequests
         );
         $order = $this->addAddressesToOrder($applePayRequestDataObject, $order);
 
-        if($applePayRequestDataObject->shippingMethod !== null){
+        if ($applePayRequestDataObject->shippingMethod !== null) {
             $order = $this->addShippingMethodsToOrder(
                 $applePayRequestDataObject->shippingMethod,
                 $applePayRequestDataObject->shippingAddress,
@@ -255,7 +277,8 @@ class AppleAjaxRequests
         $this->updateOrderPostMeta($orderId, $order);
         $result = $this->processOrderPayment($orderId);
 
-        if (isset($result['result'])
+        if (
+            isset($result['result'])
             && 'success' === $result['result']
         ) {
             $order->payment_complete();
@@ -311,7 +334,8 @@ class AppleAjaxRequests
         $order->calculate_totals();
         $this->updateOrderPostMeta($orderId, $order);
         $result = $this->processOrderPayment($orderId);
-        if (isset($result['result'])
+        if (
+            isset($result['result'])
             && 'success' === $result['result']
         ) {
             $order->payment_complete();
@@ -350,10 +374,8 @@ class AppleAjaxRequests
     /**
      * Data Object to collect and validate all needed data collected
      * through HTTP
-     *
-     * @return ApplePayDataObjectHttp
      */
-    protected function applePayDataObjectHttp()
+    protected function applePayDataObjectHttp(): ApplePayDataObjectHttp
     {
         return new ApplePayDataObjectHttp($this->logger);
     }
@@ -406,15 +428,13 @@ class AppleAjaxRequests
      * @param      $productQuantity
      * @param      $customerAddress
      * @param null $shippingMethod
-     *
-     * @return array
      */
     protected function calculateTotalsSingleProduct(
         $productId,
         $productQuantity,
         $customerAddress,
         $shippingMethod = null
-    ) {
+    ): array {
         $results = [];
         $reloadCart = false;
         if (!WC()->cart->is_empty()) {
@@ -444,11 +464,11 @@ class AppleAjaxRequests
                     $shippingMethodsArray, $selectedShippingMethod
                     )
                     = $this->cartShippingMethods(
-                    $cart,
-                    $customerAddress,
-                    $shippingMethod,
-                    $shippingMethodId
-                );
+                        $cart,
+                        $customerAddress,
+                        $shippingMethod,
+                        $shippingMethodId
+                    );
             }
 
             $cart->calculate_shipping();
@@ -479,32 +499,22 @@ class AppleAjaxRequests
      * Sets the customer address with ApplePay details to perform correct
      * calculations
      * If no parameter passed then it resets the customer to shop details
-     *
-     * @param array $address
      */
-    protected function customerAddress($address = [])
+    protected function customerAddress(array $address = [])
     {
         $base_location = wc_get_base_location();
         $shopCountryCode = $base_location['country'];
         WC()->customer->set_shipping_country(
-            isset($address['country'])
-                ? $address['country']
-                : $shopCountryCode
+            $address['country'] ?? $shopCountryCode
         );
         WC()->customer->set_billing_country(
-            isset($address['country'])
-                ? $address['country']
-                : $shopCountryCode
+            $address['country'] ?? $shopCountryCode
         );
         WC()->customer->set_shipping_postcode(
-            isset($address['postcode'])
-                ? $address['postcode']
-                : $shopCountryCode
+            $address['postcode'] ?? $shopCountryCode
         );
         WC()->customer->set_shipping_city(
-            isset($address['city'])
-                ? $address['city']
-                : $shopCountryCode
+            $address['city'] ?? $shopCountryCode
         );
     }
 
@@ -515,15 +525,13 @@ class AppleAjaxRequests
      * @param         $customerAddress
      * @param         $shippingMethod
      * @param         $shippingMethodId
-     *
-     * @return array
      */
     protected function cartShippingMethods(
         WC_Cart $cart,
         $customerAddress,
         $shippingMethod,
         $shippingMethodId
-    ) {
+    ): array {
         $shippingMethodsArray = [];
         $shippingMethods = WC()->shipping->calculate_shipping(
             $this->getShippingPackages(
@@ -586,17 +594,15 @@ class AppleAjaxRequests
     /**
      * Returns the formatted results of the cart calculations
      *
-     * @param WC_Cart $cart
+     * @param \WC_Cart $cart
      * @param         $selectedShippingMethod
      * @param         $shippingMethodsArray
-     *
-     * @return array
      */
     protected function cartCalculationResults(
         WC_Cart $cart,
         $selectedShippingMethod,
         $shippingMethodsArray
-    ) {
+    ): array {
         return [
             'subtotal' => $cart->get_subtotal(),
             'shipping' => [
@@ -619,13 +625,11 @@ class AppleAjaxRequests
      *
      * @param      $customerAddress
      * @param null $shippingMethodId
-     *
-     * @return array
      */
     protected function calculateTotalsCartPage(
         $customerAddress = null,
         $shippingMethodId = null
-    ) {
+    ): array {
         $results = [];
         if (WC()->cart->is_empty()) {
             return [];
@@ -648,11 +652,11 @@ class AppleAjaxRequests
                     $shippingMethodsArray, $selectedShippingMethod
                     )
                     = $this->cartShippingMethods(
-                    $cart,
-                    $customerAddress,
-                    $shippingMethodId,
-                    $shippingMethodId['identifier']
-                );
+                        $cart,
+                        $customerAddress,
+                        $shippingMethodId,
+                        $shippingMethodId['identifier']
+                    );
             }
             $cart->calculate_shipping();
             $cart->calculate_fees();
@@ -711,7 +715,7 @@ class AppleAjaxRequests
                 'postcode' => $shippingAddress['postcode'],
                 'city' => $shippingAddress['city'],
             );
-            $item = new WC_Order_Item_Shipping();
+            $item = new \WC_Order_Item_Shipping();
             $ratesIds = explode(":", $shippingMethod['identifier']);
             $shippingMethodId = $ratesIds[0];
             $shippingInstanceId = $ratesIds[1];
@@ -800,20 +804,21 @@ class AppleAjaxRequests
     }
 
     /**
-     * Calls MollieSettingsPage API wallets to validate merchant session
+     * Calls Mollie API wallets to validate merchant session
      *
      * @param string $domain
      * @param        $validationUrl
      *
      * @return false|string
-     * @throws \MollieSettingsPage\Api\Exceptions\ApiException
+     * @throws \Mollie\Api\Exceptions\ApiException
      */
     protected function validationApiWalletsEndpointCall(
         $domain,
-        $validationUrl
+        $validationUrl,
+        $apiKey
     ) {
-        return Plugin::getApiHelper()
-            ->getApiClient()
+        return $this->apiHelper
+            ->getApiClient($apiKey)
             ->wallets
             ->requestApplePayPaymentSession(
                 $domain,

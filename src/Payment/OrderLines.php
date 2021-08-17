@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Payment;
 
 use Mollie\WooCommerce\Gateway\Voucher\Mollie_WC_Gateway_Voucher;
+use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\Plugin;
+use Mollie\WooCommerce\Utils\Data;
 use WC_Order;
 use WC_Order_Item;
 use WC_Tax;
@@ -32,17 +34,23 @@ class OrderLines
      *
      */
     private $currency;
+    /**
+     * @var Data
+     */
+    protected $dataHelper;
+    protected $pluginId;
 
     /**
      * Mollie_WC_Helper_Order_Lines constructor.
      *
-     * @param bool|string $shop_country Shop country.
      * @param object      $order        WooCommerce Order
      */
-    public function __construct($order)
+    public function __construct($order, Data $dataHelper, string $pluginId)
     {
         $this->order = $order;
-        $this->currency = Plugin::getDataHelper()->getOrderCurrency($this->order);
+        $this->dataHelper = $dataHelper;
+        $this->currency = $this->dataHelper->getOrderCurrency($this->order);
+        $this->pluginId = $pluginId;
     }
 
     /**
@@ -83,7 +91,7 @@ class OrderLines
         $isMealVoucherEnabled = mollieWooCommerceIsVoucherEnabled();
         foreach ($this->order->get_items() as $cart_item) {
             if ($cart_item['quantity']) {
-                do_action(Plugin::PLUGIN_ID . '_orderlines_process_items_before_getting_product_id', $cart_item);
+                do_action($this->pluginId . '_orderlines_process_items_before_getting_product_id', $cart_item);
 
                 if ($cart_item['variation_id']) {
                     $product = wc_get_product($cart_item['variation_id']);
@@ -91,7 +99,7 @@ class OrderLines
                     $product = wc_get_product($cart_item['product_id']);
                 }
 
-                $this->currency = Plugin::getDataHelper()->getOrderCurrency($this->order);
+                $this->currency = $this->dataHelper->getOrderCurrency($this->order);
 
                 $mollie_order_item =  [
                     'sku' => $this->get_item_reference($product),
@@ -100,21 +108,21 @@ class OrderLines
                     'vatRate' => $this->get_item_vatRate($cart_item, $product),
                     'unitPrice' =>  [
                         'currency' => $this->currency,
-                        'value' => Plugin::getDataHelper()->formatCurrencyValue($this->get_item_price($cart_item), $this->currency),
+                        'value' => $this->dataHelper->formatCurrencyValue($this->get_item_price($cart_item), $this->currency),
                     ],
                     'totalAmount' =>  [
                         'currency' => $this->currency,
-                        'value' => Plugin::getDataHelper()->formatCurrencyValue($this->get_item_total_amount($cart_item), $this->currency),
+                        'value' => $this->dataHelper->formatCurrencyValue($this->get_item_total_amount($cart_item), $this->currency),
                     ],
                     'vatAmount' =>
                          [
                             'currency' => $this->currency,
-                            'value' => Plugin::getDataHelper()->formatCurrencyValue($this->get_item_tax_amount($cart_item), $this->currency),
+                            'value' => $this->dataHelper->formatCurrencyValue($this->get_item_tax_amount($cart_item), $this->currency),
                         ],
                     'discountAmount' =>
                          [
                             'currency' => $this->currency,
-                            'value' => Plugin::getDataHelper()->formatCurrencyValue($this->get_item_discount_amount($cart_item), $this->currency),
+                            'value' => $this->dataHelper->formatCurrencyValue($this->get_item_discount_amount($cart_item), $this->currency),
                         ],
                     'metadata' =>
                         [
@@ -129,7 +137,7 @@ class OrderLines
                 }
                 $this->order_lines[] = $mollie_order_item;
 
-                do_action(Plugin::PLUGIN_ID . '_orderlines_process_items_after_processing_item', $cart_item);
+                do_action($this->pluginId . '_orderlines_process_items_after_processing_item', $cart_item);
             }
         }
     }
@@ -149,15 +157,15 @@ class OrderLines
                 'vatRate' => $this->get_shipping_vat_rate(),
                 'unitPrice' =>  [
                     'currency' => $this->currency,
-                    'value' => Plugin::getDataHelper()->formatCurrencyValue($this->get_shipping_amount(), $this->currency),
+                    'value' => $this->dataHelper->formatCurrencyValue($this->get_shipping_amount(), $this->currency),
                 ],
                 'totalAmount' =>  [
                     'currency' => $this->currency,
-                    'value' => Plugin::getDataHelper()->formatCurrencyValue($this->get_shipping_amount(), $this->currency),
+                    'value' => $this->dataHelper->formatCurrencyValue($this->get_shipping_amount(), $this->currency),
                 ],
                 'vatAmount' =>  [
                     'currency' => $this->currency,
-                    'value' => Plugin::getDataHelper()->formatCurrencyValue($this->get_shipping_tax_amount(), $this->currency),
+                    'value' => $this->dataHelper->formatCurrencyValue($this->get_shipping_tax_amount(), $this->currency),
                 ],
                 'metadata' =>  [
                     'order_item_id' => $this->get_shipping_id(),
@@ -197,18 +205,18 @@ class OrderLines
                     'type' => 'surcharge',
                     'name' => $cart_fee['name'],
                     'quantity' => 1,
-                    'vatRate' => Plugin::getDataHelper()->formatCurrencyValue($cart_fee_vat_rate, $this->currency),
+                    'vatRate' => $this->dataHelper->formatCurrencyValue($cart_fee_vat_rate, $this->currency),
                     'unitPrice' =>  [
                         'currency' => $this->currency,
-                        'value' => Plugin::getDataHelper()->formatCurrencyValue($cart_fee_total, $this->currency),
+                        'value' => $this->dataHelper->formatCurrencyValue($cart_fee_total, $this->currency),
                     ],
                     'totalAmount' =>  [
                         'currency' => $this->currency,
-                        'value' => Plugin::getDataHelper()->formatCurrencyValue($cart_fee_total, $this->currency),
+                        'value' => $this->dataHelper->formatCurrencyValue($cart_fee_total, $this->currency),
                     ],
                     'vatAmount' =>  [
                         'currency' => $this->currency,
-                        'value' => Plugin::getDataHelper()->formatCurrencyValue($cart_fee_tax_amount, $this->currency),
+                        'value' => $this->dataHelper->formatCurrencyValue($cart_fee_tax_amount, $this->currency),
                     ],
                     'metadata' =>  [
                         'order_item_id' => $cart_fee->get_id(),
@@ -234,17 +242,17 @@ class OrderLines
                     'name' => $cart_gift_card->get_name(),
                     'unitPrice' => [
                         'currency' => $this->currency,
-                        'value' =>  Plugin::getDataHelper()->formatCurrencyValue(-$cart_gift_card->get_amount(), $this->currency),
+                        'value' =>  $this->dataHelper->formatCurrencyValue(-$cart_gift_card->get_amount(), $this->currency),
                     ],
                     'vatRate' => 0,
                     'quantity' => 1,
                     'totalAmount' => [
                         'currency' => $this->currency,
-                        'value' =>  Plugin::getDataHelper()->formatCurrencyValue(-$cart_gift_card->get_amount(), $this->currency),
+                        'value' =>  $this->dataHelper->formatCurrencyValue(-$cart_gift_card->get_amount(), $this->currency),
                     ],
                     'vatAmount' => [
                         'currency' => $this->currency,
-                        'value' => Plugin::getDataHelper()->formatCurrencyValue(0, $this->currency),
+                        'value' => $this->dataHelper->formatCurrencyValue(0, $this->currency),
                     ],
                 ];
                 $this->order_lines[] = $gift_card;
@@ -436,16 +444,16 @@ class OrderLines
         foreach ($catTerms as $term) {
             $term_id = $term->term_id;
             $metaVoucher = get_term_meta($term_id, '_mollie_voucher_category', true);
-            $category =$metaVoucher? $metaVoucher : $category;
+            $category = $metaVoucher ?: $category;
         }
 
         //local product voucher category
         $localCategory = get_post_meta(
             $product->get_id(),
-            Mollie_WC_Gateway_Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+            Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
             false
         );
-        $category = $localCategory[0] ? $localCategory[0] : $category;
+        $category = $localCategory[0] ?? $category;
 
         //if product is a single variation could have a voucher meta associated
         $simpleVariationCategory = get_post_meta(

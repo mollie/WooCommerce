@@ -44,24 +44,13 @@ class Data
      * @var Logger
      */
     protected $logger;
+    protected $pluginId;
 
-    public function __construct(Api $api_helper, Logger $logger)
+    public function __construct(Api $api_helper, Logger $logger, string $pluginId)
     {
         $this->api_helper = $api_helper;
         $this->logger = $logger;
-    }
-
-    public function gatewaysWithNamespace(): array
-    {
-        $gatewayClassnames = Plugin::$GATEWAY_CLASSNAMES;
-        $gatewayWithNamespace = [];
-        $gatewayNamespace = 'Mollie\\WooCommerce\\Gateway\\';
-        $gatewayNamePrefix = "Mollie_WC_Gateway_";
-        foreach ($gatewayClassnames as $gatewayClassname) {
-            $dirname = str_replace($gatewayNamePrefix, "", $gatewayClassname);
-            $gatewayWithNamespace[] = $gatewayNamespace . $dirname . "\\" . $gatewayClassname;
-        }
-        return $gatewayWithNamespace;
+        $this->pluginId = $pluginId;
     }
 
     /**
@@ -80,8 +69,6 @@ class Data
      */
     public function getTransientId($transient)
     {
-        global $wp_version;
-
         /*
          * WordPress will save two options to wp_options table:
          * 1. _transient_<transient_id>
@@ -92,14 +79,6 @@ class Data
         $option_name_length = strlen($option_name);
 
         $max_option_name_length = 191;
-
-        /**
-         * Prior to WordPress version 4.4.0, the maximum length for wp_options.option_name is 64 characters.
-         * @see https://core.trac.wordpress.org/changeset/34030
-         */
-        if ($wp_version < '4.4.0') {
-            $max_option_name_length = 64;
-        }
 
         if ($option_name_length > $max_option_name_length) {
             trigger_error(sprintf('Transient id %s is to long. Option name %s (%s) will be to long for database column wp_options.option_name which is varchar(%s).', $transient_id, $option_name, $option_name_length, $max_option_name_length), E_USER_WARNING);
@@ -115,7 +94,7 @@ class Data
      */
     public function deleteTransients()
     {
-        $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ': MollieSettingsPage settings saved, delete transients');
+        $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ': Mollie settings saved, delete transients');
 
         $transient_names = [
             'api_methods_test',
@@ -145,16 +124,16 @@ class Data
      * Skip cache by setting $use_cache to false
      *
      * @param string $payment_id
-     * @param bool   $test_mode (default: false)
+     * @param string   $apiKey (default: false)
      * @param bool   $use_cache (default: true)
-     * @return MollieSettingsPage\Api\Resources\Payment|null
+     * @return Mollie\Api\Resources\Payment|null
      */
-    public function getPayment($payment_id, $test_mode = false, $use_cache = true)
+    public function getPayment($payment_id, $apiKey, $use_cache = true)
     {
         try {
-            return $this->api_helper->getApiClient($test_mode)->payments->get($payment_id);
+            return $this->api_helper->getApiClient($apiKey)->payments->get($payment_id);
         } catch (\Mollie\Api\Exceptions\ApiException $apiException) {
-            $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . sprintf(': Could not load payment %s (', $payment_id) . ($test_mode ? 'test' : 'live') . "): " . $apiException->getMessage() . ' (' . get_class($apiException) . ')');
+            $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . sprintf(': Could not load payment %s (', $payment_id) . "): " . $apiException->getMessage() . ' (' . get_class($apiException) . ')');
         }
 
         return null;
@@ -166,10 +145,10 @@ class Data
      *
      * @return array|mixed|\Mollie\Api\Resources\Method[]|\Mollie\Api\Resources\MethodCollection
      */
-    public function getAllPaymentMethods($test_mode = false, $use_cache = true)
+    public function getAllPaymentMethods($apiKey, $test_mode = false, $use_cache = true)
     {
-        $result = $this->getRegularPaymentMethods($test_mode, $use_cache);
-        $recurringPaymentMethods = $this->getRecurringPaymentMethods($test_mode, $use_cache);
+        $result = $this->getRegularPaymentMethods($apiKey, $test_mode, $use_cache);
+        $recurringPaymentMethods = $this->getRecurringPaymentMethods($apiKey, $test_mode, $use_cache);
 
         if (!is_array($result)) {
             $result = unserialize($result);
@@ -200,31 +179,31 @@ class Data
      *
      * @return array|mixed|\Mollie\Api\Resources\Method[]|\Mollie\Api\Resources\MethodCollection
      */
-    public function getRegularPaymentMethods($test_mode = false, $use_cache = true)
+    public function getRegularPaymentMethods($apiKey, $test_mode = false, $use_cache = true)
     {
         // Already initialized
         if ($use_cache && ! empty(self::$regular_api_methods)) {
             return self::$regular_api_methods;
         }
 
-        self::$regular_api_methods = $this->getApiPaymentMethods($test_mode, $use_cache);
+        self::$regular_api_methods = $this->getApiPaymentMethods($apiKey, $test_mode, $use_cache);
 
         return self::$regular_api_methods;
     }
 
-    public function getRecurringPaymentMethods($test_mode = false, $use_cache = true)
+    public function getRecurringPaymentMethods($apiKey, $test_mode = false, $use_cache = true)
     {
         // Already initialized
         if ($use_cache && ! empty(self::$recurring_api_methods)) {
             return self::$recurring_api_methods;
         }
 
-        self::$recurring_api_methods = $this->getApiPaymentMethods($test_mode, $use_cache, [ 'sequenceType' => 'recurring' ]);
+        self::$recurring_api_methods = $this->getApiPaymentMethods($apiKey, $test_mode, $use_cache, [ 'sequenceType' => 'recurring' ]);
 
         return self::$recurring_api_methods;
     }
 
-    public function getApiPaymentMethods($test_mode = false, $use_cache = true, $filters = [])
+    public function getApiPaymentMethods($apiKey, $test_mode = false, $use_cache = true, $filters = [])
     {
         $methods = [];
 
@@ -233,7 +212,7 @@ class Data
         $filters_key['api'] = 'methods';
 
         try {
-            $transient_id = Plugin::getDataHelper()->getTransientId(md5(http_build_query($filters_key)));
+            $transient_id = $this->getTransientId(md5(http_build_query($filters_key)));
 
             if ($use_cache) {
                 // When no cache exists $methods will be `false`
@@ -245,7 +224,7 @@ class Data
                 $filters['resource'] = 'orders';
                 $filters['includeWallets'] = 'applepay';
 
-                $methods = $this->api_helper->getApiClient($test_mode)->methods->all($filters);
+                $methods = $this->api_helper->getApiClient($apiKey)->methods->all($filters);
 
                 $methods_cleaned = [];
 
@@ -277,9 +256,9 @@ class Data
      *
      * @return mixed|\Mollie\Api\Resources\Method|null
      */
-    public function getPaymentMethod($method, $test_mode = false)
+    public function getPaymentMethod($apiKey, $method, $test_mode = false)
     {
-        $payment_methods = $this->getAllPaymentMethods($test_mode);
+        $payment_methods = $this->getAllPaymentMethods($apiKey, $test_mode);
 
         foreach ($payment_methods as $payment_method) {
             if ($payment_method['id'] == $method) {
@@ -296,18 +275,18 @@ class Data
      * @param bool        $test_mode (default: false)
      * @param string|null $method
      *
-     * @return array|\MollieSettingsPage\Api\Resources\Method||\MollieSettingsPage\Api\Resources\MethodCollection
+     * @return array|\Mollie\Api\Resources\Method||\Mollie\Api\Resources\MethodCollection
      */
-    public function getMethodIssuers($test_mode = false, $method = null)
+    public function getMethodIssuers($apiKey, $test_mode = false, $method = null)
     {
         try {
-            $transient_id = Plugin::getDataHelper()->getTransientId($method . '_issuers_' . ( $test_mode ? 'test' : 'live' ));
+            $transient_id = $this->getTransientId($method . '_issuers_' . ( $test_mode ? 'test' : 'live' ));
 
             // When no cache exists $cached_issuers will be `false`
             $issuers = get_transient($transient_id);
 
             if (!$issuers || !is_array($issuers)) {
-                $method = $this->api_helper->getApiClient($test_mode)->methods->get(sprintf('%s', $method), [ "include" => "issuers" ]);
+                $method = $this->api_helper->getApiClient($apiKey)->methods->get(sprintf('%s', $method), [ "include" => "issuers" ]);
                 $issuers = $method->issuers;
 
                 // Set new transients (as cache)
@@ -335,7 +314,7 @@ class Data
                 $customer = new WC_Customer($user_id);
                 $customer->update_meta_data('mollie_customer_id', $customer_id);
                 $customer->save();
-                $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Stored MollieSettingsPage customer ID " . $customer_id . " with user " . $user_id);
+                $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Stored Mollie customer ID " . $customer_id . " with user " . $user_id);
             } catch (Exception $exception) {
                 $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Couldn't load (and save) WooCommerce customer based on user ID " . $user_id);
             }
@@ -365,7 +344,7 @@ class Data
      * @param bool $test_mode
      * @return null|string
      */
-    public function getUserMollieCustomerId($user_id, $test_mode = false)
+    public function getUserMollieCustomerId($user_id, $apiKey, $test_mode = false)
     {
         // Guest users can't buy subscriptions and don't need a Mollie customer ID
         // https://github.com/mollie/WooCommerce/issues/132
@@ -396,7 +375,7 @@ class Data
         // If there is a Mollie Customer ID set, check that customer ID is valid for this API key
         if (! empty($customer_id)) {
             try {
-                $this->api_helper->getApiClient($test_mode)->customers->get($customer_id);
+                $this->api_helper->getApiClient($apiKey)->customers->get($customer_id);
             } catch (\Mollie\Api\Exceptions\ApiException $e) {
                 $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . sprintf(': Mollie Customer ID (%s) not valid for user %s on this API key, try to create a new one (', $customer_id, $user_id) . ( $test_mode ? 'test' : 'live' ) . ").");
                 $customer_id = '';
@@ -416,7 +395,7 @@ class Data
                 }
 
                 // Create the Mollie Customer
-                $customer = $this->api_helper->getApiClient($test_mode)->customers->create([
+                $customer = $this->api_helper->getApiClient($apiKey)->customers->create([
                     'name' => trim($user_full_name),
                     'email' => trim($userdata->user_email),
                     'metadata' =>  [ 'user_id' => $user_id ],
@@ -492,7 +471,7 @@ class Data
      *
      * @return string $value
      */
-    public function getOrderCurrency(WC_Order $order)
+    public function getOrderCurrency(\WC_Order $order)
     {
         return $order->get_currency();
     }
@@ -500,16 +479,16 @@ class Data
     /**
      * Format currency value into Mollie API v2 format
      *
-     * @param $value
+     * @param float $value
      *
      * @return int $value
      */
     public function formatCurrencyValue($value, $currency)
     {
         // Only the Japanese Yen has no decimals in the currency
-        $value = $currency == "JPY" ? number_format($value, 0, '.', '') : number_format($value, 2, '.', '');
+        $value = $value;
 
-        return $value;
+        return $currency == "JPY" ? number_format($value, 0, '.', '') : number_format($value, 2, '.', '');
     }
 
     /**
@@ -525,6 +504,6 @@ class Data
     public function isSubscription($orderId)
     {
         $isSubscription = false;
-        return apply_filters(Plugin::PLUGIN_ID . '_is_subscription_payment', $isSubscription, $orderId);
+        return apply_filters($this->pluginId . '_is_subscription_payment', $isSubscription, $orderId);
     }
 }

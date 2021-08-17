@@ -1,21 +1,5 @@
 <?php
 
-/**
- * This file is part of the  Mollie\WooCommerce.
- *
- * (c) Inpsyde GmbH
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- * PHP version 7
- *
- * @category Activation
- * @package  Mollie\WooCommerce
- * @author   AuthorName <hello@inpsyde.com>
- * @license  GPLv2+
- * @link     https://www.inpsyde.com
- */
-
 # -*- coding: utf-8 -*-
 
 declare(strict_types=1);
@@ -45,7 +29,7 @@ class LogModule implements ServiceModule
     {
         $source = $this->loggerSource;
         return [
-            Logger::class => static function (ContainerInterface $container) use ($source): WcPsrLoggerAdapter {
+            Logger::class => static function () use ($source): WcPsrLoggerAdapter {
                 return new WcPsrLoggerAdapter(\wc_get_logger(), $source);
             },
         ];

@@ -33,76 +33,6 @@ function mollieWooCommerceComponentsStylesForAvailableGateways()
 
     return $mollieComponentsStyles->forAvailableGateways();
 }
-
-/**
- * Is MollieSettingsPage Test Mode enabled?
- *
- * @return bool
- */
-function mollieWooCommerceIsTestModeEnabled()
-{
-    $settingsHelper = Plugin::getSettingsHelper();
-    $isTestModeEnabled = $settingsHelper->isTestModeEnabled();
-
-    return $isTestModeEnabled;
-}
-
-/**
- * If we are calling this the api key has been updated, we need a new api object
- * to retrieve a new profile id
- *
- * @return CurrentProfile
- * @throws ApiException
- */
-function mollieWooCommerceMerchantProfile()
-{
-    $isTestMode = mollieWooCommerceIsTestModeEnabled();
-
-    $apiHelper = new Api(
-        Plugin::getSettingsHelper()
-    );
-
-    return $apiHelper->getApiClient(
-        $isTestMode,
-        true
-    )->profiles->getCurrent();
-}
-
-/**
- * Retrieve the merchant profile ID
- *
- * @return int|string
- * @throws ApiException
- */
-function mollieWooCommerceMerchantProfileId()
-{
-    static $merchantProfileId = null;
-    $merchantProfileIdOptionKey = Plugin::PLUGIN_ID . '_profile_merchant_id';
-
-    if ($merchantProfileId === null) {
-        $merchantProfileId = get_option($merchantProfileIdOptionKey, '');
-
-        /*
-         * Try to retrieve the merchant profile ID from an Api Request if not stored already,
-         * then store it into the database
-         */
-        if (!$merchantProfileId) {
-            try {
-                $merchantProfile = mollieWooCommerceMerchantProfile();
-                $merchantProfileId = isset($merchantProfile->id) ? $merchantProfile->id : '';
-            } catch (ApiException $exception) {
-                $merchantProfileId = '';
-            }
-
-            if ($merchantProfileId) {
-                update_option($merchantProfileIdOptionKey, $merchantProfileId);
-            }
-        }
-    }
-
-    return $merchantProfileId;
-}
-
 /**
  * Retrieve the cardToken value for Mollie Components
  *
@@ -111,30 +41,6 @@ function mollieWooCommerceMerchantProfileId()
 function mollieWooCommerceCardToken()
 {
     return $cardToken = filter_input(INPUT_POST, 'cardToken', FILTER_SANITIZE_STRING) ?: '';
-}
-
-/**
- * Retrieve the available Payment Methods Data
- *
- * @return array|bool|mixed|\Mollie\Api\Resources\BaseCollection|\Mollie\Api\Resources\MethodCollection
- */
-function mollieWooCommerceAvailablePaymentMethods()
-{
-    $testMode = mollieWooCommerceIsTestModeEnabled();
-    $dataHelper = Plugin::getDataHelper();
-    $methods = $dataHelper->getApiPaymentMethods($testMode, $use_cache = true);
-
-    return $methods;
-}
-
-/**
- * Isolates static getDataHelper calls.
- *
- * @return \Mollie\WooCommerce\Utils\Data
- */
-function mollieWooCommerceGetDataHelper()
-{
-    return Plugin::getDataHelper();
 }
 
 /**

@@ -7,7 +7,8 @@ namespace Mollie\WooCommerce\Utils;
 use Mollie\Api\CompatibilityChecker;
 use Mollie\Api\Exceptions\IncompatiblePlatform;
 use Mollie\Api\MollieApiClient;
-use Mollie\WooCommerce\Plugin;
+use Mollie\WooCommerce\SDK\Api;
+use Mollie\WooCommerce\Settings\Settings;
 use WooCommerce;
 
 class Status
@@ -28,10 +29,14 @@ class Status
      * @var CompatibilityChecker
      */
     protected $compatibilityChecker;
+    protected $pluginTitle;
 
-    public function __construct(CompatibilityChecker $compatibilityChecker)
-    {
+    public function __construct(
+        CompatibilityChecker $compatibilityChecker,
+        string $pluginTitle
+    ) {
         $this->compatibilityChecker = $compatibilityChecker;
+        $this->pluginTitle = $pluginTitle;
     }
 
     /**
@@ -71,7 +76,7 @@ class Status
                     'The %1$s plugin requires at least WooCommerce version %2$s, you are using version %3$s. Please update your WooCommerce plugin.',
                     'mollie-payments-for-woocommerce'
                 ),
-                Plugin::PLUGIN_TITLE,
+                $this->pluginTitle,
                 self::MIN_WOOCOMMERCE_VERSION,
                 $this->getWooCommerceVersion()
             );
@@ -176,17 +181,11 @@ class Status
     /**
      * @throws \Mollie\Api\Exceptions\ApiException
      */
-    public function getMollieApiStatus()
+    public function getMollieApiStatus($apiClient)
     {
         try {
-            // Is test mode enabled?
-            $test_mode = Plugin::getSettingsHelper()->isTestModeEnabled();
-
-            $api_helper = Plugin::getApiHelper();
-            $api_client = $api_helper->getApiClient($test_mode);
-
             // Try to load Mollie issuers
-            $api_client->methods->all();
+            $apiClient->methods->all();
         } catch (\Mollie\Api\Exceptions\ApiException $apiException) {
             if ($apiException->getMessage() == 'Error executing API call (401: Unauthorized Request): Missing authentication, or failed to authenticate. Documentation: https://docs.mollie.com/guides/authentication') {
                 throw new \Mollie\Api\Exceptions\ApiException(

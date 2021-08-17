@@ -8,9 +8,11 @@ use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\Gateway\AbstractGateway;
-use Mollie\WooCommerce\Plugin;
+use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\SDK\HttpResponse;
+use Mollie\WooCommerce\Utils\Data;
 use Psr\Log\LoggerInterface as Logger;
+use WC_Order;
 
 class MollieOrderService
 {
@@ -24,14 +26,31 @@ class MollieOrderService
      * @var Logger
      */
     protected $logger;
+    /**
+     * @var PaymentFactory
+     */
+    protected $paymentFactory;
+    /**
+     * @var Data
+     */
+    protected $data;
+    protected $pluginId;
 
     /**
      * PaymentService constructor.
      */
-    public function __construct(HttpResponse $httpResponse, Logger $logger)
-    {
+    public function __construct(
+        HttpResponse $httpResponse,
+        Logger $logger,
+        PaymentFactory $paymentFactory,
+        Data $data,
+        string $pluginId
+    ) {
         $this->httpResponse = $httpResponse;
         $this->logger = $logger;
+        $this->paymentFactory = $paymentFactory;
+        $this->data = $data;
+        $this->pluginId = $pluginId;
     }
 
     public function setGateway($gateway)
@@ -43,7 +62,7 @@ class MollieOrderService
     {
         // Webhook test by Mollie
         if (isset($_GET['testByMollie'])) {
-            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ': Webhook tested by MollieSettingsPage.', true);
+            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ': Webhook tested by Mollie.', [true]);
             return;
         }
 
@@ -56,7 +75,7 @@ class MollieOrderService
         $order_id = sanitize_text_field($_GET['order_id']);
         $key = sanitize_text_field($_GET['key']);
 
-        $data_helper = Plugin::getDataHelper();
+        $data_helper = $this->data;
         $order = wc_get_order($order_id);
 
         if (!$order) {
@@ -71,10 +90,10 @@ class MollieOrderService
             return;
         }
 
-        // No MollieSettingsPage payment id provided
+        // No Mollie payment id provided
         if (empty($_POST['id'])) {
             $this->httpResponse->setHttpResponseCode(400);
-            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ': No payment object ID provided.', true);
+            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ': No payment object ID provided.', [true]);
             return;
         }
 
@@ -83,7 +102,7 @@ class MollieOrderService
 
         // Load the payment from Mollie, do not use cache
         try {
-            $payment_object = Plugin::getPaymentFactoryHelper()->getPaymentObject(
+            $payment_object = $this->paymentFactory->getPaymentObject(
                 $payment_object_id
             );
         } catch (ApiException $exception) {
@@ -97,7 +116,7 @@ class MollieOrderService
         // Payment not found
         if (!$payment) {
             $this->httpResponse->setHttpResponseCode(404);
-            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ": payment object $payment_object_id not found.", true);
+            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ": payment object $payment_object_id not found.", [true]);
             return;
         }
 
@@ -108,7 +127,7 @@ class MollieOrderService
         }
 
         // Log a message that webhook was called, doesn't mean the payment is actually processed
-        $this->logger->log(\WC_Log_Levels::DEBUG, $this->gateway->id . ": MollieSettingsPage payment object {$payment->id} (" . $payment->mode . ") webhook call for order {$order->get_id()}.", true);
+        $this->logger->log(\WC_Log_Levels::DEBUG, $this->gateway->id . ": Mollie payment object {$payment->id} (" . $payment->mode . ") webhook call for order {$order->get_id()}.", [true]);
 
         // Order does not need a payment
         if (! $this->orderNeedsPayment($order)) {
@@ -152,33 +171,33 @@ class MollieOrderService
      *
      * @return bool
      */
-    protected function orderNeedsPayment(WC_Order $order)
+    public function orderNeedsPayment(WC_Order $order)
     {
         $order_id = $order->get_id();
 
         // Check whether the order is processed and paid via another gateway
         if ($this->isOrderPaidByOtherGateway($order)) {
-            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: no, previously processed by other (non-Mollie) gateway.', true);
+            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: no, previously processed by other (non-Mollie) gateway.', [true]);
 
             return false;
         }
 
-        // Check whether the order is processed and paid via MollieSettingsPage
+        // Check whether the order is processed and paid via Mollie
         if (! $this->isOrderPaidAndProcessed($order)) {
-            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, order not previously processed by Mollie gateway.', true);
+            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, order not previously processed by Mollie gateway.', [true]);
 
             return true;
         }
 
         if ($order->needs_payment()) {
-            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, WooCommerce thinks order needs payment.', true);
+            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, WooCommerce thinks order needs payment.', [true]);
 
             return true;
         }
 
         // Has initial order status 'on-hold'
         if ($this->gateway->getInitialOrderStatus() === self::STATUS_ON_HOLD && $order->has_status(self::STATUS_ON_HOLD)) {
-            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, has status On-Hold. ', true);
+            $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, has status On-Hold. ', [true]);
 
             return true;
         }
@@ -221,7 +240,7 @@ class MollieOrderService
             $this->logger->log(
                 \WC_Log_Levels::DEBUG,
                 __METHOD__ . ": No refunds to process for {$logId}",
-                true
+                [true]
             );
 
             return;
@@ -285,7 +304,7 @@ class MollieOrderService
                 return;
             }
 
-            $dataHelper = Plugin::getDataHelper();
+            $dataHelper = $this->data;
             $order = wc_get_order($orderId);
 
             foreach ($refundsToProcess as $refundToProcess) {
@@ -326,7 +345,7 @@ class MollieOrderService
             );
 
             do_action(
-                Plugin::PLUGIN_ID . '_refunds_processed',
+                $this->pluginId . '_refunds_processed',
                 $payment,
                 $order
             );
@@ -361,7 +380,7 @@ class MollieOrderService
             $this->logger->log(
                 \WC_Log_Levels::DEBUG,
                 __METHOD__ . ": No chargebacks to process for {$logId}",
-                true
+                [true]
             );
 
             return;
@@ -429,7 +448,7 @@ class MollieOrderService
                 return;
             }
 
-            $dataHelper = Plugin::getDataHelper();
+            $dataHelper = $this->data;
             $order = wc_get_order($orderId);
 
             // Update order notes, add message about chargeback
@@ -458,13 +477,13 @@ class MollieOrderService
             //
 
             // New order status
-            $newOrderStatus = AbstractGateway::STATUS_ON_HOLD;
+            $newOrderStatus = MolliePaymentGateway::STATUS_ON_HOLD;
 
             // Overwrite plugin-wide
-            $newOrderStatus = apply_filters(Plugin::PLUGIN_ID . '_order_status_on_hold', $newOrderStatus);
+            $newOrderStatus = apply_filters($this->pluginId . '_order_status_on_hold', $newOrderStatus);
 
             // Overwrite gateway-wide
-            $newOrderStatus = apply_filters(Plugin::PLUGIN_ID . "_order_status_on_hold_{$this->gateway->id}", $newOrderStatus);
+            $newOrderStatus = apply_filters($this->pluginId . "_order_status_on_hold_{$this->gateway->id}", $newOrderStatus);
 
             $paymentMethodTitle = $this->getPaymentMethodTitle($payment);
 
@@ -552,7 +571,7 @@ class MollieOrderService
             }
 
             do_action(
-                Plugin::PLUGIN_ID . '_chargebacks_processed',
+                $this->pluginId . '_chargebacks_processed',
                 $payment,
                 $order
             );
@@ -609,7 +628,7 @@ class MollieOrderService
             $this->updateStateRefund(
                 $order,
                 $payment,
-                AbstractGateway::STATUS_REFUNDED,
+                MolliePaymentGateway::STATUS_REFUNDED,
                 '_order_status_refunded'
             );
         }
@@ -629,13 +648,13 @@ class MollieOrderService
     ) {
         // Overwrite plugin-wide
         $newOrderStatus = apply_filters(
-            Plugin::PLUGIN_ID . $refundType,
+            $this->pluginId . $refundType,
             $newOrderStatus
         );
 
         // Overwrite gateway-wide
         $newOrderStatus = apply_filters(
-            Plugin::PLUGIN_ID . $refundType . $this->gateway->id,
+            $this->pluginId . $refundType . $this->gateway->id,
             $newOrderStatus
         );
         // New order status
@@ -706,7 +725,7 @@ class MollieOrderService
         $order->update_status($new_status, $note);
 
         switch ($new_status) {
-            case AbstractGateway::STATUS_ON_HOLD:
+            case MolliePaymentGateway::STATUS_ON_HOLD:
                 if ($restore_stock == true) {
                     if (! $order->get_meta('_order_stock_reduced', true)) {
                         // Reduce order stock
@@ -718,12 +737,12 @@ class MollieOrderService
 
                 break;
 
-            case AbstractGateway::STATUS_PENDING:
-            case AbstractGateway::STATUS_FAILED:
-            case AbstractGateway::STATUS_CANCELLED:
+            case MolliePaymentGateway::STATUS_PENDING:
+            case MolliePaymentGateway::STATUS_FAILED:
+            case MolliePaymentGateway::STATUS_CANCELLED:
                 if ($order->get_meta('_order_stock_reduced', true)) {
                     // Restore order stock
-                    Plugin::getDataHelper()->restoreOrderStock($order);
+                    $this->data->restoreOrderStock($order);
 
                     $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . " Stock for order {$order->get_id()} restored.");
                 }

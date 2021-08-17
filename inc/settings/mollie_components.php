@@ -73,7 +73,7 @@ return [
         'title' => _x('Padding', 'Mollie Components Settings', 'mollie-payments-for-woocommerce'),
         'desc_tip' => _x(
             'Add padding to the components. Allowed units include `16px 16px 16px 16px` and `em`, `px`, `rem`.',
-            'MollieSettingsPage Components Settings',
+            'Mollie Components Settings',
             'mollie-payments-for-woocommerce'
         ),
         'default' => '.63em',

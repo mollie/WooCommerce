@@ -1,21 +1,5 @@
 <?php
 
-/**
- * This file is part of the  Mollie\WooCommerce.
- *
- * (c) Inpsyde GmbH
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- * PHP version 7
- *
- * @category Activation
- * @package  Mollie\WooCommerce
- * @author   AuthorName <hello@inpsyde.com>
- * @license  GPLv2+
- * @link     https://www.inpsyde.com
- */
-
 # -*- coding: utf-8 -*-
 
 declare(strict_types=1);
@@ -52,7 +36,11 @@ class CoreModule implements ServiceModule
             },
             'core.plugin_version' => function (): string {
                 //Get plugin version TODO handle with properties
-                return '6.4.0';
+                return '6.7.0';
+            },
+            'core.plugin_title' => function (): string {
+                //Get plugin version TODO handle with properties
+                return 'Mollie Payments for WooCommerce';
             },
             'core.plugin_file' => function (): string {
                 //Get location of main plugin file TODO handle with properties
@@ -70,27 +58,20 @@ class CoreModule implements ServiceModule
                 return $pluginProperties->basePath();
             },
             'core.api_helper' => function (ContainerInterface $container): Api {
-                /** @var Settings $settingsHelper */
-                $settingsHelper = $container->get('settings.settings_helper');
-                return new Api($settingsHelper);
+                $pluginVersion = $container->get('core.plugin_version');
+                $pluginId = $container->get('core.plugin_id');
+                return new Api($pluginVersion, $pluginId);
             },
             'core.data_helper' => function (ContainerInterface $container): Data {
                 /** @var Api $apiHelper */
                 $apiHelper = $container->get('core.api_helper');
                 $logger = $container->get(Logger::class);
-                return new Data($apiHelper, $logger);
+                $pluginId = $container->get('core.plugin_id');
+                return new Data($apiHelper, $logger, $pluginId);
             },
-            'core.status_helper' => function (): Status {
-                return new Status(new CompatibilityChecker());
-            },
-            'core.payment_factory_helper' => function (): PaymentFactory {
-                return new PaymentFactory();
-            },
-            'core.payment_object_helper' => function (): MollieObject {
-                return new MollieObject(null);
-            },
-            'core.order_lines_helper' => function ($shop_country, \WC_Order $order): OrderLines {
-                return new OrderLines($shop_country, $order);
+            'core.status_helper' => function (ContainerInterface $container): Status {
+                $pluginTitle = $container->get('core.plugin_title');
+                return new Status(new CompatibilityChecker(), $pluginTitle);
             },
             'core.set_http_response_code' => function ($status_code): void {
                 if (PHP_SAPI !== 'cli' && !headers_sent()) {

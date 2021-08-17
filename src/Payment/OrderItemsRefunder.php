@@ -22,11 +22,11 @@ class OrderItemsRefunder
     /**
      * @var string
      */
-    const ACTION_AFTER_REFUND_ORDER_ITEMS = Plugin::PLUGIN_ID . '_refund_items_created';
+    const ACTION_AFTER_REFUND_ORDER_ITEMS = 'mollie-payments-for-woocommerce_refund_items_created';
     /**
      * @var string
      */
-    const ACTION_AFTER_CANCELED_ORDER_ITEMS = Plugin::PLUGIN_ID . '_line_items_cancelled';
+    const ACTION_AFTER_CANCELED_ORDER_ITEMS = 'mollie-payments-for-woocommerce_line_items_cancelled';
 
     /**
      * @var RefundLineItemsBuilder
@@ -60,7 +60,7 @@ class OrderItemsRefunder
     /**
      * @param WC_Order $order WooCommerce Order
      * @param array $items WooCommerce Order Items
-     * @param Order $remotePaymentObject MollieSettingsPage Order service
+     * @param Order $remotePaymentObject Mollie Order service
      * @param string $refundReason The reason of refunding
      * @return bool
      * @throws ApiException When the API call fails for any reason
@@ -119,7 +119,7 @@ class OrderItemsRefunder
             if (!$toRefundItemId) {
                 throw new UnexpectedValueException(
                     __(
-                        'One of the WooCommerce order items does not have the refund item ID meta value associated to MollieSettingsPage Order item.',
+                        'One of the WooCommerce order items does not have the refund item ID meta value associated to Mollie Order item.',
                         'mollie-payments-for-woocommerce'
                     )
                 );

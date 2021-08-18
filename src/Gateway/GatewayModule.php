@@ -16,6 +16,7 @@ use Mollie\WooCommerce\Buttons\PayPalButton\PayPalAjaxRequests;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalButtonHandler;
 use Mollie\WooCommerce\Gateway\ApplePay\Mollie_WC_Gateway_ApplePay;
 use Mollie\WooCommerce\Gateway\BankTransfer\Mollie_WC_Gateway_BankTransfer;
+use Mollie\WooCommerce\Gateway\DirectDebit\Mollie_WC_Gateway_DirectDebit;
 use Mollie\WooCommerce\Gateway\PayPal\Mollie_WC_Gateway_PayPal;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Notice\NoticeInterface;
@@ -116,15 +117,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         add_filter(
             'woocommerce_available_payment_gateways',
             [$this, 'disableSEPAInCheckout'],
-            10,
-            1
-        );
-
-        // Disable old Mollie_WC_Gateway_MisterCash as payment option in WooCommerce checkout
-        add_filter(
-            'woocommerce_available_payment_gateways',
-            [$this, 'disableMisterCashInCheckout'],
-            10,
+            11,
             1
         );
 
@@ -132,7 +125,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         add_filter(
             'woocommerce_available_payment_gateways',
             [$this, 'disableMollieOnPaymentMethodChange'],
-            10,
+            11,
             1
         );
         add_action(
@@ -188,10 +181,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
             return $gateways;
         }
         $bankTransferGatewayClassName = Mollie_WC_Gateway_BankTransfer::class;
-        $bankTransferGatewayIndex = array_search($bankTransferGatewayClassName, $gateways, true);
-        if ($bankTransferGatewayIndex !== false) {
-            unset($gateways[$bankTransferGatewayIndex]);
-        }
+        unset($gateways[$bankTransferGatewayClassName]);
+
         return  $gateways;
     }
 
@@ -226,7 +217,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
         }
 
         $applePayGatewayClassName = Mollie_WC_Gateway_ApplePay::class;
-        $applePayGatewayIndex = array_search($applePayGatewayClassName, $gateways, true);
         $postData = (string)filter_input(
             INPUT_POST,
             self::POST_DATA_KEY,
@@ -237,11 +227,11 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $applePayAllowed = isset($postData[self::APPLE_PAY_METHOD_ALLOWED_KEY])
             && $postData[self::APPLE_PAY_METHOD_ALLOWED_KEY];
 
-        if ($applePayGatewayIndex !== false && !$applePayAllowed) {
-            unset($gateways[$applePayGatewayIndex]);
+        if (!$applePayAllowed) {
+            unset($gateways[$applePayGatewayClassName]);
         }
 
-        if ($applePayGatewayIndex !== false && $applePayAllowed) {
+        if ($applePayAllowed) {
             $wooCommerceSession->set(self::APPLE_PAY_METHOD_ALLOWED_KEY, true);
         }
 
@@ -259,19 +249,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
     public function disableSEPAInCheckout($available_gateways)
     {
         if (is_checkout()) {
-            unset($available_gateways['mollie_wc_gateway_directdebit']);
-        }
-
-        return $available_gateways;
-    }
-
-    /**
-     * Don't show old Mollie_WC_Gateway_MisterCash in WooCommerce Checkout
-     */
-    public static function disableMisterCashInCheckout($available_gateways)
-    {
-        if (is_checkout()) {
-            unset($available_gateways['mollie_wc_gateway_mistercash']);
+            unset($available_gateways[Mollie_WC_Gateway_DirectDebit::class]);
         }
 
         return $available_gateways;

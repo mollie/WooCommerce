@@ -666,7 +666,7 @@ class MollieObject
             $gatewayId . ': Order ' . $order->get_id()
             . ' webhook called, but payment also started via '
             . $orderPaymentMethodTitle . ', so order status not updated.',
-            true
+            [true]
         );
 
         // Add order note

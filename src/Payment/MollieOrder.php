@@ -92,7 +92,6 @@ class MollieOrder extends MollieObject
 
         // Generate order lines for Mollie Orders
         $orderLinesHelper = new OrderLines(
-            self::$shop_country,
             $order
         );
         $orderLines = $orderLinesHelper->order_lines();

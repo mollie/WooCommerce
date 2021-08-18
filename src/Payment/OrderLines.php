@@ -36,7 +36,6 @@ class OrderLines
     /**
      * Mollie_WC_Helper_Order_Lines constructor.
      *
-     * @param bool|string $shop_country Shop country.
      * @param object      $order        WooCommerce Order
      */
     public function __construct($order)

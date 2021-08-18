@@ -80,8 +80,6 @@ class Data
      */
     public function getTransientId($transient)
     {
-        global $wp_version;
-
         /*
          * WordPress will save two options to wp_options table:
          * 1. _transient_<transient_id>
@@ -484,7 +482,7 @@ class Data
      *
      * @return string $value
      */
-    public function getOrderCurrency(WC_Order $order)
+    public function getOrderCurrency(\WC_Order $order)
     {
         return $order->get_currency();
     }
@@ -492,13 +490,14 @@ class Data
     /**
      * Format currency value into Mollie API v2 format
      *
-     * @param $value
+     * @param float $value
      *
      * @return int $value
      */
     public function formatCurrencyValue($value, $currency)
     {
         // Only the Japanese Yen has no decimals in the currency
+        $value = (float)$value;
         $value = $currency == "JPY" ? number_format($value, 0, '.', '') : number_format($value, 2, '.', '');
 
         return $value;

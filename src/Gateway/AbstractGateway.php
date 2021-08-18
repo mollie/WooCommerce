@@ -418,7 +418,6 @@ abstract class AbstractGateway extends WC_Payment_Gateway
                 $currency = get_woocommerce_currency();
             }
 
-            global $woocommerce;
             $billing_country = WC()->customer->get_billing_country();
             $billing_country = apply_filters(
                 Plugin::PLUGIN_ID . '_is_available_billing_country_for_payment_gateways',
@@ -472,10 +471,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway
                             ];
 
                             $payment_locale and $filters['locale'] = $payment_locale;
-
-                            $status = $this->isAvailableMethodInCheckout($filters);
                         }
-
+                        $status = $this->isAvailableMethodInCheckout($filters);
                         // Check available first payment methods with today's order total, but ignore SSD gateway (not shown in checkout)
                         if ($this->id !== 'mollie_wc_gateway_directdebit') {
                             $filters =  [
@@ -555,7 +552,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
         $order = wc_get_order($order);
         $order_id = $order->get_id();
 
-        $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $this->id . ": Order $order_id does not need a payment by Mollie (payment {$payment->id}).", true);
+        $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $this->id . ": Order $order_id does not need a payment by Mollie (payment {$payment->id}).", [true]);
     }
 
     /**
@@ -851,8 +848,6 @@ abstract class AbstractGateway extends WC_Payment_Gateway
                 return $title;
             }
 
-            $order = wc_get_order($order);
-
             $order_payment_method = $order->get_payment_method();
 
             // Invalid gateway
@@ -879,7 +874,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
                 // Add a message to log and order explaining a payment with status "open", only if it hasn't been added already
                 if (get_post_meta($order_id, '_mollie_open_status_note', true) !== '1') {
                     // Get payment method title
-                    $payment_method_title = $this->getPaymentMethodTitle($payment);
+                    $payment_method_title = $this->method_title;
 
                     // Add message to log
                     $this->logger->log(
@@ -986,7 +981,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
         );
         $returnUrl = untrailingslashit($returnUrl);
 
-        $this->logger->log(\WC_Log_Levels::DEBUG, "{$this->id} : Order {$orderId} returnUrl: {$returnUrl}", true);
+        $this->logger->log(\WC_Log_Levels::DEBUG, "{$this->id} : Order {$orderId} returnUrl: {$returnUrl}", [true]);
 
         return apply_filters(Plugin::PLUGIN_ID . '_return_url', $returnUrl, $order);
     }
@@ -1013,7 +1008,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway
         );
         $webhookUrl = untrailingslashit($webhookUrl);
 
-        $this->logger->log(\WC_Log_Levels::DEBUG, "{$this->id} : Order {$orderId} webhookUrl: {$webhookUrl}", true);
+        $this->logger->log(\WC_Log_Levels::DEBUG, "{$this->id} : Order {$orderId} webhookUrl: {$webhookUrl}", [true]);
 
         return apply_filters(Plugin::PLUGIN_ID . '_webhook_url', $webhookUrl, $order);
     }

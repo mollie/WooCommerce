@@ -62,7 +62,7 @@ class PaymentService
         }
 
         $orderId = $order->get_id();
-        $this->logger->log( \WC_Log_Levels::DEBUG,  "{$this->gateway->id}: Start process_payment for order {$orderId}", true );
+        $this->logger->log( \WC_Log_Levels::DEBUG,  "{$this->gateway->id}: Start process_payment for order {$orderId}", [true] );
 
         $initial_order_status = $this->getInitialOrderStatus($paymentConfirmationAfterCoupleOfDays);
 
@@ -516,7 +516,7 @@ class PaymentService
         if ($molliePaymentType == AbstractGateway::PAYMENT_METHOD_TYPE_ORDER) {
             $this->logger->log( \WC_Log_Levels::DEBUG,
                 "{$this->gateway->id}: Create Mollie payment object for order {$orderId}",
-                true
+                [true]
             );
 
             list(

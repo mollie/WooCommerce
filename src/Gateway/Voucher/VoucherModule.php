@@ -175,7 +175,7 @@ class VoucherModule implements ExecutableModule
     public function voucherTaxonomyCustomMetaSave($term_id)
     {
 
-        $metaOption = filter_input(INPUT_POST, '_mollie_voucher_category');
+        $metaOption = filter_input(INPUT_POST, '_mollie_voucher_category', FILTER_SANITIZE_STRING);
 
         update_term_meta($term_id, '_mollie_voucher_category', $metaOption);
     }

@@ -145,7 +145,7 @@ class Mollie_WC_Helper_GatewaySurchargeHandler
             return;
         }
 
-        $cartAmount = $cart->get_cart_total();
+        $cartAmount = $cart->get_subtotal() + $cart->get_subtotal_tax();
         if($this->aboveMaxLimit($cartAmount, $gatewaySettings)){
             return;
         }

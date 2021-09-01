@@ -2576,7 +2576,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         }
         $amountFee = $this->settings[Mollie_WC_Helper_GatewaySurchargeHandler::FIXED_FEE];
         $currency = get_woocommerce_currency_symbol();
-        return sprintf(__(" +%1s%2s Fee", 'mollie-payments-for-woocommerce'), $amountFee, $currency);
+        return PHP_EOL . sprintf(__("A +%1s%2s fee might apply", 'mollie-payments-for-woocommerce'), $amountFee, $currency);
     }
 
     protected function name_percentage()
@@ -2586,7 +2586,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             return false;
         }
         $amountFee = $this->settings[Mollie_WC_Helper_GatewaySurchargeHandler::PERCENTAGE];
-        return sprintf(__(' +%1s%% Fee', 'mollie-payments-for-woocommerce'), $amountFee);
+        return PHP_EOL . sprintf(__('A +%1s%% fee might apply', 'mollie-payments-for-woocommerce'), $amountFee);
     }
 
     protected function name_fixed_fee_percentage()
@@ -2603,7 +2603,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
         $amountFix = $this->settings[Mollie_WC_Helper_GatewaySurchargeHandler::FIXED_FEE];
         $currency = get_woocommerce_currency_symbol();
         $amountPercent = $this->settings[Mollie_WC_Helper_GatewaySurchargeHandler::PERCENTAGE];
-        return sprintf(__(" +%1s%2s + %3s%% Fee", 'mollie-payments-for-woocommerce'), $amountFix, $currency, $amountPercent);
+        return PHP_EOL . sprintf(__("A +%1s%2s + %3s%% fee might apply", 'mollie-payments-for-woocommerce'), $amountFix, $currency, $amountPercent);
     }
 
     protected function processAdminOptionCustomLogo()

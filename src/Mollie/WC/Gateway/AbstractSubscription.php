@@ -512,7 +512,15 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 	 */
     public function process_payment ($order_id)
     {
-        $isSubscription = Mollie_WC_Plugin::getDataHelper()->isWcSubscription($order_id);
+        add_filter(
+            Mollie_WC_Plugin::PLUGIN_ID . '_is_subscription_payment',
+            function ($isSubscription, $orderId) {
+                return mollieWooCommerceGetDataHelper()->isWcSubscription($isSubscription, $orderId);
+            },
+            10,
+            2
+        );
+        $isSubscription = Mollie_WC_Plugin::getDataHelper()->isSubscription($order_id);
         if ($isSubscription){
             $result = $this->process_subscription_payment($order_id);
             return $result;

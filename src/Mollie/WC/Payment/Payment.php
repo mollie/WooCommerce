@@ -79,28 +79,7 @@ class Mollie_WC_Payment_Payment extends Mollie_WC_Payment_Object {
             ),
         );
 
-        // Add sequenceType for subscriptions first payments
-        if (class_exists('WC_Subscriptions')
-            && class_exists(
-                'WC_Subscriptions_Admin'
-            )
-        ) {
-            if (Mollie_WC_Plugin::getDataHelper()->isWcSubscription($orderId)) {
-                // See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
-                $disableAutomaticPayments = ('yes' == get_option(
-                        WC_Subscriptions_Admin::$option_prefix
-                        . '_turn_off_automatic_payments',
-                        'no'
-                    )) ? true : false;
-                $supportsSubscriptions = $gateway->supports('subscriptions');
-
-                if ($supportsSubscriptions == true
-                    && $disableAutomaticPayments == false
-                ) {
-                    $paymentRequestData['sequenceType'] = 'first';
-                }
-            }
-        }
+        $paymentRequestData = $this->addSequenceTypeForSubscriptionsFirstPayments($order->get_id(), $gateway, $paymentRequestData);
 
         if ($storeCustomer) {
             $paymentRequestData['customerId'] = $customerId;

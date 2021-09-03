@@ -699,4 +699,17 @@ class Mollie_WC_Payment_Object {
                                    ));
         }
     }
+
+    protected function addSequenceTypeForSubscriptionsFirstPayments($orderId, $gateway, $paymentRequestData): array
+    {
+        if (mollieWooCommerceGetDataHelper()->isSubscription($orderId)) {
+            $disable_automatic_payments = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_is_automatic_payment_disabled', false );
+            $supports_subscriptions = $gateway->supports('subscriptions');
+
+            if ($supports_subscriptions == true && $disable_automatic_payments == false) {
+                $paymentRequestData['payment']['sequenceType'] = 'first';
+            }
+        }
+        return $paymentRequestData;
+    }
 }

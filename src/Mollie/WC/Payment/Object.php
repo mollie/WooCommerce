@@ -111,18 +111,13 @@ class Mollie_WC_Payment_Object {
 	 *
 	 * @return $this
 	 */
-	public function setActiveMolliePayment( $orderId ) {
-
-		// Do extra checks if WooCommerce Subscriptions is installed
-		if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-			if ( Mollie_WC_Plugin::getDataHelper()->isWcSubscription($orderId ) ) {
-				return $this->setActiveMolliePaymentForSubscriptions($orderId );
-			}
-		}
-
-		return $this->setActiveMolliePaymentForOrders($orderId );
-
-	}
+	public function setActiveMolliePayment( $orderId )
+    {
+        if (Mollie_WC_Plugin::getDataHelper()->isSubscription($orderId)) {
+            return $this->setActiveMolliePaymentForSubscriptions($orderId);
+        }
+        return $this->setActiveMolliePaymentForOrders($orderId);
+    }
 
 	/**
 	 * Save active Mollie payment id for order
@@ -204,18 +199,13 @@ class Mollie_WC_Payment_Object {
 	 *
 	 * @return $this
 	 */
-	public function unsetActiveMolliePayment( $order_id, $payment_id = null ) {
-
-		// Do extra checks if WooCommerce Subscriptions is installed
-		if ( class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ) ) {
-			if ( Mollie_WC_Plugin::getDataHelper()->isWcSubscription($order_id ) ) {
-				return $this->unsetActiveMolliePaymentForSubscriptions( $order_id );
-			}
-		}
-
-		return $this->unsetActiveMolliePaymentForOrders( $order_id );
-
-	}
+	public function unsetActiveMolliePayment( $order_id, $payment_id = null )
+    {
+        if (Mollie_WC_Plugin::getDataHelper()->isSubscription($order_id)) {
+            return $this->unsetActiveMolliePaymentForSubscriptions($order_id);
+        }
+        return $this->unsetActiveMolliePaymentForOrders($order_id);
+    }
 
     /**
      * Delete active Mollie payment id for order

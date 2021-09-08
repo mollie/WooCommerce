@@ -512,14 +512,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 	 */
     public function process_payment ($order_id)
     {
-        add_filter(
-            Mollie_WC_Plugin::PLUGIN_ID . '_is_subscription_payment',
-            function ($isSubscription, $orderId) {
-                return mollieWooCommerceGetDataHelper()->isWcSubscription($isSubscription, $orderId);
-            },
-            10,
-            2
-        );
+        $this->addWcSubscriptionsFiltersForPayment();
         $isSubscription = Mollie_WC_Plugin::getDataHelper()->isSubscription($order_id);
         if ($isSubscription){
             $result = $this->process_subscription_payment($order_id);
@@ -656,4 +649,29 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 		}
 	}
 
+    protected function addWcSubscriptionsFiltersForPayment(): void
+    {
+        add_filter(
+            Mollie_WC_Plugin::PLUGIN_ID . '_is_subscription_payment',
+            function ($orderId, $isSubscription) {
+                if (mollieWooCommerceGetDataHelper()->isWcSubscription($orderId)) {
+                    add_filter(
+                        Mollie_WC_Plugin::PLUGIN_ID . '_is_automatic_payment_disabled',
+                        function ($filteredOption) {
+                            if('yes' == get_option(
+                                    WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments'
+                                )){
+                                return true;
+                            }
+                            return $filteredOption;
+                        }
+                    );
+                    return true;
+                }
+                return $isSubscription;
+            },
+            10,
+            2
+        );
+    }
 }

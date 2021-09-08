@@ -525,10 +525,10 @@ class Mollie_WC_Helper_Data
 	 *
 	 * @return bool
 	 */
-	public function isWcSubscription(bool $isSubscription, string $orderId): bool
+	public function isWcSubscription(string $orderId): bool
     {
         if(!(class_exists( 'WC_Subscriptions' ) && class_exists( 'WC_Subscriptions_Admin' ))){
-            return $isSubscription;
+            return false;
         }
 
         if (function_exists('wcs_order_contains_subscription') && (wcs_order_contains_subscription(
@@ -536,24 +536,15 @@ class Mollie_WC_Helper_Data
                 ) || function_exists('wcs_is_subscription') && wcs_is_subscription($orderId) || function_exists(
                     'wcs_order_contains_renewal'
                 ) && wcs_order_contains_renewal($orderId))) {
-            add_filter(
-                Mollie_WC_Plugin::PLUGIN_ID . '_is_automatic_payment_disabled',
-                function () {
-                    return  ('yes' == get_option(
-                            WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments',
-                            'no'
-                        )) ? true : false;
-                }
-            );
             return true;
         }
-        return $isSubscription;
+        return false;
     }
 
     public function isSubscription($orderId)
     {
         $isSubscription = false;
-        $isSubscription = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_is_subscription_payment', $isSubscription, $orderId );
+        $isSubscription = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_is_subscription_payment', $orderId,  $isSubscription);
         return $isSubscription;
     }
 }

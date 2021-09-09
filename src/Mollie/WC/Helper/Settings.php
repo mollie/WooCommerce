@@ -624,11 +624,11 @@ class Mollie_WC_Helper_Settings
         $presentationText = __('Quickly integrate all major payment methods in WooCommerce, wherever you need them.', 'mollie-payments-for-woocommerce' );
         $presentationText .= __(' Simply drop them ready-made into your WooCommerce webshop with this powerful plugin by Mollie.', 'mollie-payments-for-woocommerce');
         $presentationText .= __(' Mollie is dedicated to making payments better for WooCommerce. ', 'mollie-payments-for-woocommerce');
-        $presentationText .='<p>Please go to <a href="https://www.mollie.com/dashboard/signup" >the signup page </a>';
+        $presentationText .='<p>'. __('Please go to', 'mollie-payments-for-woocommerce') .'<a href="https://www.mollie.com/dashboard/signup">'. __(' the signup page', 'mollie-payments-for-woocommerce') .'</a>';
         $presentationText .= __('to create a new Mollie account and start receiving payments in a couple of minutes. ', 'mollie-payments-for-woocommerce');
-        $presentationText .= 'Contact <a href="mailto:info@mollie.com">info@mollie.com</a>';
-        $presentationText .= ' if you have any questions or comments about this plugin.</p>';
-        $presentationText .= '<p style="border-left: 4px solid black; padding: 8px; height:32px; font-weight:bold; font-size: medium;">Our pricing is always per transaction. No startup fees, no monthly fees, and no gateway fees. No hidden fees, period.</p>';
+        $presentationText .= __('Contact', 'mollie-payments-for-woocommerce') .'<a href="mailto:info@mollie.com">info@mollie.com</a>';
+        $presentationText .=  __(' if you have any questions or comments about this plugin.', 'mollie-payments-for-woocommerce').'</p>';
+        $presentationText .= '<p style="border-left: 4px solid black; padding: 8px; height:32px; font-weight:bold; font-size: medium;">'. __('Our pricing is always per transaction. No startup fees, no monthly fees, and no gateway fees. No hidden fees, period.', 'mollie-payments-for-woocommerce').'</p>';
 
 
         $presentation = ''

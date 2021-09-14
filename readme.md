@@ -2,6 +2,12 @@
   <img src="https://info.mollie.com/hubfs/github/woocommerce/logo.png" width="128" height="128"/>
 </p>
 <h1 align="center">Mollie for WooCommerce</h1>
+
+
+
+https://user-images.githubusercontent.com/45061744/133243432-9b5ba527-4830-4ade-9235-2f827c981169.mp4
+
+
   
 Quickly integrate all major payment methods in WooCommerce, wherever you need them. Simply drop them ready-made into your WooCommerce webshop with this powerful plugin by Mollie. Mollie is dedicated to making payments better for WooCommerce.
 

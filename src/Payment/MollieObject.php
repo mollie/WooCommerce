@@ -8,7 +8,11 @@ use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\Gateway\AbstractGateway;
+use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Plugin;
+use Mollie\WooCommerce\SDK\Api;
+use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Utils\Data;
 use WC_Order;
 use WC_Payment_Gateway;
 use Psr\Log\LoggerInterface as Logger;
@@ -31,11 +35,22 @@ class MollieObject
      * @var Logger
      */
     protected $logger;
+    /**
+     * @var PaymentFactory
+     */
+    protected $paymentFactory;
+    protected $dataService;
+    protected $apiHelper;
+    protected $settingsHelper;
+    protected $dataHelper;
 
-    public function __construct($data, Logger $logger)
+    public function __construct($data, Logger $logger, PaymentFactory $paymentFactory, Api $apiHelper, Settings $settingsHelper)
     {
         $this->data = $data;
         $this->logger = $logger;
+        $this->paymentFactory = $paymentFactory;
+        $this->apiHelper = $apiHelper;
+        $this->settingsHelper = $settingsHelper;
 
         $base_location = wc_get_base_location();
         static::$shop_country = $base_location['country'];
@@ -69,12 +84,9 @@ class MollieObject
     public function getPaymentObjectPayment($payment_id, $test_mode = false, $use_cache = true)
     {
         try {
-            $settings_helper = Plugin::getSettingsHelper();
-            $test_mode = $settings_helper->isTestModeEnabled();
-
-            $payment = Plugin::getApiHelper()->getApiClient($test_mode)->payments->get($payment_id);
-
-            return Plugin::getApiHelper()->getApiClient($test_mode)->payments->get($payment_id);
+            $test_mode = $this->settingsHelper->isTestModeEnabled();
+            $apiKey = $this->settingsHelper->getApiKey($test_mode);
+            return $this->apiHelper->getApiClient($apiKey)->payments->get($payment_id);
         } catch (ApiException $apiException) {
             $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . sprintf(': Could not load payment %s (', $payment_id) . ( $test_mode ? 'test' : 'live' ) . "): " . $apiException->getMessage() . ' (' . get_class($apiException) . ')');
         }
@@ -97,10 +109,9 @@ class MollieObject
         // TODO David: Duplicate, send to child class.
         try {
             // Is test mode enabled?
-            $settings_helper = Plugin::getSettingsHelper();
-            $test_mode = $settings_helper->isTestModeEnabled();
-
-            return Plugin::getApiHelper()->getApiClient($test_mode)->orders->get($payment_id, [ "embed" => "payments" ]);
+            $test_mode = $this->settingsHelper->isTestModeEnabled();
+            $apiKey = $this->settingsHelper->getApiKey($test_mode);
+            return $this->apiHelper->getApiClient($apiKey)->orders->get($payment_id, [ "embed" => "payments" ]);
         } catch (ApiException $e) {
             $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . sprintf(': Could not load order %s (', $payment_id) . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
@@ -127,7 +138,7 @@ class MollieObject
     public function setActiveMolliePayment($orderId)
     {
         // Do extra checks if WooCommerce Subscriptions is installed
-        if (class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin') && Plugin::getDataHelper()->isWcSubscription($orderId)) {
+        if (class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin') && $this->dataHelper->isWcSubscription($orderId)) {
             return $this->setActiveMolliePaymentForSubscriptions($orderId);
         }
 
@@ -216,7 +227,7 @@ class MollieObject
     public function unsetActiveMolliePayment($order_id, $payment_id = null)
     {
         // Do extra checks if WooCommerce Subscriptions is installed
-        if (class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin') && Plugin::getDataHelper()->isWcSubscription($order_id)) {
+        if (class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin') && $this->dataHelper->isWcSubscription($order_id)) {
             return $this->unsetActiveMolliePaymentForSubscriptions($order_id);
         }
 
@@ -323,7 +334,7 @@ class MollieObject
             $mollie_order = $this->getPaymentObjectOrder($this->getActiveMollieOrderId($order_id));
 
             try {
-                $mollie_order = Plugin::getPaymentFactoryHelper()->getPaymentObject(
+                $mollie_order = $this->paymentFactory->getPaymentObject(
                     $mollie_order
                 );
             } catch (ApiException $exception) {
@@ -516,7 +527,7 @@ class MollieObject
         if (class_exists('WC_Subscriptions')
             && class_exists(
                 'WC_Subscriptions_Admin'
-            ) && Plugin::getDataHelper()->isSubscription(
+            ) && $this->dataHelper->isSubscription(
             $order->get_id()
         )
         ) {
@@ -595,7 +606,7 @@ class MollieObject
 
         if (function_exists('wcs_order_contains_renewal')
             && wcs_order_contains_renewal($orderId)) {
-            if ($gateway || ($gateway instanceof AbstractGateway)) {
+            if ($gateway || ($gateway instanceof MolliePaymentGateway)) {
                 $gateway->updateOrderStatus(
                     $order,
                     $newOrderStatus,
@@ -627,7 +638,7 @@ class MollieObject
             ) {
                 $emails['WC_Email_Failed_Order']->trigger($orderId);
             }
-        } elseif ($gateway || ($gateway instanceof AbstractGateway)) {
+        } elseif ($gateway || ($gateway instanceof MolliePaymentGateway)) {
             $gateway->updateOrderStatus(
                 $order,
                 $newOrderStatus,
@@ -686,7 +697,7 @@ class MollieObject
         WC_Order $order
     ) {
 
-        $payment = Plugin::getPaymentObject()->getActiveMolliePayment($order->get_id());
+        $payment = $this->getActiveMolliePayment($order->get_id());
 
         if ($payment->isPaid() && $payment->details) {
             update_post_meta($order->get_id(), '_paypal_transaction_id', $payment->details->paypalReference);

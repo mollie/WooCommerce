@@ -12,7 +12,6 @@ use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Buttons\ApplePayButton\DataToAppleButtonScripts;
 use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPalScripts;
 use Mollie\WooCommerce\Components\AcceptedLocaleValuesDictionary;
-use Mollie\WooCommerce\Plugin;
 use Psr\Container\ContainerInterface;
 
 class AssetsModule implements ExecutableModule
@@ -27,74 +26,83 @@ class AssetsModule implements ExecutableModule
      * @var mixed
      */
     protected $pluginPath;
+    protected $settingsHelper;
+    protected $pluginVersion;
 
     public function run(ContainerInterface $container): bool
     {
         $this->pluginUrl = $container->get('core.plugin_url');
         $this->pluginPath = $container->get('core.plugin_path');
-        // Enqueue Scripts
-        add_action('wp_enqueue_scripts', [$this, 'enqueueFrontendScripts']);
-        add_action('wp_enqueue_scripts', [$this, 'enqueueComponentsAssets']);
-        add_action('wp_enqueue_scripts', [$this, 'enqueueApplePayDirectScripts']);
-        add_action('wp_enqueue_scripts', [$this, 'enqueuePayPalButtonScripts']);
-        self::registerFrontendScripts();
-        wp_register_script(
-            'mollie_wc_admin_settings',
-            $this->getPluginUrl('/public/js/settings.min.js'),
-            ['underscore', 'jquery'],
-            Plugin::PLUGIN_VERSION
-        );
-        wp_enqueue_script('mollie_wc_admin_settings');
-        global $current_section;
+        $this->settingsHelper = $container->get('settings.settings_helper');
+        $this->pluginVersion = $container->get('core.plugin_version');
+        add_action(
+            'init',
+            function () {
+                self::registerFrontendScripts();
+                wp_register_script(
+                    'mollie_wc_admin_settings',
+                    $this->getPluginUrl('/public/js/settings.min.js'),
+                    ['underscore', 'jquery'],
+                    $this->pluginVersion
+                );
+                // Enqueue Scripts
+                add_action('wp_enqueue_scripts', [$this, 'enqueueFrontendScripts']);
+                add_action('wp_enqueue_scripts', [$this, 'enqueueComponentsAssets']);
+                add_action('wp_enqueue_scripts', [$this, 'enqueueApplePayDirectScripts']);
+                add_action('wp_enqueue_scripts', [$this, 'enqueuePayPalButtonScripts']);
 
-        wp_localize_script(
-            'mollie_wc_admin_settings',
-            'mollieSettingsData',
-            [
-                'current_section'=>$current_section,
-            ]
-        );
-        if (is_admin()) {
-            global $current_section;
-            wp_register_script(
-                'mollie_wc_gateway_settings',
-                $this->getPluginUrl(
-                    '/public/js/gatewaySettings.min.js'
-                ),
-                ['underscore', 'jquery'],
-                Plugin::PLUGIN_VERSION
-            );
+                wp_enqueue_script('mollie_wc_admin_settings');
+                global $current_section;
 
-            wp_enqueue_script('mollie_wc_gateway_settings');
-            wp_enqueue_style('mollie-gateway-icons');
-            $settingsName = "{$current_section}_settings";
-            $gatewaySettings = get_option($settingsName, false);
-            $message = __('No custom logo selected', 'mollie-payments-for-woocommerce');
-            $isEnabled = false;
-            if ($gatewaySettings && isset($gatewaySettings['enable_custom_logo'])) {
-                $isEnabled = $gatewaySettings['enable_custom_logo'] === 'yes';
+                wp_localize_script(
+                    'mollie_wc_admin_settings',
+                    'mollieSettingsData',
+                    [
+                        'current_section' => $current_section,
+                    ]
+                );
+                if (is_admin()) {
+                    global $current_section;
+                    wp_register_script(
+                        'mollie_wc_gateway_settings',
+                        $this->getPluginUrl(
+                            '/public/js/gatewaySettings.min.js'
+                        ),
+                        ['underscore', 'jquery'],
+                        $this->pluginVersion
+                    );
+
+                    wp_enqueue_script('mollie_wc_gateway_settings');
+                    wp_enqueue_style('mollie-gateway-icons');
+                    $settingsName = "{$current_section}_settings";
+                    $gatewaySettings = get_option($settingsName, false);
+                    $message = __('No custom logo selected', 'mollie-payments-for-woocommerce');
+                    $isEnabled = false;
+                    if ($gatewaySettings && isset($gatewaySettings['enable_custom_logo'])) {
+                        $isEnabled = $gatewaySettings['enable_custom_logo'] === 'yes';
+                    }
+                    $uploadFieldName = "{$current_section}_upload_logo";
+                    $enabledFieldName = "{$current_section}_enable_custom_logo";
+                    $gatewayIconUrl = '';
+                    if ($gatewaySettings && isset($gatewaySettings['iconFileUrl'])) {
+                        $gatewayIconUrl = $gatewaySettings['iconFileUrl'];
+                    }
+
+                    wp_localize_script(
+                        'mollie_wc_gateway_settings',
+                        'gatewaySettingsData',
+                        [
+                            'isEnabledIcon' => $isEnabled,
+                            'uploadFieldName' => $uploadFieldName,
+                            'enableFieldName' => $enabledFieldName,
+                            'iconUrl' => $gatewayIconUrl,
+                            'message' => $message,
+                            'pluginUrlImages' => plugins_url('public/images', M4W_FILE),
+                        ]
+                    );
+                }
             }
-            $uploadFieldName = "{$current_section}_upload_logo";
-            $enabledFieldName = "{$current_section}_enable_custom_logo";
-            $gatewayIconUrl = '';
-            if ($gatewaySettings && isset($gatewaySettings['iconFileUrl'])) {
-                $gatewayIconUrl = $gatewaySettings['iconFileUrl'];
-            }
-
-            wp_localize_script(
-                'mollie_wc_gateway_settings',
-                'gatewaySettingsData',
-                [
-                    'isEnabledIcon' => $isEnabled,
-                    'uploadFieldName' => $uploadFieldName,
-                    'enableFieldName' => $enabledFieldName,
-                    'iconUrl' => $gatewayIconUrl,
-                    'message'=>$message,
-                    'pluginUrlImages'=>plugins_url('public/images', M4W_FILE),
-                ]
-            );
-        }
-
+        );
         return true;
     }
 
@@ -294,7 +302,7 @@ class AssetsModule implements ExecutableModule
         }
 
         try {
-            $merchantProfileId = mollieWooCommerceMerchantProfileId();
+            $merchantProfileId = $this->settingsHelper->mollieWooCommerceMerchantProfileId();
         } catch (ApiException $exception) {
             return;
         }
@@ -323,7 +331,7 @@ class AssetsModule implements ExecutableModule
                 'merchantProfileId' => $merchantProfileId,
                 'options' => [
                     'locale' => $locale,
-                    'testmode' => mollieWooCommerceIsTestModeEnabled(),
+                    'testmode' => $this->settingsHelper->isTestModeEnabled(),
                 ],
                 'enabledGateways' => $gatewayNames,
                 'componentsSettings' => $mollieComponentsStylesGateways,
@@ -360,12 +368,12 @@ class AssetsModule implements ExecutableModule
         );
     }
 
-    protected function getPluginUrl(string $path = '')
+    protected function getPluginUrl(string $path = ''): string
     {
-        return $this->pluginUrl . '/' . ltrim($path, '/');
+        return $this->pluginUrl . ltrim($path, '/');
     }
 
-    protected function getPluginPath(string $path = '')
+    protected function getPluginPath(string $path = ''): string
     {
         return $this->pluginPath . '/' . ltrim($path, '/');
     }

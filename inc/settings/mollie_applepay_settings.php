@@ -3,11 +3,11 @@
 use Mollie\WooCommerce\Gateway\ApplePay\Mollie_WC_Gateway_ApplePay;
 use Mollie\WooCommerce\Plugin;
 
-$pluginName = Plugin::PLUGIN_ID;
-$gateway = new Mollie_WC_Gateway_ApplePay();
-$title = $gateway->method_title;
-$description = $gateway->method_description;
-$pluginId = Plugin::PLUGIN_ID;
+$pluginName = 'mollie-payments-for-woocommerce';
+//$gateway = new Mollie_WC_Gateway_ApplePay();
+$title = 'Apple Pay Hardcoded';//$gateway->method_title;
+$description = 'Apple description hardcoded'; //$gateway->method_description;
+$pluginId = 'mollie-payments-for-woocommerce';
 $applePayOption = get_option('mollie_wc_gateway_applepay_settings');
 
 return [

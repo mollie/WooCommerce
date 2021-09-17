@@ -29,7 +29,7 @@ class LogModule implements ServiceModule
     {
         $source = $this->loggerSource;
         return [
-            Logger::class => static function (ContainerInterface $container) use ($source): WcPsrLoggerAdapter {
+            Logger::class => static function () use ($source): WcPsrLoggerAdapter {
                 return new WcPsrLoggerAdapter(\wc_get_logger(), $source);
             },
         ];

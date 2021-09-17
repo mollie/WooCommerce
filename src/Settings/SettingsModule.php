@@ -11,7 +11,6 @@ use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Settings\Page\MollieSettingsPage;
-use Mollie\WooCommerce\Settings\Settings;
 use Psr\Container\ContainerInterface;
 
 class SettingsModule implements ServiceModule, ExecutableModule
@@ -39,16 +38,18 @@ class SettingsModule implements ServiceModule, ExecutableModule
                 $pluginId = $container->get('core.plugin_id');
                 $pluginUrl = $container->get('core.plugin_url');
                 $statusHelper = $container->get('core.status_helper');
-
                 $pluginVersion = $container->get('core.plugin_version');
-                $gatewayWithNamespace = $container->get('gateway.classname_with_namespace');
+                $apiHelper =  $container->get('core.api_helper');
                 return new Settings(
                     $pluginId,
                     $statusHelper,
                     $pluginVersion,
                     $pluginUrl,
-                    $gatewayWithNamespace
+                    $apiHelper
                 );
+            },
+            'settings.payment_method_settings_handler' => function (): PaymentMethodSettingsHandler {
+                return new PaymentMethodSettingsHandler();
             },
             'settings.IsTestModeEnabled' => function (ContainerInterface $container): bool {
                 /** @var Settings $settingsHelper */
@@ -71,6 +72,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
         $this->isTestModeEnabled = $container->get('settings.IsTestModeEnabled');
         $this->dataHelper = $container->get('core.data_helper');
         $pluginPath = $container->get('core.plugin_path');
+        $gateways = $container->get('gateway.instances');
         // Add settings link to plugins page
         add_filter('plugin_action_links_' . $this->plugin_basename, [$this, 'addPluginActionLinks']);
 
@@ -79,8 +81,14 @@ class SettingsModule implements ServiceModule, ExecutableModule
         });
         add_filter(
             'woocommerce_get_settings_pages',
-            function ($settings) use ($pluginPath) {
-                $settings[] = new MollieSettingsPage($this->settingsHelper, $pluginPath);
+            function ($settings) use ($pluginPath, $gateways) {
+                $settings[] = new MollieSettingsPage(
+                    $this->settingsHelper,
+                    $pluginPath,
+                    $gateways,
+                    $this->isTestModeEnabled,
+                    $this->dataHelper
+                );
 
                 return $settings;
             }

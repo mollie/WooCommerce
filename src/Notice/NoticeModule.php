@@ -19,7 +19,7 @@ class NoticeModule implements ServiceModule
     public function services(): array
     {
         return [
-            AdminNotice::class => static function (ContainerInterface $container): AdminNotice {
+            AdminNotice::class => static function (): AdminNotice {
                 return new AdminNotice();
             },
         ];

@@ -24,6 +24,7 @@ namespace Mollie\WooCommerce\Gateway\Voucher;
 
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Psr\Container\ContainerInterface;
 
 class VoucherModule implements ExecutableModule
@@ -100,7 +101,7 @@ class VoucherModule implements ExecutableModule
     public function voucherBulkEditSave($product)
     {
         $post_id = $product->get_id();
-        $optionName = Mollie_WC_Gateway_Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION;
+        $optionName = Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION;
         if (isset($_REQUEST[$optionName])) {
             $option = $_REQUEST[$optionName];
             update_post_meta($post_id, $optionName, wc_clean($option));
@@ -191,10 +192,12 @@ class VoucherModule implements ExecutableModule
         ?>
         <div class='options_group'><?php
             $voucherSettings = get_option('mollie_wc_gateway_mealvoucher_settings');
-            $defaultCategory = $voucherSettings? $voucherSettings['mealvoucher_category_default']:Mollie_WC_Gateway_Voucher::NO_CATEGORY;
+            $defaultCategory = $voucherSettings
+                    ? $voucherSettings['mealvoucher_category_default']
+                    : Voucher::NO_CATEGORY;
             woocommerce_wp_select(
                 array(
-                    'id' => Mollie_WC_Gateway_Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+                    'id' => Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
                     'title' => __(
                         'Select the default products category',
                         'mollie-payments-for-woocommerce'
@@ -207,10 +210,10 @@ class VoucherModule implements ExecutableModule
                     'type' => 'select',
                     'options' => array(
                         $defaultCategory => __('Same as default category', 'mollie-payments-for-woocommerce'),
-                        Mollie_WC_Gateway_Voucher::NO_CATEGORY => 'No category',
-                        Mollie_WC_Gateway_Voucher::MEAL => 'Meal',
-                        Mollie_WC_Gateway_Voucher::ECO => 'Eco',
-                        Mollie_WC_Gateway_Voucher::GIFT => 'Gift'
+                        Voucher::NO_CATEGORY => 'No category',
+                        Voucher::MEAL => 'Meal',
+                        Voucher::ECO => 'Eco',
+                        Voucher::GIFT => 'Gift'
 
                     ),
                     'default' => $defaultCategory,
@@ -238,14 +241,14 @@ class VoucherModule implements ExecutableModule
     {
         $option = filter_input(
             INPUT_POST,
-            Mollie_WC_Gateway_Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+            Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
             FILTER_SANITIZE_STRING
         );
         $voucherCategory = $option ?? '';
 
         update_post_meta(
             $post_id,
-            Mollie_WC_Gateway_Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+            Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
             $voucherCategory
         );
     }
@@ -264,7 +267,7 @@ class VoucherModule implements ExecutableModule
         );
         $defaultCategory = $voucherSettings ?
             $voucherSettings['mealvoucher_category_default']
-            : Mollie_WC_Gateway_Voucher::NO_CATEGORY;
+            : Voucher::NO_CATEGORY;
         woocommerce_wp_select(
             array(
                 'id'          => 'voucher[' . $variation->ID . ']',
@@ -272,10 +275,10 @@ class VoucherModule implements ExecutableModule
                 'value'       => get_post_meta($variation->ID, 'voucher', true),
                 'options' => array(
                     $defaultCategory => __('Same as default category', 'mollie-payments-for-woocommerce'),
-                    Mollie_WC_Gateway_Voucher::NO_CATEGORY => __('No Category', 'mollie-payments-for-woocommerce'),
-                    Mollie_WC_Gateway_Voucher::MEAL => __('Meal', 'mollie-payments-for-woocommerce'),
-                    Mollie_WC_Gateway_Voucher::ECO => __('Eco', 'mollie-payments-for-woocommerce'),
-                    Mollie_WC_Gateway_Voucher::GIFT => __('Gift', 'mollie-payments-for-woocommerce')
+                    Voucher::NO_CATEGORY => __('No Category', 'mollie-payments-for-woocommerce'),
+                    Voucher::MEAL => __('Meal', 'mollie-payments-for-woocommerce'),
+                    Voucher::ECO => __('Eco', 'mollie-payments-for-woocommerce'),
+                    Voucher::GIFT => __('Gift', 'mollie-payments-for-woocommerce')
                 ),
             )
         );

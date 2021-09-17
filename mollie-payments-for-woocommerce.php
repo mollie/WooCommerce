@@ -29,7 +29,8 @@ use Mollie\WooCommerce\Gateway\GatewayModule;
 use Mollie\WooCommerce\Gateway\Voucher\VoucherModule;
 use Mollie\WooCommerce\Log\LogModule;
 use Mollie\WooCommerce\Notice\NoticeModule;
-use Mollie\WooCommerce\Payment\SDKModule;
+use Mollie\WooCommerce\Payment\PaymentModule;
+use Mollie\WooCommerce\SDK\SDKModule;
 use Mollie\WooCommerce\Settings\SettingsModule;
 use Throwable;
 
@@ -102,7 +103,7 @@ function mollie_wc_plugin_autoload()
         /** @noinspection PhpIncludeInspection */
         require $mollieSdkAutoload;
     }
-    return class_exists(Plugin::class);
+    return true;
 }
 
 /**
@@ -177,12 +178,13 @@ function initialize()
             new ActivationModule(),
             new LogModule('mollie-payments-for-woocommerce-'),
             new NoticeModule(),
+            new SDKModule(),
+            new VoucherModule(),
             new CoreModule(),
             new AssetsModule(),
             new GatewayModule(),
             new SettingsModule(),
-            new SDKModule(),
-            new VoucherModule()
+            new PaymentModule()
         );
     } catch (Throwable $throwable) {
         handleException($throwable);

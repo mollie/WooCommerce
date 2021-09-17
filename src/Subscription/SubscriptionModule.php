@@ -4,7 +4,7 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Settings;
+namespace Mollie\WooCommerce\Subscription;
 
 use DateTime;
 use Inpsyde\Modularity\Module\ExecutableModule;
@@ -27,10 +27,20 @@ class SubscriptionModule implements ExecutableModule
      * @var mixed
      */
     protected $logger;
+    /**
+     * @var mixed
+     */
+    protected $dataHelper;
+    /**
+     * @var mixed
+     */
+    protected $settingsHelper;
 
     public function run(ContainerInterface $container): bool
     {
         $this->logger = $container->get(Logger::class);
+        $this->dataHelper = $container->get('core.data_helper');
+        $this->settingsHelper = $container->get('settings.settings_helper');
         $this->maybeFixSubscriptions();
         $this->schedulePendingPaymentOrdersExpirationCheck();
         return true;
@@ -51,7 +61,7 @@ class SubscriptionModule implements ExecutableModule
     public function schedulePendingPaymentOrdersExpirationCheck()
     {
         if (class_exists('WC_Subscriptions_Order')) {
-            $settings_helper = Plugin::getSettingsHelper();
+            $settings_helper = $this->settingsHelper;
             $time = $settings_helper->getPaymentConfirmationCheckTime();
             $nextScheduledTime = wp_next_scheduled('pending_payment_confirmation_check');
             if (!$nextScheduledTime) {
@@ -92,7 +102,7 @@ class SubscriptionModule implements ExecutableModule
                 $order->update_status($new_order_status, '');
                 if ($order->get_meta('_order_stock_reduced', $single = true)) {
                     // Restore order stock
-                    Plugin::getDataHelper()->restoreOrderStock($order);
+                    $this->dataHelper->restoreOrderStock($order);
 
                     $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . " Stock for order {$order->get_id()} restored.");
                 }

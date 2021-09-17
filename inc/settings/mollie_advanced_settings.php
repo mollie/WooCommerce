@@ -4,7 +4,7 @@ use Mollie\WooCommerce\Gateway\AbstractGateway;
 use Mollie\WooCommerce\Plugin;
 use Mollie\WooCommerce\Settings\Settings;
 
-$pluginName = Plugin::PLUGIN_ID;
+$pluginName = 'mollie-payments-for-woocommerce';
 return [
     [
         'id'    => $pluginName . '_' .'title',
@@ -90,15 +90,15 @@ return [
         ),
         'type' => 'select',
         'options' => [
-            AbstractGateway::PAYMENT_METHOD_TYPE_ORDER => ucfirst(
-                    AbstractGateway::PAYMENT_METHOD_TYPE_ORDER
+            \Mollie\WooCommerce\Gateway\MolliePaymentGateway::PAYMENT_METHOD_TYPE_ORDER => ucfirst(
+                    \Mollie\WooCommerce\Gateway\MolliePaymentGateway::PAYMENT_METHOD_TYPE_ORDER
                 ) . ' (' . __('default', 'mollie-payments-for-woocommerce')
                 . ')',
-            AbstractGateway::PAYMENT_METHOD_TYPE_PAYMENT => ucfirst(
-                AbstractGateway::PAYMENT_METHOD_TYPE_PAYMENT
+            \Mollie\WooCommerce\Gateway\MolliePaymentGateway::PAYMENT_METHOD_TYPE_PAYMENT => ucfirst(
+                \Mollie\WooCommerce\Gateway\MolliePaymentGateway::PAYMENT_METHOD_TYPE_PAYMENT
             ),
         ],
-        'default' => AbstractGateway::PAYMENT_METHOD_TYPE_ORDER,
+        'default' => \Mollie\WooCommerce\Gateway\MolliePaymentGateway::PAYMENT_METHOD_TYPE_ORDER,
         /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
         'desc' => sprintf(
             __(

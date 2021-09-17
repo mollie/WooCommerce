@@ -30,6 +30,7 @@
     "@babel/core": "^7.4.5",
     "@babel/polyfill": "^7.7.0",
     "@babel/preset-env": "^7.4.5",
+    "@babel/preset-react": "^7.14.5",
     "@symfony/webpack-encore": "^0.28.2",
     "date-and-time": "^0.14.0",
     "del": "^3.0.0",

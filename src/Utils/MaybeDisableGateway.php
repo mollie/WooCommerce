@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Utils;
 
+use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Gateway\Voucher\Mollie_WC_Gateway_Voucher;
+use Mollie\WooCommerce\PaymentMethods\Voucher;
 
 class MaybeDisableGateway
 {
@@ -30,19 +32,23 @@ class MaybeDisableGateway
          *
          * For any other case we want to be sure mealvoucher gateway is included.
          */
-        if ($isWcApiRequest || !doing_action('woocommerce_payment_gateways')
+        if (
+            $isWcApiRequest
+            || !doing_action('woocommerce_payment_gateways')
             || !wp_doing_ajax()
             || is_admin()
         ) {
             return $gateways;
         }
-
-        $mealvoucherGatewayClassName = 'Mollie_WC_Gateway_Voucher';
-        $mealVoucherGatewayIndex = array_search(
-            $mealvoucherGatewayClassName,
-            $gateways,
-            true
-        );
+        $mealVoucherGatewayIndex = false;
+        foreach ($gateways as $key => $gateway) {
+            if (!($gateway instanceof MolliePaymentGateway)) {
+                continue;
+            }
+            if ($gateway->id === 'Mollie_WC_Gateway_Voucher') {
+                $mealVoucherGatewayIndex = $key;
+            }
+        }
 
         $productsWithCategory = $this->numberProductsWithCategory();
 
@@ -80,9 +86,9 @@ class MaybeDisableGateway
         foreach ($products as $product) {
             $postmeta = get_post_meta($product['product_id']);
             $localCategory = array_key_exists(
-                Mollie_WC_Gateway_Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+                Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
                 $postmeta
-            ) ? $postmeta[Mollie_WC_Gateway_Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION][0] : false;
+            ) ? $postmeta[Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION][0] : false;
             if (isset($product['variation_id'])) {
                 $postmeta = get_post_meta($product['variation_id']);
                 $postmeta = is_array($postmeta)?$postmeta:[];
@@ -120,11 +126,11 @@ class MaybeDisableGateway
      */
     public function productHasVoucherCategory($defaultCategory, $localCategory, $variationCategory = false)
     {
-        $defaultCatIsSet = $defaultCategory && ($defaultCategory !== Mollie_WC_Gateway_Voucher::NO_CATEGORY);
-        $localCatIsNoCat = $localCategory && $localCategory === Mollie_WC_Gateway_Voucher::NO_CATEGORY;
-        $localCatIsSet = $localCategory && $localCategory !== Mollie_WC_Gateway_Voucher::NO_CATEGORY;
-        $variationCatIsNoCat = $variationCategory && $variationCategory === Mollie_WC_Gateway_Voucher::NO_CATEGORY;
-        $variationCatIsSet = $variationCategory && $variationCategory !== Mollie_WC_Gateway_Voucher::NO_CATEGORY;
+        $defaultCatIsSet = $defaultCategory && ($defaultCategory !== Voucher::NO_CATEGORY);
+        $localCatIsNoCat = $localCategory && $localCategory === Voucher::NO_CATEGORY;
+        $localCatIsSet = $localCategory && $localCategory !== Voucher::NO_CATEGORY;
+        $variationCatIsNoCat = $variationCategory && $variationCategory === Voucher::NO_CATEGORY;
+        $variationCatIsSet = $variationCategory && $variationCategory !== Voucher::NO_CATEGORY;
         //In importance order variations ->local product (var, simple, subs) -> general
         if ($variationCatIsNoCat) {
             return false;

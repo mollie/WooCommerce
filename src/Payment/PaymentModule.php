@@ -8,14 +8,14 @@ namespace Mollie\WooCommerce\Payment;
 
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\Api\Resources\Refund;
-use Mollie\WooCommerce\Gateway\AbstractGateway;
-use Mollie\WooCommerce\Notice\AdminNotice;
-use Mollie\WooCommerce\Plugin;
+use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
+use WC_Order;
 
-class PaymentModule implements ExecutableModule
+class PaymentModule implements ServiceModule, ExecutableModule
 {
     use ModuleClassNameIdTrait;
 
@@ -27,11 +27,47 @@ class PaymentModule implements ExecutableModule
      * @var mixed
      */
     protected $logger;
+    protected $apiHelper;
+    /**
+     * @var mixed
+     */
+    protected $settingsHelper;
+    protected $pluginId;
+    /**
+     * @var mixed
+     */
+    protected $gatewayClassnames;
+
+
+    public function services(): array
+    {
+        return [
+           PaymentFactory::class => static function (ContainerInterface $container): PaymentFactory {
+               $data = $container->get('core.data_helper');
+               $apiHelper = $container->get('core.api_helper');
+               $settingsHelper = $container->get('settings.settings_helper');
+               $pluginId = $container->get('core.plugin_id');
+               return new PaymentFactory($data, $apiHelper, $settingsHelper, $pluginId);
+           },
+           MollieObject::class => static function (ContainerInterface $container): MollieObject {
+               $logger = $container->get(Logger::class);
+               $data = $container->get('core.data_helper');
+               $apiHelper = $container->get('core.api_helper');
+               $paymentFactory = $container->get(PaymentFactory::class);
+               $settingsHelper = $container->get('settings.settings_helper');
+               return new MollieObject($data, $logger, $paymentFactory, $apiHelper, $settingsHelper);
+           }
+        ];
+    }
 
     public function run(ContainerInterface $container): bool
     {
         $this->httpResponse = $container->get('SDK.HttpResponse');
         $this->logger = $container->get(Logger::class);
+        $this->apiHelper = $container->get('core.api_helper');
+        $this->settingsHelper = $container->get('settings.settings_helper');
+        $this->pluginId = $container->get('core.plugin_id');
+        $this->gatewayClassnames = $container->get('gateway.classnames');
         // Listen to return URL call
         add_action('woocommerce_api_mollie_return', [ $this, 'onMollieReturn' ]);
         add_action('template_redirect', [ $this, 'mollieReturnRedirect' ]);
@@ -52,7 +88,7 @@ class PaymentModule implements ExecutableModule
             2
         );
 
-        self::handleExpiryDateCancelation();
+        $this->handleExpiryDateCancelation();
 
         add_action(
             OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS,
@@ -91,7 +127,8 @@ class PaymentModule implements ExecutableModule
     public function cancelOrderOnExpiryDate()
     {
         $minHeldDuration = 526000;
-        foreach (self::$GATEWAY_CLASSNAMES as $gateway) {
+        $classNames = $this->gatewayClassnames;
+        foreach ($classNames as $gateway) {
             $gatewayName = strtolower($gateway).'_settings';
             $gatewaySettings = get_option($gatewayName);
             $heldDuration = isset($gatewaySettings['order_dueDate'])?$gatewaySettings['order_dueDate']:0;
@@ -121,7 +158,7 @@ class PaymentModule implements ExecutableModule
                 foreach ($unpaid_orders as $unpaid_order) {
                     $order = wc_get_order($unpaid_order);
                     add_filter('mollie-payments-for-woocommerce_order_status_cancelled', function ($newOrderStatus) {
-                        return AbstractGateway::STATUS_CANCELLED;
+                        return MolliePaymentGateway::STATUS_CANCELLED;
                     });
                     $order->update_status('cancelled', __('Unpaid order cancelled - time limit reached.', 'woocommerce'), true);
                     self::cancelOrderAtMollie($order->get_id());
@@ -202,7 +239,7 @@ class PaymentModule implements ExecutableModule
             return;
         }
 
-        if (!($gateway instanceof AbstractGateway)) {
+        if (!($gateway instanceof MolliePaymentGateway)) {
             $this->httpResponse->setHttpResponseCode(400);
             $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ": Invalid gateway {get_class($gateway)} for this plugin. Order {$orderId}.");
             return;
@@ -243,18 +280,18 @@ class PaymentModule implements ExecutableModule
              * Do not show instruction again below details on order received page
              * Instructions already displayed on top of order received page by $gateway->thankyou_page()
              *
-             * @see AbstractGateway::thankyou_page
+             * @see MolliePaymentGateway::thankyou_page
              */
             return;
         }
 
         $gateway = wc_get_payment_gateway_by_order($order);
 
-        if (!$gateway || !($gateway instanceof AbstractGateway)) {
+        if (!$gateway || !($gateway instanceof MolliePaymentGateway)) {
             return;
         }
 
-        /** @var AbstractGateway $gateway */
+        /** @var MolliePaymentGateway $gateway */
 
         $gateway->displayInstructions($order);
     }
@@ -273,7 +310,7 @@ class PaymentModule implements ExecutableModule
 
         // To disable automatic shipping and capturing of the Mollie order when a WooCommerce order status is updated to completed,
         // store an option 'mollie-payments-for-woocommerce_disableShipOrderAtMollie' with value 1
-        if (get_option(Plugin::PLUGIN_ID . '_' . 'disableShipOrderAtMollie', '0') == '1') {
+        if (get_option($this->pluginId . '_' . 'disableShipOrderAtMollie', '0') == '1') {
             return;
         }
 
@@ -290,11 +327,11 @@ class PaymentModule implements ExecutableModule
         }
 
         // Is test mode enabled?
-        $test_mode = mollieWooCommerceIsTestModeEnabled();
+        $test_mode = $this->settingsHelper->isTestModeEnabled();
 
         try {
             // Get the order from the Mollie API
-            $mollie_order = Plugin::getApiHelper()->getApiClient($test_mode)->orders->get($mollie_order_id);
+            $mollie_order = $this->apiHelper->getApiClient($test_mode)->orders->get($mollie_order_id);
 
             // Check that order is Paid or Authorized and can be captured
             if ($mollie_order->isCanceled()) {
@@ -312,7 +349,7 @@ class PaymentModule implements ExecutableModule
             }
 
             if ($mollie_order->isPaid() || $mollie_order->isAuthorized()) {
-                Plugin::getApiHelper()->getApiClient($test_mode)->orders->get($mollie_order_id)->shipAll();
+                $this->apiHelper->getApiClient($test_mode)->orders->get($mollie_order_id)->shipAll();
                 $order->add_order_note('Order successfully updated to shipped at Mollie, capture of funds underway.');
                 $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order successfully updated to shipped at Mollie, capture of funds underway.');
 
@@ -343,7 +380,7 @@ class PaymentModule implements ExecutableModule
 
         // To disable automatic canceling of the Mollie order when a WooCommerce order status is updated to canceled,
         // store an option 'mollie-payments-for-woocommerce_disableCancelOrderAtMollie' with value 1
-        if (get_option(Plugin::PLUGIN_ID . '_' . 'disableCancelOrderAtMollie', '0') == '1') {
+        if (get_option($this->pluginId . '_' . 'disableCancelOrderAtMollie', '0') == '1') {
             return;
         }
 
@@ -359,11 +396,11 @@ class PaymentModule implements ExecutableModule
         }
 
         // Is test mode enabled?
-        $test_mode = mollieWooCommerceIsTestModeEnabled();
+        $test_mode = $this->settingsHelper->isTestModeEnabled();
 
         try {
             // Get the order from the Mollie API
-            $mollie_order = Plugin::getApiHelper()->getApiClient($test_mode)->orders->get($mollie_order_id);
+            $mollie_order = $this->apiHelper->getApiClient($test_mode)->orders->get($mollie_order_id);
 
             // Check that order is not already canceled at Mollie
             if ($mollie_order->isCanceled()) {
@@ -375,7 +412,7 @@ class PaymentModule implements ExecutableModule
 
             // Check that order has the correct status to be canceled
             if ($mollie_order->isCreated() || $mollie_order->isAuthorized() || $mollie_order->isShipping()) {
-                Plugin::getApiHelper()->getApiClient($test_mode)->orders->get($mollie_order_id)->cancel();
+                $this->apiHelper->getApiClient($test_mode)->orders->get($mollie_order_id)->cancel();
                 $order->add_order_note('Order also cancelled at Mollie.');
                 $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order cancelled in WooCommerce, also cancelled at Mollie.');
 
@@ -398,7 +435,7 @@ class PaymentModule implements ExecutableModule
             as_schedule_single_action(time(), 'mollie_woocommerce_cancel_unpaid_orders');
             add_action(
                 'mollie_woocommerce_cancel_unpaid_orders',
-                [__CLASS__, 'cancelOrderOnExpiryDate'],
+                [$this, 'cancelOrderOnExpiryDate'],
                 11,
                 2
             );

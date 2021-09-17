@@ -22,11 +22,11 @@ class OrderItemsRefunder
     /**
      * @var string
      */
-    const ACTION_AFTER_REFUND_ORDER_ITEMS = Plugin::PLUGIN_ID . '_refund_items_created';
+    const ACTION_AFTER_REFUND_ORDER_ITEMS = 'mollie-payments-for-woocommerce_refund_items_created';
     /**
      * @var string
      */
-    const ACTION_AFTER_CANCELED_ORDER_ITEMS = Plugin::PLUGIN_ID . '_line_items_cancelled';
+    const ACTION_AFTER_CANCELED_ORDER_ITEMS = 'mollie-payments-for-woocommerce_line_items_cancelled';
 
     /**
      * @var RefundLineItemsBuilder

@@ -14,7 +14,7 @@ use WC_Data_Exception;
 class PayPalAjaxRequests
 {
     /**
-     * @var Mollie_WC_Gateway_PayPal
+     * @var
      */
     protected $gateway;
     /**
@@ -29,9 +29,9 @@ class PayPalAjaxRequests
     /**
      * PayPalAjaxRequests constructor.
      *
-     * @param Mollie_WC_Gateway_PayPal $gateway
+     * @param  $gateway
      */
-    public function __construct(Mollie_WC_Gateway_PayPal $gateway, NoticeInterface $notice, Logger $logger)
+    public function __construct($gateway, NoticeInterface $notice, Logger $logger)
     {
         $this->gateway = $gateway;
         $this->notice = $notice;
@@ -144,7 +144,8 @@ class PayPalAjaxRequests
         $order = $surchargeHandler->addSurchargeFeeProductPage($order, 'mollie_wc_gateway_paypal');
         $this->updateOrderPostMeta($orderId, $order);
         $result = $this->processOrderPayment($orderId);
-        if (isset($result['result'])
+        if (
+            isset($result['result'])
             && 'success' === $result['result']
         ) {
             $cart->empty_cart();
@@ -194,7 +195,7 @@ class PayPalAjaxRequests
      */
     protected function PayPalDataObjectHttp(): PayPalDataObjectHttp
     {
-        return new PayPalDataObjectHttp();
+        return new PayPalDataObjectHttp($this->logger);
     }
 
     /**

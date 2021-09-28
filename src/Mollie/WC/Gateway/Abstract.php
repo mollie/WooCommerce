@@ -2687,8 +2687,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
     {
         if (function_exists('idn_to_ascii')) {
             $parsed = parse_url($url);
-            $query = $parsed['query'];
-            $url = str_replace('?' . $query, '', $url);
+            $url = isset($parsed['query']) ? str_replace('?' . $parsed['query'], '', $url) : $url;
             if (defined('IDNA_NONTRANSITIONAL_TO_ASCII') && defined('INTL_IDNA_VARIANT_UTS46')) {
                 $url = idn_to_ascii($url, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46) ? idn_to_ascii(
                         $url,
@@ -2698,7 +2697,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
             } else {
                 $url = idn_to_ascii($url) ? idn_to_ascii($url) : $url;
             }
-            $url = $url . '?' . $query;
+            $url = isset($parsed['query']) ? $url . '?' . $parsed['query'] : $url;
         }
 
         return $url;

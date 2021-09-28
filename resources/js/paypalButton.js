@@ -93,37 +93,43 @@
             }
             payPalButton.disabled = true;
             payPalButton.classList.add("buttonDisabled");
-            if(preventSpam){
-                return
+            if(!preventSpam){
+                jQuery.ajax({
+                    url: ajaxUrl,
+                    method: 'POST',
+                    data: {
+                        action: 'mollie_paypal_create_order',
+                        productId: productId,
+                        productQuantity: productQuantity,
+                        needShipping: needShipping,
+                        'mollie-payments-for-woocommerce_issuer_paypal_button': 'paypal',
+                        nonce: nonce,
+                    },
+                    success: (response) => {
+                        let result = response.data
+
+                        if (response.success === true) {
+                            redirectionUrl = result['redirect'];
+                            window.location.href = redirectionUrl
+                        } else {
+                            console.log(response.data)
+                        }
+                    },
+                    error: (jqXHR, textStatus, errorThrown) => {
+                        payPalButton.disabled = false;
+                        payPalButton.classList.remove("buttonDisabled");
+                        console.warn(textStatus, errorThrown)
+                    },
+                })
             }
             preventSpam = true
-            jQuery.ajax({
-                url: ajaxUrl,
-                method: 'POST',
-                data: {
-                    action: 'mollie_paypal_create_order',
-                    productId: productId,
-                    productQuantity: productQuantity,
-                    needShipping: needShipping,
-                    'mollie-payments-for-woocommerce_issuer_paypal_button': 'paypal',
-                    nonce: nonce,
-                },
-                success: (response) => {
-                    let result = response.data
-
-                    if (response.success === true) {
-                        redirectionUrl = result['redirect'];
-                        window.location.href = redirectionUrl
-                    } else {
-                        console.log(response.data)
-                    }
-                },
-                error: (jqXHR, textStatus, errorThrown) => {
+            if(preventSpam){
+                setTimeout(function() {
                     payPalButton.disabled = false;
                     payPalButton.classList.remove("buttonDisabled");
-                    console.warn(textStatus, errorThrown)
-                },
-            })
+                    preventSpam = false
+                }, 3000);
+            }
         })
     }
 )

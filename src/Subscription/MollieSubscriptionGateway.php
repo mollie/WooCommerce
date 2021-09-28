@@ -199,7 +199,6 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                 'mollie_wc_gateway_giropay',
                 'mollie_wc_gateway_ideal',
                 'mollie_wc_gateway_kbc',
-                'mollie_wc_gateway_mistercash',
                 'mollie_wc_gateway_sofort',
             ];
 
@@ -276,7 +275,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         $subscription = array_pop($subscriptions); // Just need one valid subscription
         $subscription_mollie_payment_id = $subscription->get_meta('_mollie_payment_id');
         $subcriptionParentOrder = $subscription->get_parent();
-        $mandateId = isset($subcriptionParentOrder)? $subcriptionParentOrder->get_meta('_mollie_mandate_id') : null;
+        $mandateId = !empty($subcriptionParentOrder) ? $subcriptionParentOrder->get_meta('_mollie_mandate_id') : null;
 
         if (! empty($subscription_mollie_payment_id) && ! empty($subscription)) {
             $customer_id = $this->restore_mollie_customer_id_and_mandate($customer_id, $subscription_mollie_payment_id, $subscription);
@@ -291,14 +290,15 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         // Create a renewal payment
         try {
             do_action($this->pluginId . '_create_payment', $data, $renewal_order);
-            $payment = null;
             $test_mode = $this->settingsHelper->isTestModeEnabled();
             $apiKey = $this->settingsHelper->getApiKey($test_mode);
             $mollieApiClient = $this->apiHelper->getApiClient($apiKey);
             $validMandate = false;
+
             try {
-                if (isset($mandateId)) {
+                if (!empty($mandateId)) {
                     $this->logger->log(\WC_Log_Levels::DEBUG, $this->id . ': Found mandate ID for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id);
+
                     $mandate =  $mollieApiClient->customers->get($customer_id)->getMandate($mandateId);
                     if ($mandate->status === 'valid') {
                         $data['method'] = $mandate->method;
@@ -315,7 +315,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                         if ($mandate->status === 'valid') {
                             $validMandate = true;
                             $data['method'] = $mandate->method;
-                            if ($mandate->method === $renewalOrderMethod) {
+                            if($mandate->method === $renewalOrderMethod){
                                 $data['method'] = $mandate->method;
                                 break;
                             }
@@ -348,7 +348,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             // Get correct Mollie Payment Object
             $payment_object = $this->paymentFactory->getPaymentObject($payment);
             $payment_object->unsetActiveMolliePayment($renewal_order_id);
-            $payment_object->setActiveMolliePayment($renewal_order_id, $payment);
+            $payment_object->setActiveMolliePayment($renewal_order_id);
 
             // Set Mollie customer
             $this->dataService->setUserMollieCustomerIdAtSubscription($renewal_order_id, $payment_object::$customerId);
@@ -425,7 +425,6 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             'mollie_wc_gateway_giropay',
             'mollie_wc_gateway_ideal',
             'mollie_wc_gateway_kbc',
-            'mollie_wc_gateway_mistercash',
             'mollie_wc_gateway_sofort',
         ];
 

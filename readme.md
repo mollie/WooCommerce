@@ -67,6 +67,8 @@ Please go to the [signup page](https://www.mollie.com/signup) to create a new Mo
 * WordPress Multisite support
 * WPML support
 
+https://user-images.githubusercontent.com/45061744/133243432-9b5ba527-4830-4ade-9235-2f827c981169.mp4
+
 # License
 [GPLv2 (GNU General Public License, version 2) License](http://www.gnu.org/licenses/gpl-2.0.html).
 Copyright (c) 2014-2018, Mollie B.V.

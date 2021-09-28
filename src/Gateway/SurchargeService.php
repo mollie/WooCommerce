@@ -51,7 +51,7 @@ class SurchargeService
         }
         $amountFee = $gateway->settings[GatewaySurchargeHandler::FIXED_FEE];
         $currency = get_woocommerce_currency_symbol();
-        return sprintf(__(" +%1\$1s%2\$2s Fee", 'mollie-payments-for-woocommerce'), $amountFee, $currency);
+        return sprintf(__(" +%1\$1s%2\$2s fee might apply", 'mollie-payments-for-woocommerce'), $amountFee, $currency);
     }
 
     protected function name_percentage()
@@ -61,7 +61,7 @@ class SurchargeService
             return false;
         }
         $amountFee = $gateway->settings[GatewaySurchargeHandler::PERCENTAGE];
-        return sprintf(__(' +%1s%% Fee', 'mollie-payments-for-woocommerce'), $amountFee);
+        return sprintf(__(' +%1s%% fee might apply', 'mollie-payments-for-woocommerce'), $amountFee);
     }
 
     protected function name_fixed_fee_percentage()
@@ -78,6 +78,6 @@ class SurchargeService
         $amountFix = $gateway->settings[GatewaySurchargeHandler::FIXED_FEE];
         $currency = get_woocommerce_currency_symbol();
         $amountPercent = $gateway->settings[GatewaySurchargeHandler::PERCENTAGE];
-        return sprintf(__(" +%1\$1s%2\$2s + %3\$3s%% Fee", 'mollie-payments-for-woocommerce'), $amountFix, $currency, $amountPercent);
+        return sprintf(__(" +%1\$1s%2\$2s + %3\$3s%% fee might apply", 'mollie-payments-for-woocommerce'), $amountFix, $currency, $amountPercent);
     }
 }

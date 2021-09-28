@@ -187,6 +187,14 @@ class ResponsesToApple
                 $type
             );
         }
+        if ($paymentDetails['fee']['amount']) {
+            $response[]
+                = $this->appleItemFormat(
+                $paymentDetails['fee']['label'] ?: '',
+                $paymentDetails['fee']['amount'],
+                $type
+            );
+        }
         $response[]
             = $this->appleItemFormat(
             'Estimated Tax',

@@ -135,6 +135,22 @@ return [
         )
     ],
     [
+        'id' => $pluginName . '_' . 'gatewayFeeLabel',
+        'title' => __(
+            'Surcharge gateway fee label',
+            'mollie-payments-for-woocommerce'
+        ),
+        'type' => 'text',
+        'custom_attributes'=>['maxlength'=>'30'],
+        'default' => __('Gateway Fee', 'mollie-payments-for-woocommerce'),
+        'desc' => sprintf(
+            __(
+                'This is the label will appear in frontend when the surcharge applies',
+                'mollie-payments-for-woocommerce'
+            )
+        )
+    ],
+    [
         'id'   => $pluginName . '_' .'sectionend',
         'type' => 'sectionend',
     ]

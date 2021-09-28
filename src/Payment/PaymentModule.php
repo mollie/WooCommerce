@@ -126,7 +126,6 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
     public function cancelOrderOnExpiryDate()
     {
-        $minHeldDuration = 526000;
         $classNames = $this->gatewayClassnames;
         foreach ($classNames as $gateway) {
             $gatewayName = strtolower($gateway).'_settings';
@@ -135,9 +134,6 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
             if ($heldDuration < 1) {
                 continue;
-            }
-            if ($heldDuration < $minHeldDuration) {
-                $minHeldDuration = $heldDuration;
             }
             $heldDurationInSeconds = $heldDuration*60;
             if ($gateway == 'Mollie_WC_Gateway_BankTransfer') {
@@ -165,9 +161,6 @@ class PaymentModule implements ServiceModule, ExecutableModule
                 }
             }
         }
-
-        wp_clear_scheduled_hook('mollie_woocommerce_cancel_unpaid_orders');
-        wp_schedule_single_event(time() + ( absint($minHeldDuration) * 60 ), 'mollie_woocommerce_cancel_unpaid_orders');
     }
 
     /**
@@ -430,9 +423,16 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
     public function handleExpiryDateCancelation()
     {
+        if(!mollieWooCommercIsExpiryDateEnabled()){
+            as_unschedule_action( 'mollie_woocommerce_cancel_unpaid_orders' );
+            return;
+        }
         $canSchedule = function_exists('as_schedule_single_action');
         if ($canSchedule) {
-            as_schedule_single_action(time(), 'mollie_woocommerce_cancel_unpaid_orders');
+            if ( false === as_next_scheduled_action( 'mollie_woocommerce_cancel_unpaid_orders' ) ) {
+                as_schedule_recurring_action( time(), 600, 'mollie_woocommerce_cancel_unpaid_orders');
+            }
+
             add_action(
                 'mollie_woocommerce_cancel_unpaid_orders',
                 [$this, 'cancelOrderOnExpiryDate'],

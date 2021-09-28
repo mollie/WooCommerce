@@ -333,8 +333,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         if (!$current_screen) {
             return true;
         }
-
-        // Remove old MisterCash (only) from WooCommerce Payment settings
+        
         if (is_admin() && !empty($current_screen->base)
             && $current_screen->base == 'woocommerce_page_wc-settings'
         ) {
@@ -1344,8 +1343,8 @@ class MolliePaymentGateway extends WC_Payment_Gateway
      */
     public function get_transaction_url($order)
     {
-        $resource = ($order->get_meta('_mollie_order_id', true)) ? 'orders'
-            : 'payments';
+        $isPaymentApi = substr($order->get_meta( '_mollie_order_id', true ), 0, 3) === 'tr_'  ;
+        $resource = ($order->get_meta( '_mollie_order_id', true ) && !$isPaymentApi) ? 'orders' : 'payments';
 
         $this->view_transaction_url = 'https://www.mollie.com/dashboard/'
             . $resource . '/%s';

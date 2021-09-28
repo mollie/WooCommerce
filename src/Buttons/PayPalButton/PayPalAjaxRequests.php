@@ -148,7 +148,6 @@ class PayPalAjaxRequests
             isset($result['result'])
             && 'success' === $result['result']
         ) {
-            $cart->empty_cart();
             wp_send_json_success($result);
         } else {
             /* translators: Placeholder 1: Payment method title */

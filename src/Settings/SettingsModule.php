@@ -34,18 +34,25 @@ class SettingsModule implements ServiceModule, ExecutableModule
     public function services(): array
     {
         return [
+            'settings.getGlobalSettingsUrl' => function (ContainerInterface $container): string {
+                /** @var Settings $settingsHelper */
+                $pluginId = $container->get('core.plugin_id');
+                return admin_url('admin.php?page=wc-settings&tab=mollie_settings#' . $pluginId);
+            },
             'settings.settings_helper' => function (ContainerInterface $container): Settings {
                 $pluginId = $container->get('core.plugin_id');
                 $pluginUrl = $container->get('core.plugin_url');
                 $statusHelper = $container->get('core.status_helper');
                 $pluginVersion = $container->get('core.plugin_version');
                 $apiHelper =  $container->get('core.api_helper');
+                $globalSettingsUrl = $container->get('settings.getGlobalSettingsUrl');
                 return new Settings(
                     $pluginId,
                     $statusHelper,
                     $pluginVersion,
                     $pluginUrl,
-                    $apiHelper
+                    $apiHelper,
+                    $globalSettingsUrl
                 );
             },
             'settings.payment_method_settings_handler' => function (): PaymentMethodSettingsHandler {
@@ -56,11 +63,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
                 $settingsHelper = $container->get('settings.settings_helper');
                 return $settingsHelper->isTestModeEnabled();
             },
-            'settings.getGlobalSettingsUrl' => function (ContainerInterface $container): string {
-                /** @var Settings $settingsHelper */
-                $pluginId = $container->get('core.plugin_id');
-                return admin_url('admin.php?page=wc-settings&tab=mollie_settings#' . $pluginId);
-            },
+
 
         ];
     }

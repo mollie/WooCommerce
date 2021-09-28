@@ -62,7 +62,6 @@ class AssetsModule implements ExecutableModule
                     ]
                 );
                 if (is_admin()) {
-                    global $current_section;
                     wp_register_script(
                         'mollie_wc_gateway_settings',
                         $this->getPluginUrl(
@@ -375,6 +374,6 @@ class AssetsModule implements ExecutableModule
 
     protected function getPluginPath(string $path = ''): string
     {
-        return $this->pluginPath . '/' . ltrim($path, '/');
+        return $this->pluginPath . ltrim($path, '/');
     }
 }

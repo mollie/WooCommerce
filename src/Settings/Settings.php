@@ -75,6 +75,7 @@ class Settings
     public $pluginId;
     public $pluginVersion;
     public $pluginUrl;
+    protected $globalSettingsUrl;
     protected $statusHelper;
 
     protected $gatewaysWithNamespace;
@@ -88,16 +89,20 @@ class Settings
         $statusHelper,
         $pluginVersion,
         $pluginUrl,
-        $apiHelper
+        $apiHelper,
+        $globalSettingsUrl
     ) {
-
         $this->pluginId = $pluginId;
         $this->pluginVersion = $pluginVersion;
         $this->pluginUrl = $pluginUrl;
         $this->statusHelper = $statusHelper;
         $this->apiHelper = $apiHelper;
+        $this->globalSettingsUrl = $globalSettingsUrl;
     }
 
+    public function getGlobalSettingsUrl(){
+        return $this->globalSettingsUrl;
+    }
     public function generalFormFields(
         $defaultTitle,
         $defaultDescription,
@@ -268,7 +273,8 @@ class Settings
      */
     public function isTestModeEnabled()
     {
-        return trim(get_option($this->getSettingId('test_mode_enabled'))) === 'yes';
+        $testModeEnabled = get_option($this->getSettingId('test_mode_enabled'));
+        return is_string($testModeEnabled)? trim($testModeEnabled) === 'yes': false;
     }
 
     /**
@@ -286,7 +292,7 @@ class Settings
             $apiKey = filter_input(INPUT_POST, $apiKeyId, FILTER_SANITIZE_STRING);
         }
 
-        return trim($apiKey);
+        return is_string($apiKey)? trim($apiKey): false;
     }
 
     /**
@@ -397,7 +403,7 @@ class Settings
         $merchantProfileIdOptionKey = $this->pluginId . '_profile_merchant_id';
 
         try {
-            $merchantProfile = mollieWooCommerceMerchantProfile();
+            $merchantProfile = $this->mollieWooCommerceMerchantProfile();
             $merchantProfileId = property_exists($merchantProfile, 'id') && $merchantProfile->id !== null ? $merchantProfile->id : '';
         } catch (ApiException $apiException) {
             $merchantProfileId = '';

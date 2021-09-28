@@ -4,9 +4,8 @@ use Mollie\WooCommerce\Gateway\ApplePay\Mollie_WC_Gateway_ApplePay;
 use Mollie\WooCommerce\Plugin;
 
 $pluginName = 'mollie-payments-for-woocommerce';
-//$gateway = new Mollie_WC_Gateway_ApplePay();
-$title = 'Apple Pay Hardcoded';//$gateway->method_title;
-$description = 'Apple description hardcoded'; //$gateway->method_description;
+$title = 'Apple Pay';
+$description = 'Apple description';
 $pluginId = 'mollie-payments-for-woocommerce';
 $applePayOption = get_option('mollie_wc_gateway_applepay_settings');
 

@@ -166,24 +166,39 @@ class Mollie_WC_Payment_Object {
         }
 
         // Also store it on the subscriptions being purchased or paid for in the order
-        if ( wcs_order_contains_subscription( $order_id ) ) {
-            $subscriptions = wcs_get_subscriptions_for_order( $order_id );
-        } elseif ( wcs_order_contains_renewal( $order_id ) ) {
-            $subscriptions = wcs_get_subscriptions_for_renewal_order( $order_id );
-        } else {
-            $subscriptions = array ();
-        }
-
-        foreach ( $subscriptions as $subscription ) {
-            $this->unsetActiveMolliePayment( $subscription->get_id() );
-            $subscription->delete_meta_data( '_mollie_customer_id' );
-            $subscription->update_meta_data( '_mollie_payment_id', static::$paymentId );
-            $subscription->update_meta_data( '_mollie_payment_mode', $this->data->mode );
-            $subscription->delete_meta_data( '_mollie_cancelled_payment_id' );
-            if ( static::$customerId ) {
-                $subscription->update_meta_data( '_mollie_customer_id', static::$customerId );
+        if (class_exists('WC_Subscriptions')
+            && class_exists('WC_Subscriptions_Admin')
+            && $this->dataHelper->isWcSubscription($order_id)) {
+            if (wcs_order_contains_subscription($order_id)) {
+                $subscriptions = wcs_get_subscriptions_for_order($order_id);
+            } elseif (wcs_order_contains_renewal($order_id)) {
+                $subscriptions = wcs_get_subscriptions_for_renewal_order(
+                    $order_id
+                );
+            } else {
+                $subscriptions = array();
             }
-            $subscription->save();
+
+            foreach ($subscriptions as $subscription) {
+                $this->unsetActiveMolliePayment($subscription->get_id());
+                $subscription->delete_meta_data('_mollie_customer_id');
+                $subscription->update_meta_data(
+                    '_mollie_payment_id',
+                    static::$paymentId
+                );
+                $subscription->update_meta_data(
+                    '_mollie_payment_mode',
+                    $this->data->mode
+                );
+                $subscription->delete_meta_data('_mollie_cancelled_payment_id');
+                if (static::$customerId) {
+                    $subscription->update_meta_data(
+                        '_mollie_customer_id',
+                        static::$customerId
+                    );
+                }
+                $subscription->save();
+            }
         }
 
         $order->save();

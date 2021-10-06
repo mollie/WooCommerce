@@ -25,7 +25,8 @@ function configJavaScript ({ basePath })
     .addEntry('gatewaySettings.min', './resources/js/gatewaySettings.js')
     .addEntry('gatewaySurcharge.min', './resources/js/gatewaySurcharge.js')
     .addEntry('mollie-components.min', './resources/js/mollie-components.js')
-      .enableSourceMaps(!Encore.isProduction())
+    .addEntry('mollieBlockIndex.min', './resources/js/mollieBlockIndex.js')
+    .enableSourceMaps(!Encore.isProduction())
 
   return extractEncoreConfig('javascript-configuration')
 }

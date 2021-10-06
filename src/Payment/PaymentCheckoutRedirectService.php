@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Payment;
 
 use Mollie\WooCommerce\Notice\NoticeInterface;
-use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\DefaultRedirectStrategy;
-use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\PaymentRedirectStrategyI;
+use Mollie\WooCommerce\PaymentMethods\PaymentRedirectStrategies\DefaultRedirectStrategy;
+use Mollie\WooCommerce\PaymentMethods\PaymentRedirectStrategies\PaymentRedirectStrategyI;
 use Mollie\WooCommerce\Utils\Data;
 use Psr\Log\LoggerInterface as Logger;
 use WC_Order;

@@ -36,7 +36,7 @@ class CoreModule implements ServiceModule
             },
             'core.plugin_version' => function (): string {
                 //Get plugin version TODO handle with properties
-                return '6.6.0';
+                return '6.7.0';
             },
             'core.plugin_title' => function (): string {
                 //Get plugin version TODO handle with properties

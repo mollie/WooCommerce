@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\PaymentMethods;
+namespace Mollie\WooCommerce\PaymentMethods\InstructionStrategies;
 
 interface InstructionStrategyI
 {

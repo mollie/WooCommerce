@@ -423,7 +423,8 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
     public function handleExpiryDateCancelation()
     {
-        if(!mollieWooCommercIsExpiryDateEnabled()){
+        //todo this doesnt work
+        /*if(!mollieWooCommercIsExpiryDateEnabled()){
             as_unschedule_action( 'mollie_woocommerce_cancel_unpaid_orders' );
             return;
         }
@@ -439,7 +440,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
                 11,
                 2
             );
-        }
+        }*/
     }
 
     /**

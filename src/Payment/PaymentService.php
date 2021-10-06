@@ -511,7 +511,7 @@ class PaymentService
                     ? $data['orderNumber'] : ''
             ];
 
-            $this->logger->log( \WC_Log_Levels::DEBUG, $apiCallLog);
+            $this->logger->log( \WC_Log_Levels::DEBUG, json_encode($apiCallLog));
             $paymentOrder = $paymentObject;
             $paymentObject = $this->apiHelper->getApiClient($apiKey)->orders->create($data);
             $settingsHelper = $this->settingsHelper;

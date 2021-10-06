@@ -14,6 +14,10 @@ use Mollie\WooCommerce\Settings\SettingsComponents;
  */
 function mollieWooCommerceIsCheckoutContext()
 {
+    global $wp_query;
+    if(!isset($wp_query)){
+        return false;
+    }
     return is_checkout() || is_checkout_pay_page();
 }
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\PaymentMethods;
+namespace Mollie\WooCommerce\PaymentMethods\InstructionStrategies;
 
 class DirectdebitInstructionStrategy implements InstructionStrategyI
 {

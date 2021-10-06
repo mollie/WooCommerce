@@ -86,7 +86,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                     'Belfius',
                     'Creditcard',
                     'DirectDebit',
-                    'EPS',
+                    'Eps',
                     'Giropay',
                     'Ideal',
                     'Kbc',

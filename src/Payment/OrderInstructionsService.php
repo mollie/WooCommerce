@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Payment;
 
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
-use Mollie\WooCommerce\PaymentMethods\DefaultInstructionStrategy;
+use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\DefaultInstructionStrategy;
 
 class OrderInstructionsService
 {

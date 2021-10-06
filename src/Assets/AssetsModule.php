@@ -226,9 +226,9 @@ class AssetsModule implements ExecutableModule
         );
         wp_register_script(
             'mollie_paypalButton',
-            $this->getPluginUrl('/resources/js/paypalButton.js'),
+            $this->getPluginUrl('/public/js/paypalButton.min.js'),
             ['underscore', 'jquery'],
-            filemtime($this->getPluginPath('/resources/js/paypalButton.js')),
+            filemtime($this->getPluginPath('/public/js/paypalButton.min.js')),
             true
         );
         wp_register_script(
@@ -268,6 +268,13 @@ class AssetsModule implements ExecutableModule
             filemtime($this->getPluginPath('/public/js/gatewaySurcharge.min.js')),
             true
         );
+        wp_register_script(
+            'mollie_block_index',
+            $this->getPluginUrl('/public/js/mollieBlockIndex.min.js'),
+            ['wc-blocks-registry', 'underscore'],
+            filemtime($this->getPluginPath('/public/js/mollieBlockIndex.min.js')),
+            true
+        );
     }
 
     /**
@@ -277,6 +284,14 @@ class AssetsModule implements ExecutableModule
      */
     public function enqueueFrontendScripts()
     {
+        wp_enqueue_script('mollie_block_index');
+        wp_localize_script(
+            'mollie_block_index',
+            'mollieBlockData',
+            [
+                'gatewayData' => $this->gatewayDataForWCBlocks()
+            ]
+        );
         if (is_admin() || !mollieWooCommerceIsCheckoutContext()) {
             return;
         }
@@ -365,6 +380,22 @@ class AssetsModule implements ExecutableModule
                 'isCheckoutPayPage' => is_checkout_pay_page(),
             ]
         );
+    }
+
+    protected function gatewayDataForWCBlocks(): array
+    {
+        return [
+            [
+                'name' => 'mollie_wc_gateway_ideal',
+                'label' => 'ideal',
+                'content' => 'Ideal content',
+                'edit' => 'Ideal edit',
+                'paymentMethodId' => 'mollie_wc_gateway_ideal',
+                'canMakePayment' => true,
+                'ariaLabel' => 'Payment via Mollie',
+                'supports' => []
+            ]
+        ];
     }
 
     protected function getPluginUrl(string $path = ''): string

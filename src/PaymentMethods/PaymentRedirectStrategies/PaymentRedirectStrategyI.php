@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
+namespace Mollie\WooCommerce\PaymentMethods\PaymentRedirectStrategies;
 
 use Mollie\WooCommerce\Payment\MollieObject;
 use WC_Order;

@@ -486,7 +486,7 @@ class Data
     public function formatCurrencyValue($value, $currency)
     {
         // Only the Japanese Yen has no decimals in the currency
-        $value = $value;
+        $value = (int) $value;
 
         return $currency == "JPY" ? number_format($value, 0, '.', '') : number_format($value, 2, '.', '');
     }

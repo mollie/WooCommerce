@@ -544,7 +544,7 @@ class Mollie_WC_Helper_Data
     public function isSubscription($orderId)
     {
         $isSubscription = false;
-        $isSubscription = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_is_subscription_payment', $orderId,  $isSubscription);
+        $isSubscription = apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_is_subscription_payment', $isSubscription, $orderId);
         return $isSubscription;
     }
 }

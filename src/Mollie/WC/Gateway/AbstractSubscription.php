@@ -653,7 +653,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
     {
         add_filter(
             Mollie_WC_Plugin::PLUGIN_ID . '_is_subscription_payment',
-            function ($orderId, $isSubscription) {
+            function ($isSubscription, $orderId) {
                 if (mollieWooCommerceGetDataHelper()->isWcSubscription($orderId)) {
                     add_filter(
                         Mollie_WC_Plugin::PLUGIN_ID . '_is_automatic_payment_disabled',

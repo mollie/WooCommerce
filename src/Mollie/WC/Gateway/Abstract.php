@@ -2710,6 +2710,10 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
      */
     protected function setBillingAddressAfterPayment( $payment, $order)
     {
+        if ( apply_filters( Mollie_WC_Plugin::PLUGIN_ID . '_disable_set_billing_address_after_payment', false, $payment, $order ) ) {
+            return;
+        }
+
         $billingAddress = $payment->billingAddress;
         $wooBillingAddress = [
                 'first_name' => $billingAddress->givenName,

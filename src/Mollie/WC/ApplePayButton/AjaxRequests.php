@@ -6,6 +6,8 @@ class Mollie_WC_ApplePayButton_AjaxRequests
      * @var Mollie_WC_ApplePayButton_ResponsesToApple
      */
     private $responseTemplates;
+    private $reloadCart;
+    private $oldCartContents;
 
     /**
      * Mollie_WC_ApplePayButton_AjaxRequests constructor.
@@ -203,20 +205,7 @@ class Mollie_WC_ApplePayButton_AjaxRequests
         if ($applePayRequestDataObject->hasErrors()) {
             $this->responseTemplates->responseWithDataErrors($applePayRequestDataObject->errors);
         }
-        $order = wc_create_order();
-        $order->add_product(
-            wc_get_product($applePayRequestDataObject->productId),
-            $applePayRequestDataObject->productQuantity
-        );
-        $order = $this->addAddressesToOrder($applePayRequestDataObject, $order);
-
-        if(isset($applePayRequestDataObject->shippingMethod)){
-            $order = $this->addShippingMethodsToOrder(
-                $applePayRequestDataObject->shippingMethod,
-                $applePayRequestDataObject->shippingAddress,
-                $order
-            );
-        }
+        $order = $this->createOrderFromProductPage($applePayRequestDataObject);
         $surchargeHandler = new Mollie_WC_Helper_GatewaySurchargeHandler();
         $order = $surchargeHandler->addSurchargeFeeProductPage($order, 'mollie_wc_gateway_applepay');
 
@@ -272,13 +261,8 @@ class Mollie_WC_ApplePayButton_AjaxRequests
             return;
         }
 
-        list($cart, $order) = $this->createOrderFromCart();
-        $order = $this->addAddressesToOrder($applePayRequestDataObject, $order);
-        $order = $this->addShippingMethodsToOrder(
-            $applePayRequestDataObject->shippingMethod,
-            $applePayRequestDataObject->shippingAddress,
-            $order
-        );
+        list($cart, $order) = $this->createOrderFromCart($applePayRequestDataObject);
+
         $surchargeHandler = new Mollie_WC_Helper_GatewaySurchargeHandler();
         $order = $surchargeHandler->addSurchargeFeeProductPage($order, 'mollie_wc_gateway_applepay');
 
@@ -392,13 +376,10 @@ class Mollie_WC_ApplePayButton_AjaxRequests
         $shippingMethod = null
     ) {
         $results = [];
-        $reloadCart = false;
+        $this->reloadCart = false;
+        $this->oldCartContents = WC()->cart->get_cart_contents();
         if (!WC()->cart->is_empty()) {
-            $oldCartContents = WC()->cart->get_cart_contents();
-            foreach ($oldCartContents as $cartItemKey => $value) {
-                WC()->cart->remove_cart_item($cartItemKey);
-            }
-            $reloadCart = true;
+            $this->emptyCurrentCart();
         }
         try {
             //I just care about apple address details
@@ -439,10 +420,8 @@ class Mollie_WC_ApplePayButton_AjaxRequests
 
             $cart->remove_cart_item($cartItemKey);
             $this->customerAddress();
-            if ($reloadCart) {
-                foreach ($oldCartContents as $cartItemKey => $value) {
-                    $cart->restore_cart_item($cartItemKey);
-                }
+            if ($this->reloadCart) {
+                $this->reloadCart($cart);
             }
         } catch (Exception $e) {
         }
@@ -777,13 +756,39 @@ class Mollie_WC_ApplePayButton_AjaxRequests
      * @return array
      * @throws Exception
      */
-    protected function createOrderFromCart()
+    protected function createOrderFromCart($applePayRequestDataObject)
     {
         $cart = WC()->cart;
         $checkout = WC()->checkout();
-        $orderId = $checkout->create_order([]);
+        $orderId = $checkout->create_order(
+            [
+                'payment_method' => 'mollie_wc_gateway_applepay',
+                'billing_email' => $applePayRequestDataObject->billingAddress['email']
+            ]
+        );
         $order = wc_get_order($orderId);
+        $order = $this->addAddressesToOrder($applePayRequestDataObject, $order);
+        if (isset($applePayRequestDataObject->shippingMethod)) {
+            $order = $this->addShippingMethodsToOrder(
+                $applePayRequestDataObject->shippingMethod,
+                $applePayRequestDataObject->shippingAddress,
+                $order
+            );
+        }
+        if($this->cartHasSubscriptionItem($cart)){
+            add_action('mollie_wc_create_subscription_cart_express_button', [$this, 'createWcSubscriptionInCart'], 10, 2);
+            do_action('mollie_wc_create_subscription_cart_express_button', $order, $cart);
+        }
         return array($cart, $order);
+    }
+
+    public function createWcSubscriptionInCart($order, $cart)
+    {
+        if ( class_exists( 'WC_Subscriptions_Order' ) ) {
+            $now = gmdate('Y-m-d H:i:s');
+            $cart->start_date = $now;
+            WC_Subscriptions_Checkout::create_subscription($order, $cart, []);
+        }
     }
 
     /**
@@ -826,4 +831,69 @@ class Mollie_WC_ApplePayButton_AjaxRequests
         return $json;
     }
 
+    /**
+     * @param WC_Cart $cart
+     *
+     * @return bool
+     */
+    protected function cartHasSubscriptionItem(WC_Cart $cart): bool
+    {
+        $hasSubscriptionItem = false;
+        foreach ($cart->get_cart() as $item) {
+            $product = wc_get_product($item['product_id']);
+
+            if ($product->is_type('subscription')) {
+                $hasSubscriptionItem = true;
+            }
+        }
+        return $hasSubscriptionItem;
+    }
+
+    /**
+     * @param Mollie_WC_ApplePayButton_ApplePayDataObjectHttp $applePayRequestDataObject
+     *
+     * @return mixed
+     */
+    public function createOrderFromProductPage(
+        Mollie_WC_ApplePayButton_ApplePayDataObjectHttp $applePayRequestDataObject
+    ) {
+        $cart = WC()->cart;
+        $this->oldCartContents = WC()->cart->get_cart_contents();
+        $this->emptyCurrentCart();
+        $cartItemKey = $cart->add_to_cart(
+            $applePayRequestDataObject->productId,
+            $applePayRequestDataObject->productQuantity
+        );
+        list($cart, $order) = $this->createOrderFromCart(
+            $applePayRequestDataObject
+        );
+        $cart->remove_cart_item($cartItemKey);
+        if ($this->reloadCart) {
+            $this->reloadCart($cart);
+        }
+
+        return $order;
+    }
+
+    /**
+     * Empty the cart to use for calculations
+     * while saving its contents in a field
+     */
+    protected function emptyCurrentCart()
+    {
+        foreach ($this->oldCartContents as $cartItemKey => $value) {
+            WC()->cart->remove_cart_item($cartItemKey);
+        }
+        $this->reloadCart = true;
+    }
+
+    /**
+     * @param WC_Cart $cart
+     */
+    protected function reloadCart(WC_Cart $cart): void
+    {
+        foreach ($this->oldCartContents as $cartItemKey => $value) {
+            $cart->restore_cart_item($cartItemKey);
+        }
+    }
 }

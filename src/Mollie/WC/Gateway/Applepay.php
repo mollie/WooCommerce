@@ -6,7 +6,7 @@ use Mollie\Api\Types\PaymentMethod;
 /**
  * Class applepay
  */
-class Mollie_WC_Gateway_Applepay extends Mollie_WC_Gateway_Abstract
+class Mollie_WC_Gateway_Applepay extends Mollie_WC_Gateway_AbstractSepaRecurring
 {
     /**
      * Mollie_WC_Gateway_Applepay constructor.

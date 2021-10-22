@@ -2360,6 +2360,7 @@ abstract class Mollie_WC_Gateway_Abstract extends WC_Payment_Gateway
 
             if ($order_payment_method == 'mollie_wc_gateway_klarnapaylater'
                     || $order_payment_method == 'mollie_wc_gateway_sliceit'
+                    || $order_payment_method == 'mollie_wc_gateway_klarnapaynow'
             ) {
                 Mollie_WC_Plugin::debug(
                         'Creating payment object: type Order, failed for Klarna payment, stopping process.'

@@ -36,6 +36,7 @@ class Mollie_WC_Plugin
         'Mollie_WC_Gateway_Kbc',
         'Mollie_WC_Gateway_KlarnaPayLater',
         'Mollie_WC_Gateway_KlarnaSliceIt',
+        'Mollie_WC_Gateway_KlarnaPayNow',
         'Mollie_WC_Gateway_Bancontact',
         'Mollie_WC_Gateway_PayPal',
         'Mollie_WC_Gateway_Paysafecard',
@@ -915,20 +916,20 @@ class Mollie_WC_Plugin
                 'componentsAttributes' => [
                     [
                         'name' => 'cardHolder',
-                        'label' => esc_html__('Card Holder', 'mollie-payments-for-woocommerce')
+                        'label' => esc_html__('Name on card', 'mollie-payments-for-woocommerce')
                     ],
                     [
                         'name' => 'cardNumber',
-                        'label' => esc_html__('Card Number', 'mollie-payments-for-woocommerce')
+                        'label' => esc_html__('Card number', 'mollie-payments-for-woocommerce')
                     ],
                     [
                         'name' => 'expiryDate',
-                        'label' => esc_html__('Expiry Date', 'mollie-payments-for-woocommerce')
+                        'label' => esc_html__('Expiry date', 'mollie-payments-for-woocommerce')
                     ],
                     [
                         'name' => 'verificationCode',
                         'label' => esc_html__(
-                            'Verification Code',
+                            'CVC/CVV',
                             'mollie-payments-for-woocommerce'
                         )
                     ],

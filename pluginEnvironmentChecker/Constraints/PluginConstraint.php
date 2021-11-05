@@ -72,5 +72,4 @@ class PluginConstraint extends AbstractVersionConstraint
 		}
 		return false;
 	}
-
 }

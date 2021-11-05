@@ -4,7 +4,6 @@ namespace Inpsyde\EnvironmentChecker\Constraints;
 
 class WordPressConstraint extends AbstractVersionConstraint
 {
-
 	/**
 	 * WordPressAbstractVersionConstraint constructor.
 	 *
@@ -30,5 +29,4 @@ class WordPressConstraint extends AbstractVersionConstraint
 		    $WPCurrentVersion
 	    );
     }
-
 }

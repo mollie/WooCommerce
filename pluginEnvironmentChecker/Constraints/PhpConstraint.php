@@ -4,7 +4,6 @@ namespace Inpsyde\EnvironmentChecker\Constraints;
 
 class PhpConstraint extends AbstractVersionConstraint
 {
-
 	/**
 	 * PhpAbstractVersionConstraint constructor.
 	 *

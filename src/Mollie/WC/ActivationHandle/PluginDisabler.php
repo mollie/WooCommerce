@@ -17,7 +17,6 @@ class Mollie_WC_ActivationHandle_PluginDisabler
         $pluginSlug,
         $initFunctionName
     ) {
-
         $this->pluginSlug = $pluginSlug;
         $this->initFunctionName = $initFunctionName;
     }
@@ -56,10 +55,11 @@ class Mollie_WC_ActivationHandle_PluginDisabler
 
     /**
      * Remove the plugin from the auto-update list
+     *
      * @param $update
      * @param $item
      *
-     * @return false
+     * @return bool|null
      */
     public function notAutoUpdateThisPlugin($update, $item)
     {

@@ -114,7 +114,7 @@ class Mollie_WC_Helper_ApplePayDirectHandler
     {
         ?>
         <div id="mollie-applepayDirect-button">
-            <?php wp_nonce_field('mollie_applepay_button'); ?>
+            <?php wp_nonce_field( 'woocommerce-process_checkout', 'woocommerce-process-checkout-nonce' );  ?>
         </div>
         <?php
     }

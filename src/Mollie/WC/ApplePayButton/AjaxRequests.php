@@ -129,57 +129,6 @@ class Mollie_WC_ApplePayButton_AjaxRequests
     }
 
     /**
-     * Data Object to collect and validate all needed data collected
-     * through HTTP
-     *
-     * @return Mollie_WC_ApplePayButton_ApplePayDataObjectHttp
-     */
-    protected function applePayDataObjectHttp()
-    {
-        return new Mollie_WC_ApplePayButton_ApplePayDataObjectHttp();
-    }
-
-    /**
-     * Checks if the nonce in the data object is valid
-     *
-     * @param Mollie_WC_ApplePayButton_ApplePayDataObjectHttp $applePayRequestDataObject
-     *
-     * @return bool|int
-     */
-    protected function isNonceValid(
-        Mollie_WC_ApplePayButton_ApplePayDataObjectHttp $applePayRequestDataObject
-    ) {
-        $isNonceValid = wp_verify_nonce(
-            $applePayRequestDataObject->nonce,
-            'woocommerce-process_checkout'
-        );
-        return $isNonceValid;
-    }
-
-    /**
-     * Calls Mollie API wallets to validate merchant session
-     *
-     * @param string $domain
-     * @param        $validationUrl
-     *
-     * @return false|string
-     * @throws \Mollie\Api\Exceptions\ApiException
-     */
-    protected function validationApiWalletsEndpointCall(
-        $domain,
-        $validationUrl
-    ) {
-        $json = Mollie_WC_Plugin::getApiHelper()
-            ->getApiClient()
-            ->wallets
-            ->requestApplePayPaymentSession(
-                $domain,
-                $validationUrl
-            );
-        return $json;
-    }
-
-    /**
      * Method to validate and update the shipping contact of the user
      * It updates the amount paying information if needed
      * On error returns an array of errors to be handled by the script
@@ -239,6 +188,134 @@ class Mollie_WC_ApplePayButton_AjaxRequests
             $paymentDetails
         );
         $this->responseTemplates->responseSuccess($response);
+    }
+
+    /**
+     ** Method to validate and update the shipping method selected by the user
+     * It updates the amount paying information if needed
+     * On error returns an array of errors to be handled by the script
+     * On success returns the new contact data
+     */
+    public function updateShippingMethod()
+    {
+        $applePayRequestDataObject = $this->applePayDataObjectHttp();
+        $applePayRequestDataObject->updateMethodData($_POST);
+
+        if (!$this->isNonceValid($applePayRequestDataObject)) {
+            return;
+        }
+        if ($applePayRequestDataObject->hasErrors()) {
+            $this->responseTemplates->responseWithDataErrors(
+                $applePayRequestDataObject->errors
+            );
+        }
+        $paymentDetails = $this->whichCalculateTotals(
+            $applePayRequestDataObject
+        );
+        $response = $this->responseTemplates->appleFormattedResponse(
+            $paymentDetails
+        );
+        $this->responseTemplates->responseSuccess($response);
+    }
+
+    /**
+     * Creates the order from the product detail page and process the payment
+     * On error returns an array of errors to be handled by the script
+     * On success returns the status success for Apple to close the transaction
+     * and the url to redirect the user
+     *
+     * @throws WC_Data_Exception
+     * @throws \Mollie\Api\Exceptions\ApiException
+     */
+    public function createWcOrder()
+    {
+        $this->responseAfterSuccessfulResult();
+        $cart = WC()->cart;
+        $this->oldCartContents = WC()->cart->get_cart_contents();
+        $this->emptyCurrentCart();
+        $applePayRequestDataObject = $this->applePayDataObjectHttp();
+        $applePayRequestDataObject->orderData($_POST, 'productDetail');
+
+        $cartItemKey = $cart->add_to_cart(
+            filter_input(INPUT_POST, 'productId'),
+            filter_input(INPUT_POST, 'productQuantity')
+        );
+        $this->addAddressesToOrder($applePayRequestDataObject);
+
+        WC()->checkout()->process_checkout();
+        $cart->remove_cart_item($cartItemKey);
+        if ($this->reloadCart) {
+            $this->reloadCart($cart);
+        }
+    }
+
+    /**
+     * Creates the order from the cart page and process the payment
+     * On error returns an array of errors to be handled by the script
+     * On success returns the status success for Apple to close the transaction
+     * and the url to redirect the user
+     *
+     * @throws WC_Data_Exception
+     * @throws \Mollie\Api\Exceptions\ApiException
+     */
+    public function createWcOrderFromCart()
+    {
+        $this->responseAfterSuccessfulResult();
+        $applePayRequestDataObject = $this->applePayDataObjectHttp();
+        $applePayRequestDataObject->orderData($_POST, 'cart');
+        $this->addAddressesToOrder($applePayRequestDataObject);
+        WC()->checkout()->process_checkout();
+    }
+
+    /**
+     * Data Object to collect and validate all needed data collected
+     * through HTTP
+     *
+     * @return Mollie_WC_ApplePayButton_ApplePayDataObjectHttp
+     */
+    protected function applePayDataObjectHttp()
+    {
+        return new Mollie_WC_ApplePayButton_ApplePayDataObjectHttp();
+    }
+
+    /**
+     * Checks if the nonce in the data object is valid
+     *
+     * @param Mollie_WC_ApplePayButton_ApplePayDataObjectHttp $applePayRequestDataObject
+     *
+     * @return bool|int
+     */
+    protected function isNonceValid(
+        Mollie_WC_ApplePayButton_ApplePayDataObjectHttp $applePayRequestDataObject
+    ) {
+        $isNonceValid = wp_verify_nonce(
+            $applePayRequestDataObject->nonce,
+            'woocommerce-process_checkout'
+        );
+        return $isNonceValid;
+    }
+
+    /**
+     * Calls Mollie API wallets to validate merchant session
+     *
+     * @param string $domain
+     * @param        $validationUrl
+     *
+     * @return false|string
+     * @throws \Mollie\Api\Exceptions\ApiException
+     */
+    protected function validationApiWalletsEndpointCall(
+        $domain,
+        $validationUrl
+    ) {
+        $json = Mollie_WC_Plugin::getApiHelper()
+            ->getApiClient()
+            ->wallets
+            ->requestApplePayPaymentSession(
+                $domain,
+                $validationUrl
+            );
+        return $json;
     }
 
     /**
@@ -595,64 +672,6 @@ class Mollie_WC_ApplePayButton_AjaxRequests
         return $results;
     }
 
-    /**
-     ** Method to validate and update the shipping method selected by the user
-     * It updates the amount paying information if needed
-     * On error returns an array of errors to be handled by the script
-     * On success returns the new contact data
-     */
-    public function updateShippingMethod()
-    {
-        $applePayRequestDataObject = $this->applePayDataObjectHttp();
-        $applePayRequestDataObject->updateMethodData($_POST);
-
-        if (!$this->isNonceValid($applePayRequestDataObject)) {
-            return;
-        }
-        if ($applePayRequestDataObject->hasErrors()) {
-            $this->responseTemplates->responseWithDataErrors(
-                $applePayRequestDataObject->errors
-            );
-        }
-        $paymentDetails = $this->whichCalculateTotals(
-            $applePayRequestDataObject
-        );
-        $response = $this->responseTemplates->appleFormattedResponse(
-            $paymentDetails
-        );
-        $this->responseTemplates->responseSuccess($response);
-    }
-
-    /**
-     * Creates the order from the product detail page and process the payment
-     * On error returns an array of errors to be handled by the script
-     * On success returns the status success for Apple to close the transaction
-     * and the url to redirect the user
-     *
-     * @throws WC_Data_Exception
-     * @throws \Mollie\Api\Exceptions\ApiException
-     */
-    public function createWcOrder()
-    {
-        $this->responseAfterSuccessfulResult();
-        $cart = WC()->cart;
-        $this->oldCartContents = WC()->cart->get_cart_contents();
-        $this->emptyCurrentCart();
-        $applePayRequestDataObject = $this->applePayDataObjectHttp();
-        $applePayRequestDataObject->orderData($_POST, 'productDetail');
-
-        $cartItemKey = $cart->add_to_cart(
-            filter_input(INPUT_POST, 'productId'),
-            filter_input(INPUT_POST, 'productQuantity')
-        );
-        $this->addAddressesToOrder($applePayRequestDataObject);
-
-        WC()->checkout()->process_checkout();
-        $cart->remove_cart_item($cartItemKey);
-        if ($this->reloadCart) {
-            $this->reloadCart($cart);
-        }
-    }
 
     protected function responseAfterSuccessfulResult(): void
     {
@@ -726,63 +745,4 @@ class Mollie_WC_ApplePayButton_AjaxRequests
         );
     }
 
-    /**
-     * Creates the order from the cart page and process the payment
-     * On error returns an array of errors to be handled by the script
-     * On success returns the status success for Apple to close the transaction
-     * and the url to redirect the user
-     *
-     * @throws WC_Data_Exception
-     * @throws \Mollie\Api\Exceptions\ApiException
-     */
-    public function createWcOrderFromCart()
-    {
-        $this->responseAfterSuccessfulResult();
-        $applePayRequestDataObject = $this->applePayDataObjectHttp();
-        $applePayRequestDataObject->orderData($_POST, 'cart');
-        $this->addAddressesToOrder($applePayRequestDataObject);
-        WC()->checkout()->process_checkout();
-    }
-
-    /**
-     * Add shipping methods to order
-     *
-     * @param array $shippingMethod
-     * @param array $shippingAddress
-     * @param       $order
-     *
-     * @return mixed
-     */
-    protected function addShippingMethodsToOrder(
-        array $shippingMethod,
-        array $shippingAddress,
-        $order
-    ) {
-        if ($shippingMethod) {
-            $calculate_tax_for = array(
-                'country' => $shippingAddress['country'],
-                'state' => $shippingAddress['state'],
-                'postcode' => $shippingAddress['postcode'],
-                'city' => $shippingAddress['city'],
-            );
-            $item = new WC_Order_Item_Shipping();
-            $ratesIds = explode(":", $shippingMethod['identifier']);
-            $shippingMethodId = $ratesIds[0];
-            $shippingInstanceId = $ratesIds[1];
-
-            $item->set_props(
-                array(
-                    'method_title' => $shippingMethod['label'],
-                    'method_id' => $shippingMethodId,
-                    'instance_id' => $shippingInstanceId,
-                    'total' => wc_format_decimal(
-                        $shippingMethod['amount']
-                    ),
-                )
-            );
-            $item->calculate_taxes($calculate_tax_for);
-            $order->add_item($item);
-        }
-        return $order;
-    }
 }

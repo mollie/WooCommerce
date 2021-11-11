@@ -6,19 +6,21 @@ use Mollie\Api\Types\PaymentMethod;
 /**
  * Class applepay
  */
-class Mollie_WC_Gateway_Applepay extends Mollie_WC_Gateway_Abstract
+class Mollie_WC_Gateway_Applepay extends Mollie_WC_Gateway_AbstractSubscription
 {
     /**
      * Mollie_WC_Gateway_Applepay constructor.
      */
     public function __construct()
     {
+        parent::__construct();
+
         $this->supports = [
             'products',
             'refunds',
         ];
 
-        parent::__construct();
+        $this->initSubscriptionSupport();
     }
     /**
      * @inheritDoc

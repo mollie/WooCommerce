@@ -366,6 +366,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			'mollie_wc_gateway_kbc',
 			'mollie_wc_gateway_mistercash',
 			'mollie_wc_gateway_sofort',
+            'mollie_wc_gateway_applepay'
 		);
 
 		$current_method = get_post_meta( $renewal_order_id, '_payment_method', $single = true );

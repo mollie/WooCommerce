@@ -6,14 +6,17 @@ class Mollie_WC_ApplePayButton_AjaxRequests
      * @var Mollie_WC_ApplePayButton_ResponsesToApple
      */
     private $responseTemplates;
+    private $reloadCart;
+    private $oldCartContents;
 
     /**
      * Mollie_WC_ApplePayButton_AjaxRequests constructor.
      *
      * @param Mollie_WC_ApplePayButton_ResponsesToApple $responseTemplates
      */
-    public function __construct(Mollie_WC_ApplePayButton_ResponsesToApple $responseTemplates)
-    {
+    public function __construct(
+        Mollie_WC_ApplePayButton_ResponsesToApple $responseTemplates
+    ) {
         $this->responseTemplates = $responseTemplates;
     }
 
@@ -23,46 +26,57 @@ class Mollie_WC_ApplePayButton_AjaxRequests
     public function bootstrapAjaxRequest()
     {
         add_action(
-            'wp_ajax_' . Mollie_WC_ApplePayButton_PropertiesDictionary::VALIDATION,
+            'wp_ajax_'
+            . Mollie_WC_ApplePayButton_PropertiesDictionary::VALIDATION,
             array($this, 'validateMerchant')
         );
         add_action(
-            'wp_ajax_nopriv_' . Mollie_WC_ApplePayButton_PropertiesDictionary::VALIDATION,
+            'wp_ajax_nopriv_'
+            . Mollie_WC_ApplePayButton_PropertiesDictionary::VALIDATION,
             array($this, 'validateMerchant')
         );
         add_action(
-            'wp_ajax_' . Mollie_WC_ApplePayButton_PropertiesDictionary::CREATE_ORDER,
+            'wp_ajax_'
+            . Mollie_WC_ApplePayButton_PropertiesDictionary::CREATE_ORDER,
             array($this, 'createWcOrder')
         );
         add_action(
-            'wp_ajax_nopriv_' . Mollie_WC_ApplePayButton_PropertiesDictionary::CREATE_ORDER,
+            'wp_ajax_nopriv_'
+            . Mollie_WC_ApplePayButton_PropertiesDictionary::CREATE_ORDER,
             array($this, 'createWcOrder')
         );
         add_action(
-            'wp_ajax_' . Mollie_WC_ApplePayButton_PropertiesDictionary::CREATE_ORDER_CART,
+            'wp_ajax_'
+            . Mollie_WC_ApplePayButton_PropertiesDictionary::CREATE_ORDER_CART,
             array($this, 'createWcOrderFromCart')
         );
         add_action(
-            'wp_ajax_nopriv_' . Mollie_WC_ApplePayButton_PropertiesDictionary::CREATE_ORDER_CART,
+            'wp_ajax_nopriv_'
+            . Mollie_WC_ApplePayButton_PropertiesDictionary::CREATE_ORDER_CART,
             array($this, 'createWcOrderFromCart')
         );
         add_action(
-            'wp_ajax_' . Mollie_WC_ApplePayButton_PropertiesDictionary::UPDATE_SHIPPING_CONTACT,
+            'wp_ajax_'
+            . Mollie_WC_ApplePayButton_PropertiesDictionary::UPDATE_SHIPPING_CONTACT,
             array($this, 'updateShippingContact')
         );
         add_action(
-            'wp_ajax_nopriv_' . Mollie_WC_ApplePayButton_PropertiesDictionary::UPDATE_SHIPPING_CONTACT,
+            'wp_ajax_nopriv_'
+            . Mollie_WC_ApplePayButton_PropertiesDictionary::UPDATE_SHIPPING_CONTACT,
             array($this, 'updateShippingContact')
         );
         add_action(
-            'wp_ajax_' . Mollie_WC_ApplePayButton_PropertiesDictionary::UPDATE_SHIPPING_METHOD,
+            'wp_ajax_'
+            . Mollie_WC_ApplePayButton_PropertiesDictionary::UPDATE_SHIPPING_METHOD,
             array($this, 'updateShippingMethod')
         );
         add_action(
-            'wp_ajax_nopriv_' . Mollie_WC_ApplePayButton_PropertiesDictionary::UPDATE_SHIPPING_METHOD,
+            'wp_ajax_nopriv_'
+            . Mollie_WC_ApplePayButton_PropertiesDictionary::UPDATE_SHIPPING_METHOD,
             array($this, 'updateShippingMethod')
         );
     }
+
     /**
      * Method to validate the merchant against Apple system through Mollie
      * On fail triggers and option that shows an admin notice showing the error
@@ -76,10 +90,18 @@ class Mollie_WC_ApplePayButton_AjaxRequests
             return;
         }
         $validationUrl = $applePayRequestDataObject->validationUrl;
-        $completeDomain = parse_url(get_site_url(), PHP_URL_HOST); //https://www.example.com/bla/bla
+        $completeDomain = parse_url(
+            get_site_url(),
+            PHP_URL_HOST
+        ); //https://www.example.com/bla/bla
         $removeHttp = ["https://", "http://"];
-        $regex = '/.+\.\w+\/?((\w*\/*)*)/i';//captures in $1 strings with the form bla or bla/ or bla/bla
-        $domain = str_replace($removeHttp, "", $completeDomain);//www.example.com/bla/bla
+        $regex
+            = '/.+\.\w+\/?((\w*\/*)*)/i';//captures in $1 strings with the form bla or bla/ or bla/bla
+        $domain = str_replace(
+            $removeHttp,
+            "",
+            $completeDomain
+        );//www.example.com/bla/bla
         $ending = preg_replace($regex, '$1', $domain);
         $domain = str_replace($ending, "", $domain);//www.example.com/
         $domain = str_replace("/", "", $domain);//www.example.com
@@ -112,7 +134,7 @@ class Mollie_WC_ApplePayButton_AjaxRequests
      * On error returns an array of errors to be handled by the script
      * On success returns the new contact data
      */
-    public function  updateShippingContact()
+    public function updateShippingContact()
     {
         $applePayRequestDataObject = $this->applePayDataObjectHttp();
         $applePayRequestDataObject->updateContactData($_POST);
@@ -121,7 +143,9 @@ class Mollie_WC_ApplePayButton_AjaxRequests
             return;
         }
         if ($applePayRequestDataObject->hasErrors()) {
-            $this->responseTemplates->responseWithDataErrors($applePayRequestDataObject->errors);
+            $this->responseTemplates->responseWithDataErrors(
+                $applePayRequestDataObject->errors
+            );
             return;
         }
 
@@ -157,8 +181,12 @@ class Mollie_WC_ApplePayButton_AjaxRequests
             return;
         }
 
-        $paymentDetails = $this->whichCalculateTotals($applePayRequestDataObject);
-        $response = $this->responseTemplates->appleFormattedResponse($paymentDetails);
+        $paymentDetails = $this->whichCalculateTotals(
+            $applePayRequestDataObject
+        );
+        $response = $this->responseTemplates->appleFormattedResponse(
+            $paymentDetails
+        );
         $this->responseTemplates->responseSuccess($response);
     }
 
@@ -177,10 +205,16 @@ class Mollie_WC_ApplePayButton_AjaxRequests
             return;
         }
         if ($applePayRequestDataObject->hasErrors()) {
-            $this->responseTemplates->responseWithDataErrors($applePayRequestDataObject->errors);
+            $this->responseTemplates->responseWithDataErrors(
+                $applePayRequestDataObject->errors
+            );
         }
-        $paymentDetails = $this->whichCalculateTotals($applePayRequestDataObject);
-        $response = $this->responseTemplates->appleFormattedResponse($paymentDetails);
+        $paymentDetails = $this->whichCalculateTotals(
+            $applePayRequestDataObject
+        );
+        $response = $this->responseTemplates->appleFormattedResponse(
+            $paymentDetails
+        );
         $this->responseTemplates->responseSuccess($response);
     }
 
@@ -195,63 +229,23 @@ class Mollie_WC_ApplePayButton_AjaxRequests
      */
     public function createWcOrder()
     {
+        $this->responseAfterSuccessfulResult();
+        $cart = WC()->cart;
+        $this->oldCartContents = WC()->cart->get_cart_contents();
+        $this->emptyCurrentCart();
         $applePayRequestDataObject = $this->applePayDataObjectHttp();
         $applePayRequestDataObject->orderData($_POST, 'productDetail');
-        if (!$this->isNonceValid($applePayRequestDataObject)) {
-            return;
-        }
-        if ($applePayRequestDataObject->hasErrors()) {
-            $this->responseTemplates->responseWithDataErrors($applePayRequestDataObject->errors);
-        }
-        $order = wc_create_order();
-        $order->add_product(
-            wc_get_product($applePayRequestDataObject->productId),
-            $applePayRequestDataObject->productQuantity
+
+        $cartItemKey = $cart->add_to_cart(
+            filter_input(INPUT_POST, 'productId'),
+            filter_input(INPUT_POST, 'productQuantity')
         );
-        $order = $this->addAddressesToOrder($applePayRequestDataObject, $order);
+        $this->addAddressesToOrder($applePayRequestDataObject);
 
-        if(isset($applePayRequestDataObject->shippingMethod)){
-            $order = $this->addShippingMethodsToOrder(
-                $applePayRequestDataObject->shippingMethod,
-                $applePayRequestDataObject->shippingAddress,
-                $order
-            );
-        }
-        $surchargeHandler = new Mollie_WC_Helper_GatewaySurchargeHandler();
-        $order = $surchargeHandler->addSurchargeFeeProductPage($order, 'mollie_wc_gateway_applepay');
-
-        $orderId = $order->get_id();
-
-        $order->calculate_totals();
-
-        $this->updateOrderPostMeta($orderId, $order);
-        $result = $this->processOrderPayment($orderId);
-
-        if (isset($result['result'])
-            && 'success' === $result['result']
-        ) {
-            $order->payment_complete();
-
-            $this->responseTemplates->responseSuccess(
-                $this->responseTemplates->authorizationResultResponse(
-                    'STATUS_SUCCESS',
-                    $orderId
-                )
-            );
-        } else {
-            /* translators: Placeholder 1: Payment method title */
-            $message = sprintf(
-                __(
-                    'Could not create %s payment.',
-                    'mollie-payments-for-woocommerce'
-                ),
-                'ApplePay'
-            );
-
-            mollieWooCommerceDebug($message, 'error');
-            wp_send_json_error(
-                $this->responseTemplates->authorizationResultResponse('STATUS_FAILURE')
-            );
+        WC()->checkout()->process_checkout();
+        $cart->remove_cart_item($cartItemKey);
+        if ($this->reloadCart) {
+            $this->reloadCart($cart);
         }
     }
 
@@ -266,61 +260,12 @@ class Mollie_WC_ApplePayButton_AjaxRequests
      */
     public function createWcOrderFromCart()
     {
+        $this->responseAfterSuccessfulResult();
         $applePayRequestDataObject = $this->applePayDataObjectHttp();
         $applePayRequestDataObject->orderData($_POST, 'cart');
-        if (!$this->isNonceValid($applePayRequestDataObject)) {
-            return;
-        }
-
-        list($cart, $order) = $this->createOrderFromCart();
-        $order = $this->addAddressesToOrder($applePayRequestDataObject, $order);
-        $order = $this->addShippingMethodsToOrder(
-            $applePayRequestDataObject->shippingMethod,
-            $applePayRequestDataObject->shippingAddress,
-            $order
-        );
-        $surchargeHandler = new Mollie_WC_Helper_GatewaySurchargeHandler();
-        $order = $surchargeHandler->addSurchargeFeeProductPage($order, 'mollie_wc_gateway_applepay');
-
-        $orderId = $order->get_id();
-        $order->calculate_totals();
-        $this->updateOrderPostMeta($orderId, $order);
-        $result = $this->processOrderPayment($orderId);
-        if (isset($result['result'])
-            && 'success' === $result['result']
-        ) {
-            $order->payment_complete();
-            $cart->empty_cart();
-            $this->responseTemplates->responseSuccess(
-                $this->responseTemplates->authorizationResultResponse(
-                    'STATUS_SUCCESS',
-                    $orderId
-                )
-            );
-        } else {
-            /* translators: Placeholder 1: Payment method title */
-            $message = sprintf(
-                __(
-                    'Could not create %s payment.',
-                    'mollie-payments-for-woocommerce'
-                ),
-                'ApplePay'
-            );
-
-            Mollie_WC_Plugin::addNotice($message, 'error');
-
-            wp_send_json_error(
-                $this->responseTemplates->authorizationResultResponse(
-                    'STATUS_FAILURE',
-                    0,
-                    [['errorCode' => 'unknown']]
-                )
-            );
-        }
+        $this->addAddressesToOrder($applePayRequestDataObject);
+        WC()->checkout()->process_checkout();
     }
-
-
-
 
     /**
      * Data Object to collect and validate all needed data collected
@@ -333,6 +278,45 @@ class Mollie_WC_ApplePayButton_AjaxRequests
         return new Mollie_WC_ApplePayButton_ApplePayDataObjectHttp();
     }
 
+    /**
+     * Checks if the nonce in the data object is valid
+     *
+     * @param Mollie_WC_ApplePayButton_ApplePayDataObjectHttp $applePayRequestDataObject
+     *
+     * @return bool|int
+     */
+    protected function isNonceValid(
+        Mollie_WC_ApplePayButton_ApplePayDataObjectHttp $applePayRequestDataObject
+    ) {
+        $isNonceValid = wp_verify_nonce(
+            $applePayRequestDataObject->nonce,
+            'woocommerce-process_checkout'
+        );
+        return $isNonceValid;
+    }
+
+    /**
+     * Calls Mollie API wallets to validate merchant session
+     *
+     * @param string $domain
+     * @param        $validationUrl
+     *
+     * @return false|string
+     * @throws \Mollie\Api\Exceptions\ApiException
+     */
+    protected function validationApiWalletsEndpointCall(
+        $domain,
+        $validationUrl
+    ) {
+        $json = Mollie_WC_Plugin::getApiHelper()
+            ->getApiClient()
+            ->wallets
+            ->requestApplePayPaymentSession(
+                $domain,
+                $validationUrl
+            );
+        return $json;
+    }
 
     /**
      * Returns a WC_Countries instance to check shipping
@@ -392,13 +376,10 @@ class Mollie_WC_ApplePayButton_AjaxRequests
         $shippingMethod = null
     ) {
         $results = [];
-        $reloadCart = false;
+        $this->reloadCart = false;
+        $this->oldCartContents = WC()->cart->get_cart_contents();
         if (!WC()->cart->is_empty()) {
-            $oldCartContents = WC()->cart->get_cart_contents();
-            foreach ($oldCartContents as $cartItemKey => $value) {
-                WC()->cart->remove_cart_item($cartItemKey);
-            }
-            $reloadCart = true;
+            $this->emptyCurrentCart();
         }
         try {
             //I just care about apple address details
@@ -439,16 +420,26 @@ class Mollie_WC_ApplePayButton_AjaxRequests
 
             $cart->remove_cart_item($cartItemKey);
             $this->customerAddress();
-            if ($reloadCart) {
-                foreach ($oldCartContents as $cartItemKey => $value) {
-                    $cart->restore_cart_item($cartItemKey);
-                }
+            if ($this->reloadCart) {
+                $this->reloadCart($cart);
             }
         } catch (Exception $e) {
         }
 
 
         return $results;
+    }
+
+    /**
+     * Empty the cart to use for calculations
+     * while saving its contents in a field
+     */
+    protected function emptyCurrentCart()
+    {
+        foreach ($this->oldCartContents as $cartItemKey => $value) {
+            WC()->cart->remove_cart_item($cartItemKey);
+        }
+        $this->reloadCart = true;
     }
 
     /**
@@ -539,6 +530,7 @@ class Mollie_WC_ApplePayButton_AjaxRequests
 
     /**
      * Sets shipping packages for correct calculations
+     *
      * @param $customerAddress
      * @param $total
      *
@@ -580,8 +572,11 @@ class Mollie_WC_ApplePayButton_AjaxRequests
         $surchargeLabel = $surcharge->gatewayFeeLabel;
         $settings = get_option('mollie_wc_gateway_applepay_settings', false);
 
-        $calculatedFee = round((float)$surcharge->calculteFeeAmount($cart,$settings ),2);
-        $surchargeFeeValue = !empty($settings)?$calculatedFee:0;
+        $calculatedFee = round(
+            (float)$surcharge->calculteFeeAmount($cart, $settings),
+            2
+        );
+        $surchargeFeeValue = !empty($settings) ? $calculatedFee : 0;
         $total = $cart->get_total('edit') + $surchargeFeeValue;
         $total = round($total, 2);
         $result = [
@@ -599,13 +594,23 @@ class Mollie_WC_ApplePayButton_AjaxRequests
             'total' => $total
         ];
 
-        if($surchargeFeeValue){
-            $result['fee'] =  [
+        if ($surchargeFeeValue) {
+            $result['fee'] = [
                 'amount' => $surchargeFeeValue,
                 'label' => $surchargeLabel
             ];
         }
         return $result;
+    }
+
+    /**
+     * @param WC_Cart $cart
+     */
+    protected function reloadCart(WC_Cart $cart): void
+    {
+        foreach ($this->oldCartContents as $cartItemKey => $value) {
+            $cart->restore_cart_item($cartItemKey);
+        }
     }
 
     /**
@@ -667,163 +672,77 @@ class Mollie_WC_ApplePayButton_AjaxRequests
         return $results;
     }
 
+
+    protected function responseAfterSuccessfulResult(): void
+    {
+        add_filter(
+            'woocommerce_payment_successful_result',
+            function ($result, $order_id) {
+                if (isset($result['result'])
+                    && 'success' === $result['result']
+                ) {
+                    $this->responseTemplates->responseSuccess(
+                        $this->responseTemplates->authorizationResultResponse(
+                            'STATUS_SUCCESS',
+                            $order_id
+                        )
+                    );
+                } else {
+                    /* translators: Placeholder 1: Payment method title */
+                    $message = sprintf(
+                        __(
+                            'Could not create %s payment.',
+                            'mollie-payments-for-woocommerce'
+                        ),
+                        'ApplePay'
+                    );
+
+                    Mollie_WC_Plugin::addNotice($message, 'error');
+
+                    wp_send_json_error(
+                        $this->responseTemplates->authorizationResultResponse(
+                            'STATUS_FAILURE',
+                            0,
+                            [['errorCode' => 'unknown']]
+                        )
+                    );
+                }
+            },
+            10,
+            2
+        );
+    }
+
     /**
      * Add address billing and shipping data to order
      *
      * @param Mollie_WC_ApplePayButton_ApplePayDataObjectHttp $applePayRequestDataObject
-     * @param                                         $order
+     * @param                                                 $order
      *
-     * @return mixed
      */
     protected function addAddressesToOrder(
-        Mollie_WC_ApplePayButton_ApplePayDataObjectHttp $applePayRequestDataObject,
-        $order
-    ) {
-        $billingAddress = $applePayRequestDataObject->billingAddress;
-        $shippingAddress = $applePayRequestDataObject->shippingAddress;
-        //apple puts email in shippingAddress while we get it from WC's billingAddress
-        $billingAddress['email'] = $shippingAddress['email'];
-        $billingAddress['phone'] = $shippingAddress['phone'];
-
-        $order->set_address($billingAddress, 'billing');
-        $order->set_address($shippingAddress, 'shipping');
-        return $order;
-    }
-
-    /**
-     * Add shipping methods to order
-     *
-     * @param array $shippingMethod
-     * @param array $shippingAddress
-     * @param       $order
-     *
-     * @return mixed
-     */
-    protected function addShippingMethodsToOrder(
-        array $shippingMethod,
-        array $shippingAddress,
-        $order
-    ) {
-        if ($shippingMethod) {
-            $calculate_tax_for = array(
-                'country' => $shippingAddress['country'],
-                'state' => $shippingAddress['state'],
-                'postcode' => $shippingAddress['postcode'],
-                'city' => $shippingAddress['city'],
-            );
-            $item = new WC_Order_Item_Shipping();
-            $ratesIds = explode(":", $shippingMethod['identifier']);
-            $shippingMethodId = $ratesIds[0];
-            $shippingInstanceId = $ratesIds[1];
-
-            $item->set_props(
-                array(
-                    'method_title' => $shippingMethod['label'],
-                    'method_id' => $shippingMethodId,
-                    'instance_id' => $shippingInstanceId,
-                    'total' => wc_format_decimal(
-                        $shippingMethod['amount']
-                    ),
-                )
-            );
-            $item->calculate_taxes($calculate_tax_for);
-            $order->add_item($item);
-        }
-        return $order;
-    }
-
-    /**
-     * Update order post meta
-     *
-     * @param string $orderId
-     * @param        $order
-     */
-    protected function updateOrderPostMeta($orderId, $order)
-    {
-//this is the logged one, if not logged in then create a new one?
-        update_post_meta($orderId, '_customer_user', get_current_user_id());
-        update_post_meta(
-            $orderId,
-            '_payment_method',
-            'mollie_wc_gateway_applepay'
-        );
-        update_post_meta($orderId, '_payment_method_title', 'Apple Pay');
-        $order->update_status(
-            'Processing',
-            'Apple Pay direct order',
-            true
-        );
-    }
-
-    /**
-     * Process order payment with ApplePay gateway
-     *
-     * @param int $orderId
-     *
-     * @return array|string[]
-     * @throws \Mollie\Api\Exceptions\ApiException
-     */
-    protected function processOrderPayment($orderId)
-    {
-        $gateway = new Mollie_WC_Gateway_Applepay();
-
-        $result = $gateway->process_payment($orderId);
-        return $result;
-    }
-
-    /**
-     * Handles the order creation in cart page
-     *
-     * @return array
-     * @throws Exception
-     */
-    protected function createOrderFromCart()
-    {
-        $cart = WC()->cart;
-        $checkout = WC()->checkout();
-        $orderId = $checkout->create_order([]);
-        $order = wc_get_order($orderId);
-        return array($cart, $order);
-    }
-
-    /**
-     * Checks if the nonce in the data object is valid
-     *
-     * @param Mollie_WC_ApplePayButton_ApplePayDataObjectHttp $applePayRequestDataObject
-     *
-     * @return bool|int
-     */
-    protected function isNonceValid(
         Mollie_WC_ApplePayButton_ApplePayDataObjectHttp $applePayRequestDataObject
     ) {
-        $isNonceValid = wp_verify_nonce(
-            $applePayRequestDataObject->nonce,
-            'mollie_applepay_button'
-        );
-        return $isNonceValid;
-    }
+        add_action(
+            'woocommerce_checkout_create_order',
+            function ($order, $data) use ($applePayRequestDataObject) {
+                if (isset($applePayRequestDataObject->shippingMethod)) {
+                    $billingAddress
+                        = $applePayRequestDataObject->billingAddress;
+                    $shippingAddress
+                        = $applePayRequestDataObject->shippingAddress;
+                    //apple puts email in shippingAddress while we get it from WC's billingAddress
+                    $billingAddress['email'] = $shippingAddress['email'];
+                    $billingAddress['phone'] = $shippingAddress['phone'];
 
-    /**
-     * Calls Mollie API wallets to validate merchant session
-     *
-     * @param string $domain
-     * @param        $validationUrl
-     *
-     * @return false|string
-     * @throws \Mollie\Api\Exceptions\ApiException
-     */
-    protected function validationApiWalletsEndpointCall(
-        $domain,
-        $validationUrl
-    ) {
-        $json = Mollie_WC_Plugin::getApiHelper()
-            ->getApiClient()
-            ->wallets
-            ->requestApplePayPaymentSession(
-                $domain,
-                $validationUrl
-            );
-        return $json;
+                    $order->set_address($billingAddress, 'billing');
+                    $order->set_address($shippingAddress, 'shipping');
+                }
+            }
+            ,
+            10,
+            2
+        );
     }
 
 }

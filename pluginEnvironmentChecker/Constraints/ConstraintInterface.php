@@ -15,8 +15,6 @@ interface ConstraintInterface
 	/**
 	 * Validates a value.
 	 *
-	 *
-	 *
 	 * @throws RuntimeException                                    If problem validating.
 	 * @throws ConstraintFailedExceptionInterface                  If validation failed. Must extend {@see RuntimeException}.
 	 */

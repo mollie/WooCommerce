@@ -20,6 +20,7 @@ abstract class AbstractVersionConstraint implements ConstraintInterface
 	 * @var string
 	 */
 	protected $message;
+
 	/**
 	 * @var string
 	 */

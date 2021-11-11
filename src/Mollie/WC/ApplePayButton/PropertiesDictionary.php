@@ -11,7 +11,7 @@ class Mollie_WC_ApplePayButton_PropertiesDictionary
     const BILLING_CONTACT_INVALID = 'billing Contact Invalid';
     const CREATE_ORDER_SINGLE_PROD_REQUIRED_FIELDS
         = [
-            Mollie_WC_ApplePayButton_PropertiesDictionary::NONCE,
+            Mollie_WC_ApplePayButton_PropertiesDictionary::WCNONCE,
             Mollie_WC_ApplePayButton_PropertiesDictionary::PRODUCT_ID,
             self::PRODUCT_QUANTITY,
             self::BILLING_CONTACT,
@@ -57,9 +57,10 @@ class Mollie_WC_ApplePayButton_PropertiesDictionary
     const SHIPPING_CONTACT = 'shippingContact';
     const SHIPPING_CONTACT_INVALID = 'shipping Contact Invalid';
     const NONCE = 'nonce';
+    const WCNONCE = 'woocommerce-process-checkout-nonce';
     const CREATE_ORDER_CART_REQUIRED_FIELDS
         = [
-            Mollie_WC_ApplePayButton_PropertiesDictionary::NONCE,
+            Mollie_WC_ApplePayButton_PropertiesDictionary::WCNONCE,
             Mollie_WC_ApplePayButton_PropertiesDictionary::BILLING_CONTACT,
             Mollie_WC_ApplePayButton_PropertiesDictionary::SHIPPING_CONTACT
         ];

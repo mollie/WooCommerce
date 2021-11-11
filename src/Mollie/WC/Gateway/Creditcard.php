@@ -194,7 +194,7 @@ class Mollie_WC_Gateway_Creditcard extends Mollie_WC_Gateway_AbstractSubscriptio
         $enabledCreditCards = $this->enabledCreditcards();
 
         $assetsImagesPath
-            = Mollie_WC_Plugin::getPluginPath('public/images/Creditcard_issuers/');
+            = Mollie_WC_Plugin::getPluginPath('public/images/');
         $cardWidth = Mollie_WC_Helper_PaymentMethodsIconUrl::CREDIT_CARD_ICON_WIDTH;
         $cardsNumber = count($enabledCreditCards);
         $cardsWidth = $cardWidth * $cardsNumber;

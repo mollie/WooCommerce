@@ -77,7 +77,16 @@ class Mollie_WC_Helper_ApplePayDirectHandler
             add_action(
                     'woocommerce_cart_totals_after_order_total',
                     function () {
-                        $this->applePayDirectButton();
+                        $cartItems = WC()->cart->get_cart_contents_count();
+                        $isMixedCartWithShipping = false;
+                        if(class_exists('WC_Subscriptions_Cart')){
+                            $hasSubscriptionWithShipping = WC_Subscriptions_Cart::cart_contains_subscriptions_needing_shipping();
+                            $isMixedCartWithShipping =  $cartItems > 1 && $hasSubscriptionWithShipping;
+                        }
+
+                        if(!$isMixedCartWithShipping){
+                            $this->applePayDirectButton();
+                        }
                     }
             );
         }
@@ -114,7 +123,7 @@ class Mollie_WC_Helper_ApplePayDirectHandler
     {
         ?>
         <div id="mollie-applepayDirect-button">
-            <?php wp_nonce_field('mollie_applepay_button'); ?>
+            <?php wp_nonce_field( 'woocommerce-process_checkout', 'woocommerce-process-checkout-nonce' );  ?>
         </div>
         <?php
     }

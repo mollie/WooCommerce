@@ -3,6 +3,16 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 {
 
     const PAYMENT_TEST_MODE = 'test';
+    const METHODS_NEEDING_UPDATE = ['mollie_wc_gateway_bancontact',
+        'mollie_wc_gateway_belfius',
+        'mollie_wc_gateway_directdebit',
+        'mollie_wc_gateway_eps',
+        'mollie_wc_gateway_giropay',
+        'mollie_wc_gateway_ideal',
+        'mollie_wc_gateway_kbc',
+        'mollie_wc_gateway_mistercash',
+        'mollie_wc_gateway_sofort'];
+    const DIRECTDEBIT = 'directdebit';
 
     protected $isSubscriptionPayment = false;
     /**
@@ -43,6 +53,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 	        'subscription_date_changes',
             'multiple_subscriptions',
 	        'subscription_payment_method_change',
+            'subscription_payment_method_change_admin',
 	        'subscription_payment_method_change_customer',
         );
 
@@ -121,17 +132,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			}
 
 			// Check that payment method is SEPA Direct Debit or similar
-			$methods_needing_update = array (
-				'mollie_wc_gateway_bancontact',
-				'mollie_wc_gateway_belfius',
-				'mollie_wc_gateway_directdebit',
-				'mollie_wc_gateway_eps',
-				'mollie_wc_gateway_giropay',
-				'mollie_wc_gateway_ideal',
-				'mollie_wc_gateway_kbc',
-				'mollie_wc_gateway_mistercash',
-				'mollie_wc_gateway_sofort',
-			);
+			$methods_needing_update = self::METHODS_NEEDING_UPDATE;
 
 			if ( in_array( $current_method, $methods_needing_update ) == false ) {
 				return;
@@ -229,22 +230,30 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
             do_action(Mollie_WC_Plugin::PLUGIN_ID . '_create_payment', $data, $renewal_order);
             $mollieApiClient = Mollie_WC_Plugin::getApiHelper()->getApiClient($test_mode);
             $validMandate = false;
+            $renewalOrderMethod = $renewal_order->get_payment_method();
+            $isRenewalMethodDirectDebit = in_array($renewalOrderMethod, self::METHODS_NEEDING_UPDATE);
+            $renewalOrderMethod = str_replace("mollie_wc_gateway_", "", $renewalOrderMethod);
+
             try
             {
                 if (!empty($mandateId)) {
                     Mollie_WC_Plugin::debug($this->id . ': Found mandate ID for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id );
                     $mandate =  $mollieApiClient->customers->get($customer_id)->getMandate($mandateId);
-                    if ($mandate->status === 'valid') {
+                    $bothDirectDebit = $mandate->method === self::DIRECTDEBIT
+                        && $isRenewalMethodDirectDebit;
+                    $bothCreditcard = $mandate->method !== self::DIRECTDEBIT
+                        && !$isRenewalMethodDirectDebit;
+                    $samePaymentMethodAsMandate = $bothDirectDebit || $bothCreditcard;
+                    if ($mandate->status === 'valid' && $samePaymentMethodAsMandate) {
                         $data['method'] = $mandate->method;
                         $data['mandateId'] = $mandateId;
                         $validMandate = true;
                     }
-                } else {
+                }
+                if(!$validMandate){
                     // Get all mandates for the customer ID
                     Mollie_WC_Plugin::debug($this->id . ': Try to get all mandates for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id );
                     $mandates =  $mollieApiClient->customers->get($customer_id)->mandates();
-                    $renewalOrderMethod = $renewal_order->get_payment_method();
-                    $renewalOrderMethod = str_replace("mollie_wc_gateway_", "", $renewalOrderMethod);
                     foreach ($mandates as $mandate) {
                         if ($mandate->status === 'valid') {
                             $validMandate = true;
@@ -264,8 +273,20 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 	        // Check that there is at least one valid mandate
 	        try {
 		        if ( $validMandate ) {
-			        Mollie_WC_Plugin::debug( $this->id . ': Valid mandate found for renewal order ' . $renewal_order_id );
 			        $payment = Mollie_WC_Plugin::getApiHelper()->getApiClient( $test_mode )->payments->create( $data );
+			        //update the valid mandate for this order
+                    if ((property_exists($payment, 'mandateId')
+                            && $payment->mandateId !== null)
+                        && $payment->mandateId !== $mandateId
+                        && !empty($subcriptionParentOrder)
+                    ) {
+                        Mollie_WC_Plugin::debug("{$this->id}: updating to mandate {$payment->mandateId}");
+                        $subcriptionParentOrder->update_meta_data(
+                            '_mollie_mandate_id',
+                            $payment->mandateId
+                        );
+                        $subcriptionParentOrder->save();
+                    }
 		        } else {
 			        throw new \Mollie\Api\Exceptions\ApiException( sprintf( __( 'The customer (%s) does not have a valid mandate.', 'mollie-payments-for-woocommerce-mandate-problem' ), $customer_id ) );
 		        }
@@ -365,12 +386,11 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			'mollie_wc_gateway_ideal',
 			'mollie_wc_gateway_kbc',
 			'mollie_wc_gateway_mistercash',
-			'mollie_wc_gateway_sofort',
-            'mollie_wc_gateway_applepay'
+			'mollie_wc_gateway_sofort'
 		);
 
 		$current_method = get_post_meta( $renewal_order_id, '_payment_method', $single = true );
-		if ( in_array( $current_method, $methods_needing_update ) && $payment->method == 'directdebit' ) {
+		if ( in_array( $current_method, $methods_needing_update ) && $payment->method == self::DIRECTDEBIT) {
             try {
                 $renewal_order->set_payment_method( 'mollie_wc_gateway_directdebit' );
                 $renewal_order->set_payment_method_title( 'SEPA Direct Debit' );
@@ -591,7 +611,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			);
 
 			if ( in_array( $mollie_method, $methods_needing_update ) != false ) {
-				$mollie_method = 'directdebit';
+				$mollie_method = self::DIRECTDEBIT;
 			}
 
 			// Get all mandates for the customer
@@ -611,7 +631,7 @@ abstract class Mollie_WC_Gateway_AbstractSubscription extends Mollie_WC_Gateway_
 			$sequence_type = $payment_object_resource->getSequenceTypeFromPaymentObject( $mollie_payment_id );
 
 			// Check SEPA Direct Debit payments and mandates
-			if ( $mollie_method == 'directdebit' && ! $mandates->hasValidMandateForMethod( $mollie_method ) && $payment_object->isPaid() && $sequence_type == 'oneoff' ) {
+			if ( $mollie_method == self::DIRECTDEBIT && ! $mandates->hasValidMandateForMethod($mollie_method ) && $payment_object->isPaid() && $sequence_type == 'oneoff' ) {
 
 				Mollie_WC_Plugin::debug( __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: no valid mandate for payment method ' . $mollie_method . ' found, trying to create one.' );
 

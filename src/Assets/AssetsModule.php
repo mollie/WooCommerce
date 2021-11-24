@@ -10,7 +10,7 @@ use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Buttons\ApplePayButton\DataToAppleButtonScripts;
-use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPalScripts;
+use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPal;
 use Mollie\WooCommerce\Components\AcceptedLocaleValuesDictionary;
 use Psr\Container\ContainerInterface;
 
@@ -50,6 +50,8 @@ class AssetsModule implements ExecutableModule
                 add_action('wp_enqueue_scripts', [$this, 'enqueueComponentsAssets']);
                 add_action('wp_enqueue_scripts', [$this, 'enqueueApplePayDirectScripts']);
                 add_action('wp_enqueue_scripts', [$this, 'enqueuePayPalButtonScripts']);
+                $this->registerButtonsBlockScripts();
+
 
                 wp_enqueue_script('mollie_wc_admin_settings');
                 global $current_section;
@@ -105,10 +107,66 @@ class AssetsModule implements ExecutableModule
         return true;
     }
 
+    public function registerButtonsBlockScripts ()
+    {
+        add_action('woocommerce_blocks_enqueue_cart_block_scripts_after', function (){
+            if (mollieWooCommerceIsPayPalButtonEnabled('cart')) {
+                wp_register_script(
+                    'mollie_paypalButtonBlock',
+                    $this->getPluginUrl(
+                        '/public/js/paypalButtonBlockComponent.min.js'
+                    ),
+                    [],
+                    filemtime(
+                        $this->getPluginPath(
+                            '/public/js/paypalButtonBlockComponent.min.js'
+                        )
+                    ),
+                    true
+                );
+                $cart = WC()->cart;
+                if (!$cart->needs_shipping()) {
+                    $dataToScripts = new DataToPayPal($this->pluginUrl);
+                    wp_enqueue_style('unabledButton');
+                    wp_enqueue_script('mollie_paypalButtonBlock');
+                    wp_localize_script(
+                        'mollie_paypalButtonBlock',
+                        'molliepaypalButtonCart',
+                        $dataToScripts->paypalbuttonScriptData(true)
+                    );
+                }
+            }
+            if (mollieWooCommerceIsApplePayDirectEnabled('cart')) {
+                wp_register_script(
+                    'mollie_applepayButtonBlock',
+                    $this->getPluginUrl(
+                        '/public/js/applepayButtonBlockComponent.min.js'
+                    ),
+                    [],
+                    filemtime(
+                        $this->getPluginPath(
+                            '/public/js/applepayButtonBlockComponent.min.js'
+                        )
+                    ),
+                    true
+                );
+                $dataToScripts = new DataToAppleButtonScripts();
+                wp_enqueue_style('mollie-applepaydirect');
+                wp_enqueue_script('mollie_applepayButtonBlock');
+                wp_localize_script(
+                    'mollie_applepayButtonBlock',
+                    'mollieApplePayBlockDataCart',
+                    $dataToScripts->applePayScriptData(true)
+                );
+            }
+
+        });
+    }
+
     /**
      * Enqueues the ApplePay button scripts if enabled and in correct page
      */
-    public static function enqueueApplePayDirectScripts()
+    public function enqueueApplePayDirectScripts()
     {
         if (mollieWooCommerceIsApplePayDirectEnabled('product') && is_product()) {
             $dataToScripts = new DataToAppleButtonScripts();
@@ -135,7 +193,7 @@ class AssetsModule implements ExecutableModule
     /**
      * Enqueues the ApplePay button scripts if enabled and in correct page
      */
-    public static function enqueuePayPalButtonScripts()
+    public function enqueuePayPalButtonScripts()
     {
         if (mollieWooCommerceIsPayPalButtonEnabled('product') && is_product()) {
             $product = wc_get_product(get_the_id());
@@ -144,7 +202,7 @@ class AssetsModule implements ExecutableModule
             }
             $productNeedShipping = mollieWooCommerceCheckIfNeedShipping($product);
             if (!$productNeedShipping) {
-                $dataToScripts = new DataToPayPalScripts();
+                $dataToScripts = new DataToPayPal($this->pluginUrl);
                 wp_enqueue_style('unabledButton');
                 wp_enqueue_script('mollie_paypalButton');
                 wp_localize_script(
@@ -162,7 +220,7 @@ class AssetsModule implements ExecutableModule
                 }
             }
             if (!$cart->needs_shipping()) {
-                $dataToScripts = new DataToPayPalScripts();
+                $dataToScripts = new DataToPayPal($this->pluginUrl);
                 wp_enqueue_style('unabledButton');
                 wp_enqueue_script('mollie_paypalButtonCart');
                 wp_localize_script(
@@ -233,9 +291,9 @@ class AssetsModule implements ExecutableModule
         );
         wp_register_script(
             'mollie_paypalButtonCart',
-            $this->getPluginUrl('/public/js/paypalButtonCart.min.js'),
+            $this->getPluginUrl('/resources/js/paypalButtonCart.js'),
             ['underscore', 'jquery'],
-            filemtime($this->getPluginPath('/public/js/paypalButtonCart.min.js')),
+            filemtime($this->getPluginPath('/resources/js/paypalButtonCart.js')),
             true
         );
         wp_register_script(
@@ -352,22 +410,22 @@ class AssetsModule implements ExecutableModule
                 'componentsAttributes' => [
                     [
                         'name' => 'cardHolder',
-                        'label' => esc_html__('Card Holder', 'mollie-payments-for-woocommerce'),
+                        'label' => esc_html__('Name on card', 'mollie-payments-for-woocommerce')
                     ],
                     [
                         'name' => 'cardNumber',
-                        'label' => esc_html__('Card Number', 'mollie-payments-for-woocommerce'),
+                        'label' => esc_html__('Card number', 'mollie-payments-for-woocommerce')
                     ],
                     [
                         'name' => 'expiryDate',
-                        'label' => esc_html__('Expiry Date', 'mollie-payments-for-woocommerce'),
+                        'label' => esc_html__('Expiry date', 'mollie-payments-for-woocommerce')
                     ],
                     [
                         'name' => 'verificationCode',
                         'label' => esc_html__(
-                            'Verification Code',
+                            'CVC/CVV',
                             'mollie-payments-for-woocommerce'
-                        ),
+                        )
                     ],
                 ],
                 'messages' => [

@@ -17,7 +17,7 @@ import {request} from './applePayRequest.js';
             return
         }
 
-        const nonce = document.getElementById('_wpnonce').value
+        const nonce = document.getElementById('woocommerce-process-checkout-nonce').value
         let productId = id
         let productQuantity = 1
         let updatedContactInfo = []
@@ -42,72 +42,71 @@ import {request} from './applePayRequest.js';
             appleButton.classList.add("buttonDisabled");
         }
         const amountWithoutTax = productQuantity * price
-        document.querySelector('#mollie_applepay_button').addEventListener('click', (evt) => {
-
+        let applePaySession = () => {
             const session = new ApplePaySession(3, request(countryCode, currencyCode, totalLabel, amountWithoutTax))
             session.begin()
             if(needShipping){
-            session.onshippingmethodselected = function (event) {
-                jQuery.ajax({
-                    url: ajaxUrl,
-                    method: 'POST',
-                    data: {
-                        action: 'mollie_apple_pay_update_shipping_method',
-                        shippingMethod: event.shippingMethod,
-                        productId: productId,
-                        callerPage: 'productDetail',
-                        productQuantity: productQuantity,
-                        simplifiedContact: updatedContactInfo,
-                        nonce: nonce,
-                    },
-                    complete: (jqXHR, textStatus) => {
-                    },
-                    success: (applePayShippingMethodUpdate, textStatus, jqXHR) => {
-                        let response = applePayShippingMethodUpdate.data
-                        selectedShippingMethod = event.shippingMethod
-                        if (applePayShippingMethodUpdate.success === false) {
-                            response.errors = createAppleErrors(response.errors)
-                        }
-                        this.completeShippingMethodSelection(response)
-                    },
-                    error: (jqXHR, textStatus, errorThrown) => {
-                        console.warn(textStatus, errorThrown)
-                        session.abort()
-                    },
-                })
-            }
-            session.onshippingcontactselected = function (event) {
-                jQuery.ajax({
-                    url: ajaxUrl,
-                    method: 'POST',
-                    data: {
-                        action: 'mollie_apple_pay_update_shipping_contact',
-                        productId: productId,
-                        callerPage: 'productDetail',
-                        productQuantity: productQuantity,
-                        simplifiedContact: event.shippingContact,
-                        needShipping: needShipping,
-                        nonce: nonce,
-                    },
-                    complete: (jqXHR, textStatus) => {
-                    },
-                    success: (applePayShippingContactUpdate, textStatus, jqXHR) => {
-                        let response = applePayShippingContactUpdate.data
-                        updatedContactInfo = event.shippingContact
-                        if (applePayShippingContactUpdate.success === false) {
-                            response.errors = createAppleErrors(response.errors)
-                        }
-                        if (response.newShippingMethods) {
-                            selectedShippingMethod = response.newShippingMethods[0]
-                        }
-                        this.completeShippingContactSelection(response)
-                    },
-                    error: (jqXHR, textStatus, errorThrown) => {
-                        console.warn(textStatus, errorThrown)
-                        session.abort()
-                    },
-                })
-            }
+                session.onshippingmethodselected = function (event) {
+                    jQuery.ajax({
+                        url: ajaxUrl,
+                        method: 'POST',
+                        data: {
+                            action: 'mollie_apple_pay_update_shipping_method',
+                            shippingMethod: event.shippingMethod,
+                            productId: productId,
+                            callerPage: 'productDetail',
+                            productQuantity: productQuantity,
+                            simplifiedContact: updatedContactInfo,
+                            nonce: nonce,
+                        },
+                        complete: (jqXHR, textStatus) => {
+                        },
+                        success: (applePayShippingMethodUpdate, textStatus, jqXHR) => {
+                            let response = applePayShippingMethodUpdate.data
+                            selectedShippingMethod = event.shippingMethod
+                            if (applePayShippingMethodUpdate.success === false) {
+                                response.errors = createAppleErrors(response.errors)
+                            }
+                            this.completeShippingMethodSelection(response)
+                        },
+                        error: (jqXHR, textStatus, errorThrown) => {
+                            console.warn(textStatus, errorThrown)
+                            session.abort()
+                        },
+                    })
+                }
+                session.onshippingcontactselected = function (event) {
+                    jQuery.ajax({
+                        url: ajaxUrl,
+                        method: 'POST',
+                        data: {
+                            action: 'mollie_apple_pay_update_shipping_contact',
+                            productId: productId,
+                            callerPage: 'productDetail',
+                            productQuantity: productQuantity,
+                            simplifiedContact: event.shippingContact,
+                            needShipping: needShipping,
+                            nonce: nonce,
+                        },
+                        complete: (jqXHR, textStatus) => {
+                        },
+                        success: (applePayShippingContactUpdate, textStatus, jqXHR) => {
+                            let response = applePayShippingContactUpdate.data
+                            updatedContactInfo = event.shippingContact
+                            if (applePayShippingContactUpdate.success === false) {
+                                response.errors = createAppleErrors(response.errors)
+                            }
+                            if (response.newShippingMethods) {
+                                selectedShippingMethod = response.newShippingMethods[0]
+                            }
+                            this.completeShippingContactSelection(response)
+                        },
+                        error: (jqXHR, textStatus, errorThrown) => {
+                            console.warn(textStatus, errorThrown)
+                            session.abort()
+                        },
+                    })
+                }
             }
             session.onvalidatemerchant = (applePayValidateMerchantEvent) => {
                 jQuery.ajax({
@@ -127,7 +126,6 @@ import {request} from './applePayRequest.js';
                             console.warn(merchantSession.data)
                             session.abort()
                         }
-
                     },
                     error: (jqXHR, textStatus, errorThrown) => {
                         console.warn(textStatus, errorThrown)
@@ -136,6 +134,8 @@ import {request} from './applePayRequest.js';
                 })
             }
             session.onpaymentauthorized = (ApplePayPayment) => {
+                const {billingContact, shippingContact } = ApplePayPayment.payment
+
                 jQuery.ajax({
                     url: ajaxUrl,
                     method: 'POST',
@@ -148,7 +148,32 @@ import {request} from './applePayRequest.js';
                         token: ApplePayPayment.payment.token,
                         shippingMethod: selectedShippingMethod,
                         'mollie-payments-for-woocommerce_issuer_applepay': 'applepay',
-                        nonce: nonce,
+                        'woocommerce-process-checkout-nonce': nonce,
+                        'billing_first_name':  billingContact.givenName || '',
+                        'billing_last_name' : billingContact.familyName || '',
+                        'billing_company': '',
+                        'billing_country' : billingContact.countryCode || '',
+                        'billing_address_1' : billingContact.addressLines[0] || '',
+                        'billing_address_2' : billingContact.addressLines[1] || '',
+                        'billing_postcode' : billingContact.postalCode || '',
+                        'billing_city': billingContact.locality || '',
+                        'billing_state' : billingContact.administrativeArea || '',
+                        'billing_phone' : billingContact.phoneNumber || '000000000000',
+                        'billing_email' : shippingContact.emailAddress || '',
+                        'shipping_first_name':  shippingContact.givenName || '',
+                        'shipping_last_name' : shippingContact.familyName || '',
+                        'shipping_company': '',
+                        'shipping_country' : shippingContact.countryCode || '',
+                        'shipping_address_1' : shippingContact.addressLines[0] || '',
+                        'shipping_address_2' : shippingContact.addressLines[1] || '',
+                        'shipping_postcode' : shippingContact.postalCode || '',
+                        'shipping_city': shippingContact.locality || '',
+                        'shipping_state' : shippingContact.administrativeArea || '',
+                        'shipping_phone' : shippingContact.phoneNumber || '000000000000',
+                        'shipping_email' : shippingContact.emailAddress || '',
+                        'order_comments' : '',
+                        'payment_method' : 'mollie_wc_gateway_applepay',
+                        '_wp_http_referer' : '/?wc-ajax=update_order_review'
                     },
                     complete: (jqXHR, textStatus) => {
                     },
@@ -170,12 +195,12 @@ import {request} from './applePayRequest.js';
                     },
                 })
             }
+        }
+        document.querySelector('#mollie_applepay_button').addEventListener('click', (evt) => {
+            applePaySession()
         })
     }
 )
 (
     window
 )
-
-
-

@@ -24,7 +24,7 @@ class PropertiesDictionary
      */
     const CREATE_ORDER_SINGLE_PROD_REQUIRED_FIELDS
         = [
-            PropertiesDictionary::NONCE,
+            PropertiesDictionary::WCNONCE,
             PropertiesDictionary::PRODUCT_ID,
             self::PRODUCT_QUANTITY,
             self::BILLING_CONTACT,
@@ -104,11 +104,15 @@ class PropertiesDictionary
      */
     const NONCE = 'nonce';
     /**
+     * @var string
+     */
+    const WCNONCE = 'woocommerce-process-checkout-nonce';
+    /**
      * @var string[]
      */
     const CREATE_ORDER_CART_REQUIRED_FIELDS
         = [
-            PropertiesDictionary::NONCE,
+            PropertiesDictionary::WCNONCE,
             PropertiesDictionary::BILLING_CONTACT,
             PropertiesDictionary::SHIPPING_CONTACT
         ];

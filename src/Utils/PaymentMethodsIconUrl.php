@@ -170,7 +170,7 @@ class PaymentMethodsIconUrl
         $enabledCreditCards = $this->enabledCreditcards();
 
         $assetsImagesPath
-            = $this->pluginPath . '/' . 'public/images/Creditcard_issuers/';
+            = $this->pluginPath . '/' . 'public/images/';
         $cardWidth = PaymentMethodsIconUrl::CREDIT_CARD_ICON_WIDTH;
         $cardsNumber = count($enabledCreditCards);
         $cardsWidth = $cardWidth * $cardsNumber;

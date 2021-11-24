@@ -37,6 +37,7 @@ European and local payment methods:
 * SEPA - Credit Transfer (EU)
 * SEPA - Direct Debit (EU)
 * Gift cards (Netherlands)
+* Klarna Pay now (Netherlands, Belgium, Germany, Austria, Finland)
 
 International payment methods:
 

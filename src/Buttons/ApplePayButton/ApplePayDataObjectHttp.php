@@ -349,8 +349,8 @@ class ApplePayDataObjectHttp
         return [
             'first_name' => filter_var($data['givenName'], $filter),
             'last_name' => filter_var($data['familyName'], $filter),
-            'email' => filter_var($data['emailAddress'], $filter),
-            'phone' => filter_var($data['phoneNumber'], $filter),
+            'email' => isset($data['emailAddress']) ? filter_var($data['emailAddress'], $filter): '',
+            'phone' => isset($data['phoneNumber']) ?filter_var($data['phoneNumber'], $filter): '',
             'address_1' => isset($data['addressLines'][0])
                 ? filter_var($data['addressLines'][0], $filter) : '',
             'address_2' => isset($data['addressLines'][1])

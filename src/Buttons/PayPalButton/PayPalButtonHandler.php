@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Buttons\PayPalButton;
 
-use Mollie\WooCommerce\Gateway\PayPal\Mollie_WC_Gateway_PayPal;
-use Mollie\WooCommerce\Plugin;
-
 class PayPalButtonHandler
 {
     /**
@@ -16,15 +13,15 @@ class PayPalButtonHandler
     /**
      * @var string
      */
-    protected $pluginUrl;
+    protected $dataPaypal;
 
     /**
      * PayPalHandler constructor.
      */
-    public function __construct(PayPalAjaxRequests $ajaxRequests, string $pluginUrl)
+    public function __construct(PayPalAjaxRequests $ajaxRequests, DataToPayPal $dataPaypal)
     {
         $this->ajaxRequests = $ajaxRequests;
-        $this->pluginUrl = $pluginUrl;
+        $this->dataPaypal = $dataPaypal;
     }
 
     /**
@@ -76,9 +73,8 @@ class PayPalButtonHandler
      */
     protected function renderPayPalButton()
     {
-        $whichPayPalButton = $this->whichPayPalButton();
         $assetsImagesUrl
-                = $this->pluginUrl . '/' . $whichPayPalButton;
+                = $this->dataPaypal->selectedPaypalButtonUrl();
 
         ?>
         <div id="mollie-PayPal-button" class="mol-PayPal">
@@ -86,30 +82,6 @@ class PayPalButtonHandler
             <input type="image" src="<?php echo esc_url( $assetsImagesUrl)?>" alt="PayPal Button">
         </div>
         <?php
-    }
-
-    /**
-     * Build the name of the button from the settings to return the chosen one
-     *
-     * @retun string the path of the chosen button image
-     */
-    protected function whichPayPalButton()
-    {
-        $paypalSettings = get_option('mollie_wc_gateway_paypal_settings');
-        if(!$paypalSettings){
-            return "";
-        }
-        $colorSetting = isset( $paypalSettings['color']) ? $paypalSettings['color'] : "en-checkout-pill-golden";
-        $dataArray = explode('-', $colorSetting);//[0]lang [1]folder [2]first part filename [3] second part filename
-        $fixPath = 'public/images/PayPal_Buttons/';
-        $buildButtonName = sprintf('%s/%s/%s-%s.png', $dataArray[0], $dataArray[1], $dataArray[2], $dataArray[3]);
-        $path = sprintf('%s%s', $fixPath, $buildButtonName);
-        if(file_exists(M4W_PLUGIN_DIR . '/'. $path)){
-            return sprintf('%s%s', $fixPath, $buildButtonName);
-        }else{
-            return sprintf('%s/en/checkout/pill-golden.png', $fixPath);
-        }
-
     }
 }
 

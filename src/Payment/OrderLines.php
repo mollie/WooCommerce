@@ -307,14 +307,21 @@ class OrderLines
      */
     private function get_item_vatRate($cart_item, $product)
     {
-        if ($product && $product->is_taxable() && $cart_item['line_subtotal_tax'] > 0) {
+        if ( $product && $product->is_taxable() && $cart_item['line_subtotal_tax'] > 0 ) {
             // Calculate tax rate.
-
-            $_tax = new WC_Tax();
-            $tmp_rates = $_tax->get_rates($product->get_tax_class());
-            $vat = array_shift($tmp_rates);
-
-            $item_vatRate = isset($vat['rate']) ? $vat['rate'] : 0;
+            $_tax      = new WC_Tax();
+            $tmp_rates = $_tax->get_rates( $product->get_tax_class() );
+            $item_vatRate = 0;
+            foreach($tmp_rates as $rate){
+                if ( isset( $rate['rate'] ) ) {
+                    if($rate['compound'] === "yes" ){
+                        $compoundRate = round($item_vatRate * ($rate['rate']/100)) + $rate['rate'];
+                        $item_vatRate += $compoundRate;
+                        continue;
+                    }
+                    $item_vatRate += $rate['rate'];
+                }
+            }
         } else {
             $item_vatRate = 0;
         }
@@ -538,7 +545,7 @@ class OrderLines
     {
         $shipping_vat_rate = 0;
         if (WC()->cart->shipping_tax_total > 0) {
-            $shipping_vat_rate = round(WC()->cart->shipping_tax_total / WC()->cart->shipping_total, 2) * 100;
+            $shipping_vat_rate = round(WC()->cart->shipping_tax_total / WC()->cart->shipping_total, 3) * 100;
         }
 
         return $shipping_vat_rate;

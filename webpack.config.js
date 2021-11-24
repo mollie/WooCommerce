@@ -26,6 +26,8 @@ function configJavaScript ({ basePath })
     .addEntry('gatewaySurcharge.min', './resources/js/gatewaySurcharge.js')
     .addEntry('mollie-components.min', './resources/js/mollie-components.js')
     .addEntry('mollieBlockIndex.min', './resources/js/mollieBlockIndex.js')
+    .addEntry('paypalButtonBlockComponent.min', './resources/js/paypalButtonBlockComponent.js')
+    .addEntry('applepayButtonBlockComponent.min', './resources/js/applepayButtonBlockComponent.js')
     .enableSourceMaps(!Encore.isProduction())
 
   return extractEncoreConfig('javascript-configuration')

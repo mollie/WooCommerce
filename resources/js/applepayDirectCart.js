@@ -13,7 +13,7 @@ import {maybeShowButton} from './maybeShowApplePayButton.js';
             return
         }
 
-        const nonce = document.getElementById("_wpnonce").value
+        const nonce = document.getElementById("woocommerce-process-checkout-nonce").value
 
         let updatedContactInfo = []
         let selectedShippingMethod = []
@@ -104,6 +104,8 @@ import {maybeShowButton} from './maybeShowApplePayButton.js';
                 })
             }
             session.onpaymentauthorized = (ApplePayPayment) => {
+                const {billingContact, shippingContact } = ApplePayPayment.payment
+
                 jQuery.ajax({
                     url: ajaxUrl,
                     method: 'POST',
@@ -114,7 +116,32 @@ import {maybeShowButton} from './maybeShowApplePayButton.js';
                         token: ApplePayPayment.payment.token,
                         shippingMethod: selectedShippingMethod,
                         'mollie-payments-for-woocommerce_issuer_applepay': 'applepay',
-                        nonce: nonce,
+                        'woocommerce-process-checkout-nonce': nonce,
+                        'billing_first_name': billingContact.givenName || '',
+                        'billing_last_name': billingContact.familyName || '',
+                        'billing_company': '',
+                        'billing_country': billingContact.countryCode || '',
+                        'billing_address_1': billingContact.addressLines[0] || '',
+                        'billing_address_2': billingContact.addressLines[1] || '',
+                        'billing_postcode': billingContact.postalCode || '',
+                        'billing_city': billingContact.locality || '',
+                        'billing_state': billingContact.administrativeArea || '',
+                        'billing_phone': billingContact.phoneNumber || '000000000000',
+                        'billing_email': shippingContact.emailAddress || '',
+                        'shipping_first_name': shippingContact.givenName || '',
+                        'shipping_last_name': shippingContact.familyName || '',
+                        'shipping_company': '',
+                        'shipping_country': shippingContact.countryCode || '',
+                        'shipping_address_1': shippingContact.addressLines[0] || '',
+                        'shipping_address_2': shippingContact.addressLines[1] || '',
+                        'shipping_postcode': shippingContact.postalCode || '',
+                        'shipping_city': shippingContact.locality || '',
+                        'shipping_state': shippingContact.administrativeArea || '',
+                        'shipping_phone': shippingContact.phoneNumber || '000000000000',
+                        'shipping_email': shippingContact.emailAddress || '',
+                        'order_comments' : '',
+                        'payment_method' : 'mollie_wc_gateway_applepay',
+                        '_wp_http_referer' : '/?wc-ajax=update_order_review'
                     },
                     complete: (jqXHR, textStatus) => {
 
@@ -147,7 +174,6 @@ import {maybeShowButton} from './maybeShowApplePayButton.js';
             document.querySelector('#mollie_applepay_button').addEventListener('click', (evt) => {
                 applePaySession()
             })
-
         })
 
         document.querySelector('#mollie_applepay_button').addEventListener('click', (evt) => {

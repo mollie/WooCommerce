@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Buttons\ApplePayButton;
 
 use Mollie\WooCommerce\Gateway\ApplePay\Mollie_WC_Gateway_ApplePay;
+use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
 use Psr\Log\LoggerInterface as Logger;
 
 class ResponsesToApple
@@ -13,13 +14,18 @@ class ResponsesToApple
      * @var Logger
      */
     protected $logger;
+    /**
+     * @var MollieSubscriptionGateway
+     */
+    protected $gateway;
 
     /**
      * ResponsesToApple constructor.
      */
-    public function __construct(Logger $logger)
+    public function __construct(Logger $logger, MollieSubscriptionGateway $appleGateway)
     {
         $this->logger = $logger;
+        $this->gateway = $appleGateway;
     }
 
 
@@ -214,15 +220,14 @@ class ResponsesToApple
      */
     protected function redirectUrlOnSuccessfulPayment($orderId)
     {
-        $gateway = new Mollie_WC_Gateway_ApplePay();
         $order = wc_get_order($orderId);
-        $redirect_url = $gateway->getReturnRedirectUrlForOrder($order);
+        $redirect_url = $this->gateway->getReturnRedirectUrlForOrder($order);
         // Add utm_nooverride query string
         $redirect_url = add_query_arg(['utm_nooverride' => 1], $redirect_url);
 
         $this->logger->log( \WC_Log_Levels::DEBUG,
             __METHOD__
-            . sprintf(': Redirect url on return order %s, order %s: %s', $gateway->id, $orderId, $redirect_url)
+            . sprintf(': Redirect url on return order %s, order %s: %s', $this->gateway->paymentMethod->getProperty('id'), $orderId, $redirect_url)
         );
 
         return $redirect_url;

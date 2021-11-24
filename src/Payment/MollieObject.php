@@ -247,9 +247,9 @@ class MollieObject
         $order = wc_get_order($order_id);
         $mollie_payment_id = $order->get_meta('_mollie_payment_id', true);
 
-        if ($mollie_payment_id == $this->data->id) {
-            $order->delete_meta_data('_mollie_payment_id');
-            $order->delete_meta_data('_mollie_payment_mode');
+        if (is_object($this->data) && isset($this->data->id) && $mollie_payment_id == $this->data->id ) {
+            $order->delete_meta_data( '_mollie_payment_id' );
+            $order->delete_meta_data( '_mollie_payment_mode' );
             $order->save();
         }
 

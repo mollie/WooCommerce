@@ -12,6 +12,7 @@ use Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\Buttons\ApplePayButton\AppleAjaxRequests;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDirectHandler;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ResponsesToApple;
+use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPal;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalAjaxRequests;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalButtonHandler;
 use Mollie\WooCommerce\Notice\AdminNotice;
@@ -23,8 +24,6 @@ use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\PaymentFieldsService;
 use Mollie\WooCommerce\Payment\PaymentService;
-use Mollie\WooCommerce\PaymentMethods\Directdebit;
-use Mollie\WooCommerce\PaymentMethods\Ideal;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\PaymentMethodSettingsHandler;
 use Mollie\WooCommerce\Settings\Settings;
@@ -66,6 +65,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                     'Mollie_WC_Gateway_Kbc',
                     'Mollie_WC_Gateway_KlarnaPayLater',
                     'Mollie_WC_Gateway_KlarnaSliceIt',
+                    'Mollie_WC_Gateway_KlarnaPayNow',
                     'Mollie_WC_Gateway_Bancontact',
                     'Mollie_WC_Gateway_PayPal',
                     'Mollie_WC_Gateway_Paysafecard',
@@ -198,8 +198,9 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $pluginUrl = $container->get('core.plugin_url');
         $apiHelper = $container->get('core.api_helper');
         $settingsHelper = $container->get('settings.settings_helper');
+        $appleGateway = $container->get('gateway.instances')['mollie_wc_gateway_applepay'];
         $this->gatewaySurchargeHandling();
-        $this->mollieApplePayDirectHandling($notice, $logger, $apiHelper, $settingsHelper);
+        $this->mollieApplePayDirectHandling($notice, $logger, $apiHelper, $settingsHelper, $appleGateway);
         $paypalGateway = $container->get('gateway.instances')['mollie_wc_gateway_paypal'];
         $this->molliePayPalButtonHandling($paypalGateway, $notice, $logger, $pluginUrl);
 
@@ -358,14 +359,14 @@ class GatewayModule implements ServiceModule, ExecutableModule
     /**
      * Bootstrap the ApplePay button logic if feature enabled
      */
-    public function mollieApplePayDirectHandling(NoticeInterface $notice, Logger $logger,Api $apiHelper, Settings $settingsHelper)
+    public function mollieApplePayDirectHandling(NoticeInterface $notice, Logger $logger,Api $apiHelper, Settings $settingsHelper, MollieSubscriptionGateway $appleGateway)
     {
         $buttonEnabledCart = mollieWooCommerceIsApplePayDirectEnabled('cart');
         $buttonEnabledProduct = mollieWooCommerceIsApplePayDirectEnabled('product');
 
         if ($buttonEnabledCart || $buttonEnabledProduct) {
             $notices = new AdminNotice();
-            $responseTemplates = new ResponsesToApple($logger);
+            $responseTemplates = new ResponsesToApple($logger, $appleGateway);
             $ajaxRequests = new AppleAjaxRequests($responseTemplates, $notice, $logger, $apiHelper, $settingsHelper);
             $applePayHandler = new ApplePayDirectHandler($notices, $ajaxRequests);
             $applePayHandler->bootstrap($buttonEnabledProduct, $buttonEnabledCart);
@@ -387,7 +388,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
 
         if ($shouldBuildIt) {
             $ajaxRequests = new PayPalAjaxRequests($gateway, $notice, $logger);
-            $payPalHandler = new PayPalButtonHandler($ajaxRequests, $pluginUrl);
+            $data = new DataToPayPal($pluginUrl);
+            $payPalHandler = new PayPalButtonHandler($ajaxRequests, $data);
             $payPalHandler->bootstrap($enabledInProduct, $enabledInCart);
         }
     }

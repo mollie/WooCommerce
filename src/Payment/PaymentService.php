@@ -526,6 +526,7 @@ class PaymentService
 
             if ($order_payment_method == 'mollie_wc_gateway_klarnapaylater'
                 || $order_payment_method == 'mollie_wc_gateway_sliceit'
+                || $order_payment_method == 'mollie_wc_gateway_klarnapaynow'
             ) {
                 $this->logger->log( \WC_Log_Levels::DEBUG,
                     'Creating payment object: type Order, failed for Klarna payment, stopping process.'

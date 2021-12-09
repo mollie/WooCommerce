@@ -370,6 +370,8 @@ function initializeComponents (
         const $document = jQuery(document)
         const { merchantProfileId, options, isCheckoutPayPage } = mollieComponentsSettings
         const mollie = new Mollie(merchantProfileId, options)
+
+
         if (isCheckoutPayPage) {
             eventName = 'payment_method_selected'
             $document.on(
@@ -383,6 +385,17 @@ function initializeComponents (
             )
             return
         }
+
+        document.addEventListener("mollie_creditcard_component_selected", function(event) {
+            setTimeout(function(){
+                initializeComponents(
+                    jQuery,
+                    mollie,
+                    mollieComponentsSettings,
+                    mollieComponentsMap
+                )
+            },500);
+        });
 
         function checkInit() {
             return function () {

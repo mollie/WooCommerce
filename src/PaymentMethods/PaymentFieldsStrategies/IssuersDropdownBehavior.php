@@ -17,18 +17,41 @@ trait IssuersDropdownBehavior
     }
     public function renderIssuers($gateway, $issuers, $selectedIssuer)
     {
+        $html = $this->issuersDropdownMarkup(
+            $gateway,
+            $issuers,
+            $selectedIssuer
+        );
+        echo wpautop(wptexturize($html));
+    }
+
+    /**
+     * @param $gateway
+     * @param $issuers
+     * @param $selectedIssuer
+     *
+     * @return string
+     */
+    public function issuersDropdownMarkup(
+        $gateway,
+        $issuers,
+        $selectedIssuer
+    ): string {
         $description = $gateway->paymentMethod->getProperty(
             'issuers_empty_option'
         ) ?: $gateway->paymentMethod->getProperty('defaultDescription');
 
-        $html = '<select name="' . $gateway->pluginId . '_issuer_' . $gateway->id . '">';
-        $html .= '<option value="">' . esc_html(__($description, 'mollie-payments-for-woocommerce')) . '</option>';
+        $html = '<select name="' . $gateway->pluginId . '_issuer_'
+            . $gateway->id . '">';
+        $html .= '<option value="">' . esc_html(
+                __($description, 'mollie-payments-for-woocommerce')
+            ) . '</option>';
         foreach ($issuers as $issuer) {
             $html .= '<option value="' . esc_attr($issuer->id) . '"'
                 . ($selectedIssuer == $issuer->id ? ' selected=""' : '') . '>'
                 . esc_html($issuer->name) . '</option>';
         }
         $html .= '</select>';
-        echo wpautop(wptexturize($html));
+        return $html;
     }
 }

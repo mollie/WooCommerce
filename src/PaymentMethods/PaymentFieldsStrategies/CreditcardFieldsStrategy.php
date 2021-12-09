@@ -31,6 +31,17 @@ class CreditcardFieldsStrategy implements PaymentFieldsStrategyI
         <?php
     }
 
+    public function getFieldMarkup($gateway, $dataHelper)
+    {
+        if (!$this->isMollieComponentsEnabled($gateway->paymentMethod)) {
+            return false;
+        }
+        $gateway->has_fields = true;
+        $descriptionTranslated = __('Secure payments provided by', 'mollie-payments-for-woocommerce');
+        $componentsDescription = "{$this->lockIcon($gateway)} {$descriptionTranslated} {$this->mollieLogo($gateway)}";
+        return "<div class='payment_method_mollie_wc_gateway_creditcard'><div class='mollie-components'></div><p class='mollie-components-description'>{$componentsDescription}</p></div>";
+    }
+
     protected function isMollieComponentsEnabled(PaymentMethodI $paymentMethod): bool
     {
         return $paymentMethod->getProperty('mollie_components_enabled') === 'yes';

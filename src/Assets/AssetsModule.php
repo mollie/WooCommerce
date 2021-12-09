@@ -28,6 +28,7 @@ class AssetsModule implements ExecutableModule
     protected $pluginPath;
     protected $settingsHelper;
     protected $pluginVersion;
+    protected $dataService;
 
     public function run(ContainerInterface $container): bool
     {
@@ -35,9 +36,10 @@ class AssetsModule implements ExecutableModule
         $this->pluginPath = $container->get('core.plugin_path');
         $this->settingsHelper = $container->get('settings.settings_helper');
         $this->pluginVersion = $container->get('core.plugin_version');
+        $this->dataService = $container->get('core.data_helper');
         add_action(
             'init',
-            function () {
+            function () use ($container){
                 self::registerFrontendScripts();
                 wp_register_script(
                     'mollie_wc_admin_settings',
@@ -50,6 +52,11 @@ class AssetsModule implements ExecutableModule
                 add_action('wp_enqueue_scripts', [$this, 'enqueueComponentsAssets']);
                 add_action('wp_enqueue_scripts', [$this, 'enqueueApplePayDirectScripts']);
                 add_action('wp_enqueue_scripts', [$this, 'enqueuePayPalButtonScripts']);
+
+                $gatewayInstances = $container->get('gateway.instances');
+                add_action('wp_enqueue_scripts', function() use ($gatewayInstances){
+                    $this->enqueueButtonBlocksCartScripts($gatewayInstances);
+                });
                 $this->registerButtonsBlockScripts();
 
 
@@ -72,7 +79,7 @@ class AssetsModule implements ExecutableModule
                         ['underscore', 'jquery'],
                         $this->pluginVersion
                     );
-
+                    $this->enqueueButtonBlocksCartScripts($gatewayInstances);
                     wp_enqueue_script('mollie_wc_gateway_settings');
                     wp_enqueue_style('mollie-gateway-icons');
                     $settingsName = "{$current_section}_settings";
@@ -105,6 +112,19 @@ class AssetsModule implements ExecutableModule
             }
         );
         return true;
+    }
+
+    public function enqueueButtonBlocksCartScripts($gatewayInstances){
+
+        wp_enqueue_script('mollie_block_index');
+        wp_enqueue_style('mollie-gateway-icons');
+        wp_localize_script(
+            'mollie_block_index',
+            'mollieBlockData',
+            [
+                'gatewayData' => $this->gatewayDataForWCBlocks($gatewayInstances)
+            ]
+        );
     }
 
     public function registerButtonsBlockScripts ()
@@ -329,7 +349,7 @@ class AssetsModule implements ExecutableModule
         wp_register_script(
             'mollie_block_index',
             $this->getPluginUrl('/public/js/mollieBlockIndex.min.js'),
-            ['wc-blocks-registry', 'underscore'],
+            ['wc-blocks-registry', 'underscore', 'jquery'],
             filemtime($this->getPluginPath('/public/js/mollieBlockIndex.min.js')),
             true
         );
@@ -342,14 +362,6 @@ class AssetsModule implements ExecutableModule
      */
     public function enqueueFrontendScripts()
     {
-        wp_enqueue_script('mollie_block_index');
-        wp_localize_script(
-            'mollie_block_index',
-            'mollieBlockData',
-            [
-                'gatewayData' => $this->gatewayDataForWCBlocks()
-            ]
-        );
         if (is_admin() || !mollieWooCommerceIsCheckoutContext()) {
             return;
         }
@@ -369,7 +381,10 @@ class AssetsModule implements ExecutableModule
      */
     public function enqueueComponentsAssets()
     {
-        if (is_admin() || !mollieWooCommerceIsCheckoutContext()) {
+        if (is_admin()
+            || (!mollieWooCommerceIsCheckoutContext()
+                && !has_block("woocommerce/checkout"))
+        ) {
             return;
         }
 
@@ -440,20 +455,55 @@ class AssetsModule implements ExecutableModule
         );
     }
 
-    protected function gatewayDataForWCBlocks(): array
+    protected function gatewayDataForWCBlocks($gatewayInstances): array
     {
-        return [
-            [
-                'name' => 'mollie_wc_gateway_ideal',
-                'label' => 'ideal',
-                'content' => 'Ideal content',
-                'edit' => 'Ideal edit',
-                'paymentMethodId' => 'mollie_wc_gateway_ideal',
-                'canMakePayment' => true,
-                'ariaLabel' => 'Payment via Mollie',
-                'supports' => []
-            ]
+        $filters = $this->dataService->wooCommerceFiltersForCheckout();
+
+        if($filters){
+            $availablePaymentMethods = $this->dataService->getAvailablePaymentMethodListForCheckout($filters);
+        }
+
+        $dataToScript = [
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'filters' => [
+                            'currency' => $filters['amount']['currency'],
+                            'cartTotal' => $filters['amount']['value'],
+                            'paymentLocale' => $filters['locale'],
+                            'billingCountry' => $filters['billingCountry']
+                        ]
         ];
+        $gatewayData = [];
+        foreach ($gatewayInstances as $gatewayKey => $gateway){
+            $gatewayId = $gateway->paymentMethod->getProperty('id');
+            if($gateway->enabled !== 'yes' || $gatewayId == 'directdebit'){
+                continue;
+            }
+            $content = __($gateway->paymentMethod->getProperty('defaultDescription', 'mollie-payments-for-woocommerce'));
+
+            if ($gateway->paymentMethod->getProperty('paymentFields')){
+
+                $gateway->paymentFieldsService->setStrategy($gateway);
+
+                $content = $gateway->paymentFieldsService->getStrategyMarkup($gateway);
+            }
+            $labelMarkup = "<span style='margin-right: 1em'>{$gateway->paymentMethod->getProperty('id')}</span>{$gateway->icon}";
+
+            $gatewayData[] = [
+                'name' => $gatewayKey,
+                'label' => $labelMarkup,
+                'content' => $content,
+                'edit' => $gateway->paymentMethod->getProperty('defaultDescription'),
+                'paymentMethodId' => $gatewayKey,
+                'allowedCountries'=> $gateway->paymentMethod->getProperty('allowed_countries'),
+                'ariaLabel' => $gateway->paymentMethod->getProperty('defaultDescription'),
+                'supports' => $gateway->paymentMethod->getProperty('supports')
+            ];
+        }
+        $dataToScript['gatewayData'] = $gatewayData;
+        $dataToScript['availableGateways']= isset($availablePaymentMethods)?$availablePaymentMethods:[];
+
+        //var_dump($dataToScript);
+        return $dataToScript;
     }
 
     protected function getPluginUrl(string $path = ''): string

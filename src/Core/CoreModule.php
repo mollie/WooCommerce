@@ -67,7 +67,8 @@ class CoreModule implements ServiceModule
                 $apiHelper = $container->get('core.api_helper');
                 $logger = $container->get(Logger::class);
                 $pluginId = $container->get('core.plugin_id');
-                return new Data($apiHelper, $logger, $pluginId);
+                $settings = $container->get('settings.settings_helper');
+                return new Data($apiHelper, $logger, $pluginId, $settings);
             },
             'core.status_helper' => function (ContainerInterface $container): Status {
                 $pluginTitle = $container->get('core.plugin_title');

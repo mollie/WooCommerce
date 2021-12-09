@@ -53,4 +53,8 @@ class PaymentFieldsService
     {
         return $this->strategy->execute($gateway, $this->dataHelper);
     }
+    public function getStrategyMarkup($gateway)
+    {
+        return $this->strategy->getFieldMarkup($gateway, $this->dataHelper);
+    }
 }

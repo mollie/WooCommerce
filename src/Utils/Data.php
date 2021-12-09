@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Utils;
 
 use Exception;
-use Mollie\WooCommerce\Plugin;
+use InvalidArgumentException;
 use Mollie\WooCommerce\SDK\Api;
+use Mollie\WooCommerce\Settings\Settings;
 use Psr\Log\LoggerInterface as Logger;
 use WC_Customer;
 use WC_Order;
@@ -40,15 +41,17 @@ class Data
      * @var Api
      */
     protected $api_helper;
+    protected $settingsHelper;
     /**
      * @var Logger
      */
     protected $logger;
     protected $pluginId;
 
-    public function __construct(Api $api_helper, Logger $logger, string $pluginId)
+    public function __construct(Api $api_helper, Logger $logger, string $pluginId, Settings $settingsHelper)
     {
         $this->api_helper = $api_helper;
+        $this->settingsHelper = $settingsHelper;
         $this->logger = $logger;
         $this->pluginId = $pluginId;
     }
@@ -171,6 +174,119 @@ class Data
         }
 
         return $result;
+    }
+
+    public function getAvailablePaymentMethodListForCheckout($filters){
+        $settings_helper = $this->settingsHelper;
+        $testMode = $settings_helper->isTestModeEnabled();
+        $apiKey = $this->settingsHelper->getApiKey($testMode);
+        $availablePaymentMethods = [];
+
+        $methods = $this->getApiPaymentMethods(
+            $apiKey,
+            $testMode,
+            $use_cache = true,
+            $filters
+        );
+
+
+        $activeFilterKey = "{$filters['amount']['currency']}-{$filters['locale']}-{$filters['billingCountry']}";
+        $availablePaymentMethods[$activeFilterKey] = [];
+
+        foreach ($methods as $method){
+            $gatewayName = 'mollie_wc_gateway_' . $method['id'];
+            $gatewaySettingName = $gatewayName . '_settings';
+            $gatewaySettings = get_option($gatewaySettingName);
+            $isGatewayEnabled = $gatewaySettings['enabled'] == 'yes';
+            if($isGatewayEnabled && $gatewayName !== 'directDebit'){
+                $availablePaymentMethods[$activeFilterKey][$gatewayName] = $method['id'];
+            }
+        }
+        return $availablePaymentMethods;
+    }
+
+    public function wooCommerceFiltersForCheckout(){
+        $cart = WC()->cart;
+        $cartTotal = $cart? $cart->get_total('edit'):0;
+
+        $currency = get_woocommerce_currency();
+        $billingCountry = WC()->customer? WC()->customer->get_billing_country(): "";
+        $paymentLocale = $this->settingsHelper->getPaymentLocale();
+        try {
+            $filters = $this->getFilters(
+                $currency,
+                $cartTotal,
+                $paymentLocale,
+                $billingCountry
+            );
+        } catch (InvalidArgumentException $exception) {
+            $filters = false;
+        }
+
+        return $filters;
+    }
+    /**
+     * @param $order_total
+     * @param $currency
+     *
+     * @return int
+     */
+    protected function getAmountValue($order_total, $currency)
+    {
+        return $this->formatCurrencyValue(
+            $order_total,
+            $currency
+        );
+    }
+
+    /**
+     * Returns a list of filters, ensuring that the values are valid.
+     *
+     * @param $currency
+     * @param $orderTotal
+     * @param $paymentLocale
+     * @param $billingCountry
+     *
+     * @return array
+     * @throws InvalidArgumentException
+     */
+    public function getFilters(
+        $currency,
+        $orderTotal,
+        $paymentLocale,
+        $billingCountry
+    ) {
+        $amountValue = $this->getAmountValue($orderTotal, $currency);
+        if ($amountValue <= 0) {
+            throw new InvalidArgumentException(
+                sprintf('Amount %s is not valid.', $amountValue)
+            );
+        }
+
+        // Check if currency is in ISO 4217 alpha-3 format (ex: EUR)
+        if (!preg_match('/^[a-zA-Z]{3}$/', $currency)) {
+            throw new InvalidArgumentException(
+                sprintf('Currency %s is not valid.', $currency)
+            );
+        }
+
+        // Check if billing country is in ISO 3166-1 alpha-2 format (ex: NL)
+        if (!preg_match('/^[a-zA-Z]{2}$/', $billingCountry)) {
+            throw new InvalidArgumentException(
+                sprintf('Billing Country %s is not valid.', $billingCountry)
+            );
+        }
+
+        return [
+            'amount' => [
+                'currency' => $currency,
+                'value' => $amountValue,
+            ],
+            'locale' => $paymentLocale,
+            'billingCountry' => $billingCountry,
+            'sequenceType' => \Mollie\Api\Types\SequenceType::SEQUENCETYPE_ONEOFF,
+            'resource' => 'orders',
+        ];
     }
 
     /**

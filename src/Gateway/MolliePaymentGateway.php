@@ -114,7 +114,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
      * @var OrderInstructionsService
      */
     protected $orderInstructionsService;
-    protected $paymentFieldsService;
+    public $paymentFieldsService;
     /**
      * @var Data
      */
@@ -315,7 +315,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
      *
      * @return bool
      */
-    protected function isValidForUse()
+    public function isValidForUse()
     {
         //
         // Abort if this is not the WooCommerce settings page
@@ -333,7 +333,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         if (!$current_screen) {
             return true;
         }
-        
+
         if (is_admin() && !empty($current_screen->base)
             && $current_screen->base == 'woocommerce_page_wc-settings'
         ) {
@@ -582,7 +582,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
             // For regular payments, check available payment methods, but ignore SSD gateway (not shown in checkout)
             $status = ($this->id !== 'mollie_wc_gateway_directdebit')
                 ? $this->isAvailableMethodInCheckout($filters) : false;
-            $allowedCountries = $this->get_option('allowed_countries', []);
+            $allowedCountries = $this->paymentMethod->getProperty('allowed_countries');
             //if no country is selected then this does not apply
             $bCountryIsAllowed = empty($allowedCountries)
                 ? true

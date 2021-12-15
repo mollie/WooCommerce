@@ -42,7 +42,7 @@ class MollieOrder extends MollieObject
      * @param OrderItemsRefunder $orderItemsRefunder
      * @param $data
      */
-    public function __construct(OrderItemsRefunder $orderItemsRefunder, $data, $pluginId, Api $apiHelper, $settingsHelper, $dataHelper)
+    public function __construct(OrderItemsRefunder $orderItemsRefunder, $data, $pluginId, Api $apiHelper, $settingsHelper, $dataHelper, $logger)
     {
         $this->data = $data;
         $this->orderItemsRefunder = $orderItemsRefunder;
@@ -50,6 +50,7 @@ class MollieOrder extends MollieObject
         $this->apiHelper = $apiHelper;
         $this->settingsHelper = $settingsHelper;
         $this->dataHelper = $dataHelper;
+        $this->logger = $logger;
     }
 
     public function getPaymentObject($paymentId, $testMode = false, $useCache = true)

@@ -89,7 +89,8 @@ class MollieOrderService
             $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ":  Invalid key $key for order $order_id.");
             return;
         }
-
+        $gateway = wc_get_payment_gateway_by_order($order);
+        $this->setGateway($gateway);
         // No Mollie payment id provided
         if (empty($_POST['id'])) {
             $this->httpResponse->setHttpResponseCode(400);
@@ -196,7 +197,7 @@ class MollieOrderService
         }
 
         // Has initial order status 'on-hold'
-        if ($this->gateway->getInitialOrderStatus() === self::STATUS_ON_HOLD && $order->has_status(self::STATUS_ON_HOLD)) {
+        if ($this->gateway->getInitialOrderStatus() === MolliePaymentGateway::STATUS_ON_HOLD && $order->has_status(MolliePaymentGateway::STATUS_ON_HOLD)) {
             $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, has status On-Hold. ', [true]);
 
             return true;
@@ -709,7 +710,7 @@ class MollieOrderService
     {
         // TODO David: this needs to be updated, doesn't work in all cases?
         $payment_method_title = '';
-        if ($payment->method == $this->gateway->getMollieMethodId()) {
+        if ($payment->method == $this->gateway->paymentMethod->getProperty('id')) {
             $payment_method_title = $this->gateway->method_title;
         }
         return $payment_method_title;

@@ -858,6 +858,8 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         $hookReturnPaymentStatus = 'success';
         $returnRedirect = $this->get_return_url($order);
         $failedRedirect = $order->get_checkout_payment_url(false);
+
+        $this->mollieOrderService->setGateway($this);
         if ($this->mollieOrderService->orderNeedsPayment($order)) {
             $hasCancelledMolliePayment = $this->paymentObject()
                 ->getCancelledMolliePaymentId($order_id);
@@ -931,6 +933,19 @@ class MolliePaymentGateway extends WC_Payment_Gateway
          * Return to order received page
          */
         return $this->get_return_url($order);
+    }
+
+    /**
+     * @return string
+     */
+    public function getInitialOrderStatus(): string
+    {
+
+        if ($this->paymentMethod->getProperty('confirmationDelayed')) {
+            return $this->paymentMethod->getProperty('initial_order_status');
+        }
+
+        return MolliePaymentGateway::STATUS_PENDING;
     }
 
     /**

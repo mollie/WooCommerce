@@ -25,16 +25,18 @@ class PaymentFactory
      * @var string
      */
     protected $pluginId;
+    protected $logger;
 
     /**
      * PaymentFactory constructor.
      */
-    public function __construct(Data $dataHelper, Api $apiHelper, Settings $settingsHelper, string $pluginId)
+    public function __construct(Data $dataHelper, Api $apiHelper, Settings $settingsHelper, string $pluginId, $logger)
     {
         $this->dataHelper = $dataHelper;
         $this->apiHelper = $apiHelper;
         $this->settingsHelper = $settingsHelper;
         $this->pluginId = $pluginId;
+        $this->logger = $logger;
     }
 
     /**
@@ -64,7 +66,8 @@ class PaymentFactory
                 $this->pluginId,
                 $this->apiHelper,
                 $this->settingsHelper,
-                $this->dataHelper
+                $this->dataHelper,
+                $this->logger
             );
         }
 

@@ -89,13 +89,13 @@ class PaymentService
         $orderId = $order->get_id();
         $this->logger->log( \WC_Log_Levels::DEBUG,  "{$this->gateway->id}: Start process_payment for order {$orderId}", [true] );
 
-        $initial_order_status = $this->getInitialOrderStatus($paymentConfirmationAfterCoupleOfDays);
+        $initial_order_status = $this->gateway->getInitialOrderStatus();
 
         // Overwrite plugin-wide
         $initial_order_status = apply_filters( $this->pluginId . '_initial_order_status', $initial_order_status );
 
         // Overwrite gateway-wide
-        $initial_order_status = apply_filters( $this->pluginId . '_initial_order_status_' . $this->id, $initial_order_status );
+        $initial_order_status = apply_filters( $this->pluginId . '_initial_order_status_' . $this->gateway->id, $initial_order_status );
 
         $settings_helper = $this->settingsHelper;
 
@@ -260,17 +260,7 @@ class PaymentService
         return array ( 'result' => 'failure' );
     }
 
-    /**
-     * @return string
-     */
-    public function getInitialOrderStatus(): string
-    {
-        if ($this->gateway->paymentMethod->getProperty('confirmationDelayed')) {
-            return $this->gateway->paymentMethod->getProperty('initial_order_status');
-        }
 
-        return MolliePaymentGateway::STATUS_PENDING;
-    }
 
     /**
      * Get the url to return to on Mollie return

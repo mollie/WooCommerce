@@ -47,7 +47,8 @@ class PaymentModule implements ServiceModule, ExecutableModule
                $apiHelper = $container->get('core.api_helper');
                $settingsHelper = $container->get('settings.settings_helper');
                $pluginId = $container->get('core.plugin_id');
-               return new PaymentFactory($data, $apiHelper, $settingsHelper, $pluginId);
+               $logger = $container->get(Logger::class);
+               return new PaymentFactory($data, $apiHelper, $settingsHelper, $pluginId, $logger);
            },
            MollieObject::class => static function (ContainerInterface $container): MollieObject {
                $logger = $container->get(Logger::class);

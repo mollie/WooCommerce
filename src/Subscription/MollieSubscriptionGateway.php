@@ -257,7 +257,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
 
         $this->logger->log(\WC_Log_Levels::DEBUG, $this->id . ': Try to create renewal payment for renewal order ' . $renewal_order_id);
         $this->paymentService->setGateway($this);
-        $initial_order_status = $this->paymentService->getInitialOrderStatus();
+        $initial_order_status = $this->getInitialOrderStatus();
 
         // Overwrite plugin-wide
         $initial_order_status = apply_filters($this->pluginId . '_initial_order_status', $initial_order_status);
@@ -632,7 +632,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                 return $mollie_customer_id;
             }
 
-            $mollie_method = $gateway->getMollieMethodId();
+            $mollie_method = $gateway->paymentMethod->getProperty('id');
 
             // Check that first payment method is related to SEPA Direct Debit and update
             $methods_needing_update =  [

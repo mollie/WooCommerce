@@ -31,7 +31,7 @@ class Creditcard implements PaymentMethodI
             'id' => 'creditcard',
             'defaultTitle' => __('Credit card', 'mollie-payments-for-woocommerce'),
             'settingsDescription' => '',
-            'defaultDescription' => __('Select your bank', 'mollie-payments-for-woocommerce'),
+            'defaultDescription' => __('', 'mollie-payments-for-woocommerce'),
             'paymentFields' => true,
             'instructions' => true,
             'supports' => [

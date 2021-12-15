@@ -10,6 +10,19 @@
         let cartTotal = filters.cartTotal
         let cachedAvailableGateways = availableGateways
         let changedBillingCountry = filters.billingCountry
+        let onSubmitLocal
+        let activePaymentMethodLocal
+        let creditCardSelected = new Event("mollie_creditcard_component_selected", {bubbles: true});
+
+        const Content = (props) => {
+            const {onSubmit, activePaymentMethod, item} = props
+            onSubmitLocal = onSubmit
+            if(activePaymentMethodLocal !== activePaymentMethod && activePaymentMethod === 'mollie_wc_gateway_creditcard'){
+                document.documentElement.dispatchEvent(creditCardSelected);
+            }
+            activePaymentMethodLocal = activePaymentMethod
+            return <div dangerouslySetInnerHTML={ {__html: item.content} }/>
+        }
 
         function updateAvailableGateways(item) {
             jQuery.ajax({
@@ -38,11 +51,11 @@
             let paymentMethod = {
                 name: item.name,
                 label: <div dangerouslySetInnerHTML={ {__html: item.label} }/>,
-                content: <div dangerouslySetInnerHTML={ {__html: item.content} }/>,
+                content: <Content item={item}/>,
                 edit:  <div>{item.edit}</div>,
                 paymentMethodId: item.paymentMethodId,
                 canMakePayment: ( { cartTotals, billingData } ) => {
-                    if(item.allowedCountries !== "" && !(item.allowedCountries.includes(billingData.country))){
+                    if(!_.isEmpty(item.allowedCountries) && !(item.allowedCountries.includes(billingData.country))){
                         return false
                     }
                     if(cartTotals <= 0) {
@@ -61,8 +74,7 @@
 
                     if (cachedAvailableGateways.hasOwnProperty(currentFilterKey)) {
                         if(item.name === "mollie_wc_gateway_creditcard"){
-                            let updated = new Event("mollie_creditcard_component_selected", {bubbles: true});
-                            document.documentElement.dispatchEvent(updated);
+                            document.documentElement.dispatchEvent(creditCardSelected);
                         }
 
                         return cachedAvailableGateways[currentFilterKey].hasOwnProperty(item.name)
@@ -77,6 +89,10 @@
             };
 
             registerPaymentMethod( paymentMethod );
+        })
+
+        document.addEventListener('mollie_components_ready_to_submit', function () {
+            onSubmitLocal()
         })
     }
 )

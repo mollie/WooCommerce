@@ -311,9 +311,9 @@ class AssetsModule implements ExecutableModule
         );
         wp_register_script(
             'mollie_paypalButtonCart',
-            $this->getPluginUrl('/resources/js/paypalButtonCart.js'),
+            $this->getPluginUrl('/public/js/paypalButtonCart.min.js'),
             ['underscore', 'jquery'],
-            filemtime($this->getPluginPath('/resources/js/paypalButtonCart.js')),
+            filemtime($this->getPluginPath('/public/js/paypalButtonCart.min.js')),
             true
         );
         wp_register_script(

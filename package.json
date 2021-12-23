@@ -33,7 +33,7 @@
     "@babel/preset-react": "^7.14.5",
     "@symfony/webpack-encore": "^0.28.2",
     "@woocommerce/dependency-extraction-webpack-plugin": "^1.7.0",
-    "@wordpress/plugins": "^4.0.2",
+    "@wordpress/element": "^4.0.4",
     "date-and-time": "^0.14.0",
     "del": "^3.0.0",
     "gulp": "^4.0.0",
@@ -45,15 +45,11 @@
     "minimist": "^1.2.3",
     "node-sass": "^4.13.0",
     "pump": "^3.0.0",
-    "react": "^17.0.2",
     "sass-loader": "^7.0.1"
   },
   "scripts": {
     "watch": "webpack --watch",
     "build": "gulp buildAssets",
     "setup": "gulp setup"
-  },
-  "dependencies": {
-    "@wordpress/data": "^6.1.4"
   }
 }

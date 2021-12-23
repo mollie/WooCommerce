@@ -94,6 +94,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                     'Ideal',
                     'Kbc',
                     'Klarnapaylater',
+                    'Klarnapaynow',
                     'Klarnasliceit',
                     'Bancontact',
                     'Paypal',

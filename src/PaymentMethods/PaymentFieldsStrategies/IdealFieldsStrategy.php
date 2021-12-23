@@ -27,7 +27,7 @@ class IdealFieldsStrategy implements PaymentFieldsStrategyI
         }
         $issuers = $this->getIssuers($gateway, $dataHelper);
         $selectedIssuer = $gateway->getSelectedIssuer();
-        $markup = $this->issuersDropdownMarkup($gateway, $issuers, $selectedIssuer);
+        $markup = $this->dropdownOptions($gateway, $issuers, $selectedIssuer);
         return $markup;
     }
 }

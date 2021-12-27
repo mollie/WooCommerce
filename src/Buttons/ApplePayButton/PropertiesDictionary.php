@@ -10,10 +10,10 @@ class PropertiesDictionary
     /**
      * @var string[]
      */
-    public const VALIDATION_REQUIRED_FIELDS
-        = [
+    public const VALIDATION_REQUIRED_FIELDS =
+        [
             PropertiesDictionary::NONCE,
-            PropertiesDictionary::VALIDATION_URL
+            PropertiesDictionary::VALIDATION_URL,
         ];
     /**
      * @var string
@@ -22,46 +22,45 @@ class PropertiesDictionary
     /**
      * @var string[]
      */
-    public const CREATE_ORDER_SINGLE_PROD_REQUIRED_FIELDS
-        = [
+    public const CREATE_ORDER_SINGLE_PROD_REQUIRED_FIELDS =
+        [
             PropertiesDictionary::WCNONCE,
             PropertiesDictionary::PRODUCT_ID,
             self::PRODUCT_QUANTITY,
             self::BILLING_CONTACT,
-            PropertiesDictionary::SHIPPING_CONTACT
+            PropertiesDictionary::SHIPPING_CONTACT,
         ];
     /**
      * @var string[]
      */
-    public const UPDATE_METHOD_CART_REQUIRED_FIELDS
-        = [
+    public const UPDATE_METHOD_CART_REQUIRED_FIELDS =
+        [
             PropertiesDictionary::NONCE,
             PropertiesDictionary::SHIPPING_METHOD,
             self::CALLER_PAGE,
-            PropertiesDictionary::SIMPLIFIED_CONTACT
+            PropertiesDictionary::SIMPLIFIED_CONTACT,
         ];
     /**
      * @var string[]
      */
-    public const UPDATE_CONTACT_CART_REQUIRED_FIELDS
-        = [
+    public const UPDATE_CONTACT_CART_REQUIRED_FIELDS =
+        [
             PropertiesDictionary::NONCE,
             self::CALLER_PAGE,
             PropertiesDictionary::SIMPLIFIED_CONTACT,
-            self::NEED_SHIPPING
+            self::NEED_SHIPPING,
         ];
     /**
      * @var string[]
      */
-    public const UPDATE_CONTACT_SINGLE_PROD_REQUIRED_FIELDS
-        = [
+    public const UPDATE_CONTACT_SINGLE_PROD_REQUIRED_FIELDS =
+        [
             PropertiesDictionary::NONCE,
             PropertiesDictionary::PRODUCT_ID,
             self::PRODUCT_QUANTITY,
             self::CALLER_PAGE,
             PropertiesDictionary::SIMPLIFIED_CONTACT,
-
-            self::NEED_SHIPPING
+            self::NEED_SHIPPING,
         ];
     /**
      * @var string
@@ -70,14 +69,14 @@ class PropertiesDictionary
     /**
      * @var string[]
      */
-    public const UPDATE_METHOD_SINGLE_PROD_REQUIRED_FIELDS
-        = [
+    public const UPDATE_METHOD_SINGLE_PROD_REQUIRED_FIELDS =
+        [
             PropertiesDictionary::NONCE,
             PropertiesDictionary::PRODUCT_ID,
             self::PRODUCT_QUANTITY,
             PropertiesDictionary::SHIPPING_METHOD,
             self::CALLER_PAGE,
-            PropertiesDictionary::SIMPLIFIED_CONTACT
+            PropertiesDictionary::SIMPLIFIED_CONTACT,
         ];
     /**
      * @var string
@@ -110,11 +109,11 @@ class PropertiesDictionary
     /**
      * @var string[]
      */
-    public const CREATE_ORDER_CART_REQUIRED_FIELDS
-        = [
+    public const CREATE_ORDER_CART_REQUIRED_FIELDS =
+        [
             PropertiesDictionary::WCNONCE,
             PropertiesDictionary::BILLING_CONTACT,
-            PropertiesDictionary::SHIPPING_CONTACT
+            PropertiesDictionary::SHIPPING_CONTACT,
         ];
     /**
      * @var string

@@ -94,7 +94,7 @@ class ApplePayDirectHandler
      */
     private function isApplePayCompatible()
     {
-        return !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off';
+        return !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
     }
     /**
      * Checks if the merchant has been validated

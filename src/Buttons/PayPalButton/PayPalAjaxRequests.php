@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Buttons\PayPalButton;
 
-use Mollie\WooCommerce\Gateway\PayPal\Mollie_WC_Gateway_PayPal;
 use Mollie\WooCommerce\Notice\NoticeInterface;
-use Mollie\WooCommerce\Plugin;
-use Mollie\WooCommerce\Utils\GatewaySurchargeHandler;
+use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
 use Psr\Log\LoggerInterface as Logger;
+use Psr\Log\LogLevel;
 use WC_Data_Exception;
 
 class PayPalAjaxRequests
@@ -115,7 +114,7 @@ class PayPalAjaxRequests
                 'PayPal'
             );
 
-            $this->logger->log(\WC_Log_Levels::DEBUG, $message, ['error']);
+            $this->logger->log(LogLevel::DEBUG, $message, ['error']);
             wp_send_json_error($message);
         }
     }
@@ -133,8 +132,8 @@ class PayPalAjaxRequests
     {
         $payPalRequestDataObject = $this->payPalDataObjectHttp();
         $payPalRequestDataObject->orderData($_POST, 'cart');
-        $this->logger->log(\WC_Log_Levels::DEBUG,'in create order from cart');
-        $this->logger->log(\WC_Log_Levels::DEBUG,'object' ,[$payPalRequestDataObject]);
+        $this->logger->log(LogLevel::DEBUG,'in create order from cart');
+        $this->logger->log(LogLevel::DEBUG,'object' ,[$payPalRequestDataObject]);
 
         if (!$this->isNonceValid($payPalRequestDataObject)) {
             return;
@@ -265,7 +264,7 @@ class PayPalAjaxRequests
             $PayPalRequestDataObject->nonce,
             'mollie_PayPal_button'
         );
-        $this->logger->log(\WC_Log_Levels::DEBUG,'ISNONCEVALID'.$isNonceValid);
+        $this->logger->log(LogLevel::DEBUG,'ISNONCEVALID'.$isNonceValid);
         return $isNonceValid;
     }
 }

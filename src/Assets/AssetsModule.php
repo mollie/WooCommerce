@@ -32,11 +32,11 @@ class AssetsModule implements ExecutableModule
 
     public function run(ContainerInterface $container): bool
     {
-        $this->pluginUrl = $container->get('core.plugin_url');
-        $this->pluginPath = $container->get('core.plugin_path');
+        $this->pluginUrl = $container->get('shared.plugin_url');
+        $this->pluginPath = $container->get('shared.plugin_path');
         $this->settingsHelper = $container->get('settings.settings_helper');
-        $this->pluginVersion = $container->get('core.plugin_version');
-        $this->dataService = $container->get('core.data_helper');
+        $this->pluginVersion = $container->get('shared.plugin_version');
+        $this->dataService = $container->get('shared.data_helper');
         add_action(
             'init',
             function () use ($container){
@@ -482,9 +482,9 @@ class AssetsModule implements ExecutableModule
 
             if ($gateway->paymentMethod->getProperty('paymentFields')){
 
-                $gateway->paymentFieldsService->setStrategy($gateway);
+                $gateway->paymentMethod->paymentFieldsService->setStrategy($gateway->paymentMethod);
 
-                $content = $gateway->paymentFieldsService->getStrategyMarkup($gateway);
+                $content = $gateway->paymentMethod->paymentFieldsService->getStrategyMarkup($gateway);
             }
             $labelMarkup = "<span style='margin-right: 1em'>{$gateway->paymentMethod->getProperty('id')}</span>{$gateway->icon}";
 

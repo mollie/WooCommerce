@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Utils;
+namespace Mollie\WooCommerce\Gateway\Voucher;
 
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
-use Mollie\WooCommerce\Gateway\Voucher\Mollie_WC_Gateway_Voucher;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 
 class MaybeDisableGateway

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Utils;
+namespace Mollie\WooCommerce\PaymentMethods;
 
 use Mollie\Api\Types\PaymentMethod;
 use Mollie\WooCommerce\Plugin;

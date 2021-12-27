@@ -9,15 +9,10 @@ namespace Mollie\WooCommerce\Subscription;
 use DateTime;
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
-use Inpsyde\Modularity\Module\ServiceModule;
-use Mollie\WooCommerce\Gateway\AbstractGateway;
-use Mollie\WooCommerce\Notice\AdminNotice;
-use Mollie\WooCommerce\Plugin;
-use Mollie\WooCommerce\Settings\Page\MollieSettingsPage;
-use Mollie\WooCommerce\Settings\Settings;
-use Mollie\WooCommerce\Utils\MaybeFixSubscription;
+use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
+use Psr\Log\LogLevel;
 
 class SubscriptionModule implements ExecutableModule
 {
@@ -39,7 +34,7 @@ class SubscriptionModule implements ExecutableModule
     public function run(ContainerInterface $container): bool
     {
         $this->logger = $container->get(Logger::class);
-        $this->dataHelper = $container->get('core.data_helper');
+        $this->dataHelper = $container->get('shared.data_helper');
         $this->settingsHelper = $container->get('settings.settings_helper');
         $this->maybeFixSubscriptions();
         $this->schedulePendingPaymentOrdersExpirationCheck();
@@ -63,12 +58,21 @@ class SubscriptionModule implements ExecutableModule
         if (class_exists('WC_Subscriptions_Order')) {
             $settings_helper = $this->settingsHelper;
             $time = $settings_helper->getPaymentConfirmationCheckTime();
-            $nextScheduledTime = wp_next_scheduled('pending_payment_confirmation_check');
+            $nextScheduledTime = wp_next_scheduled(
+                'pending_payment_confirmation_check'
+            );
             if (!$nextScheduledTime) {
-                wp_schedule_event($time, 'daily', 'pending_payment_confirmation_check');
+                wp_schedule_event(
+                    $time,
+                    'daily',
+                    'pending_payment_confirmation_check'
+                );
             }
 
-            add_action('pending_payment_confirmation_check', [$this, 'checkPendingPaymentOrdersExpiration']);
+            add_action(
+                'pending_payment_confirmation_check',
+                [$this, 'checkPendingPaymentOrdersExpiration']
+            );
         }
     }
 
@@ -88,8 +92,8 @@ class SubscriptionModule implements ExecutableModule
                 return false;
             }
 
-            if ($order->get_status() == AbstractGateway::STATUS_COMPLETED) {
-                $new_order_status = AbstractGateway::STATUS_FAILED;
+            if ($order->get_status() == MolliePaymentGateway::STATUS_COMPLETED) {
+                $new_order_status = MolliePaymentGateway::STATUS_FAILED;
                 $paymentMethodId = $order->get_meta('_payment_method_title', true);
                 $molliePaymentId = $order->get_meta('_mollie_payment_id', true);
                 $order->add_order_note(sprintf(
@@ -104,7 +108,7 @@ class SubscriptionModule implements ExecutableModule
                     // Restore order stock
                     $this->dataHelper->restoreOrderStock($order);
 
-                    $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . " Stock for order {$order->get_id()} restored.");
+                    $this->logger->log(LogLevel::DEBUG, __METHOD__ . " Stock for order {$order->get_id()} restored.");
                 }
 
                 $wpdb->delete(

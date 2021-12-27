@@ -24,7 +24,7 @@ use Inpsyde\Modularity\Properties\PluginProperties;
 use Mollie\WooCommerce\Activation\ActivationModule;
 use Mollie\WooCommerce\Activation\ConstraintsChecker;
 use Mollie\WooCommerce\Assets\AssetsModule;
-use Mollie\WooCommerce\Core\CoreModule;
+use Mollie\WooCommerce\Shared\SharedModule;
 use Mollie\WooCommerce\Gateway\GatewayModule;
 use Mollie\WooCommerce\Gateway\Voucher\VoucherModule;
 use Mollie\WooCommerce\Log\LogModule;
@@ -180,7 +180,7 @@ function initialize()
             new NoticeModule(),
             new SDKModule(),
             new VoucherModule(),
-            new CoreModule(),
+            new SharedModule(),
             new AssetsModule(),
             new GatewayModule(),
             new SettingsModule(),

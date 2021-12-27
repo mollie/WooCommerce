@@ -3,9 +3,8 @@
 
 namespace Mollie\WooCommerce\Settings\General;
 
-use Mollie\WooCommerce\Gateway\AbstractGateway;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
-use Mollie\WooCommerce\Utils\GatewaySurchargeHandler;
+use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
 
 class MollieGeneralSettings
 {

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Settings;
 
 use Mollie\WooCommerce\Components\StylesPropertiesDictionary;
-use Mollie\WooCommerce\Plugin;
 
 class SettingsComponents
 {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Buttons\ApplePayButton;
 
 use Psr\Log\LoggerInterface as Logger;
+use Psr\Log\LogLevel;
 
 class ApplePayDataObjectHttp
 {
@@ -196,7 +197,7 @@ class ApplePayDataObjectHttp
     {
         foreach ($required as $requiredField) {
             if (!array_key_exists($requiredField, $data)) {
-                $this->logger->log( \WC_Log_Levels::DEBUG,
+                $this->logger->log( LogLevel::DEBUG,
                     sprintf('ApplePay Data Error: Missing index %s', $requiredField)
                 );
 
@@ -204,7 +205,7 @@ class ApplePayDataObjectHttp
                 continue;
             }
             if (!$data[$requiredField]) {
-                $this->logger->log( \WC_Log_Levels::DEBUG,
+                $this->logger->log( LogLevel::DEBUG,
                     sprintf('ApplePay Data Error: Missing value for %s', $requiredField)
                 );
                 $this->errors[]= ['errorCode' => 'unknown'];
@@ -295,7 +296,7 @@ class ApplePayDataObjectHttp
     ) {
         foreach ($required as $requiredField => $errorValue) {
             if (!array_key_exists($requiredField, $post)) {
-                $this->logger->log( \WC_Log_Levels::DEBUG,
+                $this->logger->log( LogLevel::DEBUG,
                     sprintf('ApplePay Data Error: Missing index %s', $requiredField)
                 );
 
@@ -303,7 +304,7 @@ class ApplePayDataObjectHttp
                 continue;
             }
             if (!$post[$requiredField]) {
-                $this->logger->log( \WC_Log_Levels::DEBUG,
+                $this->logger->log( LogLevel::DEBUG,
                     sprintf('ApplePay Data Error: Missing value for %s', $requiredField)
                 );
                 $this->errors[]

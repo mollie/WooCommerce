@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Payment;
 
 use Mollie\Api\Exceptions\ApiException;
-use Mollie\WooCommerce\Plugin;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
-use Mollie\WooCommerce\Utils\Data;
+use Mollie\WooCommerce\Shared\Data;
 
 class PaymentFactory
 {

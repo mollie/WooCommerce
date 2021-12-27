@@ -9,24 +9,20 @@ use DateTime;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Types\SequenceType;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
-use Mollie\WooCommerce\Gateway\SurchargeService;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\OrderInstructionsService;
 use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
-use Mollie\WooCommerce\Payment\PaymentFieldsService;
 use Mollie\WooCommerce\Payment\PaymentService;
-use Mollie\WooCommerce\PaymentMethods\Directdebit;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\SDK\HttpResponse;
-use Mollie\WooCommerce\Settings\PaymentMethodSettingsHandler;
 use Mollie\WooCommerce\Settings\Settings;
-use Mollie\WooCommerce\Utils\Data;
-use Mollie\WooCommerce\Utils\IconFactory;
+use Mollie\WooCommerce\Shared\Data;
 use Psr\Log\LoggerInterface as Logger;
+use Psr\Log\LogLevel;
 
 class MollieSepaRecurringGateway extends MollieSubscriptionGateway
 {
@@ -36,24 +32,21 @@ class MollieSepaRecurringGateway extends MollieSubscriptionGateway
     protected $recurringMollieMethod = null;
     protected $dataHelper;
 
+
     /**
      * AbstractSepaRecurring constructor.
      */
     public function __construct(
+        PaymentMethodI $directDebitPaymentMethod,
         PaymentMethodI $paymentMethod,
-        IconFactory $iconFactory,
         PaymentService $paymentService,
         OrderInstructionsService $orderInstructionsService,
-        PaymentFieldsService $paymentFieldsService,
         PaymentCheckoutRedirectService $paymentCheckoutRedirectService,
-        SurchargeService $surchargeService,
         MollieOrderService $mollieOrderService,
         Data $dataService,
         Logger $logger,
         NoticeInterface $notice,
         HttpResponse $httpResponse,
-        string $pluginUrl,
-        string $pluginPath,
         Settings $settingsHelper,
         MollieObject $mollieObject,
         PaymentFactory $paymentFactory,
@@ -62,42 +55,30 @@ class MollieSepaRecurringGateway extends MollieSubscriptionGateway
     ) {
         parent::__construct(
             $paymentMethod,
-            $iconFactory,
             $paymentService,
             $orderInstructionsService,
-            $paymentFieldsService,
             $paymentCheckoutRedirectService,
-            $surchargeService,
             $mollieOrderService,
             $dataService,
             $logger,
             $notice,
             $httpResponse,
-            $pluginUrl,
-            $pluginPath,
             $settingsHelper,
             $mollieObject,
             $paymentFactory,
             $pluginId,
             $apiHelper
         );
-        $paymentMethod = new Directdebit(new PaymentMethodSettingsHandler());
         $directDebit = new MolliePaymentGateway(
-            $paymentMethod,
-            $iconFactory,
+            $directDebitPaymentMethod,
             $paymentService,
             $orderInstructionsService,
-            $paymentFieldsService,
             $paymentCheckoutRedirectService,
-            $surchargeService,
             $mollieOrderService,
             $dataService,
             $logger,
             $notice,
             $httpResponse,
-            $pluginUrl,
-            $pluginPath,
-            $settingsHelper,
             $mollieObject,
             $paymentFactory,
             $pluginId
@@ -243,7 +224,7 @@ class MollieSepaRecurringGateway extends MollieSubscriptionGateway
                     $payment
                 );
             } catch (ApiException $exception) {
-                $this->logger->log(\WC_Log_Levels::DEBUG, $exception->getMessage());
+                $this->logger->log(LogLevel::DEBUG, $exception->getMessage());
                 return;
             }
 

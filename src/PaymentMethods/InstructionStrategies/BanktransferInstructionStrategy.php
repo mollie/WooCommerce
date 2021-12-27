@@ -49,7 +49,7 @@ class BanktransferInstructionStrategy implements InstructionStrategyI
 
             if (!empty($payment->expiresAt)) {
                 $expiryDate = $payment->expiresAt;
-                //$this->logger->log(\WC_Log_Levels::DEBUG, "Due date assigned: {$expiryDate}");
+                //$this->logger->log(LogLevel::DEBUG, "Due date assigned: {$expiryDate}");
                 $expiryDate = date_i18n(wc_date_format(), strtotime($expiryDate));
 
                 if ($admin_instructions) {

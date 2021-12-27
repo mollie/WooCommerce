@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
-use Mollie\WooCommerce\Gateway\Voucher\Mollie_WC_Gateway_Voucher;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
-use Mollie\WooCommerce\Plugin;
-use Mollie\WooCommerce\Utils\Data;
+use Mollie\WooCommerce\Shared\Data;
 use WC_Order;
 use WC_Order_Item;
 use WC_Tax;

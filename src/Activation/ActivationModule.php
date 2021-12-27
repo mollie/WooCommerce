@@ -9,7 +9,6 @@ namespace Mollie\WooCommerce\Activation;
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Mollie\WooCommerce\Notice\AdminNotice;
-use Mollie\WooCommerce\Plugin;
 use Psr\Container\ContainerInterface;
 
 use function Mollie\WooCommerce\mollie_wc_plugin_autoload;

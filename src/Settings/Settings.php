@@ -10,7 +10,7 @@ use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\General\MollieGeneralSettings;
-use Mollie\WooCommerce\Utils\GatewaySurchargeHandler;
+use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
 use WC_Payment_Gateway;
 
 class Settings

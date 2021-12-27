@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Utils;
+namespace Mollie\WooCommerce\Shared;
 
 use Exception;
 

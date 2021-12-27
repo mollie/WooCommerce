@@ -4,28 +4,53 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
-class Giftcard implements PaymentMethodI
+class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
 {
-    use CommonPaymentMethodTrait;
+    /**
+     * Method to print the giftcard payment details on debug and order note
+     *
+     * @param           $payment
+     * @param \WC_Order  $order
+     *
+     */
+    public function debugGiftcardDetails(
+        $payment,
+        \WC_Order $order
+    ) {
+        $details = $payment->details;
+        if (!$details) {
+            return;
+        }
+        $orderNoteLine = "";
+        foreach ($details->giftcards as $giftcard) {
+            $orderNoteLine .= sprintf(
+                esc_html_x(
+                    'Mollie - Giftcard details: %1$s %2$s %3$s.',
+                    'Placeholder 1: giftcard issuer, Placeholder 2: amount value, Placeholder 3: currency',
+                    'mollie-payments-for-woocommerce'
+                ),
+                $giftcard->issuer,
+                $giftcard->amount->value,
+                $giftcard->amount->currency
+            );
+        }
+        if ($details->remainderMethod) {
+            $orderNoteLine .= sprintf(
+                esc_html_x(
+                    ' Remainder: %1$s %2$s %3$s.',
+                    'Placeholder 1: remainder method, Placeholder 2: amount value, Placeholder 3: currency',
+                    'mollie-payments-for-woocommerce'
+                ),
+                $details->remainderMethod,
+                $details->remainderAmount->value,
+                $details->remainderAmount->currency
+            );
+        }
 
-    /**
-     * @var string[]
-     */
-    private $config = [];
-    /**
-     * @var array[]
-     */
-    private $settings = [];
-    /**
-     * Ideal constructor.
-     */
-    public function __construct(PaymentMethodSettingsHandlerI $paymentMethodSettingsHandler)
-    {
-        $this->config = $this->getConfig();
-        $this->settings = $paymentMethodSettingsHandler->getSettings($this);
+        $order->add_order_note($orderNoteLine);
     }
 
-    private function getConfig(): array
+    protected function getConfig(): array
     {
         return [
             'id' => 'giftcard',

@@ -7,7 +7,7 @@ namespace Mollie\WooCommerce\Payment;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\PaymentMethods\PaymentRedirectStrategies\DefaultRedirectStrategy;
 use Mollie\WooCommerce\PaymentMethods\PaymentRedirectStrategies\PaymentRedirectStrategyI;
-use Mollie\WooCommerce\Utils\Data;
+use Mollie\WooCommerce\Shared\Data;
 use Psr\Log\LoggerInterface as Logger;
 use WC_Order;
 

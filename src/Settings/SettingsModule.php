@@ -36,15 +36,15 @@ class SettingsModule implements ServiceModule, ExecutableModule
         return [
             'settings.getGlobalSettingsUrl' => function (ContainerInterface $container): string {
                 /** @var Settings $settingsHelper */
-                $pluginId = $container->get('core.plugin_id');
+                $pluginId = $container->get('shared.plugin_id');
                 return admin_url('admin.php?page=wc-settings&tab=mollie_settings#' . $pluginId);
             },
             'settings.settings_helper' => function (ContainerInterface $container): Settings {
-                $pluginId = $container->get('core.plugin_id');
-                $pluginUrl = $container->get('core.plugin_url');
-                $statusHelper = $container->get('core.status_helper');
-                $pluginVersion = $container->get('core.plugin_version');
-                $apiHelper =  $container->get('core.api_helper');
+                $pluginId = $container->get('shared.plugin_id');
+                $pluginUrl = $container->get('shared.plugin_url');
+                $statusHelper = $container->get('shared.status_helper');
+                $pluginVersion = $container->get('shared.plugin_version');
+                $apiHelper =  $container->get('shared.api_helper');
                 $globalSettingsUrl = $container->get('settings.getGlobalSettingsUrl');
                 return new Settings(
                     $pluginId,
@@ -70,11 +70,11 @@ class SettingsModule implements ServiceModule, ExecutableModule
 
     public function run(ContainerInterface $container): bool
     {
-        $this->plugin_basename = $container->get('core.plugin_file');
+        $this->plugin_basename = $container->get('shared.plugin_file');
         $this->settingsHelper = $container->get('settings.settings_helper');
         $this->isTestModeEnabled = $container->get('settings.IsTestModeEnabled');
-        $this->dataHelper = $container->get('core.data_helper');
-        $pluginPath = $container->get('core.plugin_path');
+        $this->dataHelper = $container->get('shared.data_helper');
+        $pluginPath = $container->get('shared.plugin_path');
         $gateways = $container->get('gateway.instances');
         // Add settings link to plugins page
         add_filter('plugin_action_links_' . $this->plugin_basename, [$this, 'addPluginActionLinks']);

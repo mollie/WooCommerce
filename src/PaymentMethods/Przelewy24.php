@@ -4,28 +4,10 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
-class Przelewy24 implements PaymentMethodI
+class Przelewy24 extends AbstractPaymentMethod implements PaymentMethodI
 {
-    use CommonPaymentMethodTrait;
 
-    /**
-     * @var string[]
-     */
-    private $config = [];
-    /**
-     * @var array[]
-     */
-    private $settings = [];
-    /**
-     * Ideal constructor.
-     */
-    public function __construct(PaymentMethodSettingsHandlerI $paymentMethodSettingsHandler)
-    {
-        $this->config = $this->getConfig();
-        $this->settings = $paymentMethodSettingsHandler->getSettings($this);
-    }
-
-    private function getConfig(): array
+    protected function getConfig(): array
     {
         return [
             'id' => 'przelewy24',

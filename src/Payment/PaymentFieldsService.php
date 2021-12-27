@@ -7,7 +7,7 @@ namespace Mollie\WooCommerce\Payment;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\DefaultFieldsStrategy;
 use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\PaymentFieldsStrategyI;
-use Mollie\WooCommerce\Utils\Data;
+use Mollie\WooCommerce\Shared\Data;
 use Psr\Log\LoggerInterface as Logger;
 
 class PaymentFieldsService
@@ -39,12 +39,12 @@ class PaymentFieldsService
     {
         $this->dataHelper = $dataHelper;
     }
-    public function setStrategy($gateway)
+    public function setStrategy($paymentMethod)
     {
-        if (!$gateway->paymentMethod->getProperty('paymentFields')) {
+        if (!$paymentMethod->getProperty('paymentFields')) {
             $this->strategy = new DefaultFieldsStrategy();
         } else {
-            $className = 'Mollie\\WooCommerce\\PaymentMethods\\PaymentFieldsStrategies\\' .ucfirst($gateway->paymentMethod->getProperty('id')) . 'FieldsStrategy';
+            $className = 'Mollie\\WooCommerce\\PaymentMethods\\PaymentFieldsStrategies\\' .ucfirst($paymentMethod->getProperty('id')) . 'FieldsStrategy';
             $this->strategy = class_exists($className) ? new $className() : new DefaultFieldsStrategy();
         }
     }

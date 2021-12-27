@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Utils;
+namespace Mollie\WooCommerce\Shared;
 
 use Exception;
 use InvalidArgumentException;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Psr\Log\LoggerInterface as Logger;
+use Psr\Log\LogLevel;
 use WC_Customer;
 use WC_Order;
 
@@ -46,14 +47,57 @@ class Data
      * @var Logger
      */
     protected $logger;
-    protected $pluginId;
+    public $pluginId;
+    public $pluginPath;
 
-    public function __construct(Api $api_helper, Logger $logger, string $pluginId, Settings $settingsHelper)
+    public function __construct(Api $api_helper, Logger $logger, string $pluginId, Settings $settingsHelper, string $pluginPath)
     {
         $this->api_helper = $api_helper;
         $this->settingsHelper = $settingsHelper;
         $this->logger = $logger;
         $this->pluginId = $pluginId;
+        $this->pluginPath = $pluginPath;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isValidApiKeyProvided()
+    {
+        $settings = $this->settingsHelper;
+        $test_mode = $settings->isTestModeEnabled();
+        $api_key = $settings->getApiKey($test_mode);
+
+        return !empty($api_key)
+            && preg_match(
+                '/^(live|test)_\w{30,}$/',
+                $api_key
+            );
+    }
+
+    public function getGlobalSettingsUrl(){
+        return $this->settingsHelper->globalSettingsUrl;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isTestModeEnabled(): bool
+    {
+        return $this->settingsHelper->isTestModeEnabled();
+    }
+
+    public function processSettings($gateway){
+        $this->settingsHelper->processSettings($gateway);
+    }
+
+    public function processAdminOptions($gateway)
+    {
+        $this->settingsHelper->adminOptions($gateway);
+    }
+
+    public function getPaymentLocale(){
+        return $this->settingsHelper->getPaymentLocale();
     }
 
     /**
@@ -97,7 +141,7 @@ class Data
      */
     public function deleteTransients()
     {
-        $this->logger->log(\WC_Log_Levels::DEBUG, __METHOD__ . ': Mollie settings saved, delete transients');
+        $this->logger->log(LogLevel::DEBUG, __METHOD__ . ': Mollie settings saved, delete transients');
 
         $transient_names = [
             'api_methods_test',
@@ -136,7 +180,7 @@ class Data
         try {
             return $this->api_helper->getApiClient($apiKey)->payments->get($payment_id);
         } catch (\Mollie\Api\Exceptions\ApiException $apiException) {
-            $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . sprintf(': Could not load payment %s (', $payment_id) . "): " . $apiException->getMessage() . ' (' . get_class($apiException) . ')');
+            $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Could not load payment %s (', $payment_id) . "): " . $apiException->getMessage() . ' (' . get_class($apiException) . ')');
         }
 
         return null;
@@ -177,15 +221,10 @@ class Data
     }
 
     public function getAvailablePaymentMethodListForCheckout($filters){
-        $settings_helper = $this->settingsHelper;
-        $testMode = $settings_helper->isTestModeEnabled();
-        $apiKey = $this->settingsHelper->getApiKey($testMode);
         $availablePaymentMethods = [];
-
+        $useCache = true;
         $methods = $this->getApiPaymentMethods(
-            $apiKey,
-            $testMode,
-            $use_cache = true,
+            $useCache,
             $filters
         );
 
@@ -302,7 +341,7 @@ class Data
             return self::$regular_api_methods;
         }
 
-        self::$regular_api_methods = $this->getApiPaymentMethods($apiKey, $test_mode, $use_cache);
+        self::$regular_api_methods = $this->getApiPaymentMethods($use_cache);
 
         return self::$regular_api_methods;
     }
@@ -314,13 +353,16 @@ class Data
             return self::$recurring_api_methods;
         }
 
-        self::$recurring_api_methods = $this->getApiPaymentMethods($apiKey, $test_mode, $use_cache, [ 'sequenceType' => 'recurring' ]);
+        self::$recurring_api_methods = $this->getApiPaymentMethods($use_cache, [ 'sequenceType' => 'recurring' ]);
 
         return self::$recurring_api_methods;
     }
 
-    public function getApiPaymentMethods($apiKey, $test_mode = false, $use_cache = true, $filters = [])
+    public function getApiPaymentMethods( $use_cache = true, $filters = [])
     {
+        $settings_helper = $this->settingsHelper;
+        $test_mode = $settings_helper->isTestModeEnabled();
+        $apiKey = $this->settingsHelper->getApiKey($test_mode);
         $methods = [];
 
         $filters_key = $filters;
@@ -360,7 +402,7 @@ class Data
 
             return $methods;
         } catch (\Mollie\Api\Exceptions\ApiException $e) {
-            $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Could not load Mollie methods (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . ": Could not load Mollie methods (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
 
             return [];
         }
@@ -372,8 +414,11 @@ class Data
      *
      * @return mixed|\Mollie\Api\Resources\Method|null
      */
-    public function getPaymentMethod($apiKey, $method, $test_mode = false)
+    public function getPaymentMethod($method)
     {
+        $test_mode = $this->isTestModeEnabled();
+        $apiKey = $this->settingsHelper->getApiKey($test_mode);
+
         $payment_methods = $this->getAllPaymentMethods($apiKey, $test_mode);
 
         foreach ($payment_methods as $payment_method) {
@@ -411,7 +456,7 @@ class Data
 
             return $issuers;
         } catch (\Mollie\Api\Exceptions\ApiException $e) {
-            $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Could not load " . $method . " issuers (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . ": Could not load " . $method . " issuers (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
 
         return  [];
@@ -430,9 +475,9 @@ class Data
                 $customer = new WC_Customer($user_id);
                 $customer->update_meta_data('mollie_customer_id', $customer_id);
                 $customer->save();
-                $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Stored Mollie customer ID " . $customer_id . " with user " . $user_id);
+                $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . ": Stored Mollie customer ID " . $customer_id . " with user " . $user_id);
             } catch (Exception $exception) {
-                $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . ": Couldn't load (and save) WooCommerce customer based on user ID " . $user_id);
+                $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . ": Couldn't load (and save) WooCommerce customer based on user ID " . $user_id);
             }
         }
 
@@ -493,7 +538,7 @@ class Data
             try {
                 $this->api_helper->getApiClient($apiKey)->customers->get($customer_id);
             } catch (\Mollie\Api\Exceptions\ApiException $e) {
-                $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . sprintf(': Mollie Customer ID (%s) not valid for user %s on this API key, try to create a new one (', $customer_id, $user_id) . ( $test_mode ? 'test' : 'live' ) . ").");
+                $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Mollie Customer ID (%s) not valid for user %s on this API key, try to create a new one (', $customer_id, $user_id) . ( $test_mode ? 'test' : 'live' ) . ").");
                 $customer_id = '';
             }
         }
@@ -521,14 +566,14 @@ class Data
 
                 $customer_id = $customer->id;
 
-                $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . sprintf(': Created a Mollie Customer (%s) for WordPress user with ID %s (', $customer_id, $user_id) . ( $test_mode ? 'test' : 'live' ) . ").");
+                $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Created a Mollie Customer (%s) for WordPress user with ID %s (', $customer_id, $user_id) . ( $test_mode ? 'test' : 'live' ) . ").");
 
                 return $customer_id;
             } catch (\Mollie\Api\Exceptions\ApiException $e) {
-                $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . sprintf(': Could not create Mollie Customer for WordPress user with ID %s (', $user_id) . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+                $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Could not create Mollie Customer for WordPress user with ID %s (', $user_id) . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
             }
         } else {
-            $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . sprintf(': Mollie Customer ID (%s) found and valid for user %s on this API key. (', $customer_id, $user_id) . ( $test_mode ? 'test' : 'live' ) . ").");
+            $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Mollie Customer ID (%s) found and valid for user %s on this API key. (', $customer_id, $user_id) . ( $test_mode ? 'test' : 'live' ) . ").");
         }
 
         return $customer_id;

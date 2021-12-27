@@ -4,24 +4,25 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Gateway;
 
-use Mollie\WooCommerce\Utils\GatewaySurchargeHandler;
+use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
+use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
 
 class SurchargeService
 {
 
-    public function buildDescriptionWithSurcharge($gateway)
+    public function buildDescriptionWithSurcharge(PaymentMethodI $paymentMethod)
     {
+        $defaultDescription = $paymentMethod->getProperty('defaultDescription')?:'';
+        $surchargeType = $paymentMethod->getProperty('payment_surcharge');
         if (!mollieWooCommerceIsCheckoutContext()) {
-            return $gateway->get_option('description', '');
+            return $defaultDescription;
         }
-        if (!isset($gateway->settings['payment_surcharge'])
-            || $gateway->settings['payment_surcharge']
-            === GatewaySurchargeHandler::NO_FEE
+        if (!$surchargeType
+            || $surchargeType === GatewaySurchargeHandler::NO_FEE
         ) {
-            return $gateway->get_option('description', '');
+            return $defaultDescription;
         }
 
-        $surchargeType = $gateway->settings['payment_surcharge'];
         switch ($surchargeType) {
             case 'fixed_fee':
                 $feeText = $this->name_fixed_fee();
@@ -37,10 +38,9 @@ class SurchargeService
         }
         if ($feeText) {
             $feeLabel = '<span class="mollie-gateway-fee">' . $feeText . '</span>';
-
-            return $gateway->get_option('description', '') . $feeLabel;
+            return $defaultDescription . $feeLabel;
         }
-        return $gateway->get_option('description', '');
+        return $defaultDescription;
     }
 
     protected function name_fixed_fee()

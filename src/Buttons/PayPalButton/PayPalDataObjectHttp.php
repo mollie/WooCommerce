@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Buttons\PayPalButton;
 
 use Psr\Log\LoggerInterface as Logger;
+use Psr\Log\LogLevel;
 
 class PayPalDataObjectHttp
 {
@@ -95,7 +96,7 @@ class PayPalDataObjectHttp
         foreach ($required as $requiredField) {
             if (!array_key_exists($requiredField, $data)) {
                 $this->logger->log(
-                    \WC_Log_Levels::DEBUG,
+                    LogLevel::DEBUG,
                     sprintf('PayPal Data Error: Missing index %s', $requiredField)
                 );
 
@@ -104,7 +105,7 @@ class PayPalDataObjectHttp
             }
             if (!$data[$requiredField]) {
                 $this->logger->log(
-                    \WC_Log_Levels::DEBUG,
+                    LogLevel::DEBUG,
                     sprintf('PayPal Data Error: Missing value for %s', $requiredField)
                 );
                 $this->errors[]= ['errorCode' => 'unknown'];

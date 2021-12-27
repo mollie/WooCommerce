@@ -6,9 +6,8 @@ namespace Mollie\WooCommerce\PaymentMethods;
 
 use WC_Order;
 
-class Banktransfer implements PaymentMethodI
+class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
 {
-    use CommonPaymentMethodTrait;
 
     /**
      * @var int
@@ -26,24 +25,8 @@ class Banktransfer implements PaymentMethodI
      * @var string
      */
     const EXPIRY_DAYS_OPTION = 'order_dueDate';
-    /**
-     * @var string[]
-     */
-    private $config = [];
-    /**
-     * @var array[]
-     */
-    private $settings = [];
-    /**
-     * Ideal constructor.
-     */
-    public function __construct(PaymentMethodSettingsHandlerI $paymentMethodSettingsHandler)
-    {
-        $this->config = $this->getConfig();
-        $this->settings = $paymentMethodSettingsHandler->getSettings($this);
-    }
 
-    private function getConfig(): array
+    protected function getConfig(): array
     {
         return [
             'id' => 'banktransfer',

@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Settings\Page;
 
-use Mollie\WooCommerce\Gateway\AbstractGateway;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
-use Mollie\WooCommerce\Plugin;
 use Mollie\WooCommerce\Settings\Settings;
-use Mollie\WooCommerce\Utils\Data;
+use Mollie\WooCommerce\Shared\Data;
 use WC_Admin_Settings;
 use WC_Gateway_BACS;
 use WC_Settings_Page;
@@ -261,7 +259,7 @@ class MollieSettingsPage extends WC_Settings_Page
         foreach ($mollieGateways as $gateway) {
             if ($gateway instanceof MolliePaymentGateway) {
                 $content .= '<li style="float: left; width: 32%; height:32px;">';
-                $content .= $gateway->getIconUrl();
+                $content .= $gateway->paymentMethod->getIconUrl();
                 $content .= ' ' . esc_html($gateway->paymentMethod->getProperty('defaultTitle'));
 
                 if ($gateway->is_available()) {

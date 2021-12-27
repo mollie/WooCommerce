@@ -12,7 +12,8 @@ use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Plugin;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
-use Mollie\WooCommerce\Utils\Data;
+use Mollie\WooCommerce\Shared\Data;
+use Psr\Log\LogLevel;
 use WC_Order;
 use WC_Payment_Gateway;
 use Psr\Log\LoggerInterface as Logger;
@@ -88,7 +89,7 @@ class MollieObject
             $apiKey = $this->settingsHelper->getApiKey($test_mode);
             return $this->apiHelper->getApiClient($apiKey)->payments->get($payment_id);
         } catch (ApiException $apiException) {
-            $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . sprintf(': Could not load payment %s (', $payment_id) . ( $test_mode ? 'test' : 'live' ) . "): " . $apiException->getMessage() . ' (' . get_class($apiException) . ')');
+            $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Could not load payment %s (', $payment_id) . ( $test_mode ? 'test' : 'live' ) . "): " . $apiException->getMessage() . ' (' . get_class($apiException) . ')');
         }
 
         return null;
@@ -113,7 +114,7 @@ class MollieObject
             $apiKey = $this->settingsHelper->getApiKey($test_mode);
             return $this->apiHelper->getApiClient($apiKey)->orders->get($payment_id, [ "embed" => "payments" ]);
         } catch (ApiException $e) {
-            $this->logger->log(\WC_Log_Levels::DEBUG, __FUNCTION__ . sprintf(': Could not load order %s (', $payment_id) . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Could not load order %s (', $payment_id) . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
 
         return null;
@@ -338,7 +339,7 @@ class MollieObject
                     $mollie_order
                 );
             } catch (ApiException $exception) {
-                $this->logger->log(\WC_Log_Levels::DEBUG, $exception->getMessage());
+                $this->logger->log(LogLevel::DEBUG, $exception->getMessage());
                 return;
             }
 
@@ -626,7 +627,7 @@ class MollieObject
                 );
             }
             $this->logger->log(
-                \WC_Log_Levels::DEBUG,
+                LogLevel::DEBUG,
                 __METHOD__ . ' called for order ' . $orderId . ' and payment '
                 . $payment->id . ', renewal order payment failed, order set to '
                 . $newOrderStatus . ' for shop-owner review.'
@@ -673,7 +674,7 @@ class MollieObject
 
         // Add message to log
         $this->logger->log(
-            \WC_Log_Levels::DEBUG,
+            LogLevel::DEBUG,
             $gatewayId . ': Order ' . $order->get_id()
             . ' webhook called, but payment also started via '
             . $orderPaymentMethodTitle . ', so order status not updated.',

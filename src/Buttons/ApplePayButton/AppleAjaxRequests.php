@@ -8,7 +8,7 @@ use Exception;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
-use Mollie\WooCommerce\Utils\GatewaySurchargeHandler;
+use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
 use Psr\Log\LoggerInterface as Logger;
 use WC_Cart;
 use WC_Data_Exception;

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Settings\Page;
 
-use Mollie\WooCommerce\Plugin;
 use WC_Admin_Settings;
 use WC_Settings_Page;
 

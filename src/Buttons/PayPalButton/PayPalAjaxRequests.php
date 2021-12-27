@@ -100,7 +100,8 @@ class PayPalAjaxRequests
 
         $result = $this->processOrderPayment($orderId);
 
-        if (isset($result['result'])
+        if (
+            isset($result['result'])
             && 'success' === $result['result']
         ) {
             wp_send_json_success($result);
@@ -132,8 +133,8 @@ class PayPalAjaxRequests
     {
         $payPalRequestDataObject = $this->payPalDataObjectHttp();
         $payPalRequestDataObject->orderData($_POST, 'cart');
-        $this->logger->log(LogLevel::DEBUG,'in create order from cart');
-        $this->logger->log(LogLevel::DEBUG,'object' ,[$payPalRequestDataObject]);
+        $this->logger->log(LogLevel::DEBUG, 'in create order from cart');
+        $this->logger->log(LogLevel::DEBUG, 'object', [$payPalRequestDataObject]);
 
         if (!$this->isNonceValid($payPalRequestDataObject)) {
             return;
@@ -264,7 +265,7 @@ class PayPalAjaxRequests
             $PayPalRequestDataObject->nonce,
             'mollie_PayPal_button'
         );
-        $this->logger->log(LogLevel::DEBUG,'ISNONCEVALID'.$isNonceValid);
+        $this->logger->log(LogLevel::DEBUG, 'ISNONCEVALID' . $isNonceValid);
         return $isNonceValid;
     }
 }

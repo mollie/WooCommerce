@@ -22,7 +22,7 @@ class Bancontact extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => true
+            'SEPA' => true,
         ];
     }
 

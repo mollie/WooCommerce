@@ -23,7 +23,7 @@ class SDKModule implements ExecutableModule, ServiceModule
     public function services(): array
     {
         return [
-            'SDK.HttpResponse' => function (): HttpResponse {
+            'SDK.HttpResponse' => static function (): HttpResponse {
                 return new HttpResponse();
             },
         ];

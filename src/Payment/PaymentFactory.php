@@ -48,7 +48,7 @@ class PaymentFactory
         if (
             (!is_object($data) && $data === 'order')
             || (!is_object($data) && strpos($data, 'ord_') !== false)
-            || (is_object($data) && $data->resource == 'order')
+            || (is_object($data) && $data->resource === 'order')
         ) {
             $refundLineItemsBuilder = new RefundLineItemsBuilder($this->dataHelper);
             $testMode = $this->settingsHelper->isTestModeEnabled();
@@ -73,7 +73,7 @@ class PaymentFactory
         if (
             (!is_object($data) && $data === 'payment')
             || (!is_object($data) && strpos($data, 'tr_') !== false)
-            || (is_object($data) && $data->resource == 'payment')
+            || (is_object($data) && $data->resource === 'payment')
         ) {
             return new MolliePayment(
                 $data,

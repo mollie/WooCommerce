@@ -248,9 +248,9 @@ class MollieObject
         $order = wc_get_order($order_id);
         $mollie_payment_id = $order->get_meta('_mollie_payment_id', true);
 
-        if (is_object($this->data) && isset($this->data->id) && $mollie_payment_id == $this->data->id ) {
-            $order->delete_meta_data( '_mollie_payment_id' );
-            $order->delete_meta_data( '_mollie_payment_mode' );
+        if (is_object($this->data) && isset($this->data->id) && $mollie_payment_id === $this->data->id) {
+            $order->delete_meta_data('_mollie_payment_id');
+            $order->delete_meta_data('_mollie_payment_mode');
             $order->save();
         }
 
@@ -325,7 +325,7 @@ class MollieObject
         if ($this->hasActiveMolliePayment($order_id)) {
             return $this->getPaymentObjectPayment(
                 $this->getActiveMolliePaymentId($order_id),
-                $this->getActiveMolliePaymentMode($order_id) == 'test',
+                $this->getActiveMolliePaymentMode($order_id) === 'test',
                 $use_cache
             );
         }
@@ -345,7 +345,7 @@ class MollieObject
 
             return $this->getPaymentObjectPayment(
                 $mollie_order->getMolliePaymentIdFromPaymentObject(),
-                $this->getActiveMolliePaymentMode($order_id) == 'test',
+                $this->getActiveMolliePaymentMode($order_id) === 'test',
                 $use_cache
             );
         }
@@ -525,12 +525,13 @@ class MollieObject
      */
     public function deleteSubscriptionFromPending(WC_Order $order)
     {
-        if (class_exists('WC_Subscriptions')
+        if (
+            class_exists('WC_Subscriptions')
             && class_exists(
                 'WC_Subscriptions_Admin'
             ) && $this->dataHelper->isSubscription(
-            $order->get_id()
-        )
+                $order->get_id()
+            )
         ) {
             $this->deleteSubscriptionOrderFromPendingPaymentQueue($order);
         }
@@ -546,9 +547,11 @@ class MollieObject
     ) {
 
         if (class_exists('WC_Subscriptions')) {
-            $payment = isset($payment->_embedded->payments[0])? $payment->_embedded->payments[0] : false;
-            if ($payment && $payment->sequenceType === 'first'
-                && (property_exists($payment, 'mandateId') && $payment->mandateId !== null)) {
+            $payment = isset($payment->_embedded->payments[0]) ? $payment->_embedded->payments[0] : false;
+            if (
+                $payment && $payment->sequenceType === 'first'
+                && (property_exists($payment, 'mandateId') && $payment->mandateId !== null)
+            ) {
                 $order->update_meta_data(
                     '_mollie_mandate_id',
                     $payment->mandateId
@@ -605,8 +608,10 @@ class MollieObject
         $payment
     ) {
 
-        if (function_exists('wcs_order_contains_renewal')
-            && wcs_order_contains_renewal($orderId)) {
+        if (
+            function_exists('wcs_order_contains_renewal')
+            && wcs_order_contains_renewal($orderId)
+        ) {
             if ($gateway || ($gateway instanceof MolliePaymentGateway)) {
                 $gateway->updateOrderStatus(
                     $order,
@@ -618,7 +623,7 @@ class MollieObject
                             'mollie-payments-for-woocommerce'
                         ),
                         $paymentMethodTitle,
-                        $payment->id . ($payment->mode == 'test' ? (' - ' . __(
+                        $payment->id . ($payment->mode === 'test' ? (' - ' . __(
                             'test mode',
                             'mollie-payments-for-woocommerce'
                         )) : '')
@@ -634,7 +639,8 @@ class MollieObject
             );
             // Send a "Failed order" email to notify the admin
             $emails = WC()->mailer()->get_emails();
-            if (!empty($emails) && !empty($orderId)
+            if (
+                !empty($emails) && !empty($orderId)
                 && !empty($emails['WC_Email_Failed_Order'])
             ) {
                 $emails['WC_Email_Failed_Order']->trigger($orderId);
@@ -650,7 +656,7 @@ class MollieObject
                         'mollie-payments-for-woocommerce'
                     ),
                     $paymentMethodTitle,
-                    $payment->id . ($payment->mode == 'test' ? (' - ' . __(
+                    $payment->id . ($payment->mode === 'test' ? (' - ' . __(
                         'test mode',
                         'mollie-payments-for-woocommerce'
                     )) : '')

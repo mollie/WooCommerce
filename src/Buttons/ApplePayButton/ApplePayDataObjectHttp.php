@@ -374,7 +374,7 @@ class ApplePayDataObjectHttp
         $this->resetErrors();
         $requiredFields = $requiredProductFields;
         if (isset($data[PropertiesDictionary::CALLER_PAGE])
-            && $data[PropertiesDictionary::CALLER_PAGE] == 'cart'
+            && $data[PropertiesDictionary::CALLER_PAGE] === 'cart'
         ) {
             $requiredFields = $requiredCartFields;
         }

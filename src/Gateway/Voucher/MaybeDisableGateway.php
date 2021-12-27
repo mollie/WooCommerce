@@ -51,7 +51,7 @@ class MaybeDisableGateway
 
         $productsWithCategory = $this->numberProductsWithCategory();
 
-        if ($mealVoucherGatewayIndex !== false && $productsWithCategory == 0) {
+        if ($mealVoucherGatewayIndex !== false && $productsWithCategory === 0) {
             unset($gateways[$mealVoucherGatewayIndex]);
         }
 
@@ -90,18 +90,19 @@ class MaybeDisableGateway
             ) ? $postmeta[Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION][0] : false;
             if (isset($product['variation_id'])) {
                 $postmeta = get_post_meta($product['variation_id']);
-                $postmeta = is_array($postmeta)?$postmeta:[];
+                $postmeta = is_array($postmeta) ? $postmeta : [];
                 $variationCategory = array_key_exists(
                     'voucher',
                     $postmeta
                 ) ? $postmeta['voucher'][0] : false;
             }
 
-            if ($this->productHasVoucherCategory(
-                $defaultCategory,
-                $localCategory,
-                $variationCategory
-            )
+            if (
+                $this->productHasVoucherCategory(
+                    $defaultCategory,
+                    $localCategory,
+                    $variationCategory
+                )
             ) {
                 $productsWithCategory++;
             }

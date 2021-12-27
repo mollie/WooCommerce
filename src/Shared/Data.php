@@ -75,7 +75,9 @@ class Data
             );
     }
 
-    public function getGlobalSettingsUrl(){
+    public function getGlobalSettingsUrl()
+    {
+
         return $this->settingsHelper->globalSettingsUrl;
     }
 
@@ -87,7 +89,9 @@ class Data
         return $this->settingsHelper->isTestModeEnabled();
     }
 
-    public function processSettings($gateway){
+    public function processSettings($gateway)
+    {
+
         $this->settingsHelper->processSettings($gateway);
     }
 
@@ -96,7 +100,9 @@ class Data
         $this->settingsHelper->adminOptions($gateway);
     }
 
-    public function getPaymentLocale(){
+    public function getPaymentLocale()
+    {
+
         return $this->settingsHelper->getPaymentLocale();
     }
 
@@ -207,7 +213,7 @@ class Data
         foreach ($recurringPaymentMethods as $recurringItem) {
             $notFound = true;
             foreach ($result as $item) {
-                if ($item['id'] == $recurringItem['id']) {
+                if ($item['id'] === $recurringItem['id']) {
                     $notFound = false;
                     break;
                 }
@@ -220,7 +226,9 @@ class Data
         return $result;
     }
 
-    public function getAvailablePaymentMethodListForCheckout($filters){
+    public function getAvailablePaymentMethodListForCheckout($filters)
+    {
+
         $availablePaymentMethods = [];
         $useCache = true;
         $methods = $this->getApiPaymentMethods(
@@ -228,28 +236,29 @@ class Data
             $filters
         );
 
-
         $activeFilterKey = "{$filters['amount']['currency']}-{$filters['locale']}-{$filters['billingCountry']}";
         $availablePaymentMethods[$activeFilterKey] = [];
 
-        foreach ($methods as $method){
+        foreach ($methods as $method) {
             $gatewayName = 'mollie_wc_gateway_' . $method['id'];
             $gatewaySettingName = $gatewayName . '_settings';
             $gatewaySettings = get_option($gatewaySettingName);
-            $isGatewayEnabled = $gatewaySettings['enabled'] == 'yes';
-            if($isGatewayEnabled && $gatewayName !== 'directDebit'){
+            $isGatewayEnabled = $gatewaySettings['enabled'] === 'yes';
+            if ($isGatewayEnabled && $gatewayName !== 'directDebit') {
                 $availablePaymentMethods[$activeFilterKey][$gatewayName] = $method['id'];
             }
         }
         return $availablePaymentMethods;
     }
 
-    public function wooCommerceFiltersForCheckout(){
+    public function wooCommerceFiltersForCheckout()
+    {
+
         $cart = WC()->cart;
-        $cartTotal = $cart? $cart->get_total('edit'):0;
+        $cartTotal = $cart ? $cart->get_total('edit') : 0;
 
         $currency = get_woocommerce_currency();
-        $billingCountry = WC()->customer? WC()->customer->get_billing_country(): "";
+        $billingCountry = WC()->customer ? WC()->customer->get_billing_country() : "";
         $paymentLocale = $this->settingsHelper->getPaymentLocale();
         try {
             $filters = $this->getFilters(
@@ -295,6 +304,7 @@ class Data
         $paymentLocale,
         $billingCountry
     ) {
+
         $amountValue = $this->getAmountValue($orderTotal, $currency);
         if ($amountValue <= 0) {
             throw new InvalidArgumentException(
@@ -358,7 +368,7 @@ class Data
         return self::$recurring_api_methods;
     }
 
-    public function getApiPaymentMethods( $use_cache = true, $filters = [])
+    public function getApiPaymentMethods($use_cache = true, $filters = [])
     {
         $settings_helper = $this->settingsHelper;
         $test_mode = $settings_helper->isTestModeEnabled();
@@ -422,7 +432,7 @@ class Data
         $payment_methods = $this->getAllPaymentMethods($apiKey, $test_mode);
 
         foreach ($payment_methods as $payment_method) {
-            if ($payment_method['id'] == $method) {
+            if ($payment_method['id'] === $method) {
                 return $payment_method;
             }
         }
@@ -551,7 +561,7 @@ class Data
                 // Get the best name for use as Mollie Customer name
                 $user_full_name = $userdata->first_name . ' ' . $userdata->last_name;
 
-                if (strlen(trim($user_full_name)) == null) {
+                if (strlen(trim($user_full_name)) === null) {
                     $user_full_name = $userdata->display_name;
                 }
 
@@ -602,7 +612,7 @@ class Data
                 $product = $item->get_product();
 
                 if ($product && $product->exists() && $product->managing_stock()) {
-                    $old_stock =$product->get_stock_quantity();
+                    $old_stock = $product->get_stock_quantity();
 
                     $qty = apply_filters('woocommerce_order_item_quantity', $item['qty'], $order, $item);
 
@@ -649,7 +659,7 @@ class Data
         // Only the Japanese Yen has no decimals in the currency
         $value = (int) $value;
 
-        return $currency == "JPY" ? number_format($value, 0, '.', '') : number_format($value, 2, '.', '');
+        return $currency === "JPY" ? number_format($value, 0, '.', '') : number_format($value, 2, '.', '');
     }
 
     /**

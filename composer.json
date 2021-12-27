@@ -28,7 +28,7 @@
     "woocommerce/woocommerce": "^3.0 || ^4.0",
     "fzaninotto/faker": "^1.9@dev",
     "mollie/mollie-api-php": "^2.21",
-    "inpsyde/php-coding-standards": "^1.0.0-beta.1",
+    "inpsyde/php-coding-standards": "^1.0.0",
     "vimeo/psalm": "^4.8"
   },
   "autoload": {

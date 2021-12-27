@@ -9,7 +9,7 @@
 
     <config name="testVersion" value="7.2"/>
     <config name="ignore_warnings_on_exit" value="1"/>
-<rule ref="Inpsyde">
+    <rule ref="Inpsyde">
         <exclude name="NeutronStandard.StrictTypes.RequireStrictTypes.StrictTypes"/>
         <exclude name="Inpsyde.CodeQuality.ReturnTypeDeclaration.NoReturnType"/>
         <exclude name="Inpsyde.CodeQuality.ArgumentTypeDeclaration.NoArgumentType"/>

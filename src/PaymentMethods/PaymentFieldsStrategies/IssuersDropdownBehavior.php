@@ -15,6 +15,7 @@ trait IssuersDropdownBehavior
             $gateway->paymentMethod->getProperty('id')
         );
     }
+
     public function renderIssuers($gateway, $issuers, $selectedIssuer)
     {
         $html = $this->issuersDropdownMarkup(
@@ -58,16 +59,17 @@ trait IssuersDropdownBehavior
         $issuers,
         $selectedIssuer
     ): string {
+
         $description = $gateway->paymentMethod->getProperty(
             'issuers_empty_option'
         ) ?: $gateway->paymentMethod->getProperty('defaultDescription');
 
         $html = '<option value="">' . esc_html(
-                __($description, 'mollie-payments-for-woocommerce')
-            ) . '</option>';
+            __($description, 'mollie-payments-for-woocommerce')
+        ) . '</option>';
         foreach ($issuers as $issuer) {
             $html .= '<option value="' . esc_attr($issuer->id) . '"'
-                . ($selectedIssuer == $issuer->id ? ' selected=""' : '') . '>'
+                . ($selectedIssuer === $issuer->id ? ' selected=""' : '') . '>'
                 . esc_html($issuer->name) . '</option>';
         }
         return $html;

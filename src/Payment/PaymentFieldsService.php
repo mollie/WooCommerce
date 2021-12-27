@@ -31,7 +31,6 @@ class PaymentFieldsService
      */
     protected $dataHelper;
 
-
     /**
      * PaymentService constructor.
      */
@@ -39,12 +38,13 @@ class PaymentFieldsService
     {
         $this->dataHelper = $dataHelper;
     }
+
     public function setStrategy($paymentMethod)
     {
         if (!$paymentMethod->getProperty('paymentFields')) {
             $this->strategy = new DefaultFieldsStrategy();
         } else {
-            $className = 'Mollie\\WooCommerce\\PaymentMethods\\PaymentFieldsStrategies\\' .ucfirst($paymentMethod->getProperty('id')) . 'FieldsStrategy';
+            $className = 'Mollie\\WooCommerce\\PaymentMethods\\PaymentFieldsStrategies\\' . ucfirst($paymentMethod->getProperty('id')) . 'FieldsStrategy';
             $this->strategy = class_exists($className) ? new $className() : new DefaultFieldsStrategy();
         }
     }
@@ -53,6 +53,7 @@ class PaymentFieldsService
     {
         return $this->strategy->execute($gateway, $this->dataHelper);
     }
+
     public function getStrategyMarkup($gateway)
     {
         return $this->strategy->getFieldMarkup($gateway, $this->dataHelper);

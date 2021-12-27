@@ -19,7 +19,7 @@ class MolliePayment extends MollieObject
     public const ACTION_AFTER_REFUND_PAYMENT_CREATED = 'mollie-payments-for-woocommerce' . '_refund_payment_created';
     protected $pluginId;
 
-    public function __construct($data, $pluginId,  Api $apiHelper, $settingsHelper, $dataHelper)
+    public function __construct($data, $pluginId, Api $apiHelper, $settingsHelper, $dataHelper)
     {
         $this->data = $data;
         $this->pluginId = $pluginId;
@@ -54,7 +54,7 @@ class MolliePayment extends MollieObject
     public function getPaymentRequestData($order, $customerId)
     {
         $settingsHelper = $this->settingsHelper;
-        $optionName = $this->pluginId . '_' .'api_payment_description';
+        $optionName = $this->pluginId . '_' . 'api_payment_description';
         $option = get_option($optionName);
         $paymentDescription = $this->getPaymentDescription($order, $option);
         $paymentLocale = $settingsHelper->getPaymentLocale();
@@ -96,22 +96,24 @@ class MolliePayment extends MollieObject
         ];
 
         // Add sequenceType for subscriptions first payments
-        if (class_exists('WC_Subscriptions')
+        if (
+            class_exists('WC_Subscriptions')
             && class_exists(
                 'WC_Subscriptions_Admin'
             )
         ) {
             if ($this->dataHelper->isWcSubscription($orderId)) {
                 // See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
-                $disableAutomaticPayments = ('yes' == get_option(
+                $disableAutomaticPayments = ('yes' === get_option(
                     WC_Subscriptions_Admin::$option_prefix
                         . '_turn_off_automatic_payments',
                     'no'
                 )) ? true : false;
                 $supportsSubscriptions = $gateway->supports('subscriptions');
 
-                if ($supportsSubscriptions == true
-                    && $disableAutomaticPayments == false
+                if (
+                    $supportsSubscriptions === true
+                    && $disableAutomaticPayments === false
                 ) {
                     $paymentRequestData['sequenceType'] = 'first';
                 }
@@ -186,7 +188,7 @@ class MolliePayment extends MollieObject
 
     public function getMollieCustomerIdFromPaymentObject($payment = null)
     {
-        if ($payment == null) {
+        if ($payment === null) {
             $payment = $this->data->id;
         }
 
@@ -201,7 +203,7 @@ class MolliePayment extends MollieObject
 
     public function getSequenceTypeFromPaymentObject($payment = null)
     {
-        if ($payment == null) {
+        if ($payment === null) {
             $payment = $this->data->id;
         }
 
@@ -216,7 +218,7 @@ class MolliePayment extends MollieObject
 
     public function getMollieCustomerIbanDetailsFromPaymentObject($payment = null)
     {
-        if ($payment == null) {
+        if ($payment === null) {
             $payment = $this->data->id;
         }
 
@@ -254,7 +256,7 @@ class MolliePayment extends MollieObject
             /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
                 __('Order completed using %1$s payment (%2$s).', 'mollie-payments-for-woocommerce'),
                 $paymentMethodTitle,
-                $payment->id . ( $payment->mode == 'test' ? ( ' - ' . __('test mode', 'mollie-payments-for-woocommerce') ) : '' )
+                $payment->id . ( $payment->mode === 'test' ? ( ' - ' . __('test mode', 'mollie-payments-for-woocommerce') ) : '' )
             ));
 
             // Mark the order as processed and paid via Mollie
@@ -312,13 +314,13 @@ class MolliePayment extends MollieObject
         $orderStatusCancelledPayments = $settingsHelper->getOrderStatusCancelledPayments();
 
         // New order status
-        if ($orderStatusCancelledPayments == 'pending' || $orderStatusCancelledPayments == null) {
+        if ($orderStatusCancelledPayments === 'pending' || $orderStatusCancelledPayments === null) {
             $newOrderStatus = MolliePaymentGateway::STATUS_PENDING;
-        } elseif ($orderStatusCancelledPayments == 'cancelled') {
+        } elseif ($orderStatusCancelledPayments === 'cancelled') {
             $newOrderStatus = MolliePaymentGateway::STATUS_CANCELLED;
         }
         // if I cancel manually the order is canceled in Woo before calling Mollie
-        if ($order->get_status() == 'cancelled') {
+        if ($order->get_status() === 'cancelled') {
             $newOrderStatus = MolliePaymentGateway::STATUS_CANCELLED;
         }
 
@@ -338,7 +340,7 @@ class MolliePayment extends MollieObject
         /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
             __('%1$s payment (%2$s) cancelled .', 'mollie-payments-for-woocommerce'),
             $paymentMethodTitle,
-            $payment->id . ( $payment->mode == 'test' ? ( ' - ' . __('test mode', 'mollie-payments-for-woocommerce') ) : '' )
+            $payment->id . ( $payment->mode === 'test' ? ( ' - ' . __('test mode', 'mollie-payments-for-woocommerce') ) : '' )
         ));
 
         // Subscription processing
@@ -407,7 +409,7 @@ class MolliePayment extends MollieObject
             /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
                 __('%1$s payment expired (%2$s) but not cancelled because of another pending payment (%3$s).', 'mollie-payments-for-woocommerce'),
                 $paymentMethodTitle,
-                $payment->id . ( $payment->mode == 'test' ? ( ' - ' . __('test mode', 'mollie-payments-for-woocommerce') ) : '' ),
+                $payment->id . ( $payment->mode === 'test' ? ( ' - ' . __('test mode', 'mollie-payments-for-woocommerce') ) : '' ),
                 $molliePaymentId
             ));
 
@@ -430,7 +432,7 @@ class MolliePayment extends MollieObject
         /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
             __('%1$s payment expired (%2$s).', 'mollie-payments-for-woocommerce'),
             $paymentMethodTitle,
-            $payment->id . ( $payment->mode == 'test' ? ( ' - ' . __('test mode', 'mollie-payments-for-woocommerce') ) : '' )
+            $payment->id . ( $payment->mode === 'test' ? ( ' - ' . __('test mode', 'mollie-payments-for-woocommerce') ) : '' )
         ));
 
         // Remove (old) cancelled payments from this order

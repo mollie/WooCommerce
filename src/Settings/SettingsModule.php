@@ -34,12 +34,12 @@ class SettingsModule implements ServiceModule, ExecutableModule
     public function services(): array
     {
         return [
-            'settings.getGlobalSettingsUrl' => function (ContainerInterface $container): string {
+            'settings.getGlobalSettingsUrl' => static function (ContainerInterface $container): string {
                 /** @var Settings $settingsHelper */
                 $pluginId = $container->get('shared.plugin_id');
                 return admin_url('admin.php?page=wc-settings&tab=mollie_settings#' . $pluginId);
             },
-            'settings.settings_helper' => function (ContainerInterface $container): Settings {
+            'settings.settings_helper' => static function (ContainerInterface $container): Settings {
                 $pluginId = $container->get('shared.plugin_id');
                 $pluginUrl = $container->get('shared.plugin_url');
                 $statusHelper = $container->get('shared.status_helper');
@@ -55,15 +55,14 @@ class SettingsModule implements ServiceModule, ExecutableModule
                     $globalSettingsUrl
                 );
             },
-            'settings.payment_method_settings_handler' => function (): PaymentMethodSettingsHandler {
+            'settings.payment_method_settings_handler' => static function (): PaymentMethodSettingsHandler {
                 return new PaymentMethodSettingsHandler();
             },
-            'settings.IsTestModeEnabled' => function (ContainerInterface $container): bool {
+            'settings.IsTestModeEnabled' => static function (ContainerInterface $container): bool {
                 /** @var Settings $settingsHelper */
                 $settingsHelper = $container->get('settings.settings_helper');
                 return $settingsHelper->isTestModeEnabled();
             },
-
 
         ];
     }

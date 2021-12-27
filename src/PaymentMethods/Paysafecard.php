@@ -7,7 +7,6 @@ namespace Mollie\WooCommerce\PaymentMethods;
 class Paysafecard extends AbstractPaymentMethod implements PaymentMethodI
 {
 
-
     protected function getConfig(): array
     {
         return [
@@ -20,7 +19,7 @@ class Paysafecard extends AbstractPaymentMethod implements PaymentMethodI
             'supports' => [],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => false
+            'SEPA' => false,
         ];
     }
 

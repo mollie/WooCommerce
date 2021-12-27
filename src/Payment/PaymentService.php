@@ -108,7 +108,7 @@ class PaymentService
         //
         // PROCESS SUBSCRIPTION SWITCH - If this is a subscription switch and customer has a valid mandate, process the order internally
         //
-        if ( ( '0.00' === $order->get_total() ) && ( $this->dataHelper->isWcSubscription($order_id ) == true ) &&
+        if ( ( '0.00' === $order->get_total() ) && ( $this->dataHelper->isWcSubscription($order_id ) === true ) &&
             0 != $order->get_user_id() && ( wcs_order_contains_switch( $order ) )
         ) {
 
@@ -124,7 +124,7 @@ class PaymentService
                 $mandates = $this->apiHelper->getApiClient($apiKey)->customers->get($customer_id)->mandates();
                 $validMandate = false;
                 foreach ( $mandates as $mandate ) {
-                    if ( $mandate->status == 'valid' ) {
+                    if ( $mandate->status === 'valid' ) {
                         $validMandate   = true;
                         $data['method'] = $mandate->method;
                         break;
@@ -209,7 +209,7 @@ class PaymentService
             // Update initial order status for payment methods where the payment status will be delivered after a couple of days.
             // See: https://www.mollie.com/nl/docs/status#expiry-times-per-payment-method
             // Status is only updated if the new status is not the same as the default order status (pending)
-            if ( ( $paymentObject->method == 'banktransfer' ) || ( $paymentObject->method == 'directdebit' ) ) {
+            if ( ( $paymentObject->method === 'banktransfer' ) || ( $paymentObject->method === 'directdebit' ) ) {
 
                 // Don't change the status of the order if it's Partially Paid
                 // This adds support for WooCommerce Deposits (by Webtomizer)
@@ -234,7 +234,7 @@ class PaymentService
                                     /* translators: Placeholder 1: Payment method title, placeholder 2: payment ID */
                                         __( '%s payment started (%s).', 'mollie-payments-for-woocommerce' ),
                                         $paymentMethodTitle,
-                                        $paymentObject->id . ( $paymentObject->mode == 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
+                                        $paymentObject->id . ( $paymentObject->mode === 'test' ? ( ' - ' . __( 'test mode', 'mollie-payments-for-woocommerce' ) ) : '' )
                                     ) );
 
             $this->logger->log( LogLevel::DEBUG,  "For order " . $orderId . " redirect user to Mollie Checkout URL: " . $paymentObject->getCheckoutUrl() );
@@ -391,7 +391,7 @@ class PaymentService
         $optionName = $this->pluginId . '_' .'api_switch';
         $apiSwitchOption = get_option($optionName);
         $paymentType = $apiSwitchOption?: MolliePaymentGateway::PAYMENT_METHOD_TYPE_ORDER;
-        $isBankTransferGateway = $this->gateway->id == 'mollie_wc_gateway_banktransfer';
+        $isBankTransferGateway = $this->gateway->id === 'mollie_wc_gateway_banktransfer';
         if($isBankTransferGateway && $this->gateway->isExpiredDateSettingActivated()){
             $paymentType = MolliePaymentGateway::PAYMENT_METHOD_TYPE_PAYMENT;
         }
@@ -426,7 +426,7 @@ class PaymentService
                     $product = wc_get_product($cart_item['product_id']);
                 }
 
-                if ($product == false) {
+                if ($product === false) {
                     $molliePaymentType = MolliePaymentGateway::PAYMENT_METHOD_TYPE_PAYMENT;
                     do_action(
                         $this->pluginId
@@ -506,7 +506,7 @@ class PaymentService
             $paymentOrder = $paymentObject;
             $paymentObject = $this->apiHelper->getApiClient($apiKey)->orders->create($data);
             $settingsHelper = $this->settingsHelper;
-            if($settingsHelper->getOrderStatusCancelledPayments() == 'cancelled'){
+            if($settingsHelper->getOrderStatusCancelledPayments() === 'cancelled'){
                 $orderId = $order->get_id();
                 $orderWithPayments = $this->apiHelper->getApiClient($apiKey)->orders->get( $paymentObject->id, [ "embed" => "payments" ] );
                 $paymentOrder->updatePaymentDataWithOrderData($orderWithPayments, $orderId);
@@ -515,9 +515,9 @@ class PaymentService
             // Don't try to create a Mollie Payment for Klarna payment methods
             $order_payment_method = $order->get_payment_method();
 
-            if ($order_payment_method == 'mollie_wc_gateway_klarnapaylater'
-                || $order_payment_method == 'mollie_wc_gateway_sliceit'
-                || $order_payment_method == 'mollie_wc_gateway_klarnapaynow'
+            if ($order_payment_method === 'mollie_wc_gateway_klarnapaylater'
+                || $order_payment_method === 'mollie_wc_gateway_sliceit'
+                || $order_payment_method === 'mollie_wc_gateway_klarnapaynow'
             ) {
                 $this->logger->log( LogLevel::DEBUG,
                     'Creating payment object: type Order, failed for Klarna payment, stopping process.'
@@ -642,7 +642,7 @@ class PaymentService
         //
         // PROCESS REGULAR PAYMENT AS MOLLIE ORDER
         //
-        if ($molliePaymentType == MolliePaymentGateway::PAYMENT_METHOD_TYPE_ORDER) {
+        if ($molliePaymentType === MolliePaymentGateway::PAYMENT_METHOD_TYPE_ORDER) {
             $this->logger->log( LogLevel::DEBUG,
                 "{$this->gateway->id}: Create Mollie payment object for order {$orderId}",
                 [true]
@@ -707,7 +707,7 @@ class PaymentService
 
         // TODO David: this needs to be updated, doesn't work in all cases?
         $payment_method_title = '';
-        if ($payment->method == $this->gateway->paymentMethod->getProperty('id')){
+        if ($payment->method === $this->gateway->paymentMethod->getProperty('id')){
             $payment_method_title = $this->gateway->method_title;
         }
         return $payment_method_title;
@@ -726,7 +726,7 @@ class PaymentService
         {
             case MolliePaymentGateway::STATUS_ON_HOLD:
 
-                if ( $restore_stock == true ) {
+                if ( $restore_stock === true ) {
                     if ( ! $order->get_meta( '_order_stock_reduced', true ) ) {
                         // Reduce order stock
                         wc_reduce_stock_levels( $order->get_id() );

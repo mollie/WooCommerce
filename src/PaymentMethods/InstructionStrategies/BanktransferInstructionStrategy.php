@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods\InstructionStrategies;
 
-use Mollie\WooCommerce\Plugin;
-
 class BanktransferInstructionStrategy implements InstructionStrategyI
 {
 
@@ -15,6 +13,7 @@ class BanktransferInstructionStrategy implements InstructionStrategyI
         $order,
         $admin_instructions = false
     ) {
+
         $instructions = '';
 
         if (!$payment->details) {
@@ -49,19 +48,18 @@ class BanktransferInstructionStrategy implements InstructionStrategyI
 
             if (!empty($payment->expiresAt)) {
                 $expiryDate = $payment->expiresAt;
-                //$this->logger->log(LogLevel::DEBUG, "Due date assigned: {$expiryDate}");
                 $expiryDate = date_i18n(wc_date_format(), strtotime($expiryDate));
 
                 if ($admin_instructions) {
                     $instructions .= "\n" . sprintf(
-                            __('The payment will expire on <strong>%s</strong>.', 'mollie-payments-for-woocommerce'),
-                            $expiryDate
-                        ) . "\n";
+                        __('The payment will expire on <strong>%s</strong>.', 'mollie-payments-for-woocommerce'),
+                        $expiryDate
+                    ) . "\n";
                 } else {
                     $instructions .= "\n" . sprintf(
-                            __('The payment will expire on <strong>%s</strong>. Please make sure you transfer the total amount before this date.', 'mollie-payments-for-woocommerce'),
-                            $expiryDate
-                        ) . "\n";
+                        __('The payment will expire on <strong>%s</strong>. Please make sure you transfer the total amount before this date.', 'mollie-payments-for-woocommerce'),
+                        $expiryDate
+                    ) . "\n";
                 }
             }
         }

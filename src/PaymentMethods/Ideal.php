@@ -21,7 +21,7 @@ class Ideal extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => true
+            'SEPA' => true,
         ];
     }
 
@@ -55,7 +55,7 @@ class Ideal extends AbstractPaymentMethod implements PaymentMethodI
                     $this->getProperty('defaultTitle')
                 ),
                 'default' => 'Select your bank',
-            ]
+            ],
         ];
         return array_merge($generalFormFields, $paymentMethodFormFieds);
     }

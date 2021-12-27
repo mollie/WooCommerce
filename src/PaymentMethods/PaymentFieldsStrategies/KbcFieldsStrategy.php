@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
-
 class KbcFieldsStrategy implements PaymentFieldsStrategyI
 {
     use IssuersDropdownBehavior;
@@ -21,6 +20,7 @@ class KbcFieldsStrategy implements PaymentFieldsStrategyI
 
         $this->renderIssuers($gateway, $issuers, $selectedIssuer);
     }
+
     public function getFieldMarkup($gateway, $dataHelper)
     {
         if ($gateway->paymentMethod->getProperty('issuers_dropdown_shown') !== 'yes') {

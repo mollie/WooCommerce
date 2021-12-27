@@ -10,25 +10,23 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
     /**
      * @var string
      */
-    const MEAL = 'meal';
+    public const MEAL = 'meal';
     /**
      * @var string
      */
-    const ECO = 'eco';
+    public const ECO = 'eco';
     /**
      * @var string
      */
-    const GIFT = 'gift';
+    public const GIFT = 'gift';
     /**
      * @var string
      */
-    const NO_CATEGORY = 'no_category';
+    public const NO_CATEGORY = 'no_category';
     /**
      * @var string
      */
-    const MOLLIE_VOUCHER_CATEGORY_OPTION = '_mollie_voucher_category';
-
-
+    public const MOLLIE_VOUCHER_CATEGORY_OPTION = '_mollie_voucher_category';
 
     protected function getConfig(): array
     {
@@ -40,11 +38,11 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
             'paymentFields' => false,
             'instructions' => false,
             'supports' => [
-                'products'
+                'products',
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => false
+            'SEPA' => false,
         ];
     }
 
@@ -68,6 +66,7 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
         ];
         return array_merge($generalFormFields, $paymentMethodFormFieds);
     }
+
     private function categoryName($category)
     {
         return ucfirst(str_replace('_', ' ', $category));

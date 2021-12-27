@@ -14,7 +14,7 @@ class OrderLineStatus extends ApiOrderLineStatus
     /**
      * @var string[]
      */
-    const CAN_BE_CANCELED = [
+    public const CAN_BE_CANCELED = [
         self::STATUS_CREATED,
         self::STATUS_AUTHORIZED,
     ];
@@ -22,7 +22,7 @@ class OrderLineStatus extends ApiOrderLineStatus
     /**
      * @var string[]
      */
-    const CAN_BE_REFUNDED = [
+    public const CAN_BE_REFUNDED = [
         self::STATUS_PAID,
         self::STATUS_SHIPPING,
         self::STATUS_COMPLETED,

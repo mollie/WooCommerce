@@ -47,6 +47,7 @@ class MollieOrderService
         Data $data,
         string $pluginId
     ) {
+
         $this->httpResponse = $httpResponse;
         $this->logger = $logger;
         $this->paymentFactory = $paymentFactory;
@@ -100,7 +101,7 @@ class MollieOrderService
         }
 
         $payment_object_id = sanitize_text_field($_POST['id']);
-        $test_mode = $data_helper->getActiveMolliePaymentMode($order_id) == 'test';
+        $test_mode = $data_helper->getActiveMolliePaymentMode($order_id) === 'test';
 
         // Load the payment from Mollie, do not use cache
         try {
@@ -144,7 +145,7 @@ class MollieOrderService
             return;
         }
 
-        if ($payment->method == 'paypal' && $payment->billingAddress) {
+        if ($payment->method === 'paypal' && $payment->billingAddress) {
             $this->setBillingAddressAfterPayment($payment, $order);
         }
 
@@ -162,7 +163,7 @@ class MollieOrderService
                 __('%1$s payment %2$s (%3$s), not processed.', 'mollie-payments-for-woocommerce'),
                 $this->gateway->method_title,
                 $payment->status,
-                $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
+                $payment->id . ($payment->mode === 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
             ));
         }
 
@@ -500,7 +501,7 @@ class MollieOrderService
                         'mollie-payments-for-woocommerce'
                     ),
                     $paymentMethodTitle,
-                    $payment->id . ($payment->mode == 'test' ? (' - ' . __(
+                    $payment->id . ($payment->mode === 'test' ? (' - ' . __(
                         'test mode',
                         'mollie-payments-for-woocommerce'
                     )) : '')
@@ -510,7 +511,8 @@ class MollieOrderService
 
             // Send a "Failed order" email to notify the admin
             $emails = WC()->mailer()->get_emails();
-            if (!empty($emails) && !empty($orderId)
+            if (
+                !empty($emails) && !empty($orderId)
                 && !empty($emails['WC_Email_Failed_Order'])
             ) {
                 $emails['WC_Email_Failed_Order']->trigger($orderId);
@@ -534,7 +536,8 @@ class MollieOrderService
             //
 
             // Do extra checks if WooCommerce Subscriptions is installed
-            if (class_exists('WC_Subscriptions')
+            if (
+                class_exists('WC_Subscriptions')
                 && class_exists(
                     'WC_Subscriptions_Admin'
                 )
@@ -561,7 +564,7 @@ class MollieOrderService
                                 'mollie-payments-for-woocommerce'
                             ),
                             $paymentMethodTitle,
-                            $payment->id . ($payment->mode == 'test' ? (' - '
+                            $payment->id . ($payment->mode === 'test' ? (' - '
                                 . __(
                                     'test mode',
                                     'mollie-payments-for-woocommerce'
@@ -711,7 +714,7 @@ class MollieOrderService
     {
         // TODO David: this needs to be updated, doesn't work in all cases?
         $payment_method_title = '';
-        if ($payment->method == $this->gateway->paymentMethod->getProperty('id')) {
+        if ($payment->method === $this->gateway->paymentMethod->getProperty('id')) {
             $payment_method_title = $this->gateway->method_title;
         }
         return $payment_method_title;
@@ -728,7 +731,7 @@ class MollieOrderService
 
         switch ($new_status) {
             case MolliePaymentGateway::STATUS_ON_HOLD:
-                if ($restore_stock == true) {
+                if ($restore_stock === true) {
                     if (! $order->get_meta('_order_stock_reduced', true)) {
                         // Reduce order stock
                         wc_reduce_stock_levels($order->get_id());

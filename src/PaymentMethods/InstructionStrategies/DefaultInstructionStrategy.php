@@ -13,6 +13,7 @@ class DefaultInstructionStrategy implements InstructionStrategyI
         $order = null,
         $admin_instructions = false
     ) {
+
         if ($payment->isOpen() || $payment->isPending()) {
             if ($admin_instructions) {
                 // Message to admin

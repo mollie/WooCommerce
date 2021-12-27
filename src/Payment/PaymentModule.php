@@ -39,7 +39,6 @@ class PaymentModule implements ServiceModule, ExecutableModule
      */
     protected $gatewayClassnames;
 
-
     public function services(): array
     {
         return [
@@ -58,7 +57,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
                $paymentFactory = $container->get(PaymentFactory::class);
                $settingsHelper = $container->get('settings.settings_helper');
                return new MollieObject($data, $logger, $paymentFactory, $apiHelper, $settingsHelper);
-           }
+           },
         ];
     }
 
@@ -116,7 +115,8 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
             $mollieDueDateEnabled = mollieWooCommerceIsGatewayEnabled($order->get_payment_method(
             ), 'activate_expiry_days_setting');
-            if (!$isMollieGateway || !$mollieDueDateEnabled
+            if (
+                !$isMollieGateway || !$mollieDueDateEnabled
             ) {
                 return $willCancel;
             }
@@ -130,32 +130,32 @@ class PaymentModule implements ServiceModule, ExecutableModule
     {
         $classNames = $this->gatewayClassnames;
         foreach ($classNames as $gateway) {
-            $gatewayName = strtolower($gateway).'_settings';
+            $gatewayName = strtolower($gateway) . '_settings';
             $gatewaySettings = get_option($gatewayName);
-            $heldDuration = isset($gatewaySettings['order_dueDate'])?$gatewaySettings['order_dueDate']:0;
+            $heldDuration = isset($gatewaySettings['order_dueDate']) ? $gatewaySettings['order_dueDate'] : 0;
 
             if ($heldDuration < 1) {
                 continue;
             }
-            $heldDurationInSeconds = $heldDuration*60;
-            if ($gateway == 'Mollie_WC_Gateway_BankTransfer') {
-                $durationInHours = absint($heldDuration)*24;
-                $durationInMinutes = $durationInHours*60;
-                $heldDurationInSeconds = $durationInMinutes*60;
+            $heldDurationInSeconds = $heldDuration * 60;
+            if ($gateway === 'Mollie_WC_Gateway_BankTransfer') {
+                $durationInHours = absint($heldDuration) * 24;
+                $durationInMinutes = $durationInHours * 60;
+                $heldDurationInSeconds = $durationInMinutes * 60;
             }
             $args = [
                 'limit' => -1,
                 'status' => 'pending',
                 'payment_method' => strtolower($gateway),
                 'date_modified' => '<' . (time() - $heldDurationInSeconds),
-                'return'=>'ids',
+                'return' => 'ids',
             ];
-            $unpaid_orders =wc_get_orders($args);
+            $unpaid_orders = wc_get_orders($args);
 
             if ($unpaid_orders) {
                 foreach ($unpaid_orders as $unpaid_order) {
                     $order = wc_get_order($unpaid_order);
-                    add_filter('mollie-payments-for-woocommerce_order_status_cancelled', function ($newOrderStatus) {
+                    add_filter('mollie-payments-for-woocommerce_order_status_cancelled', static function ($newOrderStatus) {
                         return MolliePaymentGateway::STATUS_CANCELLED;
                     });
                     $order->update_status('cancelled', __('Unpaid order cancelled - time limit reached.', 'woocommerce'), true);
@@ -299,13 +299,13 @@ class PaymentModule implements ServiceModule, ExecutableModule
         $order = wc_get_order($order_id);
 
         // Does WooCommerce order contain a Mollie payment?
-        if (strstr($order->get_payment_method(), 'mollie_wc_gateway_') == false) {
+        if (strstr($order->get_payment_method(), 'mollie_wc_gateway_') === false) {
             return;
         }
 
         // To disable automatic shipping and capturing of the Mollie order when a WooCommerce order status is updated to completed,
         // store an option 'mollie-payments-for-woocommerce_disableShipOrderAtMollie' with value 1
-        if (get_option($this->pluginId . '_' . 'disableShipOrderAtMollie', '0') == '1') {
+        if (get_option($this->pluginId . '_' . 'disableShipOrderAtMollie', '0') === '1') {
             return;
         }
 
@@ -314,7 +314,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
         // Does WooCommerce order contain a Mollie Order?
         $mollie_order_id = ( $mollie_order_id = $order->get_meta('_mollie_order_id', true) ) ? $mollie_order_id : false;
         // Is it a payment? you cannot ship a payment
-        if ($mollie_order_id == false || substr($mollie_order_id, 0, 3) == 'tr_') {
+        if ($mollie_order_id === false || substr($mollie_order_id, 0, 3) === 'tr_') {
             $order->add_order_note('Order contains Mollie payment method, but not a Mollie Order ID. Processing capture canceled.');
             $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order contains Mollie payment method, but not a Mollie Order ID. Processing capture cancelled.');
 
@@ -369,13 +369,13 @@ class PaymentModule implements ServiceModule, ExecutableModule
         $order = wc_get_order($order_id);
 
         // Does WooCommerce order contain a Mollie payment?
-        if (strstr($order->get_payment_method(), 'mollie_wc_gateway_') == false) {
+        if (strstr($order->get_payment_method(), 'mollie_wc_gateway_') === false) {
             return;
         }
 
         // To disable automatic canceling of the Mollie order when a WooCommerce order status is updated to canceled,
         // store an option 'mollie-payments-for-woocommerce_disableCancelOrderAtMollie' with value 1
-        if (get_option($this->pluginId . '_' . 'disableCancelOrderAtMollie', '0') == '1') {
+        if (get_option($this->pluginId . '_' . 'disableCancelOrderAtMollie', '0') === '1') {
             return;
         }
 
@@ -383,7 +383,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
         $mollie_order_id = ( $mollie_order_id = $order->get_meta('_mollie_order_id', true) ) ? $mollie_order_id : false;
 
-        if ($mollie_order_id == false) {
+        if ($mollie_order_id === false) {
             $order->add_order_note('Order contains Mollie payment method, but not a valid Mollie Order ID. Canceling order failed.');
             $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order contains Mollie payment method, but not a valid Mollie Order ID. Canceling order failed.');
 

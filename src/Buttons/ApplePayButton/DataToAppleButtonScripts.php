@@ -44,7 +44,8 @@ class DataToAppleButtonScripts
      */
     protected function checkIfNeedShipping($product)
     {
-        if (!wc_shipping_enabled()
+        if (
+            !wc_shipping_enabled()
             || 0 === wc_get_shipping_method_count(
                 true
             )
@@ -115,7 +116,7 @@ class DataToAppleButtonScripts
     ) {
 
         $cart = WC()->cart;
-        $nonce = wp_nonce_field( 'woocommerce-process_checkout', 'woocommerce-process-checkout-nonce' );
+        $nonce = wp_nonce_field('woocommerce-process_checkout', 'woocommerce-process-checkout-nonce');
         $buttonMarkup =
             '<div id="mollie-applepayDirect-button">'
             . $nonce
@@ -131,7 +132,7 @@ class DataToAppleButtonScripts
                 'totalLabel' => $totalLabel,
             ],
             'ajaxUrl' => admin_url('admin-ajax.php'),
-            'buttonMarkup' => $buttonMarkup
+            'buttonMarkup' => $buttonMarkup,
         ];
     }
 }

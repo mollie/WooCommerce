@@ -9,7 +9,7 @@ use WC_Settings_Page;
 
 class Components extends WC_Settings_Page
 {
-    const FILTER_COMPONENTS_SETTINGS = 'components_settings';
+    public const FILTER_COMPONENTS_SETTINGS = 'components_settings';
     /**
      * @var string
      */

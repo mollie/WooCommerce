@@ -10,7 +10,7 @@ class PropertiesDictionary
     /**
      * @var string[]
      */
-    const VALIDATION_REQUIRED_FIELDS
+    public const VALIDATION_REQUIRED_FIELDS
         = [
             PropertiesDictionary::NONCE,
             PropertiesDictionary::VALIDATION_URL
@@ -18,11 +18,11 @@ class PropertiesDictionary
     /**
      * @var string
      */
-    const BILLING_CONTACT_INVALID = 'billing Contact Invalid';
+    public const BILLING_CONTACT_INVALID = 'billing Contact Invalid';
     /**
      * @var string[]
      */
-    const CREATE_ORDER_SINGLE_PROD_REQUIRED_FIELDS
+    public const CREATE_ORDER_SINGLE_PROD_REQUIRED_FIELDS
         = [
             PropertiesDictionary::WCNONCE,
             PropertiesDictionary::PRODUCT_ID,
@@ -33,7 +33,7 @@ class PropertiesDictionary
     /**
      * @var string[]
      */
-    const UPDATE_METHOD_CART_REQUIRED_FIELDS
+    public const UPDATE_METHOD_CART_REQUIRED_FIELDS
         = [
             PropertiesDictionary::NONCE,
             PropertiesDictionary::SHIPPING_METHOD,
@@ -43,7 +43,7 @@ class PropertiesDictionary
     /**
      * @var string[]
      */
-    const UPDATE_CONTACT_CART_REQUIRED_FIELDS
+    public const UPDATE_CONTACT_CART_REQUIRED_FIELDS
         = [
             PropertiesDictionary::NONCE,
             self::CALLER_PAGE,
@@ -53,7 +53,7 @@ class PropertiesDictionary
     /**
      * @var string[]
      */
-    const UPDATE_CONTACT_SINGLE_PROD_REQUIRED_FIELDS
+    public const UPDATE_CONTACT_SINGLE_PROD_REQUIRED_FIELDS
         = [
             PropertiesDictionary::NONCE,
             PropertiesDictionary::PRODUCT_ID,
@@ -66,11 +66,11 @@ class PropertiesDictionary
     /**
      * @var string
      */
-    const VALIDATION_URL = 'validationUrl';
+    public const VALIDATION_URL = 'validationUrl';
     /**
      * @var string[]
      */
-    const UPDATE_METHOD_SINGLE_PROD_REQUIRED_FIELDS
+    public const UPDATE_METHOD_SINGLE_PROD_REQUIRED_FIELDS
         = [
             PropertiesDictionary::NONCE,
             PropertiesDictionary::PRODUCT_ID,
@@ -82,35 +82,35 @@ class PropertiesDictionary
     /**
      * @var string
      */
-    const PRODUCT_ID = 'productId';
+    public const PRODUCT_ID = 'productId';
     /**
      * @var string
      */
-    const SIMPLIFIED_CONTACT = 'simplifiedContact';
+    public const SIMPLIFIED_CONTACT = 'simplifiedContact';
     /**
      * @var string
      */
-    const SHIPPING_METHOD = 'shippingMethod';
+    public const SHIPPING_METHOD = 'shippingMethod';
     /**
      * @var string
      */
-    const SHIPPING_CONTACT = 'shippingContact';
+    public const SHIPPING_CONTACT = 'shippingContact';
     /**
      * @var string
      */
-    const SHIPPING_CONTACT_INVALID = 'shipping Contact Invalid';
+    public const SHIPPING_CONTACT_INVALID = 'shipping Contact Invalid';
     /**
      * @var string
      */
-    const NONCE = 'nonce';
+    public const NONCE = 'nonce';
     /**
      * @var string
      */
-    const WCNONCE = 'woocommerce-process-checkout-nonce';
+    public const WCNONCE = 'woocommerce-process-checkout-nonce';
     /**
      * @var string[]
      */
-    const CREATE_ORDER_CART_REQUIRED_FIELDS
+    public const CREATE_ORDER_CART_REQUIRED_FIELDS
         = [
             PropertiesDictionary::WCNONCE,
             PropertiesDictionary::BILLING_CONTACT,
@@ -119,41 +119,41 @@ class PropertiesDictionary
     /**
      * @var string
      */
-    const PRODUCT_QUANTITY = 'productQuantity';
+    public const PRODUCT_QUANTITY = 'productQuantity';
     /**
      * @var string
      */
-    const CALLER_PAGE = 'callerPage';
+    public const CALLER_PAGE = 'callerPage';
     /**
      * @var string
      */
-    const BILLING_CONTACT = 'billingContact';
+    public const BILLING_CONTACT = 'billingContact';
     /**
      * @var string
      */
-    const NEED_SHIPPING = 'needShipping';
+    public const NEED_SHIPPING = 'needShipping';
     /**
      * @var string
      */
-    const UPDATE_SHIPPING_CONTACT = 'mollie_apple_pay_update_shipping_contact';
+    public const UPDATE_SHIPPING_CONTACT = 'mollie_apple_pay_update_shipping_contact';
     /**
      * @var string
      */
-    const UPDATE_SHIPPING_METHOD = 'mollie_apple_pay_update_shipping_method';
+    public const UPDATE_SHIPPING_METHOD = 'mollie_apple_pay_update_shipping_method';
     /**
      * @var string
      */
-    const VALIDATION = 'mollie_apple_pay_validation';
+    public const VALIDATION = 'mollie_apple_pay_validation';
     /**
      * @var string
      */
-    const CREATE_ORDER = 'mollie_apple_pay_create_order';
+    public const CREATE_ORDER = 'mollie_apple_pay_create_order';
     /**
      * @var string
      */
-    const CREATE_ORDER_CART = 'mollie_apple_pay_create_order_cart';
+    public const CREATE_ORDER_CART = 'mollie_apple_pay_create_order_cart';
     /**
      * @var string
      */
-    const REDIRECT = 'mollie_apple_pay_redirect';
+    public const REDIRECT = 'mollie_apple_pay_redirect';
 }

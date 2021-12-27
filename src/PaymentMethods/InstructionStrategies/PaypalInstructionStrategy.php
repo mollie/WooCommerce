@@ -13,6 +13,7 @@ class PaypalInstructionStrategy implements InstructionStrategyI
         $order = null,
         $admin_instructions = false
     ) {
+
         if ($payment->isPaid() && $payment->details) {
             return sprintf(
             /* translators: Placeholder 1: PayPal consumer name, placeholder 2: PayPal email, placeholder 3: PayPal transaction ID */

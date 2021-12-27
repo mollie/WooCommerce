@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Mollie\WooCommerce\Settings;
 
 
@@ -16,5 +15,4 @@ class PaymentMethodSettingsHandler implements PaymentMethodSettingsHandlerI
         $optionName = 'mollie_wc_gateway_' . $paymentMethodId . '_settings';
         return get_option($optionName, false);
     }
-
 }

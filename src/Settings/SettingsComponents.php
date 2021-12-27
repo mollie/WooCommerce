@@ -12,7 +12,7 @@ class SettingsComponents
     /**
      * @var string[]
      */
-    const STYLE_KEY_PREFIXES = [
+    public const STYLE_KEY_PREFIXES = [
         'invalid_',
     ];
     /**

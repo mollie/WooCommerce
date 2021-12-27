@@ -88,11 +88,11 @@ class SubscriptionModule implements ExecutableModule
             $order = wc_get_order($item->post_id);
 
             // Check that order actually exists
-            if ($order == false) {
+            if ($order === false) {
                 return false;
             }
 
-            if ($order->get_status() == MolliePaymentGateway::STATUS_COMPLETED) {
+            if ($order->get_status() === MolliePaymentGateway::STATUS_COMPLETED) {
                 $new_order_status = MolliePaymentGateway::STATUS_FAILED;
                 $paymentMethodId = $order->get_meta('_payment_method_title', true);
                 $molliePaymentId = $order->get_meta('_mollie_payment_id', true);

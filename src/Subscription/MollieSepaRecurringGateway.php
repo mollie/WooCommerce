@@ -32,7 +32,6 @@ class MollieSepaRecurringGateway extends MollieSubscriptionGateway
     protected $recurringMollieMethod = null;
     protected $dataHelper;
 
-
     /**
      * AbstractSepaRecurring constructor.
      */
@@ -53,6 +52,7 @@ class MollieSepaRecurringGateway extends MollieSubscriptionGateway
         string $pluginId,
         Api $apiHelper
     ) {
+
         parent::__construct(
             $paymentMethod,
             $paymentService,
@@ -83,7 +83,7 @@ class MollieSepaRecurringGateway extends MollieSubscriptionGateway
             $paymentFactory,
             $pluginId
         );
-        if ($directDebit->enabled == 'yes') {
+        if ($directDebit->enabled === 'yes') {
             $this->initSubscriptionSupport();
             $this->recurringMollieMethod = $directDebit;
         }
@@ -138,7 +138,7 @@ class MollieSepaRecurringGateway extends MollieSubscriptionGateway
         /* translators: Placeholder 1: Payment method title, placeholder 2: payment ID */
             __('%1$s payment started (%2$s).', 'mollie-payments-for-woocommerce'),
             $payment_method_title,
-            $payment->id . ($payment->mode == 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
+            $payment->id . ($payment->mode === 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
         ));
 
         $this->addPendingPaymentOrder($renewal_order);
@@ -160,7 +160,7 @@ class MollieSepaRecurringGateway extends MollieSubscriptionGateway
         global $wpdb;
 
         $confirmationDate = new DateTime();
-        $period = 'P'.self::WAITING_CONFIRMATION_PERIOD_DAYS . 'D';
+        $period = 'P' . self::WAITING_CONFIRMATION_PERIOD_DAYS . 'D';
         $confirmationDate->add(new DateInterval($period));
         $wpdb->insert(
             $wpdb->mollie_pending_payment,
@@ -179,7 +179,7 @@ class MollieSepaRecurringGateway extends MollieSubscriptionGateway
     {
         $payment_method_title = $this->method_title;
         $orderId = isset($payment->metadata) ? $payment->metadata->order_id : false;
-        if ($orderId && $this->dataService->isWcSubscription($orderId) && $payment->method == $this->getRecurringMollieMethodId()) {
+        if ($orderId && $this->dataService->isWcSubscription($orderId) && $payment->method === $this->getRecurringMollieMethodId()) {
             $payment_method_title = $this->getRecurringMollieMethodTitle();
         }
 
@@ -195,9 +195,10 @@ class MollieSepaRecurringGateway extends MollieSubscriptionGateway
         $orderId = $order->get_id();
 
         // Duplicate webhook call
-        if ($this->dataService->isWcSubscription($orderId)
+        if (
+            $this->dataService->isWcSubscription($orderId)
             && isset($payment->sequenceType)
-            && $payment->sequenceType == SequenceType::SEQUENCETYPE_RECURRING
+            && $payment->sequenceType === SequenceType::SEQUENCETYPE_RECURRING
         ) {
             $payment_method_title = $this->getPaymentMethodTitle($payment);
 

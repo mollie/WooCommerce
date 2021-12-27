@@ -92,6 +92,7 @@ class Settings
         $apiHelper,
         $globalSettingsUrl
     ) {
+
         $this->pluginId = $pluginId;
         $this->pluginVersion = $pluginVersion;
         $this->pluginUrl = $pluginUrl;
@@ -100,9 +101,12 @@ class Settings
         $this->globalSettingsUrl = $globalSettingsUrl;
     }
 
-    public function getGlobalSettingsUrl(){
+    public function getGlobalSettingsUrl()
+    {
+
         return $this->globalSettingsUrl;
     }
+
     public function generalFormFields(
         $defaultTitle,
         $defaultDescription,
@@ -119,7 +123,7 @@ class Settings
             $this->processAdminOptionCustomLogo($gateway);
             $this->processAdminOptionSurcharge($gateway);
             //only credit cards have a selector
-            if ($gateway->id == 'mollie_wc_gateway_creditcard') {
+            if ($gateway->id === 'mollie_wc_gateway_creditcard') {
                 $this->processAdminOptionCreditcardSelector();
             }
         }
@@ -139,7 +143,8 @@ class Settings
             $gatewaySettings["iconFilePath"] = null;
             update_option(sprintf('%s_settings', $gateway->id), $gatewaySettings);
         }
-        if (isset($_POST[$enabledLogoOptionName])
+        if (
+            isset($_POST[$enabledLogoOptionName])
             && isset($_FILES[$fileOptionName])
             && $_FILES[$fileOptionName]['size'] > 0
         ) {
@@ -152,11 +157,11 @@ class Settings
                 $tempName = $_FILES[$fileOptionName]['tmp_name'];
                 move_uploaded_file($tempName, $targetLocation . $fileName);
                 $gatewaySettings["iconFileUrl"] = trailingslashit(
-                        wp_upload_dir()['baseurl']
-                    ) . 'mollie-uploads/'. $gateway->id .'/'. $fileName;
+                    wp_upload_dir()['baseurl']
+                ) . 'mollie-uploads/' . $gateway->id . '/' . $fileName;
                 $gatewaySettings["iconFilePath"] = trailingslashit(
-                        wp_upload_dir()['basedir']
-                    ) . 'mollie-uploads/'. $gateway->id .'/'. $fileName;
+                    wp_upload_dir()['basedir']
+                ) . 'mollie-uploads/' . $gateway->id . '/' . $fileName;
                 update_option(sprintf('%s_settings', $gateway->id), $gatewaySettings);
             } else {
                 $notice = new AdminNotice();
@@ -177,7 +182,8 @@ class Settings
     {
         $paymentSurcharge = $gateway->id . '_payment_surcharge';
 
-        if (isset($_POST[$paymentSurcharge])
+        if (
+            isset($_POST[$paymentSurcharge])
             && $_POST[$paymentSurcharge]
             !== GatewaySurchargeHandler::NO_FEE
         ) {
@@ -198,7 +204,9 @@ class Settings
         }
     }
 
-    public function adminOptions(WC_Payment_Gateway $gateway){
+    public function adminOptions(WC_Payment_Gateway $gateway)
+    {
+
         if (!$gateway->enabled && count($gateway->errors)) {
             echo '<div class="inline error"><p><strong>' . __('Gateway Disabled', 'mollie-payments-for-woocommerce') . '</strong>: '
                 . implode('<br/>', $gateway->errors)
@@ -267,14 +275,13 @@ class Settings
         return ob_get_clean();
     }
 
-
     /**
      * @return bool
      */
     public function isTestModeEnabled()
     {
         $testModeEnabled = get_option($this->getSettingId('test_mode_enabled'));
-        return is_string($testModeEnabled)? trim($testModeEnabled) === 'yes': false;
+        return is_string($testModeEnabled) ? trim($testModeEnabled) === 'yes' : false;
     }
 
     /**
@@ -292,7 +299,7 @@ class Settings
             $apiKey = filter_input(INPUT_POST, $apiKeyId, FILTER_SANITIZE_STRING);
         }
 
-        return is_string($apiKey)? trim($apiKey): false;
+        return is_string($apiKey) ? trim($apiKey) : false;
     }
 
     /**
@@ -423,7 +430,7 @@ class Settings
      */
     public function updateMerchantIdAfterApiKeyChanges($oldValue, $value, $optionName)
     {
-        $option = ['id'=>$optionName];
+        $option = ['id' => $optionName];
         $this->updateMerchantIdOnApiKeyChanges($value, $option);
     }
 
@@ -635,8 +642,8 @@ class Settings
         $apiKey = $this->getApiKey($testMode);
 
         return $this->apiHelper->getApiClient(
-                $apiKey,
-                true
+            $apiKey,
+            true
         )->profiles->getCurrent();
     }
 

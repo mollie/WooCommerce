@@ -1,14 +1,13 @@
 <?php
 
-if (!function_exists('is_order_received_page'))
-{
+if (!function_exists('is_order_received_page')) {
     /**
      * Check if the current page is the order received page
      *
      * @since WooCommerce 2.3.3
      * @return bool
      */
-    function is_order_received_page ()
+    function is_order_received_page()
     {
         global $wp;
 
@@ -16,14 +15,13 @@ if (!function_exists('is_order_received_page'))
     }
 }
 
-if (!function_exists('untrailingslashit'))
-{
+if (!function_exists('untrailingslashit')) {
     /**
      * @since WooCommerce 2.2.0
      * @param string $string
      * @return string
      */
-    function untrailingslashit ($string)
+    function untrailingslashit($string)
     {
         return rtrim($string, '/');
     }
@@ -43,6 +41,6 @@ function mollieWooCommerceSession()
 function mollieWooCommerceStringToBoolOption($string)
 {
     return is_bool($string) ? $string : ('yes' === strtolower(
-            $string
-        ) || 1 === $string || 'true' === strtolower($string) || '1' === $string);
+        $string
+    ) || 1 === $string || 'true' === strtolower($string) || '1' === $string);
 }

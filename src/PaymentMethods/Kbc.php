@@ -21,7 +21,7 @@ class Kbc extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => true
+            'SEPA' => true,
         ];
     }
 
@@ -60,6 +60,5 @@ class Kbc extends AbstractPaymentMethod implements PaymentMethodI
             ],
         ];
         return array_merge($generalFormFields, $paymentMethodFormFieds);
-
     }
 }

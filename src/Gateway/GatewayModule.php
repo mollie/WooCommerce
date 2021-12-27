@@ -55,7 +55,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
     public function services(): array
     {
         return [
-            'gateway.classnames' => function (): array {
+            'gateway.classnames' => static function (): array {
                 return [
                     'Mollie_WC_Gateway_BankTransfer',
                     'Mollie_WC_Gateway_Belfius',
@@ -82,7 +82,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
             'gateway.instances' => function (ContainerInterface $container): array {
                 return $this->instantiatePaymentMethodGateways($container);
             },
-            'gateway.paymentMethods' => function (): array {
+            'gateway.paymentMethods' => static function (): array {
                 return [
                     'Banktransfer',
                     'Belfius',
@@ -160,12 +160,12 @@ class GatewayModule implements ServiceModule, ExecutableModule
             $mollieGateways = $this->instantiatePaymentMethodGateways($container);
             return array_merge($gateways, $mollieGateways);
         });
-       add_filter('woocommerce_payment_gateways', [$this, 'maybeDisableApplePayGateway'], 20);
-         add_filter('woocommerce_payment_gateways', function ($gateways) {
+        add_filter('woocommerce_payment_gateways', [$this, 'maybeDisableApplePayGateway'], 20);
+         add_filter('woocommerce_payment_gateways', static function ($gateways) {
             $maybeEnablegatewayHelper = new MaybeDisableGateway();
 
             return $maybeEnablegatewayHelper->maybeDisableMealVoucherGateway($gateways);
-        });
+         });
         add_filter(
             'woocommerce_payment_gateways',
             [$this, 'maybeDisableBankTransferGateway'],
@@ -188,7 +188,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         );
         add_action(
             'woocommerce_after_order_object_save',
-            function () {
+            static function () {
                 $mollieWooCommerceSession = mollieWooCommerceSession();
                 if ($mollieWooCommerceSession instanceof \WC_Session) {
                     $mollieWooCommerceSession->__unset(self::APPLE_PAY_METHOD_ALLOWED_KEY);
@@ -236,7 +236,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
          *
          * For any other case we want to be sure bank transfer gateway is included.
          */
-        if ($isWcApiRequest ||
+        if (
+            $isWcApiRequest ||
             !$isSettingActivated ||
             is_checkout() && ! is_wc_endpoint_url('order-pay') ||
             !wp_doing_ajax() && ! is_wc_endpoint_url('order-pay') ||
@@ -267,7 +268,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
          *
          * For any other case we want to be sure apple pay gateway is included.
          */
-        if ($isWcApiRequest ||
+        if (
+            $isWcApiRequest ||
             !$wooCommerceSession instanceof \WC_Session ||
             !doing_action('woocommerce_payment_gateways') ||
             !wp_doing_ajax() && ! is_wc_endpoint_url('order-pay') ||
@@ -367,7 +369,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
     /**
      * Bootstrap the ApplePay button logic if feature enabled
      */
-    public function mollieApplePayDirectHandling(NoticeInterface $notice, Logger $logger,Api $apiHelper, Settings $settingsHelper, MollieSubscriptionGateway $appleGateway)
+    public function mollieApplePayDirectHandling(NoticeInterface $notice, Logger $logger, Api $apiHelper, Settings $settingsHelper, MollieSubscriptionGateway $appleGateway)
     {
         $buttonEnabledCart = mollieWooCommerceIsApplePayDirectEnabled('cart');
         $buttonEnabledProduct = mollieWooCommerceIsApplePayDirectEnabled('product');
@@ -390,6 +392,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         Logger $logger,
         string $pluginUrl
     ) {
+
         $enabledInProduct = (mollieWooCommerceIsPayPalButtonEnabled('product'));
         $enabledInCart = (mollieWooCommerceIsPayPalButtonEnabled('cart'));
         $shouldBuildIt = $enabledInProduct || $enabledInCart;

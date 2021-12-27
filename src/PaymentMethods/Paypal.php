@@ -7,7 +7,6 @@ namespace Mollie\WooCommerce\PaymentMethods;
 class Paypal extends AbstractPaymentMethod implements PaymentMethodI
 {
 
-
     protected function getConfig(): array
     {
         return [
@@ -23,7 +22,7 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => false
+            'SEPA' => false,
         ];
     }
 
@@ -76,13 +75,14 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
                     'If the product or the cart total amount is under this number, then the button will not show up.',
                     'mollie-payments-for-woocommerce'
                 ),
-                'custom_attributes'=>['step'=>'0.01', 'min'=>'0', 'max'=>'100000000'],
+                'custom_attributes' => ['step' => '0.01', 'min' => '0', 'max' => '100000000'],
                 'default' => 0,
                 'desc_tip' => true,
-            ]
+            ],
         ];
         return array_merge($generalFormFields, $paymentMethodFormFieds);
     }
+
     private function buttonOptions(): array
     {
         return [

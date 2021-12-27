@@ -12,11 +12,11 @@ class PaymentMethodsIconUrl
     /**
      * @var string
      */
-    const MOLLIE_CREDITCARD_ICONS = 'mollie_creditcard_icons_';
+    public const MOLLIE_CREDITCARD_ICONS = 'mollie_creditcard_icons_';
     /**
      * @var string[]
      */
-    const AVAILABLE_CREDITCARD_ICONS = [
+    public const AVAILABLE_CREDITCARD_ICONS = [
             'amex',
             'cartasi',
             'cartebancaire',
@@ -28,15 +28,15 @@ class PaymentMethodsIconUrl
     /**
      * @var string
      */
-    const SVG_FILE_EXTENSION = '.svg';
+    public const SVG_FILE_EXTENSION = '.svg';
     /**
      * @var int
      */
-    const CREDIT_CARD_ICON_WIDTH = 33;
+    public const CREDIT_CARD_ICON_WIDTH = 33;
     /**
      * @var string
      */
-    const MOLLIE_CREDITCARD_ICONS_ENABLER = 'mollie_creditcard_icons_enabler';
+    public const MOLLIE_CREDITCARD_ICONS_ENABLER = 'mollie_creditcard_icons_enabler';
     /**
      * @var string
      */
@@ -67,7 +67,7 @@ class PaymentMethodsIconUrl
      */
     public function svgUrlForPaymentMethod($paymentMethodName)
     {
-        if ($paymentMethodName == PaymentMethod::CREDITCARD && !is_admin()) {
+        if ($paymentMethodName === PaymentMethod::CREDITCARD && !is_admin()) {
             return $this->getCreditcardIcon();
         }
 
@@ -76,8 +76,8 @@ class PaymentMethodsIconUrl
         $gatewaySettings = get_option(sprintf('mollie_wc_gateway_%s_settings', $paymentMethodName), false);
 
         if ($gatewaySettings) {
-            $svgPath = isset($gatewaySettings["iconFilePath"])?$gatewaySettings["iconFilePath"]:false;
-            $svgUrl =  isset($gatewaySettings["iconFileUrl"])?$gatewaySettings["iconFileUrl"]:false;
+            $svgPath = isset($gatewaySettings["iconFilePath"]) ? $gatewaySettings["iconFilePath"] : false;
+            $svgUrl =  isset($gatewaySettings["iconFileUrl"]) ? $gatewaySettings["iconFileUrl"] : false;
         }
 
         if ($svgPath && !file_exists($svgPath) || !$svgUrl) {
@@ -113,23 +113,25 @@ class PaymentMethodsIconUrl
         if (!$gatewaySettings) {
             return false;
         }
-        if (!isset($gatewaySettings['enable_custom_logo'])
+        if (
+            !isset($gatewaySettings['enable_custom_logo'])
             || $gatewaySettings['enable_custom_logo'] !== 'yes'
         ) {
             return false;
         }
-        if (!isset($gatewaySettings['iconFileUrl'])
+        if (
+            !isset($gatewaySettings['iconFileUrl'])
             && !is_string(
                 $gatewaySettings['iconFileUrl']
             )
         ) {
             return false;
         }
-        if(!isset($gatewaySettings["iconFilePath"])){
+        if (!isset($gatewaySettings["iconFilePath"])) {
             return false;
         }
         $svgPath = $gatewaySettings["iconFilePath"];
-        return file_exists( $svgPath );
+        return file_exists($svgPath);
     }
     /**
      * @return array Array containing the credit cards names enabled in settings
@@ -170,15 +172,15 @@ class PaymentMethodsIconUrl
         $enabledCreditCards = $this->enabledCreditcards();
 
         $assetsImagesPath
-            = $this->pluginPath . '/' . 'public/images/';
+ = $this->pluginPath . '/' . 'public/images/';
         $cardWidth = PaymentMethodsIconUrl::CREDIT_CARD_ICON_WIDTH;
         $cardsNumber = count($enabledCreditCards);
         $cardsWidth = $cardWidth * $cardsNumber;
         $cardPositionX = 0;
         $actual = get_transient('svg_creditcards_string');
-        if(!$actual){
+        if (!$actual) {
             $actual
-                = sprintf('<svg width="%s" height="24" class="mollie-gateway-icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">', $cardsWidth);
+ = sprintf('<svg width="%s" height="24" class="mollie-gateway-icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">', $cardsWidth);
             foreach ($enabledCreditCards as $creditCard) {
                 $svgString = file_get_contents(
                     $assetsImagesPath . $creditCard
@@ -192,9 +194,8 @@ class PaymentMethodsIconUrl
                 }
             }
             $actual .= "</svg>";
-            set_transient( 'svg_creditcards_string', $actual, DAY_IN_SECONDS );
+            set_transient('svg_creditcards_string', $actual, DAY_IN_SECONDS);
         }
-
 
         return $actual;
     }

@@ -17,6 +17,7 @@ class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
         $payment,
         \WC_Order $order
     ) {
+
         $details = $payment->details;
         if (!$details) {
             return;
@@ -60,11 +61,11 @@ class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
             'paymentFields' => true,
             'instructions' => false,
             'supports' => [
-                'products'
+                'products',
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => false
+            'SEPA' => false,
         ];
     }
 

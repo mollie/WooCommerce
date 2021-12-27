@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Mollie\WooCommerce\Settings\General;
 
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
@@ -30,9 +29,9 @@ class MollieGeneralSettings
             [
                 'id' => $defaultTitle . '_' . 'title',
                 'title' => sprintf(__(
-                                       '%s display settings',
-                                       'mollie-payments-for-woocommerce'
-                                   ), $defaultTitle),
+                    '%s display settings',
+                    'mollie-payments-for-woocommerce'
+                ), $defaultTitle),
                 'type' => 'title',
             ],
             'title' => [
@@ -76,9 +75,9 @@ class MollieGeneralSettings
             [
                 'id' => $defaultTitle . '_' . 'title',
                 'title' => sprintf(__(
-                                       'Sales countries',
-                                       'mollie-payments-for-woocommerce'
-                                   )),
+                    'Sales countries',
+                    'mollie-payments-for-woocommerce'
+                )),
                 'type' => 'title',
             ],
             'allowed_countries' => [
@@ -94,9 +93,9 @@ class MollieGeneralSettings
             [
                 'id' => $defaultTitle . '_' . 'custom_logo',
                 'title' => sprintf(__(
-                                       '%s custom logo',
-                                       'mollie-payments-for-woocommerce'
-                                   ), $defaultTitle),
+                    '%s custom logo',
+                    'mollie-payments-for-woocommerce'
+                ), $defaultTitle),
                 'type' => 'title',
             ],
             'enable_custom_logo' => [
@@ -116,7 +115,7 @@ class MollieGeneralSettings
                     'mollie-payments-for-woocommerce'
                 ),
                 'type' => 'file',
-                'custom_attributes'=>['accept'=>'.png, .jpeg, .svg, image/png, image/jpeg'],
+                'custom_attributes' => ['accept' => '.png, .jpeg, .svg, image/png, image/jpeg'],
                 'description' => sprintf(
                     __(
                         'Upload a custom icon for this gateway. The feature must be enabled.',
@@ -128,9 +127,9 @@ class MollieGeneralSettings
             [
                 'id' => $defaultTitle . '_' . 'surcharge',
                 'title' => sprintf(__(
-                                       '%s surcharge',
-                                       'mollie-payments-for-woocommerce'
-                                   ), $defaultTitle),
+                    '%s surcharge',
+                    'mollie-payments-for-woocommerce'
+                ), $defaultTitle),
                 'type' => 'title',
             ],
             'payment_surcharge' => [
@@ -173,7 +172,7 @@ class MollieGeneralSettings
                         'mollie-payments-for-woocommerce'
                     )
                 ),
-                'custom_attributes'=>['step'=>'0.01', 'min'=>'0.00', 'max'=>'999'],
+                'custom_attributes' => ['step' => '0.01', 'min' => '0.00', 'max' => '999'],
                 'default' => '0.00',
                 'desc_tip' => true,
             ],
@@ -186,7 +185,7 @@ class MollieGeneralSettings
                         'mollie-payments-for-woocommerce'
                     )
                 ),
-                'custom_attributes'=>['step'=>'0.01', 'min'=>'0.00', 'max'=>'999'],
+                'custom_attributes' => ['step' => '0.01', 'min' => '0.00', 'max' => '999'],
                 'default' => '0.00',
                 'desc_tip' => true,
             ],
@@ -199,12 +198,12 @@ class MollieGeneralSettings
                         'mollie-payments-for-woocommerce'
                     )
                 ),
-                'custom_attributes'=>['step'=>'0.01', 'min'=>'0.00', 'max'=>'999'],
+                'custom_attributes' => ['step' => '0.01', 'min' => '0.00', 'max' => '999'],
                 'default' => '0.00',
                 'desc_tip' => true,
             ],
             'maximum_limit' => [
-                'title' => sprintf(__('Surcharge only under this limit, in %s', 'mollie-payments-for-woocommerce'), html_entity_decode( get_woocommerce_currency_symbol())),
+                'title' => sprintf(__('Surcharge only under this limit, in %s', 'mollie-payments-for-woocommerce'), html_entity_decode(get_woocommerce_currency_symbol())),
                 'type' => 'number',
                 'description' => sprintf(
                     __(
@@ -212,16 +211,16 @@ class MollieGeneralSettings
                         'mollie-payments-for-woocommerce'
                     )
                 ),
-                'custom_attributes'=>['step'=>'0.01', 'min'=>'0.00', 'max'=>'999'],
+                'custom_attributes' => ['step' => '0.01', 'min' => '0.00', 'max' => '999'],
                 'default' => '0.00',
                 'desc_tip' => true,
             ],
             [
                 'id' => $defaultTitle . '_' . 'advanced',
                 'title' => sprintf(__(
-                                       '%s advanced',
-                                       'mollie-payments-for-woocommerce'
-                                   ), $defaultTitle),
+                    '%s advanced',
+                    'mollie-payments-for-woocommerce'
+                ), $defaultTitle),
                 'type' => 'title',
             ],
             'activate_expiry_days_setting' => [
@@ -240,7 +239,7 @@ class MollieGeneralSettings
                         'mollie-payments-for-woocommerce'
                     )
                 ),
-                'custom_attributes'=>['step'=>'1', 'min'=>'0', 'max'=>'526000'],
+                'custom_attributes' => ['step' => '1', 'min' => '0', 'max' => '526000'],
                 'default' => '0',
                 'desc_tip' => true,
             ],
@@ -255,11 +254,11 @@ class MollieGeneralSettings
                 'type' => 'select',
                 'options' => [
                     MolliePaymentGateway::STATUS_ON_HOLD => wc_get_order_status_name(
-                            MolliePaymentGateway::STATUS_ON_HOLD
-                        ) . ' (' . __(
-                            'default',
-                            'mollie-payments-for-woocommerce'
-                        ) . ')',
+                        MolliePaymentGateway::STATUS_ON_HOLD
+                    ) . ' (' . __(
+                        'default',
+                        'mollie-payments-for-woocommerce'
+                    ) . ')',
                     MolliePaymentGateway::STATUS_PENDING => wc_get_order_status_name(
                         MolliePaymentGateway::STATUS_PENDING
                     ),

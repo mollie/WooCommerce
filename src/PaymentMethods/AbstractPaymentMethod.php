@@ -53,7 +53,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     public function shouldDisplayIcon(): bool
     {
         return $this->hasProperty('display_logo')
-            && $this->getProperty('display_logo') == 'yes';
+            && $this->getProperty('display_logo') === 'yes';
     }
 
     public function getSharedFormFields(){

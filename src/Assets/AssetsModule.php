@@ -39,7 +39,7 @@ class AssetsModule implements ExecutableModule
         $this->dataService = $container->get('shared.data_helper');
         add_action(
             'init',
-            function () use ($container){
+            function () use ($container) {
                 self::registerFrontendScripts();
                 wp_register_script(
                     'mollie_wc_admin_settings',
@@ -54,11 +54,10 @@ class AssetsModule implements ExecutableModule
                 add_action('wp_enqueue_scripts', [$this, 'enqueuePayPalButtonScripts']);
 
                 $gatewayInstances = $container->get('gateway.instances');
-                add_action('wp_enqueue_scripts', function() use ($gatewayInstances){
+                add_action('wp_enqueue_scripts', function () use ($gatewayInstances) {
                     $this->enqueueButtonBlocksCartScripts($gatewayInstances);
                 });
                 $this->registerButtonsBlockScripts();
-
 
                 wp_enqueue_script('mollie_wc_admin_settings');
                 global $current_section;
@@ -114,7 +113,8 @@ class AssetsModule implements ExecutableModule
         return true;
     }
 
-    public function enqueueButtonBlocksCartScripts($gatewayInstances){
+    public function enqueueButtonBlocksCartScripts($gatewayInstances)
+    {
 
         wp_enqueue_script('mollie_block_index');
         wp_enqueue_style('mollie-gateway-icons');
@@ -122,14 +122,14 @@ class AssetsModule implements ExecutableModule
             'mollie_block_index',
             'mollieBlockData',
             [
-                'gatewayData' => $this->gatewayDataForWCBlocks($gatewayInstances)
+                'gatewayData' => $this->gatewayDataForWCBlocks($gatewayInstances),
             ]
         );
     }
 
-    public function registerButtonsBlockScripts ()
+    public function registerButtonsBlockScripts()
     {
-        add_action('woocommerce_blocks_enqueue_cart_block_scripts_after', function (){
+        add_action('woocommerce_blocks_enqueue_cart_block_scripts_after', function () {
             if (mollieWooCommerceIsPayPalButtonEnabled('cart')) {
                 wp_register_script(
                     'mollie_paypalButtonBlock',
@@ -179,7 +179,6 @@ class AssetsModule implements ExecutableModule
                     $dataToScripts->applePayScriptData(true)
                 );
             }
-
         });
     }
 
@@ -381,7 +380,8 @@ class AssetsModule implements ExecutableModule
      */
     public function enqueueComponentsAssets()
     {
-        if (is_admin()
+        if (
+            is_admin()
             || (!mollieWooCommerceIsCheckoutContext()
                 && !has_block("woocommerce/checkout"))
         ) {
@@ -425,22 +425,22 @@ class AssetsModule implements ExecutableModule
                 'componentsAttributes' => [
                     [
                         'name' => 'cardHolder',
-                        'label' => esc_html__('Name on card', 'mollie-payments-for-woocommerce')
+                        'label' => esc_html__('Name on card', 'mollie-payments-for-woocommerce'),
                     ],
                     [
                         'name' => 'cardNumber',
-                        'label' => esc_html__('Card number', 'mollie-payments-for-woocommerce')
+                        'label' => esc_html__('Card number', 'mollie-payments-for-woocommerce'),
                     ],
                     [
                         'name' => 'expiryDate',
-                        'label' => esc_html__('Expiry date', 'mollie-payments-for-woocommerce')
+                        'label' => esc_html__('Expiry date', 'mollie-payments-for-woocommerce'),
                     ],
                     [
                         'name' => 'verificationCode',
                         'label' => esc_html__(
                             'CVC/CVV',
                             'mollie-payments-for-woocommerce'
-                        )
+                        ),
                     ],
                 ],
                 'messages' => [
@@ -459,7 +459,7 @@ class AssetsModule implements ExecutableModule
     {
         $filters = $this->dataService->wooCommerceFiltersForCheckout();
 
-        if($filters){
+        if ($filters) {
             $availablePaymentMethods = $this->dataService->getAvailablePaymentMethodListForCheckout($filters);
         }
 
@@ -469,19 +469,18 @@ class AssetsModule implements ExecutableModule
                             'currency' => $filters['amount']['currency'],
                             'cartTotal' => $filters['amount']['value'],
                             'paymentLocale' => $filters['locale'],
-                            'billingCountry' => $filters['billingCountry']
-                        ]
+                            'billingCountry' => $filters['billingCountry'],
+                        ],
         ];
         $gatewayData = [];
-        foreach ($gatewayInstances as $gatewayKey => $gateway){
+        foreach ($gatewayInstances as $gatewayKey => $gateway) {
             $gatewayId = $gateway->paymentMethod->getProperty('id');
-            if($gateway->enabled !== 'yes' || $gatewayId == 'directdebit'){
+            if ($gateway->enabled !== 'yes' || $gatewayId === 'directdebit') {
                 continue;
             }
             $content = __($gateway->paymentMethod->getProperty('defaultDescription', 'mollie-payments-for-woocommerce'));
 
-            if ($gateway->paymentMethod->getProperty('paymentFields')){
-
+            if ($gateway->paymentMethod->getProperty('paymentFields')) {
                 $gateway->paymentMethod->paymentFieldsService->setStrategy($gateway->paymentMethod);
 
                 $content = $gateway->paymentMethod->paymentFieldsService->getStrategyMarkup($gateway);
@@ -494,13 +493,13 @@ class AssetsModule implements ExecutableModule
                 'content' => $content,
                 'edit' => $gateway->paymentMethod->getProperty('defaultDescription'),
                 'paymentMethodId' => $gatewayKey,
-                'allowedCountries'=> $gateway->paymentMethod->getProperty('allowed_countries'),
+                'allowedCountries' => $gateway->paymentMethod->getProperty('allowed_countries'),
                 'ariaLabel' => $gateway->paymentMethod->getProperty('defaultDescription'),
-                'supports' => $gateway->paymentMethod->getProperty('supports')
+                'supports' => $gateway->paymentMethod->getProperty('supports'),
             ];
         }
         $dataToScript['gatewayData'] = $gatewayData;
-        $dataToScript['availableGateways']= isset($availablePaymentMethods)?$availablePaymentMethods:[];
+        $dataToScript['availableGateways'] = isset($availablePaymentMethods) ? $availablePaymentMethods : [];
 
         //var_dump($dataToScript);
         return $dataToScript;

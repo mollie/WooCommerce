@@ -105,7 +105,7 @@ class ApplePayDirectHandler
     {
         $option = get_option('mollie_wc_applepay_validated', 'yes');
 
-        return $option == 'yes';
+        return $option === 'yes';
     }
 
     /**
@@ -115,7 +115,7 @@ class ApplePayDirectHandler
     {
         ?>
         <div id="mollie-applepayDirect-button">
-            <?php wp_nonce_field( 'woocommerce-process_checkout', 'woocommerce-process-checkout-nonce' );  ?>
+            <?php wp_nonce_field('woocommerce-process_checkout', 'woocommerce-process-checkout-nonce');  ?>
         </div>
         <?php
     }

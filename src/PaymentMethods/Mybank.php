@@ -7,7 +7,6 @@ namespace Mollie\WooCommerce\PaymentMethods;
 class Mybank extends AbstractPaymentMethod implements PaymentMethodI
 {
 
-
     protected function getConfig(): array
     {
         return [
@@ -19,11 +18,11 @@ class Mybank extends AbstractPaymentMethod implements PaymentMethodI
             'instructions' => true,
             'supports' => [
                 'products',
-                'refunds'
+                'refunds',
                 ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => false
+            'SEPA' => false,
         ];
     }
 

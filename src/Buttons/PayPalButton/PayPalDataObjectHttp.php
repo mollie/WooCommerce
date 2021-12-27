@@ -100,7 +100,7 @@ class PayPalDataObjectHttp
                     sprintf('PayPal Data Error: Missing index %s', $requiredField)
                 );
 
-                $this->errors[]= ['errorCode' => 'unknown'];
+                $this->errors[] = ['errorCode' => 'unknown'];
                 continue;
             }
             if (!$data[$requiredField]) {
@@ -108,7 +108,7 @@ class PayPalDataObjectHttp
                     LogLevel::DEBUG,
                     sprintf('PayPal Data Error: Missing value for %s', $requiredField)
                 );
-                $this->errors[]= ['errorCode' => 'unknown'];
+                $this->errors[] = ['errorCode' => 'unknown'];
                 continue;
             }
         }
@@ -166,8 +166,9 @@ class PayPalDataObjectHttp
     {
         $this->resetErrors();
         $requiredFields = $requiredProductFields;
-        if (isset($data[PropertiesDictionary::CALLER_PAGE])
-            && $data[PropertiesDictionary::CALLER_PAGE] == 'cart'
+        if (
+            isset($data[PropertiesDictionary::CALLER_PAGE])
+            && $data[PropertiesDictionary::CALLER_PAGE] === 'cart'
         ) {
             $requiredFields = $requiredCartFields;
         }

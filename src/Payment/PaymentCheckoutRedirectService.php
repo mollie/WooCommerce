@@ -32,7 +32,6 @@ class PaymentCheckoutRedirectService
      */
     protected $dataHelper;
 
-
     /**
      * PaymentService constructor.
      */
@@ -40,12 +39,13 @@ class PaymentCheckoutRedirectService
     {
         $this->dataHelper = $dataHelper;
     }
+
     public function setStrategy($gateway)
     {
         if (!$gateway->paymentMethod->getProperty('customRedirect')) {
             $this->strategy = new DefaultRedirectStrategy();
         } else {
-            $className = 'Mollie\\WooCommerce\\PaymentMethods\\PaymentRedirectStrategies\\' .ucfirst($gateway->paymentMethod->getProperty('id')) . 'RedirectStrategy';
+            $className = 'Mollie\\WooCommerce\\PaymentMethods\\PaymentRedirectStrategies\\' . ucfirst($gateway->paymentMethod->getProperty('id')) . 'RedirectStrategy';
             $this->strategy = class_exists($className) ? new $className() : new DefaultRedirectStrategy();
         }
     }

@@ -183,7 +183,7 @@ class OrderLines
     {
         if (! empty($this->order->get_items('fee'))) {
             foreach ($this->order->get_items('fee') as $cart_fee) {
-                if ($cart_fee['tax_status'] == 'taxable' && $cart_fee['total_tax'] > 0) {
+                if ($cart_fee['tax_status'] === 'taxable' && $cart_fee['total_tax'] > 0) {
                     // Calculate tax rate.
                     $_tax = new WC_Tax();
                     $tmp_rates = $_tax::get_rates($cart_fee['tax_class']);
@@ -305,15 +305,15 @@ class OrderLines
      */
     private function get_item_vatRate($cart_item, $product)
     {
-        if ( $product && $product->is_taxable() && $cart_item['line_subtotal_tax'] > 0 ) {
+        if ($product && $product->is_taxable() && $cart_item['line_subtotal_tax'] > 0) {
             // Calculate tax rate.
-            $_tax      = new WC_Tax();
-            $tmp_rates = $_tax->get_rates( $product->get_tax_class() );
+            $_tax = new WC_Tax();
+            $tmp_rates = $_tax->get_rates($product->get_tax_class());
             $item_vatRate = 0;
-            foreach($tmp_rates as $rate){
-                if ( isset( $rate['rate'] ) ) {
-                    if($rate['compound'] === "yes" ){
-                        $compoundRate = round($item_vatRate * ($rate['rate']/100)) + $rate['rate'];
+            foreach ($tmp_rates as $rate) {
+                if (isset($rate['rate'])) {
+                    if ($rate['compound'] === "yes") {
+                        $compoundRate = round($item_vatRate * ($rate['rate'] / 100)) + $rate['rate'];
                         $item_vatRate += $compoundRate;
                         continue;
                     }

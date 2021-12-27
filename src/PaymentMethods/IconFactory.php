@@ -17,7 +17,7 @@ class IconFactory
     public function __construct($pluginUrl, $pluginPath)
     {
         $this->pluginUrl = $pluginUrl;
-        $this->pluginPath =$pluginPath;
+        $this->pluginPath = $pluginPath;
     }
 
     /**
@@ -41,6 +41,4 @@ class IconFactory
 
         return $factory;
     }
-
-
 }

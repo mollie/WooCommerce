@@ -21,8 +21,10 @@ class CreditcardFieldsStrategy implements PaymentFieldsStrategyI
         <p class="mollie-components-description">
             <?php
             printf(
-                __(esc_html('%1$s Secure payments provided by %2$s'),
-                   'mollie-payments-for-woocommerce'),
+                __(
+                    esc_html('%1$s Secure payments provided by %2$s'),
+                    'mollie-payments-for-woocommerce'
+                ),
                 $this->lockIcon($dataHelper),
                 $this->mollieLogo($dataHelper)
             );
@@ -50,15 +52,14 @@ class CreditcardFieldsStrategy implements PaymentFieldsStrategyI
     protected function lockIcon($dataHelper)
     {
         return file_get_contents(
-                $dataHelper->pluginPath . '/' . 'public/images/lock-icon.svg'
+            $dataHelper->pluginPath . '/' . 'public/images/lock-icon.svg'
         );
     }
 
     protected function mollieLogo($dataHelper)
     {
         return file_get_contents(
-                $dataHelper->pluginPath . '/' . 'public/images/mollie-logo.svg'
+            $dataHelper->pluginPath . '/' . 'public/images/mollie-logo.svg'
         );
     }
-
 }

@@ -13,7 +13,7 @@ use WC_Settings_Page;
 
 class MollieSettingsPage extends WC_Settings_Page
 {
-    const FILTER_COMPONENTS_SETTINGS = 'mollie_settings';
+    public const FILTER_COMPONENTS_SETTINGS = 'mollie_settings';
     protected $settingsHelper;
 
     /**
@@ -33,8 +33,14 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     protected $dataHelper;
 
-    public function __construct(Settings $settingsHelper, string $pluginPath, array $gateways, bool $isTestModeEnabled, Data $dataHelper)
-    {
+    public function __construct(
+        Settings $settingsHelper,
+        string $pluginPath,
+        array $gateways,
+        bool $isTestModeEnabled,
+        Data $dataHelper
+    ) {
+
         $this->id = 'mollie_settings';
         $this->label = __('Mollie Settings', 'mollie-payments-for-woocommerce');
         $this->settingsHelper = $settingsHelper;
@@ -52,43 +58,26 @@ class MollieSettingsPage extends WC_Settings_Page
 
     public function output()
     {
-        global $current_section;
-        $settings = $this->get_settings($current_section);
+        global $currentSection;
+        $settings = $this->get_settings($currentSection);
         $settings = $this->hideKeysIntoStars($settings);
 
         WC_Admin_Settings::output_fields($settings);
     }
-    /**
-     * Save settings
-     *
-     * @since 1.0
-     */
-    public function save()
-    {
-        global $current_section;
 
-        $settings = $this->get_settings($current_section);
-        if ('applepay_button' === $current_section) {
-            $this->saveApplePaySettings();
-        } else {
-            $settings = $this->saveApiKeys($settings);
-            WC_Admin_Settings::save_fields($settings);
-        }
-    }
-
-    public function get_settings($current_section = '')
+    public function get_settings($currentSection = '')
     {
         $mollieSettings = $this->addGlobalSettingsFields([]);
 
-        if ('mollie_components' === $current_section) {
+        if ('mollie_components' === $currentSection) {
             $mollieSettings = $this->sectionSettings(
                 $this->componentsFilePath()
             );
         }
-        if ('applepay_button' === $current_section) {
+        if ('applepay_button' === $currentSection) {
             $mollieSettings = $this->sectionSettings($this->applePaySection());
         }
-        if ('advanced' === $current_section) {
+        if ('advanced' === $currentSection) {
             $mollieSettings = $this->sectionSettings($this->advancedSectionFilePath());
         }
 
@@ -102,65 +91,104 @@ class MollieSettingsPage extends WC_Settings_Page
             $mollieSettings
         );
 
-        $mollieSettings = apply_filters(
+        return apply_filters(
             'woocommerce_get_settings_' . $this->id,
             $mollieSettings,
-            $current_section
+            $currentSection
         );
-
-        return $mollieSettings;
     }
 
     /**
      * @param array $settings
      * @return array
      */
-    public function addGlobalSettingsFields(array $settings)
+    public function addGlobalSettingsFields(array $settings): array
     {
-        wp_register_script('mollie_wc_admin_settings', $this->settingsHelper->pluginUrl . '/public/js/settings.min.js', ['jquery'], $this->settingsHelper->pluginVersion);
+        wp_register_script(
+            'mollie_wc_admin_settings',
+            $this->settingsHelper->pluginUrl . '/public/js/settings.min.js',
+            ['jquery'],
+            $this->settingsHelper->pluginVersion
+        );
         wp_enqueue_script('mollie_wc_admin_settings');
 
-        $presentationText = __('Quickly integrate all major payment methods in WooCommerce, wherever you need them.', 'mollie-payments-for-woocommerce' );
-        $presentationText .= __(' Simply drop them ready-made into your WooCommerce webshop with this powerful plugin by Mollie.', 'mollie-payments-for-woocommerce');
-        $presentationText .= __(' Mollie is dedicated to making payments better for WooCommerce. ', 'mollie-payments-for-woocommerce');
-        $presentationText .='<p>'. __('Please go to', 'mollie-payments-for-woocommerce') .'<a href="https://www.mollie.com/dashboard/signup">'. __(' the signup page', 'mollie-payments-for-woocommerce') .'</a>';
-        $presentationText .= __('to create a new Mollie account and start receiving payments in a couple of minutes. ', 'mollie-payments-for-woocommerce');
-        $presentationText .= __('Contact ', 'mollie-payments-for-woocommerce') .'<a href="mailto:info@mollie.com">info@mollie.com</a>';
-        $presentationText .=  __(' if you have any questions or comments about this plugin.', 'mollie-payments-for-woocommerce').'</p>';
-        $presentationText .= '<p style="border-left: 4px solid black; padding: 8px; height:32px; font-weight:bold; font-size: medium;">'. __('Our pricing is always per transaction. No startup fees, no monthly fees, and no gateway fees. No hidden fees, period.', 'mollie-payments-for-woocommerce').'</p>';
+        $presentationText = __(
+            'Quickly integrate all major payment methods in WooCommerce, wherever you need them.',
+            'mollie-payments-for-woocommerce'
+        );
+        $presentationText .= __(
+            ' Simply drop them ready-made into your WooCommerce webshop with this powerful plugin by Mollie.',
+            'mollie-payments-for-woocommerce'
+        );
+        $presentationText .= __(
+            ' Mollie is dedicated to making payments better for WooCommerce. ',
+            'mollie-payments-for-woocommerce'
+        );
+        $presentationText .= '<p>' . __(
+            'Please go to',
+            'mollie-payments-for-woocommerce'
+        ) . '<a href="https://www.mollie.com/dashboard/signup">' . __(
+            ' the signup page',
+            'mollie-payments-for-woocommerce'
+        ) . '</a>';
+        $presentationText .= __(
+            'to create a new Mollie account and start receiving payments in a couple of minutes. ',
+            'mollie-payments-for-woocommerce'
+        );
+        $presentationText .= __(
+            'Contact ',
+            'mollie-payments-for-woocommerce'
+        ) . '<a href="mailto:info@mollie.com">info@mollie.com</a>';
+        $presentationText .= __(
+            ' if you have any questions or comments about this plugin.',
+            'mollie-payments-for-woocommerce'
+        ) . '</p>';
+        $presentationText .= '<p style="border-left: 4px solid black; padding: 8px; height:32px; font-weight:bold; font-size: medium;">' . __(
+            'Our pricing is always per transaction. No startup fees, no monthly fees, and no gateway fees. No hidden fees, period.',
+            'mollie-payments-for-woocommerce'
+        ) . '</p>';
 
         $presentation = ''
-            . '<div style="width:1000px"><div style="font-weight:bold;"><a href="https://github.com/mollie/WooCommerce/wiki">'.__('Plugin Documentation', 'mollie-payments-for-woocommerce').'</a> | <a href="https://mollie.inpsyde.com/docs/how-to-request-support-via-website-widget/">'.__('Contact Support', 'mollie-payments-for-woocommerce').'</a></div></div>'
+            . '<div style="width:1000px"><div style="font-weight:bold;"><a href="https://github.com/mollie/WooCommerce/wiki">' . __(
+                'Plugin Documentation',
+                'mollie-payments-for-woocommerce'
+            ) . '</a> | <a href="https://mollie.inpsyde.com/docs/how-to-request-support-via-website-widget/">' . __(
+                'Contact Support',
+                'mollie-payments-for-woocommerce'
+            ) . '</a></div></div>'
             . '<span></span>'
-            . '<div id="" class="" style="width: 1000px; padding:5px 0 0 10px"><p>'.$presentationText.'</p></div>';
+            . '<div id="" class="" style="width: 1000px; padding:5px 0 0 10px"><p>' . $presentationText . '</p></div>';
 
         $content = ''
             . $presentation
             . $this->settingsHelper->getPluginStatus()
             . $this->getMollieMethods();
 
-        $debug_desc = __('Log plugin events.', 'mollie-payments-for-woocommerce');
+        $debugDesc = __('Log plugin events.', 'mollie-payments-for-woocommerce');
 
         // Display location of log files
 
         /* translators: Placeholder 1: Location of the log files */
-        $debug_desc .= ' ' . sprintf(
-                __(
-                    'Log files are saved to <code>%s</code>',
-                    'mollie-payments-for-woocommerce'
-                ),
-                defined('WC_LOG_DIR') ? WC_LOG_DIR
+        $debugDesc .= ' ' . sprintf(
+            __(
+                'Log files are saved to <code>%s</code>',
+                'mollie-payments-for-woocommerce'
+            ),
+            defined('WC_LOG_DIR') ? WC_LOG_DIR
                     : WC()->plugin_path() . '/logs/'
-            );
+        );
 
         // Global Mollie settings
-        $mollie_settings = [
+        $mollieSettings = [
             [
                 'id' => $this->settingsHelper->getSettingId('title'),
                 'title' => __('Mollie Settings', 'mollie-payments-for-woocommerce'),
                 'type' => 'title',
                 'desc' => '<p id="' . $this->settingsHelper->pluginId . '">' . $content . '</p>'
-                    . '<p>' . __('The following options are required to use the plugin and are used by all Mollie payment methods', 'mollie-payments-for-woocommerce') . '</p>',
+                    . '<p>' . __(
+                        'The following options are required to use the plugin and are used by all Mollie payment methods',
+                        'mollie-payments-for-woocommerce'
+                    ) . '</p>',
             ],
             [
                 'id' => $this->settingsHelper->getSettingId('live_api_key'),
@@ -169,20 +197,29 @@ class MollieSettingsPage extends WC_Settings_Page
                 'type' => 'text',
                 'desc' => sprintf(
                 /* translators: Placeholder 1: API key mode (live or test). The surrounding %s's Will be replaced by a link to the Mollie profile */
-                    __('The API key is used to connect to Mollie. You can find your <strong>%1$s</strong> API key in your %2$sMollie profile%3$s', 'mollie-payments-for-woocommerce'),
+                    __(
+                        'The API key is used to connect to Mollie. You can find your <strong>%1$s</strong> API key in your %2$sMollie profile%3$s',
+                        'mollie-payments-for-woocommerce'
+                    ),
                     'live',
                     '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
                     '</a>'
                 ),
                 'css' => 'width: 350px',
-                'placeholder' => $live_placeholder = __('Live API key should start with live_', 'mollie-payments-for-woocommerce'),
+                'placeholder' => __(
+                    'Live API key should start with live_',
+                    'mollie-payments-for-woocommerce'
+                ),
             ],
             [
                 'id' => $this->settingsHelper->getSettingId('test_mode_enabled'),
                 'title' => __('Enable test mode', 'mollie-payments-for-woocommerce'),
                 'default' => 'no',
                 'type' => 'checkbox',
-                'desc_tip' => __('Enable test mode if you want to test the plugin without using real payments.', 'mollie-payments-for-woocommerce'),
+                'desc_tip' => __(
+                    'Enable test mode if you want to test the plugin without using real payments.',
+                    'mollie-payments-for-woocommerce'
+                ),
             ],
             [
                 'id' => $this->settingsHelper->getSettingId('test_api_key'),
@@ -191,19 +228,25 @@ class MollieSettingsPage extends WC_Settings_Page
                 'type' => 'text',
                 'desc' => sprintf(
                 /* translators: Placeholder 1: API key mode (live or test). The surrounding %s's Will be replaced by a link to the Mollie profile */
-                    __('The API key is used to connect to Mollie. You can find your <strong>%1$s</strong> API key in your %2$sMollie profile%3$s', 'mollie-payments-for-woocommerce'),
+                    __(
+                        'The API key is used to connect to Mollie. You can find your <strong>%1$s</strong> API key in your %2$sMollie profile%3$s',
+                        'mollie-payments-for-woocommerce'
+                    ),
                     'test',
                     '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
                     '</a>'
                 ),
                 'css' => 'width: 350px',
-                'placeholder' => $test_placeholder = __('Test API key should start with test_', 'mollie-payments-for-woocommerce'),
+                'placeholder' => __(
+                    'Test API key should start with test_',
+                    'mollie-payments-for-woocommerce'
+                ),
             ],
             [
                 'id' => $this->settingsHelper->getSettingId('debug'),
                 'title' => __('Debug Log', 'mollie-payments-for-woocommerce'),
                 'type' => 'checkbox',
-                'desc' => $debug_desc,
+                'desc' => $debugDesc,
                 'default' => 'yes',
             ],
             [
@@ -212,46 +255,64 @@ class MollieSettingsPage extends WC_Settings_Page
             ],
         ];
 
-        return $this->mergeSettings($settings, $mollie_settings);
+        return $this->mergeSettings($settings, $mollieSettings);
     }
 
     public function getMollieMethods()
     {
         $content = '';
 
-        $data_helper = $this->dataHelper;
+        $dataHelper = $this->dataHelper;
 
         // Is Test mode enabled?
-        $test_mode = $this->isTestModeEnabled;
-        $apiKey = $this->settingsHelper->getApiKey($test_mode);
+        $testMode = $this->isTestModeEnabled;
+        $apiKey = $this->settingsHelper->getApiKey($testMode);
 
-        if (isset($_GET['refresh-methods']) && wp_verify_nonce($_GET['nonce_mollie_refresh_methods'], 'nonce_mollie_refresh_methods')) {
+        if (
+            isset($_GET['refresh-methods']) && wp_verify_nonce(
+                $_GET['nonce_mollie_refresh_methods'],
+                'nonce_mollie_refresh_methods'
+            )
+        ) {
             /* Reload active Mollie methods */
-            $data_helper->getAllPaymentMethods($apiKey, $test_mode, $use_cache = false);
+            $dataHelper->getAllPaymentMethods($apiKey, $testMode, $use_cache = false);
         }
 
-        $icon_available = ' <span style="color: green; cursor: help;" title="' . __('Gateway enabled', 'mollie-payments-for-woocommerce') . '">' . strtolower(__('Enabled', 'mollie-payments-for-woocommerce')) . '</span>';
-        $icon_no_available = ' <span style="color: red; cursor: help;" title="' . __('Gateway disabled', 'mollie-payments-for-woocommerce') . '">' . strtolower(__('Disabled', 'mollie-payments-for-woocommerce')) . '</span>';
+        $iconAvailable = ' <span style="color: green; cursor: help;" title="' . __(
+            'Gateway enabled',
+            'mollie-payments-for-woocommerce'
+        ) . '">' . strtolower(__('Enabled', 'mollie-payments-for-woocommerce')) . '</span>';
+        $iconNoAvailable = ' <span style="color: red; cursor: help;" title="' . __(
+            'Gateway disabled',
+            'mollie-payments-for-woocommerce'
+        ) . '">' . strtolower(__('Disabled', 'mollie-payments-for-woocommerce')) . '</span>';
 
         $content .= '<br /><br />';
         $content .= '<div style="width:1000px;height:350px; background:white; padding:10px; margin-top:10px;">';
 
-        if ($test_mode) {
+        if ($testMode) {
             $content .= '<strong>' . __('Test mode enabled.', 'mollie-payments-for-woocommerce') . '</strong> ';
         }
 
         $content .= sprintf(
         /* translators: The surrounding %s's Will be replaced by a link to the Mollie profile */
-            __('The following payment methods are activated in your %1$sMollie profile%2$s:', 'mollie-payments-for-woocommerce'),
+            __(
+                'The following payment methods are activated in your %1$sMollie profile%2$s:',
+                'mollie-payments-for-woocommerce'
+            ),
             '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
             '</a>'
         );
 
         // Set a "refresh" link so payment method status can be refreshed from Mollie API
         $nonce_mollie_refresh_methods = wp_create_nonce('nonce_mollie_refresh_methods');
-        $refresh_methods_url = add_query_arg([ 'refresh-methods' => 1, 'nonce_mollie_refresh_methods' => $nonce_mollie_refresh_methods ]);
+        $refresh_methods_url = add_query_arg(
+            ['refresh-methods' => 1, 'nonce_mollie_refresh_methods' => $nonce_mollie_refresh_methods]
+        );
 
-        $content .= ' (<a href="' . esc_attr($refresh_methods_url) . '">' . strtolower(__('Refresh', 'mollie-payments-for-woocommerce')) . '</a>)';
+        $content .= ' (<a href="' . esc_attr($refresh_methods_url) . '">' . strtolower(
+            __('Refresh', 'mollie-payments-for-woocommerce')
+        ) . '</a>)';
 
         $content .= '<ul style="width: 1000px; padding:20px 0 0 10px">';
 
@@ -263,12 +324,14 @@ class MollieSettingsPage extends WC_Settings_Page
                 $content .= ' ' . esc_html($gateway->paymentMethod->getProperty('defaultTitle'));
 
                 if ($gateway->is_available()) {
-                    $content .= $icon_available;
+                    $content .= $iconAvailable;
                 } else {
-                    $content .= $icon_no_available;
+                    $content .= $iconNoAvailable;
                 }
 
-                $content .= ' <a href="' . $this->getGatewaySettingsUrl($gateway->id) . '">' . strtolower(__('Edit', 'mollie-payments-for-woocommerce')) . '</a>';
+                $content .= ' <a href="' . $this->getGatewaySettingsUrl($gateway->id) . '">' . strtolower(
+                    __('Edit', 'mollie-payments-for-woocommerce')
+                ) . '</a>';
 
                 $content .= '</li>';
             }
@@ -293,6 +356,17 @@ class MollieSettingsPage extends WC_Settings_Page
     }
 
     /**
+     * @param string $gateway_class_name
+     * @return string
+     */
+    protected function getGatewaySettingsUrl($gateway_class_name): string
+    {
+        return admin_url(
+            'admin.php?page=wc-settings&tab=checkout&section=' . sanitize_title(strtolower($gateway_class_name))
+        );
+    }
+
+    /**
      * @param $content
      *
      * @return string
@@ -302,8 +376,11 @@ class MollieSettingsPage extends WC_Settings_Page
         $ideal_gateway = $this->registeredGateways["mollie_wc_gateway_ideal"];
         $sepa_gateway = $this->registeredGateways["mollie_wc_gateway_directdebit"];
 
-        if (( class_exists('WC_Subscription') ) && ( $ideal_gateway->is_available() ) && ( ! $sepa_gateway->is_available() )) {
-            $warning_message = __('You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL and/or other "first" payment methods.', 'mollie-payments-for-woocommerce');
+        if ((class_exists('WC_Subscription')) && ($ideal_gateway->is_available()) && (!$sepa_gateway->is_available())) {
+            $warning_message = __(
+                'You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL and/or other "first" payment methods.',
+                'mollie-payments-for-woocommerce'
+            );
 
             $content .= '<div class="notice notice-warning is-dismissible"><p>';
             $content .= $warning_message;
@@ -326,7 +403,10 @@ class MollieSettingsPage extends WC_Settings_Page
 
         if ($woocommerce_banktransfer_gateway->is_available()) {
             $content .= '<div class="notice notice-warning is-dismissible"><p>';
-            $content .= __('You have the WooCommerce default Direct Bank Transfer (BACS) payment gateway enabled in WooCommerce. Mollie strongly advices only using Bank Transfer via Mollie and disabling the default WooCommerce BACS payment gateway to prevent possible conflicts.', 'mollie-payments-for-woocommerce');
+            $content .= __(
+                'You have the WooCommerce default Direct Bank Transfer (BACS) payment gateway enabled in WooCommerce. Mollie strongly advices only using Bank Transfer via Mollie and disabling the default WooCommerce BACS payment gateway to prevent possible conflicts.',
+                'mollie-payments-for-woocommerce'
+            );
             $content .= '</p></div> ';
 
             return $content;
@@ -346,8 +426,10 @@ class MollieSettingsPage extends WC_Settings_Page
         $woocommerce_klarnasliceit_gateway = isset($this->registeredGateways["mollie_wc_gateway_klarnasliceit"]) ? $this->registeredGateways["mollie_wc_gateway_klarnasliceit"] : false;
         $woocommerce_klarnapaynow_gateway = isset($this->registeredGateways["mollie_wc_gateway_klarnapaynow"]) ? $this->registeredGateways["mollie_wc_gateway_klarnapaynow"] : false;
 
-
-        if ($woocommerce_klarnapaylater_gateway && $woocommerce_klarnapaylater_gateway->is_available() || $woocommerce_klarnasliceit_gateway && $woocommerce_klarnasliceit_gateway->is_available()) {
+        if (
+            $woocommerce_klarnapaylater_gateway && $woocommerce_klarnapaylater_gateway->is_available(
+            ) || $woocommerce_klarnasliceit_gateway && $woocommerce_klarnasliceit_gateway->is_available()
+        ) {
             $content .= '<div class="notice notice-warning is-dismissible"><p>';
             $content .= sprintf(
                 __(
@@ -367,7 +449,6 @@ class MollieSettingsPage extends WC_Settings_Page
         return $content;
     }
 
-
     /**
      * @param array $settings
      * @param array $mollie_settings
@@ -380,7 +461,8 @@ class MollieSettingsPage extends WC_Settings_Page
 
         // Find payment gateway options index
         foreach ($settings as $index => $setting) {
-            if (isset($setting['id']) && $setting['id'] == 'payment_gateways_options'
+            if (
+                isset($setting['id']) && $setting['id'] === 'payment_gateways_options'
                 && (!isset($setting['type']) || $setting['type'] != 'sectionend')
             ) {
                 $new_settings = array_merge($new_settings, $mollie_settings);
@@ -397,15 +479,6 @@ class MollieSettingsPage extends WC_Settings_Page
         }
 
         return $new_settings;
-    }
-
-    /**
-     * @param string $gateway_class_name
-     * @return string
-     */
-    protected function getGatewaySettingsUrl($gateway_class_name): string
-    {
-        return admin_url('admin.php?page=wc-settings&tab=checkout&section=' . sanitize_title(strtolower($gateway_class_name)));
     }
 
     /**
@@ -453,30 +526,6 @@ class MollieSettingsPage extends WC_Settings_Page
     }
 
     /**
-     * @return array|mixed|void|null
-     */
-    public function get_sections()
-    {
-        $sections = [
-            '' => __('General', 'mollie-payments-for-woocommerce'),
-            'mollie_components' => __(
-                'Mollie Components',
-                'mollie-payments-for-woocommerce'
-            ),
-            'applepay_button' => __(
-                'Apple Pay Button',
-                'mollie-payments-for-woocommerce'
-            ),
-            'advanced' => __('Advanced', 'mollie-payments-for-woocommerce'),
-        ];
-
-        return apply_filters(
-            'woocommerce_get_sections_' . $this->id,
-            $sections
-        );
-    }
-
-    /**
      * @param $settings
      *
      * @return array
@@ -489,7 +538,8 @@ class MollieSettingsPage extends WC_Settings_Page
         $testValue = get_option($testKeyName);
 
         foreach ($settings as $key => $setting) {
-            if (($setting['id']
+            if (
+                ($setting['id']
                     === $liveKeyName
                     && $liveValue)
                 || ($setting['id']
@@ -503,51 +553,21 @@ class MollieSettingsPage extends WC_Settings_Page
     }
 
     /**
-     * @param $settings
+     * Save settings
      *
-     * @return array
+     * @since 1.0
      */
-    protected function saveApiKeys($settings)
+    public function save()
     {
-        $liveKeyName = 'mollie-payments-for-woocommerce_live_api_key';
-        $testKeyName = 'mollie-payments-for-woocommerce_test_api_key';
-        $liveValueInDb = get_option($liveKeyName);
-        $testValueInDb = get_option($testKeyName);
-        $postedLiveValue = isset($_POST[$liveKeyName])? sanitize_text_field($_POST[$liveKeyName]):'';
-        $postedTestValue = isset($_POST[$testKeyName])? sanitize_text_field($_POST[$testKeyName]):'';
+        global $currentSection;
 
-        foreach ($settings as $setting) {
-            if ($setting['id']
-                === $liveKeyName
-                && $liveValueInDb
-            ) {
-                if ($postedLiveValue === '**********') {
-                    $_POST[$liveKeyName] = $liveValueInDb;
-                } else {
-                    $pattern = '/^live_\w{30,}$/';
-                    $this->validateApiKeyOrRemove(
-                        $pattern,
-                        $postedLiveValue,
-                        $liveKeyName
-                    );
-                }
-            } elseif ($setting['id']
-                === $testKeyName
-                && $testValueInDb
-            ) {
-                if ($postedTestValue === '**********') {
-                    $_POST[$testKeyName] = $testValueInDb;
-                } else {
-                    $pattern = '/^test_\w{30,}$/';
-                    $this->validateApiKeyOrRemove(
-                        $pattern,
-                        $postedTestValue,
-                        $testKeyName
-                    );
-                }
-            }
+        $settings = $this->get_settings($currentSection);
+        if ('applepay_button' === $currentSection) {
+            $this->saveApplePaySettings();
+        } else {
+            $settings = $this->saveApiKeys($settings);
+            WC_Admin_Settings::save_fields($settings);
         }
-        return $settings;
     }
 
     protected function saveApplePaySettings()
@@ -583,6 +603,56 @@ class MollieSettingsPage extends WC_Settings_Page
     }
 
     /**
+     * @param $settings
+     *
+     * @return array
+     */
+    protected function saveApiKeys($settings)
+    {
+        $liveKeyName = 'mollie-payments-for-woocommerce_live_api_key';
+        $testKeyName = 'mollie-payments-for-woocommerce_test_api_key';
+        $liveValueInDb = get_option($liveKeyName);
+        $testValueInDb = get_option($testKeyName);
+        $postedLiveValue = isset($_POST[$liveKeyName]) ? sanitize_text_field($_POST[$liveKeyName]) : '';
+        $postedTestValue = isset($_POST[$testKeyName]) ? sanitize_text_field($_POST[$testKeyName]) : '';
+
+        foreach ($settings as $setting) {
+            if (
+                $setting['id']
+                === $liveKeyName
+                && $liveValueInDb
+            ) {
+                if ($postedLiveValue === '**********') {
+                    $_POST[$liveKeyName] = $liveValueInDb;
+                } else {
+                    $pattern = '/^live_\w{30,}$/';
+                    $this->validateApiKeyOrRemove(
+                        $pattern,
+                        $postedLiveValue,
+                        $liveKeyName
+                    );
+                }
+            } elseif (
+                $setting['id']
+                === $testKeyName
+                && $testValueInDb
+            ) {
+                if ($postedTestValue === '**********') {
+                    $_POST[$testKeyName] = $testValueInDb;
+                } else {
+                    $pattern = '/^test_\w{30,}$/';
+                    $this->validateApiKeyOrRemove(
+                        $pattern,
+                        $postedTestValue,
+                        $testKeyName
+                    );
+                }
+            }
+        }
+        return $settings;
+    }
+
+    /**
      * @param       $pattern
      * @param       $value
      * @param       $keyName
@@ -594,5 +664,29 @@ class MollieSettingsPage extends WC_Settings_Page
         if (!$hasApiFormat) {
             unset($_POST[$keyName]);
         }
+    }
+
+    /**
+     * @return array|mixed|void|null
+     */
+    public function get_sections()
+    {
+        $sections = [
+            '' => __('General', 'mollie-payments-for-woocommerce'),
+            'mollie_components' => __(
+                'Mollie Components',
+                'mollie-payments-for-woocommerce'
+            ),
+            'applepay_button' => __(
+                'Apple Pay Button',
+                'mollie-payments-for-woocommerce'
+            ),
+            'advanced' => __('Advanced', 'mollie-payments-for-woocommerce'),
+        ];
+
+        return apply_filters(
+            'woocommerce_get_sections_' . $this->id,
+            $sections
+        );
     }
 }

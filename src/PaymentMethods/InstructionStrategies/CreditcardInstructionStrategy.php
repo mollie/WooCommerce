@@ -13,6 +13,7 @@ class CreditcardInstructionStrategy implements InstructionStrategyI
         $order = null,
         $admin_instructions = false
     ) {
+
         if ($payment->isPaid() && $payment->details) {
             return sprintf(
             /* translators: Placeholder 1: card holder */

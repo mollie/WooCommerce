@@ -13,6 +13,7 @@ class ApplepayInstructionStrategy implements InstructionStrategyI
         $order = null,
         $admin_instructions = false
     ) {
+
         if ($payment->isPaid() && $payment->details) {
             return
                 __(

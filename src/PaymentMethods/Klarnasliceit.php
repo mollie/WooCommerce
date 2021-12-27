@@ -7,12 +7,11 @@ namespace Mollie\WooCommerce\PaymentMethods;
 class Klarnasliceit extends AbstractPaymentMethod implements PaymentMethodI
 {
 
-
     protected function getConfig(): array
     {
         return [
             'id' => 'klarnasliceit',
-            'defaultTitle' =>__('Klarna Slice it', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => __('Klarna Slice it', 'mollie-payments-for-woocommerce'),
             'settingsDescription' => __(
                 'To accept payments via Klarna, all default WooCommerce checkout fields should be enabled and required.',
                 'mollie-payments-for-woocommerce'
@@ -26,7 +25,7 @@ class Klarnasliceit extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => false
+            'SEPA' => false,
         ];
     }
 

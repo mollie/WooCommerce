@@ -9,7 +9,7 @@ class PropertiesDictionary
     /**
      * @var string[]
      */
-    const CREATE_ORDER_SINGLE_PROD_REQUIRED_FIELDS
+    public const CREATE_ORDER_SINGLE_PROD_REQUIRED_FIELDS
         = [
             PropertiesDictionary::NONCE,
             PropertiesDictionary::PRODUCT_ID,
@@ -18,7 +18,7 @@ class PropertiesDictionary
     /**
      * @var string[]
      */
-    const CREATE_ORDER_CART_REQUIRED_FIELDS
+    public const CREATE_ORDER_CART_REQUIRED_FIELDS
         = [
             PropertiesDictionary::NONCE
         ];
@@ -26,37 +26,37 @@ class PropertiesDictionary
     /**
      * @var string
      */
-    const PRODUCT_ID = 'productId';
+    public const PRODUCT_ID = 'productId';
     /**
      * @var string
      */
-    const NONCE = 'nonce';
+    public const NONCE = 'nonce';
     /**
      * @var string
      */
-    const PRODUCT_QUANTITY = 'productQuantity';
+    public const PRODUCT_QUANTITY = 'productQuantity';
     /**
      * @var string
      */
-    const CALLER_PAGE = 'callerPage';
+    public const CALLER_PAGE = 'callerPage';
     /**
      * @var string
      */
-    const NEED_SHIPPING = 'needShipping';
+    public const NEED_SHIPPING = 'needShipping';
     /**
      * @var string
      */
-    const CREATE_ORDER = 'mollie_paypal_create_order';
+    public const CREATE_ORDER = 'mollie_paypal_create_order';
     /**
      * @var string
      */
-    const CREATE_ORDER_CART = 'mollie_paypal_create_order_cart';
+    public const CREATE_ORDER_CART = 'mollie_paypal_create_order_cart';
     /**
      * @var string
      */
-    const UPDATE_AMOUNT = 'mollie_paypal_update_amount';
+    public const UPDATE_AMOUNT = 'mollie_paypal_update_amount';
     /**
      * @var string
      */
-    const REDIRECT = 'mollie_paypal_redirect';
+    public const REDIRECT = 'mollie_paypal_redirect';
 }

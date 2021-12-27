@@ -20,6 +20,7 @@ class PluginDisabler
         $pluginSlug,
         $initFunctionName
     ) {
+
         $this->pluginSlug = $pluginSlug;
         $this->initFunctionName = $initFunctionName;
     }
@@ -40,7 +41,7 @@ class PluginDisabler
     {
         add_filter(
             'auto_update_plugin',
-            function ($update, $item) : bool {
+            function ($update, $item): bool {
                 return $this->notAutoUpdateThisPlugin($update, $item);
             },
             10,
@@ -68,7 +69,7 @@ class PluginDisabler
      */
     public function notAutoUpdateThisPlugin($update, $item)
     {
-        if ($item == $this->pluginSlug) {
+        if ($item === $this->pluginSlug) {
             return false;
         } else {
             return $update;

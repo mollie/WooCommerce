@@ -22,7 +22,7 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
             'SEPA' => false,
-            'Subscription' => true
+            'Subscription' => true,
         ];
     }
 
@@ -44,7 +44,6 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
                         'mollie-payments-for-woocommerce'
                     ),
                     __('Mollie Components', 'mollie-payments-for-woocommerce')
-
                 ),
                 'default' => 'no',
             ],
@@ -63,14 +62,15 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
         $fields && ($componentFields = array_merge($componentFields, $fields));
         return $componentFields;
     }
+
     private function creditcardIconsSelectorFields(): array
     {
         return [
             [
-                'title' => __( 'Customize Icons', 'mollie-payments-for-woocommerce' ),
-                'type'  => 'title',
-                'desc'  => '',
-                'id'    => 'customize_icons',
+                'title' => __('Customize Icons', 'mollie-payments-for-woocommerce'),
+                'type' => 'title',
+                'desc' => '',
+                'id' => 'customize_icons',
             ],
             'mollie_creditcard_icons_enabler' => [
                 'type' => 'checkbox',
@@ -79,43 +79,43 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
                     'Show customized creditcard icons on checkout page',
                     'mollie-payments-for-woocommerce'
                 ),
-                'checkboxgroup'   => 'start',
+                'checkboxgroup' => 'start',
                 'default' => 'no',
             ],
             'mollie_creditcard_icons_amex' => [
-                'label'       => __('Show American Express Icon', 'mollie-payments-for-woocommerce'),
+                'label' => __('Show American Express Icon', 'mollie-payments-for-woocommerce'),
                 'type' => 'checkbox',
                 'default' => 'no',
             ],
             'mollie_creditcard_icons_cartasi' => [
-                'label'       => __('Show Carta Si Icon', 'mollie-payments-for-woocommerce'),
+                'label' => __('Show Carta Si Icon', 'mollie-payments-for-woocommerce'),
                 'type' => 'checkbox',
                 'default' => 'no',
             ],
             'mollie_creditcard_icons_cartebancaire' => [
-                'label'       => __('Show Carte Bancaire Icon', 'mollie-payments-for-woocommerce'),
+                'label' => __('Show Carte Bancaire Icon', 'mollie-payments-for-woocommerce'),
                 'type' => 'checkbox',
                 'default' => 'no',
             ],
             'mollie_creditcard_icons_maestro' => [
-                'label'       => __('Show Maestro Icon', 'mollie-payments-for-woocommerce'),
+                'label' => __('Show Maestro Icon', 'mollie-payments-for-woocommerce'),
                 'type' => 'checkbox',
                 'default' => 'no',
             ],
             'mollie_creditcard_icons_mastercard' => [
-                'label'       => __('Show Mastercard Icon', 'mollie-payments-for-woocommerce'),
+                'label' => __('Show Mastercard Icon', 'mollie-payments-for-woocommerce'),
                 'type' => 'checkbox',
                 'default' => 'no',
             ],
             'mollie_creditcard_icons_visa' => [
-                'label'       => __('Show Visa Icon', 'mollie-payments-for-woocommerce'),
+                'label' => __('Show Visa Icon', 'mollie-payments-for-woocommerce'),
                 'type' => 'checkbox',
                 'default' => 'no',
             ],
             'mollie_creditcard_icons_vpay' => [
-                'label'       => __('Show VPay Icon', 'mollie-payments-for-woocommerce'),
+                'label' => __('Show VPay Icon', 'mollie-payments-for-woocommerce'),
                 'type' => 'checkbox',
-                'checkboxgroup'   => 'end',
+                'checkboxgroup' => 'end',
                 'default' => 'no',
             ],
         ];

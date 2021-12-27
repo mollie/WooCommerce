@@ -12,19 +12,19 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
     /**
      * @var int
      */
-    const EXPIRY_DEFAULT_DAYS = 12;
+    public const EXPIRY_DEFAULT_DAYS = 12;
     /**
      * @var int
      */
-    const EXPIRY_MIN_DAYS = 5;
+    public const EXPIRY_MIN_DAYS = 5;
     /**
      * @var int
      */
-    const EXPIRY_MAX_DAYS = 60;
+    public const EXPIRY_MAX_DAYS = 60;
     /**
      * @var string
      */
-    const EXPIRY_DAYS_OPTION = 'order_dueDate';
+    public const EXPIRY_DAYS_OPTION = 'order_dueDate';
 
     protected function getConfig(): array
     {
@@ -42,7 +42,7 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
             'filtersOnBuild' => true,
             'confirmationDelayed' => true,
             'SEPA' => false,
-            'customRedirect' => true
+            'customRedirect' => true,
         ];
     }
 
@@ -52,36 +52,37 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
         unset($generalFormFields['order_dueDate']);
         $paymentMethodFormFieds = [
             'activate_expiry_days_setting' => [
-                'title'             => __('Activate expiry date setting', 'mollie-payments-for-woocommerce'),
-                'label'             => __('Enable expiry date for payments', 'mollie-payments-for-woocommerce'),
-                'description'       => __('Enable this option if you want to be able to set the number of days after the payment will expire. This will turn all transactions into payments instead of orders', 'mollie-payments-for-woocommerce'),
-                'type'              => 'checkbox',
-                'default'           => 'no',
+                'title' => __('Activate expiry date setting', 'mollie-payments-for-woocommerce'),
+                'label' => __('Enable expiry date for payments', 'mollie-payments-for-woocommerce'),
+                'description' => __('Enable this option if you want to be able to set the number of days after the payment will expire. This will turn all transactions into payments instead of orders', 'mollie-payments-for-woocommerce'),
+                'type' => 'checkbox',
+                'default' => 'no',
             ],
             'order_dueDate' => [
-                'title'             => __('Expiry date', 'mollie-payments-for-woocommerce'),
-                'type'              => 'number',
-                'description'       => sprintf(__('Number of DAYS after the payment will expire. Default <code>%d</code> days', 'mollie-payments-for-woocommerce'), self::EXPIRY_DEFAULT_DAYS),
-                'default'           => self::EXPIRY_DEFAULT_DAYS,
+                'title' => __('Expiry date', 'mollie-payments-for-woocommerce'),
+                'type' => 'number',
+                'description' => sprintf(__('Number of DAYS after the payment will expire. Default <code>%d</code> days', 'mollie-payments-for-woocommerce'), self::EXPIRY_DEFAULT_DAYS),
+                'default' => self::EXPIRY_DEFAULT_DAYS,
                 'custom_attributes' => [
-                    'min'  => self::EXPIRY_MIN_DAYS,
-                    'max'  => self::EXPIRY_MAX_DAYS,
+                    'min' => self::EXPIRY_MIN_DAYS,
+                    'max' => self::EXPIRY_MAX_DAYS,
                     'step' => 1,
                 ],
             ],
             'skip_mollie_payment_screen' => [
-                'title'             => __('Skip Mollie payment screen', 'mollie-payments-for-woocommerce'),
-                'label'             => __('Skip Mollie payment screen when Bank Transfer is selected', 'mollie-payments-for-woocommerce'),
-                'description'       => __('Enable this option if you want to skip redirecting your user to the Mollie payment screen, instead this will redirect your user directly to the WooCommerce order received page displaying instructions how to complete the Bank Transfer payment.', 'mollie-payments-for-woocommerce'),
-                'type'              => 'checkbox',
-                'default'           => 'no',
+                'title' => __('Skip Mollie payment screen', 'mollie-payments-for-woocommerce'),
+                'label' => __('Skip Mollie payment screen when Bank Transfer is selected', 'mollie-payments-for-woocommerce'),
+                'description' => __('Enable this option if you want to skip redirecting your user to the Mollie payment screen, instead this will redirect your user directly to the WooCommerce order received page displaying instructions how to complete the Bank Transfer payment.', 'mollie-payments-for-woocommerce'),
+                'type' => 'checkbox',
+                'default' => 'no',
             ],
         ];
         return array_merge($generalFormFields, $paymentMethodFormFieds);
     }
+
     public function filtersOnBuild()
     {
-        add_filter('woocommerce_' . $this->getProperty('id') . '_args', function (array $args, \WC_Order $order) : array {
+        add_filter('woocommerce_' . $this->getProperty('id') . '_args', function (array $args, \WC_Order $order): array {
             return $this->addPaymentArguments($args, $order);
         }, 10, 2);
     }
@@ -112,6 +113,7 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
 
         return $args;
     }
+
     //TODO is this needed??
     protected function isExpiredDateSettingActivated()
     {

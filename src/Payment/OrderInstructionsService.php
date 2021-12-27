@@ -19,12 +19,14 @@ class OrderInstructionsService
             $this->strategy = class_exists($className) ? new $className() : new DefaultInstructionStrategy();
         }
     }
+
     public function executeStrategy(
         MolliePaymentGateway $gateway,
         $payment,
         $admin_instructions = false,
         $order = null
     ) {
+
         return $this->strategy->execute($gateway, $payment, $admin_instructions, $order);
     }
 }

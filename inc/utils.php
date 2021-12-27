@@ -15,7 +15,7 @@ use Mollie\WooCommerce\Settings\SettingsComponents;
 function mollieWooCommerceIsCheckoutContext()
 {
     global $wp_query;
-    if(!isset($wp_query)){
+    if (!isset($wp_query)) {
         return false;
     }
     return is_checkout() || is_checkout_pay_page();
@@ -73,7 +73,7 @@ function mollieWooCommerceIsGatewayEnabled($gatewaySettingsName, $settingToCheck
  */
 function mollieWooCommerceisApplePayDirectEnabled($page)
 {
-    $pageToCheck = 'mollie_apple_pay_button_enabled_'.$page;
+    $pageToCheck = 'mollie_apple_pay_button_enabled_' . $page;
     return mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_applepay_settings', $pageToCheck);
 }
 /**
@@ -90,7 +90,7 @@ function mollieWooCommerceIsPayPalButtonEnabled($page)
     if (!$payPalGatewayEnabled) {
         return false;
     }
-    $settingToCheck = 'mollie_paypal_button_enabled_'.$page;
+    $settingToCheck = 'mollie_paypal_button_enabled_' . $page;
     return mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_paypal_settings', $settingToCheck);
 }
 
@@ -103,7 +103,8 @@ function mollieWooCommerceIsPayPalButtonEnabled($page)
  */
 function mollieWooCommerceCheckIfNeedShipping($product)
 {
-    if (!wc_shipping_enabled()
+    if (
+        !wc_shipping_enabled()
         || 0 === wc_get_shipping_method_count(
             true
         )
@@ -111,7 +112,7 @@ function mollieWooCommerceCheckIfNeedShipping($product)
         return false;
     }
     $needs_shipping = false;
-    if ($product->is_type('variable')){
+    if ($product->is_type('variable')) {
         return false;
     }
 
@@ -144,12 +145,14 @@ function mollieWooCommerceIsDropdownEnabled($gatewaySettingsName)
  *
  * @return bool
  */
-function mollieWooCommerceIsVoucherEnabled(){
+function mollieWooCommerceIsVoucherEnabled()
+{
+
     $voucherSettings = get_option('mollie_wc_gateway_voucher_settings');
-    if(!$voucherSettings){
+    if (!$voucherSettings) {
         $voucherSettings = get_option('mollie_wc_gateway_mealvoucher_settings');
     }
-    return $voucherSettings? ($voucherSettings['enabled'] == 'yes'): false;
+    return $voucherSettings ? ($voucherSettings['enabled'] == 'yes') : false;
 }
 
 /**
@@ -170,18 +173,16 @@ function mollieWooCommercIsExpiryDateEnabled()
 {
     global $wpdb;
     $option = 'mollie_wc_gateway_%_settings';
-    $gatewaySettings = $wpdb->get_results($wpdb->prepare( "SELECT option_value FROM $wpdb->options WHERE option_name LIKE %s", $option));
+    $gatewaySettings = $wpdb->get_results($wpdb->prepare("SELECT option_value FROM $wpdb->options WHERE option_name LIKE %s", $option));
     $expiryDateEnabled = false;
-    foreach($gatewaySettings as $gatewaySetting){
+    foreach ($gatewaySettings as $gatewaySetting) {
         $values = unserialize($gatewaySetting->option_value);
-        if($values['enabled'] !== 'yes'){
+        if ($values['enabled'] !== 'yes') {
             continue;
         }
-        if (!empty($values["activate_expiry_days_setting"]) && $values["activate_expiry_days_setting"] === 'yes'){
+        if (!empty($values["activate_expiry_days_setting"]) && $values["activate_expiry_days_setting"] === 'yes') {
             $expiryDateEnabled = true;
         }
     }
     return $expiryDateEnabled;
 }
-
-

@@ -20,6 +20,7 @@ class IdealFieldsStrategy implements PaymentFieldsStrategyI
 
         $this->renderIssuers($gateway, $issuers, $selectedIssuer);
     }
+
     public function getFieldMarkup($gateway, $dataHelper)
     {
         if ($gateway->paymentMethod->getProperty('issuers_dropdown_shown') !== 'yes') {

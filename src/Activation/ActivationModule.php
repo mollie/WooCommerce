@@ -78,12 +78,13 @@ class ActivationModule implements ExecutableModule
         add_action('core_upgrade_preamble', [$this, 'mollieDeleteWPTranslationFiles']);
         add_filter(
             'site_transient_update_plugins',
-            function ($value) {
+            static function ($value) {
                 if (isset($value->translations)) {
                     $i = 0;
                     foreach ($value->translations as $translation) {
-                        if ($translation["slug"]
-                            == "mollie-payments-for-woocommerce"
+                        if (
+                            $translation["slug"]
+                            === "mollie-payments-for-woocommerce"
                         ) {
                             unset($value->translations[$i]);
                         }
@@ -103,15 +104,16 @@ class ActivationModule implements ExecutableModule
     {
         add_filter(
             'query_vars',
-            function ($query_vars) {
+            static function ($query_vars) {
                 $query_vars[] = 'appleparam';
                 return $query_vars;
             }
         );
         add_action(
             'template_include',
-            function ($template) {
-                if (get_query_var('appleparam') === false
+            static function ($template) {
+                if (
+                    get_query_var('appleparam') === false
                     || get_query_var('appleparam') === ''
                 ) {
                     return $template;
@@ -125,7 +127,7 @@ class ActivationModule implements ExecutableModule
         );
         add_action(
             'init',
-            function () {
+            static function () {
                 add_rewrite_rule(
                     '^.well-known/apple-developer-merchantid-domain-association$',
                     'index.php?appleparam=applepaydirect',

@@ -13,6 +13,7 @@ class DirectdebitInstructionStrategy implements InstructionStrategyI
         $order = null,
         $admin_instructions = false
     ) {
+
         if ($payment->isPaid() && $payment->details) {
             return sprintf(
             /* translators: Placeholder 1: consumer name, placeholder 2: consumer IBAN, placeholder 3: consumer BIC */

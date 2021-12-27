@@ -6,7 +6,6 @@ namespace Mollie\WooCommerce\BlockService;
 
 use InvalidArgumentException;
 
-
 class CheckoutBlockService
 {
     protected $dataService;
@@ -54,7 +53,7 @@ class CheckoutBlockService
             $_POST['billingCountry'],
             FILTER_SANITIZE_STRING
         );
-        $cartTotal = $cartTotal/100;
+        $cartTotal = $cartTotal / 100;
         $availablePaymentMethods = [];
         try {
             $filters = $this->dataService->getFilters(
@@ -66,11 +65,10 @@ class CheckoutBlockService
         } catch (InvalidArgumentException $exception) {
             $filters = false;
         }
-        if($filters){
+        if ($filters) {
             $availablePaymentMethods = $this->dataService->getAvailablePaymentMethodListForCheckout($filters);
         }
 
         wp_send_json_success($availablePaymentMethods);
     }
-
 }

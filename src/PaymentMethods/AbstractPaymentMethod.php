@@ -116,7 +116,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         return isset($properties[$propertyName]);
     }
 
-    private function getMergedProperties(): array
+    public function getMergedProperties(): array
     {
         return $this->settings !== null && is_array($this->settings) ? array_merge($this->config, $this->settings) : $this->config;
     }

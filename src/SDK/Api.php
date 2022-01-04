@@ -36,6 +36,7 @@ class Api
      */
     public function getApiClient($apiKey, $needToUpdateApiKey = false)
     {
+
         global $wp_version;
 
         if (has_filter('mollie_api_key_filter')) {

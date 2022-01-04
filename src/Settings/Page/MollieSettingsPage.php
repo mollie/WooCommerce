@@ -266,7 +266,7 @@ class MollieSettingsPage extends WC_Settings_Page
 
         // Is Test mode enabled?
         $testMode = $this->isTestModeEnabled;
-        $apiKey = $this->settingsHelper->getApiKey($testMode);
+        $apiKey = $this->settingsHelper->getApiKey();
 
         if (
             isset($_GET['refresh-methods']) && wp_verify_nonce(

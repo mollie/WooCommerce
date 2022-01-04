@@ -119,7 +119,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $api = $container->get('shared.api_helper');
                 $settings = $container->get('settings.settings_helper');
                 $pluginId = $container->get('shared.plugin_id');
-                return new PaymentService($notice, $logger, $paymentFactory, $data, $api, $settings, $pluginId);
+                $paymentCheckoutRedirectService = $container->get(PaymentCheckoutRedirectService::class);
+                return new PaymentService($notice, $logger, $paymentFactory, $data, $api, $settings, $pluginId, $paymentCheckoutRedirectService);
             },
             OrderInstructionsService::class => static function (): OrderInstructionsService {
                 return new OrderInstructionsService();
@@ -416,12 +417,9 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $HttpResponseService = $container->get('SDK.HttpResponse');
         $settingsHelper = $container->get('settings.settings_helper');
         $apiHelper = $container->get('shared.api_helper');
-        $pluginUrl = $container->get('shared.plugin_url');
-        $pluginPath = $container->get('shared.plugin_path');
         $paymentMethods = $container->get('gateway.paymentMethods');
         $data = $container->get('shared.data_helper');
         $orderInstructionsService = new OrderInstructionsService();
-        $paymentCheckoutRedirectService = $container->get(PaymentCheckoutRedirectService::class);
         $paymentFieldsService = $container->get(PaymentFieldsService::class);
         $mollieObject = $container->get(MollieObject::class);
         $paymentFactory = $container->get(PaymentFactory::class);
@@ -454,7 +452,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
                     $paymentMethod,
                     $paymentService,
                     $orderInstructionsService,
-                    $paymentCheckoutRedirectService,
                     $mollieOrderService,
                     $data,
                     $logger,
@@ -471,7 +468,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
                     $paymentMethod,
                     $paymentService,
                     $orderInstructionsService,
-                    $paymentCheckoutRedirectService,
                     $mollieOrderService,
                     $data,
                     $logger,
@@ -488,7 +484,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
                     $paymentMethod,
                     $paymentService,
                     $orderInstructionsService,
-                    $paymentCheckoutRedirectService,
                     $mollieOrderService,
                     $data,
                     $logger,

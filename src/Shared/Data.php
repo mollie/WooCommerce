@@ -65,8 +65,7 @@ class Data
     public function isValidApiKeyProvided()
     {
         $settings = $this->settingsHelper;
-        $test_mode = $settings->isTestModeEnabled();
-        $api_key = $settings->getApiKey($test_mode);
+        $api_key = $settings->getApiKey();
 
         return !empty($api_key)
             && preg_match(
@@ -77,8 +76,7 @@ class Data
 
     public function getGlobalSettingsUrl()
     {
-
-        return $this->settingsHelper->globalSettingsUrl;
+        return $this->settingsHelper->getGlobalSettingsUrl();
     }
 
     /**
@@ -370,9 +368,8 @@ class Data
 
     public function getApiPaymentMethods($use_cache = true, $filters = [])
     {
-        $settings_helper = $this->settingsHelper;
-        $test_mode = $settings_helper->isTestModeEnabled();
-        $apiKey = $this->settingsHelper->getApiKey($test_mode);
+        $test_mode = $this->isTestModeEnabled();
+        $apiKey = $this->settingsHelper->getApiKey();
         $methods = [];
 
         $filters_key = $filters;
@@ -427,7 +424,7 @@ class Data
     public function getPaymentMethod($method)
     {
         $test_mode = $this->isTestModeEnabled();
-        $apiKey = $this->settingsHelper->getApiKey($test_mode);
+        $apiKey = $this->settingsHelper->getApiKey();
 
         $payment_methods = $this->getAllPaymentMethods($apiKey, $test_mode);
 
@@ -515,13 +512,14 @@ class Data
      * @param bool $test_mode
      * @return null|string
      */
-    public function getUserMollieCustomerId($user_id, $apiKey, $test_mode = false)
+    public function getUserMollieCustomerId($user_id, $apiKey)
     {
         // Guest users can't buy subscriptions and don't need a Mollie customer ID
         // https://github.com/mollie/WooCommerce/issues/132
         if (empty($user_id)) {
             return null;
         }
+        $isTestModeEnabled = $this->isTestModeEnabled();
 
         $customer = new WC_Customer($user_id);
         $customer_id = $customer->get_meta('mollie_customer_id');
@@ -548,7 +546,7 @@ class Data
             try {
                 $this->api_helper->getApiClient($apiKey)->customers->get($customer_id);
             } catch (\Mollie\Api\Exceptions\ApiException $e) {
-                $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Mollie Customer ID (%s) not valid for user %s on this API key, try to create a new one (', $customer_id, $user_id) . ( $test_mode ? 'test' : 'live' ) . ").");
+                $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Mollie Customer ID (%s) not valid for user %s on this API key, try to create a new one (', $customer_id, $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . ").");
                 $customer_id = '';
             }
         }
@@ -576,14 +574,14 @@ class Data
 
                 $customer_id = $customer->id;
 
-                $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Created a Mollie Customer (%s) for WordPress user with ID %s (', $customer_id, $user_id) . ( $test_mode ? 'test' : 'live' ) . ").");
+                $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Created a Mollie Customer (%s) for WordPress user with ID %s (', $customer_id, $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . ").");
 
                 return $customer_id;
             } catch (\Mollie\Api\Exceptions\ApiException $e) {
-                $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Could not create Mollie Customer for WordPress user with ID %s (', $user_id) . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+                $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Could not create Mollie Customer for WordPress user with ID %s (', $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
             }
         } else {
-            $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Mollie Customer ID (%s) found and valid for user %s on this API key. (', $customer_id, $user_id) . ( $test_mode ? 'test' : 'live' ) . ").");
+            $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Mollie Customer ID (%s) found and valid for user %s on this API key. (', $customer_id, $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . ").");
         }
 
         return $customer_id;
@@ -642,7 +640,7 @@ class Data
      *
      * @return string $value
      */
-    public function getOrderCurrency(\WC_Order $order)
+    public function getOrderCurrency($order)
     {
         return $order->get_currency();
     }

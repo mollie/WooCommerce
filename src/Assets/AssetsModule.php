@@ -501,7 +501,6 @@ class AssetsModule implements ExecutableModule
         $dataToScript['gatewayData'] = $gatewayData;
         $dataToScript['availableGateways'] = isset($availablePaymentMethods) ? $availablePaymentMethods : [];
 
-        //var_dump($dataToScript);
         return $dataToScript;
     }
 

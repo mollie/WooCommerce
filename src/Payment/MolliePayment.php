@@ -34,7 +34,7 @@ class MolliePayment extends MollieObject
             // Is test mode enabled?
             $settingsHelper = $this->settingsHelper;
             $testMode = $settingsHelper->isTestModeEnabled();
-            $apiKey = $this->settingsHelper->getApiKey($testMode);
+            $apiKey = $this->settingsHelper->getApiKey();
             self::$payment = $this->apiHelper->getApiClient($apiKey)->payments->get($paymentId);
 
             return parent::getPaymentObject($paymentId, $testMode = false, $useCache = true);
@@ -68,8 +68,9 @@ class MolliePayment extends MollieObject
 
         $mollieMethod = $gateway->paymentMethod->getProperty('id');
         $selectedIssuer = $gateway->getSelectedIssuer();
-        $returnUrl = $gateway->paymentService->getReturnUrl($order);
-        $webhookUrl = $gateway->paymentService->getWebhookUrl($order);
+        $returnUrl = $gateway->get_return_url($order);
+        $returnUrl = $this->getReturnUrl($order, $returnUrl);
+        $webhookUrl = $this->getWebhookUrl($order, $mollieMethod);
         $orderId = $order->get_id();
 
         $paymentRequestData = [
@@ -477,9 +478,7 @@ class MolliePayment extends MollieObject
 
             do_action($this->pluginId . '_create_refund', $paymentObject, $order);
 
-            // Is test mode enabled?
-            $testMode = $this->settingsHelper->isTestModeEnabled();
-            $apiKey = $this->settingsHelper->getApiKey($testMode);
+            $apiKey = $this->settingsHelper->getApiKey();
             // Send refund to Mollie
             $refund = $this->apiHelper->getApiClient($apiKey)->payments->refund($paymentObject, [
                 'amount' =>  [

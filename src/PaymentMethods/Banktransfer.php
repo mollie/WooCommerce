@@ -115,11 +115,10 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
     }
 
     //TODO is this needed??
-    protected function isExpiredDateSettingActivated()
+    public function isExpiredDateSettingActivated()
     {
-        $expiryDays = $this->get_option(
-            'activate_expiry_days_setting',
-            'no'
+        $expiryDays = $this->getProperty(
+            'activate_expiry_days_setting'
         );
         return mollieWooCommerceStringToBoolOption($expiryDays);
     }

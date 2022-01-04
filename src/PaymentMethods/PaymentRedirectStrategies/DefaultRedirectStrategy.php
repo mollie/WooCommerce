@@ -6,6 +6,7 @@ namespace Mollie\WooCommerce\PaymentMethods\PaymentRedirectStrategies;
 
 use Mollie\WooCommerce\Payment\MollieOrder;
 use Mollie\WooCommerce\Payment\MolliePayment;
+use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use WC_Order;
 
 class DefaultRedirectStrategy implements PaymentRedirectStrategyI
@@ -17,11 +18,8 @@ class DefaultRedirectStrategy implements PaymentRedirectStrategyI
      * @param WC_Order  $order
      * @param MollieOrder|MolliePayment $payment_object
      */
-    public function execute($gateway, WC_Order $order, $paymentObject): string
+    public function execute(PaymentMethodI $paymentMethod, $order, $paymentObject,string $redirectUrl): string
     {
-        /*
-        * Redirect to payment URL
-        */
         return $paymentObject->getCheckoutUrl();
     }
 }

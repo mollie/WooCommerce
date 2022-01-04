@@ -86,7 +86,7 @@ class MollieObject
     {
         try {
             $test_mode = $this->settingsHelper->isTestModeEnabled();
-            $apiKey = $this->settingsHelper->getApiKey($test_mode);
+            $apiKey = $this->settingsHelper->getApiKey();
             return $this->apiHelper->getApiClient($apiKey)->payments->get($payment_id);
         } catch (ApiException $apiException) {
             $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Could not load payment %s (', $payment_id) . ( $test_mode ? 'test' : 'live' ) . "): " . $apiException->getMessage() . ' (' . get_class($apiException) . ')');
@@ -111,7 +111,7 @@ class MollieObject
         try {
             // Is test mode enabled?
             $test_mode = $this->settingsHelper->isTestModeEnabled();
-            $apiKey = $this->settingsHelper->getApiKey($test_mode);
+            $apiKey = $this->settingsHelper->getApiKey();
             return $this->apiHelper->getApiClient($apiKey)->orders->get($payment_id, [ "embed" => "payments" ]);
         } catch (ApiException $e) {
             $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Could not load order %s (', $payment_id) . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
@@ -717,4 +717,112 @@ class MollieObject
             ));
         }
     }
+    /**
+     * Get the url to return to on Mollie return
+     * saves the return redirect and failed redirect, so we save the page language in case there is one set
+     * For example 'http://mollie-wc.docker.myhost/wc-api/mollie_return/?order_id=89&key=wc_order_eFZyH8jki6fge'
+     *
+     * @param WC_Order $order The order processed
+     *
+     * @return string The url with order id and key as params
+     */
+    public function getReturnUrl($order, $returnUrl)
+    {
+        $returnUrl = untrailingslashit($returnUrl);
+        $returnUrl = $this->asciiDomainName($returnUrl);
+        $orderId = $order->get_id();
+        $orderKey = $order->get_order_key();
+
+        $onMollieReturn = 'onMollieReturn';
+        $returnUrl = $this->appendOrderArgumentsToUrl(
+            $orderId,
+            $orderKey,
+            $returnUrl,
+            $onMollieReturn
+        );
+        $returnUrl = untrailingslashit($returnUrl);
+        $this->logger->log(LogLevel::DEBUG, "{$this->id} : Order {$orderId} returnUrl: {$returnUrl}", [true]);
+
+        return apply_filters($this->pluginId . '_return_url', $returnUrl, $order);
+    }
+    /**
+     * Get the webhook url
+     * For example 'http://mollie-wc.docker.myhost/wc-api/mollie_return/mollie_wc_gateway_bancontact/?order_id=89&key=wc_order_eFZyH8jki6fge'
+     *
+     * @param WC_Order $order The order processed
+     *
+     * @return string The url with gateway and order id and key as params
+     */
+    public function getWebhookUrl($order, $gatewayId)
+    {
+        $webhookUrl = WC()->api_request_url($gatewayId);
+        $webhookUrl = untrailingslashit($webhookUrl);
+        $webhookUrl = $this->asciiDomainName($webhookUrl);
+        $orderId = $order->get_id();
+        $orderKey = $order->get_order_key();
+        $webhookUrl = $this->appendOrderArgumentsToUrl(
+            $orderId,
+            $orderKey,
+            $webhookUrl
+        );
+        $webhookUrl = untrailingslashit($webhookUrl);
+
+        $this->logger->log(LogLevel::DEBUG, "{$this->id} : Order {$orderId} webhookUrl: {$webhookUrl}", [true]);
+
+        return apply_filters($this->pluginId . '_webhook_url', $webhookUrl, $order);
+    }
+    /**
+     * @param $url
+     *
+     * @return string
+     */
+    protected function asciiDomainName($url): string
+    {
+        if (function_exists('idn_to_ascii')) {
+            $parsed = parse_url($url);
+            $query = $parsed['query'];
+            $url = str_replace('?' . $query, '', $url);
+            if (defined('IDNA_NONTRANSITIONAL_TO_ASCII')
+                && defined(
+                    'INTL_IDNA_VARIANT_UTS46'
+                )
+            ) {
+                $url = idn_to_ascii(
+                    $url,
+                    IDNA_NONTRANSITIONAL_TO_ASCII,
+                    INTL_IDNA_VARIANT_UTS46
+                ) ? idn_to_ascii(
+                    $url,
+                    IDNA_NONTRANSITIONAL_TO_ASCII,
+                    INTL_IDNA_VARIANT_UTS46
+                ) : $url;
+            } else {
+                $url = idn_to_ascii($url) ? idn_to_ascii($url) : $url;
+            }
+            $url = $url . '?' . $query;
+        }
+
+        return $url;
+    }
+    /**
+     * @param $order_id
+     * @param $order_key
+     * @param $webhook_url
+     * @param string $filterFlag
+     *
+     * @return string
+     */
+    protected function appendOrderArgumentsToUrl($order_id, $order_key, $webhook_url, $filterFlag = '')
+    {
+        $webhook_url = add_query_arg(
+            [
+                'order_id' => $order_id,
+                'key' => $order_key,
+                'filter_flag' => $filterFlag,
+            ],
+            $webhook_url
+        );
+        return $webhook_url;
+    }
+
 }

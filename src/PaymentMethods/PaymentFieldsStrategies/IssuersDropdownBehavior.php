@@ -7,7 +7,7 @@ trait IssuersDropdownBehavior
     public function getIssuers($gateway, $dataHelper)
     {
         $testMode = $gateway->settingsHelper->isTestModeEnabled();
-        $apiKey = $gateway->settingsHelper->getApiKey($testMode);
+        $apiKey = $gateway->settingsHelper->getApiKey();
 
         return $dataHelper->getMethodIssuers(
             $apiKey,

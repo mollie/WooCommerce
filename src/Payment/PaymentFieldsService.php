@@ -12,16 +12,6 @@ use Psr\Log\LoggerInterface as Logger;
 
 class PaymentFieldsService
 {
-    protected $gateway;
-    /**
-     * @var NoticeInterface
-     */
-    protected $notice;
-    /**
-     * @var Logger
-     */
-    protected $logger;
-
     /**
      * @var PaymentFieldsStrategyI
      */

@@ -56,7 +56,7 @@ class MollieOrder extends MollieObject
     {
         try {
             $testMode = $this->settingsHelper->isTestModeEnabled();
-            $apiKey = $this->settingsHelper->getApiKey($testMode);
+            $apiKey = $this->settingsHelper->getApiKey();
             self::$payment = $this->apiHelper->getApiClient($apiKey)->orders->get($paymentId, [ "embed" => "payments" ]);
 
             return parent::getPaymentObject($paymentId, $testMode = false, $useCache = true);
@@ -87,8 +87,9 @@ class MollieOrder extends MollieObject
 
         $mollieMethod = $gateway->paymentMethod->getProperty('id');
         $selectedIssuer = $gateway->getSelectedIssuer();
-        $returnUrl = $gateway->paymentService->getReturnUrl($order);
-        $webhookUrl = $gateway->paymentService->getWebhookUrl($order);
+        $returnUrl = $gateway->get_return_url($order);
+        $returnUrl = $this->getReturnUrl($order, $returnUrl);
+        $webhookUrl = $this->getWebhookUrl($order, $mollieMethod);
         if ($mollieMethod !== 'paypal' || ($mollieMethod === 'paypal' && $order->get_billing_first_name() !== '')) {
             $billingAddress = $this->createBillingAddress($order);
             $shippingAddress = $this->createShippingAddress($order);
@@ -717,9 +718,7 @@ class MollieOrder extends MollieObject
                         throw new Exception($noteMessage);
                     }
 
-                    // Is test mode enabled?
-                    $testMode = $this->settingsHelper->isTestModeEnabled();
-                    $apiKey = $this->settingsHelper->getApiKey($testMode);
+                    $apiKey = $this->settingsHelper->getApiKey();
 
                     // Get the Mollie order
                     $mollieOrder = $this->apiHelper->getApiClient($apiKey)->orders->get($paymentObject->id);
@@ -830,8 +829,7 @@ class MollieOrder extends MollieObject
             $orderId
         );
 
-        $testMode = $this->settingsHelper->isTestModeEnabled();
-        $apiKey = $this->settingsHelper->getApiKey($testMode);
+        $apiKey = $this->settingsHelper->getApiKey();
 
         if ($paymentObject->isCreated() || $paymentObject->isAuthorized() || $paymentObject->isShipping()) {
             $noteMessage = 'Can not refund order amount that has status ' . ucfirst($paymentObject->status) . ' at Mollie.';

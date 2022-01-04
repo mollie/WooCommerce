@@ -7,6 +7,7 @@ namespace Mollie\WooCommerce\Subscription;
 use Exception;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Payment\MollieObject;
+use Mollie\WooCommerce\Payment\MollieSubscription;
 use Mollie\WooCommerce\Payment\OrderInstructionsService;
 use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
@@ -31,6 +32,10 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
     protected $isSubscriptionPayment = false;
     protected $apiHelper;
     public $settingsHelper;
+    /**
+     * @var MollieSubscription
+     */
+    protected $subscriptionObject;
 
     /**
      * AbstractSubscription constructor.
@@ -39,7 +44,6 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         PaymentMethodI $paymentMethod,
         PaymentService $paymentService,
         OrderInstructionsService $orderInstructionsService,
-        PaymentCheckoutRedirectService $paymentCheckoutRedirectService,
         MollieOrderService $mollieOrderService,
         Data $dataService,
         Logger $logger,
@@ -56,7 +60,6 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             $paymentMethod,
             $paymentService,
             $orderInstructionsService,
-            $paymentCheckoutRedirectService,
             $mollieOrderService,
             $dataService,
             $logger,
@@ -69,6 +72,13 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
 
         $this->apiHelper = $apiHelper;
         $this->settingsHelper = $settingsHelper;
+        $this->subscriptionObject = new mollieSubscription(
+            $pluginId,
+            $apiHelper,
+            $settingsHelper,
+            $dataService,
+            $logger
+        );
 
         if (class_exists('WC_Subscriptions_Order')) {
             add_action('woocommerce_scheduled_subscription_payment_' . $this->id, [ $this, 'scheduled_subscription_payment' ], 10, 2);
@@ -120,40 +130,6 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         return parent::process_payment($order_id);
     }
 
-    /**
-     * @param $order
-     * @param $customer_id
-     * @return array
-     */
-    protected function getRecurringPaymentRequestData($order, $customer_id)
-    {
-        // TODO David: is this still used?
-        $settings_helper = $this->settingsHelper;
-        $payment_description = __('Order', 'woocommerce') . ' ' . $order->get_order_number();
-        $payment_locale = $settings_helper->getPaymentLocale();
-        $mollie_method = $this->paymentMethod->getProperty('id');
-        $selected_issuer = $this->getSelectedIssuer();
-        $return_url = $this->paymentService->getReturnUrl($order);
-        $webhook_url = $this->paymentService->getWebhookUrl($order);
-
-        return array_filter([
-                                  'amount' =>  [
-                                      'currency' => $this->dataService->getOrderCurrency($order),
-                                      'value' => $this->dataService->formatCurrencyValue($order->get_total(), $this->dataService->getOrderCurrency($order)),
-                                  ],
-                                  'description' => $payment_description,
-                                  'redirectUrl' => $return_url,
-                                  'webhookUrl' => $webhook_url,
-                                  'method' => $mollie_method,
-                                  'issuer' => $selected_issuer,
-                                  'locale' => $payment_locale,
-                                  'metadata' =>  [
-                                      'order_id' => $order->get_id(),
-                                  ],
-                                  'sequenceType' => 'recurring',
-                                  'customerId' => $customer_id,
-                              ]);
-    }
 
     /**
      * @param $renewal_order
@@ -271,7 +247,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         }
 
         // Get all data for the renewal payment
-        $data = $this->getRecurringPaymentRequestData($renewal_order, $customer_id);
+        $data = $this->subscriptionObject->getRecurringPaymentRequestData($renewal_order, $customer_id);
 
         // Allow filtering the renewal payment data
         $data = apply_filters('woocommerce_' . $this->id . '_args', $data, $renewal_order);
@@ -279,8 +255,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         // Create a renewal payment
         try {
             do_action($this->pluginId . '_create_payment', $data, $renewal_order);
-            $test_mode = $this->settingsHelper->isTestModeEnabled();
-            $apiKey = $this->settingsHelper->getApiKey($test_mode);
+            $apiKey = $this->settingsHelper->getApiKey();
             $mollieApiClient = $this->apiHelper->getApiClient($apiKey);
             $validMandate = false;
 
@@ -606,10 +581,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             //
             // Check for valid mandates
             //
-
-
-            $testMode = $this->settingsHelper->isTestModeEnabled();
-            $apiKey = $this->settingsHelper->getApiKey($testMode);
+            $apiKey = $this->settingsHelper->getApiKey();
 
             // Get the WooCommerce payment gateway for this subscription
             $gateway = wc_get_payment_gateway_by_order($subscription);

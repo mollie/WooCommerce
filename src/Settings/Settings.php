@@ -89,21 +89,18 @@ class Settings
         $statusHelper,
         $pluginVersion,
         $pluginUrl,
-        $apiHelper,
-        $globalSettingsUrl
+        $apiHelper
     ) {
-
         $this->pluginId = $pluginId;
         $this->pluginVersion = $pluginVersion;
         $this->pluginUrl = $pluginUrl;
         $this->statusHelper = $statusHelper;
         $this->apiHelper = $apiHelper;
-        $this->globalSettingsUrl = $globalSettingsUrl;
+        $this->globalSettingsUrl = admin_url('admin.php?page=wc-settings&tab=mollie_settings#' . $pluginId);
     }
 
     public function getGlobalSettingsUrl()
     {
-
         return $this->globalSettingsUrl;
     }
 
@@ -285,15 +282,16 @@ class Settings
     }
 
     /**
-     * @param bool $test_mode
+     * @param bool $overrideTestMode
      * @return null|string
      */
-    public function getApiKey($test_mode = false)
+    public function getApiKey($overrideTestMode = false)
     {
-        $setting_id = $test_mode ? 'test_api_key' : 'live_api_key';
-
-        $apiKeyId = $this->getSettingId($setting_id);
+        $isTestModeEnabled = $overrideTestMode ?: $this->isTestModeEnabled();
+        $settingId = $isTestModeEnabled ? 'test_api_key' : 'live_api_key';
+        $apiKeyId = $this->getSettingId($settingId);
         $apiKey = get_option($apiKeyId);
+        //TODO add api key filter
 
         if (!$apiKey && is_admin()) {
             $apiKey = filter_input(INPUT_POST, $apiKeyId, FILTER_SANITIZE_STRING);
@@ -459,7 +457,7 @@ class Settings
 
         try {
             // Check compatibility
-            $apiKey = $this->getApiKey($this->isTestModeEnabled());
+            $apiKey = $this->getApiKey();
             $apiClient = $this->apiHelper->getApiClient($apiKey);
             $status->getMollieApiStatus($apiClient);
 
@@ -638,8 +636,7 @@ class Settings
      */
     protected function mollieWooCommerceMerchantProfile()
     {
-        $testMode = $this->isTestModeEnabled();
-        $apiKey = $this->getApiKey($testMode);
+        $apiKey = $this->getApiKey();
 
         return $this->apiHelper->getApiClient(
             $apiKey,

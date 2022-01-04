@@ -131,8 +131,8 @@ class AppleAjaxRequests
         if (!$this->isNonceValid($applePayRequestDataObject)) {
             return;
         }
-        //we cannot access the endpoint in testmode, default is false
-        $apiKey = $this->settingsHelper->getApiKey();
+        //we cannot access the endpoint in testmode, we override it
+        $apiKey = $this->settingsHelper->getApiKey(true);
         $validationUrl = $applePayRequestDataObject->validationUrl;
         $completeDomain = parse_url(get_site_url(), PHP_URL_HOST);
         $removeHttp = ["https://", "http://"];

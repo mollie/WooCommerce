@@ -83,7 +83,7 @@ class WcPsrLoggerAdapter extends AbstractLogger
             throw new InvalidArgumentException("Unknown log level ${$wcLevel}");
         }
 
-        if (isset($context['source']) && $context['source'] !== $this->loggerSource) {
+        if (isset($context['source']) && $context['source'] !== $this-> loggerSource) {
             $context['originalSource'] = $context['source'];
         }
         if ($this->className && !isset($context['originalSource'])) {

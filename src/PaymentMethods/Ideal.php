@@ -6,7 +6,7 @@ namespace Mollie\WooCommerce\PaymentMethods;
 
 class Ideal extends AbstractPaymentMethod implements PaymentMethodI
 {
-    protected function getConfig(): array
+    public function getConfig(): array
     {
         return [
             'id' => 'ideal',

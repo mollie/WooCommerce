@@ -45,14 +45,15 @@ class PaymentFactory
      */
     public function getPaymentObject($data)
     {
+
         if (
             (!is_object($data) && $data === 'order')
             || (!is_object($data) && strpos($data, 'ord_') !== false)
             || (is_object($data) && $data->resource === 'order')
         ) {
+
             $refundLineItemsBuilder = new RefundLineItemsBuilder($this->dataHelper);
-            $testMode = $this->settingsHelper->isTestModeEnabled();
-            $apiKey = $this->settingsHelper->getApiKey($testMode);
+            $apiKey = $this->settingsHelper->getApiKey();
             $orderItemsRefunded = new OrderItemsRefunder(
                 $refundLineItemsBuilder,
                 $this->dataHelper,

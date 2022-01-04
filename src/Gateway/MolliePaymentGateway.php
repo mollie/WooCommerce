@@ -11,11 +11,8 @@ use Mollie\Api\Resources\Payment;
 use Mollie\Api\Types\SequenceType;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieObject;
-use Mollie\WooCommerce\Payment\MollieOrder;
 use Mollie\WooCommerce\Payment\MollieOrderService;
-use Mollie\WooCommerce\Payment\MolliePayment;
 use Mollie\WooCommerce\Payment\OrderInstructionsService;
-use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\PaymentService;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
@@ -41,8 +38,6 @@ class MolliePaymentGateway extends WC_Payment_Gateway
     public const STATUS_FAILED = 'failed';
     public const STATUS_REFUNDED = 'refunded';
 
-    public const PAYMENT_METHOD_TYPE_PAYMENT = 'payment';
-    public const PAYMENT_METHOD_TYPE_ORDER = 'order';
     /**
      * @var bool
      */
@@ -115,7 +110,6 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         PaymentMethodI $paymentMethod,
         PaymentService $paymentService,
         OrderInstructionsService $orderInstructionsService,
-        PaymentCheckoutRedirectService $paymentCheckoutRedirectService,
         MollieOrderService $mollieOrderService,
         Data $dataService,
         Logger $logger,
@@ -130,7 +124,6 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         $this->notice = $notice;
         $this->paymentService = $paymentService;
         $this->orderInstructionsService = $orderInstructionsService;
-        $this->paymentCheckoutRedirectService = $paymentCheckoutRedirectService;
         $this->mollieOrderService = $mollieOrderService;
         $this->httpResponse = $httpResponse;
         $this->dataService = $dataService;
@@ -355,7 +348,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
     /**
      * @return Method|null
      */
-    public function getMollieMethod(): ?Method
+    public function getMollieMethod()
     {
         return $this->dataService->getPaymentMethod(
             $this->paymentMethod->getProperty('id')
@@ -643,36 +636,19 @@ class MolliePaymentGateway extends WC_Payment_Gateway
     }
 
     /**
-     * @param int $order_id
+     * @param int $orderId
      *
      * @return array
      */
-    public function process_payment($order_id)
+    public function process_payment($orderId)
     {
-        $this->paymentService->setGateway($this);
-        $paymentConfirmationAfterCoupleOfDays
-        = $this->paymentMethod->getProperty('SEPA');
-        return $this->paymentService->processPayment(
-            $order_id,
-            $paymentConfirmationAfterCoupleOfDays
-        );
-    }
-
-    /**
-     * Redirect location after successfully completing process_payment
-     *
-     * @param WC_Order                  $order
-     * @param MollieOrder|MolliePayment $payment_object
-     *
-     * @return string
-     */
-    public function getProcessPaymentRedirect(WC_Order $order, $payment_object): string
-    {
-        /*
-         * Redirect to payment URL
-         */
-        $this->paymentCheckoutRedirectService->setStrategy($this);
-        return $this->paymentCheckoutRedirectService->executeStrategy($this, $order, $payment_object);
+        $order = wc_get_order($orderId);
+        if (!$order) {
+            return $this->noOrderPaymentFailure($orderId);
+        }
+        $paymentMethod = $this->paymentMethod;
+        $redirectUrl = $this->get_return_url($order);
+        return $this->paymentService->processPayment($orderId, $order, $paymentMethod, $redirectUrl);
     }
 
     /**
@@ -785,7 +761,30 @@ class MolliePaymentGateway extends WC_Payment_Gateway
          */
         return $this->get_return_url($order);
     }
+    /**
+     * @param $orderId
+     * @return string[]
+     */
+    protected function noOrderPaymentFailure($orderId): array
+    {
+        $this->logger->log(
+            LogLevel::DEBUG,
+            $this->id . ': Could not process payment, order ' . $orderId . ' not found.'
+        );
 
+        $this->notice->addNotice(
+            'error',
+            sprintf(
+                __(
+                    'Could not load order %s',
+                    'mollie-payments-for-woocommerce'
+                ),
+                $orderId
+            )
+        );
+
+        return array('result' => 'failure');
+    }
     /**
      * Retrieve the payment object
      *

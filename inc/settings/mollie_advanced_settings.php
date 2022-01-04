@@ -1,6 +1,7 @@
 <?php
 
 use Mollie\WooCommerce\Gateway\AbstractGateway;
+use Mollie\WooCommerce\Payment\PaymentService;
 use Mollie\WooCommerce\Plugin;
 use Mollie\WooCommerce\Settings\Settings;
 
@@ -89,15 +90,15 @@ return [
         ),
         'type' => 'select',
         'options' => [
-            \Mollie\WooCommerce\Gateway\MolliePaymentGateway::PAYMENT_METHOD_TYPE_ORDER => ucfirst(
-                \Mollie\WooCommerce\Gateway\MolliePaymentGateway::PAYMENT_METHOD_TYPE_ORDER
+            PaymentService::PAYMENT_METHOD_TYPE_ORDER => ucfirst(
+                    PaymentService::PAYMENT_METHOD_TYPE_ORDER
             ) . ' (' . __('default', 'mollie-payments-for-woocommerce')
                 . ')',
-            \Mollie\WooCommerce\Gateway\MolliePaymentGateway::PAYMENT_METHOD_TYPE_PAYMENT => ucfirst(
-                \Mollie\WooCommerce\Gateway\MolliePaymentGateway::PAYMENT_METHOD_TYPE_PAYMENT
+            PaymentService::PAYMENT_METHOD_TYPE_PAYMENT => ucfirst(
+                PaymentService::PAYMENT_METHOD_TYPE_PAYMENT
             ),
         ],
-        'default' => \Mollie\WooCommerce\Gateway\MolliePaymentGateway::PAYMENT_METHOD_TYPE_ORDER,
+        'default' => PaymentService::PAYMENT_METHOD_TYPE_ORDER,
         /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
         'desc' => sprintf(
             __(

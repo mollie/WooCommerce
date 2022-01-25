@@ -4,55 +4,55 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Shared;
 
+use Mollie\WooCommerce\Gateway\Surcharge;
 use WC_Order_Item_Fee;
 
 class GatewaySurchargeHandler
 {
-    /**
-     * @var string
-     */
-    public const NO_FEE = 'no_fee';
-    /**
-     * @var string
-     */
-    public const FIXED_FEE = 'fixed_fee';
-    /**
-     * @var string
-     */
-    public const PERCENTAGE = 'percentage';
-    /**
-     * @var string
-     */
-    public const FIXED_AND_PERCENTAGE = 'fixed_fee_percentage';
-    public const DEFAULT_FEE_LABEL = 'Gateway Fee';
     public $gatewayFeeLabel;
+    protected $surcharge;
 
     /**
      * GatewaySurchargeHandler constructor.
      */
-    public function __construct()
+    public function __construct(Surcharge $surcharge)
     {
+        $this->surcharge = $surcharge;
         $this->gatewayFeeLabel = get_option(
             'mollie-payments-for-woocommerce_gatewayFeeLabel',
-            __(self::DEFAULT_FEE_LABEL, 'mollie-payments-for-woocommerce')
+            __(Surcharge::DEFAULT_FEE_LABEL, 'mollie-payments-for-woocommerce')
         );
 
+
         add_filter('woocommerce_cart_calculate_fees', function ($cart) {
+
             return $this->add_engraving_fees($cart);
         }, 10, 1);
         add_action('wp_enqueue_scripts', function () {
             return $this->enqueueSurchargeScript();
         });
         add_action(
-            'wp_ajax_update_surcharge_order_pay',
+                'wp_ajax_update_surcharge_order_pay',
+                function () {
+                    return $this->updateSurchargeOrderPay();
+                }
+        );
+        add_action(
+                'wp_ajax_nopriv_update_surcharge_order_pay',
+                function () {
+                    return $this->updateSurchargeOrderPay();
+                }
+        );
+        add_action(
+            'wp_ajax_mollie_checkout_blocks_surchage',
             function () {
-                return $this->updateSurchargeOrderPay();
+                return $this->updateSurchargeCheckoutBlock();
             }
         );
         add_action(
-            'wp_ajax_nopriv_update_surcharge_order_pay',
+            'wp_ajax_nopriv_mollie_checkout_blocks_surchage',
             function () {
-                return $this->updateSurchargeOrderPay();
+                return $this->updateSurchargeCheckoutBlock();
             }
         );
         add_action('woocommerce_order_item_meta_end', function ($item_id, $item, $order, $bool) {
@@ -86,18 +86,18 @@ class GatewaySurchargeHandler
     public function addSurchargeFeeProductPage($order, $gateway)
     {
         $gatewaySettings = $this->gatewaySettings($gateway);
-        if (!isset($gatewaySettings['payment_surcharge']) || $gatewaySettings['payment_surcharge'] === self::NO_FEE) {
+        if (!isset($gatewaySettings['payment_surcharge']) || $gatewaySettings['payment_surcharge'] === Surcharge::NO_FEE) {
             return $order;
         }
         $order->calculate_totals();
         $orderAmount = $order->get_total();
-        if ($this->aboveMaxLimit($orderAmount, $gatewaySettings)) {
+        if ($this->surcharge->aboveMaxLimit($orderAmount, $gatewaySettings)) {
             return $order;
         }
-        $amount = $this->calculteFeeAmountOrder($order, $gatewaySettings);
+        $amount = $this->surcharge->calculateFeeAmountOrder($order, $gatewaySettings);
 
         if ($amount > 0) {
-            $surchargeName = $this->buildFeeName($gateway);
+            $surchargeName = $this->surcharge->buildFeeName($this->gatewayFeeLabel);
             $this->orderRemoveFee($order);
             $this->orderAddFee($order, $amount, $surchargeName);
             $order->calculate_totals();
@@ -107,28 +107,18 @@ class GatewaySurchargeHandler
 
     public function updateSurchargeOrderPay()
     {
-        $orderId = isset($_POST['orderId']) ? filter_var($_POST['orderId'], FILTER_SANITIZE_NUMBER_INT) : false;
-        if (!$orderId) {
-            return;
-        }
-        $order = wc_get_order($orderId);
-        if (!$order) {
-            return;
-        }
-        $gateway = isset($_POST['method']) ? filter_var($_POST['method'], FILTER_SANITIZE_STRING) : false;
-        if (!$gateway) {
-            return;
-        }
-        if (!$this->isMollieGateway($gateway)) {
+        $order = $this->canProcessOrder();
+        $gatewayName = $this->canProcessGateway();
+        if(!$order || !$gatewayName){
             return;
         }
         $this->orderRemoveFee($order);
-        $gatewaySettings = $this->gatewaySettings($gateway);
+         $gatewaySettings = $this->gatewaySettings($gatewayName);
         $orderAmount = $order->get_total();
-        if ($this->aboveMaxLimit($orderAmount, $gatewaySettings)) {
+        if ($this->surcharge->aboveMaxLimit($orderAmount, $gatewaySettings)) {
             return;
         }
-        if (!isset($gatewaySettings['payment_surcharge']) || $gatewaySettings['payment_surcharge'] === self::NO_FEE) {
+        if (!isset($gatewaySettings['payment_surcharge']) || $gatewaySettings['payment_surcharge'] === Surcharge::NO_FEE) {
             $data = [
                 'amount' => false,
                 'currency' => get_woocommerce_currency_symbol(),
@@ -137,8 +127,8 @@ class GatewaySurchargeHandler
             wp_send_json_success($data);
         }
 
-        $amount = $this->calculteFeeAmountOrder($order, $gatewaySettings);
-        $surchargeName = $this->buildFeeName($gateway);
+        $amount = $this->surcharge->calculateFeeAmountOrder($order, $gatewaySettings);
+        $surchargeName = $this->surcharge->buildFeeName($gatewayName);
 
         if ($amount > 0) {
             $this->orderAddFee($order, $amount, $surchargeName);
@@ -154,19 +144,28 @@ class GatewaySurchargeHandler
         }
     }
 
-    public function add_engraving_fees($cart)
+    public function updateSurchargeCheckoutBlock()
     {
-        if (!mollieWooCommerceIsCheckoutContext()) {
-            return;
-        }
-
-        $gateway = $this->chosenGateway();
-        if (!$gateway) {
-            return;
-        }
+        $gateway = $this->canProcessGateway();
+        $cart = WC()->cart;
 
         $gatewaySettings = $this->gatewaySettings($gateway);
-        if (!isset($gatewaySettings['payment_surcharge']) || $gatewaySettings['payment_surcharge'] === self::NO_FEE) {
+        if (!$gatewaySettings){
+            return;
+        }
+        //This also removes previous fees
+        $cart->calculate_totals();
+        if (
+                !isset($gatewaySettings['payment_surcharge'])
+                || $gatewaySettings['payment_surcharge'] === Surcharge::NO_FEE
+        ) {
+            $data = [
+                    'amount' => false,
+                    'name' => '',
+                    'currency' => get_woocommerce_currency_symbol(),
+                    'newTotal' => $cart->get_total(),
+            ];
+            wp_send_json_success($data);
             return;
         }
 
@@ -175,24 +174,59 @@ class GatewaySurchargeHandler
             return;
         }
         $cartAmount = $cart->get_subtotal() + $cart->get_subtotal_tax();
-        if ($this->aboveMaxLimit($cartAmount, $gatewaySettings)) {
+        if ($this->surcharge->aboveMaxLimit($cartAmount, $gatewaySettings)) {
             return;
         }
-        $amount = $this->calculteFeeAmount($cart, $gatewaySettings);
-        $surchargeName = $this->buildFeeName($gateway);
-        $cart->add_fee($surchargeName, $amount);
+        $feeAmount = (float) $this->surcharge->calculateFeeAmount($cart, $gatewaySettings);
+        $surchargeName = $this->surcharge->buildFeeName($this->gatewayFeeLabel);
+
+        $newTotal = (float) $cart->get_total('edit') + $feeAmount;
+        $data = [
+                'amount' => $feeAmount,
+                'name' => $surchargeName,
+                'currency' => get_woocommerce_currency_symbol(),
+                'newTotal' => $newTotal,
+        ];
+        wp_send_json_success($data);
     }
 
-    public function aboveMaxLimit($totalAmount, $gatewaySettings)
+    public function add_engraving_fees($cart)
     {
-        $maxLimit = !empty($gatewaySettings['maximum_limit']) ? $gatewaySettings['maximum_limit'] : 0;
-        if ($maxLimit <= 0) {
-            return false;
+        if (!mollieWooCommerceIsCheckoutContext()
+                && !has_block('woocommerce/checkout')
+                && !has_block('woocommerce/cart')
+        ) {
+            return;
         }
-        if ($totalAmount > $maxLimit) {
-            return true;
+
+        $gateway = $this->chosenGateway();
+
+        if (!$gateway) {
+            return;
         }
-        return false;
+
+        $gatewaySettings = $this->gatewaySettings($gateway);
+        if (!$gatewaySettings){
+            return;
+        }
+        if (
+                !isset($gatewaySettings['payment_surcharge'])
+                || $gatewaySettings['payment_surcharge'] === Surcharge::NO_FEE
+        ) {
+            return;
+        }
+
+        $isRecurringCart = ! empty($cart->recurring_cart_key);
+        if ($isRecurringCart) {
+            return;
+        }
+        $cartAmount = $cart->get_subtotal() + $cart->get_subtotal_tax();
+        if ($this->surcharge->aboveMaxLimit($cartAmount, $gatewaySettings)) {
+            return;
+        }
+        $amount = $this->surcharge->calculateFeeAmount($cart, $gatewaySettings);
+        $surchargeName = $this->surcharge->buildFeeName($this->gatewayFeeLabel);
+        $cart->add_fee($surchargeName, $amount);
     }
 
     protected function chosenGateway()
@@ -227,104 +261,6 @@ class GatewaySurchargeHandler
         return $allSettings;
     }
 
-    public function calculteFeeAmount($cart, $gatewaySettings)
-    {
-        $surchargeType = $gatewaySettings['payment_surcharge'];
-        $methodName = sprintf('calculate_%s', $surchargeType);
-
-        return $this->$methodName($cart, $gatewaySettings);
-    }
-
-    protected function calculteFeeAmountOrder($cart, $gatewaySettings)
-    {
-        $surchargeType = $gatewaySettings['payment_surcharge'];
-        switch ($surchargeType) {
-            case 'fixed_fee':
-                return $this->calculate_fixed_fee($cart, $gatewaySettings);
-            case 'percentage':
-                return $this->calculate_percentage_order($cart, $gatewaySettings);
-            case 'fixed_fee_percentage':
-                return $this->calculate_fixed_fee_percentage_order($cart, $gatewaySettings);
-        }
-        return 0;
-    }
-
-    protected function calculate_no_fee($cart, $gatewaySettings)
-    {
-        return 0;
-    }
-
-    protected function calculate_fixed_fee($cart, $gatewaySettings)
-    {
-        return !empty($gatewaySettings[self::FIXED_FEE]) ? (float) $gatewaySettings[self::FIXED_FEE] : 0;
-    }
-
-    protected function calculate_percentage($cart, $gatewaySettings)
-    {
-        if (empty($gatewaySettings[self::PERCENTAGE])) {
-            return 0;
-        }
-        $percentageFee = $gatewaySettings[self::PERCENTAGE];
-        $subtotal = $cart->get_subtotal() + $cart->get_shipping_total() - $cart->get_discount_total();
-        $taxes = $cart->get_subtotal_tax() + $cart->get_shipping_tax() - $cart->get_discount_tax();
-        $total = $subtotal + $taxes;
-        $fee = $total * ($percentageFee / 100);
-
-        return $this->addMaxLimit($fee, $gatewaySettings);
-    }
-
-    protected function calculate_percentage_order($order, $gatewaySettings)
-    {
-        if (empty($gatewaySettings[self::PERCENTAGE])) {
-            return 0;
-        }
-        $percentageFee = $gatewaySettings[self::PERCENTAGE];
-        $total = $order->get_total();
-        $fee = $total * ($percentageFee / 100);
-
-        return $this->addMaxLimit($fee, $gatewaySettings);
-    }
-
-    protected function calculate_fixed_fee_percentage($cart, $gatewaySettings)
-    {
-        $fixedFee = $this->calculate_fixed_fee($cart, $gatewaySettings);
-        $percentageFee = $this->calculate_percentage($cart, $gatewaySettings);
-        $fee = $fixedFee + $percentageFee;
-
-        return $this->addMaxLimit($fee, $gatewaySettings);
-    }
-
-    protected function calculate_fixed_fee_percentage_order($cart, $gatewaySettings)
-    {
-        $fixedFee = $this->calculate_fixed_fee($cart, $gatewaySettings);
-        $percentageFee = $this->calculate_percentage_order($cart, $gatewaySettings);
-        $fee = $fixedFee + $percentageFee;
-
-        return $this->addMaxLimit($fee, $gatewaySettings);
-    }
-
-    /**
-     * @param string $gateway
-     *
-     * @return string
-     */
-    protected function buildFeeName($gateway)
-    {
-        return __($this->gatewayFeeLabel, 'mollie-payments-for-woocommerce');
-    }
-
-    protected function addMaxLimit($fee, $gatewaySettings)
-    {
-        if (empty($gatewaySettings['surcharge_limit'])) {
-            return $fee;
-        }
-        $maxLimit = $gatewaySettings['surcharge_limit'];
-        if ($fee > $maxLimit) {
-            return $maxLimit;
-        }
-        return $fee;
-    }
-
     /**
     * @var wc_order $order
      */
@@ -352,6 +288,31 @@ class GatewaySurchargeHandler
 
         $order->add_item($item_fee);
         $order->calculate_totals();
+    }
+
+    protected function canProcessOrder()
+    {
+        $orderId = isset($_POST['orderId']) ? filter_var($_POST['orderId'], FILTER_SANITIZE_NUMBER_INT) : false;
+        if (!$orderId) {
+            return false;
+        }
+        $order = wc_get_order($orderId);
+        if (!$order) {
+            return false;
+        }
+        return $order;
+    }
+
+    protected function canProcessGateway()
+    {
+        $gateway = isset($_POST['method']) ? filter_var($_POST['method'], FILTER_SANITIZE_STRING) : false;
+        if (!$gateway) {
+            return false;
+        }
+        if (!$this->isMollieGateway($gateway)) {
+            return false;
+        }
+        return $gateway;
     }
 }
 

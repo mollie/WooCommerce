@@ -7,6 +7,7 @@ namespace Mollie\WooCommerce\Payment;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
@@ -90,6 +91,12 @@ class PaymentService
         $customerId = $this->getUserMollieCustomerId($order);
 
         $apiKey = $this->settingsHelper->getApiKey();
+
+        $hasBlocksEnabled = $this->dataHelper->isBlockPluginActive();
+        if($hasBlocksEnabled){
+            $order = $this->correctSurchargeFee($order, $paymentMethod);
+        }
+
         if ($this->needsSubscriptionSwitch($order, $orderId)) {
             return $this->processSubscriptionSwitch($order, $orderId, $customerId, $apiKey);
         }
@@ -129,6 +136,75 @@ class PaymentService
             $this->reportPaymentCreationFailure($orderId, $error);
         }
         return ['result' => 'failure'];
+    }
+
+
+    /**
+     * @param WC_Order $order
+     * @param PaymentMethodI $paymentMethod
+     */
+    protected function correctSurchargeFee($order, $paymentMethod)
+    {
+        $fees = $order->get_fees();
+        $surcharge = $paymentMethod->surcharge();
+        $gatewaySettings = $paymentMethod->getMergedProperties();
+        $amount = $surcharge->calculateFeeAmountOrder($order, $gatewaySettings);
+        $gatewayHasSurcharge = $amount !== 0;
+        $gatewayFeeLabel = get_option(
+            'mollie-payments-for-woocommerce_gatewayFeeLabel',
+            __(Surcharge::DEFAULT_FEE_LABEL, 'mollie-payments-for-woocommerce')
+        );
+        $surchargeName = $surcharge->buildFeeName($gatewayFeeLabel);
+
+        $correctedFee = false;
+        foreach ($fees as $fee) {
+            $feeName = $fee->get_name();
+            $feeId = $fee->get_id();
+            $hasMollieFee = strpos($feeName, $gatewayFeeLabel) !== false;
+            if ($hasMollieFee) {
+                if($amount == (float) $fee->get_amount('edit')){
+                    continue;
+                }
+                if(!$gatewayHasSurcharge){
+                    $this->removeOrderFee($order, $feeId);
+                }
+                $this->removeOrderFee($order, $feeId);
+                $this->orderAddFee($order, $amount, $surchargeName);
+                $correctedFee = true;
+            }
+        }
+        if (!$correctedFee) {
+            if($gatewayHasSurcharge){
+                $this->orderAddFee($order, $amount, $surchargeName);
+            }
+        }
+        return $order;
+    }
+
+    /**
+     * @param WC_Order $order
+     * @param int $feeId
+     * @throws \Exception
+     */
+    protected function removeOrderFee(WC_Order $order, int $feeId): WC_Order
+    {
+        $order->remove_item($feeId);
+        wc_delete_order_item($feeId);
+        $order->calculate_totals();
+        return $order;
+    }
+
+
+    protected function orderAddFee($order, $amount, $surchargeName)
+    {
+        $item_fee = new WC_Order_Item_Fee();
+        $item_fee->set_name($surchargeName);
+        $item_fee->set_amount($amount);
+        $item_fee->set_total($amount);
+        $item_fee->set_tax_status('none');
+
+        $order->add_item($item_fee);
+        $order->calculate_totals();
     }
 
     /**

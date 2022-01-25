@@ -8,15 +8,11 @@ import {createAppleErrors} from "./applePayError";
         if (_.isEmpty(mollieApplePayBlockDataCart)) {
             return
         }
-        console.log('script componente')
-        console.log(mollieApplePayBlockDataCart)
         const {product: {needShipping = true, subtotal}, shop: {countryCode, currencyCode = 'EUR', totalLabel = ''}, buttonMarkup, ajaxUrl} = mollieApplePayBlockDataCart
 
         const { registerPlugin } = wp.plugins;
         const { ExperimentalOrderMeta } = wc.blocksCheckout;
         const ApplePayButtonComponent = ( { cart, extensions } ) => {
-            console.log('hola')
-            console.log(buttonMarkup)
             return <div dangerouslySetInnerHTML={ {__html: buttonMarkup} }/>
         }
         const MollieApplePayButtonCart = () => {

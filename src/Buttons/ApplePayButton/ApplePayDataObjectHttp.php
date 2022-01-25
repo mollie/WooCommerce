@@ -222,6 +222,9 @@ class ApplePayDataObjectHttp
     {
         foreach ($data as $key => $value) {
             $filterType = $this->filterType($value);
+            if($key === 'woocommerce-process-checkout-nonce'){
+                $key = 'nonce';
+            }
             $this->$key = filter_var($value, $filterType);
         }
     }

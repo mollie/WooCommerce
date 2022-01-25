@@ -7,10 +7,9 @@ namespace Mollie\WooCommerce\Settings;
 use DateInterval;
 use DateTime;
 use Mollie\Api\Exceptions\ApiException;
+use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\AdminNotice;
-use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\General\MollieGeneralSettings;
-use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
 use WC_Payment_Gateway;
 
 class Settings
@@ -97,6 +96,7 @@ class Settings
         $this->statusHelper = $statusHelper;
         $this->apiHelper = $apiHelper;
         $this->globalSettingsUrl = admin_url('admin.php?page=wc-settings&tab=mollie_settings#' . $pluginId);
+
     }
 
     public function getGlobalSettingsUrl()
@@ -182,7 +182,7 @@ class Settings
         if (
             isset($_POST[$paymentSurcharge])
             && $_POST[$paymentSurcharge]
-            !== GatewaySurchargeHandler::NO_FEE
+            !== Surcharge::NO_FEE
         ) {
             $surchargeFields = [
                 '_fixed_fee',

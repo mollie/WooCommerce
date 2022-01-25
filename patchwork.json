@@ -2,6 +2,7 @@
   "redefinable-internals": [
     "filter_input",
     "filemtime",
-    "file_get_contents"
+    "file_get_contents", 
+    "file_exists"
   ]
 }

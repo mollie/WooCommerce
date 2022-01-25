@@ -33,7 +33,6 @@ class Status
         CompatibilityChecker $compatibilityChecker,
         string $pluginTitle
     ) {
-
         $this->compatibilityChecker = $compatibilityChecker;
         $this->pluginTitle = $pluginTitle;
     }
@@ -71,6 +70,7 @@ class Status
 
         if (!$this->hasCompatibleWooCommerceVersion()) {
             $this->errors[] = sprintf(
+                /* translators: Placeholder 1: Plugin title. Placeholder 2: Min WooCommerce version. Placeholder 3: WooCommerce version used. */
                 __(
                     'The %1$s plugin requires at least WooCommerce version %2$s, you are using version %3$s. Please update your WooCommerce plugin.',
                     'mollie-payments-for-woocommerce'
@@ -107,6 +107,7 @@ class Status
             switch ($incompatiblePlatform->getCode()) {
                 case IncompatiblePlatform::INCOMPATIBLE_PHP_VERSION:
                     $error = sprintf(
+                    /* translators: Placeholder 1: Min PHP version. Placeholder 2: PHP version used. Placeholder 3: Opening link tag. placeholder 4: Closing link tag. */
                         __(
                             'Mollie Payments for WooCommerce require PHP %1$s or higher, you have PHP %2$s. Please upgrade and view %3$sthis FAQ%4$s',
                             'mollie-payments-for-woocommerce'

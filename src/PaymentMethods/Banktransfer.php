@@ -61,6 +61,7 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
             'order_dueDate' => [
                 'title' => __('Expiry date', 'mollie-payments-for-woocommerce'),
                 'type' => 'number',
+                /* translators: Placeholder 1: Default expiry days. */
                 'description' => sprintf(__('Number of DAYS after the payment will expire. Default <code>%d</code> days', 'mollie-payments-for-woocommerce'), self::EXPIRY_DEFAULT_DAYS),
                 'default' => self::EXPIRY_DEFAULT_DAYS,
                 'custom_attributes' => [

@@ -274,6 +274,14 @@ function mountComponent (
 
   createComponentLabelElementWithin(currentComponentElement, componentAttributes)
   createComponentsErrorContainerWithin(currentComponentElement, componentAttributes)
+  let componentError = document.querySelector('#' + componentName + '-errors')
+  component.addEventListener('change', event => {
+      if (event.error && event.touched) {
+          componentError.textContent = event.error
+      } else {
+          componentError.textContent = ''
+      }
+  })
 
   !mollieComponentsMap.has(componentName) && mollieComponentsMap.set(componentName, component)
 }

@@ -5,6 +5,301 @@ use Mollie\WooCommerce\Payment\OrderItemsRefunder;
 
 use Mollie\WooCommerceTests\TestCase;
 
+class WC_Order
+{
+    public function get_order_key()
+    {
+    }
+
+    public function get_id()
+    {
+    }
+
+    public function get_status()
+    {
+    }
+
+    public function add_order_note($note)
+    {
+    }
+
+    public function key_is_valid()
+    {
+    }
+
+    public function add_product()
+    {
+    }
+
+    public function calculate_totals()
+    {
+    }
+
+    public function payment_complete()
+    {
+    }
+
+    public function get_customer_id()
+    {
+    }
+
+    public function get_total()
+    {
+    }
+
+    public function get_user_id()
+    {
+    }
+
+    public function get_items()
+    {
+    }
+
+    public function get_billing_first_name()
+    {
+    }
+
+    public function get_billing_last_name()
+    {
+    }
+
+    public function get_billing_email()
+    {
+    }
+
+    public function get_shipping_first_name()
+    {
+    }
+
+    public function get_shipping_last_name()
+    {
+    }
+
+    public function get_billing_address_1()
+    {
+    }
+
+    public function get_billing_address_2()
+    {
+    }
+
+    public function get_billing_postcode()
+    {
+    }
+
+    public function get_billing_city()
+    {
+    }
+
+    public function get_billing_state()
+    {
+    }
+
+    public function get_billing_country()
+    {
+    }
+
+    public function get_shipping_address_1()
+    {
+    }
+
+    public function get_shipping_address_2()
+    {
+    }
+
+    public function get_shipping_postcode()
+    {
+    }
+
+    public function get_shipping_city()
+    {
+    }
+
+    public function get_shipping_state()
+    {
+    }
+
+    public function get_shipping_country()
+    {
+    }
+
+    public function get_shipping_methods()
+    {
+    }
+
+    public function get_order_number()
+    {
+    }
+
+    public function update_meta_data()
+    {
+    }
+
+    public function delete_meta_data()
+    {
+    }
+
+    public function save()
+    {
+    }
+
+    public function get_payment_method()
+    {
+    }
+
+    public function get_checkout_payment_url()
+    {
+    }
+
+    public function get_meta()
+    {
+    }
+    public function get_currency(){}
+}
+class WC_Cart
+{
+    public function needs_shipping()
+    {
+    }
+
+    public function get_subtotal()
+    {
+    }
+
+    public function is_empty()
+    {
+    }
+
+    public function get_shipping_total()
+    {
+    }
+
+    public function add_to_cart()
+    {
+    }
+
+    public function get_total_tax()
+    {
+    }
+
+    public function get_total()
+    {
+    }
+
+    public function remove_cart_item()
+    {
+    }
+
+    public function calculate_shipping()
+    {
+    }
+
+    public function calculate_fees()
+    {
+    }
+
+    public function calculate_totals()
+    {
+    }
+
+    public function get_cart_contents()
+    {
+    }
+
+    public function get_subtotal_tax()
+    {
+    }
+
+    public function add_fee()
+    {
+    }
+}
+class WC_Order_Item_Product extends ArrayObject
+{
+    protected $data = array();
+
+    public function __construct()
+    {
+    }
+
+    public function get_item_quantity()
+    {
+    }
+
+    public function get_name()
+    {
+        return 'productName';
+    }
+
+    public function get_id()
+    {
+    }
+
+    public function get_amount()
+    {
+    }
+}
+
+class WC_Order_Item
+{
+    public function get_quantity()
+    {
+    }
+
+    public function get_total()
+    {
+    }
+
+    public function get_total_tax()
+    {
+    }
+
+    public function get_meta()
+    {
+    }
+
+    public function get_name()
+    {
+    }
+}
+
+class WC_Product
+{
+    public function get_id()
+    {
+    }
+
+    public function get_type()
+    {
+    }
+
+    public function get_price()
+    {
+    }
+
+    public function get_sku()
+    {
+    }
+
+    public function needs_shipping()
+    {
+    }
+
+    public function is_taxable()
+    {
+    }
+
+    public function is_type($type){
+    }
+
+
+}
+
+class Status
+{
+}
+
+
 class WC_Payment_Gateway extends WC_Settings_API
 {
     public $id;
@@ -252,7 +547,3 @@ class Mollie_WC_Helper_PaymentFactory
     }
 }
 
-class Status
-{
-
-}

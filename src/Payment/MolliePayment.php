@@ -9,6 +9,7 @@ use Mollie\WooCommerce\Gateway\AbstractGateway;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Plugin;
 use Mollie\WooCommerce\SDK\Api;
+use Psr\Log\LogLevel;
 use WC_Order;
 use WC_Payment_Gateway;
 use WC_Subscriptions_Manager;
@@ -19,13 +20,14 @@ class MolliePayment extends MollieObject
     public const ACTION_AFTER_REFUND_PAYMENT_CREATED = 'mollie-payments-for-woocommerce' . '_refund_payment_created';
     protected $pluginId;
 
-    public function __construct($data, $pluginId, Api $apiHelper, $settingsHelper, $dataHelper)
+    public function __construct($data, $pluginId, Api $apiHelper, $settingsHelper, $dataHelper, $logger)
     {
         $this->data = $data;
         $this->pluginId = $pluginId;
         $this->apiHelper = $apiHelper;
         $this->settingsHelper = $settingsHelper;
         $this->dataHelper = $dataHelper;
+        $this->logger = $logger;
     }
 
     public function getPaymentObject($paymentId, $testMode = false, $useCache = true)
@@ -39,7 +41,10 @@ class MolliePayment extends MollieObject
 
             return parent::getPaymentObject($paymentId, $testMode = false, $useCache = true);
         } catch (\Mollie\Api\Exceptions\ApiException $e) {
-            $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . ": Could not load payment $paymentId (" . ( $testMode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            $this->logger->log(
+                LogLevel::DEBUG,
+                __FUNCTION__ . ": Could not load payment $paymentId (" . ( $testMode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')'
+            );
         }
 
         return null;
@@ -66,11 +71,11 @@ class MolliePayment extends MollieObject
             return ['result' => 'failure'];
         }
 
-        $mollieMethod = $gateway->paymentMethod->getProperty('id');
+        $gatewayId = $gateway->id;
         $selectedIssuer = $gateway->getSelectedIssuer();
         $returnUrl = $gateway->get_return_url($order);
         $returnUrl = $this->getReturnUrl($order, $returnUrl);
-        $webhookUrl = $this->getWebhookUrl($order, $mollieMethod);
+        $webhookUrl = $this->getWebhookUrl($order, $gatewayId);
         $orderId = $order->get_id();
 
         $paymentRequestData = [
@@ -88,7 +93,7 @@ class MolliePayment extends MollieObject
             'description' => $paymentDescription,
             'redirectUrl' => $returnUrl,
             'webhookUrl' => $webhookUrl,
-            'method' => $mollieMethod,
+            'method' => $gateway->paymentMethod->getProperty('id'),
             'issuer' => $selectedIssuer,
             'locale' => $paymentLocale,
             'metadata' => [
@@ -96,30 +101,7 @@ class MolliePayment extends MollieObject
             ],
         ];
 
-        // Add sequenceType for subscriptions first payments
-        if (
-            class_exists('WC_Subscriptions')
-            && class_exists(
-                'WC_Subscriptions_Admin'
-            )
-        ) {
-            if ($this->dataHelper->isWcSubscription($orderId)) {
-                // See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
-                $disableAutomaticPayments = ('yes' === get_option(
-                    WC_Subscriptions_Admin::$option_prefix
-                        . '_turn_off_automatic_payments',
-                    'no'
-                )) ? true : false;
-                $supportsSubscriptions = $gateway->supports('subscriptions');
-
-                if (
-                    $supportsSubscriptions === true
-                    && $disableAutomaticPayments === false
-                ) {
-                    $paymentRequestData['sequenceType'] = 'first';
-                }
-            }
-        }
+        $paymentRequestData = $this->addSequenceTypeForSubscriptionsFirstPayments($order->get_id(), $gateway, $paymentRequestData);
 
         if ($storeCustomer) {
             $paymentRequestData['customerId'] = $customerId;
@@ -251,7 +233,10 @@ class MolliePayment extends MollieObject
             $order->payment_complete($payment->id);
 
             // Add messages to log
-            $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for payment ' . $orderId);
+            $this->logger->log(
+                LogLevel::DEBUG,
+                __METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for payment ' . $orderId
+            );
 
             $order->add_order_note(sprintf(
             /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
@@ -267,7 +252,10 @@ class MolliePayment extends MollieObject
             $this->unsetCancelledMolliePaymentId($orderId);
 
             // Add messages to log
-            $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' processing paid payment via Mollie plugin fully completed for order ' . $orderId);
+            $this->logger->log(
+                LogLevel::DEBUG,
+                __METHOD__ . ' processing paid payment via Mollie plugin fully completed for order ' . $orderId
+            );
 
             // Subscription processing
             if (class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin')) {
@@ -278,7 +266,10 @@ class MolliePayment extends MollieObject
             }
         } else {
             // Add messages to log
-            $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' payment at Mollie not paid, so no processing for order ' . $orderId);
+            $this->logger->log(
+                LogLevel::DEBUG,
+                __METHOD__ . ' payment at Mollie not paid, so no processing for order ' . $orderId
+            );
         }
     }
 

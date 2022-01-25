@@ -58,8 +58,8 @@ class MollieSettingsPage extends WC_Settings_Page
 
     public function output()
     {
-        global $currentSection;
-        $settings = $this->get_settings($currentSection);
+        global $current_section;
+        $settings = $this->get_settings($current_section);
         $settings = $this->hideKeysIntoStars($settings);
 
         WC_Admin_Settings::output_fields($settings);
@@ -104,14 +104,6 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     public function addGlobalSettingsFields(array $settings): array
     {
-        wp_register_script(
-            'mollie_wc_admin_settings',
-            $this->settingsHelper->pluginUrl . '/public/js/settings.min.js',
-            ['jquery'],
-            $this->settingsHelper->pluginVersion
-        );
-        wp_enqueue_script('mollie_wc_admin_settings');
-
         $presentationText = __(
             'Quickly integrate all major payment methods in WooCommerce, wherever you need them.',
             'mollie-payments-for-woocommerce'
@@ -168,8 +160,9 @@ class MollieSettingsPage extends WC_Settings_Page
 
         // Display location of log files
 
-        /* translators: Placeholder 1: Location of the log files */
+
         $debugDesc .= ' ' . sprintf(
+            /* translators: Placeholder 1: Location of the log files */
             __(
                 'Log files are saved to <code>%s</code>',
                 'mollie-payments-for-woocommerce'
@@ -432,6 +425,7 @@ class MollieSettingsPage extends WC_Settings_Page
         ) {
             $content .= '<div class="notice notice-warning is-dismissible"><p>';
             $content .= sprintf(
+            /* translators: Placeholder 1: Opening link tag. Placeholder 2: Closing link tag. Placeholder 3: Opening link tag. Placeholder 4: Closing link tag. */
                 __(
                     'You have activated Klarna. To accept payments, please make sure all default WooCommerce checkout fields are enabled and required. For more information, go to %1$1sKlarna Pay Later documentation%2$2s or  %3$3sKlarna Slice it documentation%4$4s',
                     'mollie-payments-for-woocommerce'
@@ -559,10 +553,10 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     public function save()
     {
-        global $currentSection;
+        global $current_section;
 
-        $settings = $this->get_settings($currentSection);
-        if ('applepay_button' === $currentSection) {
+        $settings = $this->get_settings($current_section);
+        if ('applepay_button' === $current_section) {
             $this->saveApplePaySettings();
         } else {
             $settings = $this->saveApiKeys($settings);

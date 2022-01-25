@@ -12,7 +12,7 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
             'id' => 'applepay',
             'defaultTitle' => __('Apple Pay', 'mollie-payments-for-woocommerce'),
             'settingsDescription' => __('To accept payments via Apple Pay', 'mollie-payments-for-woocommerce'),
-            'defaultDescription' => __('Select your bank', 'mollie-payments-for-woocommerce'),
+            'defaultDescription' => '',
             'paymentFields' => false,
             'instructions' => true,
             'supports' => [

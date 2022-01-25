@@ -43,20 +43,21 @@ class PaymentModule implements ServiceModule, ExecutableModule
     {
         return [
            PaymentFactory::class => static function (ContainerInterface $container): PaymentFactory {
-               $data = $container->get('shared.data_helper');
-               $apiHelper = $container->get('shared.api_helper');
                $settingsHelper = $container->get('settings.settings_helper');
+               $apiHelper = $container->get('SDK.api_helper');
+               $data = $container->get('settings.data_helper');
                $pluginId = $container->get('shared.plugin_id');
                $logger = $container->get(Logger::class);
                return new PaymentFactory($data, $apiHelper, $settingsHelper, $pluginId, $logger);
            },
            MollieObject::class => static function (ContainerInterface $container): MollieObject {
                $logger = $container->get(Logger::class);
-               $data = $container->get('shared.data_helper');
-               $apiHelper = $container->get('shared.api_helper');
+               $data = $container->get('settings.data_helper');
+               $apiHelper = $container->get('SDK.api_helper');
+               $pluginId = $container->get('shared.plugin_id');
                $paymentFactory = $container->get(PaymentFactory::class);
                $settingsHelper = $container->get('settings.settings_helper');
-               return new MollieObject($data, $logger, $paymentFactory, $apiHelper, $settingsHelper);
+               return new MollieObject($data, $logger, $paymentFactory, $apiHelper, $settingsHelper, $pluginId);
            },
         ];
     }
@@ -65,10 +66,11 @@ class PaymentModule implements ServiceModule, ExecutableModule
     {
         $this->httpResponse = $container->get('SDK.HttpResponse');
         $this->logger = $container->get(Logger::class);
-        $this->apiHelper = $container->get('shared.api_helper');
+        $this->apiHelper = $container->get('SDK.api_helper');
         $this->settingsHelper = $container->get('settings.settings_helper');
         $this->pluginId = $container->get('shared.plugin_id');
         $this->gatewayClassnames = $container->get('gateway.classnames');
+
         // Listen to return URL call
         add_action('woocommerce_api_mollie_return', [ $this, 'onMollieReturn' ]);
         add_action('template_redirect', [ $this, 'mollieReturnRedirect' ]);
@@ -315,8 +317,8 @@ class PaymentModule implements ServiceModule, ExecutableModule
         $mollie_order_id = ( $mollie_order_id = $order->get_meta('_mollie_order_id', true) ) ? $mollie_order_id : false;
         // Is it a payment? you cannot ship a payment
         if ($mollie_order_id === false || substr($mollie_order_id, 0, 3) === 'tr_') {
-            $order->add_order_note('Order contains Mollie payment method, but not a Mollie Order ID. Processing capture canceled.');
-            $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order contains Mollie payment method, but not a Mollie Order ID. Processing capture cancelled.');
+            $order->add_order_note('Processing a payment, no capture needed');
+            $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Processing a payment, no capture needed.');
 
             return;
         }

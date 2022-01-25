@@ -5,22 +5,15 @@ namespace Mollie\WooCommerceTests\Functional\Payment;
 use Mollie\Api\Endpoints\OrderEndpoint;
 use Mollie\Api\MollieApiClient;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
-use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
-use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\PaymentService;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
-use Mollie\WooCommerce\PaymentMethods\Ideal;
-use Mollie\WooCommerce\SDK\Api;
-use Mollie\WooCommerce\Settings\Settings;
-use Mollie\WooCommerce\Shared\Data;
-use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
-use Mollie\WooCommerceTests\Stubs\Status;
+use Mollie\WooCommerceTests\Functional\HelperMocks;
 use Mollie\WooCommerceTests\Stubs\WC_Order_Item_Product;
 use Mollie\WooCommerceTests\Stubs\WC_Settings_API;
 use Mollie\WooCommerceTests\TestCase;
-use PHPUnit_Framework_Exception;
-use Psr\Log\LoggerInterface;
+
+
 
 use stdClass;
 
@@ -33,6 +26,15 @@ use function Brain\Monkey\Functions\when;
  */
 class PaymentServiceTest extends TestCase
 {
+    /** @var HelperMocks */
+    private $helperMocks;
+
+    public function __construct($name = null, array $data = [], $dataName = '')
+    {
+        parent::__construct($name, $data, $dataName);
+        $this->helperMocks = new HelperMocks();
+    }
+
     /**
      * GIVEN I RECEIVE A WC ORDER (DIFFERENT KIND OF WC PRODUCTS OR SUBSCRIPTIONS)
      * WHEN I PAY WITH ANY GATEWAY (STATUS PAID, AUTHORIZED)
@@ -56,7 +58,7 @@ class PaymentServiceTest extends TestCase
         $mollieOrderId = 'wvndyu';//ord_wvndyu
         $processPaymentRedirect = 'https://www.mollie.com/payscreen/order/checkout/'. $mollieOrderId;
 
-        $paymentMethod = $this->paymentMethodBuilder($paymentMethodId);
+        $paymentMethod = $this->helperMocks->paymentMethodBuilder($paymentMethodId);
         $orderEndpoints = $this->createConfiguredMock(
             OrderEndpoint::class,
             [
@@ -69,13 +71,13 @@ class PaymentServiceTest extends TestCase
         );
         $apiClientMock->orders = $orderEndpoints;
         $testee = new PaymentService(
-            $this->noticeMock(),
-            $this->loggerMock(),
-            $this->paymentFactory($apiClientMock),
-            $this->dataHelper($apiClientMock),
-            $this->apiHelper($apiClientMock),
-            $this->settingsHelper(),
-            $this->pluginId(),
+            $this->helperMocks->noticeMock(),
+            $this->helperMocks->loggerMock(),
+            $this->helperMocks->paymentFactory($apiClientMock),
+            $this->helperMocks->dataHelper($apiClientMock),
+            $this->helperMocks->apiHelper($apiClientMock),
+            $this->helperMocks->settingsHelper(),
+            $this->helperMocks->pluginId(),
             $this->paymentCheckoutService($apiClientMock)
         );
         stubs(
@@ -124,87 +126,13 @@ class PaymentServiceTest extends TestCase
                 'get_return_url' => 'https://webshop.example.org/wc-api/',
             ]
         );
-        $gateway->paymentMethod = $this->paymentMethodBuilder($paymentMethodName, $isSepa, $isSubscription);
+        $gateway->paymentMethod = $this->helperMocks->paymentMethodBuilder($paymentMethodName, $isSepa, $isSubscription);
         $gateway->paymentService = $testee;
 
         return $gateway;
     }
 
-    protected function dataHelper($apiClientMock){
-        $apiHelper = $this->apiHelper($apiClientMock);
-        $logger = $this->loggerMock();
-        $pluginId = $this->pluginId();
-        $pluginPath = $this->pluginPath();
-        $settings = $this->settingsHelper();
-        return new Data($apiHelper, $logger, $pluginId, $settings, $pluginPath);
-    }
-    protected function apiHelper($apiClientMock)
-    {
-        $api = $this->createPartialMock(
-            Api::class,
-            ['getApiClient']
-        );
 
-
-        $api->method('getApiClient')->willReturn($apiClientMock);
-        return $api;
-
-    }
-    protected function settingsHelper()
-    {
-        return $this->createConfiguredMock(
-            Settings::class,
-            [
-                'isTestModeEnabled' => 'true',
-                'getApiKey' => 'test_NtHd7vSyPSpEyuTEwhjsxdjsgVG4SV',
-                'getPaymentLocale' => 'en_US',
-                'shouldStoreCustomer' => false,
-            ]
-        );
-
-    }
-
-    protected function pluginId()
-    {
-        return 'mollie-payments-for-woocommerce';
-    }
-    protected function pluginVersion()
-    {
-        return '7.0.0';
-    }
-    protected function pluginPath()
-    {
-        return 'plugin/path';
-    }
-    protected function pluginUrl()
-    {
-        return 'https://pluginUrl.com';
-    }
-    protected function statusHelper()
-    {
-        return new Status();
-    }
-
-    protected function paymentFactory($apiClientMock){
-        return new PaymentFactory(
-            $this->dataHelper($apiClientMock),
-            $this->apiHelper($apiClientMock),
-            $this->settingsHelper(),
-            $this->pluginId(),
-            $this->loggerMock()
-        );
-    }
-
-    protected function noticeMock()
-    {
-        return $this->getMockBuilder(AdminNotice::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-    }
-    protected function loggerMock()
-    {
-        return new emptyLogger();
-    }
     /**
      *
      * @throws PHPUnit_Framework_Exception
@@ -212,7 +140,7 @@ class PaymentServiceTest extends TestCase
     private function wcOrder($id, $orderKey)
     {
         $item = $this->createConfiguredMock(
-            'Mollie\WooCommerceTests\Stubs\WC_Order',
+            'WC_Order',
             [
                 'get_id' => $id,
                 'get_order_key' => $orderKey,
@@ -249,7 +177,7 @@ class PaymentServiceTest extends TestCase
      * @return PHPUnit_Framework_MockObject_MockObject
      * @throws PHPUnit_Framework_Exception
      */
-    private function wooCommerce() {
+    public function wooCommerce() {
         $item = $this->createConfiguredMock(
             'WooCommerce',
             [
@@ -268,7 +196,7 @@ class PaymentServiceTest extends TestCase
     {
 
         $item = $this->createConfiguredMock(
-            'Mollie\WooCommerceTests\Stubs\WC_Product',
+            'WC_Product',
             [
                 'get_price' => '1',
                 'get_id'=>'1',
@@ -288,7 +216,7 @@ class PaymentServiceTest extends TestCase
      */
     private function wcOrderItem()
     {
-        $item = new WC_Order_Item_Product();
+        $item = new \WC_Order_Item_Product();
 
         $item['quantity'] = 1;
         $item['variation_id'] = null;
@@ -412,51 +340,18 @@ class PaymentServiceTest extends TestCase
             'orderNumber' => 1
         ];
     }
-    protected function paymentMethodBuilder($paymentMethodName, $isSepa = false, $isSubscription = false){
-
-        $paymentMethod= $this->createPartialMock(
-            Ideal::class,
-            ['getConfig', 'getInitialOrderStatus', 'getMergedProperties']
-        );
-        $paymentMethod
-            ->method('getConfig')
-            ->willReturn(
-                $this->gatewayMockedOptions($paymentMethodName, $isSepa, $isSubscription)
-            );
-        $paymentMethod
-            ->method('getInitialOrderStatus')
-            ->willReturn('paid');
-        $paymentMethod
-            ->method('getMergedProperties')
-            ->willReturn($this->paymentMethodMergedProperties($paymentMethodName, $isSepa, $isSubscription));
-
-        return $paymentMethod;
+    protected function paymentMethodBuilder($paymentMethodName, $isSepa = false, $isSubscription = false)
+    {
+        return $this->helperMocks->paymentMethodBuilder($paymentMethodName, $isSepa, $isSubscription);
     }
 
-    protected function paymentMethodMergedProperties($paymentMethodName, $isSepa, $isSubscription){
-        $options = $this->gatewayMockedOptions($paymentMethodName, $isSepa, $isSubscription);
-        $settings = [
-            'enabled' => 'yes',
-            'title' => 'default title',
-            'description' => 'default description',
-            'display_logo' =>  'yes',
-            'iconFileUrl' => '',
-            'iconFilePath' => '',
-            'allowed_countries' =>  [],
-            'enable_custom_logo' => false,
-            'payment_surcharge' =>  'no_fee',
-            'fixed_fee' => '0.00',
-            'percentage' =>  '0.00',
-            'surcharge_limit' => '0.00',
-            'maximum_limit' => '0.00',
-            'activate_expiry_days_setting' => 'no',
-            'order_dueDate' => '0',
-            'issuers_dropdown_shown' => 'yes',
-            'issuers_empty_option' => 'Select your bank',
-            'initial_order_status' => 'on-hold',
-
-        ];
-        return array_merge($options, $settings);
+    protected function paymentMethodMergedProperties($paymentMethodName, $isSepa, $isSubscription)
+    {
+        return $this->helperMocks->paymentMethodMergedProperties($paymentMethodName, $isSepa, $isSubscription);
+    }
+    protected function gatewayMockedOptions(string $paymentMethodId, $isSepa = false, $isSubscription = false)
+    {
+        return $this->helperMocks->gatewayMockedOptions($paymentMethodId, $isSepa, $isSubscription);
     }
 
     protected function iconFactoryMock()
@@ -506,79 +401,15 @@ class PaymentServiceTest extends TestCase
 
     protected function paymentCheckoutService($apiClientMock)
     {
-        $data = $this->dataHelper($apiClientMock);
+        $data = $this->helperMocks->dataHelper($apiClientMock);
         return new PaymentCheckoutRedirectService($data);
     }
 
-    protected function gatewayMockedOptions(string $paymentMethodId, $isSepa = false, $isSubscription = false)
-    {
-        return [
-            'id' => strtolower($paymentMethodId),
-            'defaultTitle' => __($paymentMethodId, 'mollie-payments-for-woocommerce'),
-            'settingsDescription' => '',
-            'defaultDescription' => __('Select your bank', 'mollie-payments-for-woocommerce'),
-            'paymentFields' => true,
-            'instructions' => true,
-            'supports' => [
-                'products',
-                'refunds',
-            ],
-            'filtersOnBuild' => false,
-            'confirmationDelayed' => false,
-            'SEPA' => $isSepa,
-            'Subscription' => $isSubscription
-        ];
-    }
+
 }
 
 
-class emptyLogger implements LoggerInterface{
 
-    public function emergency($message, array $context = array())
-    {
-        // TODO: Implement emergency() method.
-    }
-
-    public function alert($message, array $context = array())
-    {
-        // TODO: Implement alert() method.
-    }
-
-    public function critical($message, array $context = array())
-    {
-        // TODO: Implement critical() method.
-    }
-
-    public function error($message, array $context = array())
-    {
-        // TODO: Implement error() method.
-    }
-
-    public function warning($message, array $context = array())
-    {
-        // TODO: Implement warning() method.
-    }
-
-    public function notice($message, array $context = array())
-    {
-        // TODO: Implement notice() method.
-    }
-
-    public function info($message, array $context = array())
-    {
-        // TODO: Implement info() method.
-    }
-
-    public function debug($message, array $context = array())
-    {
-        // TODO: Implement debug() method.
-    }
-
-    public function log($level, $message, array $context = array())
-    {
-        // TODO: Implement log() method.
-    }
-}
 class MollieOrderResponse
 {
     public $resource;

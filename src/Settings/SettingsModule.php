@@ -10,8 +10,11 @@ use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\Notice\AdminNotice;
+use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Page\MollieSettingsPage;
+use Mollie\WooCommerce\Shared\Data;
 use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface as Logger;
 
 class SettingsModule implements ServiceModule, ExecutableModule
 {
@@ -39,7 +42,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
                 $pluginUrl = $container->get('shared.plugin_url');
                 $statusHelper = $container->get('shared.status_helper');
                 $pluginVersion = $container->get('shared.plugin_version');
-                $apiHelper =  $container->get('shared.api_helper');
+                $apiHelper =  $container->get('SDK.api_helper');
                 return new Settings(
                     $pluginId,
                     $statusHelper,
@@ -48,8 +51,14 @@ class SettingsModule implements ServiceModule, ExecutableModule
                     $apiHelper
                 );
             },
-            'settings.payment_method_settings_handler' => static function (): PaymentMethodSettingsHandler {
-                return new PaymentMethodSettingsHandler();
+            'settings.data_helper' => static function (ContainerInterface $container): Data {
+                /** @var Api $apiHelper */
+                $apiHelper = $container->get('SDK.api_helper');
+                $logger = $container->get(Logger::class);
+                $pluginId = $container->get('shared.plugin_id');
+                $pluginPath = $container->get('shared.plugin_path');
+                $settings = $container->get('settings.settings_helper');
+                return new Data($apiHelper, $logger, $pluginId, $settings, $pluginPath);
             },
             'settings.IsTestModeEnabled' => static function (ContainerInterface $container): bool {
                 /** @var Settings $settingsHelper */
@@ -64,7 +73,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
         $this->plugin_basename = $container->get('shared.plugin_file');
         $this->settingsHelper = $container->get('settings.settings_helper');
         $this->isTestModeEnabled = $container->get('settings.IsTestModeEnabled');
-        $this->dataHelper = $container->get('shared.data_helper');
+        $this->dataHelper = $container->get('settings.data_helper');
         $pluginPath = $container->get('shared.plugin_path');
         $gateways = $container->get('gateway.instances');
         // Add settings link to plugins page
@@ -137,6 +146,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
         if ($isTestModeEnabled) {
             $notice = new AdminNotice();
             $message = sprintf(
+                /* translators: Placeholder 1: Opening strong tag. Placeholder 2: Closing strong tag. Placeholder 3: Opening link tag. Placeholder 4: Closing link tag. */
                 esc_html__(
                     '%1$sMollie Payments for WooCommerce%2$s The test mode is active, %3$s disable it%4$s before deploying into production.',
                     'mollie-payments-for-woocommerce'

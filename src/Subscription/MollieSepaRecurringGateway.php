@@ -107,7 +107,7 @@ class MollieSepaRecurringGateway extends MollieSubscriptionGateway
     {
         $result = null;
         if ($this->recurringMollieMethod) {
-            $result = $this->recurringMollieMethod->paymentMethod->getProperty('defaultTitle');
+            $result = $this->recurringMollieMethod->paymentMethod->getProperty('title');
         }
 
         return $result;

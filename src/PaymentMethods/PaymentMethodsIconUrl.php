@@ -154,7 +154,7 @@ class PaymentMethodsIconUrl
 
         $enabledCreditcards = [];
 
-        $creditcardSettings = get_option('mollie_wc_gateway_creditcard_settings', []) ?: [];
+        $creditcardSettings = get_option('mollie_wc_gateway_creditcard_settings', []);
         foreach ($creditcardsAvailable as $card) {
             if (mollieWooCommerceStringToBoolOption($creditcardSettings[$optionLexem . $card])) {
                 $enabledCreditcards[] = $card . $svgFileName;
@@ -196,7 +196,6 @@ class PaymentMethodsIconUrl
             $actual .= "</svg>";
             set_transient('svg_creditcards_string', $actual, DAY_IN_SECONDS);
         }
-
         return $actual;
     }
 

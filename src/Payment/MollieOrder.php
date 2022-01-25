@@ -85,12 +85,16 @@ class MollieOrder extends MollieObject
             return  [ 'result' => 'failure' ];
         }
 
-        $mollieMethod = $gateway->paymentMethod->getProperty('id');
+        $gatewayId = $gateway->id;
         $selectedIssuer = $gateway->getSelectedIssuer();
         $returnUrl = $gateway->get_return_url($order);
         $returnUrl = $this->getReturnUrl($order, $returnUrl);
-        $webhookUrl = $this->getWebhookUrl($order, $mollieMethod);
-        if ($mollieMethod !== 'paypal' || ($mollieMethod === 'paypal' && $order->get_billing_first_name() !== '')) {
+        $webhookUrl = $this->getWebhookUrl($order, $gatewayId);
+        if (
+            $gatewayId !== 'paypal'
+            || ($gatewayId === 'paypal'
+                && $order->get_billing_first_name() !== '')
+        ) {
             $billingAddress = $this->createBillingAddress($order);
             $shippingAddress = $this->createShippingAddress($order);
         }
@@ -114,7 +118,7 @@ class MollieOrder extends MollieObject
             ],
             'redirectUrl' => $returnUrl,
             'webhookUrl' => $webhookUrl,
-            'method' => $mollieMethod,
+            'method' => $gateway->paymentMethod->getProperty('id'),
             'payment' => [
                 'issuer' => $selectedIssuer,
             ],
@@ -131,28 +135,7 @@ class MollieOrder extends MollieObject
             'orderNumber' => $order->get_order_number(),
         ];
 
-            // Add sequenceType for subscriptions first payments
-        if (class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin')) {
-            if ($this->dataHelper->isWcSubscription($order->get_id())) {
-                // See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
-                $disable_automatic_payments = ( 'yes' === get_option(\WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no') ) ? true : false;
-                $supports_subscriptions = $gateway->supports('subscriptions');
-
-                if ($supports_subscriptions === true && $disable_automatic_payments === false) {
-                    $paymentRequestData['payment']['sequenceType'] = 'first';
-                }
-            }
-        }
-
-        $dataHelper = $this->dataHelper;
-        $orderId = $order->get_id();
-        if ($dataHelper->isSubscription($orderId)) {
-            $supports_subscriptions = $gateway->supports('subscriptions');
-
-            if ($supports_subscriptions === true) {
-                $paymentRequestData['payment']['sequenceType'] = 'first';
-            }
-        }
+        $paymentRequestData = $this->addSequenceTypeForSubscriptionsFirstPayments($order->get_id(), $gateway, $paymentRequestData);
 
         // Only add shippingAddress if all required fields are set
         if (
@@ -757,6 +740,7 @@ class MollieOrder extends MollieObject
                         $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - Cancelled order line: ' . abs($item->get_quantity()) . 'x ' . $item->get_name() . '. Mollie order line: ' . $line->id . ', payment object: ' . $paymentObject->id . ', order: ' . $orderId . ', amount: ' . $this->data->getOrderCurrency($order) . wc_format_decimal($itemRefundAmount) . ( ! empty($reason) ? ', reason: ' . $reason : '' ));
 
                         if ($refund === null) {
+                            /* translators: Placeholder 1: Number of items. Placeholder 2: Name of item. Placeholder 3: Currency. Placeholder 4: Amount.*/
                             $noteMessage = sprintf(
                                 __('%1$sx %2$s cancelled for %3$s%4$s in WooCommerce and at Mollie.', 'mollie-payments-for-woocommerce'),
                                 abs($item->get_quantity()),
@@ -772,7 +756,7 @@ class MollieOrder extends MollieObject
                         $refund = $mollieOrder->refund($lines);
 
                         $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - Refunded order line: ' . abs($item->get_quantity()) . 'x ' . $item->get_name() . '. Mollie order line: ' . $line->id . ', payment object: ' . $paymentObject->id . ', order: ' . $orderId . ', amount: ' . $this->data->getOrderCurrency($order) . wc_format_decimal($itemRefundAmount) . ( ! empty($reason) ? ', reason: ' . $reason : '' ));
-
+                        /* translators: Placeholder 1: Number of items. Placeholder 2: Name of item. Placeholder 3: Currency. Placeholder 4: Amount. Placeholder 5: Reason. Placeholder 6: Refund Id. */
                         $noteMessage = sprintf(
                             __('%1$sx %2$s refunded for %3$s%4$s in WooCommerce and at Mollie.%5$s Refund ID: %6$s.', 'mollie-payments-for-woocommerce'),
                             abs($item->get_quantity()),
@@ -846,7 +830,7 @@ class MollieOrder extends MollieObject
                 ],
                 'description' => $reason,
             ]);
-
+            /* translators: Placeholder 1: Currency. Placeholder 2: Refund amount. Placeholder 3: Reason. Placeholder 4: Refund id.*/
             $noteMessage = sprintf(
                 __('Amount refund of %1$s%2$s refunded in WooCommerce and at Mollie.%3$s Refund ID: %4$s.', 'mollie-payments-for-woocommerce'),
                 $this->dataHelper->getOrderCurrency($order),

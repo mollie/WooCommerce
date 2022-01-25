@@ -28,7 +28,6 @@ use Mollie\WooCommerce\Payment\PaymentService;
 use Mollie\WooCommerce\PaymentMethods\Directdebit;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
 use Mollie\WooCommerce\SDK\Api;
-use Mollie\WooCommerce\Settings\PaymentMethodSettingsHandler;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Subscription\MollieSepaRecurringGateway;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
@@ -115,8 +114,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $logger = $container->get(Logger::class);
                 $notice = $container->get(AdminNotice::class);
                 $paymentFactory = $container->get(PaymentFactory::class);
-                $data = $container->get('shared.data_helper');
-                $api = $container->get('shared.api_helper');
+                $data = $container->get('settings.data_helper');
+                $api = $container->get('SDK.api_helper');
                 $settings = $container->get('settings.settings_helper');
                 $pluginId = $container->get('shared.plugin_id');
                 $paymentCheckoutRedirectService = $container->get(PaymentCheckoutRedirectService::class);
@@ -126,23 +125,23 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 return new OrderInstructionsService();
             },
             PaymentFieldsService::class => static function (ContainerInterface $container): PaymentFieldsService {
-                $data = $container->get('shared.data_helper');
+                $data = $container->get('settings.data_helper');
                 return new PaymentFieldsService($data);
             },
             PaymentCheckoutRedirectService::class => static function (
                 ContainerInterface $container
             ): PaymentCheckoutRedirectService {
-                $data = $container->get('shared.data_helper');
+                $data = $container->get('settings.data_helper');
                 return new PaymentCheckoutRedirectService($data);
             },
-            SurchargeService::class => static function (ContainerInterface $container): SurchargeService {
-                return new SurchargeService();
+            Surcharge::class => static function (ContainerInterface $container): Surcharge {
+                return new Surcharge();
             },
             MollieOrderService::class => static function (ContainerInterface $container): MollieOrderService {
                 $HttpResponseService = $container->get('SDK.HttpResponse');
                 $logger = $container->get(Logger::class);
                 $paymentFactory = $container->get(PaymentFactory::class);
-                $data = $container->get('shared.data_helper');
+                $data = $container->get('settings.data_helper');
                 $pluginId = $container->get('shared.plugin_id');
                 return new MollieOrderService($HttpResponseService, $logger, $paymentFactory, $data, $pluginId);
             },
@@ -202,15 +201,15 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $notice = $container->get(AdminNotice::class);
         $logger = $container->get(Logger::class);
         $pluginUrl = $container->get('shared.plugin_url');
-        $apiHelper = $container->get('shared.api_helper');
+        $apiHelper = $container->get('SDK.api_helper');
         $settingsHelper = $container->get('settings.settings_helper');
         $appleGateway = $container->get('gateway.instances')['mollie_wc_gateway_applepay'];
-        $this->gatewaySurchargeHandling();
+        $this->gatewaySurchargeHandling($container->get(Surcharge::class));
         $this->mollieApplePayDirectHandling($notice, $logger, $apiHelper, $settingsHelper, $appleGateway);
         $gatewayInstances = $container->get('gateway.instances');
         $paypalGateway = $gatewayInstances['mollie_wc_gateway_paypal'];
         $this->molliePayPalButtonHandling($paypalGateway, $notice, $logger, $pluginUrl);
-        $checkoutBlockHandler = new CheckoutBlockService($container->get('shared.data_helper'));
+        $checkoutBlockHandler = new CheckoutBlockService($container->get('settings.data_helper'));
         $checkoutBlockHandler->bootstrapAjaxRequest();
 
         return true;
@@ -305,9 +304,9 @@ class GatewayModule implements ServiceModule, ExecutableModule
         return $gateways;
     }
 
-    public function gatewaySurchargeHandling()
+    public function gatewaySurchargeHandling(Surcharge $surcharge)
     {
-        new GatewaySurchargeHandler();
+        new GatewaySurchargeHandler($surcharge);
     }
 
     /**
@@ -408,28 +407,28 @@ class GatewayModule implements ServiceModule, ExecutableModule
 
     public function instantiatePaymentMethodGateways(ContainerInterface $container): array
     {
+
         $logger = $container->get(Logger::class);
         $notice = $container->get(AdminNotice::class);
         $iconFactory = $container->get(IconFactory::class);
         $paymentService = $container->get(PaymentService::class);
-        $surchargeService = $container->get(SurchargeService::class);
+        $surchargeService = $container->get(Surcharge::class);
         $mollieOrderService = $container->get(MollieOrderService::class);
         $HttpResponseService = $container->get('SDK.HttpResponse');
         $settingsHelper = $container->get('settings.settings_helper');
-        $apiHelper = $container->get('shared.api_helper');
+        $apiHelper = $container->get('SDK.api_helper');
         $paymentMethods = $container->get('gateway.paymentMethods');
-        $data = $container->get('shared.data_helper');
+        $data = $container->get('settings.data_helper');
         $orderInstructionsService = new OrderInstructionsService();
         $paymentFieldsService = $container->get(PaymentFieldsService::class);
         $mollieObject = $container->get(MollieObject::class);
         $paymentFactory = $container->get(PaymentFactory::class);
+        $pluginId = $container->get('shared.plugin_id');
         $gateways = [];
-        $paymentMethodSettingsHandler = new PaymentMethodSettingsHandler();
 
         foreach ($paymentMethods as $paymentMethodName) {
             $paymentMethodName = 'Mollie\\WooCommerce\\PaymentMethods\\' . $paymentMethodName;
             $paymentMethod = new $paymentMethodName(
-                $paymentMethodSettingsHandler,
                 $iconFactory,
                 $settingsHelper,
                 $paymentFieldsService,
@@ -441,7 +440,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
             //si lo saco de aquí y devuelve solo uno gatewayFactory(type)
             if ($isSepa) {
                 $directDebit = new Directdebit(
-                    $paymentMethodSettingsHandler,
                     $iconFactory,
                     $settingsHelper,
                     $paymentFieldsService,
@@ -460,7 +458,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                     $settingsHelper,
                     $mollieObject,
                     $paymentFactory,
-                    $this->pluginId,
+                    $pluginId,
                     $apiHelper
                 );
             } elseif ($paymentMethod->getProperty('Subscription')) {
@@ -476,7 +474,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                     $settingsHelper,
                     $mollieObject,
                     $paymentFactory,
-                    $this->pluginId,
+                    $pluginId,
                     $apiHelper
                 );
             } else {
@@ -491,7 +489,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                     $HttpResponseService,
                     $mollieObject,
                     $paymentFactory,
-                    $this->pluginId
+                    $pluginId
                 );
             }
         }

@@ -21,10 +21,9 @@ class CreditcardFieldsStrategy implements PaymentFieldsStrategyI
         <p class="mollie-components-description">
             <?php
             printf(
-                __(
-                    esc_html('%1$s Secure payments provided by %2$s'),
-                    'mollie-payments-for-woocommerce'
-                ),
+            /* translators: Placeholder 1: Lock icon. Placeholder 2: Mollie logo. */
+            __('%1$s Secure payments provided by %2$s',
+                    'mollie-payments-for-woocommerce'),
                 $this->lockIcon($dataHelper),
                 $this->mollieLogo($dataHelper)
             );

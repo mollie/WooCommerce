@@ -45,14 +45,14 @@ class MollieObject
     protected $settingsHelper;
     protected $dataHelper;
 
-    public function __construct($data, Logger $logger, PaymentFactory $paymentFactory, Api $apiHelper, Settings $settingsHelper)
+    public function __construct($data, Logger $logger, PaymentFactory $paymentFactory, Api $apiHelper, Settings $settingsHelper, string $pluginId)
     {
         $this->data = $data;
         $this->logger = $logger;
         $this->paymentFactory = $paymentFactory;
         $this->apiHelper = $apiHelper;
         $this->settingsHelper = $settingsHelper;
-
+        $this->pluginId = $pluginId;
         $base_location = wc_get_base_location();
         static::$shop_country = $base_location['country'];
     }
@@ -138,8 +138,7 @@ class MollieObject
      */
     public function setActiveMolliePayment($orderId)
     {
-        // Do extra checks if WooCommerce Subscriptions is installed
-        if (class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin') && $this->dataHelper->isWcSubscription($orderId)) {
+        if ($this->dataHelper->isSubscription($orderId)) {
             return $this->setActiveMolliePaymentForSubscriptions($orderId);
         }
 
@@ -193,24 +192,39 @@ class MollieObject
         }
 
         // Also store it on the subscriptions being purchased or paid for in the order
-        if (wcs_order_contains_subscription($order_id)) {
-            $subscriptions = wcs_get_subscriptions_for_order($order_id);
-        } elseif (wcs_order_contains_renewal($order_id)) {
-            $subscriptions = wcs_get_subscriptions_for_renewal_order($order_id);
-        } else {
-            $subscriptions =  [];
-        }
-
-        foreach ($subscriptions as $subscription) {
-            $this->unsetActiveMolliePayment($subscription->get_id());
-            $subscription->delete_meta_data('_mollie_customer_id');
-            $subscription->update_meta_data('_mollie_payment_id', static::$paymentId);
-            $subscription->update_meta_data('_mollie_payment_mode', $this->data->mode);
-            $subscription->delete_meta_data('_mollie_cancelled_payment_id');
-            if (static::$customerId) {
-                $subscription->update_meta_data('_mollie_customer_id', static::$customerId);
+        if (
+            class_exists('WC_Subscriptions')
+            && class_exists('WC_Subscriptions_Admin')
+            && $this->dataHelper->isWcSubscription($order_id)
+        ) {
+            if (wcs_order_contains_subscription($order_id)) {
+                $subscriptions = wcs_get_subscriptions_for_order($order_id);
+            } elseif (wcs_order_contains_renewal($order_id)) {
+                $subscriptions = wcs_get_subscriptions_for_renewal_order($order_id);
+            } else {
+                $subscriptions = array();
             }
-            $subscription->save();
+
+            foreach ($subscriptions as $subscription) {
+                $this->unsetActiveMolliePayment($subscription->get_id());
+                $subscription->delete_meta_data('_mollie_customer_id');
+                $subscription->update_meta_data(
+                    '_mollie_payment_id',
+                    static::$paymentId
+                );
+                $subscription->update_meta_data(
+                    '_mollie_payment_mode',
+                    $this->data->mode
+                );
+                $subscription->delete_meta_data('_mollie_cancelled_payment_id');
+                if (static::$customerId) {
+                    $subscription->update_meta_data(
+                        '_mollie_customer_id',
+                        static::$customerId
+                    );
+                }
+                $subscription->save();
+            }
         }
 
         $order->save();
@@ -227,8 +241,7 @@ class MollieObject
      */
     public function unsetActiveMolliePayment($order_id, $payment_id = null)
     {
-        // Do extra checks if WooCommerce Subscriptions is installed
-        if (class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin') && $this->dataHelper->isWcSubscription($order_id)) {
+        if ($this->dataHelper->isSubscription($order_id)) {
             return $this->unsetActiveMolliePaymentForSubscriptions($order_id);
         }
 
@@ -561,6 +574,20 @@ class MollieObject
         }
     }
 
+
+    protected function addSequenceTypeForSubscriptionsFirstPayments($orderId, $gateway, $paymentRequestData): array
+    {
+        if ($this->dataHelper->isSubscription($orderId)) {
+            $disable_automatic_payments = apply_filters( $this->pluginId . '_is_automatic_payment_disabled', false );
+            $supports_subscriptions = $gateway->supports('subscriptions');
+
+            if ($supports_subscriptions == true && $disable_automatic_payments == false) {
+                $paymentRequestData['payment']['sequenceType'] = 'first';
+            }
+        }
+        return $paymentRequestData;
+    }
+
     /**
      * @param $order
      */
@@ -778,28 +805,18 @@ class MollieObject
      */
     protected function asciiDomainName($url): string
     {
+        $parsed = parse_url($url);
+        $scheme = $parsed['scheme']?:'';
+        $domain = $parsed['host']?:false;
+        $query = $parsed['query']?:'';
+        $path = $parsed['path']?:'';
+        if(!$domain){
+            return $url;
+        }
+
         if (function_exists('idn_to_ascii')) {
-            $parsed = parse_url($url);
-            $query = $parsed['query'];
-            $url = str_replace('?' . $query, '', $url);
-            if (defined('IDNA_NONTRANSITIONAL_TO_ASCII')
-                && defined(
-                    'INTL_IDNA_VARIANT_UTS46'
-                )
-            ) {
-                $url = idn_to_ascii(
-                    $url,
-                    IDNA_NONTRANSITIONAL_TO_ASCII,
-                    INTL_IDNA_VARIANT_UTS46
-                ) ? idn_to_ascii(
-                    $url,
-                    IDNA_NONTRANSITIONAL_TO_ASCII,
-                    INTL_IDNA_VARIANT_UTS46
-                ) : $url;
-            } else {
-                $url = idn_to_ascii($url) ? idn_to_ascii($url) : $url;
-            }
-            $url = $url . '?' . $query;
+            $domain = $this->idnEncodeDomain($domain);
+            $url = $scheme . "://". $domain . $path . '?' . $query;
         }
 
         return $url;
@@ -823,6 +840,32 @@ class MollieObject
             $webhook_url
         );
         return $webhook_url;
+    }
+
+    /**
+     * @param $domain
+     * @return false|mixed|string
+     */
+    protected function idnEncodeDomain($domain)
+    {
+        if (defined('IDNA_NONTRANSITIONAL_TO_ASCII')
+            && defined(
+                'INTL_IDNA_VARIANT_UTS46'
+            )
+        ) {
+            $domain = idn_to_ascii(
+                $domain,
+                IDNA_NONTRANSITIONAL_TO_ASCII,
+                INTL_IDNA_VARIANT_UTS46
+            ) ? idn_to_ascii(
+                $domain,
+                IDNA_NONTRANSITIONAL_TO_ASCII,
+                INTL_IDNA_VARIANT_UTS46
+            ) : $domain;
+        } else {
+            $domain = idn_to_ascii($domain) ? idn_to_ascii($domain) : $domain;
+        }
+        return $domain;
     }
 
 }

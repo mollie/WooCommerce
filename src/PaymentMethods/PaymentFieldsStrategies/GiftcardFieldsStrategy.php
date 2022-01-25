@@ -10,6 +10,7 @@ class GiftcardFieldsStrategy implements PaymentFieldsStrategyI
 
     public function execute($gateway, $dataHelper)
     {
+
         if ($gateway->paymentMethod->getProperty('issuers_dropdown_shown') !== 'yes') {
             return;
         }

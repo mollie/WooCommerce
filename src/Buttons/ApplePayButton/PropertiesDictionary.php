@@ -12,7 +12,7 @@ class PropertiesDictionary
      */
     public const VALIDATION_REQUIRED_FIELDS =
         [
-            PropertiesDictionary::NONCE,
+            PropertiesDictionary::WCNONCE,
             PropertiesDictionary::VALIDATION_URL,
         ];
     /**
@@ -35,7 +35,7 @@ class PropertiesDictionary
      */
     public const UPDATE_METHOD_CART_REQUIRED_FIELDS =
         [
-            PropertiesDictionary::NONCE,
+            PropertiesDictionary::WCNONCE,
             PropertiesDictionary::SHIPPING_METHOD,
             self::CALLER_PAGE,
             PropertiesDictionary::SIMPLIFIED_CONTACT,
@@ -45,7 +45,7 @@ class PropertiesDictionary
      */
     public const UPDATE_CONTACT_CART_REQUIRED_FIELDS =
         [
-            PropertiesDictionary::NONCE,
+            PropertiesDictionary::WCNONCE,
             self::CALLER_PAGE,
             PropertiesDictionary::SIMPLIFIED_CONTACT,
             self::NEED_SHIPPING,
@@ -55,7 +55,7 @@ class PropertiesDictionary
      */
     public const UPDATE_CONTACT_SINGLE_PROD_REQUIRED_FIELDS =
         [
-            PropertiesDictionary::NONCE,
+            PropertiesDictionary::WCNONCE,
             PropertiesDictionary::PRODUCT_ID,
             self::PRODUCT_QUANTITY,
             self::CALLER_PAGE,
@@ -71,7 +71,7 @@ class PropertiesDictionary
      */
     public const UPDATE_METHOD_SINGLE_PROD_REQUIRED_FIELDS =
         [
-            PropertiesDictionary::NONCE,
+            PropertiesDictionary::WCNONCE,
             PropertiesDictionary::PRODUCT_ID,
             self::PRODUCT_QUANTITY,
             PropertiesDictionary::SHIPPING_METHOD,

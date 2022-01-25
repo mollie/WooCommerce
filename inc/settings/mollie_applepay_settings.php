@@ -17,7 +17,7 @@ return [
     [
         'id' => 'enabled',
         'title' => __('Enable/Disable', 'mollie-payments-for-woocommerce'),
-        /* translators: Placeholder 1: enabled or disabled */
+        /* translators: Placeholder 1: Gateway title */
         'desc' => sprintf(__('Enable %s', 'mollie-payments-for-woocommerce'), $title),
         'type' => 'checkbox',
         'default' =>  'yes',
@@ -27,7 +27,7 @@ return [
     [
         'id' => 'title',
         'title' => __('Title', 'mollie-payments-for-woocommerce'),
-        /* translators: Placeholder 1: enabled or disabled */
+        /* translators: Placeholder 1: Gateway title */
         'desc' => sprintf(
             __(
                 'This controls the title which the user sees during checkout. Default <code>%s</code>',
@@ -44,7 +44,6 @@ return [
     [
         'id' => 'display_logo',
         'title' => __('Display logo', 'mollie-payments-for-woocommerce'),
-        /* translators: Placeholder 1: enabled or disabled */
         'desc' => sprintf(
             __(
                 'Display logo',
@@ -60,13 +59,13 @@ return [
     [
         'id' => 'description',
         'title' => __('Description', 'mollie-payments-for-woocommerce'),
-        /* translators: Placeholder 1: enabled or disabled */
+        /* translators: Placeholder 1: Gateway description */
         'desc' => sprintf(
             __(
                 'Payment method description that the customer will see on your checkout. Default <code>%s</code>',
                 'mollie-payments-for-woocommerce'
             ),
-            $title
+            $description
         ),
         'desc_tip' => true,
         'type' => 'text',

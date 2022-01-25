@@ -59,6 +59,11 @@ class Data
         $this->pluginPath = $pluginPath;
     }
 
+    public function isBlockPluginActive(): bool
+    {
+        return is_plugin_active('woocommerce-gutenberg-products-block/woocommerce-gutenberg-products-block.php');
+    }
+
     /**
      * @return bool
      */
@@ -85,6 +90,15 @@ class Data
     public function isTestModeEnabled(): bool
     {
         return $this->settingsHelper->isTestModeEnabled();
+    }
+
+    /**
+     * @param bool $overrideTestMode
+     * @return string
+     */
+    public function getApiKey($overrideTestMode = false)
+    {
+        return $this->settingsHelper->getApiKey($overrideTestMode);
     }
 
     public function processSettings($gateway)
@@ -256,7 +270,8 @@ class Data
         $cartTotal = $cart ? $cart->get_total('edit') : 0;
 
         $currency = get_woocommerce_currency();
-        $billingCountry = WC()->customer ? WC()->customer->get_billing_country() : "";
+        $billingCountry = WC()->customer ? WC()->customer->get_billing_country() : wc_get_base_location()['country'];
+
         $paymentLocale = $this->settingsHelper->getPaymentLocale();
         try {
             $filters = $this->getFilters(
@@ -650,24 +665,39 @@ class Data
      *
      * @param float $value
      *
-     * @return int $value
+     * @return float $value
      */
     public function formatCurrencyValue($value, $currency)
     {
         // Only the Japanese Yen has no decimals in the currency
-        $value = (int) $value;
+        $value = (float) $value;
 
         return $currency === "JPY" ? number_format($value, 0, '.', '') : number_format($value, 2, '.', '');
     }
 
     /**
-     * @param $order_id
+     *
+     * @param  $orderId
      *
      * @return bool
      */
-    public function isWcSubscription($order_id)
+    public function isWcSubscription($orderId): bool
     {
-        return ( function_exists('wcs_order_contains_subscription') && ( wcs_order_contains_subscription($order_id) || function_exists('wcs_is_subscription') && wcs_is_subscription($order_id) || function_exists('wcs_order_contains_renewal') && wcs_order_contains_renewal($order_id) ) );
+        if (!(class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin'))) {
+            return false;
+        }
+
+        if (
+            function_exists('wcs_order_contains_subscription')
+            && (wcs_order_contains_subscription($orderId)
+                || function_exists('wcs_is_subscription')
+                && wcs_is_subscription($orderId)
+                || function_exists('wcs_order_contains_renewal')
+                && wcs_order_contains_renewal($orderId))
+        ) {
+            return true;
+        }
+        return false;
     }
 
     public function isSubscription($orderId)

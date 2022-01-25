@@ -37,6 +37,7 @@ class ApplePayDirectHandler
     public function bootstrap($buttonEnabledProduct, $buttonEnabledCart)
     {
         if (!$this->isApplePayCompatible()) {
+            /* translators: Placeholder 1: Opening strong tag. Placeholder 2: Closing strong tag. Placeholder 3: Opening link tag to documentation. Placeholder 4: Closing link tag.*/
             $message = sprintf(
                 esc_html__(
                     '%1$sServer not compliant with Apple requirements%2$s Check %3$sApple Server requirements page%4$s to fix it in order to make the Apple Pay button work',
@@ -52,6 +53,7 @@ class ApplePayDirectHandler
         }
 
         if (!$this->merchantValidated()) {
+            /* translators: Placeholder 1: Opening strong tag. Placeholder 2: Closing strong tag. Placeholder 3: Opening link tag to documentation. Placeholder 4: Closing link tag.*/
             $message = sprintf(
                 esc_html__(
                     '%1$sApple Pay Validation Error%2$s Check %3$sApple Server requirements page%4$s to fix it in order to make the Apple Pay button work',

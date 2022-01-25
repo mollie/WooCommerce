@@ -6,7 +6,7 @@ namespace Mollie\WooCommerce\PaymentMethods;
 
 
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
-use Mollie\WooCommerce\Gateway\SurchargeService;
+use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Payment\PaymentFieldsService;
 use Mollie\WooCommerce\Settings\Settings;
 
@@ -15,32 +15,40 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     /**
      * @var string[]
      */
-    protected $config = [];
+    public $config = [];
     /**
      * @var array[]
      */
-    protected $settings = [];
+    public $settings = [];
     protected $iconFactory;
     protected $settingsHelper;
     /**
      * @var PaymentFieldsService
      */
     public $paymentFieldsService;
-    protected $surchargeService;
+    protected $surcharge;
 
     public function __construct(
-        PaymentMethodSettingsHandlerI $paymentMethodSettingsHandler,
         IconFactory $iconFactory,
         Settings $settingsHelper,
         PaymentFieldsService $paymentFieldsService,
-        SurchargeService $surchargeService
+        Surcharge $surcharge
     ) {
         $this->config = $this->getConfig();
-        $this->settings = $paymentMethodSettingsHandler->getSettings($this);
+        $this->settings = $this->getSettings();
         $this->iconFactory = $iconFactory;
         $this->settingsHelper = $settingsHelper;
         $this->paymentFieldsService = $paymentFieldsService;
-        $this->surchargeService = $surchargeService;
+        $this->surcharge = $surcharge;
+    }
+
+    public function surcharge(){
+        return $this->surcharge;
+    }
+
+    public function hasSurcharge(){
+        return $this->getProperty('payment_surcharge')
+            && $this->getProperty('payment_surcharge') !== Surcharge::NO_FEE;
     }
 
     public function getIconUrl(): string
@@ -74,7 +82,18 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     }
 
     public function getProcessedDescription(){
-        $this->surchargeService->buildDescriptionWithSurcharge($this);
+        return $this->surcharge->buildDescriptionWithSurcharge($this);
+    }
+
+    public function getProcessedDescriptionForBlock(){
+        return $this->surcharge->buildDescriptionWithSurchargeForBlock($this);
+    }
+
+    public function getSettings()
+    {
+        $paymentMethodId = $this->getProperty('id');
+        $optionName = 'mollie_wc_gateway_' . $paymentMethodId . '_settings';
+        return get_option($optionName, false);
     }
 
     /**

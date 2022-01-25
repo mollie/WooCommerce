@@ -206,13 +206,12 @@ class MolliePaymentGateway extends WC_Payment_Gateway
     }
 
     public function initIcon()
-{
-
+    {
         if ($this->paymentMethod->shouldDisplayIcon()) {
-            $default_icon = $this->paymentMethod->getIconUrl();
+            $defaultIcon = $this->paymentMethod->getIconUrl();
             $this->icon = apply_filters(
                 $this->id . '_icon_url',
-                $default_icon
+                $defaultIcon
             );
         }
     }
@@ -470,7 +469,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
                 $currency = get_woocommerce_currency();
             }
 
-            $billing_country = WC()->customer->get_billing_country();
+            $billing_country = WC()->customer ? WC()->customer->get_billing_country() : wc_get_base_location()['country'];
             $billing_country = apply_filters(
                 $this->pluginId
                 . '_is_available_billing_country_for_payment_gateways',

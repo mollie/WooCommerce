@@ -178,12 +178,14 @@ function initialize()
             new ActivationModule(),
             new LogModule('mollie-payments-for-woocommerce-'),
             new NoticeModule(),
-            new SDKModule(),
-            new VoucherModule(),
             new SharedModule(),
+            new SDKModule(),
+            new SettingsModule(),
+            new VoucherModule(),
+
             new AssetsModule(),
             new GatewayModule(),
-            new SettingsModule(),
+
             new PaymentModule()
         );
     } catch (Throwable $throwable) {

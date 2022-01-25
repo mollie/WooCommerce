@@ -34,7 +34,7 @@ class SubscriptionModule implements ExecutableModule
     public function run(ContainerInterface $container): bool
     {
         $this->logger = $container->get(Logger::class);
-        $this->dataHelper = $container->get('shared.data_helper');
+        $this->dataHelper = $container->get('settings.data_helper');
         $this->settingsHelper = $container->get('settings.settings_helper');
         $this->maybeFixSubscriptions();
         $this->schedulePendingPaymentOrdersExpirationCheck();

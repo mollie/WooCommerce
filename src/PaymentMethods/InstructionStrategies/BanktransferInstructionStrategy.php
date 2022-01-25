@@ -35,7 +35,9 @@ class BanktransferInstructionStrategy implements InstructionStrategyI
 
             /* translators: Placeholder 1: 'Stichting Mollie Payments' */
             $instructions .= sprintf(__('Beneficiary: %s', 'mollie-payments-for-woocommerce'), $payment->details->bankName) . "\n";
+            /* translators: Placeholder 1: Payment details bank account */
             $instructions .= sprintf(__('IBAN: <strong>%s</strong>', 'mollie-payments-for-woocommerce'), implode(' ', str_split($payment->details->bankAccount, 4))) . "\n";
+            /* translators: Placeholder 1: Payment details bic */
             $instructions .= sprintf(__('BIC: %s', 'mollie-payments-for-woocommerce'), $payment->details->bankBic) . "\n";
 
             if ($admin_instructions) {
@@ -52,11 +54,13 @@ class BanktransferInstructionStrategy implements InstructionStrategyI
 
                 if ($admin_instructions) {
                     $instructions .= "\n" . sprintf(
+                        /* translators: Placeholder 1: Payment expiry date */
                         __('The payment will expire on <strong>%s</strong>.', 'mollie-payments-for-woocommerce'),
                         $expiryDate
                     ) . "\n";
                 } else {
                     $instructions .= "\n" . sprintf(
+                        /* translators: Placeholder 1: Payment expiry date */
                         __('The payment will expire on <strong>%s</strong>. Please make sure you transfer the total amount before this date.', 'mollie-payments-for-woocommerce'),
                         $expiryDate
                     ) . "\n";

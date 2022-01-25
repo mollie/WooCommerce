@@ -36,40 +36,52 @@ class AssetsModule implements ExecutableModule
         $this->pluginPath = $container->get('shared.plugin_path');
         $this->settingsHelper = $container->get('settings.settings_helper');
         $this->pluginVersion = $container->get('shared.plugin_version');
-        $this->dataService = $container->get('shared.data_helper');
+        $this->dataService = $container->get('settings.data_helper');
+
         add_action(
             'init',
             function () use ($container) {
+                $hasBlocksEnabled = $this->dataService->isBlockPluginActive();
                 self::registerFrontendScripts();
-                wp_register_script(
-                    'mollie_wc_admin_settings',
-                    $this->getPluginUrl('/public/js/settings.min.js'),
-                    ['underscore', 'jquery'],
-                    $this->pluginVersion
-                );
+
                 // Enqueue Scripts
                 add_action('wp_enqueue_scripts', [$this, 'enqueueFrontendScripts']);
                 add_action('wp_enqueue_scripts', [$this, 'enqueueComponentsAssets']);
                 add_action('wp_enqueue_scripts', [$this, 'enqueueApplePayDirectScripts']);
                 add_action('wp_enqueue_scripts', [$this, 'enqueuePayPalButtonScripts']);
 
-                $gatewayInstances = $container->get('gateway.instances');
-                add_action('wp_enqueue_scripts', function () use ($gatewayInstances) {
-                    $this->enqueueButtonBlocksCartScripts($gatewayInstances);
-                });
-                $this->registerButtonsBlockScripts();
+                if($hasBlocksEnabled){
+                    $gatewayInstances = $container->get('gateway.instances');
+                    self::registerBlockScripts();
+                    add_action('wp_enqueue_scripts', function () use ($gatewayInstances) {
+                        $this->enqueueBlockCheckoutScripts($gatewayInstances);
+                    });
+                    $this->registerButtonsBlockScripts();
+                }
 
-                wp_enqueue_script('mollie_wc_admin_settings');
-                global $current_section;
-
-                wp_localize_script(
-                    'mollie_wc_admin_settings',
-                    'mollieSettingsData',
-                    [
-                        'current_section' => $current_section,
-                    ]
-                );
+            }
+        );
+        add_action(
+            'admin_init',
+            function () use ($container) {
                 if (is_admin()) {
+                    $hasBlocksEnabled = $this->dataService->isBlockPluginActive();
+                    wp_register_script(
+                        'mollie_wc_admin_settings',
+                        $this->getPluginUrl('/public/js/settings.min.js'),
+                        ['underscore', 'jquery'],
+                        $this->pluginVersion
+                    );
+                    wp_enqueue_script('mollie_wc_admin_settings');
+                    global $current_section;
+                    wp_localize_script(
+                        'mollie_wc_admin_settings',
+                        'mollieSettingsData',
+                        [
+                            'current_section' => $current_section,
+                        ]
+                    );
+
                     wp_register_script(
                         'mollie_wc_gateway_settings',
                         $this->getPluginUrl(
@@ -78,7 +90,13 @@ class AssetsModule implements ExecutableModule
                         ['underscore', 'jquery'],
                         $this->pluginVersion
                     );
-                    $this->enqueueButtonBlocksCartScripts($gatewayInstances);
+
+                    if($hasBlocksEnabled){
+                        $gatewayInstances = $container->get('gateway.instances');
+                        $this->enqueueBlockCheckoutScripts($gatewayInstances);
+                    }
+
+
                     wp_enqueue_script('mollie_wc_gateway_settings');
                     wp_enqueue_style('mollie-gateway-icons');
                     $settingsName = "{$current_section}_settings";
@@ -113,9 +131,8 @@ class AssetsModule implements ExecutableModule
         return true;
     }
 
-    public function enqueueButtonBlocksCartScripts($gatewayInstances)
+    public function enqueueBlockCheckoutScripts($gatewayInstances)
     {
-
         wp_enqueue_script('mollie_block_index');
         wp_enqueue_style('mollie-gateway-icons');
         wp_localize_script(
@@ -345,11 +362,21 @@ class AssetsModule implements ExecutableModule
             filemtime($this->getPluginPath('/public/js/gatewaySurcharge.min.js')),
             true
         );
+    }
+
+    public function registerBlockScripts(){
         wp_register_script(
             'mollie_block_index',
             $this->getPluginUrl('/public/js/mollieBlockIndex.min.js'),
             ['wc-blocks-registry', 'underscore', 'jquery'],
             filemtime($this->getPluginPath('/public/js/mollieBlockIndex.min.js')),
+            true
+        );
+        wp_register_script(
+            'mollie_block_cart',
+            $this->getPluginUrl('/public/js/mollieBlockCart.min.js'),
+            ['underscore', 'jquery'],
+            filemtime($this->getPluginPath('/public/js/mollieBlockCart.min.js')),
             true
         );
     }
@@ -478,20 +505,23 @@ class AssetsModule implements ExecutableModule
             if ($gateway->enabled !== 'yes' || $gatewayId === 'directdebit') {
                 continue;
             }
-            $content = __($gateway->paymentMethod->getProperty('defaultDescription', 'mollie-payments-for-woocommerce'));
-
+            $content = $gateway->paymentMethod->getProcessedDescriptionForBlock();
+            $issuers = false;
             if ($gateway->paymentMethod->getProperty('paymentFields')) {
                 $gateway->paymentMethod->paymentFieldsService->setStrategy($gateway->paymentMethod);
 
-                $content = $gateway->paymentMethod->paymentFieldsService->getStrategyMarkup($gateway);
+                $issuers = $gateway->paymentMethod->paymentFieldsService->getStrategyMarkup($gateway);
             }
-            $labelMarkup = "<span style='margin-right: 1em'>{$gateway->paymentMethod->getProperty('id')}</span>{$gateway->icon}";
-
+            $labelMarkup = "<span style='margin-right: 1em'>{$gateway->paymentMethod->getProperty('title')}</span>{$gateway->icon}";
+            $hasSurcharge = $gateway->paymentMethod->hasSurcharge();
             $gatewayData[] = [
                 'name' => $gatewayKey,
                 'label' => $labelMarkup,
                 'content' => $content,
-                'edit' => $gateway->paymentMethod->getProperty('defaultDescription'),
+                'issuers' => $issuers,
+                'hasSurcharge' => $hasSurcharge,
+                'contentFallback'=> __('Please choose a billing country to see the available payment methods', 'mollie-payments-for-woocommerce'),
+                'edit' => $content,
                 'paymentMethodId' => $gatewayKey,
                 'allowedCountries' => $gateway->paymentMethod->getProperty('allowed_countries'),
                 'ariaLabel' => $gateway->paymentMethod->getProperty('defaultDescription'),

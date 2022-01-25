@@ -23,9 +23,9 @@ class IconFactory
     /**
      * @return string
      */
-    public function getIconUrl($gatewayId): string
+    public function getIconUrl($paymentMethodName): string
     {
-        return $this->iconFactory()->svgUrlForPaymentMethod($gatewayId);
+        return $this->iconFactory()->svgUrlForPaymentMethod($paymentMethodName);
     }
 
     /**

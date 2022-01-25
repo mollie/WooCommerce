@@ -50,20 +50,6 @@ class SharedModule implements ServiceModule
 
                 return $pluginProperties->basePath();
             },
-            'shared.api_helper' => static function (ContainerInterface $container): Api {
-                $pluginVersion = $container->get('shared.plugin_version');
-                $pluginId = $container->get('shared.plugin_id');
-                return new Api($pluginVersion, $pluginId);
-            },
-            'shared.data_helper' => static function (ContainerInterface $container): Data {
-                /** @var Api $apiHelper */
-                $apiHelper = $container->get('shared.api_helper');
-                $logger = $container->get(Logger::class);
-                $pluginId = $container->get('shared.plugin_id');
-                $pluginPath = $container->get('shared.plugin_path');
-                $settings = $container->get('settings.settings_helper');
-                return new Data($apiHelper, $logger, $pluginId, $settings, $pluginPath);
-            },
             'shared.status_helper' => static function (ContainerInterface $container): Status {
                 $pluginTitle = $container->get('shared.plugin_title');
                 return new Status(new CompatibilityChecker(), $pluginTitle);
@@ -76,7 +62,7 @@ class SharedModule implements ServiceModule
                         header(" ", true, $status_code);
                     }
                 }
-            },
+            }
         ];
     }
 }

@@ -151,6 +151,7 @@ class ActivationModule implements ExecutableModule
         }
 
         $notice = new AdminNotice();
+        /* translators: Placeholder 1: Opening strong tag. Placeholder 2: Closing strong tag. Placeholder 3: Opening link tag to settings. Placeholder 4: Closing link tag.*/
         $message = sprintf(
             esc_html__(
                 '%1$sMollie Payments for WooCommerce: API keys missing%2$s Please%3$s set your API keys here%4$s.',

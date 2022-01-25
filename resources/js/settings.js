@@ -1,7 +1,7 @@
 (
     function ({_, mollieSettingsData, jQuery })
     {
-
+        const {current_section = false} = mollieSettingsData
         jQuery(function($) {
 
             $('#mollie-payments-for-woocommerce_test_mode_enabled').change(function() {
@@ -18,7 +18,10 @@
             if(_.isEmpty(mollieSettingsData)){
                 return
             }
-            const gatewayName = mollieSettingsData['current_section']
+            const gatewayName = current_section
+            if(!gatewayName){
+                return
+            }
             let fixedField = $('#'+gatewayName+'_fixed_fee').closest('tr')
             let percentField = $('#'+gatewayName+'_percentage').closest('tr')
             let limitField = $('#'+gatewayName+'_surcharge_limit').closest('tr')

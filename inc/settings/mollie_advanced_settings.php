@@ -1,8 +1,6 @@
 <?php
 
-use Mollie\WooCommerce\Gateway\AbstractGateway;
 use Mollie\WooCommerce\Payment\PaymentService;
-use Mollie\WooCommerce\Plugin;
 use Mollie\WooCommerce\Settings\Settings;
 
 $pluginName = 'mollie-payments-for-woocommerce';
@@ -99,7 +97,7 @@ return [
             ),
         ],
         'default' => PaymentService::PAYMENT_METHOD_TYPE_ORDER,
-        /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
+        /* translators: Placeholder 1: opening link tag, placeholder 2: closing link tag */
         'desc' => sprintf(
             __(
                 'Click %1$shere%2$s to read more about the differences between the Payments and Orders API',
@@ -124,7 +122,7 @@ return [
             '{customer.company}' => '{customer.company}',
         ],
         'default' => '{orderNumber}',
-        /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
+        /* translators: Placeholder 1: Opening paragraph tag, placeholder 2: Closing paragraph tag */
         'desc' => sprintf(
             __(
                 'Select among the available variables the description to be used for this transaction.%1$s(Note: this only works when the method is set to Payments API)%2$s',

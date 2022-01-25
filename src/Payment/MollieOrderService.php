@@ -316,7 +316,7 @@ class MollieOrderService
                     __METHOD__
                     . " New refund {$refundToProcess} processed in Mollie Dashboard for {$logId} Order note added, but order not updated."
                 );
-
+                /* translators: Placeholder 1: Refund to process id. */
                 $order->add_order_note(
                     sprintf(
                         __(
@@ -461,7 +461,7 @@ class MollieOrderService
                     __METHOD__
                     . " New chargeback {$chargebackToProcess} for {$logId}. Order note and order status updated."
                 );
-
+                /* translators: Placeholder 1: Chargeback to process id. */
                 $order->add_order_note(
                     sprintf(
                         __(

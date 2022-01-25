@@ -9,6 +9,7 @@ import molliePaymentMethod from './blocks/molliePaymentMethod'
         const { ajaxUrl, filters, gatewayData, availableGateways } = mollieBlockData.gatewayData;
         const {useEffect} = wp.element;
 
+
         gatewayData.forEach(item=>{
             registerPaymentMethod(molliePaymentMethod(useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery));
         })

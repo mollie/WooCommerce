@@ -3,8 +3,6 @@ export const maybeShowButton = () => {
     const applePayMethodElement = document.querySelector(
         '#mollie-applepayDirect-button',
     )
-    console.log('maybe')
-    console.log(applePayMethodElement)
     const canShowButton = applePayMethodElement && (ApplePaySession && ApplePaySession.canMakePayments())
 
     if (!canShowButton) {

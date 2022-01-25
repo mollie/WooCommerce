@@ -81,7 +81,8 @@ class PaymentFactory
                 $this->pluginId,
                 $this->apiHelper,
                 $this->settingsHelper,
-                $this->dataHelper
+                $this->dataHelper,
+                $this->logger
             );
         }
 

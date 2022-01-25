@@ -141,6 +141,7 @@ class AppleAjaxRequests
         $ending = preg_replace($regex, '$1', $domain);
         $domain = str_replace($ending, "", $domain);
         $domain = str_replace("/", "", $domain);
+
         try {
             $json = $this->validationApiWalletsEndpointCall(
                 $domain,
@@ -439,13 +440,13 @@ class AppleAjaxRequests
     /**
      * Add shipping methods to cart to perform correct calculations
      *
-     * @param WC_Cart $cart
-     * @param         $customerAddress
-     * @param         $shippingMethod
-     * @param         $shippingMethodId
+     * @param $cart
+     * @param $customerAddress
+     * @param $shippingMethod
+     * @param $shippingMethodId
      */
     protected function cartShippingMethods(
-        WC_Cart $cart,
+        $cart,
         $customerAddress,
         $shippingMethod,
         $shippingMethodId
@@ -512,12 +513,12 @@ class AppleAjaxRequests
     /**
      * Returns the formatted results of the cart calculations
      *
-     * @param \WC_Cart $cart
-     * @param         $selectedShippingMethod
-     * @param         $shippingMethodsArray
+     * @param $cart
+     * @param $selectedShippingMethod
+     * @param $shippingMethodsArray
      */
     protected function cartCalculationResults(
-        WC_Cart $cart,
+        $cart,
         $selectedShippingMethod,
         $shippingMethodsArray
     ): array {
@@ -525,7 +526,7 @@ class AppleAjaxRequests
         $surchargeLabel = $surcharge->gatewayFeeLabel;
         $settings = get_option('mollie_wc_gateway_applepay_settings', false);
 
-        $calculatedFee = round((float)$surcharge->calculteFeeAmount($cart,$settings ),2);
+        $calculatedFee = round((float)$surcharge->calculateFeeAmount($cart, $settings ), 2);
         $surchargeFeeValue = !empty($settings)?$calculatedFee:0;
         $total = $cart->get_total('edit') + $surchargeFeeValue;
         $total = round($total, 2);

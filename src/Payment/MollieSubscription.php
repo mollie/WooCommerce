@@ -28,9 +28,8 @@ class MollieSubscription extends MollieObject
      * @param $customerId
      * @return array
      */
-    protected function getRecurringPaymentRequestData($order, $customerId)
+    public function getRecurringPaymentRequestData($order, $customerId)
     {
-        // TODO David: is this still used?
         $paymentDescription = __('Order', 'woocommerce') . ' ' . $order->get_order_number();
         $paymentLocale = $this->settingsHelper->getPaymentLocale();
         $gateway = wc_get_payment_gateway_by_order($order);
@@ -38,24 +37,24 @@ class MollieSubscription extends MollieObject
         if (! $gateway || ! ( $gateway instanceof MolliePaymentGateway )) {
             return  [ 'result' => 'failure' ];
         }
-        $mollieMethod = $gateway->paymentMethod->getProperty('id');
+        $gatewayId = $gateway->id;
         $selectedIssuer = $gateway->getSelectedIssuer();
         $returnUrl = $gateway->get_return_url($order);
         $returnUrl = $this->getReturnUrl($order, $returnUrl);
-        $webhookUrl = $this->getWebhookUrl($order, $mollieMethod);
+        $webhookUrl = $this->getWebhookUrl($order, $gatewayId);
 
         return array_filter([
                                 'amount' =>  [
                                     'currency' => $this->dataHelper->getOrderCurrency($order),
                                     'value' => $this->dataHelper->formatCurrencyValue(
                                         $order->get_total(),
-                                        $this->dataService->getOrderCurrency($order)
+                                        $this->dataHelper->getOrderCurrency($order)
                                     ),
                                 ],
                                 'description' => $paymentDescription,
                                 'redirectUrl' => $returnUrl,
                                 'webhookUrl' => $webhookUrl,
-                                'method' => $mollieMethod,
+                                'method' => $gateway->paymentMethod->getProperty('id'),
                                 'issuer' => $selectedIssuer,
                                 'locale' => $paymentLocale,
                                 'metadata' =>  [

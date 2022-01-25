@@ -23,6 +23,11 @@ class SDKModule implements ExecutableModule, ServiceModule
     public function services(): array
     {
         return [
+            'SDK.api_helper' => static function (ContainerInterface $container): Api {
+                $pluginVersion = $container->get('shared.plugin_version');
+                $pluginId = $container->get('shared.plugin_id');
+                return new Api($pluginVersion, $pluginId);
+            },
             'SDK.HttpResponse' => static function (): HttpResponse {
                 return new HttpResponse();
             },

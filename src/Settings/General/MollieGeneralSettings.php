@@ -3,7 +3,7 @@
 namespace Mollie\WooCommerce\Settings\General;
 
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
-use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
+use Mollie\WooCommerce\Gateway\Surcharge;
 
 class MollieGeneralSettings
 {
@@ -20,6 +20,7 @@ class MollieGeneralSettings
                     'mollie-payments-for-woocommerce'
                 ),
                 'type' => 'checkbox',
+                /* translators: Placeholder 1: Gateway title */
                 'label' => sprintf(
                     __('Enable %s', 'mollie-payments-for-woocommerce'),
                     $defaultTitle
@@ -28,15 +29,15 @@ class MollieGeneralSettings
             ],
             [
                 'id' => $defaultTitle . '_' . 'title',
-                'title' => sprintf(__(
-                    '%s display settings',
-                    'mollie-payments-for-woocommerce'
-                ), $defaultTitle),
+                'title' => sprintf(
+                    /* translators: Placeholder 1: Gateway title */
+                    __('%s display settings', 'mollie-payments-for-woocommerce'), $defaultTitle),
                 'type' => 'title',
             ],
             'title' => [
                 'title' => __('Title', 'mollie-payments-for-woocommerce'),
                 'type' => 'text',
+                /* translators: Placeholder 1: Gateway title */
                 'description' => sprintf(
                     __(
                         'This controls the title which the user sees during checkout. Default <code>%s</code>',
@@ -50,6 +51,7 @@ class MollieGeneralSettings
             'description' => [
                 'title' => __('Description', 'mollie-payments-for-woocommerce'),
                 'type' => 'textarea',
+                /* translators: Placeholder 1: Gateway description */
                 'description' => sprintf(
                     __(
                         'Payment method description that the customer will see on your checkout. Default <code>%s</code>',
@@ -92,10 +94,9 @@ class MollieGeneralSettings
             ],
             [
                 'id' => $defaultTitle . '_' . 'custom_logo',
-                'title' => sprintf(__(
-                    '%s custom logo',
-                    'mollie-payments-for-woocommerce'
-                ), $defaultTitle),
+                'title' => sprintf(
+                /* translators: Placeholder 1: Gateway title */
+                    __('%s custom logo', 'mollie-payments-for-woocommerce'), $defaultTitle),
                 'type' => 'title',
             ],
             'enable_custom_logo' => [
@@ -126,10 +127,10 @@ class MollieGeneralSettings
             ],
             [
                 'id' => $defaultTitle . '_' . 'surcharge',
-                'title' => sprintf(__(
-                    '%s surcharge',
-                    'mollie-payments-for-woocommerce'
-                ), $defaultTitle),
+                'title' => sprintf(
+                /* translators: Placeholder 1: Gateway title */
+                    __('%s surcharge', 'mollie-payments-for-woocommerce'),
+                    $defaultTitle),
                 'type' => 'title',
             ],
             'payment_surcharge' => [
@@ -139,19 +140,19 @@ class MollieGeneralSettings
                 ),
                 'type' => 'select',
                 'options' => [
-                    GatewaySurchargeHandler::NO_FEE => __(
+                    Surcharge::NO_FEE => __(
                         'No fee',
                         'mollie-payments-for-woocommerce'
                     ),
-                    GatewaySurchargeHandler::FIXED_FEE => __(
+                    Surcharge::FIXED_FEE => __(
                         'Fixed fee',
                         'mollie-payments-for-woocommerce'
                     ),
-                    GatewaySurchargeHandler::PERCENTAGE => __(
+                    Surcharge::PERCENTAGE => __(
                         'Percentage',
                         'mollie-payments-for-woocommerce'
                     ),
-                    GatewaySurchargeHandler::FIXED_AND_PERCENTAGE => __(
+                    Surcharge::FIXED_AND_PERCENTAGE => __(
                         'Fixed fee and percentage',
                         'mollie-payments-for-woocommerce'
                     ),
@@ -164,7 +165,10 @@ class MollieGeneralSettings
                 'desc_tip' => true,
             ],
             'fixed_fee' => [
-                'title' => sprintf(__('Payment surcharge fixed amount in %s', 'mollie-payments-for-woocommerce'), html_entity_decode(get_woocommerce_currency_symbol())),
+                'title' => sprintf(
+                /* translators: Placeholder 1: currency */
+                    __('Payment surcharge fixed amount in %s', 'mollie-payments-for-woocommerce'),
+                    html_entity_decode(get_woocommerce_currency_symbol())),
                 'type' => 'number',
                 'description' => sprintf(
                     __(
@@ -190,6 +194,7 @@ class MollieGeneralSettings
                 'desc_tip' => true,
             ],
             'surcharge_limit' => [
+                /* translators: Placeholder 1: currency */
                 'title' => sprintf(__('Payment surcharge limit in %s', 'mollie-payments-for-woocommerce'), html_entity_decode(get_woocommerce_currency_symbol())),
                 'type' => 'number',
                 'description' => sprintf(
@@ -203,6 +208,7 @@ class MollieGeneralSettings
                 'desc_tip' => true,
             ],
             'maximum_limit' => [
+                /* translators: Placeholder 1: currency */
                 'title' => sprintf(__('Surcharge only under this limit, in %s', 'mollie-payments-for-woocommerce'), html_entity_decode(get_woocommerce_currency_symbol())),
                 'type' => 'number',
                 'description' => sprintf(
@@ -217,10 +223,10 @@ class MollieGeneralSettings
             ],
             [
                 'id' => $defaultTitle . '_' . 'advanced',
-                'title' => sprintf(__(
-                    '%s advanced',
-                    'mollie-payments-for-woocommerce'
-                ), $defaultTitle),
+                'title' => sprintf(
+                /* translators: Placeholder 1: gateway title */
+                    __('%s advanced', 'mollie-payments-for-woocommerce'),
+                    $defaultTitle),
                 'type' => 'title',
             ],
             'activate_expiry_days_setting' => [

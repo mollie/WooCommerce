@@ -35,7 +35,7 @@ class SurchargeHandlerTest extends TestCase
      *
      * @test
      */
-    public function addsSurchargeFeesInCheckout(){
+    /*public function addsSurchargeFeesInCheckout(){
         $cart = $this->cartMock();
         $paymentSurcharge = Surcharge::FIXED_FEE;
         $fixedFee = 10.00;
@@ -64,7 +64,7 @@ class SurchargeHandlerTest extends TestCase
 
         $cart->expects(self::once())->method('add_fee')->with($expectedLabel, $expectedAmount);
         $testee->add_engraving_fees($cart);
-    }
+    }*/
 
     /**
      *
@@ -74,7 +74,7 @@ class SurchargeHandlerTest extends TestCase
      *
      * @test
      */
-    public function addsSurchargeFeesInOrderPayPage()
+    /*public function addsSurchargeFeesInOrderPayPage()
     {
         $paymentSurcharge = Surcharge::FIXED_FEE;
         $fixedFee = 10.00;
@@ -122,7 +122,7 @@ class SurchargeHandlerTest extends TestCase
 
         expect('wp_send_json_success')->with($expectedData);
         $testee->updateSurchargeOrderPay();
-    }
+    }*/
 
     protected function cartMock()
     {

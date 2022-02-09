@@ -60,5 +60,13 @@
   ],
   "extra": {
     "installer-disable": true
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "composer/package-versions-deprecated": true,
+      "automattic/jetpack-autoloader": false,
+      "composer/installers": true
+    }
   }
 }

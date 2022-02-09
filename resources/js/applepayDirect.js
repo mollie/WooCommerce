@@ -57,7 +57,7 @@ import {request} from './applePayRequest.js';
                             callerPage: 'productDetail',
                             productQuantity: productQuantity,
                             simplifiedContact: updatedContactInfo,
-                            nonce: nonce,
+                            'woocommerce-process-checkout-nonce': nonce,
                         },
                         complete: (jqXHR, textStatus) => {
                         },
@@ -86,7 +86,7 @@ import {request} from './applePayRequest.js';
                             productQuantity: productQuantity,
                             simplifiedContact: event.shippingContact,
                             needShipping: needShipping,
-                            nonce: nonce,
+                            'woocommerce-process-checkout-nonce': nonce,
                         },
                         complete: (jqXHR, textStatus) => {
                         },
@@ -115,7 +115,7 @@ import {request} from './applePayRequest.js';
                     data: {
                         action: 'mollie_apple_pay_validation',
                         validationUrl: applePayValidateMerchantEvent.validationURL,
-                        nonce: nonce,
+                        'woocommerce-process-checkout-nonce': nonce,
                     },
                     complete: (jqXHR, textStatus) => {
                     },
@@ -204,6 +204,3 @@ import {request} from './applePayRequest.js';
 (
     window
 )
-
-
-

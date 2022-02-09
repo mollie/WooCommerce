@@ -4,7 +4,6 @@ export const maybeShowButton = () => {
         '#mollie-applepayDirect-button',
     )
     const canShowButton = applePayMethodElement && (ApplePaySession && ApplePaySession.canMakePayments())
-
     if (!canShowButton) {
         return false
     }

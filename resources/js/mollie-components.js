@@ -2,6 +2,8 @@ const SELECTOR_TOKEN_ELEMENT = '.cardToken'
 const SELECTOR_MOLLIE_COMPONENTS_CONTAINER = '.mollie-components'
 const SELECTOR_FORM = 'form'
 const SELECTOR_MOLLIE_GATEWAY_CONTAINER = '.wc_payment_methods'
+const SELECTOR_MOLLIE_GATEWAY_BLOCK_CONTAINER = '.wc-block-components-radio-control'
+
 const SELECTOR_MOLLIE_NOTICE_CONTAINER = '#mollie-notice'
 
 function returnFalse ()
@@ -18,7 +20,9 @@ function returnTrue ()
    ---------------------------------------------------------------- */
 function gatewayContainer (container)
 {
-  return container ? container.querySelector(SELECTOR_MOLLIE_GATEWAY_CONTAINER) : null
+    let checkoutContainer = container ? container.querySelector(SELECTOR_MOLLIE_GATEWAY_CONTAINER) : null
+    let blockContainer = container ? container.querySelector(SELECTOR_MOLLIE_GATEWAY_BLOCK_CONTAINER) : null
+  return checkoutContainer ? checkoutContainer : blockContainer
 }
 
 function containerForGateway (gateway, container)
@@ -138,12 +142,22 @@ function turnMollieComponentsSubmissionOff ($form)
   $form.off('submit', submitForm)
 }
 
+function turnBlockListenerOff (target)
+{
+    target.off('click', submitForm)
+}
+
 function isGatewaySelected (gateway)
 {
   const gatewayContainer = containerForGateway(gateway, document)
   const gatewayInput = gatewayContainer
     ? gatewayContainer.querySelector(`#payment_method_mollie_wc_gateway_${gateway}`)
     : null
+    //if we are in blocks then the input is different
+    const gatewayBlockInput = document.getElementById("radio-control-wc-payment-method-options-mollie_wc_gateway_creditcard")
+    if(gatewayBlockInput){
+        return gatewayBlockInput.checked || false
+    }
 
   if (!gatewayInput) {
     return false
@@ -184,6 +198,13 @@ async function submitForm (evt)
   turnMollieComponentsSubmissionOff($form)
 
   token && setTokenValueToField(token, tokenElementWithin(gatewayContainer))
+    if(evt.type === 'click'){
+        turnBlockListenerOff(jQuery(evt.target))
+        let readyToSubmitBlock = new Event("mollie_components_ready_to_submit", {bubbles: true});
+        document.documentElement.dispatchEvent(readyToSubmitBlock);
+        return
+    }
+
   $form.submit()
 }
 
@@ -253,6 +274,14 @@ function mountComponent (
 
   createComponentLabelElementWithin(currentComponentElement, componentAttributes)
   createComponentsErrorContainerWithin(currentComponentElement, componentAttributes)
+  let componentError = document.querySelector('#' + componentName + '-errors')
+  component.addEventListener('change', event => {
+      if (event.error && event.touched) {
+          componentError.textContent = event.error
+      } else {
+          componentError.textContent = ''
+      }
+  })
 
   !mollieComponentsMap.has(componentName) && mollieComponentsMap.set(componentName, component)
 }
@@ -355,6 +384,21 @@ function initializeComponents (
       },
       submitForm
     )
+      //waiting for the blocks to load, this should receive an event to look for the button instead
+      setTimeout(function (){
+          submitButton = jQuery(".wc-block-components-checkout-place-order-button")
+
+          jQuery(submitButton).click(
+              {
+                  jQuery,
+                  mollie,
+                  gateway,
+                  gatewayContainer,
+                  messages
+              },
+              submitForm
+          )
+      },500)
   })
 }
 
@@ -370,6 +414,8 @@ function initializeComponents (
         const $document = jQuery(document)
         const { merchantProfileId, options, isCheckoutPayPage } = mollieComponentsSettings
         const mollie = new Mollie(merchantProfileId, options)
+
+
         if (isCheckoutPayPage) {
             eventName = 'payment_method_selected'
             $document.on(
@@ -383,6 +429,17 @@ function initializeComponents (
             )
             return
         }
+
+        document.addEventListener("mollie_creditcard_component_selected", function(event) {
+            setTimeout(function(){
+                initializeComponents(
+                    jQuery,
+                    mollie,
+                    mollieComponentsSettings,
+                    mollieComponentsMap
+                )
+            },500);
+        });
 
         function checkInit() {
             return function () {

@@ -11,6 +11,18 @@
           ]
         }
       }
+    ],
+    [
+      "@babel/preset-react",
+      {
+        "useBuiltIns": "entry",
+        "targets": {
+          "browsers": [
+            "last 2 versions",
+            "ie 10"
+          ]
+        }
+      }
     ]
   ]
 }

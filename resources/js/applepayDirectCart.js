@@ -30,7 +30,7 @@ import {maybeShowButton} from './maybeShowApplePayButton.js';
                         shippingMethod: event.shippingMethod,
                         callerPage: 'cart',
                         simplifiedContact: updatedContactInfo,
-                        nonce: nonce,
+                        'woocommerce-process-checkout-nonce': nonce,
                     },
                     complete: (jqXHR, textStatus) => {
                     },
@@ -57,7 +57,7 @@ import {maybeShowButton} from './maybeShowApplePayButton.js';
                         simplifiedContact: event.shippingContact,
                         callerPage: 'cart',
                         needShipping: needShipping,
-                        nonce: nonce,
+                        'woocommerce-process-checkout-nonce': nonce,
                     },
                     complete: (jqXHR, textStatus) => {
                     },
@@ -85,7 +85,7 @@ import {maybeShowButton} from './maybeShowApplePayButton.js';
                     data: {
                         action: 'mollie_apple_pay_validation',
                         validationUrl: applePayValidateMerchantEvent.validationURL,
-                        nonce: nonce,
+                        'woocommerce-process-checkout-nonce': nonce,
                     },
                     complete: (jqXHR, textStatus) => {
                     },
@@ -139,9 +139,9 @@ import {maybeShowButton} from './maybeShowApplePayButton.js';
                         'shipping_state': shippingContact.administrativeArea || '',
                         'shipping_phone': shippingContact.phoneNumber || '000000000000',
                         'shipping_email': shippingContact.emailAddress || '',
-                    'order_comments' : '',
-                    'payment_method' : 'mollie_wc_gateway_applepay',
-                    '_wp_http_referer' : '/?wc-ajax=update_order_review'
+                        'order_comments' : '',
+                        'payment_method' : 'mollie_wc_gateway_applepay',
+                        '_wp_http_referer' : '/?wc-ajax=update_order_review'
                     },
                     complete: (jqXHR, textStatus) => {
 

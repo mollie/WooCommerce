@@ -2,6 +2,10 @@
 
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\CurrentProfile;
+use Mollie\WooCommerce\Components\ComponentsStyles;
+use Mollie\WooCommerce\Plugin;
+use Mollie\WooCommerce\SDK\Api;
+use Mollie\WooCommerce\Settings\SettingsComponents;
 
 /**
  * Check if the current page context is for checkout
@@ -10,93 +14,29 @@ use Mollie\Api\Resources\CurrentProfile;
  */
 function mollieWooCommerceIsCheckoutContext()
 {
+    global $wp_query;
+    if (!isset($wp_query)) {
+        return false;
+    }
     return is_checkout() || is_checkout_pay_page();
 }
 
 /**
- * Mollie_WC_Components_Styles Factory
+ * ComponentsStyles Factory
  *
  * @return array
  */
 function mollieWooCommerceComponentsStylesForAvailableGateways()
 {
-    $mollieComponentsStyles = new Mollie_WC_Components_Styles(
-        new Mollie_WC_Settings_Components(),
+    $pluginPath = untrailingslashit(M4W_PLUGIN_DIR) . '/';
+
+    $mollieComponentsStyles = new ComponentsStyles(
+        new SettingsComponents($pluginPath),
         WC()->payment_gateways()
     );
 
     return $mollieComponentsStyles->forAvailableGateways();
 }
-
-/**
- * Is Mollie Test Mode enabled?
- *
- * @return bool
- */
-function mollieWooCommerceIsTestModeEnabled()
-{
-    $settingsHelper = Mollie_WC_Plugin::getSettingsHelper();
-    $isTestModeEnabled = $settingsHelper->isTestModeEnabled();
-
-    return $isTestModeEnabled;
-}
-
-/**
- * If we are calling this the api key has been updated, we need a new api object
- * to retrieve a new profile id
- *
- * @return CurrentProfile
- * @throws ApiException
- */
-function mollieWooCommerceMerchantProfile()
-{
-    $isTestMode = mollieWooCommerceIsTestModeEnabled();
-
-    $apiHelper = new Mollie_WC_Helper_Api(
-        Mollie_WC_Plugin::getSettingsHelper()
-    );
-
-    return $apiHelper->getApiClient(
-        $isTestMode,
-        true
-    )->profiles->getCurrent();
-}
-
-/**
- * Retrieve the merchant profile ID
- *
- * @return int|string
- * @throws ApiException
- */
-function mollieWooCommerceMerchantProfileId()
-{
-    static $merchantProfileId = null;
-    $merchantProfileIdOptionKey = Mollie_WC_Plugin::PLUGIN_ID . '_profile_merchant_id';
-
-    if ($merchantProfileId === null) {
-        $merchantProfileId = get_option($merchantProfileIdOptionKey, '');
-
-        /*
-         * Try to retrieve the merchant profile ID from an Api Request if not stored already,
-         * then store it into the database
-         */
-        if (!$merchantProfileId) {
-            try {
-                $merchantProfile = mollieWooCommerceMerchantProfile();
-                $merchantProfileId = isset($merchantProfile->id) ? $merchantProfile->id : '';
-            } catch (ApiException $exception) {
-                $merchantProfileId = '';
-            }
-
-            if ($merchantProfileId) {
-                update_option($merchantProfileIdOptionKey, $merchantProfileId);
-            }
-        }
-    }
-
-    return $merchantProfileId;
-}
-
 /**
  * Retrieve the cardToken value for Mollie Components
  *
@@ -105,51 +45,6 @@ function mollieWooCommerceMerchantProfileId()
 function mollieWooCommerceCardToken()
 {
     return $cardToken = filter_input(INPUT_POST, 'cardToken', FILTER_SANITIZE_STRING) ?: '';
-}
-
-/**
- * Retrieve the available Payment Methods Data
- *
- * @return array|bool|mixed|\Mollie\Api\Resources\BaseCollection|\Mollie\Api\Resources\MethodCollection
- */
-function mollieWooCommerceAvailablePaymentMethods()
-{
-    $testMode = mollieWooCommerceIsTestModeEnabled();
-    $dataHelper = Mollie_WC_Plugin::getDataHelper();
-    $methods = $dataHelper->getApiPaymentMethods($testMode, $use_cache = true);
-
-    return $methods;
-}
-
-/**
- * Isolates static debug calls.
- *
- * @param  string $message
- * @param bool  $set_debug_header Set X-Mollie-Debug header (default false)
- */
-function mollieWooCommerceDebug($message, $set_debug_header = false)
-{
-    Mollie_WC_Plugin::debug($message, $set_debug_header);
-}
-
-/**
- * Isolates static addNotice calls.
- *
- * @param  string $message
- * @param string $type    One of notice, error or success (default notice)
- */
-function mollieWooCommerceNotice($message, $type = 'notice')
-{
-    Mollie_WC_Plugin::addNotice($message, $type);
-}
-/**
- * Isolates static getDataHelper calls.
- *
- * @return Mollie_WC_Helper_Data
- */
-function mollieWooCommerceGetDataHelper()
-{
-    return Mollie_WC_Plugin::getDataHelper();
 }
 
 /**
@@ -178,7 +73,7 @@ function mollieWooCommerceIsGatewayEnabled($gatewaySettingsName, $settingToCheck
  */
 function mollieWooCommerceisApplePayDirectEnabled($page)
 {
-    $pageToCheck = 'mollie_apple_pay_button_enabled_'.$page;
+    $pageToCheck = 'mollie_apple_pay_button_enabled_' . $page;
     return mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_applepay_settings', $pageToCheck);
 }
 /**
@@ -195,7 +90,7 @@ function mollieWooCommerceIsPayPalButtonEnabled($page)
     if (!$payPalGatewayEnabled) {
         return false;
     }
-    $settingToCheck = 'mollie_paypal_button_enabled_'.$page;
+    $settingToCheck = 'mollie_paypal_button_enabled_' . $page;
     return mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_paypal_settings', $settingToCheck);
 }
 
@@ -208,7 +103,8 @@ function mollieWooCommerceIsPayPalButtonEnabled($page)
  */
 function mollieWooCommerceCheckIfNeedShipping($product)
 {
-    if (!wc_shipping_enabled()
+    if (
+        !wc_shipping_enabled()
         || 0 === wc_get_shipping_method_count(
             true
         )
@@ -216,7 +112,7 @@ function mollieWooCommerceCheckIfNeedShipping($product)
         return false;
     }
     $needs_shipping = false;
-    if ($product->is_type('variable')){
+    if ($product->is_type('variable')) {
         return false;
     }
 
@@ -249,9 +145,13 @@ function mollieWooCommerceIsDropdownEnabled($gatewaySettingsName)
  *
  * @return bool
  */
-function mollieWooCommerceIsVoucherEnabled(){
-    $voucherSettings = get_option('mollie_wc_gateway_mealvoucher_settings');
-    return $voucherSettings? ($voucherSettings['enabled'] == 'yes'): false;
+function mollieWooCommerceIsVoucherEnabled()
+{
+    $voucherSettings = get_option('mollie_wc_gateway_voucher_settings');
+    if (!$voucherSettings) {
+        $voucherSettings = get_option('mollie_wc_gateway_mealvoucher_settings');
+    }
+    return $voucherSettings ? ($voucherSettings['enabled'] == 'yes') : false;
 }
 
 /**
@@ -272,18 +172,16 @@ function mollieWooCommercIsExpiryDateEnabled()
 {
     global $wpdb;
     $option = 'mollie_wc_gateway_%_settings';
-    $gatewaySettings = $wpdb->get_results($wpdb->prepare( "SELECT option_value FROM $wpdb->options WHERE option_name LIKE %s", $option));
+    $gatewaySettings = $wpdb->get_results($wpdb->prepare("SELECT option_value FROM $wpdb->options WHERE option_name LIKE %s", $option));
     $expiryDateEnabled = false;
-    foreach($gatewaySettings as $gatewaySetting){
+    foreach ($gatewaySettings as $gatewaySetting) {
         $values = unserialize($gatewaySetting->option_value);
-        if($values['enabled'] !== 'yes'){
+        if ($values['enabled'] !== 'yes') {
             continue;
         }
-        if (!empty($values["activate_expiry_days_setting"]) && $values["activate_expiry_days_setting"] === 'yes'){
+        if (!empty($values["activate_expiry_days_setting"]) && $values["activate_expiry_days_setting"] === 'yes') {
             $expiryDateEnabled = true;
         }
     }
     return $expiryDateEnabled;
 }
-
-

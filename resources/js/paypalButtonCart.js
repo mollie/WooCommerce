@@ -1,3 +1,5 @@
+import {ajaxCallToOrder} from "./paypalButtonUtils";
+
 (
     function ({_, molliepaypalButtonCart, jQuery}) {
 
@@ -5,14 +7,11 @@
             return
         }
 
-        const {product: {needShipping = true, minFee}, ajaxUrl} = molliepaypalButtonCart
+        const {product: {minFee}, ajaxUrl} = molliepaypalButtonCart
 
         if (!ajaxUrl) {
             return
         }
-
-        let redirectionUrl = ''
-        let payPalButton = document.getElementById('mollie-PayPal-button');
 
         const maybeShowButton = (underRange) => {
             if (underRange) {
@@ -21,7 +20,7 @@
         }
 
         const hideButton = () => {
-            payPalButton = document.getElementById('mollie-PayPal-button');
+            let payPalButton = document.getElementById('mollie-PayPal-button');
             if (payPalButton.parentNode !== null) {
                 payPalButton.parentNode.removeChild(payPalButton)
             }
@@ -63,68 +62,24 @@
             return minFee > updatedPrice
         }
 
-        const ajaxCallToOrder = () => {
-            let button = document.getElementById('mollie-PayPal-button')
-
-            if(!button){
-                return
-            }
-
-            let preventSpam = false
-            const nonce = button.children[0].value
-            button.addEventListener('click', (evt) => {
-                if(!button){
-                    return
-                }
-                button.disabled = true;
-                button.classList.add("buttonDisabled");
-                jQuery.ajax({
-                    url: ajaxUrl,
-                    method: 'POST',
-                    data: {
-                        action: 'mollie_paypal_create_order_cart',
-                        'mollie-payments-for-woocommerce_issuer_paypal_button': 'paypal',
-                        needShipping: needShipping,
-                        nonce: nonce,
-                    },
-                    success: (response) => {
-                        let result = response.data
-                        if (response.success === true) {
-                            redirectionUrl = result['redirect'];
-                            window.location.href = redirectionUrl
-                        } else {
-                            console.log(response.data)
-                        }
-                    },
-                    error: (jqXHR, textStatus, errorThrown) => {
-                        payPalButton.disabled = false;
-                        payPalButton.classList.remove("buttonDisabled");
-                        console.warn(textStatus, errorThrown)
-                    },
-                })
-                preventSpam = true
-                if(preventSpam){
-                    setTimeout(function() {
-                        payPalButton.disabled = false;
-                        payPalButton.classList.remove("buttonDisabled");
-                        preventSpam = false
-                    }, 3000);
-                }
-            })
-        }
         jQuery(document.body).on('updated_cart_totals', function (event) {
             let payPalButton = document.getElementById('mollie-PayPal-button')
             if(payPalButton == null || payPalButton.parentNode == null){
                 return
             }
             maybeShowButton(underRange())
-            ajaxCallToOrder()
+            ajaxCallToOrder(ajaxUrl)
         })
-        if(payPalButton == null || payPalButton.parentNode == null){
-            return
-        }
-        maybeShowButton(underRange())
-        ajaxCallToOrder()
+
+        setTimeout(function(){
+            let payPalButton = document.getElementById('mollie-PayPal-button');
+            if(payPalButton == null || payPalButton.parentNode == null){
+                return
+            }
+            maybeShowButton(underRange())
+            ajaxCallToOrder(ajaxUrl)
+        },500);
+
     }
 )
 (

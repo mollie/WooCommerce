@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="PhpCSFixer">
+    <phpcsfixer_settings>
+      <PhpCSFixerConfiguration tool_path="$PROJECT_DIR$/vendor/bin/phpcbf" />
+    </phpcsfixer_settings>
+  </component>
+  <component name="PhpCodeSniffer">
+    <phpcs_settings>
+      <PhpCSConfiguration beautifier_path="$PROJECT_DIR$/vendor/bin/phpcbf" tool_path="$PROJECT_DIR$/vendor/bin/phpcs" />
+    </phpcs_settings>
+  </component>
   <component name="PhpIncludePathManager">
     <include_path>
       <path value="$PROJECT_DIR$/vendor/theseer/tokenizer" />
@@ -88,12 +98,6 @@
       <path value="$PROJECT_DIR$/vendor/felixfbecker/advanced-json-rpc" />
       <path value="$PROJECT_DIR$/vendor/amphp/byte-stream" />
       <path value="$PROJECT_DIR$/vendor/amphp/amp" />
-      <path value="$PROJECT_DIR$/vendor/automattic/phpcs-neutron-standard" />
-      <path value="$PROJECT_DIR$/vendor/automattic/vipwpcs" />
-      <path value="$PROJECT_DIR$/vendor/inpsyde/modularity" />
-      <path value="$PROJECT_DIR$/vendor/phpcompatibility/php-compatibility" />
-      <path value="$PROJECT_DIR$/vendor/sirbrillig/phpcs-variable-analysis" />
-      <path value="$PROJECT_DIR$/vendor/dealerdirect/phpcodesniffer-composer-installer" />
     </include_path>
   </component>
   <component name="PhpInterpreters">
@@ -277,5 +281,10 @@
     <phpunit_settings>
       <PhpUnitSettings configuration_file_path="$PROJECT_DIR$/phpunit.xml.dist" custom_loader_path="$PROJECT_DIR$/vendor/autoload.php" use_configuration_file="true" />
     </phpunit_settings>
+  </component>
+  <component name="Psalm">
+    <Psalm_settings>
+      <PsalmConfiguration tool_path="$PROJECT_DIR$/vendor/bin/psalm" />
+    </Psalm_settings>
   </component>
 </project>

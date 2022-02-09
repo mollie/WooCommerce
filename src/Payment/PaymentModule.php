@@ -134,13 +134,13 @@ class PaymentModule implements ServiceModule, ExecutableModule
         foreach ($classNames as $gateway) {
             $gatewayName = strtolower($gateway) . '_settings';
             $gatewaySettings = get_option($gatewayName);
-            $heldDuration = isset($gatewaySettings['order_dueDate']) ? $gatewaySettings['order_dueDate'] : 0;
+            $heldDuration = isset($gatewaySettings) && isset($gatewaySettings['order_dueDate']) ? $gatewaySettings['order_dueDate'] : 0;
 
             if ($heldDuration < 1) {
                 continue;
             }
             $heldDurationInSeconds = $heldDuration * 60;
-            if ($gateway === 'Mollie_WC_Gateway_BankTransfer') {
+            if ($gateway === 'mollie_wc_gateway_bankTransfer') {
                 $durationInHours = absint($heldDuration) * 24;
                 $durationInMinutes = $durationInHours * 60;
                 $heldDurationInSeconds = $durationInMinutes * 60;
@@ -161,7 +161,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
                         return MolliePaymentGateway::STATUS_CANCELLED;
                     });
                     $order->update_status('cancelled', __('Unpaid order cancelled - time limit reached.', 'woocommerce'), true);
-                    self::cancelOrderAtMollie($order->get_id());
+                    $this->cancelOrderAtMollie($order->get_id());
                 }
             }
         }
@@ -427,8 +427,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
     public function handleExpiryDateCancelation()
     {
-        //todo this doesnt work
-        /*if(!mollieWooCommercIsExpiryDateEnabled()){
+        if(!mollieWooCommercIsExpiryDateEnabled()){
             as_unschedule_action( 'mollie_woocommerce_cancel_unpaid_orders' );
             return;
         }
@@ -444,7 +443,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
                 11,
                 2
             );
-        }*/
+        }
     }
 
     /**

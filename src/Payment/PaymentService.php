@@ -88,6 +88,7 @@ class PaymentService
         );
         $initialOrderStatus = $this->processInitialOrderStatus($paymentMethod);
 
+
         $customerId = $this->getUserMollieCustomerId($order);
 
         $apiKey = $this->settingsHelper->getApiKey();
@@ -163,10 +164,13 @@ class PaymentService
             $hasMollieFee = strpos($feeName, $gatewayFeeLabel) !== false;
             if ($hasMollieFee) {
                 if($amount == (float) $fee->get_amount('edit')){
+                    $correctedFee = true;
                     continue;
                 }
                 if(!$gatewayHasSurcharge){
                     $this->removeOrderFee($order, $feeId);
+                    $correctedFee = true;
+                    continue;
                 }
                 $this->removeOrderFee($order, $feeId);
                 $this->orderAddFee($order, $amount, $surchargeName);
@@ -186,7 +190,7 @@ class PaymentService
      * @param int $feeId
      * @throws \Exception
      */
-    protected function removeOrderFee(WC_Order $order, int $feeId): WC_Order
+    protected function removeOrderFee(\WC_Order $order, int $feeId): \WC_Order
     {
         $order->remove_item($feeId);
         wc_delete_order_item($feeId);
@@ -197,7 +201,7 @@ class PaymentService
 
     protected function orderAddFee($order, $amount, $surchargeName)
     {
-        $item_fee = new WC_Order_Item_Fee();
+        $item_fee = new \WC_Order_Item_Fee();
         $item_fee->set_name($surchargeName);
         $item_fee->set_amount($amount);
         $item_fee->set_total($amount);
@@ -361,6 +365,7 @@ class PaymentService
             $this->logger->log( LogLevel::DEBUG, json_encode($apiCallLog));
             $paymentOrder = $paymentObject;
             $paymentObject = $this->apiHelper->getApiClient($apiKey)->orders->create($data);
+            $this->logger->log( LogLevel::DEBUG, json_encode($paymentObject));
             $settingsHelper = $this->settingsHelper;
             if($settingsHelper->getOrderStatusCancelledPayments() === 'cancelled'){
                 $orderId = $order->get_id();

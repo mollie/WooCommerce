@@ -11,5 +11,5 @@ use WC_Order;
 interface PaymentRedirectStrategyI
 {
 
-    public function execute(PaymentMethodI $paymentMethod, $order, MollieObject $paymentObject, string $redirectUrl);
+    public function execute(PaymentMethodI $paymentMethod, $order, $paymentObject, string $redirectUrl);
 }

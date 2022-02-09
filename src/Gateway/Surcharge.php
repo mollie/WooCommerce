@@ -31,11 +31,11 @@ class Surcharge
 
     public function buildDescriptionWithSurcharge(PaymentMethodI $paymentMethod)
     {
-        $defaultDescription = $paymentMethod->getProperty('description') ?: '';
+        $defaultDescription = $paymentMethod->getProperty('description') ?: $paymentMethod->getProperty(
+            'defaultDescription'
+        );
         $surchargeType = $paymentMethod->getProperty('payment_surcharge');
-        if (!mollieWooCommerceIsCheckoutContext()) {
-            return $defaultDescription;
-        }
+
         if (
             !$surchargeType
             || $surchargeType === self::NO_FEE
@@ -93,7 +93,7 @@ class Surcharge
 
     public function calculateFeeAmountOrder($cart, $gatewaySettings)
     {
-        $surchargeType = $gatewaySettings['payment_surcharge'];
+        $surchargeType = isset($gatewaySettings['payment_surcharge'])?$gatewaySettings['payment_surcharge']:'';
         switch ($surchargeType) {
             case 'fixed_fee':
                 return $this->calculate_fixed_fee($cart, $gatewaySettings);

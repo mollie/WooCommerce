@@ -117,7 +117,7 @@ class ApplePayDirectHandlerTest extends TestCase
     private function wcProduct()
     {
         $item = $this->createConfiguredMock(
-            'Mollie\WooCommerceTests\Stubs\WC_Product',
+            'WC_Product',
             [
                 'get_price' => '1',
                 'get_type' => 'simple',
@@ -161,7 +161,7 @@ class ApplePayDirectHandlerTest extends TestCase
     private function wcCart($subtotal, $shippingTotal, $total, $tax)
     {
         $item = $this->createConfiguredMock(
-            'Mollie\WooCommerceTests\Stubs\WC_Cart',
+            'WC_Cart',
             [
                 'needs_shipping' => true,
                 'get_subtotal' => $subtotal,

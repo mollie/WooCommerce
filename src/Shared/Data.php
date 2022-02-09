@@ -6,12 +6,13 @@ namespace Mollie\WooCommerce\Shared;
 
 use Exception;
 use InvalidArgumentException;
+use Mollie\WooCommerce\Gateway\Voucher\MaybeDisableGateway;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
-use WC_Customer;
-use WC_Order;
+use \WC_Customer;
+use \WC_Order;
 
 class Data
 {
@@ -61,7 +62,7 @@ class Data
 
     public function isBlockPluginActive(): bool
     {
-        return is_plugin_active('woocommerce-gutenberg-products-block/woocommerce-gutenberg-products-block.php');
+        return is_plugin_active('woo-gutenberg-products-block/woocommerce-gutenberg-products-block.php');
     }
 
     /**
@@ -96,7 +97,7 @@ class Data
      * @param bool $overrideTestMode
      * @return string
      */
-    public function getApiKey($overrideTestMode = false)
+    public function getApiKey($overrideTestMode = 2)
     {
         return $this->settingsHelper->getApiKey($overrideTestMode);
     }
@@ -238,31 +239,6 @@ class Data
         return $result;
     }
 
-    public function getAvailablePaymentMethodListForCheckout($filters)
-    {
-
-        $availablePaymentMethods = [];
-        $useCache = true;
-        $methods = $this->getApiPaymentMethods(
-            $useCache,
-            $filters
-        );
-
-        $activeFilterKey = "{$filters['amount']['currency']}-{$filters['locale']}-{$filters['billingCountry']}";
-        $availablePaymentMethods[$activeFilterKey] = [];
-
-        foreach ($methods as $method) {
-            $gatewayName = 'mollie_wc_gateway_' . $method['id'];
-            $gatewaySettingName = $gatewayName . '_settings';
-            $gatewaySettings = get_option($gatewaySettingName);
-            $isGatewayEnabled = $gatewaySettings['enabled'] === 'yes';
-            if ($isGatewayEnabled && $gatewayName !== 'directDebit') {
-                $availablePaymentMethods[$activeFilterKey][$gatewayName] = $method['id'];
-            }
-        }
-        return $availablePaymentMethods;
-    }
-
     public function wooCommerceFiltersForCheckout()
     {
 
@@ -385,6 +361,7 @@ class Data
     {
         $test_mode = $this->isTestModeEnabled();
         $apiKey = $this->settingsHelper->getApiKey();
+
         $methods = [];
 
         $filters_key = $filters;
@@ -403,8 +380,10 @@ class Data
             if (!$methods) {
                 $filters['resource'] = 'orders';
                 $filters['includeWallets'] = 'applepay';
-
-                $methods = $this->api_helper->getApiClient($apiKey)->methods->all($filters);
+                if(!$apiKey) {
+                    return [];
+                }
+                $methods = $this->api_helper->getApiClient($apiKey)->methods->allActive($filters);
 
                 $methods_cleaned = [];
 
@@ -469,6 +448,10 @@ class Data
             $issuers = get_transient($transient_id);
 
             if (!$issuers || !is_array($issuers)) {
+
+                if (!$apiKey) {
+                    return [];
+                }
                 $method = $this->api_helper->getApiClient($apiKey)->methods->get(sprintf('%s', $method), [ "include" => "issuers" ]);
                 $issuers = $method->issuers;
 

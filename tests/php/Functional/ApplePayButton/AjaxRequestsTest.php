@@ -594,7 +594,7 @@ class AjaxRequestsTest extends TestCase
     private function wcCart($subtotal, $shippingTotal, $total, $tax)
     {
         $item = $this->createConfiguredMock(
-            'Mollie\WooCommerceTests\Stubs\WC_Cart',
+            'WC_Cart',
             [
                 'needs_shipping' => true,
                 'get_subtotal' => $subtotal,

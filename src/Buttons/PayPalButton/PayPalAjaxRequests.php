@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Buttons\PayPalButton;
 
+use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
 use Psr\Log\LoggerInterface as Logger;
@@ -91,7 +92,8 @@ class PayPalAjaxRequests
             $payPalRequestDataObject->productQuantity
         );
 
-        $surchargeHandler = new GatewaySurchargeHandler();
+        $surcharge = new Surcharge();
+        $surchargeHandler = new GatewaySurchargeHandler($surcharge);
         $order = $surchargeHandler->addSurchargeFeeProductPage($order, 'mollie_wc_gateway_paypal');
 
         $orderId = $order->get_id();
@@ -143,7 +145,8 @@ class PayPalAjaxRequests
         list($cart, $order) = $this->createOrderFromCart();
         $orderId = $order->get_id();
         $order->calculate_totals();
-        $surchargeHandler = new GatewaySurchargeHandler();
+        $surcharge = new Surcharge();
+        $surchargeHandler = new GatewaySurchargeHandler($surcharge);
         $order = $surchargeHandler->addSurchargeFeeProductPage($order, 'mollie_wc_gateway_paypal');
         $this->updateOrderPostMeta($orderId, $order);
         $result = $this->processOrderPayment($orderId);

@@ -147,7 +147,6 @@ function mollieWooCommerceIsDropdownEnabled($gatewaySettingsName)
  */
 function mollieWooCommerceIsVoucherEnabled()
 {
-
     $voucherSettings = get_option('mollie_wc_gateway_voucher_settings');
     if (!$voucherSettings) {
         $voucherSettings = get_option('mollie_wc_gateway_mealvoucher_settings');

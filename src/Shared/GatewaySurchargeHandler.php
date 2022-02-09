@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Shared;
 
 use Mollie\WooCommerce\Gateway\Surcharge;
-use WC_Order_Item_Fee;
+use \WC_Order_Item_Fee;
 
 class GatewaySurchargeHandler
 {
@@ -148,33 +148,36 @@ class GatewaySurchargeHandler
     {
         $gateway = $this->canProcessGateway();
         $cart = WC()->cart;
-
+        $noSurchargeData = [
+                'amount' => false,
+                'name' => '',
+                'currency' => get_woocommerce_currency_symbol(),
+                'newTotal' => $cart->get_total(),
+        ];
         $gatewaySettings = $this->gatewaySettings($gateway);
+        $cart->calculate_totals();
         if (!$gatewaySettings){
+            wp_send_json_success($noSurchargeData);
             return;
         }
         //This also removes previous fees
-        $cart->calculate_totals();
+
         if (
                 !isset($gatewaySettings['payment_surcharge'])
                 || $gatewaySettings['payment_surcharge'] === Surcharge::NO_FEE
         ) {
-            $data = [
-                    'amount' => false,
-                    'name' => '',
-                    'currency' => get_woocommerce_currency_symbol(),
-                    'newTotal' => $cart->get_total(),
-            ];
-            wp_send_json_success($data);
+            wp_send_json_success($noSurchargeData);
             return;
         }
 
         $isRecurringCart = ! empty($cart->recurring_cart_key);
         if ($isRecurringCart) {
+            wp_send_json_success($noSurchargeData);
             return;
         }
         $cartAmount = $cart->get_subtotal() + $cart->get_subtotal_tax();
         if ($this->surcharge->aboveMaxLimit($cartAmount, $gatewaySettings)) {
+            wp_send_json_success($noSurchargeData);
             return;
         }
         $feeAmount = (float) $this->surcharge->calculateFeeAmount($cart, $gatewaySettings);
@@ -194,7 +197,7 @@ class GatewaySurchargeHandler
     {
         if (!mollieWooCommerceIsCheckoutContext()
                 && !has_block('woocommerce/checkout')
-                && !has_block('woocommerce/cart')
+
         ) {
             return;
         }

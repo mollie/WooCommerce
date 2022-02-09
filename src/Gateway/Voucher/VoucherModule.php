@@ -38,38 +38,42 @@ class VoucherModule implements ExecutableModule
      */
     public function run(ContainerInterface $container): bool
     {
-        $this->voucherEnabledHooks();
+        $voucherGateway = $container->get('gateway.instances')['mollie_wc_gateway_voucher'];
+        $voucher = $voucherGateway->enabled === 'yes';
+
+        if($voucher){
+            $this->voucherEnabledHooks();
+        }
+
         return true;
     }
 
     public function voucherEnabledHooks()
     {
-        if (mollieWooCommerceIsVoucherEnabled()) {
-            add_filter(
+        add_filter(
                 'woocommerce_product_data_tabs',
                 static function ($tabs) {
                     $tabs['MollieSettingsPage'] = [
-                        'label' => __('Mollie Settings', 'mollie-payments-for-woocommerce'),
-                        'target' => 'mollie_options',
-                        'class' => ['show_if_simple', 'show_if_variable'],
+                            'label' => __('Mollie Settings', 'mollie-payments-for-woocommerce'),
+                            'target' => 'mollie_options',
+                            'class' => ['show_if_simple', 'show_if_variable'],
                     ];
 
                     return $tabs;
                 }
-            );
-            add_filter('woocommerce_product_data_panels', [$this, 'mollieOptionsProductTabContent']);
-            add_action('woocommerce_process_product_meta_simple', [$this, 'saveProductVoucherOptionFields']);
-            add_action('woocommerce_process_product_meta_variable', [$this, 'saveProductVoucherOptionFields']);
-            add_action('woocommerce_product_after_variable_attributes', [$this, 'voucherFieldInVariations'], 10, 3);
-            add_action('woocommerce_save_product_variation', [$this, 'saveVoucherFieldVariations'], 10, 2);
-            add_filter('woocommerce_available_variation', [$this, 'addVoucherVariationData']);
-            add_action('woocommerce_product_bulk_edit_start', [$this, 'voucherBulkEditInput']);
-            add_action('woocommerce_product_bulk_edit_save', [$this, 'voucherBulkEditSave']);
-            add_action('product_cat_add_form_fields', [$this, 'voucherTaxonomyFieldOnCreatePage'], 10, 1);
-            add_action('product_cat_edit_form_fields', [$this, 'voucherTaxonomyFieldOnEditPage'], 10, 1);
-            add_action('edited_product_cat', [$this, 'voucherTaxonomyCustomMetaSave'], 10, 1);
-            add_action('create_product_cat', [$this, 'voucherTaxonomyCustomMetaSave'], 10, 1);
-        }
+        );
+        add_filter('woocommerce_product_data_panels', [$this, 'mollieOptionsProductTabContent']);
+        add_action('woocommerce_process_product_meta_simple', [$this, 'saveProductVoucherOptionFields']);
+        add_action('woocommerce_process_product_meta_variable', [$this, 'saveProductVoucherOptionFields']);
+        add_action('woocommerce_product_after_variable_attributes', [$this, 'voucherFieldInVariations'], 10, 3);
+        add_action('woocommerce_save_product_variation', [$this, 'saveVoucherFieldVariations'], 10, 2);
+        add_filter('woocommerce_available_variation', [$this, 'addVoucherVariationData']);
+        add_action('woocommerce_product_bulk_edit_start', [$this, 'voucherBulkEditInput']);
+        add_action('woocommerce_product_bulk_edit_save', [$this, 'voucherBulkEditSave']);
+        add_action('product_cat_add_form_fields', [$this, 'voucherTaxonomyFieldOnCreatePage'], 10, 1);
+        add_action('product_cat_edit_form_fields', [$this, 'voucherTaxonomyFieldOnEditPage'], 10, 1);
+        add_action('edited_product_cat', [$this, 'voucherTaxonomyCustomMetaSave'], 10, 1);
+        add_action('create_product_cat', [$this, 'voucherTaxonomyCustomMetaSave'], 10, 1);
     }
 
     /**
@@ -187,8 +191,11 @@ class VoucherModule implements ExecutableModule
     public function mollieOptionsProductTabContent()
     {
         ?>
-        <div id='mollie_options' class='panel woocommerce_options_panel'>        <div class='options_group'><?php
-            $voucherSettings = get_option('mollie_wc_gateway_mealvoucher_settings');
+        <div id='mollie_options' class='panel woocommerce_options_panel'><div class='options_group'><?php
+            $voucherSettings = get_option('mollie_wc_gateway_voucher_settings');
+            if(!$voucherSettings){
+                $voucherSettings = get_option('mollie_wc_gateway_mealvoucher_settings');
+            }
             $defaultCategory = $voucherSettings
                     ? $voucherSettings['mealvoucher_category_default']
                     : Voucher::NO_CATEGORY;
@@ -207,10 +214,10 @@ class VoucherModule implements ExecutableModule
                     'type' => 'select',
                     'options' => [
                         $defaultCategory => __('Same as default category', 'mollie-payments-for-woocommerce'),
-                        Voucher::NO_CATEGORY => 'No category',
-                        Voucher::MEAL => 'Meal',
-                        Voucher::ECO => 'Eco',
-                        Voucher::GIFT => 'Gift',
+                        Voucher::NO_CATEGORY => __('No Category', 'mollie-payments-for-woocommerce'),
+                        Voucher::MEAL => __('Meal', 'mollie-payments-for-woocommerce'),
+                        Voucher::ECO => __('Eco', 'mollie-payments-for-woocommerce'),
+                        Voucher::GIFT => __('Gift', 'mollie-payments-for-woocommerce'),
 
                     ],
                     'default' => $defaultCategory,
@@ -223,7 +230,7 @@ class VoucherModule implements ExecutableModule
                     ),
                     'desc_tip' => true,
                 ]
-                                                                                                            ); ?>
+              ); ?>
         </div>
 
         </div><?php

@@ -122,7 +122,7 @@ class MollieSettingsPage extends WC_Settings_Page
         ) . '<a href="https://www.mollie.com/dashboard/signup">' . __(
             ' the signup page',
             'mollie-payments-for-woocommerce'
-        ) . '</a>';
+        ) . '</a> ';
         $presentationText .= __(
             'to create a new Mollie account and start receiving payments in a couple of minutes. ',
             'mollie-payments-for-woocommerce'

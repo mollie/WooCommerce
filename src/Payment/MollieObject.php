@@ -582,10 +582,14 @@ class MollieObject
             $supports_subscriptions = $gateway->supports('subscriptions');
 
             if ($supports_subscriptions == true && $disable_automatic_payments == false) {
-                $paymentRequestData['payment']['sequenceType'] = 'first';
+                $paymentRequestData = $this->addSequenceTypeFirst($paymentRequestData);
             }
         }
         return $paymentRequestData;
+    }
+
+    public function addSequenceTypeFirst($paymentRequestData)
+    {
     }
 
     /**
@@ -768,7 +772,7 @@ class MollieObject
             $onMollieReturn
         );
         $returnUrl = untrailingslashit($returnUrl);
-        $this->logger->log(LogLevel::DEBUG, "{$this->id} : Order {$orderId} returnUrl: {$returnUrl}", [true]);
+        $this->logger->log(LogLevel::DEBUG, " Order {$orderId} returnUrl: {$returnUrl}", [true]);
 
         return apply_filters($this->pluginId . '_return_url', $returnUrl, $order);
     }
@@ -794,7 +798,7 @@ class MollieObject
         );
         $webhookUrl = untrailingslashit($webhookUrl);
 
-        $this->logger->log(LogLevel::DEBUG, "{$this->id} : Order {$orderId} webhookUrl: {$webhookUrl}", [true]);
+        $this->logger->log(LogLevel::DEBUG, " Order {$orderId} webhookUrl: {$webhookUrl}", [true]);
 
         return apply_filters($this->pluginId . '_webhook_url', $webhookUrl, $order);
     }
@@ -806,10 +810,10 @@ class MollieObject
     protected function asciiDomainName($url): string
     {
         $parsed = parse_url($url);
-        $scheme = $parsed['scheme']?:'';
-        $domain = $parsed['host']?:false;
-        $query = $parsed['query']?:'';
-        $path = $parsed['path']?:'';
+        $scheme = isset($parsed['scheme'])?$parsed['scheme']:'';
+        $domain = isset($parsed['host'])?$parsed['host']:false;
+        $query = isset($parsed['query'])?$parsed['query']:'';
+        $path = isset($parsed['path'])?$parsed['path']:'';
         if(!$domain){
             return $url;
         }

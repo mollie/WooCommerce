@@ -91,8 +91,8 @@ class MollieOrder extends MollieObject
         $returnUrl = $this->getReturnUrl($order, $returnUrl);
         $webhookUrl = $this->getWebhookUrl($order, $gatewayId);
         if (
-            $gatewayId !== 'paypal'
-            || ($gatewayId === 'paypal'
+            $gatewayId !== 'mollie_wc_gateway_paypal'
+            || ($gatewayId === 'mollie_wc_gateway_paypal'
                 && $order->get_billing_first_name() !== '')
         ) {
             $billingAddress = $this->createBillingAddress($order);
@@ -231,6 +231,12 @@ class MollieOrder extends MollieObject
         }
 
         return $ibanDetails;
+    }
+
+    public function addSequenceTypeFirst($paymentRequestData)
+    {
+        $paymentRequestData['payment']['sequenceType'] = 'first';
+        return $paymentRequestData;
     }
 
     /**

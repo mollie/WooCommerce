@@ -5,7 +5,7 @@ import {createAppleErrors} from "./applePayError";
 (
     function ({mollieApplePayBlockDataCart})
     {
-        if (_.isEmpty(mollieApplePayBlockDataCart)) {
+        if (mollieApplePayBlockDataCart.length === 0 ) {
             return
         }
         const {product: {needShipping = true, subtotal}, shop: {countryCode, currencyCode = 'EUR', totalLabel = ''}, buttonMarkup, ajaxUrl} = mollieApplePayBlockDataCart
@@ -33,7 +33,6 @@ import {createAppleErrors} from "./applePayError";
                 return
             }
             const nonce = document.getElementById("woocommerce-process-checkout-nonce").value
-
             let updatedContactInfo = []
             let selectedShippingMethod = []
             let redirectionUrl = ''
@@ -49,7 +48,7 @@ import {createAppleErrors} from "./applePayError";
                             shippingMethod: event.shippingMethod,
                             callerPage: 'cart',
                             simplifiedContact: updatedContactInfo,
-                            nonce: nonce,
+                            'woocommerce-process-checkout-nonce': nonce,
                         },
                         complete: (jqXHR, textStatus) => {
                         },
@@ -76,7 +75,7 @@ import {createAppleErrors} from "./applePayError";
                             simplifiedContact: event.shippingContact,
                             callerPage: 'cart',
                             needShipping: needShipping,
-                            nonce: nonce,
+                            'woocommerce-process-checkout-nonce': nonce,
                         },
                         complete: (jqXHR, textStatus) => {
                         },
@@ -104,7 +103,7 @@ import {createAppleErrors} from "./applePayError";
                         data: {
                             action: 'mollie_apple_pay_validation',
                             validationUrl: applePayValidateMerchantEvent.validationURL,
-                            nonce: nonce,
+                            'woocommerce-process-checkout-nonce': nonce,
                         },
                         complete: (jqXHR, textStatus) => {
                         },
@@ -186,7 +185,7 @@ import {createAppleErrors} from "./applePayError";
             document.querySelector('#mollie_applepay_button').addEventListener('click', (evt) => {
                 applePaySession()
             })
-        },500);
+        },2000);
 
     }
 )

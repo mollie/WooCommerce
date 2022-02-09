@@ -285,9 +285,9 @@ class Settings
      * @param bool $overrideTestMode
      * @return null|string
      */
-    public function getApiKey($overrideTestMode = false)
+    public function getApiKey($overrideTestMode = 2)
     {
-        $isTestModeEnabled = $overrideTestMode ?: $this->isTestModeEnabled();
+        $isTestModeEnabled = $overrideTestMode === 2 ? $this->isTestModeEnabled(): $overrideTestMode;
         $settingId = $isTestModeEnabled ? 'test_api_key' : 'live_api_key';
         $apiKeyId = $this->getSettingId($settingId);
         $apiKey = get_option($apiKeyId);
@@ -307,7 +307,9 @@ class Settings
      */
     public function getOrderStatusCancelledPayments()
     {
-        return trim(get_option($this->getSettingId('order_status_cancelled_payments')));
+        $defaultCanceledPaymentSetting = 'pending';
+        $orderStatusCanceledPaymentsSetting = get_option($this->getSettingId('order_status_cancelled_payments'))?:$defaultCanceledPaymentSetting;
+        return trim($orderStatusCanceledPaymentsSetting);
     }
 
     /**

@@ -127,7 +127,7 @@ class SurchargeHandlerTest extends TestCase
     protected function cartMock()
     {
         return $this->createConfiguredMock(
-            'Mollie\WooCommerceTests\Stubs\WC_Cart',
+            'WC_Cart',
             [
                 'get_subtotal'=> '2.00',
                 'get_subtotal_tax' => '2.50',
@@ -158,7 +158,7 @@ class SurchargeHandlerTest extends TestCase
     private function wcOrder($id, $orderKey)
     {
         $item = $this->createConfiguredMock(
-            'Mollie\WooCommerceTests\Stubs\WC_Order',
+            'WC_Order',
             [
                 'get_id' => $id,
                 'get_order_key' => $orderKey,

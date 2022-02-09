@@ -28,11 +28,11 @@ class SharedModule implements ServiceModule
                 return 'mollie-payments-for-woocommerce';
             },
             'shared.plugin_version' => static function (): string {
-                //Get plugin version TODO handle with properties
-                return '6.7.0';
+                //Get plugin version
+                return '7.0.0';
             },
             'shared.plugin_title' => static function (): string {
-                //Get plugin version TODO handle with properties
+                //Get plugin version
                 return 'Mollie Payments for WooCommerce';
             },
             'shared.plugin_file' => static function (): string {

@@ -10,8 +10,7 @@ class GiftcardFieldsStrategy implements PaymentFieldsStrategyI
 
     public function execute($gateway, $dataHelper)
     {
-
-        if ($gateway->paymentMethod->getProperty('issuers_dropdown_shown') !== 'yes') {
+        if (!$this->dropDownEnabled($gateway)) {
             return;
         }
 
@@ -36,7 +35,7 @@ class GiftcardFieldsStrategy implements PaymentFieldsStrategyI
 
     public function getFieldMarkup($gateway, $dataHelper)
     {
-        if ($gateway->paymentMethod->getProperty('issuers_dropdown_shown') !== 'yes') {
+        if (!$this->dropDownEnabled($gateway)) {
             return "";
         }
         $issuers = $this->getIssuers($gateway, $dataHelper);

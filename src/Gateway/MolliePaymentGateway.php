@@ -147,7 +147,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         $this->init_form_fields();
         $this->init_settings();
         $this->title = $this->paymentMethod->hasProperty('title')
-            ? $this->paymentMethod->getProperty('title') : 'MollieGateway';
+            ? $this->paymentMethod->getProperty('title') : $this->paymentMethod->getProperty('defaultTitle');
 
         $this->initDescription();
         $this->initIcon();
@@ -203,6 +203,8 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         if ($this->paymentMethod->getProperty('filtersOnBuild')) {
             $this->paymentMethod->filtersOnBuild();
         }
+
+
     }
 
     public function initIcon()
@@ -269,27 +271,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
      */
     public function isValidForUse(): bool
     {
-        //
-        // Abort if this is not the WooCommerce settings page
-        //
-
-        // Return if function get_current_screen() is not defined
-        if (!function_exists('get_current_screen')) {
-            return true;
-        }
-
-        // Try getting get_current_screen()
-        $current_screen = get_current_screen();
-
-        // Return if get_current_screen() isn't set
-        if (!$current_screen) {
-            return true;
-        }
-
-        if (
-        is_admin() && !empty($current_screen->base)
-            && $current_screen->base === 'woocommerce_page_wc-settings'
-        ) {
+        if (is_admin()) {
             if (!$this->dataService->isValidApiKeyProvided()) {
                 $test_mode = $this->dataService->isTestModeEnabled();
 
@@ -647,6 +629,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         }
         $paymentMethod = $this->paymentMethod;
         $redirectUrl = $this->get_return_url($order);
+        $this->paymentService->setGateway($this);
         return $this->paymentService->processPayment($orderId, $order, $paymentMethod, $redirectUrl);
     }
 

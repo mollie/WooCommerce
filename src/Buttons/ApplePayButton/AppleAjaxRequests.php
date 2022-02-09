@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Buttons\ApplePayButton;
 
 use Exception;
+use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
@@ -131,8 +132,8 @@ class AppleAjaxRequests
         if (!$this->isNonceValid($applePayRequestDataObject)) {
             return;
         }
-        //we cannot access the endpoint in testmode, we override it
-        $apiKey = $this->settingsHelper->getApiKey(true);
+        //we cannot access the endpoint in testmode, we override it to be testMode = false
+        $apiKey = $this->settingsHelper->getApiKey(false);
         $validationUrl = $applePayRequestDataObject->validationUrl;
         $completeDomain = parse_url(get_site_url(), PHP_URL_HOST);
         $removeHttp = ["https://", "http://"];
@@ -177,6 +178,7 @@ class AppleAjaxRequests
         if (!$this->isNonceValid($applePayRequestDataObject)) {
             return;
         }
+
         if ($applePayRequestDataObject->hasErrors()) {
             $this->responseTemplates->responseWithDataErrors($applePayRequestDataObject->errors);
             return;
@@ -201,6 +203,7 @@ class AppleAjaxRequests
         );
         $productNeedShipping
             = $applePayRequestDataObject->needShipping;
+
         if (!$isAllowedSellingCountry) {
             $this->responseTemplates->responseWithDataErrors(
                 [['errorCode' => 'addressUnserviceable']]
@@ -522,8 +525,11 @@ class AppleAjaxRequests
         $selectedShippingMethod,
         $shippingMethodsArray
     ): array {
-        $surcharge = new GatewaySurchargeHandler();
-        $surchargeLabel = $surcharge->gatewayFeeLabel;
+        $surcharge = new Surcharge();
+        $surchargeLabel = get_option(
+            'mollie-payments-for-woocommerce_gatewayFeeLabel',
+            __(Surcharge::DEFAULT_FEE_LABEL, 'mollie-payments-for-woocommerce')
+        );
         $settings = get_option('mollie_wc_gateway_applepay_settings', false);
 
         $calculatedFee = round((float)$surcharge->calculateFeeAmount($cart, $settings ), 2);

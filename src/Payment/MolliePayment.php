@@ -121,6 +121,12 @@ class MolliePayment extends MollieObject
         return $paymentRequestData;
     }
 
+    public function addSequenceTypeFirst($paymentRequestData)
+    {
+        $paymentRequestData['sequenceType'] = 'first';
+        return $paymentRequestData;
+    }
+
     protected function getPaymentDescription($order, $option)
     {
         switch ($option) {

@@ -24,18 +24,19 @@ class MaybeDisableGateway
             'wc-api',
             FILTER_SANITIZE_STRING
         );
-
         /*
-         * There is only one case where we want to filter the gateway and it's when the checkout
-         * page render the available payments methods.
+         * There are 2 cases where we want to filter the gateway and it's when the checkout
+         * page render the available payments methods.(classic and block)
          *
          * For any other case we want to be sure mealvoucher gateway is included.
          */
         if (
-            $isWcApiRequest
+        ($isWcApiRequest
             || !doing_action('woocommerce_payment_gateways')
             || !wp_doing_ajax()
-            || is_admin()
+            || is_admin())
+        && !has_block('woocommerce/checkout')
+
         ) {
             return $gateways;
         }
@@ -44,7 +45,7 @@ class MaybeDisableGateway
             if (!($gateway instanceof MolliePaymentGateway)) {
                 continue;
             }
-            if ($gateway->id === 'Mollie_WC_Gateway_Voucher') {
+            if ($gateway->id === 'mollie_wc_gateway_voucher') {
                 $mealVoucherGatewayIndex = $key;
             }
         }
@@ -71,8 +72,13 @@ class MaybeDisableGateway
         $cart = WC()->cart;
         $products = $cart->get_cart_contents();
         $mealvoucherSettings = get_option(
-            'mollie_wc_gateway_mealvoucher_settings'
+            'mollie_wc_gateway_voucher_settings'
         );
+        if(!$mealvoucherSettings){
+            $mealvoucherSettings = get_option(
+                'mollie_wc_gateway_mealvoucher_settings'
+            );
+        }
         //Check if mealvoucherSettings is an array as to prevent notice from being thrown for PHP 7.4 and up.
         if (is_array($mealvoucherSettings)) {
             $defaultCategory = $mealvoucherSettings['mealvoucher_category_default'];

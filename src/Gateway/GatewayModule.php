@@ -157,7 +157,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         });
 
         add_filter('woocommerce_payment_gateways', function ($gateways) use ($container) {
-            $mollieGateways = $this->instantiatePaymentMethodGateways($container);
+            $mollieGateways = $container->get('gateway.instances');
             return array_merge($gateways, $mollieGateways);
         });
         add_filter('woocommerce_payment_gateways', [$this, 'maybeDisableApplePayGateway'], 20);
@@ -211,7 +211,15 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $this->molliePayPalButtonHandling($paypalGateway, $notice, $logger, $pluginUrl);
         $checkoutBlockHandler = new CheckoutBlockService($container->get('settings.data_helper'));
         $checkoutBlockHandler->bootstrapAjaxRequest();
-
+        add_action( 'woocommerce_blocks_checkout_update_order_meta', function($order) use($gatewayInstances){
+            $orderPaymentMethod = $order->get_payment_method();
+            $title = $orderPaymentMethod? $gatewayInstances[$orderPaymentMethod]->title: '';
+            if(!$title){
+                return $order;
+            }
+            $order->update_meta_data('_payment_method_title', $title);
+            return $order;
+        } );
         return true;
     }
 

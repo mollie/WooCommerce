@@ -58,7 +58,6 @@ class AssetsModule implements ExecutableModule
                     });
                     $this->registerButtonsBlockScripts();
                 }
-
             }
         );
         add_action(
@@ -96,35 +95,7 @@ class AssetsModule implements ExecutableModule
                         $this->enqueueBlockCheckoutScripts($gatewayInstances);
                     }
 
-
-                    wp_enqueue_script('mollie_wc_gateway_settings');
-                    wp_enqueue_style('mollie-gateway-icons');
-                    $settingsName = "{$current_section}_settings";
-                    $gatewaySettings = get_option($settingsName, false);
-                    $message = __('No custom logo selected', 'mollie-payments-for-woocommerce');
-                    $isEnabled = false;
-                    if ($gatewaySettings && isset($gatewaySettings['enable_custom_logo'])) {
-                        $isEnabled = $gatewaySettings['enable_custom_logo'] === 'yes';
-                    }
-                    $uploadFieldName = "{$current_section}_upload_logo";
-                    $enabledFieldName = "{$current_section}_enable_custom_logo";
-                    $gatewayIconUrl = '';
-                    if ($gatewaySettings && isset($gatewaySettings['iconFileUrl'])) {
-                        $gatewayIconUrl = $gatewaySettings['iconFileUrl'];
-                    }
-
-                    wp_localize_script(
-                        'mollie_wc_gateway_settings',
-                        'gatewaySettingsData',
-                        [
-                            'isEnabledIcon' => $isEnabled,
-                            'uploadFieldName' => $uploadFieldName,
-                            'enableFieldName' => $enabledFieldName,
-                            'iconUrl' => $gatewayIconUrl,
-                            'message' => $message,
-                            'pluginUrlImages' => plugins_url('public/images', M4W_FILE),
-                        ]
-                    );
+                    $this->enqueueIconSettings($current_section);
                 }
             }
         );
@@ -485,23 +456,33 @@ class AssetsModule implements ExecutableModule
     protected function gatewayDataForWCBlocks($gatewayInstances): array
     {
         $filters = $this->dataService->wooCommerceFiltersForCheckout();
+        $availableGateways = WC()->payment_gateways()->get_available_payment_gateways();
 
-        if ($filters) {
-            $availablePaymentMethods = $this->dataService->getAvailablePaymentMethodListForCheckout($filters);
+        if (
+            isset($filters['amount']['currency'])
+            && isset($filters['locale'])
+            && isset($filters['billingCountry'])
+        ) {
+            $filterKey = "{$filters['amount']['currency']}-{$filters['locale']}-{$filters['billingCountry']}";
+            foreach ($availableGateways as $key => $gateway){
+                $availablePaymentMethods[$filterKey][$key] = $gateway->paymentMethod->getProperty('id');
+            }
         }
 
         $dataToScript = [
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'filters' => [
-                            'currency' => $filters['amount']['currency'],
-                            'cartTotal' => $filters['amount']['value'],
-                            'paymentLocale' => $filters['locale'],
-                            'billingCountry' => $filters['billingCountry'],
+                'currency' => isset($filters['amount']['currency']) ? $filters['amount']['currency'] : false,
+                'cartTotal' => isset($filters['amount']['value']) ? $filters['amount']['value'] : false,
+                'paymentLocale' => isset($filters['locale']) ? $filters['locale'] : false,
+                'billingCountry' => isset($filters['billingCountry']) ? $filters['billingCountry'] : false,
                         ],
         ];
         $gatewayData = [];
+        $isSepaEnabled = isset($gatewayInstances['mollie_wc_gateway_directdebit']) && $gatewayInstances['mollie_wc_gateway_directdebit']->enabled === 'yes';
         foreach ($gatewayInstances as $gatewayKey => $gateway) {
             $gatewayId = $gateway->paymentMethod->getProperty('id');
+
             if ($gateway->enabled !== 'yes' || $gatewayId === 'directdebit') {
                 continue;
             }
@@ -509,10 +490,15 @@ class AssetsModule implements ExecutableModule
             $issuers = false;
             if ($gateway->paymentMethod->getProperty('paymentFields')) {
                 $gateway->paymentMethod->paymentFieldsService->setStrategy($gateway->paymentMethod);
-
                 $issuers = $gateway->paymentMethod->paymentFieldsService->getStrategyMarkup($gateway);
             }
-            $labelMarkup = "<span style='margin-right: 1em'>{$gateway->paymentMethod->getProperty('title')}</span>{$gateway->icon}";
+            if($gatewayId == 'creditcard'){
+                $content .= $issuers;
+                $issuers = false;
+            }
+            $title = $gateway->paymentMethod->getProperty('title')?:
+                $gateway->paymentMethod->getProperty('defaultTitle');
+            $labelMarkup = "<span style='margin-right: 1em'>{$title}</span>{$gateway->icon}";
             $hasSurcharge = $gateway->paymentMethod->hasSurcharge();
             $gatewayData[] = [
                 'name' => $gatewayKey,
@@ -520,18 +506,32 @@ class AssetsModule implements ExecutableModule
                 'content' => $content,
                 'issuers' => $issuers,
                 'hasSurcharge' => $hasSurcharge,
+                'title' => $title,
                 'contentFallback'=> __('Please choose a billing country to see the available payment methods', 'mollie-payments-for-woocommerce'),
                 'edit' => $content,
                 'paymentMethodId' => $gatewayKey,
                 'allowedCountries' => $gateway->paymentMethod->getProperty('allowed_countries'),
                 'ariaLabel' => $gateway->paymentMethod->getProperty('defaultDescription'),
-                'supports' => $gateway->paymentMethod->getProperty('supports'),
+                'supports' => $this->gatewaySupportsFeatures($gateway->paymentMethod, $isSepaEnabled),
             ];
         }
         $dataToScript['gatewayData'] = $gatewayData;
-        $dataToScript['availableGateways'] = isset($availablePaymentMethods) ? $availablePaymentMethods : [];
+        $dataToScript['availableGateways'] = isset($availablePaymentMethods) ?
+            $availablePaymentMethods
+            : [];
 
         return $dataToScript;
+    }
+
+    public function gatewaySupportsFeatures($paymentMethod, $isSepaEnabled):array
+    {
+        $supports = $paymentMethod->getProperty('supports');
+        $isSepaPaymentMethod = $paymentMethod->getProperty('SEPA');
+        if($isSepaEnabled && $isSepaPaymentMethod){
+            array_push($supports, 'subscriptions');
+        }
+
+        return $supports;
     }
 
     protected function getPluginUrl(string $path = ''): string
@@ -542,5 +542,40 @@ class AssetsModule implements ExecutableModule
     protected function getPluginPath(string $path = ''): string
     {
         return $this->pluginPath . ltrim($path, '/');
+    }
+
+    /**
+     * @param $current_section
+     */
+    protected function enqueueIconSettings($current_section): void
+    {
+        wp_enqueue_script('mollie_wc_gateway_settings');
+        wp_enqueue_style('mollie-gateway-icons');
+        $settingsName = "{$current_section}_settings";
+        $gatewaySettings = get_option($settingsName, false);
+        $message = __('No custom logo selected', 'mollie-payments-for-woocommerce');
+        $isEnabled = false;
+        if ($gatewaySettings && isset($gatewaySettings['enable_custom_logo'])) {
+            $isEnabled = $gatewaySettings['enable_custom_logo'] === 'yes';
+        }
+        $uploadFieldName = "{$current_section}_upload_logo";
+        $enabledFieldName = "{$current_section}_enable_custom_logo";
+        $gatewayIconUrl = '';
+        if ($gatewaySettings && isset($gatewaySettings['iconFileUrl'])) {
+            $gatewayIconUrl = $gatewaySettings['iconFileUrl'];
+        }
+
+        wp_localize_script(
+            'mollie_wc_gateway_settings',
+            'gatewaySettingsData',
+            [
+                'isEnabledIcon' => $isEnabled,
+                'uploadFieldName' => $uploadFieldName,
+                'enableFieldName' => $enabledFieldName,
+                'iconUrl' => $gatewayIconUrl,
+                'message' => $message,
+                'pluginUrlImages' => plugins_url('public/images', M4W_FILE),
+            ]
+        );
     }
 }

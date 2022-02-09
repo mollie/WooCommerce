@@ -304,6 +304,12 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             try {
                 if ( $validMandate ) {
                     $payment = $this->apiHelper->getApiClient($apiKey)->payments->create( $data );
+                    //check the payment method is the one in the order, if not we want this payment method in the order MOL-596
+                    $paymentMethodUsed = 'mollie_wc_gateway_'.$payment->method;
+                    if($paymentMethodUsed !== $renewalOrderMethod){
+                        $renewal_order->set_payment_method($paymentMethodUsed);
+                    }
+
                     //update the valid mandate for this order
                     if ((property_exists($payment, 'mandateId')
                             && $payment->mandateId !== null)

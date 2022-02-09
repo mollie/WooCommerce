@@ -41,7 +41,7 @@ class PluginDisabler
     {
         add_filter(
             'auto_update_plugin',
-            function ($update, $item): bool {
+            function ($update, $item) {
                 return $this->notAutoUpdateThisPlugin($update, $item);
             },
             10,
@@ -69,7 +69,7 @@ class PluginDisabler
      */
     public function notAutoUpdateThisPlugin($update, $item)
     {
-        if ($item === $this->pluginSlug) {
+        if ($item->slug === $this->pluginSlug) {
             return false;
         } else {
             return $update;

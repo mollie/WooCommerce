@@ -21,7 +21,7 @@ class BanktransferRedirectStrategy implements PaymentRedirectStrategyI
      *
      * @return string
      */
-    public function execute(PaymentMethodI $paymentMethod, $order, MollieObject $paymentObject, string $redirectUrl): string
+    public function execute(PaymentMethodI $paymentMethod, $order, $paymentObject, string $redirectUrl): string
     {
         if ($paymentMethod->getProperty('skip_mollie_payment_screen') === 'yes') {
             return add_query_arg(

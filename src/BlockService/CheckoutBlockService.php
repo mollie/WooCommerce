@@ -66,7 +66,11 @@ class CheckoutBlockService
             $filters = false;
         }
         if ($filters) {
-            $availablePaymentMethods = $this->dataService->getAvailablePaymentMethodListForCheckout($filters);
+            $availableGateways = WC()->payment_gateways()->get_available_payment_gateways();
+            $filterKey = "{$filters['amount']['currency']}-{$filters['locale']}-{$filters['billingCountry']}";
+            foreach ($availableGateways as $key => $gateway){
+                $availablePaymentMethods[$filterKey][$key] = $gateway->paymentMethod->getProperty('id');
+            }
         }
 
         wp_send_json_success($availablePaymentMethods);

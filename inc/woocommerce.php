@@ -1,4 +1,16 @@
 <?php
+if (!function_exists('has_block')) {
+    /**
+     * Check if the current page has block
+     *
+     * @since WooCommerce 5.0
+     * @return bool
+     */
+    function has_block($blockName)
+    {
+        return false;
+    }
+}
 
 if (!function_exists('is_order_received_page')) {
     /**

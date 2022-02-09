@@ -60,8 +60,8 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
 
     public function shouldDisplayIcon(): bool
     {
-        return $this->hasProperty('display_logo')
-            && $this->getProperty('display_logo') === 'yes';
+        $defaultIconSetting = true;
+        return $this->hasProperty('display_logo')? $this->getProperty('display_logo') === 'yes': $defaultIconSetting;
     }
 
     public function getSharedFormFields(){
@@ -112,7 +112,8 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     public function getInitialOrderStatus(): string
     {
         if ($this->getProperty('confirmationDelayed')) {
-            return $this->getProperty('initial_order_status');
+            return $this->getProperty('initial_order_status')
+                ?: MolliePaymentGateway::STATUS_ON_HOLD;
         }
 
         return MolliePaymentGateway::STATUS_PENDING;

@@ -86,7 +86,12 @@ class OrderLines
      */
     private function process_items()
     {
-        $isMealVoucherEnabled = mollieWooCommerceIsVoucherEnabled();
+        $voucherSettings = get_option('mollie_wc_gateway_voucher_settings')?:get_option('mollie_wc_gateway_mealvoucher_settings');
+        $isMealVoucherEnabled = $voucherSettings ? ($voucherSettings['enabled'] == 'yes') : false;
+        if (!$voucherSettings) {
+            $isMealVoucherEnabled = $this->dataHelper->getPaymentMethod('voucher')?true:false;
+        }
+
         foreach ($this->order->get_items() as $cart_item) {
             if ($cart_item['quantity']) {
                 do_action($this->pluginId . '_orderlines_process_items_before_getting_product_id', $cart_item);
@@ -435,9 +440,15 @@ class OrderLines
     private function get_item_category($product)
     {
         $mealvoucherSettings = get_option(
-            'mollie_wc_gateway_mealvoucher_settings'
+            'mollie_wc_gateway_voucher_settings'
         );
-        $defaultCategory = $mealvoucherSettings['mealvoucher_category_default'];
+        if(!$mealvoucherSettings){
+            $mealvoucherSettings = get_option(
+                'mollie_wc_gateway_mealvoucher_settings'
+            );
+        }
+
+        $defaultCategory = $mealvoucherSettings? $mealvoucherSettings['mealvoucher_category_default']:Voucher::NO_CATEGORY;
         $category = $defaultCategory;
 
         if (!$product) {

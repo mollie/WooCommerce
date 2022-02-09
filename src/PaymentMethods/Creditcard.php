@@ -18,6 +18,7 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
             'supports' => [
                 'products',
                 'refunds',
+                'subscriptions',
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,

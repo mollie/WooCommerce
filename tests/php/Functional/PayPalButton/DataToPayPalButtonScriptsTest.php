@@ -122,7 +122,7 @@ class DataToPayPalButtonScriptsTest extends TestCase
     private function wcProduct()
     {
         return $this->createConfiguredMock(
-            'Mollie\WooCommerceTests\Stubs\WC_Product',
+            'WC_Product',
             [
                 'get_price' => '1',
                 'get_type' => 'simple',
@@ -163,7 +163,7 @@ class DataToPayPalButtonScriptsTest extends TestCase
     private function wcCart($subtotal, $shippingTotal, $total, $tax)
     {
         return $this->createConfiguredMock(
-            'Mollie\WooCommerceTests\Stubs\WC_Cart',
+            'WC_Cart',
             [
                 'needs_shipping' => false,
                 'get_subtotal' => $subtotal,

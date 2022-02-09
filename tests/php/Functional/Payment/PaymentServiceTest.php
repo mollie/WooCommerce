@@ -96,9 +96,12 @@ class PaymentServiceTest extends TestCase
         /*
          *  Expectations
          */
+        expect('is_plugin_active')
+            ->andReturn(false);
         expect('get_option')
             ->with('mollie-payments-for-woocommerce_api_switch')
             ->andReturn(false);
+
 
         /*
         * Execute Test

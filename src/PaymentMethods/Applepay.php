@@ -18,6 +18,7 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
             'supports' => [
                 'products',
                 'refunds',
+                'subscriptions',
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,

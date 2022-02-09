@@ -34,7 +34,7 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
             'id' => 'voucher',
             'defaultTitle' => __('Voucher', 'mollie-payments-for-woocommerce'),
             'settingsDescription' => '',
-            'defaultDescription' => __('Select your voucher', 'mollie-payments-for-woocommerce'),
+            'defaultDescription' => __('', 'mollie-payments-for-woocommerce'),
             'paymentFields' => false,
             'instructions' => false,
             'supports' => [
@@ -49,6 +49,7 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
     public function getFormFields($generalFormFields): array
     {
         $paymentMethodFormFieds = [
+
             'mealvoucher_category_default' => [
                 'title' => __('Select the default products category', 'mollie-payments-for-woocommerce'),
                 'type' => 'select',
@@ -69,6 +70,6 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
 
     private function categoryName($category)
     {
-        return ucfirst(str_replace('_', ' ', $category));
+        return __(ucwords(str_replace('_', ' ', $category)), 'mollie-payments-for-woocommerce');
     }
 }

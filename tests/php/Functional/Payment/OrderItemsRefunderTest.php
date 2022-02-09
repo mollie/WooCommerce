@@ -12,7 +12,7 @@ use Mollie\WooCommerce\Payment\OrderItemsRefunder;
 use Mollie\WooCommerce\Payment\RefundLineItemsBuilder;
 use Mollie\WooCommerce\Shared\Data;
 
-use Mollie\WooCommerceTests\Stubs\WC_Order_Item;
+use WC_Order_Item;
 
 use Mollie\WooCommerceTests\TestCase;
 use PHPUnit_Framework_Exception;
@@ -318,7 +318,7 @@ class OrderItemsRefunderTest extends TestCase
     private function orderItem(array $config)
     {
         $item = $this->createConfiguredMock(
-            'Mollie\WooCommerceTests\Stubs\WC_Order_Item',
+            'WC_Order_Item',
             [
                 'get_meta' => $config['meta'],
             ]

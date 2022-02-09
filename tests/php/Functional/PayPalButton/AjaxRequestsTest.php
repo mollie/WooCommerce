@@ -153,7 +153,7 @@ class AjaxRequestsTest extends TestCase
     private function wcOrder()
     {
         $item = $this->createConfiguredMock(
-            'Mollie\WooCommerceTests\Stubs\WC_Order',
+            'WC_Order',
             [
                 'get_id' => 11,
             ]

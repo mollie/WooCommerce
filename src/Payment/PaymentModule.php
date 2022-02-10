@@ -91,7 +91,13 @@ class PaymentModule implements ServiceModule, ExecutableModule
             2
         );
 
-        $this->handleExpiryDateCancelation();
+       add_action(
+            'init',
+            [$this, 'handleExpiryDateCancelation'],
+            10,
+            2
+        );
+
 
         add_action(
             OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS,

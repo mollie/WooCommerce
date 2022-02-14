@@ -67,6 +67,11 @@ class CheckoutBlockService
         }
         if ($filters) {
             $availableGateways = WC()->payment_gateways()->get_available_payment_gateways();
+            foreach ($availableGateways as $key => $gateway){
+                if(strpos($key, 'mollie_wc_gateway_') === false){
+                    unset($availableGateways[$key]);
+                }
+            }
             $filterKey = "{$filters['amount']['currency']}-{$filters['locale']}-{$filters['billingCountry']}";
             foreach ($availableGateways as $key => $gateway){
                 $availablePaymentMethods[$filterKey][$key] = $gateway->paymentMethod->getProperty('id');

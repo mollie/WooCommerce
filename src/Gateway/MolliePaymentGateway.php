@@ -142,6 +142,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         $this->method_description = $this->paymentMethod->getProperty(
             'settingsDescription'
         );
+        $this->supports = $this->paymentMethod->getProperty('supports');
 
         // Load the settings.
         $this->init_form_fields();

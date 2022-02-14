@@ -14,6 +14,7 @@ use Mollie\WooCommerce\SDK\Api;
 use Psr\Log\LogLevel;
 use stdClass;
 use WC_Order;
+use WP_Error;
 
 class MollieOrder extends MollieObject
 {
@@ -564,7 +565,7 @@ class MollieOrder extends MollieObject
      * @param null     $amount
      * @param string   $reason
      *
-     * @return bool|\WP_Error
+     * @return bool|WP_Error
      */
     public function refund(WC_Order $order, $orderId, $paymentObject, $amount = null, $reason = '')
     {
@@ -614,7 +615,7 @@ class MollieOrder extends MollieObject
             }
 
             $totals = number_format(abs($totals), 2); // WooCommerce - sum of all refund items
-            $checkAmount = number_format($amount, 2); // WooCommerce - refund amount
+            $checkAmount = $amount? number_format((float)$amount, 2):0; // WooCommerce - refund amount
 
             if ($checkAmount !== $totals) {
                 $errorMessage = "The sum of refunds for all order lines is not identical to the refund amount, so this refund will be processed as a payment amount refund, not an order line refund.";

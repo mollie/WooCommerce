@@ -343,13 +343,6 @@ class AssetsModule implements ExecutableModule
             filemtime($this->getPluginPath('/public/js/mollieBlockIndex.min.js')),
             true
         );
-        wp_register_script(
-            'mollie_block_cart',
-            $this->getPluginUrl('/public/js/mollieBlockCart.min.js'),
-            ['underscore', 'jquery'],
-            filemtime($this->getPluginPath('/public/js/mollieBlockCart.min.js')),
-            true
-        );
     }
 
     /**
@@ -458,6 +451,11 @@ class AssetsModule implements ExecutableModule
         $filters = $this->dataService->wooCommerceFiltersForCheckout();
         $availableGateways = WC()->payment_gateways()->get_available_payment_gateways();
 
+        foreach ($availableGateways as $key => $gateway){
+            if(strpos($key, 'mollie_wc_gateway_') === false){
+                unset($availableGateways[$key]);
+            }
+        }
         if (
             isset($filters['amount']['currency'])
             && isset($filters['locale'])

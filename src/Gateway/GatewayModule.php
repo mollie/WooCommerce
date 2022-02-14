@@ -211,15 +211,19 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $this->molliePayPalButtonHandling($paypalGateway, $notice, $logger, $pluginUrl);
         $checkoutBlockHandler = new CheckoutBlockService($container->get('settings.data_helper'));
         $checkoutBlockHandler->bootstrapAjaxRequest();
-        add_action( 'woocommerce_blocks_checkout_update_order_meta', function($order) use($gatewayInstances){
-            $orderPaymentMethod = $order->get_payment_method();
-            $title = $orderPaymentMethod? $gatewayInstances[$orderPaymentMethod]->title: '';
-            if(!$title){
-                return $order;
+        add_action( 'woocommerce_rest_checkout_process_payment_with_context', function($paymentContext){
+            if(strpos($paymentContext->payment_method, 'mollie_wc_gateway_') === false){
+                return;
             }
-            $order->update_meta_data('_payment_method_title', $title);
-            return $order;
+            $title = isset($paymentContext->payment_data['payment_method_title'])?$paymentContext->payment_data['payment_method_title']:false;
+            if(!$title){
+                return ;
+            }
+            $order = $paymentContext->order;
+            $order->set_payment_method_title( $title );
+            $order->save();
         } );
+
         return true;
     }
 

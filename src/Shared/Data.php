@@ -367,9 +367,9 @@ class Data
         $filters_key = $filters;
         $filters_key['mode'] = ( $test_mode ? 'test' : 'live' );
         $filters_key['api'] = 'methods';
+        $transient_id = $this->getTransientId(md5(http_build_query($filters_key)));
 
         try {
-            $transient_id = $this->getTransientId(md5(http_build_query($filters_key)));
 
             if ($use_cache) {
                 // When no cache exists $methods will be `false`
@@ -377,7 +377,7 @@ class Data
             }
 
             // No cache exists, call the API and cache the result
-            if (!$methods) {
+            if ($methods === false) {
                 $filters['resource'] = 'orders';
                 $filters['includeWallets'] = 'applepay';
                 if(!$apiKey) {
@@ -403,6 +403,13 @@ class Data
 
             return $methods;
         } catch (\Mollie\Api\Exceptions\ApiException $e) {
+            /**
+             * Cache the result for a short period
+             * to prevent hammering the API with requests that are likely to fail again
+             */
+            if ($use_cache) {
+                set_transient($transient_id, [], 60 * 5);
+            }
             $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . ": Could not load Mollie methods (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
 
             return [];

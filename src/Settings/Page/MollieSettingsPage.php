@@ -665,18 +665,21 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     public function get_sections()
     {
+        $isAppleEnabled =array_key_exists('mollie_wc_gateway_applepay', $this->registeredGateways);
         $sections = [
             '' => __('General', 'mollie-payments-for-woocommerce'),
             'mollie_components' => __(
                 'Mollie Components',
                 'mollie-payments-for-woocommerce'
             ),
-            'applepay_button' => __(
-                'Apple Pay Button',
-                'mollie-payments-for-woocommerce'
-            ),
             'advanced' => __('Advanced', 'mollie-payments-for-woocommerce'),
         ];
+        if($isAppleEnabled){
+            $sections['applepay_button'] = __(
+                'Apple Pay Button',
+                'mollie-payments-for-woocommerce'
+            );
+        }
 
         return apply_filters(
             'woocommerce_get_sections_' . $this->id,

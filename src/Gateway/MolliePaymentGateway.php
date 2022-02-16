@@ -197,10 +197,11 @@ class MolliePaymentGateway extends WC_Payment_Gateway
             $this->has_fields = false;
         }
 
-        if (!$this->isValidForUse()) {
-            // Disable gateway if it's not valid for use
-            $this->enabled = false;
-        }
+        $isEnabledAtWoo = $this->paymentMethod->getProperty('enabled') ?
+            $this->paymentMethod->getProperty('enabled')==='yes' :
+            true;
+        $this->enabled = $isEnabledAtWoo;
+
         if ($this->paymentMethod->getProperty('filtersOnBuild')) {
             $this->paymentMethod->filtersOnBuild();
         }

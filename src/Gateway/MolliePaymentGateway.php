@@ -198,8 +198,8 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         }
 
         $isEnabledAtWoo = $this->paymentMethod->getProperty('enabled') ?
-            $this->paymentMethod->getProperty('enabled')==='yes' :
-            true;
+            $this->paymentMethod->getProperty('enabled') :
+            'yes';
         $this->enabled = $isEnabledAtWoo;
 
         if ($this->paymentMethod->getProperty('filtersOnBuild')) {

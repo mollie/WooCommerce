@@ -362,7 +362,7 @@ class Data
         $test_mode = $this->isTestModeEnabled();
         $apiKey = $this->settingsHelper->getApiKey();
 
-        $methods = [];
+        $methods = false;
 
         $filters_key = $filters;
         $filters_key['mode'] = ( $test_mode ? 'test' : 'live' );

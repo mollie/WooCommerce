@@ -329,12 +329,10 @@ class PaymentModule implements ServiceModule, ExecutableModule
             return;
         }
 
-        // Is test mode enabled?
-        $test_mode = $this->settingsHelper->isTestModeEnabled();
-
+        $apiKey = $this->settingsHelper->getApiKey();
         try {
             // Get the order from the Mollie API
-            $mollie_order = $this->apiHelper->getApiClient($test_mode)->orders->get($mollie_order_id);
+            $mollie_order = $this->apiHelper->getApiClient($apiKey)->orders->get($mollie_order_id);
 
             // Check that order is Paid or Authorized and can be captured
             if ($mollie_order->isCanceled()) {
@@ -352,7 +350,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
             }
 
             if ($mollie_order->isPaid() || $mollie_order->isAuthorized()) {
-                $this->apiHelper->getApiClient($test_mode)->orders->get($mollie_order_id)->shipAll();
+                $this->apiHelper->getApiClient($apiKey)->orders->get($mollie_order_id)->shipAll();
                 $order->add_order_note('Order successfully updated to shipped at Mollie, capture of funds underway.');
                 $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order successfully updated to shipped at Mollie, capture of funds underway.');
 
@@ -398,12 +396,10 @@ class PaymentModule implements ServiceModule, ExecutableModule
             return;
         }
 
-        // Is test mode enabled?
-        $test_mode = $this->settingsHelper->isTestModeEnabled();
-
+        $apiKey = $this->settingsHelper->getApiKey();
         try {
             // Get the order from the Mollie API
-            $mollie_order = $this->apiHelper->getApiClient($test_mode)->orders->get($mollie_order_id);
+            $mollie_order = $this->apiHelper->getApiClient($apiKey)->orders->get($mollie_order_id);
 
             // Check that order is not already canceled at Mollie
             if ($mollie_order->isCanceled()) {
@@ -415,7 +411,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
             // Check that order has the correct status to be canceled
             if ($mollie_order->isCreated() || $mollie_order->isAuthorized() || $mollie_order->isShipping()) {
-                $this->apiHelper->getApiClient($test_mode)->orders->get($mollie_order_id)->cancel();
+                $this->apiHelper->getApiClient($apiKey)->orders->get($mollie_order_id)->cancel();
                 $order->add_order_note('Order also cancelled at Mollie.');
                 $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order cancelled in WooCommerce, also cancelled at Mollie.');
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Settings\Page;
 
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use WC_Admin_Settings;
@@ -32,11 +31,16 @@ class MollieSettingsPage extends WC_Settings_Page
      * @var Data
      */
     protected $dataHelper;
+    /**
+     * @var array
+     */
+    protected $paymentMethods;
 
     public function __construct(
         Settings $settingsHelper,
         string $pluginPath,
         array $gateways,
+        array $paymentMethods,
         bool $isTestModeEnabled,
         Data $dataHelper
     ) {
@@ -48,7 +52,7 @@ class MollieSettingsPage extends WC_Settings_Page
         $this->registeredGateways = $gateways;
         $this->isTestModeEnabled = $isTestModeEnabled;
         $this->dataHelper = $dataHelper;
-
+        $this->paymentMethods = $paymentMethods;
         add_action(
             'woocommerce_sections_' . $this->id,
             [$this, 'output_sections']
@@ -309,25 +313,38 @@ class MollieSettingsPage extends WC_Settings_Page
 
         $content .= '<ul style="width: 1000px; padding:20px 0 0 10px">';
 
-        $mollieGateways = $this->registeredGateways;
-        foreach ($mollieGateways as $gateway) {
-            if ($gateway instanceof MolliePaymentGateway) {
-                $content .= '<li style="float: left; width: 32%; height:32px;">';
-                $content .= $gateway->paymentMethod->getIconUrl();
-                $content .= ' ' . esc_html($gateway->paymentMethod->getProperty('defaultTitle'));
-
-                if ($gateway->is_available()) {
+        $mollieGateways = $this->registeredGateways;//this are the gateways enabled
+        $paymentMethods = $this->paymentMethods;
+        foreach ($paymentMethods as $paymentMethod) {
+            $paymentMethodId = $paymentMethod->getProperty('id');
+            $gatewayKey = 'mollie_wc_gateway_' . $paymentMethodId;
+            $paymentMethodEnabledAtMollie = array_key_exists($gatewayKey , $mollieGateways);
+            $content .= '<li style="float: left; width: 32%; height:32px;">';
+            $content .= $paymentMethod->getIconUrl();
+            $content .= ' ' . esc_html($paymentMethod->getProperty('defaultTitle'));
+            if ($paymentMethodEnabledAtMollie) {
+                $isEnabledAtWoo = $paymentMethod->getProperty('enabled') ?
+                    $paymentMethod->getProperty('enabled') :
+                    'yes';
+                if ($isEnabledAtWoo === 'yes') {
                     $content .= $iconAvailable;
                 } else {
                     $content .= $iconNoAvailable;
                 }
 
-                $content .= ' <a href="' . $this->getGatewaySettingsUrl($gateway->id) . '">' . strtolower(
+                $content .= ' <a href="' . $this->getGatewaySettingsUrl($gatewayKey) . '">' . strtolower(
                     __('Edit', 'mollie-payments-for-woocommerce')
                 ) . '</a>';
 
                 $content .= '</li>';
+                continue;
             }
+            $content .= $iconNoAvailable;
+            $content .= ' <a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">' . strtolower(
+                    __('Activate', 'mollie-payments-for-woocommerce')
+                ) . '</a>';
+
+            $content .= '</li>';
         }
 
         $content .= '</ul></div>';

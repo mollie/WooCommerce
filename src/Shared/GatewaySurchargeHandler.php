@@ -23,7 +23,15 @@ class GatewaySurchargeHandler
             __(Surcharge::DEFAULT_FEE_LABEL, 'mollie-payments-for-woocommerce')
         );
 
+        add_action(
+                'init',
+                [$this, 'surchargeActions']
+        );
 
+    }
+
+    public function surchargeActions()
+    {
         add_filter('woocommerce_cart_calculate_fees', function ($cart) {
 
             return $this->add_engraving_fees($cart);
@@ -44,20 +52,18 @@ class GatewaySurchargeHandler
                 }
         );
         add_action(
-            'wp_ajax_mollie_checkout_blocks_surchage',
-            function () {
-                return $this->updateSurchargeCheckoutBlock();
-            }
+                'wp_ajax_mollie_checkout_blocks_surchage',
+                function () {
+                    return $this->updateSurchargeCheckoutBlock();
+                }
         );
         add_action(
-            'wp_ajax_nopriv_mollie_checkout_blocks_surchage',
-            function () {
-                return $this->updateSurchargeCheckoutBlock();
-            }
+                'wp_ajax_nopriv_mollie_checkout_blocks_surchage',
+                function () {
+                    return $this->updateSurchargeCheckoutBlock();
+                }
         );
-        add_action('woocommerce_order_item_meta_end', function ($item_id, $item, $order, $bool) {
-            return $this->setHiddenOrderId($item_id, $item, $order, $bool);
-        }, 10, 4);
+        add_action( 'woocommerce_order_item_meta_end',[$this, 'setHiddenOrderId'], 10, 4);
     }
 
     public function setHiddenOrderId($item_id, $item, $order, $bool = false)

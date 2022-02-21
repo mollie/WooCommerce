@@ -323,15 +323,7 @@ class MollieSettingsPage extends WC_Settings_Page
             $content .= $paymentMethod->getIconUrl();
             $content .= ' ' . esc_html($paymentMethod->getProperty('defaultTitle'));
             if ($paymentMethodEnabledAtMollie) {
-                $isEnabledAtWoo = $paymentMethod->getProperty('enabled') ?
-                    $paymentMethod->getProperty('enabled') :
-                    'yes';
-                if ($isEnabledAtWoo === 'yes') {
-                    $content .= $iconAvailable;
-                } else {
-                    $content .= $iconNoAvailable;
-                }
-
+                $content .= $iconAvailable;
                 $content .= ' <a href="' . $this->getGatewaySettingsUrl($gatewayKey) . '">' . strtolower(
                     __('Edit', 'mollie-payments-for-woocommerce')
                 ) . '</a>';

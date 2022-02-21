@@ -513,7 +513,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
             'Banktransfer',
             'Belfius',
             'Creditcard',
-            'DirectDebit',
+            'Directdebit',
             'Eps',
             'Giropay',
             'Ideal',

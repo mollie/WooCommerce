@@ -4,8 +4,85 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "41cdf9b79a3525cc68e7b232a6f79dbc",
+    "content-hash": "30be4fb2467d33afac71d083f8d46109",
     "packages": [
+        {
+            "name": "composer/ca-bundle",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/composer/ca-bundle.git",
+                "reference": "4c679186f2aca4ab6a0f1b0b9cf9252decb44d0b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/4c679186f2aca4ab6a0f1b0b9cf9252decb44d0b",
+                "reference": "4c679186f2aca4ab6a0f1b0b9cf9252decb44d0b",
+                "shasum": ""
+            },
+            "require": {
+                "ext-openssl": "*",
+                "ext-pcre": "*",
+                "php": "^5.3.2 || ^7.0 || ^8.0"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^0.12.55",
+                "psr/log": "^1.0",
+                "symfony/phpunit-bridge": "^4.2 || ^5",
+                "symfony/process": "^2.5 || ^3.0 || ^4.0 || ^5.0 || ^6.0"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "1.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Composer\\CaBundle\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jordi Boggiano",
+                    "email": "j.boggiano@seld.be",
+                    "homepage": "http://seld.be"
+                }
+            ],
+            "description": "Lets you find a path to the system CA bundle, and includes a fallback to the Mozilla CA bundle.",
+            "keywords": [
+                "cabundle",
+                "cacert",
+                "certificate",
+                "ssl",
+                "tls"
+            ],
+            "support": {
+                "irc": "irc://irc.freenode.org/composer",
+                "issues": "https://github.com/composer/ca-bundle/issues",
+                "source": "https://github.com/composer/ca-bundle/tree/1.3.1"
+            },
+            "funding": [
+                {
+                    "url": "https://packagist.com",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/composer",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/composer/composer",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2021-10-28T20:44:15+00:00"
+        },
         {
             "name": "inpsyde/modularity",
             "version": "dev-master",
@@ -81,6 +158,97 @@
             "time": "2022-01-24T14:27:58+00:00"
         },
         {
+            "name": "mollie/mollie-api-php",
+            "version": "v2.40.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mollie/mollie-api-php.git",
+                "reference": "ac3e079bbc86e95dc77d4f33965a62e9e6b95ed8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mollie/mollie-api-php/zipball/ac3e079bbc86e95dc77d4f33965a62e9e6b95ed8",
+                "reference": "ac3e079bbc86e95dc77d4f33965a62e9e6b95ed8",
+                "shasum": ""
+            },
+            "require": {
+                "composer/ca-bundle": "^1.2",
+                "ext-curl": "*",
+                "ext-json": "*",
+                "ext-openssl": "*",
+                "php": ">=5.6"
+            },
+            "require-dev": {
+                "eloquent/liberator": "^2.0",
+                "friendsofphp/php-cs-fixer": "^3.0",
+                "guzzlehttp/guzzle": "^6.3 || ^7.0",
+                "phpunit/phpunit": "^5.7 || ^6.5 || ^7.1 || ^8.5 || ^9.5"
+            },
+            "suggest": {
+                "mollie/oauth2-mollie-php": "Use OAuth to authenticate with the Mollie API. This is needed for some endpoints. Visit https://docs.mollie.com/ for more information."
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Mollie\\Api\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-2-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Mollie B.V.",
+                    "email": "info@mollie.com"
+                }
+            ],
+            "description": "Mollie API client library for PHP. Mollie is a European Payment Service provider and offers international payment methods such as Mastercard, VISA, American Express and PayPal, and local payment methods such as iDEAL, Bancontact, SOFORT Banking, SEPA direct debit, Belfius Direct Net, KBC Payment Button and various gift cards such as Podiumcadeaukaart and fashioncheque.",
+            "homepage": "https://www.mollie.com/en/developers",
+            "keywords": [
+                "Apple Pay",
+                "CBC",
+                "Przelewy24",
+                "api",
+                "bancontact",
+                "banktransfer",
+                "belfius",
+                "belfius direct net",
+                "charges",
+                "creditcard",
+                "direct debit",
+                "fashioncheque",
+                "gateway",
+                "gift cards",
+                "ideal",
+                "inghomepay",
+                "intersolve",
+                "kbc",
+                "klarna",
+                "mistercash",
+                "mollie",
+                "paylater",
+                "payment",
+                "payments",
+                "paypal",
+                "paysafecard",
+                "podiumcadeaukaart",
+                "recurring",
+                "refunds",
+                "sepa",
+                "service",
+                "sliceit",
+                "sofort",
+                "sofortbanking",
+                "subscriptions"
+            ],
+            "support": {
+                "issues": "https://github.com/mollie/mollie-api-php/issues",
+                "source": "https://github.com/mollie/mollie-api-php/tree/v2.40.2"
+            },
+            "time": "2022-02-08T08:53:18+00:00"
+        },
+        {
             "name": "psr/container",
             "version": "1.0.0",
             "source": {
@@ -141,12 +309,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/amphp/amp.git",
-                "reference": "591e06ec427c2d2e5018172552b9354c208419e7"
+                "reference": "9d5100cebffa729aaffecd3ad25dc5aeea4f13bb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/amphp/amp/zipball/591e06ec427c2d2e5018172552b9354c208419e7",
-                "reference": "591e06ec427c2d2e5018172552b9354c208419e7",
+                "url": "https://api.github.com/repos/amphp/amp/zipball/9d5100cebffa729aaffecd3ad25dc5aeea4f13bb",
+                "reference": "9d5100cebffa729aaffecd3ad25dc5aeea4f13bb",
                 "shasum": ""
             },
             "require": {
@@ -169,13 +337,13 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Amp\\": "lib"
-                },
                 "files": [
                     "lib/functions.php",
                     "lib/Internal/functions.php"
-                ]
+                ],
+                "psr-4": {
+                    "Amp\\": "lib"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -215,7 +383,7 @@
             "support": {
                 "irc": "irc://irc.freenode.org/amphp",
                 "issues": "https://github.com/amphp/amp/issues",
-                "source": "https://github.com/amphp/amp/tree/master"
+                "source": "https://github.com/amphp/amp/tree/v2.6.2"
             },
             "funding": [
                 {
@@ -223,7 +391,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2021-12-03T13:45:05+00:00"
+            "time": "2022-02-20T17:52:18+00:00"
         },
         {
             "name": "amphp/byte-stream",
@@ -597,83 +765,6 @@
             "time": "2021-11-11T15:53:55+00:00"
         },
         {
-            "name": "composer/ca-bundle",
-            "version": "dev-main",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/composer/ca-bundle.git",
-                "reference": "4c679186f2aca4ab6a0f1b0b9cf9252decb44d0b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/4c679186f2aca4ab6a0f1b0b9cf9252decb44d0b",
-                "reference": "4c679186f2aca4ab6a0f1b0b9cf9252decb44d0b",
-                "shasum": ""
-            },
-            "require": {
-                "ext-openssl": "*",
-                "ext-pcre": "*",
-                "php": "^5.3.2 || ^7.0 || ^8.0"
-            },
-            "require-dev": {
-                "phpstan/phpstan": "^0.12.55",
-                "psr/log": "^1.0",
-                "symfony/phpunit-bridge": "^4.2 || ^5",
-                "symfony/process": "^2.5 || ^3.0 || ^4.0 || ^5.0 || ^6.0"
-            },
-            "default-branch": true,
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-main": "1.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Composer\\CaBundle\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Jordi Boggiano",
-                    "email": "j.boggiano@seld.be",
-                    "homepage": "http://seld.be"
-                }
-            ],
-            "description": "Lets you find a path to the system CA bundle, and includes a fallback to the Mozilla CA bundle.",
-            "keywords": [
-                "cabundle",
-                "cacert",
-                "certificate",
-                "ssl",
-                "tls"
-            ],
-            "support": {
-                "irc": "irc://irc.freenode.org/composer",
-                "issues": "https://github.com/composer/ca-bundle/issues",
-                "source": "https://github.com/composer/ca-bundle/tree/1.3.1"
-            },
-            "funding": [
-                {
-                    "url": "https://packagist.com",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/composer",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/composer/composer",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2021-10-28T20:44:15+00:00"
-        },
-        {
             "name": "composer/installers",
             "version": "1.x-dev",
             "source": {
@@ -900,7 +991,7 @@
         },
         {
             "name": "composer/pcre",
-            "version": "dev-main",
+            "version": "1.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/pcre.git",
@@ -920,7 +1011,6 @@
                 "phpstan/phpstan-strict-rules": "^1.1",
                 "symfony/phpunit-bridge": "^4.2 || ^5"
             },
-            "default-branch": true,
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -1583,12 +1673,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/johnpbloch/wordpress-core.git",
-                "reference": "d5f3b8dfadf381c70b2f313a9fdb7c2ef795689b"
+                "reference": "2e2368da8dffca20962a592fc69e327d532d3fe8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/johnpbloch/wordpress-core/zipball/d5f3b8dfadf381c70b2f313a9fdb7c2ef795689b",
-                "reference": "d5f3b8dfadf381c70b2f313a9fdb7c2ef795689b",
+                "url": "https://api.github.com/repos/johnpbloch/wordpress-core/zipball/2e2368da8dffca20962a592fc69e327d532d3fe8",
+                "reference": "2e2368da8dffca20962a592fc69e327d532d3fe8",
                 "shasum": ""
             },
             "require": {
@@ -1623,7 +1713,7 @@
                 "source": "https://core.trac.wordpress.org/browser",
                 "wiki": "https://codex.wordpress.org/"
             },
-            "time": "2022-02-07T15:15:53+00:00"
+            "time": "2022-02-22T16:15:52+00:00"
         },
         {
             "name": "maxmind-db/reader",
@@ -1759,120 +1849,26 @@
             "time": "2021-09-13T15:33:03+00:00"
         },
         {
-            "name": "mollie/mollie-api-php",
-            "version": "v2.40.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/mollie/mollie-api-php.git",
-                "reference": "ac3e079bbc86e95dc77d4f33965a62e9e6b95ed8"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/mollie/mollie-api-php/zipball/ac3e079bbc86e95dc77d4f33965a62e9e6b95ed8",
-                "reference": "ac3e079bbc86e95dc77d4f33965a62e9e6b95ed8",
-                "shasum": ""
-            },
-            "require": {
-                "composer/ca-bundle": "^1.2",
-                "ext-curl": "*",
-                "ext-json": "*",
-                "ext-openssl": "*",
-                "php": ">=5.6"
-            },
-            "require-dev": {
-                "eloquent/liberator": "^2.0",
-                "friendsofphp/php-cs-fixer": "^3.0",
-                "guzzlehttp/guzzle": "^6.3 || ^7.0",
-                "phpunit/phpunit": "^5.7 || ^6.5 || ^7.1 || ^8.5 || ^9.5"
-            },
-            "suggest": {
-                "mollie/oauth2-mollie-php": "Use OAuth to authenticate with the Mollie API. This is needed for some endpoints. Visit https://docs.mollie.com/ for more information."
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Mollie\\Api\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-2-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Mollie B.V.",
-                    "email": "info@mollie.com"
-                }
-            ],
-            "description": "Mollie API client library for PHP. Mollie is a European Payment Service provider and offers international payment methods such as Mastercard, VISA, American Express and PayPal, and local payment methods such as iDEAL, Bancontact, SOFORT Banking, SEPA direct debit, Belfius Direct Net, KBC Payment Button and various gift cards such as Podiumcadeaukaart and fashioncheque.",
-            "homepage": "https://www.mollie.com/en/developers",
-            "keywords": [
-                "Apple Pay",
-                "CBC",
-                "Przelewy24",
-                "api",
-                "bancontact",
-                "banktransfer",
-                "belfius",
-                "belfius direct net",
-                "charges",
-                "creditcard",
-                "direct debit",
-                "fashioncheque",
-                "gateway",
-                "gift cards",
-                "ideal",
-                "inghomepay",
-                "intersolve",
-                "kbc",
-                "klarna",
-                "mistercash",
-                "mollie",
-                "paylater",
-                "payment",
-                "payments",
-                "paypal",
-                "paysafecard",
-                "podiumcadeaukaart",
-                "recurring",
-                "refunds",
-                "sepa",
-                "service",
-                "sliceit",
-                "sofort",
-                "sofortbanking",
-                "subscriptions"
-            ],
-            "support": {
-                "issues": "https://github.com/mollie/mollie-api-php/issues",
-                "source": "https://github.com/mollie/mollie-api-php/tree/v2.40.2"
-            },
-            "time": "2022-02-08T08:53:18+00:00"
-        },
-        {
             "name": "myclabs/deep-copy",
             "version": "1.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/myclabs/DeepCopy.git",
-                "reference": "776f831124e9c62e1a2c601ecc52e776d8bb7220"
+                "reference": "8263fc30b63ea463b22e7f264ed77f2ceb022cdc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/776f831124e9c62e1a2c601ecc52e776d8bb7220",
-                "reference": "776f831124e9c62e1a2c601ecc52e776d8bb7220",
+                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/8263fc30b63ea463b22e7f264ed77f2ceb022cdc",
+                "reference": "8263fc30b63ea463b22e7f264ed77f2ceb022cdc",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.1 || ^8.0"
             },
-            "replace": {
-                "myclabs/deep-copy": "self.version"
-            },
             "require-dev": {
-                "doctrine/collections": "^1.0",
-                "doctrine/common": "^2.6",
-                "phpunit/phpunit": "^7.1"
+                "doctrine/collections": "^1.6",
+                "doctrine/common": "^2.13",
+                "phpunit/phpunit": "^7.5 || ^8.5 || ^9.5"
             },
             "default-branch": true,
             "type": "library",
@@ -1898,7 +1894,7 @@
             ],
             "support": {
                 "issues": "https://github.com/myclabs/DeepCopy/issues",
-                "source": "https://github.com/myclabs/DeepCopy/tree/1.10.2"
+                "source": "https://github.com/myclabs/DeepCopy/tree/1.x"
             },
             "funding": [
                 {
@@ -1906,7 +1902,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-11-13T09:40:50+00:00"
+            "time": "2022-02-17T17:54:39+00:00"
         },
         {
             "name": "netresearch/jsonmapper",
@@ -3684,12 +3680,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sirbrillig/phpcs-variable-analysis.git",
-                "reference": "0c25aa925ee40a693b70f085a74701754238da5d"
+                "reference": "c921498b474212fe4552928bbeb68d70250ce5e8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sirbrillig/phpcs-variable-analysis/zipball/0c25aa925ee40a693b70f085a74701754238da5d",
-                "reference": "0c25aa925ee40a693b70f085a74701754238da5d",
+                "url": "https://api.github.com/repos/sirbrillig/phpcs-variable-analysis/zipball/c921498b474212fe4552928bbeb68d70250ce5e8",
+                "reference": "c921498b474212fe4552928bbeb68d70250ce5e8",
                 "shasum": ""
             },
             "require": {
@@ -3730,7 +3726,7 @@
                 "source": "https://github.com/sirbrillig/phpcs-variable-analysis",
                 "wiki": "https://github.com/sirbrillig/phpcs-variable-analysis/wiki"
             },
-            "time": "2021-09-27T22:26:41+00:00"
+            "time": "2022-02-21T17:01:13+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",
@@ -3794,12 +3790,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "468f17e0875fb182bb3f8e51ed43d9be31e68dc2"
+                "reference": "5caf5d80363b2a46d2cd1b24d08c5ab259b53487"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/468f17e0875fb182bb3f8e51ed43d9be31e68dc2",
-                "reference": "468f17e0875fb182bb3f8e51ed43d9be31e68dc2",
+                "url": "https://api.github.com/repos/symfony/console/zipball/5caf5d80363b2a46d2cd1b24d08c5ab259b53487",
+                "reference": "5caf5d80363b2a46d2cd1b24d08c5ab259b53487",
                 "shasum": ""
             },
             "require": {
@@ -3886,7 +3882,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-01-31T16:08:03+00:00"
+            "time": "2022-02-09T15:52:21+00:00"
         },
         {
             "name": "symfony/css-selector",
@@ -4303,12 +4299,12 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Symfony\\Polyfill\\Mbstring\\": ""
-                },
                 "files": [
                     "bootstrap.php"
-                ]
+                ],
+                "psr-4": {
+                    "Symfony\\Polyfill\\Mbstring\\": ""
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -4736,12 +4732,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/vimeo/psalm.git",
-                "reference": "b06fb932d486eb7165bbea6625583506e4b2cfd1"
+                "reference": "3a85f49268f8db12d35cc6c991218ddeea72ed02"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vimeo/psalm/zipball/b06fb932d486eb7165bbea6625583506e4b2cfd1",
-                "reference": "b06fb932d486eb7165bbea6625583506e4b2cfd1",
+                "url": "https://api.github.com/repos/vimeo/psalm/zipball/3a85f49268f8db12d35cc6c991218ddeea72ed02",
+                "reference": "3a85f49268f8db12d35cc6c991218ddeea72ed02",
                 "shasum": ""
             },
             "require": {
@@ -4835,7 +4831,7 @@
                 "issues": "https://github.com/vimeo/psalm/issues",
                 "source": "https://github.com/vimeo/psalm/tree/4.x"
             },
-            "time": "2022-02-04T19:36:20+00:00"
+            "time": "2022-02-23T12:45:57+00:00"
         },
         {
             "name": "webmozart/assert",
@@ -5229,5 +5225,5 @@
         "ext-json": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.1.0"
+    "plugin-api-version": "2.2.0"
 }

@@ -65,6 +65,12 @@ class Data
         return is_plugin_active('woo-gutenberg-products-block/woocommerce-gutenberg-products-block.php');
     }
 
+    public function isSubscriptionPluginActive(): bool
+    {
+        $subscriptionPlugin = is_plugin_active('woocommerce-subscriptions/woocommerce-subscriptions.php');
+        return apply_filters('mollie_wc_subscription_plugin_active', $subscriptionPlugin);
+    }
+
     /**
      * @return bool
      */
@@ -214,26 +220,13 @@ class Data
     public function getAllPaymentMethods($apiKey, $test_mode = false, $use_cache = true)
     {
         $result = $this->getRegularPaymentMethods($apiKey, $test_mode, $use_cache);
-        $recurringPaymentMethods = $this->getRecurringPaymentMethods($apiKey, $test_mode, $use_cache);
-
         if (!is_array($result)) {
             $result = unserialize($result);
         }
-        if (!is_array($recurringPaymentMethods)) {
-            $recurringPaymentMethods = unserialize($recurringPaymentMethods);
-        }
 
-        foreach ($recurringPaymentMethods as $recurringItem) {
-            $notFound = true;
-            foreach ($result as $item) {
-                if ($item['id'] === $recurringItem['id']) {
-                    $notFound = false;
-                    break;
-                }
-            }
-            if ($notFound) {
-                $result[] = $recurringItem;
-            }
+        $isSubscriptionPluginActive = $this->isSubscriptionPluginActive();
+        if($isSubscriptionPluginActive){
+            $result = $this->addRecurringPaymentMethods($apiKey, $test_mode, $use_cache, $result);
         }
 
         return $result;
@@ -693,5 +686,33 @@ class Data
     {
         $isSubscription = false;
         return apply_filters($this->pluginId . '_is_subscription_payment', $isSubscription, $orderId);
+    }
+
+    /**
+     * @param $apiKey
+     * @param bool $test_mode
+     * @param bool $use_cache
+     * @param $result
+     * @return mixed
+     */
+    protected function addRecurringPaymentMethods($apiKey, bool $test_mode, bool $use_cache, $result)
+    {
+        $recurringPaymentMethods = $this->getRecurringPaymentMethods($apiKey, $test_mode, $use_cache);
+        if (!is_array($recurringPaymentMethods)) {
+            $recurringPaymentMethods = unserialize($recurringPaymentMethods);
+        }
+        foreach ($recurringPaymentMethods as $recurringItem) {
+            $notFound = true;
+            foreach ($result as $item) {
+                if ($item['id'] === $recurringItem['id']) {
+                    $notFound = false;
+                    break;
+                }
+            }
+            if ($notFound) {
+                $result[] = $recurringItem;
+            }
+        }
+        return $result;
     }
 }

@@ -374,6 +374,8 @@ class Data
             if ($use_cache) {
                 // When no cache exists $methods will be `false`
                 $methods =  get_transient($transient_id);
+            } else {
+                delete_transient($transient_id);
             }
 
             // No cache exists, call the API and cache the result
@@ -653,16 +655,13 @@ class Data
     /**
      * Format currency value into Mollie API v2 format
      *
-     * @param float $value
+     * @param float|string $value
      *
-     * @return float $value
+     * @return string
      */
     public function formatCurrencyValue($value, $currency)
     {
-        // Only the Japanese Yen has no decimals in the currency
-        $value = (float) $value;
-
-        return $currency === "JPY" ? number_format($value, 0, '.', '') : number_format($value, 2, '.', '');
+        return mollieWooCommerceFormatCurrencyValue($value, $currency);
     }
 
     /**

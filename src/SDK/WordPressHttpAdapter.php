@@ -11,17 +11,13 @@ use Mollie\Api\HttpAdapter\MollieHttpAdapterInterface;
 class WordPressHttpAdapter implements MollieHttpAdapterInterface
 {
     /**
+     * Default response timeout (in seconds).
+     */
+    const DEFAULT_TIMEOUT = 10;
+    /**
      * HTTP status code for an empty ok response.
      */
     const HTTP_NO_CONTENT = 204;
-    /**
-     * The maximum number of retries
-     */
-    const MAX_RETRIES = 5;
-    /**
-     * The amount of milliseconds the delay is being increased with on each retry.
-     */
-    const DELAY_INCREASE_MS = 1000;
 
     /**
      * @param string $httpMethod
@@ -29,23 +25,27 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
      * @param array $headers
      * @param $httpBody
      *
-     * @throws \Mollie\Api\Exceptions\CurlConnectTimeoutException
+     * @throws ApiException
      */
     public function send($httpMethod, $url, $headers, $httpBody)
     {
-        for ($i = 0; $i <= self::MAX_RETRIES; $i++) {
-            usleep($i * self::DELAY_INCREASE_MS);
+        $headers['Content-Type'] = 'application/json';
 
-            try {
-                return $this->attemptRequest($httpMethod, $httpBody, $headers, $url);
-            } catch (ApiException $e) {
-                // Nothing
-            }
+        $args = [
+            'method' => $httpMethod,
+            'body' => $httpBody,
+            'headers' => $headers,
+            'user-agent' => $headers['User-Agent'],
+            'sslverify' => true,
+            'timeout' => self::DEFAULT_TIMEOUT
+        ];
+        $response = wp_remote_request($url, $args);
+        
+        if(is_wp_error($response)){
+            throw new ApiException($response->get_error_message(), $response->get_error_code());
         }
 
-        throw new CurlConnectTimeoutException(
-            "Unable to connect to Mollie. Maximum number of retries (" . self::MAX_RETRIES . ") reached."
-        );
+        return $this->parseResponse($response);
     }
 
     public function versionString()
@@ -56,6 +56,7 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
 
     /**
      * @param $response
+     * @throws ApiException
      */
     protected function parseResponse($response)
     {
@@ -103,25 +104,4 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
         return $body;
     }
 
-    /**
-     * @param string $httpMethod
-     * @param $httpBody
-     * @param array $headers
-     * @param string $url
-     * @return array|\WP_Error
-     */
-    protected function attemptRequest(string $httpMethod, $httpBody, array $headers, string $url)
-    {
-        $args = [
-            'method' => $httpMethod,
-            'body' => $httpBody,
-            'headers' => $headers
-        ];
-        $response = wp_remote_request($url, $args);
-        if(is_wp_error($response)){
-            throw new ApiException($response->get_error_message());
-        }
-
-        return $this->parseResponse($response);
-    }
 }

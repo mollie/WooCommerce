@@ -38,8 +38,9 @@ class VoucherModule implements ExecutableModule
      */
     public function run(ContainerInterface $container): bool
     {
-        $voucherGateway = $container->get('gateway.instances')['mollie_wc_gateway_voucher'];
-        $voucher = $voucherGateway->enabled === 'yes';
+        $gatewayInstances = $container->get('gateway.instances');
+        $voucherGateway = isset($gatewayInstances['mollie_wc_gateway_voucher'])?$gatewayInstances['mollie_wc_gateway_voucher']:false;
+        $voucher = $voucherGateway? $voucherGateway->enabled === 'yes': false;
 
         if($voucher){
             $this->voucherEnabledHooks();

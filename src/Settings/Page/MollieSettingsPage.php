@@ -380,8 +380,8 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     protected function checkDirectDebitStatus($content): string
     {
-        $idealGateway = !empty($this->registeredGateways["mollie_wc_gateway_ideal"]) && $this->registeredGateways["mollie_wc_gateway_ideal"]->enabled === 'yes';
-        $sepaGateway = !empty($this->registeredGateways["mollie_wc_gateway_directdebit"]) && $this->registeredGateways["mollie_wc_gateway_directdebit"]->enabled === 'yes';
+        $idealGateway = !empty($this->registeredGateways["mollie_wc_gateway_ideal"]) && $this->paymentMethods["ideal"]->getProperty('enabled') === 'yes';
+        $sepaGateway = !empty($this->registeredGateways["mollie_wc_gateway_directdebit"]) && $this->paymentMethods["directdebit"]->getProperty('enabled') === 'yes';
 
         if ((class_exists('WC_Subscription')) && $idealGateway && !$sepaGateway) {
             $warning_message = __(
@@ -429,9 +429,9 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     protected function warnAboutRequiredCheckoutFieldForKlarna($content)
     {
-        $woocommerceKlarnapaylaterGateway = !empty($this->registeredGateways["mollie_wc_gateway_klarnapaylater"]) && $this->registeredGateways["mollie_wc_gateway_klarnapaylater"]->enabled === 'yes';
-        $woocommerceKlarnasliceitGateway = !empty($this->registeredGateways["mollie_wc_gateway_klarnasliceit"]) && $this->registeredGateways["mollie_wc_gateway_klarnasliceit"]->enabled === 'yes';
-        $woocommerceKlarnapaynowGateway = !empty($this->registeredGateways["mollie_wc_gateway_klarnapaynow"]) && $this->registeredGateways["mollie_wc_gateway_klarnapaynow"]->enabled === 'yes';
+        $woocommerceKlarnapaylaterGateway = !empty($this->registeredGateways["mollie_wc_gateway_klarnapaylater"]) && $this->paymentMethods["klarnapaylater"]->getProperty('enabled') === 'yes';
+        $woocommerceKlarnasliceitGateway = !empty($this->registeredGateways["mollie_wc_gateway_klarnasliceit"]) && $this->paymentMethods["klarnasliceit"]->getProperty('enabled') === 'yes';
+        $woocommerceKlarnapaynowGateway = !empty($this->registeredGateways["mollie_wc_gateway_klarnapaynow"]) && $this->paymentMethods["klarnapaynow"]->getProperty('enabled') === 'yes';
 
         if (
             $woocommerceKlarnapaylaterGateway || $woocommerceKlarnasliceitGateway || $woocommerceKlarnapaynowGateway

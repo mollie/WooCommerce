@@ -272,7 +272,12 @@ class MollieSettingsPage extends WC_Settings_Page
             )
         ) {
             /* Reload active Mollie methods */
-            $dataHelper->getAllPaymentMethods($apiKey, $testMode, $use_cache = false);
+            $methods = $dataHelper->getAllPaymentMethods($apiKey, $testMode, false);
+            foreach ($methods as $key => $method){
+                $methods['mollie_wc_gateway_'.$method['id']] = $method;
+                unset($methods[$key]);
+            }
+            $this->registeredGateways = $methods;
         }
 
         $iconAvailable = ' <span style="color: green; cursor: help;" title="' . __(

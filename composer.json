@@ -15,19 +15,18 @@
     }
   ],
   "require": {
-    "php": "^7.2",
+    "php": ">=7.2",
     "ext-intl": "*",
     "ext-json": "*",
+    "mollie/mollie-api-php": "^v2.40",
     "inpsyde/modularity": "^1.3.0"
   },
   "require-dev": {
-    "phpunit/phpunit": "^7.1",
+    "phpunit/phpunit": "^8",
     "brain/monkey": "^2.3",
     "ptrofimov/xpmock": "^1",
     "johnpbloch/wordpress-core": "^5.0",
-    "woocommerce/woocommerce": "^3.0 || ^4.0",
     "fzaninotto/faker": "^1.9@dev",
-    "mollie/mollie-api-php": "^2.21",
     "inpsyde/php-coding-standards": "^1.0.0",
     "vimeo/psalm": "^4.8"
   },
@@ -40,6 +39,7 @@
   "autoload-dev": {
     "psr-4": {
       "Mollie\\WooCommerceTests\\": "tests/php",
+      "Mollie\\WooCommerceTests\\Unit\\": "tests/php/Unit",
       "Mollie\\WooCommerceTests\\Functional\\": "tests/php/Functional"
     }
   },

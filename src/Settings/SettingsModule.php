@@ -76,6 +76,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
         $this->dataHelper = $container->get('settings.data_helper');
         $pluginPath = $container->get('shared.plugin_path');
         $gateways = $container->get('gateway.instances');
+        $paymentMethods = $container->get('gateway.paymentMethods');
         // Add settings link to plugins page
         add_filter('plugin_action_links_' . $this->plugin_basename, [$this, 'addPluginActionLinks']);
 
@@ -84,11 +85,12 @@ class SettingsModule implements ServiceModule, ExecutableModule
         });
         add_filter(
             'woocommerce_get_settings_pages',
-            function ($settings) use ($pluginPath, $gateways) {
+            function ($settings) use ($pluginPath, $gateways, $paymentMethods) {
                 $settings[] = new MollieSettingsPage(
                     $this->settingsHelper,
                     $pluginPath,
                     $gateways,
+                    $paymentMethods,
                     $this->isTestModeEnabled,
                     $this->dataHelper
                 );

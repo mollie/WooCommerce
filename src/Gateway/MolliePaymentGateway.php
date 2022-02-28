@@ -197,10 +197,11 @@ class MolliePaymentGateway extends WC_Payment_Gateway
             $this->has_fields = false;
         }
 
-        if (!$this->isValidForUse()) {
-            // Disable gateway if it's not valid for use
-            $this->enabled = false;
-        }
+        $isEnabledAtWoo = $this->paymentMethod->getProperty('enabled') ?
+            $this->paymentMethod->getProperty('enabled') :
+            'yes';
+        $this->enabled = $isEnabledAtWoo;
+
         if ($this->paymentMethod->getProperty('filtersOnBuild')) {
             $this->paymentMethod->filtersOnBuild();
         }
@@ -453,6 +454,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
             }
 
             $billing_country = WC()->customer ? WC()->customer->get_billing_country() : wc_get_base_location()['country'];
+
             $billing_country = apply_filters(
                 $this->pluginId
                 . '_is_available_billing_country_for_payment_gateways',

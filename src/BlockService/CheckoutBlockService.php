@@ -66,6 +66,7 @@ class CheckoutBlockService
             $filters = false;
         }
         if ($filters) {
+            WC()->customer->set_billing_country($billingCountry);
             $availableGateways = WC()->payment_gateways()->get_available_payment_gateways();
             foreach ($availableGateways as $key => $gateway){
                 if(strpos($key, 'mollie_wc_gateway_') === false){

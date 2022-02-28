@@ -181,11 +181,9 @@ function initialize()
             new SharedModule(),
             new SDKModule(),
             new SettingsModule(),
-            new VoucherModule(),
-
             new AssetsModule(),
             new GatewayModule(),
-
+            new VoucherModule(),
             new PaymentModule()
         );
     } catch (Throwable $throwable) {

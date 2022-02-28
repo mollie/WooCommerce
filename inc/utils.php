@@ -185,3 +185,10 @@ function mollieWooCommercIsExpiryDateEnabled()
     }
     return $expiryDateEnabled;
 }
+
+function mollieWooCommerceFormatCurrencyValue($value, $currency)
+{
+    // Only the Japanese Yen has no decimals in the currency
+
+    return $currency === "JPY" ? number_format($value, 0, '.', '') : number_format($value, 2, '.', '');
+}

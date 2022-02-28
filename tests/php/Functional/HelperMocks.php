@@ -5,7 +5,6 @@ namespace Mollie\WooCommerceTests\Functional;
 
 
 use Mollie\Api\MollieApiClient;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\OrderInstructionsService;
@@ -15,7 +14,6 @@ use Mollie\WooCommerce\PaymentMethods\Ideal;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
-use Mollie\WooCommerceTests\Functional\Payment\PaymentServiceTest;
 use Mollie\WooCommerceTests\Stubs\Status;
 use Mollie\WooCommerceTests\TestCase;
 use Psr\Log\LoggerInterface;
@@ -100,7 +98,7 @@ class HelperMocks extends TestCase
         return $this->createConfiguredMock(
             Settings::class,
             [
-                'isTestModeEnabled' => 'true',
+                'isTestModeEnabled' => true,
                 'getApiKey' => 'test_NtHd7vSyPSpEyuTEwhjsxdjsgVG4SV',
                 'getPaymentLocale' => 'en_US',
                 'shouldStoreCustomer' => false,
@@ -161,27 +159,26 @@ class HelperMocks extends TestCase
 
     public function paymentMethodSettings($testParams = []){
         return [
-            'enabled' => $testParams['enabled'] ?: 'yes',
-            'title' => $testParams['title'] ?: 'default title',
-            'description' => $testParams['description'] ?: 'default description',
-            'display_logo' => $testParams['display_logo'] ?: 'yes',
-            'iconFileUrl' => $testParams['iconFileUrl'] ?: '',
-            'iconFilePath' => $testParams['iconFilePath'] ?: '',
-            'allowed_countries' => $testParams['allowed_countries'] ?: [],
-            'enable_custom_logo' => $testParams['enable_custom_logo'] ?: false,
-            'payment_surcharge' => $testParams['payment_surcharge'] ?: 'no_fee',
-            'fixed_fee' => $testParams['fixed_fee'] ?: '0.00',
-            'percentage' => $testParams['percentage'] ?: '0.00',
-            'surcharge_limit' => $testParams['surcharge_limit'] ?: '0.00',
-            'maximum_limit' => $testParams['maximum_limit'] ?: '0.00',
-            'activate_expiry_days_setting' => $testParams['activate_expiry_days_setting'] ?: 'no',
-            'order_dueDate' => $testParams['order_dueDate'] ?: '0',
-            'issuers_dropdown_shown' => $testParams['issuers_dropdown_shown'] ?: 'yes',
-            'issuers_empty_option' => $testParams['issuers_empty_option'] ?: 'Select your bank',
-            'initial_order_status' => $testParams['initial_order_status'] ?: 'on-hold',
-            'mollie_creditcard_icons_enabler' => $testParams['mollie_creditcard_icons_enabler'] ?: false,
-            'mollie_creditcard_icons_amex' => $testParams['mollie_creditcard_icons_amex'],
-
+            'enabled' => isset($testParams['enabled']) ? $testParams['enabled'] : 'yes',
+            'title' => isset($testParams['title']) ? $testParams['title'] : 'default title',
+            'description' => isset($testParams['description']) ? $testParams['description'] : 'default description',
+            'display_logo' => isset($testParams['display_logo']) ? $testParams['display_logo'] : 'yes',
+            'iconFileUrl' => isset($testParams['iconFileUrl']) ? $testParams['iconFileUrl'] : '',
+            'iconFilePath' => isset($testParams['iconFilePath']) ? $testParams['iconFilePath'] : '',
+            'allowed_countries' => isset($testParams['allowed_countries']) ? $testParams['allowed_countries'] : [],
+            'enable_custom_logo' => isset($testParams['enable_custom_logo']) ? $testParams['enable_custom_logo'] : false,
+            'payment_surcharge' => isset($testParams['payment_surcharge']) ? $testParams['payment_surcharge'] : 'no_fee',
+            'fixed_fee' => isset($testParams['fixed_fee']) ? $testParams['fixed_fee'] : '0.00',
+            'percentage' => isset($testParams['percentage']) ? $testParams['percentage'] : '0.00',
+            'surcharge_limit' => isset($testParams['surcharge_limit']) ? $testParams['surcharge_limit'] : '0.00',
+            'maximum_limit' => isset($testParams['maximum_limit']) ? $testParams['maximum_limit'] : '0.00',
+            'activate_expiry_days_setting' => isset($testParams['activate_expiry_days_setting']) ? $testParams['activate_expiry_days_setting'] : 'no',
+            'order_dueDate' => isset($testParams['order_dueDate']) ? $testParams['order_dueDate'] : '0',
+            'issuers_dropdown_shown' => isset($testParams['issuers_dropdown_shown']) ? $testParams['issuers_dropdown_shown'] : 'yes',
+            'issuers_empty_option' => isset($testParams['issuers_empty_option']) ? $testParams['issuers_empty_option'] : 'Select your bank',
+            'initial_order_status' => isset($testParams['initial_order_status']) ? $testParams['initial_order_status'] : 'on-hold',
+            'mollie_creditcard_icons_enabler' => isset($testParams['mollie_creditcard_icons_enabler']) ? $testParams['mollie_creditcard_icons_enabler'] : false,
+            'mollie_creditcard_icons_amex' => isset($testParams['mollie_creditcard_icons_amex']) ? $testParams['mollie_creditcard_icons_amex'] : '',
         ];
     }
 

@@ -156,7 +156,7 @@ class PaymentMethodsIconUrl
 
         $creditcardSettings = get_option('mollie_wc_gateway_creditcard_settings', []);
         foreach ($creditcardsAvailable as $card) {
-            if (mollieWooCommerceStringToBoolOption($creditcardSettings[$optionLexem . $card])) {
+            if (isset($creditcardSettings[$optionLexem . $card]) && mollieWooCommerceStringToBoolOption($creditcardSettings[$optionLexem . $card])) {
                 $enabledCreditcards[] = $card . $svgFileName;
             }
         }

@@ -12,6 +12,7 @@ use Mollie\WooCommerce\Payment\OrderItemsRefunder;
 use Mollie\WooCommerce\Payment\RefundLineItemsBuilder;
 use Mollie\WooCommerce\Shared\Data;
 
+
 use WC_Order_Item;
 
 use Mollie\WooCommerceTests\TestCase;
@@ -378,7 +379,7 @@ class OrderItemsRefunderTest extends TestCase
     /**
      * @inheritDoc
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

@@ -35,7 +35,7 @@ class SurchargeHandlerTest extends TestCase
      *
      * @test
      */
-    /*public function addsSurchargeFeesInCheckout(){
+    public function addsSurchargeFeesInCheckout(){
         $cart = $this->cartMock();
         $paymentSurcharge = Surcharge::FIXED_FEE;
         $fixedFee = 10.00;
@@ -43,12 +43,13 @@ class SurchargeHandlerTest extends TestCase
         $feeLimit = 1;
         $expectedLabel = 'custom label';
         $expectedAmount = 10.00;
-        $testee = $this->createPartialMock(
+        $testee = $this->buildTesteeMock(
             GatewaySurchargeHandler::class,
-            []
-        );
-        $testee->gatewayFeeLabel = 'custom label';
+            [new Surcharge()],
+            ['surchargeFeeOption']
+        )->getMock();
 
+        $testee->gatewayFeeLabel = 'custom label';
         expect('mollieWooCommerceIsCheckoutContext')->andReturn(true);
         expect('WC')->andReturn($this->wooCommerce());
         expect('get_option')->andReturn(
@@ -64,7 +65,7 @@ class SurchargeHandlerTest extends TestCase
 
         $cart->expects(self::once())->method('add_fee')->with($expectedLabel, $expectedAmount);
         $testee->add_engraving_fees($cart);
-    }*/
+    }
 
     /**
      *
@@ -74,14 +75,14 @@ class SurchargeHandlerTest extends TestCase
      *
      * @test
      */
-    /*public function addsSurchargeFeesInOrderPayPage()
+    public function addsSurchargeFeesInOrderPayPage()
     {
         $paymentSurcharge = Surcharge::FIXED_FEE;
         $fixedFee = 10.00;
         $percentage = 0;
         $feeLimit = 1;
         $expectedLabel = 'custom label';
-        $expectedAmount = 10.00;
+        $expectedAmount =  10.00;
         $newTotal = 20.00;
         $expectedData = [
             'amount' => $expectedAmount,
@@ -89,10 +90,11 @@ class SurchargeHandlerTest extends TestCase
             'currency' => 'EUR',
             'newTotal' => $newTotal,
         ];
-        $testee = $this->createPartialMock(
+        $testee = $this->buildTesteeMock(
             GatewaySurchargeHandler::class,
-            ['canProcessOrder', 'canProcessGateway', 'orderRemoveFee', 'orderAddFee']
-        );
+            [new Surcharge()],
+            ['canProcessOrder', 'canProcessGateway', 'orderRemoveFee', 'orderAddFee', 'surchargeFeeOption']
+        )->getMock();
         $testee->gatewayFeeLabel = 'custom label';
 
         $testee->expects($this->once())
@@ -122,7 +124,7 @@ class SurchargeHandlerTest extends TestCase
 
         expect('wp_send_json_success')->with($expectedData);
         $testee->updateSurchargeOrderPay();
-    }*/
+    }
 
     protected function cartMock()
     {
@@ -162,7 +164,7 @@ class SurchargeHandlerTest extends TestCase
             [
                 'get_id' => $id,
                 'get_order_key' => $orderKey,
-                'get_total' => '20.00',
+                'get_total' => 20.00,
                 'get_items' => [],
                 'get_billing_first_name' => 'billingggivenName',
                 'get_billing_last_name' => 'billingfamilyName',

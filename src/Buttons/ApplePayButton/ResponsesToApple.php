@@ -193,7 +193,8 @@ class ResponsesToApple
                 $type
             );
         }
-        if ($paymentDetails['fee']['amount']) {
+        $issetFeeAmount = isset($paymentDetails['fee']) && isset($paymentDetails['fee']['amount']);
+        if ( $issetFeeAmount ) {
             $response[]
                 = $this->appleItemFormat(
                 $paymentDetails['fee']['label'] ?: '',

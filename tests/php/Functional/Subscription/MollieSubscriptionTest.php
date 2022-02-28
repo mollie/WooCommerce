@@ -2,17 +2,20 @@
 
 namespace Mollie\WooCommerceTests\Functional\Subscription;
 
+use Mollie\Api\Endpoints\CustomerEndpoint;
+use Mollie\Api\Endpoints\PaymentEndpoint;
+use Mollie\Api\Resources\Customer;
+use Mollie\Api\Resources\Mandate;
+use Mollie\Api\Resources\MandateCollection;
+use Mollie\Api\Resources\Payment;
+use Mollie\WooCommerce\Payment\MollieObject;
+use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
 use Mollie\WooCommerceTests\TestCase;
 
-
-
-use stdClass;
-
 use function Brain\Monkey\Functions\expect;
-use function Brain\Monkey\Functions\stubs;
-use function Brain\Monkey\Functions\when;
+
 
 /**
  * Class Mollie_WC_Plugin_Test
@@ -35,19 +38,33 @@ class MollieSubscriptionTest extends TestCase
      * THEN THE ORDER NOTES ARE CREATED
      * @test
      */
-    /*public function renewSubcriptionPaymentTest()
+    public function renewSubcriptionPaymentTest()
     {
-        $wcSubscription = $this->wcOrder();
+        $gatewayName = 'mollie_wc_gateway_ideal';
+        $renewalOrder = $this->wcOrder();
+        $subscription = $this->wcOrder(2, $gatewayName, $renewalOrder, 'active' );
 
+        $testee = $this->buildTestee();
+        $testee->expects($this->once())->method(
+            'isTestModeEnabledForRenewalOrder'
+        )->with($renewalOrder)->willReturn(true);
+        expect('wcs_get_subscriptions_for_renewal_order')->andReturn(
+            [$subscription]
+        );
+        $testee->expects($this->once())->method(
+            'restore_mollie_customer_id_and_mandate'
+        )->willReturn(false);
+        expect('wc_get_payment_gateway_by_order')->andReturn($gatewayName);
+        $renewalOrder->expects($this->once())->method(
+            'set_payment_method'
+        )->with($gatewayName);
+        expect('get_post_meta')->with(1, '_payment_method', true);
+        expect('wc_get_order')->with(1)->andReturn($renewalOrder);
+        expect('wcs_order_contains_renewal')->with(1)->andReturn($renewalOrder);
+        expect('wcs_get_subscription')->andReturn($subscription);
 
-        $testee = $this->buildTesteeMock(
-            MollieSubscriptionGateway::class,
-            [],
-            []
-        )->getMock();
-        var_dump($testee);
         $expectedResult = ['result' => 'success'];
-        $result = $testee->scheduled_subscription_payment(1.02, $wcSubscription);
+        $result = $testee->scheduled_subscription_payment(1.02, $renewalOrder);
         $this->assertEquals($expectedResult, $result);
     }
 
@@ -59,30 +76,71 @@ class MollieSubscriptionTest extends TestCase
         $data = $this->helperMocks->dataHelper();
         $logger = $this->helperMocks->loggerMock();
         $notice = $this->helperMocks->noticeMock();
-
-        return new MollieSubscriptionGateway(
-            $paymentMethod,
-            $paymentService,
-            $orderInstructionsService,
-            $mollieOrderService,
-            $data,
-            $logger,
-            $notice,
-            $HttpResponseService,
-            $settingsHelper,
-            $mollieObject,
-            $paymentFactory,
-            $pluginId,
-            $apiHelper
+        $HttpResponseService = new HttpResponse();
+        $settingsHelper = $this->helperMocks->settingsHelper();
+        $mollieObject = $this->createMock(MollieObject::class);
+        $apiClientMock = $this->helperMocks->apiClient();
+        $mandate = $this->createMock(Mandate::class);
+        $mandate->status = 'valid';
+        $mandate->method = 'mollie_wc_gateway_ideal';
+        $customer = $this->createConfiguredMock(
+            Customer::class,
+            [
+                'mandates'=> [$mandate]
+            ]
         );
-    }*/
+        $apiClientMock->customers = $this->createConfiguredMock(
+            CustomerEndpoint::class,
+            [
+                'get'=> $customer
+            ]
+        );
+        $paymentResponse = $this->createMock(Payment::class);
+        $paymentResponse->method = 'ideal';
+        $paymentResponse->mandateId = 'mandateId';
+        $paymentResponse->resource = 'payment';
+        $apiClientMock->payments = $this->createConfiguredMock(
+            PaymentEndpoint::class,
+            [
+                'create'=> $paymentResponse
+            ]
+        );
+        $paymentFactory = $this->helperMocks->paymentFactory($apiClientMock);
+        $pluginId = $this->helperMocks->pluginId();
+        $apiHelper = $this->helperMocks->apiHelper($apiClientMock);
+        return $this->buildTesteeMock(
+            MollieSubscriptionGateway::class,
+            [
+                $paymentMethod,
+                $paymentService,
+                $orderInstructionsService,
+                $mollieOrderService,
+                $data,
+                $logger,
+                $notice,
+                $HttpResponseService,
+                $settingsHelper,
+                $mollieObject,
+                $paymentFactory,
+                $pluginId,
+                $apiHelper
+            ],
+            [
+                'init_form_fields',
+                'initDescription',
+                'initIcon',
+                'isTestModeEnabledForRenewalOrder',
+                'restore_mollie_customer_id_and_mandate'
+            ]
+        )->getMock();
+    }
 
-    private function wcOrder()
+    private function wcOrder($id = 1, $meta = false, $parentOrder = false, $status = 'processing')
     {
         $item = $this->createConfiguredMock(
             'WC_Order',
             [
-                'get_id' => 1,
+                'get_id' => $id,
                 'get_order_key' => 'wc_order_hxZniP1zDcnM8',
                 'get_total' => '20',
                 'get_items' => [$this->wcOrderItem()],
@@ -107,6 +165,9 @@ class MollieSubscriptionTest extends TestCase
                 'get_order_number' => 1,
                 'get_payment_method' => 'mollie_wc_gateway_ideal',
                 'get_currency' => 'EUR',
+                'get_meta' => $meta,
+                'get_parent' => $parentOrder,
+                'update_status'=>$status
             ]
         );
 

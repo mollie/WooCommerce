@@ -13,6 +13,7 @@ use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
 use Mollie\WooCommerceTests\Stubs\postDTOTestsStubs;
+use Mollie\WooCommerceTests\Stubs\WooCommerceMocks;
 use Mollie\WooCommerceTests\TestCase;
 use PHPUnit_Framework_Exception;
 use WC_Countries;
@@ -41,11 +42,14 @@ class AjaxRequestsTest extends TestCase
     private $ordersApiClient;
     /** @var HelperMocks */
     private $helperMocks;
+    /** @var WooCommerceMocks */
+    private $wooCommerceMocks;
 
     public function __construct($name = null, array $data = [], $dataName = '')
     {
         parent::__construct($name, $data, $dataName);
         $this->helperMocks = new HelperMocks();
+        $this->wooCommerceMocks = new WooCommerceMocks();
     }
 
     public function testValidateMerchant()
@@ -285,10 +289,6 @@ class AjaxRequestsTest extends TestCase
         $testee->updateShippingContact();
     }
 
-
-
-
-
     public function mollieGateway($paymentMethodName, $isSepa = false, $isSubscription = false){
         $gateway = $this->createConfiguredMock(
             MollieSubscriptionGateway::class,
@@ -311,18 +311,7 @@ class AjaxRequestsTest extends TestCase
         $total = 0,
         $tax = 0
     ) {
-        $item = $this->createConfiguredMock(
-            'WooCommerce',
-            [
-
-            ]
-        );
-        $item->cart = $this->wcCart($subtotal, $shippingTotal, $total, $tax);
-        $item->customer = $this->wcCustomer();
-        $item->shipping = $this->wcShipping();
-        $item->session = $this->wcSession();
-
-        return $item;
+        return $this->wooCommerceMocks->wooCommerce($subtotal, $shippingTotal, $total, $tax);
     }
 
     /**
@@ -332,22 +321,7 @@ class AjaxRequestsTest extends TestCase
      */
     private function wcCart($subtotal, $shippingTotal, $total, $tax)
     {
-        $item = $this->createConfiguredMock(
-            'WC_Cart',
-            [
-                'needs_shipping' => true,
-                'get_subtotal' => $subtotal,
-                'is_empty' => true,
-                'get_shipping_total' => $shippingTotal,
-                'add_to_cart' => '88888',
-                'get_total_tax' => $tax,
-                'get_total' => $total,
-                'calculate_shipping' => null
-
-            ]
-        );
-
-        return $item;
+        return $this->wooCommerceMocks->wcCart($subtotal, $shippingTotal, $total, $tax);
     }
 
     /**
@@ -357,15 +331,7 @@ class AjaxRequestsTest extends TestCase
      */
     private function wcCustomer()
     {
-        $item = $this->createConfiguredMock(
-            'WC_Customer',
-            [
-                'get_shipping_country' => 'IT'
-
-            ]
-        );
-
-        return $item;
+        return $this->wooCommerceMocks->wcCustomer();
     }
 
     /**
@@ -375,15 +341,7 @@ class AjaxRequestsTest extends TestCase
      */
     private function wcCountries()
     {
-        $item = $this->createConfiguredMock(
-            WC_Countries::class,
-            [
-                'get_allowed_countries' => ['IT' => 'Italy'],
-                'get_shipping_countries' => ['IT' => 'Italy'],
-            ]
-        );
-
-        return $item;
+        return $this->wooCommerceMocks->wcCountries();
     }
 
     /**
@@ -393,29 +351,7 @@ class AjaxRequestsTest extends TestCase
      */
     private function wcShipping()
     {
-        $item = $this->createConfiguredMock(
-            'WC_Shipping',
-            [
-                'calculate_shipping' => [
-                    0 => [
-                        'rates' => [
-                            $this->wcShippingRate(
-                                'flat_rate:1',
-                                'Flat1',
-                                '1.00'
-                            ),
-                            $this->wcShippingRate(
-                                'flat_rate:4',
-                                'Flat4',
-                                '4.00'
-                            )
-                        ]
-                    ]
-                ]
-            ]
-        );
-
-        return $item;
+        return $this->wooCommerceMocks->wcShipping();
     }
 
     /**
@@ -425,17 +361,7 @@ class AjaxRequestsTest extends TestCase
      */
     private function wcShippingRate($id, $label, $cost)
     {
-        $item = $this->createConfiguredMock(
-            'WC_Shipping_Rate',
-            [
-                'get_id' => $id,
-                'get_label' => $label,
-                'get_cost' => $cost
-
-            ]
-        );
-
-        return $item;
+        return $this->wooCommerceMocks->wcShippingRate($id, $label, $cost);
     }
 
     /**
@@ -445,13 +371,7 @@ class AjaxRequestsTest extends TestCase
      */
     private function wcSession()
     {
-        return $this->createConfiguredMock(
-            'WC_Session',
-            [
-                'set' => null
-
-            ]
-        );
+        return $this->wooCommerceMocks->wcSession();
     }
 
     /**
@@ -460,12 +380,7 @@ class AjaxRequestsTest extends TestCase
      */
     private function wcOrder()
     {
-        return $this->createConfiguredMock(
-            'Mollie\WooCommerceTests\Stubs\WC_Order',
-            [
-                'get_id' => 11,
-            ]
-        );
+        return $this->wooCommerceMocks->wcOrder();
     }
 
     /**

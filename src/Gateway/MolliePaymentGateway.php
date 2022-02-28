@@ -454,6 +454,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
             }
 
             $billing_country = WC()->customer ? WC()->customer->get_billing_country() : wc_get_base_location()['country'];
+
             $billing_country = apply_filters(
                 $this->pluginId
                 . '_is_available_billing_country_for_payment_gateways',

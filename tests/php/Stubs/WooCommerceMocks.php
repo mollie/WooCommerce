@@ -34,13 +34,13 @@ class WooCommerceMocks extends TestCase
      * @return PHPUnit_Framework_MockObject_MockObject
      * @throws PHPUnit_Framework_Exception
      */
-    public function wcCustomer()
+    public function wcCustomer($country = 'IT')
     {
         $item = $this->createConfiguredMock(
             'WC_Customer',
             [
-                'get_shipping_country' => 'IT',
-                'get_billing_country' => 'IT'
+                'get_shipping_country' => $country,
+                'get_billing_country' => $country
 
             ]
         );
@@ -57,7 +57,8 @@ class WooCommerceMocks extends TestCase
         $subtotal = 0,
         $shippingTotal = 0,
         $total = 0,
-        $tax = 0
+        $tax = 0,
+        $country = 'IT'
     ) {
         $item = $this->createConfiguredMock(
             'WooCommerce',
@@ -66,7 +67,7 @@ class WooCommerceMocks extends TestCase
             ]
         );
         $item->cart = $this->wcCart($subtotal, $shippingTotal, $total, $tax);
-        $item->customer = $this->wcCustomer();
+        $item->customer = $this->wcCustomer($country);
         $item->shipping = $this->wcShipping();
         $item->session = $this->wcSession();
 

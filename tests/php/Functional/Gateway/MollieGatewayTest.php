@@ -1,6 +1,6 @@
 <?php # -*- coding: utf-8 -*-
 
-namespace Mollie\WooCommerceTests\Functional\Subscription;
+namespace Mollie\WooCommerceTests\Functional\Gateway;
 
 use Mollie\Api\Endpoints\CustomerEndpoint;
 use Mollie\Api\Endpoints\PaymentEndpoint;
@@ -8,10 +8,12 @@ use Mollie\Api\Resources\Customer;
 use Mollie\Api\Resources\Mandate;
 use Mollie\Api\Resources\MandateCollection;
 use Mollie\Api\Resources\Payment;
+use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
+use Mollie\WooCommerceTests\Stubs\WooCommerceMocks;
 use Mollie\WooCommerceTests\TestCase;
 
 use function Brain\Monkey\Functions\expect;
@@ -20,56 +22,58 @@ use function Brain\Monkey\Functions\expect;
 /**
  * Class Mollie_WC_Plugin_Test
  */
-class MollieSubscriptionTest extends TestCase
+class MollieGatewayTest extends TestCase
 {
     /** @var HelperMocks */
     private $helperMocks;
+    /**
+     * @var WooCommerceMocks
+     */
+    protected $wooCommerceMocks;
 
     public function __construct($name = null, array $data = [], $dataName = '')
     {
         parent::__construct($name, $data, $dataName);
         $this->helperMocks = new HelperMocks();
+        $this->wooCommerceMocks = new WooCommerceMocks();
     }
 
     /**
-     * GIVEN I RECEIVE A WC ORDER WITH SUBSCRIPTION
-     * THEN CREATES CORRECT MOLLIE REQUEST ORDER
-     * THEN THE DEBUG LOGS ARE CORRECT
-     * THEN THE ORDER NOTES ARE CREATED
+     * WHEN gateway setting 'enabled' !== 'yes'
+     * THEN is_available returns false
      * @test
      */
-    public function renewSubcriptionPaymentTest()
+    public function gatewayNOTEnabledIsNOTAvailable()
     {
-        $gatewayName = 'mollie_wc_gateway_ideal';
-        $renewalOrder = $this->wcOrder();
-        $subscription = $this->wcOrder(2, $gatewayName, $renewalOrder, 'active' );
+        $testee = $this->buildTestee(['enabled'=>'no']);
 
-        $testee = $this->buildTestee();
-        $testee->expects($this->once())->method(
-            'isTestModeEnabledForRenewalOrder'
-        )->with($renewalOrder)->willReturn(true);
-        expect('wcs_get_subscriptions_for_renewal_order')->andReturn(
-            [$subscription]
-        );
-        $testee->expects($this->once())->method(
-            'restore_mollie_customer_id_and_mandate'
-        )->willReturn(false);
-        expect('wc_get_payment_gateway_by_order')->andReturn($gatewayName);
-        $renewalOrder->expects($this->once())->method(
-            'set_payment_method'
-        )->with($gatewayName);
-        expect('get_post_meta')->with(1, '_payment_method', true);
-        expect('wc_get_order')->with(1)->andReturn($renewalOrder);
-        expect('wcs_order_contains_renewal')->with(1)->andReturn($renewalOrder);
-        expect('wcs_get_subscription')->andReturn($subscription);
-
-        $expectedResult = ['result' => 'success'];
-        $result = $testee->scheduled_subscription_payment(1.02, $renewalOrder);
+        $expectedResult = false;
+        $result = $testee->is_available();
         $this->assertEquals($expectedResult, $result);
     }
 
-    private function buildTestee(){
-        $paymentMethod = $this->helperMocks->paymentMethodBuilder('Ideal');
+    /**
+     * WHEN gateway setting 'enabled' !== 'yes'
+     * THEN is_available returns false
+     * @test
+     */
+    public function gatewayEnabledIsAvailable()
+    {
+        $testee = $this->buildTestee(['enabled'=>'yes']);
+        $total = 10.00;
+        $WC = $this->wooCommerceMocks->wooCommerce(10.00, 0, $total, 0);
+        expect('WC')->andReturn($WC);
+        $testee->expects($this->atLeast(2))->method('get_order_total')->willReturn($total);
+        expect('get_woocommerce_currency')->andReturn('EUR');
+        expect('get_transient')->andReturn([['id'=>'ideal']]);
+
+        $expectedResult = true;
+        $result = $testee->is_available();
+        $this->assertEquals($expectedResult, $result);
+    }
+
+    private function buildTestee($settings){
+        $paymentMethod = $this->helperMocks->paymentMethodBuilder('Ideal', false, false, $settings);
         $paymentService = $this->helperMocks->paymentService();
         $orderInstructionsService = $this->helperMocks->orderInstructionsService();
         $mollieOrderService = $this->helperMocks->mollieOrderService();
@@ -77,39 +81,14 @@ class MollieSubscriptionTest extends TestCase
         $logger = $this->helperMocks->loggerMock();
         $notice = $this->helperMocks->noticeMock();
         $HttpResponseService = new HttpResponse();
-        $settingsHelper = $this->helperMocks->settingsHelper();
         $mollieObject = $this->createMock(MollieObject::class);
         $apiClientMock = $this->helperMocks->apiClient();
-        $mandate = $this->createMock(Mandate::class);
-        $mandate->status = 'valid';
-        $mandate->method = 'mollie_wc_gateway_ideal';
-        $customer = $this->createConfiguredMock(
-            Customer::class,
-            [
-                'mandates'=> [$mandate]
-            ]
-        );
-        $apiClientMock->customers = $this->createConfiguredMock(
-            CustomerEndpoint::class,
-            [
-                'get'=> $customer
-            ]
-        );
-        $paymentResponse = $this->createMock(Payment::class);
-        $paymentResponse->method = 'ideal';
-        $paymentResponse->mandateId = 'mandateId';
-        $paymentResponse->resource = 'payment';
-        $apiClientMock->payments = $this->createConfiguredMock(
-            PaymentEndpoint::class,
-            [
-                'create'=> $paymentResponse
-            ]
-        );
+
         $paymentFactory = $this->helperMocks->paymentFactory($apiClientMock);
         $pluginId = $this->helperMocks->pluginId();
-        $apiHelper = $this->helperMocks->apiHelper($apiClientMock);
+
         return $this->buildTesteeMock(
-            MollieSubscriptionGateway::class,
+            MolliePaymentGateway::class,
             [
                 $paymentMethod,
                 $paymentService,
@@ -119,18 +98,15 @@ class MollieSubscriptionTest extends TestCase
                 $logger,
                 $notice,
                 $HttpResponseService,
-                $settingsHelper,
                 $mollieObject,
                 $paymentFactory,
-                $pluginId,
-                $apiHelper
+                $pluginId
             ],
             [
                 'init_form_fields',
                 'initDescription',
                 'initIcon',
-                'isTestModeEnabledForRenewalOrder',
-                'restore_mollie_customer_id_and_mandate'
+                'get_order_total'
             ]
         )->getMock();
     }

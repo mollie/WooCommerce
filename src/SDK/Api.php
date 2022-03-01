@@ -50,10 +50,10 @@ class Api
         }
 
         if (empty(self::$api_client) || $needToUpdateApiKey) {
-            $client = new MollieApiClient();
+            $httpClient = new WordPressHttpAdapter();
+            $client = new MollieApiClient($httpClient);
             $client->setApiKey($apiKey);
             $client->setApiEndpoint($this->getApiEndpoint());
-            $client->addVersionString('WordPress/' . ( isset($wp_version) ? $wp_version : 'Unknown' ));
             $client->addVersionString('WooCommerce/' . get_option('woocommerce_version', 'Unknown'));
             $client->addVersionString('WooCommerceSubscriptions/' . get_option('woocommerce_subscriptions_active_version', 'Unknown'));
             $client->addVersionString('MollieWoo/' . $this->pluginVersion);

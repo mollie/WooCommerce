@@ -49,9 +49,84 @@ class PaymentServiceTest extends TestCase
      *
      * @test
      */
+    public function processPayment_Order_success(){
+        $paymentMethodId = 'Ideal';
+        $isSepa = true;
+        $wcOrderId = 1;
+        $wcOrderKey = 'wc_order_hxZniP1zDcnM8';
+        $wcOrder = $this->wcOrder($wcOrderId, $wcOrderKey);
+        $mollieOrderId = 'wvndyu';//ord_wvndyu
+        $processPaymentRedirect = 'https://www.mollie.com/payscreen/order/checkout/'. $mollieOrderId;
+
+        $paymentMethod = $this->helperMocks->paymentMethodBuilder($paymentMethodId);
+        $orderEndpoints = $this->createConfiguredMock(
+            OrderEndpoint::class,
+            [
+                'create' => new MollieOrderResponse(),
+            ]
+        );
+        $apiClientMock = $this->createConfiguredMock(
+            MollieApiClient::class,
+            []
+        );
+        $apiClientMock->orders = $orderEndpoints;
+        $testee = new PaymentService(
+            $this->helperMocks->noticeMock(),
+            $this->helperMocks->loggerMock(),
+            $this->helperMocks->paymentFactory($apiClientMock),
+            $this->helperMocks->dataHelper($apiClientMock),
+            $this->helperMocks->apiHelper($apiClientMock),
+            $this->helperMocks->settingsHelper(),
+            $this->helperMocks->pluginId(),
+            $this->paymentCheckoutService($apiClientMock)
+        );
+        $testee->setGateway($this->createMock(MolliePaymentGateway::class));
+        stubs(
+            [
+                'admin_url' => 'http://admin.com',
+                'wc_get_order' => $wcOrder,
+                'wc_get_product' => $this->wcProduct(),
+                'wc_get_payment_gateway_by_order' => $this->mollieGateway($paymentMethodId, $testee),
+                'add_query_arg' => 'https://webshop.example.org/wc-api/mollie_return?order_id=1&key=wc_order_hxZniP1zDcnM8',
+                'WC' => $this->wooCommerce()
+            ]
+        );
+        $expectedRequestToMollie = $this->expectedRequestData($wcOrder);
+        $orderEndpoints->method('create')->with($expectedRequestToMollie);
+
+        /*
+         *  Expectations
+         */
+        expect('is_plugin_active')
+            ->andReturn(false);
+        expect('get_option')
+            ->with('mollie-payments-for-woocommerce_api_switch')
+            ->andReturn(false);
+        expect('get_transient')->andReturn(['ideal'=>['id'=>'ideal']]);
+
+        /*
+        * Execute Test
+        */
+        $expectedResult = array (
+            'result'   => 'success',
+            'redirect' => $processPaymentRedirect,
+        );
+        $arrayResult = $testee->processPayment(1, $wcOrder, $paymentMethod, $processPaymentRedirect);
+        self::assertEquals($expectedResult, $arrayResult);
+
+        /*
+        * Execute Test
+        */
+        $expectedResult = array (
+            'result'   => 'success',
+            'redirect' => $processPaymentRedirect,
+        );
+        $arrayResult = $testee->processPayment(1, $wcOrder, $paymentMethod, $processPaymentRedirect);
+        self::assertEquals($expectedResult, $arrayResult);
+    }
 
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $_POST = [];
         parent::setUp();

@@ -154,7 +154,23 @@ class WC_Order
     public function get_meta()
     {
     }
-    public function get_currency(){}
+
+    public function get_currency()
+    {
+    }
+
+    public function get_parent()
+    {
+    }
+
+    public function set_payment_method()
+    {
+    }
+
+    public function update_status()
+    {
+
+    }
 }
 class WC_Cart
 {

@@ -712,4 +712,16 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             return $mollie_customer_id;
         }
     }
+
+    /**
+     * Check if the gateway is available in checkout
+     *
+     * @return bool
+     */
+    public function is_available(): bool
+    {
+        $status =  parent::is_available();
+        // Do extra checks if WooCommerce Subscriptions is installed
+        return $this->subscriptionObject->isAvailableForSubscriptions($status, $this);
+    }
 }

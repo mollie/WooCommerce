@@ -66,6 +66,7 @@ class MollieGatewayTest extends TestCase
         $testee->expects($this->atLeast(2))->method('get_order_total')->willReturn($total);
         expect('get_woocommerce_currency')->andReturn('EUR');
         expect('get_transient')->andReturn([['id'=>'ideal']]);
+        expect('wc_get_base_location')->andReturn(['country'=>'ES']);
 
         $expectedResult = true;
         $result = $testee->is_available();

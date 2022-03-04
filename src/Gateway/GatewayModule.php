@@ -207,7 +207,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
             $this->molliePayPalButtonHandling($paypalGateway, $notice, $logger, $pluginUrl);
         }
 
-        $checkoutBlockHandler = new CheckoutBlockService($container->get('settings.data_helper'));
+        $maybeDisableVoucher = new MaybeDisableGateway();
+        $checkoutBlockHandler = new CheckoutBlockService($container->get('settings.data_helper'), $maybeDisableVoucher);
         $checkoutBlockHandler->bootstrapAjaxRequest();
         add_action( 'woocommerce_rest_checkout_process_payment_with_context', function($paymentContext){
             if(strpos($paymentContext->payment_method, 'mollie_wc_gateway_') === false){

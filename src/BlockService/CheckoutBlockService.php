@@ -5,17 +5,28 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\BlockService;
 
 use InvalidArgumentException;
+use Mollie\WooCommerce\Gateway\Voucher\MaybeDisableGateway;
+use Mollie\WooCommerce\Shared\Data;
 
+/**
+ * Class CheckoutBlockService
+ * @package Mollie\WooCommerce\BlockService
+ */
 class CheckoutBlockService
 {
     protected $dataService;
+    /**
+     * @var MaybeDisableGateway
+     */
+    protected $voucherDisabler;
 
     /**
      * CheckoutBlockService constructor.
      */
-    public function __construct($dataService)
+    public function __construct(Data $dataService, MaybeDisableGateway $voucherDisabler)
     {
         $this->dataService = $dataService;
+        $this->voucherDisabler = $voucherDisabler;
     }
 
     /**
@@ -38,21 +49,17 @@ class CheckoutBlockService
         );
     }
 
+    /**
+     * When the country changes in the checkout block
+     * We need to check again the list of available gateways accordingly
+     * And return the result with a key based on the evaluated filters for the script to cache
+     */
     public function availableGateways()
     {
         $currency = filter_var($_POST['currency'], FILTER_SANITIZE_STRING);
-        $cartTotal = filter_var(
-            $_POST['cartTotal'],
-            FILTER_SANITIZE_NUMBER_INT
-        );
-        $paymentLocale = filter_var(
-            $_POST['paymentLocale'],
-            FILTER_SANITIZE_STRING
-        );
-        $billingCountry = filter_var(
-            $_POST['billingCountry'],
-            FILTER_SANITIZE_STRING
-        );
+        $cartTotal = filter_var($_POST['cartTotal'], FILTER_SANITIZE_NUMBER_INT);
+        $paymentLocale = filter_var($_POST['paymentLocale'], FILTER_SANITIZE_STRING);
+        $billingCountry = filter_var($_POST['billingCountry'], FILTER_SANITIZE_STRING);
         $cartTotal = $cartTotal / 100;
         $availablePaymentMethods = [];
         try {
@@ -68,17 +75,51 @@ class CheckoutBlockService
         if ($filters) {
             WC()->customer->set_billing_country($billingCountry);
             $availableGateways = WC()->payment_gateways()->get_available_payment_gateways();
-            foreach ($availableGateways as $key => $gateway){
-                if(strpos($key, 'mollie_wc_gateway_') === false){
-                    unset($availableGateways[$key]);
-                }
-            }
+            $availableGateways = $this->removeNonMollieGateway($availableGateways);
+            $availableGateways = $this->maybeRemoveVoucher($availableGateways);
             $filterKey = "{$filters['amount']['currency']}-{$filters['locale']}-{$filters['billingCountry']}";
             foreach ($availableGateways as $key => $gateway){
                 $availablePaymentMethods[$filterKey][$key] = $gateway->paymentMethod->getProperty('id');
             }
         }
-
         wp_send_json_success($availablePaymentMethods);
+    }
+
+    /**
+     * Remove the voucher gateway from the available ones
+     * if the products in the cart don't fit the requirements
+     *
+     * @param array $availableGateways
+     * @return array
+     */
+    protected function maybeRemoveVoucher(array $availableGateways): array
+    {
+        foreach ($availableGateways as $key => $gateway) {
+            if ($key !=='mollie_wc_gateway_voucher') {
+                continue;
+            }
+            $shouldRemoveVoucher = $this->voucherDisabler->shouldRemoveVoucher();
+            if($shouldRemoveVoucher){
+                unset($availableGateways[$key]);
+            }
+        }
+        return $availableGateways;
+    }
+
+    /**
+     * Remove the non Mollie gateways from the available ones
+     * so we don't deal with them in our block logic
+     *
+     * @param array $availableGateways
+     * @return array
+     */
+    protected function removeNonMollieGateway(array $availableGateways): array
+    {
+        foreach ($availableGateways as $key => $gateway) {
+            if (strpos($key, 'mollie_wc_gateway_') === false) {
+                unset($availableGateways[$key]);
+            }
+        }
+        return $availableGateways;
     }
 }

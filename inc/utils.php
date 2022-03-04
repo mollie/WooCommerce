@@ -186,9 +186,21 @@ function mollieWooCommercIsExpiryDateEnabled()
     return $expiryDateEnabled;
 }
 
+/**
+ * Format the value that is sent to Mollie's API
+ * with the required number of decimals
+ * depending on the currency used
+ *
+ * @param $value
+ * @param $currency
+ * @return string
+ */
 function mollieWooCommerceFormatCurrencyValue($value, $currency)
 {
-    // Only the Japanese Yen has no decimals in the currency
+    $currenciesWithNoDecimals = ["JPY", "ISK"];
+    if(in_array($currency, $currenciesWithNoDecimals)){
+        return number_format($value, 0, '.', '');
+    }
 
-    return $currency === "JPY" ? number_format($value, 0, '.', '') : number_format($value, 2, '.', '');
+    return number_format($value, 2, '.', '');
 }

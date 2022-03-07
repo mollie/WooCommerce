@@ -457,10 +457,12 @@ class OrderLines
 
         //if product has taxonomy associated, retrieve voucher cat from there.
         $catTerms = get_the_terms($product->get_id(), 'product_cat');
-        foreach ($catTerms as $term) {
-            $term_id = $term->term_id;
-            $metaVoucher = get_term_meta($term_id, '_mollie_voucher_category', true);
-            $category = $metaVoucher ?: $category;
+        if(is_array($catTerms)){
+            foreach ($catTerms as $term) {
+                $term_id = $term->term_id;
+                $metaVoucher = get_term_meta($term_id, '_mollie_voucher_category', true);
+                $category = $metaVoucher ?: $category;
+            }
         }
 
         //local product voucher category

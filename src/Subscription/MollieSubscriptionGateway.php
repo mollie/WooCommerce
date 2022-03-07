@@ -250,7 +250,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         }
 
         // Get all data for the renewal payment
-        $data = $this->subscriptionObject->getRecurringPaymentRequestData($renewal_order, $customer_id);
+        $data = $this->subscriptionObject->getRecurringPaymentRequestData($renewal_order, $customer_id, $this->paymentService);
 
         // Allow filtering the renewal payment data
         $data = apply_filters('woocommerce_' . $this->id . '_args', $data, $renewal_order);

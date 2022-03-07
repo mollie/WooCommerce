@@ -188,7 +188,7 @@ msgstr "Beschrijving Betalingen API"
 #. translators: Placeholder 1: Opening paragraph tag, placeholder 2: Closing paragraph tag
 #: inc/settings/mollie_advanced_settings.php:127
 msgid "Select among the available variables the description to be used for this transaction.%1$s(Note: this only works when the method is set to Payments API)%2$s"
-msgstr "Kies uit de beschikbare variabelen de beschrijving die je voor deze transactie wilt gebruiken.%1$sLet op: dit werkt alleen als de methode is ingesteld op Betalingen API).%2$s"
+msgstr "Kies uit de beschikbare variabelen de beschrijving die je voor deze transactie wilt gebruiken.%1$s(Let op: dit werkt alleen als de methode is ingesteld op Betalingen API.)%2$s"
 
 #: inc/settings/mollie_advanced_settings.php:137
 msgid "Surcharge gateway fee label"

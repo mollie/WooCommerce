@@ -2183,7 +2183,7 @@ msgstr ""
 #: src/Mollie/WC/Gateway/AbstractSubscription.php:116
 #: src/Mollie/WC/Payment/Payment.php:132
 msgctxt "Payment description for {orderNumber}"
-msgid "Order %s"
+msgid "Order %1$s"
 msgstr ""
 
 #. translators: Placeholder 1: store name
@@ -2192,7 +2192,7 @@ msgstr ""
 #: src/Mollie/WC/Gateway/AbstractSubscription.php:127
 #: src/Mollie/WC/Payment/Payment.php:143
 msgctxt "Payment description for {storeName}"
-msgid "StoreName %s"
+msgid "StoreName %1$s"
 msgstr ""
 
 #. translators: Placeholder 1: customer first name
@@ -2201,7 +2201,7 @@ msgstr ""
 #: src/Mollie/WC/Gateway/AbstractSubscription.php:138
 #: src/Mollie/WC/Payment/Payment.php:154
 msgctxt "Payment description for {customer.firstname}"
-msgid "Customer Firstname %s"
+msgid "Customer Firstname %1$s"
 msgstr ""
 
 #. translators: Placeholder 1: customer last name
@@ -2210,7 +2210,7 @@ msgstr ""
 #: src/Mollie/WC/Gateway/AbstractSubscription.php:149
 #: src/Mollie/WC/Payment/Payment.php:165
 msgctxt "Payment description for {customer.lastname}"
-msgid "Customer Lastname %s"
+msgid "Customer Lastname %1$s"
 msgstr ""
 
 #. translators: Placeholder 1: customer company name
@@ -2219,7 +2219,7 @@ msgstr ""
 #: src/Mollie/WC/Gateway/AbstractSubscription.php:160
 #: src/Mollie/WC/Payment/Payment.php:176
 msgctxt "Payment description for {customer.company}"
-msgid "Customer Company %s"
+msgid "Customer Company %1$s"
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID

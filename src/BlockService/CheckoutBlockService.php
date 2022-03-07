@@ -56,10 +56,10 @@ class CheckoutBlockService
      */
     public function availableGateways()
     {
-        $currency = filter_var($_POST['currency'], FILTER_SANITIZE_STRING);
-        $cartTotal = filter_var($_POST['cartTotal'], FILTER_SANITIZE_NUMBER_INT);
-        $paymentLocale = filter_var($_POST['paymentLocale'], FILTER_SANITIZE_STRING);
-        $billingCountry = filter_var($_POST['billingCountry'], FILTER_SANITIZE_STRING);
+        $currency = filter_input(INPUT_POST, 'currency', FILTER_SANITIZE_STRING);
+        $cartTotal = filter_input(INPUT_POST,'cartTotal', FILTER_SANITIZE_NUMBER_INT);
+        $paymentLocale = filter_input(INPUT_POST, 'paymentLocale', FILTER_SANITIZE_STRING);
+        $billingCountry = filter_input(INPUT_POST, 'billingCountry', FILTER_SANITIZE_STRING);
         $cartTotal = $cartTotal / 100;
         $availablePaymentMethods = [];
         try {

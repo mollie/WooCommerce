@@ -74,13 +74,12 @@ class MollieSubscription extends MollieObject
      * @param MollieSubscriptionGateway $subscriptionGateway
      * @return bool
      */
-    public function isAvailableForSubscriptions(bool $status, MollieSubscriptionGateway $subscriptionGateway): bool
+    public function isAvailableForSubscriptions(bool $status, MollieSubscriptionGateway $subscriptionGateway, $orderTotal): bool
     {
         $subscriptionPluginActive = class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin');
         if(!$subscriptionPluginActive){
             return $status;
         }
-        $order_total = $subscriptionGateway->get_order_total();
         $currency = $subscriptionGateway->getCurrencyFromOrder();
         $billingCountry = $subscriptionGateway->getBillingCountry();
         $paymentLocale = $subscriptionGateway->dataService->getPaymentLocale();
@@ -114,7 +113,7 @@ class MollieSubscription extends MollieObject
         }
         $filters = $this->buildFilters(
             $currency,
-            $order_total,
+            $orderTotal,
             $billingCountry,
             SequenceType::SEQUENCETYPE_FIRST,
             $paymentLocale

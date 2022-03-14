@@ -239,7 +239,9 @@ class Data
         $cartTotal = $cart ? $cart->get_total('edit') : 0;
 
         $currency = get_woocommerce_currency();
-        $billingCountry = WC()->customer ? WC()->customer->get_billing_country() : wc_get_base_location()['country'];
+        $customerExistsAndHasCountry = WC()->customer && !empty(WC()->customer->get_billing_country());
+        $fallbackToShopCountry = wc_get_base_location()['country'];
+        $billingCountry = $customerExistsAndHasCountry? WC()->customer->get_billing_country() : $fallbackToShopCountry;
 
         $paymentLocale = $this->settingsHelper->getPaymentLocale();
         try {

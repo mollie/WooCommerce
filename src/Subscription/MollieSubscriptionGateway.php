@@ -722,6 +722,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
     {
         $status =  parent::is_available();
         // Do extra checks if WooCommerce Subscriptions is installed
-        return $this->subscriptionObject->isAvailableForSubscriptions($status, $this);
+        $orderTotal = $this->get_order_total();
+        return $this->subscriptionObject->isAvailableForSubscriptions($status, $this, $orderTotal);
     }
 }

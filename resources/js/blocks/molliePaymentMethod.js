@@ -146,7 +146,9 @@ const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, available
             }
 
             cartTotal = cartTotals?.total_price
-            billingCountry = billingData?.country
+            if(billingData?.country && billingData.country !== ''){
+                billingCountry = billingData?.country
+            }
             let currencyCode = cartTotals?.currency_code
             let currentFilterKey = currencyCode + "-" + filters.paymentLocale + "-" + billingCountry
 

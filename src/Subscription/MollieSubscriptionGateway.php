@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Subscription;
 
 use Exception;
+use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieSubscription;
@@ -250,8 +251,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         }
 
         // Get all data for the renewal payment
-        $parentOrderMeta = !empty($subcriptionParentOrder) ? $subcriptionParentOrder->get_meta('_mollie_order_id') : PaymentService::PAYMENT_METHOD_TYPE_PAYMENT;
-        $initialPaymentUsedOrderAPI = strpos($parentOrderMeta, 'ord_') !== false;
+        $initialPaymentUsedOrderAPI = $this->initialPaymentUsedOrderAPI($subcriptionParentOrder);
         $data = $this->subscriptionObject->getRecurringPaymentRequestData($renewal_order, $customer_id, $initialPaymentUsedOrderAPI);
 
         // Allow filtering the renewal payment data
@@ -298,8 +298,8 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                         }
                     }
                 }
-            } catch (Mollie\Api\Exceptions\ApiException $e) {
-                throw new \Mollie\Api\Exceptions\ApiException(sprintf(__('The customer (%s) could not be used or found. ' . $e->getMessage(), 'mollie-payments-for-woocommerce-mandate-problem'), $customer_id));
+            } catch (ApiException $e) {
+                throw new ApiException(sprintf(__('The customer (%s) could not be used or found. ' . $e->getMessage(), 'mollie-payments-for-woocommerce-mandate-problem'), $customer_id));
             }
 
             // Check that there is at least one valid mandate
@@ -326,9 +326,9 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                         $subcriptionParentOrder->save();
                     }
                 } else {
-                    throw new \Mollie\Api\Exceptions\ApiException(sprintf(__('The customer (%s) does not have a valid mandate.', 'mollie-payments-for-woocommerce-mandate-problem'), $customer_id));
+                    throw new ApiException(sprintf(__('The customer (%s) does not have a valid mandate.', 'mollie-payments-for-woocommerce-mandate-problem'), $customer_id));
                 }
-            } catch (Mollie\Api\Exceptions\ApiException $e) {
+            } catch (ApiException $e) {
                 throw $e;
             }
 
@@ -362,7 +362,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             return [
                 'result' => 'success',
             ];
-        } catch (Mollie\Api\Exceptions\ApiException $e) {
+        } catch (ApiException $e) {
             $this->logger->log(LogLevel::DEBUG, $this->id . ': Failed to create payment for order ' . $renewal_order_id . ': ' . $e->getMessage());
 
             /* translators: Placeholder 1: Payment method title */
@@ -708,10 +708,26 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             }
 
             return $mollie_customer_id;
-        } catch (Mollie\Api\Exceptions\ApiException $e) {
+        } catch (ApiException $e) {
             $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: customer id and mandate restore failed. ' . $e->getMessage());
 
             return $mollie_customer_id;
         }
+    }
+
+    /**
+     * @param $subcriptionParentOrder
+     * @return bool
+     */
+    protected function initialPaymentUsedOrderAPI($subcriptionParentOrder): bool
+    {
+        if(empty($subcriptionParentOrder)){
+            return false;
+        }
+        $orderIdMeta = $subcriptionParentOrder->get_meta('_mollie_order_id');
+
+        $parentOrderMeta = $orderIdMeta?: PaymentService::PAYMENT_METHOD_TYPE_PAYMENT;
+
+        return strpos($parentOrderMeta, 'ord_') !== false;
     }
 }

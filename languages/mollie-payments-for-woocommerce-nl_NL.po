@@ -4,14 +4,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mollie Payments for WooCommerce 6.7.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/mollie-payments-for-woocommerce\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"POT-Creation-Date: 2022-01-18T10:01:34+00:00\n"
+"PO-Revision-Date: 2022-03-12 08:17+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: nl_NL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2022-01-18T10:01:34+00:00\n"
-"PO-Revision-Date: 2022-02-01 11:36+0100\n"
-"X-Generator: WP-CLI 2.5.0\n"
+"X-Generator: Poedit 3.0.1\n"
 "X-Domain: mollie-payments-for-woocommerce\n"
 
 #. Plugin Name of the plugin
@@ -285,14 +286,12 @@ msgctxt "Mollie Components Settings"
 msgid "Base Styles"
 msgstr "Basisstijlen"
 
-#: inc/settings/mollie_components.php:18
-#: inc/settings/mollie_components.php:158
+#: inc/settings/mollie_components.php:18 inc/settings/mollie_components.php:158
 msgctxt "Mollie Components Settings"
 msgid "Background Color"
 msgstr "Achtergrondkleur"
 
-#: inc/settings/mollie_components.php:24
-#: inc/settings/mollie_components.php:147
+#: inc/settings/mollie_components.php:24 inc/settings/mollie_components.php:147
 msgctxt "Mollie Components Settings"
 msgid "Text Color"
 msgstr "Tekstkleur"
@@ -444,8 +443,7 @@ msgstr "Naam op de kaart"
 msgid "Card number"
 msgstr "Kaartnummer"
 
-#: src/Assets/AssetsModule.php:435
-#: src/PaymentMethods/Banktransfer.php:62
+#: src/Assets/AssetsModule.php:435 src/PaymentMethods/Banktransfer.php:62
 #: src/Settings/General/MollieGeneralSettings.php:234
 msgid "Expiry date"
 msgstr "Vervaldatum"
@@ -522,24 +520,16 @@ msgstr "Bestelling geannuleerd"
 msgid "%1$s payment still pending (%2$s) but customer already returned to the store. Status should be updated automatically in the future, if it doesn't this might indicate a communication issue between the site and Mollie."
 msgstr "%1$s betaling nog hangende (%2$s) maar klant is al teruggekeerd naar de shop. De status moet in de toekomst automatisch worden bijgewerkt, als dat niet gebeurt, kan dit betekenen dat er een communicatieprobleem is tussen de site en Mollie."
 
-#: src/Gateway/MolliePaymentGateway.php:1082
-#: src/Payment/MollieObject.php:653
-#: src/Payment/MollieObject.php:686
-#: src/Payment/MollieOrder.php:269
-#: src/Payment/MollieOrder.php:329
-#: src/Payment/MollieOrder.php:374
-#: src/Payment/MollieOrder.php:457
-#: src/Payment/MollieOrder.php:520
-#: src/Payment/MollieOrder.php:934
-#: src/Payment/MollieOrderService.php:166
+#: src/Gateway/MolliePaymentGateway.php:1082 src/Payment/MollieObject.php:653
+#: src/Payment/MollieObject.php:686 src/Payment/MollieOrder.php:269
+#: src/Payment/MollieOrder.php:329 src/Payment/MollieOrder.php:374
+#: src/Payment/MollieOrder.php:457 src/Payment/MollieOrder.php:520
+#: src/Payment/MollieOrder.php:934 src/Payment/MollieOrderService.php:166
 #: src/Payment/MollieOrderService.php:504
 #: src/Payment/MollieOrderService.php:568
-#: src/Payment/MollieOrderService.php:701
-#: src/Payment/MolliePayment.php:245
-#: src/Payment/MolliePayment.php:335
-#: src/Payment/MolliePayment.php:404
-#: src/Payment/MolliePayment.php:427
-#: src/Payment/PaymentService.php:702
+#: src/Payment/MollieOrderService.php:701 src/Payment/MolliePayment.php:245
+#: src/Payment/MolliePayment.php:335 src/Payment/MolliePayment.php:404
+#: src/Payment/MolliePayment.php:427 src/Payment/PaymentService.php:702
 #: src/Subscription/MollieSepaRecurringGateway.php:138
 #: src/Subscription/MollieSepaRecurringGateway.php:205
 #: src/Subscription/MollieSubscriptionGateway.php:465
@@ -620,8 +610,7 @@ msgstr "Cadeau"
 msgid "Select a voucher category to apply to all products with this category"
 msgstr "Kies een waardeboncategorie om alle producten met deze categorie te gebruiken"
 
-#: src/Gateway/Voucher/VoucherModule.php:198
-#: src/PaymentMethods/Voucher.php:53
+#: src/Gateway/Voucher/VoucherModule.php:198 src/PaymentMethods/Voucher.php:53
 msgid "Select the default products category"
 msgstr "Kies de categorie standaard producten"
 
@@ -661,11 +650,10 @@ msgstr "Mollie-webhook heeft gebeld, maar betaling is ook gestart via %s, dus de
 #: src/Payment/MollieObject.php:740
 #: src/PaymentMethods/InstructionStrategies/PaypalInstructionStrategy.php:20
 msgid "Payment completed by <strong>%1$s</strong> - %2$s (PayPal transaction ID: %3$s)"
-msgstr "Betaling voltooid met <strong>%1$s</strong> - %2$s (PayPal transactie-ID: %3$s)"
+msgstr "Betaling voltooid door <strong>%1$s</strong> - %2$s (PayPal transactie-ID: %3$s)"
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: src/Payment/MollieOrder.php:265
-#: src/Payment/MolliePayment.php:243
+#: src/Payment/MollieOrder.php:265 src/Payment/MolliePayment.php:243
 #: src/Subscription/MollieSepaRecurringGateway.php:211
 msgid "Order completed using %1$s payment (%2$s)."
 msgstr "Bestelling voltooid met gebruik van %1$s betaling (%2$s)."
@@ -871,8 +859,7 @@ msgstr "Activeer Mollie-componenten"
 msgid "Use the Mollie Components for this Gateway. Read more about <a href=\"https://www.mollie.com/en/news/post/better-checkout-flows-with-mollie-components\">%s</a> and how it improves your conversion."
 msgstr "Gebruik de Mollie-componenten voor deze gateway. Lees meer over <a href=\"https://www.mollie.com/en/news/post/better-checkout-flows-with-mollie-components\">%s</a> en hoe het je conversie verbetert."
 
-#: src/PaymentMethods/Creditcard.php:46
-#: src/Settings/Page/Components.php:21
+#: src/PaymentMethods/Creditcard.php:46 src/Settings/Page/Components.php:21
 #: src/Settings/Page/MollieSettingsPage.php:676
 msgid "Mollie Components"
 msgstr "Mollie-componenten"
@@ -955,8 +942,7 @@ msgstr "Toon cadeaubonnen-dropdown"
 msgid "If you disable this, a dropdown with various gift cards will not be shown in the WooCommerce checkout, so users will select a gift card on the Mollie payment page after checkout."
 msgstr "Als je dit deactiveert, zal een dropdown met verschillende cadeaubonnen niet in de WooCommerce- checkout worden getoond, dus gebruikers zullen een cadeaubon selecteren op de Mollie-betaalpagina na het afrekenen."
 
-#: src/PaymentMethods/Giftcard.php:91
-#: src/PaymentMethods/Ideal.php:46
+#: src/PaymentMethods/Giftcard.php:91 src/PaymentMethods/Ideal.php:46
 #: src/PaymentMethods/Kbc.php:47
 msgid "Issuers empty option"
 msgstr "Optie uitgevers leeg"
@@ -973,8 +959,7 @@ msgstr "Giropay"
 msgid "iDEAL"
 msgstr "iDEAL"
 
-#: src/PaymentMethods/Ideal.php:15
-#: src/PaymentMethods/Kbc.php:15
+#: src/PaymentMethods/Ideal.php:15 src/PaymentMethods/Kbc.php:15
 #: tests/php/Functional/HelperMocks.php:148
 msgid "Select your bank"
 msgstr "Selecteer je bank"
@@ -988,14 +973,20 @@ msgid ""
 "If you disable this, a dropdown with various iDEAL banks\n"
 "                         will not be shown in the WooCommerce checkout,\n"
 "                         so users will select a iDEAL bank on the Mollie payment page after checkout."
-msgstr "Als je dit deactiveert, zal een dropdown bij verschillende iDEAL-banken\n                         niet in de WooCommerce- checkout\n                         worden getoond, dus gebruikers zullen een iDEAL-bank kiezen op de Mollie-betaalpagina na het afrekenen."
+msgstr ""
+"Als je dit deactiveert, zal een dropdown bij verschillende iDEAL-banken\n"
+"                         niet in de WooCommerce- checkout\n"
+"                         worden getoond, dus gebruikers zullen een iDEAL-bank kiezen op de Mollie-betaalpagina na het afrekenen."
 
 #: src/PaymentMethods/Ideal.php:49
 msgid ""
 "This text will be displayed as the first option in the iDEAL issuers drop down,\n"
 "                         if nothing is entered, \"Select your bank\" will be shown. Only if the above \n"
 "                         'Show iDEAL banks dropdown' is enabled."
-msgstr "Deze tekst wordt weergegeven als eerste optie in de iDEAL-uitgevers drop-down,\n                         als er niets wordt ingevoerd, wordt „Kies je bank\" weergegeven. Alleen als het bovenstaande\n                         ''Toon iDEAL-banken dropdown'' is geactiveerd."
+msgstr ""
+"Deze tekst wordt weergegeven als eerste optie in de iDEAL-uitgevers drop-down,\n"
+"                         als er niets wordt ingevoerd, wordt „Kies je bank\" weergegeven. Alleen als het bovenstaande\n"
+"                         ''Toon iDEAL-banken dropdown'' is geactiveerd."
 
 #. translators: Placeholder 1: consumer name, placeholder 2: consumer IBAN, placeholder 3: consumer BIC
 #: src/PaymentMethods/InstructionStrategies/BanktransferInstructionStrategy.php:26
@@ -1003,7 +994,7 @@ msgstr "Deze tekst wordt weergegeven als eerste optie in de iDEAL-uitgevers drop
 #: src/PaymentMethods/InstructionStrategies/IdealInstructionStrategy.php:20
 #: src/PaymentMethods/InstructionStrategies/SofortInstructionStrategy.php:20
 msgid "Payment completed by <strong>%1$s</strong> (IBAN (last 4 digits): %2$s, BIC: %3$s)"
-msgstr "Betaling voltooid met <strong>%1$s</strong> (IBAN (ten minste 4 cijfers): %2$s, BIC: %3$s)"
+msgstr "Betaling voltooid door <strong>%1$s</strong> (IBAN (ten minste 4 cijfers): %2$s, BIC: %3$s)"
 
 #: src/PaymentMethods/InstructionStrategies/BanktransferInstructionStrategy.php:33
 msgid "Please complete your payment by transferring the total amount to the following bank account:"
@@ -1047,7 +1038,7 @@ msgstr "De betaling vervalt op <strong>%s</strong>. Zorg ervoor dat je vóór de
 #. translators: Placeholder 1: card holder
 #: src/PaymentMethods/InstructionStrategies/CreditcardInstructionStrategy.php:20
 msgid "Payment completed by <strong>%s</strong>"
-msgstr "Betaling voltooid met <strong>%s</strong>."
+msgstr "Betaling voltooid door <strong>%s</strong>."
 
 #: src/PaymentMethods/InstructionStrategies/DefaultInstructionStrategy.php:20
 msgid "We have not received a definite payment status."
@@ -1057,7 +1048,9 @@ msgstr "We hebben geen definitieve betalingsstatus ontvangen."
 msgid ""
 "We have not received a definite payment status. You will receive an email\n"
 "                     as soon as we receive a confirmation of the bank/merchant."
-msgstr "We hebben geen definitieve betalingsstatus ontvangen. Je ontvangt een e-mail\n                     als we een bevestiging van de bank/handelaar ontvangen."
+msgstr ""
+"We hebben geen definitieve betalingsstatus ontvangen. Je ontvangt een e-mail\n"
+"                     als we een bevestiging van de bank/handelaar ontvangen."
 
 #. translators: Placeholder 1: payment method
 #: src/PaymentMethods/InstructionStrategies/DefaultInstructionStrategy.php:35
@@ -1067,12 +1060,12 @@ msgstr "Betaling voltooid met <strong>%s</strong>"
 #. translators: Placeholder 1: Mollie_WC_Gateway_MyBank consumer name, placeholder 2: Consumer Account number
 #: src/PaymentMethods/InstructionStrategies/MybankInstructionStrategy.php:19
 msgid "Payment completed by <strong>%1$s</strong> - %2$s"
-msgstr "Betaling voltooid met <strong>%1$s</strong> - %2$s"
+msgstr "Betaling voltooid door <strong>%1$s</strong> - %2$s"
 
 #. translators: Placeholder 1: customer billing email
 #: src/PaymentMethods/InstructionStrategies/Przelewy24InstructionStrategy.php:20
 msgid "Payment completed by <strong>%s</strong>."
-msgstr "Betaling voltooid met <strong>%s</strong>."
+msgstr "Betaling voltooid door <strong>%s</strong>."
 
 #: src/PaymentMethods/Kbc.php:13
 msgid "KBC/CBC Payment Button"
@@ -1098,7 +1091,9 @@ msgstr "Klarna betaal later"
 msgid ""
 "To accept payments via Klarna, all default WooCommerce checkout fields\n"
 "                 should be enabled and required."
-msgstr "Om betalingen via Klarna te accepteren, moeten alle standaard WooCommerce-afrekenvelden\n                 geactiveerd en verplicht zijn."
+msgstr ""
+"Om betalingen via Klarna te accepteren, moeten alle standaard WooCommerce-afrekenvelden\n"
+"                 geactiveerd en verplicht zijn."
 
 #: src/PaymentMethods/Klarnapaynow.php:13
 msgid "Klarna Pay Now"

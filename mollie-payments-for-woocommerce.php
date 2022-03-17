@@ -174,7 +174,7 @@ function initialize()
         // Initialize plugin.
         $properties = PluginProperties::new(__FILE__);
         $bootstrap = Package::new($properties);
-        $bootstrap->boot(
+        $modules = [
             new ActivationModule(__FILE__),
             new LogModule('mollie-payments-for-woocommerce-'),
             new NoticeModule(),
@@ -185,7 +185,9 @@ function initialize()
             new GatewayModule(),
             new VoucherModule(),
             new PaymentModule()
-        );
+        ];
+        $modules = apply_filters('mollie_wc_plugin_modules', $modules);
+        $bootstrap->boot(...$modules);
     } catch (Throwable $throwable) {
         handleException($throwable);
     }

@@ -37,6 +37,36 @@ msgid "Mollie advanced settings"
 msgstr ""
 
 #: build/inc/settings/mollie_advanced_settings.php:8
+#: inc/settings/mollie_advanced_settings.php:8
+msgctxt "Label {orderNumber} description for payment description options"
+msgid "Order number"
+msgstr
+
+#: build/inc/settings/mollie_advanced_settings.php:9
+#: inc/settings/mollie_advanced_settings.php:9
+msgctxt "Label {storeName} description for payment description options"
+msgid "Site Title"
+msgstr
+
+#: build/inc/settings/mollie_advanced_settings.php:10
+#: inc/settings/mollie_advanced_settings.php:10
+msgctxt "Label {customer.firstname} description for payment description options"
+msgid "Customer's first name"
+msgstr
+
+#: build/inc/settings/mollie_advanced_settings.php:11
+#: inc/settings/mollie_advanced_settings.php:11
+msgctxt "Label {customer.lastname} description for payment description options"
+msgid "Customer's last name"
+msgstr
+
+#: build/inc/settings/mollie_advanced_settings.php:12
+#: inc/settings/mollie_advanced_settings.php:12
+msgctxt "Label {customer.company} description for payment description options"
+msgid "Customer's company name"
+msgstr
+
+#: build/inc/settings/mollie_advanced_settings.php:8
 #: build/src/Mollie/WC/Helper/Settings.php:666
 #: inc/settings/mollie_advanced_settings.php:8
 #: src/Mollie/WC/Helper/Settings.php:666
@@ -224,8 +254,14 @@ msgstr ""
 msgid "API Payment Description"
 msgstr ""
 
-#: build/inc/settings/mollie_advanced_settings.php:124
-#: inc/settings/mollie_advanced_settings.php:124
+#: build/inc/settings/mollie_advanced_settings.php:137
+#: inc/settings/mollie_advanced_settings.php:137
+msgctxt "Payment description options"
+msgid "Available variables"
+msgstr ""
+
+#: build/inc/settings/mollie_advanced_settings.php:160
+#: inc/settings/mollie_advanced_settings.php:160
 msgid "Select among the available variables the description to be used for this transaction.%s(Note: this only works when the method is set to Payments API)%s"
 msgstr ""
 
@@ -2139,6 +2175,51 @@ msgstr ""
 #: build/src/Mollie/WC/Payment/OrderItemsRefunder.php:183
 #: src/Mollie/WC/Payment/OrderItemsRefunder.php:183
 msgid "Empty WooCommerce order items or mollie order lines."
+msgstr ""
+
+#. translators: Placeholder 1: order number
+#: build/src/Mollie/WC/Gateway/AbstractSubscription.php:116
+#: build/src/Mollie/WC/Payment/Payment.php:132
+#: src/Mollie/WC/Gateway/AbstractSubscription.php:116
+#: src/Mollie/WC/Payment/Payment.php:132
+msgctxt "Payment description for {orderNumber}"
+msgid "Order %1$s"
+msgstr ""
+
+#. translators: Placeholder 1: store name
+#: build/src/Mollie/WC/Gateway/AbstractSubscription.php:127
+#: build/src/Mollie/WC/Payment/Payment.php:143
+#: src/Mollie/WC/Gateway/AbstractSubscription.php:127
+#: src/Mollie/WC/Payment/Payment.php:143
+msgctxt "Payment description for {storeName}"
+msgid "StoreName %1$s"
+msgstr ""
+
+#. translators: Placeholder 1: customer first name
+#: build/src/Mollie/WC/Gateway/AbstractSubscription.php:138
+#: build/src/Mollie/WC/Payment/Payment.php:154
+#: src/Mollie/WC/Gateway/AbstractSubscription.php:138
+#: src/Mollie/WC/Payment/Payment.php:154
+msgctxt "Payment description for {customer.firstname}"
+msgid "Customer Firstname %1$s"
+msgstr ""
+
+#. translators: Placeholder 1: customer last name
+#: build/src/Mollie/WC/Gateway/AbstractSubscription.php:149
+#: build/src/Mollie/WC/Payment/Payment.php:165
+#: src/Mollie/WC/Gateway/AbstractSubscription.php:149
+#: src/Mollie/WC/Payment/Payment.php:165
+msgctxt "Payment description for {customer.lastname}"
+msgid "Customer Lastname %1$s"
+msgstr ""
+
+#. translators: Placeholder 1: customer company name
+#: build/src/Mollie/WC/Gateway/AbstractSubscription.php:160
+#: build/src/Mollie/WC/Payment/Payment.php:176
+#: src/Mollie/WC/Gateway/AbstractSubscription.php:160
+#: src/Mollie/WC/Payment/Payment.php:176
+msgctxt "Payment description for {customer.company}"
+msgid "Customer Company %1$s"
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID

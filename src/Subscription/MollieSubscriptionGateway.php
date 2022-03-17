@@ -250,7 +250,9 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         }
 
         // Get all data for the renewal payment
-        $data = $this->subscriptionObject->getRecurringPaymentRequestData($renewal_order, $customer_id);
+        $parentOrderMeta = !empty($subcriptionParentOrder) ? $subcriptionParentOrder->get_meta('_mollie_order_id') : PaymentService::PAYMENT_METHOD_TYPE_PAYMENT;
+        $initialPaymentUsedOrderAPI = strpos($parentOrderMeta, 'ord_') !== false;
+        $data = $this->subscriptionObject->getRecurringPaymentRequestData($renewal_order, $customer_id, $initialPaymentUsedOrderAPI);
 
         // Allow filtering the renewal payment data
         $data = apply_filters('woocommerce_' . $this->id . '_args', $data, $renewal_order);

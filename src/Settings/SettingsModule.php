@@ -83,6 +83,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
         add_action('wp_loaded', function () {
             $this->maybeTestModeNotice($this->isTestModeEnabled);
         });
+
         add_filter(
             'woocommerce_get_settings_pages',
             function ($settings) use ($pluginPath, $gateways, $paymentMethods) {
@@ -163,4 +164,6 @@ class SettingsModule implements ServiceModule, ExecutableModule
             $notice->addNotice('notice-error', $message);
         }
     }
+
+
 }

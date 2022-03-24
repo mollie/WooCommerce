@@ -184,18 +184,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
             10,
             2
         );
-        if ($this->paymentMethod->getProperty('paymentFields')) {
-            $this->has_fields = true;
-        }
-        /* Override show issuers dropdown? */
-        $dropdownDisabled = $this->paymentMethod->hasProperty(
-            'issuers_dropdown_shown'
-        )
-            && $this->paymentMethod->getProperty('issuers_dropdown_shown')
-            === 'no';
-        if ($dropdownDisabled) {
-            $this->has_fields = false;
-        }
+        $this->gatewayHasFields();
 
         $isEnabledAtWoo = $this->paymentMethod->getProperty('enabled') ?
             $this->paymentMethod->getProperty('enabled') :
@@ -263,7 +252,8 @@ class MolliePaymentGateway extends WC_Payment_Gateway
 
     protected function initDescription()
     {
-        $this->description = $this->paymentMethod->getProcessedDescription();
+        $description = $this->paymentMethod->getProcessedDescription();
+        $this->description = empty($description)? false: $description;
     }
 
     /**
@@ -1147,5 +1137,22 @@ class MolliePaymentGateway extends WC_Payment_Gateway
             . $resource . '/%s';
 
         return parent::get_transaction_url($order);
+    }
+
+    protected function gatewayHasFields(): void
+    {
+        if ($this->paymentMethod->getProperty('paymentFields')) {
+            $this->has_fields = true;
+        }
+
+        /* Override show issuers dropdown? */
+        $dropdownDisabled = $this->paymentMethod->hasProperty(
+                'issuers_dropdown_shown'
+            )
+            && $this->paymentMethod->getProperty('issuers_dropdown_shown')
+            === 'no';
+        if ($dropdownDisabled) {
+            $this->has_fields = false;
+        }
     }
 }

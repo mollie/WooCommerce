@@ -13,6 +13,10 @@ use Mollie\WooCommerce\Settings\Settings;
 abstract class AbstractPaymentMethod implements PaymentMethodI
 {
     /**
+     * @var string
+     */
+    public $id;
+    /**
      * @var string[]
      */
     public $config = [];
@@ -34,8 +38,9 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         PaymentFieldsService $paymentFieldsService,
         Surcharge $surcharge
     ) {
-        $this->config = $this->getConfig();
+        $this->id = $this->getConfig()['id'];
         $this->settings = $this->getSettings();
+        $this->config = $this->getConfig();
         $this->iconFactory = $iconFactory;
         $this->settingsHelper = $settingsHelper;
         $this->paymentFieldsService = $paymentFieldsService;
@@ -94,7 +99,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
 
     public function getSettings()
     {
-        $paymentMethodId = $this->getProperty('id');
+        $paymentMethodId = $this->id;
         $optionName = 'mollie_wc_gateway_' . $paymentMethodId . '_settings';
         return get_option($optionName, false);
     }

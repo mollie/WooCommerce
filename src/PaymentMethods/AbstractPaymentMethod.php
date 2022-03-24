@@ -82,7 +82,10 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     }
 
     public function getProcessedDescription(){
-        return $this->surcharge->buildDescriptionWithSurcharge($this);
+        $description = $this->getProperty('description') === false ? $this->getProperty(
+            'defaultDescription'
+        ) : $this->getProperty('description');
+        return $this->surcharge->buildDescriptionWithSurcharge($description, $this);
     }
 
     public function getProcessedDescriptionForBlock(){

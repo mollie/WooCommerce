@@ -29,11 +29,9 @@ class Surcharge
 
 
 
-    public function buildDescriptionWithSurcharge(PaymentMethodI $paymentMethod)
+    public function buildDescriptionWithSurcharge($description, PaymentMethodI $paymentMethod)
     {
-        $defaultDescription = $paymentMethod->getProperty('description') ?: $paymentMethod->getProperty(
-            'defaultDescription'
-        );
+        $defaultDescription = $description;
         $surchargeType = $paymentMethod->getProperty('payment_surcharge');
 
         if (

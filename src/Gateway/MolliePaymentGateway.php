@@ -1094,11 +1094,11 @@ class MolliePaymentGateway extends WC_Payment_Gateway
 
     /**
      * @param          $text
-     * @param WC_Order $order
+     * @param WC_Order| null $order
      *
      * @return string|void
      */
-    public function onOrderReceivedText($text, WC_Order $order)
+    public function onOrderReceivedText($text, $order)
     {
         if (!is_a($order, 'WC_Order')) {
             return $text;

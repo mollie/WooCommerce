@@ -4,6 +4,10 @@ use Mollie\WooCommerce\Payment\PaymentService;
 use Mollie\WooCommerce\Settings\Settings;
 
 $pluginName = 'mollie-payments-for-woocommerce';
+$nonce_mollie_cleanDb = wp_create_nonce('nonce_mollie_cleanDb');
+$cleanDB_mollie_url = add_query_arg(
+    ['cleanDB-mollie' => 1, 'nonce_mollie_cleanDb' => $nonce_mollie_cleanDb]
+);
 return [
     [
         'id' => $pluginName . '_' . 'title',
@@ -147,6 +151,18 @@ return [
                 'mollie-payments-for-woocommerce'
             )
         ),
+    ],
+    [
+        'id' => $pluginName . '_' . 'removeOptionsAndTransients',
+        'title' => __(
+            'Remove Mollie data from Database on uninstall',
+            'mollie-payments-for-woocommerce'
+        ),
+        'type' => 'checkbox',
+        'default' => 'no',
+        'desc' => __("Remove options and scheduled actions from database when uninstalling the plugin.", "mollie-payments-for-woocommerce") . ' (<a href="' . esc_attr($cleanDB_mollie_url) . '">' . strtolower(
+                __('Clear now', 'mollie-payments-for-woocommerce')
+            ) . '</a>)',
     ],
     [
         'id' => $pluginName . '_' . 'sectionend',

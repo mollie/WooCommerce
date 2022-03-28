@@ -13,6 +13,7 @@ use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Page\MollieSettingsPage;
 use Mollie\WooCommerce\Shared\Data;
+use Mollie\WooCommerce\Uninstall\CleanDb;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 
@@ -43,12 +44,14 @@ class SettingsModule implements ServiceModule, ExecutableModule
                 $statusHelper = $container->get('shared.status_helper');
                 $pluginVersion = $container->get('shared.plugin_version');
                 $apiHelper =  $container->get('SDK.api_helper');
+                $cleanDb = $container->get(CleanDb::class);
                 return new Settings(
                     $pluginId,
                     $statusHelper,
                     $pluginVersion,
                     $pluginUrl,
-                    $apiHelper
+                    $apiHelper,
+                    $cleanDb
                 );
             },
             'settings.data_helper' => static function (ContainerInterface $container): Data {

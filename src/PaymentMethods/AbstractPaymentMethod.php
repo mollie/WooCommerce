@@ -99,8 +99,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
 
     public function getSettings()
     {
-        $paymentMethodId = $this->id;
-        $optionName = 'mollie_wc_gateway_' . $paymentMethodId . '_settings';
+        $optionName = 'mollie_wc_gateway_' . $this->id . '_settings';
         return get_option($optionName, false);
     }
 

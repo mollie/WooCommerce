@@ -15,7 +15,7 @@ class OrderInstructionsService
         if (!$gateway->paymentMethod->getProperty('instructions')) {
             $this->strategy = new DefaultInstructionStrategy();
         } else {
-            $className = 'Mollie\\WooCommerce\\PaymentMethods\\InstructionStrategies\\' . ucfirst($gateway->paymentMethod->getProperty('id')) . 'InstructionsStrategy';
+            $className = 'Mollie\\WooCommerce\\PaymentMethods\\InstructionStrategies\\' . ucfirst($gateway->paymentMethod->getProperty('id')) . 'InstructionStrategy';
             $this->strategy = class_exists($className) ? new $className() : new DefaultInstructionStrategy();
         }
     }
@@ -23,10 +23,10 @@ class OrderInstructionsService
     public function executeStrategy(
         MolliePaymentGateway $gateway,
         $payment,
-        $admin_instructions = false,
-        $order = null
+        $order = null,
+        $admin_instructions = false
     ) {
 
-        return $this->strategy->execute($gateway, $payment, $admin_instructions, $order);
+        return $this->strategy->execute($gateway, $payment, $order, $admin_instructions);
     }
 }

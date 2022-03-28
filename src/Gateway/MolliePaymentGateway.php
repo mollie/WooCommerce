@@ -952,6 +952,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
             $instructions = $this->orderInstructionsService->executeStrategy(
                 $this,
                 $payment,
+                $order,
                 $admin_instructions
             );
 

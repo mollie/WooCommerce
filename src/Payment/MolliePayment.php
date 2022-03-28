@@ -520,23 +520,20 @@ class MolliePayment extends MollieObject
 
     /**
      * @param WC_Order $order
-     * @param WC_Payment_Gateway $gateway
+     * @param MolliePaymentGateway $gateway
      * @param                    $newOrderStatus
      * @param                    $orderId
      */
     protected function maybeUpdateStatus(
         WC_Order $order,
-        WC_Payment_Gateway $gateway,
+        MolliePaymentGateway $gateway,
         $newOrderStatus,
         $orderId
     ) {
-
-        if (!$this->isOrderPaymentStartedByOtherGateway($order)) {
-            if ($gateway) {
-                $gateway->updateOrderStatus($order, $newOrderStatus);
-            }
-        } else {
+        if ($this->isOrderPaymentStartedByOtherGateway($order) || !$gateway) {
             $this->informNotUpdatingStatus($orderId, $gateway->id, $order);
+            return;
         }
+        $gateway->paymentService->updateOrderStatus($order, $newOrderStatus);
     }
 }

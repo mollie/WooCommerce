@@ -829,7 +829,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         );
 
         // If there is no Mollie Payment Order object, try getting a Mollie Payment Payment object
-        if ($payment_object_id === null) {
+        if (!$payment_object_id) {
             $payment_object_id = $this->paymentObject()
                 ->getActiveMolliePaymentId($order_id);
         }
@@ -1084,11 +1084,11 @@ class MolliePaymentGateway extends WC_Payment_Gateway
 
     /**
      * @param          $text
-     * @param WC_Order $order
+     * @param WC_Order| null $order
      *
      * @return string|void
      */
-    public function onOrderReceivedText($text, WC_Order $order)
+    public function onOrderReceivedText($text, $order)
     {
         if (!is_a($order, 'WC_Order')) {
             return $text;

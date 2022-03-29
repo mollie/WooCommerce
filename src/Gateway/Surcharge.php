@@ -29,26 +29,23 @@ class Surcharge
 
 
 
-    public function buildDescriptionWithSurcharge(PaymentMethodI $paymentMethod)
+    public function buildDescriptionWithSurcharge($description, PaymentMethodI $paymentMethod)
     {
-        $defaultDescription = $paymentMethod->getProperty('description') ?: $paymentMethod->getProperty(
-            'defaultDescription'
-        );
         $surchargeType = $paymentMethod->getProperty('payment_surcharge');
 
         if (
             !$surchargeType
             || $surchargeType === self::NO_FEE
         ) {
-            return $defaultDescription;
+            return $description;
         }
 
         $feeText = $this->feeTextByType($surchargeType, $paymentMethod);
         if ($feeText) {
             $feeLabel = '<span class="mollie-gateway-fee">' . $feeText . '</span>';
-            return $defaultDescription . $feeLabel;
+            return $description . $feeLabel;
         }
-        return $defaultDescription;
+        return $description;
     }
 
     public function buildDescriptionWithSurchargeForBlock(PaymentMethodI $paymentMethod)

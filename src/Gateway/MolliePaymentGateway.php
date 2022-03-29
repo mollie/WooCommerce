@@ -184,18 +184,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
             10,
             2
         );
-        if ($this->paymentMethod->getProperty('paymentFields')) {
-            $this->has_fields = true;
-        }
-        /* Override show issuers dropdown? */
-        $dropdownDisabled = $this->paymentMethod->hasProperty(
-            'issuers_dropdown_shown'
-        )
-            && $this->paymentMethod->getProperty('issuers_dropdown_shown')
-            === 'no';
-        if ($dropdownDisabled) {
-            $this->has_fields = false;
-        }
+        $this->gatewayHasFields();
 
         $isEnabledAtWoo = $this->paymentMethod->getProperty('enabled') ?
             $this->paymentMethod->getProperty('enabled') :
@@ -263,7 +252,8 @@ class MolliePaymentGateway extends WC_Payment_Gateway
 
     protected function initDescription()
     {
-        $this->description = $this->paymentMethod->getProcessedDescription();
+        $description = $this->paymentMethod->getProcessedDescription();
+        $this->description = empty($description)? false: $description;
     }
 
     /**
@@ -839,7 +829,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         );
 
         // If there is no Mollie Payment Order object, try getting a Mollie Payment Payment object
-        if ($payment_object_id === null) {
+        if (!$payment_object_id) {
             $payment_object_id = $this->paymentObject()
                 ->getActiveMolliePaymentId($order_id);
         }
@@ -952,6 +942,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
             $instructions = $this->orderInstructionsService->executeStrategy(
                 $this,
                 $payment,
+                $order,
                 $admin_instructions
             );
 
@@ -1094,11 +1085,11 @@ class MolliePaymentGateway extends WC_Payment_Gateway
 
     /**
      * @param          $text
-     * @param WC_Order $order
+     * @param WC_Order| null $order
      *
      * @return string|void
      */
-    public function onOrderReceivedText($text, WC_Order $order)
+    public function onOrderReceivedText($text, $order)
     {
         if (!is_a($order, 'WC_Order')) {
             return $text;
@@ -1147,5 +1138,22 @@ class MolliePaymentGateway extends WC_Payment_Gateway
             . $resource . '/%s';
 
         return parent::get_transaction_url($order);
+    }
+
+    protected function gatewayHasFields(): void
+    {
+        if ($this->paymentMethod->getProperty('paymentFields')) {
+            $this->has_fields = true;
+        }
+
+        /* Override show issuers dropdown? */
+        $dropdownDisabled = $this->paymentMethod->hasProperty(
+                'issuers_dropdown_shown'
+            )
+            && $this->paymentMethod->getProperty('issuers_dropdown_shown')
+            === 'no';
+        if ($dropdownDisabled) {
+            $this->has_fields = false;
+        }
     }
 }

@@ -133,7 +133,7 @@ class PaymentService
                     $redirectUrl
                 ),
             ];
-        } catch (Mollie\Api\Exceptions\ApiException $error) {
+        } catch (ApiException $error) {
             $this->reportPaymentCreationFailure($orderId, $error);
         }
         return ['result' => 'failure'];
@@ -149,7 +149,9 @@ class PaymentService
         $fees = $order->get_fees();
         $surcharge = $paymentMethod->surcharge();
         $gatewaySettings = $paymentMethod->getMergedProperties();
-        $amount = $surcharge->calculateFeeAmountOrder($order, $gatewaySettings);
+        $totalAmount = $order->get_total();
+        $aboveMaxLimit = $surcharge->aboveMaxLimit($totalAmount, $gatewaySettings);
+        $amount = $aboveMaxLimit? 0 : $surcharge->calculateFeeAmountOrder($order, $gatewaySettings);
         $gatewayHasSurcharge = $amount !== 0;
         $gatewayFeeLabel = get_option(
             'mollie-payments-for-woocommerce_gatewayFeeLabel',
@@ -372,7 +374,7 @@ class PaymentService
                 $orderWithPayments = $this->apiHelper->getApiClient($apiKey)->orders->get( $paymentObject->id, [ "embed" => "payments" ] );
                 $paymentOrder->updatePaymentDataWithOrderData($orderWithPayments, $orderId);
             }
-        } catch (Mollie\Api\Exceptions\ApiException $e) {
+        } catch (ApiException $e) {
             // Don't try to create a Mollie Payment for Klarna payment methods
             $order_payment_method = $order->get_payment_method();
 
@@ -409,7 +411,7 @@ class PaymentService
                 $paymentObject = $this->apiHelper->getApiClient(
                     $apiKey
                 )->orders->create($data);
-            } catch (Mollie\Api\Exceptions\ApiException $e) {
+            } catch (ApiException $e) {
                 // Set Mollie payment type to payment, when creating a Mollie Order has failed
                 $molliePaymentType = self::PAYMENT_METHOD_TYPE_PAYMENT;
             }
@@ -425,7 +427,7 @@ class PaymentService
      * @param                         $customer_id
      * @param                         $test_mode
      *
-     * @return Mollie\Api\Resources\Payment $paymentObject
+     * @return Payment $paymentObject
      * @throws ApiException
      */
     protected function processAsMolliePayment(
@@ -473,7 +475,7 @@ class PaymentService
             $paymentObject = $this->apiHelper->getApiClient(
                 $apiKey
             )->payments->create($data);
-        } catch (Mollie\Api\Exceptions\ApiException $e) {
+        } catch (ApiException $e) {
             $message = $e->getMessage();
             $this->logger->log( LogLevel::DEBUG, $message);
             throw $e;
@@ -615,7 +617,7 @@ class PaymentService
                 'mollie-payments-for-woocommerce'
             )
         );
-        throw new Mollie\Api\Exceptions\ApiException(
+        throw new ApiException(
             __('Failed switching subscriptions, no valid mandate.', 'mollie-payments-for-woocommerce')
         );
     }
@@ -677,7 +679,7 @@ class PaymentService
                 $this->noValidMandateForSubsSwitchFailure($orderId);
             }
         }
-        catch ( Mollie\Api\Exceptions\ApiException $e ) {
+        catch ( ApiException $e ) {
             if ( $e->getField() ) {
                 throw $e;
             }

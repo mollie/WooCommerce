@@ -60,6 +60,18 @@ class MaybeDisableGateway
     }
 
     /**
+     * If there are no products with category
+     * then we should not see the voucher gateway
+     *
+     * @return bool
+     */
+    public function shouldRemoveVoucher(): bool
+    {
+        $productsWithCategory = $this->numberProductsWithCategory();
+        return $productsWithCategory === 0;
+    }
+
+    /**
      * Compares the products in the cart with the categories associated with
      * every product in the cart. So it returns 0 if no products have category
      * and 2 if all products

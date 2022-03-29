@@ -86,7 +86,7 @@ class ActivationModule implements ExecutableModule
      */
     public function handleTranslations(): void
     {
-        add_action('core_upgrade_preamble', [$this, 'mollieDeleteWPTranslationFiles']);
+        add_action('core_upgrade_preamble', 'mollieDeleteWPTranslationFiles');
         add_filter(
             'site_transient_update_plugins',
             static function ($value) {

@@ -234,9 +234,6 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         // Overwrite gateway-wide
         $initial_order_status = apply_filters($this->pluginId . '_initial_order_status_' . $this->id, $initial_order_status);
 
-        // Check if test mode is enabled
-        $test_mode = $this->isTestModeEnabledForRenewalOrder($renewal_order);
-
         // Get Mollie customer ID
         $customer_id = $this->getOrderMollieCustomerId($renewal_order);
 
@@ -721,7 +718,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
      */
     protected function initialPaymentUsedOrderAPI($subcriptionParentOrder): bool
     {
-        if(empty($subcriptionParentOrder)){
+        if(!$subcriptionParentOrder){
             return false;
         }
         $orderIdMeta = $subcriptionParentOrder->get_meta('_mollie_order_id');

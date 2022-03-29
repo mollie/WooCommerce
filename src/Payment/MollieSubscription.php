@@ -37,7 +37,7 @@ class MollieSubscription extends MollieObject
             return  [ 'result' => 'failure' ];
         }
         $gatewayId = $gateway->id;
-        $optionName = $this->pluginId . '_' . 'api_payment_description';
+        $optionName = $this->pluginId . '_api_payment_description';
         $option = get_option($optionName);
         $paymentDescription = $this->getRecurringPaymentDescription($order, $option, $initialPaymentUsedOrderAPI);
         $selectedIssuer = $gateway->getSelectedIssuer();
@@ -69,10 +69,10 @@ class MollieSubscription extends MollieObject
 
     protected function getRecurringPaymentDescription($order, $option, $initialPaymentUsedOrderAPI)
     {
-        $description = empty( $option ) ? '': trim($option);
+        $description = !$option ? '' : trim($option);
 
         // Also use default when Order API was used on initial payment to match payment descriptions.
-        if ( empty( $description ) || $initialPaymentUsedOrderAPI ) {
+        if ( !$description || $initialPaymentUsedOrderAPI ) {
             $description = sprintf(
                 /* translators: Placeholder 1: order number */
                 _x(

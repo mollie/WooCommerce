@@ -873,85 +873,90 @@ class MollieObject
     }
     protected function getPaymentDescription($order, $option)
     {
-        $description = empty( $option ) ? '': trim($option);
-        $description = empty( $description ) ? '{orderNumber}': $description;
+        $description = !$option ? '' : trim($option);
+        $description = !$description ? '{orderNumber}' : $description;
 
         switch ($description) {
             // Support for old deprecated options.
             // TODO: remove when deprecated
             case '{orderNumber}':
-                $description = sprintf(
-                /* translators: Placeholder 1: order number */
+                $description =
+                    /* translators: do not translate between {} */
                     _x(
-                        'Order %1$s',
+                        'Order {orderNumber}',
                         'Payment description for {orderNumber}',
                         'mollie-payments-for-woocommerce'
-                    ),
-                    $order->get_order_number()
-                );
+                    );
+                $description = $this->replaceTagsDescription($order, $description);
                 break;
             case '{storeName}':
-                $description = sprintf(
-                /* translators: Placeholder 1: store name */
+                $description =
+                    /* translators: do not translate between {} */
                     _x(
-                        'StoreName %1$s',
+                        'StoreName {storeName}',
                         'Payment description for {storeName}',
                         'mollie-payments-for-woocommerce'
-                    ),
-                    get_bloginfo('name')
-                );
+                    );
+                $description = $this->replaceTagsDescription($order, $description);
                 break;
             case '{customer.firstname}':
-                $description = sprintf(
-                /* translators: Placeholder 1: customer first name */
+                $description =
+                    /* translators: do not translate between {} */
                     _x(
-                        'Customer Firstname %1$s',
+                        'Customer Firstname {customer.firstname}',
                         'Payment description for {customer.firstname}',
                         'mollie-payments-for-woocommerce'
-                    ),
-                    $order->get_billing_first_name()
-                );
+                    );
+                $description = $this->replaceTagsDescription($order, $description);
                 break;
             case '{customer.lastname}':
-                $description = sprintf(
-                /* translators: Placeholder 1: customer last name */
+                $description =
+                    /* translators: do not translate between {} */
                     _x(
-                        'Customer Lastname %1$s',
+                        'Customer Lastname {customer.lastname}',
                         'Payment description for {customer.lastname}',
                         'mollie-payments-for-woocommerce'
-                    ),
-                    $order->get_billing_last_name()
-                );
+                    );
+                $description = $this->replaceTagsDescription($order, $description);
                 break;
             case '{customer.company}':
-                $description = sprintf(
-                /* translators: Placeholder 1: customer company */
+                $description =
+                /* translators: do not translate between {} */
                     _x(
-                        'Customer Company %1$s',
+                        'Customer Company {customer.company}',
                         'Payment description for {customer.company}',
                         'mollie-payments-for-woocommerce'
-                    ),
-                    $order->get_billing_company()
-                );
+                    );
+                $description = $this->replaceTagsDescription($order, $description);
                 break;
             // Support for custom string with interpolation.
             default:
                 // Replace available description tags.
-                $replacement_tags = [
-                    '{orderNumber}' => $order->get_order_number(),
-                    '{storeName}' => get_bloginfo('name'),
-                    '{customer.firstname}' => $order->get_billing_first_name(),
-                    '{customer.lastname}' => $order->get_billing_last_name(),
-                    '{customer.company}' => $order->get_billing_company(),
-                ];
-                foreach ( $replacement_tags as $tag => $replacement ) {
-                    $description = str_replace( $tag, $replacement, $description );
-                }
+                $description = $this->replaceTagsDescription($order, $description);
                 break;
         }
 
         // Fall back on default if description turns out empty.
-        $description = empty( $description ) ? __( 'Order', 'woocommerce' ) . ' ' . $order->get_order_number(): $description;
+        return !$description ? __('Order', 'woocommerce' ) . ' ' . $order->get_order_number() : $description;
+    }
+
+    /**
+     * @param $order
+     * @param $description
+     * @return array|string|string[]
+     */
+    protected function replaceTagsDescription($order, $description)
+    {
+        $replacement_tags = [
+            '{orderNumber}' => $order->get_order_number(),
+            '{storeName}' => get_bloginfo('name'),
+            '{customer.firstname}' => $order->get_billing_first_name(),
+            '{customer.lastname}' => $order->get_billing_last_name(),
+            '{customer.company}' => $order->get_billing_company(),
+        ];
+        foreach ($replacement_tags as $tag => $replacement) {
+            $description = str_replace($tag, $replacement, $description);
+        }
         return $description;
     }
 }

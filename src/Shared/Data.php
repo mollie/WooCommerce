@@ -447,9 +447,9 @@ class Data
         try {
             $transient_id = $this->getTransientId($methodId . '_issuers_' . ($test_mode ? 'test' : 'live'));
 
-            // When no cache exists $cached_issuers will be `false`
+            // When no cache exists $issuers will be `false`
             $issuers = get_transient($transient_id);
-            if ($issuers && is_array($issuers)) {
+            if (is_array($issuers)) {
                 return $issuers;
             }
 
@@ -491,7 +491,8 @@ class Data
      */
     public function getCachedMethodById(string $methodId)
     {
-        $cachedMethods = self::$regular_api_methods;
+        $apiKey = $this->settingsHelper->getApiKey();
+        $cachedMethods = $this->getRegularPaymentMethods($apiKey);
         if(empty($cachedMethods)){
             return false;
         }

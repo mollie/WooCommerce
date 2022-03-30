@@ -29,7 +29,7 @@ class SharedModule implements ServiceModule
             },
             'shared.plugin_version' => static function (): string {
                 //Get plugin version
-                return '7.0.3';
+                return '7.0.4';
             },
             'shared.plugin_title' => static function (): string {
                 //Get plugin version

@@ -3,7 +3,7 @@
  * Plugin Name: Mollie Payments for WooCommerce
  * Plugin URI: https://www.mollie.com
  * Description: Accept payments in WooCommerce with the official Mollie plugin
- * Version: 7.0.3
+ * Version: 7.0.4
  * Author: Mollie
  * Author URI: https://www.mollie.com
  * Requires at least: 5.0
@@ -32,6 +32,7 @@ use Mollie\WooCommerce\Notice\NoticeModule;
 use Mollie\WooCommerce\Payment\PaymentModule;
 use Mollie\WooCommerce\SDK\SDKModule;
 use Mollie\WooCommerce\Settings\SettingsModule;
+use Mollie\WooCommerce\Uninstall\UninstallModule;
 use Throwable;
 
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
@@ -58,37 +59,6 @@ function mollie_wc_plugin_activation_hook()
     mollieDeleteWPTranslationFiles();
 }
 
-
-function mollieDeleteWPTranslationFiles()
-{
-    WP_Filesystem();
-    global $wp_filesystem;
-
-    $remote_destination = $wp_filesystem->find_folder(WP_LANG_DIR);
-    if (!$wp_filesystem->exists($remote_destination)) {
-        return;
-    }
-    $languageExtensions = [
-        'de_DE',
-        'de_DE_formal',
-        'es_ES',
-        'fr_FR',
-        'it_IT',
-        'nl_BE',
-        'nl_NL',
-        'nl_NL_formal'
-    ];
-    $translationExtensions = ['.mo', '.po'];
-    $destination = WP_LANG_DIR
-        . '/plugins/mollie-payments-for-woocommerce-';
-    foreach ($languageExtensions as $languageExtension) {
-        foreach ($translationExtensions as $translationExtension) {
-            $file = $destination . $languageExtension
-                . $translationExtension;
-            $wp_filesystem->delete($file, false);
-        }
-    }
-}
 
 function mollie_wc_plugin_autoload()
 {
@@ -174,7 +144,7 @@ function initialize()
         // Initialize plugin.
         $properties = PluginProperties::new(__FILE__);
         $bootstrap = Package::new($properties);
-        $bootstrap->boot(
+        $modules = [
             new ActivationModule(__FILE__),
             new LogModule('mollie-payments-for-woocommerce-'),
             new NoticeModule(),
@@ -184,8 +154,11 @@ function initialize()
             new AssetsModule(),
             new GatewayModule(),
             new VoucherModule(),
-            new PaymentModule()
-        );
+            new PaymentModule(),
+            new UninstallModule()
+        ];
+        $modules = apply_filters('mollie_wc_plugin_modules', $modules);
+        $bootstrap->boot(...$modules);
     } catch (Throwable $throwable) {
         handleException($throwable);
     }

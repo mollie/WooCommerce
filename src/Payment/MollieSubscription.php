@@ -4,8 +4,10 @@
 namespace Mollie\WooCommerce\Payment;
 
 
+use Mollie\Api\Types\SequenceType;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\SDK\Api;
+use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
 
 class MollieSubscription extends MollieObject
 {
@@ -63,5 +65,93 @@ class MollieSubscription extends MollieObject
                                 'sequenceType' => 'recurring',
                                 'customerId' => $customerId,
                             ]);
+    }
+
+    /**
+     * Validate in the checkout if the gateway is available for subscriptions
+     *
+     * @param bool $status
+     * @param MollieSubscriptionGateway $subscriptionGateway
+     * @return bool
+     */
+    public function isAvailableForSubscriptions(bool $status, MollieSubscriptionGateway $subscriptionGateway, $orderTotal): bool
+    {
+        $subscriptionPluginActive = class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin');
+        if(!$subscriptionPluginActive){
+            return $status;
+        }
+        $currency = $subscriptionGateway->getCurrencyFromOrder();
+        $billingCountry = $subscriptionGateway->getBillingCountry();
+        $paymentLocale = $subscriptionGateway->dataService->getPaymentLocale();
+        // Check recurring totals against recurring payment methods for future renewal payments
+        $recurringTotal = $subscriptionGateway->get_recurring_total();
+        // See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
+        $acceptManualRenewals = 'yes' === get_option(
+                \WC_Subscriptions_Admin::$option_prefix
+                . '_accept_manual_renewals',
+                'no'
+            );
+        $supportsSubscriptions = $subscriptionGateway->supports('subscriptions');
+        if($acceptManualRenewals === true || !$supportsSubscriptions || empty($recurringTotal)){
+            return $status;
+        }
+        foreach ($recurringTotal as $recurring_total) {
+            // First check recurring payment methods CC and SDD
+            $filters = $this->buildFilters(
+                $currency,
+                $recurring_total,
+                $billingCountry,
+                SequenceType::SEQUENCETYPE_RECURRING,
+                $paymentLocale
+            );
+            $status = $subscriptionGateway->isAvailableMethodInCheckout($filters);
+        }
+
+        // Check available first payment methods with today's order total, but ignore SSD gateway (not shown in checkout)
+        if ($subscriptionGateway->id === 'mollie_wc_gateway_directdebit') {
+            return $status;
+        }
+        $filters = $this->buildFilters(
+            $currency,
+            $orderTotal,
+            $billingCountry,
+            SequenceType::SEQUENCETYPE_FIRST,
+            $paymentLocale
+        );
+        return $subscriptionGateway->isAvailableMethodInCheckout($filters);
+    }
+
+    /**
+     * @param string $currency
+     * @param $recurring_total
+     * @param string $billingCountry
+     * @param string $sequenceType
+     * @param string $paymentLocale
+     * @return array
+     */
+    protected function buildFilters(
+        string $currency,
+        $recurring_total,
+        string $billingCountry,
+        string $sequenceType,
+        string $paymentLocale
+    ): array {
+        $filters = [
+            'amount' => [
+                'currency' => $currency,
+                'value' => $this->dataHelper
+                    ->formatCurrencyValue(
+                        $recurring_total,
+                        $currency
+                    ),
+            ],
+            'resource' => 'orders',
+            'billingCountry' => $billingCountry,
+            'sequenceType' => $sequenceType,
+        ];
+
+        $paymentLocale and
+        $filters['locale'] = $paymentLocale;
+        return $filters;
     }
 }

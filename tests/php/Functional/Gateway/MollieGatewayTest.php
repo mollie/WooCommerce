@@ -54,7 +54,7 @@ class MollieGatewayTest extends TestCase
 
     /**
      * WHEN gateway setting 'enabled' !== 'yes'
-     * THEN is_available returns false
+     * THEN is_available returns true
      * @test
      */
     public function gatewayEnabledIsAvailable()
@@ -66,6 +66,29 @@ class MollieGatewayTest extends TestCase
         $testee->expects($this->atLeast(2))->method('get_order_total')->willReturn($total);
         expect('get_woocommerce_currency')->andReturn('EUR');
         expect('get_transient')->andReturn([['id'=>'ideal']]);
+        expect('wc_get_base_location')->andReturn(['country'=>'ES']);
+
+        $expectedResult = true;
+        $result = $testee->is_available();
+        $this->assertEquals($expectedResult, $result);
+    }
+
+    /**
+     * WHEN gateway setting 'enabled' !== 'yes'
+     * AND the customer has no country set
+     * THEN we fallback to the shop country and is_available returns true
+     * @test
+     */
+    public function gatewayAvailableWhenNoCountrySelected()
+    {
+        $testee = $this->buildTestee(['enabled'=>'yes']);
+        $total = 10.00;
+        $WC = $this->wooCommerceMocks->wooCommerce(10.00, 0, $total, 0, '');
+        expect('WC')->andReturn($WC);
+        $testee->expects($this->atLeast(2))->method('get_order_total')->willReturn($total);
+        expect('get_woocommerce_currency')->andReturn('EUR');
+        expect('get_transient')->andReturn([['id'=>'ideal']]);
+        expect('wc_get_base_location')->andReturn(['country'=>'ES']);
 
         $expectedResult = true;
         $result = $testee->is_available();

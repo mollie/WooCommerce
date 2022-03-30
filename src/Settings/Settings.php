@@ -74,6 +74,7 @@ class Settings
     public $pluginId;
     public $pluginVersion;
     public $pluginUrl;
+    protected $cleanDb;
     protected $globalSettingsUrl;
     protected $statusHelper;
 
@@ -84,11 +85,12 @@ class Settings
      * Settings constructor.
      */
     public function __construct(
-        $pluginId,
-        $statusHelper,
-        $pluginVersion,
-        $pluginUrl,
-        $apiHelper
+            $pluginId,
+            $statusHelper,
+            $pluginVersion,
+            $pluginUrl,
+            $apiHelper,
+            $cleanDb
     ) {
         $this->pluginId = $pluginId;
         $this->pluginVersion = $pluginVersion;
@@ -96,7 +98,12 @@ class Settings
         $this->statusHelper = $statusHelper;
         $this->apiHelper = $apiHelper;
         $this->globalSettingsUrl = admin_url('admin.php?page=wc-settings&tab=mollie_settings#' . $pluginId);
+        $this->cleanDb = $cleanDb;
+    }
 
+    public function cleanDb()
+    {
+        return $this->cleanDb;
     }
 
     public function getGlobalSettingsUrl()

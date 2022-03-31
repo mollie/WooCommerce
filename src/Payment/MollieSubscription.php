@@ -30,9 +30,8 @@ class MollieSubscription extends MollieObject
      * @param $customerId
      * @return array
      */
-    public function getRecurringPaymentRequestData($order, $customerId)
+    public function getRecurringPaymentRequestData($order, $customerId, $initialPaymentUsedOrderAPI)
     {
-        $paymentDescription = __('Order', 'woocommerce') . ' ' . $order->get_order_number();
         $paymentLocale = $this->settingsHelper->getPaymentLocale();
         $gateway = wc_get_payment_gateway_by_order($order);
 
@@ -40,6 +39,9 @@ class MollieSubscription extends MollieObject
             return  [ 'result' => 'failure' ];
         }
         $gatewayId = $gateway->id;
+        $optionName = $this->pluginId . '_api_payment_description';
+        $option = get_option($optionName);
+        $paymentDescription = $this->getRecurringPaymentDescription($order, $option, $initialPaymentUsedOrderAPI);
         $selectedIssuer = $gateway->getSelectedIssuer();
         $returnUrl = $gateway->get_return_url($order);
         $returnUrl = $this->getReturnUrl($order, $returnUrl);
@@ -65,6 +67,26 @@ class MollieSubscription extends MollieObject
                                 'sequenceType' => 'recurring',
                                 'customerId' => $customerId,
                             ]);
+    }
+
+    protected function getRecurringPaymentDescription($order, $option, $initialPaymentUsedOrderAPI)
+    {
+        $description = !$option ? '' : trim($option);
+
+        // Also use default when Order API was used on initial payment to match payment descriptions.
+        if ( !$description || $initialPaymentUsedOrderAPI ) {
+            $description = sprintf(
+                /* translators: Placeholder 1: order number */
+                _x(
+                    'Order %1$s',
+                    'Default payment description for subscription recurring payments',
+                    'mollie-payments-for-woocommerce'
+                ),
+                $order->get_order_number()
+            );
+            return $description;
+        }
+        return $this->getPaymentDescription($order, $option);
     }
 
     /**

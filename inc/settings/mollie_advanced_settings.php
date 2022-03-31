@@ -8,6 +8,14 @@ $nonce_mollie_cleanDb = wp_create_nonce('nonce_mollie_cleanDb');
 $cleanDB_mollie_url = add_query_arg(
     ['cleanDB-mollie' => 1, 'nonce_mollie_cleanDb' => $nonce_mollie_cleanDb]
 );
+$api_payment_description_labels = [
+    '{orderNumber}' => _x( 'Order number', 'Label {orderNumber} description for payment description options', 'mollie-payments-for-woocommerce' ),
+    '{storeName}' => _x( 'Site Title', 'Label {storeName} description for payment description options', 'mollie-payments-for-woocommerce' ),
+    '{customer.firstname}' => _x( 'Customer\'s first name', 'Label {customer.firstname} description for payment description options', 'mollie-payments-for-woocommerce' ),
+    '{customer.lastname}' => _x( 'Customer\'s last name', 'Label {customer.lastname} description for payment description options', 'mollie-payments-for-woocommerce' ),
+    '{customer.company}' => _x( 'Customer\'s company name', 'Label {customer.company} description for payment description options', 'mollie-payments-for-woocommerce' )
+];
+
 return [
     [
         'id' => $pluginName . '_' . 'title',
@@ -117,23 +125,51 @@ return [
             'API Payment Description',
             'mollie-payments-for-woocommerce'
         ),
-        'type' => 'select',
-        'options' => [
-            '{orderNumber}' => '{orderNumber}',
-            '{storeName}' => '{storeName}',
-            '{customer.firstname}' => '{customer.firstname}',
-            '{customer.lastname}' => '{customer.lastname}',
-            '{customer.company}' => '{customer.company}',
-        ],
+        'type' => 'text',
         'default' => '{orderNumber}',
-        /* translators: Placeholder 1: Opening paragraph tag, placeholder 2: Closing paragraph tag */
         'desc' => sprintf(
-            __(
-                'Select among the available variables the description to be used for this transaction.%1$s(Note: this only works when the method is set to Payments API)%2$s',
-                'mollie-payments-for-woocommerce'
-            ),
-            '<p>',
-            '</p>'
+            '</p>
+            <div class="available-payment-description-labels hide-if-no-js">
+                <p>%1$s:</p>
+                <ul role="list">
+                    %2$s
+                </ul>
+            </div>
+            <br style="clear: both;" />
+            <p class="description">%3$s',
+
+            _x( 'Available variables', 'Payment description options', 'mollie-payments-for-woocommerce' ),
+            implode( '', array_map(
+                function ($label, $label_description) {
+                    return sprintf(
+                        '<li style="float: left; margin-right: 5px;">
+                            <button type="button"
+                                class="mollie-settings-advanced-payment-desc-label button button-secondary button-small"
+                                data-tag="%1$s"
+                                aria-label="%2$s"
+                                title="%3$s"
+                            >
+                                %1$s
+                            </button>
+                        </li>',
+
+                        $label,
+                        substr( $label, 1, -1 ),
+                        $label_description
+                    );
+                },
+                array_keys( $api_payment_description_labels ),
+                $api_payment_description_labels
+            ) ),
+            /* translators: Placeholder 1: Opening paragraph tag, placeholder 2: Closing paragraph tag */
+            sprintf(
+                __(
+                    'Select among the available variables the description to be used for this transaction.%1$s(Note: this only works when the method is set to Payments API)%2$s',
+                    'mollie-payments-for-woocommerce'
+                ),
+                '<p>',
+                '</p>'
+            )
         ),
     ],
     [

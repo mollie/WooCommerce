@@ -6,13 +6,13 @@ namespace Mollie\WooCommerce\Shared;
 
 use Exception;
 use InvalidArgumentException;
-use Mollie\WooCommerce\Gateway\Voucher\MaybeDisableGateway;
+use Mollie\Api\Resources\Method;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
-use \WC_Customer;
-use \WC_Order;
+use WC_Customer;
+use WC_Order;
 
 class Data
 {
@@ -377,6 +377,7 @@ class Data
             if ($methods === false) {
                 $filters['resource'] = 'orders';
                 $filters['includeWallets'] = 'applepay';
+                $filters['include'] = 'issuers';
                 if(!$apiKey) {
                     return [];
                 }
@@ -439,36 +440,71 @@ class Data
      * Get issuers for payment method (e.g. for iDEAL, KBC/CBC payment button, gift cards)
      *
      * @param bool        $test_mode (default: false)
-     * @param string|null $method
+     * @param string|null $methodId
      *
      * @return array|\Mollie\Api\Resources\Method||\Mollie\Api\Resources\MethodCollection
      */
-    public function getMethodIssuers($apiKey, $test_mode = false, $method = null)
+    public function getMethodIssuers($apiKey, $test_mode = false, $methodId = null)
     {
         try {
-            $transient_id = $this->getTransientId($method . '_issuers_' . ( $test_mode ? 'test' : 'live' ));
+            $transient_id = $this->getTransientId($methodId . '_issuers_' . ($test_mode ? 'test' : 'live'));
 
-            // When no cache exists $cached_issuers will be `false`
+            // When no cache exists $issuers will be `false`
             $issuers = get_transient($transient_id);
-
-            if (!$issuers || !is_array($issuers)) {
-
-                if (!$apiKey) {
-                    return [];
-                }
-                $method = $this->api_helper->getApiClient($apiKey)->methods->get(sprintf('%s', $method), [ "include" => "issuers" ]);
-                $issuers = $method->issuers;
-
-                // Set new transients (as cache)
-                set_transient($transient_id, $issuers, HOUR_IN_SECONDS);
+            if (is_array($issuers)) {
+                return $issuers;
             }
 
+            $method = $this->getMethodWithIssuersById($methodId, $apiKey);
+            $issuers = $method ? $method['issuers'] : [];
+            set_transient($transient_id, $issuers, HOUR_IN_SECONDS);
             return $issuers;
         } catch (\Mollie\Api\Exceptions\ApiException $e) {
-            $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . ": Could not load " . $method . " issuers (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . ": Could not load " . $methodId . " issuers (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
 
         return  [];
+    }
+
+    /**
+     * Take the method by Id from cache or call the API
+     *
+     * @param string $methodId
+     * @param string $apiKey
+     * @return bool|Method
+     * @throws \Mollie\Api\Exceptions\ApiException
+     */
+    public function getMethodWithIssuersById($methodId, $apiKey)
+    {
+        $method = $this->getCachedMethodById($methodId);
+        if($method){
+            return $method;
+        }
+        if (!$apiKey) {
+            return false;
+        }
+        return $this->api_helper->getApiClient($apiKey)->methods->get(sprintf('%s', $method), [ "include" => "issuers" ]);
+    }
+
+    /**
+     *
+     * @param string $methodId
+     * @return false|Method
+     */
+    public function getCachedMethodById(string $methodId)
+    {
+        $apiKey = $this->settingsHelper->getApiKey();
+        $cachedMethods = $this->getRegularPaymentMethods($apiKey);
+        if(empty($cachedMethods)){
+            return false;
+        }
+        foreach ($cachedMethods as $cachedMethod){
+            if($cachedMethod['id'] !== $methodId){
+                continue;
+            }
+            return $cachedMethod;
+        }
+        return false;
     }
 
     /**

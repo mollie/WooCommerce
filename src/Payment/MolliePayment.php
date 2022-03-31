@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
+use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Refund;
-use Mollie\WooCommerce\Gateway\AbstractGateway;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
-use Mollie\WooCommerce\Plugin;
 use Mollie\WooCommerce\SDK\Api;
 use Psr\Log\LogLevel;
 use WC_Order;
 use WC_Payment_Gateway;
 use WC_Subscriptions_Manager;
+use WP_Error;
 
 class MolliePayment extends MollieObject
 {
@@ -40,7 +40,7 @@ class MolliePayment extends MollieObject
             self::$payment = $this->apiHelper->getApiClient($apiKey)->payments->get($paymentId);
 
             return parent::getPaymentObject($paymentId, $testMode = false, $useCache = true);
-        } catch (\Mollie\Api\Exceptions\ApiException $e) {
+        } catch (ApiException $e) {
             $this->logger->log(
                 LogLevel::DEBUG,
                 __FUNCTION__ . ": Could not load payment $paymentId (" . ( $testMode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')'
@@ -194,7 +194,7 @@ class MolliePayment extends MollieObject
 
     /**
      * @param \WC_Order                     $order
-     * @param Mollie\Api\Resources\Payment $payment
+     * @param \Mollie\Api\Resources\Payment $payment
      * @param string                       $paymentMethodTitle
      */
     public function onWebhookPaid(WC_Order $order, $payment, $paymentMethodTitle)
@@ -254,7 +254,7 @@ class MolliePayment extends MollieObject
 
     /**
      * @param WC_Order                     $order
-     * @param Mollie\Api\Resources\Payment $payment
+     * @param \Mollie\Api\Resources\Payment $payment
      * @param string                       $paymentMethodTitle
      */
     public function onWebhookCanceled(WC_Order $order, $payment, $paymentMethodTitle)
@@ -320,7 +320,7 @@ class MolliePayment extends MollieObject
 
     /**
      * @param WC_Order                     $order
-     * @param Mollie\Api\Resources\Payment $payment
+     * @param \Mollie\Api\Resources\Payment $payment
      * @param string                       $paymentMethodTitle
      */
     public function onWebhookFailed(WC_Order $order, $payment, $paymentMethodTitle)
@@ -358,7 +358,7 @@ class MolliePayment extends MollieObject
 
     /**
      * @param WC_Order                     $order
-     * @param Mollie\Api\Resources\Payment $payment
+     * @param \Mollie\Api\Resources\Payment $payment
      * @param string                       $paymentMethodTitle
      */
     public function onWebhookExpired(WC_Order $order, $payment, $paymentMethodTitle)
@@ -419,7 +419,7 @@ class MolliePayment extends MollieObject
      * @param null   $amount
      * @param string $reason
      *
-     * @return bool | \WP_Error
+     * @return bool | WP_Error
      */
     public function refund(\WC_Order $order, $orderId, $paymentObject, $amount = null, $reason = '')
     {
@@ -486,30 +486,27 @@ class MolliePayment extends MollieObject
             ));
 
             return true;
-        } catch (\Mollie\Api\Exceptions\ApiException $e) {
+        } catch (ApiException $e) {
             return new WP_Error(1, $e->getMessage());
         }
     }
 
     /**
      * @param WC_Order $order
-     * @param WC_Payment_Gateway $gateway
+     * @param MolliePaymentGateway $gateway
      * @param                    $newOrderStatus
      * @param                    $orderId
      */
     protected function maybeUpdateStatus(
         WC_Order $order,
-        WC_Payment_Gateway $gateway,
+        MolliePaymentGateway $gateway,
         $newOrderStatus,
         $orderId
     ) {
-
-        if (!$this->isOrderPaymentStartedByOtherGateway($order)) {
-            if ($gateway) {
-                $gateway->updateOrderStatus($order, $newOrderStatus);
-            }
-        } else {
+        if ($this->isOrderPaymentStartedByOtherGateway($order) || !$gateway) {
             $this->informNotUpdatingStatus($orderId, $gateway->id, $order);
+            return;
         }
+        $gateway->paymentService->updateOrderStatus($order, $newOrderStatus);
     }
 }

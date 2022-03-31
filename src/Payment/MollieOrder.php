@@ -7,9 +7,7 @@ namespace Mollie\WooCommerce\Payment;
 use Exception;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Refund;
-use Mollie\WooCommerce\Gateway\AbstractGateway;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
-use Mollie\WooCommerce\Plugin;
 use Mollie\WooCommerce\SDK\Api;
 use Psr\Log\LogLevel;
 use stdClass;
@@ -920,15 +918,11 @@ class MollieOrder extends MollieObject
         $paymentMethodTitle,
         \Mollie\Api\Resources\Order $payment
     ) {
-
-        if (!$this->isOrderPaymentStartedByOtherGateway($order)) {
-            $gateway = wc_get_payment_gateway_by_order($order);
-
-            if ($gateway) {
-                $gateway->updateOrderStatus($order, $newOrderStatus);
-            }
+        $gateway = wc_get_payment_gateway_by_order($order);
+        if (!$this->isOrderPaymentStartedByOtherGateway($order) && is_a($gateway, MolliePaymentGateway::class) ) {
+            $gateway->paymentService->updateOrderStatus($order, $newOrderStatus);
         } else {
-            $this->informNotUpdatingStatus($orderId, $this->id, $order);
+            $this->informNotUpdatingStatus($orderId, $gateway->id, $order);
         }
 
         $order->add_order_note(

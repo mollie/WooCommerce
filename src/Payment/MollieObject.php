@@ -7,12 +7,9 @@ namespace Mollie\WooCommerce\Payment;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Payment;
-use Mollie\WooCommerce\Gateway\AbstractGateway;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
-use Mollie\WooCommerce\Plugin;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
-use Mollie\WooCommerce\Shared\Data;
 use Psr\Log\LogLevel;
 use WC_Order;
 use WC_Payment_Gateway;
@@ -643,8 +640,8 @@ class MollieObject
             function_exists('wcs_order_contains_renewal')
             && wcs_order_contains_renewal($orderId)
         ) {
-            if ($gateway || ($gateway instanceof MolliePaymentGateway)) {
-                $gateway->updateOrderStatus(
+            if ($gateway instanceof MolliePaymentGateway) {
+                $gateway->paymentService->updateOrderStatus(
                     $order,
                     $newOrderStatus,
                     sprintf(
@@ -676,8 +673,8 @@ class MollieObject
             ) {
                 $emails['WC_Email_Failed_Order']->trigger($orderId);
             }
-        } elseif ($gateway || ($gateway instanceof MolliePaymentGateway)) {
-            $gateway->updateOrderStatus(
+        } elseif ($gateway instanceof MolliePaymentGateway) {
+            $gateway->paymentService->updateOrderStatus(
                 $order,
                 $newOrderStatus,
                 sprintf(

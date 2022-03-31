@@ -455,7 +455,7 @@ class AssetsModule implements ExecutableModule
         );
     }
 
-    protected function gatewayDataForWCBlocks($gatewayInstances): array
+    protected function gatewayDataForWCBlocks(array $gatewayInstances): array
     {
         $filters = $this->dataService->wooCommerceFiltersForCheckout();
         $availableGateways = WC()->payment_gateways()->get_available_payment_gateways();

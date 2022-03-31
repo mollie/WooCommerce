@@ -14,6 +14,7 @@ use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
+use RuntimeException;
 use WC_Order;
 
 class PaymentModule implements ServiceModule, ExecutableModule

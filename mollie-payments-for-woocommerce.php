@@ -32,6 +32,7 @@ use Mollie\WooCommerce\Notice\NoticeModule;
 use Mollie\WooCommerce\Payment\PaymentModule;
 use Mollie\WooCommerce\SDK\SDKModule;
 use Mollie\WooCommerce\Settings\SettingsModule;
+use Mollie\WooCommerce\Uninstall\UninstallModule;
 use Throwable;
 
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
@@ -153,7 +154,8 @@ function initialize()
             new AssetsModule(),
             new GatewayModule(),
             new VoucherModule(),
-            new PaymentModule()
+            new PaymentModule(),
+            new UninstallModule()
         ];
         $modules = apply_filters('mollie_wc_plugin_modules', $modules);
         $bootstrap->boot(...$modules);

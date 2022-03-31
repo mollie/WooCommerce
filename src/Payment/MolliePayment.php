@@ -127,33 +127,6 @@ class MolliePayment extends MollieObject
         return $paymentRequestData;
     }
 
-    protected function getPaymentDescription($order, $option)
-    {
-        switch ($option) {
-            case '{orderNumber}':
-                $description = 'Order ' . $order->get_order_number();
-                break;
-            case '{storeName}':
-                $description = 'StoreName ' . get_bloginfo('name');
-                break;
-            case '{customer.firstname}':
-                $description = 'Customer Firstname '
-                    . $order->get_billing_first_name();
-                break;
-            case '{customer.lastname}':
-                $description = 'Customer Lastname '
-                    . $order->get_billing_last_name();
-                break;
-            case '{customer.company}':
-                $description = 'Customer Company '
-                    . $order->get_billing_company();
-                break;
-            default:
-                $description = 'Order ' . $order->get_order_number();
-        }
-        return $description;
-    }
-
     public function setActiveMolliePayment($orderId)
     {
         self::$paymentId = $this->getMolliePaymentIdFromPaymentObject();

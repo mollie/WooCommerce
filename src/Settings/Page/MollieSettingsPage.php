@@ -279,6 +279,15 @@ class MollieSettingsPage extends WC_Settings_Page
             }
             $this->registeredGateways = $methods;
         }
+        if (
+            isset($_GET['cleanDB-mollie']) && wp_verify_nonce(
+                $_GET['nonce_mollie_cleanDb'],
+                'nonce_mollie_cleanDb'
+            )
+        ) {
+            $cleaner = $this->settingsHelper->cleanDb();
+            $cleaner->cleanAll();
+        }
 
         $iconAvailable = ' <span style="color: green; cursor: help;" title="' . __(
             'Gateway enabled',

@@ -424,136 +424,38 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         if ($this->enabled != 'yes') {
             return false;
         }
-
         // Only in WooCommerce checkout, check min/max amounts
-        if (WC()->cart && $this->get_order_total() > 0) {
-            // Check the current (normal) order total
-            $order_total = $this->get_order_total();
-
-            // Get the correct currency for this payment or order
-            // On order-pay page, order is already created and has an order currency
-            // On checkout, order is not created, use get_woocommerce_currency
-            global $wp;
-            if (!empty($wp->query_vars['order-pay'])) {
-                $order_id = $wp->query_vars['order-pay'];
-                $order = wc_get_order($order_id);
-
-                $currency = $this->dataService->getOrderCurrency($order);
-            } else {
-                $currency = get_woocommerce_currency();
-            }
-
-            $billing_country = WC()->customer ? WC()->customer->get_billing_country() : wc_get_base_location()['country'];
-
-            $billing_country = apply_filters(
-                $this->pluginId
-                . '_is_available_billing_country_for_payment_gateways',
-                $billing_country
-            );
-
-            // Get current locale for this user
-            $payment_locale = $this->dataService->getPaymentLocale();
-
-            try {
-                $filters = $this->dataService->getFilters(
-                    $currency,
-                    $order_total,
-                    $payment_locale,
-                    $billing_country
-                );
-            } catch (InvalidArgumentException $exception) {
-                $this->logger->log(
-                    LogLevel::DEBUG,
-                    $exception->getMessage()
-                );
-                return false;
-            }
-
-            // For regular payments, check available payment methods, but ignore SSD gateway (not shown in checkout)
-            $status = $this->id !== 'mollie_wc_gateway_directdebit'
-                && $this->isAvailableMethodInCheckout($filters);
-            $allowedCountries = $this->paymentMethod->getProperty('allowed_countries');
-            //if no country is selected then this does not apply
-            $bCountryIsAllowed = empty($allowedCountries)
-                || in_array(
-                    $billing_country,
-                    $allowedCountries
-                );
-            if (!$bCountryIsAllowed) {
-                $status = false;
-            }
-            // Do extra checks if WooCommerce Subscriptions is installed
-            if (
-            class_exists('WC_Subscriptions')
-                && class_exists(
-                    'WC_Subscriptions_Admin'
-                )
-            ) {
-                // Check recurring totals against recurring payment methods for future renewal payments
-                $recurring_totals = $this->get_recurring_total();
-
-                // See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
-                $accept_manual_renewals = 'yes' === get_option(
-                    \WC_Subscriptions_Admin::$option_prefix
-                        . '_accept_manual_renewals',
-                    'no'
-                );
-                $supports_subscriptions = $this->supports('subscriptions');
-
-                if (
-                $accept_manual_renewals !== true
-                    && $supports_subscriptions
-                ) {
-                    if (!empty($recurring_totals)) {
-                        foreach ($recurring_totals as $recurring_total) {
-                            // First check recurring payment methods CC and SDD
-                            $filters = [
-                                'amount' => [
-                                    'currency' => $currency,
-                                    'value' => $this->dataService
-                                        ->formatCurrencyValue(
-                                            $recurring_total,
-                                            $currency
-                                        ),
-                                ],
-                                'resource' => 'orders',
-                                'billingCountry' => $billing_country,
-                                'sequenceType' => SequenceType::SEQUENCETYPE_RECURRING,
-                            ];
-
-                            $payment_locale and
-                            $filters['locale'] = $payment_locale;
-                        }
-                        $status = $this->isAvailableMethodInCheckout($filters);
-                        // Check available first payment methods with today's order total, but ignore SSD gateway (not shown in checkout)
-                        if ($this->id !== 'mollie_wc_gateway_directdebit') {
-                            $filters = [
-                                'amount' => [
-                                    'currency' => $currency,
-                                    'value' => $this->dataService
-                                        ->formatCurrencyValue(
-                                            $order_total,
-                                            $currency
-                                        ),
-                                ],
-                                'resource' => 'orders',
-                                'locale' => $payment_locale,
-                                'billingCountry' => $billing_country,
-                                'sequenceType' => SequenceType::SEQUENCETYPE_FIRST,
-                            ];
-
-                            $status = $this->isAvailableMethodInCheckout(
-                                $filters
-                            );
-                        }
-                    }
-                }
-            }
-
-            return $status;
+        if(!WC()->cart || !($this->get_order_total() > 0)){
+            return true;
+        }
+        // For regular payments, check available payment methods, but ignore SSD gateway (not shown in checkout)
+        if($this->id === 'mollie_wc_gateway_directdebit'){
+            return false;
         }
 
-        return true;
+        $order_total = $this->get_order_total();
+        $currency = $this->getCurrencyFromOrder();
+        $billingCountry = $this->getBillingCountry();
+        $paymentLocale = $this->dataService->getPaymentLocale();
+
+        try {
+            $filters = $this->dataService->getFilters(
+                $currency,
+                $order_total,
+                $paymentLocale,
+                $billingCountry
+            );
+        } catch (InvalidArgumentException $exception) {
+            $this->logger->log(
+                LogLevel::DEBUG,
+                $exception->getMessage()
+            );
+            return false;
+        }
+
+        $status = $this->isAvailableMethodInCheckout($filters);
+
+        return $this->isAllowedBillingCountry($billingCountry, $status);
     }
 
     /**
@@ -563,7 +465,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
      *
      * @return bool
      */
-    protected function isAvailableMethodInCheckout($filters): bool
+    public function isAvailableMethodInCheckout($filters): bool
     {
         $useCache = true;
         $methods = $this->dataService->getApiPaymentMethods(
@@ -587,7 +489,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
     /**
      * @return array|false|int
      */
-    protected function get_recurring_total()
+    public function get_recurring_total()
     {
         if (isset(WC()->cart)) {
             if (!empty(WC()->cart->recurring_carts)) {
@@ -1155,5 +1057,70 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         if ($dropdownDisabled) {
             $this->has_fields = false;
         }
+    }
+
+    /**
+     * Get the correct currency for this payment or order
+     * On order-pay page, order is already created and has an order currency
+     * On checkout, order is not created, use get_woocommerce_currency
+     *
+     * @return string
+     */
+    public function getCurrencyFromOrder()
+    {
+        global $wp;
+        if (!empty($wp->query_vars['order-pay'])) {
+            $order_id = $wp->query_vars['order-pay'];
+            $order = wc_get_order($order_id);
+
+            $currency = $this->dataService->getOrderCurrency($order);
+        } else {
+            $currency = get_woocommerce_currency();
+        }
+        return $currency;
+    }
+
+    /**
+     * Retrieve the customer's billing country
+     * or fallback to the shop country
+     *
+     * @return mixed|void|null
+     */
+    public function getBillingCountry()
+    {
+        $customerExistsAndHasCountry = WC()->customer && !empty(WC()->customer->get_billing_country());
+        $fallbackToShopCountry = wc_get_base_location()['country'];
+        $billingCountry = $customerExistsAndHasCountry? WC()->customer->get_billing_country() : $fallbackToShopCountry;
+
+        $billingCountry = apply_filters(
+            $this->pluginId
+            . '_is_available_billing_country_for_payment_gateways',
+            $billingCountry
+        );
+
+        return $billingCountry;
+    }
+
+    /**
+     * Check the 'allowed_countries' setting
+     * and return false if $billingCountry is in the list of not allowed.
+     *
+     * @param string $billingCountry
+     * @param bool $status
+     * @return bool
+     */
+    protected function isAllowedBillingCountry($billingCountry, $status)
+    {
+        $allowedCountries = $this->paymentMethod->getProperty('allowed_countries');
+        //if no country is selected then this does not apply
+        $bCountryIsAllowed = empty($allowedCountries)
+            || in_array(
+                $billingCountry,
+                $allowedCountries
+            );
+        if (!$bCountryIsAllowed) {
+            $status = false;
+        }
+        return $status;
     }
 }

@@ -38,7 +38,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         PaymentFieldsService $paymentFieldsService,
         Surcharge $surcharge
     ) {
-        $this->id = $this->getConfig()['id'];
+        $this->id = $this->getIdFromConfig();
         $this->settings = $this->getSettings();
         $this->config = $this->getConfig();
         $this->iconFactory = $iconFactory;
@@ -46,8 +46,13 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         $this->paymentFieldsService = $paymentFieldsService;
         $this->surcharge = $surcharge;
     }
+    public function getIdFromConfig()
+    {
+        return $this->getConfig()['id'];
+    }
 
-    public function surcharge(){
+    public function surcharge()
+    {
         return $this->surcharge;
     }
 

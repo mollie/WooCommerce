@@ -45,9 +45,7 @@ class MollieSubscriptionTest extends TestCase
         $subscription = $this->wcOrder(2, $gatewayName, $renewalOrder, 'active' );
 
         $testee = $this->buildTestee();
-        $testee->expects($this->once())->method(
-            'isTestModeEnabledForRenewalOrder'
-        )->with($renewalOrder)->willReturn(true);
+
         expect('wcs_get_subscriptions_for_renewal_order')->andReturn(
             [$subscription]
         );

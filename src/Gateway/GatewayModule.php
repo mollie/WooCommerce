@@ -31,6 +31,7 @@ use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
+use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Mollie\WooCommerce\Subscription\MollieSepaRecurringGateway;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
 use Psr\Container\ContainerInterface;
@@ -55,28 +56,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
     {
         return [
             'gateway.classnames' => static function (): array {
-                return [
-                    'Mollie_WC_Gateway_BankTransfer',
-                    'Mollie_WC_Gateway_Belfius',
-                    'Mollie_WC_Gateway_Creditcard',
-                    'Mollie_WC_Gateway_DirectDebit',
-                    'Mollie_WC_Gateway_EPS',
-                    'Mollie_WC_Gateway_Giropay',
-                    'Mollie_WC_Gateway_Ideal',
-                    'Mollie_WC_Gateway_Kbc',
-                    'Mollie_WC_Gateway_KlarnaPayLater',
-                    'Mollie_WC_Gateway_KlarnaSliceIt',
-                    'Mollie_WC_Gateway_KlarnaPayNow',
-                    'Mollie_WC_Gateway_Bancontact',
-                    'Mollie_WC_Gateway_PayPal',
-                    'Mollie_WC_Gateway_Paysafecard',
-                    'Mollie_WC_Gateway_Przelewy24',
-                    'Mollie_WC_Gateway_Sofort',
-                    'Mollie_WC_Gateway_Giftcard',
-                    'Mollie_WC_Gateway_ApplePay',
-                    'Mollie_WC_Gateway_MyBank',
-                    'Mollie_WC_Gateway_Voucher',
-                ];
+                return SharedDataDictionary::GATEWAY_CLASSNAMES;
             },
             'gateway.instances' => function (ContainerInterface $container): array {
                 return $this->instantiatePaymentMethodGateways($container);
@@ -207,7 +187,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
             $this->molliePayPalButtonHandling($paypalGateway, $notice, $logger, $pluginUrl);
         }
 
-        $checkoutBlockHandler = new CheckoutBlockService($container->get('settings.data_helper'));
+        $maybeDisableVoucher = new MaybeDisableGateway();
+        $checkoutBlockHandler = new CheckoutBlockService($container->get('settings.data_helper'), $maybeDisableVoucher);
         $checkoutBlockHandler->bootstrapAjaxRequest();
         add_action( 'woocommerce_rest_checkout_process_payment_with_context', function($paymentContext){
             if(strpos($paymentContext->payment_method, 'mollie_wc_gateway_') === false){

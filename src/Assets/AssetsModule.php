@@ -72,6 +72,15 @@ class AssetsModule implements ExecutableModule
                         $this->pluginVersion
                     );
                     wp_enqueue_script('mollie_wc_admin_settings');
+                    wp_register_script(
+                        'mollie_wc_gateway_advanced_settings',
+                        $this->getPluginUrl(
+                            '/public/js/advancedSettings.min.js'
+                        ),
+                        ['underscore', 'jquery'],
+                        $this->pluginVersion
+                    );
+                    add_action('admin_enqueue_scripts', [$this, 'enqueueAdvancedSettingsJS'], 10, 1 );
                     global $current_section;
                     wp_localize_script(
                         'mollie_wc_admin_settings',
@@ -575,5 +584,24 @@ class AssetsModule implements ExecutableModule
                 'pluginUrlImages' => plugins_url('public/images', M4W_FILE),
             ]
         );
+    }
+
+    /**
+     * Enqueue inline JavaScript for Advanced Settings admin page
+     * @param array $ar Can be ignored
+     * @return void
+     */
+    public function enqueueAdvancedSettingsJS($ar)
+    {
+        // Only insert scripts on specific admin page
+        global $current_screen, $current_tab, $current_section;
+        if (
+            $current_screen->id !== 'woocommerce_page_wc-settings'
+            || $current_tab !== 'mollie_settings'
+            || $current_section !== 'advanced'
+        ) {
+            return;
+        }
+        wp_enqueue_script('mollie_wc_gateway_advanced_settings');
     }
 }

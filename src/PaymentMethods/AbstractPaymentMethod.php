@@ -13,6 +13,10 @@ use Mollie\WooCommerce\Settings\Settings;
 abstract class AbstractPaymentMethod implements PaymentMethodI
 {
     /**
+     * @var string
+     */
+    public $id;
+    /**
      * @var string[]
      */
     public $config = [];
@@ -34,15 +38,21 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         PaymentFieldsService $paymentFieldsService,
         Surcharge $surcharge
     ) {
-        $this->config = $this->getConfig();
+        $this->id = $this->getIdFromConfig();
         $this->settings = $this->getSettings();
+        $this->config = $this->getConfig();
         $this->iconFactory = $iconFactory;
         $this->settingsHelper = $settingsHelper;
         $this->paymentFieldsService = $paymentFieldsService;
         $this->surcharge = $surcharge;
     }
+    public function getIdFromConfig()
+    {
+        return $this->getConfig()['id'];
+    }
 
-    public function surcharge(){
+    public function surcharge()
+    {
         return $this->surcharge;
     }
 
@@ -82,7 +92,10 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     }
 
     public function getProcessedDescription(){
-        return $this->surcharge->buildDescriptionWithSurcharge($this);
+        $description = $this->getProperty('description') === false ? $this->getProperty(
+            'defaultDescription'
+        ) : $this->getProperty('description');
+        return $this->surcharge->buildDescriptionWithSurcharge($description, $this);
     }
 
     public function getProcessedDescriptionForBlock(){
@@ -91,8 +104,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
 
     public function getSettings()
     {
-        $paymentMethodId = $this->getProperty('id');
-        $optionName = 'mollie_wc_gateway_' . $paymentMethodId . '_settings';
+        $optionName = 'mollie_wc_gateway_' . $this->id . '_settings';
         return get_option($optionName, false);
     }
 

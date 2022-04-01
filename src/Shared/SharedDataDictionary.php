@@ -56,6 +56,9 @@ class SharedDataDictionary
         'mollie-payments-for-woocommerce_profile_merchant_id',
         'mollie-payments-for-woocommerce_test_api_key',
         'mollie-payments-for-woocommerce_test_mode_enabled',
+        'mollie_apple_pay_button_enabled_product',
+        'mollie_apple_pay_button_enabled_cart',
+        'mollie_wc_applepay_validated',
         'mollie-payments-for-woocommerce_removeOptionsAndTransients'
     ];
 }

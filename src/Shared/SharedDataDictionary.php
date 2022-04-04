@@ -6,6 +6,7 @@ namespace Mollie\WooCommerce\Shared;
 
 class SharedDataDictionary
 {
+    public const DIRECTDEBIT = 'mollie_wc_gateway_directdebit';
     public const GATEWAY_CLASSNAMES = [
         'Mollie_WC_Gateway_BankTransfer',
         'Mollie_WC_Gateway_Belfius',

@@ -719,6 +719,12 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
      */
     public function is_available(): bool
     {
+        if(!$this->checkEnabledNorDirectDebit()){
+            return false;
+        }
+        if(!$this->cartAmountAvailable()){
+            return true;
+        }
         $status =  parent::is_available();
         // Do extra checks if WooCommerce Subscriptions is installed
         $orderTotal = $this->get_order_total();

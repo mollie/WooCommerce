@@ -420,17 +420,11 @@ class MolliePaymentGateway extends WC_Payment_Gateway
      */
     public function is_available(): bool
     {
-        // In WooCommerce check if the gateway is available for use (WooCommerce settings)
-        if ($this->enabled != 'yes') {
+        if(!$this->checkEnabledNorDirectDebit()){
             return false;
         }
-        // Only in WooCommerce checkout, check min/max amounts
-        if(!WC()->cart || !($this->get_order_total() > 0)){
+        if(!$this->cartAmountAvailable()){
             return true;
-        }
-        // For regular payments, check available payment methods, but ignore SSD gateway (not shown in checkout)
-        if($this->id === 'mollie_wc_gateway_directdebit'){
-            return false;
         }
 
         $order_total = $this->get_order_total();
@@ -1122,5 +1116,35 @@ class MolliePaymentGateway extends WC_Payment_Gateway
             $status = false;
         }
         return $status;
+    }
+
+    /**
+     * In WooCommerce check if the gateway is available for use (WooCommerce settings)
+     * but also check if is not direct debit as this should not be shown in checkout
+     *
+     * @return bool
+     */
+    protected function checkEnabledNorDirectDebit():bool
+    {
+        if ($this->enabled != 'yes') {
+            return false;
+        }
+        if($this->id === 'mollie_wc_gateway_directdebit'){
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Check if the cart amount is available and > 0
+     *
+     * @return bool
+     */
+    protected function cartAmountAvailable()
+    {
+        if(WC()->cart && ($this->get_order_total() > 0)){
+            return false;
+        }
+        return true;
     }
 }

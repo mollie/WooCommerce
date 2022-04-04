@@ -1143,9 +1143,6 @@ class MolliePaymentGateway extends WC_Payment_Gateway
      */
     protected function cartAmountAvailable()
     {
-        if(WC()->cart && $this->get_order_total() > 0){
-            return false;
-        }
-        return true;
+        return WC()->cart && $this->get_order_total() > 0;
     }
 }

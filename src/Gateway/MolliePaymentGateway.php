@@ -18,6 +18,7 @@ use Mollie\WooCommerce\Payment\PaymentService;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Shared\Data;
+use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
 use UnexpectedValueException;
@@ -1129,7 +1130,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         if ($this->enabled != 'yes') {
             return false;
         }
-        if($this->id === 'mollie_wc_gateway_directdebit'){
+        if($this->id === SharedDataDictionary::DIRECTDEBIT){
             return false;
         }
         return true;

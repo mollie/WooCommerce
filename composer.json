@@ -28,7 +28,8 @@
     "johnpbloch/wordpress-core": "^5.0",
     "fzaninotto/faker": "^1.9@dev",
     "inpsyde/php-coding-standards": "^1.0.0",
-    "vimeo/psalm": "^4.8"
+    "vimeo/psalm": "^4.8",
+    "pronamic/wp-documentor": "dev-main"
   },
   "autoload": {
     "psr-4": {

@@ -68,6 +68,17 @@ class Data
     public function isSubscriptionPluginActive(): bool
     {
         $subscriptionPlugin = is_plugin_active('woocommerce-subscriptions/woocommerce-subscriptions.php');
+
+        /**
+         * Declare that there is a subscription plugin active.
+         *
+         * The plugin checks for the WooCommerce Subscriptions plugin
+         * but this can be modified by the filter
+         *
+         * @since 6.7.0
+         *
+         * @param bool $subscriptionPlugin is there a subscription plugin active.
+         */
         return apply_filters('mollie_wc_subscription_plugin_active', $subscriptionPlugin);
     }
 
@@ -723,6 +734,14 @@ class Data
     public function isSubscription($orderId)
     {
         $isSubscription = false;
+        /**
+         * Declare that the order contains a subscription.
+         *
+         * @since 7.0.0
+         *
+         * @param bool $isSubscription truthy result means the order contains a subscription.
+         * @param string $orderId ID of the WooCommerce order.
+         */
         return apply_filters($this->pluginId . '_is_subscription_payment', $isSubscription, $orderId);
     }
 

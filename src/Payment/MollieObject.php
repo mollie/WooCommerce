@@ -575,6 +575,13 @@ class MollieObject
     protected function addSequenceTypeForSubscriptionsFirstPayments($orderId, $gateway, $paymentRequestData): array
     {
         if ($this->dataHelper->isSubscription($orderId)) {
+            /**
+             * Overwrite setting for automatic payment disabled.
+             *
+             * @since 7.0.0
+             *
+             * @param bool $default default value is false.
+             */
             $disable_automatic_payments = apply_filters( $this->pluginId . '_is_automatic_payment_disabled', false );
             $supports_subscriptions = $gateway->supports('subscriptions');
 
@@ -771,6 +778,14 @@ class MollieObject
         $returnUrl = untrailingslashit($returnUrl);
         $this->logger->log(LogLevel::DEBUG, " Order {$orderId} returnUrl: {$returnUrl}", [true]);
 
+        /**
+         * Overwrite the return url after Mollie payment.
+         *
+         * @since 2.1.0
+         *
+         * @param string $returnUrl the processed return url.
+         * @param WC_Order $order the processed order.
+         */
         return apply_filters($this->pluginId . '_return_url', $returnUrl, $order);
     }
     /**
@@ -797,6 +812,14 @@ class MollieObject
 
         $this->logger->log(LogLevel::DEBUG, " Order {$orderId} webhookUrl: {$webhookUrl}", [true]);
 
+        /**
+         * Overwrite the webhook url sent to Mollie.
+         *
+         * @since 2.1.0
+         *
+         * @param string $webhookUrl the processed webhook url.
+         * @param WC_Order $order the processed order.
+         */
         return apply_filters($this->pluginId . '_webhook_url', $webhookUrl, $order);
     }
     /**

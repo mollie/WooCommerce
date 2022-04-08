@@ -228,10 +228,22 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         $this->paymentService->setGateway($this);
         $initial_order_status = $this->paymentMethod->getInitialOrderStatus();
 
-        // Overwrite plugin-wide
+        /**
+         * Overwrite plugin-wide the initial order status.
+         *
+         * @since 2.0.0
+         *
+         * @param string $initial_order_status initial order status.
+         */
         $initial_order_status = apply_filters($this->pluginId . '_initial_order_status', $initial_order_status);
 
-        // Overwrite gateway-wide
+        /**
+         * Overwrite gateway-wide the initial order status.
+         *
+         * @since 2.0.0
+         *
+         * @param string $initial_order_status initial order status.
+         */
         $initial_order_status = apply_filters($this->pluginId . '_initial_order_status_' . $this->id, $initial_order_status);
 
         // Get Mollie customer ID
@@ -251,7 +263,14 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         $initialPaymentUsedOrderAPI = $this->initialPaymentUsedOrderAPI($subcriptionParentOrder);
         $data = $this->subscriptionObject->getRecurringPaymentRequestData($renewal_order, $customer_id, $initialPaymentUsedOrderAPI);
 
-        // Allow filtering the renewal payment data
+        /**
+         * Allow filtering the renewal payment data.
+         *
+         * @since 2.5.2
+         *
+         * @param array $data data to send to Mollie's API.
+         * @param string $renewal_order the order to be renewed.
+         */
         $data = apply_filters('woocommerce_' . $this->id . '_args', $data, $renewal_order);
 
         // Create a renewal payment

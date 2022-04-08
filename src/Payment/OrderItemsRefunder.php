@@ -206,6 +206,8 @@ class OrderItemsRefunder
         /**
          * Canceled Order Lines
          *
+         * @since 5.3.1
+         *
          * @param array $data Data sent to Mollie cancel endpoint
          * @param WC_Order $order
          */
@@ -221,6 +223,8 @@ class OrderItemsRefunder
 
         /**
          * Refund Orders Lines
+         *
+         * @since 5.3.1
          *
          * @param Refund $refund Refund instance
          * @param WC_Order $order

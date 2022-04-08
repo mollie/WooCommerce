@@ -203,10 +203,17 @@ class MolliePaymentGateway extends WC_Payment_Gateway
     {
         if ($this->paymentMethod->shouldDisplayIcon()) {
             $defaultIcon = $this->paymentMethod->getIconUrl();
-            $this->icon = apply_filters(
-                $this->id . '_icon_url',
-                $defaultIcon
-            );
+
+            /**
+             * Overwrite the returned icon markup.
+             *
+             * A markup of the form '<img src="{your-icon-url-here}" class="mollie-gateway-icon" />' is expected
+             *
+             * @since 6.3.0
+             *
+             * @param string $defaultIcon the icon img markup.
+             */
+            $this->icon = apply_filters($this->id . '_icon_url', $defaultIcon);
         }
     }
 
@@ -376,6 +383,13 @@ class MolliePaymentGateway extends WC_Payment_Gateway
             'USD',
         ];
 
+        /**
+         * Overwrite the array of supported currencies for every gateway.
+         *
+         * @since 2.0.0
+         *
+         * @param array $default array of the default supported currencies.
+         */
         return apply_filters(
             'woocommerce_' . $this->id . '_supported_currencies',
             $default
@@ -622,6 +636,13 @@ class MolliePaymentGateway extends WC_Payment_Gateway
                 $hookReturnPaymentStatus = 'failed';
             }
         }
+        /**
+         * Action hook after customer returned from payment.
+         *
+         * @since 5.0.0
+         *
+         * @param WC_Order $order The WooCommerce order.
+         */
         do_action(
             $this->pluginId . '_customer_return_payment_'
             . $hookReturnPaymentStatus,
@@ -1087,6 +1108,13 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         $fallbackToShopCountry = wc_get_base_location()['country'];
         $billingCountry = $customerExistsAndHasCountry? WC()->customer->get_billing_country() : $fallbackToShopCountry;
 
+        /**
+         * Overwrite the billing country assigned to the customer.
+         *
+         * @since 5.0.5
+         *
+         * @param string $billingCountry billing country of the customer.
+         */
         $billingCountry = apply_filters(
             $this->pluginId
             . '_is_available_billing_country_for_payment_gateways',

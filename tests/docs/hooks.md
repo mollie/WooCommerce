@@ -442,6 +442,47 @@ Source: [./src/Payment/MollieOrderService.php](MollieOrderService.php), [line 59
 
 
 ## Filters
+### `mollie_wc_plugin_modules`
+
+*Declare your own module to access the plugin's container data.*
+
+The module must implement the ServiceModule or ExecutableModule interface from the composer package ["inpsyde/modularity"](https://github.com/inpsyde/modularity)
+
+An example could be:
+```
+$module = new class implements ExecutableModule{
+    public function run(ContainerInterface $ccontainer): bool
+    {
+        $gateways = $container->get('gateway.instances');
+        return true;
+    }
+
+    public function id(): string
+    {
+        return __CLASS__;
+    }
+};
+
+add_filter('mollie_wc_plugin_modules', function($modules) use ($module) {
+    array_push($modules, $module);
+
+    return $modules;
+});
+```
+
+**Arguments**
+
+Argument | Type | Description
+-------- | ---- | -----------
+`$modules` | `array` | The array of declared modules.
+
+**Changelog**
+
+Version | Description
+------- | -----------
+`7.0.4` |
+
+Source: [./mollie-payments-for-woocommerce.php](mollie-payments-for-woocommerce.php), [line 160](mollie-payments-for-woocommerce.php#L160-L170)
 
 ### `{$gateway->id}_icon_url`
 

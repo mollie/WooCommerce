@@ -157,6 +157,16 @@ function initialize()
             new PaymentModule(),
             new UninstallModule()
         ];
+        /**
+         * Declare your own module to access the plugin's container data.
+         *
+         * The module must implement the ServiceModule or ExecutableModule interface
+         * from the composer package "inpsyde/modularity"
+         *
+         * @since 7.0.4
+         *
+         * @param array $modules The array of declared modules.
+         */
         $modules = apply_filters('mollie_wc_plugin_modules', $modules);
         $bootstrap->boot(...$modules);
     } catch (Throwable $throwable) {

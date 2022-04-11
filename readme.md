@@ -56,7 +56,7 @@ Please go to the [signup page](https://www.mollie.com/signup) to create a new Mo
 ### Features
 
 * Support for all available Mollie payment methods
-* Compatible with WooCommerce Subscriptions for recurring payments (credit card, iDEAL, SEPA Direct Debit)
+* Compatible with WooCommerce Subscriptions for recurring payments (Apple Pay, credit card, iDEAL, and more via SEPA Direct Debit)
 * Transparent pricing. No startup fees, no monthly fees, and no gateway fees. No hidden fees, period.
 * Edit the order, title and description of every payment method in WooCommerce checkout
 * Support for full and partial payment refunds (WooCommerce 2.2+)

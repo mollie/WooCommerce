@@ -9,11 +9,13 @@ namespace Mollie\WooCommerce\Payment;
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
+use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
+use RuntimeException;
 use WC_Order;
 
 class PaymentModule implements ServiceModule, ExecutableModule
@@ -359,7 +361,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
             $order->add_order_note('Order not paid or authorized at Mollie yet, can not be shipped.');
             $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order not paid or authorized at Mollie yet, can not be shipped.');
-        } catch (Mollie\Api\Exceptions\ApiException $e) {
+        } catch (ApiException $e) {
             $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Processing shipment & capture failed, error: ' . $e->getMessage());
         }
 
@@ -396,6 +398,13 @@ class PaymentModule implements ServiceModule, ExecutableModule
             return;
         }
 
+        $orderStr = "ord_";
+        if (substr($mollie_order_id, 0, strlen($orderStr)) !== $orderStr) {
+            $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order uses Payment API, cannot cancel as order.');
+
+            return;
+        }
+
         $apiKey = $this->settingsHelper->getApiKey();
         try {
             // Get the order from the Mollie API
@@ -420,7 +429,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
             $order->add_order_note('Order could not be canceled at Mollie, because order status is ' . $mollie_order->status . '.');
             $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Order could not be canceled at Mollie, because order status is ' . $mollie_order->status . '.');
-        } catch (Mollie\Api\Exceptions\ApiException $e) {
+        } catch (ApiException $e) {
             $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - ' . $order_id . ' - Updating order to canceled at Mollie failed, error: ' . $e->getMessage());
         }
 

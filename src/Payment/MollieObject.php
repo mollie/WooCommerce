@@ -7,12 +7,9 @@ namespace Mollie\WooCommerce\Payment;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Payment;
-use Mollie\WooCommerce\Gateway\AbstractGateway;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
-use Mollie\WooCommerce\Plugin;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
-use Mollie\WooCommerce\Shared\Data;
 use Psr\Log\LogLevel;
 use WC_Order;
 use WC_Payment_Gateway;
@@ -643,8 +640,8 @@ class MollieObject
             function_exists('wcs_order_contains_renewal')
             && wcs_order_contains_renewal($orderId)
         ) {
-            if ($gateway || ($gateway instanceof MolliePaymentGateway)) {
-                $gateway->updateOrderStatus(
+            if ($gateway instanceof MolliePaymentGateway) {
+                $gateway->paymentService->updateOrderStatus(
                     $order,
                     $newOrderStatus,
                     sprintf(
@@ -676,8 +673,8 @@ class MollieObject
             ) {
                 $emails['WC_Email_Failed_Order']->trigger($orderId);
             }
-        } elseif ($gateway || ($gateway instanceof MolliePaymentGateway)) {
-            $gateway->updateOrderStatus(
+        } elseif ($gateway instanceof MolliePaymentGateway) {
+            $gateway->paymentService->updateOrderStatus(
                 $order,
                 $newOrderStatus,
                 sprintf(
@@ -871,5 +868,92 @@ class MollieObject
         }
         return $domain;
     }
+    protected function getPaymentDescription($order, $option)
+    {
+        $description = !$option ? '' : trim($option);
+        $description = !$description ? '{orderNumber}' : $description;
 
+        switch ($description) {
+            // Support for old deprecated options.
+            // TODO: remove when deprecated
+            case '{orderNumber}':
+                $description =
+                    /* translators: do not translate between {} */
+                    _x(
+                        'Order {orderNumber}',
+                        'Payment description for {orderNumber}',
+                        'mollie-payments-for-woocommerce'
+                    );
+                $description = $this->replaceTagsDescription($order, $description);
+                break;
+            case '{storeName}':
+                $description =
+                    /* translators: do not translate between {} */
+                    _x(
+                        'StoreName {storeName}',
+                        'Payment description for {storeName}',
+                        'mollie-payments-for-woocommerce'
+                    );
+                $description = $this->replaceTagsDescription($order, $description);
+                break;
+            case '{customer.firstname}':
+                $description =
+                    /* translators: do not translate between {} */
+                    _x(
+                        'Customer Firstname {customer.firstname}',
+                        'Payment description for {customer.firstname}',
+                        'mollie-payments-for-woocommerce'
+                    );
+                $description = $this->replaceTagsDescription($order, $description);
+                break;
+            case '{customer.lastname}':
+                $description =
+                    /* translators: do not translate between {} */
+                    _x(
+                        'Customer Lastname {customer.lastname}',
+                        'Payment description for {customer.lastname}',
+                        'mollie-payments-for-woocommerce'
+                    );
+                $description = $this->replaceTagsDescription($order, $description);
+                break;
+            case '{customer.company}':
+                $description =
+                /* translators: do not translate between {} */
+                    _x(
+                        'Customer Company {customer.company}',
+                        'Payment description for {customer.company}',
+                        'mollie-payments-for-woocommerce'
+                    );
+                $description = $this->replaceTagsDescription($order, $description);
+                break;
+            // Support for custom string with interpolation.
+            default:
+                // Replace available description tags.
+                $description = $this->replaceTagsDescription($order, $description);
+                break;
+        }
+
+        // Fall back on default if description turns out empty.
+        return !$description ? __('Order', 'woocommerce' ) . ' ' . $order->get_order_number() : $description;
+    }
+
+    /**
+     * @param $order
+     * @param $description
+     * @return array|string|string[]
+     */
+    protected function replaceTagsDescription($order, $description)
+    {
+        $replacement_tags = [
+            '{orderNumber}' => $order->get_order_number(),
+            '{storeName}' => get_bloginfo('name'),
+            '{customer.firstname}' => $order->get_billing_first_name(),
+            '{customer.lastname}' => $order->get_billing_last_name(),
+            '{customer.company}' => $order->get_billing_company(),
+        ];
+        foreach ($replacement_tags as $tag => $replacement) {
+            $description = str_replace($tag, $replacement, $description);
+        }
+        return $description;
+    }
 }

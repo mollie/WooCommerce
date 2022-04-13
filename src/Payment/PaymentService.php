@@ -48,6 +48,10 @@ class PaymentService
      * @var PaymentCheckoutRedirectService
      */
     protected $paymentCheckoutRedirectService;
+    /**
+     * @var string
+     */
+    protected $voucherDefaultCategory;
 
 
     /**
@@ -61,7 +65,8 @@ class PaymentService
         Api $apiHelper,
         Settings $settingsHelper,
         string $pluginId,
-        PaymentCheckoutRedirectService $paymentCheckoutRedirectService
+        PaymentCheckoutRedirectService $paymentCheckoutRedirectService,
+        string $voucherDefaultCategory
     )
     {
         $this->notice = $notice;
@@ -72,6 +77,7 @@ class PaymentService
         $this->settingsHelper = $settingsHelper;
         $this->pluginId = $pluginId;
         $this->paymentCheckoutRedirectService = $paymentCheckoutRedirectService;
+        $this->voucherDefaultCategory = $voucherDefaultCategory;
     }
 
     public function setGateway($gateway)
@@ -324,7 +330,8 @@ class PaymentService
         $molliePaymentType = self::PAYMENT_METHOD_TYPE_ORDER;
         $paymentRequestData = $paymentObject->getPaymentRequestData(
             $order,
-            $customer_id
+            $customer_id,
+            $this->voucherDefaultCategory
         );
 
         $data = array_filter($paymentRequestData);

@@ -8,6 +8,7 @@ use Exception;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\SDK\Api;
 use Psr\Log\LogLevel;
 use stdClass;
@@ -77,7 +78,7 @@ class MollieOrder extends MollieObject
      *
      * @return array
      */
-    public function getPaymentRequestData($order, $customerId, $voucherDefaultCategory)
+    public function getPaymentRequestData($order, $customerId, $voucherDefaultCategory = Voucher::NO_CATEGORY)
     {
         $settingsHelper = $this->settingsHelper;
         $paymentLocale = $settingsHelper->getPaymentLocale();
@@ -104,10 +105,7 @@ class MollieOrder extends MollieObject
         }
 
         // Generate order lines for Mollie Orders
-
         $orderLinesHelper = $this->orderLines;
-        //inicio order lines sin order en el constructor, lo he iniciado en el modulo
-        //aqui le paso el voucher cat default, que va desde argumento no en constructor y el order
         $orderLines = $orderLinesHelper->order_lines($order, $voucherDefaultCategory);
 
         // Build the Mollie order data

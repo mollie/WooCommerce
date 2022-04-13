@@ -44,13 +44,22 @@ class PaymentModule implements ServiceModule, ExecutableModule
     public function services(): array
     {
         return [
+            OrderLines::class => static function (ContainerInterface $container): OrderLines {
+                $data = $container->get('settings.data_helper');
+                $pluginId = $container->get('shared.plugin_id');
+                return new OrderLines(
+                    $data,
+                    $pluginId
+                );
+            },
            PaymentFactory::class => static function (ContainerInterface $container): PaymentFactory {
                $settingsHelper = $container->get('settings.settings_helper');
                $apiHelper = $container->get('SDK.api_helper');
                $data = $container->get('settings.data_helper');
                $pluginId = $container->get('shared.plugin_id');
                $logger = $container->get(Logger::class);
-               return new PaymentFactory($data, $apiHelper, $settingsHelper, $pluginId, $logger);
+               $orderLines = $container->get(OrderLines::class);
+               return new PaymentFactory($data, $apiHelper, $settingsHelper, $pluginId, $logger, $orderLines);
            },
            MollieObject::class => static function (ContainerInterface $container): MollieObject {
                $logger = $container->get(Logger::class);
@@ -60,7 +69,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
                $paymentFactory = $container->get(PaymentFactory::class);
                $settingsHelper = $container->get('settings.settings_helper');
                return new MollieObject($data, $logger, $paymentFactory, $apiHelper, $settingsHelper, $pluginId);
-           },
+           }
         ];
     }
 

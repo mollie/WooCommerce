@@ -8,6 +8,7 @@ use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
 use Mollie\WooCommerce\Payment\PaymentService;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
+use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
 use Mollie\WooCommerceTests\Stubs\WC_Order_Item_Product;
 use Mollie\WooCommerceTests\Stubs\WC_Settings_API;
@@ -70,6 +71,7 @@ class PaymentServiceTest extends TestCase
             []
         );
         $apiClientMock->orders = $orderEndpoints;
+        $voucherDefaultCategory = Voucher::NO_CATEGORY;
         $testee = new PaymentService(
             $this->helperMocks->noticeMock(),
             $this->helperMocks->loggerMock(),
@@ -78,7 +80,8 @@ class PaymentServiceTest extends TestCase
             $this->helperMocks->apiHelper($apiClientMock),
             $this->helperMocks->settingsHelper(),
             $this->helperMocks->pluginId(),
-            $this->paymentCheckoutService($apiClientMock)
+            $this->paymentCheckoutService($apiClientMock),
+            $voucherDefaultCategory
         );
         $testee->setGateway($this->createMock(MolliePaymentGateway::class));
         stubs(
@@ -103,16 +106,6 @@ class PaymentServiceTest extends TestCase
             ->with('mollie-payments-for-woocommerce_api_switch')
             ->andReturn(false);
         expect('get_transient')->andReturn(['ideal'=>['id'=>'ideal']]);
-
-        /*
-        * Execute Test
-        */
-        $expectedResult = array (
-            'result'   => 'success',
-            'redirect' => $processPaymentRedirect,
-        );
-        $arrayResult = $testee->processPayment(1, $wcOrder, $paymentMethod, $processPaymentRedirect);
-        self::assertEquals($expectedResult, $arrayResult);
 
         /*
         * Execute Test

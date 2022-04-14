@@ -556,8 +556,8 @@ msgstr "Il tuo ordine è stato annullato."
 
 #. translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency.
 #: src/Gateway/SurchargeLabelBuilder.php:72
-msgid " +%1s%2s fee might apply"
-msgstr " +%1s%2s tariffa può essere applicata"
+msgid " + %1s %2s fee might apply"
+msgstr " + %1s %2s tariffa può essere applicata"
 
 #. translators: Placeholder 1: Fee amount tag.
 #: src/Gateway/SurchargeLabelBuilder.php:84
@@ -566,8 +566,8 @@ msgstr " +%1s%% tariffa può essere applicata"
 
 #. translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency. Placeholder 3: Percentage amount.
 #: src/Gateway/SurchargeLabelBuilder.php:102
-msgid " +%1s%2s + %3s%% fee might apply"
-msgstr " +%1s%2s + %3s%% tariffa può essere applicata"
+msgid " + %1s %2s + %3s%% fee might apply"
+msgstr " + %1s %2s + %3s%% tariffa può essere applicata"
 
 #: src/Gateway/Voucher/VoucherModule.php:52
 #: src/Settings/Page/MollieSettingsPage.php:45

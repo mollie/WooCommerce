@@ -190,7 +190,7 @@ class Surcharge
         $amountFee = $paymentMethod->getProperty(self::FIXED_FEE);
         $currency = get_woocommerce_currency_symbol();
         /* translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency.*/
-        return sprintf(__(' +%1s%2s fee might apply', 'mollie-payments-for-woocommerce'), $amountFee, $currency);
+        return sprintf(__(' + %1s %2s fee might apply', 'mollie-payments-for-woocommerce'), $currency, $amountFee);
     }
 
     protected function name_percentage($paymentMethod)
@@ -203,7 +203,7 @@ class Surcharge
         }
         $amountFee = $paymentMethod->getProperty(self::PERCENTAGE);
         /* translators: Placeholder 1: Fee amount tag.*/
-        return sprintf(__(' +%1s%% fee might apply', 'mollie-payments-for-woocommerce'), $amountFee);
+        return sprintf(__(' + %1s%% fee might apply', 'mollie-payments-for-woocommerce'), $amountFee);
     }
 
     protected function name_fixed_fee_percentage($paymentMethod)
@@ -222,7 +222,7 @@ class Surcharge
         $currency = get_woocommerce_currency_symbol();
         $amountPercent = $paymentMethod->getProperty(self::PERCENTAGE);
         /* translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency. Placeholder 3: Percentage amount. */
-        return sprintf(__(' +%1s%2s + %3s%% fee might apply', 'mollie-payments-for-woocommerce'), $amountFix, $currency, $amountPercent);
+        return sprintf(__(' + %1s %2s + %3s%% fee might apply', 'mollie-payments-for-woocommerce'), $currency, $amountFix, $amountPercent);
     }
 
     /**

@@ -94,7 +94,8 @@ class PaymentService
         $apiKey = $this->settingsHelper->getApiKey();
 
         $hasBlocksEnabled = $this->dataHelper->isBlockPluginActive();
-        if($hasBlocksEnabled){
+        $isClassicCheckout = isset($_REQUEST["wc-ajax"]) && $_REQUEST["wc-ajax"] === "checkout";
+        if($hasBlocksEnabled && !$isClassicCheckout){
             $order = $this->correctSurchargeFee($order, $paymentMethod);
         }
 

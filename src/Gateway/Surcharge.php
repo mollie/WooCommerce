@@ -60,7 +60,7 @@ class Surcharge
             return $defaultDescription;
         }
         $feeText = $this->feeTextByType($surchargeType, $paymentMethod);
-        $feeText = html_entity_decode($feeText);
+        $feeText = is_string($feeText)? html_entity_decode($feeText):false;
 
         return $feeText?:__('A surchage fee might apply');
     }

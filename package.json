@@ -34,10 +34,10 @@
     "@symfony/webpack-encore": "^0.28.2",
     "@woocommerce/dependency-extraction-webpack-plugin": "^1.7.0",
     "@wordpress/element": "^4.0.4",
-    "cypress": "^9.2.0",
-    "cypress-woocommerce": "^0.1.1",
+    "@playwright/test": "^1.21.1",
     "date-and-time": "^0.14.0",
     "del": "^3.0.0",
+    "dotenv": "^16.0.0",
     "gulp": "^4.0.0",
     "gulp-cli": "^2.0.1",
     "gulp-help-doc": "^1.1.1",
@@ -53,7 +53,6 @@
     "watch": "webpack --watch",
     "build": "gulp buildAssets",
     "setup": "gulp setup",
-    "cypress:open": "cypress open"
   },
   "dependencies": {
     "@woocommerce/e2e-utils": "^0.1.6",

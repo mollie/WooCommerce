@@ -18,6 +18,7 @@ web_environment:
   - WP_VERSION=5.9
   - WP_LOCALE=de_DE
   - WP_TITLE=Mollie WordPress Test
+  - PLUGIN_NAME=mollie-payments-for-woocommerce
   - ADMIN_USER=admin
   - ADMIN_PASS=admin
   - ADMIN_EMAIL=admin@example.com

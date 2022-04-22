@@ -22,6 +22,12 @@ web_environment:
   - ADMIN_PASS=admin
   - ADMIN_EMAIL=admin@example.com
   - WC_VERSION=6.1.0
+
+hooks:
+  post-start:
+    - exec-host: ".ddev/bin/dump-compose-config"
+    - exec-host: "ddev describe -j | SOURCE_NAME=$DDEV_PROJECT .ddev/bin/setup-ide-datasource.php"
+
 # Key features of ddev's config.yaml:
 
 # name: <projectname> # Name of the project, automatically provides

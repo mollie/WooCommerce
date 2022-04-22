@@ -1,0 +1,19 @@
+#!/bin/sh
+## Description: erxport a docker-compose.yml for use with php storm.
+## Usage: phpstormcompose [compose-yaml file/path]
+## Example: "ddev phpstormcompose build/docker-compose.yml"
+set -eu
+COMPOSE_FILE=${1:-.idea/docker-compose.yml}
+ddev debug compose-config | \
+  # Remove windows Debug output
+  sed 's/Running  Command=.*//g' | \
+  # Remove localhost bindings
+  sed -r 's#\s- 127\.0\.0\.1\:\:(80|443)/tcp##g' | \
+  # convert newlines to formfeed (so we can do multiline replacment
+  tr '\n' '\f' | \
+  # convert empty port: into empty array port: []
+  sed -r 's/ports:\f\s+\f\s+\f/ports: \[\]\f/g' | \
+  # convert formfeed back to newline
+  tr '\f' '\n' > \
+  "$COMPOSE_FILE"
+echo "created: ${COMPOSE_FILE}"

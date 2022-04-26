@@ -17,3 +17,5 @@
 
 .env
 cypress.json
+test-results/
+playwright-report/

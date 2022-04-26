@@ -511,6 +511,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
             'Applepay',
             'Mybank',
             'Voucher',
+            'In3'
         ];
         $iconFactory = $container->get(IconFactory::class);
         $settingsHelper = $container->get('settings.settings_helper');

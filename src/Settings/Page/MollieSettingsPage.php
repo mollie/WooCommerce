@@ -128,7 +128,7 @@ class MollieSettingsPage extends WC_Settings_Page
             'mollie-payments-for-woocommerce'
         ) . '</a> ';
         $presentationText .= __(
-            'to create a new Mollie account and start receiving payments in a couple of minutes. ',
+            ' to create a new Mollie account and start receiving payments in a couple of minutes. ',
             'mollie-payments-for-woocommerce'
         );
         $presentationText .= __(

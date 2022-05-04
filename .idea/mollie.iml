@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="WEB_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/.ddev/wordpress/wp-content/plugins/woocommerce-subscriptions_new" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/automattic/phpcs-neutron-standard" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/automattic/vipwpcs" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/sirbrillig/phpcs-variable-analysis" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/dealerdirect/phpcodesniffer-composer-installer" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/phpcompatibility/php-compatibility" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/inpsyde/modularity" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>

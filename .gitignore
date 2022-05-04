@@ -5,10 +5,13 @@
 /vendor/
 /coverage/
 /node_modules/
+/.idea/dataSources.xml
+/.idea/docker-compose.xml
 /.idea/dictionaries/
 /.idea/workspace.xml
 /.idea/tasks.xml
 /.idea/vagrant.xml
+/.ddev/wordpress
 /public/js/
 /public/css/
 /tools/

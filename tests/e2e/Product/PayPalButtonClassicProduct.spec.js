@@ -1,5 +1,10 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
+const { loginAdmin } = require('../Shared/wpUtils');
+const {setOrderAPI, markPaidInMollie} = require('../Shared/mollieUtils');
+const {wooOrderPaidPage, wooOrderDetailsPageOnPaid} = require('../Shared/testMollieInWooPage');
+
+
 const GATEWAYS = {
   'paypal':{
       'title':'PayPal',
@@ -16,39 +21,7 @@ const PRODUCTS = {
         'price': '20,25€'
     }
 }
-/**
- * @param {import('@playwright/test').Page} page
- */
-async function loginAdmin(page) {
-  await page.goto(process.env.E2E_URL_TESTSITE + '/wp-login.php');
-  await page.locator('#user_pass').fill(process.env.ADMIN_PASS);
-  await Promise.all([
-      page.waitForNavigation(),
-      page.locator('text=Log in').click()
-  ]);
-}
-/**
- * @param {import('@playwright/test').Page} page
- */
-async function setOrderAPI(page) {
-  await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/admin.php?page=wc-settings&tab=mollie_settings&section=advanced');
-  await page.selectOption('select#mollie-payments-for-woocommerce_api_switch', 'order')
-  await Promise.all([
-      page.waitForNavigation(),
-      page.locator('text=Save changes').click()
-  ]);
-}
-/**
- * @param {import('@playwright/test').Page} page
- */
-async function setPaymentAPI(page) {
-  await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/admin.php?page=wc-settings&tab=mollie_settings&section=advanced');
-  await page.selectOption('select#mollie-payments-for-woocommerce_api_switch', 'payment')
-  await Promise.all([
-      page.waitForNavigation(),
-      page.locator('text=Save changes').click()
-  ]);
-}
+
 
 test.describe('PayPal Transaction in classic product', () => {
     test.beforeAll(async ({browser }) => {
@@ -89,30 +62,14 @@ test.describe('PayPal Transaction in classic product', () => {
           page.locator('input[alt="PayPal Button"]').click()
       ]);
 
-      // Check paid with Mollie
-      const mollieHeader = await page.innerText('.header__info');
-      const mollieOrder = mollieHeader.substring(6, mollieHeader.length)
-      await page.locator('text=Paid').click();
-      await page.locator('text=Continue').click();
+        // IN MOLLIE
+        // Capture order number in Mollie and mark as paid
+        const mollieOrder = await markPaidInMollie(page);
 
+        // WOOCOMMERCE ORDER PAID PAGE
+        await wooOrderPaidPage(page, mollieOrder, totalAmount, testedGateway);
 
-      await expect(page).toHaveURL(process.env.E2E_URL_TESTSITE + '/checkout/order-received/639/?key=wc_order_DO3CVhQvzpCxv&utm_nooverride=1');
-      // Check order number
-      await expect(page.locator('li.woocommerce-order-overview__order.order')).toContainText(mollieOrder);
-      // Check total amount in order
-      await expect(page.locator('li.woocommerce-order-overview__total.total')).toContainText(totalAmount);
-      // Check customer in billind details
-      await expect(page.locator('div.woocommerce-column.woocommerce-column--1.woocommerce-column--billing-address.col-1 > address')).toContainText("Test test");
-      // Check Mollie method appears
-      await expect(page.locator('li.woocommerce-order-overview__payment-method.method')).toContainText(testedGateway.title);
-
-      // WOOCOMMERCE ORDER PAGE
-      await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/edit.php?post_type=shop_order');
-      // Check order is in status processing in order page
-      await expect(page.locator('#post-' + mollieOrder + '> td.order_status.column-order_status > mark > span')).toContainText("Processing");
-      await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/post.php?post=' + mollieOrder + '&action=edit');
-
-      // Check order notes has correct text
-      await expect(page.locator('#woocommerce-order-notes > div.inside > ul')).toContainText('Order completed using Mollie – ' + testedGateway.title + ' payment');
+        // WOOCOMMERCE ORDER PAGE
+        await wooOrderDetailsPageOnPaid(page, mollieOrder, testedGateway);
   });
 });

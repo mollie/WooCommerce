@@ -3,7 +3,8 @@ const {test, expect} = require('@playwright/test');
 const { loginAdmin } = require('../Shared/wpUtils');
 const {setOrderAPI, setPaymentAPI, markPaidInMollie} = require('../Shared/mollieUtils');
 const {wooOrderPaidPage, wooOrderDetailsPageOnPaid} = require('../Shared/testMollieInWooPage');
-const {addProductToCart, fillCustomerInCheckout} = require('../Shared/wooUtils');
+const {addProductToCart, fillCustomerInBlockCheckout} = require('../Shared/wooUtils');
+
 const GATEWAYS = {
     'banktransfer': {
         'title': 'Bank Transfer',
@@ -17,12 +18,15 @@ const PRODUCTS = {
     }
 }
 
+
+
+
 /**
  * @param {import('@playwright/test').Page} page
  * @param testedProduct
  * @param testedGateway
  */
-async function classicCheckoutPaidTransaction(page, testedProduct, testedGateway) {
+async function blockCheckoutPaidTransaction(page, testedProduct, testedGateway) {
     await addProductToCart(page, testedProduct);
 
     // Go to checkout
@@ -36,7 +40,7 @@ async function classicCheckoutPaidTransaction(page, testedProduct, testedGateway
     const totalAmount = await page.innerText('.order-total > td > strong > span > bdi');
 
     // CUSTOMER DETAILS
-    await fillCustomerInCheckout(page);
+    await fillCustomerInBlockCheckout(page);
 
     // Check testedGateway option NO ISSUERS DROPDOWN
     await page.locator('text=' + testedGateway.title).check();
@@ -57,7 +61,7 @@ async function classicCheckoutPaidTransaction(page, testedProduct, testedGateway
     await wooOrderDetailsPageOnPaid(page, mollieOrder, testedGateway);
 }
 
-async function classicCheckoutFailedTransaction(page, testedProduct, testedGateway) {
+async function blockCheckoutFailedTransaction(page, testedProduct, testedGateway) {
     await addProductToCart(page, testedProduct);
 
     // Go to checkout
@@ -71,7 +75,7 @@ async function classicCheckoutFailedTransaction(page, testedProduct, testedGatew
     const totalAmount = await page.innerText('.order-total > td > strong > span > bdi');
 
     // CUSTOMER DETAILS
-    await fillCustomerInCheckout(page);
+    await fillCustomerInBlockCheckout(page);
 
     // Check testedGateway option NO ISSUERS DROPDOWN
     await page.locator('text=' + testedGateway.title).check();
@@ -92,27 +96,27 @@ async function classicCheckoutFailedTransaction(page, testedProduct, testedGatew
     await wooOrderDetailsPageOnFailed(page, mollieOrder, testedGateway);
 }
 
-async function classicCheckoutCancelledTransactionPending(page, testedProduct, testedGateway) {
+async function blockCheckoutCancelledTransactionPending(page, testedProduct, testedGateway) {
 
 }
 
-async function classicCheckoutCancelledTransactionCancelled(page, testedProduct, testedGateway) {
+async function blockCheckoutCancelledTransactionCancelled(page, testedProduct, testedGateway) {
 
 }
 
-async function classicCheckoutPaidTransactionFullRefund(page, testedProduct, testedGateway) {
-    await classicCheckoutPaidTransaction(page, testedProduct, testedGateway);
+async function blockCheckoutPaidTransactionFullRefund(page, testedProduct, testedGateway) {
+    await blockCheckoutPaidTransaction(page, testedProduct, testedGateway);
         //in order page select quantity
     //refund
 }
 
-async function classicCheckoutPaidTransactionPartialRefund(page, testedProduct, testedGateway) {
-    await classicCheckoutPaidTransaction(page, testedProduct, testedGateway);
+async function blockCheckoutPaidTransactionPartialRefund(page, testedProduct, testedGateway) {
+    await blockCheckoutPaidTransaction(page, testedProduct, testedGateway);
     //in order page select partial amount
     //refund
 }
 
-async function classicCheckoutExpiredTransaction(page, testedProduct, testedGateway) {
+async function blockCheckoutExpiredTransaction(page, testedProduct, testedGateway) {
 
 }
 
@@ -124,7 +128,7 @@ test.describe('Transaction in classic checkout', () => {
             let testedGateway = GATEWAYS[key]
             for (const key in PRODUCTS) {
                 let testedProduct = PRODUCTS[key]
-                await classicCheckoutPaidTransaction(page, testedProduct, testedGateway);
+                await blockCheckoutPaidTransaction(page, testedProduct, testedGateway);
             }// end loop products
         }// end loop gateways
     });
@@ -135,7 +139,7 @@ test.describe('Transaction in classic checkout', () => {
             let testedGateway = GATEWAYS[key]
             for (const key in PRODUCTS) {
                 let testedProduct = PRODUCTS[key]
-                await classicCheckoutFailedTransaction(page, testedProduct, testedGateway);
+                await blockCheckoutFailedTransaction(page, testedProduct, testedGateway);
             }// end loop products
         }// end loop gateways
     });
@@ -153,7 +157,7 @@ test.describe('Transaction in classic checkout', () => {
             let testedGateway = GATEWAYS[key]
             for (const key in PRODUCTS) {
                 let testedProduct = PRODUCTS[key]
-                await classicCheckoutCancelledTransactionPending(page, testedProduct, testedGateway);
+                await blockCheckoutCancelledTransactionPending(page, testedProduct, testedGateway);
             }// end loop products
         }// end loop gateways
     });
@@ -171,7 +175,7 @@ test.describe('Transaction in classic checkout', () => {
             let testedGateway = GATEWAYS[key]
             for (const key in PRODUCTS) {
                 let testedProduct = PRODUCTS[key]
-                await classicCheckoutCancelledTransactionCancelled(page, testedProduct, testedGateway);
+                await blockCheckoutCancelledTransactionCancelled(page, testedProduct, testedGateway);
             }// end loop products
         }// end loop gateways
     });
@@ -182,7 +186,7 @@ test.describe('Transaction in classic checkout', () => {
             let testedGateway = GATEWAYS[key]
             for (const key in PRODUCTS) {
                 let testedProduct = PRODUCTS[key]
-                await classicCheckoutPaidTransactionFullRefund(page, testedProduct, testedGateway);
+                await blockCheckoutPaidTransactionFullRefund(page, testedProduct, testedGateway);
             }// end loop products
         }// end loop gateways
     });
@@ -193,7 +197,7 @@ test.describe('Transaction in classic checkout', () => {
             let testedGateway = GATEWAYS[key]
             for (const key in PRODUCTS) {
                 let testedProduct = PRODUCTS[key]
-                await classicCheckoutPaidTransactionPartialRefund(page, testedProduct, testedGateway);
+                await blockCheckoutPaidTransactionPartialRefund(page, testedProduct, testedGateway);
             }// end loop products
         }// end loop gateways
     });
@@ -204,7 +208,7 @@ test.describe('Transaction in classic checkout', () => {
             let testedGateway = GATEWAYS[key]
             for (const key in PRODUCTS) {
                 let testedProduct = PRODUCTS[key]
-                await classicCheckoutExpiredTransaction(page, testedProduct, testedGateway);
+                await blockCheckoutExpiredTransaction(page, testedProduct, testedGateway);
             }// end loop products
         }// end loop gateways
     });
@@ -217,7 +221,7 @@ test.describe('Transaction in classic checkout', () => {
             let testedGateway = GATEWAYS[key]
             for (const key in PRODUCTS) {
                 let testedProduct = PRODUCTS[key]
-                await classicCheckoutPaidTransaction(page, testedProduct, testedGateway);
+                await blockCheckoutPaidTransaction(page, testedProduct, testedGateway);
             }// end loop products
         }// end loop gateways
     });
@@ -236,7 +240,7 @@ test.describe('Transaction in classic checkout', () => {
             let testedGateway = GATEWAYS[key]
             for (const key in PRODUCTS) {
                 let testedProduct = PRODUCTS[key]
-                await classicCheckoutCancelledTransactionPending(page, testedProduct, testedGateway);
+                await blockCheckoutCancelledTransactionPending(page, testedProduct, testedGateway);
             }// end loop products
         }// end loop gateways
     });
@@ -255,7 +259,7 @@ test.describe('Transaction in classic checkout', () => {
             let testedGateway = GATEWAYS[key]
             for (const key in PRODUCTS) {
                 let testedProduct = PRODUCTS[key]
-                await classicCheckoutCancelledTransactionCancelled(page, testedProduct, testedGateway);
+                await blockCheckoutCancelledTransactionCancelled(page, testedProduct, testedGateway);
             }// end loop products
         }// end loop gateways
     });
@@ -266,7 +270,7 @@ test.describe('Transaction in classic checkout', () => {
             let testedGateway = GATEWAYS[key]
             for (const key in PRODUCTS) {
                 let testedProduct = PRODUCTS[key]
-                await classicCheckoutPaidTransactionFullRefund(page, testedProduct, testedGateway);
+                await blockCheckoutPaidTransactionFullRefund(page, testedProduct, testedGateway);
             }// end loop products
         }// end loop gateways
     });
@@ -277,7 +281,7 @@ test.describe('Transaction in classic checkout', () => {
             let testedGateway = GATEWAYS[key]
             for (const key in PRODUCTS) {
                 let testedProduct = PRODUCTS[key]
-                await classicCheckoutPaidTransactionPartialRefund(page, testedProduct, testedGateway);
+                await blockCheckoutPaidTransactionPartialRefund(page, testedProduct, testedGateway);
             }// end loop products
         }// end loop gateways
     });
@@ -288,7 +292,7 @@ test.describe('Transaction in classic checkout', () => {
             let testedGateway = GATEWAYS[key]
             for (const key in PRODUCTS) {
                 let testedProduct = PRODUCTS[key]
-                await classicCheckoutExpiredTransaction(page, testedProduct, testedGateway);
+                await blockCheckoutExpiredTransaction(page, testedProduct, testedGateway);
             }// end loop products
         }// end loop gateways
     });

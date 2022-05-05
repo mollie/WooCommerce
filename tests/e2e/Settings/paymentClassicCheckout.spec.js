@@ -1,5 +1,8 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
+const { loginAdmin } = require('../Shared/wpUtils');
+const {insertAPIKeys, resetSettings} = require('../Shared/mollieUtils');
+
 const PRODUCTS = {
     'simple': {
         'name': 'simple_taxes',
@@ -23,35 +26,6 @@ const GATEWAYS = {
             'SEPA' : false,
             'customRedirect' : true,
     }
-}
-/**
- * @param {import('@playwright/test').Page} page
- */
-async function loginAdmin(page) {
-    await page.goto(process.env.E2E_URL_TESTSITE + '/wp-login.php');
-    await page.locator('#user_pass').fill(process.env.ADMIN_PASS);
-    await Promise.all([
-        page.waitForNavigation(),
-        page.locator('text=Log in').click()
-    ]);
-}
-async function resetSettings(page){
-        await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/admin.php?page=wc-settings&tab=mollie_settings&section=advanced');
-        await Promise.all([
-             page.waitForNavigation(),
-             await page.locator('text=clear now').click()
-         ]);
-}
-
-async function insertAPIKeys(page){
-    await page.goto('https://cmaymo.emp.pluginpsyde.com/wp-admin/admin.php?page=wc-settings&tab=mollie_settings');
-    await page.locator(`input[name="mollie-payments-for-woocommerce_live_api_key"]`).fill(process.env.MOLLIE_LIVE_API_KEY);
-    await page.locator(`input[name="mollie-payments-for-woocommerce_test_mode_enabled"]`).check();
-    await page.locator(`input[name="mollie-payments-for-woocommerce_test_api_key"]`).fill(process.env.MOLLIE_TEST_API_KEY);
-    await Promise.all([
-        page.waitForNavigation(),
-        page.locator('text=Save changes').click()
-    ]);
 }
 
 test.describe('Should show payment settings on classic checkout', () => {

@@ -37,7 +37,7 @@ const markPaidInMollie = async (page) =>{
  * @param {import('@playwright/test').Page} page
  */
 const insertAPIKeys = async (page) =>{
-    await page.goto('https://cmaymo.emp.pluginpsyde.com/wp-admin/admin.php?page=wc-settings&tab=mollie_settings');
+    await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/admin.php?page=wc-settings&tab=mollie_settings');
     await page.locator(`input[name="mollie-payments-for-woocommerce_live_api_key"]`).fill(process.env.MOLLIE_LIVE_API_KEY);
     await page.locator(`input[name="mollie-payments-for-woocommerce_test_mode_enabled"]`).check();
     await page.locator(`input[name="mollie-payments-for-woocommerce_test_api_key"]`).fill(process.env.MOLLIE_TEST_API_KEY);

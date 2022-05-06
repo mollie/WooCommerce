@@ -1,12 +1,12 @@
 /**
  * @param {import('@playwright/test').Page} page
+ * @param testedProductName
  */
-const addProductToCart = async (page, testedProduct) => {
+const addProductToCart = async (page, testedProductName) => {
     // Go to shop
     await page.goto(process.env.E2E_URL_TESTSITE + '/shop/');
     // Add product to cart
-    const productCartButton = testedProduct.name;
-    await page.locator('[data-product_sku="' + productCartButton + '"]').click();
+    await page.locator('[data-product_sku="' + testedProductName + '"]').click();
 }
 
 /**

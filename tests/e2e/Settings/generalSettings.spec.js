@@ -1,31 +1,9 @@
 // @ts-check
-const { test, expect } = require('@playwright/test');
+const { expect } = require('@playwright/test');
+const { test } = require('../Shared/base-test');
+
 const { loginAdmin } = require('../Shared/wpUtils');
 const {insertAPIKeys, resetSettings} = require('../Shared/mollieUtils');
-const PRODUCTS = {
-    'simple': {
-        'name': 'simple_taxes',
-        'price': '24,33€'
-    }
-  }
-const GATEWAYS = {
-    'banktransfer': {
-            'id' : 'banktransfer',
-            'defaultTitle' : 'Bank Transfer',
-            'settingsDescription' : '',
-            'defaultDescription' : '',
-            'paymentFields' : false,
-            'instructions' : true,
-            'supports' : [
-                        'products',
-                        'refunds',
-                        ],
-            'filtersOnBuild' : true,
-            'confirmationDelayed' : true,
-            'SEPA' : false,
-            'customRedirect' : true,
-    }
-}
 
 test.describe('Should show general settings', () => {
     test.beforeAll(async ({browser }) => {
@@ -35,14 +13,14 @@ test.describe('Should show general settings', () => {
         await resetSettings(page);
         await insertAPIKeys(page);
     });
-    test('Should show empty and disconnected', async ({ page }) => {
+    test('Should show empty and disconnected', async ({ page , gateways}) => {
         // Go to settings
         await loginAdmin(page);
         await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/admin.php?page=wc-settings&tab=mollie_settings&section');
         await expect(page.locator('text=No API key provided. Please set your Mollie API keys below.')).toBeVisible();
 
-        for ( const key in GATEWAYS ){
-            let testedGateway = GATEWAYS[key]
+        for ( const key in gateways ){
+            let testedGateway = gateways[key]
             //check default icon with a locator that has disabled and activate
             const url = await page.$eval(`text=${testedGateway.defaultTitle} disabled activate >> img`, img => img.src);
             await expect(url).toEqual(`${process.env.E2E_URL_TESTSITE}/wp-content/plugins/${process.env.E2E_TESTPACKAGE}//public/images/${testedGateway.id}.svg`)
@@ -57,8 +35,8 @@ test.describe('Should show general settings', () => {
             page.locator('text=Save changes').click()
         ]);
         await expect(page.locator('text=Mollie status: Connected')).toBeVisible();
-        for ( const key in GATEWAYS ){
-            let testedGateway = GATEWAYS[key]
+        for ( const key in gateways ){
+            let testedGateway = gateways[key]
             await expect(page.locator(`text=${testedGateway.defaultTitle} enabled edit >> span`)).toBeVisible();
         }
     });

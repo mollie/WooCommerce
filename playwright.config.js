@@ -1,6 +1,7 @@
 // @ts-check
 const { devices } = require('@playwright/test');
-
+const {simple, virtual} = require('./tests/e2e/Shared/products');
+const {banktransfer, paypal} = require('./tests/e2e/Shared/gateways');
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -48,54 +49,77 @@ const config = {
 
   /* Configure projects for major browsers */
   projects: [
-    {
-      name: 'chromium',
-      use: {
-        ...devices['Desktop Chrome'],
+      //all simple classic:simple prod, simple subs, one gw, one browser, checkout and settings, no buttons
+      {
+          name: 'simple-classic',
+          testIgnore: ['**/Cart/**','**/Product/**', '**/*.block.spec.js'],
+          use: {
+            ...devices['Desktop Chrome'],
+            gateways: banktransfer,
+            products: simple,
+          },
       },
-    },
 
-    {
-      name: 'firefox',
-      use: {
-        ...devices['Desktop Firefox'],
+      //all simple blocks:simple prod, simple subs, one gw, one browser
+      {
+          name: 'simple-block',
+          testIgnore: ['**/Cart/**','**/Product/**', '**/*.classic.spec.js'],
+          use: {
+              ...devices['Desktop Chrome'],
+              gateways: banktransfer,
+              products: simple,
+          },
       },
-    },
-
-    {
-      name: 'webkit',
-      use: {
-        ...devices['Desktop Safari'],
+      //cart :paypal
+      {
+          name: 'cart-paypal',
+          testMatch: '**/Cart/**',
+          use: {
+              ...devices['Desktop Chrome'],
+              gateways: paypal,
+              products: {simple, virtual},
+          },
       },
-    },
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: {
-    //     ...devices['Pixel 5'],
-    //   },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: {
-    //     ...devices['iPhone 12'],
-    //   },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: {
-    //     channel: 'msedge',
-    //   },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: {
-    //     channel: 'chrome',
-    //   },
-    // },
+      //product:paypal
+      {
+          name: 'product-paypal',
+          testMatch: '**/Product/**',
+          use: {
+              ...devices['Desktop Chrome'],
+              gateways: paypal,
+              products: {simple, virtual},
+          },
+      },
+      //settings simple
+      {
+          name: 'simple-settings',
+          testIgnore: ['**/Cart/**', '**/Product/**', '**/Transaction/**'],
+          use: {
+              ...devices['Desktop Chrome'],
+              gateways: banktransfer,
+              products: simple,
+          },
+      },
+      // full settings:all gw, all browsers
+      {
+          name: 'full-settings',
+          testIgnore: ['**/Cart/**', '**/Product/**', '**/Transaction/**'],
+          use: {
+              ...devices['Desktop Chrome', 'Desktop Firefox', 'Desktop Safari'],
+              gateways: {banktransfer, paypal},
+              products: simple,
+          },
+      },
+      //full transaction:all gw, all products, all browsers
+      {
+          name: 'full-transaction',
+          testIgnore: ['**/Cart/**', '**/Product/**', '**/Settings/**'],
+          use: {
+              ...devices['Desktop Chrome', 'Desktop Firefox', 'Desktop Safari'],
+              gateways: {banktransfer, paypal},
+              products: {simple, virtual},
+          },
+      },
   ],
 
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */

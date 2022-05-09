@@ -52,7 +52,14 @@
   "scripts": {
     "watch": "webpack --watch",
     "build": "gulp buildAssets",
-    "setup": "gulp setup"
+    "setup": "gulp setup",
+    "e2e-simple": "npx playwright test --project=simple-classic",
+    "e2e-block": "npx playwright test --project=simple-block",
+    "e2e-full-transaction": "npx playwright test --project=full-transaction",
+    "e2e-cart-paypal": "npx playwright test --project=cart-paypal",
+    "e2e-product-paypal": "npx playwright test --project=product-paypal",
+    "e2e-simple-settings": "npx playwright test --project=simple-settings",
+    "e2e-full-settings": "npx playwright test --project=full-settings"
   },
   "dependencies": {
     "@woocommerce/e2e-utils": "^0.1.6",

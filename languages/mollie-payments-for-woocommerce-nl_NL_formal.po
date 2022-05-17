@@ -546,8 +546,8 @@ msgstr "Uw bestelling is geannuleerd."
 
 #. translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency.
 #: src/Gateway/SurchargeLabelBuilder.php:72
-msgid " +%1s%2s fee might apply"
-msgstr " +%1s%2s prijstoeslag zou van toepassing kunnen zijn"
+msgid " + %1s %2s fee might apply"
+msgstr " + %1s %2s prijstoeslag zou van toepassing kunnen zijn"
 
 #. translators: Placeholder 1: Fee amount tag.
 #: src/Gateway/SurchargeLabelBuilder.php:84
@@ -556,8 +556,8 @@ msgstr " +%1s%% prijstoeslag zou van toepassing kunnen zijn"
 
 #. translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency. Placeholder 3: Percentage amount.
 #: src/Gateway/SurchargeLabelBuilder.php:102
-msgid " +%1s%2s + %3s%% fee might apply"
-msgstr " +%1s%2s + %3s%% prijstoeslag zou van toepassing kunnen zijn"
+msgid " + %1s %2s + %3s%% fee might apply"
+msgstr " + %1s %2s + %3s%% prijstoeslag zou van toepassing kunnen zijn"
 
 #: src/Gateway/Voucher/VoucherModule.php:52
 #: src/Settings/Page/MollieSettingsPage.php:45

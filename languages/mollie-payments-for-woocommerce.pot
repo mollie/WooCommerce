@@ -1330,17 +1330,17 @@ msgstr ""
 
 #: build/src/Mollie/WC/Gateway/Abstract.php:2580
 #: src/Mollie/WC/Gateway/Abstract.php:2580
-msgid "A +%1s%2s fee might apply"
+msgid "A + %1s %2s fee might apply"
 msgstr ""
 
 #: build/src/Mollie/WC/Gateway/Abstract.php:2590
 #: src/Mollie/WC/Gateway/Abstract.php:2590
-msgid "A +%1s%% fee might apply"
+msgid "A + %1s%% fee might apply"
 msgstr ""
 
 #: build/src/Mollie/WC/Gateway/Abstract.php:2607
 #: src/Mollie/WC/Gateway/Abstract.php:2607
-msgid "A +%1s%2s + %3s%% fee might apply"
+msgid "A + %1s %2s + %3s%% fee might apply"
 msgstr ""
 
 #: build/src/Mollie/WC/Gateway/Abstract.php:2646

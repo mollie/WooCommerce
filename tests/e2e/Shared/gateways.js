@@ -32,7 +32,18 @@ const creditcard = {
     'defaultTitle': 'Credit card',
 }
 const paypal = {
-    'id': 'paypal',
-    'defaultTitle': 'PayPal',
+    'id' : 'paypal',
+    'defaultTitle' : 'PayPal',
+    'settingsDescription' : '',
+    'defaultDescription' : '',
+    'paymentFields' : false,
+    'instructions' : true,
+    'supports' : [
+        'products',
+        'refunds',
+    ],
+    'filtersOnBuild' : false,
+    'confirmationDelayed' : false,
+    'SEPA' : false,
 }
 module.exports = {banktransfer, ideal, creditcard, paypal};

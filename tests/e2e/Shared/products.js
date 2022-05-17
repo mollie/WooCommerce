@@ -1,14 +1,10 @@
 const simple = {
-    'simple': {
-        'name': 'simple_taxes',
-        'price': '24,33€'
-    }
+    'name': 'woo-beanie',
+    'price': '18,00€'
 }
 const virtual = {
-    'virtual': {
-        'name': 'virtual_no_down',
-        'price': '20,25€'
-    }
+    'name': 'woo-album',
+    'price': '15,00€'
 }
 
 

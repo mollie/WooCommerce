@@ -1,21 +1,9 @@
 // @ts-check
-const {test, expect} = require('@playwright/test');
-const { loginAdmin } = require('../Shared/wpUtils');
+const {expect} = require('@playwright/test');
+const {test} = require('../Shared/base-test');
 const {setOrderAPI, setPaymentAPI, markPaidInMollie} = require('../Shared/mollieUtils');
 const {wooOrderPaidPage, wooOrderDetailsPageOnPaid} = require('../Shared/testMollieInWooPage');
 const {addProductToCart, fillCustomerInCheckout} = require('../Shared/wooUtils');
-const GATEWAYS = {
-    'banktransfer': {
-        'title': 'Bank Transfer',
-
-    }
-}
-const PRODUCTS = {
-    'simple': {
-        'name': 'simple_taxes',
-        'price': '24,33€'
-    }
-}
 
 /**
  * @param {import('@playwright/test').Page} page
@@ -117,30 +105,23 @@ async function classicCheckoutExpiredTransaction(page, testedProduct, testedGate
 }
 
 test.describe('Transaction in classic checkout', () => {
-    test('Transaction with Order API paid', async ({page}) => {
-        await loginAdmin(page);
+    test('Transaction classic with Order API paid', async ({page, products, gateways}) => {
         await setOrderAPI(page);
-        for (const key in GATEWAYS) {
-            let testedGateway = GATEWAYS[key]
-            for (const key in PRODUCTS) {
-                let testedProduct = PRODUCTS[key]
-                await classicCheckoutPaidTransaction(page, testedProduct, testedGateway);
+        for (const gateway in gateways) {
+            for (const product in products) {
+                await classicCheckoutPaidTransaction(page, product, gateway);
             }// end loop products
         }// end loop gateways
     });
-    test('Transaction with Order API failed', async ({page}) => {
-        await loginAdmin(page);
+    test('Transaction classic with Order API failed', async ({page, products, gateways}) => {
         await setOrderAPI(page);
-        for (const key in GATEWAYS) {
-            let testedGateway = GATEWAYS[key]
-            for (const key in PRODUCTS) {
-                let testedProduct = PRODUCTS[key]
-                await classicCheckoutFailedTransaction(page, testedProduct, testedGateway);
+        for (const gateway in gateways) {
+            for (const product in products) {
+                await classicCheckoutFailedTransaction(page, product, gateway);
             }// end loop products
         }// end loop gateways
     });
-    test('Transaction with Order API cancelled setting as pending', async ({page}) => {
-        await loginAdmin(page);
+    test('Transaction classic with Order API cancelled setting as pending', async ({page, products, gateways}) => {
         await setOrderAPI(page);
         //setting as pending
         await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/admin.php?page=wc-settings&tab=mollie_settings&section=advanced');
@@ -149,16 +130,13 @@ test.describe('Transaction in classic checkout', () => {
             page.waitForNavigation(),
             page.locator('text=Save changes').click()
         ]);
-        for (const key in GATEWAYS) {
-            let testedGateway = GATEWAYS[key]
-            for (const key in PRODUCTS) {
-                let testedProduct = PRODUCTS[key]
-                await classicCheckoutCancelledTransactionPending(page, testedProduct, testedGateway);
+        for (const gateway in gateways) {
+            for (const product in products) {
+                await classicCheckoutCancelledTransactionPending(page, product, gateway);
             }// end loop products
         }// end loop gateways
     });
-    test('Transaction with Order API cancelled setting as cancelled', async ({page}) => {
-        await loginAdmin(page);
+    test('Transaction classic with Order API cancelled setting as cancelled', async ({page, products, gateways}) => {
         await setOrderAPI(page);
         //setting as cancelled
         await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/admin.php?page=wc-settings&tab=mollie_settings&section=advanced');
@@ -167,63 +145,46 @@ test.describe('Transaction in classic checkout', () => {
             page.waitForNavigation(),
             page.locator('text=Save changes').click()
         ]);
-        for (const key in GATEWAYS) {
-            let testedGateway = GATEWAYS[key]
-            for (const key in PRODUCTS) {
-                let testedProduct = PRODUCTS[key]
-                await classicCheckoutCancelledTransactionCancelled(page, testedProduct, testedGateway);
+        for (const gateway in gateways) {
+            for (const product in products) {
+                await classicCheckoutCancelledTransactionCancelled(page, product, gateway);
             }// end loop products
         }// end loop gateways
     });
-    test('Transaction full refund Order', async ({page}) => {
-        await loginAdmin(page);
+    test('Transaction classic full refund Order', async ({page, products, gateways}) => {
         await setOrderAPI(page);
-        for (const key in GATEWAYS) {
-            let testedGateway = GATEWAYS[key]
-            for (const key in PRODUCTS) {
-                let testedProduct = PRODUCTS[key]
-                await classicCheckoutPaidTransactionFullRefund(page, testedProduct, testedGateway);
+        for (const gateway in gateways) {
+            for (const product in products) {
+                await classicCheckoutPaidTransactionFullRefund(page, product, gateway);
             }// end loop products
         }// end loop gateways
     });
-    test('Transaction partial refund Order', async ({page}) => {
-        await loginAdmin(page);
+    test('Transaction classic partial refund Order', async ({page, products, gateways}) => {
         await setOrderAPI(page);
-        for (const key in GATEWAYS) {
-            let testedGateway = GATEWAYS[key]
-            for (const key in PRODUCTS) {
-                let testedProduct = PRODUCTS[key]
-                await classicCheckoutPaidTransactionPartialRefund(page, testedProduct, testedGateway);
+        for (const gateway in gateways) {
+            for (const product in products) {
+                await classicCheckoutPaidTransactionPartialRefund(page, product, gateway);
             }// end loop products
         }// end loop gateways
     });
-    test('Transaction with Order API expired', async ({page}) => {
-        await loginAdmin(page);
+    test('Transaction classic with Order API expired', async ({page, products, gateways}) => {
         await setOrderAPI(page);
-        for (const key in GATEWAYS) {
-            let testedGateway = GATEWAYS[key]
-            for (const key in PRODUCTS) {
-                let testedProduct = PRODUCTS[key]
-                await classicCheckoutExpiredTransaction(page, testedProduct, testedGateway);
+        for (const gateway in gateways) {
+            for (const product in products) {
+                await classicCheckoutExpiredTransaction(page, product, gateway);
             }// end loop products
         }// end loop gateways
     });
-    test('Transaction with Payment API paid', async ({page}) => {
-        //login as Admin
-        await loginAdmin(page);
+    test('Transaction classic with Payment API paid', async ({page, products, gateways}) => {
         //Set Payment API
         await setPaymentAPI(page);
-        for (const key in GATEWAYS) {
-            let testedGateway = GATEWAYS[key]
-            for (const key in PRODUCTS) {
-                let testedProduct = PRODUCTS[key]
-                await classicCheckoutPaidTransaction(page, testedProduct, testedGateway);
+        for (const gateway in gateways) {
+            for (const product in products) {
+                await classicCheckoutPaidTransaction(page, product, gateway);
             }// end loop products
         }// end loop gateways
     });
-    test('Transaction with Payment API cancelled setting as pending', async ({page}) => {
-        //login as Admin
-        await loginAdmin(page);
+    test('Transaction classic with Payment API cancelled setting as pending', async ({page, products, gateways}) => {
         //Set Payment API
         await setPaymentAPI(page);
         //setting as pending
@@ -232,17 +193,13 @@ test.describe('Transaction in classic checkout', () => {
             page.waitForNavigation(),
             page.locator('text=Save changes').click()
         ]);
-        for (const key in GATEWAYS) {
-            let testedGateway = GATEWAYS[key]
-            for (const key in PRODUCTS) {
-                let testedProduct = PRODUCTS[key]
-                await classicCheckoutCancelledTransactionPending(page, testedProduct, testedGateway);
+        for (const gateway in gateways) {
+            for (const product in products) {
+                await classicCheckoutCancelledTransactionPending(page, product, gateway);
             }// end loop products
         }// end loop gateways
     });
-    test('Transaction with Payment API cancelled setting as cancelled', async ({page}) => {
-        //login as Admin
-        await loginAdmin(page);
+    test('Transaction classic with Payment API cancelled setting as cancelled', async ({page, products, gateways}) => {
         //Set Payment API
         await setPaymentAPI(page);
         //setting as cancelled
@@ -251,44 +208,33 @@ test.describe('Transaction in classic checkout', () => {
             page.waitForNavigation(),
             page.locator('text=Save changes').click()
         ]);
-        for (const key in GATEWAYS) {
-            let testedGateway = GATEWAYS[key]
-            for (const key in PRODUCTS) {
-                let testedProduct = PRODUCTS[key]
-                await classicCheckoutCancelledTransactionCancelled(page, testedProduct, testedGateway);
+        for (const gateway in gateways) {
+            for (const product in products) {
+                await classicCheckoutCancelledTransactionCancelled(page, product, gateway);
             }// end loop products
         }// end loop gateways
     });
-    test('Transaction full refund Payment', async ({page}) => {
-        await loginAdmin(page);
+    test('Transaction classic full refund Payment', async ({page, products, gateways}) => {
         await setPaymentAPI(page);
-        for (const key in GATEWAYS) {
-            let testedGateway = GATEWAYS[key]
-            for (const key in PRODUCTS) {
-                let testedProduct = PRODUCTS[key]
-                await classicCheckoutPaidTransactionFullRefund(page, testedProduct, testedGateway);
+        for (const gateway in gateways) {
+            for (const product in products) {
+                await classicCheckoutPaidTransactionFullRefund(page, product, gateway);
             }// end loop products
         }// end loop gateways
     });
-    test('Transaction partial refund Payment', async ({page}) => {
-        await loginAdmin(page);
+    test('Transaction classic partial refund Payment', async ({page, products, gateways}) => {
         await setPaymentAPI(page);
-        for (const key in GATEWAYS) {
-            let testedGateway = GATEWAYS[key]
-            for (const key in PRODUCTS) {
-                let testedProduct = PRODUCTS[key]
-                await classicCheckoutPaidTransactionPartialRefund(page, testedProduct, testedGateway);
+        for (const gateway in gateways) {
+            for (const product in products) {
+                await classicCheckoutPaidTransactionPartialRefund(page, product, gateway);
             }// end loop products
         }// end loop gateways
     });
-    test('Transaction with Payment API expired', async ({page}) => {
-        await loginAdmin(page);
+    test('Transaction classic with Payment API expired', async ({page, products, gateways}) => {
         await setPaymentAPI(page);
-        for (const key in GATEWAYS) {
-            let testedGateway = GATEWAYS[key]
-            for (const key in PRODUCTS) {
-                let testedProduct = PRODUCTS[key]
-                await classicCheckoutExpiredTransaction(page, testedProduct, testedGateway);
+        for (const gateway in gateways) {
+            for (const product in products) {
+                await classicCheckoutExpiredTransaction(page, product, gateway);
             }// end loop products
         }// end loop gateways
     });

@@ -32,19 +32,16 @@ const config = {
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
+  globalSetup: require.resolve('./tests/e2e/Shared/global-setup'),
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
     actionTimeout: 0,
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: process.env.E2E_URL_TESTSITE,
-
+    storageState: './storageState.json',
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
-    httpCredentials: {
-        username: process.env.E2E_AUTH_USERNAME,
-        password: process.env.E2E_AUTH_PW,
-    },
   },
 
   /* Configure projects for major browsers */
@@ -80,7 +77,7 @@ const config = {
               products: {simple, virtual},
           },
       },
-      //product:paypal
+       //product:paypal
       {
           name: 'product-paypal',
           testMatch: '**/Product/**',
@@ -90,24 +87,22 @@ const config = {
               products: {simple, virtual},
           },
       },
-      //settings simple
+       //settings simple
       {
           name: 'simple-settings',
-          testIgnore: ['**/Cart/**', '**/Product/**', '**/Transaction/**'],
+          testMatch: '**/Settings/GeneralSettings.spec.js',
           use: {
               ...devices['Desktop Chrome'],
-              gateways: banktransfer,
-              products: simple,
+              gateways: {banktransfer},
+              products: {simple},
           },
       },
-      // full settings:all gw, all browsers
+       // full settings:all gw, all browsers
       {
           name: 'full-settings',
-          testIgnore: ['**/Cart/**', '**/Product/**', '**/Transaction/**'],
+          testMatch: '**/Settings/PaymentSettingsCheckout.classic.spec.js',
           use: {
-              ...devices['Desktop Chrome', 'Desktop Firefox', 'Desktop Safari'],
-              gateways: {banktransfer, paypal},
-              products: simple,
+              ...devices['Desktop Chrome', 'Desktop Firefox', 'Desktop Safari']
           },
       },
       //full transaction:all gw, all products, all browsers

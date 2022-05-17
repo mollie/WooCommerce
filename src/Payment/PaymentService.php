@@ -362,7 +362,8 @@ class PaymentService
                 'metadata' => isset($data['metadata']) ? $data['metadata']
                     : '',
                 'orderNumber' => isset($data['orderNumber'])
-                    ? $data['orderNumber'] : ''
+                    ? $data['orderNumber'] : '',
+                'lines' => isset($data['lines']) ? $data['lines'] : ''
             ];
 
             $this->logger->log( LogLevel::DEBUG, json_encode($apiCallLog));

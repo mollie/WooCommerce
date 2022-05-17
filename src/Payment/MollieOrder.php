@@ -616,7 +616,7 @@ class MollieOrder extends MollieObject
             $checkAmount = $amount? number_format((float)$amount, 2):0; // WooCommerce - refund amount
 
             if ($checkAmount !== $totals) {
-                $errorMessage = "The sum of refunds for all order lines is not identical to the refund amount, so this refund will be processed as a payment amount refund, not an order line refund.";
+                $errorMessage = _x('The sum of refunds for all order lines is not identical to the refund amount, so this refund will be processed as a payment amount refund, not an order line refund.', 'Order note error', 'mollie-payments-for-woocommerce');
                 $order->add_order_note($errorMessage);
                 $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - ' . $errorMessage);
 
@@ -821,7 +821,15 @@ class MollieOrder extends MollieObject
         $apiKey = $this->settingsHelper->getApiKey();
 
         if ($paymentObject->isCreated() || $paymentObject->isAuthorized() || $paymentObject->isShipping()) {
-            $noteMessage = 'Can not refund order amount that has status ' . ucfirst($paymentObject->status) . ' at Mollie.';
+            /* translators: Placeholder 1: payment status.*/
+            $noteMessage = sprintf(
+                _x(
+                    'Can not refund order amount that has status %1$s at Mollie.',
+                    'Order note error',
+                    'mollie-payments-for-woocommerce'
+                ),
+                ucfirst($paymentObject->status)
+            );
             $order->add_order_note($noteMessage);
             $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - ' . $noteMessage);
             throw new Exception($noteMessage);

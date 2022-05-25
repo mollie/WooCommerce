@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+PROJECT_HOST=$(ddev wp option get home | tr -d '\r' | awk -F'^http[s]?://' '{print $2}')
+ddev share >/dev/null &
+NGROK_PID=$!
+ngrok-url(){
+    curl -s localhost:4040/api/tunnels | jq -r .tunnels[0].public_url | awk -F'^http[s]?://' '{print $2}'
+}
+wp-replace(){
+  echo "Replacing ${1} with ${2}"
+  ddev wp search-replace "${1}" "${2}" --all-tables --precise --recurse-objects
+}
+kill-ngrok(){
+  echo "Killing ngrok process ${NGROK_PID}"
+  pkill "${NGROK_PID}"
+  wp-replace "${NGROK_HOST}" "${PROJECT_HOST}"
+}
+echo "ngrok started with PID ${NGROK_PID}"
+
+echo "Waiting a few seconds for the service to come up"
+sleep 3
+NGROK_HOST=$(ngrok-url)
+wp-replace "${PROJECT_HOST}" "${NGROK_HOST}"
+
+echo "Your site is now reachable at https://${NGROK_HOST}"
+echo "ctrl-c to stop sharing and revert database changes"
+trap kill-ngrok INT
+wait -f "${NGROK_PID}"

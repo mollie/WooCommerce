@@ -117,6 +117,11 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $pluginId = $container->get('shared.plugin_id');
                 return new MollieOrderService($HttpResponseService, $logger, $paymentFactory, $data, $pluginId);
             },
+            OrderMandatoryGatewayDisabler::class => static function (ContainerInterface $container): OrderMandatoryGatewayDisabler {
+                $settings = $container->get('settings.settings_helper');
+                $isSettingsOrderApi = $settings->isOrderApiSetting();
+                return new OrderMandatoryGatewayDisabler($isSettingsOrderApi);
+            },
         ];
     }
 
@@ -133,6 +138,11 @@ class GatewayModule implements ServiceModule, ExecutableModule
             return array_merge($gateways, $mollieGateways);
         });
         add_filter('woocommerce_payment_gateways', [$this, 'maybeDisableApplePayGateway'], 20);
+        add_filter('woocommerce_payment_gateways', static function ($gateways) use ($container) {
+            $orderMandatoryGatewayDisabler = $container->get(OrderMandatoryGatewayDisabler::class);
+
+            return $orderMandatoryGatewayDisabler->processGateways($gateways);
+        });
          add_filter('woocommerce_payment_gateways', static function ($gateways) {
             $maybeEnablegatewayHelper = new MaybeDisableGateway();
 

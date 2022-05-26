@@ -94,7 +94,12 @@ class MollieSettingsPage extends WC_Settings_Page
             self::FILTER_COMPONENTS_SETTINGS,
             $mollieSettings
         );
-
+        /**
+         * Filter Mollie gateway settings
+         *
+         * @param array $mollieSettings The gateway settings
+         * @param string $currentSection The current section in settings
+         */
         return apply_filters(
             'woocommerce_get_settings_' . $this->id,
             $mollieSettings,
@@ -702,7 +707,11 @@ class MollieSettingsPage extends WC_Settings_Page
                 'mollie-payments-for-woocommerce'
             );
         }
-
+        /**
+         * Filter Mollie settings sections
+         *
+         * @param string $sections The gateway settings sections.
+         */
         return apply_filters(
             'woocommerce_get_sections_' . $this->id,
             $sections

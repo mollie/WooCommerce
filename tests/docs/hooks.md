@@ -23,24 +23,19 @@ Version | Description
 
 Source: [./src/Gateway/MolliePaymentGateway.php](MolliePaymentGateway.php), [line 639](MolliePaymentGateway.php#L639-L650)
 
-### `woocommerce_auto_stock_restored`
-
-**Arguments**
-
-Argument | Type | Description
--------- | ---- | -----------
-`$product` |  |
-`$item` |  |
-
-Source: [./src/Shared/Data.php](Data.php), [line 668](Data.php#L668-L668)
-
 ### `mollie-payments-for-woocommerce_before_renewal_payment_created`
 
 **Arguments**
 
 Argument | Type | Description
 -------- | ---- | -----------
-`$renewal_order` |  |
+`$renewal_order` | `\WC_Order` | The WooCommerce order to renew.
+
+**Changelog**
+
+Version | Description
+------- | -----------
+`2.0.0` |
 
 Source: [./src/Subscription/MollieSubscriptionGateway.php](MollieSubscriptionGateway.php), [line 225](MollieSubscriptionGateway.php#L225-L225)
 
@@ -50,21 +45,10 @@ Source: [./src/Subscription/MollieSubscriptionGateway.php](MollieSubscriptionGat
 
 Argument | Type | Description
 -------- | ---- | -----------
-`$data` |  |
-`$renewal_order` |  |
+`$data` | `array` | Data for the payment.
+`$renewal_order` | `\WC_Order` | The WooCommerce order to renew.
 
-Source: [./src/Subscription/MollieSubscriptionGateway.php](MollieSubscriptionGateway.php), [line 278](MollieSubscriptionGateway.php#L278-L278)
-
-### `mollie-payments-for-woocommerce_payment_created`
-
-**Arguments**
-
-Argument | Type | Description
--------- | ---- | -----------
-`$payment` |  |
-`$renewal_order` |  |
-
-Source: [./src/Subscription/MollieSubscriptionGateway.php](MollieSubscriptionGateway.php), [line 367](MollieSubscriptionGateway.php#L367-L367)
+Source: [./src/Subscription/MollieSubscriptionGateway.php](MollieSubscriptionGateway.php), [line 278](MollieSubscriptionGateway.php#L278-L278), [./src/Payment/PaymentService.php](PaymentService.php), [line 373](PaymentService.php#L373-L385)
 
 ### `mollie-payments-for-woocommerce_after_renewal_payment_created`
 
@@ -72,8 +56,8 @@ Source: [./src/Subscription/MollieSubscriptionGateway.php](MollieSubscriptionGat
 
 Argument | Type | Description
 -------- | ---- | -----------
-`$payment` |  |
-`$renewal_order` |  |
+`$payment` | `bool\|MollieOrder\|MolliePayment` | Received payment object.
+`$renewal_order` | `\WC_Order` | The order being processed.
 
 Source: [./src/Subscription/MollieSubscriptionGateway.php](MollieSubscriptionGateway.php), [line 376](MollieSubscriptionGateway.php#L376-L376)
 
@@ -86,7 +70,7 @@ Source: [./src/Subscription/MollieSubscriptionGateway.php](MollieSubscriptionGat
 Argument | Type | Description
 -------- | ---- | -----------
 `$paymentObject` | `bool\|\Mollie\WooCommerce\Payment\MollieOrder\|\Mollie\WooCommerce\Payment\MolliePayment` | Received payment object.
-`$order` | `string` | The order being processed.
+`$order` | `\WC_Order` | The order being processed.
 
 **Changelog**
 
@@ -94,7 +78,7 @@ Version | Description
 ------- | -----------
 `2.0.0` |
 
-Source: [./src/Payment/PaymentService.php](PaymentService.php), [line 124](PaymentService.php#L124-L132)
+Source: [./src/Payment/PaymentService.php](PaymentService.php), [line 124](PaymentService.php#L124-L132), [./src/Subscription/MollieSubscriptionGateway.php](MollieSubscriptionGateway.php), [line 367](MollieSubscriptionGateway.php#L367-L367)
 
 ### `mollie-payments-for-woocommerce_orderlines_process_items_before_getting_product_id`
 
@@ -150,25 +134,6 @@ Version | Description
 
 Source: [./src/Payment/PaymentService.php](PaymentService.php), [line 322](PaymentService.php#L322-L333)
 
-### `mollie-payments-for-woocommerce_create_payment`
-
-*Action hook before creating the payment.*
-
-**Arguments**
-
-Argument | Type | Description
--------- | ---- | -----------
-`$data` | `array` | data to send to Mollie's API.
-`$order` | `string` | the order being processed.
-
-**Changelog**
-
-Version | Description
-------- | -----------
-`2.0.0` |
-
-Source: [./src/Payment/PaymentService.php](PaymentService.php), [line 373](PaymentService.php#L373-L385)
-
 ### `mollie-payments-for-woocommerce_after_mandate_created`
 
 *Action hook after the mandate is created.*
@@ -177,7 +142,7 @@ Source: [./src/Payment/PaymentService.php](PaymentService.php), [line 373](Payme
 
 Argument | Type | Description
 -------- | ---- | -----------
-`$paymentObject` | `bool\|\Mollie\WooCommerce\Payment\MollieOrder\|\Mollie\WooCommerce\Payment\MolliePayment` | Mollie payment object.
+`$paymentObject` | `bool\|MollieOrder\|MolliePayment` | Mollie payment object.
 `$order` | `\WC_Order` | WoCommerce order.
 `$customerId` | `string` | WoCommerce customer id.
 `$mandateId` | `string` | WoCommerce mandate id.
@@ -198,7 +163,7 @@ Source: [./src/Payment/PaymentService.php](PaymentService.php), [line 795](Payme
 
 Argument | Type | Description
 -------- | ---- | -----------
-`$paymentObject` |  |
+`$paymentObject` | `bool\|MollieOrder\|MolliePayment` |  Mollie payment object.
 `$order` | `\WC_Order` | The WooCommerce order.
 
 **Changelog**
@@ -217,8 +182,8 @@ Source: [./src/Payment/MolliePayment.php](MolliePayment.php), [line 483](MollieP
 
 Argument | Type | Description
 -------- | ---- | -----------
-`$refund` | `\Mollie\Api\Resources\Refund` |
-`$order` | `\WC_Order` |
+`$refund` | `\Mollie\Api\Resources\Refund` | The refund created
+`$order` | `\WC_Order` | The WooCommerce order.
 
 **Changelog**
 
@@ -236,17 +201,16 @@ Source: [./src/Payment/MolliePayment.php](MolliePayment.php), [line 505](MollieP
 
 Argument | Type | Description
 -------- | ---- | -----------
-`[$refund, $order]` |  |
-`'5.3.1'` |  |
-`self::ACTION_AFTER_REFUND_PAYMENT_CREATED` |  |
+`$refund` | `\Mollie\Api\Resources\Refund` | The refund created
+`$order` | `\WC_Order` | The WooCommerce order.
 
 **Changelog**
 
 Version | Description
 ------- | -----------
-`2.0.0` |
+`5.3.1` |
 
-Source: [./src/Payment/MolliePayment.php](MolliePayment.php), [line 514](MolliePayment.php#L514-L527)
+Source: [./src/Payment/MolliePayment.php](MolliePayment.php), [line 514](MolliePayment.php#L514-L527), [./src/Payment/MollieOrder.php](MollieOrder.php), [line 838](MollieOrder.php#L838-L851), [line 925](MollieOrder.php#L925-L938)
 
 ### `mollie-payments-for-woocommerce_refund_order_created`
 
@@ -267,25 +231,6 @@ Version | Description
 
 Source: [./src/Payment/MollieOrder.php](MollieOrder.php), [line 824](MollieOrder.php#L824-L836)
 
-### `mollie-payments-for-woocommerce_refund_created`
-
-*Action hook after the refund is created.*
-
-**Arguments**
-
-Argument | Type | Description
--------- | ---- | -----------
-`[$refund, $order]` |  |
-`'5.3.1'` |  |
-`self::ACTION_AFTER_REFUND_PAYMENT_CREATED` |  |
-
-**Changelog**
-
-Version | Description
-------- | -----------
-`2.0.0` |
-
-Source: [./src/Payment/MollieOrder.php](MollieOrder.php), [line 838](MollieOrder.php#L838-L851)
 
 ### `mollie-payments-for-woocommerce_refund_amount_created`
 
@@ -295,9 +240,9 @@ Source: [./src/Payment/MollieOrder.php](MollieOrder.php), [line 838](MollieOrder
 
 Argument | Type | Description
 -------- | ---- | -----------
-`$refund` | `\Mollie\Api\Resources\Refund` |
-`$order` | `\WC_Order` |
-`$amount` | `string` |
+`$refund` | `\Mollie\Api\Resources\Refund` |Mollie refund object.
+`$order` | `\WC_Order` |WoCommerce order.
+`$amount` | `string` | The amount to refund.
 
 **Changelog**
 
@@ -307,25 +252,6 @@ Version | Description
 
 Source: [./src/Payment/MollieOrder.php](MollieOrder.php), [line 914](MollieOrder.php#L914-L923)
 
-### `mollie-payments-for-woocommerce_refund_created`
-
-*Action hook after the refund is created.*
-
-**Arguments**
-
-Argument | Type | Description
--------- | ---- | -----------
-`[$refund, $order]` |  |
-`'5.3.1'` |  |
-`self::ACTION_AFTER_REFUND_AMOUNT_CREATED` |  |
-
-**Changelog**
-
-Version | Description
-------- | -----------
-`2.0.0` |
-
-Source: [./src/Payment/MollieOrder.php](MollieOrder.php), [line 925](MollieOrder.php#L925-L938)
 
 ### `mollie-payments-for-woocommerce_line_items_cancelled`
 
@@ -336,7 +262,7 @@ Source: [./src/Payment/MollieOrder.php](MollieOrder.php), [line 925](MollieOrder
 Argument | Type | Description
 -------- | ---- | -----------
 `$data` | `array` | Data sent to Mollie cancel endpoint
-`$order` | `\WC_Order` |
+`$order` | `\WC_Order` | WoCommerce order.
 
 **Changelog**
 
@@ -355,7 +281,7 @@ Source: [./src/Payment/OrderItemsRefunder.php](OrderItemsRefunder.php), [line 20
 Argument | Type | Description
 -------- | ---- | -----------
 `$refund` | `\Mollie\Api\Resources\Refund` | Refund instance
-`$order` | `\WC_Order` |
+`$order` | `\WC_Order` | WoCommerce order.
 `$data` | `array` | Data sent to Mollie refund endpoint
 
 **Changelog**
@@ -504,17 +430,6 @@ Version | Description
 
 Source: [./src/Gateway/MolliePaymentGateway.php](MolliePaymentGateway.php), [line 207](MolliePaymentGateway.php#L207-L216)
 
-### `woocommerce_gateway_icon`
-
-**Arguments**
-
-Argument | Type | Description
--------- | ---- | -----------
-`$output` |  |
-`$this->id` |  |
-
-Source: [./src/Gateway/MolliePaymentGateway.php](MolliePaymentGateway.php), [line 223](MolliePaymentGateway.php#L223-L223)
-
 ### `woocommerce_{$gateway->id}_supported_currencies`
 
 *Overwrite the array of supported currencies for every gateway.*
@@ -532,26 +447,6 @@ Version | Description
 `2.0.0` |
 
 Source: [./src/Gateway/MolliePaymentGateway.php](MolliePaymentGateway.php), [line 386](MolliePaymentGateway.php#L386-L396)
-
-### `woocommerce_thankyou_order_id`
-
-**Arguments**
-
-Argument | Type | Description
--------- | ---- | -----------
-`absint($wp->query_vars['order-received'])` |  |
-
-Source: [./src/Gateway/MolliePaymentGateway.php](MolliePaymentGateway.php), [line 894](MolliePaymentGateway.php#L894-L897)
-
-### `woocommerce_thankyou_order_key`
-
-**Arguments**
-
-Argument | Type | Description
--------- | ---- | -----------
-`empty($_GET['key']) ? '' : wc_clean($_GET['key'])` |  |
-
-Source: [./src/Gateway/MolliePaymentGateway.php](MolliePaymentGateway.php), [line 898](MolliePaymentGateway.php#L898-L905)
 
 ### `mollie-payments-for-woocommerce_is_available_billing_country_for_payment_gateways`
 
@@ -597,7 +492,7 @@ Source: [./src/SDK/Api.php](Api.php), [line 43](Api.php#L43-L50)
 
 Argument | Type | Description
 -------- | ---- | -----------
-`\Mollie\Api\MollieApiClient::API_ENDPOINT` |  |
+`\Mollie\Api\MollieApiClient::API_ENDPOINT` | `string` | "https://api.mollie.com" endpoint.
 
 **Changelog**
 
@@ -627,38 +522,6 @@ Version | Description
 `6.7.0` |
 
 Source: [./src/Shared/Data.php](Data.php), [line 72](Data.php#L72-L82)
-
-### `wpml_current_language`
-
-**Arguments**
-
-Argument | Type | Description
--------- | ---- | -----------
-`get_locale()` |  |
-
-Source: [./src/Shared/Data.php](Data.php), [line 146](Data.php#L146-L146)
-
-### `wpml_active_languages`
-
-**Arguments**
-
-Argument | Type | Description
--------- | ---- | -----------
-`[]` |  |
-
-Source: [./src/Shared/Data.php](Data.php), [line 195](Data.php#L195-L195)
-
-### `woocommerce_order_item_quantity`
-
-**Arguments**
-
-Argument | Type | Description
--------- | ---- | -----------
-`$item['qty']` |  |
-`$order` |  |
-`$item` |  |
-
-Source: [./src/Shared/Data.php](Data.php), [line 664](Data.php#L664-L664)
 
 ### `mollie-payments-for-woocommerce_is_subscription_payment`
 
@@ -734,16 +597,6 @@ Version | Description
 
 Source: [./src/Subscription/MollieSubscriptionGateway.php](MollieSubscriptionGateway.php), [line 266](MollieSubscriptionGateway.php#L266-L274)
 
-### `wpml_current_language`
-
-**Arguments**
-
-Argument | Type | Description
--------- | ---- | -----------
-`get_locale()` |  |
-
-Source: [./src/Subscription/MollieSubscriptionGateway.php](MollieSubscriptionGateway.php), [line 458](MollieSubscriptionGateway.php#L458-L458)
-
 ### `components_settings`
 
 *Filter Component Settings*
@@ -752,30 +605,20 @@ Source: [./src/Subscription/MollieSubscriptionGateway.php](MollieSubscriptionGat
 
 Argument | Type | Description
 -------- | ---- | -----------
-`$componentsSettings` |  |
+`$componentsSettings` | `array` | Array of components settings.
 
-Source: [./src/Settings/Page/Components.php](Page/Components.php), [line 37](Page/Components.php#L37-L42)
-
-### `components_settings`
-
-*Filter Component Settings*
-
-**Arguments**
-
-Argument | Type | Description
--------- | ---- | -----------
-`$mollieSettings` |  |
-
-Source: [./src/Settings/Page/MollieSettingsPage.php](Page/MollieSettingsPage.php), [line 88](Page/MollieSettingsPage.php#L88-L96)
+Source: [./src/Settings/Page/Components.php](Page/Components.php), [line 37](Page/Components.php#L37-L42), [./src/Settings/Page/MollieSettingsPage.php](Page/MollieSettingsPage.php), [line 88](Page/MollieSettingsPage.php#L88-L96)
 
 ### `woocommerce_get_settings_{$gateway->id}`
 
+*Filter Mollie gateway settings*
+
 **Arguments**
 
 Argument | Type | Description
 -------- | ---- | -----------
-`$mollieSettings` |  |
-`$currentSection` |  |
+`$mollieSettings` | `array` | The gateway settings.
+`$currentSection` | `string` | The current section in settings.
 
 Source: [./src/Settings/Page/MollieSettingsPage.php](Page/MollieSettingsPage.php), [line 98](Page/MollieSettingsPage.php#L98-L102)
 
@@ -783,21 +626,13 @@ Source: [./src/Settings/Page/MollieSettingsPage.php](Page/MollieSettingsPage.php
 
 **Arguments**
 
+*Filter Mollie settings sections*
+
 Argument | Type | Description
 -------- | ---- | -----------
-`$sections` |  |
+`$sections` | `string` | The gateway settings sections.
 
 Source: [./src/Settings/Page/MollieSettingsPage.php](Page/MollieSettingsPage.php), [line 706](Page/MollieSettingsPage.php#L706-L709)
-
-### `wpml_current_language`
-
-**Arguments**
-
-Argument | Type | Description
--------- | ---- | -----------
-`get_locale()` |  |
-
-Source: [./src/Settings/Settings.php](Settings.php), [line 535](Settings.php#L535-L535)
 
 ### `mollie.allowed_language_code_setting`
 
@@ -807,7 +642,7 @@ Source: [./src/Settings/Settings.php](Settings.php), [line 535](Settings.php#L53
 
 Argument | Type | Description
 -------- | ---- | -----------
-`self::ALLOWED_LANGUAGE_CODES` |  |
+`self::ALLOWED_LANGUAGE_CODES` | `array`  | The allowed language codes
 
 Source: [./src/Settings/Settings.php](Settings.php), [line 593](Settings.php#L593-L601)
 
@@ -847,26 +682,7 @@ Version | Description
 ------- | -----------
 `2.0.0` |
 
-Source: [./src/Payment/PaymentService.php](PaymentService.php), [line 490](PaymentService.php#L490-L502)
-
-### `woocommerce_{$gateway->id}_args`
-
-*Allow filtering the payment data.*
-
-**Arguments**
-
-Argument | Type | Description
--------- | ---- | -----------
-`$data` | `array` | data to send to Mollie's API.
-`$order` | `string` | the order being processed.
-
-**Changelog**
-
-Version | Description
-------- | -----------
-`2.0.0` |
-
-Source: [./src/Payment/PaymentService.php](PaymentService.php), [line 704](PaymentService.php#L704-L712)
+Source: [./src/Payment/PaymentService.php](PaymentService.php), [line 490](PaymentService.php#L490-L502), [line 704](PaymentService.php#L704-L712)
 
 ### `mollie-payments-for-woocommerce_initial_order_status`
 
@@ -1146,7 +962,7 @@ Source: [./src/Payment/MollieOrder.php](MollieOrder.php), [line 580](MollieOrder
 
 Argument | Type | Description
 -------- | ---- | -----------
-`false` |  |
+`$default` | `bool` | Default value is false.
 
 **Changelog**
 

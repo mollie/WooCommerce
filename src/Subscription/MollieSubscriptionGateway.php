@@ -221,7 +221,13 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
 
         $renewal_order_id = $renewal_order->get_id();
 
-        // Allow developers to hook into the subscription renewal payment before it processed
+        /**
+         * Action Allow developers to hook into the subscription renewal payment before it processed.
+         *
+         * @since 2.0.0
+         *
+         * @param WC_Order $renewal_order The WooCommerce order to renew.
+         */
         do_action($this->pluginId . '_before_renewal_payment_created', $renewal_order);
 
         $this->logger->log(LogLevel::DEBUG, $this->id . ': Try to create renewal payment for renewal order ' . $renewal_order_id);
@@ -275,6 +281,14 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
 
         // Create a renewal payment
         try {
+            /**
+             * Action hook before creating the payment.
+             *
+             * @since 3.0.0
+             *
+             * @param array $data Data for the payment.
+             * @param WC_Order $renewal_order The WooCommerce order to renew.
+             */
             do_action($this->pluginId . '_create_payment', $data, $renewal_order);
             $apiKey = $this->dataService->getApiKey();
             $mollieApiClient = $this->apiHelper->getApiClient($apiKey);
@@ -363,7 +377,14 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             // Set Mollie customer
             $this->dataService->setUserMollieCustomerIdAtSubscription($renewal_order_id, $payment_object::$customerId);
 
-            // Tell WooCommerce a new payment was created for the order/subscription
+            /**
+             * Action hook after creating the payment.
+             *
+             * @since 2.0.0
+             *
+             * @param bool|MollieOrder|MolliePayment $payment The payment.
+             * @param WC_Order $renewal_order The WooCommerce order processed.
+             */
             do_action($this->pluginId . '_payment_created', $payment, $renewal_order);
 
             // Update order status and add order note
@@ -372,7 +393,14 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             // Update status of subscriptions with payment method SEPA Direct Debit or similar
             $this->update_subscription_status_for_direct_debit($renewal_order);
 
-            // Tell WooCommerce a new payment was created for the order/subscription
+            /**
+             * Action hook after creating the renewal.
+             *
+             * @since 2.0.0
+             *
+             * @param bool|MollieOrder|MolliePayment $payment The payment received.
+             * @param WC_Order $renewal_order The WooCommerce order processed.
+             */
             do_action($this->pluginId . '_after_renewal_payment_created', $payment, $renewal_order);
 
             return [

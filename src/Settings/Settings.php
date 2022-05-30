@@ -301,7 +301,7 @@ class Settings
         //TODO add api key filter
 
         if (!$apiKey && is_admin()) {
-            $apiKey = filter_input(INPUT_POST, $apiKeyId, FILTER_SANITIZE_STRING);
+            $apiKey = sanitize_text_field(wp_unslash($_POST[$apiKeyId]));
         }
 
         return is_string($apiKey) ? trim($apiKey) : false;

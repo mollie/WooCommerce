@@ -314,7 +314,7 @@ class GatewaySurchargeHandler
 
     protected function canProcessGateway()
     {
-        $gateway = isset($_POST['method']) ? filter_var($_POST['method'], FILTER_SANITIZE_STRING) : false;
+        $gateway = isset($_POST['method']) ? sanitize_text_field(wp_unslash($_POST['method'])) : false;
         if (!$gateway) {
             return false;
         }

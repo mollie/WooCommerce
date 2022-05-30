@@ -156,7 +156,7 @@ class MollieOrder extends MollieObject
             $paymentRequestData['payment']['cardToken'] = $cardToken;
         }
 
-        $applePayToken = filter_input(INPUT_POST, 'token', FILTER_SANITIZE_STRING);
+        $applePayToken = isset($_POST['token'])? sanitize_text_field(wp_unslash($_POST['token'])) : false;
         if ($applePayToken && isset($paymentRequestData['payment'])) {
             $encodedApplePayToken = json_encode($applePayToken);
             $paymentRequestData['payment']['applePayPaymentToken'] = $encodedApplePayToken;
@@ -1082,15 +1082,14 @@ class MollieOrder extends MollieObject
     ) {
 
         $address = $payment->shippingAddress;
-        $filter = FILTER_SANITIZE_STRING;
         $shippingAddress = [
-            'first_name' => filter_var($address->givenName, $filter),
-            'last_name' => filter_var($address->familyName, $filter),
-            'email' => filter_var($address->email, $filter),
-            'postcode' => filter_var($address->postalCode, $filter),
-            'country' => strtoupper(filter_var($address->country, $filter)),
-            'city' => filter_var($address->city, $filter),
-            'address_1' => filter_var($address->streetAndNumber, $filter),
+            'first_name' => sanitize_text_field(wp_unslash($address->givenName)),
+            'last_name' => sanitize_text_field(wp_unslash($address->familyName)),
+            'email' => sanitize_text_field(wp_unslash($address->email)),
+            'postcode' => sanitize_text_field(wp_unslash($address->postalCode)),
+            'country' => sanitize_text_field(wp_unslash($address->country)),
+            'city' => sanitize_text_field(wp_unslash($address->city)),
+            'address_1' => sanitize_text_field(wp_unslash($address->streetAndNumber)),
         ];
 
         $order->set_address($shippingAddress, 'shipping');

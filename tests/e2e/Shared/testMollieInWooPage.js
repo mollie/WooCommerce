@@ -1,3 +1,5 @@
+const { expect } = require('@playwright/test');
+
 const wooOrderPaidPage = async (page, mollieOrder, totalAmount, testedGateway) => {
     // Check order number
     await expect(page.locator('li.woocommerce-order-overview__order.order')).toContainText(mollieOrder);
@@ -7,6 +9,13 @@ const wooOrderPaidPage = async (page, mollieOrder, totalAmount, testedGateway) =
     await expect(page.locator('div.woocommerce-column.woocommerce-column--1.woocommerce-column--billing-address.col-1 > address')).toContainText("Test test");
     // Check Mollie method appears
     await expect(page.locator('li.woocommerce-order-overview__payment-method.method')).toContainText(testedGateway.title);
+}
+
+const wooOrderRetryPage = async (page, mollieOrder, totalAmount, testedGateway) => {
+    // Check we are in retry page
+    const regex = new RegExp(`${process.env.E2E_URL_TESTSITE}/checkout/order-pay/${mollieOrder}.`);
+    await expect(page).toHaveURL(regex);
+
 }
 
 const wooOrderDetailsPageOnPaid = async (page, mollieOrder, testedGateway) => {
@@ -19,4 +28,4 @@ const wooOrderDetailsPageOnPaid = async (page, mollieOrder, testedGateway) => {
     await expect(page.locator('#woocommerce-order-notes > div.inside > ul')).toContainText('Order completed using Mollie – ' + testedGateway.title + ' payment');
 }
 
-module.exports = {wooOrderPaidPage, wooOrderDetailsPageOnPaid}
+module.exports = {wooOrderPaidPage, wooOrderDetailsPageOnPaid, wooOrderRetryPage}

@@ -11,8 +11,10 @@ const {banktransfer, paypal} = require('./tests/e2e/Shared/gateways');
 
 /**
  * @see https://playwright.dev/docs/test-configuration
- * @type {import('@playwright/test').PlaywrightTestConfig}
+ *
+ * @type {import('@playwright/test').PlaywrightTestConfig<{ products: Object, gateways: Object }>}
  */
+
 const config = {
   testDir: './tests/e2e',
   /* Maximum time one test can run for. */
@@ -31,7 +33,9 @@ const config = {
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  reporter: [
+      [process.env.CI ? 'github' : 'list'],
+      ['junit', { outputFile: './tests/e2e/Reports/results.xml' }]],
   globalSetup: require.resolve('./tests/e2e/Shared/global-setup'),
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {

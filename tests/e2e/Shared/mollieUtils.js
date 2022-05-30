@@ -24,11 +24,12 @@ const setPaymentAPI = async (page) => {
 
 /**
  * @param {import('@playwright/test').Page} page
+ * @param status
  */
-const markPaidInMollie = async (page) =>{
+const markStatusInMollie = async (page, status) =>{
     const mollieHeader = await page.innerText('.header__info');
     const mollieOrder = mollieHeader.substring(6, mollieHeader.length)
-    await page.locator('text=Paid').click();
+    await page.locator('text=' + status).click();
     await page.locator('text=Continue').click();
     return mollieOrder;
 }
@@ -58,4 +59,4 @@ const resetSettings = async (page) => {
     ]);
 }
 
-module.exports = {setOrderAPI, setPaymentAPI, markPaidInMollie, insertAPIKeys, resetSettings};
+module.exports = {setOrderAPI, setPaymentAPI, markStatusInMollie, insertAPIKeys, resetSettings};

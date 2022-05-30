@@ -3,7 +3,7 @@ type: php
 docroot: .ddev/wordpress
 php_version: "7.4"
 webserver_type: nginx-fpm
-router_http_port: "80"
+router_http_port: "86"
 router_https_port: "443"
 xdebug_enabled: false
 additional_hostnames: []
@@ -95,7 +95,7 @@ hooks:
 # Please take care with this because it can cause great confusion.
 
 # upload_dir: custom/upload/dir
-# would set the destination path for ddev import-files to <docroot>/custom/upload/dir 
+# would set the destination path for ddev import-files to <docroot>/custom/upload/dir
 
 # working_dir:
 #   web: /var/www/html

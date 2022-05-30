@@ -1,17 +1,12 @@
 // @ts-check
 const {expect} = require('@playwright/test');
 const {test} = require('../Shared/base-test');
-const {setOrderAPI, setPaymentAPI, markPaidInMollie} = require('../Shared/mollieUtils');
-const {wooOrderPaidPage, wooOrderDetailsPageOnPaid} = require('../Shared/testMollieInWooPage');
+const {setOrderAPI, setPaymentAPI, markStatusInMollie} = require('../Shared/mollieUtils');
+const {wooOrderPaidPage, wooOrderDetailsPageOnPaid, wooOrderRetryPage} = require('../Shared/testMollieInWooPage');
 const {addProductToCart, fillCustomerInCheckout} = require('../Shared/wooUtils');
 
-/**
- * @param {import('@playwright/test').Page} page
- * @param testedProduct
- * @param testedGateway
- */
-async function classicCheckoutPaidTransaction(page, testedProduct, testedGateway) {
-    await addProductToCart(page, testedProduct);
+async function beforePlacingOrder(page, testedProduct, testedGateway) {
+    await addProductToCart(page, testedProduct.name);
 
     // Go to checkout
     await Promise.all([
@@ -19,7 +14,7 @@ async function classicCheckoutPaidTransaction(page, testedProduct, testedGateway
         await page.locator('text=Checkout').first().click()
     ]);
 
-    await expect(page).toHaveURL(process.env.E2E_URL_TESTSITE + '/checkout/');
+    await expect(page).toHaveURL(process.env.E2E_URL_TESTSITE + '/checkout');
     //Capture WooCommerce total amount
     const totalAmount = await page.innerText('.order-total > td > strong > span > bdi');
 
@@ -27,16 +22,27 @@ async function classicCheckoutPaidTransaction(page, testedProduct, testedGateway
     await fillCustomerInCheckout(page);
 
     // Check testedGateway option NO ISSUERS DROPDOWN
-    await page.locator('text=' + testedGateway.title).check();
+
+    await page.locator('#payment_method_mollie_wc_gateway_' + testedGateway.id).check();
     // Click text=Place order
     await Promise.all([
         page.waitForNavigation(/*{ url: 'https://www.mollie.com/checkout/test-mode?method=GATEWAY&token=XXX' }*/),
         page.locator('text=Place order').click()
     ]);
+    return totalAmount;
+}
+
+/**
+ * @param {import('@playwright/test').Page} page
+ * @param testedProduct
+ * @param testedGateway
+ */
+async function classicCheckoutPaidTransaction(page, testedProduct, testedGateway) {
+    const totalAmount = await beforePlacingOrder(page, testedProduct, testedGateway);
 
     // IN MOLLIE
     // Capture order number in Mollie and mark as paid
-    const mollieOrder = await markPaidInMollie(page);
+    const mollieOrder = await markStatusInMollie(page, "Paid");
 
     // WOOCOMMERCE ORDER PAID PAGE
     await wooOrderPaidPage(page, mollieOrder, totalAmount, testedGateway);
@@ -46,46 +52,33 @@ async function classicCheckoutPaidTransaction(page, testedProduct, testedGateway
 }
 
 async function classicCheckoutFailedTransaction(page, testedProduct, testedGateway) {
-    await addProductToCart(page, testedProduct);
-
-    // Go to checkout
-    await Promise.all([
-        page.waitForNavigation(/*{ url: 'https://www.mollie.com/checkout/test-mode?method=GATEWAY&token=XXX' }*/),
-        await page.locator('text=Checkout').first().click()
-    ]);
-
-    await expect(page).toHaveURL(process.env.E2E_URL_TESTSITE + '/checkout/');
-    //Capture WooCommerce total amount
-    const totalAmount = await page.innerText('.order-total > td > strong > span > bdi');
-
-    // CUSTOMER DETAILS
-    await fillCustomerInCheckout(page);
-
-    // Check testedGateway option NO ISSUERS DROPDOWN
-    await page.locator('text=' + testedGateway.title).check();
-    // Click text=Place order
-    await Promise.all([
-        page.waitForNavigation(/*{ url: 'https://www.mollie.com/checkout/test-mode?method=GATEWAY&token=XXX' }*/),
-        page.locator('text=Place order').click()
-    ]);
+    const totalAmount = await beforePlacingOrder(page, testedProduct, testedGateway);
 
     // IN MOLLIE
     // Capture order number in Mollie and mark as paid
-    const mollieOrder = await markFailedInMollie(page);
+    const mollieOrder = await markStatusInMollie(page, "Failed");
 
     // WOOCOMMERCE ORDER PAID PAGE
     await wooOrderRetryPage(page, mollieOrder, totalAmount, testedGateway);
 
     // WOOCOMMERCE ORDER PAGE
-    await wooOrderDetailsPageOnFailed(page, mollieOrder, testedGateway);
+    //await wooOrderDetailsPageOnFailed(page, mollieOrder, testedGateway);
 }
 
 async function classicCheckoutCancelledTransactionPending(page, testedProduct, testedGateway) {
+    const totalAmount = await beforePlacingOrder(page, testedProduct, testedGateway);
 
+    // IN MOLLIE
+    // Capture order number in Mollie and mark as paid
+    const mollieOrder = await markStatusInMollie(page, "Canceled");
 }
 
 async function classicCheckoutCancelledTransactionCancelled(page, testedProduct, testedGateway) {
+    const totalAmount = await beforePlacingOrder(page, testedProduct, testedGateway);
 
+    // IN MOLLIE
+    // Capture order number in Mollie and mark as paid
+    const mollieOrder = await markStatusInMollie(page, "Canceled");
 }
 
 async function classicCheckoutPaidTransactionFullRefund(page, testedProduct, testedGateway) {
@@ -100,9 +93,6 @@ async function classicCheckoutPaidTransactionPartialRefund(page, testedProduct, 
     //refund
 }
 
-async function classicCheckoutExpiredTransaction(page, testedProduct, testedGateway) {
-
-}
 
 test.describe('Transaction in classic checkout', () => {
     test('Transaction classic with Order API paid', async ({page, products, gateways}) => {
@@ -167,14 +157,6 @@ test.describe('Transaction in classic checkout', () => {
             }// end loop products
         }// end loop gateways
     });
-    test('Transaction classic with Order API expired', async ({page, products, gateways}) => {
-        await setOrderAPI(page);
-        for (const gateway in gateways) {
-            for (const product in products) {
-                await classicCheckoutExpiredTransaction(page, product, gateway);
-            }// end loop products
-        }// end loop gateways
-    });
     test('Transaction classic with Payment API paid', async ({page, products, gateways}) => {
         //Set Payment API
         await setPaymentAPI(page);
@@ -227,14 +209,6 @@ test.describe('Transaction in classic checkout', () => {
         for (const gateway in gateways) {
             for (const product in products) {
                 await classicCheckoutPaidTransactionPartialRefund(page, product, gateway);
-            }// end loop products
-        }// end loop gateways
-    });
-    test('Transaction classic with Payment API expired', async ({page, products, gateways}) => {
-        await setPaymentAPI(page);
-        for (const gateway in gateways) {
-            for (const product in products) {
-                await classicCheckoutExpiredTransaction(page, product, gateway);
             }// end loop products
         }// end loop gateways
     });

@@ -51,7 +51,7 @@
   },
   "scripts": {
     "watch": "webpack --watch",
-    "build": "gulp buildAssets",
+    "build": "node_modules/.bin/encore dev --env.basePath=.",
     "setup": "gulp setup",
     "cypress:open": "cypress open"
   },

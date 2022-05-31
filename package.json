@@ -45,7 +45,7 @@
     "gulp-rename": "^2.0",
     "gulp-zip": "^4.2.0",
     "minimist": "^1.2.3",
-    "node-sass": "^4.13.0",
+    "sass": "^1.52.1",
     "pump": "^3.0.0",
     "sass-loader": "^7.0.1"
   },

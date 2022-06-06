@@ -1087,7 +1087,7 @@ class MollieOrder extends MollieObject
             'last_name' => sanitize_text_field(wp_unslash($address->familyName)),
             'email' => sanitize_text_field(wp_unslash($address->email)),
             'postcode' => sanitize_text_field(wp_unslash($address->postalCode)),
-            'country' => sanitize_text_field(wp_unslash($address->country)),
+            'country' => strtoupper(sanitize_text_field(wp_unslash($address->country))),
             'city' => sanitize_text_field(wp_unslash($address->city)),
             'address_1' => sanitize_text_field(wp_unslash($address->streetAndNumber)),
         ];

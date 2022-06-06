@@ -12,6 +12,10 @@ use Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\SDK\Api;
+use Mollie\WooCommerce\SDK\HttpResponse;
+use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Shared\Data;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
@@ -46,19 +50,28 @@ class PaymentModule implements ServiceModule, ExecutableModule
         return [
            PaymentFactory::class => static function (ContainerInterface $container): PaymentFactory {
                $settingsHelper = $container->get('settings.settings_helper');
+               assert($settingsHelper instanceof Settings);
                $apiHelper = $container->get('SDK.api_helper');
+               assert($apiHelper instanceof Api);
                $data = $container->get('settings.data_helper');
+               assert($data instanceof Data);
                $pluginId = $container->get('shared.plugin_id');
                $logger = $container->get(Logger::class);
+               assert($logger instanceof Logger);
                return new PaymentFactory($data, $apiHelper, $settingsHelper, $pluginId, $logger);
            },
            MollieObject::class => static function (ContainerInterface $container): MollieObject {
                $logger = $container->get(Logger::class);
+               assert($logger instanceof Logger);
                $data = $container->get('settings.data_helper');
+               assert($data instanceof Data);
                $apiHelper = $container->get('SDK.api_helper');
+               assert($apiHelper instanceof Api);
                $pluginId = $container->get('shared.plugin_id');
                $paymentFactory = $container->get(PaymentFactory::class);
+               assert($paymentFactory instanceof PaymentFactory);
                $settingsHelper = $container->get('settings.settings_helper');
+               assert($settingsHelper instanceof Settings);
                return new MollieObject($data, $logger, $paymentFactory, $apiHelper, $settingsHelper, $pluginId);
            },
         ];
@@ -67,9 +80,13 @@ class PaymentModule implements ServiceModule, ExecutableModule
     public function run(ContainerInterface $container): bool
     {
         $this->httpResponse = $container->get('SDK.HttpResponse');
+        assert($this->httpResponse instanceof HttpResponse);
         $this->logger = $container->get(Logger::class);
+        assert($this->logger instanceof Logger);
         $this->apiHelper = $container->get('SDK.api_helper');
+        assert($this->apiHelper instanceof Api);
         $this->settingsHelper = $container->get('settings.settings_helper');
+        assert($this->settingsHelper instanceof Settings);
         $this->pluginId = $container->get('shared.plugin_id');
         $this->gatewayClassnames = $container->get('gateway.classnames');
 

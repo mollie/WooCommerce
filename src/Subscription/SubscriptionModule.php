@@ -10,6 +10,8 @@ use DateTime;
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Shared\Data;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
@@ -34,8 +36,11 @@ class SubscriptionModule implements ExecutableModule
     public function run(ContainerInterface $container): bool
     {
         $this->logger = $container->get(Logger::class);
+        assert($this->logger instanceof Logger);
         $this->dataHelper = $container->get('settings.data_helper');
+        assert($this->dataHelper instanceof Data);
         $this->settingsHelper = $container->get('settings.settings_helper');
+        assert($this->settingsHelper instanceof Settings);
         $this->maybeFixSubscriptions();
         $this->schedulePendingPaymentOrdersExpirationCheck();
         return true;

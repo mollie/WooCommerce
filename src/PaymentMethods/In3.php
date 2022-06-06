@@ -21,6 +21,7 @@ class In3 extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
+            'orderMandatory' => true,
         ];
     }
 

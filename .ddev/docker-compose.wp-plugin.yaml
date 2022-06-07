@@ -2,4 +2,4 @@ version: '3.6'
 services:
     web:
         volumes:
-            - ../:/var/www/html/.ddev/wordpress/wp-content/plugins/${DDEV_PROJECT}:ro
+            - ../:/var/www/html/.ddev/wordpress/wp-content/plugins/mollie-payments-for-woocommerce:ro

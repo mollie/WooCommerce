@@ -43,6 +43,7 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
             'SEPA' => false,
+            'orderMandatory' => true,
         ];
     }
 

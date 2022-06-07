@@ -25,11 +25,13 @@ class OrderMandatoryGatewayDisabler
      */
     public function processGateways(array $gateways): array
     {
-        $isWcApiRequest = (bool)filter_input(
-            INPUT_GET,
-            'wc-api',
-            FILTER_SANITIZE_STRING
-        );
+        $isWcApiRequest = isset($_GET['wc-api']) ? (bool)sanitize_text_field(wp_unslash($_GET['wc-api'])) : false;
+        /*
+         * There are 2 cases where we want to filter the gateway and it's when the checkout
+         * page render the available payments methods.(classic and block)
+         *
+         * For any other case we want to be sure voucher gateway is included.
+         */
         if (
             ($isWcApiRequest
                 || !doing_action('woocommerce_payment_gateways')
@@ -42,18 +44,12 @@ class OrderMandatoryGatewayDisabler
         if ($this->isSettingsOrderApi) {
             return $gateways;
         }
-        foreach ($gateways as $key => $gateway) {
-            $isMollieGateway = $gateway instanceof MolliePaymentGateway;
-
-            if (!$isMollieGateway) {
-                continue;
+        return array_filter(
+            $gateways,
+            function ($gateway) {
+                return !($gateway instanceof MolliePaymentGateway)
+                    || !$gateway->paymentMethod->getProperty('orderMandatory');
             }
-            $isOrderMandatory = $gateway->paymentMethod->getProperty('orderMandatory');
-            if ($isOrderMandatory) {
-                unset($gateways[$key]);
-            }
-        }
-
-        return $gateways;
+        );
     }
 }

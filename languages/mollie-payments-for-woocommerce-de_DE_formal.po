@@ -556,8 +556,8 @@ msgstr "Ihre Bestellung wurde storniert."
 
 #. translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency.
 #: src/Gateway/SurchargeLabelBuilder.php:72
-msgid " +%1s%2s fee might apply"
-msgstr " Möglicherweise fällt eine +%1s%2s-Gebühr an"
+msgid " + %1s %2s fee might apply"
+msgstr " Möglicherweise fällt eine + %1s %2s-Gebühr an"
 
 #. translators: Placeholder 1: Fee amount tag.
 #: src/Gateway/SurchargeLabelBuilder.php:84
@@ -566,8 +566,8 @@ msgstr " Möglicherweise fällt eine +%1s%%-Gebühr an"
 
 #. translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency. Placeholder 3: Percentage amount.
 #: src/Gateway/SurchargeLabelBuilder.php:102
-msgid " +%1s%2s + %3s%% fee might apply"
-msgstr " Möglicherweise fällt eine +%1s%2s + %3s%%-Gebühr an"
+msgid " + %1s %2s + %3s%% fee might apply"
+msgstr " Möglicherweise fällt eine + %1s %2s + %3s%%-Gebühr an"
 
 #: src/Gateway/Voucher/VoucherModule.php:52
 #: src/Settings/Page/MollieSettingsPage.php:45

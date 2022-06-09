@@ -556,18 +556,18 @@ msgstr "Tu pedido ha sido cancelado."
 
 #. translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency.
 #: src/Gateway/SurchargeLabelBuilder.php:72
-msgid " +%1s%2s fee might apply"
-msgstr " Podría aplicarse un cargo %1s%2s"
+msgid " + %1s %2s fee might apply"
+msgstr " Podría aplicarse un cargo de %1s %2s"
 
 #. translators: Placeholder 1: Fee amount tag.
 #: src/Gateway/SurchargeLabelBuilder.php:84
-msgid " +%1s%% fee might apply"
+msgid " + %1s%% fee might apply"
 msgstr " Podría aplicarse un cargo de %1s%%"
 
 #. translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency. Placeholder 3: Percentage amount.
 #: src/Gateway/SurchargeLabelBuilder.php:102
-msgid " +%1s%2s + %3s%% fee might apply"
-msgstr " Podría aplicarse un cargo de %1s%2s + %3s%%"
+msgid " + %1s %2s + %3s%% fee might apply"
+msgstr " Podría aplicarse un cargo de %1s %2s + %3s%%"
 
 #: src/Gateway/Voucher/VoucherModule.php:52
 #: src/Settings/Page/MollieSettingsPage.php:45

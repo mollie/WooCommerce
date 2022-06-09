@@ -45,13 +45,13 @@
     "gulp-rename": "^2.0",
     "gulp-zip": "^4.2.0",
     "minimist": "^1.2.3",
-    "node-sass": "^4.13.0",
+    "sass": "^1.52.1",
     "pump": "^3.0.0",
     "sass-loader": "^7.0.1"
   },
   "scripts": {
     "watch": "webpack --watch",
-    "build": "gulp buildAssets",
+    "build": "node_modules/.bin/encore dev --env.basePath=.",
     "setup": "gulp setup",
     "e2e-simple": "npx playwright test --project=simple-classic",
     "e2e-block": "npx playwright test --project=simple-block",

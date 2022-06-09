@@ -14,6 +14,9 @@ nfs_mount_enabled: false
 mutagen_enabled: false
 use_dns_when_possible: true
 composer_version: "2"
+hooks:
+  pre-start:
+    - exec-host: "mkdir -p .ddev/wordpress/wp-content/plugins/${DDEV_PROJECT}"
 web_environment:
   - WP_VERSION=5.9
   - WP_LOCALE=de_DE

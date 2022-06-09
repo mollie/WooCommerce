@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Gateway\Voucher;
 
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Payment\PaymentService;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 
 class MaybeDisableGateway
 {
     /**
-     * Disable Meal Mollie_WC_Gateway_Voucher Gateway if no categories associated with any product
+     * Disable Voucher Gateway if no categories associated with any product
      * in the cart
+     * Disable if Payments API is selected in advanced settings
      *
      * @param array $gateways
      *
@@ -28,7 +30,7 @@ class MaybeDisableGateway
          * There are 2 cases where we want to filter the gateway and it's when the checkout
          * page render the available payments methods.(classic and block)
          *
-         * For any other case we want to be sure mealvoucher gateway is included.
+         * For any other case we want to be sure voucher gateway is included.
          */
         if (
         ($isWcApiRequest
@@ -51,8 +53,9 @@ class MaybeDisableGateway
         }
 
         $productsWithCategory = $this->numberProductsWithCategory();
+        $paymentAPISetting = get_option('mollie-payments-for-woocommerce_api_switch') === PaymentService::PAYMENT_METHOD_TYPE_PAYMENT;
 
-        if ($mealVoucherGatewayIndex !== false && $productsWithCategory === 0) {
+        if ($mealVoucherGatewayIndex !== false && ($productsWithCategory === 0 || $paymentAPISetting)) {
             unset($gateways[$mealVoucherGatewayIndex]);
         }
 

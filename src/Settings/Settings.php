@@ -296,7 +296,7 @@ class Settings
     public function isOrderApiSetting()
     {
         $orderApiSetting = get_option($this->getSettingId('api_switch'));
-        return is_string($orderApiSetting) && trim($orderApiSetting) === PaymentService::PAYMENT_METHOD_TYPE_ORDER;
+        return !$orderApiSetting || is_string($orderApiSetting) && trim($orderApiSetting) === PaymentService::PAYMENT_METHOD_TYPE_ORDER;
     }
     /**
      * @param bool $overrideTestMode

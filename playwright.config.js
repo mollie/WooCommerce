@@ -1,7 +1,7 @@
 // @ts-check
 const { devices } = require('@playwright/test');
 const {simple, virtual} = require('./tests/e2e/Shared/products');
-const {banktransfer, paypal} = require('./tests/e2e/Shared/gateways');
+const {banktransfer, paypal, creditcard} = require('./tests/e2e/Shared/gateways');
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -53,11 +53,11 @@ const config = {
       //all simple classic:simple prod, simple subs, one gw, one browser, checkout and settings, no buttons
       {
           name: 'simple-classic',
-          testIgnore: ['**/Cart/**','**/Product/**', '**/*.block.spec.js'],
+          testMatch: ['**/Transaction/Checkout.classic.spec.js'],
           use: {
             ...devices['Desktop Chrome'],
-            gateways: banktransfer,
-            products: simple,
+            gateways: {creditcard},
+            products: {simple},
           },
       },
 
@@ -67,8 +67,8 @@ const config = {
           testIgnore: ['**/Cart/**','**/Product/**', '**/*.classic.spec.js'],
           use: {
               ...devices['Desktop Chrome'],
-              gateways: banktransfer,
-              products: simple,
+              gateways: {creditcard},
+              products: {simple},
           },
       },
       //cart :paypal
@@ -77,7 +77,7 @@ const config = {
           testMatch: '**/Cart/**',
           use: {
               ...devices['Desktop Chrome'],
-              gateways: paypal,
+              gateways: {paypal},
               products: {simple, virtual},
           },
       },
@@ -87,7 +87,7 @@ const config = {
           testMatch: '**/Product/**',
           use: {
               ...devices['Desktop Chrome'],
-              gateways: paypal,
+              gateways: {paypal},
               products: {simple, virtual},
           },
       },

@@ -1,20 +1,18 @@
 // @ts-check
 const {expect} = require('@playwright/test');
 const {test} = require('../Shared/base-test');
-const {setOrderAPI, setPaymentAPI, markStatusInMollie} = require('../Shared/mollieUtils');
-const {wooOrderPaidPage, wooOrderDetailsPageOnPaid, wooOrderRetryPage} = require('../Shared/testMollieInWooPage');
+const {setOrderAPI, setPaymentAPI, markStatusInMollie, insertAPIKeys, resetSettings} = require('../Shared/mollieUtils');
+const {wooOrderPaidPage, wooOrderDetailsPageOnPaid, wooOrderRetryPage, wooOrderDetailsPageOnFailed} = require('../Shared/testMollieInWooPage');
 const {addProductToCart, fillCustomerInCheckout} = require('../Shared/wooUtils');
-
+/**
+ * @param {import('@playwright/test').Page} page
+ * @param testedProduct
+ * @param testedGateway
+ */
 async function beforePlacingOrder(page, testedProduct, testedGateway) {
     await addProductToCart(page, testedProduct.name);
+    await page.goto(process.env.E2E_URL_TESTSITE + '/checkout/');
 
-    // Go to checkout
-    await Promise.all([
-        page.waitForNavigation(/*{ url: 'https://www.mollie.com/checkout/test-mode?method=GATEWAY&token=XXX' }*/),
-        await page.locator('text=Checkout').first().click()
-    ]);
-
-    await expect(page).toHaveURL(process.env.E2E_URL_TESTSITE + '/checkout');
     //Capture WooCommerce total amount
     const totalAmount = await page.innerText('.order-total > td > strong > span > bdi');
 
@@ -23,7 +21,7 @@ async function beforePlacingOrder(page, testedProduct, testedGateway) {
 
     // Check testedGateway option NO ISSUERS DROPDOWN
 
-    await page.locator('#payment_method_mollie_wc_gateway_' + testedGateway.id).check();
+    await page.locator(`text=${testedGateway.defaultTitle}`).click();
     // Click text=Place order
     await Promise.all([
         page.waitForNavigation(/*{ url: 'https://www.mollie.com/checkout/test-mode?method=GATEWAY&token=XXX' }*/),
@@ -62,7 +60,7 @@ async function classicCheckoutFailedTransaction(page, testedProduct, testedGatew
     await wooOrderRetryPage(page, mollieOrder, totalAmount, testedGateway);
 
     // WOOCOMMERCE ORDER PAGE
-    //await wooOrderDetailsPageOnFailed(page, mollieOrder, testedGateway);
+    await wooOrderDetailsPageOnFailed(page, mollieOrder, testedGateway);
 }
 
 async function classicCheckoutCancelledTransactionPending(page, testedProduct, testedGateway) {
@@ -71,6 +69,11 @@ async function classicCheckoutCancelledTransactionPending(page, testedProduct, t
     // IN MOLLIE
     // Capture order number in Mollie and mark as paid
     const mollieOrder = await markStatusInMollie(page, "Canceled");
+    // WOOCOMMERCE ORDER PAID PAGE
+    await wooOrderRetryPage(page, mollieOrder, totalAmount, testedGateway);
+
+    // WOOCOMMERCE ORDER PAGE
+    await wooOrderDetailsPageOnFailed(page, mollieOrder, testedGateway);
 }
 
 async function classicCheckoutCancelledTransactionCancelled(page, testedProduct, testedGateway) {
@@ -79,27 +82,44 @@ async function classicCheckoutCancelledTransactionCancelled(page, testedProduct,
     // IN MOLLIE
     // Capture order number in Mollie and mark as paid
     const mollieOrder = await markStatusInMollie(page, "Canceled");
+    // WOOCOMMERCE ORDER PAID PAGE
+    await wooOrderRetryPage(page, mollieOrder, totalAmount, testedGateway);
+
+    // WOOCOMMERCE ORDER PAGE
+    await wooOrderDetailsPageOnFailed(page, mollieOrder, testedGateway);
 }
 
 async function classicCheckoutPaidTransactionFullRefund(page, testedProduct, testedGateway) {
     await classicCheckoutPaidTransaction(page, testedProduct, testedGateway);
-        //in order page select quantity
-    //refund
+    await page.locator('text=Refund').click();
+    await page.locator('input[class="refund_order_item_qty"]').fill(1);
+    page.on('dialog', dialog => dialog.accept());
+    await page.locator('#woocommerce-order-items > div.inside > div.wc-order-data-row.wc-order-refund-items.wc-order-data-row-toggle > div.refund-actions > button.button.button-primary.do-api-refund').click();
+    await expect(page.locator('#select2-order_status-container')).toContainText("Refunded");
 }
 
 async function classicCheckoutPaidTransactionPartialRefund(page, testedProduct, testedGateway) {
     await classicCheckoutPaidTransaction(page, testedProduct, testedGateway);
-    //in order page select partial amount
-    //refund
+    await page.locator('text=Refund').click();
+    await page.locator('input[name="#order_line_items > tr > td.line_cost > div.refund > input"]').fill(2);
+    page.on('dialog', dialog => dialog.accept());
+    await page.locator('#woocommerce-order-items > div.inside > div.wc-order-data-row.wc-order-refund-items.wc-order-data-row-toggle > div.refund-actions > button.button.button-primary.do-api-refund').click();
+    await expect(page.locator('#select2-order_status-container')).toContainText("Processing");
+    await expect(page.locator('#woocommerce-order-notes > div.inside > ul')).toContainText('Amount refund of EUR2.00');
 }
 
 
 test.describe('Transaction in classic checkout', () => {
-    test('Transaction classic with Order API paid', async ({page, products, gateways}) => {
+    test.beforeAll(async ({browser }) => {
+        /*const page = await browser.newPage();
+        await resetSettings(page);
+        await insertAPIKeys(page);*/
+    });
+    /*test('Transaction classic with Order API paid', async ({page, products, gateways}) => {
         await setOrderAPI(page);
         for (const gateway in gateways) {
             for (const product in products) {
-                await classicCheckoutPaidTransaction(page, product, gateway);
+                await classicCheckoutPaidTransaction(page, products[product], gateways[gateway]);
             }// end loop products
         }// end loop gateways
     });
@@ -107,11 +127,11 @@ test.describe('Transaction in classic checkout', () => {
         await setOrderAPI(page);
         for (const gateway in gateways) {
             for (const product in products) {
-                await classicCheckoutFailedTransaction(page, product, gateway);
+                await classicCheckoutFailedTransaction(page, products[product], gateways[gateway]);
             }// end loop products
         }// end loop gateways
-    });
-    test('Transaction classic with Order API cancelled setting as pending', async ({page, products, gateways}) => {
+    });*/
+    /*test('Transaction classic with Order API cancelled setting as pending', async ({page, products, gateways}) => {
         await setOrderAPI(page);
         //setting as pending
         await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/admin.php?page=wc-settings&tab=mollie_settings&section=advanced');
@@ -122,7 +142,7 @@ test.describe('Transaction in classic checkout', () => {
         ]);
         for (const gateway in gateways) {
             for (const product in products) {
-                await classicCheckoutCancelledTransactionPending(page, product, gateway);
+                await classicCheckoutCancelledTransactionPending(page, products[product], gateways[gateway]);
             }// end loop products
         }// end loop gateways
     });
@@ -130,30 +150,30 @@ test.describe('Transaction in classic checkout', () => {
         await setOrderAPI(page);
         //setting as cancelled
         await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/admin.php?page=wc-settings&tab=mollie_settings&section=advanced');
-        await page.selectOption('select#mollie-payments-for-woocommerce_order_status_cancelled_payments', 'pending');
+        await page.selectOption('select#mollie-payments-for-woocommerce_order_status_cancelled_payments', 'cancelled');
         await Promise.all([
             page.waitForNavigation(),
             page.locator('text=Save changes').click()
         ]);
         for (const gateway in gateways) {
             for (const product in products) {
-                await classicCheckoutCancelledTransactionCancelled(page, product, gateway);
+                await classicCheckoutCancelledTransactionCancelled(page, products[product], gateways[gateway]);
             }// end loop products
         }// end loop gateways
-    });
+    });*/
     test('Transaction classic full refund Order', async ({page, products, gateways}) => {
         await setOrderAPI(page);
         for (const gateway in gateways) {
             for (const product in products) {
-                await classicCheckoutPaidTransactionFullRefund(page, product, gateway);
+                await classicCheckoutPaidTransactionFullRefund(page, products[product], gateways[gateway]);
             }// end loop products
         }// end loop gateways
     });
-    test('Transaction classic partial refund Order', async ({page, products, gateways}) => {
+    /*test('Transaction classic partial refund Order', async ({page, products, gateways}) => {
         await setOrderAPI(page);
         for (const gateway in gateways) {
             for (const product in products) {
-                await classicCheckoutPaidTransactionPartialRefund(page, product, gateway);
+                await classicCheckoutPaidTransactionPartialRefund(page, products[product], gateways[gateway]);
             }// end loop products
         }// end loop gateways
     });
@@ -162,7 +182,7 @@ test.describe('Transaction in classic checkout', () => {
         await setPaymentAPI(page);
         for (const gateway in gateways) {
             for (const product in products) {
-                await classicCheckoutPaidTransaction(page, product, gateway);
+                await classicCheckoutPaidTransaction(page, products[product], gateways[gateway]);
             }// end loop products
         }// end loop gateways
     });
@@ -177,7 +197,7 @@ test.describe('Transaction in classic checkout', () => {
         ]);
         for (const gateway in gateways) {
             for (const product in products) {
-                await classicCheckoutCancelledTransactionPending(page, product, gateway);
+                await classicCheckoutCancelledTransactionPending(page, products[product], gateways[gateway]);
             }// end loop products
         }// end loop gateways
     });
@@ -192,7 +212,7 @@ test.describe('Transaction in classic checkout', () => {
         ]);
         for (const gateway in gateways) {
             for (const product in products) {
-                await classicCheckoutCancelledTransactionCancelled(page, product, gateway);
+                await classicCheckoutCancelledTransactionCancelled(page, products[product], gateways[gateway]);
             }// end loop products
         }// end loop gateways
     });
@@ -200,7 +220,7 @@ test.describe('Transaction in classic checkout', () => {
         await setPaymentAPI(page);
         for (const gateway in gateways) {
             for (const product in products) {
-                await classicCheckoutPaidTransactionFullRefund(page, product, gateway);
+                await classicCheckoutPaidTransactionFullRefund(page, products[product], gateways[gateway]);
             }// end loop products
         }// end loop gateways
     });
@@ -208,8 +228,8 @@ test.describe('Transaction in classic checkout', () => {
         await setPaymentAPI(page);
         for (const gateway in gateways) {
             for (const product in products) {
-                await classicCheckoutPaidTransactionPartialRefund(page, product, gateway);
+                await classicCheckoutPaidTransactionPartialRefund(page, products[product], gateways[gateway]);
             }// end loop products
         }// end loop gateways
-    });
+    });*/
 });

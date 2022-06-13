@@ -389,8 +389,12 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     protected function checkDirectDebitStatus($content): string
     {
-        $idealGateway = !empty($this->registeredGateways["mollie_wc_gateway_ideal"]) && $this->paymentMethods["ideal"]->getProperty('enabled') === 'yes';
-        $sepaGateway = !empty($this->registeredGateways["mollie_wc_gateway_directdebit"]) && $this->paymentMethods["directdebit"]->getProperty('enabled') === 'yes';
+        $hasCustomIdealSettings = $this->paymentMethods["ideal"]->getProperty('enabled') !== false;
+        $isIdealEnabled = !$hasCustomIdealSettings || $this->paymentMethods["ideal"]->getProperty('enabled') === 'yes';
+        $hasCustomSepaSettings = $this->paymentMethods["directdebit"]->getProperty('enabled') !== false;
+        $isSepaEnabled = !$hasCustomSepaSettings || $this->paymentMethods["directdebit"]->getProperty('enabled') === 'yes';
+        $idealGateway = !empty($this->registeredGateways["mollie_wc_gateway_ideal"]) && $isIdealEnabled;
+        $sepaGateway = !empty($this->registeredGateways["mollie_wc_gateway_directdebit"]) && $isSepaEnabled;
 
         if ((class_exists('WC_Subscription')) && $idealGateway && !$sepaGateway) {
             $warning_message = __(

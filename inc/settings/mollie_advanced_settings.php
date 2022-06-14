@@ -18,13 +18,13 @@ $api_payment_description_labels = [
 
 return [
     [
-        'id' => $pluginName . '_' . 'title',
+        'id' => $pluginName . '_title',
         'title' => __('Mollie advanced settings', 'mollie-payments-for-woocommerce'),
         'type' => 'title',
         'desc' => '<p>' . __('The following options are required to use the plugin and are used by all Mollie payment methods', 'mollie-payments-for-woocommerce') . '</p>',
     ],
     [
-        'id' => $pluginName . '_' . 'order_status_cancelled_payments',
+        'id' => $pluginName . '_order_status_cancelled_payments',
         'title' => __('Order status after cancelled payment', 'mollie-payments-for-woocommerce'),
         'type' => 'select',
         'options' => [
@@ -77,7 +77,7 @@ return [
         'default' => Settings::SETTING_LOCALE_WP_LANGUAGE,
     ],
     [
-        'id' => $pluginName . '_' . 'customer_details',
+        'id' => $pluginName . '_customer_details',
         'title' => __('Store customer details at Mollie', 'mollie-payments-for-woocommerce'),
         /* translators: Placeholder 1: enabled or disabled */
         'desc' => sprintf(
@@ -93,7 +93,7 @@ return [
 
     ],
     [
-        'id' => $pluginName . '_' . 'api_switch',
+        'id' => $pluginName . '_api_switch',
         'title' => __(
             'Select API Method',
             'mollie-payments-for-woocommerce'
@@ -120,7 +120,7 @@ return [
         ),
     ],
     [
-        'id' => $pluginName . '_' . 'api_payment_description',
+        'id' => $pluginName . '_api_payment_description',
         'title' => __(
             'API Payment Description',
             'mollie-payments-for-woocommerce'
@@ -173,7 +173,7 @@ return [
         ),
     ],
     [
-        'id' => $pluginName . '_' . 'gatewayFeeLabel',
+        'id' => $pluginName . '_gatewayFeeLabel',
         'title' => __(
             'Surcharge gateway fee label',
             'mollie-payments-for-woocommerce'
@@ -189,7 +189,7 @@ return [
         ),
     ],
     [
-        'id' => $pluginName . '_' . 'removeOptionsAndTransients',
+        'id' => $pluginName . '_removeOptionsAndTransients',
         'title' => __(
             'Remove Mollie data from Database on uninstall',
             'mollie-payments-for-woocommerce'
@@ -201,7 +201,7 @@ return [
             ) . '</a>)',
     ],
     [
-        'id' => $pluginName . '_' . 'sectionend',
+        'id' => $pluginName . '_sectionend',
         'type' => 'sectionend',
     ],
 ];

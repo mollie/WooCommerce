@@ -12,6 +12,8 @@ use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Buttons\ApplePayButton\DataToAppleButtonScripts;
 use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPal;
 use Mollie\WooCommerce\Components\AcceptedLocaleValuesDictionary;
+use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Shared\Data;
 use Psr\Container\ContainerInterface;
 
 class AssetsModule implements ExecutableModule
@@ -35,8 +37,10 @@ class AssetsModule implements ExecutableModule
         $this->pluginUrl = $container->get('shared.plugin_url');
         $this->pluginPath = $container->get('shared.plugin_path');
         $this->settingsHelper = $container->get('settings.settings_helper');
+        assert($this->settingsHelper instanceof Settings);
         $this->pluginVersion = $container->get('shared.plugin_version');
         $this->dataService = $container->get('settings.data_helper');
+        assert($this->dataService instanceof Data);
 
         add_action(
             'init',
@@ -503,8 +507,8 @@ class AssetsModule implements ExecutableModule
                 $content .= $issuers;
                 $issuers = false;
             }
-            $title = $gateway->paymentMethod->getProperty('title')?:
-                $gateway->paymentMethod->getProperty('defaultTitle');
+            $title = $gateway->paymentMethod->getProperty('title') === false?
+                $gateway->paymentMethod->getProperty('defaultTitle') : $gateway->paymentMethod->getProperty('title');
             $labelMarkup = "<span style='margin-right: 1em'>{$title}</span>{$gateway->icon}";
             $hasSurcharge = $gateway->paymentMethod->hasSurcharge();
             $gatewayData[] = [

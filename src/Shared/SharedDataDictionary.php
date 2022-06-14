@@ -28,6 +28,7 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_ApplePay',
         'Mollie_WC_Gateway_MyBank',
         'Mollie_WC_Gateway_Voucher',
+        'Mollie_WC_Gateway_In3',
     ];
 
     public const MOLLIE_OPTIONS_NAMES = [

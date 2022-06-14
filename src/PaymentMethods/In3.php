@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
-class Klarnapaynow extends AbstractPaymentMethod implements PaymentMethodI
+class In3 extends AbstractPaymentMethod implements PaymentMethodI
 {
-    protected function getConfig(): array
+    public function getConfig(): array
     {
         return [
-            'id' => 'klarnapaynow',
-            'defaultTitle' => __('Klarna Pay Now', 'mollie-payments-for-woocommerce'),
-            'settingsDescription' => __(
-                'To accept payments via Klarna, all default WooCommerce checkout fields should be enabled and required.',
-                'mollie-payments-for-woocommerce'
-            ),
+            'id' => 'in3',
+            'defaultTitle' => __('in3', 'mollie-payments-for-woocommerce'),
+            'settingsDescription' => '',
             'defaultDescription' => '',
             'paymentFields' => false,
             'instructions' => false,
@@ -24,7 +21,6 @@ class Klarnapaynow extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => false,
             'orderMandatory' => true,
         ];
     }

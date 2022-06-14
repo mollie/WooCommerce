@@ -26,6 +26,7 @@ class Klarnasliceit extends AbstractPaymentMethod implements PaymentMethodI
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
             'SEPA' => false,
+            'orderMandatory' => true,
         ];
     }
 

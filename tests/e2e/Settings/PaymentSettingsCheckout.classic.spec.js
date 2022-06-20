@@ -26,12 +26,11 @@ test.describe('Should show payment settings on classic checkout', () => {
             let testedGateway = GATEWAYS[key]
             //check default title
             await page.locator('#payment_method_mollie_wc_gateway_' + testedGateway.id)
-            await expect(page.locator('#payment')).toContainText(testedGateway.defaultTitle);
+            await expect(page.locator(`#payment`)).toContainText(testedGateway.defaultTitle);
             //check default icon
             const url = await page.$eval(`text=${testedGateway.defaultTitle} >> img`, img => img.src);
-            await expect(url).toEqual(`${process.env.E2E_URL_TESTSITE}/wp-content/plugins/${process.env.E2E_TESTPACKAGE}//public/images/${testedGateway.id}.svg`)
-            //check default description
-            await expect(page.locator('#payment')).toContainText(testedGateway.defaultDescription);
+            await expect(url).toContain(`/public/images/${testedGateway.id}.svg`)
+
             //check issuers dropdown show
             if (testedGateway.paymentFields) {
                 let issuers = page.locator(`#payment > ul > li.wc_payment_method.payment_method_mollie_wc_gateway_${testedGateway.id} > div`)

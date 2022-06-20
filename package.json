@@ -53,13 +53,14 @@
     "watch": "webpack --watch",
     "build": "node_modules/.bin/encore dev --env.basePath=.",
     "setup": "gulp setup",
-    "e2e-simple": "npx playwright test -c playwright.config.js --headed --project=simple-classic ",
+    "e2e-simple": "npx playwright test --project=simple-classic",
     "e2e-block": "npx playwright test --project=simple-block",
     "e2e-full-transaction": "npx playwright test --project=full-transaction",
     "e2e-cart-paypal": "npx playwright test --project=cart-paypal",
-    "e2e-product-paypal": "npx playwright test --project=product-paypal",
+    "e2e-product-paypal": "npx playwright test  --project=product-paypal",
     "e2e-simple-settings": "npx playwright test --project=simple-settings",
-    "e2e-full-settings": "npx playwright test --project=full-settings"
+    "e2e-full-settings": "npx playwright test --project=full-settings",
+    "e2e-all-simple": "npx playwright test"
   },
   "dependencies": {
     "@woocommerce/e2e-utils": "^0.1.6",

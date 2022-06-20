@@ -28,9 +28,9 @@ const fillCustomerInCheckout = async (page) => {
  */
 const fillCustomerInBlockCheckout = async (page) => {
     // Fill input[name="billing_first_name"]
-    await page.locator('input[name="billing_first_name"]').fill('Test');
+    await page.locator('input[name="billing_first_name"]').fill('Julia');
     // Fill input[name="billing_last_name"]
-    await page.locator('input[name="billing_last_name"]').fill('test');
+    await page.locator('input[name="billing_last_name"]').fill('Callas');
 }
 
 module.exports = {addProductToCart, fillCustomerInCheckout, fillCustomerInBlockCheckout}

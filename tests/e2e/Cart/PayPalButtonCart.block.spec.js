@@ -1,7 +1,7 @@
 // @ts-check
 const { expect } = require('@playwright/test');
 const { test } = require('../Shared/base-test');
-const {setOrderAPI, markPaidInMollie} = require('../Shared/mollieUtils');
+const {setOrderAPI, markStatusInMollie} = require('../Shared/mollieUtils');
 const {addProductToCart} = require('../Shared/wooUtils');
 const {wooOrderPaidPage, wooOrderDetailsPageOnPaid} = require('../Shared/testMollieInWooPage');
 
@@ -50,7 +50,7 @@ test.describe('PayPal Transaction in classic cart', () => {
         ]);
         // IN MOLLIE
         // Capture order number in Mollie and mark as paid
-        const mollieOrder = await markPaidInMollie(page);
+        const mollieOrder = await markStatusInMollie(page, "Paid");
 
         // WOOCOMMERCE ORDER PAID PAGE
         await wooOrderPaidPage(page, mollieOrder, totalAmount, testedGateway);

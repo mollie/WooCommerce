@@ -18,7 +18,7 @@ const {banktransfer, paypal, creditcard} = require('./tests/e2e/Shared/gateways'
 const config = {
   testDir: './tests/e2e',
   /* Maximum time one test can run for. */
-  timeout: 30 * 1000,
+  timeout: 50 * 1000,
   expect: {
     /**
      * Maximum time expect() should wait for the condition to be met.
@@ -29,7 +29,7 @@ const config = {
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI ? 2 : 1,
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
@@ -50,7 +50,7 @@ const config = {
 
   /* Configure projects for major browsers */
   projects: [
-      //all simple classic:simple prod, simple subs, one gw, one browser, checkout and settings, no buttons
+      //all simple classic:simple prod, simple subs, one gw, one browser, checkout, no buttons
       {
           name: 'simple-classic',
           testMatch: ['**/Transaction/Checkout.classic.spec.js'],
@@ -64,7 +64,7 @@ const config = {
       //all simple blocks:simple prod, simple subs, one gw, one browser
       {
           name: 'simple-block',
-          testIgnore: ['**/Cart/**','**/Product/**', '**/*.classic.spec.js'],
+          testMatch: ['**/Transaction/Checkout.block.spec.js'],
           use: {
               ...devices['Desktop Chrome'],
               gateways: {creditcard},
@@ -74,10 +74,10 @@ const config = {
       //cart :paypal
       {
           name: 'cart-paypal',
-          testMatch: '**/Cart/**',
+          testMatch: '**/Cart/PayPalButtonCart.classic.spec.js',
           use: {
               ...devices['Desktop Chrome'],
-              gateways: {paypal},
+              gateways: paypal,
               products: {simple, virtual},
           },
       },
@@ -87,7 +87,7 @@ const config = {
           testMatch: '**/Product/**',
           use: {
               ...devices['Desktop Chrome'],
-              gateways: {paypal},
+              gateways: paypal,
               products: {simple, virtual},
           },
       },
@@ -110,15 +110,15 @@ const config = {
           },
       },
       //full transaction:all gw, all products, all browsers
-      {
+      /*{
           name: 'full-transaction',
-          testIgnore: ['**/Cart/**', '**/Product/**', '**/Settings/**'],
+          testMatch: ['**!/Transaction/!**'],
           use: {
               ...devices['Desktop Chrome', 'Desktop Firefox', 'Desktop Safari'],
               gateways: {banktransfer, paypal},
               products: {simple, virtual},
           },
-      },
+      },*/
   ],
 
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */

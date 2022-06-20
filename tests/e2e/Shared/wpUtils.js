@@ -4,7 +4,7 @@ const loginAdmin = async (page)=>{
     await page.locator('#user_pass').fill(process.env.ADMIN_PASS);
     await Promise.all([
         page.waitForNavigation(),
-        page.locator('text=Log in').click()
+        page.locator('input:has-text("Log In")').click()
     ]);
 
 }

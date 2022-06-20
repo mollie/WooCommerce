@@ -17,7 +17,7 @@ test.describe('Should show general settings', () => {
             const title = gateways[gatewayName].defaultTitle
             const id = gateways[gatewayName].id
             const url = await page.$eval(`text=${title} disabled activate >> img`, img => img.src);
-            await expect(url).toEqual(`${process.env.E2E_URL_TESTSITE}/wp-content/plugins/${process.env.E2E_TESTPACKAGE}//public/images/${id}.svg`)
+            await expect(url).toContain(`/public/images/${id}.svg`)
         }
     });
     test('Should connect when API key is present', async ({ page , gateways}) => {

@@ -18,13 +18,26 @@ const wooOrderRetryPage = async (page, mollieOrder, totalAmount, testedGateway) 
     // Check we are in retry page
     const regex = new RegExp(`${process.env.E2E_URL_TESTSITE}/checkout/order-pay/${mollieOrder}.`);
     await expect(page).toHaveURL(regex);
+}
 
+const wooOrderCanceledPage = async (page, mollieOrder, totalAmount, testedGateway) => {
+    await expect(page.locator('#wp--skip-link--target > div.wp-container-7.entry-content.wp-block-post-content > div > div > p')).toContainText('cancelled');
 }
 
 const wooOrderDetailsPageOnPaid = async (page, mollieOrder, testedGateway) => {
     await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/edit.php?post_type=shop_order');
     // Check order is in status processing in order page
     await expect(page.locator('#post-' + mollieOrder + '> td.order_status.column-order_status > mark > span')).toContainText("Processing");
+    await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/post.php?post=' + mollieOrder + '&action=edit');
+
+    // Check order notes has correct text
+    await expect(page.locator('#woocommerce-order-notes > div.inside > ul')).toContainText('Order completed using Mollie – ' + testedGateway.defaultTitle + ' payment');
+}
+
+const wooOrderDetailsPageVirtual = async (page, mollieOrder, testedGateway) => {
+    await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/edit.php?post_type=shop_order');
+    // Check order is in status processing in order page
+    await expect(page.locator('#post-' + mollieOrder + '> td.order_status.column-order_status > mark > span')).toContainText("Completed");
     await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/post.php?post=' + mollieOrder + '&action=edit');
 
     // Check order notes has correct text
@@ -40,5 +53,22 @@ const wooOrderDetailsPageOnFailed = async (page, mollieOrder, testedGateway) => 
     // Check order notes has correct text
     await expect(page.locator('#woocommerce-order-notes > div.inside > ul')).toContainText(testedGateway.id + ' payment started');
 }
+const wooOrderDetailsPageOnCanceled = async (page, mollieOrder, testedGateway) => {
+    await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/edit.php?post_type=shop_order');
+    // Check order is in status processing in order page
+    await expect(page.locator('#post-' + mollieOrder + '> td.order_status.column-order_status > mark > span')).toContainText("Cancelled");
+    await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/post.php?post=' + mollieOrder + '&action=edit');
 
-module.exports = {wooOrderPaidPage, wooOrderDetailsPageOnPaid, wooOrderRetryPage, wooOrderDetailsPageOnFailed}
+    // Check order notes has correct text
+    await expect(page.locator('#woocommerce-order-notes > div.inside > ul')).toContainText(testedGateway.id + ' payment started');
+}
+
+module.exports = {
+    wooOrderPaidPage,
+    wooOrderDetailsPageOnPaid,
+    wooOrderRetryPage,
+    wooOrderDetailsPageOnFailed,
+    wooOrderCanceledPage: wooOrderCanceledPage,
+    wooOrderDetailsPageOnCanceled,
+    wooOrderDetailsPageVirtual
+}

@@ -1,10 +1,15 @@
 // @ts-check
 const { expect } = require('@playwright/test');
 const { test } = require('../Shared/base-test');
-const {setOrderAPI, markPaidInMollie} = require('../Shared/mollieUtils');
-const {wooOrderPaidPage, wooOrderDetailsPageOnPaid} = require('../Shared/testMollieInWooPage');
+const {setOrderAPI, markStatusInMollie, resetSettings, insertAPIKeys} = require('../Shared/mollieUtils');
+const {wooOrderPaidPage, wooOrderDetailsPageVirtual} = require('../Shared/testMollieInWooPage');
 
 test.describe('PayPal Transaction in classic product', () => {
+    test.beforeAll(async ({browser }) => {
+        const page = await browser.newPage();
+        await resetSettings(page);
+        await insertAPIKeys(page);
+    });
     test('Not be seen if not enabled', async ({ page }) => {
         // Go to virtual product product
         await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/admin.php?page=wc-settings&tab=checkout&section=mollie_wc_gateway_paypal');
@@ -43,20 +48,20 @@ test.describe('PayPal Transaction in classic product', () => {
 
         await expect(page.locator('#mollie-PayPal-button')).toBeVisible();
         //Capture WooCommerce total amount
-        const totalAmount = products.virtual.price
+        const totalAmount = await page.innerText('div.summary.entry-summary > p > span > bdi')
         await Promise.all([
-            page.waitForNavigation(/*{ url: 'https://www.mollie.com/checkout/test-mode?method=paypal&token=3.q6wq1i' }*/),
+            page.waitForNavigation({ url: 'https://www.mollie.com/checkout/test-mode?method=paypal&token=3.q6wq1i' }),
             page.locator('input[alt="PayPal Button"]').click()
         ]);
 
         // IN MOLLIE
         // Capture order number in Mollie and mark as paid
-        const mollieOrder = await markPaidInMollie(page);
+        const mollieOrder = await markStatusInMollie(page, "Paid");
 
         // WOOCOMMERCE ORDER PAID PAGE
         await wooOrderPaidPage(page, mollieOrder, totalAmount, testedGateway);
 
         // WOOCOMMERCE ORDER PAGE
-        await wooOrderDetailsPageOnPaid(page, mollieOrder, testedGateway);
+        await wooOrderDetailsPageVirtual(page, mollieOrder, testedGateway);
     });
 });

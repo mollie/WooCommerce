@@ -190,8 +190,7 @@ class OrderLines
             foreach ($this->order->get_items('fee') as $cart_fee) {
                 if ($cart_fee['tax_status'] === 'taxable') {
                     // Calculate tax rate.
-                    $_tax = new WC_Tax();
-                    $tmp_rates = $_tax::get_rates($cart_fee['tax_class']);
+                    $tmp_rates = WC_Tax::get_rates($cart_fee['tax_class']);
                     $vat = array_shift($tmp_rates);
 
                     $cart_fee_vat_rate = isset($vat['rate']) ? $vat['rate'] : 0;

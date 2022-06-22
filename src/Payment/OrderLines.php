@@ -188,7 +188,7 @@ class OrderLines
     {
         if (! empty($this->order->get_items('fee'))) {
             foreach ($this->order->get_items('fee') as $cart_fee) {
-                if ($cart_fee['tax_status'] === 'taxable' && $cart_fee['total_tax'] > 0) {
+                if ($cart_fee['tax_status'] === 'taxable') {
                     // Calculate tax rate.
                     $_tax = new WC_Tax();
                     $tmp_rates = $_tax::get_rates($cart_fee['tax_class']);

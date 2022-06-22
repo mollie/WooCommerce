@@ -10,14 +10,13 @@ use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\SDK\Api;
 use Psr\Log\LogLevel;
 use WC_Order;
-use WC_Payment_Gateway;
 use WC_Subscriptions_Manager;
 use WP_Error;
 
 class MolliePayment extends MollieObject
 {
 
-    public const ACTION_AFTER_REFUND_PAYMENT_CREATED = 'mollie-payments-for-woocommerce' . '_refund_payment_created';
+    public const ACTION_AFTER_REFUND_PAYMENT_CREATED = 'mollie-payments-for-woocommerce_refund_payment_created';
     protected $pluginId;
 
     public function __construct($data, $pluginId, Api $apiHelper, $settingsHelper, $dataHelper, $logger)
@@ -297,10 +296,22 @@ class MolliePayment extends MollieObject
 
         // Get current gateway
         $gateway = wc_get_payment_gateway_by_order($order);
-        // Overwrite plugin-wide
+        /**
+         * Overwrite plugin-wide the status when webhook canceled is triggered.
+         *
+         * @since 2.3.0
+         *
+         * @param string $newOrderStatus order status on canceled.
+         */
         $newOrderStatus = apply_filters($this->pluginId . '_order_status_cancelled', $newOrderStatus);
 
-        // Overwrite gateway-wide
+        /**
+         * Overwrite gateway-wide the status when webhook canceled is triggered.
+         *
+         * @since 2.3.0
+         *
+         * @param string $newOrderStatus order status on canceled.
+         */
         $newOrderStatus = apply_filters($this->pluginId . '_order_status_cancelled_' . $gateway->id, $newOrderStatus);
 
         // Update order status, but only if there is no payment started by another gateway
@@ -336,10 +347,22 @@ class MolliePayment extends MollieObject
         // New order status
         $newOrderStatus = MolliePaymentGateway::STATUS_FAILED;
 
-        // Overwrite plugin-wide
+        /**
+         * Overwrite plugin-wide the status when webhook failed is triggered.
+         *
+         * @since 5.1.0
+         *
+         * @param string $newOrderStatus order status on canceled.
+         */
         $newOrderStatus = apply_filters($this->pluginId . '_order_status_failed', $newOrderStatus);
 
-        // Overwrite gateway-wide
+        /**
+         * Overwrite gateway-wide the status when webhook failed is triggered.
+         *
+         * @since 5.1.0
+         *
+         * @param string $newOrderStatus order status on canceled.
+         */
         $newOrderStatus = apply_filters($this->pluginId . '_order_status_failed_' . $gateway->id, $newOrderStatus);
 
         // If WooCommerce Subscriptions is installed, process this failure as a subscription, otherwise as a regular order
@@ -390,10 +413,22 @@ class MolliePayment extends MollieObject
         // New order status
         $newOrderStatus = MolliePaymentGateway::STATUS_CANCELLED;
 
-        // Overwrite plugin-wide
+        /**
+         * Overwrite plugin-wide the status when webhook expired is triggered.
+         *
+         * @since 2.3.0
+         *
+         * @param string $newOrderStatus order status on canceled.
+         */
         $newOrderStatus = apply_filters($this->pluginId . '_order_status_expired', $newOrderStatus);
 
-        // Overwrite gateway-wide
+        /**
+         * Overwrite gateway-wide the status when webhook expired is triggered.
+         *
+         * @since 2.3.0
+         *
+         * @param string $newOrderStatus order status on canceled.
+         */
         $newOrderStatus = apply_filters($this->pluginId . '_order_status_expired_' . $gateway->id, $newOrderStatus);
 
         // Update order status, but only if there is no payment started by another gateway
@@ -445,7 +480,14 @@ class MolliePayment extends MollieObject
             }
 
             $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - Create refund - payment object: ' . $paymentObject->id . ', WooCommerce order: ' . $orderId . ', amount: ' . $this->dataHelper->getOrderCurrency($order) . $amount . ( ! empty($reason) ? ', reason: ' . $reason : '' ));
-
+            /**
+             * Action hook after processing the chargeback.
+             *
+             * @since 2.0.0
+             *
+             * @param object $payment The Mollie payment.
+             * @param WC_Order $order The WooCommerce order.
+             */
             do_action($this->pluginId . '_create_refund', $paymentObject, $order);
 
             $apiKey = $this->settingsHelper->getApiKey();
@@ -463,11 +505,20 @@ class MolliePayment extends MollieObject
             /**
              * After Payment Refund has been created
              *
+             * @since 5.3.1
+             *
              * @param Refund $refund
              * @param WC_Order $order
              */
             do_action(self::ACTION_AFTER_REFUND_PAYMENT_CREATED, $refund, $order);
-
+            /**
+             * After Payment Refund has been created
+             *
+             * @since 2.0.0
+             *
+             * @param Refund $refund
+             * @param WC_Order $order
+             */
             do_action_deprecated(
                 $this->pluginId . '_refund_created',
                 [$refund, $order],

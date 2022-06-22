@@ -122,6 +122,14 @@ class PaymentService
 
             $this->saveMollieInfo($order, $paymentObject);
             $this->saveSubscriptionMandateData($orderId, $apiKey, $customerId, $paymentObject, $order);
+            /**
+             * Action hook after creating the payment.
+             *
+             * @since 2.0.0
+             *
+             * @param bool|MollieOrder|MolliePayment $paymentObject Received payment object.
+             * @param string $order The order being processed.
+             */
             do_action($this->pluginId . '_payment_created', $paymentObject, $order);
             $this->updatePaymentStatusForDelayedMethods($paymentObject, $order, $initialOrderStatus);
             $this->reportPaymentSuccess($paymentObject, $orderId, $order, $paymentMethod);
@@ -277,6 +285,13 @@ class PaymentService
     {
         foreach ($order->get_items() as $cart_item) {
             if ($cart_item['quantity']) {
+                /**
+                 * Action hook before processing items.
+                 *
+                 * @since 5.1.1
+                 *
+                 * @param \WC_Order_Item $cart_item The WooCommerce item.
+                 */
                 do_action(
                     $this->pluginId
                     . '_orderlines_process_items_before_getting_product_id',
@@ -291,6 +306,13 @@ class PaymentService
 
                 if ($product === false) {
                     $molliePaymentType = self::PAYMENT_METHOD_TYPE_PAYMENT;
+                    /**
+                     * Action hook after processing the items.
+                     *
+                     * @since 5.1.1
+                     *
+                     * @param \WC_Order_Item $cart_item The WooCommerce item.
+                     */
                     do_action(
                         $this->pluginId
                         . '_orderlines_process_items_after_processing_item',
@@ -298,6 +320,13 @@ class PaymentService
                     );
                     break;
                 }
+                /**
+                 * Action hook after processing the items.
+                 *
+                 * @since 5.1.1
+                 *
+                 * @param \WC_Order_Item $cart_item The WooCommerce item.
+                 */
                 do_action(
                     $this->pluginId
                     . '_orderlines_process_items_after_processing_item',
@@ -329,13 +358,27 @@ class PaymentService
         );
 
         $data = array_filter($paymentRequestData);
-
+        /**
+         * Allow filtering the payment data.
+         *
+         * @since 2.0.0
+         *
+         * @param array $data data to send to Mollie's API.
+         * @param string $order the order being processed.
+         */
         $data = apply_filters(
             'woocommerce_' . $this->gateway->id . '_args',
             $data,
             $order
         );
-
+        /**
+         * Action hook before creating the payment.
+         *
+         * @since 2.0.0
+         *
+         * @param array $data data to send to Mollie's API.
+         * @param string $order the order being processed.
+         */
         do_action(
             $this->pluginId . '_create_payment',
             $data,
@@ -446,7 +489,14 @@ class PaymentService
         );
 
         $data = array_filter($paymentRequestData);
-
+        /**
+         * Allow filtering the payment data.
+         *
+         * @since 2.0.0
+         *
+         * @param array $data data to send to Mollie's API.
+         * @param string $order the order being processed.
+         */
         $data = apply_filters(
             'woocommerce_' . $this->gateway->id . '_args',
             $data,
@@ -653,6 +703,14 @@ class PaymentService
         );
         $paymentRequestData = $paymentObject->getPaymentRequestData($order, $customerId);
         $data = array_filter($paymentRequestData);
+        /**
+         * Allow filtering the payment data.
+         *
+         * @since 2.0.0
+         *
+         * @param array $data data to send to Mollie's API.
+         * @param string $order the order being processed.
+         */
         $data = apply_filters('woocommerce_' . $this->gateway->id . '_args', $data, $order);
 
         $mandates = $this->apiHelper->getApiClient($apiKey)->customers->get($customerId)->mandates();
@@ -736,6 +794,16 @@ class PaymentService
                 LogLevel::DEBUG,
                 "Mollie Subscription in the order: customer id {$customerId} and mandate id {$mandateId} "
             );
+            /**
+             * Action hook after the mandate is created.
+             *
+             * @since 6.0.0
+             *
+             * @param bool|MollieOrder|MolliePayment $paymentObject Mollie payment object.
+             * @param WC_Order $order WoCommerce order.
+             * @param string $customerId WoCommerce customer id.
+             * @param string $mandateId WoCommerce mandate id.
+             */
             do_action($this->pluginId . '_after_mandate_created', $paymentObject, $order, $customerId, $mandateId);
         }
     }
@@ -826,13 +894,26 @@ class PaymentService
     protected function processInitialOrderStatus($paymentMethod)
     {
         $initialOrderStatus = $paymentMethod->getInitialOrderStatus();
-        // Overwrite plugin-wide
+        /**
+         * Overwrite plugin-wide the initial order status.
+         *
+         * @since 2.0.0
+         *
+         * @param string $initialOrderStatus initial order status.
+         */
         $initialOrderStatus = apply_filters(
             $this->pluginId . '_initial_order_status', $initialOrderStatus
         );
-        // Overwrite gateway-wide
+        $paymentMethodId = $paymentMethod->getProperty('id');
+        /**
+         * Overwrite gateway-wide the initial order status.
+         *
+         * @since 2.0.0
+         *
+         * @param string $initialOrderStatus initial order status.
+         */
         $initialOrderStatus = apply_filters(
-            $this->pluginId . '_initial_order_status_' . $paymentMethod->getProperty('id'),
+            $this->pluginId . '_initial_order_status_' . $paymentMethodId,
             $initialOrderStatus
         );
         return $initialOrderStatus;

@@ -40,6 +40,13 @@ class Api
         global $wp_version;
 
         if (has_filter('mollie_api_key_filter')) {
+            /**
+             * Overwrite the Mollie API key.
+             *
+             * @since 2.6.0
+             *
+             * @param string $apiKey saved in db api key.
+             */
             $apiKey = apply_filters('mollie_api_key_filter', $apiKey);
         }
 
@@ -69,6 +76,13 @@ class Api
      */
     public function getApiEndpoint()
     {
+        /**
+         * Overwrite the Mollie endpoint.
+         *
+         * @since 2.0.0
+         *
+         * @param string "https://api.mollie.com" endpoint.
+         */
         return apply_filters($this->pluginId . '_api_endpoint', \Mollie\Api\MollieApiClient::API_ENDPOINT);
     }
 }

@@ -346,7 +346,14 @@ class MollieOrderService
                 LogLevel::DEBUG,
                 __METHOD__ . " Updated state for order {$orderId}"
             );
-
+            /**
+             * Action hook after processing the refund.
+             *
+             * @since 5.0.6
+             *
+             * @param Payment|Order $payment The Mollie payment.
+             * @param WC_Order $order The WooCommerce order.
+             */
             do_action(
                 $this->pluginId . '_refunds_processed',
                 $payment,
@@ -482,10 +489,22 @@ class MollieOrderService
             // New order status
             $newOrderStatus = MolliePaymentGateway::STATUS_ON_HOLD;
 
-            // Overwrite plugin-wide
+            /**
+             * Overwrite plugin-wide the status when chargeback is processed.
+             *
+             * @since 5.0.6
+             *
+             * @param string $newOrderStatus order status on hold.
+             */
             $newOrderStatus = apply_filters($this->pluginId . '_order_status_on_hold', $newOrderStatus);
 
-            // Overwrite gateway-wide
+            /**
+             * Overwrite gateway-wide the status when chargeback is processed.
+             *
+             * @since 5.0.6
+             *
+             * @param string $newOrderStatus order status on hold.
+             */
             $newOrderStatus = apply_filters($this->pluginId . "_order_status_on_hold_{$this->gateway->id}", $newOrderStatus);
 
             $paymentMethodTitle = $this->getPaymentMethodTitle($payment);
@@ -574,7 +593,14 @@ class MollieOrderService
                     );
                 }
             }
-
+            /**
+             * Action hook after processing the chargeback.
+             *
+             * @since 5.0.6
+             *
+             * @param Payment|Order $payment The Mollie payment.
+             * @param WC_Order $order The WooCommerce order.
+             */
             do_action(
                 $this->pluginId . '_chargebacks_processed',
                 $payment,
@@ -651,13 +677,25 @@ class MollieOrderService
         $newOrderStatus,
         $refundType
     ) {
-        // Overwrite plugin-wide
+        /**
+         * Overwrite plugin-wide the status when refund is processed.
+         *
+         * @since 5.0.6
+         *
+         * @param string $newOrderStatus order status refunded.
+         */
         $newOrderStatus = apply_filters(
             $this->pluginId . $refundType,
             $newOrderStatus
         );
 
-        // Overwrite gateway-wide
+        /**
+         * Overwrite gateway-wide the status when refund is processed.
+         *
+         * @since 5.0.6
+         *
+         * @param string $newOrderStatus order status refunded.
+         */
         $newOrderStatus = apply_filters(
             $this->pluginId . $refundType . $this->gateway->id,
             $newOrderStatus

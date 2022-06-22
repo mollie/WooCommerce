@@ -94,6 +94,13 @@ class OrderLines
 
         foreach ($this->order->get_items() as $cart_item) {
             if ($cart_item['quantity']) {
+                /**
+                 * Action hook before processing items.
+                 *
+                 * @since 5.1.1
+                 *
+                 * @param \WC_Order_Item $cart_item The WooCommerce item.
+                 */
                 do_action($this->pluginId . '_orderlines_process_items_before_getting_product_id', $cart_item);
 
                 if ($cart_item['variation_id']) {
@@ -139,7 +146,13 @@ class OrderLines
                     );
                 }
                 $this->order_lines[] = $mollie_order_item;
-
+                /**
+                 * Action hook after processing the items.
+                 *
+                 * @since 5.1.1
+                 *
+                 * @param \WC_Order_Item $cart_item The WooCommerce item.
+                 */
                 do_action($this->pluginId . '_orderlines_process_items_after_processing_item', $cart_item);
             }
         }

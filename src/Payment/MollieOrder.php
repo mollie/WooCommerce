@@ -16,8 +16,8 @@ use WP_Error;
 
 class MollieOrder extends MollieObject
 {
-    public const ACTION_AFTER_REFUND_AMOUNT_CREATED = 'mollie-payments-for-woocommerce' . '_refund_amount_created';
-    public const ACTION_AFTER_REFUND_ORDER_CREATED = 'mollie-payments-for-woocommerce' . '_refund_order_created';
+    public const ACTION_AFTER_REFUND_AMOUNT_CREATED = 'mollie-payments-for-woocommerce_refund_amount_created';
+    public const ACTION_AFTER_REFUND_ORDER_CREATED = 'mollie-payments-for-woocommerce_refund_order_created';
     public const MAXIMAL_LENGHT_ADDRESS = 100;
     public const MAXIMAL_LENGHT_POSTALCODE = 20;
     public const MAXIMAL_LENGHT_CITY = 200;
@@ -123,6 +123,17 @@ class MollieOrder extends MollieObject
             ],
             'locale' => $paymentLocale,
             'billingAddress' => $billingAddress ?: null,
+            /**
+             * Overwrite payment metadata to send to Mollie API.
+             *
+             * @since 5.1.0
+             *
+             * @param array $args {
+             *  Payment details
+             * @type string order id
+             * @type string order number
+             * }
+             */
             'metadata' => apply_filters(
                 $this->pluginId . '_payment_object_metadata',
                 [
@@ -439,11 +450,24 @@ class MollieOrder extends MollieObject
             $newOrderStatus = MolliePaymentGateway::STATUS_CANCELLED;
         }
 
-        // Overwrite plugin-wide
+        /**
+         * Overwrite plugin-wide the status when webhook canceled is triggered.
+         *
+         * @since 2.3.0
+         *
+         * @param string $newOrderStatus order status on canceled.
+         */
         $newOrderStatus = apply_filters($this->pluginId . '_order_status_cancelled', $newOrderStatus);
 
-        // Overwrite gateway-wide
-        $newOrderStatus = apply_filters($this->pluginId . '_order_status_cancelled_' . $this->id, $newOrderStatus);
+        $gateway = wc_get_payment_gateway_by_order($order);
+        /**
+         * Overwrite gateway-wide the status when webhook canceled is triggered.
+         *
+         * @since 2.3.0
+         *
+         * @param string $newOrderStatus order status on canceled.
+         */
+        $newOrderStatus = apply_filters($this->pluginId . '_order_status_cancelled_' . $gateway->id, $newOrderStatus);
 
         // Update order status, but only if there is no payment started by another gateway
         $this->maybeUpdateStatus(
@@ -479,11 +503,23 @@ class MollieOrder extends MollieObject
         // New order status
         $newOrderStatus = MolliePaymentGateway::STATUS_FAILED;
 
-        // Overwrite plugin-wide
+        /**
+         * Overwrite plugin-wide the status when webhook failed is triggered.
+         *
+         * @since 5.1.0
+         *
+         * @param string $newOrderStatus order status on canceled.
+         */
         $newOrderStatus = apply_filters($this->pluginId . '_order_status_failed', $newOrderStatus);
-
-        // Overwrite gateway-wide
-        $newOrderStatus = apply_filters($this->pluginId . '_order_status_failed_' . $this->id, $newOrderStatus);
+        $gateway = wc_get_payment_gateway_by_order($order);
+        /**
+         * Overwrite gateway-wide the status when webhook failed is triggered.
+         *
+         * @since 5.1.0
+         *
+         * @param string $newOrderStatus order status on canceled.
+         */
+        $newOrderStatus = apply_filters($this->pluginId . '_order_status_failed_' . $gateway->id, $newOrderStatus);
 
         $gateway = wc_get_payment_gateway_by_order($order);
 
@@ -532,10 +568,22 @@ class MollieOrder extends MollieObject
         // New order status
         $newOrderStatus = MolliePaymentGateway::STATUS_CANCELLED;
 
-        // Overwrite plugin-wide
+        /**
+         * Overwrite plugin-wide the status when webhook expired is triggered.
+         *
+         * @since 2.3.0
+         *
+         * @param string $newOrderStatus order status on canceled.
+         */
         $newOrderStatus = apply_filters($this->pluginId . '_order_status_expired', $newOrderStatus);
 
-        // Overwrite gateway-wide
+        /**
+         * Overwrite gateway-wide the status when webhook expired is triggered.
+         *
+         * @since 2.3.0
+         *
+         * @param string $newOrderStatus order status on canceled.
+         */
         $newOrderStatus = apply_filters($this->pluginId . '_order_status_expired_' . $this->id, $newOrderStatus);
 
         // Update order status, but only if there is no payment started by another gateway
@@ -773,12 +821,28 @@ class MollieOrder extends MollieObject
                         );
                     }
 
+                    /**
+                     * Action hook after the refund is created.
+                     *
+                     * @since 5.3.1
+                     *
+                     * @param Refund $refund Mollie refund object.
+                     * @param WC_Order $order WoCommerce order.
+                     */
                     do_action(
                         self::ACTION_AFTER_REFUND_ORDER_CREATED,
                         $refund,
                         $order
                     );
 
+                    /**
+                     * Action hook after the refund is created.
+                     *
+                     * @since 2.0.0
+                     *
+                     * @param Refund $refund Mollie refund object.
+                     * @param WC_Order $order WoCommerce order.
+                     */
                     do_action_deprecated(
                         $this->pluginId . '_refund_created',
                         [$refund, $order],
@@ -858,12 +922,22 @@ class MollieOrder extends MollieObject
             /**
              * After Refund Amount Created
              *
+             * @since 5.3.1
+             *
              * @param Refund $refund
              * @param WC_Order $order
              * @param string $amount
              */
             do_action(self::ACTION_AFTER_REFUND_AMOUNT_CREATED, $refund, $order, $amount);
 
+            /**
+             * Action hook after the refund is created.
+             *
+             * @since 2.0.0
+             *
+             * @param Refund $refund Mollie refund object.
+             * @param WC_Order $order WoCommerce order.
+             */
             do_action_deprecated(
                 $this->pluginId . '_refund_created',
                 [$refund, $order],

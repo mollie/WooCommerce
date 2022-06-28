@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
+use Mollie\WooCommerce\Activation\ActivationModule;
+use Mollie\WooCommerce\Shared\SharedDataDictionary;
+
 class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
 {
     protected function getConfig(): array
@@ -33,9 +36,10 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
         return $this->includeCreditCardIconSelector($componentFields);
     }
 
-    protected function hasPaymentFields()
+    public function hasPaymentFields(): bool
     {
-        return $this->getProperty('mollie_components_enabled') === 'yes';
+        $componentsEnabled = $this->getProperty('mollie_components_enabled');
+        return $componentsEnabled ? $componentsEnabled === 'yes' : $this->defaultComponentsEnabled() === 'yes';
     }
 
     protected function includeMollieComponentsFields($generalFormFields)
@@ -52,11 +56,20 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
                     ),
                     __('Mollie Components', 'mollie-payments-for-woocommerce')
                 ),
-                'default' => 'no',
+                'default' => $this->defaultComponentsEnabled(),
             ],
         ];
 
         return array_merge($generalFormFields, $fields);
+    }
+
+    protected function defaultComponentsEnabled()
+    {
+        $isNewInstall = get_option(SharedDataDictionary::NEW_INSTALL_PARAM_NAME, false);
+        if ($isNewInstall === 'yes') {
+            return 'yes';
+        }
+        return 'no';
     }
 
     /**

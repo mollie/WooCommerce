@@ -61,6 +61,11 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
             && $this->getProperty('payment_surcharge') !== Surcharge::NO_FEE;
     }
 
+    public function hasPaymentFields(): bool
+    {
+        return $this->getProperty('paymentFields');
+    }
+
     public function getIconUrl(): string
     {
         return $this->iconFactory->getIconUrl(

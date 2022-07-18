@@ -145,7 +145,7 @@ class MollieOrderService
             return;
         }
 
-        if ($payment->method === 'paypal' && $payment->billingAddress) {
+        if ($payment->method === 'paypal' && isset($payment->billingAddress)) {
             $this->setBillingAddressAfterPayment($payment, $order);
         }
 

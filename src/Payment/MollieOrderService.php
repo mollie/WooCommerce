@@ -712,8 +712,10 @@ class MollieOrderService
      */
     protected function getPaymentMethodTitle($payment)
     {
-        // TODO David: this needs to be updated, doesn't work in all cases?
         $payment_method_title = '';
+        if (!($this->gateway instanceof MolliePaymentGateway)) {
+            return $payment_method_title;
+        }
         if ($payment->method === $this->gateway->paymentMethod->getProperty('id')) {
             $payment_method_title = $this->gateway->method_title;
         }

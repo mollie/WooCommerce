@@ -159,11 +159,10 @@ class GatewaySurchargeHandler
         ];
         $gatewaySettings = $this->gatewaySettings($gateway);
         $cart->calculate_totals();
-        if (!$gatewaySettings){
+        if (!$gatewaySettings) {
             wp_send_json_success($noSurchargeData);
             return;
         }
-        //This also removes previous fees
 
         if (
                 !isset($gatewaySettings['payment_surcharge'])
@@ -184,11 +183,11 @@ class GatewaySurchargeHandler
             return;
         }
         $feeAmount = (float) $this->surcharge->calculateFeeAmount($cart, $gatewaySettings);
+        $feeAmountTaxed = $feeAmount + $cart->get_fee_tax();
         $surchargeName = $this->surcharge->buildFeeName($this->gatewayFeeLabel);
-
-        $newTotal = (float) $cart->get_total('edit') + $feeAmount;
+        $newTotal = (float) $cart->get_total('edit');
         $data = [
-                'amount' => $feeAmount,
+                'amount' => $feeAmountTaxed,
                 'name' => $surchargeName,
                 'currency' => get_woocommerce_currency_symbol(),
                 'newTotal' => $newTotal,
@@ -198,13 +197,6 @@ class GatewaySurchargeHandler
 
     public function add_engraving_fees($cart)
     {
-        if (!mollieWooCommerceIsCheckoutContext()
-                && !has_block('woocommerce/checkout')
-
-        ) {
-            return;
-        }
-
         $gateway = $this->chosenGateway();
 
         if (!$gateway) {
@@ -212,7 +204,7 @@ class GatewaySurchargeHandler
         }
 
         $gatewaySettings = $this->gatewaySettings($gateway);
-        if (!$gatewaySettings){
+        if (!$gatewaySettings) {
             return;
         }
         if (
@@ -235,13 +227,13 @@ class GatewaySurchargeHandler
 
         $surchargeName = $this->surcharge->buildFeeName($this->gatewayFeeLabel);
 
-        $cart->add_fee($surchargeName, $amount);
+        $cart->add_fee($surchargeName, $amount, true, 'standard');
     }
 
     protected function chosenGateway()
     {
         $gateway = WC()->session->chosen_payment_method;
-        if ($gateway === '') {
+        if (empty($gateway)) {
             $gateway = (empty($_REQUEST['payment_method'])
                     ? '' : sanitize_text_field(
                         wp_unslash($_REQUEST['payment_method'])
@@ -254,7 +246,7 @@ class GatewaySurchargeHandler
         return $gateway;
     }
 
-    protected function isMollieGateway($gateway)
+    protected function isMollieGateway($gateway): bool
     {
         return !empty($gateway) && strpos($gateway, 'mollie_wc_gateway_') !== false;
     }
@@ -293,8 +285,7 @@ class GatewaySurchargeHandler
         $item_fee->set_name($surchargeName);
         $item_fee->set_amount($amount);
         $item_fee->set_total($amount);
-        $item_fee->set_tax_status('none');
-
+        $item_fee->set_tax_status('taxable');
         $order->add_item($item_fee);
         $order->calculate_totals();
     }
@@ -314,7 +305,7 @@ class GatewaySurchargeHandler
 
     protected function canProcessGateway()
     {
-        $gateway = isset($_POST['method']) ? filter_var($_POST['method'], FILTER_SANITIZE_STRING) : false;
+        $gateway = isset($_POST['payment_method']) ? filter_var($_POST['payment_method'], FILTER_SANITIZE_STRING) : false;
         if (!$gateway) {
             return false;
         }

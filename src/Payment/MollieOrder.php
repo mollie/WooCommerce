@@ -443,7 +443,7 @@ class MollieOrder extends MollieObject
         $newOrderStatus = apply_filters($this->pluginId . '_order_status_cancelled', $newOrderStatus);
 
         // Overwrite gateway-wide
-        $newOrderStatus = apply_filters($this->pluginId . '_order_status_cancelled_' . $this->id, $newOrderStatus);
+        $newOrderStatus = apply_filters($this->pluginId . '_order_status_cancelled_' . $payment->method, $newOrderStatus);
 
         // Update order status, but only if there is no payment started by another gateway
         $this->maybeUpdateStatus(
@@ -483,7 +483,7 @@ class MollieOrder extends MollieObject
         $newOrderStatus = apply_filters($this->pluginId . '_order_status_failed', $newOrderStatus);
 
         // Overwrite gateway-wide
-        $newOrderStatus = apply_filters($this->pluginId . '_order_status_failed_' . $this->id, $newOrderStatus);
+        $newOrderStatus = apply_filters($this->pluginId . '_order_status_failed_' . $payment->method, $newOrderStatus);
 
         $gateway = wc_get_payment_gateway_by_order($order);
 
@@ -536,7 +536,7 @@ class MollieOrder extends MollieObject
         $newOrderStatus = apply_filters($this->pluginId . '_order_status_expired', $newOrderStatus);
 
         // Overwrite gateway-wide
-        $newOrderStatus = apply_filters($this->pluginId . '_order_status_expired_' . $this->id, $newOrderStatus);
+        $newOrderStatus = apply_filters($this->pluginId . '_order_status_expired_' . $payment->method, $newOrderStatus);
 
         // Update order status, but only if there is no payment started by another gateway
         $this->maybeUpdateStatus(

@@ -2606,7 +2606,7 @@ msgstr "Lege WooCommerce bestelartikelen of Mollie-bestelregels."
 #: src/Mollie/WC/Payment/Payment.php:132
 msgctxt "Payment description for {orderNumber}"
 msgid "Order {orderNumber}"
-msgstr "Bestelling {bestelnummer}"
+msgstr "Bestelling {orderNumber}"
 
 #. translators: Placeholder 1: store name
 #: build/src/Mollie/WC/Gateway/AbstractSubscription.php:127
@@ -2615,7 +2615,7 @@ msgstr "Bestelling {bestelnummer}"
 #: src/Mollie/WC/Payment/Payment.php:143
 msgctxt "Payment description for {storeName}"
 msgid "StoreName {storeName}"
-msgstr "WinkelNaam {winkelNaam}"
+msgstr "WinkelNaam {storeName}"
 
 #. translators: Placeholder 1: customer first name
 #: build/src/Mollie/WC/Gateway/AbstractSubscription.php:138
@@ -2624,7 +2624,7 @@ msgstr "WinkelNaam {winkelNaam}"
 #: src/Mollie/WC/Payment/Payment.php:154
 msgctxt "Payment description for {customer.firstname}"
 msgid "Customer Firstname {customer.firstname}"
-msgstr "Klant voornaam {klant.voornaam}"
+msgstr "Klant voornaam {customer.firstname}"
 
 #. translators: Placeholder 1: customer last name
 #: build/src/Mollie/WC/Gateway/AbstractSubscription.php:149
@@ -2633,7 +2633,7 @@ msgstr "Klant voornaam {klant.voornaam}"
 #: src/Mollie/WC/Payment/Payment.php:165
 msgctxt "Payment description for {customer.lastname}"
 msgid "Customer Lastname {customer.lastname}"
-msgstr "Klant achternaam {klant.achternaam}"
+msgstr "Klant achternaam {customer.lastname}"
 
 #. translators: Placeholder 1: customer company name
 #: build/src/Mollie/WC/Gateway/AbstractSubscription.php:160
@@ -2642,7 +2642,7 @@ msgstr "Klant achternaam {klant.achternaam}"
 #: src/Mollie/WC/Payment/Payment.php:176
 msgctxt "Payment description for {customer.company}"
 msgid "Customer Company {customer.company}"
-msgstr "Klant bedrijf {klant.bedrijf}"
+msgstr "Klant bedrijf {customer.company}"
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
 #: build/src/Mollie/WC/Payment/Payment.php:334

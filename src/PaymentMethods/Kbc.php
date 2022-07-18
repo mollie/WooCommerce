@@ -20,7 +20,7 @@ class Kbc extends AbstractPaymentMethod implements PaymentMethodI
                 'refunds',
             ],
             'filtersOnBuild' => false,
-            'confirmationDelayed' => false,
+            'confirmationDelayed' => true,
             'SEPA' => true,
         ];
     }

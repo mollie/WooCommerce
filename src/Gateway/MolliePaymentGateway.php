@@ -293,7 +293,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
                         'mollie-payments-for-woocommerce'
                     ),
                     $this->paymentMethod->getProperty('defaultTitle'),
-                    '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
+                    '<a href="https://my.mollie.com/dashboard/settings/profiles" target="_blank">',
                     '</a>'
                 );
 
@@ -1031,7 +1031,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         $isPaymentApi = substr($order->get_meta('_mollie_order_id', true), 0, 3) === 'tr_'  ;
         $resource = ($order->get_meta('_mollie_order_id', true) && !$isPaymentApi) ? 'orders' : 'payments';
 
-        $this->view_transaction_url = 'https://www.mollie.com/dashboard/'
+        $this->view_transaction_url = 'https://my.mollie.com/dashboard/'
             . $resource . '/%s';
 
         return parent::get_transaction_url($order);

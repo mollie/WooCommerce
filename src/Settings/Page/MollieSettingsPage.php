@@ -123,7 +123,7 @@ class MollieSettingsPage extends WC_Settings_Page
         $presentationText .= '<p>' . __(
             'Please go to',
             'mollie-payments-for-woocommerce'
-        ) . '<a href="https://www.mollie.com/dashboard/signup">' . __(
+        ) . '<a href="https://my.mollie.com/dashboard/signup">' . __(
             ' the signup page',
             'mollie-payments-for-woocommerce'
         ) . '</a> ';
@@ -199,7 +199,7 @@ class MollieSettingsPage extends WC_Settings_Page
                         'mollie-payments-for-woocommerce'
                     ),
                     'live',
-                    '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
+                    '<a href="https://my.mollie.com/dashboard/settings/profiles" target="_blank">',
                     '</a>'
                 ),
                 'css' => 'width: 350px',
@@ -230,7 +230,7 @@ class MollieSettingsPage extends WC_Settings_Page
                         'mollie-payments-for-woocommerce'
                     ),
                     'test',
-                    '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
+                    '<a href="https://my.mollie.com/dashboard/settings/profiles" target="_blank">',
                     '</a>'
                 ),
                 'css' => 'width: 350px',
@@ -311,7 +311,7 @@ class MollieSettingsPage extends WC_Settings_Page
                 'The following payment methods are activated in your %1$sMollie profile%2$s:',
                 'mollie-payments-for-woocommerce'
             ),
-            '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
+            '<a href="https://my.mollie.com/dashboard/settings/profiles" target="_blank">',
             '</a>'
         );
 
@@ -346,7 +346,7 @@ class MollieSettingsPage extends WC_Settings_Page
                 continue;
             }
             $content .= $iconNoAvailable;
-            $content .= ' <a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">' . strtolower(
+            $content .= ' <a href="https://my.mollie.com/dashboard/settings/profiles" target="_blank">' . strtolower(
                     __('Activate', 'mollie-payments-for-woocommerce')
                 ) . '</a>';
 

@@ -108,7 +108,7 @@ class OrderLines
                     'sku' => $this->get_item_reference($product),
                     'name' => $this->get_item_name($cart_item),
                     'quantity' => $this->get_item_quantity($cart_item),
-                    'vatRate' => $this->get_item_vatRate($cart_item, $product),
+                    'vatRate' => round($this->get_item_vatRate($cart_item, $product), 2),
                     'unitPrice' =>  [
                         'currency' => $this->currency,
                         'value' => $this->dataHelper->formatCurrencyValue($this->get_item_price($cart_item), $this->currency),
@@ -561,7 +561,7 @@ class OrderLines
     {
         $shipping_vat_rate = 0;
         if (WC()->cart->shipping_tax_total > 0) {
-            $shipping_vat_rate = round(WC()->cart->shipping_tax_total / WC()->cart->shipping_total, 3) * 100;
+            $shipping_vat_rate = round(WC()->cart->shipping_tax_total / WC()->cart->shipping_total, 2) * 100;
         }
 
         return $shipping_vat_rate;

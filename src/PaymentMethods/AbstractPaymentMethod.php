@@ -56,9 +56,15 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         return $this->surcharge;
     }
 
-    public function hasSurcharge(){
+    public function hasSurcharge()
+    {
         return $this->getProperty('payment_surcharge')
             && $this->getProperty('payment_surcharge') !== Surcharge::NO_FEE;
+    }
+
+    public function hasPaymentFields(): bool
+    {
+        return $this->getProperty('paymentFields');
     }
 
     public function getIconUrl(): string
@@ -71,10 +77,11 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     public function shouldDisplayIcon(): bool
     {
         $defaultIconSetting = true;
-        return $this->hasProperty('display_logo')? $this->getProperty('display_logo') === 'yes': $defaultIconSetting;
+        return $this->hasProperty('display_logo') ? $this->getProperty('display_logo') === 'yes' : $defaultIconSetting;
     }
 
-    public function getSharedFormFields(){
+    public function getSharedFormFields()
+    {
         return $this->settingsHelper->generalFormFields(
             $this->getProperty('defaultTitle'),
             $this->getProperty('defaultDescription'),
@@ -82,23 +89,27 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         );
     }
 
-    public function getAllFormFields(){
+    public function getAllFormFields()
+    {
         return $this->getFormFields($this->getSharedFormFields());
     }
 
-    public function paymentFieldsStrategy($gateway){
+    public function paymentFieldsStrategy($gateway)
+    {
         $this->paymentFieldsService->setStrategy($this);
         $this->paymentFieldsService->executeStrategy($gateway);
     }
 
-    public function getProcessedDescription(){
+    public function getProcessedDescription()
+    {
         $description = $this->getProperty('description') === false ? $this->getProperty(
             'defaultDescription'
         ) : $this->getProperty('description');
         return $this->surcharge->buildDescriptionWithSurcharge($description, $this);
     }
 
-    public function getProcessedDescriptionForBlock(){
+    public function getProcessedDescriptionForBlock()
+    {
         return $this->surcharge->buildDescriptionWithSurchargeForBlock($this);
     }
 

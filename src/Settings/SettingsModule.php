@@ -74,6 +74,10 @@ class SettingsModule implements ServiceModule, ExecutableModule
                 assert($settingsHelper instanceof Settings);
                 return $settingsHelper->isTestModeEnabled();
             },
+            'settings.IsDebugEnabled' => static function (): bool {
+                $debugEnabled = get_option('mollie-payments-for-woocommerce_debug', true);
+                return $debugEnabled === 'yes';
+            },
         ];
     }
 

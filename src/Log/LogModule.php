@@ -9,6 +9,7 @@ namespace Mollie\WooCommerce\Log;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
 use Psr\Container\ContainerInterface;
+use Psr\Log\AbstractLogger;
 use Psr\Log\LoggerInterface as Logger;
 
 class LogModule implements ServiceModule
@@ -29,8 +30,12 @@ class LogModule implements ServiceModule
     {
         $source = $this->loggerSource;
         return [
-            Logger::class => static function () use ($source): WcPsrLoggerAdapter {
-                return new WcPsrLoggerAdapter(\wc_get_logger(), $source);
+            Logger::class => static function (ContainerInterface $container) use ($source): AbstractLogger {
+                $debugEnabled = $container->get('settings.IsDebugEnabled');
+                if ($debugEnabled) {
+                    return new WcPsrLoggerAdapter(\wc_get_logger(), $source);
+                }
+                return new EmptyPsrLoggerAdapter();
             },
         ];
     }

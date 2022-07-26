@@ -12,7 +12,7 @@ class In3 extends AbstractPaymentMethod implements PaymentMethodI
             'id' => 'in3',
             'defaultTitle' => __('in3', 'mollie-payments-for-woocommerce'),
             'settingsDescription' => '',
-            'defaultDescription' => '',
+            'defaultDescription' => __('Pay in 3 instalments, 0% interest', 'mollie-payments-for-woocommerce'),
             'paymentFields' => false,
             'instructions' => false,
             'supports' => [

@@ -3,7 +3,7 @@
  * Plugin Name: Mollie Payments for WooCommerce
  * Plugin URI: https://www.mollie.com
  * Description: Accept payments in WooCommerce with the official Mollie plugin
- * Version: 7.2.0
+ * Version: 7.3.0-beta1
  * Author: Mollie
  * Author URI: https://www.mollie.com
  * Requires at least: 5.0
@@ -145,7 +145,7 @@ function initialize()
         $properties = PluginProperties::new(__FILE__);
         $bootstrap = Package::new($properties);
         $modules = [
-            new ActivationModule(__FILE__),
+            new ActivationModule(__FILE__, $properties->version()),
             new LogModule('mollie-payments-for-woocommerce-'),
             new NoticeModule(),
             new SharedModule(),
@@ -155,7 +155,7 @@ function initialize()
             new GatewayModule(),
             new VoucherModule(),
             new PaymentModule(),
-            new UninstallModule()
+            new UninstallModule(),
         ];
         $modules = apply_filters('mollie_wc_plugin_modules', $modules);
         $bootstrap->boot(...$modules);

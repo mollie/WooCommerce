@@ -237,9 +237,10 @@ class MollieOrderService
 
         // Add message to log
         $this->logger->log(LogLevel::DEBUG, __METHOD__ . " called for {$logId}");
+        $refundedByLine = $this->checkLineRefund($payment);
 
         // Make sure there are refunds to process at all
-        if (empty($payment->_links->refunds)) {
+        if (empty($payment->_links->refunds) && !$refundedByLine) {
             $this->logger->log(
                 LogLevel::DEBUG,
                 __METHOD__ . ": No refunds to process for {$logId}",
@@ -249,119 +250,54 @@ class MollieOrderService
             return;
         }
 
+        $refundIds = $this->findRefundIds($payment);
         // Check for new refund
-        try {
-            // Get all refunds for this payment
-            $refunds = $payment->refunds();
+        $this->logger->log(
+            LogLevel::DEBUG,
+            __METHOD__ . " All refund IDs for {$logId}: " . json_encode(
+                $refundIds
+            )
+        );
 
-            // Collect all refund IDs in one array
-            $refundIds = [];
-            foreach ($refunds as $refund) {
-                $refundIds[] = $refund->id;
-            }
+        // Get possibly already processed refunds
+        $processedRefundIds = $this->getProcessedRefundIds($order, $logId);
 
+        // Order the refund arrays by value (refund ID)
+        asort($refundIds);
+        asort($processedRefundIds);
+
+        // Check if no new refunds need processing return
+        if ($refundIds === $processedRefundIds) {
             $this->logger->log(
                 LogLevel::DEBUG,
-                __METHOD__ . " All refund IDs for {$logId}: " . json_encode(
-                    $refundIds
-                )
+                __METHOD__ . " No new refunds, stop processing for {$logId}"
             );
-
-            // Get possibly already processed refunds
-            if ($order->meta_exists('_mollie_processed_refund_ids')) {
-                $processedRefundIds = $order->get_meta(
-                    '_mollie_processed_refund_ids',
-                    true
-                );
-            } else {
-                $processedRefundIds = [];
-            }
-
-            $this->logger->log(
-                LogLevel::DEBUG,
-                __METHOD__ . " Already processed refunds for {$logId}: "
-                . json_encode($processedRefundIds)
-            );
-
-            // Order the refund arrays by value (refund ID)
-            asort($refundIds);
-            asort($processedRefundIds);
-
-            // Check if there are new refunds that need processing
-            if ($refundIds != $processedRefundIds) {
-                // There are new refunds.
-                $refundsToProcess = array_diff($refundIds, $processedRefundIds);
-                $this->logger->log(
-                    LogLevel::DEBUG,
-                    __METHOD__
-                    . " Refunds that need to be processed for {$logId}: "
-                    . json_encode($refundsToProcess)
-                );
-            } else {
-                // No new refunds, stop processing.
-                $this->logger->log(
-                    LogLevel::DEBUG,
-                    __METHOD__ . " No new refunds, stop processing for {$logId}"
-                );
-
-                return;
-            }
-
-            $dataHelper = $this->data;
-            $order = wc_get_order($orderId);
-
-            foreach ($refundsToProcess as $refundToProcess) {
-                $this->logger->log(
-                    LogLevel::DEBUG,
-                    __METHOD__
-                    . " New refund {$refundToProcess} processed in Mollie Dashboard for {$logId} Order note added, but order not updated."
-                );
-                /* translators: Placeholder 1: Refund to process id. */
-                $order->add_order_note(
-                    sprintf(
-                        __(
-                            'New refund %s processed in Mollie Dashboard! Order note added, but order not updated.',
-                            'mollie-payments-for-woocommerce'
-                        ),
-                        $refundToProcess
-                    )
-                );
-
-                $processedRefundIds[] = $refundToProcess;
-            }
-
-            $order->update_meta_data(
-                '_mollie_processed_refund_ids',
-                $processedRefundIds
-            );
-            $this->logger->log(
-                LogLevel::DEBUG,
-                __METHOD__ . " Updated, all processed refunds for {$logId}: "
-                . json_encode($processedRefundIds)
-            );
-
-            $order->save();
-            $this->processUpdateStateRefund($order, $payment);
-            $this->logger->log(
-                LogLevel::DEBUG,
-                __METHOD__ . " Updated state for order {$orderId}"
-            );
-
-            do_action(
-                $this->pluginId . '_refunds_processed',
-                $payment,
-                $order
-            );
-
             return;
-        } catch (\Mollie\Api\Exceptions\ApiException $e) {
-            $this->logger->log(
-                LogLevel::DEBUG,
-                __FUNCTION__
-                . " : Could not load refunds for {$payment->id}: {$e->getMessage()}"
-                . ' (' . get_class($e) . ')'
-            );
         }
+        // There are new refunds.
+        $refundsToProcess = array_diff($refundIds, $processedRefundIds);
+        $this->logger->log(
+            LogLevel::DEBUG,
+            __METHOD__
+            . " Refunds that need to be processed for {$logId}: "
+            . json_encode($refundsToProcess)
+        );
+        $order = wc_get_order($orderId);
+
+        $processedRefundIds = $this->notifyProcessedRefunds($refundsToProcess, $logId, $order, $processedRefundIds);
+
+        $order->save();
+        $this->processUpdateStateRefund($order, $payment);
+        $this->logger->log(
+            LogLevel::DEBUG,
+            __METHOD__ . " Updated state for order {$orderId}"
+        );
+
+        do_action(
+            $this->pluginId . '_refunds_processed',
+            $payment,
+            $order
+        );
     }
 
     /**
@@ -592,6 +528,89 @@ class MollieOrderService
     }
 
     /**
+     * Check if there is a refund inside an order line
+     *
+     * @param $payment
+     * @return bool
+     */
+    protected function checkLineRefund($payment): bool
+    {
+        return !empty($payment->_embedded->refunds);
+    }
+
+    /**
+     * Find the Ids of the refunds
+     *
+     * @param $payment
+     * @return array
+     */
+    protected function findRefundIds($payment): array
+    {
+        if (empty($payment->_links->refunds)) {
+            return $this->findRefundIdsByLine($payment);
+        }
+        return $this->findRefundIdsByLinks($payment);
+    }
+
+    /**
+     * Find refund ids inside an order line
+     *
+     * @param $payment
+     * @return array
+     */
+    protected function findRefundIdsByLine($payment): array
+    {
+        $refundIds = [];
+        $refunds = $payment->_embedded->refunds;
+        foreach ($refunds as $refund) {
+            $refundIds[] = $refund->id;
+        }
+        return $refundIds;
+    }
+
+    /**
+     * calculate refund amount inside order lines
+     *
+     * @param $payment
+     * @return float
+     */
+    protected function calculateRefundByLine($payment): float
+    {
+        $refundAmount = 0.0;
+        $refunds = $payment->_embedded->refunds;
+        foreach ($refunds as $refund) {
+            $refundAmount += (float) $refund->amount->value;
+        }
+        return $refundAmount;
+    }
+
+    /**
+     * Check if there is a refund inside an order line
+     *
+     * @param $payment
+     * @return array
+     */
+    protected function findRefundIdsByLinks($payment): array
+    {
+        $refundIds = [];
+        try {
+            // Get all refunds for this payment
+            $refunds = $payment->refunds();
+            foreach ($refunds as $refund) {
+                $refundIds[] = $refund->id;
+            }
+        } catch (\Mollie\Api\Exceptions\ApiException $e) {
+            $this->logger->log(
+                LogLevel::DEBUG,
+                __FUNCTION__
+                . " : Could not load refunds for {$payment->id}: {$e->getMessage()}"
+                . ' (' . get_class($e) . ')'
+            );
+        }
+        return $refundIds;
+    }
+
+    /**
      * @param Payment|Order $payment
      * @param WC_Order $order
      */
@@ -620,6 +639,9 @@ class MollieOrderService
      */
     protected function isPartialRefund($payment)
     {
+        if ($payment->amountRefunded === null) {
+            return (float)($payment->amount->value - $this->calculateRefundByLine($payment)) !== 0.0;
+        }
         return (float)($payment->amount->value - $payment->amountRefunded->value) !== 0.0;
     }
 
@@ -756,5 +778,70 @@ class MollieOrderService
 
                 break;
         }
+    }
+
+    /**
+     * @param WC_Order $order
+     * @param string $logId
+     * @return array|mixed|string|void
+     */
+    protected function getProcessedRefundIds(WC_Order $order, string $logId)
+    {
+        if ($order->meta_exists('_mollie_processed_refund_ids')) {
+            $processedRefundIds = $order->get_meta(
+                '_mollie_processed_refund_ids',
+                true
+            );
+        } else {
+            $processedRefundIds = [];
+        }
+
+        $this->logger->log(
+            LogLevel::DEBUG,
+            __METHOD__ . " Already processed refunds for {$logId}: "
+            . json_encode($processedRefundIds)
+        );
+        return $processedRefundIds;
+    }
+
+    /**
+     * @param array $refundsToProcess
+     * @param string $logId
+     * @param $order
+     * @param $processedRefundIds
+     * @return mixed
+     */
+    protected function notifyProcessedRefunds(array $refundsToProcess, string $logId, $order, $processedRefundIds)
+    {
+        foreach ($refundsToProcess as $refundToProcess) {
+            $this->logger->log(
+                LogLevel::DEBUG,
+                __METHOD__
+                . " New refund {$refundToProcess} processed in Mollie Dashboard for {$logId} Order note added, but order not updated."
+            );
+            /* translators: Placeholder 1: Refund to process id. */
+            $order->add_order_note(
+                sprintf(
+                    __(
+                        'New refund %s processed in Mollie Dashboard! Order note added, but order not updated.',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                    $refundToProcess
+                )
+            );
+
+            $processedRefundIds[] = $refundToProcess;
+        }
+
+        $order->update_meta_data(
+            '_mollie_processed_refund_ids',
+            $processedRefundIds
+        );
+        $this->logger->log(
+            LogLevel::DEBUG,
+            __METHOD__ . " Updated, all processed refunds for {$logId}: "
+            . json_encode($processedRefundIds)
+        );
+        return $processedRefundIds;
     }
 }

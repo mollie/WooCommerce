@@ -56,7 +56,7 @@ class MollieOrder extends MollieObject
         try {
             $testMode = $this->settingsHelper->isTestModeEnabled();
             $apiKey = $this->settingsHelper->getApiKey();
-            self::$payment = $this->apiHelper->getApiClient($apiKey)->orders->get($paymentId, [ "embed" => "payments" ]);
+            self::$payment = $this->apiHelper->getApiClient($apiKey)->orders->get($paymentId, [ "embed" => "payments,refunds" ]);
 
             return parent::getPaymentObject($paymentId, $testMode = false, $useCache = true);
         } catch (ApiException $e) {

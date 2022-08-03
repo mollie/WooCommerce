@@ -255,8 +255,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
     {
         $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_STRING);
         $bankTransferSettings = get_option('mollie_wc_gateway_banktransfer_settings', false);
-        $isSettingActivated = false;
-        if ($bankTransferSettings && isset($bankTransferSettings['order_dueDate'])) {
+        $isSettingActivated = $bankTransferSettings && isset($bankTransferSettings['activate_expiry_days_setting']) && $bankTransferSettings['activate_expiry_days_setting'] === "yes";
+        if ($isSettingActivated  && isset($bankTransferSettings['order_dueDate'])) {
             $isSettingActivated = $bankTransferSettings['order_dueDate'] > 0;
         }
 

@@ -195,11 +195,11 @@ class MollieSettingsPage extends WC_Settings_Page
                 'desc' => sprintf(
                 /* translators: Placeholder 1: API key mode (live or test). The surrounding %s's Will be replaced by a link to the Mollie profile */
                     __(
-                        'The API key is used to connect to Mollie. You can find your <strong>%1$s</strong> API key in your %2$sMollie profile%3$s',
+                        'The API key is used to connect to Mollie. You can find your <strong>%1$s</strong> API key in your %2$sMollie account%3$s',
                         'mollie-payments-for-woocommerce'
                     ),
                     'live',
-                    '<a href="https://my.mollie.com/dashboard/settings/profiles" target="_blank">',
+                    '<a href="https://my.mollie.com/dashboard/developers/api-keys" target="_blank">',
                     '</a>'
                 ),
                 'css' => 'width: 350px',
@@ -226,11 +226,11 @@ class MollieSettingsPage extends WC_Settings_Page
                 'desc' => sprintf(
                 /* translators: Placeholder 1: API key mode (live or test). The surrounding %s's Will be replaced by a link to the Mollie profile */
                     __(
-                        'The API key is used to connect to Mollie. You can find your <strong>%1$s</strong> API key in your %2$sMollie profile%3$s',
+                        'The API key is used to connect to Mollie. You can find your <strong>%1$s</strong> API key in your %2$sMollie account%3$s',
                         'mollie-payments-for-woocommerce'
                     ),
                     'test',
-                    '<a href="https://my.mollie.com/dashboard/settings/profiles" target="_blank">',
+                    '<a href="https://my.mollie.com/dashboard/developers/api-keys" target="_blank">',
                     '</a>'
                 ),
                 'css' => 'width: 350px',

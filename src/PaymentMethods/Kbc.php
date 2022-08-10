@@ -6,13 +6,15 @@ namespace Mollie\WooCommerce\PaymentMethods;
 
 class Kbc extends AbstractPaymentMethod implements PaymentMethodI
 {
+    protected const DEFAULT_ISSUERS_DROPDOWN = 'yes';
+    protected const DEFAULT_ISSUERS_EMPTY = 'Select your bank';
     protected function getConfig(): array
     {
         return [
             'id' => 'kbc',
             'defaultTitle' => __('KBC/CBC Payment Button', 'mollie-payments-for-woocommerce'),
             'settingsDescription' => '',
-            'defaultDescription' => __('Select your bank', 'mollie-payments-for-woocommerce'),
+            'defaultDescription' => __(self::DEFAULT_ISSUERS_EMPTY, 'mollie-payments-for-woocommerce'),
             'paymentFields' => true,
             'instructions' => false,
             'supports' => [
@@ -41,7 +43,7 @@ class Kbc extends AbstractPaymentMethod implements PaymentMethodI
                     ),
                     $this->getProperty('defaultTitle')
                 ),
-                'default' => 'yes',
+                'default' => self::DEFAULT_ISSUERS_DROPDOWN,
             ],
             'issuers_empty_option' => [
                 'title' => __(
@@ -56,9 +58,21 @@ class Kbc extends AbstractPaymentMethod implements PaymentMethodI
                     ),
                     $this->getProperty('defaultTitle')
                 ),
-                'default' => 'Select your bank',
+                'default' => self::DEFAULT_ISSUERS_EMPTY,
             ],
         ];
         return array_merge($generalFormFields, $paymentMethodFormFieds);
+    }
+    /**
+     * Default values for the initial settings saved
+     *
+     * @return array
+     */
+    public function defaultSettings(): array
+    {
+        $settings = parent::defaultSettings();
+        $settings['issuers_dropdown_shown'] = self::DEFAULT_ISSUERS_DROPDOWN;
+        $settings['issuers_empty_option'] = self::DEFAULT_ISSUERS_EMPTY;
+        return $settings;
     }
 }

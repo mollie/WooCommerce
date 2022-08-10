@@ -6,6 +6,8 @@ namespace Mollie\WooCommerce\PaymentMethods;
 
 class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
 {
+    protected const DEFAULT_ISSUERS_DROPDOWN = 'yes';
+    protected const DEFAULT_ISSUERS_EMPTY = 'Select your gift card';
     /**
      * Method to print the giftcard payment details on debug and order note
      *
@@ -57,7 +59,7 @@ class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
             'id' => 'giftcard',
             'defaultTitle' => __('Gift cards', 'mollie-payments-for-woocommerce'),
             'settingsDescription' => '',
-            'defaultDescription' => __('Select your gift card', 'mollie-payments-for-woocommerce'),
+            'defaultDescription' => __(self::DEFAULT_ISSUERS_EMPTY, 'mollie-payments-for-woocommerce'),
             'paymentFields' => true,
             'instructions' => false,
             'supports' => [
@@ -85,7 +87,7 @@ class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
                     ),
                     $this->getProperty('defaultTitle')
                 ),
-                'default' => 'yes',
+                'default' => self::DEFAULT_ISSUERS_DROPDOWN,
             ],
             'issuers_empty_option' => [
                 'title' => __(
@@ -100,9 +102,21 @@ class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
                     ),
                     $this->getProperty('defaultTitle')
                 ),
-                'default' => '',
+                'default' => self::DEFAULT_ISSUERS_EMPTY,
             ],
         ];
         return array_merge($generalFormFields, $paymentMethodFormFieds);
+    }
+    /**
+     * Default values for the initial settings saved
+     *
+     * @return array
+     */
+    public function defaultSettings(): array
+    {
+        $settings = parent::defaultSettings();
+        $settings['issuers_dropdown_shown'] = self::DEFAULT_ISSUERS_DROPDOWN;
+        $settings['issuers_empty_option'] = self::DEFAULT_ISSUERS_EMPTY;
+        return $settings;
     }
 }

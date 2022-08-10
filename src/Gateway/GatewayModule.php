@@ -72,11 +72,11 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 assert($settings instanceof Settings);
                 $apiKey = $settings->getApiKey();
                 $methods = $apiKey ? $dataHelper->getAllPaymentMethods($apiKey) : [];
-                foreach ($methods as $key => $method) {
-                    $methods[$method['id']] = $method;
-                    unset($methods[$key]);
+                $enabledMethods = [];
+                foreach ($methods as $method) {
+                    $enabledMethods[] = $method['id'];
                 }
-                return $methods;
+                return $enabledMethods;
             },
             IconFactory::class => static function (ContainerInterface $container): IconFactory {
                 $pluginUrl = $container->get('shared.plugin_url');
@@ -149,7 +149,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         });
 
         add_filter('woocommerce_payment_gateways', function ($gateways) use ($container) {
-            $mollieGateways = $container->get('gateway.instances');
+            $mollieGateways = $this->instantiatePaymentMethodGateways($container);
             return array_merge($gateways, $mollieGateways);
         });
         add_filter('woocommerce_payment_gateways', [$this, 'maybeDisableApplePayGateway'], 20);
@@ -460,18 +460,13 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $paymentFactory = $container->get(PaymentFactory::class);
         assert($paymentFactory instanceof PaymentFactory);
         $pluginId = $container->get('shared.plugin_id');
-        $methodsEnabledAtMollie = $container->get('gateway.paymentMethodsEnabledAtMollie');
         $gateways = [];
-        if(empty($methodsEnabledAtMollie)){
+        if(empty($paymentMethods)){
             return $gateways;
         }
 
         foreach ($paymentMethods as $paymentMethod) {
             $paymentMethodId = $paymentMethod->getProperty('id');
-            if(!$this->paymentMethodEnabledAtMollie($paymentMethodId, $methodsEnabledAtMollie)){
-                continue;
-            }
-
             $isSepa = $paymentMethod->getProperty('SEPA');
             $key = 'mollie_wc_gateway_' . $paymentMethodId;
             if ($isSepa) {
@@ -527,11 +522,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
         return $gateways;
     }
 
-    private function paymentMethodEnabledAtMollie($paymentMethodName, $methodsEnabledAtMollie)
-    {
-        return array_key_exists(strtolower($paymentMethodName), $methodsEnabledAtMollie);
-    }
-
     /**
      * @param $container
      * @return array
@@ -539,29 +529,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
     protected function instantiatePaymentMethods($container): array
     {
         $paymentMethods = [];
-        $paymentMethodsNames = [
-            'Banktransfer',
-            'Belfius',
-            'Creditcard',
-            'Directdebit',
-            'Eps',
-            'Giropay',
-            'Ideal',
-            'Kbc',
-            'Klarnapaylater',
-            'Klarnapaynow',
-            'Klarnasliceit',
-            'Bancontact',
-            'Paypal',
-            'Paysafecard',
-            'Przelewy24',
-            'Sofort',
-            'Giftcard',
-            'Applepay',
-            'Mybank',
-            'Voucher',
-            'In3'
-        ];
+        $paymentMethodsNames = $container->get('gateway.paymentMethodsEnabledAtMollie');
         $iconFactory = $container->get(IconFactory::class);
         assert($iconFactory instanceof IconFactory);
         $settingsHelper = $container->get('settings.settings_helper');
@@ -571,7 +539,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $paymentFieldsService = $container->get(PaymentFieldsService::class);
         assert($paymentFieldsService instanceof PaymentFieldsService);
         foreach ($paymentMethodsNames as $paymentMethodName) {
-            $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . $paymentMethodName;
+            $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . strtoupper($paymentMethodName);
             $paymentMethod = new $paymentMethodClassName(
                 $iconFactory,
                 $settingsHelper,

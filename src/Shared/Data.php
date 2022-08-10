@@ -160,38 +160,6 @@ class Data
     }
 
     /**
-     * Called when page 'WooCommerce -> Checkout -> Checkout Options' is saved
-     *
-     * @see \Plugin::init
-     */
-    public function deleteTransients()
-    {
-        $this->logger->log(LogLevel::DEBUG, __METHOD__ . ': Mollie settings saved, delete transients');
-
-        $transient_names = [
-            'api_methods_test',
-            'api_methods_live',
-            'api_issuers_test',
-            'api_issuers_live',
-            'ideal_issuers_test',
-            'ideal_issuers_live',
-            'kbc_issuers_test',
-            'kbc_issuers_live',
-            'giftcard_issuers_test',
-            'giftcard_issuers_live',
-        ];
-
-        $languages = array_keys(apply_filters('wpml_active_languages', []));
-        $languages[] = $this->getCurrentLocale();
-
-        foreach ($transient_names as $transient_name) {
-            foreach ($languages as $language) {
-                delete_transient($this->getTransientId($transient_name . sprintf('_%s', $language)));
-            }
-        }
-    }
-
-    /**
      * Get Mollie payment from cache or load from Mollie
      * Skip cache by setting $use_cache to false
      *

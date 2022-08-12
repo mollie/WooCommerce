@@ -1630,10 +1630,9 @@ msgstr "Bankoverdracht"
 #: src/Mollie/WC/Gateway/DirectDebit.php:80 src/Mollie/WC/Gateway/Ideal.php:124
 #: src/Mollie/WC/Gateway/Sofort.php:64
 msgid ""
-"Payment completed by <strong>%s</strong> (IBAN (last 4 digits): %s, BIC: %s)"
+"Payment completed by <strong>%1$s</strong> (IBAN (last 4 digits): %2$s, BIC: %3$s)"
 msgstr ""
-"Betaling voltooid door <strong>%s</strong> (IBAN (ten minste 4 cijfers): %s, "
-"BIC: %s)"
+"Betaling voltooid door <strong>%1$s</strong> (IBAN (ten minste 4 cijfers): %2$s, BIC: %3$s)"
 
 # MS: Datei sagt informal, Satz müsste sein: 'Voltooi je betaling door het totale bedrag over te maken naar de volgende bankrekening:' #query
 #: build/src/Mollie/WC/Gateway/BankTransfer.php:198

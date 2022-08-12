@@ -546,12 +546,9 @@ class MollieOrderService
      */
     protected function findRefundIdsByLine($payment): array
     {
-        $refundIds = [];
-        $refunds = $payment->_embedded->refunds;
-        foreach ($refunds as $refund) {
-            $refundIds[] = $refund->id;
-        }
-        return $refundIds;
+        return array_map(static function ($refund) {
+            return $refund->id;
+        }, $payment->_embedded->refunds);
     }
 
     /**

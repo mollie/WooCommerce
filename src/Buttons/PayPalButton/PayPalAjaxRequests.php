@@ -117,7 +117,7 @@ class PayPalAjaxRequests
                 'PayPal'
             );
 
-            $this->logger->log(LogLevel::DEBUG, $message, ['error']);
+            $this->logger->debug($message, ['error']);
             wp_send_json_error($message);
         }
     }
@@ -135,8 +135,8 @@ class PayPalAjaxRequests
     {
         $payPalRequestDataObject = $this->payPalDataObjectHttp();
         $payPalRequestDataObject->orderData($_POST, 'cart');
-        $this->logger->log(LogLevel::DEBUG, 'in create order from cart');
-        $this->logger->log(LogLevel::DEBUG, 'object', [$payPalRequestDataObject]);
+        $this->logger->debug('in create order from cart');
+        $this->logger->debug('object', [$payPalRequestDataObject]);
 
         if (!$this->isNonceValid($payPalRequestDataObject)) {
             return;
@@ -268,7 +268,7 @@ class PayPalAjaxRequests
             $PayPalRequestDataObject->nonce,
             'mollie_PayPal_button'
         );
-        $this->logger->log(LogLevel::DEBUG, 'ISNONCEVALID' . $isNonceValid);
+        $this->logger->debug('ISNONCEVALID' . $isNonceValid);
         return $isNonceValid;
     }
 }

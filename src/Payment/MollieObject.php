@@ -86,7 +86,7 @@ class MollieObject
             $apiKey = $this->settingsHelper->getApiKey();
             return $this->apiHelper->getApiClient($apiKey)->payments->get($payment_id);
         } catch (ApiException $apiException) {
-            $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Could not load payment %s (', $payment_id) . ( $test_mode ? 'test' : 'live' ) . "): " . $apiException->getMessage() . ' (' . get_class($apiException) . ')');
+            $this->logger->debug(__FUNCTION__ . sprintf(': Could not load payment %s (', $payment_id) . ( $test_mode ? 'test' : 'live' ) . "): " . $apiException->getMessage() . ' (' . get_class($apiException) . ')');
         }
 
         return null;
@@ -111,7 +111,7 @@ class MollieObject
             $apiKey = $this->settingsHelper->getApiKey();
             return $this->apiHelper->getApiClient($apiKey)->orders->get($payment_id, [ "embed" => "payments" ]);
         } catch (ApiException $e) {
-            $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Could not load order %s (', $payment_id) . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            $this->logger->debug(__FUNCTION__ . sprintf(': Could not load order %s (', $payment_id) . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
 
         return null;
@@ -349,7 +349,7 @@ class MollieObject
                     $mollie_order
                 );
             } catch (ApiException $exception) {
-                $this->logger->log(LogLevel::DEBUG, $exception->getMessage());
+                $this->logger->debug($exception->getMessage());
                 return;
             }
 
@@ -659,8 +659,7 @@ class MollieObject
                     $restoreStock = false
                 );
             }
-            $this->logger->log(
-                LogLevel::DEBUG,
+            $this->logger->debug(
                 __METHOD__ . ' called for order ' . $orderId . ' and payment '
                 . $payment->id . ', renewal order payment failed, order set to '
                 . $newOrderStatus . ' for shop-owner review.'
@@ -707,8 +706,7 @@ class MollieObject
         );
 
         // Add message to log
-        $this->logger->log(
-            LogLevel::DEBUG,
+        $this->logger->debug(
             $gatewayId . ': Order ' . $order->get_id()
             . ' webhook called, but payment also started via '
             . $orderPaymentMethodTitle . ', so order status not updated.',
@@ -769,7 +767,7 @@ class MollieObject
             $onMollieReturn
         );
         $returnUrl = untrailingslashit($returnUrl);
-        $this->logger->log(LogLevel::DEBUG, " Order {$orderId} returnUrl: {$returnUrl}", [true]);
+        $this->logger->debug(" Order {$orderId} returnUrl: {$returnUrl}", [true]);
 
         return apply_filters($this->pluginId . '_return_url', $returnUrl, $order);
     }
@@ -795,7 +793,7 @@ class MollieObject
         );
         $webhookUrl = untrailingslashit($webhookUrl);
 
-        $this->logger->log(LogLevel::DEBUG, " Order {$orderId} webhookUrl: {$webhookUrl}", [true]);
+        $this->logger->debug(" Order {$orderId} webhookUrl: {$webhookUrl}", [true]);
 
         return apply_filters($this->pluginId . '_webhook_url', $webhookUrl, $order);
     }

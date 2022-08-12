@@ -17,7 +17,6 @@ use WC_Order;
 
 class MollieOrderService
 {
-
     protected $gateway;
     /**
      * @var HttpResponse
@@ -237,10 +236,10 @@ class MollieOrderService
 
         // Add message to log
         $this->logger->debug(__METHOD__ . " called for {$logId}");
-        $refundedByLine = $this->checkLineRefund($payment);
+        $hasLineRefund = $this->hasLineRefund($payment);
 
         // Make sure there are refunds to process at all
-        if (empty($payment->_links->refunds) && !$refundedByLine) {
+        if (empty($payment->_links->refunds) && !$hasLineRefund) {
             $this->logger->debug(
                 __METHOD__ . ": No refunds to process for {$logId}",
                 [true]
@@ -520,7 +519,7 @@ class MollieOrderService
      * @param $payment
      * @return bool
      */
-    protected function checkLineRefund($payment): bool
+    protected function hasLineRefund($payment): bool
     {
         return !empty($payment->_embedded->refunds);
     }
@@ -781,7 +780,7 @@ class MollieOrderService
         } else {
             $processedRefundIds = [];
         }
-        
+
         $this->logger->debug(
             __METHOD__ . " Already processed refunds for {$logId}: "
             . json_encode($processedRefundIds)

@@ -293,7 +293,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
                         'mollie-payments-for-woocommerce'
                     ),
                     $this->paymentMethod->getProperty('defaultTitle'),
-                    '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
+                    '<a href="https://my.mollie.com/dashboard/settings/profiles?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">',
                     '</a>'
                 );
 
@@ -308,7 +308,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
                         'mollie-payments-for-woocommerce'
                     ),
                     get_woocommerce_currency(),
-                    '<a href="https://help.mollie.com/hc/en-us/articles/360003980013-Which-currencies-are-supported-and-what-is-the-settlement-currency-" target="_blank">',
+                    '<a href="https://help.mollie.com/hc/en-us/articles/360003980013-Which-currencies-are-supported-and-what-is-the-settlement-currency-?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">',
                     '</a>'
                 );
 
@@ -1031,8 +1031,8 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         $isPaymentApi = substr($order->get_meta('_mollie_order_id', true), 0, 3) === 'tr_'  ;
         $resource = ($order->get_meta('_mollie_order_id', true) && !$isPaymentApi) ? 'orders' : 'payments';
 
-        $this->view_transaction_url = 'https://www.mollie.com/dashboard/'
-            . $resource . '/%s';
+        $this->view_transaction_url = 'https://my.mollie.com/dashboard/'
+            . $resource . '/%s?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner';
 
         return parent::get_transaction_url($order);
     }

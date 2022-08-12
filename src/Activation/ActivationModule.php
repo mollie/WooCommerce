@@ -10,6 +10,7 @@ use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Package;
 use Mollie\WooCommerce\Notice\AdminNotice;
+use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Container\ContainerInterface;
 
 use function Mollie\WooCommerce\mollie_wc_plugin_autoload;
@@ -18,17 +19,16 @@ class ActivationModule implements ExecutableModule
 {
     use ModuleClassNameIdTrait;
 
-    public const DB_VERSION_PARAM_NAME = 'mollie-db-version';
-    public const PENDING_PAYMENT_DB_TABLE_NAME = 'mollie_pending_payment';
-    public const DB_VERSION = '1.0';
     private $baseFile;
+    private $pluginVersion;
 
     /**
      * ActivationModule constructor.
      */
-    public function __construct($baseFile)
+    public function __construct($baseFile, $pluginVersion)
     {
         $this->baseFile = $baseFile;
+        $this->pluginVersion = $pluginVersion;
     }
 
 
@@ -56,10 +56,10 @@ class ActivationModule implements ExecutableModule
     public function initDb()
     {
         global $wpdb;
-        $wpdb->mollie_pending_payment = $wpdb->prefix . self::PENDING_PAYMENT_DB_TABLE_NAME;
-        if (get_option(self::DB_VERSION_PARAM_NAME, '') !== self::DB_VERSION) {
+        $wpdb->mollie_pending_payment = $wpdb->prefix . SharedDataDictionary::PENDING_PAYMENT_DB_TABLE_NAME;
+        if (get_option(SharedDataDictionary::DB_VERSION_PARAM_NAME, '') !== SharedDataDictionary::DB_VERSION) {
             global $wpdb;
-            $pendingPaymentConfirmTable = $wpdb->prefix . self::PENDING_PAYMENT_DB_TABLE_NAME;
+            $pendingPaymentConfirmTable = $wpdb->prefix . SharedDataDictionary::PENDING_PAYMENT_DB_TABLE_NAME;
             require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
             if ($wpdb->get_var("show tables like '$pendingPaymentConfirmTable'") !== $pendingPaymentConfirmTable) {
                 $sql = "
@@ -77,7 +77,7 @@ class ActivationModule implements ExecutableModule
                 global $EZSQL_ERROR;
                 array_pop($EZSQL_ERROR);
             }
-            update_option(self::DB_VERSION_PARAM_NAME, self::DB_VERSION);
+            update_option(SharedDataDictionary::DB_VERSION_PARAM_NAME, SharedDataDictionary::DB_VERSION);
         }
     }
 
@@ -177,6 +177,25 @@ class ActivationModule implements ExecutableModule
         $notice->addNotice('notice-error is-dismissible', $message);
     }
 
+    protected function markUpdatedOrNew()
+    {
+        $dbVersionOption = get_option(SharedDataDictionary::DB_VERSION_PARAM_NAME, '');
+        $dbPluginOption = get_option(SharedDataDictionary::PLUGIN_VERSION_PARAM_NAME, '');
+
+        if ($dbPluginOption === $this->pluginVersion) {
+            return;
+        }
+
+        if (!$dbVersionOption && !$dbPluginOption) {
+            update_option(SharedDataDictionary::NEW_INSTALL_PARAM_NAME, 'yes', true);
+            update_option(SharedDataDictionary::PLUGIN_VERSION_PARAM_NAME, $this->pluginVersion, true);
+            return;
+        }
+
+        update_option(SharedDataDictionary::NEW_INSTALL_PARAM_NAME, 'no', true);
+        update_option(SharedDataDictionary::PLUGIN_VERSION_PARAM_NAME, $this->pluginVersion, true);
+    }
+
     /**
      *
      */
@@ -187,6 +206,7 @@ class ActivationModule implements ExecutableModule
             false,
             dirname(plugin_basename($this->baseFile)) . '/languages/'
         );
+        $this->markUpdatedOrNew();
         $this->initDb();
     }
 }

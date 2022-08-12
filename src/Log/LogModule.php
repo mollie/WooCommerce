@@ -11,6 +11,7 @@ use Inpsyde\Modularity\Module\ServiceModule;
 use Psr\Container\ContainerInterface;
 use Psr\Log\AbstractLogger;
 use Psr\Log\LoggerInterface as Logger;
+use Psr\Log\NullLogger;
 
 class LogModule implements ServiceModule
 {
@@ -35,7 +36,7 @@ class LogModule implements ServiceModule
                 if ($debugEnabled) {
                     return new WcPsrLoggerAdapter(\wc_get_logger(), $source);
                 }
-                return new EmptyPsrLoggerAdapter();
+                return new NullLogger();
             },
         ];
     }

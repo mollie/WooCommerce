@@ -560,7 +560,7 @@ class AssetsModule implements ExecutableModule
      */
     protected function enqueueIconSettings($current_section): void
     {
-        if (!strpos($current_section, 'mollie_wc_gateway_')) {
+        if (!$current_section || strpos($current_section, 'mollie_wc_gateway_') === false) {
             return;
         }
         wp_enqueue_script('mollie_wc_gateway_settings');

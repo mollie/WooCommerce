@@ -6,7 +6,6 @@ namespace Mollie\WooCommerce\PaymentMethods;
 
 class Voucher extends AbstractPaymentMethod implements PaymentMethodI
 {
-
     /**
      * @var string
      */

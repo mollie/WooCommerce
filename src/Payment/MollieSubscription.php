@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Mollie\WooCommerce\Payment;
 
 
@@ -17,7 +16,7 @@ class MollieSubscription extends MollieObject
      * Molliesubscription constructor.
      *
      */
-    public function __construct( $pluginId, Api $apiHelper, $settingsHelper, $dataHelper, $logger)
+    public function __construct($pluginId, Api $apiHelper, $settingsHelper, $dataHelper, $logger)
     {
         $this->pluginId = $pluginId;
         $this->apiHelper = $apiHelper;
@@ -74,7 +73,7 @@ class MollieSubscription extends MollieObject
         $description = !$option ? '' : trim($option);
 
         // Also use default when Order API was used on initial payment to match payment descriptions.
-        if ( !$description || $initialPaymentUsedOrderAPI ) {
+        if (!$description || $initialPaymentUsedOrderAPI) {
             $description = sprintf(
                 /* translators: Placeholder 1: order number */
                 _x(
@@ -99,7 +98,7 @@ class MollieSubscription extends MollieObject
     public function isAvailableForSubscriptions(bool $status, MollieSubscriptionGateway $subscriptionGateway, $orderTotal): bool
     {
         $subscriptionPluginActive = class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin');
-        if(!$subscriptionPluginActive){
+        if (!$subscriptionPluginActive) {
             return $status;
         }
         $currency = $subscriptionGateway->getCurrencyFromOrder();
@@ -109,12 +108,12 @@ class MollieSubscription extends MollieObject
         $recurringTotal = $subscriptionGateway->get_recurring_total();
         // See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
         $acceptManualRenewals = 'yes' === get_option(
-                \WC_Subscriptions_Admin::$option_prefix
+            \WC_Subscriptions_Admin::$option_prefix
                 . '_accept_manual_renewals',
-                'no'
-            );
+            'no'
+        );
         $supportsSubscriptions = $subscriptionGateway->supports('subscriptions');
-        if($acceptManualRenewals === true || !$supportsSubscriptions || empty($recurringTotal)){
+        if ($acceptManualRenewals === true || !$supportsSubscriptions || empty($recurringTotal)) {
             return $status;
         }
         foreach ($recurringTotal as $recurring_total) {
@@ -158,6 +157,7 @@ class MollieSubscription extends MollieObject
         string $sequenceType,
         string $paymentLocale
     ): array {
+
         $filters = [
             'amount' => [
                 'currency' => $currency,

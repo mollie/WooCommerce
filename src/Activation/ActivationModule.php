@@ -31,7 +31,6 @@ class ActivationModule implements ExecutableModule
         $this->pluginVersion = $pluginVersion;
     }
 
-
     /**
      * @param ContainerInterface $container
      *

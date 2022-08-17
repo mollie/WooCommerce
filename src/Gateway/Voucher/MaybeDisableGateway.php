@@ -33,12 +33,11 @@ class MaybeDisableGateway
          * For any other case we want to be sure voucher gateway is included.
          */
         if (
-        ($isWcApiRequest
+            ($isWcApiRequest
             || !doing_action('woocommerce_payment_gateways')
             || !wp_doing_ajax()
             || is_admin())
-        && !has_block('woocommerce/checkout')
-
+            && !has_block('woocommerce/checkout')
         ) {
             return $gateways;
         }
@@ -89,7 +88,7 @@ class MaybeDisableGateway
         $mealvoucherSettings = get_option(
             'mollie_wc_gateway_voucher_settings'
         );
-        if(!$mealvoucherSettings){
+        if (!$mealvoucherSettings) {
             $mealvoucherSettings = get_option(
                 'mollie_wc_gateway_mealvoucher_settings'
             );

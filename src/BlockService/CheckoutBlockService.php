@@ -57,7 +57,7 @@ class CheckoutBlockService
     public function availableGateways()
     {
         $currency = filter_input(INPUT_POST, 'currency', FILTER_SANITIZE_STRING);
-        $cartTotal = filter_input(INPUT_POST,'cartTotal', FILTER_SANITIZE_NUMBER_INT);
+        $cartTotal = filter_input(INPUT_POST, 'cartTotal', FILTER_SANITIZE_NUMBER_INT);
         $paymentLocale = filter_input(INPUT_POST, 'paymentLocale', FILTER_SANITIZE_STRING);
         $billingCountry = filter_input(INPUT_POST, 'billingCountry', FILTER_SANITIZE_STRING);
         $cartTotal = $cartTotal / 100;
@@ -78,7 +78,7 @@ class CheckoutBlockService
             $availableGateways = $this->removeNonMollieGateway($availableGateways);
             $availableGateways = $this->maybeRemoveVoucher($availableGateways);
             $filterKey = "{$filters['amount']['currency']}-{$filters['locale']}-{$filters['billingCountry']}";
-            foreach ($availableGateways as $key => $gateway){
+            foreach ($availableGateways as $key => $gateway) {
                 $availablePaymentMethods[$filterKey][$key] = $gateway->paymentMethod->getProperty('id');
             }
         }
@@ -95,11 +95,11 @@ class CheckoutBlockService
     protected function maybeRemoveVoucher(array $availableGateways): array
     {
         foreach ($availableGateways as $key => $gateway) {
-            if ($key !=='mollie_wc_gateway_voucher') {
+            if ($key !== 'mollie_wc_gateway_voucher') {
                 continue;
             }
             $shouldRemoveVoucher = $this->voucherDisabler->shouldRemoveVoucher();
-            if($shouldRemoveVoucher){
+            if ($shouldRemoveVoucher) {
                 unset($availableGateways[$key]);
             }
         }

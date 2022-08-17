@@ -225,7 +225,7 @@ class Data
         }
 
         $isSubscriptionPluginActive = $this->isSubscriptionPluginActive();
-        if($isSubscriptionPluginActive){
+        if ($isSubscriptionPluginActive) {
             $result = $this->addRecurringPaymentMethods($apiKey, $test_mode, $use_cache, $result);
         }
 
@@ -241,7 +241,7 @@ class Data
         $currency = get_woocommerce_currency();
         $customerExistsAndHasCountry = WC()->customer && !empty(WC()->customer->get_billing_country());
         $fallbackToShopCountry = wc_get_base_location()['country'];
-        $billingCountry = $customerExistsAndHasCountry? WC()->customer->get_billing_country() : $fallbackToShopCountry;
+        $billingCountry = $customerExistsAndHasCountry ? WC()->customer->get_billing_country() : $fallbackToShopCountry;
 
         $paymentLocale = $this->settingsHelper->getPaymentLocale();
         try {
@@ -365,7 +365,6 @@ class Data
         $transient_id = $this->getTransientId(md5(http_build_query($filters_key)));
 
         try {
-
             if ($use_cache) {
                 // When no cache exists $methods will be `false`
                 $methods =  get_transient($transient_id);
@@ -378,7 +377,7 @@ class Data
                 $filters['resource'] = 'orders';
                 $filters['includeWallets'] = 'applepay';
                 $filters['include'] = 'issuers';
-                if(!$apiKey) {
+                if (!$apiKey) {
                     return [];
                 }
                 $methods = $this->api_helper->getApiClient($apiKey)->methods->allActive($filters);
@@ -477,7 +476,7 @@ class Data
     public function getMethodWithIssuersById($methodId, $apiKey)
     {
         $method = $this->getCachedMethodById($methodId);
-        if($method){
+        if ($method) {
             return $method;
         }
         if (!$apiKey) {
@@ -495,11 +494,11 @@ class Data
     {
         $apiKey = $this->settingsHelper->getApiKey();
         $cachedMethods = $this->getRegularPaymentMethods($apiKey);
-        if(empty($cachedMethods)){
+        if (empty($cachedMethods)) {
             return false;
         }
-        foreach ($cachedMethods as $cachedMethod){
-            if($cachedMethod['id'] !== $methodId){
+        foreach ($cachedMethods as $cachedMethod) {
+            if ($cachedMethod['id'] !== $methodId) {
                 continue;
             }
             return $cachedMethod;

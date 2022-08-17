@@ -6,7 +6,6 @@ namespace Mollie\WooCommerce\PaymentMethods\InstructionStrategies;
 
 class DirectdebitInstructionStrategy implements InstructionStrategyI
 {
-
     public function execute(
         $gateway,
         $payment,

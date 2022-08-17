@@ -46,7 +46,7 @@ class OrderMandatoryGatewayDisabler
         }
         return array_filter(
             $gateways,
-            function ($gateway) {
+            static function ($gateway) {
                 return !($gateway instanceof MolliePaymentGateway)
                     || !$gateway->paymentMethod->getProperty('orderMandatory');
             }

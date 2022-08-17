@@ -11,6 +11,7 @@ trait IssuersDropdownBehavior
             $gateway->paymentMethod->getProperty('issuers_dropdown_shown') === 'yes' :
             $defaultDropdownSetting;
     }
+
     public function getIssuers($gateway, $dataHelper)
     {
         $testMode = $dataHelper->isTestModeEnabled();

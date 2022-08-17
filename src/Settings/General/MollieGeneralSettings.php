@@ -31,7 +31,9 @@ class MollieGeneralSettings
                 'id' => $defaultTitle . '_' . 'title',
                 'title' => sprintf(
                     /* translators: Placeholder 1: Gateway title */
-                    __('%s display settings', 'mollie-payments-for-woocommerce'), $defaultTitle),
+                    __('%s display settings', 'mollie-payments-for-woocommerce'),
+                    $defaultTitle
+                ),
                 'type' => 'title',
             ],
             'title' => [
@@ -96,7 +98,9 @@ class MollieGeneralSettings
                 'id' => $defaultTitle . '_' . 'custom_logo',
                 'title' => sprintf(
                 /* translators: Placeholder 1: Gateway title */
-                    __('%s custom logo', 'mollie-payments-for-woocommerce'), $defaultTitle),
+                    __('%s custom logo', 'mollie-payments-for-woocommerce'),
+                    $defaultTitle
+                ),
                 'type' => 'title',
             ],
             'enable_custom_logo' => [
@@ -130,7 +134,8 @@ class MollieGeneralSettings
                 'title' => sprintf(
                 /* translators: Placeholder 1: Gateway title */
                     __('%s surcharge', 'mollie-payments-for-woocommerce'),
-                    $defaultTitle),
+                    $defaultTitle
+                ),
                 'type' => 'title',
             ],
             'payment_surcharge' => [
@@ -168,7 +173,8 @@ class MollieGeneralSettings
                 'title' => sprintf(
                 /* translators: Placeholder 1: currency */
                     __('Payment surcharge fixed amount in %s', 'mollie-payments-for-woocommerce'),
-                    html_entity_decode(get_woocommerce_currency_symbol())),
+                    html_entity_decode(get_woocommerce_currency_symbol())
+                ),
                 'type' => 'number',
                 'description' => sprintf(
                     __(
@@ -226,7 +232,8 @@ class MollieGeneralSettings
                 'title' => sprintf(
                 /* translators: Placeholder 1: gateway title */
                     __('%s advanced', 'mollie-payments-for-woocommerce'),
-                    $defaultTitle),
+                    $defaultTitle
+                ),
                 'type' => 'title',
             ],
             'activate_expiry_days_setting' => [

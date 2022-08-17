@@ -86,13 +86,14 @@ class Settings
      * Settings constructor.
      */
     public function __construct(
-            $pluginId,
-            $statusHelper,
-            $pluginVersion,
-            $pluginUrl,
-            $apiHelper,
-            $cleanDb
+        $pluginId,
+        $statusHelper,
+        $pluginVersion,
+        $pluginUrl,
+        $apiHelper,
+        $cleanDb
     ) {
+
         $this->pluginId = $pluginId;
         $this->pluginVersion = $pluginVersion;
         $this->pluginUrl = $pluginUrl;
@@ -304,7 +305,7 @@ class Settings
      */
     public function getApiKey($overrideTestMode = 2)
     {
-        $isTestModeEnabled = $overrideTestMode === 2 ? $this->isTestModeEnabled(): $overrideTestMode;
+        $isTestModeEnabled = $overrideTestMode === 2 ? $this->isTestModeEnabled() : $overrideTestMode;
         $settingId = $isTestModeEnabled ? 'test_api_key' : 'live_api_key';
         $apiKeyId = $this->getSettingId($settingId);
         $apiKey = get_option($apiKeyId);
@@ -325,7 +326,7 @@ class Settings
     public function getOrderStatusCancelledPayments()
     {
         $defaultCanceledPaymentSetting = 'pending';
-        $orderStatusCanceledPaymentsSetting = get_option($this->getSettingId('order_status_cancelled_payments'))?:$defaultCanceledPaymentSetting;
+        $orderStatusCanceledPaymentsSetting = get_option($this->getSettingId('order_status_cancelled_payments')) ?: $defaultCanceledPaymentSetting;
         return trim($orderStatusCanceledPaymentsSetting);
     }
 

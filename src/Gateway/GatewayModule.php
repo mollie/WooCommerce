@@ -63,7 +63,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 return $this->instantiatePaymentMethodGateways($container);
             },
             'gateway.paymentMethods' => static function (ContainerInterface $container): array {
-                return (new self)->instantiatePaymentMethods($container);
+                return (new self())->instantiatePaymentMethods($container);
             },
             'gateway.paymentMethodsEnabledAtMollie' => static function (ContainerInterface $container): array {
                 $dataHelper = $container->get('settings.data_helper');
@@ -148,7 +148,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
             return $this->gatewayClassnames;
         });
 
-        add_filter('woocommerce_payment_gateways', function ($gateways) use ($container) {
+        add_filter('woocommerce_payment_gateways', static function ($gateways) use ($container) {
             $mollieGateways = $container->get('gateway.instances');
             return array_merge($gateways, $mollieGateways);
         });
@@ -228,7 +228,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $checkoutBlockHandler->bootstrapAjaxRequest();
         add_action(
             'woocommerce_rest_checkout_process_payment_with_context',
-            function ($paymentContext) {
+            static function ($paymentContext) {
                 if (strpos($paymentContext->payment_method, 'mollie_wc_gateway_') === false) {
                     return;
                 }
@@ -462,13 +462,13 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $pluginId = $container->get('shared.plugin_id');
         $methodsEnabledAtMollie = $container->get('gateway.paymentMethodsEnabledAtMollie');
         $gateways = [];
-        if(empty($methodsEnabledAtMollie)){
+        if (empty($methodsEnabledAtMollie)) {
             return $gateways;
         }
 
         foreach ($paymentMethods as $paymentMethod) {
             $paymentMethodId = $paymentMethod->getProperty('id');
-            if(!$this->paymentMethodEnabledAtMollie($paymentMethodId, $methodsEnabledAtMollie)){
+            if (!$this->paymentMethodEnabledAtMollie($paymentMethodId, $methodsEnabledAtMollie)) {
                 continue;
             }
 
@@ -560,7 +560,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
             'Applepay',
             'Mybank',
             'Voucher',
-            'In3'
+            'In3',
         ];
         $iconFactory = $container->get(IconFactory::class);
         assert($iconFactory instanceof IconFactory);

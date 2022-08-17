@@ -9,7 +9,6 @@ use Psr\Log\LogLevel;
 
 class PayPalDataObjectHttp
 {
-
     /**
      * @var mixed
      */

@@ -54,7 +54,7 @@ class AssetsModule implements ExecutableModule
                 add_action('wp_enqueue_scripts', [$this, 'enqueueApplePayDirectScripts']);
                 add_action('wp_enqueue_scripts', [$this, 'enqueuePayPalButtonScripts']);
 
-                if($hasBlocksEnabled){
+                if ($hasBlocksEnabled) {
                     $gatewayInstances = $container->get('gateway.instances');
                     self::registerBlockScripts();
                     add_action('wp_enqueue_scripts', function () use ($gatewayInstances) {
@@ -84,7 +84,7 @@ class AssetsModule implements ExecutableModule
                         ['underscore', 'jquery'],
                         $this->pluginVersion
                     );
-                    add_action('admin_enqueue_scripts', [$this, 'enqueueAdvancedSettingsJS'], 10, 1 );
+                    add_action('admin_enqueue_scripts', [$this, 'enqueueAdvancedSettingsJS'], 10, 1);
                     global $current_section;
                     wp_localize_script(
                         'mollie_wc_admin_settings',
@@ -103,7 +103,7 @@ class AssetsModule implements ExecutableModule
                         $this->pluginVersion
                     );
 
-                    if($hasBlocksEnabled){
+                    if ($hasBlocksEnabled) {
                         $gatewayInstances = $container->get('gateway.instances');
                         $this->enqueueBlockCheckoutScripts($gatewayInstances);
                     }
@@ -348,7 +348,9 @@ class AssetsModule implements ExecutableModule
         );
     }
 
-    public function registerBlockScripts(){
+    public function registerBlockScripts()
+    {
+
         wp_register_script(
             'mollie_block_index',
             $this->getPluginUrl('/public/js/mollieBlockIndex.min.js'),
@@ -464,8 +466,8 @@ class AssetsModule implements ExecutableModule
         $filters = $this->dataService->wooCommerceFiltersForCheckout();
         $availableGateways = WC()->payment_gateways()->get_available_payment_gateways();
 
-        foreach ($availableGateways as $key => $gateway){
-            if(strpos($key, 'mollie_wc_gateway_') === false){
+        foreach ($availableGateways as $key => $gateway) {
+            if (strpos($key, 'mollie_wc_gateway_') === false) {
                 unset($availableGateways[$key]);
             }
         }
@@ -475,7 +477,7 @@ class AssetsModule implements ExecutableModule
             && isset($filters['billingCountry'])
         ) {
             $filterKey = "{$filters['amount']['currency']}-{$filters['locale']}-{$filters['billingCountry']}";
-            foreach ($availableGateways as $key => $gateway){
+            foreach ($availableGateways as $key => $gateway) {
                 $availablePaymentMethods[$filterKey][$key] = $gateway->paymentMethod->getProperty('id');
             }
         }
@@ -503,11 +505,11 @@ class AssetsModule implements ExecutableModule
                 $gateway->paymentMethod->paymentFieldsService->setStrategy($gateway->paymentMethod);
                 $issuers = $gateway->paymentMethod->paymentFieldsService->getStrategyMarkup($gateway);
             }
-            if($gatewayId == 'creditcard'){
+            if ($gatewayId == 'creditcard') {
                 $content .= $issuers;
                 $issuers = false;
             }
-            $title = $gateway->paymentMethod->getProperty('title') === false?
+            $title = $gateway->paymentMethod->getProperty('title') === false ?
                 $gateway->paymentMethod->getProperty('defaultTitle') : $gateway->paymentMethod->getProperty('title');
             $labelMarkup = "<span style='margin-right: 1em'>{$title}</span>{$gateway->icon}";
             $hasSurcharge = $gateway->paymentMethod->hasSurcharge();
@@ -518,7 +520,7 @@ class AssetsModule implements ExecutableModule
                 'issuers' => $issuers,
                 'hasSurcharge' => $hasSurcharge,
                 'title' => $title,
-                'contentFallback'=> __('Please choose a billing country to see the available payment methods', 'mollie-payments-for-woocommerce'),
+                'contentFallback' => __('Please choose a billing country to see the available payment methods', 'mollie-payments-for-woocommerce'),
                 'edit' => $content,
                 'paymentMethodId' => $gatewayKey,
                 'allowedCountries' => $gateway->paymentMethod->getProperty('allowed_countries'),
@@ -534,11 +536,11 @@ class AssetsModule implements ExecutableModule
         return $dataToScript;
     }
 
-    public function gatewaySupportsFeatures($paymentMethod, $isSepaEnabled):array
+    public function gatewaySupportsFeatures($paymentMethod, $isSepaEnabled): array
     {
         $supports = $paymentMethod->getProperty('supports');
         $isSepaPaymentMethod = $paymentMethod->getProperty('SEPA');
-        if($isSepaEnabled && $isSepaPaymentMethod){
+        if ($isSepaEnabled && $isSepaPaymentMethod) {
             array_push($supports, 'subscriptions');
         }
 

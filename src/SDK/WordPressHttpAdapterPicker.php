@@ -10,9 +10,9 @@ class WordPressHttpAdapterPicker implements MollieHttpAdapterPickerInterface
 {
     public function pickHttpAdapter($httpClient)
     {
-       if($httpClient === null ){
-           return new WordPressHttpAdapter();
-       }
-       return $httpClient;
+        if ($httpClient === null) {
+            return new WordPressHttpAdapter();
+        }
+        return $httpClient;
     }
 }

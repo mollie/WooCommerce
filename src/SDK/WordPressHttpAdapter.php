@@ -37,11 +37,11 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
             'headers' => $headers,
             'user-agent' => $headers['User-Agent'],
             'sslverify' => true,
-            'timeout' => self::DEFAULT_TIMEOUT
+            'timeout' => self::DEFAULT_TIMEOUT,
         ];
         $response = wp_remote_request($url, $args);
-        
-        if(is_wp_error($response)){
+
+        if (is_wp_error($response)) {
             throw new ApiException($response->get_error_message(), $response->get_error_code());
         }
 
@@ -51,7 +51,7 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
     public function versionString()
     {
         global $wp_version;
-        return 'WordPress/'. $wp_version;
+        return 'WordPress/' . $wp_version;
     }
 
     /**
@@ -103,5 +103,4 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
 
         return $body;
     }
-
 }

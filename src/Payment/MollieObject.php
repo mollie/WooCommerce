@@ -17,7 +17,6 @@ use Psr\Log\LoggerInterface as Logger;
 
 class MollieObject
 {
-
     public $data;
     /**
      * @var string[]
@@ -199,7 +198,7 @@ class MollieObject
             } elseif (wcs_order_contains_renewal($order_id)) {
                 $subscriptions = wcs_get_subscriptions_for_renewal_order($order_id);
             } else {
-                $subscriptions = array();
+                $subscriptions = [];
             }
 
             foreach ($subscriptions as $subscription) {
@@ -571,11 +570,10 @@ class MollieObject
         }
     }
 
-
     protected function addSequenceTypeForSubscriptionsFirstPayments($orderId, $gateway, $paymentRequestData): array
     {
         if ($this->dataHelper->isSubscription($orderId)) {
-            $disable_automatic_payments = apply_filters( $this->pluginId . '_is_automatic_payment_disabled', false );
+            $disable_automatic_payments = apply_filters($this->pluginId . '_is_automatic_payment_disabled', false);
             $supports_subscriptions = $gateway->supports('subscriptions');
 
             if ($supports_subscriptions == true && $disable_automatic_payments == false) {
@@ -807,17 +805,17 @@ class MollieObject
     protected function asciiDomainName($url): string
     {
         $parsed = parse_url($url);
-        $scheme = isset($parsed['scheme'])?$parsed['scheme']:'';
-        $domain = isset($parsed['host'])?$parsed['host']:false;
-        $query = isset($parsed['query'])?$parsed['query']:'';
-        $path = isset($parsed['path'])?$parsed['path']:'';
-        if(!$domain){
+        $scheme = isset($parsed['scheme']) ? $parsed['scheme'] : '';
+        $domain = isset($parsed['host']) ? $parsed['host'] : false;
+        $query = isset($parsed['query']) ? $parsed['query'] : '';
+        $path = isset($parsed['path']) ? $parsed['path'] : '';
+        if (!$domain) {
             return $url;
         }
 
         if (function_exists('idn_to_ascii')) {
             $domain = $this->idnEncodeDomain($domain);
-            $url = $scheme . "://". $domain . $path . '?' . $query;
+            $url = $scheme . "://" . $domain . $path . '?' . $query;
         }
 
         return $url;
@@ -849,7 +847,8 @@ class MollieObject
      */
     protected function idnEncodeDomain($domain)
     {
-        if (defined('IDNA_NONTRANSITIONAL_TO_ASCII')
+        if (
+            defined('IDNA_NONTRANSITIONAL_TO_ASCII')
             && defined(
                 'INTL_IDNA_VARIANT_UTS46'
             )
@@ -868,6 +867,7 @@ class MollieObject
         }
         return $domain;
     }
+
     protected function getPaymentDescription($order, $option)
     {
         $description = !$option ? '' : trim($option);
@@ -934,7 +934,7 @@ class MollieObject
         }
 
         // Fall back on default if description turns out empty.
-        return !$description ? __('Order', 'woocommerce' ) . ' ' . $order->get_order_number() : $description;
+        return !$description ? __('Order', 'woocommerce') . ' ' . $order->get_order_number() : $description;
     }
 
     /**

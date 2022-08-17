@@ -16,7 +16,6 @@ use WP_Error;
 
 class MolliePayment extends MollieObject
 {
-
     public const ACTION_AFTER_REFUND_PAYMENT_CREATED = 'mollie-payments-for-woocommerce' . '_refund_payment_created';
     protected $pluginId;
 
@@ -503,6 +502,7 @@ class MolliePayment extends MollieObject
         $newOrderStatus,
         $orderId
     ) {
+
         if ($this->isOrderPaymentStartedByOtherGateway($order) || !$gateway) {
             $this->informNotUpdatingStatus($orderId, $gateway->id, $order);
             return;

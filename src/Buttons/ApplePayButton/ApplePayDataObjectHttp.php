@@ -9,7 +9,6 @@ use Psr\Log\LogLevel;
 
 class ApplePayDataObjectHttp
 {
-
     /**
      * @var mixed
      */
@@ -68,7 +67,6 @@ class ApplePayDataObjectHttp
         $this->logger = $logger;
     }
 
-
     /**
      * Resets the errors array
      */
@@ -92,10 +90,11 @@ class ApplePayDataObjectHttp
     public function validationData(array $data)
     {
         $this->resetErrors();
-        if (!$this->hasRequiredFieldsValuesOrError(
-            $data,
-            PropertiesDictionary::VALIDATION_REQUIRED_FIELDS
-        )
+        if (
+            !$this->hasRequiredFieldsValuesOrError(
+                $data,
+                PropertiesDictionary::VALIDATION_REQUIRED_FIELDS
+            )
         ) {
             return;
         }
@@ -154,12 +153,13 @@ class ApplePayDataObjectHttp
         if (!$result) {
             return;
         }
-        if (!array_key_exists('emailAddress', $data[PropertiesDictionary::SHIPPING_CONTACT])
+        if (
+            !array_key_exists('emailAddress', $data[PropertiesDictionary::SHIPPING_CONTACT])
             || !$data[PropertiesDictionary::SHIPPING_CONTACT]['emailAddress']
         ) {
             $this->errors[] =  [
                 'errorCode' => PropertiesDictionary::SHIPPING_CONTACT_INVALID,
-                'contactField' => 'emailAddress'
+                'contactField' => 'emailAddress',
             ];
 
             return;
@@ -197,18 +197,20 @@ class ApplePayDataObjectHttp
     {
         foreach ($required as $requiredField) {
             if (!array_key_exists($requiredField, $data)) {
-                $this->logger->log( LogLevel::DEBUG,
+                $this->logger->log(
+                    LogLevel::DEBUG,
                     sprintf('ApplePay Data Error: Missing index %s', $requiredField)
                 );
 
-                $this->errors[]= ['errorCode' => 'unknown'];
+                $this->errors[] = ['errorCode' => 'unknown'];
                 continue;
             }
             if (!$data[$requiredField]) {
-                $this->logger->log( LogLevel::DEBUG,
+                $this->logger->log(
+                    LogLevel::DEBUG,
                     sprintf('ApplePay Data Error: Missing value for %s', $requiredField)
                 );
-                $this->errors[]= ['errorCode' => 'unknown'];
+                $this->errors[] = ['errorCode' => 'unknown'];
                 continue;
             }
         }
@@ -222,7 +224,7 @@ class ApplePayDataObjectHttp
     {
         foreach ($data as $key => $value) {
             $filterType = $this->filterType($value);
-            if($key === 'woocommerce-process-checkout-nonce'){
+            if ($key === 'woocommerce-process-checkout-nonce') {
                 $key = 'nonce';
             }
             $this->$key = filter_var($value, $filterType);
@@ -239,7 +241,7 @@ class ApplePayDataObjectHttp
     {
         $filterInt = [
             PropertiesDictionary::PRODUCT_QUANTITY,
-            PropertiesDictionary::PRODUCT_ID
+            PropertiesDictionary::PRODUCT_ID,
         ];
         $filterBoolean = [PropertiesDictionary::NEED_SHIPPING];
         switch ($value) {
@@ -264,20 +266,21 @@ class ApplePayDataObjectHttp
         $required = [
             'locality' => 'locality',
             'postalCode' => 'postalCode',
-            'countryCode' => 'countryCode'
+            'countryCode' => 'countryCode',
         ];
-        if (!$this->addressHasRequiredFieldsValues(
-            $contactInfo,
-            $required,
-            PropertiesDictionary::SHIPPING_CONTACT_INVALID
-        )
+        if (
+            !$this->addressHasRequiredFieldsValues(
+                $contactInfo,
+                $required,
+                PropertiesDictionary::SHIPPING_CONTACT_INVALID
+            )
         ) {
             return [];
         }
         return [
             'city' => $contactInfo['locality'],
             'postcode' => $contactInfo['postalCode'],
-            'country' => strtoupper($contactInfo['countryCode'])
+            'country' => strtoupper($contactInfo['countryCode']),
         ];
     }
 
@@ -297,23 +300,26 @@ class ApplePayDataObjectHttp
         array $required,
         $errorCode
     ) {
+
         foreach ($required as $requiredField => $errorValue) {
             if (!array_key_exists($requiredField, $post)) {
-                $this->logger->log( LogLevel::DEBUG,
+                $this->logger->log(
+                    LogLevel::DEBUG,
                     sprintf('ApplePay Data Error: Missing index %s', $requiredField)
                 );
 
-                $this->errors[]= ['errorCode' => 'unknown'];
+                $this->errors[] = ['errorCode' => 'unknown'];
                 continue;
             }
             if (!$post[$requiredField]) {
-                $this->logger->log( LogLevel::DEBUG,
+                $this->logger->log(
+                    LogLevel::DEBUG,
                     sprintf('ApplePay Data Error: Missing value for %s', $requiredField)
                 );
                 $this->errors[]
-                    = [
+ = [
                     'errorCode' => $errorCode,
-                    'contactField' => $errorValue
+                    'contactField' => $errorValue,
                 ];
                 continue;
             }
@@ -338,13 +344,14 @@ class ApplePayDataObjectHttp
             'addressLines' => 'addressLines',
             'locality' => 'locality',
             'postalCode' => 'postalCode',
-            'countryCode' => 'countryCode'
+            'countryCode' => 'countryCode',
         ];
-        if (!$this->addressHasRequiredFieldsValues(
-            $data,
-            $required,
-            $errorCode
-        )
+        if (
+            !$this->addressHasRequiredFieldsValues(
+                $data,
+                $required,
+                $errorCode
+            )
         ) {
             return [];
         }
@@ -353,8 +360,8 @@ class ApplePayDataObjectHttp
         return [
             'first_name' => filter_var($data['givenName'], $filter),
             'last_name' => filter_var($data['familyName'], $filter),
-            'email' => isset($data['emailAddress']) ? filter_var($data['emailAddress'], $filter): '',
-            'phone' => isset($data['phoneNumber']) ?filter_var($data['phoneNumber'], $filter): '',
+            'email' => isset($data['emailAddress']) ? filter_var($data['emailAddress'], $filter) : '',
+            'phone' => isset($data['phoneNumber']) ? filter_var($data['phoneNumber'], $filter) : '',
             'address_1' => isset($data['addressLines'][0])
                 ? filter_var($data['addressLines'][0], $filter) : '',
             'address_2' => isset($data['addressLines'][1])
@@ -364,7 +371,7 @@ class ApplePayDataObjectHttp
             'postcode' => filter_var($data['postalCode'], $filter),
             'country' => strtoupper(
                 filter_var($data['countryCode'], $filter)
-            )
+            ),
         ];
     }
 
@@ -376,7 +383,8 @@ class ApplePayDataObjectHttp
     {
         $this->resetErrors();
         $requiredFields = $requiredProductFields;
-        if (isset($data[PropertiesDictionary::CALLER_PAGE])
+        if (
+            isset($data[PropertiesDictionary::CALLER_PAGE])
             && $data[PropertiesDictionary::CALLER_PAGE] === 'cart'
         ) {
             $requiredFields = $requiredCartFields;
@@ -408,8 +416,12 @@ class ApplePayDataObjectHttp
 
     protected function updateShippingMethod(array $data)
     {
-        if (array_key_exists(
-            PropertiesDictionary::SHIPPING_METHOD, $data)) {
+        if (
+            array_key_exists(
+                PropertiesDictionary::SHIPPING_METHOD,
+                $data
+            )
+        ) {
             $this->shippingMethod = filter_var_array(
                 $data[PropertiesDictionary::SHIPPING_METHOD],
                 FILTER_SANITIZE_STRING

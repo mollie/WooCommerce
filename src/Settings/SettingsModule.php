@@ -175,6 +175,4 @@ class SettingsModule implements ServiceModule, ExecutableModule
             $notice->addNotice('notice-error', $message);
         }
     }
-
-
 }

@@ -12,7 +12,6 @@ use WC_Tax;
 
 class OrderLines
 {
-
     /**
      * Formatted order lines.
      *
@@ -86,10 +85,10 @@ class OrderLines
      */
     private function process_items()
     {
-        $voucherSettings = get_option('mollie_wc_gateway_voucher_settings')?:get_option('mollie_wc_gateway_mealvoucher_settings');
+        $voucherSettings = get_option('mollie_wc_gateway_voucher_settings') ?: get_option('mollie_wc_gateway_mealvoucher_settings');
         $isMealVoucherEnabled = $voucherSettings ? ($voucherSettings['enabled'] == 'yes') : false;
         if (!$voucherSettings) {
-            $isMealVoucherEnabled = $this->dataHelper->getPaymentMethod('voucher')?true:false;
+            $isMealVoucherEnabled = $this->dataHelper->getPaymentMethod('voucher') ? true : false;
         }
 
         foreach ($this->order->get_items() as $cart_item) {
@@ -448,13 +447,13 @@ class OrderLines
         $mealvoucherSettings = get_option(
             'mollie_wc_gateway_voucher_settings'
         );
-        if(!$mealvoucherSettings){
+        if (!$mealvoucherSettings) {
             $mealvoucherSettings = get_option(
                 'mollie_wc_gateway_mealvoucher_settings'
             );
         }
 
-        $defaultCategory = $mealvoucherSettings? $mealvoucherSettings['mealvoucher_category_default']:Voucher::NO_CATEGORY;
+        $defaultCategory = $mealvoucherSettings ? $mealvoucherSettings['mealvoucher_category_default'] : Voucher::NO_CATEGORY;
         $category = $defaultCategory;
 
         if (!$product) {

@@ -17,7 +17,6 @@ use WC_Order;
 
 class MollieOrderService
 {
-
     protected $gateway;
     /**
      * @var HttpResponse

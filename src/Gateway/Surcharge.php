@@ -8,7 +8,6 @@ use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 
 class Surcharge
 {
-
     /**
      * @var string
      */
@@ -26,8 +25,6 @@ class Surcharge
      * @var string
      */
     public const FIXED_AND_PERCENTAGE = 'fixed_fee_percentage';
-
-
 
     public function buildDescriptionWithSurcharge($description, PaymentMethodI $paymentMethod)
     {
@@ -60,9 +57,9 @@ class Surcharge
             return $defaultDescription;
         }
         $feeText = $this->feeTextByType($surchargeType, $paymentMethod);
-        $feeText = is_string($feeText)? html_entity_decode($feeText):false;
+        $feeText = is_string($feeText) ? html_entity_decode($feeText) : false;
 
-        return $feeText?:__('A surchage fee might apply');
+        return $feeText ?: __('A surchage fee might apply');
     }
 
     public function aboveMaxLimit($totalAmount, $gatewaySettings)
@@ -90,7 +87,7 @@ class Surcharge
 
     public function calculateFeeAmountOrder($cart, $gatewaySettings)
     {
-        $surchargeType = isset($gatewaySettings['payment_surcharge'])?$gatewaySettings['payment_surcharge']:'';
+        $surchargeType = isset($gatewaySettings['payment_surcharge']) ? $gatewaySettings['payment_surcharge'] : '';
         switch ($surchargeType) {
             case 'fixed_fee':
                 return $this->calculate_fixed_fee($cart, $gatewaySettings);
@@ -178,7 +175,6 @@ class Surcharge
         return __($gateway, 'mollie-payments-for-woocommerce');
     }
 
-
     protected function name_fixed_fee($paymentMethod)
     {
         if (
@@ -190,7 +186,7 @@ class Surcharge
         $amountFee = $paymentMethod->getProperty(self::FIXED_FEE);
         $currency = get_woocommerce_currency_symbol();
         /* translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency.*/
-        return sprintf(__(' + %1s %2s fee might apply', 'mollie-payments-for-woocommerce'), $currency, $amountFee);
+        return sprintf(__(' + %1$1s %2$2s fee might apply', 'mollie-payments-for-woocommerce'), $currency, $amountFee);
     }
 
     protected function name_percentage($paymentMethod)
@@ -222,7 +218,7 @@ class Surcharge
         $currency = get_woocommerce_currency_symbol();
         $amountPercent = $paymentMethod->getProperty(self::PERCENTAGE);
         /* translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency. Placeholder 3: Percentage amount. */
-        return sprintf(__(' + %1s %2s + %3s%% fee might apply', 'mollie-payments-for-woocommerce'), $currency, $amountFix, $amountPercent);
+        return sprintf(__(' + %1$1s %2$2s + %3$3s%% fee might apply', 'mollie-payments-for-woocommerce'), $currency, $amountFix, $amountPercent);
     }
 
     /**

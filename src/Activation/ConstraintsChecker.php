@@ -16,7 +16,6 @@ use Mollie\WooCommerce\Notice\NoticeInterface;
 
 class ConstraintsChecker
 {
-
     /**
      * @var EnvironmentChecker
      */

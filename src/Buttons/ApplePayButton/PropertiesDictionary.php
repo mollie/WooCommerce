@@ -6,7 +6,6 @@ namespace Mollie\WooCommerce\Buttons\ApplePayButton;
 
 class PropertiesDictionary
 {
-
     /**
      * @var string[]
      */

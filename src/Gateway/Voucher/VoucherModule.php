@@ -39,10 +39,10 @@ class VoucherModule implements ExecutableModule
     public function run(ContainerInterface $container): bool
     {
         $gatewayInstances = $container->get('gateway.instances');
-        $voucherGateway = isset($gatewayInstances['mollie_wc_gateway_voucher'])?$gatewayInstances['mollie_wc_gateway_voucher']:false;
-        $voucher = $voucherGateway? $voucherGateway->enabled === 'yes': false;
+        $voucherGateway = isset($gatewayInstances['mollie_wc_gateway_voucher']) ? $gatewayInstances['mollie_wc_gateway_voucher'] : false;
+        $voucher = $voucherGateway ? $voucherGateway->enabled === 'yes' : false;
 
-        if($voucher){
+        if ($voucher) {
             $this->voucherEnabledHooks();
         }
 
@@ -52,8 +52,8 @@ class VoucherModule implements ExecutableModule
     public function voucherEnabledHooks()
     {
         add_filter(
-                'woocommerce_product_data_tabs',
-                static function ($tabs) {
+            'woocommerce_product_data_tabs',
+            static function ($tabs) {
                     $tabs['MollieSettingsPage'] = [
                             'label' => __('Mollie Settings', 'mollie-payments-for-woocommerce'),
                             'target' => 'mollie_options',
@@ -61,7 +61,7 @@ class VoucherModule implements ExecutableModule
                     ];
 
                     return $tabs;
-                }
+            }
         );
         add_filter('woocommerce_product_data_panels', [$this, 'mollieOptionsProductTabContent']);
         add_action('woocommerce_process_product_meta_simple', [$this, 'saveProductVoucherOptionFields']);
@@ -194,9 +194,9 @@ class VoucherModule implements ExecutableModule
         ?>
         <div id='mollie_options' class='panel woocommerce_options_panel'><div class='options_group'><?php
             $voucherSettings = get_option('mollie_wc_gateway_voucher_settings');
-            if(!$voucherSettings){
-                $voucherSettings = get_option('mollie_wc_gateway_mealvoucher_settings');
-            }
+        if (!$voucherSettings) {
+            $voucherSettings = get_option('mollie_wc_gateway_mealvoucher_settings');
+        }
             $defaultCategory = $voucherSettings
                     ? $voucherSettings['mealvoucher_category_default']
                     : Voucher::NO_CATEGORY;
@@ -231,7 +231,7 @@ class VoucherModule implements ExecutableModule
                     ),
                     'desc_tip' => true,
                 ]
-              ); ?>
+            ); ?>
         </div>
 
         </div><?php

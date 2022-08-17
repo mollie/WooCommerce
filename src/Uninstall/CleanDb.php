@@ -21,7 +21,9 @@ class CleanDb
         $this->gatewayClassnames = $gatewayClassnames;
     }
 
-    public function cleanAll(){
+    public function cleanAll()
+    {
+
         $options = $this->allMollieOptionNames();
         $this->deleteSiteOptions($options);
         $this->cleanScheduledJobs();
@@ -33,20 +35,20 @@ class CleanDb
      */
     protected function deleteSiteOptions(array $options): void
     {
-        foreach ($options as $option){
+        foreach ($options as $option) {
             delete_option($option);
         }
     }
 
     protected function cleanScheduledJobs()
     {
-        as_unschedule_action( 'mollie_woocommerce_cancel_unpaid_orders' );
+        as_unschedule_action('mollie_woocommerce_cancel_unpaid_orders');
     }
 
     protected function allMollieOptionNames(): array
     {
         $names = SharedDataDictionary::MOLLIE_OPTIONS_NAMES;
-        foreach ($this->gatewayClassnames as $gateway){
+        foreach ($this->gatewayClassnames as $gateway) {
             $option = strtolower($gateway) . "_settings";
             $names[] = $option;
         }

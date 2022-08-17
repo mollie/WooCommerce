@@ -62,7 +62,7 @@ class SharedModule implements ServiceModule
                         header(" ", true, $status_code);
                     }
                 }
-            }
+            },
         ];
     }
 }

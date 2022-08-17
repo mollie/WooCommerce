@@ -198,7 +198,7 @@ function mollieWooCommercIsExpiryDateEnabled()
 function mollieWooCommerceFormatCurrencyValue($value, $currency)
 {
     $currenciesWithNoDecimals = ["JPY", "ISK"];
-    if(in_array($currency, $currenciesWithNoDecimals)){
+    if (in_array($currency, $currenciesWithNoDecimals)) {
         return number_format($value, 0, '.', '');
     }
 
@@ -222,7 +222,7 @@ function mollieDeleteWPTranslationFiles()
         'it_IT',
         'nl_BE',
         'nl_NL',
-        'nl_NL_formal'
+        'nl_NL_formal',
     ];
     $translationExtensions = ['.mo', '.po'];
     $destination = WP_LANG_DIR

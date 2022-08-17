@@ -613,7 +613,7 @@ class MollieOrder extends MollieObject
             }
 
             $totals = number_format(abs($totals), 2); // WooCommerce - sum of all refund items
-            $checkAmount = $amount? number_format((float)$amount, 2):0; // WooCommerce - refund amount
+            $checkAmount = $amount ? number_format((float)$amount, 2) : 0; // WooCommerce - refund amount
 
             if ($checkAmount !== $totals) {
                 $errorMessage = _x('The sum of refunds for all order lines is not identical to the refund amount, so this refund will be processed as a payment amount refund, not an order line refund.', 'Order note error', 'mollie-payments-for-woocommerce');
@@ -926,8 +926,9 @@ class MollieOrder extends MollieObject
         $paymentMethodTitle,
         \Mollie\Api\Resources\Order $payment
     ) {
+
         $gateway = wc_get_payment_gateway_by_order($order);
-        if (!$this->isOrderPaymentStartedByOtherGateway($order) && is_a($gateway, MolliePaymentGateway::class) ) {
+        if (!$this->isOrderPaymentStartedByOtherGateway($order) && is_a($gateway, MolliePaymentGateway::class)) {
             $gateway->paymentService->updateOrderStatus($order, $newOrderStatus);
         } else {
             $this->informNotUpdatingStatus($orderId, $gateway->id, $order);

@@ -273,8 +273,8 @@ class MollieSettingsPage extends WC_Settings_Page
         ) {
             /* Reload active Mollie methods */
             $methods = $dataHelper->getAllPaymentMethods($apiKey, $testMode, false);
-            foreach ($methods as $key => $method){
-                $methods['mollie_wc_gateway_'.$method['id']] = $method;
+            foreach ($methods as $key => $method) {
+                $methods['mollie_wc_gateway_' . $method['id']] = $method;
                 unset($methods[$key]);
             }
             $this->registeredGateways = $methods;
@@ -332,7 +332,7 @@ class MollieSettingsPage extends WC_Settings_Page
         foreach ($paymentMethods as $paymentMethod) {
             $paymentMethodId = $paymentMethod->getProperty('id');
             $gatewayKey = 'mollie_wc_gateway_' . $paymentMethodId;
-            $paymentMethodEnabledAtMollie = array_key_exists($gatewayKey , $mollieGateways);
+            $paymentMethodEnabledAtMollie = array_key_exists($gatewayKey, $mollieGateways);
             $content .= '<li style="float: left; width: 32%; height:32px;">';
             $content .= $paymentMethod->getIconUrl();
             $content .= ' ' . esc_html($paymentMethod->getProperty('defaultTitle'));
@@ -347,8 +347,8 @@ class MollieSettingsPage extends WC_Settings_Page
             }
             $content .= $iconNoAvailable;
             $content .= ' <a href="https://my.mollie.com/dashboard/settings/profiles?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">' . strtolower(
-                    __('Activate', 'mollie-payments-for-woocommerce')
-                ) . '</a>';
+                __('Activate', 'mollie-payments-for-woocommerce')
+            ) . '</a>';
 
             $content .= '</li>';
         }
@@ -691,7 +691,7 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     public function get_sections()
     {
-        $isAppleEnabled =array_key_exists('mollie_wc_gateway_applepay', $this->registeredGateways);
+        $isAppleEnabled = array_key_exists('mollie_wc_gateway_applepay', $this->registeredGateways);
         $sections = [
             '' => __('General', 'mollie-payments-for-woocommerce'),
             'mollie_components' => __(
@@ -700,7 +700,7 @@ class MollieSettingsPage extends WC_Settings_Page
             ),
             'advanced' => __('Advanced', 'mollie-payments-for-woocommerce'),
         ];
-        if($isAppleEnabled){
+        if ($isAppleEnabled) {
             $sections['applepay_button'] = __(
                 'Apple Pay Button',
                 'mollie-payments-for-woocommerce'

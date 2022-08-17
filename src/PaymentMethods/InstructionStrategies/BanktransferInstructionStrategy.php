@@ -6,7 +6,6 @@ namespace Mollie\WooCommerce\PaymentMethods\InstructionStrategies;
 
 class BanktransferInstructionStrategy implements InstructionStrategyI
 {
-
     public function execute(
         $gateway,
         $payment,
@@ -30,7 +29,7 @@ class BanktransferInstructionStrategy implements InstructionStrategyI
             );
             return $instructions;
         }
-        if (is_object($order) && ($order->has_status('on-hold') || $order->has_status('pending')) ) {
+        if (is_object($order) && ($order->has_status('on-hold') || $order->has_status('pending'))) {
             if (!$admin_instructions) {
                 $instructions .= __('Please complete your payment by transferring the total amount to the following bank account:', 'mollie-payments-for-woocommerce') . "\n\n\n";
             }

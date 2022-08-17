@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Shared;
 
 use Mollie\WooCommerce\Gateway\Surcharge;
-use \WC_Order_Item_Fee;
+use WC_Order_Item_Fee;
 
 class GatewaySurchargeHandler
 {
@@ -21,10 +21,9 @@ class GatewaySurchargeHandler
         $this->gatewayFeeLabel = $this->surchargeFeeOption();
 
         add_action(
-                'init',
-                [$this, 'surchargeActions']
+            'init',
+            [$this, 'surchargeActions']
         );
-
     }
 
     public function surchargeActions()
@@ -37,30 +36,30 @@ class GatewaySurchargeHandler
             return $this->enqueueSurchargeScript();
         });
         add_action(
-                'wp_ajax_update_surcharge_order_pay',
-                function () {
-                    return $this->updateSurchargeOrderPay();
-                }
+            'wp_ajax_update_surcharge_order_pay',
+            function () {
+                return $this->updateSurchargeOrderPay();
+            }
         );
         add_action(
-                'wp_ajax_nopriv_update_surcharge_order_pay',
-                function () {
-                    return $this->updateSurchargeOrderPay();
-                }
+            'wp_ajax_nopriv_update_surcharge_order_pay',
+            function () {
+                return $this->updateSurchargeOrderPay();
+            }
         );
         add_action(
-                'wp_ajax_mollie_checkout_blocks_surchage',
-                function () {
-                    return $this->updateSurchargeCheckoutBlock();
-                }
+            'wp_ajax_mollie_checkout_blocks_surchage',
+            function () {
+                return $this->updateSurchargeCheckoutBlock();
+            }
         );
         add_action(
-                'wp_ajax_nopriv_mollie_checkout_blocks_surchage',
-                function () {
-                    return $this->updateSurchargeCheckoutBlock();
-                }
+            'wp_ajax_nopriv_mollie_checkout_blocks_surchage',
+            function () {
+                return $this->updateSurchargeCheckoutBlock();
+            }
         );
-        add_action( 'woocommerce_order_item_meta_end',[$this, 'setHiddenOrderId'], 10, 4);
+        add_action('woocommerce_order_item_meta_end', [$this, 'setHiddenOrderId'], 10, 4);
     }
 
     public function setHiddenOrderId($item_id, $item, $order, $bool = false)
@@ -112,7 +111,7 @@ class GatewaySurchargeHandler
     {
         $order = $this->canProcessOrder();
         $gatewayName = $this->canProcessGateway();
-        if(!$order || !$gatewayName){
+        if (!$order || !$gatewayName) {
             return;
         }
         $this->orderRemoveFee($order);
@@ -318,8 +317,8 @@ class GatewaySurchargeHandler
     protected function surchargeFeeOption()
     {
         return get_option(
-                'mollie-payments-for-woocommerce_gatewayFeeLabel',
-                __(Surcharge::DEFAULT_FEE_LABEL, 'mollie-payments-for-woocommerce')
+            'mollie-payments-for-woocommerce_gatewayFeeLabel',
+            __(Surcharge::DEFAULT_FEE_LABEL, 'mollie-payments-for-woocommerce')
         );
     }
 }

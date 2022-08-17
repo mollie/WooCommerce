@@ -6,7 +6,6 @@ namespace Mollie\WooCommerce\Activation;
 
 class PluginDisabler
 {
-
     private $pluginSlug;
     private $initFunctionName;
 
@@ -20,6 +19,7 @@ class PluginDisabler
         $pluginSlug,
         $initFunctionName
     ) {
+
         $this->pluginSlug = $pluginSlug;
         $this->initFunctionName = $initFunctionName;
     }

@@ -8,7 +8,6 @@ use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 
 class CreditcardFieldsStrategy implements PaymentFieldsStrategyI
 {
-
     public function execute($gateway, $dataHelper)
     {
         if (!$this->isMollieComponentsEnabled($gateway->paymentMethod)) {
@@ -22,8 +21,10 @@ class CreditcardFieldsStrategy implements PaymentFieldsStrategyI
             <?php
             printf(
             /* translators: Placeholder 1: Lock icon. Placeholder 2: Mollie logo. */
-            __('%1$s Secure payments provided by %2$s',
-                    'mollie-payments-for-woocommerce'),
+                __(
+                    '%1$s Secure payments provided by %2$s',
+                    'mollie-payments-for-woocommerce'
+                ),
                 $this->lockIcon($dataHelper),
                 $this->mollieLogo($dataHelper)
             );

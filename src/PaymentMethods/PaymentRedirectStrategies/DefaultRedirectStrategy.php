@@ -11,14 +11,13 @@ use WC_Order;
 
 class DefaultRedirectStrategy implements PaymentRedirectStrategyI
 {
-
     /**
      * Redirect location after successfully completing process_payment
      *
      * @param WC_Order  $order
      * @param MollieOrder|MolliePayment $payment_object
      */
-    public function execute(PaymentMethodI $paymentMethod, $order, $paymentObject,string $redirectUrl): string
+    public function execute(PaymentMethodI $paymentMethod, $order, $paymentObject, string $redirectUrl): string
     {
         return $paymentObject->getCheckoutUrl();
     }

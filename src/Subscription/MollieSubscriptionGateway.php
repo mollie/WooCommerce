@@ -27,7 +27,6 @@ use WC_Order;
 
 class MollieSubscriptionGateway extends MolliePaymentGateway
 {
-
     const PAYMENT_TEST_MODE = 'test';
     const METHODS_NEEDING_UPDATE = ['mollie_wc_gateway_bancontact',
         'mollie_wc_gateway_belfius',
@@ -36,9 +35,8 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         'mollie_wc_gateway_giropay',
         'mollie_wc_gateway_ideal',
         'mollie_wc_gateway_kbc',
-        'mollie_wc_gateway_sofort'];
+        'mollie_wc_gateway_sofort', ];
     const DIRECTDEBIT = 'directdebit';
-
 
     protected $isSubscriptionPayment = false;
     protected $apiHelper;
@@ -140,7 +138,6 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         $this->isSubscriptionPayment = true;
         return parent::process_payment($order_id);
     }
-
 
     /**
      * @param $renewal_order
@@ -280,15 +277,15 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                         $validMandate = true;
                     }
                 }
-                if(!$validMandate){
+                if (!$validMandate) {
                     // Get all mandates for the customer ID
-                    $this->logger->log(LogLevel::DEBUG,$this->id . ': Try to get all mandates for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id );
+                    $this->logger->log(LogLevel::DEBUG, $this->id . ': Try to get all mandates for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id);
                     $mandates =  $mollieApiClient->customers->get($customer_id)->mandates();
                     foreach ($mandates as $mandate) {
                         if ($mandate->status === 'valid') {
                             $validMandate = true;
                             $data['method'] = $mandate->method;
-                            if($mandate->method === $renewalOrderMethod){
+                            if ($mandate->method === $renewalOrderMethod) {
                                 $data['method'] = $mandate->method;
                                 break;
                             }
@@ -301,21 +298,22 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
 
             // Check that there is at least one valid mandate
             try {
-                if ( $validMandate ) {
-                    $payment = $this->apiHelper->getApiClient($apiKey)->payments->create( $data );
+                if ($validMandate) {
+                    $payment = $this->apiHelper->getApiClient($apiKey)->payments->create($data);
                     //check the payment method is the one in the order, if not we want this payment method in the order MOL-596
-                    $paymentMethodUsed = 'mollie_wc_gateway_'.$payment->method;
-                    if($paymentMethodUsed !== $renewalOrderMethod){
+                    $paymentMethodUsed = 'mollie_wc_gateway_' . $payment->method;
+                    if ($paymentMethodUsed !== $renewalOrderMethod) {
                         $renewal_order->set_payment_method($paymentMethodUsed);
                     }
 
                     //update the valid mandate for this order
-                    if ((property_exists($payment, 'mandateId')
+                    if (
+                        (property_exists($payment, 'mandateId')
                             && $payment->mandateId !== null)
                         && $payment->mandateId !== $mandateId
                         && !empty($subcriptionParentOrder)
                     ) {
-                        $this->logger->log(LogLevel::DEBUG,"{$this->id}: updating to mandate {$payment->mandateId}");
+                        $this->logger->log(LogLevel::DEBUG, "{$this->id}: updating to mandate {$payment->mandateId}");
                         $subcriptionParentOrder->update_meta_data(
                             '_mollie_mandate_id',
                             $payment->mandateId
@@ -579,10 +577,12 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                 if ($this->dataService->isWcSubscription($orderId)) {
                     add_filter(
                         $this->pluginId . '_is_automatic_payment_disabled',
-                        function ($filteredOption) {
-                            if('yes' == get_option(
+                        static function ($filteredOption) {
+                            if (
+                                'yes' == get_option(
                                     \WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments'
-                                )){
+                                )
+                            ) {
                                 return true;
                             }
                             return $filteredOption;
@@ -719,10 +719,10 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
      */
     public function is_available(): bool
     {
-        if(!$this->checkEnabledNorDirectDebit()){
+        if (!$this->checkEnabledNorDirectDebit()) {
             return false;
         }
-        if(!$this->cartAmountAvailable()){
+        if (!$this->cartAmountAvailable()) {
             return true;
         }
         $status =  parent::is_available();
@@ -737,12 +737,12 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
      */
     protected function initialPaymentUsedOrderAPI($subcriptionParentOrder): bool
     {
-        if(!$subcriptionParentOrder){
+        if (!$subcriptionParentOrder) {
             return false;
         }
         $orderIdMeta = $subcriptionParentOrder->get_meta('_mollie_order_id');
 
-        $parentOrderMeta = $orderIdMeta?: PaymentService::PAYMENT_METHOD_TYPE_PAYMENT;
+        $parentOrderMeta = $orderIdMeta ?: PaymentService::PAYMENT_METHOD_TYPE_PAYMENT;
 
         return strpos($parentOrderMeta, 'ord_') !== false;
     }

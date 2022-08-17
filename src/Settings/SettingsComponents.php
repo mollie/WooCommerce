@@ -8,7 +8,6 @@ use Mollie\WooCommerce\Components\StylesPropertiesDictionary;
 
 class SettingsComponents
 {
-
     /**
      * @var string[]
      */

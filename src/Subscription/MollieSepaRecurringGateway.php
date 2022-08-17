@@ -26,7 +26,6 @@ use Psr\Log\LogLevel;
 
 class MollieSepaRecurringGateway extends MollieSubscriptionGateway
 {
-
     const WAITING_CONFIRMATION_PERIOD_DAYS = '21';
 
     protected $recurringMollieMethod = null;

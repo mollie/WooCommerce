@@ -110,13 +110,12 @@ class PaymentModule implements ServiceModule, ExecutableModule
             2
         );
 
-       add_action(
+        add_action(
             'init',
             [$this, 'handleExpiryDateCancelation'],
             10,
             2
         );
-
 
         add_action(
             OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS,
@@ -462,14 +461,14 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
     public function handleExpiryDateCancelation()
     {
-        if(!mollieWooCommercIsExpiryDateEnabled()){
-            as_unschedule_action( 'mollie_woocommerce_cancel_unpaid_orders' );
+        if (!mollieWooCommercIsExpiryDateEnabled()) {
+            as_unschedule_action('mollie_woocommerce_cancel_unpaid_orders');
             return;
         }
         $canSchedule = function_exists('as_schedule_single_action');
         if ($canSchedule) {
-            if ( false === as_next_scheduled_action( 'mollie_woocommerce_cancel_unpaid_orders' ) ) {
-                as_schedule_recurring_action( time(), 600, 'mollie_woocommerce_cancel_unpaid_orders');
+            if (false === as_next_scheduled_action('mollie_woocommerce_cancel_unpaid_orders')) {
+                as_schedule_recurring_action(time(), 600, 'mollie_woocommerce_cancel_unpaid_orders');
             }
 
             add_action(

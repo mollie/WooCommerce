@@ -6,7 +6,6 @@ namespace Mollie\WooCommerce\Subscription;
 
 class MaybeFixSubscription
 {
-
     public function maybeFix()
     {
         $fixSubscriptionsProcess = get_option('mollie_wc_fix_subscriptions2', false);

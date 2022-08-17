@@ -11,7 +11,6 @@ namespace Mollie\WooCommerce\Notice;
  */
 interface NoticeInterface
 {
-
     /**
      * @param string $level class to apply: ex. 'notice-error'
      * @param string $message translated message

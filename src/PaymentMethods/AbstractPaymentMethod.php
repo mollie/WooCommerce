@@ -240,18 +240,11 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
      */
     public function defaultSettings(): array
     {
-        return [
-            "enabled" => "yes",
-            "title" => $this->config['defaultTitle'],
-            "description" => $this->config['settingsDescription'],
-            "display_logo" => "yes",
-            "allowed_countries" => [],
-            "enable_custom_logo" => "no",
-            "payment_surcharge" => "no_fee",
-            "activate_expiry_days_setting" => "no",
-            "order_dueDate" => "0",
-            "initial_order_status" => "on-hold",
-            "issuers_empty_option" => "Select your bank",
-        ];
+        $fields = $this->getAllFormFields();
+        //remove setting title fields
+        $fields = array_filter($fields, static function ($key) {
+                return !is_numeric($key);
+        }, ARRAY_FILTER_USE_KEY);
+        return array_combine(array_keys($fields), array_column($fields, 'default'));
     }
 }

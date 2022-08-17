@@ -2,7 +2,6 @@
 
 namespace Mollie\WooCommerce\Payment;
 
-
 use Mollie\Api\Types\SequenceType;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\SDK\Api;

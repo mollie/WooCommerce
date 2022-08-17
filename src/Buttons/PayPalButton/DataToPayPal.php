@@ -29,8 +29,7 @@ class DataToPayPal
         $paypalSettings = get_option('mollie_wc_gateway_paypal_settings', false);
         $minAmount = 0;
         if ($paypalSettings) {
-            $minAmount
-                = isset($paypalSettings['mollie_paypal_button_minimum_amount'])
+            $minAmount = isset($paypalSettings['mollie_paypal_button_minimum_amount'])
             && $paypalSettings['mollie_paypal_button_minimum_amount'] > 0
                 ? $paypalSettings['mollie_paypal_button_minimum_amount'] : 0;
         }
@@ -41,7 +40,7 @@ class DataToPayPal
         if (is_cart()) {
             return $this->dataForCartPage($minAmount);
         }
-        if($isBlock){
+        if ($isBlock) {
             return $this->dataForBlockCartPage($minAmount);
         }
 
@@ -62,23 +61,22 @@ class DataToPayPal
      *
      * @retun string the path of the chosen button image
      */
-    protected function whichPayPalButton()
+    protected function whichPayPalButton(): string
     {
         $paypalSettings = get_option('mollie_wc_gateway_paypal_settings');
-        if(!$paypalSettings){
+        if (!$paypalSettings) {
             return "";
         }
-        $colorSetting = isset( $paypalSettings['color']) ? $paypalSettings['color'] : "en-checkout-pill-golden";
+        $colorSetting = isset($paypalSettings['color']) ? $paypalSettings['color'] : "en-checkout-pill-golden";
         $dataArray = explode('-', $colorSetting);//[0]lang [1]folder [2]first part filename [3] second part filename
         $fixPath = 'public/images/PayPal_Buttons/';
         $buildButtonName = sprintf('%s/%s/%s-%s.png', $dataArray[0], $dataArray[1], $dataArray[2], $dataArray[3]);
         $path = sprintf('%s%s', $fixPath, $buildButtonName);
-        if(file_exists(M4W_PLUGIN_DIR . '/'. $path)){
+        if (file_exists(M4W_PLUGIN_DIR . '/' . $path)) {
             return sprintf('%s%s', $fixPath, $buildButtonName);
-        }else{
+        } else {
             return sprintf('%s/en/checkout/pill-golden.png', $fixPath);
         }
-
     }
 
     /**
@@ -108,9 +106,9 @@ class DataToPayPal
                 'id' => $productId,
                 'price' => $productPrice,
                 'isVariation' => $isVariation,
-                'minFee' =>$minAmount
+                'minFee' => $minAmount,
             ],
-            'ajaxUrl' => admin_url('admin-ajax.php')
+            'ajaxUrl' => admin_url('admin-ajax.php'),
         ];
     }
 
@@ -126,10 +124,9 @@ class DataToPayPal
         return [
             'product' => [
                 'needShipping' => $cart->needs_shipping(),
-                'minFee' =>$minAmount
-
+                'minFee' => $minAmount,
             ],
-            'ajaxUrl' => admin_url('admin-ajax.php')
+            'ajaxUrl' => admin_url('admin-ajax.php'),
         ];
     }
 
@@ -143,14 +140,12 @@ class DataToPayPal
     {
         $nonce = wp_nonce_field('mollie_PayPal_button');
         $buttonMarkup = '<div id="mollie-PayPal-button" class="mol-PayPal">'
-                . $nonce . '<input type="image" src="' . esc_url(
-                        $this->selectedPaypalButtonUrl()
-                ) . '" alt="PayPal Button">
-        </div>';
+            . $nonce . '<input type="image" src="' . esc_url($this->selectedPaypalButtonUrl())
+            . '" alt="PayPal Button"></div>';
         return [
                 'minFee' => $minAmount,
                 'ajaxUrl' => admin_url('admin-ajax.php'),
-                'buttonMarkup' => $buttonMarkup
+                'buttonMarkup' => $buttonMarkup,
         ];
     }
 }

@@ -54,7 +54,7 @@ class ResponsesToApple
         } else {
             $response = [
                 'status' => 1,
-                'errors' => $this->applePayError($errorList)
+                'errors' => $this->applePayError($errorList),
             ];
         }
 
@@ -89,8 +89,7 @@ class ResponsesToApple
     {
         $response = [];
         if ($paymentDetails['shippingMethods']) {
-            $response['newShippingMethods']
-                = $paymentDetails['shippingMethods'];
+            $response['newShippingMethods'] = $paymentDetails['shippingMethods'];
         }
 
         $response['newLineItems'] = $this->appleNewLineItemsResponse(
@@ -142,7 +141,7 @@ class ResponsesToApple
      *
      * @return array
      */
-    protected function appleNewTotalResponse($total, $type = 'final')
+    protected function appleNewTotalResponse($total, string $type = 'final'): array
     {
         return $this->appleItemFormat(
             get_bloginfo('name'),
@@ -160,12 +159,12 @@ class ResponsesToApple
      *
      * @return array
      */
-    protected function appleItemFormat($subtotalLabel, $subtotal, $type)
+    protected function appleItemFormat($subtotalLabel, $subtotal, $type): array
     {
         return [
             "label" => $subtotalLabel,
             "amount" => $subtotal,
-            "type" => $type
+            "type" => $type,
         ];
     }
 
@@ -175,7 +174,7 @@ class ResponsesToApple
      *
      * @return array[]
      */
-    protected function appleNewLineItemsResponse(array $paymentDetails)
+    protected function appleNewLineItemsResponse(array $paymentDetails): array
     {
         $type = 'final';
         $response = [];
@@ -186,29 +185,21 @@ class ResponsesToApple
         );
 
         if ($paymentDetails['shipping']['amount']) {
-            $response[]
-                = $this->appleItemFormat(
+            $response[] = $this->appleItemFormat(
                 $paymentDetails['shipping']['label'] ?: '',
                 $paymentDetails['shipping']['amount'],
                 $type
             );
         }
         $issetFeeAmount = isset($paymentDetails['fee']) && isset($paymentDetails['fee']['amount']);
-        if ( $issetFeeAmount ) {
-            $response[]
-                = $this->appleItemFormat(
+        if ($issetFeeAmount) {
+            $response[] = $this->appleItemFormat(
                 $paymentDetails['fee']['label'] ?: '',
                 $paymentDetails['fee']['amount'],
                 $type
             );
         }
-        $response[]
-            = $this->appleItemFormat(
-            'Estimated Tax',
-            $paymentDetails['taxes'],
-            $type
-
-        );
+        $response[] = $this->appleItemFormat('Estimated Tax', $paymentDetails['taxes'], $type);
         return $response;
     }
 
@@ -226,9 +217,15 @@ class ResponsesToApple
         // Add utm_nooverride query string
         $redirect_url = add_query_arg(['utm_nooverride' => 1], $redirect_url);
 
-        $this->logger->log( LogLevel::DEBUG,
+        $this->logger->log(
+            LogLevel::DEBUG,
             __METHOD__
-            . sprintf(': Redirect url on return order %s, order %s: %s', $this->gateway->paymentMethod->getProperty('id'), $orderId, $redirect_url)
+            . sprintf(
+                ': Redirect url on return order %s, order %s: %s',
+                $this->gateway->paymentMethod->getProperty('id'),
+                $orderId,
+                $redirect_url
+            )
         );
 
         return $redirect_url;

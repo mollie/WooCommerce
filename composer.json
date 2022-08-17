@@ -45,7 +45,7 @@
     }
   },
   "scripts": {
-    "check-coding-standards": "vendor/bin/phpcs",
+    "check-coding-standards": "vendor/bin/phpcs -n -p",
     "fix-coding-standards": "vendor/bin/phpcbf",
     "tests": "@php ./vendor/phpunit/phpunit/phpunit --coverage-text",
     "tests:no-cov": "@php ./vendor/phpunit/phpunit/phpunit --no-coverage",

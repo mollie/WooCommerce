@@ -172,7 +172,7 @@ class PaymentMethodsIconUrl
         $enabledCreditCards = $this->enabledCreditcards();
 
         $assetsImagesPath
- = $this->pluginPath . '/' . 'public/images/';
+        = $this->pluginPath . '/' . 'public/images/';
         $cardWidth = PaymentMethodsIconUrl::CREDIT_CARD_ICON_WIDTH;
         $cardsNumber = count($enabledCreditCards);
         $cardsWidth = $cardWidth * $cardsNumber;
@@ -180,7 +180,7 @@ class PaymentMethodsIconUrl
         $actual = get_transient('svg_creditcards_string');
         if (!$actual) {
             $actual
- = sprintf('<svg width="%s" height="24" class="mollie-gateway-icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">', $cardsWidth);
+            = sprintf('<svg width="%s" height="24" class="mollie-gateway-icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">', $cardsWidth);
             foreach ($enabledCreditCards as $creditCard) {
                 $svgString = file_get_contents(
                     $assetsImagesPath . $creditCard

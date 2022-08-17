@@ -492,18 +492,17 @@ class PaymentModule implements ServiceModule, ExecutableModule
      */
     public function IsExpiryDateEnabled($paymentMethods): bool
     {
-        $expiryDateEnabled = false;
         foreach ($paymentMethods as $paymentMethod) {
-            $optionName = "mollie_wc_gateway_{$paymentMethod->id}_settings";
+            $optionName = "mollie_wc_gateway_{$paymentMethod->getProperty('id')}_settings";
             $option = get_option($optionName, false);
             if ($option && $option['enabled'] !== 'yes') {
                 continue;
             }
             if (!empty($option["activate_expiry_days_setting"]) && $option["activate_expiry_days_setting"] === 'yes') {
-                $expiryDateEnabled = true;
+                return true;
             }
         }
-        return $expiryDateEnabled;
+        return false;
     }
 
     /**

@@ -14,11 +14,11 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     /**
      * @var string
      */
-    protected $id;
+    public $id;
     /**
      * @var string[]
      */
-    protected $config = [];
+    public $config = [];
     /**
      * @var IconFactory
      */

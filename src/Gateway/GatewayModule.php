@@ -461,7 +461,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         assert($paymentFactory instanceof PaymentFactory);
         $pluginId = $container->get('shared.plugin_id');
         $gateways = [];
-        if(empty($paymentMethods)){
+        if (empty($paymentMethods)) {
             return $gateways;
         }
 
@@ -539,7 +539,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $paymentFieldsService = $container->get(PaymentFieldsService::class);
         assert($paymentFieldsService instanceof PaymentFieldsService);
         foreach ($paymentMethodsNames as $paymentMethodName) {
-            $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . strtoupper($paymentMethodName);
+            $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . ucfirst($paymentMethodName);
             $paymentMethod = new $paymentMethodClassName(
                 $iconFactory,
                 $settingsHelper,

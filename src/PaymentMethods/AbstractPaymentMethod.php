@@ -116,9 +116,9 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     public function getSharedFormFields()
     {
         return $this->settingsHelper->generalFormFields(
-            $this->getProperty('defaultTitle'),
-            $this->getProperty('defaultDescription'),
-            $this->getProperty('confirmationDelayed')
+            $this->config['defaultTitle'],
+            $this->config['defaultDescription'],
+            $this->config['confirmationDelayed']
         );
     }
 

@@ -39,8 +39,8 @@ class VoucherModule implements ExecutableModule
     public function run(ContainerInterface $container): bool
     {
         $gatewayInstances = $container->get('gateway.instances');
-        $voucherGateway = isset($gatewayInstances['mollie_wc_gateway_voucher']) ? $gatewayInstances['mollie_wc_gateway_voucher'] : false;
-        $voucher = $voucherGateway ? $voucherGateway->enabled === 'yes' : false;
+        $voucherGateway = $gatewayInstances['mollie_wc_gateway_voucher'] ?? false;
+        $voucher = $voucherGateway && $voucherGateway->enabled === 'yes';
 
         if ($voucher) {
             $this->voucherEnabledHooks();
@@ -85,14 +85,14 @@ class VoucherModule implements ExecutableModule
         ?>
         <div class="inline-edit-group">
             <label class="alignleft">
-                <span class="title"><?php _e('Mollie Voucher Category', 'mollie-payments-for-woocommerce'); ?></span>
+                <span class="title"><?php esc_html_e('Mollie Voucher Category', 'mollie-payments-for-woocommerce'); ?></span>
                 <span class="input-text-wrap">
                 <select name="_mollie_voucher_category" class="select">
-                   <option value=""><?php _e('--Please choose an option--', 'mollie-payments-for-woocommerce'); ?></option>
-                   <option value="no_category"> <?php _e('No Category', 'mollie-payments-for-woocommerce'); ?></option>
-                   <option value="meal"><?php _e('Meal', 'mollie-payments-for-woocommerce'); ?></option>
-                   <option value="eco"><?php _e('Eco', 'mollie-payments-for-woocommerce'); ?></option>
-                   <option value="gift"><?php _e('Gift', 'mollie-payments-for-woocommerce'); ?></option>
+                   <option value=""><?php esc_html_e('--Please choose an option--', 'mollie-payments-for-woocommerce'); ?></option>
+                   <option value="no_category"> <?php esc_html_e('No Category', 'mollie-payments-for-woocommerce'); ?></option>
+                   <option value="meal"><?php esc_html_e('Meal', 'mollie-payments-for-woocommerce'); ?></option>
+                   <option value="eco"><?php esc_html_e('Eco', 'mollie-payments-for-woocommerce'); ?></option>
+                   <option value="gift"><?php esc_html_e('Gift', 'mollie-payments-for-woocommerce'); ?></option>
                 </select>
          </span>
             </label>
@@ -107,8 +107,9 @@ class VoucherModule implements ExecutableModule
     {
         $post_id = $product->get_id();
         $optionName = Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION;
+        check_ajax_referer('inlineeditnonce', '_inline_edit');
         if (isset($_REQUEST[$optionName])) {
-            $option = $_REQUEST[$optionName];
+            $option = filter_var(wp_unslash($_REQUEST[$optionName]), FILTER_SANITIZE_STRING);
             update_post_meta($post_id, $optionName, wc_clean($option));
         }
     }
@@ -120,15 +121,15 @@ class VoucherModule implements ExecutableModule
     {
         ?>
         <div class="form-field">
-            <label for="_mollie_voucher_category"><?php _e('Mollie Voucher Category', 'mollie-payments-for-woocommerce'); ?></label>
+            <label for="_mollie_voucher_category"><?php esc_html_e('Mollie Voucher Category', 'mollie-payments-for-woocommerce'); ?></label>
             <select name="_mollie_voucher_category" id="_mollie_voucher_category" class="select">
-                <option value=""><?php _e('--Please choose an option--', 'mollie-payments-for-woocommerce'); ?></option>
-                <option value="no_category"> <?php _e('No Category', 'mollie-payments-for-woocommerce'); ?></option>
-                <option value="meal"><?php _e('Meal', 'mollie-payments-for-woocommerce'); ?></option>
-                <option value="eco"><?php _e('Eco', 'mollie-payments-for-woocommerce'); ?></option>
-                <option value="gift"><?php _e('Gift', 'mollie-payments-for-woocommerce'); ?></option>
+                <option value=""><?php esc_html_e('--Please choose an option--', 'mollie-payments-for-woocommerce'); ?></option>
+                <option value="no_category"> <?php esc_html_e('No Category', 'mollie-payments-for-woocommerce'); ?></option>
+                <option value="meal"><?php esc_html_e('Meal', 'mollie-payments-for-woocommerce'); ?></option>
+                <option value="eco"><?php esc_html_e('Eco', 'mollie-payments-for-woocommerce'); ?></option>
+                <option value="gift"><?php esc_html_e('Gift', 'mollie-payments-for-woocommerce'); ?></option>
             </select>
-            <p class="description"><?php _e('Select a voucher category to apply to all products with this category', 'mollie-payments-for-woocommerce'); ?></p>
+            <p class="description"><?php esc_html_e('Select a voucher category to apply to all products with this category', 'mollie-payments-for-woocommerce'); ?></p>
         </div>
         <?php
     }
@@ -143,29 +144,29 @@ class VoucherModule implements ExecutableModule
 
         ?>
         <tr class="form-field">
-            <th scope="row" valign="top"><label for="_mollie_voucher_category"><?php _e('Mollie Voucher Category', 'mollie-payments-for-woocommerce'); ?></label></th>
+            <th scope="row" valign="top"><label for="_mollie_voucher_category"><?php esc_html_e('Mollie Voucher Category', 'mollie-payments-for-woocommerce'); ?></label></th>
             <td>
                 <select name="_mollie_voucher_category" id="_mollie_voucher_category" class="select">
                     <option value="">
-                        <?php _e(
+                        <?php esc_html_e(
                             '--Please choose an option--',
                             'mollie-payments-for-woocommerce'
                         ); ?></option>
                     <option value="no_category" <?php selected($savedCategory, 'no_category'); ?>>
-                        <?php _e('No Category', 'mollie-payments-for-woocommerce'); ?>
+                        <?php esc_html_e('No Category', 'mollie-payments-for-woocommerce'); ?>
                     </option>
                     <option value="meal" <?php selected($savedCategory, 'meal'); ?>>
-                        <?php _e('Meal', 'mollie-payments-for-woocommerce'); ?>
+                        <?php esc_html_e('Meal', 'mollie-payments-for-woocommerce'); ?>
                     </option>
                     <option value="eco" <?php selected($savedCategory, 'eco'); ?>>
-                        <?php _e('Eco', 'mollie-payments-for-woocommerce'); ?>
+                        <?php esc_html_e('Eco', 'mollie-payments-for-woocommerce'); ?>
                     </option>
                     <option value="gift" <?php selected($savedCategory, 'gift'); ?>>
-                        <?php _e('Gift', 'mollie-payments-for-woocommerce'); ?>
+                        <?php esc_html_e('Gift', 'mollie-payments-for-woocommerce'); ?>
                     </option>
                 </select>
                 <p class="description">
-                    <?php _e(
+                    <?php esc_html_e(
                         'Select a voucher category to apply to all products with this category',
                         'mollie-payments-for-woocommerce'
                     ); ?>
@@ -197,11 +198,8 @@ class VoucherModule implements ExecutableModule
         if (!$voucherSettings) {
             $voucherSettings = get_option('mollie_wc_gateway_mealvoucher_settings');
         }
-            $defaultCategory = $voucherSettings
-                    ? $voucherSettings['mealvoucher_category_default']
-                    : Voucher::NO_CATEGORY;
-            woocommerce_wp_select(
-                [
+            $defaultCategory = $voucherSettings ? $voucherSettings['mealvoucher_category_default'] : Voucher::NO_CATEGORY;
+            woocommerce_wp_select([
                     'id' => Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
                     'title' => __(
                         'Select the default products category',
@@ -223,18 +221,15 @@ class VoucherModule implements ExecutableModule
                     ],
                     'default' => $defaultCategory,
                     /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
-                    'description' => sprintf(
-                        __(
-                            'In order to process it, all products in the order must have a category. To disable the product from voucher selection select "No category" option.',
-                            'mollie-payments-for-woocommerce'
-                        )
+                    'description' => __(
+                        'In order to process it, all products in the order must have a category. To disable the product from voucher selection select "No category" option.',
+                        'mollie-payments-for-woocommerce'
                     ),
                     'desc_tip' => true,
-                ]
-                                                                                                    ); ?>
-        </div>
-
-        </div><?php
+                ]);
+                                                                                                    ?>
+        </div></div>
+        <?php
     }
 
     /**

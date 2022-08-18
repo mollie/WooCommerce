@@ -254,8 +254,10 @@ class MollieSettingsPage extends WC_Settings_Page
 
         return $this->mergeSettings($settings, $mollieSettings);
     }
-
-    public function getMollieMethods()
+    /**
+     * @return string
+     */
+    public function getMollieMethods(): string
     {
         $content = '';
 
@@ -266,8 +268,10 @@ class MollieSettingsPage extends WC_Settings_Page
         $apiKey = $this->settingsHelper->getApiKey();
 
         if (
-            isset($_GET['refresh-methods']) && wp_verify_nonce(
-                $_GET['nonce_mollie_refresh_methods'],
+            isset($_GET['refresh-methods']) &&
+            isset($_GET['nonce_mollie_refresh_methods-methods']) &&
+            wp_verify_nonce(
+                filter_input(INPUT_GET, 'nonce_mollie_refresh_methods', FILTER_SANITIZE_STRING),
                 'nonce_mollie_refresh_methods'
             )
         ) {
@@ -281,7 +285,7 @@ class MollieSettingsPage extends WC_Settings_Page
         }
         if (
             isset($_GET['cleanDB-mollie']) && wp_verify_nonce(
-                $_GET['nonce_mollie_cleanDb'],
+                filter_input(INPUT_GET, 'nonce_mollie_cleanDb', FILTER_SANITIZE_STRING),
                 'nonce_mollie_cleanDb'
             )
         ) {
@@ -321,7 +325,7 @@ class MollieSettingsPage extends WC_Settings_Page
             ['refresh-methods' => 1, 'nonce_mollie_refresh_methods' => $nonce_mollie_refresh_methods]
         );
 
-        $content .= ' (<a href="' . esc_attr($refresh_methods_url) . '">' . strtolower(
+        $content .= ' (<a href="' . esc_url($refresh_methods_url) . '">' . strtolower(
             __('Refresh', 'mollie-payments-for-woocommerce')
         ) . '</a>)';
 
@@ -375,7 +379,7 @@ class MollieSettingsPage extends WC_Settings_Page
      * @param string $gateway_class_name
      * @return string
      */
-    protected function getGatewaySettingsUrl($gateway_class_name): string
+    protected function getGatewaySettingsUrl(string $gateway_class_name): string
     {
         return admin_url(
             'admin.php?page=wc-settings&tab=checkout&section=' . sanitize_title(strtolower($gateway_class_name))
@@ -417,7 +421,7 @@ class MollieSettingsPage extends WC_Settings_Page
      *
      * @return string
      */
-    protected function checkMollieBankTransferNotBACS($content)
+    protected function checkMollieBankTransferNotBACS($content): string
     {
         $woocommerce_banktransfer_gateway = new WC_Gateway_BACS();
 
@@ -440,7 +444,7 @@ class MollieSettingsPage extends WC_Settings_Page
      *
      * @return string
      */
-    protected function warnAboutRequiredCheckoutFieldForKlarna($content)
+    protected function warnAboutRequiredCheckoutFieldForKlarna($content): string
     {
         $woocommerceKlarnapaylaterGateway = !empty($this->registeredGateways["mollie_wc_gateway_klarnapaylater"]) && $this->paymentMethods["klarnapaylater"]->getProperty('enabled') === 'yes';
         $woocommerceKlarnasliceitGateway = !empty($this->registeredGateways["mollie_wc_gateway_klarnasliceit"]) && $this->paymentMethods["klarnasliceit"]->getProperty('enabled') === 'yes';
@@ -483,7 +487,7 @@ class MollieSettingsPage extends WC_Settings_Page
         foreach ($settings as $index => $setting) {
             if (
                 isset($setting['id']) && $setting['id'] === 'payment_gateways_options'
-                && (!isset($setting['type']) || $setting['type'] != 'sectionend')
+                && (!isset($setting['type']) || $setting['type'] !== 'sectionend')
             ) {
                 $new_settings = array_merge($new_settings, $mollie_settings);
                 $mollie_settings_merged = true;
@@ -524,7 +528,7 @@ class MollieSettingsPage extends WC_Settings_Page
     /**
      * @return string
      */
-    protected function componentsFilePath()
+    protected function componentsFilePath(): string
     {
         return $this->pluginPath . '/inc/settings/mollie_components.php';
     }
@@ -532,7 +536,7 @@ class MollieSettingsPage extends WC_Settings_Page
     /**
      * @return string
      */
-    protected function applePaySection()
+    protected function applePaySection(): string
     {
         return $this->pluginPath . '/inc/settings/mollie_applepay_settings.php';
     }
@@ -540,7 +544,7 @@ class MollieSettingsPage extends WC_Settings_Page
     /**
      * @return string
      */
-    protected function advancedSectionFilePath()
+    protected function advancedSectionFilePath(): string
     {
         return $this->pluginPath . '/inc/settings/mollie_advanced_settings.php';
     }
@@ -550,7 +554,7 @@ class MollieSettingsPage extends WC_Settings_Page
      *
      * @return array
      */
-    protected function hideKeysIntoStars($settings)
+    protected function hideKeysIntoStars($settings): array
     {
         $liveKeyName = 'mollie-payments-for-woocommerce_live_api_key';
         $testKeyName = 'mollie-payments-for-woocommerce_test_api_key';

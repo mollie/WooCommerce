@@ -47,7 +47,9 @@
     "minimist": "^1.2.3",
     "sass": "^1.52.1",
     "pump": "^3.0.0",
-    "sass-loader": "^7.0.1"
+    "sass-loader": "^7.0.1", 
+    "@woocommerce/e2e-utils": "^0.1.6",
+    "@wordpress/data": "^6.1.5"
   },
   "scripts": {
     "watch": "webpack --watch",
@@ -61,9 +63,5 @@
     "e2e-simple-settings": "npx playwright test --project=simple-settings",
     "e2e-full-settings": "npx playwright test --project=full-settings",
     "e2e-all-simple": "npx playwright test"
-  },
-  "dependencies": {
-    "@woocommerce/e2e-utils": "^0.1.6",
-    "@wordpress/data": "^6.1.5"
   }
 }

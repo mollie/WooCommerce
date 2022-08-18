@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
+use Mollie\WooCommerce\Activation\ActivationModule;
+use Mollie\WooCommerce\Shared\SharedDataDictionary;
+
 class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
 {
     protected function getConfig(): array
@@ -33,9 +36,10 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
         return $this->includeCreditCardIconSelector($componentFields);
     }
 
-    protected function hasPaymentFields()
+    public function hasPaymentFields(): bool
     {
-        return $this->getProperty('mollie_components_enabled') === 'yes';
+        $componentsEnabled = $this->getProperty('mollie_components_enabled');
+        return $componentsEnabled ? $componentsEnabled === 'yes' : $this->defaultComponentsEnabled() === 'yes';
     }
 
     protected function includeMollieComponentsFields($generalFormFields)
@@ -47,16 +51,25 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
                 /* translators: Placeholder 1: Mollie Components.*/
                 'description' => sprintf(
                     __(
-                        'Use the Mollie Components for this Gateway. Read more about <a href="https://www.mollie.com/en/news/post/better-checkout-flows-with-mollie-components">%s</a> and how it improves your conversion.',
+                        'Use the Mollie Components for this Gateway. Read more about <a href="https://www.mollie.com/en/news/post/better-checkout-flows-with-mollie-components?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner">%s</a> and how it improves your conversion.',
                         'mollie-payments-for-woocommerce'
                     ),
                     __('Mollie Components', 'mollie-payments-for-woocommerce')
                 ),
-                'default' => 'no',
+                'default' => $this->defaultComponentsEnabled(),
             ],
         ];
 
         return array_merge($generalFormFields, $fields);
+    }
+
+    protected function defaultComponentsEnabled()
+    {
+        $isNewInstall = get_option(SharedDataDictionary::NEW_INSTALL_PARAM_NAME, false);
+        if ($isNewInstall === 'yes') {
+            return 'yes';
+        }
+        return 'no';
     }
 
     /**

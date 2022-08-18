@@ -28,6 +28,7 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_ApplePay',
         'Mollie_WC_Gateway_MyBank',
         'Mollie_WC_Gateway_Voucher',
+        'Mollie_WC_Gateway_In3',
     ];
 
     public const MOLLIE_OPTIONS_NAMES = [
@@ -60,6 +61,13 @@ class SharedDataDictionary
         'mollie_apple_pay_button_enabled_product',
         'mollie_apple_pay_button_enabled_cart',
         'mollie_wc_applepay_validated',
-        'mollie-payments-for-woocommerce_removeOptionsAndTransients'
+        'mollie-payments-for-woocommerce_removeOptionsAndTransients',
+        'mollie-plugin-version',
+        'mollie-new-install',
     ];
+    public const DB_VERSION_PARAM_NAME = 'mollie-db-version';
+    public const PLUGIN_VERSION_PARAM_NAME = 'mollie-plugin-version';
+    public const NEW_INSTALL_PARAM_NAME = 'mollie-new-install';
+    public const PENDING_PAYMENT_DB_TABLE_NAME = 'mollie_pending_payment';
+    public const DB_VERSION = '1.0';
 }

@@ -13,6 +13,7 @@ use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Page\MollieSettingsPage;
 use Mollie\WooCommerce\Shared\Data;
+use Mollie\WooCommerce\Shared\Status;
 use Mollie\WooCommerce\Uninstall\CleanDb;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
@@ -42,9 +43,12 @@ class SettingsModule implements ServiceModule, ExecutableModule
                 $pluginId = $container->get('shared.plugin_id');
                 $pluginUrl = $container->get('shared.plugin_url');
                 $statusHelper = $container->get('shared.status_helper');
+                assert($statusHelper instanceof Status);
                 $pluginVersion = $container->get('shared.plugin_version');
                 $apiHelper =  $container->get('SDK.api_helper');
+                assert($apiHelper instanceof Api);
                 $cleanDb = $container->get(CleanDb::class);
+                assert($cleanDb instanceof CleanDb);
                 return new Settings(
                     $pluginId,
                     $statusHelper,
@@ -55,17 +59,19 @@ class SettingsModule implements ServiceModule, ExecutableModule
                 );
             },
             'settings.data_helper' => static function (ContainerInterface $container): Data {
-                /** @var Api $apiHelper */
                 $apiHelper = $container->get('SDK.api_helper');
+                assert($apiHelper instanceof Api);
                 $logger = $container->get(Logger::class);
+                assert($logger instanceof Logger);
                 $pluginId = $container->get('shared.plugin_id');
                 $pluginPath = $container->get('shared.plugin_path');
                 $settings = $container->get('settings.settings_helper');
+                assert($settings instanceof Settings);
                 return new Data($apiHelper, $logger, $pluginId, $settings, $pluginPath);
             },
             'settings.IsTestModeEnabled' => static function (ContainerInterface $container): bool {
-                /** @var Settings $settingsHelper */
                 $settingsHelper = $container->get('settings.settings_helper');
+                assert($settingsHelper instanceof Settings);
                 return $settingsHelper->isTestModeEnabled();
             },
         ];
@@ -75,8 +81,10 @@ class SettingsModule implements ServiceModule, ExecutableModule
     {
         $this->plugin_basename = $container->get('shared.plugin_file');
         $this->settingsHelper = $container->get('settings.settings_helper');
+        assert($this->settingsHelper instanceof Settings);
         $this->isTestModeEnabled = $container->get('settings.IsTestModeEnabled');
         $this->dataHelper = $container->get('settings.data_helper');
+        assert($this->dataHelper instanceof Data);
         $pluginPath = $container->get('shared.plugin_path');
         $gateways = $container->get('gateway.instances');
         $paymentMethods = $container->get('gateway.paymentMethods');

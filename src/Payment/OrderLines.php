@@ -108,7 +108,7 @@ class OrderLines
                     'sku' => $this->get_item_reference($product),
                     'name' => $this->get_item_name($cart_item),
                     'quantity' => $this->get_item_quantity($cart_item),
-                    'vatRate' => $this->get_item_vatRate($cart_item, $product),
+                    'vatRate' => round($this->get_item_vatRate($cart_item, $product), 2),
                     'unitPrice' =>  [
                         'currency' => $this->currency,
                         'value' => $this->dataHelper->formatCurrencyValue($this->get_item_price($cart_item), $this->currency),
@@ -188,16 +188,22 @@ class OrderLines
     {
         if (! empty($this->order->get_items('fee'))) {
             foreach ($this->order->get_items('fee') as $cart_fee) {
-                if ($cart_fee['tax_status'] === 'taxable' && $cart_fee['total_tax'] > 0) {
+                if ($cart_fee['tax_status'] === 'taxable') {
                     // Calculate tax rate.
-                    $_tax = new WC_Tax();
-                    $tmp_rates = $_tax::get_rates($cart_fee['tax_class']);
+                    $tmp_rates = WC_Tax::get_rates($cart_fee['tax_class']);
                     $vat = array_shift($tmp_rates);
 
                     $cart_fee_vat_rate = isset($vat['rate']) ? $vat['rate'] : 0;
 
                     $cart_fee_tax_amount = $cart_fee['total_tax'];
                     $cart_fee_total = ( $cart_fee['total'] + $cart_fee['total_tax'] );
+                    /*This is the equation Mollie uses to validate our input*/
+                    $validTax = $cart_fee_total * ($cart_fee_vat_rate / (100 + $cart_fee_vat_rate)) === (float) $cart_fee_tax_amount;
+                    if (!$validTax) {
+                        /*inverse of the equation Mollie uses to validate our input,
+                        so we don't fail when cart has mixed taxes*/
+                        $cart_fee_vat_rate = ($cart_fee_tax_amount * 100) / ($cart_fee_total - $cart_fee_tax_amount);
+                    }
                 } else {
                     $cart_fee_vat_rate = 0;
                     $cart_fee_tax_amount = 0;
@@ -555,7 +561,7 @@ class OrderLines
     {
         $shipping_vat_rate = 0;
         if (WC()->cart->shipping_tax_total > 0) {
-            $shipping_vat_rate = round(WC()->cart->shipping_tax_total / WC()->cart->shipping_total, 3) * 100;
+            $shipping_vat_rate = round(WC()->cart->shipping_tax_total / WC()->cart->shipping_total, 2) * 100;
         }
 
         return $shipping_vat_rate;

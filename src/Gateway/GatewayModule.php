@@ -28,6 +28,7 @@ use Mollie\WooCommerce\Payment\PaymentFieldsService;
 use Mollie\WooCommerce\Payment\PaymentService;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
 use Mollie\WooCommerce\SDK\Api;
+use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
@@ -65,13 +66,13 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 return (new self)->instantiatePaymentMethods($container);
             },
             'gateway.paymentMethodsEnabledAtMollie' => static function (ContainerInterface $container): array {
-                /* @var Data $dataHelper */
                 $dataHelper = $container->get('settings.data_helper');
-                /* @var Settings $settings */
+                assert($dataHelper instanceof Data);
                 $settings = $container->get('settings.settings_helper');
+                assert($settings instanceof Settings);
                 $apiKey = $settings->getApiKey();
-                $methods = $apiKey? $dataHelper->getAllPaymentMethods($apiKey):[];
-                foreach ($methods as $key => $method){
+                $methods = $apiKey ? $dataHelper->getAllPaymentMethods($apiKey) : [];
+                foreach ($methods as $key => $method) {
                     $methods[$method['id']] = $method;
                     unset($methods[$key]);
                 }
@@ -84,13 +85,20 @@ class GatewayModule implements ServiceModule, ExecutableModule
             },
             PaymentService::class => static function (ContainerInterface $container): PaymentService {
                 $logger = $container->get(Logger::class);
+                assert($logger instanceof Logger);
                 $notice = $container->get(AdminNotice::class);
+                assert($notice instanceof AdminNotice);
                 $paymentFactory = $container->get(PaymentFactory::class);
+                assert($paymentFactory instanceof PaymentFactory);
                 $data = $container->get('settings.data_helper');
+                assert($data instanceof Data);
                 $api = $container->get('SDK.api_helper');
+                assert($api instanceof Api);
                 $settings = $container->get('settings.settings_helper');
+                assert($settings instanceof Settings);
                 $pluginId = $container->get('shared.plugin_id');
                 $paymentCheckoutRedirectService = $container->get(PaymentCheckoutRedirectService::class);
+                assert($paymentCheckoutRedirectService instanceof PaymentCheckoutRedirectService);
                 return new PaymentService($notice, $logger, $paymentFactory, $data, $api, $settings, $pluginId, $paymentCheckoutRedirectService);
             },
             OrderInstructionsService::class => static function (): OrderInstructionsService {
@@ -98,12 +106,14 @@ class GatewayModule implements ServiceModule, ExecutableModule
             },
             PaymentFieldsService::class => static function (ContainerInterface $container): PaymentFieldsService {
                 $data = $container->get('settings.data_helper');
+                assert($data instanceof Data);
                 return new PaymentFieldsService($data);
             },
             PaymentCheckoutRedirectService::class => static function (
                 ContainerInterface $container
             ): PaymentCheckoutRedirectService {
                 $data = $container->get('settings.data_helper');
+                assert($data instanceof Data);
                 return new PaymentCheckoutRedirectService($data);
             },
             Surcharge::class => static function (ContainerInterface $container): Surcharge {
@@ -111,11 +121,21 @@ class GatewayModule implements ServiceModule, ExecutableModule
             },
             MollieOrderService::class => static function (ContainerInterface $container): MollieOrderService {
                 $HttpResponseService = $container->get('SDK.HttpResponse');
+                assert($HttpResponseService instanceof HttpResponse);
                 $logger = $container->get(Logger::class);
+                assert($logger instanceof Logger);
                 $paymentFactory = $container->get(PaymentFactory::class);
+                assert($paymentFactory instanceof PaymentFactory);
                 $data = $container->get('settings.data_helper');
+                assert($data instanceof Data);
                 $pluginId = $container->get('shared.plugin_id');
                 return new MollieOrderService($HttpResponseService, $logger, $paymentFactory, $data, $pluginId);
+            },
+            OrderMandatoryGatewayDisabler::class => static function (ContainerInterface $container): OrderMandatoryGatewayDisabler {
+                $settings = $container->get('settings.settings_helper');
+                assert($settings instanceof Settings);
+                $isSettingsOrderApi = $settings->isOrderApiSetting();
+                return new OrderMandatoryGatewayDisabler($isSettingsOrderApi);
             },
         ];
     }
@@ -133,6 +153,11 @@ class GatewayModule implements ServiceModule, ExecutableModule
             return array_merge($gateways, $mollieGateways);
         });
         add_filter('woocommerce_payment_gateways', [$this, 'maybeDisableApplePayGateway'], 20);
+        add_filter('woocommerce_payment_gateways', static function ($gateways) use ($container) {
+            $orderMandatoryGatewayDisabler = $container->get(OrderMandatoryGatewayDisabler::class);
+
+            return $orderMandatoryGatewayDisabler->processGateways($gateways);
+        });
          add_filter('woocommerce_payment_gateways', static function ($gateways) {
             $maybeEnablegatewayHelper = new MaybeDisableGateway();
 
@@ -170,38 +195,52 @@ class GatewayModule implements ServiceModule, ExecutableModule
 
         // Set order to paid and processed when eventually completed without Mollie
         add_action('woocommerce_payment_complete', [$this, 'setOrderPaidByOtherGateway'], 10, 1);
-        $appleGateway = isset($container->get('gateway.instances')['mollie_wc_gateway_applepay'])? $container->get('gateway.instances')['mollie_wc_gateway_applepay']:false;
-
+        $appleGateway = isset($container->get('gateway.instances')['mollie_wc_gateway_applepay']) ? $container->get(
+            'gateway.instances'
+        )['mollie_wc_gateway_applepay'] : false;
         $notice = $container->get(AdminNotice::class);
+        assert($notice instanceof AdminNotice);
         $logger = $container->get(Logger::class);
+        assert($logger instanceof Logger);
         $pluginUrl = $container->get('shared.plugin_url');
         $apiHelper = $container->get('SDK.api_helper');
+        assert($apiHelper instanceof Api);
         $settingsHelper = $container->get('settings.settings_helper');
-        $this->gatewaySurchargeHandling($container->get(Surcharge::class));
-        if($appleGateway){
+        assert($settingsHelper instanceof Settings);
+        $surchargeService = $container->get(Surcharge::class);
+        assert($surchargeService instanceof Surcharge);
+        $this->gatewaySurchargeHandling($surchargeService);
+        if ($appleGateway) {
             $this->mollieApplePayDirectHandling($notice, $logger, $apiHelper, $settingsHelper, $appleGateway);
         }
 
-        $paypalGateway = isset($container->get('gateway.instances')['mollie_wc_gateway_paypal'])? $container->get('gateway.instances')['mollie_wc_gateway_paypal']:false;
-        if ($paypalGateway){
+        $paypalGateway = isset($container->get('gateway.instances')['mollie_wc_gateway_paypal']) ? $container->get(
+            'gateway.instances'
+        )['mollie_wc_gateway_paypal'] : false;
+        if ($paypalGateway) {
             $this->molliePayPalButtonHandling($paypalGateway, $notice, $logger, $pluginUrl);
         }
 
         $maybeDisableVoucher = new MaybeDisableGateway();
-        $checkoutBlockHandler = new CheckoutBlockService($container->get('settings.data_helper'), $maybeDisableVoucher);
+        $dataService = $container->get('settings.data_helper');
+        assert($dataService instanceof Data);
+        $checkoutBlockHandler = new CheckoutBlockService($dataService, $maybeDisableVoucher);
         $checkoutBlockHandler->bootstrapAjaxRequest();
-        add_action( 'woocommerce_rest_checkout_process_payment_with_context', function($paymentContext){
-            if(strpos($paymentContext->payment_method, 'mollie_wc_gateway_') === false){
-                return;
+        add_action(
+            'woocommerce_rest_checkout_process_payment_with_context',
+            function ($paymentContext) {
+                if (strpos($paymentContext->payment_method, 'mollie_wc_gateway_') === false) {
+                    return;
+                }
+                $title = isset($paymentContext->payment_data['payment_method_title']) ? $paymentContext->payment_data['payment_method_title'] : false;
+                if (!$title) {
+                    return;
+                }
+                $order = $paymentContext->order;
+                $order->set_payment_method_title($title);
+                $order->save();
             }
-            $title = isset($paymentContext->payment_data['payment_method_title'])?$paymentContext->payment_data['payment_method_title']:false;
-            if(!$title){
-                return ;
-            }
-            $order = $paymentContext->order;
-            $order->set_payment_method_title( $title );
-            $order->save();
-        } );
+        );
 
         return true;
     }
@@ -399,17 +438,27 @@ class GatewayModule implements ServiceModule, ExecutableModule
     public function instantiatePaymentMethodGateways(ContainerInterface $container): array
     {
         $logger = $container->get(Logger::class);
+        assert($logger instanceof Logger);
         $notice = $container->get(AdminNotice::class);
+        assert($notice instanceof AdminNotice);
         $paymentService = $container->get(PaymentService::class);
+        assert($paymentService instanceof PaymentService);
         $mollieOrderService = $container->get(MollieOrderService::class);
+        assert($mollieOrderService instanceof MollieOrderService);
         $HttpResponseService = $container->get('SDK.HttpResponse');
+        assert($HttpResponseService instanceof HttpResponse);
         $settingsHelper = $container->get('settings.settings_helper');
+        assert($settingsHelper instanceof Settings);
         $apiHelper = $container->get('SDK.api_helper');
+        assert($apiHelper instanceof Api);
         $paymentMethods = $container->get('gateway.paymentMethods');
         $data = $container->get('settings.data_helper');
+        assert($data instanceof Data);
         $orderInstructionsService = new OrderInstructionsService();
         $mollieObject = $container->get(MollieObject::class);
+        assert($mollieObject instanceof MollieObject);
         $paymentFactory = $container->get(PaymentFactory::class);
+        assert($paymentFactory instanceof PaymentFactory);
         $pluginId = $container->get('shared.plugin_id');
         $methodsEnabledAtMollie = $container->get('gateway.paymentMethodsEnabledAtMollie');
         $gateways = [];
@@ -511,11 +560,16 @@ class GatewayModule implements ServiceModule, ExecutableModule
             'Applepay',
             'Mybank',
             'Voucher',
+            'In3'
         ];
         $iconFactory = $container->get(IconFactory::class);
+        assert($iconFactory instanceof IconFactory);
         $settingsHelper = $container->get('settings.settings_helper');
+        assert($settingsHelper instanceof Settings);
         $surchargeService = $container->get(Surcharge::class);
+        assert($surchargeService instanceof Surcharge);
         $paymentFieldsService = $container->get(PaymentFieldsService::class);
+        assert($paymentFieldsService instanceof PaymentFieldsService);
         foreach ($paymentMethodsNames as $paymentMethodName) {
             $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . $paymentMethodName;
             $paymentMethod = new $paymentMethodClassName(

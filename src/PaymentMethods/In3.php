@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
-class Eps extends AbstractPaymentMethod implements PaymentMethodI
+class In3 extends AbstractPaymentMethod implements PaymentMethodI
 {
-    protected function getConfig(): array
+    public function getConfig(): array
     {
         return [
-            'id' => 'eps',
-            'defaultTitle' => __('EPS', 'mollie-payments-for-woocommerce'),
+            'id' => 'in3',
+            'defaultTitle' => __('in3', 'mollie-payments-for-woocommerce'),
             'settingsDescription' => '',
-            'defaultDescription' => '',
+            'defaultDescription' => __('Pay in 3 instalments, 0% interest', 'mollie-payments-for-woocommerce'),
             'paymentFields' => false,
             'instructions' => false,
             'supports' => [
@@ -20,8 +20,8 @@ class Eps extends AbstractPaymentMethod implements PaymentMethodI
                 'refunds',
             ],
             'filtersOnBuild' => false,
-            'confirmationDelayed' => true,
-            'SEPA' => true,
+            'confirmationDelayed' => false,
+            'orderMandatory' => true,
         ];
     }
 

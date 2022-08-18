@@ -31,7 +31,7 @@ const options = {
                 buildDir: `${__dirname}/build`,
                 distDir: `${__dirname}/dist`,
                 q: false,
-                depsVersionPhp: '5.6.39',
+                depsVersionPhp: '7.2.9',
             },
         }
     )
@@ -177,14 +177,6 @@ function _installPhp({buildDir, depsVersionPhp}) {
     }
 }
 
-function _installPhar({buildDir}) {
-    return function installPhar(done) {
-        chain([
-            (done) => { return exec('phive', ['install', '--force-accept-unsigned', '--copy'], {cwd: buildDir}, done)},
-        ], done);
-    }
-}
-
 function _installJs({buildDir}) {
     return function installJs(done) {
         chain([
@@ -256,6 +248,7 @@ function _archive({baseDir, buildDir, distDir, packageVersion, packageName}) {
                             '!**/webpack.config.js',
                             '!**/.github',
                             '!**/.git',
+                            '!**/.ddev',
                             '!**/.gitignore',
                             '!**/.gitattributes',
                             '!**/Makefile',
@@ -298,10 +291,6 @@ exports.installPhp = series(
     _installPhp(options)
 )
 
-exports.installPhar = series(
-    _installPhar(options)
-)
-
 exports.installJs = series(
     _installJs(options)
 )
@@ -316,8 +305,7 @@ exports.archive = series(
 
 exports.install = parallel(
     exports.installJs,
-    exports.installPhp,
-    exports.installPhar,
+    exports.installPhp
 )
 
 exports.process = series(

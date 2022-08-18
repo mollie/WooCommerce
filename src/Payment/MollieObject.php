@@ -557,7 +557,7 @@ class MollieObject
         $payment
     ) {
 
-        if (class_exists('WC_Subscriptions')) {
+        if ($this->dataHelper->isSubscriptionPluginActive()) {
             $payment = isset($payment->_embedded->payments[0]) ? $payment->_embedded->payments[0] : false;
             if (
                 $payment && $payment->sequenceType === 'first'

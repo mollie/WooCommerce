@@ -109,16 +109,6 @@ const config = {
               ...devices['Desktop Chrome', 'Desktop Firefox', 'Desktop Safari']
           },
       },
-      //full transaction:all gw, all products, all browsers
-      /*{
-          name: 'full-transaction',
-          testMatch: ['**!/Transaction/!**'],
-          use: {
-              ...devices['Desktop Chrome', 'Desktop Firefox', 'Desktop Safari'],
-              gateways: {banktransfer, paypal},
-              products: {simple, virtual},
-          },
-      },*/
   ],
 
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */

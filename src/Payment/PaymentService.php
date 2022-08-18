@@ -81,8 +81,7 @@ class PaymentService
 
     public function processPayment($orderId, $order, $paymentMethod, $redirectUrl)
     {
-        $this->logger->log(
-            LogLevel::DEBUG,
+        $this->logger->debug(
             "{$paymentMethod->getProperty('id')}: Start process_payment for order {$orderId}",
             [true]
         );
@@ -344,7 +343,7 @@ class PaymentService
 
         // Create Mollie payment with customer id.
         try {
-            $this->logger->log( LogLevel::DEBUG,
+            $this->logger->debug( 
                 'Creating payment object: type Order, first try creating a Mollie Order.'
             );
 
@@ -366,10 +365,10 @@ class PaymentService
                 'lines' => isset($data['lines']) ? $data['lines'] : ''
             ];
 
-            $this->logger->log( LogLevel::DEBUG, json_encode($apiCallLog));
+            $this->logger->debug(  json_encode($apiCallLog));
             $paymentOrder = $paymentObject;
             $paymentObject = $this->apiHelper->getApiClient($apiKey)->orders->create($data);
-            $this->logger->log( LogLevel::DEBUG, json_encode($paymentObject));
+            $this->logger->debug(  json_encode($paymentObject));
             $settingsHelper = $this->settingsHelper;
             if($settingsHelper->getOrderStatusCancelledPayments() === 'cancelled'){
                 $orderId = $order->get_id();
@@ -384,13 +383,13 @@ class PaymentService
                 || $order_payment_method === 'mollie_wc_gateway_sliceit'
                 || $order_payment_method === 'mollie_wc_gateway_klarnapaynow'
             ) {
-                $this->logger->log( LogLevel::DEBUG,
+                $this->logger->debug( 
                     'Creating payment object: type Order, failed for Klarna payment, stopping process.'
                 );
                 throw $e;
             }
 
-            $this->logger->log( LogLevel::DEBUG,
+            $this->logger->debug( 
                 'Creating payment object: type Order, first try failed: '
                 . $e->getMessage()
             );
@@ -400,14 +399,14 @@ class PaymentService
 
             try {
                 if ($e->getField() !== 'payment.customerId') {
-                    $this->logger->log( LogLevel::DEBUG,
+                    $this->logger->debug( 
                         'Creating payment object: type Order, did not fail because of incorrect customerId, so trying Payment now.'
                     );
                     throw $e;
                 }
 
                 // Retry without customer id.
-                $this->logger->log( LogLevel::DEBUG,
+                $this->logger->debug( 
                     'Creating payment object: type Order, second try, creating a Mollie Order without a customerId.'
                 );
                 $paymentObject = $this->apiHelper->getApiClient(
@@ -471,7 +470,7 @@ class PaymentService
                     : ''
             ];
 
-            $this->logger->log( LogLevel::DEBUG, $apiCallLog);
+            $this->logger->debug(  $apiCallLog);
 
             // Try as simple payment
             $paymentObject = $this->apiHelper->getApiClient(
@@ -479,7 +478,7 @@ class PaymentService
             )->payments->create($data);
         } catch (ApiException $e) {
             $message = $e->getMessage();
-            $this->logger->log( LogLevel::DEBUG, $message);
+            $this->logger->debug(  $message);
             throw $e;
         }
         return $paymentObject;
@@ -508,7 +507,7 @@ class PaymentService
         // PROCESS REGULAR PAYMENT AS MOLLIE ORDER
         //
         if ($molliePaymentType === self::PAYMENT_METHOD_TYPE_ORDER) {
-            $this->logger->log( LogLevel::DEBUG,
+            $this->logger->debug( 
                 "{$this->gateway->id}: Create Mollie payment object for order {$orderId}",
                 [true]
             );
@@ -530,7 +529,7 @@ class PaymentService
         //
 
         if ($molliePaymentType === self::PAYMENT_METHOD_TYPE_PAYMENT) {
-            $this->logger->log( LogLevel::DEBUG,
+            $this->logger->debug( 
                 'Creating payment object: type Payment, creating a Payment.'
             );
 
@@ -580,7 +579,7 @@ class PaymentService
                         // Reduce order stock
                         wc_reduce_stock_levels( $order->get_id() );
 
-                        $this->logger->log( LogLevel::DEBUG,  __METHOD__ . ":  Stock for order {$order->get_id()} reduced." );
+                        $this->logger->debug(   __METHOD__ . ":  Stock for order {$order->get_id()} reduced." );
                     }
                 }
 
@@ -594,7 +593,7 @@ class PaymentService
                     // Restore order stock
                     $this->dataHelper->restoreOrderStock($order);
 
-                    $this->logger->log( LogLevel::DEBUG, __METHOD__ . " Stock for order {$order->get_id()} restored.");
+                    $this->logger->debug(  __METHOD__ . " Stock for order {$order->get_id()} restored.");
                 }
 
                 break;
@@ -608,8 +607,7 @@ class PaymentService
      */
     protected function noValidMandateForSubsSwitchFailure($orderId): void
     {
-        $this->logger->log(
-            LogLevel::DEBUG,
+        $this->logger->debug(
             $this->gateway->id . ': Subscription switch failed, no valid mandate for order #' . $orderId
         );
         $this->notice->addNotice(
@@ -631,7 +629,7 @@ class PaymentService
         $order->add_order_note( sprintf(
                                     __( 'Order completed internally because of an existing valid mandate at Mollie.', 'mollie-payments-for-woocommerce' ) ) );
 
-        $this->logger->log( LogLevel::DEBUG,  $this->gateway->id . ': Subscription switch completed, valid mandate for order #' . $orderId );
+        $this->logger->debug(   $this->gateway->id . ': Subscription switch completed, valid mandate for order #' . $orderId );
 
         return array (
             'result'   => 'success',
@@ -673,7 +671,7 @@ class PaymentService
         // PROCESS SUBSCRIPTION SWITCH - If this is a subscription switch and customer has a valid mandate, process the order internally
         //
         try {
-            $this->logger->log(LogLevel::DEBUG,  $this->gateway->id . ': Subscription switch started, fetching mandate(s) for order #' . $orderId);
+            $this->logger->debug( $this->gateway->id . ': Subscription switch started, fetching mandate(s) for order #' . $orderId);
             $validMandate = $this->processValidMandate($order, $customerId, $apiKey);
             if ( $validMandate ) {
                 return $this->subsSwitchCompleted($order);
@@ -696,7 +694,7 @@ class PaymentService
      */
     protected function reportPaymentCreationFailure($orderId, $e): void
     {
-        $this->logger->log(LogLevel::DEBUG,
+        $this->logger->debug(
                            $this->id . ': Failed to create Mollie payment object for order ' . $orderId . ': ' . $e->getMessage(
                            )
         );
@@ -732,8 +730,7 @@ class PaymentService
             $mandate = $mandates[0];
             $customerId = $mandate->customerId;
             $mandateId = $mandate->id;
-            $this->logger->log(
-                LogLevel::DEBUG,
+            $this->logger->debug(
                 "Mollie Subscription in the order: customer id {$customerId} and mandate id {$mandateId} "
             );
             do_action($this->pluginId . '_after_mandate_created', $paymentObject, $order, $customerId, $mandateId);
@@ -775,8 +772,7 @@ class PaymentService
     protected function reportPaymentSuccess($paymentObject, $orderId, $order, $paymentMethod): void
     {
         $paymentMethodTitle = $paymentMethod->getProperty('id');
-        $this->logger->log(
-            LogLevel::DEBUG,
+        $this->logger->debug(
             $paymentMethodTitle . ': Mollie payment object ' . $paymentObject->id . ' (' . $paymentObject->mode . ') created for order ' . $orderId
         );
         $order->add_order_note(
@@ -791,8 +787,7 @@ class PaymentService
             )
         );
 
-        $this->logger->log(
-            LogLevel::DEBUG,
+        $this->logger->debug(
             "For order " . $orderId . " redirect user to Mollie Checkout URL: " . $paymentObject->getCheckoutUrl()
         );
     }
@@ -816,7 +811,7 @@ class PaymentService
      */
     protected function paymentObjectFailure($exception): array
     {
-        $this->logger->log(LogLevel::DEBUG, $exception->getMessage());
+        $this->logger->debug($exception->getMessage());
         return array('result' => 'failure');
     }
 

@@ -7,6 +7,7 @@ namespace Mollie\WooCommerce\Payment;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\SDK\Api;
 use Psr\Log\LogLevel;
 use WC_Order;
@@ -55,7 +56,7 @@ class MolliePayment extends MollieObject
      *
      * @return array
      */
-    public function getPaymentRequestData($order, $customerId)
+    public function getPaymentRequestData($order, $customerId, $voucherDefaultCategory = Voucher::NO_CATEGORY)
     {
         $settingsHelper = $this->settingsHelper;
         $optionName = $this->pluginId . '_' . 'api_payment_description';

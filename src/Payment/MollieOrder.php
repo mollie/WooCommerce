@@ -8,6 +8,7 @@ use Exception;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\SDK\Api;
 use Psr\Log\LogLevel;
 use stdClass;
@@ -28,6 +29,10 @@ class MollieOrder extends MollieObject
     public static $order;
     public static $payment;
     public static $shop_country;
+    /**
+     * @var OrderLines
+     */
+    protected $orderLines;
 
     /**
      * @var OrderItemsRefunder
@@ -40,7 +45,7 @@ class MollieOrder extends MollieObject
      * @param OrderItemsRefunder $orderItemsRefunder
      * @param $data
      */
-    public function __construct(OrderItemsRefunder $orderItemsRefunder, $data, $pluginId, Api $apiHelper, $settingsHelper, $dataHelper, $logger)
+    public function __construct(OrderItemsRefunder $orderItemsRefunder, $data, $pluginId, Api $apiHelper, $settingsHelper, $dataHelper, $logger, OrderLines $orderLines)
     {
         $this->data = $data;
         $this->orderItemsRefunder = $orderItemsRefunder;
@@ -49,6 +54,7 @@ class MollieOrder extends MollieObject
         $this->settingsHelper = $settingsHelper;
         $this->dataHelper = $dataHelper;
         $this->logger = $logger;
+        $this->orderLines = $orderLines;
     }
 
     public function getPaymentObject($paymentId, $testMode = false, $useCache = true)
@@ -72,7 +78,7 @@ class MollieOrder extends MollieObject
      *
      * @return array
      */
-    public function getPaymentRequestData($order, $customerId)
+    public function getPaymentRequestData($order, $customerId, $voucherDefaultCategory = Voucher::NO_CATEGORY)
     {
         $settingsHelper = $this->settingsHelper;
         $paymentLocale = $settingsHelper->getPaymentLocale();
@@ -99,12 +105,8 @@ class MollieOrder extends MollieObject
         }
 
         // Generate order lines for Mollie Orders
-        $orderLinesHelper = new OrderLines(
-            $order,
-            $this->dataHelper,
-            $this->pluginId
-        );
-        $orderLines = $orderLinesHelper->order_lines();
+        $orderLinesHelper = $this->orderLines;
+        $orderLines = $orderLinesHelper->order_lines($order, $voucherDefaultCategory);
 
         // Build the Mollie order data
         $paymentRequestData = [

@@ -99,7 +99,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $pluginId = $container->get('shared.plugin_id');
                 $paymentCheckoutRedirectService = $container->get(PaymentCheckoutRedirectService::class);
                 assert($paymentCheckoutRedirectService instanceof PaymentCheckoutRedirectService);
-                return new PaymentService($notice, $logger, $paymentFactory, $data, $api, $settings, $pluginId, $paymentCheckoutRedirectService);
+                $voucherDefaultCategory = $container->get('voucher.defaultCategory');
+                return new PaymentService($notice, $logger, $paymentFactory, $data, $api, $settings, $pluginId, $paymentCheckoutRedirectService, $voucherDefaultCategory);
             },
             OrderInstructionsService::class => static function (): OrderInstructionsService {
                 return new OrderInstructionsService();

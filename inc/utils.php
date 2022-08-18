@@ -111,16 +111,18 @@ function mollieWooCommerceCheckIfNeedShipping($product)
     ) {
         return false;
     }
-    $needs_shipping = false;
-    if ($product->is_type('variable')) {
-        return false;
+    //variations might be virtual
+   if ($product->is_type('variable')) {
+       $variations = $product->get_available_variations();
+       foreach ($variations as $variation) {
+           if($variation["is_virtual"]) {
+               return false;
+           }
+       }
+        return true;
     }
 
-    if ($product->needs_shipping()) {
-        $needs_shipping = true;
-    }
-
-    return $needs_shipping;
+    return $product->needs_shipping();
 }
 
 function checkIndexExistOrDefault($array, $key, $default)

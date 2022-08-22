@@ -14,10 +14,7 @@ class Surcharge
      * @var string
      */
     public const FIXED_FEE = 'fixed_fee';
-    /**
-     * @var string
-     */
-    public const DEFAULT_FEE_LABEL = 'Gateway Fee';
+
     /**
      * @var string
      */
@@ -30,6 +27,14 @@ class Surcharge
      * @var string
      */
     public const FIXED_AND_PERCENTAGE = 'fixed_fee_percentage';
+
+    /**
+     * @return string
+     */
+    public function defaultFeeLabel(): string
+    {
+        return __('Gateway Fee', 'mollie-payments-for-woocommerce');
+    }
 
     /**
      * @param $description
@@ -247,15 +252,6 @@ class Surcharge
         $taxRates = \WC_Tax::get_rates();
         $wcStandardTax = \WC_Tax::calc_inclusive_tax($amount, $taxRates);
         return $amount - $wcStandardTax[1];
-    }
-
-    /**
-     * @param string $gateway
-     * @return string
-     */
-    public function buildFeeName(string $gateway): string
-    {
-        return __($gateway, 'mollie-payments-for-woocommerce');
     }
 
     /**

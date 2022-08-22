@@ -10,7 +10,7 @@ use \WC_Order_Item_Fee;
 
 class GatewaySurchargeHandler
 {
-    protected $gatewayFeeLabel;
+    public $gatewayFeeLabel;
     protected $surcharge;
 
     /**
@@ -83,9 +83,8 @@ class GatewaySurchargeHandler
         $amount = $this->surcharge->calculateFeeAmountOrder($order, $gatewaySettings);
 
         if ($amount > 0) {
-            $surchargeName = $this->surcharge->buildFeeName($this->gatewayFeeLabel);
             $this->orderRemoveFee($order);
-            $this->orderAddFee($order, $amount, $surchargeName);
+            $this->orderAddFee($order, $amount, $this->gatewayFeeLabel);
             $order->calculate_totals();
         }
         return $order;
@@ -114,15 +113,14 @@ class GatewaySurchargeHandler
         }
 
         $amount = $this->surcharge->calculateFeeAmountOrder($order, $gatewaySettings);
-        $surchargeName = $this->surcharge->buildFeeName($this->gatewayFeeLabel);
 
         if ($amount > 0) {
-            $this->orderAddFee($order, $amount, $surchargeName);
+            $this->orderAddFee($order, $amount, $this->gatewayFeeLabel);
             $order->calculate_totals();
             $newTotal = $order->get_total();
             $data = [
                 'amount' => $amount,
-                'name' => $surchargeName,
+                'name' => $this->gatewayFeeLabel,
                 'currency' => get_woocommerce_currency_symbol(),
                 'newTotal' => $newTotal,
             ];
@@ -167,11 +165,10 @@ class GatewaySurchargeHandler
         }
         $feeAmount = (float) $this->surcharge->calculateFeeAmount($cart, $gatewaySettings);
         $feeAmountTaxed = $feeAmount + $cart->get_fee_tax();
-        $surchargeName = $this->surcharge->buildFeeName($this->gatewayFeeLabel);
         $newTotal = (float) $cart->get_total('edit');
         $data = [
                 'amount' => $feeAmountTaxed,
-                'name' => $surchargeName,
+                'name' => $this->gatewayFeeLabel,
                 'currency' => get_woocommerce_currency_symbol(),
                 'newTotal' => $newTotal,
         ];
@@ -207,10 +204,7 @@ class GatewaySurchargeHandler
         }
 
         $amount = $this->surcharge->calculateFeeAmount($cart, $gatewaySettings);
-
-        $surchargeName = $this->surcharge->buildFeeName($this->gatewayFeeLabel);
-
-        $cart->add_fee($surchargeName, $amount, true, 'standard');
+        $cart->add_fee($this->gatewayFeeLabel, $amount, true, 'standard');
     }
 
     protected function chosenGateway()
@@ -303,7 +297,7 @@ class GatewaySurchargeHandler
     {
         return get_option(
             'mollie-payments-for-woocommerce_gatewayFeeLabel',
-            __(Surcharge::DEFAULT_FEE_LABEL, 'mollie-payments-for-woocommerce')
+            $this->surcharge->defaultFeeLabel()
         );
     }
 }

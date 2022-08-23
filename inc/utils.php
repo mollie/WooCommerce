@@ -193,7 +193,9 @@ function mollieDeleteWPTranslationFiles()
 {
     WP_Filesystem();
     global $wp_filesystem;
-
+    if (!$wp_filesystem) {
+        return;
+    }
     $remote_destination = $wp_filesystem->find_folder(WP_LANG_DIR);
     if (!$wp_filesystem->exists($remote_destination)) {
         return;

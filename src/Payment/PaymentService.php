@@ -145,7 +145,6 @@ class PaymentService
         return ['result' => 'failure'];
     }
 
-
     /**
      * @param WC_Order $order
      * @param PaymentMethodI $paymentMethod
@@ -161,7 +160,7 @@ class PaymentService
         $gatewayHasSurcharge = $amount !== 0;
         $gatewayFeeLabel = get_option(
             'mollie-payments-for-woocommerce_gatewayFeeLabel',
-            __(Surcharge::DEFAULT_FEE_LABEL, 'mollie-payments-for-woocommerce')
+            $surcharge->defaultFeeLabel()
         );
         $surchargeName = $surcharge->buildFeeName($gatewayFeeLabel);
 

@@ -20,6 +20,10 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
      */
     public $config = [];
     /**
+     * @var array
+     */
+    public $settings = [];
+    /**
      * @var IconFactory
      */
     protected $iconFactory;
@@ -44,11 +48,12 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     ) {
 
         $this->id = $this->getIdFromConfig();
-        $this->config = $this->getConfig();
         $this->iconFactory = $iconFactory;
         $this->settingsHelper = $settingsHelper;
         $this->paymentFieldsService = $paymentFieldsService;
         $this->surcharge = $surcharge;
+        $this->config = $this->getConfig();
+        $this->settings = $this->getSettings();
     }
 
     /**

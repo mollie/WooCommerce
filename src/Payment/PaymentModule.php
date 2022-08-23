@@ -115,15 +115,15 @@ class PaymentModule implements ServiceModule, ExecutableModule
             9,
             2
         );
-
-       add_action(
+        $paymentMethods = $container->get('gateway.paymentMethods');
+        add_action(
             'init',
-            [$this, 'handleExpiryDateCancelation'],
+            function () use ($paymentMethods) {
+                $this->handleExpiryDateCancelation($paymentMethods);
+            },
             10,
             2
         );
-
-
         add_action(
             OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS,
             [$this, 'addOrderNoteForRefundCreated'],
@@ -465,18 +465,22 @@ class PaymentModule implements ServiceModule, ExecutableModule
         return;
     }
 
-    public function handleExpiryDateCancelation()
+    /**
+     * Add/remove scheduled action to cancel orders on expiration date
+     * @param $paymentMethods
+     * @return void
+     */
+    public function handleExpiryDateCancelation($paymentMethods)
     {
-        if(!mollieWooCommercIsExpiryDateEnabled()){
-            as_unschedule_action( 'mollie_woocommerce_cancel_unpaid_orders' );
+        if (!$this->IsExpiryDateEnabled($paymentMethods)) {
+            as_unschedule_action('mollie_woocommerce_cancel_unpaid_orders');
             return;
         }
         $canSchedule = function_exists('as_schedule_single_action');
         if ($canSchedule) {
-            if ( false === as_next_scheduled_action( 'mollie_woocommerce_cancel_unpaid_orders' ) ) {
-                as_schedule_recurring_action( time(), 600, 'mollie_woocommerce_cancel_unpaid_orders');
+            if (false === as_next_scheduled_action('mollie_woocommerce_cancel_unpaid_orders')) {
+                as_schedule_recurring_action(time(), 600, 'mollie_woocommerce_cancel_unpaid_orders');
             }
-
             add_action(
                 'mollie_woocommerce_cancel_unpaid_orders',
                 [$this, 'cancelOrderOnExpiryDate'],
@@ -484,6 +488,26 @@ class PaymentModule implements ServiceModule, ExecutableModule
                 2
             );
         }
+    }
+
+    /**
+     * Check if there is any payment method that has the expiry date enabled
+     * @param $paymentMethods
+     * @return bool
+     */
+    public function IsExpiryDateEnabled($paymentMethods): bool
+    {
+        foreach ($paymentMethods as $paymentMethod) {
+            $optionName = "mollie_wc_gateway_{$paymentMethod->getProperty('id')}_settings";
+            $option = get_option($optionName, false);
+            if ($option && $option['enabled'] !== 'yes') {
+                continue;
+            }
+            if (!empty($option["activate_expiry_days_setting"]) && $option["activate_expiry_days_setting"] === 'yes') {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

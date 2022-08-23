@@ -145,12 +145,12 @@ function initialize()
         $properties = PluginProperties::new(__FILE__);
         $bootstrap = Package::new($properties);
         $modules = [
-            new ActivationModule(__FILE__, $properties->version()),
-            new LogModule('mollie-payments-for-woocommerce-'),
+            new ActivationModule(__FILE__),
             new NoticeModule(),
             new SharedModule(),
             new SDKModule(),
             new SettingsModule(),
+            new LogModule('mollie-payments-for-woocommerce-'),
             new AssetsModule(),
             new GatewayModule(),
             new VoucherModule(),

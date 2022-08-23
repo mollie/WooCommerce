@@ -104,6 +104,7 @@ class MollieGeneralSettings
                     'Enable custom logo',
                     'mollie-payments-for-woocommerce'
                 ),
+                'default' => 'no',
                 'type' => 'checkbox',
                 'label' => __(
                     'Enable the feature to add a custom logo for this gateway. This feature will have precedence over other logo options.',
@@ -115,6 +116,7 @@ class MollieGeneralSettings
                     'Upload custom logo',
                     'mollie-payments-for-woocommerce'
                 ),
+                'default' => null,
                 'type' => 'file',
                 'custom_attributes' => ['accept' => '.png, .jpeg, .svg, image/png, image/jpeg'],
                 'description' => sprintf(

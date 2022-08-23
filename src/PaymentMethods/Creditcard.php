@@ -15,7 +15,7 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
             'id' => 'creditcard',
             'defaultTitle' => __('Credit card', 'mollie-payments-for-woocommerce'),
             'settingsDescription' => '',
-            'defaultDescription' => __('', 'mollie-payments-for-woocommerce'),
+            'defaultDescription' => '',
             'paymentFields' => $this->hasPaymentFields(),
             'instructions' => true,
             'supports' => [
@@ -38,7 +38,7 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
 
     public function hasPaymentFields(): bool
     {
-        $componentsEnabled = $this->getProperty('mollie_components_enabled');
+        $componentsEnabled = $this->settings['mollie_components_enabled'] ?? false;
         return $componentsEnabled ? $componentsEnabled === 'yes' : $this->defaultComponentsEnabled() === 'yes';
     }
 

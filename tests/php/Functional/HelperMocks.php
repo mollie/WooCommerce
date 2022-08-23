@@ -8,6 +8,7 @@ use Mollie\Api\MollieApiClient;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\OrderInstructionsService;
+use Mollie\WooCommerce\Payment\OrderLines;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\PaymentService;
 use Mollie\WooCommerce\PaymentMethods\Ideal;
@@ -50,7 +51,8 @@ class HelperMocks extends TestCase
             $this->apiHelper($apiClientMock),
             $this->settingsHelper(),
             $this->pluginId(),
-            $this->loggerMock()
+            $this->loggerMock(),
+            $this->orderLines($apiClientMock)
         );
     }
 
@@ -86,6 +88,12 @@ class HelperMocks extends TestCase
             [
 
             ]
+        );
+    }
+    public function orderLines($apiClientMock){
+        return new OrderLines(
+            $this->dataHelper($apiClientMock),
+            $this->pluginId()
         );
     }
 

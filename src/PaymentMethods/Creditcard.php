@@ -38,20 +38,8 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
 
     public function hasPaymentFields(): bool
     {
-        $componentsEnabled = $this->getProperty('mollie_components_enabled');
-        return $this->hasProperty('mollie_components_enabled') ? $componentsEnabled === 'yes' : $this->defaultComponentsEnabled() === 'yes';
-    }
-
-    /**
-     * Default values for the initial settings saved
-     *
-     * @return array
-     */
-    public function defaultSettings(): array
-    {
-        $settings = parent::defaultSettings();
-        $settings['mollie_components_enabled'] = $this->defaultComponentsEnabled();
-        return $settings;
+        $componentsEnabled = $this->settings['mollie_components_enabled'] ?? false;
+        return $componentsEnabled ? $componentsEnabled === 'yes' : $this->defaultComponentsEnabled() === 'yes';
     }
 
     protected function includeMollieComponentsFields($generalFormFields)

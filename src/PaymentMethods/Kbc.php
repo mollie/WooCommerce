@@ -41,7 +41,7 @@ class Kbc extends AbstractPaymentMethod implements PaymentMethodI
                         'If you disable this, a dropdown with various KBC/CBC banks will not be shown in the WooCommerce checkout, so users will select a KBC/CBC bank on the Mollie payment page after checkout.',
                         'mollie-payments-for-woocommerce'
                     ),
-                    $this->getProperty('defaultTitle')
+                    $this->getConfig()['defaultTitle']
                 ),
                 'default' => self::DEFAULT_ISSUERS_DROPDOWN,
             ],
@@ -56,23 +56,11 @@ class Kbc extends AbstractPaymentMethod implements PaymentMethodI
                         'This text will be displayed as the first option in the KBC/CBC issuers drop down, if nothing is entered, "Select your bank" will be shown. Only if the above \'\'Show KBC/CBC banks dropdown\' is enabled.',
                         'mollie-payments-for-woocommerce'
                     ),
-                    $this->getProperty('defaultTitle')
+                    $this->getConfig()['defaultTitle']
                 ),
                 'default' => self::DEFAULT_ISSUERS_EMPTY,
             ],
         ];
         return array_merge($generalFormFields, $paymentMethodFormFieds);
-    }
-    /**
-     * Default values for the initial settings saved
-     *
-     * @return array
-     */
-    public function defaultSettings(): array
-    {
-        $settings = parent::defaultSettings();
-        $settings['issuers_dropdown_shown'] = self::DEFAULT_ISSUERS_DROPDOWN;
-        $settings['issuers_empty_option'] = self::DEFAULT_ISSUERS_EMPTY;
-        return $settings;
     }
 }

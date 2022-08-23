@@ -41,7 +41,7 @@ class Ideal extends AbstractPaymentMethod implements PaymentMethodI
                          so users will select a iDEAL bank on the Mollie payment page after checkout.',
                         'mollie-payments-for-woocommerce'
                     ),
-                    $this->getProperty('defaultTitle')
+                    $this->getConfig()['defaultTitle']
                 ),
                 'default' => self::DEFAULT_ISSUERS_DROPDOWN,
             ],
@@ -55,24 +55,11 @@ class Ideal extends AbstractPaymentMethod implements PaymentMethodI
                          \'Show iDEAL banks dropdown\' is enabled.',
                         'mollie-payments-for-woocommerce'
                     ),
-                    $this->getProperty('defaultTitle')
+                    $this->getConfig()['defaultTitle']
                 ),
                 'default' => self::DEFAULT_ISSUERS_EMPTY,
             ],
         ];
         return array_merge($generalFormFields, $paymentMethodFormFieds);
-    }
-
-    /**
-     * Default values for the initial settings saved
-     *
-     * @return array
-     */
-    public function defaultSettings(): array
-    {
-        $settings = parent::defaultSettings();
-        $settings['issuers_dropdown_shown'] = self::DEFAULT_ISSUERS_DROPDOWN;
-        $settings['issuers_empty_option'] = self::DEFAULT_ISSUERS_EMPTY;
-        return $settings;
     }
 }

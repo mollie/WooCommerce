@@ -332,6 +332,18 @@ class Surcharge
             default:
                 $feeText = false;
         }
+        return $this->maybeAddTaxString($feeText);
+    }
+
+    /**
+     * @param string $feeText
+     * @return string
+     */
+    protected function maybeAddTaxString(string $feeText): string
+    {
+        if (wc_tax_enabled()) {
+            $feeText .= __(' (incl. VAT)', 'mollie-payments-for-woocommerce');
+        }
         return $feeText;
     }
 }

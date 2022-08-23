@@ -466,7 +466,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         }
 
         foreach ($paymentMethods as $paymentMethod) {
-            $paymentMethodId = $paymentMethod->getProperty('id');
+            $paymentMethodId = $paymentMethod->getIdFromConfig();
             $isSepa = $paymentMethod->getProperty('SEPA');
             $key = 'mollie_wc_gateway_' . $paymentMethodId;
             if ($isSepa) {
@@ -538,6 +538,10 @@ class GatewayModule implements ServiceModule, ExecutableModule
         assert($surchargeService instanceof Surcharge);
         $paymentFieldsService = $container->get(PaymentFieldsService::class);
         assert($paymentFieldsService instanceof PaymentFieldsService);
+        //I need DirectDebit to create SEPA gateway
+        if (!in_array('directdebit', $paymentMethodsNames, true)) {
+            $paymentMethodsNames[] = 'directdebit';
+        }
         foreach ($paymentMethodsNames as $paymentMethodName) {
             $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . ucfirst($paymentMethodName);
             $paymentMethod = new $paymentMethodClassName(
@@ -546,7 +550,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $paymentFieldsService,
                 $surchargeService
             );
-            $paymentMethodId = $paymentMethod->getProperty('id');
+            $paymentMethodId = $paymentMethod->getIdFromConfig();
             $paymentMethods[$paymentMethodId] = $paymentMethod;
         }
 

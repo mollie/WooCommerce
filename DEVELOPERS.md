@@ -33,15 +33,3 @@ To start a sharing session, simply run
 bin/ddev-share
 ```
 
-
-## Using ngrok
-You will often need to test and debug webhooks which require your development environment to be reachable from the outside
-DDEV provides integration with `ngrok` via the `ddev share` command. Unfortunately, this is not very helpful with WordPress
-since it needs correct URLs in the database.
-Therefore, we have a wrapper command that sets up & restores the URLs in the database before and after a sharing session.
-
-To start a sharing session, simply run 
-```shell
-bin/ddev-share
-```
-

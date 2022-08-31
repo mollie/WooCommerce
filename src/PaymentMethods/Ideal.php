@@ -6,13 +6,16 @@ namespace Mollie\WooCommerce\PaymentMethods;
 
 class Ideal extends AbstractPaymentMethod implements PaymentMethodI
 {
+    protected const DEFAULT_ISSUERS_DROPDOWN = 'yes';
+    protected const DEFAULT_ISSUERS_EMPTY = 'Select your bank';
+
     public function getConfig(): array
     {
         return [
             'id' => 'ideal',
             'defaultTitle' => __('iDEAL', 'mollie-payments-for-woocommerce'),
             'settingsDescription' => '',
-            'defaultDescription' => __('Select your bank', 'mollie-payments-for-woocommerce'),
+            'defaultDescription' => __(self::DEFAULT_ISSUERS_EMPTY, 'mollie-payments-for-woocommerce'),
             'paymentFields' => true,
             'instructions' => true,
             'supports' => [
@@ -38,9 +41,9 @@ class Ideal extends AbstractPaymentMethod implements PaymentMethodI
                          so users will select a iDEAL bank on the Mollie payment page after checkout.',
                         'mollie-payments-for-woocommerce'
                     ),
-                    $this->getProperty('defaultTitle')
+                    $this->getConfig()['defaultTitle']
                 ),
-                'default' => 'yes',
+                'default' => self::DEFAULT_ISSUERS_DROPDOWN,
             ],
             'issuers_empty_option' => [
                 'title' => __('Issuers empty option', 'mollie-payments-for-woocommerce'),
@@ -52,9 +55,9 @@ class Ideal extends AbstractPaymentMethod implements PaymentMethodI
                          \'Show iDEAL banks dropdown\' is enabled.',
                         'mollie-payments-for-woocommerce'
                     ),
-                    $this->getProperty('defaultTitle')
+                    $this->getConfig()['defaultTitle']
                 ),
-                'default' => 'Select your bank',
+                'default' => self::DEFAULT_ISSUERS_EMPTY,
             ],
         ];
         return array_merge($generalFormFields, $paymentMethodFormFieds);

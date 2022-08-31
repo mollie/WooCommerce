@@ -1634,10 +1634,9 @@ msgstr "Überweisung"
 #: src/Mollie/WC/Gateway/DirectDebit.php:80 src/Mollie/WC/Gateway/Ideal.php:124
 #: src/Mollie/WC/Gateway/Sofort.php:64
 msgid ""
-"Payment completed by <strong>%s</strong> (IBAN (last 4 digits): %s, BIC: %s)"
+"Payment completed by <strong>%1$s</strong> (IBAN (last 4 digits): %2$s, BIC: %3$s)"
 msgstr ""
-"Zahlung durch <strong>%s</strong> erfolgt (IBAN (letzte 4 Ziffern): %s, BIC: "
-"%s)"
+"Zahlung durch <strong>%1$s</strong> erfolgt (IBAN (letzte 4 Ziffern): %2$s, BIC: %3$s"
 
 #: build/src/Mollie/WC/Gateway/BankTransfer.php:198
 #: src/Mollie/WC/Gateway/BankTransfer.php:198

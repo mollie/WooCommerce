@@ -195,11 +195,13 @@ class MollieSettingsPage extends WC_Settings_Page
                 'desc' => sprintf(
                 /* translators: Placeholder 1: API key mode (live or test). The surrounding %s's Will be replaced by a link to the Mollie profile */
                     __(
-                        'The API key is used to connect to Mollie. You can find your <strong>%1$s</strong> API key in your %2$sMollie profile%3$s',
+                        'The API key is used to connect to Mollie. You can find your <strong>%1$s</strong> API key in your %2$sMollie account%3$s',
                         'mollie-payments-for-woocommerce'
                     ),
                     'live',
-                    '<a href="https://my.mollie.com/dashboard/settings/profiles?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">',
+
+                    '<a href="https://my.mollie.com/dashboard/developers/api-keys?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">',
+
                     '</a>'
                 ),
                 'css' => 'width: 350px',
@@ -226,11 +228,13 @@ class MollieSettingsPage extends WC_Settings_Page
                 'desc' => sprintf(
                 /* translators: Placeholder 1: API key mode (live or test). The surrounding %s's Will be replaced by a link to the Mollie profile */
                     __(
-                        'The API key is used to connect to Mollie. You can find your <strong>%1$s</strong> API key in your %2$sMollie profile%3$s',
+                        'The API key is used to connect to Mollie. You can find your <strong>%1$s</strong> API key in your %2$sMollie account%3$s',
                         'mollie-payments-for-woocommerce'
                     ),
                     'test',
-                    '<a href="https://my.mollie.com/dashboard/settings/profiles?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">',
+
+                    '<a href="https://my.mollie.com/dashboard/developers/api-keys?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">',
+
                     '</a>'
                 ),
                 'css' => 'width: 350px',
@@ -396,7 +400,7 @@ class MollieSettingsPage extends WC_Settings_Page
         $idealGateway = !empty($this->registeredGateways["mollie_wc_gateway_ideal"]) && $isIdealEnabled;
         $sepaGateway = !empty($this->registeredGateways["mollie_wc_gateway_directdebit"]) && $isSepaEnabled;
 
-        if ((class_exists('WC_Subscription')) && $idealGateway && !$sepaGateway) {
+        if ($idealGateway && !$sepaGateway) {
             $warning_message = __(
                 'You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL and/or other "first" payment methods.',
                 'mollie-payments-for-woocommerce'

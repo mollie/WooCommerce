@@ -222,7 +222,7 @@ class MollieSepaRecurringGateway extends MollieSubscriptionGateway
                     $payment
                 );
             } catch (ApiException $exception) {
-                $this->logger->log(LogLevel::DEBUG, $exception->getMessage());
+                $this->logger->debug($exception->getMessage());
                 return;
             }
 

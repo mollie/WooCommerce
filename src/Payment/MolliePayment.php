@@ -503,7 +503,7 @@ class MolliePayment extends MollieObject
         $newOrderStatus,
         $orderId
     ) {
-        if ($this->isOrderPaymentStartedByOtherGateway($order) || !$gateway) {
+        if ($this->isOrderPaymentStartedByOtherGateway($order) || ! is_a($gateway, MolliePaymentGateway::class)) {
             $this->informNotUpdatingStatus($orderId, $gateway->id, $order);
             return;
         }

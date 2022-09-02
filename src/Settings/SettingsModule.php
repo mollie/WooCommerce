@@ -167,9 +167,6 @@ class SettingsModule implements ServiceModule, ExecutableModule
             3
         );
 
-        // When page 'WooCommerce -> Checkout -> Checkout Options' is saved
-        add_action('woocommerce_settings_save_checkout', [$this->dataHelper, 'deleteTransients']);
-
         return true;
     }
 

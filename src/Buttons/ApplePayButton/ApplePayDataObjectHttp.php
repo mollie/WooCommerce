@@ -197,7 +197,7 @@ class ApplePayDataObjectHttp
     {
         foreach ($required as $requiredField) {
             if (!array_key_exists($requiredField, $data)) {
-                $this->logger->log( LogLevel::DEBUG,
+                $this->logger->debug( 
                     sprintf('ApplePay Data Error: Missing index %s', $requiredField)
                 );
 
@@ -205,7 +205,7 @@ class ApplePayDataObjectHttp
                 continue;
             }
             if (!$data[$requiredField]) {
-                $this->logger->log( LogLevel::DEBUG,
+                $this->logger->debug( 
                     sprintf('ApplePay Data Error: Missing value for %s', $requiredField)
                 );
                 $this->errors[]= ['errorCode' => 'unknown'];
@@ -299,7 +299,7 @@ class ApplePayDataObjectHttp
     ) {
         foreach ($required as $requiredField => $errorValue) {
             if (!array_key_exists($requiredField, $post)) {
-                $this->logger->log( LogLevel::DEBUG,
+                $this->logger->debug( 
                     sprintf('ApplePay Data Error: Missing index %s', $requiredField)
                 );
 
@@ -307,7 +307,7 @@ class ApplePayDataObjectHttp
                 continue;
             }
             if (!$post[$requiredField]) {
-                $this->logger->log( LogLevel::DEBUG,
+                $this->logger->debug( 
                     sprintf('ApplePay Data Error: Missing value for %s', $requiredField)
                 );
                 $this->errors[]

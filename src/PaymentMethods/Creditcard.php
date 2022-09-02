@@ -15,7 +15,7 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
             'id' => 'creditcard',
             'defaultTitle' => __('Credit card', 'mollie-payments-for-woocommerce'),
             'settingsDescription' => '',
-            'defaultDescription' => __('', 'mollie-payments-for-woocommerce'),
+            'defaultDescription' => '',
             'paymentFields' => $this->hasPaymentFields(),
             'instructions' => true,
             'supports' => [
@@ -38,7 +38,7 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
 
     public function hasPaymentFields(): bool
     {
-        $componentsEnabled = $this->getProperty('mollie_components_enabled');
+        $componentsEnabled = $this->settings['mollie_components_enabled'] ?? false;
         return $componentsEnabled ? $componentsEnabled === 'yes' : $this->defaultComponentsEnabled() === 'yes';
     }
 
@@ -51,7 +51,7 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
                 /* translators: Placeholder 1: Mollie Components.*/
                 'description' => sprintf(
                     __(
-                        'Use the Mollie Components for this Gateway. Read more about <a href="https://www.mollie.com/en/news/post/better-checkout-flows-with-mollie-components">%s</a> and how it improves your conversion.',
+                        'Use the Mollie Components for this Gateway. Read more about <a href="https://www.mollie.com/en/news/post/better-checkout-flows-with-mollie-components?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner">%s</a> and how it improves your conversion.',
                         'mollie-payments-for-woocommerce'
                     ),
                     __('Mollie Components', 'mollie-payments-for-woocommerce')

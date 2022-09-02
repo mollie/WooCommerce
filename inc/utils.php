@@ -170,24 +170,6 @@ function mollieWooCommerceIsMollieGateway($gateway)
     return false;
 }
 
-function mollieWooCommercIsExpiryDateEnabled()
-{
-    global $wpdb;
-    $option = 'mollie_wc_gateway_%_settings';
-    $gatewaySettings = $wpdb->get_results($wpdb->prepare("SELECT option_value FROM $wpdb->options WHERE option_name LIKE %s", $option));
-    $expiryDateEnabled = false;
-    foreach ($gatewaySettings as $gatewaySetting) {
-        $values = unserialize($gatewaySetting->option_value);
-        if ($values['enabled'] !== 'yes') {
-            continue;
-        }
-        if (!empty($values["activate_expiry_days_setting"]) && $values["activate_expiry_days_setting"] === 'yes') {
-            $expiryDateEnabled = true;
-        }
-    }
-    return $expiryDateEnabled;
-}
-
 /**
  * Format the value that is sent to Mollie's API
  * with the required number of decimals
@@ -211,7 +193,9 @@ function mollieDeleteWPTranslationFiles()
 {
     WP_Filesystem();
     global $wp_filesystem;
-
+    if (!$wp_filesystem) {
+        return;
+    }
     $remote_destination = $wp_filesystem->find_folder(WP_LANG_DIR);
     if (!$wp_filesystem->exists($remote_destination)) {
         return;

@@ -78,6 +78,10 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 }
                 return $enabledMethods;
             },
+            'gateway.isSDDGatewayEnabled' => static function (ContainerInterface $container): bool {
+                $enabledMethods = $container->get('gateway.paymentMethodsEnabledAtMollie');
+                return in_array('directdebit', $enabledMethods, true);
+            },
             IconFactory::class => static function (ContainerInterface $container): IconFactory {
                 $pluginUrl = $container->get('shared.plugin_url');
                 $pluginPath = $container->get('shared.plugin_path');

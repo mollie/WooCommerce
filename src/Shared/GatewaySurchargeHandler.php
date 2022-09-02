@@ -158,12 +158,12 @@ class GatewaySurchargeHandler
             wp_send_json_success($noSurchargeData);
             return;
         }
-        $cartAmount = $cart->get_subtotal() + $cart->get_subtotal_tax();
+        $cartAmount = (float) $cart->get_subtotal() + $cart->get_subtotal_tax();
         if ($this->surcharge->aboveMaxLimit($cartAmount, $gatewaySettings)) {
             wp_send_json_success($noSurchargeData);
             return;
         }
-        $feeAmount = (float) $this->surcharge->calculateFeeAmount($cart, $gatewaySettings);
+        $feeAmount = $this->surcharge->calculateFeeAmount($cart, $gatewaySettings);
         $feeAmountTaxed = $feeAmount + $cart->get_fee_tax();
         $newTotal = (float) $cart->get_total('edit');
         $data = [

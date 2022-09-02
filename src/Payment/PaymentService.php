@@ -154,7 +154,7 @@ class PaymentService
         $fees = $order->get_fees();
         $surcharge = $paymentMethod->surcharge();
         $gatewaySettings = $paymentMethod->getMergedProperties();
-        $totalAmount = $order->get_total();
+        $totalAmount = (float) $order->get_total();
         $aboveMaxLimit = $surcharge->aboveMaxLimit($totalAmount, $gatewaySettings);
         $amount = $aboveMaxLimit? 0 : $surcharge->calculateFeeAmountOrder($order, $gatewaySettings);
         $gatewayHasSurcharge = $amount !== 0;
@@ -162,7 +162,6 @@ class PaymentService
             'mollie-payments-for-woocommerce_gatewayFeeLabel',
             $surcharge->defaultFeeLabel()
         );
-        $surchargeName = $surcharge->buildFeeName($gatewayFeeLabel);
 
         $correctedFee = false;
         foreach ($fees as $fee) {
@@ -180,13 +179,13 @@ class PaymentService
                     continue;
                 }
                 $this->removeOrderFee($order, $feeId);
-                $this->orderAddFee($order, $amount, $surchargeName);
+                $this->orderAddFee($order, $amount, $gatewayFeeLabel);
                 $correctedFee = true;
             }
         }
         if (!$correctedFee) {
             if($gatewayHasSurcharge){
-                $this->orderAddFee($order, $amount, $surchargeName);
+                $this->orderAddFee($order, $amount, $gatewayFeeLabel);
             }
         }
         return $order;
@@ -349,7 +348,7 @@ class PaymentService
 
         // Create Mollie payment with customer id.
         try {
-            $this->logger->debug( 
+            $this->logger->debug(
                 'Creating payment object: type Order, first try creating a Mollie Order.'
             );
 
@@ -389,13 +388,13 @@ class PaymentService
                 || $order_payment_method === 'mollie_wc_gateway_sliceit'
                 || $order_payment_method === 'mollie_wc_gateway_klarnapaynow'
             ) {
-                $this->logger->debug( 
+                $this->logger->debug(
                     'Creating payment object: type Order, failed for Klarna payment, stopping process.'
                 );
                 throw $e;
             }
 
-            $this->logger->debug( 
+            $this->logger->debug(
                 'Creating payment object: type Order, first try failed: '
                 . $e->getMessage()
             );
@@ -405,14 +404,14 @@ class PaymentService
 
             try {
                 if ($e->getField() !== 'payment.customerId') {
-                    $this->logger->debug( 
+                    $this->logger->debug(
                         'Creating payment object: type Order, did not fail because of incorrect customerId, so trying Payment now.'
                     );
                     throw $e;
                 }
 
                 // Retry without customer id.
-                $this->logger->debug( 
+                $this->logger->debug(
                     'Creating payment object: type Order, second try, creating a Mollie Order without a customerId.'
                 );
                 $paymentObject = $this->apiHelper->getApiClient(
@@ -513,7 +512,7 @@ class PaymentService
         // PROCESS REGULAR PAYMENT AS MOLLIE ORDER
         //
         if ($molliePaymentType === self::PAYMENT_METHOD_TYPE_ORDER) {
-            $this->logger->debug( 
+            $this->logger->debug(
                 "{$this->gateway->id}: Create Mollie payment object for order {$orderId}",
                 [true]
             );
@@ -535,7 +534,7 @@ class PaymentService
         //
 
         if ($molliePaymentType === self::PAYMENT_METHOD_TYPE_PAYMENT) {
-            $this->logger->debug( 
+            $this->logger->debug(
                 'Creating payment object: type Payment, creating a Payment.'
             );
 

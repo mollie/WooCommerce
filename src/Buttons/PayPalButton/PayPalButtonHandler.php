@@ -51,7 +51,7 @@ class PayPalButtonHandler
                     function () {
                         $cart = WC()->cart;
                         foreach ($cart->get_cart_contents() as $product){
-                            if($product['data']->is_type('subscription')){
+                            if($product['data']->is_type('subscription') || $product['data'] instanceof \WC_Product_Subscription_Variation){
                                 return;
                             }
                         }

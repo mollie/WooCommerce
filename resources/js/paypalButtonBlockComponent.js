@@ -35,7 +35,7 @@ import {ajaxCallToOrder} from "./paypalButtonUtils";
                 return
             }
             ajaxCallToOrder(ajaxUrl)
-        },500);
+        },3000);
     }
 )
 (

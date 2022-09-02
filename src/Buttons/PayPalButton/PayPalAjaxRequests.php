@@ -135,8 +135,6 @@ class PayPalAjaxRequests
     {
         $payPalRequestDataObject = $this->payPalDataObjectHttp();
         $payPalRequestDataObject->orderData($_POST, 'cart');
-        $this->logger->debug('in create order from cart');
-        $this->logger->debug('object', [$payPalRequestDataObject]);
 
         if (!$this->isNonceValid($payPalRequestDataObject)) {
             return;
@@ -268,7 +266,7 @@ class PayPalAjaxRequests
             $PayPalRequestDataObject->nonce,
             'mollie_PayPal_button'
         );
-        $this->logger->debug('ISNONCEVALID' . $isNonceValid);
+
         return $isNonceValid;
     }
 }

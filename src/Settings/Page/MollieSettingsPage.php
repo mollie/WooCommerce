@@ -291,6 +291,10 @@ class MollieSettingsPage extends WC_Settings_Page
         ) {
             $cleaner = $this->settingsHelper->cleanDb();
             $cleaner->cleanAll();
+            //set default settings
+            foreach ($this->paymentMethods as $paymentMethod) {
+                $paymentMethod->getSettings();
+            }
         }
 
         $iconAvailable = ' <span style="color: green; cursor: help;" title="' . __(
@@ -333,6 +337,13 @@ class MollieSettingsPage extends WC_Settings_Page
 
         $mollieGateways = $this->registeredGateways;//this are the gateways enabled
         $paymentMethods = $this->paymentMethods;
+        if (empty($mollieGateways)) {
+            $content .= '<li style="float: left; width: 32%; height:32px;">';
+            $content .= __("No payment methods available", "mollie-payments-for-woocommerce");
+            $content .= '</li></ul></div>';
+            $content .= '<div class="clear"></div>';
+            return $content;
+        }
         foreach ($paymentMethods as $paymentMethod) {
             $paymentMethodId = $paymentMethod->getProperty('id');
             $gatewayKey = 'mollie_wc_gateway_' . $paymentMethodId;

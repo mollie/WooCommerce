@@ -1917,6 +1917,10 @@ msgstr ""
 msgid "Refresh"
 msgstr ""
 
+#: src/Settings/Page/MollieSettingsPage.php:342
+msgid "No payment methods available"
+msgstr ""
+
 #: build/src/Mollie/WC/Helper/Settings.php:591
 #: src/Mollie/WC/Helper/Settings.php:591
 msgid "Edit"

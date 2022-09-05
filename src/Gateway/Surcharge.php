@@ -332,7 +332,7 @@ class Surcharge
             default:
                 $feeText = false;
         }
-        return $this->maybeAddTaxString($feeText);
+        return $feeText ? $this->maybeAddTaxString($feeText) : false;
     }
 
     /**

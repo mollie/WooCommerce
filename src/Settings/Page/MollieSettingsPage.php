@@ -453,13 +453,8 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     protected function warnAboutRequiredCheckoutFieldForKlarna($content)
     {
-        $woocommerceKlarnapaylaterGateway = !empty($this->registeredGateways["mollie_wc_gateway_klarnapaylater"]) && $this->paymentMethods["klarnapaylater"]->getProperty('enabled') === 'yes';
-        $woocommerceKlarnasliceitGateway = !empty($this->registeredGateways["mollie_wc_gateway_klarnasliceit"]) && $this->paymentMethods["klarnasliceit"]->getProperty('enabled') === 'yes';
-        $woocommerceKlarnapaynowGateway = !empty($this->registeredGateways["mollie_wc_gateway_klarnapaynow"]) && $this->paymentMethods["klarnapaynow"]->getProperty('enabled') === 'yes';
-
-        if (
-            $woocommerceKlarnapaylaterGateway || $woocommerceKlarnasliceitGateway || $woocommerceKlarnapaynowGateway
-        ) {
+        $isKlarnaEnabled = $this->isKlarnaEnabled();
+        if ($isKlarnaEnabled) {
             $content .= '<div class="notice notice-warning is-dismissible"><p>';
             $content .= sprintf(
             /* translators: Placeholder 1: Opening link tag. Placeholder 2: Closing link tag. Placeholder 3: Opening link tag. Placeholder 4: Closing link tag. */
@@ -722,5 +717,25 @@ class MollieSettingsPage extends WC_Settings_Page
             'woocommerce_get_sections_' . $this->id,
             $sections
         );
+    }
+
+    /**
+     * @return bool
+     */
+    protected function isKlarnaEnabled(): bool
+    {
+        $klarnaGateways = ['klarnapaylater', 'klarnasliceit', 'klarnapaynow'];
+        $isKlarnaEnabled = false;
+        foreach ($klarnaGateways as $klarnaGateway) {
+            if (
+                array_key_exists('mollie_wc_gateway_' . $klarnaGateway, $this->registeredGateways)
+                && array_key_exists($klarnaGateway, $this->paymentMethods)
+                && $this->paymentMethods[$klarnaGateway]->getProperty('enabled') === 'yes'
+            ) {
+                $isKlarnaEnabled = true;
+                break;
+            }
+        }
+        return $isKlarnaEnabled;
     }
 }

@@ -132,14 +132,14 @@ class GatewaySurchargeHandler
     {
         $gateway = $this->canProcessGateway();
         $cart = WC()->cart;
+        $gatewaySettings = $this->gatewaySettings($gateway);
+        $cart->calculate_totals();
         $noSurchargeData = [
                 'amount' => false,
                 'name' => '',
                 'currency' => get_woocommerce_currency_symbol(),
                 'newTotal' => $cart->get_total(),
         ];
-        $gatewaySettings = $this->gatewaySettings($gateway);
-        $cart->calculate_totals();
         if (!$gatewaySettings) {
             wp_send_json_success($noSurchargeData);
             return;

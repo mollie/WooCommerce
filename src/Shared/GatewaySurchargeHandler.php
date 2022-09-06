@@ -158,7 +158,7 @@ class GatewaySurchargeHandler
             wp_send_json_success($noSurchargeData);
             return;
         }
-        $cartAmount = (float) $cart->get_subtotal() + $cart->get_subtotal_tax();
+        $cartAmount = (float) $cart->get_total('edit');
         if ($this->surcharge->aboveMaxLimit($cartAmount, $gatewaySettings)) {
             wp_send_json_success($noSurchargeData);
             return;

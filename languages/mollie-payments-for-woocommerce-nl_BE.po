@@ -1486,20 +1486,20 @@ msgstr " Restant: %1$s %2$s %3$s."
 #. translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency.
 #: build/src/Mollie/WC/Gateway/Abstract.php:2580
 #: src/Mollie/WC/Gateway/Abstract.php:2580
-msgid "A + %1s %2s fee might apply"
-msgstr "A + %1s %2s prijstoeslag zou van toepassing kunnen zijn"
+msgid " + %1$s %2$s fee might apply"
+msgstr " + %1$s %2$s prijstoeslag zou van toepassing kunnen zijn"
 
 #. translators: Placeholder 1: Fee amount tag.
 #: build/src/Mollie/WC/Gateway/Abstract.php:2590
 #: src/Mollie/WC/Gateway/Abstract.php:2590
-msgid "A + %1s%% fee might apply"
-msgstr "A + %1s%% prijstoeslag zou van toepassing kunnen zijn"
+msgid " + %1$s%% fee might apply"
+msgstr " + %1$s%% prijstoeslag zou van toepassing kunnen zijn"
 
 #. translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency. Placeholder 3: Percentage amount.
 #: build/src/Mollie/WC/Gateway/Abstract.php:2607
 #: src/Mollie/WC/Gateway/Abstract.php:2607
-msgid "A + %1s %2s + %3s%% fee might apply"
-msgstr "A + %1s %2s + %3s%% prijstoeslag zou van toepassing kunnen zijn"
+msgid " + %1$s %2$s + %3$s%% fee might apply"
+msgstr " + %1$s %2$s + %3$s%%% prijstoeslag zou van toepassing kunnen zijn"
 
 #: build/src/Mollie/WC/Gateway/Abstract.php:2646
 #: src/Mollie/WC/Gateway/Abstract.php:2646

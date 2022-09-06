@@ -59,7 +59,7 @@ class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
             'id' => 'giftcard',
             'defaultTitle' => __('Gift cards', 'mollie-payments-for-woocommerce'),
             'settingsDescription' => '',
-            'defaultDescription' => __(self::DEFAULT_ISSUERS_EMPTY, 'mollie-payments-for-woocommerce'),
+            'defaultDescription' => __('Select your gift card', 'mollie-payments-for-woocommerce'),
             'paymentFields' => true,
             'instructions' => false,
             'supports' => [
@@ -102,7 +102,7 @@ class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
                     ),
                     $this->getConfig()['defaultTitle']
                 ),
-                'default' => self::DEFAULT_ISSUERS_EMPTY,
+                'default' => __('Select your gift card', 'mollie-payments-for-woocommerce'),
             ],
         ];
         return array_merge($generalFormFields, $paymentMethodFormFieds);

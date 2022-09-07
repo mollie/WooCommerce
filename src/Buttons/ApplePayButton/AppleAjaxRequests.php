@@ -528,7 +528,7 @@ class AppleAjaxRequests
         $surcharge = new Surcharge();
         $surchargeLabel = get_option(
             'mollie-payments-for-woocommerce_gatewayFeeLabel',
-            __(Surcharge::DEFAULT_FEE_LABEL, 'mollie-payments-for-woocommerce')
+            $surcharge->defaultFeeLabel()
         );
         $settings = get_option('mollie_wc_gateway_applepay_settings', false);
 

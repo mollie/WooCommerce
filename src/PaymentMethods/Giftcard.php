@@ -6,6 +6,8 @@ namespace Mollie\WooCommerce\PaymentMethods;
 
 class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
 {
+    protected const DEFAULT_ISSUERS_DROPDOWN = 'yes';
+    protected const DEFAULT_ISSUERS_EMPTY = 'Select your gift card';
     /**
      * Method to print the giftcard payment details on debug and order note
      *
@@ -83,9 +85,9 @@ class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
                         'If you disable this, a dropdown with various gift cards will not be shown in the WooCommerce checkout, so users will select a gift card on the Mollie payment page after checkout.',
                         'mollie-payments-for-woocommerce'
                     ),
-                    $this->getProperty('defaultTitle')
+                    $this->getConfig()['defaultTitle']
                 ),
-                'default' => 'yes',
+                'default' => self::DEFAULT_ISSUERS_DROPDOWN,
             ],
             'issuers_empty_option' => [
                 'title' => __(
@@ -98,9 +100,9 @@ class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
                         "This text will be displayed as the first option in the gift card dropdown, but only if the above 'Show gift cards dropdown' is enabled.",
                         'mollie-payments-for-woocommerce'
                     ),
-                    $this->getProperty('defaultTitle')
+                    $this->getConfig()['defaultTitle']
                 ),
-                'default' => '',
+                'default' => __('Select your gift card', 'mollie-payments-for-woocommerce'),
             ],
         ];
         return array_merge($generalFormFields, $paymentMethodFormFieds);

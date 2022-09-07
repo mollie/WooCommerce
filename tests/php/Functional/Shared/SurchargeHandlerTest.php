@@ -51,6 +51,7 @@ class SurchargeHandlerTest extends TestCase
 
         $testee->gatewayFeeLabel = 'custom label';
         expect('mollieWooCommerceIsCheckoutContext')->andReturn(true);
+        expect('wc_tax_enabled')->andReturn(false);
         expect('WC')->andReturn($this->wooCommerce());
         expect('get_option')->andReturn(
             $this->helperMocks->paymentMethodSettings(
@@ -104,6 +105,7 @@ class SurchargeHandlerTest extends TestCase
         $testee->expects($this->once())
             ->method('canProcessGateway')
             ->willReturn('mollie_wc_gateway_ideal');
+        expect('wc_tax_enabled')->andReturn(false);
         //this method uses all woo functions outside our scope
         $testee->expects($this->once())
             ->method('orderRemoveFee');

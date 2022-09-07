@@ -68,6 +68,8 @@
 
         if (isVariation) {
             jQuery('.single_variation_wrap').on('show_variation', function (event, variation) {
+                productId = ''
+                fadeButton();
                 // Fired when the user selects all the required dropdowns / attributes
                 // and a final variation is selected / shown
                 if (variation.is_virtual && variation.variation_id) {

@@ -1485,20 +1485,20 @@ msgstr " Restant: %1$s %2$s %3$s."
 #. translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency.
 #: build/src/Mollie/WC/Gateway/Abstract.php:2580
 #: src/Mollie/WC/Gateway/Abstract.php:2580
-msgid "A + %1s %2s fee might apply"
-msgstr "A + %1s %2s prijstoeslag zou van toepassing kunnen zijn"
+msgid " + %1$s %2$s fee might apply"
+msgstr " + %1$s %2$s prijstoeslag zou van toepassing kunnen zijn"
 
 #. translators: Placeholder 1: Fee amount tag.
 #: build/src/Mollie/WC/Gateway/Abstract.php:2590
 #: src/Mollie/WC/Gateway/Abstract.php:2590
-msgid "A + %1s%% fee might apply"
-msgstr "A + %1s%% prijstoeslag zou van toepassing kunnen zijn"
+msgid " + %1$s%% fee might apply"
+msgstr " + %1$s%% prijstoeslag zou van toepassing kunnen zijn"
 
 #. translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency. Placeholder 3: Percentage amount.
 #: build/src/Mollie/WC/Gateway/Abstract.php:2607
 #: src/Mollie/WC/Gateway/Abstract.php:2607
-msgid "A + %1s %2s + %3s%% fee might apply"
-msgstr "A + %1s %2s + %3s%% prijstoeslag zou van toepassing kunnen zijn"
+msgid " + %1$s %2$s + %3$s%% fee might apply"
+msgstr " + %1$s %2$s + %3$s%%% prijstoeslag zou van toepassing kunnen zijn"
 
 #: build/src/Mollie/WC/Gateway/Abstract.php:2646
 #: src/Mollie/WC/Gateway/Abstract.php:2646
@@ -1623,10 +1623,9 @@ msgstr "Bankoverdracht"
 #: src/Mollie/WC/Gateway/DirectDebit.php:80 src/Mollie/WC/Gateway/Ideal.php:124
 #: src/Mollie/WC/Gateway/Sofort.php:64
 msgid ""
-"Payment completed by <strong>%s</strong> (IBAN (last 4 digits): %s, BIC: %s)"
+"Payment completed by <strong>%1$s</strong> (IBAN (last 4 digits): %2$s, BIC: %3$s)"
 msgstr ""
-"Betaling voltooid door <strong>%s</strong> (IBAN (ten minste 4 cijfers): %s, "
-"BIC: %s)"
+"Betaling voltooid door <strong>%1$s</strong> (IBAN (ten minste 4 cijfers): %2$s, BIC: %3$s)"
 
 #: build/src/Mollie/WC/Gateway/BankTransfer.php:198
 #: src/Mollie/WC/Gateway/BankTransfer.php:198

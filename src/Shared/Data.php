@@ -160,38 +160,6 @@ class Data
     }
 
     /**
-     * Called when page 'WooCommerce -> Checkout -> Checkout Options' is saved
-     *
-     * @see \Plugin::init
-     */
-    public function deleteTransients()
-    {
-        $this->logger->log(LogLevel::DEBUG, __METHOD__ . ': Mollie settings saved, delete transients');
-
-        $transient_names = [
-            'api_methods_test',
-            'api_methods_live',
-            'api_issuers_test',
-            'api_issuers_live',
-            'ideal_issuers_test',
-            'ideal_issuers_live',
-            'kbc_issuers_test',
-            'kbc_issuers_live',
-            'giftcard_issuers_test',
-            'giftcard_issuers_live',
-        ];
-
-        $languages = array_keys(apply_filters('wpml_active_languages', []));
-        $languages[] = $this->getCurrentLocale();
-
-        foreach ($transient_names as $transient_name) {
-            foreach ($languages as $language) {
-                delete_transient($this->getTransientId($transient_name . sprintf('_%s', $language)));
-            }
-        }
-    }
-
-    /**
      * Get Mollie payment from cache or load from Mollie
      * Skip cache by setting $use_cache to false
      *
@@ -205,7 +173,7 @@ class Data
         try {
             return $this->api_helper->getApiClient($apiKey)->payments->get($payment_id);
         } catch (\Mollie\Api\Exceptions\ApiException $apiException) {
-            $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Could not load payment %s (', $payment_id) . "): " . $apiException->getMessage() . ' (' . get_class($apiException) . ')');
+            $this->logger->debug(__FUNCTION__ . sprintf(': Could not load payment %s (', $payment_id) . "): " . $apiException->getMessage() . ' (' . get_class($apiException) . ')');
         }
 
         return null;
@@ -408,7 +376,7 @@ class Data
             if ($use_cache) {
                 set_transient($transient_id, [], 60 * 5);
             }
-            $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . ": Could not load Mollie methods (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            $this->logger->debug(__FUNCTION__ . ": Could not load Mollie methods (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
 
             return [];
         }
@@ -460,7 +428,7 @@ class Data
             set_transient($transient_id, $issuers, HOUR_IN_SECONDS);
             return $issuers;
         } catch (\Mollie\Api\Exceptions\ApiException $e) {
-            $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . ": Could not load " . $methodId . " issuers (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            $this->logger->debug(__FUNCTION__ . ": Could not load " . $methodId . " issuers (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
 
         return  [];
@@ -520,9 +488,9 @@ class Data
                 $customer = new WC_Customer($user_id);
                 $customer->update_meta_data('mollie_customer_id', $customer_id);
                 $customer->save();
-                $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . ": Stored Mollie customer ID " . $customer_id . " with user " . $user_id);
+                $this->logger->debug(__FUNCTION__ . ": Stored Mollie customer ID " . $customer_id . " with user " . $user_id);
             } catch (Exception $exception) {
-                $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . ": Couldn't load (and save) WooCommerce customer based on user ID " . $user_id);
+                $this->logger->debug(__FUNCTION__ . ": Couldn't load (and save) WooCommerce customer based on user ID " . $user_id);
             }
         }
 
@@ -584,7 +552,7 @@ class Data
             try {
                 $this->api_helper->getApiClient($apiKey)->customers->get($customer_id);
             } catch (\Mollie\Api\Exceptions\ApiException $e) {
-                $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Mollie Customer ID (%s) not valid for user %s on this API key, try to create a new one (', $customer_id, $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . ").");
+                $this->logger->debug(__FUNCTION__ . sprintf(': Mollie Customer ID (%s) not valid for user %s on this API key, try to create a new one (', $customer_id, $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . ").");
                 $customer_id = '';
             }
         }
@@ -612,14 +580,14 @@ class Data
 
                 $customer_id = $customer->id;
 
-                $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Created a Mollie Customer (%s) for WordPress user with ID %s (', $customer_id, $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . ").");
+                $this->logger->debug(__FUNCTION__ . sprintf(': Created a Mollie Customer (%s) for WordPress user with ID %s (', $customer_id, $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . ").");
 
                 return $customer_id;
             } catch (\Mollie\Api\Exceptions\ApiException $e) {
-                $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Could not create Mollie Customer for WordPress user with ID %s (', $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+                $this->logger->debug(__FUNCTION__ . sprintf(': Could not create Mollie Customer for WordPress user with ID %s (', $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
             }
         } else {
-            $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Mollie Customer ID (%s) found and valid for user %s on this API key. (', $customer_id, $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . ").");
+            $this->logger->debug(__FUNCTION__ . sprintf(': Mollie Customer ID (%s) found and valid for user %s on this API key. (', $customer_id, $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . ").");
         }
 
         return $customer_id;

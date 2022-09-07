@@ -30,14 +30,12 @@ class PayPalButtonHandler
      */
     public function bootstrap($enabledInProduct, $enabledInCart)
     {
-        //y no hay shipping enseño, luego ya la cantidad en js
-
         if($enabledInProduct){
             add_action(
                     'woocommerce_after_single_product',
                     function () {
                         $product = wc_get_product(get_the_id());
-                        if (!$product || $product->is_type('subscription')) {
+                        if (!$product || $product->is_type('subscription') || $product instanceof \WC_Product_Variable_Subscription) {
                             return;
                         }
                         $productNeedShipping = mollieWooCommerceCheckIfNeedShipping($product);
@@ -53,7 +51,7 @@ class PayPalButtonHandler
                     function () {
                         $cart = WC()->cart;
                         foreach ($cart->get_cart_contents() as $product){
-                            if($product['data']->is_type('subscription')){
+                            if($product['data']->is_type('subscription') || $product['data'] instanceof \WC_Product_Subscription_Variation){
                                 return;
                             }
                         }

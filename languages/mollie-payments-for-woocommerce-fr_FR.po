@@ -1492,20 +1492,20 @@ msgstr " Solde : %1$s %2$s %3$s."
 #. translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency.
 #: build/src/Mollie/WC/Gateway/Abstract.php:2580
 #: src/Mollie/WC/Gateway/Abstract.php:2580
-msgid "A + %1s %2s fee might apply"
-msgstr "Un + %1s %2s de frais peuvent s’appliquer"
+msgid " + %1$s %2$s fee might apply"
+msgstr "Un + %1$s %2$s de frais peuvent s’appliquer"
 
 #. translators: Placeholder 1: Fee amount tag.
 #: build/src/Mollie/WC/Gateway/Abstract.php:2590
 #: src/Mollie/WC/Gateway/Abstract.php:2590
-msgid "A + %1s%% fee might apply"
-msgstr "Un + %1s%% de frais peuvent s’appliquer"
+msgid " + %1$s%% fee might apply"
+msgstr "Un + %1$s%% de frais peuvent s’appliquer"
 
 #. translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency. Placeholder 3: Percentage amount.
 #: build/src/Mollie/WC/Gateway/Abstract.php:2607
 #: src/Mollie/WC/Gateway/Abstract.php:2607
-msgid "A + %1s %2s + %3s%% fee might apply"
-msgstr "Un + %1s %2s + %3s%% de frais peuvent s’appliquer"
+msgid " + %1$s %2$s + %3$s%% fee might apply"
+msgstr "Un + %1$s %2$s + %3$s%%% de frais peuvent s’appliquer"
 
 #: build/src/Mollie/WC/Gateway/Abstract.php:2646
 #: src/Mollie/WC/Gateway/Abstract.php:2646
@@ -1633,10 +1633,9 @@ msgstr "Transfert Bancaire"
 #: src/Mollie/WC/Gateway/DirectDebit.php:80 src/Mollie/WC/Gateway/Ideal.php:124
 #: src/Mollie/WC/Gateway/Sofort.php:64
 msgid ""
-"Payment completed by <strong>%s</strong> (IBAN (last 4 digits): %s, BIC: %s)"
+"Payment completed by <strong>%1$s</strong> (IBAN (last 4 digits): %2$s, BIC: %3$s)"
 msgstr ""
-"Paiement complété par <strong>%s</strong> (IBAN (4 derniers chiffres) : %s, "
-"BIC : %s)"
+"Paiement complété par <strong>%1$s</strong> (IBAN (4 derniers chiffres): %2$s, BIC: %3$s)"
 
 #: build/src/Mollie/WC/Gateway/BankTransfer.php:198
 #: src/Mollie/WC/Gateway/BankTransfer.php:198

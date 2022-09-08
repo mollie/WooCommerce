@@ -1505,7 +1505,7 @@ msgstr "Un + %1$s%% de frais peuvent s’appliquer"
 #: build/src/Mollie/WC/Gateway/Abstract.php:2607
 #: src/Mollie/WC/Gateway/Abstract.php:2607
 msgid " + %1$s %2$s + %3$s%% fee might apply"
-msgstr "Un + %1$s %2$s + %3$s%%% de frais peuvent s’appliquer"
+msgstr "Un + %1$s %2$s + %3$s%% de frais peuvent s’appliquer"
 
 #: build/src/Mollie/WC/Gateway/Abstract.php:2646
 #: src/Mollie/WC/Gateway/Abstract.php:2646

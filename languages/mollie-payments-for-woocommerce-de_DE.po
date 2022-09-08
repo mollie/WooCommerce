@@ -1511,7 +1511,7 @@ msgstr "Möglicherweise fällt eine + %1$s%%-Gebühr an"
 #: build/src/Mollie/WC/Gateway/Abstract.php:2607
 #: src/Mollie/WC/Gateway/Abstract.php:2607
 msgid " + %1$s %2$s + %3$s%% fee might apply"
-msgstr "Möglicherweise fällt eine + %1$s %2$s + %3$s%%%-Gebühr an"
+msgstr "Möglicherweise fällt eine + %1$s %2$s + %3$s%%-Gebühr an"
 
 #: build/src/Mollie/WC/Gateway/Abstract.php:2646
 #: src/Mollie/WC/Gateway/Abstract.php:2646

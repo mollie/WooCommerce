@@ -1504,7 +1504,7 @@ msgstr "Podría aplicarse un cargo de + %1$s%%"
 #: build/src/Mollie/WC/Gateway/Abstract.php:2607
 #: src/Mollie/WC/Gateway/Abstract.php:2607
 msgid " + %1$s %2$s + %3$s%% fee might apply"
-msgstr "Podría aplicarse un cargo de + %1$s %2$s + %3$s%%%"
+msgstr "Podría aplicarse un cargo de + %1$s %2$s + %3$s%%"
 
 #: build/src/Mollie/WC/Gateway/Abstract.php:2646
 #: src/Mollie/WC/Gateway/Abstract.php:2646

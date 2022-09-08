@@ -1506,7 +1506,7 @@ msgstr "Una tariffa + %1$s%% può essere applicata"
 #: build/src/Mollie/WC/Gateway/Abstract.php:2607
 #: src/Mollie/WC/Gateway/Abstract.php:2607
 msgid " + %1$s %2$s + %3$s%% fee might apply"
-msgstr "Una tariffa + %1$s %2$s + %3$s%%% può essere applicata"
+msgstr "Una tariffa + %1$s %2$s + %3$s%% può essere applicata"
 
 #: build/src/Mollie/WC/Gateway/Abstract.php:2646
 #: src/Mollie/WC/Gateway/Abstract.php:2646

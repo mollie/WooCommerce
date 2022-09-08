@@ -1497,7 +1497,7 @@ msgstr " + %1$s%% prijstoeslag kan van toepassing zijn"
 #: build/src/Mollie/WC/Gateway/Abstract.php:2607
 #: src/Mollie/WC/Gateway/Abstract.php:2607
 msgid " + %1$s %2$s + %3$s%% fee might apply"
-msgstr " + %1$s %2$s + %3$s%%% prijstoeslag kan van toepassing zijn"
+msgstr " + %1$s %2$s + %3$s%% prijstoeslag kan van toepassing zijn"
 
 #: build/src/Mollie/WC/Gateway/Abstract.php:2646
 #: src/Mollie/WC/Gateway/Abstract.php:2646

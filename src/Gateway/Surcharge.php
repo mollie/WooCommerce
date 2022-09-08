@@ -251,7 +251,10 @@ class Surcharge
         }
         $taxRates = \WC_Tax::get_rates();
         $wcStandardTax = \WC_Tax::calc_inclusive_tax($amount, $taxRates);
-        return $amount - $wcStandardTax[1];
+        foreach ($wcStandardTax as $tax) {
+            $amount -= $tax;
+        }
+        return $amount;
     }
 
     /**

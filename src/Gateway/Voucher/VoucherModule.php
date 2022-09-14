@@ -38,16 +38,16 @@ class VoucherModule implements ExecutableModule, ServiceModule
 
     public function services(): array
     {
-       return [
-               'voucher.defaultCategory' => function (ContainerInterface $container): string {
-                   $paymentMethods = $container->get('gateway.paymentMethods');
-                   $voucher = $paymentMethods['voucher'];
-                   if($voucher){
-                       return $voucher->voucherDefaultCategory();
-                   }
-                   return Voucher::NO_CATEGORY;
-               }
-       ];
+        return [
+                'voucher.defaultCategory' => function (ContainerInterface $container): string {
+                    $paymentMethods = $container->get('gateway.paymentMethods');
+                    $voucher = isset($paymentMethods['voucher']) ? $paymentMethods['voucher'] : false;
+                    if ($voucher) {
+                        return $voucher->voucherDefaultCategory();
+                    }
+                    return Voucher::NO_CATEGORY;
+                }
+        ];
     }
 
     /**

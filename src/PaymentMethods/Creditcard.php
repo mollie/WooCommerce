@@ -38,7 +38,9 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
 
     public function hasPaymentFields(): bool
     {
-        $componentsEnabled = $this->settings['mollie_components_enabled'] ?? false;
+        $optionName = 'mollie_wc_gateway_creditcard_settings';
+        $settings = get_option($optionName, false);
+        $componentsEnabled = $settings['mollie_components_enabled'] ?? false;
         return $componentsEnabled ? $componentsEnabled === 'yes' : $this->defaultComponentsEnabled() === 'yes';
     }
 

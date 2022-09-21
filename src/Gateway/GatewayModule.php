@@ -154,7 +154,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         });
 
         add_filter('woocommerce_payment_gateways', function ($gateways) use ($container) {
-            $mollieGateways = $this->instantiatePaymentMethodGateways($container);
+            $mollieGateways = $container->get('gateway.instances');
             return array_merge($gateways, $mollieGateways);
         });
         add_filter('woocommerce_payment_gateways', [$this, 'maybeDisableApplePayGateway'], 20);

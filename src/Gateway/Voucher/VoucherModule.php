@@ -24,12 +24,31 @@ namespace Mollie\WooCommerce\Gateway\Voucher;
 
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Psr\Container\ContainerInterface;
 
-class VoucherModule implements ExecutableModule
+class VoucherModule implements ExecutableModule, ServiceModule
 {
     use ModuleClassNameIdTrait;
+    /**
+     * @var string
+     */
+    public $voucherDefaultCategory;
+
+    public function services(): array
+    {
+        return [
+                'voucher.defaultCategory' => function (ContainerInterface $container): string {
+                    $paymentMethods = $container->get('gateway.paymentMethods');
+                    $voucher = isset($paymentMethods['voucher']) ? $paymentMethods['voucher'] : false;
+                    if ($voucher) {
+                        return $voucher->voucherDefaultCategory();
+                    }
+                    return Voucher::NO_CATEGORY;
+                }
+        ];
+    }
 
     /**
      * @param ContainerInterface $container
@@ -42,7 +61,8 @@ class VoucherModule implements ExecutableModule
         $voucherGateway = $gatewayInstances['mollie_wc_gateway_voucher'] ?? false;
         $voucher = $voucherGateway && $voucherGateway->enabled === 'yes';
 
-        if ($voucher) {
+        if($voucher){
+            $this->voucherDefaultCategory = $container->get('voucher.defaultCategory');
             $this->voucherEnabledHooks();
         }
 
@@ -194,12 +214,9 @@ class VoucherModule implements ExecutableModule
     {
         ?>
         <div id='mollie_options' class='panel woocommerce_options_panel'><div class='options_group'><?php
-            $voucherSettings = get_option('mollie_wc_gateway_voucher_settings');
-        if (!$voucherSettings) {
-            $voucherSettings = get_option('mollie_wc_gateway_mealvoucher_settings');
-        }
-            $defaultCategory = $voucherSettings ? $voucherSettings['mealvoucher_category_default'] : Voucher::NO_CATEGORY;
-            woocommerce_wp_select([
+            $defaultCategory = $this->voucherDefaultCategory;
+            woocommerce_wp_select(
+                [
                     'id' => Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
                     'title' => __(
                         'Select the default products category',
@@ -262,12 +279,7 @@ class VoucherModule implements ExecutableModule
      */
     public function voucherFieldInVariations($loop, $variation_data, $variation)
     {
-        $voucherSettings = get_option(
-            'mollie_wc_gateway_mealvoucher_settings'
-        );
-        $defaultCategory = $voucherSettings ?
-            $voucherSettings['mealvoucher_category_default']
-            : Voucher::NO_CATEGORY;
+        $defaultCategory = $this->voucherDefaultCategory;
         woocommerce_wp_select(
             [
                 'id' => 'voucher[' . $variation->ID . ']',

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Payment;
 
 use Mollie\Api\Exceptions\ApiException;
+use Mollie\Api\Resources\Order;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
@@ -25,17 +26,22 @@ class PaymentFactory
      */
     protected $pluginId;
     protected $logger;
+    /**
+     * @var OrderLines
+     */
+    protected $orderLines;
 
     /**
      * PaymentFactory constructor.
      */
-    public function __construct(Data $dataHelper, Api $apiHelper, Settings $settingsHelper, string $pluginId, $logger)
+    public function __construct(Data $dataHelper, Api $apiHelper, Settings $settingsHelper, string $pluginId, $logger, OrderLines $orderLines)
     {
         $this->dataHelper = $dataHelper;
         $this->apiHelper = $apiHelper;
         $this->settingsHelper = $settingsHelper;
         $this->pluginId = $pluginId;
         $this->logger = $logger;
+        $this->orderLines = $orderLines;
     }
 
     /**
@@ -66,7 +72,8 @@ class PaymentFactory
                 $this->apiHelper,
                 $this->settingsHelper,
                 $this->dataHelper,
-                $this->logger
+                $this->logger,
+                $this->orderLines
             );
         }
 

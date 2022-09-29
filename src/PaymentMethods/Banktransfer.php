@@ -51,14 +51,14 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
         unset($generalFormFields['order_dueDate']);
         $paymentMethodFormFieds = [
             'activate_expiry_days_setting' => [
-                'title' => __('Activate expiry date setting', 'mollie-payments-for-woocommerce'),
-                'label' => __('Enable expiry date for payments', 'mollie-payments-for-woocommerce'),
-                'description' => __('Enable this option if you want to be able to set the number of days after the payment will expire. This will turn all transactions into payments instead of orders', 'mollie-payments-for-woocommerce'),
+                'title' => __('Activate expiry time setting', 'mollie-payments-for-woocommerce'),
+                'label' => __('Enable expiry time for payments', 'mollie-payments-for-woocommerce'),
+                'description' => __('Enable this option if you want to be able to set the time after which the payment will expire. This will turn all transactions into payments instead of orders', 'mollie-payments-for-woocommerce'),
                 'type' => 'checkbox',
                 'default' => 'no',
             ],
             'order_dueDate' => [
-                'title' => __('Expiry date', 'mollie-payments-for-woocommerce'),
+                'title' => __('Expiry time', 'mollie-payments-for-woocommerce'),
                 'type' => 'number',
                 /* translators: Placeholder 1: Default expiry days. */
                 'description' => sprintf(__('Number of DAYS after the payment will expire. Default <code>%d</code> days', 'mollie-payments-for-woocommerce'), self::EXPIRY_DEFAULT_DAYS),

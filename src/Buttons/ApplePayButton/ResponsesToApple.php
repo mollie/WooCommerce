@@ -217,8 +217,7 @@ class ResponsesToApple
         // Add utm_nooverride query string
         $redirect_url = add_query_arg(['utm_nooverride' => 1], $redirect_url);
 
-        $this->logger->log(
-            LogLevel::DEBUG,
+        $this->logger->debug(
             __METHOD__
             . sprintf(
                 ': Redirect url on return order %s, order %s: %s',

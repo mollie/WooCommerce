@@ -74,6 +74,29 @@ class SettingsModule implements ServiceModule, ExecutableModule
                 assert($settingsHelper instanceof Settings);
                 return $settingsHelper->isTestModeEnabled();
             },
+            'settings.IsDebugEnabled' => static function (): bool {
+                $debugEnabled = get_option('mollie-payments-for-woocommerce_debug', true);
+                return $debugEnabled === 'yes';
+            },
+            'settings.advanced_default_options' => static function (ContainerInterface $container) {
+                $pluginPath = $container->get('shared.plugin_path');
+                $advancedSettingsFilePath = $pluginPath . 'inc/settings/mollie_advanced_settings.php';
+                if (!file_exists($advancedSettingsFilePath)) {
+                    return [];
+                }
+                return include $advancedSettingsFilePath;
+            },
+            'settings.components_default_options' => static function (ContainerInterface $container) {
+                $pluginPath = $container->get('shared.plugin_path');
+                $componentsSettingsFilePath = $pluginPath . 'inc/settings/mollie_components.php';
+                if (!file_exists($componentsSettingsFilePath)) {
+                    return [];
+                }
+                return include $componentsSettingsFilePath;
+            },
+            'settings.option_name' => static function () {
+                return 'mollie-payments-for-woocommerce_';
+            },
         ];
     }
 
@@ -86,30 +109,33 @@ class SettingsModule implements ServiceModule, ExecutableModule
         $this->dataHelper = $container->get('settings.data_helper');
         assert($this->dataHelper instanceof Data);
         $pluginPath = $container->get('shared.plugin_path');
-        $gateways = $container->get('gateway.instances');
+
         $paymentMethods = $container->get('gateway.paymentMethods');
         // Add settings link to plugins page
         add_filter('plugin_action_links_' . $this->plugin_basename, [$this, 'addPluginActionLinks']);
+        //init settings with advanced and components defaults if not exists
+        $optionName = $container->get('settings.option_name');
+        $defaultAdvancedOptions = $container->get('settings.advanced_default_options');
+        $defaultComponentsOptions = $container->get('settings.components_default_options');
+        add_action(
+            'init',
+            function () use ($optionName, $defaultAdvancedOptions, $defaultComponentsOptions) {
+                $testedOption = 'order_status_cancelled_payments';
+                $this->maybeSaveDefaultSettings($optionName, $testedOption, $defaultAdvancedOptions);
+                $testedOption = 'backgroundColor';
+                $this->maybeSaveDefaultSettings('mollie_components_', $testedOption, $defaultComponentsOptions);
+            },
+            10,
+            2
+        );
 
         add_action('wp_loaded', function () {
             $this->maybeTestModeNotice($this->isTestModeEnabled);
         });
 
-        add_filter(
-            'woocommerce_get_settings_pages',
-            function ($settings) use ($pluginPath, $gateways, $paymentMethods) {
-                $settings[] = new MollieSettingsPage(
-                    $this->settingsHelper,
-                    $pluginPath,
-                    $gateways,
-                    $paymentMethods,
-                    $this->isTestModeEnabled,
-                    $this->dataHelper
-                );
-
-                return $settings;
-            }
-        );
+        $gateways = $container->get('gateway.instances');
+        $isSDDGatewayEnabled = $container->get('gateway.isSDDGatewayEnabled');
+        $this->initMollieSettingsPage($isSDDGatewayEnabled, $gateways, $pluginPath, $paymentMethods);
         add_action(
             'woocommerce_admin_settings_sanitize_option',
             [$this->settingsHelper, 'updateMerchantIdOnApiKeyChanges'],
@@ -128,9 +154,6 @@ class SettingsModule implements ServiceModule, ExecutableModule
             10,
             3
         );
-
-        // When page 'WooCommerce -> Checkout -> Checkout Options' is saved
-        add_action('woocommerce_settings_save_checkout', [$this->dataHelper, 'deleteTransients']);
 
         return true;
     }
@@ -174,5 +197,62 @@ class SettingsModule implements ServiceModule, ExecutableModule
             );
             $notice->addNotice('notice-error', $message);
         }
+    }
+
+    /**
+     * Save default settings if not found
+     * @param $optionName
+     * @param $defaultOptions
+     * @return void
+     */
+    public function maybeSaveDefaultSettings($optionName, $testOption, $defaultOptions): void
+    {
+        //if one exists in db, then the settings were saved
+        $hasOption = get_option("{$optionName}{$testOption}");
+        if ($hasOption) {
+            return;
+        }
+        foreach ($defaultOptions as $defaultOption) {
+            $noOptions = [
+                "{$optionName}sectionend",
+                "{$optionName}title",
+                "{$optionName}styles",
+                "{$optionName}invalid_styles",
+            ];
+            if (in_array($defaultOption['id'], $noOptions, true)) {
+                continue;
+            }
+            update_option($defaultOption['id'], $defaultOption['default']);
+        }
+    }
+
+    /**
+     * @param $isSDDGatewayEnabled
+     * @param $gateways
+     * @param $pluginPath
+     * @param $paymentMethods
+     * @return void
+     */
+    protected function initMollieSettingsPage($isSDDGatewayEnabled, $gateways, $pluginPath, $paymentMethods): void
+    {
+        if (!$isSDDGatewayEnabled) {
+            //remove directdebit gateway from gateways list
+            unset($gateways['mollie_wc_gateway_directdebit']);
+        }
+        add_filter(
+            'woocommerce_get_settings_pages',
+            function ($settings) use ($pluginPath, $gateways, $paymentMethods) {
+                $settings[] = new MollieSettingsPage(
+                    $this->settingsHelper,
+                    $pluginPath,
+                    $gateways,
+                    $paymentMethods,
+                    $this->isTestModeEnabled,
+                    $this->dataHelper
+                );
+
+                return $settings;
+            }
+        );
     }
 }

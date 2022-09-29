@@ -131,7 +131,10 @@ class AssetsModule implements ExecutableModule
     public function registerButtonsBlockScripts()
     {
         add_action('woocommerce_blocks_enqueue_cart_block_scripts_after', function () {
-            if (mollieWooCommerceIsPayPalButtonEnabled('cart')) {
+            $cart = WC()->cart;
+            $shouldShow = !$cart->needs_shipping();
+            $shouldShow = !$this->cartHasSubscription($cart) && $shouldShow;
+            if (mollieWooCommerceIsPayPalButtonEnabled('cart') && $shouldShow) {
                 wp_register_script(
                     'mollie_paypalButtonBlock',
                     $this->getPluginUrl(
@@ -145,19 +148,16 @@ class AssetsModule implements ExecutableModule
                     ),
                     true
                 );
-                $cart = WC()->cart;
-                if (!$cart->needs_shipping()) {
-                    $dataToScripts = new DataToPayPal($this->pluginUrl);
-                    wp_enqueue_style('unabledButton');
-                    wp_enqueue_script('mollie_paypalButtonBlock');
-                    wp_localize_script(
-                        'mollie_paypalButtonBlock',
-                        'molliepaypalButtonCart',
-                        $dataToScripts->paypalbuttonScriptData(true)
-                    );
-                }
+                $dataToScripts = new DataToPayPal($this->pluginUrl);
+                wp_enqueue_style('unabledButton');
+                wp_enqueue_script('mollie_paypalButtonBlock');
+                wp_localize_script(
+                    'mollie_paypalButtonBlock',
+                    'molliepaypalButtonCart',
+                    $dataToScripts->paypalbuttonScriptData(true)
+                );
             }
-            if (mollieWooCommerceIsApplePayDirectEnabled('cart')) {
+            if (mollieWooCommerceIsApplePayDirectEnabled('cart') && !$this->cartHasSubscription($cart)) {
                 wp_register_script(
                     'mollie_applepayButtonBlock',
                     $this->getPluginUrl(
@@ -562,6 +562,9 @@ class AssetsModule implements ExecutableModule
      */
     protected function enqueueIconSettings($current_section): void
     {
+        if (!$current_section || strpos($current_section, 'mollie_wc_gateway_') === false) {
+            return;
+        }
         wp_enqueue_script('mollie_wc_gateway_settings');
         wp_enqueue_style('mollie-gateway-icons');
         $settingsName = "{$current_section}_settings";
@@ -609,5 +612,19 @@ class AssetsModule implements ExecutableModule
             return;
         }
         wp_enqueue_script('mollie_wc_gateway_advanced_settings');
+    }
+
+    /**
+     * @param \WC_Cart $cart
+     * @return bool
+     */
+    protected function cartHasSubscription(\WC_Cart $cart): bool
+    {
+        foreach ($cart->cart_contents as $cart_content) {
+            if ($cart_content['data'] instanceof \WC_Product_Subscription_Variation) {
+                return true;
+            }
+        }
+        return false;
     }
 }

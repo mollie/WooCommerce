@@ -1330,17 +1330,17 @@ msgstr ""
 
 #: build/src/Mollie/WC/Gateway/Abstract.php:2580
 #: src/Mollie/WC/Gateway/Abstract.php:2580
-msgid "A + %1s %2s fee might apply"
+msgid " + %1$s %2$s fee might apply"
 msgstr ""
 
 #: build/src/Mollie/WC/Gateway/Abstract.php:2590
 #: src/Mollie/WC/Gateway/Abstract.php:2590
-msgid "A + %1s%% fee might apply"
+msgid " + %1$s%% fee might apply"
 msgstr ""
 
 #: build/src/Mollie/WC/Gateway/Abstract.php:2607
 #: src/Mollie/WC/Gateway/Abstract.php:2607
-msgid "A + %1s %2s + %3s%% fee might apply"
+msgid " + %1$s %2$s + %3$s%% fee might apply"
 msgstr ""
 
 #: build/src/Mollie/WC/Gateway/Abstract.php:2646
@@ -1443,7 +1443,7 @@ msgstr ""
 #: src/Mollie/WC/Gateway/DirectDebit.php:80
 #: src/Mollie/WC/Gateway/Ideal.php:124
 #: src/Mollie/WC/Gateway/Sofort.php:64
-msgid "Payment completed by <strong>%s</strong> (IBAN (last 4 digits): %s, BIC: %s)"
+msgid "Payment completed by <strong>%1$s</strong> (IBAN (last 4 digits): %2$s, BIC: %3$s)"
 msgstr ""
 
 #: build/src/Mollie/WC/Gateway/BankTransfer.php:198
@@ -1915,6 +1915,10 @@ msgstr ""
 #: build/src/Mollie/WC/Helper/Settings.php:572
 #: src/Mollie/WC/Helper/Settings.php:572
 msgid "Refresh"
+msgstr ""
+
+#: src/Settings/Page/MollieSettingsPage.php:342
+msgid "No payment methods available"
 msgstr ""
 
 #: build/src/Mollie/WC/Helper/Settings.php:591

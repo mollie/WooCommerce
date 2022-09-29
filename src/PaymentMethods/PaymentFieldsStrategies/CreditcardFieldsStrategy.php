@@ -10,10 +10,11 @@ class CreditcardFieldsStrategy implements PaymentFieldsStrategyI
 {
     public function execute($gateway, $dataHelper)
     {
-        if (!$this->isMollieComponentsEnabled($gateway->paymentMethod)) {
+        if (!$this->isMollieComponentsEnabled($gateway->paymentMethod())) {
             return;
         }
         $gateway->has_fields = true;
+        $allowedHtml = $this->svgAllowedHtml()
 
         ?>
         <div class="mollie-components"></div>
@@ -21,12 +22,12 @@ class CreditcardFieldsStrategy implements PaymentFieldsStrategyI
             <?php
             printf(
             /* translators: Placeholder 1: Lock icon. Placeholder 2: Mollie logo. */
-                __(
+                esc_html(__(
                     '%1$s Secure payments provided by %2$s',
                     'mollie-payments-for-woocommerce'
-                ),
-                $this->lockIcon($dataHelper),
-                $this->mollieLogo($dataHelper)
+                )),
+                wp_kses($this->lockIcon($dataHelper), $allowedHtml),
+                wp_kses($this->mollieLogo($dataHelper), $allowedHtml)
             );
             ?>
         </p>
@@ -35,7 +36,7 @@ class CreditcardFieldsStrategy implements PaymentFieldsStrategyI
 
     public function getFieldMarkup($gateway, $dataHelper)
     {
-        if (!$this->isMollieComponentsEnabled($gateway->paymentMethod)) {
+        if (!$this->isMollieComponentsEnabled($gateway->paymentMethod())) {
             return false;
         }
         $gateway->has_fields = true;
@@ -52,14 +53,51 @@ class CreditcardFieldsStrategy implements PaymentFieldsStrategyI
     protected function lockIcon($dataHelper)
     {
         return file_get_contents(
-            $dataHelper->pluginPath . '/' . 'public/images/lock-icon.svg'
+            $dataHelper->pluginPath() . '/' . 'public/images/lock-icon.svg'
         );
     }
 
     protected function mollieLogo($dataHelper)
     {
         return file_get_contents(
-            $dataHelper->pluginPath . '/' . 'public/images/mollie-logo.svg'
+            $dataHelper->pluginPath() . '/' . 'public/images/mollie-logo.svg'
         );
+    }
+
+    /**
+     * @return array
+     */
+    protected function svgAllowedHtml(): array
+    {
+        return [
+                'svg' => [
+                        'class' => [],
+                        'width' => [],
+                        'height' => [],
+                        'viewbox' => [],
+                        'xmlns' => [],
+                        'aria-hidden' => [],
+                        'role' => [],
+                ],
+                'g' => [
+                ],
+                'defs' => [
+                ],
+                'use' => [
+                        'xlink:href' => [],
+                        'clip-path' => [],
+                        'fill' => [],
+                        'stroke' => [],
+                        'stroke-width' => [],
+                ],
+                'path' => [
+                        'fill' => [],
+                        'd' => [],
+                        'id' => [],
+                ],
+                'clipPath' => [
+                        'id' => [],
+                ],
+        ];
     }
 }

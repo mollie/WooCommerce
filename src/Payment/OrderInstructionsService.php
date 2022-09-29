@@ -12,10 +12,10 @@ class OrderInstructionsService
     protected $strategy;
     public function setStrategy($gateway)
     {
-        if (!$gateway->paymentMethod->getProperty('instructions')) {
+        if (!$gateway->paymentMethod()->getProperty('instructions')) {
             $this->strategy = new DefaultInstructionStrategy();
         } else {
-            $className = 'Mollie\\WooCommerce\\PaymentMethods\\InstructionStrategies\\' . ucfirst($gateway->paymentMethod->getProperty('id')) . 'InstructionStrategy';
+            $className = 'Mollie\\WooCommerce\\PaymentMethods\\InstructionStrategies\\' . ucfirst($gateway->paymentMethod()->getProperty('id')) . 'InstructionStrategy';
             $this->strategy = class_exists($className) ? new $className() : new DefaultInstructionStrategy();
         }
     }

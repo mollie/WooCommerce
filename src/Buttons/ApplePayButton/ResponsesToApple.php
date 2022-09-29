@@ -28,7 +28,6 @@ class ResponsesToApple
         $this->gateway = $appleGateway;
     }
 
-
     /**
      * Returns the authorization response with according success/fail status
      * Adds the error list if provided to be handled by the script
@@ -45,6 +44,7 @@ class ResponsesToApple
         $orderId = '',
         $errorList = []
     ) {
+
         $response = [];
         if ($status === 'STATUS_SUCCESS') {
             $response['returnUrl'] = $this->redirectUrlOnSuccessfulPayment(
@@ -221,7 +221,7 @@ class ResponsesToApple
             __METHOD__
             . sprintf(
                 ': Redirect url on return order %s, order %s: %s',
-                $this->gateway->paymentMethod->getProperty('id'),
+                $this->gateway->paymentMethod()->getProperty('id'),
                 $orderId,
                 $redirect_url
             )

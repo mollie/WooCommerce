@@ -4,6 +4,7 @@ namespace Mollie\WooCommerce\Settings\General;
 
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Gateway\Surcharge;
+use Mollie\WooCommerce\Shared\SharedDataDictionary;
 
 class MollieGeneralSettings
 {
@@ -268,17 +269,15 @@ class MollieGeneralSettings
                 ),
                 'type' => 'select',
                 'options' => [
-                    MolliePaymentGateway::STATUS_ON_HOLD => wc_get_order_status_name(
-                        MolliePaymentGateway::STATUS_ON_HOLD
-                    ) . ' (' . __(
+                    SharedDataDictionary::STATUS_ON_HOLD => wc_get_order_status_name(SharedDataDictionary::STATUS_ON_HOLD) . ' (' . __(
                         'default',
                         'mollie-payments-for-woocommerce'
                     ) . ')',
-                    MolliePaymentGateway::STATUS_PENDING => wc_get_order_status_name(
-                        MolliePaymentGateway::STATUS_PENDING
+                    SharedDataDictionary::STATUS_PENDING => wc_get_order_status_name(
+                        SharedDataDictionary::STATUS_PENDING
                     ),
                 ],
-                'default' => MolliePaymentGateway::STATUS_ON_HOLD,
+                'default' => SharedDataDictionary::STATUS_ON_HOLD,
                 /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
                 'description' => sprintf(
                     __(
@@ -286,7 +285,7 @@ class MollieGeneralSettings
                         'mollie-payments-for-woocommerce'
                     ),
                     wc_get_order_status_name(
-                        MolliePaymentGateway::STATUS_ON_HOLD
+                        SharedDataDictionary::STATUS_ON_HOLD
                     ),
                     '<a href="' . admin_url(
                         'admin.php?page=wc-settings&tab=products&section=inventory'

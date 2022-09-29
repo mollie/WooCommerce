@@ -9,52 +9,46 @@ use Psr\Log\LogLevel;
 
 class ApplePayDataObjectHttp
 {
-
     /**
      * @var mixed
      */
-    public $nonce;
+    protected $nonce;
     /**
      * @var mixed
      */
-    public $validationUrl;
+    protected $validationUrl;
     /**
      * @var mixed
      */
-    public $simplifiedContact;
+    protected $simplifiedContact;
     /**
      * @var mixed|null
      */
-    public $needShipping;
+    protected $needShipping;
     /**
      * @var mixed
      */
-    public $productId;
+    protected $productId;
     /**
      * @var mixed
      */
-    public $productQuantity;
+    protected $productQuantity;
     /**
      * @var array|mixed
      */
-    public $shippingMethod;
+    protected $shippingMethod;
     /**
      * @var string[]
      */
-    public $billingAddress = [];
+    protected $billingAddress = [];
     /**
      * @var string[]
      */
-    public $shippingAddress = [];
-    /**
-     * @var mixed
-     */
-    public $callerPage;
-
+    protected $shippingAddress = [];
     /**
      * @var array
      */
-    public $errors = [];
+    protected $errors = [];
     /**
      * @var Logger
      */
@@ -67,7 +61,6 @@ class ApplePayDataObjectHttp
     {
         $this->logger = $logger;
     }
-
 
     /**
      * Resets the errors array
@@ -85,12 +78,29 @@ class ApplePayDataObjectHttp
     {
         return !empty($this->errors);
     }
+    /**
+     * Returns errors
+     * @return array
+     */
+    public function errors(): array
+    {
+        return $this->errors;
+    }
 
     /**
      * Set the object with the data relevant to ApplePay validation
      */
-    public function validationData(array $data)
+    public function validationData()
     {
+        $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_STRING);
+        $isNonceValid = wp_verify_nonce(
+            $nonce,
+            'woocommerce-process_checkout'
+        );
+        if (!$isNonceValid) {
+            return;
+        }
+        $data = filter_var_array($_POST, FILTER_SANITIZE_STRING);
         $this->resetErrors();
         if (
             !$this->hasRequiredFieldsValuesOrError(
@@ -107,8 +117,17 @@ class ApplePayDataObjectHttp
      * Set the object with the data relevant to ApplePay on update shipping contact
      * Required data depends on callerPage
      */
-    public function updateContactData(array $data)
+    public function updateContactData()
     {
+        $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_STRING);
+        $isNonceValid = wp_verify_nonce(
+            $nonce,
+            'woocommerce-process_checkout'
+        );
+        if (!$isNonceValid) {
+            return;
+        }
+        $data = filter_var_array($_POST, FILTER_SANITIZE_STRING);
         $result = $this->updateRequiredData(
             $data,
             PropertiesDictionary::UPDATE_CONTACT_SINGLE_PROD_REQUIRED_FIELDS,
@@ -124,8 +143,17 @@ class ApplePayDataObjectHttp
      * Set the object with the data relevant to ApplePay on update shipping method
      * Required data depends on callerPage
      */
-    public function updateMethodData(array $data)
+    public function updateMethodData()
     {
+        $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_STRING);
+        $isNonceValid = wp_verify_nonce(
+            $nonce,
+            'woocommerce-process_checkout'
+        );
+        if (!$isNonceValid) {
+            return;
+        }
+        $data = filter_var_array($_POST, FILTER_SANITIZE_STRING);
         $result = $this->updateRequiredData(
             $data,
             PropertiesDictionary::UPDATE_METHOD_SINGLE_PROD_REQUIRED_FIELDS,
@@ -144,8 +172,17 @@ class ApplePayDataObjectHttp
      *
      * @param       $callerPage
      */
-    public function orderData(array $data, $callerPage)
+    public function orderData($callerPage)
     {
+        $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_STRING);
+        $isNonceValid = wp_verify_nonce(
+            $nonce,
+            'woocommerce-process_checkout'
+        );
+        if (!$isNonceValid) {
+            return;
+        }
+        $data = filter_var_array($_POST, FILTER_SANITIZE_STRING);
         $data[PropertiesDictionary::CALLER_PAGE] = $callerPage;
         $result = $this->updateRequiredData(
             $data,
@@ -245,9 +282,9 @@ class ApplePayDataObjectHttp
         ];
         $filterBoolean = [PropertiesDictionary::NEED_SHIPPING];
         switch ($value) {
-            case in_array($value, $filterInt):
+            case in_array($value, $filterInt, true):
                 return FILTER_SANITIZE_NUMBER_INT;
-            case in_array($value, $filterBoolean):
+            case in_array($value, $filterBoolean, true):
                 return FILTER_VALIDATE_BOOLEAN;
             default:
                 return FILTER_SANITIZE_STRING;
@@ -425,5 +462,45 @@ class ApplePayDataObjectHttp
                 FILTER_SANITIZE_STRING
             );
         }
+    }
+
+    public function billingAddress(): array
+    {
+        return $this->billingAddress;
+    }
+
+    public function shippingAddress(): array
+    {
+        return $this->shippingAddress;
+    }
+
+    public function shippingMethod(): array
+    {
+        return $this->shippingMethod;
+    }
+
+    public function needShipping(): array
+    {
+        return $this->needShipping;
+    }
+
+    public function productId(): array
+    {
+        return $this->productId;
+    }
+
+    public function nonce()
+    {
+        return $this->nonce;
+    }
+
+    public function validationUrl()
+    {
+        return $this->validationUrl;
+    }
+
+    public function simplifiedContact()
+    {
+        return $this->simplifiedContact;
     }
 }

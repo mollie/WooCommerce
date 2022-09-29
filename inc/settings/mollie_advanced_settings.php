@@ -2,6 +2,7 @@
 
 use Mollie\WooCommerce\Payment\PaymentService;
 use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Shared\SharedDataDictionary;
 
 $pluginName = 'mollie-payments-for-woocommerce';
 $nonce_mollie_cleanDb = wp_create_nonce('nonce_mollie_cleanDb');
@@ -35,15 +36,15 @@ return [
         'default' => 'pending',
     ],
     [
-        'id' => $pluginName . '_' . Settings::SETTING_NAME_PAYMENT_LOCALE,
+        'id' => $pluginName . '_' . SharedDataDictionary::SETTING_NAME_PAYMENT_LOCALE,
         'title' => __('Payment screen language', 'mollie-payments-for-woocommerce'),
         'type' => 'select',
         'options' => [
-            Settings::SETTING_LOCALE_WP_LANGUAGE => __(
+            SharedDataDictionary::SETTING_LOCALE_WP_LANGUAGE => __(
                 'Automatically send WordPress language',
                 'mollie-payments-for-woocommerce'
             ) . ' (' . __('default', 'mollie-payments-for-woocommerce') . ')',
-            Settings::SETTING_LOCALE_DETECT_BY_BROWSER => __(
+            SharedDataDictionary::SETTING_LOCALE_DETECT_BY_BROWSER => __(
                 'Detect using browser language',
                 'mollie-payments-for-woocommerce'
             ),
@@ -74,7 +75,7 @@ return [
             '<a href="https://www.mollie.com/nl/docs/reference/payments/create" target="_blank">',
             '</a>'
         ),
-        'default' => Settings::SETTING_LOCALE_WP_LANGUAGE,
+        'default' => SharedDataDictionary::SETTING_LOCALE_WP_LANGUAGE,
     ],
     [
         'id' => $pluginName . '_customer_details',

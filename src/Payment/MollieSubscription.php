@@ -56,7 +56,7 @@ class MollieSubscription extends MollieObject
                                 'description' => $paymentDescription,
                                 'redirectUrl' => $returnUrl,
                                 'webhookUrl' => $webhookUrl,
-                                'method' => $gateway->paymentMethod->getProperty('id'),
+                                'method' => $gateway->paymentMethod()->getProperty('id'),
                                 'issuer' => $selectedIssuer,
                                 'locale' => $paymentLocale,
                                 'metadata' =>  [
@@ -102,7 +102,7 @@ class MollieSubscription extends MollieObject
         }
         $currency = $subscriptionGateway->getCurrencyFromOrder();
         $billingCountry = $subscriptionGateway->getBillingCountry();
-        $paymentLocale = $subscriptionGateway->dataService->getPaymentLocale();
+        $paymentLocale = $subscriptionGateway->dataService()->getPaymentLocale();
         // Check recurring totals against recurring payment methods for future renewal payments
         $recurringTotal = $subscriptionGateway->get_recurring_total();
         // See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php

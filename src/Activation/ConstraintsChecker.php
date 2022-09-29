@@ -105,12 +105,11 @@ class ConstraintsChecker
 
     protected function showNotice(array $errors)
     {
-        $message = '%1$sMollie Payments for WooCommerce is inactive:%2$s';
+        $message = sprintf(__('%1$sMollie Payments for WooCommerce is inactive:%2$s', 'mollie-payments-for-woocommerce'), '<p><strong>', '</strong></p>');
         foreach ($errors as $error) {
             $message .= sprintf('<p>%s</p>', $error);
         }
-        $message .= "<p>Correct the above errors to use Mollie Payments for Woocommerce</p>";
-        $message = sprintf(__($message, 'mollie-payments-for-woocommerce'), '<p><strong>', '</strong></p>');
+        $message .= sprintf(__('%1$sCorrect the above errors to use Mollie Payments for Woocommerce%2$s', 'mollie-payments-for-woocommerce'), '<p>', '</p>');
         $errorLevel = 'notice-error';
         $this->notice->addNotice($errorLevel, $message);
     }

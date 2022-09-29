@@ -27,8 +27,8 @@ use WC_Order;
 
 class MollieSubscriptionGateway extends MolliePaymentGateway
 {
-    const PAYMENT_TEST_MODE = 'test';
-    const METHODS_NEEDING_UPDATE = ['mollie_wc_gateway_bancontact',
+    protected const PAYMENT_TEST_MODE = 'test';
+    protected const METHODS_NEEDING_UPDATE = ['mollie_wc_gateway_bancontact',
         'mollie_wc_gateway_belfius',
         'mollie_wc_gateway_directdebit',
         'mollie_wc_gateway_eps',
@@ -36,11 +36,11 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         'mollie_wc_gateway_ideal',
         'mollie_wc_gateway_kbc',
         'mollie_wc_gateway_sofort', ];
-    const DIRECTDEBIT = 'directdebit';
+    protected const DIRECTDEBIT = 'directdebit';
 
     protected $isSubscriptionPayment = false;
     protected $apiHelper;
-    public $settingsHelper;
+    protected $settingsHelper;
     /**
      * @var MollieSubscription
      */
@@ -80,7 +80,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         );
 
         $this->apiHelper = $apiHelper;
-        $this->subscriptionObject = new mollieSubscription(
+        $this->subscriptionObject = new MollieSubscription(
             $pluginId,
             $apiHelper,
             $settingsHelper,
@@ -100,7 +100,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             add_action('woocommerce_subscription_failing_payment_method_updated_mollie', [ $this, 'update_failing_payment_method' ], 10, 2);
 
             add_filter('woocommerce_subscription_payment_meta', [ $this, 'add_subscription_payment_meta' ], 10, 2);
-            add_filter('woocommerce_subscription_validate_payment_meta', [ $this, 'validate_subscription_payment_meta' ], 10, 2);
+            add_action('woocommerce_subscription_validate_payment_meta', [ $this, 'validate_subscription_payment_meta' ], 10, 2);
         }
         if ($this->paymentMethod->getProperty('Subscription')) {
             $this->initSubscriptionSupport();
@@ -166,7 +166,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             // Check that payment method is SEPA Direct Debit or similar
             $methods_needing_update =  self::METHODS_NEEDING_UPDATE;
 
-            if (in_array($current_method, $methods_needing_update) === false) {
+            if (in_array($current_method, $methods_needing_update, true) === false) {
                 return;
             }
 
@@ -196,7 +196,6 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                 __('Updated subscription from \'On hold\' to \'Active\' until payment fails, because a SEPA Direct Debit payment takes some time to process.', 'mollie-payments-for-woocommerce')
             );
         }
-        return;
     }
 
     /**
@@ -258,42 +257,33 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             $mollieApiClient = $this->apiHelper->getApiClient($apiKey);
             $validMandate = false;
             $renewalOrderMethod = $renewal_order->get_payment_method();
-            $isRenewalMethodDirectDebit = in_array($renewalOrderMethod, self::METHODS_NEEDING_UPDATE);
+            $isRenewalMethodDirectDebit = in_array($renewalOrderMethod, self::METHODS_NEEDING_UPDATE, true);
             $renewalOrderMethod = str_replace("mollie_wc_gateway_", "", $renewalOrderMethod);
 
             try {
                 if (!empty($mandateId)) {
-                    $this->logger->debug($this->id . ': Found mandate ID for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id);
-
-                    $mandate =  $mollieApiClient->customers->get($customer_id)->getMandate($mandateId);
-                    $bothDirectDebit = $mandate->method === self::DIRECTDEBIT
-                        && $isRenewalMethodDirectDebit;
-                    $bothCreditcard = $mandate->method !== self::DIRECTDEBIT
-                        && !$isRenewalMethodDirectDebit;
-                    $samePaymentMethodAsMandate = $bothDirectDebit || $bothCreditcard;
-                    if ($mandate->status === 'valid' && $samePaymentMethodAsMandate) {
-                        $data['method'] = $mandate->method;
-                        $data['mandateId'] = $mandateId;
-                        $validMandate = true;
-                    }
+                    list($mandate, $data, $validMandate) = $this->usePreviousMandate(
+                        $renewal_order_id,
+                        $customer_id,
+                        $mollieApiClient,
+                        $mandateId,
+                        $isRenewalMethodDirectDebit,
+                        $data,
+                        $validMandate
+                    );
                 }
                 if (!$validMandate) {
-                    // Get all mandates for the customer ID
-                    $this->logger->debug($this->id . ': Try to get all mandates for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id );
-                    $mandates =  $mollieApiClient->customers->get($customer_id)->mandates();
-                    foreach ($mandates as $mandate) {
-                        if ($mandate->status === 'valid') {
-                            $validMandate = true;
-                            $data['method'] = $mandate->method;
-                            if ($mandate->method === $renewalOrderMethod) {
-                                $data['method'] = $mandate->method;
-                                break;
-                            }
-                        }
-                    }
+                    list($validMandate, $data) = $this->useAnyValidMandate(
+                        $renewal_order_id,
+                        $customer_id,
+                        $mollieApiClient,
+                        $validMandate,
+                        $data,
+                        $renewalOrderMethod
+                    );
                 }
             } catch (ApiException $e) {
-                throw new ApiException(sprintf(__('The customer (%s) could not be used or found. ' . $e->getMessage(), 'mollie-payments-for-woocommerce-mandate-problem'), $customer_id));
+                throw new ApiException(sprintf(__('The customer (%s) could not be used or found. ', 'mollie-payments-for-woocommerce-mandate-problem') . $e->getMessage(), $customer_id));
             }
 
             // Check that there is at least one valid mandate
@@ -340,13 +330,13 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             $payment_object->setActiveMolliePayment($renewal_order_id);
 
             // Set Mollie customer
-            $this->dataService->setUserMollieCustomerIdAtSubscription($renewal_order_id, $payment_object::$customerId);
+            $this->dataService->setUserMollieCustomerIdAtSubscription($renewal_order_id, $payment_object->customerId());
 
             // Tell WooCommerce a new payment was created for the order/subscription
             do_action($this->pluginId . '_payment_created', $payment, $renewal_order);
 
             // Update order status and add order note
-            $this->_updateScheduledPaymentOrder($renewal_order, $initial_order_status, $payment);
+            $this->updateScheduledPaymentOrder($renewal_order, $initial_order_status, $payment);
 
             // Update status of subscriptions with payment method SEPA Direct Debit or similar
             $this->update_subscription_status_for_direct_debit($renewal_order);
@@ -451,7 +441,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
      * @param $initial_order_status
      * @param $payment
      */
-    protected function _updateScheduledPaymentOrder($renewal_order, $initial_order_status, $payment)
+    protected function updateScheduledPaymentOrder($renewal_order, $initial_order_status, $payment)
     {
         $this->mollieOrderService->updateOrderStatus(
             $renewal_order,
@@ -745,5 +735,79 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         $parentOrderMeta = $orderIdMeta ?: PaymentService::PAYMENT_METHOD_TYPE_PAYMENT;
 
         return strpos($parentOrderMeta, 'ord_') !== false;
+    }
+
+    /**
+     * @param int $renewal_order_id
+     * @param $customer_id
+     * @param \Mollie\Api\MollieApiClient $mollieApiClient
+     * @param $mandateId
+     * @param bool $isRenewalMethodDirectDebit
+     * @param $data
+     * @param bool $validMandate
+     * @return array
+     * @throws ApiException
+     */
+    protected function usePreviousMandate(
+        int $renewal_order_id,
+        $customer_id,
+        \Mollie\Api\MollieApiClient $mollieApiClient,
+        $mandateId,
+        bool $isRenewalMethodDirectDebit,
+        $data,
+        bool $validMandate
+    ): array {
+        $this->logger->debug(
+            $this->id . ': Found mandate ID for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id
+        );
+
+        $mandate = $mollieApiClient->customers->get($customer_id)->getMandate($mandateId);
+        $bothDirectDebit = $mandate->method === self::DIRECTDEBIT
+            && $isRenewalMethodDirectDebit;
+        $bothCreditcard = $mandate->method !== self::DIRECTDEBIT
+            && !$isRenewalMethodDirectDebit;
+        $samePaymentMethodAsMandate = $bothDirectDebit || $bothCreditcard;
+        if ($mandate->status === 'valid' && $samePaymentMethodAsMandate) {
+            $data['method'] = $mandate->method;
+            $data['mandateId'] = $mandateId;
+            $validMandate = true;
+        }
+        return [$mandate, $data, $validMandate];
+    }
+
+    /**
+     * @param int $renewal_order_id
+     * @param $customer_id
+     * @param \Mollie\Api\MollieApiClient $mollieApiClient
+     * @param bool $validMandate
+     * @param $data
+     * @param $renewalOrderMethod
+     * @return array
+     * @throws ApiException
+     */
+    protected function useAnyValidMandate(
+        int $renewal_order_id,
+        $customer_id,
+        \Mollie\Api\MollieApiClient $mollieApiClient,
+        bool $validMandate,
+        $data,
+        $renewalOrderMethod
+    ): array {
+// Get all mandates for the customer ID
+        $this->logger->debug(
+            $this->id . ': Try to get all mandates for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id
+        );
+        $mandates = $mollieApiClient->customers->get($customer_id)->mandates();
+        foreach ($mandates as $mandate) {
+            if ($mandate->status === 'valid') {
+                $validMandate = true;
+                $data['method'] = $mandate->method;
+                if ($mandate->method === $renewalOrderMethod) {
+                    $data['method'] = $mandate->method;
+                    break;
+                }
+            }
+        }
+        return [$validMandate, $data];
     }
 }

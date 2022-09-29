@@ -48,8 +48,8 @@ class Data
      * @var Logger
      */
     protected $logger;
-    public $pluginId;
-    public $pluginPath;
+    protected $pluginId;
+    protected $pluginPath;
 
     public function __construct(Api $api_helper, Logger $logger, string $pluginId, Settings $settingsHelper, string $pluginPath)
     {
@@ -58,6 +58,16 @@ class Data
         $this->logger = $logger;
         $this->pluginId = $pluginId;
         $this->pluginPath = $pluginPath;
+    }
+
+    public function getPluginId(): string
+    {
+        return $this->pluginId;
+    }
+
+    public function pluginPath(): string
+    {
+        return $this->pluginPath;
     }
 
     public function isBlockPluginActive(): bool
@@ -153,7 +163,7 @@ class Data
         $max_option_name_length = 191;
 
         if ($option_name_length > $max_option_name_length) {
-            trigger_error(sprintf('Transient id %s is to long. Option name %s (%s) will be to long for database column wp_options.option_name which is varchar(%s).', $transient_id, $option_name, $option_name_length, $max_option_name_length), E_USER_WARNING);
+            trigger_error(sprintf('Transient id %s is to long. Option name %s (%s) will be to long for database column wp_options.option_name which is varchar(%s).', esc_html($transient_id), esc_html($option_name), esc_html($option_name_length), esc_html($max_option_name_length)), E_USER_WARNING);
         }
 
         return $transient_id;

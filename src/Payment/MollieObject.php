@@ -18,17 +18,17 @@ use Psr\Log\LoggerInterface as Logger;
 
 class MollieObject
 {
-    public $data;
+    protected $data;
     /**
      * @var string[]
      */
-    const FINAL_STATUSES = ['completed', 'refunded', 'canceled'];
+    protected const FINAL_STATUSES = ['completed', 'refunded', 'canceled'];
 
-    public static $paymentId;
-    public static $customerId;
-    public static $order;
-    public static $payment;
-    public static $shop_country;
+    protected static $paymentId;
+    protected static $customerId;
+    protected static $order;
+    protected static $payment;
+    protected static $shop_country;
     /**
      * @var Logger
      */
@@ -52,6 +52,16 @@ class MollieObject
         $this->pluginId = $pluginId;
         $base_location = wc_get_base_location();
         static::$shop_country = $base_location['country'];
+    }
+
+    public function data()
+    {
+        return $this->data;
+    }
+
+    public function customerId()
+    {
+        return self::$customerId;
     }
 
     /**
@@ -640,7 +650,7 @@ class MollieObject
             && wcs_order_contains_renewal($orderId)
         ) {
             if ($gateway instanceof MolliePaymentGateway) {
-                $gateway->paymentService->updateOrderStatus(
+                $gateway->paymentService()->updateOrderStatus(
                     $order,
                     $newOrderStatus,
                     sprintf(
@@ -672,7 +682,7 @@ class MollieObject
                 $emails['WC_Email_Failed_Order']->trigger($orderId);
             }
         } elseif ($gateway instanceof MolliePaymentGateway) {
-            $gateway->paymentService->updateOrderStatus(
+            $gateway->paymentService()->updateOrderStatus(
                 $order,
                 $newOrderStatus,
                 sprintf(

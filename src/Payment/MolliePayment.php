@@ -9,6 +9,7 @@ use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\SDK\Api;
+use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Log\LogLevel;
 use WC_Order;
 use WC_Payment_Gateway;
@@ -92,7 +93,7 @@ class MolliePayment extends MollieObject
             'description' => $paymentDescription,
             'redirectUrl' => $returnUrl,
             'webhookUrl' => $webhookUrl,
-            'method' => $gateway->paymentMethod->getProperty('id'),
+            'method' => $gateway->paymentMethod()->getProperty('id'),
             'issuer' => $selectedIssuer,
             'locale' => $paymentLocale,
             'metadata' => [
@@ -110,10 +111,8 @@ class MolliePayment extends MollieObject
         if ($cardToken) {
             $paymentRequestData['cardToken'] = $cardToken;
         }
-
-        if (isset($_POST['token'])) {
-            $applePayToken = $_POST['token'];
-            $applePayToken = filter_var($applePayToken, FILTER_SANITIZE_STRING);
+        $applePayToken = filter_input(INPUT_POST, 'token', FILTER_SANITIZE_STRING);
+        if ($applePayToken) {
             $encodedApplePayToken = json_encode($applePayToken);
             $paymentRequestData['applePayPaymentToken'] = $encodedApplePayToken;
         }
@@ -281,13 +280,13 @@ class MolliePayment extends MollieObject
 
         // New order status
         if ($orderStatusCancelledPayments === 'pending' || $orderStatusCancelledPayments === null) {
-            $newOrderStatus = MolliePaymentGateway::STATUS_PENDING;
+            $newOrderStatus = SharedDataDictionary::STATUS_PENDING;
         } elseif ($orderStatusCancelledPayments === 'cancelled') {
-            $newOrderStatus = MolliePaymentGateway::STATUS_CANCELLED;
+            $newOrderStatus = SharedDataDictionary::STATUS_CANCELLED;
         }
         // if I cancel manually the order is canceled in Woo before calling Mollie
         if ($order->get_status() === 'cancelled') {
-            $newOrderStatus = MolliePaymentGateway::STATUS_CANCELLED;
+            $newOrderStatus = SharedDataDictionary::STATUS_CANCELLED;
         }
 
         // Get current gateway
@@ -329,7 +328,7 @@ class MolliePayment extends MollieObject
         $gateway = wc_get_payment_gateway_by_order($order);
 
         // New order status
-        $newOrderStatus = MolliePaymentGateway::STATUS_FAILED;
+        $newOrderStatus = SharedDataDictionary::STATUS_FAILED;
 
         // Overwrite plugin-wide
         $newOrderStatus = apply_filters($this->pluginId . '_order_status_failed', $newOrderStatus);
@@ -383,7 +382,7 @@ class MolliePayment extends MollieObject
         }
 
         // New order status
-        $newOrderStatus = MolliePaymentGateway::STATUS_CANCELLED;
+        $newOrderStatus = SharedDataDictionary::STATUS_CANCELLED;
 
         // Overwrite plugin-wide
         $newOrderStatus = apply_filters($this->pluginId . '_order_status_expired', $newOrderStatus);
@@ -498,10 +497,11 @@ class MolliePayment extends MollieObject
         $newOrderStatus,
         $orderId
     ) {
+
         if ($this->isOrderPaymentStartedByOtherGateway($order) || ! is_a($gateway, MolliePaymentGateway::class)) {
             $this->informNotUpdatingStatus($orderId, $gateway->id, $order);
             return;
         }
-        $gateway->paymentService->updateOrderStatus($order, $newOrderStatus);
+        $gateway->paymentService()->updateOrderStatus($order, $newOrderStatus);
     }
 }

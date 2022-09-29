@@ -48,9 +48,9 @@ class PayPalDataObjectTest extends TestCase
 
         $dataObject->orderData($postOrder, 'productDetail');
 
-        self::assertEquals($postOrder['nonce'], $dataObject->nonce);
-        self::assertEquals($postOrder['productId'], $dataObject->productId);
-        self::assertEquals($postOrder['productQuantity'], $dataObject->productQuantity);
+        self::assertEquals($postOrder['nonce'], $dataObject->nonce());
+        self::assertEquals($postOrder['productId'], $dataObject->productId());
+        self::assertEquals($postOrder['productQuantity'], $dataObject->productQuantity());
         self::assertFalse(isset($dataObject->malicious));
     }
 

@@ -37,15 +37,11 @@ class CheckoutBlockService
         $actionName = 'mollie_checkout_blocks_canmakepayment';
         add_action(
             'wp_ajax_' . $actionName,
-            function () {
-                return $this->availableGateways();
-            }
+            [$this, 'availableGateways']
         );
         add_action(
             'wp_ajax_nopriv_' . $actionName,
-            function () {
-                return $this->availableGateways();
-            }
+            [$this, 'availableGateways']
         );
     }
 
@@ -79,7 +75,7 @@ class CheckoutBlockService
             $availableGateways = $this->maybeRemoveVoucher($availableGateways);
             $filterKey = "{$filters['amount']['currency']}-{$filters['locale']}-{$filters['billingCountry']}";
             foreach ($availableGateways as $key => $gateway) {
-                $availablePaymentMethods[$filterKey][$key] = $gateway->paymentMethod->getProperty('id');
+                $availablePaymentMethods[$filterKey][$key] = $gateway->paymentMethod()->getProperty('id');
             }
         }
         wp_send_json_success($availablePaymentMethods);

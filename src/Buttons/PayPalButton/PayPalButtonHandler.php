@@ -30,35 +30,35 @@ class PayPalButtonHandler
      */
     public function bootstrap($enabledInProduct, $enabledInCart)
     {
-        if($enabledInProduct){
+        if ($enabledInProduct) {
             add_action(
-                    'woocommerce_after_single_product',
-                    function () {
-                        $product = wc_get_product(get_the_id());
-                        if (!$product || $product->is_type('subscription') || $product instanceof \WC_Product_Variable_Subscription) {
-                            return;
-                        }
-                        $productNeedShipping = mollieWooCommerceCheckIfNeedShipping($product);
-                        if(!$productNeedShipping){
-                            $this->renderPayPalButton();
-                        }
+                'woocommerce_after_single_product',
+                function () {
+                    $product = wc_get_product(get_the_id());
+                    if (!$product || $product->is_type('subscription') || $product instanceof \WC_Product_Variable_Subscription) {
+                        return;
                     }
+                    $productNeedShipping = mollieWooCommerceCheckIfNeedShipping($product);
+                    if (!$productNeedShipping) {
+                        $this->renderPayPalButton();
+                    }
+                }
             );
         }
-        if($enabledInCart){
+        if ($enabledInCart) {
             add_action(
-                    'woocommerce_cart_totals_after_order_total',
-                    function () {
-                        $cart = WC()->cart;
-                        foreach ($cart->get_cart_contents() as $product){
-                            if($product['data']->is_type('subscription') || $product['data'] instanceof \WC_Product_Subscription_Variation){
-                                return;
-                            }
-                        }
-                        if(!$cart->needs_shipping()){
-                            $this->renderPayPalButton();
+                'woocommerce_cart_totals_after_order_total',
+                function () {
+                    $cart = WC()->cart;
+                    foreach ($cart->get_cart_contents() as $product) {
+                        if ($product['data']->is_type('subscription') || $product['data'] instanceof \WC_Product_Subscription_Variation) {
+                            return;
                         }
                     }
+                    if (!$cart->needs_shipping()) {
+                        $this->renderPayPalButton();
+                    }
+                }
             );
         }
 

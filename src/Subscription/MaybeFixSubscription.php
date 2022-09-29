@@ -14,9 +14,7 @@ class MaybeFixSubscription
         $canSchedule = function_exists('as_schedule_single_action');
         if (!$fixSubscriptionsProcess && $hasSubscriptionPlugin && $canSchedule) {
             as_schedule_single_action(time(), 'runScheduledFix');
-            add_action('runScheduledFix', function () {
-                return $this->retrieveAndFixBrokenSubscriptions();
-            });
+            add_action('runScheduledFix', [$this, 'retrieveAndFixBrokenSubscriptions']);
         }
     }
 

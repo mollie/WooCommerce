@@ -323,7 +323,7 @@ class AssetsModule implements ExecutableModule
             filemtime($this->getPluginPath('/public/js/applepayDirectCart.min.js')),
             true
         );
-        wp_register_script('mollie', 'https://js.mollie.com/v1/mollie.js', [], null, true);
+        wp_register_script('mollie', 'https://js.mollie.com/v1/mollie.js', [], date("d"), true);
         wp_register_script(
             'mollie-components',
             $this->getPluginUrl('/public/js/mollie-components.min.js'),
@@ -478,7 +478,7 @@ class AssetsModule implements ExecutableModule
         ) {
             $filterKey = "{$filters['amount']['currency']}-{$filters['locale']}-{$filters['billingCountry']}";
             foreach ($availableGateways as $key => $gateway) {
-                $availablePaymentMethods[$filterKey][$key] = $gateway->paymentMethod->getProperty('id');
+                $availablePaymentMethods[$filterKey][$key] = $gateway->paymentMethod()->getProperty('id');
             }
         }
 
@@ -494,25 +494,26 @@ class AssetsModule implements ExecutableModule
         $gatewayData = [];
         $isSepaEnabled = isset($gatewayInstances['mollie_wc_gateway_directdebit']) && $gatewayInstances['mollie_wc_gateway_directdebit']->enabled === 'yes';
         foreach ($gatewayInstances as $gatewayKey => $gateway) {
-            $gatewayId = $gateway->paymentMethod->getProperty('id');
+            $gatewayId = $gateway->paymentMethod()->getProperty('id');
 
             if ($gateway->enabled !== 'yes' || $gatewayId === 'directdebit') {
                 continue;
             }
-            $content = $gateway->paymentMethod->getProcessedDescriptionForBlock();
+            $content = $gateway->paymentMethod()->getProcessedDescriptionForBlock();
             $issuers = false;
-            if ($gateway->paymentMethod->getProperty('paymentFields')) {
-                $gateway->paymentMethod->paymentFieldsService->setStrategy($gateway->paymentMethod);
-                $issuers = $gateway->paymentMethod->paymentFieldsService->getStrategyMarkup($gateway);
+            if ($gateway->paymentMethod()->getProperty('paymentFields')) {
+                $paymentFieldsService = $gateway->paymentMethod()->paymentFieldsService();
+                $paymentFieldsService->setStrategy($gateway->paymentMethod());
+                $issuers = $gateway->paymentMethod()->paymentFieldsService->getStrategyMarkup($gateway);
             }
-            if ($gatewayId == 'creditcard') {
+            if ($gatewayId === 'creditcard') {
                 $content .= $issuers;
                 $issuers = false;
             }
-            $title = $gateway->paymentMethod->getProperty('title') === false ?
-                $gateway->paymentMethod->getProperty('defaultTitle') : $gateway->paymentMethod->getProperty('title');
+            $title = $gateway->paymentMethod()->getProperty('title') === false ?
+                $gateway->paymentMethod()->getProperty('defaultTitle') : $gateway->paymentMethod()->getProperty('title');
             $labelMarkup = "<span style='margin-right: 1em'>{$title}</span>{$gateway->icon}";
-            $hasSurcharge = $gateway->paymentMethod->hasSurcharge();
+            $hasSurcharge = $gateway->paymentMethod()->hasSurcharge();
             $gatewayData[] = [
                 'name' => $gatewayKey,
                 'label' => $labelMarkup,
@@ -523,9 +524,9 @@ class AssetsModule implements ExecutableModule
                 'contentFallback' => __('Please choose a billing country to see the available payment methods', 'mollie-payments-for-woocommerce'),
                 'edit' => $content,
                 'paymentMethodId' => $gatewayKey,
-                'allowedCountries' => $gateway->paymentMethod->getProperty('allowed_countries'),
-                'ariaLabel' => $gateway->paymentMethod->getProperty('defaultDescription'),
-                'supports' => $this->gatewaySupportsFeatures($gateway->paymentMethod, $isSepaEnabled),
+                'allowedCountries' => $gateway->paymentMethod()->getProperty('allowed_countries'),
+                'ariaLabel' => $gateway->paymentMethod()->getProperty('defaultDescription'),
+                'supports' => $this->gatewaySupportsFeatures($gateway->paymentMethod(), $isSepaEnabled),
             ];
         }
         $dataToScript['gatewayData'] = $gatewayData;

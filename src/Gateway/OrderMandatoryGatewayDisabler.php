@@ -48,7 +48,7 @@ class OrderMandatoryGatewayDisabler
             $gateways,
             static function ($gateway) {
                 return !($gateway instanceof MolliePaymentGateway)
-                    || !$gateway->paymentMethod->getProperty('orderMandatory');
+                    || !$gateway->paymentMethod()->getProperty('orderMandatory');
             }
         );
     }

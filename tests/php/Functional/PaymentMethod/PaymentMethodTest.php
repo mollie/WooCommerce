@@ -165,7 +165,7 @@ class PaymentMethodTest extends TestCase
         )->getMock();
         $paymentMethod->config = $this->helperMocks->gatewayMockedOptions($paymentMethodName, false, true);
         $paymentMethod->settings = $this->helperMocks->paymentMethodSettings();
-        $paymentMethod->id = $paymentMethod->config['id'];
+        $paymentMethod->id = $paymentMethod->getConfig()['id'];
 
         return $paymentMethod;
     }

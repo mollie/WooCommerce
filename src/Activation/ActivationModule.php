@@ -60,7 +60,7 @@ class ActivationModule implements ExecutableModule
             global $wpdb;
             $pendingPaymentConfirmTable = $wpdb->prefix . SharedDataDictionary::PENDING_PAYMENT_DB_TABLE_NAME;
             require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-            if ($wpdb->get_var("show tables like '$pendingPaymentConfirmTable'") !== $pendingPaymentConfirmTable) {
+            if ($wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $pendingPaymentConfirmTable)) !== $pendingPaymentConfirmTable) {
                 $sql = "
 					CREATE TABLE " . $pendingPaymentConfirmTable . " (
                     id int(11) NOT NULL AUTO_INCREMENT,
@@ -119,7 +119,7 @@ class ActivationModule implements ExecutableModule
                 return $query_vars;
             }
         );
-        add_action(
+        add_filter(
             'template_include',
             static function ($template) {
                 if (

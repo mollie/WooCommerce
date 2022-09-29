@@ -11,6 +11,7 @@ use Mollie\WooCommerce\Gateway\AbstractGateway;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Shared\Data;
+use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
 use WC_Order;
@@ -73,8 +74,8 @@ class MollieOrderService
             return;
         }
 
-        $order_id = sanitize_text_field($_GET['order_id']);
-        $key = sanitize_text_field($_GET['key']);
+        $order_id = sanitize_text_field(wp_unslash($_GET['order_id']));
+        $key = sanitize_text_field(wp_unslash($_GET['key']));
 
         $data_helper = $this->data;
         $order = wc_get_order($order_id);
@@ -93,13 +94,14 @@ class MollieOrderService
         $gateway = wc_get_payment_gateway_by_order($order);
         $this->setGateway($gateway);
         // No Mollie payment id provided
-        if (empty($_POST['id'])) {
+        $paymentId = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_STRING);
+        if (empty($paymentId)) {
             $this->httpResponse->setHttpResponseCode(400);
             $this->logger->debug(__METHOD__ . ': No payment object ID provided.', [true]);
             return;
         }
 
-        $payment_object_id = sanitize_text_field($_POST['id']);
+        $payment_object_id = sanitize_text_field(wp_unslash($paymentId));
         $test_mode = $data_helper->getActiveMolliePaymentMode($order_id) === 'test';
 
         // Load the payment from Mollie, do not use cache
@@ -113,7 +115,7 @@ class MollieOrderService
             return;
         }
 
-        $payment = $payment_object->getPaymentObject($payment_object->data, $test_mode, $use_cache = false);
+        $payment = $payment_object->getPaymentObject($payment_object->data(), $test_mode, $use_cache = false);
 
         // Payment not found
         if (!$payment) {
@@ -198,12 +200,16 @@ class MollieOrderService
         }
 
         // Has initial order status 'on-hold'
-        if ($this->gateway->paymentMethod->getInitialOrderStatus() === MolliePaymentGateway::STATUS_ON_HOLD && $order->has_status(MolliePaymentGateway::STATUS_ON_HOLD)) {
-            $this->logger->debug(__METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, has status On-Hold. ', [true]);
-
+        if (
+            $this->gateway->paymentMethod()->getInitialOrderStatus() === SharedDataDictionary::STATUS_ON_HOLD
+            && $order->has_status(SharedDataDictionary::STATUS_ON_HOLD)
+        ) {
+            $this->logger->debug(
+                __METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, has status On-Hold. ',
+                [true]
+            );
             return true;
         }
-
         return false;
     }
 
@@ -404,7 +410,7 @@ class MollieOrderService
             //
 
             // New order status
-            $newOrderStatus = MolliePaymentGateway::STATUS_ON_HOLD;
+            $newOrderStatus = SharedDataDictionary::STATUS_ON_HOLD;
 
             // Overwrite plugin-wide
             $newOrderStatus = apply_filters($this->pluginId . '_order_status_on_hold', $newOrderStatus);
@@ -637,7 +643,7 @@ class MollieOrderService
             $this->updateStateRefund(
                 $order,
                 $payment,
-                MolliePaymentGateway::STATUS_REFUNDED,
+                SharedDataDictionary::STATUS_REFUNDED,
                 '_order_status_refunded'
             );
         }
@@ -720,7 +726,7 @@ class MollieOrderService
         if (!($this->gateway instanceof MolliePaymentGateway)) {
             return $payment_method_title;
         }
-        if ($payment->method === $this->gateway->paymentMethod->getProperty('id')) {
+        if ($payment->method === $this->gateway->paymentMethod()->getProperty('id')) {
             $payment_method_title = $this->gateway->method_title;
         }
         return $payment_method_title;
@@ -736,7 +742,7 @@ class MollieOrderService
         $order->update_status($new_status, $note);
 
         switch ($new_status) {
-            case MolliePaymentGateway::STATUS_ON_HOLD:
+            case SharedDataDictionary::STATUS_ON_HOLD:
                 if ($restore_stock === true) {
                     if (! $order->get_meta('_order_stock_reduced', true)) {
                         // Reduce order stock
@@ -748,9 +754,9 @@ class MollieOrderService
 
                 break;
 
-            case MolliePaymentGateway::STATUS_PENDING:
-            case MolliePaymentGateway::STATUS_FAILED:
-            case MolliePaymentGateway::STATUS_CANCELLED:
+            case SharedDataDictionary::STATUS_PENDING:
+            case SharedDataDictionary::STATUS_FAILED:
+            case SharedDataDictionary::STATUS_CANCELLED:
                 if ($order->get_meta('_order_stock_reduced', true)) {
                     // Restore order stock
                     $this->data->restoreOrderStock($order);

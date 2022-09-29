@@ -6,11 +6,11 @@ namespace Mollie\WooCommerce\Shared;
 
 use Mollie\WooCommerce\Gateway\Surcharge;
 use WC_Order;
-use \WC_Order_Item_Fee;
+use WC_Order_Item_Fee;
 
 class GatewaySurchargeHandler
 {
-    public $gatewayFeeLabel;
+    protected $gatewayFeeLabel;
     protected $surcharge;
 
     /**
@@ -270,7 +270,8 @@ class GatewaySurchargeHandler
 
     protected function canProcessOrder()
     {
-        $orderId = !empty(filter_var(wp_unslash($_POST['orderId']), FILTER_SANITIZE_NUMBER_INT)) ? filter_var(wp_unslash($_POST['orderId']), FILTER_SANITIZE_NUMBER_INT) : false;
+        $postedOrderId = filter_input(INPUT_POST, 'orderId', FILTER_SANITIZE_NUMBER_INT);
+        $orderId = !empty($postedOrderId) ? $postedOrderId : false;
         if (!$orderId) {
             return false;
         }
@@ -283,7 +284,8 @@ class GatewaySurchargeHandler
 
     protected function canProcessGateway()
     {
-        $gateway = !empty(filter_var(wp_unslash($_POST['payment_method']), FILTER_SANITIZE_STRING)) ? filter_var(wp_unslash($_POST['payment_method']), FILTER_SANITIZE_STRING) : false;
+        $postedMethod = filter_input(INPUT_POST, 'payment_method', FILTER_SANITIZE_STRING);
+        $gateway = !empty($postedMethod) ? $postedMethod : false;
         if (!$gateway) {
             return false;
         }

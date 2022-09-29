@@ -16,6 +16,7 @@ use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
+use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
@@ -79,7 +80,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
                $settingsHelper = $container->get('settings.settings_helper');
                assert($settingsHelper instanceof Settings);
                return new MollieObject($data, $logger, $paymentFactory, $apiHelper, $settingsHelper, $pluginId);
-           }
+           },
         ];
     }
 
@@ -189,7 +190,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
                 foreach ($unpaid_orders as $unpaid_order) {
                     $order = wc_get_order($unpaid_order);
                     add_filter('mollie-payments-for-woocommerce_order_status_cancelled', static function ($newOrderStatus) {
-                        return MolliePaymentGateway::STATUS_CANCELLED;
+                        return SharedDataDictionary::STATUS_CANCELLED;
                     });
                     $order->update_status('cancelled', __('Unpaid order cancelled - time limit reached.', 'woocommerce'), true);
                     $this->cancelOrderAtMollie($order->get_id());

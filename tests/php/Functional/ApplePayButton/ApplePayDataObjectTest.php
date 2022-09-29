@@ -95,30 +95,30 @@ class ApplePayDataObjectTest extends TestCase
         $dataObject = new ApplePayDataObjectHttp($logger);
         $dataObject->validationData($postValidation);
 
-        $nonce = $dataObject->nonce;
+        $nonce = $dataObject->nonce();
         self::assertEquals($postValidation['woocommerce-process-checkout-nonce'], $nonce);
-        $validationUrl = $dataObject->validationUrl;
+        $validationUrl = $dataObject->validationUrl();
         self::assertEquals($postValidation['validationUrl'], $validationUrl);
 
         $dataObject->updateContactData($postUpdateContact);
 
-        $nonce = $dataObject->nonce;
+        $nonce = $dataObject->nonce();
         self::assertEquals($postUpdateContact['woocommerce-process-checkout-nonce'], $nonce);
-        $productId = $dataObject->productId;
+        $productId = $dataObject->productId();
         self::assertEquals($postUpdateContact['productId'], $productId);
         $simplifiedContact = $dataObject->simplifiedContact;
         self::assertEquals($expectedContact, $simplifiedContact);
 
         $dataObject->updateMethodData($postUpdateMethod);
 
-        $method = $dataObject->shippingMethod;
+        $method = $dataObject->shippingMethod();
 
         self::assertEquals($postUpdateMethod['shippingMethod'], $method);
 
         $dataObject->orderData($postOrder, 'productDetail');
 
 
-        $shippingAddress = $dataObject->shippingAddress;
+        $shippingAddress = $dataObject->shippingAddress();
         $shippingAddress['address_1'] = htmlspecialchars_decode($shippingAddress['address_1'], ENT_QUOTES);
         $shippingAddress['address_2'] = htmlspecialchars_decode($shippingAddress['address_2'], ENT_QUOTES);
 
@@ -175,14 +175,14 @@ class ApplePayDataObjectTest extends TestCase
             ->withAnyArgs();
         $dataObject->validationData($postMissingIndex);
 
-        self::assertEquals($expectedErrorsIndex, $dataObject->errors);
+        self::assertEquals($expectedErrorsIndex, $dataObject->errors());
 
 
         $dataObject->validationData($postMissingValue);
-        self::assertEquals($expectedErrorsValue, $dataObject->errors);
+        self::assertEquals($expectedErrorsValue, $dataObject->errors());
 
         $dataObject->updateContactData($postUpdateContact);
-        self::assertEquals($expectedErrorsContact, $dataObject->errors);
+        self::assertEquals($expectedErrorsContact, $dataObject->errors());
         /*
          * Execute Test
          */

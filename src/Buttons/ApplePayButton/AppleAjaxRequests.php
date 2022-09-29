@@ -61,63 +61,43 @@ class AppleAjaxRequests
     {
         add_action(
             'wp_ajax_' . PropertiesDictionary::VALIDATION,
-            function () {
-                return $this->validateMerchant();
-            }
+            [$this, 'validateMerchant']
         );
         add_action(
             'wp_ajax_nopriv_' . PropertiesDictionary::VALIDATION,
-            function () {
-                return $this->validateMerchant();
-            }
+            [$this, 'validateMerchant']
         );
         add_action(
             'wp_ajax_' . PropertiesDictionary::CREATE_ORDER,
-            function () {
-                return $this->createWcOrder();
-            }
+            [$this, 'createWcOrder']
         );
         add_action(
             'wp_ajax_nopriv_' . PropertiesDictionary::CREATE_ORDER,
-            function () {
-                return $this->createWcOrder();
-            }
+            [$this, 'createWcOrder']
         );
         add_action(
             'wp_ajax_' . PropertiesDictionary::CREATE_ORDER_CART,
-            function () {
-                return $this->createWcOrderFromCart();
-            }
+            [$this, 'createWcOrderFromCart']
         );
         add_action(
             'wp_ajax_nopriv_' . PropertiesDictionary::CREATE_ORDER_CART,
-            function () {
-                return $this->createWcOrderFromCart();
-            }
+            [$this, 'createWcOrderFromCart']
         );
         add_action(
             'wp_ajax_' . PropertiesDictionary::UPDATE_SHIPPING_CONTACT,
-            function () {
-                return $this->updateShippingContact();
-            }
+            [$this, 'updateShippingContact']
         );
         add_action(
             'wp_ajax_nopriv_' . PropertiesDictionary::UPDATE_SHIPPING_CONTACT,
-            function () {
-                return $this->updateShippingContact();
-            }
+            [$this, 'updateShippingContact']
         );
         add_action(
             'wp_ajax_' . PropertiesDictionary::UPDATE_SHIPPING_METHOD,
-            function () {
-                return $this->updateShippingMethod();
-            }
+            [$this, 'updateShippingMethod']
         );
         add_action(
             'wp_ajax_nopriv_' . PropertiesDictionary::UPDATE_SHIPPING_METHOD,
-            function () {
-                return $this->updateShippingMethod();
-            }
+            [$this, 'updateShippingMethod']
         );
     }
     /**
@@ -128,13 +108,13 @@ class AppleAjaxRequests
     public function validateMerchant()
     {
         $applePayRequestDataObject = $this->applePayDataObjectHttp();
-        $applePayRequestDataObject->validationData($_POST);
-        if (!$this->isNonceValid($applePayRequestDataObject)) {
+        if (!$this->isNonceValid()) {
             return;
         }
+        $applePayRequestDataObject->validationData();
         //we cannot access the endpoint in testmode, we override it to be testMode = false
         $apiKey = $this->settingsHelper->getApiKey(false);
-        $validationUrl = $applePayRequestDataObject->validationUrl;
+        $validationUrl = $applePayRequestDataObject->validationUrl();
         $completeDomain = parse_url(get_site_url(), PHP_URL_HOST);
         $removeHttp = ["https://", "http://"];
         $regex = '/.+\.\w+\/?((\w*\/*)*)/i';
@@ -151,12 +131,8 @@ class AppleAjaxRequests
             );
         } catch (\Mollie\Api\Exceptions\ApiException $apiException) {
             update_option('mollie_wc_applepay_validated', 'no');
-            $errorMessage = $apiException->getMessage();
             wp_send_json_error(
-                __(
-                    $errorMessage,
-                    'mollie-payments-for-woocommerce'
-                )
+                $apiException->getMessage()
             );
         }
         update_option('mollie_wc_applepay_validated', 'yes');
@@ -173,14 +149,12 @@ class AppleAjaxRequests
     public function updateShippingContact()
     {
         $applePayRequestDataObject = $this->applePayDataObjectHttp();
-        $applePayRequestDataObject->updateContactData($_POST);
-
-        if (!$this->isNonceValid($applePayRequestDataObject)) {
+        if (!$this->isNonceValid()) {
             return;
         }
-
+        $applePayRequestDataObject->updateContactData();
         if ($applePayRequestDataObject->hasErrors()) {
-            $this->responseTemplates->responseWithDataErrors($applePayRequestDataObject->errors);
+            $this->responseTemplates->responseWithDataErrors($applePayRequestDataObject->errors());
             return;
         }
 
@@ -191,7 +165,7 @@ class AppleAjaxRequests
         $countries = $this->createWCCountries();
         $allowedSellingCountries = $countries->get_allowed_countries();
         $allowedShippingCountries = $countries->get_shipping_countries();
-        $userCountry = $applePayRequestDataObject->simplifiedContact['country'];
+        $userCountry = $applePayRequestDataObject->simplifiedContact()['country'];
         $isAllowedSellingCountry = array_key_exists(
             $userCountry,
             $allowedSellingCountries
@@ -201,8 +175,7 @@ class AppleAjaxRequests
             $userCountry,
             $allowedShippingCountries
         );
-        $productNeedShipping
-            = $applePayRequestDataObject->needShipping;
+        $productNeedShipping = $applePayRequestDataObject->needShipping();
 
         if (!$isAllowedSellingCountry) {
             $this->responseTemplates->responseWithDataErrors(
@@ -231,13 +204,12 @@ class AppleAjaxRequests
     public function updateShippingMethod()
     {
         $applePayRequestDataObject = $this->applePayDataObjectHttp();
-        $applePayRequestDataObject->updateMethodData($_POST);
-
-        if (!$this->isNonceValid($applePayRequestDataObject)) {
+        if (!$this->isNonceValid()) {
             return;
         }
+        $applePayRequestDataObject->updateMethodData();
         if ($applePayRequestDataObject->hasErrors()) {
-            $this->responseTemplates->responseWithDataErrors($applePayRequestDataObject->errors);
+            $this->responseTemplates->responseWithDataErrors($applePayRequestDataObject->errors());
         }
         $paymentDetails = $this->whichCalculateTotals($applePayRequestDataObject);
         $response = $this->responseTemplates->appleFormattedResponse($paymentDetails);
@@ -260,7 +232,7 @@ class AppleAjaxRequests
         $this->oldCartContents = WC()->cart->get_cart_contents();
         $this->emptyCurrentCart();
         $applePayRequestDataObject = $this->applePayDataObjectHttp();
-        $applePayRequestDataObject->orderData($_POST, 'productDetail');
+        $applePayRequestDataObject->orderData('productDetail');
 
         $cartItemKey = $cart->add_to_cart(
             filter_input(INPUT_POST, 'productId'),
@@ -288,7 +260,7 @@ class AppleAjaxRequests
     {
         $this->responseAfterSuccessfulResult();
         $applePayRequestDataObject = $this->applePayDataObjectHttp();
-        $applePayRequestDataObject->orderData($_POST, 'cart');
+        $applePayRequestDataObject->orderData('cart');
         $this->addAddressesToOrder($applePayRequestDataObject);
         WC()->checkout()->process_checkout();
     }
@@ -377,15 +349,14 @@ class AppleAjaxRequests
                 $shippingMethodId = $shippingMethod['identifier'];
                 WC()->session->set(
                     'chosen_shipping_methods',
-                    array($shippingMethodId)
+                    [$shippingMethodId]
                 );
             }
             $cartItemKey = $cart->add_to_cart($productId, $productQuantity);
             if ($cart->needs_shipping()) {
                 list(
                     $shippingMethodsArray, $selectedShippingMethod
-                    )
-                    = $this->cartShippingMethods(
+                    ) = $this->cartShippingMethods(
                         $cart,
                         $customerAddress,
                         $shippingMethod,
@@ -412,8 +383,6 @@ class AppleAjaxRequests
             }
         } catch (Exception $exception) {
         }
-
-
         return $results;
     }
 
@@ -454,6 +423,7 @@ class AppleAjaxRequests
         $shippingMethod,
         $shippingMethodId
     ): array {
+
         $shippingMethodsArray = [];
         $shippingMethods = WC()->shipping->calculate_shipping(
             $this->getShippingPackages(
@@ -467,7 +437,7 @@ class AppleAjaxRequests
                 "label" => $rate->get_label(),
                 "detail" => "",
                 "amount" => $rate->get_cost(),
-                "identifier" => $rate->get_id()
+                "identifier" => $rate->get_id(),
             ];
             if (!$done) {
                 $done = true;
@@ -475,7 +445,7 @@ class AppleAjaxRequests
                     : $rate->get_id();
                 WC()->session->set(
                     'chosen_shipping_methods',
-                    array($shippingMethodId)
+                    [$shippingMethodId]
                 );
             }
         }
@@ -485,7 +455,7 @@ class AppleAjaxRequests
             $selectedShippingMethod = $shippingMethod;
         }
 
-        return array($shippingMethodsArray, $selectedShippingMethod);
+        return [$shippingMethodsArray, $selectedShippingMethod];
     }
 
     /**
@@ -498,7 +468,7 @@ class AppleAjaxRequests
     protected function getShippingPackages($customerAddress, $total)
     {
         // Packages array for storing 'carts'
-        $packages = array();
+        $packages = [];
         $packages[0]['contents'] = WC()->cart->cart_contents;
         $packages[0]['contents_cost'] = $total;
         $packages[0]['applied_coupons'] = WC()->session->applied_coupon;
@@ -508,7 +478,6 @@ class AppleAjaxRequests
         $packages[0]['destination']['city'] = $customerAddress['city'];
         $packages[0]['destination']['address'] = '';
         $packages[0]['destination']['address_2'] = '';
-
 
         return apply_filters('woocommerce_cart_shipping_packages', $packages);
     }
@@ -525,6 +494,7 @@ class AppleAjaxRequests
         $selectedShippingMethod,
         $shippingMethodsArray
     ): array {
+
         $surcharge = new Surcharge();
         $surchargeLabel = get_option(
             'mollie-payments-for-woocommerce_gatewayFeeLabel',
@@ -532,8 +502,8 @@ class AppleAjaxRequests
         );
         $settings = get_option('mollie_wc_gateway_applepay_settings', false);
 
-        $calculatedFee = round((float)$surcharge->calculateFeeAmount($cart, $settings ), 2);
-        $surchargeFeeValue = !empty($settings)?$calculatedFee:0;
+        $calculatedFee = round((float)$surcharge->calculateFeeAmount($cart, $settings), 2);
+        $surchargeFeeValue = !empty($settings) ? $calculatedFee : 0;
         $total = $cart->get_total('edit') + $surchargeFeeValue;
         $total = round($total, 2);
         $result = [
@@ -542,19 +512,19 @@ class AppleAjaxRequests
                 'amount' => $cart->needs_shipping()
                     ? $cart->get_shipping_total() : null,
                 'label' => $cart->needs_shipping()
-                    ? $selectedShippingMethod['label'] : null
+                    ? $selectedShippingMethod['label'] : null,
             ],
 
             'shippingMethods' => $cart->needs_shipping()
                 ? $shippingMethodsArray : null,
             'taxes' => $cart->get_total_tax(),
-            'total' => $total
+            'total' => $total,
         ];
 
-        if($surchargeFeeValue){
+        if ($surchargeFeeValue) {
             $result['fee'] =  [
                 'amount' => $surchargeFeeValue,
-                'label' => $surchargeLabel
+                'label' => $surchargeLabel,
             ];
         }
         return $result;
@@ -572,6 +542,7 @@ class AppleAjaxRequests
         $customerAddress = null,
         $shippingMethodId = null
     ): array {
+
         $results = [];
         if (WC()->cart->is_empty()) {
             return [];
@@ -585,15 +556,14 @@ class AppleAjaxRequests
             if ($shippingMethodId) {
                 WC()->session->set(
                     'chosen_shipping_methods',
-                    array($shippingMethodId['identifier'])
+                    [$shippingMethodId['identifier']]
                 );
             }
 
             if ($cart->needs_shipping()) {
                 list(
                     $shippingMethodsArray, $selectedShippingMethod
-                    )
-                    = $this->cartShippingMethods(
+                    ) = $this->cartShippingMethods(
                         $cart,
                         $customerAddress,
                         $shippingMethodId,
@@ -627,14 +597,13 @@ class AppleAjaxRequests
     protected function addAddressesToOrder(
         ApplePayDataObjectHttp $applePayRequestDataObject
     ) {
+
         add_action(
             'woocommerce_checkout_create_order',
-            function ($order, $data) use ($applePayRequestDataObject) {
-                if (isset($applePayRequestDataObject->shippingMethod)) {
-                    $billingAddress
-                        = $applePayRequestDataObject->billingAddress;
-                    $shippingAddress
-                        = $applePayRequestDataObject->shippingAddress;
+            static function ($order, $data) use ($applePayRequestDataObject) {
+                if ($applePayRequestDataObject->shippingMethod() !== null) {
+                    $billingAddress = $applePayRequestDataObject->billingAddress();
+                    $shippingAddress = $applePayRequestDataObject->shippingAddress();
                     //apple puts email in shippingAddress while we get it from WC's billingAddress
                     $billingAddress['email'] = $shippingAddress['email'];
                     $billingAddress['phone'] = $shippingAddress['phone'];
@@ -642,8 +611,7 @@ class AppleAjaxRequests
                     $order->set_address($billingAddress, 'billing');
                     $order->set_address($shippingAddress, 'shipping');
                 }
-            }
-            ,
+            },
             10,
             2
         );
@@ -655,11 +623,11 @@ class AppleAjaxRequests
      *
      * @return bool|int
      */
-    protected function isNonceValid(
-        ApplePayDataObjectHttp $applePayRequestDataObject
-    ) {
+    protected function isNonceValid()
+    {
+        $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_STRING);
         return wp_verify_nonce(
-            $applePayRequestDataObject->nonce,
+            $nonce,
             'woocommerce-process_checkout'
         );
     }
@@ -708,12 +676,14 @@ class AppleAjaxRequests
             $cart->restore_cart_item($cartItemKey);
         }
     }
+
     protected function responseAfterSuccessfulResult(): void
     {
         add_filter(
             'woocommerce_payment_successful_result',
             function ($result, $order_id) {
-                if (isset($result['result'])
+                if (
+                    isset($result['result'])
                     && 'success' === $result['result']
                 ) {
                     $this->responseTemplates->responseSuccess(
@@ -742,10 +712,10 @@ class AppleAjaxRequests
                         )
                     );
                 }
+                return $result;
             },
             10,
             2
         );
     }
-
 }

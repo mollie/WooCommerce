@@ -181,7 +181,7 @@ class MollieSettingsPage extends WC_Settings_Page
                 'id' => $this->settingsHelper->getSettingId('title'),
                 'title' => __('Mollie Settings', 'mollie-payments-for-woocommerce'),
                 'type' => 'title',
-                'desc' => '<p id="' . $this->settingsHelper->pluginId . '">' . $content . '</p>'
+                'desc' => '<p id="' . $this->dataHelper->getPluginId() . '">' . $content . '</p>'
                     . '<p>' . __(
                         'The following options are required to use the plugin and are used by all Mollie payment methods',
                         'mollie-payments-for-woocommerce'
@@ -199,9 +199,7 @@ class MollieSettingsPage extends WC_Settings_Page
                         'mollie-payments-for-woocommerce'
                     ),
                     'live',
-
                     '<a href="https://my.mollie.com/dashboard/developers/api-keys?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">',
-
                     '</a>'
                 ),
                 'css' => 'width: 350px',
@@ -232,9 +230,7 @@ class MollieSettingsPage extends WC_Settings_Page
                         'mollie-payments-for-woocommerce'
                     ),
                     'test',
-
                     '<a href="https://my.mollie.com/dashboard/developers/api-keys?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">',
-
                     '</a>'
                 ),
                 'css' => 'width: 350px',
@@ -602,6 +598,14 @@ class MollieSettingsPage extends WC_Settings_Page
 
     protected function saveApplePaySettings()
     {
+        $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_STRING);
+        $isNonceValid = wp_verify_nonce(
+            $nonce,
+            'woocommerce-settings'
+        );
+        if (!$isNonceValid) {
+            return;
+        }
         $data = filter_var_array($_POST, FILTER_SANITIZE_STRING);
 
         $applepaySettings = [];
@@ -639,12 +643,20 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     protected function saveApiKeys($settings)
     {
+        $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_STRING);
+        $isNonceValid = wp_verify_nonce(
+            $nonce,
+            'woocommerce-settings'
+        );
+        if (!$isNonceValid) {
+            return $settings;
+        }
         $liveKeyName = 'mollie-payments-for-woocommerce_live_api_key';
         $testKeyName = 'mollie-payments-for-woocommerce_test_api_key';
         $liveValueInDb = get_option($liveKeyName);
         $testValueInDb = get_option($testKeyName);
-        $postedLiveValue = isset($_POST[$liveKeyName]) ? sanitize_text_field($_POST[$liveKeyName]) : '';
-        $postedTestValue = isset($_POST[$testKeyName]) ? sanitize_text_field($_POST[$testKeyName]) : '';
+        $postedLiveValue = isset($_POST[$liveKeyName]) ? sanitize_text_field(wp_unslash($_POST[$liveKeyName])) : '';
+        $postedTestValue = isset($_POST[$testKeyName]) ? sanitize_text_field(wp_unslash($_POST[$testKeyName])) : '';
 
         foreach ($settings as $setting) {
             if (
@@ -690,6 +702,14 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     protected function validateApiKeyOrRemove($pattern, $value, $keyName)
     {
+        $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_STRING);
+        $isNonceValid = wp_verify_nonce(
+            $nonce,
+            'woocommerce-settings'
+        );
+        if (!$isNonceValid) {
+            return;
+        }
         $hasApiFormat = preg_match($pattern, $value);
         if (!$hasApiFormat) {
             unset($_POST[$keyName]);

@@ -1424,11 +1424,9 @@ msgstr "Non abbiamo ricevuto uno stato del pagamento definito."
 #: build/src/Mollie/WC/Gateway/Abstract.php:1534
 #: src/Mollie/WC/Gateway/Abstract.php:1534
 msgid ""
-"We have not received a definite payment status. You will receive an email as "
-"soon as we receive a confirmation of the bank/merchant."
+"We have not received a definite payment status. You will receive an email as soon as we receive a confirmation of the bank/merchant."
 msgstr ""
-"Non abbiamo ricevuto uno stato del pagamento definito. Riceverai un'e-mail "
-"non appena riceveremo una conferma della banca/dell’operatore commerciale."
+"Non abbiamo ricevuto uno stato del pagamento definito. Riceverai un'e-mail non appena riceveremo una conferma della banca/dell’operatore commerciale."
 
 #. translators: Placeholder 1: payment method
 #: build/src/Mollie/WC/Gateway/Abstract.php:1541

@@ -296,7 +296,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                     }
                 }
             } catch (ApiException $e) {
-                throw new ApiException(sprintf(__('The customer (%s) could not be used or found. ' . $e->getMessage(), 'mollie-payments-for-woocommerce-mandate-problem'), $customer_id));
+                throw new ApiException(sprintf(__('The customer (%s) could not be used or found. ', 'mollie-payments-for-woocommerce-mandate-problem'), $customer_id) . $e->getMessage());
             }
 
             // Check that there is at least one valid mandate

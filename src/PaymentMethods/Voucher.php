@@ -50,15 +50,14 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
     public function getFormFields($generalFormFields): array
     {
         $paymentMethodFormFieds = [
-
             'mealvoucher_category_default' => [
                 'title' => __('Select the default products category', 'mollie-payments-for-woocommerce'),
                 'type' => 'select',
                 'options' => [
-                    self::NO_CATEGORY => $this->categoryName(self::NO_CATEGORY),
-                    self::MEAL => $this->categoryName(self::MEAL),
-                    self::ECO => $this->categoryName(self::ECO),
-                    self::GIFT => $this->categoryName(self::GIFT),
+                    self::NO_CATEGORY => __('No category', 'mollie-payments-for-woocommerce'),
+                    self::MEAL => __('Meal', 'mollie-payments-for-woocommerce'),
+                    self::ECO => __('Eco', 'mollie-payments-for-woocommerce'),
+                    self::GIFT => __('Gift', 'mollie-payments-for-woocommerce'),
                 ],
                 'default' => self::NO_CATEGORY,
                 /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
@@ -86,10 +85,5 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
         }
 
         return $mealvoucherSettings ? $mealvoucherSettings['mealvoucher_category_default'] : Voucher::NO_CATEGORY;
-    }
-
-    private function categoryName($category)
-    {
-        return __(ucwords(str_replace('_', ' ', $category)), 'mollie-payments-for-woocommerce');
     }
 }

@@ -61,6 +61,6 @@
     "e2e-product-paypal": "npx playwright test  --project=product-paypal",
     "e2e-simple-settings": "npx playwright test --project=simple-settings",
     "e2e-full-settings": "npx playwright test --project=full-settings",
-    "e2e-all-simple": "npx playwright test"
+    "e2e-all": "npx playwright test"
   }
 }

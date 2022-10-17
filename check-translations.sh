@@ -21,7 +21,7 @@ do
     #copy file to temp-file
     cp $file temp.po
     #remove header
-    sed -i '' -e '1,20d' temp.po
+    sed -i '' -e '1,17d' temp.po
     #remove msgctxt
     sed -i '' -e 's/msgctxt.*//g' temp.po
     #remove msgstr

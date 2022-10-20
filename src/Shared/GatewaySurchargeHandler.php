@@ -177,6 +177,7 @@ class GatewaySurchargeHandler
 
     public function add_engraving_fees($cart)
     {
+        var_dump('hola');
         $gateway = $this->chosenGateway();
 
         if (!$gateway) {

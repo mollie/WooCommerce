@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\DefaultInstructionStrategy;
 
 class OrderInstructionsService
@@ -21,7 +21,7 @@ class OrderInstructionsService
     }
 
     public function executeStrategy(
-        MolliePaymentGateway $gateway,
+        MolliePaymentGatewayI $gateway,
         $payment,
         $order = null,
         $admin_instructions = false

@@ -257,6 +257,9 @@ class PayPalAjaxRequests
     protected function isNonceValid(): bool
     {
         $nonce = filter_input(INPUT_POST, 'nonce', FILTER_SANITIZE_STRING);
+        if (!$nonce) {
+            return false;
+        }
         return wp_verify_nonce(
             $nonce,
             'mollie_PayPal_button'

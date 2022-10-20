@@ -87,20 +87,22 @@ class AjaxRequestsTest extends TestCase
                 $this->helperMocks->apiHelper($apiClientMock),
                 $this->helperMocks->settingsHelper(),
             ],
-            ['validationApiWalletsEndpointCall']
+            ['validationApiWalletsEndpointCall', 'isNonceValid']
         )->getMock();
-
-
         /*
          * Expectations
          */
         expect('wp_verify_nonce')
-            ->once()
             ->with($_POST['woocommerce-process-checkout-nonce'], 'woocommerce-process_checkout')
             ->andReturn(true);
         $testee->expects($this->once())->method(
+            'isNonceValid'
+        )->willReturn(
+            true
+        );
+        $testee->expects($this->once())->method(
             'validationApiWalletsEndpointCall'
-        )->with('www.testdomain.com', $_POST['validationUrl'])->willReturn(
+        )->with('www.testdomain.com', $_POST['validationUrl'], 'test_NtHd7vSyPSpEyuTEwhjsxdjsgVG4Sx')->willReturn(
             $responseFromMollie
         );
         expect('update_option')
@@ -183,7 +185,6 @@ class AjaxRequestsTest extends TestCase
          * Expectations
          */
         expect('wp_verify_nonce')
-            ->once()
             ->with($_POST['woocommerce-process-checkout-nonce'], 'woocommerce-process_checkout')
             ->andReturn(true);
         $testee->expects($this->once())
@@ -273,7 +274,6 @@ class AjaxRequestsTest extends TestCase
          * Expectations
          */
         expect('wp_verify_nonce')
-            ->once()
             ->with($_POST['woocommerce-process-checkout-nonce'], 'woocommerce-process_checkout')
             ->andReturn(true);
         $testee->expects($this->never())
@@ -290,14 +290,7 @@ class AjaxRequestsTest extends TestCase
     }
 
     public function mollieGateway($paymentMethodName, $isSepa = false, $isSubscription = false){
-        $gateway = $this->createConfiguredMock(
-            MollieSubscriptionGateway::class,
-            [
-            ]
-        );
-        $gateway->paymentMethod = $this->helperMocks->paymentMethodBuilder($paymentMethodName, $isSepa, $isSubscription);
-
-        return $gateway;
+        return $this->helperMocks->mollieGatewayBuilder($paymentMethodName, $isSepa, $isSubscription, []);
     }
 
     /**

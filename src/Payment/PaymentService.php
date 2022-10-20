@@ -7,6 +7,7 @@ namespace Mollie\WooCommerce\Payment;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
@@ -23,7 +24,7 @@ class PaymentService
     public const PAYMENT_METHOD_TYPE_ORDER = 'order';
     public const PAYMENT_METHOD_TYPE_PAYMENT = 'payment';
     /**
-     * @var MolliePaymentGateway
+     * @var MolliePaymentGatewayI
      */
     protected $gateway;
     /**

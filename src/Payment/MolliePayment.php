@@ -7,6 +7,7 @@ namespace Mollie\WooCommerce\Payment;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
@@ -487,13 +488,13 @@ class MolliePayment extends MollieObject
 
     /**
      * @param WC_Order $order
-     * @param MolliePaymentGateway $gateway
+     * @param MolliePaymentGatewayI $gateway
      * @param                    $newOrderStatus
      * @param                    $orderId
      */
     protected function maybeUpdateStatus(
         WC_Order $order,
-        MolliePaymentGateway $gateway,
+        MolliePaymentGatewayI $gateway,
         $newOrderStatus,
         $orderId
     ) {

@@ -10,7 +10,7 @@ use Mollie\WooCommerceTests\TestCase;
 use Mollie_WC_PayPalButton_PayPalDataObjectHttp;
 
 use function Brain\Monkey\Functions\when;
-
+use function Brain\Monkey\Functions\expect;
 
 class PayPalDataObjectTest extends TestCase
 {
@@ -33,7 +33,7 @@ class PayPalDataObjectTest extends TestCase
          */
         $postDummyData = new postDTOTestsStubs();
 
-        $postOrder = [
+        $_POST = [
             'nonce' => $postDummyData->nonce,
             'productId' => $postDummyData->productId,
             'productQuantity' => $postDummyData->productQuantity,
@@ -45,12 +45,14 @@ class PayPalDataObjectTest extends TestCase
          */
         $logger = $this->helperMocks->loggerMock();
         $dataObject = new PayPalDataObjectHttp($logger);
+        expect('wp_verify_nonce')
+            ->once()
+            ->andReturn(true);
+        $dataObject->orderData('productDetail');
 
-        $dataObject->orderData($postOrder, 'productDetail');
-
-        self::assertEquals($postOrder['nonce'], $dataObject->nonce());
-        self::assertEquals($postOrder['productId'], $dataObject->productId());
-        self::assertEquals($postOrder['productQuantity'], $dataObject->productQuantity());
+        self::assertEquals($_POST['nonce'], $dataObject->nonce());
+        self::assertEquals($_POST['productId'], $dataObject->productId());
+        self::assertEquals($_POST['productQuantity'], $dataObject->productQuantity());
         self::assertFalse(isset($dataObject->malicious));
     }
 

@@ -100,7 +100,8 @@ class ApplePayDataObjectHttp
         if (!$isNonceValid) {
             return;
         }
-        $data = filter_var_array($_POST, FILTER_SANITIZE_STRING);
+        $data = $this->getFilteredRequestData();
+
         $this->resetErrors();
         if (
             !$this->hasRequiredFieldsValuesOrError(
@@ -127,7 +128,8 @@ class ApplePayDataObjectHttp
         if (!$isNonceValid) {
             return;
         }
-        $data = filter_var_array($_POST, FILTER_SANITIZE_STRING);
+        $data = $this->getFilteredRequestData();
+
         $result = $this->updateRequiredData(
             $data,
             PropertiesDictionary::UPDATE_CONTACT_SINGLE_PROD_REQUIRED_FIELDS,
@@ -153,7 +155,8 @@ class ApplePayDataObjectHttp
         if (!$isNonceValid) {
             return;
         }
-        $data = filter_var_array($_POST, FILTER_SANITIZE_STRING);
+
+        $data = $this->getFilteredRequestData();
         $result = $this->updateRequiredData(
             $data,
             PropertiesDictionary::UPDATE_METHOD_SINGLE_PROD_REQUIRED_FIELDS,
@@ -260,34 +263,10 @@ class ApplePayDataObjectHttp
     protected function assignDataObjectValues(array $data)
     {
         foreach ($data as $key => $value) {
-            $filterType = $this->filterType($value);
             if ($key === 'woocommerce-process-checkout-nonce') {
                 $key = 'nonce';
             }
-            $this->$key = filter_var($value, $filterType);
-        }
-    }
-
-    /**
-     * Selector for the different filters to apply to each field
-     * @param $value
-     *
-     * @return int
-     */
-    protected function filterType($value)
-    {
-        $filterInt = [
-            PropertiesDictionary::PRODUCT_QUANTITY,
-            PropertiesDictionary::PRODUCT_ID,
-        ];
-        $filterBoolean = [PropertiesDictionary::NEED_SHIPPING];
-        switch ($value) {
-            case in_array($value, $filterInt, true):
-                return FILTER_SANITIZE_NUMBER_INT;
-            case in_array($value, $filterBoolean, true):
-                return FILTER_VALIDATE_BOOLEAN;
-            default:
-                return FILTER_SANITIZE_STRING;
+            $this->$key = $value;
         }
     }
 
@@ -479,12 +458,12 @@ class ApplePayDataObjectHttp
         return $this->shippingMethod;
     }
 
-    public function needShipping(): array
+    public function needShipping(): bool
     {
         return $this->needShipping;
     }
 
-    public function productId(): array
+    public function productId(): string
     {
         return $this->productId;
     }
@@ -502,5 +481,36 @@ class ApplePayDataObjectHttp
     public function simplifiedContact()
     {
         return $this->simplifiedContact;
+    }
+
+    /**
+     * @return array|false|null
+     */
+    protected function getFilteredRequestData()
+    {
+        return filter_var_array($_POST, [
+            PropertiesDictionary::CALLER_PAGE => FILTER_SANITIZE_STRING,
+            PropertiesDictionary::VALIDATION_URL => FILTER_SANITIZE_STRING,
+            'woocommerce-process-checkout-nonce' => FILTER_SANITIZE_STRING,
+            PropertiesDictionary::NEED_SHIPPING => FILTER_VALIDATE_BOOLEAN,
+            PropertiesDictionary::SIMPLIFIED_CONTACT => [
+                'filter' => FILTER_SANITIZE_STRING,
+                'flags' => FILTER_REQUIRE_ARRAY,
+            ],
+            PropertiesDictionary::SHIPPING_CONTACT => [
+                'filter' => FILTER_SANITIZE_STRING,
+                'flags' => FILTER_REQUIRE_ARRAY,
+            ],
+            PropertiesDictionary::BILLING_CONTACT => [
+                'filter' => FILTER_SANITIZE_STRING,
+                'flags' => FILTER_REQUIRE_ARRAY,
+            ],
+            PropertiesDictionary::SHIPPING_METHOD => [
+                'filter' => FILTER_SANITIZE_STRING,
+                'flags' => FILTER_REQUIRE_ARRAY,
+            ],
+            PropertiesDictionary::PRODUCT_ID => FILTER_SANITIZE_NUMBER_INT,
+            PropertiesDictionary::PRODUCT_QUANTITY => FILTER_SANITIZE_NUMBER_INT,
+        ]);
     }
 }

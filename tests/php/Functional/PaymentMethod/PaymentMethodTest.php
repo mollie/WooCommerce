@@ -48,8 +48,7 @@ class PaymentMethodTest extends TestCase
             ->andReturn(
                 $this->helperMocks->paymentMethodMergedProperties($paymentMethodName, false, true)
             );
-        expect('esc_attr')->with($urlBuild)->andReturn($urlBuild);
-
+        expect('esc_url')->with($urlBuild)->andReturn($urlBuild);
         $expectedUrl = '<img src="' . $urlBuild . '" class="mollie-gateway-icon" />';
         $iconUrl = $testee->getIconUrl();
         self::assertEquals($expectedUrl, $iconUrl);
@@ -78,7 +77,7 @@ class PaymentMethodTest extends TestCase
             ->andReturn(
                 $this->helperMocks->paymentMethodMergedProperties($paymentMethodName, false, true, $testSettings)
             );
-        expect('esc_attr')->withAnyArgs()->andReturn($urlBuild);
+        expect('esc_url')->withAnyArgs()->andReturn($urlBuild);
 
         $expectedUrl = '<img src="' . $urlBuild . '" class="mollie-gateway-icon" />';
         $iconUrl = $testee->getIconUrl();
@@ -108,7 +107,7 @@ class PaymentMethodTest extends TestCase
                 $this->helperMocks->paymentMethodMergedProperties($paymentMethodName, false, true, $testSettings)
             );
         expect('file_exists')->with($testSettings['iconFilePath'])->andReturn(true);
-        expect('esc_attr')->withAnyArgs()->andReturn($urlBuild);
+        expect('esc_url')->withAnyArgs()->andReturn($urlBuild);
 
         $expectedUrl = '<img src="' . $urlBuild . '" class="mollie-gateway-icon" />';
         $iconUrl = $testee->getIconUrl();
@@ -133,6 +132,7 @@ class PaymentMethodTest extends TestCase
             = $this->pluginPath . '/' . 'public/images/';
 
         $testee = $this->paymentMethodBuilder($paymentMethodName, $testSettings);
+        $testee->expects($this->once())->method('getIdFromConfig')->willReturn('creditcard');
         expect('is_admin')->andReturn(false);
         expect('get_option')
             ->with($settingOptionName)
@@ -142,7 +142,7 @@ class PaymentMethodTest extends TestCase
         expect('get_transient')->andReturn(false);
         expect('file_get_contents')->with($assetsImagesPath . 'amex')->andReturn('<svg width="33"></svg>');
         expect('set_transient')->andReturn(true);
-
+        expect('esc_url')->withAnyArgs()->andReturn($assetsImagesPath);
 
         $expectedUrl = '<svg width="33" height="24" class="mollie-gateway-icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><svg x="0" width="33"></svg></svg>';
         $iconUrl = $testee->getIconUrl();
@@ -163,9 +163,6 @@ class PaymentMethodTest extends TestCase
             [$iconFactory, $settingsHelper, $paymentFieldsService, $surchargeService],
             ['getConfig', 'getSettings', 'getInitialOrderStatus', 'getIdFromConfig']
         )->getMock();
-        $paymentMethod->config = $this->helperMocks->gatewayMockedOptions($paymentMethodName, false, true);
-        $paymentMethod->settings = $this->helperMocks->paymentMethodSettings();
-        $paymentMethod->id = $paymentMethod->getConfig()['id'];
 
         return $paymentMethod;
     }

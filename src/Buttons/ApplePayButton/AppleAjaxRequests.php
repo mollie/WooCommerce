@@ -111,6 +111,7 @@ class AppleAjaxRequests
         if (!$this->isNonceValid()) {
             return;
         }
+
         $applePayRequestDataObject->validationData();
         //we cannot access the endpoint in testmode, we override it to be testMode = false
         $apiKey = $this->settingsHelper->getApiKey(false);
@@ -122,7 +123,6 @@ class AppleAjaxRequests
         $ending = preg_replace($regex, '$1', $domain);
         $domain = str_replace($ending, "", $domain);
         $domain = str_replace("/", "", $domain);
-
         try {
             $json = $this->validationApiWalletsEndpointCall(
                 $domain,

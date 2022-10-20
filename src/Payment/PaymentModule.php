@@ -12,6 +12,7 @@ use Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Settings\Settings;
@@ -319,7 +320,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
             return;
         }
 
-        /** @var MolliePaymentGateway $gateway */
+        /** @var MolliePaymentGatewayI $gateway */
 
         $gateway->displayInstructions($order);
     }

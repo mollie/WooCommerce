@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Buttons\ApplePayButton;
 
-use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
 use Psr\Log\LoggerInterface as Logger;
-use Psr\Log\LogLevel;
 
 class ResponsesToApple
 {
@@ -15,14 +14,14 @@ class ResponsesToApple
      */
     protected $logger;
     /**
-     * @var MollieSubscriptionGateway
+     * @var MolliePaymentGatewayI
      */
     protected $gateway;
 
     /**
      * ResponsesToApple constructor.
      */
-    public function __construct(Logger $logger, MollieSubscriptionGateway $appleGateway)
+    public function __construct(Logger $logger, MolliePaymentGatewayI $appleGateway)
     {
         $this->logger = $logger;
         $this->gateway = $appleGateway;

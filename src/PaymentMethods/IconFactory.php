@@ -25,6 +25,7 @@ class IconFactory
      */
     public function getIconUrl($paymentMethodName): string
     {
+        var_dump($paymentMethodName);
         return $this->iconFactory()->svgUrlForPaymentMethod($paymentMethodName);
     }
 

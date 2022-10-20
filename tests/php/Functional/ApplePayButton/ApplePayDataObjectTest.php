@@ -29,16 +29,23 @@ class ApplePayDataObjectTest extends TestCase
      */
     public function testDataObjectSuccess()
     {
-        /*
-         * Stubs
-         */
         $postDummyData = new postDTOTestsStubs();
-        $postValidation = [
+        $_POST = [
             'woocommerce-process-checkout-nonce' => $postDummyData->nonce,
             'validationUrl' => $postDummyData->validationUrl
         ];
+        expect('wp_verify_nonce')
+            ->andReturn(true);
+        $logger = $this->helperMocks->loggerMock();
+        $dataObject = new ApplePayDataObjectHttp($logger);
+        $dataObject->validationData();
+        $nonce = $dataObject->nonce();
+        self::assertEquals($_POST['woocommerce-process-checkout-nonce'], $nonce);
+        $validationUrl = $dataObject->validationUrl();
+        self::assertEquals($_POST['validationUrl'], $validationUrl);
 
-        $postUpdateContact = [
+
+        $_POST = [
             'woocommerce-process-checkout-nonce' => $postDummyData->nonce,
             'productId' => $postDummyData->productId,
             'productQuantity' => $postDummyData->productQuantity,
@@ -46,15 +53,23 @@ class ApplePayDataObjectTest extends TestCase
             'simplifiedContact' => $postDummyData->simplifiedContact,
             'needShipping' => $postDummyData->needShipping,
         ];
+        $dataObject->updateContactData();
+        $nonce = $dataObject->nonce();
+        self::assertEquals($_POST['woocommerce-process-checkout-nonce'], $nonce);
+        $productId = $dataObject->productId();
+        self::assertEquals($_POST['productId'], $productId);
+
+        $simplifiedContact = $dataObject->simplifiedContact();
         $expectedContact = [
-            'city' => $postUpdateContact['simplifiedContact']['locality'],
-            'postcode' => $postUpdateContact['simplifiedContact']['postalCode'],
+            'city' => $_POST['simplifiedContact']['locality'],
+            'postcode' => $_POST['simplifiedContact']['postalCode'],
             'country' => strtoupper(
-                $postUpdateContact['simplifiedContact']['countryCode']
+                $_POST['simplifiedContact']['countryCode']
             )
         ];
+        self::assertEquals($expectedContact, $simplifiedContact);
 
-        $postUpdateMethod = [
+        $_POST = [
             'woocommerce-process-checkout-nonce' => $postDummyData->nonce,
             'productId' => $postDummyData->productId,
             'productQuantity' => $postDummyData->productQuantity,
@@ -62,8 +77,11 @@ class ApplePayDataObjectTest extends TestCase
             'simplifiedContact' => $postDummyData->simplifiedContact,
             'shippingMethod' => $postDummyData->shippingMethod,
         ];
+        $dataObject->updateMethodData();
+        $method = $dataObject->shippingMethod();
+        self::assertEquals($_POST['shippingMethod'], $method);
 
-        $postOrder = [
+        $_POST = [
             'woocommerce-process-checkout-nonce' => $postDummyData->nonce,
             'productId' => $postDummyData->productId,
             'productQuantity' => $postDummyData->productQuantity,
@@ -72,6 +90,10 @@ class ApplePayDataObjectTest extends TestCase
             'shippingContact' => $postDummyData->shippingContact,
             'billingContact' => $postDummyData->billingContact
         ];
+        $dataObject->orderData('productDetail');
+        $shippingAddress = $dataObject->shippingAddress();
+        $shippingAddress['address_1'] = htmlspecialchars_decode($shippingAddress['address_1'], ENT_QUOTES);
+        $shippingAddress['address_2'] = htmlspecialchars_decode($shippingAddress['address_2'], ENT_QUOTES);
         $expectedAddress = [
             'first_name' => $postDummyData->shippingContact['givenName'],
             'last_name' => $postDummyData->shippingContact['familyName'],
@@ -86,63 +108,34 @@ class ApplePayDataObjectTest extends TestCase
                 $postDummyData->shippingContact['countryCode']
             )
         ];
-
-
-        /*
-         * Sut
-         */
-        $logger = $this->helperMocks->loggerMock();
-        $dataObject = new ApplePayDataObjectHttp($logger);
-        $dataObject->validationData($postValidation);
-
-        $nonce = $dataObject->nonce();
-        self::assertEquals($postValidation['woocommerce-process-checkout-nonce'], $nonce);
-        $validationUrl = $dataObject->validationUrl();
-        self::assertEquals($postValidation['validationUrl'], $validationUrl);
-
-        $dataObject->updateContactData($postUpdateContact);
-
-        $nonce = $dataObject->nonce();
-        self::assertEquals($postUpdateContact['woocommerce-process-checkout-nonce'], $nonce);
-        $productId = $dataObject->productId();
-        self::assertEquals($postUpdateContact['productId'], $productId);
-        $simplifiedContact = $dataObject->simplifiedContact;
-        self::assertEquals($expectedContact, $simplifiedContact);
-
-        $dataObject->updateMethodData($postUpdateMethod);
-
-        $method = $dataObject->shippingMethod();
-
-        self::assertEquals($postUpdateMethod['shippingMethod'], $method);
-
-        $dataObject->orderData($postOrder, 'productDetail');
-
-
-        $shippingAddress = $dataObject->shippingAddress();
-        $shippingAddress['address_1'] = htmlspecialchars_decode($shippingAddress['address_1'], ENT_QUOTES);
-        $shippingAddress['address_2'] = htmlspecialchars_decode($shippingAddress['address_2'], ENT_QUOTES);
-
         self::assertEquals($expectedAddress, $shippingAddress);
     }
 
     public function testDataObjectError()
     {
-        /*
-         * Stubs
-         */
         $postDummyData = new postDTOTestsStubs();
-        $postMissingIndex = [
+        $logger = $this->helperMocks->loggerMock();
+        $dataObject = new ApplePayDataObjectHttp($logger);
+        expect('wp_verify_nonce')
+            ->andReturn(true);
+        expect('mollieWooCommerceDebug')
+            ->withAnyArgs();
+        $_POST = [
             'woocommerce-process-checkout-nonce' => $postDummyData->nonce,
         ];
+        $dataObject->validationData();
         $expectedErrorsIndex = [['errorCode' => 'unknown']];
+        self::assertEquals($expectedErrorsIndex, $dataObject->errors());
 
-        $postMissingValue = [
+        $_POST = [
             'woocommerce-process-checkout-nonce' => '',
             'validationUrl' => $postDummyData->validationUrl
         ];
+        $dataObject->validationData();
         $expectedErrorsValue = [['errorCode' => 'unknown']];
+        self::assertEquals($expectedErrorsValue, $dataObject->errors());
 
-        $postUpdateContact = [
+        $_POST = [
             'woocommerce-process-checkout-nonce' => $postDummyData->nonce,
             'productId' => $postDummyData->productId,
             'productQuantity' => $postDummyData->productQuantity,
@@ -154,6 +147,7 @@ class ApplePayDataObjectTest extends TestCase
             ],
             'needShipping' => $postDummyData->needShipping,
         ];
+        $dataObject->updateContactData();
         $expectedErrorsContact = [
             [
                 'errorCode' => 'shipping Contact Invalid',
@@ -164,24 +158,6 @@ class ApplePayDataObjectTest extends TestCase
                 'contactField' => 'countryCode'
             ]
         ];
-
-
-        /*
-         * Sut
-         */
-        $logger = $this->helperMocks->loggerMock();
-        $dataObject = new ApplePayDataObjectHttp($logger);
-        expect('mollieWooCommerceDebug')
-            ->withAnyArgs();
-        $dataObject->validationData($postMissingIndex);
-
-        self::assertEquals($expectedErrorsIndex, $dataObject->errors());
-
-
-        $dataObject->validationData($postMissingValue);
-        self::assertEquals($expectedErrorsValue, $dataObject->errors());
-
-        $dataObject->updateContactData($postUpdateContact);
         self::assertEquals($expectedErrorsContact, $dataObject->errors());
         /*
          * Execute Test

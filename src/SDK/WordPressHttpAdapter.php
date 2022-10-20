@@ -40,9 +40,11 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
             'timeout' => self::DEFAULT_TIMEOUT
         ];
         $response = wp_remote_request($url, $args);
-        
+
         if(is_wp_error($response)){
-            throw new ApiException($response->get_error_message(), $response->get_error_code());
+            $message = is_string($response->get_error_message())? $response->get_error_message() : 'Unknown error';
+            $code = is_int($response->get_error_code())? $response->get_error_code() : 0;
+            throw new ApiException($message, $code);
         }
 
         return $this->parseResponse($response);

@@ -211,8 +211,6 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
      */
     public function scheduled_subscription_payment($renewal_total, WC_Order $renewal_order)
     {
-        $this->logger->debug(json_encode($renewal_order));
-
         if (! $renewal_order) {
             $this->logger->debug($this->id . ': Could not load renewal order or process renewal payment.');
 

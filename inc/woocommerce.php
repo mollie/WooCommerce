@@ -39,6 +39,20 @@ if (!function_exists('untrailingslashit')) {
     }
 }
 
+if (!function_exists('as_unscheduled_action')) {
+    /**
+     * @since WooCommerce 3.0.0
+     * @param string $hook
+     * @param array $args
+     * @param string $group
+     * @return bool
+     */
+    function as_unschedule_action($hook, $args = [], $group = '')
+    {
+        return 0;
+    }
+}
+
 function mollieWooCommerceSession()
 {
     return WC()->session;

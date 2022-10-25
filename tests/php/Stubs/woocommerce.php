@@ -528,6 +528,19 @@ class WC_Session
     }
 }
 
+class WP_Error
+{
+    public function get_error_message()
+    {
+        return 'error';
+    }
+    public function get_error_code()
+    {
+        return 'error-code';
+    }
+}
+
+
 /**
  * This class is a partial mock to create an order
  * the order created is also partially mocked

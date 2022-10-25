@@ -39,7 +39,7 @@ if (!function_exists('untrailingslashit')) {
     }
 }
 
-if (!function_exists('as_unscheduled_action')) {
+if (!function_exists('as_unschedule_action')) {
     /**
      * @since WooCommerce 3.0.0
      * @param string $hook

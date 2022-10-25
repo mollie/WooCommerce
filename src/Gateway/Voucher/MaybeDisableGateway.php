@@ -95,7 +95,7 @@ class MaybeDisableGateway
             );
         }
         //Check if mealvoucherSettings is an array as to prevent notice from being thrown for PHP 7.4 and up.
-        if (is_array($mealvoucherSettings)) {
+        if (is_array($mealvoucherSettings) && isset($mealvoucherSettings['mealvoucher_category_default'])) {
             $defaultCategory = $mealvoucherSettings['mealvoucher_category_default'];
         } else {
             $defaultCategory = false;

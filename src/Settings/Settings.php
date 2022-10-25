@@ -266,12 +266,11 @@ class Settings
                     <?php
                     if (!empty($countries)) {
                         foreach ($countries as $key => $val) {
-                            echo '<option value="' . esc_attr($key) . '"' . wc_selected($key, $selections) . '>' . esc_html($val) . '</option>';
+                            echo '<option value="' . esc_attr($key) . '"' . esc_attr(wc_selected($key, $selections)) . '>' . esc_html($val) . '</option>';
                         }
                     }
                     ?>
-                </select> <?php echo ($description !== '') ? $description : ''; ?> <br/><a class="select_all button"
-                                                                                    href="#"><?php esc_html_e('Select all', 'mollie-payments-for-woocommerce'); ?></a>
+                </select><br/><a class="select_all button" href="#"><?php esc_html_e('Select all', 'mollie-payments-for-woocommerce'); ?></a>
                 <a class="select_none button" href="#"><?php esc_html_e('Select none', 'mollie-payments-for-woocommerce'); ?></a>
             </td>
         </tr>

@@ -270,9 +270,8 @@ class GatewaySurchargeHandler
 
     protected function canProcessOrder()
     {
-        $orderId = !empty(filter_input(INPUT_POST, 'orderId', FILTER_SANITIZE_NUMBER_INT))
-                ? filter_input(INPUT_POST, 'orderId', FILTER_SANITIZE_NUMBER_INT)
-                : false;
+        $inputOrder = filter_input(INPUT_POST, 'orderId', FILTER_SANITIZE_NUMBER_INT);
+        $orderId = !empty($inputOrder) ? $inputOrder : false;
         if (!$orderId) {
             return false;
         }
@@ -285,9 +284,8 @@ class GatewaySurchargeHandler
 
     protected function canProcessGateway()
     {
-        $gateway = !empty(filter_input(INPUT_POST, 'payment_method', FILTER_SANITIZE_SPECIAL_CHARS))
-                ? filter_input(INPUT_POST, 'payment_method', FILTER_SANITIZE_SPECIAL_CHARS)
-                : false;
+        $inputGateway = filter_input(INPUT_POST, 'payment_method', FILTER_SANITIZE_SPECIAL_CHARS);
+        $gateway = !empty($inputGateway) ? $inputGateway : false;
         if (!$gateway) {
             return false;
         }

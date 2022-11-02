@@ -37,12 +37,14 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
             'headers' => $headers,
             'user-agent' => $headers['User-Agent'],
             'sslverify' => true,
-            'timeout' => self::DEFAULT_TIMEOUT
+            'timeout' => self::DEFAULT_TIMEOUT,
         ];
         $response = wp_remote_request($url, $args);
-        
-        if(is_wp_error($response)){
-            throw new ApiException($response->get_error_message(), $response->get_error_code());
+
+        if (is_wp_error($response)) {
+            $message =  $response->get_error_message() ?? 'Unknown error';
+            $code = is_int($response->get_error_code()) ? $response->get_error_code() : 0;
+            throw new ApiException($message, $code);
         }
 
         return $this->parseResponse($response);

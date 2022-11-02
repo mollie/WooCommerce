@@ -510,9 +510,17 @@ class MollieOrder extends MollieObject
 
         // Add messages to log
         $this->logger->debug(__METHOD__ . ' called for order ' . $orderId);
+        // Check that this order has not been marked paid already
+        if (!$order->needs_payment()) {
+            $this->logger->log(
+                LogLevel::DEBUG,
+                __METHOD__ . ' called for order ' . $orderId . ', not processed because the order is already paid.'
+            );
 
+            return;
+        }
         // Check that this payment is the most recent, based on Mollie Payment ID from post meta, do not cancel the order if it isn't
-        if ($molliePaymentId != $payment->id) {
+        if ($molliePaymentId !== $payment->id) {
             $this->logger->debug(__METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', not processed because of a newer pending payment ' . $molliePaymentId);
 
             $order->add_order_note(sprintf(

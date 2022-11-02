@@ -8,6 +8,7 @@ const usage = require('gulp-help-doc')
 const zip = require('gulp-zip')
 const rename = require('gulp-rename')
 const date = require('date-and-time')
+const wpPot = require('wp-pot')
 
 const options = {
     ...minimist(
@@ -272,6 +273,22 @@ function _archive({baseDir, buildDir, distDir, packageVersion, packageName}) {
     }
 }
 
+function _generatePotFile ({buildDir, langDir}) {
+    return async function generatePotFile (done) {
+        wpPot({
+            destFile: `languages/en_GB.pot`,
+            includePOTCreationDate: false,
+            src: [
+                `mollie-payments-for-woocommerce.php`,
+                `src/**/*.php`,
+                `inc/**/*.php`,
+            ]
+        });
+
+        done()
+    }
+}
+
 // --------------------------------------------------------------------
 // TARGETS
 // --------------------------------------------------------------------
@@ -326,4 +343,8 @@ exports.dist = series(
 
 exports.default = series(
     exports.build
+)
+
+exports.generatePotFile = series(
+    _generatePotFile(options)
 )

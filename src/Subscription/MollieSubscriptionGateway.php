@@ -211,8 +211,6 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
      */
     public function scheduled_subscription_payment($renewal_total, WC_Order $renewal_order)
     {
-        $this->logger->debug(json_encode($renewal_order));
-
         if (! $renewal_order) {
             $this->logger->debug($this->id . ': Could not load renewal order or process renewal payment.');
 
@@ -296,7 +294,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                     }
                 }
             } catch (ApiException $e) {
-                throw new ApiException(sprintf(__('The customer (%s) could not be used or found. ' . $e->getMessage(), 'mollie-payments-for-woocommerce-mandate-problem'), $customer_id));
+                throw new ApiException(sprintf(__('The customer (%s) could not be used or found. ', 'mollie-payments-for-woocommerce-mandate-problem'), $customer_id) . $e->getMessage());
             }
 
             // Check that there is at least one valid mandate

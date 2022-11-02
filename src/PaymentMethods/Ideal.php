@@ -35,9 +35,7 @@ class Ideal extends AbstractPaymentMethod implements PaymentMethodI
                 'type' => 'checkbox',
                 'description' => sprintf(
                     __(
-                        'If you disable this, a dropdown with various iDEAL banks
-                         will not be shown in the WooCommerce checkout,
-                         so users will select a iDEAL bank on the Mollie payment page after checkout.',
+                        'If you disable this, a dropdown with various iDEAL banks will not be shown in the WooCommerce checkout, so users will select a iDEAL bank on the Mollie payment page after checkout.',
                         'mollie-payments-for-woocommerce'
                     ),
                     $this->getConfig()['defaultTitle']
@@ -49,9 +47,7 @@ class Ideal extends AbstractPaymentMethod implements PaymentMethodI
                 'type' => 'text',
                 'description' => sprintf(
                     __(
-                        'This text will be displayed as the first option in the iDEAL issuers drop down,
-                         if nothing is entered, "Select your bank" will be shown. Only if the above 
-                         \'Show iDEAL banks dropdown\' is enabled.',
+                        'This text will be displayed as the first option in the iDEAL issuers drop down, if nothing is entered, "Select your bank" will be shown. Only if the above \'Show iDEAL banks dropdown\' is enabled.',
                         'mollie-payments-for-woocommerce'
                     ),
                     $this->getConfig()['defaultTitle']

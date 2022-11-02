@@ -12,8 +12,7 @@ class Klarnapaylater extends AbstractPaymentMethod implements PaymentMethodI
             'id' => 'klarnapaylater',
             'defaultTitle' => __('Klarna Pay later', 'mollie-payments-for-woocommerce'),
             'settingsDescription' => __(
-                'To accept payments via Klarna, all default WooCommerce checkout fields
-                 should be enabled and required.',
+                'To accept payments via Klarna, all default WooCommerce checkout fields should be enabled and required.',
                 'mollie-payments-for-woocommerce'
             ),
             'defaultDescription' => '',

@@ -328,7 +328,8 @@ class Settings
     }
     /**
      * @param bool $overrideTestMode
-     * @return null|string
+     *
+     * @return false|string
      */
     public function getApiKey($overrideTestMode = 2)
     {
@@ -408,10 +409,8 @@ class Settings
 
     /**
      * Store customer details at Mollie
-     *
-     * @return string
      */
-    public function shouldStoreCustomer()
+    public function shouldStoreCustomer(): bool
     {
         return get_option($this->getSettingId('customer_details'), 'yes') === 'yes';
     }

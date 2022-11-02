@@ -99,7 +99,6 @@ class MaybeDisableGateway
         } else {
             $defaultCategory = false;
         }
-        $numberOfProducts = 0;
         $productsWithCategory = 0;
         $variationCategory = false;
         foreach ($products as $product) {

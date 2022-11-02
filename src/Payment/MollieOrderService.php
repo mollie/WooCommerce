@@ -285,7 +285,7 @@ class MollieOrderService
         );
         $order = wc_get_order($orderId);
 
-        $processedRefundIds = $this->notifyProcessedRefunds($refundsToProcess, $logId, $order, $processedRefundIds);
+        $this->notifyProcessedRefunds($refundsToProcess, $logId, $order, $processedRefundIds);
 
         $order->save();
         $this->processUpdateStateRefund($order, $payment);
@@ -382,7 +382,6 @@ class MollieOrderService
                 return;
             }
 
-            $dataHelper = $this->data;
             $order = wc_get_order($orderId);
 
             // Update order notes, add message about chargeback

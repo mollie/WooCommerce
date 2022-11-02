@@ -93,7 +93,6 @@ class ConstraintsChecker
             return true;
         } catch (ConstraintFailedException $exception) {
             $mainException = $exception->getValidationErrors();
-            $errors = [];
             foreach ($mainException as $error) {
                 $errors[] = $error->getMessage();
             }

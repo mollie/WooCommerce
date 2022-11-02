@@ -31,7 +31,6 @@ class CleanDb
 
     /**
      * @param array $options
-     * @return int
      */
     protected function deleteSiteOptions(array $options): void
     {

@@ -209,8 +209,9 @@ class Surcharge
     }
 
     /**
-     * @param WC_Cart $order
+     * @param WC_Order $order
      * @param array $gatewaySettings
+     *
      * @return mixed
      */
     protected function calculate_fixed_fee_percentage_order(WC_Order $order, array $gatewaySettings)

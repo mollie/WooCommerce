@@ -111,9 +111,10 @@ class Data
 
     /**
      * @param bool $overrideTestMode
-     * @return string
+     *
+     * @return null|string
      */
-    public function getApiKey($overrideTestMode = 2)
+    public function getApiKey($overrideTestMode = 2): ?string
     {
         return $this->settingsHelper->getApiKey($overrideTestMode);
     }
@@ -176,9 +177,10 @@ class Data
      * @param string $payment_id
      * @param string   $apiKey (default: false)
      * @param bool   $use_cache (default: true)
-     * @return Mollie\Api\Resources\Payment|null
+     *
+     * @return \Mollie\Api\Resources\Payment|null
      */
-    public function getPayment($payment_id, $apiKey, $use_cache = true)
+    public function getPayment($payment_id, $apiKey, $use_cache = true): ?\Mollie\Api\Resources\Payment
     {
         try {
             return $this->api_helper->getApiClient($apiKey)->payments->get($payment_id);
@@ -238,10 +240,8 @@ class Data
     /**
      * @param $order_total
      * @param $currency
-     *
-     * @return int
      */
-    protected function getAmountValue($order_total, $currency)
+    protected function getAmountValue($order_total, $currency): string
     {
         return $this->formatCurrencyValue(
             $order_total,

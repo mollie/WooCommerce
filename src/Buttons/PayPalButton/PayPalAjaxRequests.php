@@ -251,8 +251,6 @@ class PayPalAjaxRequests
      * Checks if the nonce in the data object is valid
      *
      * @param PayPalDataObjectHttp $PayPalRequestDataObject
-     *
-     * @return bool|int
      */
     protected function isNonceValid(): bool
     {

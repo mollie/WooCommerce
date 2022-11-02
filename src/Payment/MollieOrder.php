@@ -101,7 +101,7 @@ class MollieOrder extends MollieObject
             || ($gatewayId === 'mollie_wc_gateway_paypal'
                 && $order->get_billing_first_name() !== '')
         ) {
-            $billingAddress = $this->createBillingAddress($order);
+            $this->createBillingAddress($order);
             $shippingAddress = $this->createShippingAddress($order);
         }
 
@@ -428,13 +428,10 @@ class MollieOrder extends MollieObject
 
         // New order status
         if ($orderStatusCancelledPayments === 'pending' || $orderStatusCancelledPayments === null) {
-            $newOrderStatus = SharedDataDictionary::STATUS_PENDING;
         } elseif ($orderStatusCancelledPayments === 'cancelled') {
-            $newOrderStatus = SharedDataDictionary::STATUS_CANCELLED;
         }
         // if I cancel manually the order is canceled in Woo before calling Mollie
         if ($order->get_status() === 'cancelled') {
-            $newOrderStatus = SharedDataDictionary::STATUS_CANCELLED;
         }
 
         // Overwrite plugin-wide

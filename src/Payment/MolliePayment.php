@@ -126,6 +126,9 @@ class MolliePayment extends MollieObject
         return $paymentRequestData;
     }
 
+    /**
+     * @return void
+     */
     public function setActiveMolliePayment($orderId)
     {
         self::$paymentId = $this->getMolliePaymentIdFromPaymentObject();
@@ -281,13 +284,10 @@ class MolliePayment extends MollieObject
 
         // New order status
         if ($orderStatusCancelledPayments === 'pending' || $orderStatusCancelledPayments === null) {
-            $newOrderStatus = SharedDataDictionary::STATUS_PENDING;
         } elseif ($orderStatusCancelledPayments === 'cancelled') {
-            $newOrderStatus = SharedDataDictionary::STATUS_CANCELLED;
         }
         // if I cancel manually the order is canceled in Woo before calling Mollie
         if ($order->get_status() === 'cancelled') {
-            $newOrderStatus = SharedDataDictionary::STATUS_CANCELLED;
         }
 
         // Get current gateway
@@ -408,7 +408,7 @@ class MolliePayment extends MollieObject
     /**
      * Process a payment object refund
      *
-     * @param object $order
+     * @param WC_Order $order
      * @param int    $orderId
      * @param object $paymentObject
      * @param null   $amount

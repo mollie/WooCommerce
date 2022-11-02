@@ -515,7 +515,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
     /**
      * Returns the order from the Request first by Id, if not by Key
      *
-     * @return bool|WC_Order
+     * @return WC_Order|\WC_Order_Refund|true
      */
     public function orderByRequest()
     {

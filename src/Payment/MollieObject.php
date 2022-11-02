@@ -508,7 +508,7 @@ class MollieObject
     /**
      * Process a payment object refund
      *
-     * @param object $order
+     * @param WC_Order $order
      * @param int    $orderId
      * @param object $paymentObject
      * @param null   $amount

@@ -12,7 +12,7 @@ class DataToAppleButtonScripts
      *
      * @return array|bool
      */
-    public function applePayScriptData($isBlock = false)
+    public function applePayScriptData($isBlock = false): array
     {
         $base_location = wc_get_base_location();
         $shopCountryCode = $base_location['country'];

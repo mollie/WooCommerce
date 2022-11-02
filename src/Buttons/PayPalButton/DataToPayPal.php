@@ -21,10 +21,8 @@ class DataToPayPal
     /**
      * Sets the appropriate data to send to PayPal script
      * Data differs between product page and cart page
-     *
-     * @return array|bool
      */
-    public function paypalbuttonScriptData($isBlock = false)
+    public function paypalbuttonScriptData($isBlock = false): array
     {
         $paypalSettings = get_option('mollie_wc_gateway_paypal_settings', false);
         $minAmount = 0;

@@ -1,5 +1,3 @@
 <?php
 
-function mollieWooCommerceIsPayPalButtonEnabled(){}
-function mollieWooCommerceIsApplePayDirectEnabled(){}
-function mollieWooCommerceCheckIfNeedShipping(){}
+class WC_Product_Subscription_Variation {}

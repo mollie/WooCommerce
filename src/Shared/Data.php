@@ -212,7 +212,7 @@ class Data
         return $result;
     }
 
-    public function wooCommerceFiltersForCheckout()
+    public function wooCommerceFiltersForCheckout(): array
     {
 
         $cart = WC()->cart;
@@ -232,7 +232,7 @@ class Data
                 $billingCountry
             );
         } catch (InvalidArgumentException $exception) {
-            $filters = false;
+            $filters = [];
         }
 
         return $filters;

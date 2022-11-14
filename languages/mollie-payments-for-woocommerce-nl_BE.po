@@ -581,31 +581,31 @@ msgstr "Betaling voltooid met <strong>%1$s</strong> - %2$s (PayPal transactie-ID
 #: ../src/Payment/MollieObject.php:881
 msgctxt "Payment description for {orderNumber}"
 msgid "Order {orderNumber}"
-msgstr "Bestelling {bestelnummer}"
+msgstr "Bestelling {orderNumber}"
 
 #. translators: do not translate between {}
 #: ../src/Payment/MollieObject.php:891
 msgctxt "Payment description for {storeName}"
 msgid "StoreName {storeName}"
-msgstr "Winkelnaam {winkelnaam}"
+msgstr "Winkelnaam {storeName}"
 
 #. translators: do not translate between {}
 #: ../src/Payment/MollieObject.php:901
 msgctxt "Payment description for {customer.firstname}"
 msgid "Customer Firstname {customer.firstname}"
-msgstr "Voornaam Klant {voornaam.klant}"
+msgstr "Voornaam Klant {customer.firstname}"
 
 #. translators: do not translate between {}
 #: ../src/Payment/MollieObject.php:911
 msgctxt "Payment description for {customer.lastname}"
 msgid "Customer Lastname {customer.lastname}"
-msgstr "Achternaam Klant {achternaam.klant}"
+msgstr "Achternaam Klant {customer.lastname}"
 
 #. translators: do not translate between {}
 #: ../src/Payment/MollieObject.php:921
 msgctxt "Payment description for {customer.company}"
 msgid "Customer Company {customer.company}"
-msgstr "Bedrijf Klant {bedrijf.klant}"
+msgstr "Bedrijf Klant {customer.company}"
 
 #: ../src/Payment/MollieObject.php:936
 msgid "Order"

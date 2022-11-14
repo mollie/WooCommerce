@@ -53,7 +53,7 @@ class GatewaySurchargeHandler
         <?php
     }
 
-    public function enqueueSurchargeScript()
+    public function enqueueSurchargeScript():void
     {
         if (is_admin() || !mollieWooCommerceIsCheckoutContext()) {
             return;
@@ -177,7 +177,6 @@ class GatewaySurchargeHandler
 
     public function add_engraving_fees($cart)
     {
-        var_dump('hola');
         $gateway = $this->chosenGateway();
 
         if (!$gateway) {
@@ -242,7 +241,7 @@ class GatewaySurchargeHandler
 
     /**
      * @throws \Exception
-     * @var wc_order $order
+     * @param wc_order $order
      */
     protected function orderRemoveFee($order)
     {

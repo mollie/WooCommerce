@@ -55,9 +55,9 @@ class ActivationModule implements ExecutableModule
     public function initDb()
     {
         global $wpdb;
+        global $EZSQL_ERROR;
         $wpdb->mollie_pending_payment = $wpdb->prefix . SharedDataDictionary::PENDING_PAYMENT_DB_TABLE_NAME;
         if (get_option(SharedDataDictionary::DB_VERSION_PARAM_NAME, '') !== SharedDataDictionary::DB_VERSION) {
-            global $wpdb;
             $pendingPaymentConfirmTable = $wpdb->prefix . SharedDataDictionary::PENDING_PAYMENT_DB_TABLE_NAME;
             require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
             if ($wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $pendingPaymentConfirmTable)) !== $pendingPaymentConfirmTable) {
@@ -73,7 +73,6 @@ class ActivationModule implements ExecutableModule
                 /**
                  * Remove redundant 'DESCRIBE *__mollie_pending_payment' error so it doesn't show up in error logs
                  */
-                global $EZSQL_ERROR;
                 array_pop($EZSQL_ERROR);
             }
             update_option(SharedDataDictionary::DB_VERSION_PARAM_NAME, SharedDataDictionary::DB_VERSION);

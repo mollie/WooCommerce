@@ -56,7 +56,6 @@ class ConstraintsChecker
      * prevents updates
      *
      * @return bool
-     * @throws Exception
      */
     public function handleActivation()
     {

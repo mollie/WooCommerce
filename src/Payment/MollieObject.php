@@ -41,6 +41,10 @@ class MollieObject
     protected $apiHelper;
     protected $settingsHelper;
     protected $dataHelper;
+    /**
+     * @var string
+     */
+    protected $pluginId;
 
     public function __construct($data, Logger $logger, PaymentFactory $paymentFactory, Api $apiHelper, Settings $settingsHelper, string $pluginId)
     {

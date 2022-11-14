@@ -128,7 +128,7 @@ class MollieSubscription extends MollieObject
         }
 
         // Check available first payment methods with today's order total, but ignore SSD gateway (not shown in checkout)
-        if ($subscriptionGateway->id === 'mollie_wc_gateway_directdebit') {
+        if ($subscriptionGateway->paymentMethod()->getProperty('id') === 'mollie_wc_gateway_directdebit') {
             return $status;
         }
         $filters = $this->buildFilters(

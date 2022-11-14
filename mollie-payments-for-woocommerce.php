@@ -65,12 +65,18 @@ function mollie_wc_plugin_autoload()
     $autoloader = __DIR__ . '/vendor/autoload.php';
     $mollieSdkAutoload = __DIR__ . '/vendor/mollie/mollie-api-php/vendor/autoload.php';
     if (file_exists($autoloader)) {
-        /** @noinspection PhpIncludeInspection */
+        /**
+         * @noinspection PhpIncludeInspection
+         *
+         */
         require $autoloader;
     }
 
     if (file_exists($mollieSdkAutoload)) {
-        /** @noinspection PhpIncludeInspection */
+        /**
+         * @noinspection PhpIncludeInspection
+         * @psalm-suppress MissingFile
+         */
         require $mollieSdkAutoload;
     }
     return true;

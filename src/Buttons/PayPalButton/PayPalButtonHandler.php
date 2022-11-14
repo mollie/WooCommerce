@@ -11,7 +11,7 @@ class PayPalButtonHandler
      */
     private $ajaxRequests;
     /**
-     * @var string
+     * @var DataToPayPal
      */
     protected $dataPaypal;
 

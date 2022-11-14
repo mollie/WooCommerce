@@ -598,7 +598,7 @@ class MollieOrderService
     }
 
     /**
-     * @param Payment|Order $payment
+     * @param Order $payment
      * @param WC_Order $order
      */
     protected function setBillingAddressAfterPayment($payment, $order)

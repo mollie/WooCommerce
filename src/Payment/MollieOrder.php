@@ -6,6 +6,7 @@ namespace Mollie\WooCommerce\Payment;
 
 use Exception;
 use Mollie\Api\Exceptions\ApiException;
+use Mollie\Api\Resources\Payment;
 use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
@@ -101,7 +102,7 @@ class MollieOrder extends MollieObject
             || ($gatewayId === 'mollie_wc_gateway_paypal'
                 && $order->get_billing_first_name() !== '')
         ) {
-            $this->createBillingAddress($order);
+            $billingAddress = $this->createBillingAddress($order);
             $shippingAddress = $this->createShippingAddress($order);
         }
 
@@ -225,9 +226,11 @@ class MollieOrder extends MollieObject
         $ibanDetails = [];
 
         if (isset($payment->_embedded->payments[0]->id)) {
-            $actualPayment = new MolliePayment($payment->_embedded->payments[0]->id, $this->pluginId, $this->apiHelper, $this->settingsHelper, $this->dataHelper);
+            $actualPayment = new MolliePayment($payment->_embedded->payments[0]->id, $this->pluginId, $this->apiHelper, $this->settingsHelper, $this->dataHelper, $this->logger);
             $actualPayment = $actualPayment->getPaymentObject($actualPayment->data);
-
+            /**
+             * @var Payment $actualPayment
+             */
             $ibanDetails['consumerName'] = $actualPayment->details->consumerName;
             $ibanDetails['consumerAccount'] = $actualPayment->details->consumerAccount;
         }
@@ -428,10 +431,13 @@ class MollieOrder extends MollieObject
 
         // New order status
         if ($orderStatusCancelledPayments === 'pending' || $orderStatusCancelledPayments === null) {
+            $newOrderStatus = SharedDataDictionary::STATUS_PENDING;
         } elseif ($orderStatusCancelledPayments === 'cancelled') {
+            $newOrderStatus = SharedDataDictionary::STATUS_CANCELLED;
         }
         // if I cancel manually the order is canceled in Woo before calling Mollie
         if ($order->get_status() === 'cancelled') {
+            $newOrderStatus = SharedDataDictionary::STATUS_CANCELLED;
         }
 
         // Overwrite plugin-wide

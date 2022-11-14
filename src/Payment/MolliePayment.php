@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Payment;
 
 use Mollie\Api\Exceptions\ApiException;
+use Mollie\Api\Resources\Order;
+use Mollie\Api\Resources\Payment;
 use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
@@ -179,7 +181,10 @@ class MolliePayment extends MollieObject
 
         return null;
     }
-
+    /**
+     * @param Payment $payment
+     *
+     */
     public function getMollieCustomerIbanDetailsFromPaymentObject($payment = null)
     {
         if ($payment === null) {
@@ -187,7 +192,9 @@ class MolliePayment extends MollieObject
         }
 
         $payment = $this->getPaymentObject($payment);
-
+        /**
+         * @var Payment $payment
+         */
         $ibanDetails['consumerName'] = $payment->details->consumerName;
         $ibanDetails['consumerAccount'] = $payment->details->consumerAccount;
 
@@ -284,10 +291,13 @@ class MolliePayment extends MollieObject
 
         // New order status
         if ($orderStatusCancelledPayments === 'pending' || $orderStatusCancelledPayments === null) {
+            $newOrderStatus = SharedDataDictionary::STATUS_PENDING;
         } elseif ($orderStatusCancelledPayments === 'cancelled') {
+            $newOrderStatus = SharedDataDictionary::STATUS_CANCELLED;
         }
         // if I cancel manually the order is canceled in Woo before calling Mollie
         if ($order->get_status() === 'cancelled') {
+            $newOrderStatus = SharedDataDictionary::STATUS_CANCELLED;
         }
 
         // Get current gateway

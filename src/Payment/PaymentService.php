@@ -635,7 +635,7 @@ class PaymentService
             )
         );
 
-        $this->logger->debug($this->gateway->id . ': Subscription switch completed, valid mandate for order #' . $orderId);
+        $this->logger->debug($this->gateway->id . ': Subscription switch completed, valid mandate for order #' . $order->get_id());
 
         return [
             'result' => 'success',

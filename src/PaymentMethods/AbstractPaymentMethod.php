@@ -79,7 +79,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
      * Check if the payment method has surcharge applied
      * @return bool
      */
-    public function hasSurcharge()
+    public function hasSurcharge(): bool
     {
         return $this->getProperty('payment_surcharge')
             && $this->getProperty('payment_surcharge') !== Surcharge::NO_FEE;
@@ -101,7 +101,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     public function getIconUrl(): string
     {
         return $this->iconFactory->getIconUrl(
-            $this->getProperty('id')
+            $this->getIdFromConfig()
         );
     }
 
@@ -170,9 +170,9 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
 
     /**
      * Access the payment method description for the checkout blocks
-     * @return false|string|void
+     * @return string
      */
-    public function getProcessedDescriptionForBlock()
+    public function getProcessedDescriptionForBlock(): string
     {
         return $this->surcharge->buildDescriptionWithSurchargeForBlock($this);
     }

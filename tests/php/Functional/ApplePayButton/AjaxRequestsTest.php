@@ -6,6 +6,7 @@ use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mollie\Api\Endpoints\OrderEndpoint;
 use Mollie\Api\MollieApiClient;
 use Mollie\WooCommerce\Buttons\ApplePayButton\AppleAjaxRequests;
+use Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDataObjectHttp;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ResponsesToApple;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Payment\RefundLineItemsBuilder;
@@ -87,11 +88,16 @@ class AjaxRequestsTest extends TestCase
                 $this->helperMocks->apiHelper($apiClientMock),
                 $this->helperMocks->settingsHelper(),
             ],
-            ['validationApiWalletsEndpointCall', 'isNonceValid']
+            ['validationApiWalletsEndpointCall', 'isNonceValid', 'applePayDataObjectHttp']
         )->getMock();
         /*
          * Expectations
          */
+        $applePayDataObjectHttp = $this->createPartialMock(ApplePayDataObjectHttp::class, ['getFilteredRequestData']);
+        $applePayDataObjectHttp->method('getFilteredRequestData')->willReturn($_POST);
+        $testee->expects($this->once())->method('applePayDataObjectHttp')->willReturn(
+            $applePayDataObjectHttp
+        );
         expect('wp_verify_nonce')
             ->with($_POST['woocommerce-process-checkout-nonce'], 'woocommerce-process_checkout')
             ->andReturn(true);
@@ -178,12 +184,17 @@ class AjaxRequestsTest extends TestCase
                 $this->helperMocks->apiHelper($apiClientMock),
                 $this->helperMocks->settingsHelper(),
             ],
-            ['createWCCountries', 'getShippingPackages']
+            ['createWCCountries', 'getShippingPackages', 'applePayDataObjectHttp']
         )->getMock();
 
         /*
          * Expectations
          */
+        $applePayDataObjectHttp = $this->createPartialMock(ApplePayDataObjectHttp::class, ['getFilteredRequestData']);
+        $applePayDataObjectHttp->method('getFilteredRequestData')->willReturn($_POST);
+        $testee->expects($this->once())->method('applePayDataObjectHttp')->willReturn(
+            $applePayDataObjectHttp
+        );
         expect('wp_verify_nonce')
             ->with($_POST['woocommerce-process-checkout-nonce'], 'woocommerce-process_checkout')
             ->andReturn(true);
@@ -266,13 +277,19 @@ class AjaxRequestsTest extends TestCase
                 $this->helperMocks->apiHelper($apiClientMock),
                 $this->helperMocks->settingsHelper(),
             ],
-            ['createWCCountries']
+            ['createWCCountries', 'applePayDataObjectHttp']
         )->getMock();
 
 
         /*
          * Expectations
          */
+        $applePayDataObjectHttp = $this->getMockBuilder(ApplePayDataObjectHttp::class)->setConstructorArgs([$logger]
+        )->onlyMethods(['getFilteredRequestData'])->getMock();
+        $applePayDataObjectHttp->method('getFilteredRequestData')->willReturn($_POST);
+        $testee->expects($this->once())->method('applePayDataObjectHttp')->willReturn(
+            $applePayDataObjectHttp
+        );
         expect('wp_verify_nonce')
             ->with($_POST['woocommerce-process-checkout-nonce'], 'woocommerce-process_checkout')
             ->andReturn(true);

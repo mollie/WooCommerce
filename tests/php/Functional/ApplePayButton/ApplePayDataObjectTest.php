@@ -32,27 +32,28 @@ class ApplePayDataObjectTest extends TestCase
         $postDummyData = new postDTOTestsStubs();
         $_POST = [
             'woocommerce-process-checkout-nonce' => $postDummyData->nonce,
-            'validationUrl' => $postDummyData->validationUrl
+            'validationUrl' => $postDummyData->validationUrl,
+            'productId' => $postDummyData->productId,
+            'productQuantity' => $postDummyData->productQuantity,
+            'simplifiedContact' => $postDummyData->simplifiedContact,
+            'needShipping' => $postDummyData->needShipping,
+            'callerPage' => $postDummyData->callerPage,
+            'shippingMethod' => $postDummyData->shippingMethod,
+            'shippingContact' => $postDummyData->shippingContact,
+            'billingContact' => $postDummyData->billingContact
         ];
         expect('wp_verify_nonce')
             ->andReturn(true);
         $logger = $this->helperMocks->loggerMock();
-        $dataObject = new ApplePayDataObjectHttp($logger);
+        $dataObject = $this->getMockBuilder(ApplePayDataObjectHttp::class)->setConstructorArgs([$logger]
+        )->onlyMethods(['getFilteredRequestData'])->getMock();
+        $dataObject->method('getFilteredRequestData')->willReturn($_POST);
         $dataObject->validationData();
         $nonce = $dataObject->nonce();
         self::assertEquals($_POST['woocommerce-process-checkout-nonce'], $nonce);
         $validationUrl = $dataObject->validationUrl();
         self::assertEquals($_POST['validationUrl'], $validationUrl);
 
-
-        $_POST = [
-            'woocommerce-process-checkout-nonce' => $postDummyData->nonce,
-            'productId' => $postDummyData->productId,
-            'productQuantity' => $postDummyData->productQuantity,
-            'callerPage' => $postDummyData->callerPage,
-            'simplifiedContact' => $postDummyData->simplifiedContact,
-            'needShipping' => $postDummyData->needShipping,
-        ];
         $dataObject->updateContactData();
         $nonce = $dataObject->nonce();
         self::assertEquals($_POST['woocommerce-process-checkout-nonce'], $nonce);
@@ -69,27 +70,10 @@ class ApplePayDataObjectTest extends TestCase
         ];
         self::assertEquals($expectedContact, $simplifiedContact);
 
-        $_POST = [
-            'woocommerce-process-checkout-nonce' => $postDummyData->nonce,
-            'productId' => $postDummyData->productId,
-            'productQuantity' => $postDummyData->productQuantity,
-            'callerPage' => $postDummyData->callerPage,
-            'simplifiedContact' => $postDummyData->simplifiedContact,
-            'shippingMethod' => $postDummyData->shippingMethod,
-        ];
         $dataObject->updateMethodData();
         $method = $dataObject->shippingMethod();
         self::assertEquals($_POST['shippingMethod'], $method);
 
-        $_POST = [
-            'woocommerce-process-checkout-nonce' => $postDummyData->nonce,
-            'productId' => $postDummyData->productId,
-            'productQuantity' => $postDummyData->productQuantity,
-            'simplifiedContact' => $postDummyData->simplifiedContact,
-            'shippingMethod' => $postDummyData->shippingMethod,
-            'shippingContact' => $postDummyData->shippingContact,
-            'billingContact' => $postDummyData->billingContact
-        ];
         $dataObject->orderData('productDetail');
         $shippingAddress = $dataObject->shippingAddress();
         $shippingAddress['address_1'] = htmlspecialchars_decode($shippingAddress['address_1'], ENT_QUOTES);
@@ -111,30 +95,48 @@ class ApplePayDataObjectTest extends TestCase
         self::assertEquals($expectedAddress, $shippingAddress);
     }
 
-    public function testDataObjectError()
+    public function testDataObjectErrorNoUrl()
     {
         $postDummyData = new postDTOTestsStubs();
         $logger = $this->helperMocks->loggerMock();
-        $dataObject = new ApplePayDataObjectHttp($logger);
+        $_POST = [
+            'woocommerce-process-checkout-nonce' => $postDummyData->nonce,
+        ];
+        $dataObject = $this->getMockBuilder(ApplePayDataObjectHttp::class)->setConstructorArgs([$logger]
+        )->onlyMethods(['getFilteredRequestData'])->getMock();
+        $dataObject->method('getFilteredRequestData')->willReturn($_POST);
         expect('wp_verify_nonce')
             ->andReturn(true);
         expect('mollieWooCommerceDebug')
             ->withAnyArgs();
-        $_POST = [
-            'woocommerce-process-checkout-nonce' => $postDummyData->nonce,
-        ];
+
         $dataObject->validationData();
         $expectedErrorsIndex = [['errorCode' => 'unknown']];
         self::assertEquals($expectedErrorsIndex, $dataObject->errors());
+    }
 
+    public function testDataObjectErrorNoNonce()
+    {
+        $postDummyData = new postDTOTestsStubs();
+        $logger = $this->helperMocks->loggerMock();
         $_POST = [
             'woocommerce-process-checkout-nonce' => '',
             'validationUrl' => $postDummyData->validationUrl
         ];
+        $dataObject = $this->getMockBuilder(ApplePayDataObjectHttp::class)->setConstructorArgs([$logger]
+        )->onlyMethods(['getFilteredRequestData'])->getMock();
+        $dataObject->method('getFilteredRequestData')->willReturn($_POST);
+        expect('wp_verify_nonce')
+            ->andReturn(true);
         $dataObject->validationData();
         $expectedErrorsValue = [['errorCode' => 'unknown']];
         self::assertEquals($expectedErrorsValue, $dataObject->errors());
+    }
 
+    public function testDataObjectErrorShippingIncorrect()
+    {
+        $postDummyData = new postDTOTestsStubs();
+        $logger = $this->helperMocks->loggerMock();
         $_POST = [
             'woocommerce-process-checkout-nonce' => $postDummyData->nonce,
             'productId' => $postDummyData->productId,
@@ -147,6 +149,12 @@ class ApplePayDataObjectTest extends TestCase
             ],
             'needShipping' => $postDummyData->needShipping,
         ];
+        $dataObject = $this->getMockBuilder(ApplePayDataObjectHttp::class)->setConstructorArgs([$logger]
+        )->onlyMethods(['getFilteredRequestData'])->getMock();
+        $dataObject->method('getFilteredRequestData')->willReturn($_POST);
+        expect('wp_verify_nonce')
+            ->andReturn(true);
+
         $dataObject->updateContactData();
         $expectedErrorsContact = [
             [
@@ -159,9 +167,6 @@ class ApplePayDataObjectTest extends TestCase
             ]
         ];
         self::assertEquals($expectedErrorsContact, $dataObject->errors());
-        /*
-         * Execute Test
-         */
     }
 
 

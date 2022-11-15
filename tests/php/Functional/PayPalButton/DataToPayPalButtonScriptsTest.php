@@ -29,7 +29,7 @@ class DataToPayPalButtonScriptsTest extends TestCase
     /**
      *
      */
-    public function testApplePayScriptDataOnProduct()
+    public function testPayPalScriptDataOnProduct()
     {
         /*
          * Stubs
@@ -56,6 +56,8 @@ class DataToPayPalButtonScriptsTest extends TestCase
                 'is_product' => true,
                 'get_the_id' => $postDummyData->productId,
                 'admin_url' => 'admin-ajax.php',
+                'get_option' => ['mollie_paypal_button_minimum_amount' => $minAmount],
+                'wc_get_product' => $this->wcProduct(),
             ]
         );
 

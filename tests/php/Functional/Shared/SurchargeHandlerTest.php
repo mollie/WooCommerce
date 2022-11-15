@@ -57,7 +57,7 @@ class SurchargeHandlerTest extends TestCase
         $testee = $this->buildTesteeMock(
             GatewaySurchargeHandler::class,
             [new Surcharge()],
-            []
+            ['canProcessOrder', 'canProcessGateway', 'orderRemoveFee', 'orderAddFee']
         )->getMock();
         expect('mollieWooCommerceIsCheckoutContext')->andReturn(true);
         expect('wc_tax_enabled')->andReturn(false);

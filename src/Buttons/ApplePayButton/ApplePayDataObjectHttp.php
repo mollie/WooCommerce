@@ -97,6 +97,7 @@ class ApplePayDataObjectHttp
             $nonce,
             'woocommerce-process_checkout'
         );
+
         if (!$isNonceValid) {
             return;
         }
@@ -486,27 +487,27 @@ class ApplePayDataObjectHttp
     /**
      * @return array|false|null
      */
-    protected function getFilteredRequestData()
+    public function getFilteredRequestData()
     {
         return filter_input_array(INPUT_POST, [
-            PropertiesDictionary::CALLER_PAGE => FILTER_SANITIZE_STRING,
-            PropertiesDictionary::VALIDATION_URL => FILTER_SANITIZE_STRING,
-            'woocommerce-process-checkout-nonce' => FILTER_SANITIZE_STRING,
+            PropertiesDictionary::CALLER_PAGE => FILTER_SANITIZE_SPECIAL_CHARS,
+            PropertiesDictionary::VALIDATION_URL => FILTER_SANITIZE_SPECIAL_CHARS,
+            'woocommerce-process-checkout-nonce' => FILTER_SANITIZE_SPECIAL_CHARS,
             PropertiesDictionary::NEED_SHIPPING => FILTER_VALIDATE_BOOLEAN,
             PropertiesDictionary::SIMPLIFIED_CONTACT => [
-                'filter' => FILTER_SANITIZE_STRING,
+                'filter' => FILTER_SANITIZE_SPECIAL_CHARS,
                 'flags' => FILTER_REQUIRE_ARRAY,
             ],
             PropertiesDictionary::SHIPPING_CONTACT => [
-                'filter' => FILTER_SANITIZE_STRING,
+                'filter' => FILTER_SANITIZE_SPECIAL_CHARS,
                 'flags' => FILTER_REQUIRE_ARRAY,
             ],
             PropertiesDictionary::BILLING_CONTACT => [
-                'filter' => FILTER_SANITIZE_STRING,
+                'filter' => FILTER_SANITIZE_SPECIAL_CHARS,
                 'flags' => FILTER_REQUIRE_ARRAY,
             ],
             PropertiesDictionary::SHIPPING_METHOD => [
-                'filter' => FILTER_SANITIZE_STRING,
+                'filter' => FILTER_SANITIZE_SPECIAL_CHARS,
                 'flags' => FILTER_REQUIRE_ARRAY,
             ],
             PropertiesDictionary::PRODUCT_ID => FILTER_SANITIZE_NUMBER_INT,

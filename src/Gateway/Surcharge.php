@@ -62,7 +62,7 @@ class Surcharge
 
     /**
      * @param PaymentMethodI $paymentMethod
-     * @return false|string|void
+     * @return string
      */
     public function buildDescriptionWithSurchargeForBlock(PaymentMethodI $paymentMethod)
     {

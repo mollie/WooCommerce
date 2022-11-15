@@ -8,10 +8,10 @@ use Mollie\WooCommerce\Payment\PaymentFieldsService;
 
 interface PaymentMethodI
 {
-    public function getProperty(string $propertyName):false|mixed;
-    public function hasProperty(string $propertyName):bool;
-    public function hasPaymentFields():bool;
-    public function getProcessedDescriptionForBlock():string;
-    public function paymentFieldsService():PaymentFieldsService;
-    public function hasSurcharge():bool;
+    public function getProperty(string $propertyName);
+    public function hasProperty(string $propertyName): bool;
+    public function hasPaymentFields(): bool;
+    public function getProcessedDescriptionForBlock(): string;
+    public function paymentFieldsService(): PaymentFieldsService;
+    public function hasSurcharge(): bool;
 }

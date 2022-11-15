@@ -488,7 +488,7 @@ class ApplePayDataObjectHttp
      */
     protected function getFilteredRequestData()
     {
-        return filter_var_array($_POST, [
+        return filter_input_array(INPUT_POST, [
             PropertiesDictionary::CALLER_PAGE => FILTER_SANITIZE_STRING,
             PropertiesDictionary::VALIDATION_URL => FILTER_SANITIZE_STRING,
             'woocommerce-process-checkout-nonce' => FILTER_SANITIZE_STRING,

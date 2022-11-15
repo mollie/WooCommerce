@@ -71,7 +71,7 @@ class AssetsModule implements ExecutableModule
                 wp_localize_script(
                     'mollie_paypalButtonBlock',
                     'molliepaypalButtonCart',
-                     $dataToScripts->paypalbuttonScriptData(true)
+                    $dataToScripts->paypalbuttonScriptData(true)
                 );
             }
             if (mollieWooCommerceIsApplePayDirectEnabled('cart') && !$this->cartHasSubscription($cart)) {
@@ -463,7 +463,7 @@ class AssetsModule implements ExecutableModule
         return $dataToScript;
     }
 
-    public function gatewaySupportsFeatures(PaymentMethodI $paymentMethod,bool $isSepaEnabled): array
+    public function gatewaySupportsFeatures(PaymentMethodI $paymentMethod, bool $isSepaEnabled): array
     {
         $supports = (array) $paymentMethod->getProperty('supports');
         $isSepaPaymentMethod = (bool) $paymentMethod->getProperty('SEPA');

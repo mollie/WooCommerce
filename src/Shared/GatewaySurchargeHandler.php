@@ -53,7 +53,7 @@ class GatewaySurchargeHandler
         <?php
     }
 
-    public function enqueueSurchargeScript():void
+    public function enqueueSurchargeScript(): void
     {
         if (is_admin() || !mollieWooCommerceIsCheckoutContext()) {
             return;

@@ -15,12 +15,16 @@ class MaybeDisableGateway
      * in the cart
      * Disable if Payments API is selected in advanced settings
      *
-     * @param array $gateways
+     * @param ?array $gateways
      *
      * @return array
      */
-    public function maybeDisableMealVoucherGateway(array $gateways)
+    public function maybeDisableMealVoucherGateway(?array $gateways): array
     {
+        if (!is_array($gateways)) {
+            return [];
+        }
+
         $isWcApiRequest = (bool)filter_input(
             INPUT_GET,
             'wc-api',
@@ -125,7 +129,6 @@ class MaybeDisableGateway
             ) {
                 $productsWithCategory++;
             }
-            $numberOfProducts++;
         }
         if ($productsWithCategory === 0) {
             return 0;

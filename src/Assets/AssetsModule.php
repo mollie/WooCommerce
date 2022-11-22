@@ -485,9 +485,9 @@ class AssetsModule implements ExecutableModule
     }
 
     /**
-     * @param string $current_section
+     * @param ?string $current_section
      */
-    protected function enqueueIconSettings(string $current_section): void
+    protected function enqueueIconSettings(?string $current_section): void
     {
         if (!$current_section || strpos($current_section, 'mollie_wc_gateway_') === false) {
             return;

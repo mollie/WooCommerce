@@ -113,8 +113,7 @@ class MolliePayment extends MollieObject
         }
 
         if (isset($_POST['token'])) {
-            $applePayToken = $_POST['token'];
-            $applePayToken = filter_var($applePayToken, FILTER_SANITIZE_STRING);
+            $applePayToken = sanitize_text_field(wp_unslash($_POST['token']));
             $encodedApplePayToken = json_encode($applePayToken);
             $paymentRequestData['applePayPaymentToken'] = $encodedApplePayToken;
         }

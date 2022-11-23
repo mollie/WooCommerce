@@ -165,18 +165,12 @@ class ApplePayDataObjectHttp
             return;
         }
 
-        $filteredShippingContact = filter_var_array(
-            $data[PropertiesDictionary::SHIPPING_CONTACT],
-            FILTER_SANITIZE_STRING
-        );
+        $filteredShippingContact = array_map('sanitize_text_field', $data[PropertiesDictionary::SHIPPING_CONTACT]);
         $this->shippingAddress = $this->completeAddress(
             $filteredShippingContact,
             PropertiesDictionary::SHIPPING_CONTACT_INVALID
         );
-        $filteredbillingContact = filter_var_array(
-            $data[PropertiesDictionary::BILLING_CONTACT],
-            FILTER_SANITIZE_STRING
-        );
+        $filteredbillingContact = array_map('sanitize_text_field', $data[PropertiesDictionary::BILLING_CONTACT]);
         $this->billingAddress = $this->completeAddress(
             $filteredbillingContact,
             PropertiesDictionary::BILLING_CONTACT_INVALID
@@ -225,7 +219,7 @@ class ApplePayDataObjectHttp
             if($key === 'woocommerce-process-checkout-nonce'){
                 $key = 'nonce';
             }
-            $this->$key = filter_var($value, $filterType);
+            $this->$key = $filterType ? filter_var($value, $filterType) : sanitize_text_field(wp_unslash($value));
         }
     }
 
@@ -248,7 +242,7 @@ class ApplePayDataObjectHttp
             case in_array($value, $filterBoolean):
                 return FILTER_VALIDATE_BOOLEAN;
             default:
-                return FILTER_SANITIZE_STRING;
+                return false;
         }
     }
 
@@ -348,23 +342,20 @@ class ApplePayDataObjectHttp
         ) {
             return [];
         }
-        $filter = FILTER_SANITIZE_STRING;
 
         return [
-            'first_name' => filter_var($data['givenName'], $filter),
-            'last_name' => filter_var($data['familyName'], $filter),
-            'email' => isset($data['emailAddress']) ? filter_var($data['emailAddress'], $filter): '',
-            'phone' => isset($data['phoneNumber']) ?filter_var($data['phoneNumber'], $filter): '',
+            'first_name' => sanitize_text_field(wp_unslash($data['givenName'])),
+            'last_name' => sanitize_text_field(wp_unslash($data['familyName'])),
+            'email' => isset($data['emailAddress']) ? sanitize_text_field(wp_unslash($data['emailAddress'])) : '',
+            'phone' => isset($data['phoneNumber']) ? sanitize_text_field(wp_unslash($data['phoneNumber'])) : '',
             'address_1' => isset($data['addressLines'][0])
-                ? filter_var($data['addressLines'][0], $filter) : '',
+                ? sanitize_text_field(wp_unslash($data['addressLines'][0])) : '',
             'address_2' => isset($data['addressLines'][1])
-                ? filter_var($data['addressLines'][1], $filter) : '',
-            'city' => filter_var($data['locality'], $filter),
-            'state' => filter_var($data['administrativeArea'], $filter),
-            'postcode' => filter_var($data['postalCode'], $filter),
-            'country' => strtoupper(
-                filter_var($data['countryCode'], $filter)
-            )
+                ? sanitize_text_field(wp_unslash($data['addressLines'][1])) : '',
+            'city' => sanitize_text_field(wp_unslash($data['locality'])),
+            'state' => sanitize_text_field(wp_unslash($data['administrativeArea'])),
+            'postcode' => sanitize_text_field(wp_unslash($data['postalCode'])),
+            'country' => strtoupper(sanitize_text_field(wp_unslash($data['countryCode']))),
         ];
     }
 
@@ -397,10 +388,7 @@ class ApplePayDataObjectHttp
      */
     protected function updateSimplifiedContact($data)
     {
-        $simplifiedContactInfo = filter_var_array(
-            $data,
-            FILTER_SANITIZE_STRING
-        );
+        $simplifiedContactInfo = array_map('sanitize_text_field', $data);
         $this->simplifiedContact = $this->simplifiedAddress(
             $simplifiedContactInfo
         );
@@ -408,12 +396,8 @@ class ApplePayDataObjectHttp
 
     protected function updateShippingMethod(array $data)
     {
-        if (array_key_exists(
-            PropertiesDictionary::SHIPPING_METHOD, $data)) {
-            $this->shippingMethod = filter_var_array(
-                $data[PropertiesDictionary::SHIPPING_METHOD],
-                FILTER_SANITIZE_STRING
-            );
+        if (array_key_exists(PropertiesDictionary::SHIPPING_METHOD, $data)) {
+            $this->shippingMethod = array_map('sanitize_text_field', $data[PropertiesDictionary::SHIPPING_METHOD]);
         }
     }
 }

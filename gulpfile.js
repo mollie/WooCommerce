@@ -8,6 +8,7 @@ const usage = require('gulp-help-doc')
 const zip = require('gulp-zip')
 const rename = require('gulp-rename')
 const date = require('date-and-time')
+const wpPot = require('wp-pot')
 
 const options = {
     ...minimist(
@@ -31,7 +32,7 @@ const options = {
                 buildDir: `${__dirname}/build`,
                 distDir: `${__dirname}/dist`,
                 q: false,
-                depsVersionPhp: '5.6.39',
+                depsVersionPhp: '7.2.9',
             },
         }
     )
@@ -177,14 +178,6 @@ function _installPhp({buildDir, depsVersionPhp}) {
     }
 }
 
-function _installPhar({buildDir}) {
-    return function installPhar(done) {
-        chain([
-            (done) => { return exec('phive', ['install', '--force-accept-unsigned', '--copy'], {cwd: buildDir}, done)},
-        ], done);
-    }
-}
-
 function _installJs({buildDir}) {
     return function installJs(done) {
         chain([
@@ -256,6 +249,7 @@ function _archive({baseDir, buildDir, distDir, packageVersion, packageName}) {
                             '!**/webpack.config.js',
                             '!**/.github',
                             '!**/.git',
+                            '!**/.ddev',
                             '!**/.gitignore',
                             '!**/.gitattributes',
                             '!**/Makefile',
@@ -279,6 +273,22 @@ function _archive({baseDir, buildDir, distDir, packageVersion, packageName}) {
     }
 }
 
+function _generatePotFile ({buildDir, langDir}) {
+    return async function generatePotFile (done) {
+        wpPot({
+            destFile: `languages/en_GB.pot`,
+            includePOTCreationDate: false,
+            src: [
+                `mollie-payments-for-woocommerce.php`,
+                `src/**/*.php`,
+                `inc/**/*.php`,
+            ]
+        });
+
+        done()
+    }
+}
+
 // --------------------------------------------------------------------
 // TARGETS
 // --------------------------------------------------------------------
@@ -298,10 +308,6 @@ exports.installPhp = series(
     _installPhp(options)
 )
 
-exports.installPhar = series(
-    _installPhar(options)
-)
-
 exports.installJs = series(
     _installJs(options)
 )
@@ -316,8 +322,7 @@ exports.archive = series(
 
 exports.install = parallel(
     exports.installJs,
-    exports.installPhp,
-    exports.installPhar,
+    exports.installPhp
 )
 
 exports.process = series(
@@ -338,4 +343,8 @@ exports.dist = series(
 
 exports.default = series(
     exports.build
+)
+
+exports.generatePotFile = series(
+    _generatePotFile(options)
 )

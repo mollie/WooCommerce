@@ -95,8 +95,7 @@ class PayPalDataObjectHttp
     {
         foreach ($required as $requiredField) {
             if (!array_key_exists($requiredField, $data)) {
-                $this->logger->log(
-                    LogLevel::DEBUG,
+                $this->logger->debug(
                     sprintf('PayPal Data Error: Missing index %s', $requiredField)
                 );
 
@@ -104,8 +103,7 @@ class PayPalDataObjectHttp
                 continue;
             }
             if (!$data[$requiredField]) {
-                $this->logger->log(
-                    LogLevel::DEBUG,
+                $this->logger->debug(
                     sprintf('PayPal Data Error: Missing value for %s', $requiredField)
                 );
                 $this->errors[] = ['errorCode' => 'unknown'];

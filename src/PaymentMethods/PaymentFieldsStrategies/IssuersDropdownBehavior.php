@@ -71,9 +71,7 @@ trait IssuersDropdownBehavior
             'issuers_empty_option'
         ) ?: $gateway->paymentMethod->getProperty('defaultDescription');
 
-        $html = '<option value="">' . esc_html(
-            __($description, 'mollie-payments-for-woocommerce')
-        ) . '</option>';
+        $html = '<option value="">' . esc_html($description) . '</option>';
         foreach ($issuers as $issuer) {
             $html .= '<option value="' . esc_attr($issuer->id) . '"'
                 . ($selectedIssuer === $issuer->id ? ' selected=""' : '') . '>'

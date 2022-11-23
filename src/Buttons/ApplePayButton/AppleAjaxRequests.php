@@ -152,12 +152,7 @@ class AppleAjaxRequests
         } catch (\Mollie\Api\Exceptions\ApiException $apiException) {
             update_option('mollie_wc_applepay_validated', 'no');
             $errorMessage = $apiException->getMessage();
-            wp_send_json_error(
-                __(
-                    $errorMessage,
-                    'mollie-payments-for-woocommerce'
-                )
-            );
+            wp_send_json_error($errorMessage);
         }
         update_option('mollie_wc_applepay_validated', 'yes');
 
@@ -528,7 +523,7 @@ class AppleAjaxRequests
         $surcharge = new Surcharge();
         $surchargeLabel = get_option(
             'mollie-payments-for-woocommerce_gatewayFeeLabel',
-            __(Surcharge::DEFAULT_FEE_LABEL, 'mollie-payments-for-woocommerce')
+            $surcharge->defaultFeeLabel()
         );
         $settings = get_option('mollie_wc_gateway_applepay_settings', false);
 

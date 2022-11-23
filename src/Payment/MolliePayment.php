@@ -7,6 +7,7 @@ namespace Mollie\WooCommerce\Payment;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\SDK\Api;
 use Psr\Log\LogLevel;
 use WC_Order;
@@ -41,8 +42,7 @@ class MolliePayment extends MollieObject
 
             return parent::getPaymentObject($paymentId, $testMode = false, $useCache = true);
         } catch (ApiException $e) {
-            $this->logger->log(
-                LogLevel::DEBUG,
+            $this->logger->debug(
                 __FUNCTION__ . ": Could not load payment $paymentId (" . ( $testMode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')'
             );
         }
@@ -56,7 +56,7 @@ class MolliePayment extends MollieObject
      *
      * @return array
      */
-    public function getPaymentRequestData($order, $customerId)
+    public function getPaymentRequestData($order, $customerId, $voucherDefaultCategory = Voucher::NO_CATEGORY)
     {
         $settingsHelper = $this->settingsHelper;
         $optionName = $this->pluginId . '_' . 'api_payment_description';
@@ -201,7 +201,7 @@ class MolliePayment extends MollieObject
         $orderId = $order->get_id();
         if ($payment->isPaid()) {
             // Add messages to log
-            $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' called for payment ' . $orderId);
+            $this->logger->debug(__METHOD__ . ' called for payment ' . $orderId);
 
             if ($payment->method === 'paypal') {
                 $this->addPaypalTransactionIdToOrder($order);
@@ -211,8 +211,7 @@ class MolliePayment extends MollieObject
             $order->payment_complete($payment->id);
 
             // Add messages to log
-            $this->logger->log(
-                LogLevel::DEBUG,
+            $this->logger->debug(
                 __METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for payment ' . $orderId
             );
 
@@ -230,8 +229,7 @@ class MolliePayment extends MollieObject
             $this->unsetCancelledMolliePaymentId($orderId);
 
             // Add messages to log
-            $this->logger->log(
-                LogLevel::DEBUG,
+            $this->logger->debug(
                 __METHOD__ . ' processing paid payment via Mollie plugin fully completed for order ' . $orderId
             );
 
@@ -244,8 +242,7 @@ class MolliePayment extends MollieObject
             }
         } else {
             // Add messages to log
-            $this->logger->log(
-                LogLevel::DEBUG,
+            $this->logger->debug(
                 __METHOD__ . ' payment at Mollie not paid, so no processing for order ' . $orderId
             );
         }
@@ -262,12 +259,11 @@ class MolliePayment extends MollieObject
         $orderId = $order->get_id();
 
         // Add messages to log
-        $this->logger->log(LogLevel::DEBUG, __METHOD__ . " called for payment {$orderId}");
+        $this->logger->debug(__METHOD__ . " called for payment {$orderId}");
 
         // if the status is Completed|Refunded|Cancelled  DONT change the status to cancelled
         if ($this->isFinalOrderStatus($order)) {
-            $this->logger->log(
-                LogLevel::DEBUG,
+            $this->logger->debug(
                 __METHOD__
                 . " called for payment {$orderId} has final status. Nothing to be done"
             );
@@ -327,7 +323,7 @@ class MolliePayment extends MollieObject
         $orderId = $order->get_id();
 
         // Add messages to log
-        $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' called for order ' . $orderId);
+        $this->logger->debug(__METHOD__ . ' called for order ' . $orderId);
 
         // Get current gateway
         $gateway = wc_get_payment_gateway_by_order($order);
@@ -352,7 +348,7 @@ class MolliePayment extends MollieObject
             $payment
         );
 
-        $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', regular payment failed.');
+        $this->logger->debug(__METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', regular payment failed.');
     }
 
     /**
@@ -366,14 +362,21 @@ class MolliePayment extends MollieObject
         $molliePaymentId = $order->get_meta('_mollie_payment_id', true);
 
         // Add messages to log
-        $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' called for order ' . $orderId);
+        $this->logger->debug(__METHOD__ . ' called for order ' . $orderId);
 
-        // Get current gateway
-        $gateway = wc_get_payment_gateway_by_order($order);
+        // Check that this order has not been marked paid already
+        if (!$order->needs_payment()) {
+            $this->logger->log(
+                LogLevel::DEBUG,
+                __METHOD__ . ' called for order ' . $orderId . ', not processed because the order is already paid.'
+            );
+
+            return;
+        }
 
         // Check that this payment is the most recent, based on Mollie Payment ID from post meta, do not cancel the order if it isn't
-        if ($molliePaymentId != $payment->id) {
-            $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', not processed because of a newer pending payment ' . $molliePaymentId);
+        if ($molliePaymentId !== $payment->id) {
+            $this->logger->debug(__METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', not processed because of a newer pending payment ' . $molliePaymentId);
 
             $order->add_order_note(sprintf(
             /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
@@ -388,7 +391,8 @@ class MolliePayment extends MollieObject
 
         // New order status
         $newOrderStatus = MolliePaymentGateway::STATUS_CANCELLED;
-
+        //Get current gateway
+        $gateway = wc_get_payment_gateway_by_order($order);
         // Overwrite plugin-wide
         $newOrderStatus = apply_filters($this->pluginId . '_order_status_expired', $newOrderStatus);
 
@@ -422,7 +426,7 @@ class MolliePayment extends MollieObject
      */
     public function refund(\WC_Order $order, $orderId, $paymentObject, $amount = null, $reason = '')
     {
-        $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - ' . $orderId . ' - Try to process refunds for individual order line(s).');
+        $this->logger->debug(__METHOD__ . ' - ' . $orderId . ' - Try to process refunds for individual order line(s).');
 
         try {
             $paymentObject = $this->getActiveMolliePayment($orderId);
@@ -430,7 +434,7 @@ class MolliePayment extends MollieObject
             if (! $paymentObject) {
                 $errorMessage = "Could not find active Mollie payment for WooCommerce order ' . $orderId";
 
-                $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - ' . $errorMessage);
+                $this->logger->debug(__METHOD__ . ' - ' . $errorMessage);
 
                 return new WP_Error('1', $errorMessage);
             }
@@ -438,12 +442,12 @@ class MolliePayment extends MollieObject
             if (! $paymentObject->isPaid()) {
                 $errorMessage = "Can not refund payment $paymentObject->id for WooCommerce order $orderId as it is not paid.";
 
-                $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - ' . $errorMessage);
+                $this->logger->debug(__METHOD__ . ' - ' . $errorMessage);
 
                 return new WP_Error('1', $errorMessage);
             }
 
-            $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - Create refund - payment object: ' . $paymentObject->id . ', WooCommerce order: ' . $orderId . ', amount: ' . $this->dataHelper->getOrderCurrency($order) . $amount . ( ! empty($reason) ? ', reason: ' . $reason : '' ));
+            $this->logger->debug(__METHOD__ . ' - Create refund - payment object: ' . $paymentObject->id . ', WooCommerce order: ' . $orderId . ', amount: ' . $this->dataHelper->getOrderCurrency($order) . $amount . ( ! empty($reason) ? ', reason: ' . $reason : '' ));
 
             do_action($this->pluginId . '_create_refund', $paymentObject, $order);
 
@@ -457,7 +461,7 @@ class MolliePayment extends MollieObject
                 'description' => $reason,
             ]);
 
-            $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - Refund created - refund: ' . $refund->id . ', payment: ' . $paymentObject->id . ', order: ' . $orderId . ', amount: ' . $this->dataHelper->getOrderCurrency($order) . $amount . ( ! empty($reason) ? ', reason: ' . $reason : '' ));
+            $this->logger->debug(__METHOD__ . ' - Refund created - refund: ' . $refund->id . ', payment: ' . $paymentObject->id . ', order: ' . $orderId . ', amount: ' . $this->dataHelper->getOrderCurrency($order) . $amount . ( ! empty($reason) ? ', reason: ' . $reason : '' ));
 
             /**
              * After Payment Refund has been created
@@ -492,17 +496,17 @@ class MolliePayment extends MollieObject
 
     /**
      * @param WC_Order $order
-     * @param MolliePaymentGateway $gateway
+     * @param WC_Payment_Gateway|bool $gateway
      * @param                    $newOrderStatus
      * @param                    $orderId
      */
     protected function maybeUpdateStatus(
         WC_Order $order,
-        MolliePaymentGateway $gateway,
+        $gateway,
         $newOrderStatus,
         $orderId
     ) {
-        if ($this->isOrderPaymentStartedByOtherGateway($order) || !$gateway) {
+        if ($this->isOrderPaymentStartedByOtherGateway($order) || ! is_a($gateway, MolliePaymentGateway::class)) {
             $this->informNotUpdatingStatus($orderId, $gateway->id, $order);
             return;
         }

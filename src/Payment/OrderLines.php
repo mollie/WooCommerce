@@ -41,24 +41,27 @@ class OrderLines
     /**
      * Mollie_WC_Helper_Order_Lines constructor.
      *
-     * @param object      $order        WooCommerce Order
+     *
      */
-    public function __construct($order, Data $dataHelper, string $pluginId)
+    public function __construct(Data $dataHelper, string $pluginId)
     {
-        $this->order = $order;
         $this->dataHelper = $dataHelper;
-        $this->currency = $this->dataHelper->getOrderCurrency($this->order);
         $this->pluginId = $pluginId;
     }
 
     /**
      * Gets formatted order lines from WooCommerce order.
      *
+     * @param WC_Order $order WooCommerce Order
+     * @param string $voucherDefaultCategory Voucher gaetway default category
+     *
      * @return array
      */
-    public function order_lines()
+    public function order_lines($order, $voucherDefaultCategory)
     {
-        $this->process_items();
+        $this->order = $order;
+        $this->currency = $this->dataHelper->getOrderCurrency($this->order);
+        $this->process_items($voucherDefaultCategory);
         $this->process_shipping();
         $this->process_fees();
         $this->process_gift_cards();
@@ -84,7 +87,7 @@ class OrderLines
      *
      * @access private
      */
-    private function process_items()
+    private function process_items($voucherDefaultCategory)
     {
         $voucherSettings = get_option('mollie_wc_gateway_voucher_settings')?:get_option('mollie_wc_gateway_mealvoucher_settings');
         $isMealVoucherEnabled = $voucherSettings ? ($voucherSettings['enabled'] == 'yes') : false;
@@ -108,7 +111,7 @@ class OrderLines
                     'sku' => $this->get_item_reference($product),
                     'name' => $this->get_item_name($cart_item),
                     'quantity' => $this->get_item_quantity($cart_item),
-                    'vatRate' => $this->get_item_vatRate($cart_item, $product),
+                    'vatRate' => round($this->get_item_vatRate($cart_item, $product), 2),
                     'unitPrice' =>  [
                         'currency' => $this->currency,
                         'value' => $this->dataHelper->formatCurrencyValue($this->get_item_price($cart_item), $this->currency),
@@ -133,9 +136,10 @@ class OrderLines
                         ],
                 ];
 
-                if ($isMealVoucherEnabled && $this->get_item_category($product) != "no_category") {
+                if ($isMealVoucherEnabled && $this->get_item_category($product, $voucherDefaultCategory) != "no_category") {
                     $mollie_order_item['category'] = $this->get_item_category(
-                        $product
+                        $product,
+                        $voucherDefaultCategory
                     );
                 }
                 $this->order_lines[] = $mollie_order_item;
@@ -188,16 +192,22 @@ class OrderLines
     {
         if (! empty($this->order->get_items('fee'))) {
             foreach ($this->order->get_items('fee') as $cart_fee) {
-                if ($cart_fee['tax_status'] === 'taxable' && $cart_fee['total_tax'] > 0) {
+                if ($cart_fee['tax_status'] === 'taxable') {
                     // Calculate tax rate.
-                    $_tax = new WC_Tax();
-                    $tmp_rates = $_tax::get_rates($cart_fee['tax_class']);
+                    $tmp_rates = WC_Tax::get_rates($cart_fee['tax_class']);
                     $vat = array_shift($tmp_rates);
 
                     $cart_fee_vat_rate = isset($vat['rate']) ? $vat['rate'] : 0;
 
                     $cart_fee_tax_amount = $cart_fee['total_tax'];
                     $cart_fee_total = ( $cart_fee['total'] + $cart_fee['total_tax'] );
+                    /*This is the equation Mollie uses to validate our input*/
+                    $validTax = ($cart_fee_total * ($cart_fee_vat_rate / (100 + $cart_fee_vat_rate))) === (float) $cart_fee_tax_amount || $cart_fee_total === 0;
+                    if (!$validTax) {
+                        /*inverse of the equation Mollie uses to validate our input,
+                        so we don't fail when cart has mixed taxes*/
+                        $cart_fee_vat_rate = ($cart_fee_tax_amount * 100) / ($cart_fee_total - $cart_fee_tax_amount);
+                    }
                 } else {
                     $cart_fee_vat_rate = 0;
                     $cart_fee_tax_amount = 0;
@@ -434,22 +444,13 @@ class OrderLines
      * @access private
      *
      * @param  object $product Product object.
+     * @param  string $voucherDefaultCategory Voucher default category.
      *
      * @return string $category Product voucher category.
      */
-    private function get_item_category($product)
+    private function get_item_category($product, $voucherDefaultCategory)
     {
-        $mealvoucherSettings = get_option(
-            'mollie_wc_gateway_voucher_settings'
-        );
-        if(!$mealvoucherSettings){
-            $mealvoucherSettings = get_option(
-                'mollie_wc_gateway_mealvoucher_settings'
-            );
-        }
-
-        $defaultCategory = $mealvoucherSettings? $mealvoucherSettings['mealvoucher_category_default']:Voucher::NO_CATEGORY;
-        $category = $defaultCategory;
+        $category = $voucherDefaultCategory;
 
         if (!$product) {
             return $category;
@@ -555,7 +556,7 @@ class OrderLines
     {
         $shipping_vat_rate = 0;
         if (WC()->cart->shipping_tax_total > 0) {
-            $shipping_vat_rate = round(WC()->cart->shipping_tax_total / WC()->cart->shipping_total, 3) * 100;
+            $shipping_vat_rate = round(WC()->cart->shipping_tax_total / WC()->cart->shipping_total, 2) * 100;
         }
 
         return $shipping_vat_rate;

@@ -17,7 +17,6 @@ use WC_Order;
 
 class MollieOrderService
 {
-
     protected $gateway;
     /**
      * @var HttpResponse
@@ -64,13 +63,13 @@ class MollieOrderService
     {
         // Webhook test by Mollie
         if (isset($_GET['testByMollie'])) {
-            $this->logger->log(LogLevel::DEBUG, __METHOD__ . ': Webhook tested by Mollie.', [true]);
+            $this->logger->debug(__METHOD__ . ': Webhook tested by Mollie.', [true]);
             return;
         }
 
         if (empty($_GET['order_id']) || empty($_GET['key'])) {
             $this->httpResponse->setHttpResponseCode(400);
-            $this->logger->log(LogLevel::DEBUG, __METHOD__ . ":  No order ID or order key provided.");
+            $this->logger->debug(__METHOD__ . ":  No order ID or order key provided.");
             return;
         }
 
@@ -82,13 +81,13 @@ class MollieOrderService
 
         if (!$order) {
             $this->httpResponse->setHttpResponseCode(404);
-            $this->logger->log(LogLevel::DEBUG, __METHOD__ . ":  Could not find order $order_id.");
+            $this->logger->debug(__METHOD__ . ":  Could not find order $order_id.");
             return;
         }
 
         if (!$order->key_is_valid($key)) {
             $this->httpResponse->setHttpResponseCode(401);
-            $this->logger->log(LogLevel::DEBUG, __METHOD__ . ":  Invalid key $key for order $order_id.");
+            $this->logger->debug(__METHOD__ . ":  Invalid key $key for order $order_id.");
             return;
         }
         $gateway = wc_get_payment_gateway_by_order($order);
@@ -96,7 +95,7 @@ class MollieOrderService
         // No Mollie payment id provided
         if (empty($_POST['id'])) {
             $this->httpResponse->setHttpResponseCode(400);
-            $this->logger->log(LogLevel::DEBUG, __METHOD__ . ': No payment object ID provided.', [true]);
+            $this->logger->debug(__METHOD__ . ': No payment object ID provided.', [true]);
             return;
         }
 
@@ -110,7 +109,7 @@ class MollieOrderService
             );
         } catch (ApiException $exception) {
             $this->httpResponse->setHttpResponseCode(400);
-            $this->logger->log(LogLevel::DEBUG, $exception->getMessage());
+            $this->logger->debug($exception->getMessage());
             return;
         }
 
@@ -119,18 +118,18 @@ class MollieOrderService
         // Payment not found
         if (!$payment) {
             $this->httpResponse->setHttpResponseCode(404);
-            $this->logger->log(LogLevel::DEBUG, __METHOD__ . ": payment object $payment_object_id not found.", [true]);
+            $this->logger->debug(__METHOD__ . ": payment object $payment_object_id not found.", [true]);
             return;
         }
 
         if ($order_id != $payment->metadata->order_id) {
             $this->httpResponse->setHttpResponseCode(400);
-            $this->logger->log(LogLevel::DEBUG, __METHOD__ . ": Order ID does not match order_id in payment metadata. Payment ID {$payment->id}, order ID $order_id");
+            $this->logger->debug(__METHOD__ . ": Order ID does not match order_id in payment metadata. Payment ID {$payment->id}, order ID $order_id");
             return;
         }
 
         // Log a message that webhook was called, doesn't mean the payment is actually processed
-        $this->logger->log(LogLevel::DEBUG, $this->gateway->id . ": Mollie payment object {$payment->id} (" . $payment->mode . ") webhook call for order {$order->get_id()}.", [true]);
+        $this->logger->debug($this->gateway->id . ": Mollie payment object {$payment->id} (" . $payment->mode . ") webhook call for order {$order->get_id()}.", [true]);
 
         // Order does not need a payment
         if (! $this->orderNeedsPayment($order)) {
@@ -145,7 +144,7 @@ class MollieOrderService
             return;
         }
 
-        if ($payment->method === 'paypal' && $payment->billingAddress) {
+        if ($payment->method === 'paypal' && isset($payment->billingAddress)) {
             $this->setBillingAddressAfterPayment($payment, $order);
         }
 
@@ -180,27 +179,27 @@ class MollieOrderService
 
         // Check whether the order is processed and paid via another gateway
         if ($this->isOrderPaidByOtherGateway($order)) {
-            $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: no, previously processed by other (non-Mollie) gateway.', [true]);
+            $this->logger->debug(__METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: no, previously processed by other (non-Mollie) gateway.', [true]);
 
             return false;
         }
 
         // Check whether the order is processed and paid via Mollie
         if (! $this->isOrderPaidAndProcessed($order)) {
-            $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, order not previously processed by Mollie gateway.', [true]);
+            $this->logger->debug(__METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, order not previously processed by Mollie gateway.', [true]);
 
             return true;
         }
 
         if ($order->needs_payment()) {
-            $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, WooCommerce thinks order needs payment.', [true]);
+            $this->logger->debug(__METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, WooCommerce thinks order needs payment.', [true]);
 
             return true;
         }
 
         // Has initial order status 'on-hold'
         if ($this->gateway->paymentMethod->getInitialOrderStatus() === MolliePaymentGateway::STATUS_ON_HOLD && $order->has_status(MolliePaymentGateway::STATUS_ON_HOLD)) {
-            $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, has status On-Hold. ', [true]);
+            $this->logger->debug(__METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, has status On-Hold. ', [true]);
 
             return true;
         }
@@ -236,12 +235,12 @@ class MollieOrderService
         $logId = "order {$orderId} / payment{$payment->id}";
 
         // Add message to log
-        $this->logger->log(LogLevel::DEBUG, __METHOD__ . " called for {$logId}");
+        $this->logger->debug(__METHOD__ . " called for {$logId}");
+        $hasLineRefund = $this->hasLineRefund($payment);
 
         // Make sure there are refunds to process at all
-        if (empty($payment->_links->refunds)) {
-            $this->logger->log(
-                LogLevel::DEBUG,
+        if (empty($payment->_links->refunds) && !$hasLineRefund) {
+            $this->logger->debug(
                 __METHOD__ . ": No refunds to process for {$logId}",
                 [true]
             );
@@ -249,119 +248,50 @@ class MollieOrderService
             return;
         }
 
+        $refundIds = $this->findRefundIds($payment);
         // Check for new refund
-        try {
-            // Get all refunds for this payment
-            $refunds = $payment->refunds();
+        $this->logger->debug(
+            __METHOD__ . " All refund IDs for {$logId}: " . json_encode(
+                $refundIds
+            )
+        );
 
-            // Collect all refund IDs in one array
-            $refundIds = [];
-            foreach ($refunds as $refund) {
-                $refundIds[] = $refund->id;
-            }
+        // Get possibly already processed refunds
+        $processedRefundIds = $this->getProcessedRefundIds($order, $logId);
 
-            $this->logger->log(
-                LogLevel::DEBUG,
-                __METHOD__ . " All refund IDs for {$logId}: " . json_encode(
-                    $refundIds
-                )
+        // Order the refund arrays by value (refund ID)
+        asort($refundIds);
+        asort($processedRefundIds);
+
+        // Check if no new refunds need processing return
+        if ($refundIds === $processedRefundIds) {
+            $this->logger->debug(
+                __METHOD__ . " No new refunds, stop processing for {$logId}"
             );
-
-            // Get possibly already processed refunds
-            if ($order->meta_exists('_mollie_processed_refund_ids')) {
-                $processedRefundIds = $order->get_meta(
-                    '_mollie_processed_refund_ids',
-                    true
-                );
-            } else {
-                $processedRefundIds = [];
-            }
-
-            $this->logger->log(
-                LogLevel::DEBUG,
-                __METHOD__ . " Already processed refunds for {$logId}: "
-                . json_encode($processedRefundIds)
-            );
-
-            // Order the refund arrays by value (refund ID)
-            asort($refundIds);
-            asort($processedRefundIds);
-
-            // Check if there are new refunds that need processing
-            if ($refundIds != $processedRefundIds) {
-                // There are new refunds.
-                $refundsToProcess = array_diff($refundIds, $processedRefundIds);
-                $this->logger->log(
-                    LogLevel::DEBUG,
-                    __METHOD__
-                    . " Refunds that need to be processed for {$logId}: "
-                    . json_encode($refundsToProcess)
-                );
-            } else {
-                // No new refunds, stop processing.
-                $this->logger->log(
-                    LogLevel::DEBUG,
-                    __METHOD__ . " No new refunds, stop processing for {$logId}"
-                );
-
-                return;
-            }
-
-            $dataHelper = $this->data;
-            $order = wc_get_order($orderId);
-
-            foreach ($refundsToProcess as $refundToProcess) {
-                $this->logger->log(
-                    LogLevel::DEBUG,
-                    __METHOD__
-                    . " New refund {$refundToProcess} processed in Mollie Dashboard for {$logId} Order note added, but order not updated."
-                );
-                /* translators: Placeholder 1: Refund to process id. */
-                $order->add_order_note(
-                    sprintf(
-                        __(
-                            'New refund %s processed in Mollie Dashboard! Order note added, but order not updated.',
-                            'mollie-payments-for-woocommerce'
-                        ),
-                        $refundToProcess
-                    )
-                );
-
-                $processedRefundIds[] = $refundToProcess;
-            }
-
-            $order->update_meta_data(
-                '_mollie_processed_refund_ids',
-                $processedRefundIds
-            );
-            $this->logger->log(
-                LogLevel::DEBUG,
-                __METHOD__ . " Updated, all processed refunds for {$logId}: "
-                . json_encode($processedRefundIds)
-            );
-
-            $order->save();
-            $this->processUpdateStateRefund($order, $payment);
-            $this->logger->log(
-                LogLevel::DEBUG,
-                __METHOD__ . " Updated state for order {$orderId}"
-            );
-
-            do_action(
-                $this->pluginId . '_refunds_processed',
-                $payment,
-                $order
-            );
-
             return;
-        } catch (\Mollie\Api\Exceptions\ApiException $e) {
-            $this->logger->log(
-                LogLevel::DEBUG,
-                __FUNCTION__
-                . " : Could not load refunds for {$payment->id}: {$e->getMessage()}"
-                . ' (' . get_class($e) . ')'
-            );
         }
+        // There are new refunds.
+        $refundsToProcess = array_diff($refundIds, $processedRefundIds);
+        $this->logger->debug(
+            __METHOD__
+            . " Refunds that need to be processed for {$logId}: "
+            . json_encode($refundsToProcess)
+        );
+        $order = wc_get_order($orderId);
+
+        $processedRefundIds = $this->notifyProcessedRefunds($refundsToProcess, $logId, $order, $processedRefundIds);
+
+        $order->save();
+        $this->processUpdateStateRefund($order, $payment);
+        $this->logger->debug(
+            __METHOD__ . " Updated state for order {$orderId}"
+        );
+
+        do_action(
+            $this->pluginId . '_refunds_processed',
+            $payment,
+            $order
+        );
     }
 
     /**
@@ -376,12 +306,11 @@ class MollieOrderService
         $logId = "order {$orderId} / payment {$payment->id}";
 
         // Add message to log
-        $this->logger->log(LogLevel::DEBUG, __METHOD__ . " called for {$logId}");
+        $this->logger->debug(__METHOD__ . " called for {$logId}");
 
         // Make sure there are chargebacks to process at all
         if (empty($payment->_links->chargebacks)) {
-            $this->logger->log(
-                LogLevel::DEBUG,
+            $this->logger->debug(
                 __METHOD__ . ": No chargebacks to process for {$logId}",
                 [true]
             );
@@ -400,8 +329,7 @@ class MollieOrderService
                 $chargebackIds[] = $chargeback->id;
             }
 
-            $this->logger->log(
-                LogLevel::DEBUG,
+            $this->logger->debug(
                 __METHOD__ . " All chargeback IDs for {$logId}: " . json_encode(
                     $chargebackIds
                 )
@@ -417,8 +345,7 @@ class MollieOrderService
                 $processedChargebackIds = [];
             }
 
-            $this->logger->log(
-                LogLevel::DEBUG,
+            $this->logger->debug(
                 __METHOD__ . " Already processed chargebacks for {$logId}: "
                 . json_encode($processedChargebackIds)
             );
@@ -434,16 +361,14 @@ class MollieOrderService
                     $chargebackIds,
                     $processedChargebackIds
                 );
-                $this->logger->log(
-                    LogLevel::DEBUG,
+                $this->logger->debug(
                     __METHOD__
                     . " Chargebacks that need to be processed for {$logId}: "
                     . json_encode($chargebacksToProcess)
                 );
             } else {
                 // No new chargebacks, stop processing.
-                $this->logger->log(
-                    LogLevel::DEBUG,
+                $this->logger->debug(
                     __METHOD__
                     . " No new chargebacks, stop processing for {$logId}"
                 );
@@ -456,8 +381,7 @@ class MollieOrderService
 
             // Update order notes, add message about chargeback
             foreach ($chargebacksToProcess as $chargebackToProcess) {
-                $this->logger->log(
-                    LogLevel::DEBUG,
+                $this->logger->debug(
                     __METHOD__
                     . " New chargeback {$chargebackToProcess} for {$logId}. Order note and order status updated."
                 );
@@ -522,8 +446,7 @@ class MollieOrderService
                 '_mollie_processed_chargeback_ids',
                 $processedChargebackIds
             );
-            $this->logger->log(
-                LogLevel::DEBUG,
+            $this->logger->debug(
                 __METHOD__
                 . " Updated, all processed chargebacks for {$logId}: "
                 . json_encode($processedChargebackIds)
@@ -583,12 +506,90 @@ class MollieOrderService
 
             return;
         } catch (\Mollie\Api\Exceptions\ApiException $e) {
-            $this->logger->log(
-                LogLevel::DEBUG,
+            $this->logger->debug(
                 __FUNCTION__ . ": Could not load chargebacks for $payment->id: "
                 . $e->getMessage() . ' (' . get_class($e) . ')'
             );
         }
+    }
+
+    /**
+     * Check if there is a refund inside an order line
+     *
+     * @param $payment
+     * @return bool
+     */
+    protected function hasLineRefund($payment): bool
+    {
+        return !empty($payment->_embedded->refunds);
+    }
+
+    /**
+     * Find the Ids of the refunds
+     *
+     * @param $payment
+     * @return array
+     */
+    protected function findRefundIds($payment): array
+    {
+        if (empty($payment->_links->refunds)) {
+            return $this->findRefundIdsByLine($payment);
+        }
+        return $this->findRefundIdsByLinks($payment);
+    }
+
+    /**
+     * Find refund ids inside an order line
+     *
+     * @param $payment
+     * @return array
+     */
+    protected function findRefundIdsByLine($payment): array
+    {
+        return array_map(static function ($refund) {
+            return $refund->id;
+        }, $payment->_embedded->refunds);
+    }
+
+    /**
+     * calculate refund amount inside order lines
+     *
+     * @param $payment
+     * @return float
+     */
+    protected function calculateRefundByLine($payment): float
+    {
+        $refundAmount = 0.0;
+        $refunds = $payment->_embedded->refunds;
+        foreach ($refunds as $refund) {
+            $refundAmount += (float) $refund->amount->value;
+        }
+        return $refundAmount;
+    }
+
+    /**
+     * Check if there is a refund inside an order line
+     *
+     * @param $payment
+     * @return array
+     */
+    protected function findRefundIdsByLinks($payment): array
+    {
+        $refundIds = [];
+        try {
+            // Get all refunds for this payment
+            $refunds = $payment->refunds();
+            foreach ($refunds as $refund) {
+                $refundIds[] = $refund->id;
+            }
+        } catch (\Mollie\Api\Exceptions\ApiException $e) {
+            $this->logger->debug(
+                __FUNCTION__
+                . " : Could not load refunds for {$payment->id}: {$e->getMessage()}"
+                . ' (' . get_class($e) . ')'
+            );
+        }
+        return $refundIds;
     }
 
     /**
@@ -620,6 +621,9 @@ class MollieOrderService
      */
     protected function isPartialRefund($payment)
     {
+        if ($payment->amountRefunded === null) {
+            return (float)($payment->amount->value - $this->calculateRefundByLine($payment)) !== 0.0;
+        }
         return (float)($payment->amount->value - $payment->amountRefunded->value) !== 0.0;
     }
 
@@ -712,8 +716,10 @@ class MollieOrderService
      */
     protected function getPaymentMethodTitle($payment)
     {
-        // TODO David: this needs to be updated, doesn't work in all cases?
         $payment_method_title = '';
+        if (!($this->gateway instanceof MolliePaymentGateway)) {
+            return $payment_method_title;
+        }
         if ($payment->method === $this->gateway->paymentMethod->getProperty('id')) {
             $payment_method_title = $this->gateway->method_title;
         }
@@ -736,7 +742,7 @@ class MollieOrderService
                         // Reduce order stock
                         wc_reduce_stock_levels($order->get_id());
 
-                        $this->logger->log(LogLevel::DEBUG, __METHOD__ . ":  Stock for order {$order->get_id()} reduced.");
+                        $this->logger->debug(__METHOD__ . ":  Stock for order {$order->get_id()} reduced.");
                     }
                 }
 
@@ -749,10 +755,72 @@ class MollieOrderService
                     // Restore order stock
                     $this->data->restoreOrderStock($order);
 
-                    $this->logger->log(LogLevel::DEBUG, __METHOD__ . " Stock for order {$order->get_id()} restored.");
+                    $this->logger->debug(__METHOD__ . " Stock for order {$order->get_id()} restored.");
                 }
 
                 break;
         }
+    }
+
+    /**
+     * @param WC_Order $order
+     * @param string $logId
+     * @return array|mixed|string|void
+     */
+    protected function getProcessedRefundIds(WC_Order $order, string $logId)
+    {
+        if ($order->meta_exists('_mollie_processed_refund_ids')) {
+            $processedRefundIds = $order->get_meta(
+                '_mollie_processed_refund_ids',
+                true
+            );
+        } else {
+            $processedRefundIds = [];
+        }
+
+        $this->logger->debug(
+            __METHOD__ . " Already processed refunds for {$logId}: "
+            . json_encode($processedRefundIds)
+        );
+        return $processedRefundIds;
+    }
+
+    /**
+     * @param array $refundsToProcess
+     * @param string $logId
+     * @param $order
+     * @param $processedRefundIds
+     * @return mixed
+     */
+    protected function notifyProcessedRefunds(array $refundsToProcess, string $logId, $order, $processedRefundIds)
+    {
+        foreach ($refundsToProcess as $refundToProcess) {
+            $this->logger->debug(
+                __METHOD__
+                . " New refund {$refundToProcess} processed in Mollie Dashboard for {$logId} Order note added, but order not updated."
+            );
+            /* translators: Placeholder 1: Refund to process id. */
+            $order->add_order_note(
+                sprintf(
+                    __(
+                        'New refund %s processed in Mollie Dashboard! Order note added, but order not updated.',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                    $refundToProcess
+                )
+            );
+
+            $processedRefundIds[] = $refundToProcess;
+        }
+
+        $order->update_meta_data(
+            '_mollie_processed_refund_ids',
+            $processedRefundIds
+        );
+        $this->logger->debug(
+            __METHOD__ . " Updated, all processed refunds for {$logId}: "
+            . json_encode($processedRefundIds)
+        );
+        return $processedRefundIds;
     }
 }

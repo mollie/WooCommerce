@@ -123,7 +123,7 @@ class MollieSettingsPage extends WC_Settings_Page
         $presentationText .= '<p>' . __(
             'Please go to',
             'mollie-payments-for-woocommerce'
-        ) . '<a href="https://www.mollie.com/dashboard/signup">' . __(
+        ) . '<a href="https://my.mollie.com/dashboard/signup?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner">' . __(
             ' the signup page',
             'mollie-payments-for-woocommerce'
         ) . '</a> ';
@@ -195,11 +195,13 @@ class MollieSettingsPage extends WC_Settings_Page
                 'desc' => sprintf(
                 /* translators: Placeholder 1: API key mode (live or test). The surrounding %s's Will be replaced by a link to the Mollie profile */
                     __(
-                        'The API key is used to connect to Mollie. You can find your <strong>%1$s</strong> API key in your %2$sMollie profile%3$s',
+                        'The API key is used to connect to Mollie. You can find your <strong>%1$s</strong> API key in your %2$sMollie account%3$s',
                         'mollie-payments-for-woocommerce'
                     ),
                     'live',
-                    '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
+
+                    '<a href="https://my.mollie.com/dashboard/developers/api-keys?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">',
+
                     '</a>'
                 ),
                 'css' => 'width: 350px',
@@ -226,11 +228,13 @@ class MollieSettingsPage extends WC_Settings_Page
                 'desc' => sprintf(
                 /* translators: Placeholder 1: API key mode (live or test). The surrounding %s's Will be replaced by a link to the Mollie profile */
                     __(
-                        'The API key is used to connect to Mollie. You can find your <strong>%1$s</strong> API key in your %2$sMollie profile%3$s',
+                        'The API key is used to connect to Mollie. You can find your <strong>%1$s</strong> API key in your %2$sMollie account%3$s',
                         'mollie-payments-for-woocommerce'
                     ),
                     'test',
-                    '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
+
+                    '<a href="https://my.mollie.com/dashboard/developers/api-keys?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">',
+
                     '</a>'
                 ),
                 'css' => 'width: 350px',
@@ -287,6 +291,10 @@ class MollieSettingsPage extends WC_Settings_Page
         ) {
             $cleaner = $this->settingsHelper->cleanDb();
             $cleaner->cleanAll();
+            //set default settings
+            foreach ($this->paymentMethods as $paymentMethod) {
+                $paymentMethod->getSettings();
+            }
         }
 
         $iconAvailable = ' <span style="color: green; cursor: help;" title="' . __(
@@ -311,7 +319,7 @@ class MollieSettingsPage extends WC_Settings_Page
                 'The following payment methods are activated in your %1$sMollie profile%2$s:',
                 'mollie-payments-for-woocommerce'
             ),
-            '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
+            '<a href="https://my.mollie.com/dashboard/settings/profiles?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">',
             '</a>'
         );
 
@@ -329,6 +337,13 @@ class MollieSettingsPage extends WC_Settings_Page
 
         $mollieGateways = $this->registeredGateways;//this are the gateways enabled
         $paymentMethods = $this->paymentMethods;
+        if (empty($mollieGateways)) {
+            $content .= '<li style="float: left; width: 32%; height:32px;">';
+            $content .= __("No payment methods available", "mollie-payments-for-woocommerce");
+            $content .= '</li></ul></div>';
+            $content .= '<div class="clear"></div>';
+            return $content;
+        }
         foreach ($paymentMethods as $paymentMethod) {
             $paymentMethodId = $paymentMethod->getProperty('id');
             $gatewayKey = 'mollie_wc_gateway_' . $paymentMethodId;
@@ -346,7 +361,7 @@ class MollieSettingsPage extends WC_Settings_Page
                 continue;
             }
             $content .= $iconNoAvailable;
-            $content .= ' <a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">' . strtolower(
+            $content .= ' <a href="https://my.mollie.com/dashboard/settings/profiles?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">' . strtolower(
                     __('Activate', 'mollie-payments-for-woocommerce')
                 ) . '</a>';
 
@@ -389,10 +404,10 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     protected function checkDirectDebitStatus($content): string
     {
-        $idealGateway = !empty($this->registeredGateways["mollie_wc_gateway_ideal"]) && $this->paymentMethods["ideal"]->getProperty('enabled') === 'yes';
-        $sepaGateway = !empty($this->registeredGateways["mollie_wc_gateway_directdebit"]) && $this->paymentMethods["directdebit"]->getProperty('enabled') === 'yes';
-
-        if ((class_exists('WC_Subscription')) && $idealGateway && !$sepaGateway) {
+        $hasCustomSepaSettings = $this->paymentMethods["directdebit"]->getProperty('enabled') !== false;
+        $isSepaEnabled = !$hasCustomSepaSettings || $this->paymentMethods["directdebit"]->getProperty('enabled') === 'yes';
+        $sepaGatewayAllowed = !empty($this->registeredGateways["mollie_wc_gateway_directdebit"]);
+        if ($sepaGatewayAllowed && !$isSepaEnabled) {
             $warning_message = __(
                 'You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL and/or other "first" payment methods.',
                 'mollie-payments-for-woocommerce'
@@ -438,18 +453,13 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     protected function warnAboutRequiredCheckoutFieldForKlarna($content)
     {
-        $woocommerceKlarnapaylaterGateway = !empty($this->registeredGateways["mollie_wc_gateway_klarnapaylater"]) && $this->paymentMethods["klarnapaylater"]->getProperty('enabled') === 'yes';
-        $woocommerceKlarnasliceitGateway = !empty($this->registeredGateways["mollie_wc_gateway_klarnasliceit"]) && $this->paymentMethods["klarnasliceit"]->getProperty('enabled') === 'yes';
-        $woocommerceKlarnapaynowGateway = !empty($this->registeredGateways["mollie_wc_gateway_klarnapaynow"]) && $this->paymentMethods["klarnapaynow"]->getProperty('enabled') === 'yes';
-
-        if (
-            $woocommerceKlarnapaylaterGateway || $woocommerceKlarnasliceitGateway || $woocommerceKlarnapaynowGateway
-        ) {
+        $isKlarnaEnabled = $this->isKlarnaEnabled();
+        if ($isKlarnaEnabled) {
             $content .= '<div class="notice notice-warning is-dismissible"><p>';
             $content .= sprintf(
             /* translators: Placeholder 1: Opening link tag. Placeholder 2: Closing link tag. Placeholder 3: Opening link tag. Placeholder 4: Closing link tag. */
                 __(
-                    'You have activated Klarna. To accept payments, please make sure all default WooCommerce checkout fields are enabled and required. For more information, go to %1$1sKlarna Pay Later documentation%2$2s or  %3$3sKlarna Slice it documentation%4$4s',
+                    'You have activated Klarna. To accept payments, please make sure all default WooCommerce checkout fields are enabled and required. For more information, go to %1$sKlarna Pay Later documentation%2$s or  %3$sKlarna Slice it documentation%4$s',
                     'mollie-payments-for-woocommerce'
                 ),
                 '<a href="https://github.com/mollie/WooCommerce/wiki/Setting-up-Klarna-Pay-later-gateway">',
@@ -707,5 +717,25 @@ class MollieSettingsPage extends WC_Settings_Page
             'woocommerce_get_sections_' . $this->id,
             $sections
         );
+    }
+
+    /**
+     * @return bool
+     */
+    protected function isKlarnaEnabled(): bool
+    {
+        $klarnaGateways = ['klarnapaylater', 'klarnasliceit', 'klarnapaynow'];
+        $isKlarnaEnabled = false;
+        foreach ($klarnaGateways as $klarnaGateway) {
+            if (
+                array_key_exists('mollie_wc_gateway_' . $klarnaGateway, $this->registeredGateways)
+                && array_key_exists($klarnaGateway, $this->paymentMethods)
+                && $this->paymentMethods[$klarnaGateway]->getProperty('enabled') === 'yes'
+            ) {
+                $isKlarnaEnabled = true;
+                break;
+            }
+        }
+        return $isKlarnaEnabled;
     }
 }

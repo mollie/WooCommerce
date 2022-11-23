@@ -72,7 +72,7 @@ const MollieComponent = (props) => {
             method: 'POST',
             data: {
                 action: 'mollie_checkout_blocks_surchage',
-                method: activePaymentMethod
+                payment_method: activePaymentMethod
             },
             complete: (jqXHR, textStatus) => {
             },

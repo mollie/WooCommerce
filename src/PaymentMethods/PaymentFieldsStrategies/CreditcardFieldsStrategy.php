@@ -45,7 +45,7 @@ class CreditcardFieldsStrategy implements PaymentFieldsStrategyI
 
     protected function isMollieComponentsEnabled(PaymentMethodI $paymentMethod): bool
     {
-        return $paymentMethod->getProperty('mollie_components_enabled') === 'yes';
+        return $paymentMethod->hasPaymentFields();
     }
 
     protected function lockIcon($dataHelper)

@@ -175,7 +175,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
 
             // Check if WooCommerce Subscriptions Failed Recurring Payment Retry System is in-use, if it is, don't update subscription status
             if (class_exists('WCS_Retry_Manager') && \WCS_Retry_Manager::is_retry_enabled() && $subscription->get_date('payment_retry') > 0) {
-                $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - WooCommerce Subscriptions Failed Recurring Payment Retry System in use, not updating subscription status to Active!');
+                $this->logger->debug(__METHOD__ . ' - WooCommerce Subscriptions Failed Recurring Payment Retry System in use, not updating subscription status to Active!');
 
                 return;
             }
@@ -190,7 +190,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                 $subscription->update_status('active');
             } catch (Exception $e) {
                 // Already logged by WooCommerce Subscriptions
-                $this->logger->log(LogLevel::DEBUG, 'Could not update subscription ' . $subscription_id . ' status:' . $e->getMessage());
+                $this->logger->debug('Could not update subscription ' . $subscription_id . ' status:' . $e->getMessage());
             }
 
             // Add order note to subscription explaining the change
@@ -211,10 +211,8 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
      */
     public function scheduled_subscription_payment($renewal_total, WC_Order $renewal_order)
     {
-        $this->logger->log(LogLevel::DEBUG, json_encode($renewal_order));
-
         if (! $renewal_order) {
-            $this->logger->log(LogLevel::DEBUG, $this->id . ': Could not load renewal order or process renewal payment.');
+            $this->logger->debug($this->id . ': Could not load renewal order or process renewal payment.');
 
             return  [ 'result' => 'failure' ];
         }
@@ -224,7 +222,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         // Allow developers to hook into the subscription renewal payment before it processed
         do_action($this->pluginId . '_before_renewal_payment_created', $renewal_order);
 
-        $this->logger->log(LogLevel::DEBUG, $this->id . ': Try to create renewal payment for renewal order ' . $renewal_order_id);
+        $this->logger->debug($this->id . ': Try to create renewal payment for renewal order ' . $renewal_order_id);
         $this->paymentService->setGateway($this);
         $initial_order_status = $this->paymentMethod->getInitialOrderStatus();
 
@@ -266,7 +264,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
 
             try {
                 if (!empty($mandateId)) {
-                    $this->logger->log(LogLevel::DEBUG, $this->id . ': Found mandate ID for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id);
+                    $this->logger->debug($this->id . ': Found mandate ID for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id);
 
                     $mandate =  $mollieApiClient->customers->get($customer_id)->getMandate($mandateId);
                     $bothDirectDebit = $mandate->method === self::DIRECTDEBIT
@@ -282,7 +280,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                 }
                 if(!$validMandate){
                     // Get all mandates for the customer ID
-                    $this->logger->log(LogLevel::DEBUG,$this->id . ': Try to get all mandates for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id );
+                    $this->logger->debug($this->id . ': Try to get all mandates for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id );
                     $mandates =  $mollieApiClient->customers->get($customer_id)->mandates();
                     foreach ($mandates as $mandate) {
                         if ($mandate->status === 'valid') {
@@ -296,7 +294,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                     }
                 }
             } catch (ApiException $e) {
-                throw new ApiException(sprintf(__('The customer (%s) could not be used or found. ' . $e->getMessage(), 'mollie-payments-for-woocommerce-mandate-problem'), $customer_id));
+                throw new ApiException(sprintf(__('The customer (%s) could not be used or found. ', 'mollie-payments-for-woocommerce-mandate-problem'), $customer_id) . $e->getMessage());
             }
 
             // Check that there is at least one valid mandate
@@ -315,7 +313,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                         && $payment->mandateId !== $mandateId
                         && !empty($subcriptionParentOrder)
                     ) {
-                        $this->logger->log(LogLevel::DEBUG,"{$this->id}: updating to mandate {$payment->mandateId}");
+                        $this->logger->debug("{$this->id}: updating to mandate {$payment->mandateId}");
                         $subcriptionParentOrder->update_meta_data(
                             '_mollie_mandate_id',
                             $payment->mandateId
@@ -333,7 +331,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             $this->updateFirstPaymentMethodToRecurringPaymentMethod($renewal_order, $renewal_order_id, $payment);
 
             // Log successful creation of payment
-            $this->logger->log(LogLevel::DEBUG, $this->id . ': Renewal payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $renewal_order_id . ' payment json response: ' . json_encode($payment));
+            $this->logger->debug($this->id . ': Renewal payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $renewal_order_id . ' payment json response: ' . json_encode($payment));
 
             // Unset & set active Mollie payment
             // Get correct Mollie Payment Object
@@ -360,7 +358,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                 'result' => 'success',
             ];
         } catch (ApiException $e) {
-            $this->logger->log(LogLevel::DEBUG, $this->id . ': Failed to create payment for order ' . $renewal_order_id . ': ' . $e->getMessage());
+            $this->logger->debug($this->id . ': Failed to create payment for order ' . $renewal_order_id . ': ' . $e->getMessage());
 
             /* translators: Placeholder 1: Payment method title */
             $message = sprintf(__('Could not create %s renewal payment.', 'mollie-payments-for-woocommerce'), $this->title);
@@ -426,7 +424,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                 $renewal_order->set_payment_method_title('SEPA Direct Debit');
                 $renewal_order->save();
             } catch (\WC_Data_Exception $e) {
-                $this->logger->log(LogLevel::DEBUG, 'Updating payment method to SEPA Direct Debit failed for renewal order: ' . $renewal_order_id);
+                $this->logger->debug('Updating payment method to SEPA Direct Debit failed for renewal order: ' . $renewal_order_id);
             }
         }
     }
@@ -618,18 +616,18 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             //
 
             if (empty($mollie_customer_id)) {
-                $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: no valid customer ID found, trying to restore from Mollie API payment (' . $mollie_payment_id . ').');
+                $this->logger->debug(__METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: no valid customer ID found, trying to restore from Mollie API payment (' . $mollie_payment_id . ').');
 
                 // Try to get the customer ID from the payment object
                 $mollie_customer_id = $payment_object_resource->getMollieCustomerIdFromPaymentObject($mollie_payment_id);
 
                 if (empty($mollie_customer_id)) {
-                    $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: stopped processing, no customer ID found for this customer/payment combination.');
+                    $this->logger->debug(__METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: stopped processing, no customer ID found for this customer/payment combination.');
 
                     return $mollie_customer_id;
                 }
 
-                $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: customer ID (' . $mollie_customer_id . ') found, verifying status of customer and mandate(s).');
+                $this->logger->debug(__METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: customer ID (' . $mollie_customer_id . ') found, verifying status of customer and mandate(s).');
             }
 
             //
@@ -641,7 +639,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             $gateway = wc_get_payment_gateway_by_order($subscription);
 
             if (! $gateway || ! ( $gateway instanceof MolliePaymentGateway )) {
-                $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: stopped processing, not a Mollie payment gateway, could not restore customer ID.');
+                $this->logger->debug(__METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: stopped processing, not a Mollie payment gateway, could not restore customer ID.');
 
                 return $mollie_customer_id;
             }
@@ -668,7 +666,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
 
             // Check credit card payments and mandates
             if ($mollie_method === 'creditcard' && ! $mandates->hasValidMandateForMethod($mollie_method)) {
-                $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: failed! No valid mandate for payment method ' . $mollie_method . ' found.');
+                $this->logger->debug(__METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: failed! No valid mandate for payment method ' . $mollie_method . ' found.');
 
                 return $mollie_customer_id;
             }
@@ -681,7 +679,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
 
             // Check SEPA Direct Debit payments and mandates
             if ($mollie_method === self::DIRECTDEBIT && ! $mandates->hasValidMandateForMethod($mollie_method) && $payment_object->isPaid() && $sequence_type === 'oneoff') {
-                $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: no valid mandate for payment method ' . $mollie_method . ' found, trying to create one.');
+                $this->logger->debug(__METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: no valid mandate for payment method ' . $mollie_method . ' found, trying to create one.');
 
                 $options = $payment_object_resource->getMollieCustomerIbanDetailsFromPaymentObject($mollie_payment_id);
 
@@ -699,14 +697,14 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                 $customer = $this->apiHelper->getApiClient($apiKey)->customers->get($mollie_customer_id);
                 $this->apiHelper->getApiClient($apiKey)->mandates->createFor($customer, $options);
 
-                $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: mandate created successfully, customer restored.');
+                $this->logger->debug(__METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: mandate created successfully, customer restored.');
             } else {
-                $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: the subscription doesn\'t meet the conditions for a mandate restore.');
+                $this->logger->debug(__METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: the subscription doesn\'t meet the conditions for a mandate restore.');
             }
 
             return $mollie_customer_id;
         } catch (ApiException $e) {
-            $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: customer id and mandate restore failed. ' . $e->getMessage());
+            $this->logger->debug(__METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: customer id and mandate restore failed. ' . $e->getMessage());
 
             return $mollie_customer_id;
         }

@@ -293,7 +293,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
                         'mollie-payments-for-woocommerce'
                     ),
                     $this->paymentMethod->getProperty('defaultTitle'),
-                    '<a href="https://www.mollie.com/dashboard/settings/profiles" target="_blank">',
+                    '<a href="https://my.mollie.com/dashboard/settings/profiles?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">',
                     '</a>'
                 );
 
@@ -308,7 +308,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
                         'mollie-payments-for-woocommerce'
                     ),
                     get_woocommerce_currency(),
-                    '<a href="https://help.mollie.com/hc/en-us/articles/360003980013-Which-currencies-are-supported-and-what-is-the-settlement-currency-" target="_blank">',
+                    '<a href="https://help.mollie.com/hc/en-us/articles/360003980013-Which-currencies-are-supported-and-what-is-the-settlement-currency-?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">',
                     '</a>'
                 );
 
@@ -441,8 +441,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
                 $billingCountry
             );
         } catch (InvalidArgumentException $exception) {
-            $this->logger->log(
-                LogLevel::DEBUG,
+            $this->logger->debug(
                 $exception->getMessage()
             );
             return false;
@@ -535,8 +534,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         $order = wc_get_order($order);
         $order_id = $order->get_id();
 
-        $this->logger->log(
-            LogLevel::DEBUG,
+        $this->logger->debug(
             __METHOD__ . ' - ' . $this->id
             . ": Order $order_id does not need a payment by Mollie (payment {$payment->id}).",
             [true]
@@ -553,7 +551,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         $order_id = $order->get_id();
         $debugLine = __METHOD__
             . " {$order_id}: Determine what the redirect URL in WooCommerce should be.";
-        $this->logger->log(LogLevel::DEBUG, $debugLine);
+        $this->logger->debug($debugLine);
         $hookReturnPaymentStatus = 'success';
         $returnRedirect = $this->get_return_url($order);
         $failedRedirect = $order->get_checkout_payment_url(false);
@@ -618,7 +616,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
                 $exceptionMessage = $exc->getMessage();
                 $debugLine = __METHOD__
                     . " Problem processing the payment. {$exceptionMessage}";
-                $this->logger->log(LogLevel::DEBUG, $debugLine);
+                $this->logger->debug($debugLine);
                 $hookReturnPaymentStatus = 'failed';
             }
         }
@@ -639,8 +637,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
      */
     protected function noOrderPaymentFailure($orderId): array
     {
-        $this->logger->log(
-            LogLevel::DEBUG,
+        $this->logger->debug(
             $this->id . ': Could not process payment, order ' . $orderId . ' not found.'
         );
 
@@ -712,8 +709,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         if (!$order) {
             $error_message = "Could not find WooCommerce order $order_id.";
 
-            $this->logger->log(
-                LogLevel::DEBUG,
+            $this->logger->debug(
                 __METHOD__ . ' - ' . $error_message
             );
 
@@ -736,8 +732,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
             $error_message
             = "Can\'t process refund. Could not find Mollie Payment object id for order $order_id.";
 
-            $this->logger->log(
-                LogLevel::DEBUG,
+            $this->logger->debug(
                 __METHOD__ . ' - ' . $error_message
             );
 
@@ -751,7 +746,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
                 );
         } catch (ApiException $exception) {
             $exceptionMessage = $exception->getMessage();
-            $this->logger->log(LogLevel::DEBUG, $exceptionMessage);
+            $this->logger->debug($exceptionMessage);
             return new WP_Error('error', $exceptionMessage);
         }
 
@@ -759,8 +754,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
             $error_message
             = "Can\'t process refund. Could not find Mollie Payment object data for order $order_id.";
 
-            $this->logger->log(
-                LogLevel::DEBUG,
+            $this->logger->debug(
                 __METHOD__ . ' - ' . $error_message
             );
 
@@ -935,8 +929,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
                     $payment_method_title = $this->method_title;
 
                     // Add message to log
-                    $this->logger->log(
-                        LogLevel::DEBUG,
+                    $this->logger->debug(
                         $this->id
                         . ': Customer returned to store, but payment still pending for order #'
                         . $order_id
@@ -1031,8 +1024,8 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         $isPaymentApi = substr($order->get_meta('_mollie_order_id', true), 0, 3) === 'tr_'  ;
         $resource = ($order->get_meta('_mollie_order_id', true) && !$isPaymentApi) ? 'orders' : 'payments';
 
-        $this->view_transaction_url = 'https://www.mollie.com/dashboard/'
-            . $resource . '/%s';
+        $this->view_transaction_url = 'https://my.mollie.com/dashboard/'
+            . $resource . '/%s?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner';
 
         return parent::get_transaction_url($order);
     }

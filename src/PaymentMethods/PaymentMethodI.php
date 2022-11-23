@@ -8,4 +8,5 @@ interface PaymentMethodI
 {
     public function getProperty(string $propertyName);
     public function hasProperty(string $propertyName);
+    public function hasPaymentFields();
 }

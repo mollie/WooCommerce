@@ -258,7 +258,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
      */
     public function maybeDisableBankTransferGateway(array $gateways): array
     {
-        $isWcApiRequest = (bool)sanitize_text_field(wp_unslash($_GET['wc-api']));
+        $isWcApiRequest = isset($_GET['wc-api']) && sanitize_text_field(wp_unslash($_GET['wc-api']));
         $bankTransferSettings = get_option('mollie_wc_gateway_banktransfer_settings', false);
         $isSettingActivated = $bankTransferSettings && isset($bankTransferSettings['activate_expiry_days_setting']) && $bankTransferSettings['activate_expiry_days_setting'] === "yes";
         if ($isSettingActivated  && isset($bankTransferSettings['order_dueDate'])) {
@@ -294,7 +294,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
      */
     public function maybeDisableApplePayGateway(array $gateways): array
     {
-        $isWcApiRequest = (bool)sanitize_text_field(wp_unslash($_GET['wc-api']));
+        $isWcApiRequest = isset($_GET['wc-api']) && sanitize_text_field(wp_unslash($_GET['wc-api']));
         $wooCommerceSession = mollieWooCommerceSession();
 
         /*

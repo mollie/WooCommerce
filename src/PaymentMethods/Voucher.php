@@ -49,7 +49,6 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
     public function getFormFields($generalFormFields): array
     {
         $paymentMethodFormFieds = [
-
             'mealvoucher_category_default' => [
                 'title' => __('Select the default products category', 'mollie-payments-for-woocommerce'),
                 'type' => 'select',

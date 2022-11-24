@@ -201,7 +201,7 @@ class OrderLines
                     $cart_fee_tax_amount = $cart_fee['total_tax'];
                     $cart_fee_total = ( $cart_fee['total'] + $cart_fee['total_tax'] );
                     /*This is the equation Mollie uses to validate our input*/
-                    $validTax = $cart_fee_total * ($cart_fee_vat_rate / (100 + $cart_fee_vat_rate)) === (float) $cart_fee_tax_amount;
+                    $validTax = ($cart_fee_total * ($cart_fee_vat_rate / (100 + $cart_fee_vat_rate))) === (float) $cart_fee_tax_amount || $cart_fee_total === 0;
                     if (!$validTax) {
                         /*inverse of the equation Mollie uses to validate our input,
                         so we don't fail when cart has mixed taxes*/

@@ -208,18 +208,12 @@ class ApplePayDataObjectHttp
             return;
         }
 
-        $filteredShippingContact = filter_var_array(
-            $data[PropertiesDictionary::SHIPPING_CONTACT],
-            FILTER_SANITIZE_STRING
-        );
+        $filteredShippingContact = array_map('sanitize_text_field', $data[PropertiesDictionary::SHIPPING_CONTACT]);
         $this->shippingAddress = $this->completeAddress(
             $filteredShippingContact,
             PropertiesDictionary::SHIPPING_CONTACT_INVALID
         );
-        $filteredbillingContact = filter_var_array(
-            $data[PropertiesDictionary::BILLING_CONTACT],
-            FILTER_SANITIZE_STRING
-        );
+        $filteredbillingContact = array_map('sanitize_text_field', $data[PropertiesDictionary::BILLING_CONTACT]);
         $this->billingAddress = $this->completeAddress(
             $filteredbillingContact,
             PropertiesDictionary::BILLING_CONTACT_INVALID
@@ -370,7 +364,6 @@ class ApplePayDataObjectHttp
         ) {
             return [];
         }
-        $filter = FILTER_SANITIZE_STRING;
 
         return [
             'first_name' => filter_var($data['givenName'], $filter),
@@ -378,7 +371,7 @@ class ApplePayDataObjectHttp
             'email' => isset($data['emailAddress']) ? filter_var($data['emailAddress'], $filter) : '',
             'phone' => isset($data['phoneNumber']) ? filter_var($data['phoneNumber'], $filter) : '',
             'address_1' => isset($data['addressLines'][0])
-                ? filter_var($data['addressLines'][0], $filter) : '',
+                ? sanitize_text_field(wp_unslash($data['addressLines'][0])) : '',
             'address_2' => isset($data['addressLines'][1])
                 ? filter_var($data['addressLines'][1], $filter) : '',
             'city' => filter_var($data['locality'], $filter),
@@ -420,10 +413,7 @@ class ApplePayDataObjectHttp
      */
     protected function updateSimplifiedContact($data)
     {
-        $simplifiedContactInfo = filter_var_array(
-            $data,
-            FILTER_SANITIZE_STRING
-        );
+        $simplifiedContactInfo = array_map('sanitize_text_field', $data);
         $this->simplifiedContact = $this->simplifiedAddress(
             $simplifiedContactInfo
         );

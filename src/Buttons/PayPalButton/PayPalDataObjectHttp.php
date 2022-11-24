@@ -129,7 +129,7 @@ class PayPalDataObjectHttp
         foreach ($data as $key => $value) {
             if (in_array($key, $allowedKeys)) {
                 $filterType = $this->filterType($key);
-                $this->$key = filter_var($value, $filterType);
+                $this->$key = $filterType ? filter_var($value, $filterType) : sanitize_text_field(wp_unslash($value));
             }
         }
     }
@@ -153,7 +153,7 @@ class PayPalDataObjectHttp
             case in_array($value, $filterBoolean):
                 return FILTER_VALIDATE_BOOLEAN;
             default:
-                return FILTER_SANITIZE_STRING;
+                return false;
         }
     }
 

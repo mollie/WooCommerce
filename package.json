@@ -45,9 +45,10 @@
     "minimist": "^1.2.3",
     "sass": "^1.52.1",
     "pump": "^3.0.0",
-    "sass-loader": "^7.0.1", 
+    "sass-loader": "^7.0.1",
     "@woocommerce/e2e-utils": "^0.1.6",
-    "@wordpress/data": "^6.1.5"
+    "@wordpress/data": "^6.1.5",
+    "wp-pot": "^1.10.2"
   },
   "scripts": {
     "watch": "webpack --watch",

@@ -203,7 +203,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
     public function voucherTaxonomyCustomMetaSave($term_id)
     {
 
-        $metaOption = filter_input(INPUT_POST, '_mollie_voucher_category', FILTER_SANITIZE_STRING);
+        $metaOption = sanitize_text_field(wp_unslash($_POST(['_mollie_voucher_category'])));
 
         update_term_meta($term_id, '_mollie_voucher_category', $metaOption);
     }
@@ -264,11 +264,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
      */
     public function saveProductVoucherOptionFields($post_id)
     {
-        $option = filter_input(
-            INPUT_POST,
-            Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
-            FILTER_SANITIZE_STRING
-        );
+        $option = sanitize_text_field(wp_unslash($_POST[Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION]));
         $voucherCategory = $option ?? '';
 
         update_post_meta(
@@ -312,11 +308,11 @@ class VoucherModule implements ExecutableModule, ServiceModule
     public function saveVoucherFieldVariations($variation_id, $i)
     {
         $optionName = 'voucher';
-        $args = [$optionName => ['filter' => FILTER_SANITIZE_STRING, 'flags' => FILTER_REQUIRE_ARRAY]];
-        $option = filter_input_array(INPUT_POST, $args);
-        $voucherCategory = $option[$optionName][$variation_id] ?: null;
+        $voucherCategory = isset($_POST[$optionName]) && isset($_POST[$optionName][$variation_id]) ? sanitize_text_field(
+                wp_unslash($_POST[$optionName][$variation_id])
+        ) : false;
 
-        if (isset($voucherCategory)) {
+        if ($voucherCategory) {
             update_post_meta($variation_id, $optionName, esc_attr($voucherCategory));
         }
     }

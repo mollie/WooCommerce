@@ -160,7 +160,7 @@ class MollieOrder extends MollieObject
             $paymentRequestData['payment']['cardToken'] = $cardToken;
         }
 
-        $applePayToken = filter_input(INPUT_POST, 'token', FILTER_SANITIZE_STRING);
+        $applePayToken = isset($_POST['token'])? sanitize_text_field(wp_unslash($_POST['token'])) : false;
         if ($applePayToken && isset($paymentRequestData['payment'])) {
             $encodedApplePayToken = json_encode($applePayToken);
             $paymentRequestData['payment']['applePayPaymentToken'] = $encodedApplePayToken;
@@ -514,9 +514,17 @@ class MollieOrder extends MollieObject
 
         // Add messages to log
         $this->logger->debug(__METHOD__ . ' called for order ' . $orderId);
+        // Check that this order has not been marked paid already
+        if (!$order->needs_payment()) {
+            $this->logger->log(
+                LogLevel::DEBUG,
+                __METHOD__ . ' called for order ' . $orderId . ', not processed because the order is already paid.'
+            );
 
+            return;
+        }
         // Check that this payment is the most recent, based on Mollie Payment ID from post meta, do not cancel the order if it isn't
-        if ($molliePaymentId != $payment->id) {
+        if ($molliePaymentId !== $payment->id) {
             $this->logger->debug(__METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', not processed because of a newer pending payment ' . $molliePaymentId);
 
             $order->add_order_note(sprintf(
@@ -1017,15 +1025,14 @@ class MollieOrder extends MollieObject
     ) {
 
         $address = $payment->shippingAddress;
-        $filter = FILTER_SANITIZE_STRING;
         $shippingAddress = [
-            'first_name' => filter_var($address->givenName, $filter),
-            'last_name' => filter_var($address->familyName, $filter),
-            'email' => filter_var($address->email, $filter),
-            'postcode' => filter_var($address->postalCode, $filter),
-            'country' => strtoupper(filter_var($address->country, $filter)),
-            'city' => filter_var($address->city, $filter),
-            'address_1' => filter_var($address->streetAndNumber, $filter),
+            'first_name' => sanitize_text_field(wp_unslash($address->givenName)),
+            'last_name' => sanitize_text_field(wp_unslash($address->familyName)),
+            'email' => sanitize_text_field(wp_unslash($address->email)),
+            'postcode' => sanitize_text_field(wp_unslash($address->postalCode)),
+            'country' => strtoupper(sanitize_text_field(wp_unslash($address->country))),
+            'city' => sanitize_text_field(wp_unslash($address->city)),
+            'address_1' => sanitize_text_field(wp_unslash($address->streetAndNumber)),
         ];
 
         $order->set_address($shippingAddress, 'shipping');

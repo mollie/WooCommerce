@@ -23,8 +23,7 @@ class DefaultInstructionStrategy implements InstructionStrategyI
             } else {
                 // Message to customer
                 return __(
-                    'We have not received a definite payment status. You will receive an email
-                     as soon as we receive a confirmation of the bank/merchant.',
+                    'We have not received a definite payment status. You will receive an email as soon as we receive a confirmation of the bank/merchant.',
                     'mollie-payments-for-woocommerce'
                 );
             }

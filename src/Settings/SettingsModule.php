@@ -132,6 +132,10 @@ class SettingsModule implements ServiceModule, ExecutableModule
         add_action('wp_loaded', function () {
             $this->maybeTestModeNotice($this->isTestModeEnabled);
         });
+        add_action('woocommerce_settings_saved', function () {
+            $testModeEnabled = get_option('mollie-payments-for-woocommerce_test_mode_enabled', true);
+            $this->maybeTestModeNotice($testModeEnabled === 'yes');
+        });
 
         $gateways = $container->get('gateway.instances');
         $isSDDGatewayEnabled = $container->get('gateway.isSDDGatewayEnabled');

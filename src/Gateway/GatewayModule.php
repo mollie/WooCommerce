@@ -261,7 +261,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         if (!is_array($gateways)) {
             return [];
         }
-        $isWcApiRequest = (bool)sanitize_text_field(wp_unslash($_GET['wc-api']));
+        $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_SPECIAL_CHARS);
         $bankTransferSettings = get_option('mollie_wc_gateway_banktransfer_settings', false);
         $isSettingActivated = $bankTransferSettings && isset($bankTransferSettings['activate_expiry_days_setting']) && $bankTransferSettings['activate_expiry_days_setting'] === "yes";
         if ($isSettingActivated  && isset($bankTransferSettings['order_dueDate'])) {
@@ -300,7 +300,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         if (!is_array($gateways)) {
             return [];
         }
-        $isWcApiRequest = (bool)sanitize_text_field(wp_unslash($_GET['wc-api']));
+        $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_SPECIAL_CHARS);
         $wooCommerceSession = mollieWooCommerceSession();
 
         /*
@@ -324,9 +324,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         }
 
         $applePayGatewayClassName = 'mollie_wc_gateway_applepay';
-        $postData = isset($_POST[self::POST_DATA_KEY]) ? sanitize_text_field(
-            wp_unslash($_POST[self::POST_DATA_KEY])
-        ) : '';
+        $postData = filter_input(INPUT_POST, self::POST_DATA_KEY, FILTER_SANITIZE_SPECIAL_CHARS) ?? '';
         parse_str($postData, $postData);
 
         $applePayAllowed = isset($postData[self::APPLE_PAY_METHOD_ALLOWED_KEY])

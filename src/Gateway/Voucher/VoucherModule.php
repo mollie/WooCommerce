@@ -203,7 +203,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
     public function voucherTaxonomyCustomMetaSave($term_id)
     {
 
-        $metaOption = sanitize_text_field(wp_unslash($_POST(['_mollie_voucher_category'])));
+        $metaOption = filter_input(INPUT_POST, '_mollie_voucher_category', FILTER_SANITIZE_SPECIAL_CHARS);
 
         update_term_meta($term_id, '_mollie_voucher_category', $metaOption);
     }
@@ -264,7 +264,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
      */
     public function saveProductVoucherOptionFields($post_id)
     {
-        $option = sanitize_text_field(wp_unslash($_POST[Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION]));
+        $option = filter_input(INPUT_POST, Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION, FILTER_SANITIZE_SPECIAL_CHARS);
         $voucherCategory = $option ?? '';
 
         update_post_meta(
@@ -308,9 +308,11 @@ class VoucherModule implements ExecutableModule, ServiceModule
     public function saveVoucherFieldVariations($variation_id, $i)
     {
         $optionName = 'voucher';
-        $voucherCategory = isset($_POST[$optionName]) && isset($_POST[$optionName][$variation_id]) ? sanitize_text_field(
-                wp_unslash($_POST[$optionName][$variation_id])
-        ) : false;
+        //phpcs:ignore WordPress.Security.NonceVerification.Missing
+        $voucherCategory = isset($_POST[$optionName]) && isset($_POST[$optionName][$variation_id])
+        //phpcs:ignore WordPress.Security.NonceVerification.Missing
+                ? sanitize_text_field(wp_unslash($_POST[$optionName][$variation_id]))
+                : false;
 
         if ($voucherCategory) {
             update_post_meta($variation_id, $optionName, esc_attr($voucherCategory));

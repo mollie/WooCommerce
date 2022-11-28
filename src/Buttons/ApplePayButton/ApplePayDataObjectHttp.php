@@ -366,20 +366,18 @@ class ApplePayDataObjectHttp
         }
 
         return [
-            'first_name' => filter_var($data['givenName'], $filter),
-            'last_name' => filter_var($data['familyName'], $filter),
-            'email' => isset($data['emailAddress']) ? filter_var($data['emailAddress'], $filter) : '',
-            'phone' => isset($data['phoneNumber']) ? filter_var($data['phoneNumber'], $filter) : '',
+            'first_name' => sanitize_text_field(wp_unslash($data['givenName'])),
+            'last_name' => sanitize_text_field(wp_unslash($data['familyName'])),
+            'email' => isset($data['emailAddress']) ? sanitize_text_field(wp_unslash($data['emailAddress'])) : '',
+            'phone' => isset($data['phoneNumber']) ? sanitize_text_field(wp_unslash($data['phoneNumber'])) : '',
             'address_1' => isset($data['addressLines'][0])
                 ? sanitize_text_field(wp_unslash($data['addressLines'][0])) : '',
             'address_2' => isset($data['addressLines'][1])
-                ? filter_var($data['addressLines'][1], $filter) : '',
-            'city' => filter_var($data['locality'], $filter),
-            'state' => filter_var($data['administrativeArea'], $filter),
-            'postcode' => filter_var($data['postalCode'], $filter),
-            'country' => strtoupper(
-                filter_var($data['countryCode'], $filter)
-            ),
+                ? sanitize_text_field(wp_unslash($data['addressLines'][1])) : '',
+            'city' => sanitize_text_field(wp_unslash($data['locality'])),
+            'state' => sanitize_text_field(wp_unslash($data['administrativeArea'])),
+            'postcode' => sanitize_text_field(wp_unslash($data['postalCode'])),
+            'country' => strtoupper(sanitize_text_field(wp_unslash($data['countryCode']))),
         ];
     }
 

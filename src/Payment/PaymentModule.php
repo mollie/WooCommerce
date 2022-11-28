@@ -520,7 +520,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
     public function orderByRequest()
     {
         $orderId = filter_input(INPUT_GET, 'order_id', FILTER_SANITIZE_NUMBER_INT) ?: null;
-        $key = sanitize_text_field(wp_unslash($_GET['key'])) ?: null;
+        $key = filter_input(INPUT_GET, 'key', FILTER_SANITIZE_SPECIAL_CHARS) ?? null;
         $order = wc_get_order($orderId);
 
         if (!$order) {

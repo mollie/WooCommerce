@@ -558,8 +558,7 @@ class AssetsModule implements ExecutableModule
     /**
      * @param ContainerInterface $container
      * @return void
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Psr\Container\NotFoundExceptionInterface
+     *
      */
     protected function setupModuleActions(ContainerInterface $container): void
     {

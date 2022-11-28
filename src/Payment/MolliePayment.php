@@ -96,9 +96,12 @@ class MolliePayment extends MollieObject
             'method' => $gateway->paymentMethod->getProperty('id'),
             'issuer' => $selectedIssuer,
             'locale' => $paymentLocale,
-            'metadata' => [
-                'order_id' => $orderId,
-            ],
+            'metadata' => apply_filters(
+                $this->pluginId . '_payment_object_metadata',
+                [
+                    'order_id' => $order->get_id(),
+                ]
+            ),
         ];
 
         $paymentRequestData = $this->addSequenceTypeForSubscriptionsFirstPayments($order->get_id(), $gateway, $paymentRequestData);

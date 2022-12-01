@@ -47,7 +47,7 @@
     }
   },
   "scripts": {
-    "check-coding-standards": "vendor/bin/phpcs -n -p --colors",
+    "check-coding-standards": "vendor/bin/phpcs --parallel=8 -s",
     "fix-coding-standards": "vendor/bin/phpcbf",
     "tests": "@php ./vendor/phpunit/phpunit/phpunit --coverage-text",
     "tests:no-cov": "@php ./vendor/phpunit/phpunit/phpunit --no-coverage",

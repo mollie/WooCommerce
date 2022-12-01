@@ -250,15 +250,15 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     /**
      * Default values for the initial settings saved
      *
-     * @return array|false
+     * @return array
      */
-    public function defaultSettings()
+    public function defaultSettings(): array
     {
         $fields = $this->getAllFormFields();
         //remove setting title fields
         $fields = array_filter($fields, static function ($key) {
                 return !is_numeric($key);
         }, ARRAY_FILTER_USE_KEY);
-        return array_combine(array_keys($fields), array_column($fields, 'default'));
+        return array_combine(array_keys($fields), array_column($fields, 'default')) ?: [];
     }
 }

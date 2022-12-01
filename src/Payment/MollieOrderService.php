@@ -94,7 +94,7 @@ class MollieOrderService
         $gateway = wc_get_payment_gateway_by_order($order);
         $this->setGateway($gateway);
         // No Mollie payment id provided
-        $paymentId = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_STRING);
+        $paymentId = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_SPECIAL_CHARS);
         if (empty($paymentId)) {
             $this->httpResponse->setHttpResponseCode(400);
             $this->logger->debug(__METHOD__ . ': No payment object ID provided.', [true]);

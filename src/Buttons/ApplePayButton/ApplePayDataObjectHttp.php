@@ -92,7 +92,7 @@ class ApplePayDataObjectHttp
      */
     public function validationData()
     {
-        $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_STRING);
+        $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = wp_verify_nonce(
             $nonce,
             'woocommerce-process_checkout'
@@ -121,7 +121,7 @@ class ApplePayDataObjectHttp
      */
     public function updateContactData()
     {
-        $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_STRING);
+        $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = wp_verify_nonce(
             $nonce,
             'woocommerce-process_checkout'
@@ -148,7 +148,7 @@ class ApplePayDataObjectHttp
      */
     public function updateMethodData()
     {
-        $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_STRING);
+        $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = wp_verify_nonce(
             $nonce,
             'woocommerce-process_checkout'
@@ -178,7 +178,7 @@ class ApplePayDataObjectHttp
      */
     public function orderData($callerPage)
     {
-        $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_STRING);
+        $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = wp_verify_nonce(
             $nonce,
             'woocommerce-process_checkout'
@@ -186,7 +186,7 @@ class ApplePayDataObjectHttp
         if (!$isNonceValid) {
             return;
         }
-        $data = filter_var_array($_POST, FILTER_SANITIZE_STRING);
+        $data = filter_var_array($_POST, FILTER_SANITIZE_SPECIAL_CHARS);
         $data[PropertiesDictionary::CALLER_PAGE] = $callerPage;
         $result = $this->updateRequiredData(
             $data,
@@ -427,7 +427,7 @@ class ApplePayDataObjectHttp
         ) {
             $this->shippingMethod = filter_var_array(
                 $data[PropertiesDictionary::SHIPPING_METHOD],
-                FILTER_SANITIZE_STRING
+                FILTER_SANITIZE_SPECIAL_CHARS
             );
         }
     }

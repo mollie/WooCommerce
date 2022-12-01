@@ -67,7 +67,7 @@ class Settings
 
     public function processSettings(WC_Payment_Gateway $gateway)
     {
-        $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_STRING);
+        $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = wp_verify_nonce($nonce, 'woocommerce-settings');
         if (!$isNonceValid) {
             return;
@@ -84,7 +84,7 @@ class Settings
 
     public function processAdminOptionCustomLogo(WC_Payment_Gateway $gateway)
     {
-        $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_STRING);
+        $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = wp_verify_nonce($nonce, 'woocommerce-settings');
         if (!$isNonceValid) {
             return;
@@ -142,7 +142,7 @@ class Settings
 
     public function processAdminOptionSurcharge(WC_Payment_Gateway $gateway)
     {
-        $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_STRING);
+        $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = wp_verify_nonce($nonce, 'woocommerce-settings');
         if (!$isNonceValid) {
             return;

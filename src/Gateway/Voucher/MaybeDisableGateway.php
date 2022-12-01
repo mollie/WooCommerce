@@ -28,7 +28,7 @@ class MaybeDisableGateway
         $isWcApiRequest = (bool)filter_input(
             INPUT_GET,
             'wc-api',
-            FILTER_SANITIZE_STRING
+            FILTER_SANITIZE_SPECIAL_CHARS
         );
         /*
          * There are 2 cases where we want to filter the gateway and it's when the checkout

@@ -283,7 +283,7 @@ class GatewaySurchargeHandler
 
     protected function canProcessGateway()
     {
-        $postedMethod = filter_input(INPUT_POST, 'payment_method', FILTER_SANITIZE_STRING);
+        $postedMethod = filter_input(INPUT_POST, 'payment_method', FILTER_SANITIZE_SPECIAL_CHARS);
         $gateway = !empty($postedMethod) ? $postedMethod : false;
         if (!$gateway) {
             return false;

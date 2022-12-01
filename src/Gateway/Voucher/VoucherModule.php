@@ -130,7 +130,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
         $optionName = Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION;
         check_ajax_referer('inlineeditnonce', '_inline_edit');
         if (isset($_REQUEST[$optionName])) {
-            $option = filter_var(wp_unslash($_REQUEST[$optionName]), FILTER_SANITIZE_STRING);
+            $option = filter_var(wp_unslash($_REQUEST[$optionName]), FILTER_SANITIZE_SPECIAL_CHARS);
             update_post_meta($post_id, $optionName, wc_clean($option));
         }
     }

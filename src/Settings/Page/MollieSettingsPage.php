@@ -271,7 +271,7 @@ class MollieSettingsPage extends WC_Settings_Page
             isset($_GET['refresh-methods']) &&
             isset($_GET['nonce_mollie_refresh_methods-methods']) &&
             wp_verify_nonce(
-                filter_input(INPUT_GET, 'nonce_mollie_refresh_methods', FILTER_SANITIZE_STRING),
+                filter_input(INPUT_GET, 'nonce_mollie_refresh_methods', FILTER_SANITIZE_SPECIAL_CHARS),
                 'nonce_mollie_refresh_methods'
             )
         ) {
@@ -285,7 +285,7 @@ class MollieSettingsPage extends WC_Settings_Page
         }
         if (
             isset($_GET['cleanDB-mollie']) && wp_verify_nonce(
-                filter_input(INPUT_GET, 'nonce_mollie_cleanDb', FILTER_SANITIZE_STRING),
+                filter_input(INPUT_GET, 'nonce_mollie_cleanDb', FILTER_SANITIZE_SPECIAL_CHARS),
                 'nonce_mollie_cleanDb'
             )
         ) {
@@ -598,7 +598,7 @@ class MollieSettingsPage extends WC_Settings_Page
 
     protected function saveApplePaySettings()
     {
-        $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_STRING);
+        $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = wp_verify_nonce(
             $nonce,
             'woocommerce-settings'
@@ -606,7 +606,7 @@ class MollieSettingsPage extends WC_Settings_Page
         if (!$isNonceValid) {
             return;
         }
-        $data = filter_var_array($_POST, FILTER_SANITIZE_STRING);
+        $data = filter_var_array($_POST, FILTER_SANITIZE_SPECIAL_CHARS);
 
         $applepaySettings = [];
         isset($data['enabled']) && ($data['enabled'] === '1') ?
@@ -643,7 +643,7 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     protected function saveApiKeys($settings)
     {
-        $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_STRING);
+        $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = wp_verify_nonce(
             $nonce,
             'woocommerce-settings'
@@ -702,7 +702,7 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     protected function validateApiKeyOrRemove($pattern, $value, $keyName)
     {
-        $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_STRING);
+        $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = wp_verify_nonce(
             $nonce,
             'woocommerce-settings'

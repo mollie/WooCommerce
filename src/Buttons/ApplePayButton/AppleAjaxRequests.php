@@ -625,7 +625,7 @@ class AppleAjaxRequests
      */
     protected function isNonceValid()
     {
-        $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_STRING);
+        $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_SPECIAL_CHARS);
         return wp_verify_nonce(
             $nonce,
             'woocommerce-process_checkout'

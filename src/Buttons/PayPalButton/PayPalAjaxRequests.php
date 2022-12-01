@@ -254,7 +254,7 @@ class PayPalAjaxRequests
      */
     protected function isNonceValid(): bool
     {
-        $nonce = filter_input(INPUT_POST, 'nonce', FILTER_SANITIZE_STRING);
+        $nonce = filter_input(INPUT_POST, 'nonce', FILTER_SANITIZE_SPECIAL_CHARS);
         if (!$nonce) {
             return false;
         }

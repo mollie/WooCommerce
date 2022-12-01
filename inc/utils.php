@@ -44,7 +44,7 @@ function mollieWooCommerceComponentsStylesForAvailableGateways()
  */
 function mollieWooCommerceCardToken()
 {
-    return $cardToken = filter_input(INPUT_POST, 'cardToken', FILTER_SANITIZE_STRING) ?: '';
+    return $cardToken = filter_input(INPUT_POST, 'cardToken', FILTER_SANITIZE_SPECIAL_CHARS) ?: '';
 }
 
 /**

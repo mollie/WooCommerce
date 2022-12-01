@@ -869,7 +869,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
             );
             $order_key = apply_filters(
                 'woocommerce_thankyou_order_key',
-                empty($_GET['key']) ? '' : wc_clean(filter_input(INPUT_GET, 'key', FILTER_SANITIZE_STRING))
+                empty($_GET['key']) ? '' : wc_clean(filter_input(INPUT_GET, 'key', FILTER_SANITIZE_SPECIAL_CHARS))
             );
             if ($order_id > 0) {
                 $order = wc_get_order($order_id);

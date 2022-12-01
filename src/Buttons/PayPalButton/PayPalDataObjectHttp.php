@@ -67,7 +67,7 @@ class PayPalDataObjectHttp
      */
     public function orderData($callerPage)
     {
-        $nonce = filter_input(INPUT_POST, 'nonce', FILTER_SANITIZE_STRING);
+        $nonce = filter_input(INPUT_POST, 'nonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = wp_verify_nonce(
             $nonce,
             'mollie_PayPal_button'
@@ -75,7 +75,7 @@ class PayPalDataObjectHttp
         if (!$isNonceValid) {
             return;
         }
-        $data = filter_var_array($_POST, FILTER_SANITIZE_STRING);
+        $data = filter_var_array($_POST, FILTER_SANITIZE_SPECIAL_CHARS);
         $data[PropertiesDictionary::CALLER_PAGE] = $callerPage;
         $this->updateRequiredData(
             $data,

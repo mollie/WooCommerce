@@ -2,7 +2,7 @@
 const { expect } = require('@playwright/test');
 const { test } = require('../Shared/base-test');
 const {insertAPIKeys, resetSettings} = require('../Shared/mollieUtils');
-
+const {sharedUrl: {settingsRoot}} = require('../Shared/sharedUrl');
 test.describe('Should show general settings', () => {
     test.beforeAll(async ({browser }) => {
         const page = await browser.newPage();
@@ -10,7 +10,7 @@ test.describe('Should show general settings', () => {
     });
     test('Should show empty and disconnected', async ({ page , gateways}) => {
         // Go to settings
-        await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/admin.php?page=wc-settings&tab=mollie_settings&section');
+        await page.goto(settingsRoot);
         await expect(page.locator('text=No API key provided. Please set your Mollie API keys below.')).toBeVisible();
         for ( const gatewayName in gateways ){
             //check default icon with a locator that has disabled and activate
@@ -22,7 +22,7 @@ test.describe('Should show general settings', () => {
     });
     test('Should connect when API key is present', async ({ page , gateways}) => {
         // Go to settings
-        await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/admin.php?page=wc-settings&tab=mollie_settings&section');
+        await page.goto(settingsRoot);
         await insertAPIKeys(page);
         await expect(page.locator('text=Mollie status: Connected')).toBeVisible();
         for ( const gatewayName in gateways ){

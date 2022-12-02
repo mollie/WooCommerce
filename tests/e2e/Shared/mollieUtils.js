@@ -1,8 +1,9 @@
+const {sharedUrl: {settingsRoot}} = require('../Shared/sharedUrl');
 /**
  * @param {import('@playwright/test').Page} page
  */
 const setOrderAPI = async (page) => {
-    await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/admin.php?page=wc-settings&tab=mollie_settings&section=advanced');
+    await page.goto(settingsRoot + '=advanced');
     await page.selectOption('select#mollie-payments-for-woocommerce_api_switch', 'order')
     await Promise.all([
         page.waitForNavigation(),
@@ -14,7 +15,7 @@ const setOrderAPI = async (page) => {
  * @param {import('@playwright/test').Page} page
  */
 const setPaymentAPI = async (page) => {
-    await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/admin.php?page=wc-settings&tab=mollie_settings&section=advanced');
+    await page.goto(settingsRoot + '=advanced');
     await page.selectOption('select#mollie-payments-for-woocommerce_api_switch', 'payment')
     await Promise.all([
         page.waitForNavigation(),
@@ -52,7 +53,7 @@ const insertAPIKeys = async (page) =>{
  * @param {import('@playwright/test').Page} page
  */
 const resetSettings = async (page) => {
-    await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/admin.php?page=wc-settings&tab=mollie_settings&section=advanced');
+    await page.goto(settingsRoot + '=advanced');
     await Promise.all([
         page.waitForNavigation(),
         await page.locator('text=clear now').click()

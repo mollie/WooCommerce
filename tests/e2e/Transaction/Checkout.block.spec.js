@@ -7,6 +7,7 @@ const {
     wooOrderDetailsPageOnCanceled
 } = require('../Shared/testMollieInWooPage');
 const {addProductToCart, fillCustomerInBlockCheckout} = require('../Shared/wooUtils');
+const {sharedUrl: {settingsRoot}} = require('../Shared/sharedUrl');
 
 /**
  * @param {import('@playwright/test').Page} page
@@ -116,7 +117,7 @@ test.describe('Transaction in block checkout', () => {
     });
     test('Transaction block with Order API cancelled setting as pending', async ({page, products, gateways}) => {
         //setting as pending
-        await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/admin.php?page=wc-settings&tab=mollie_settings&section=advanced');
+        await page.goto(settingsRoot + '=advanced');
         await page.selectOption('select#mollie-payments-for-woocommerce_order_status_cancelled_payments', 'pending');
         await Promise.all([
             page.waitForNavigation(),
@@ -139,7 +140,7 @@ test.describe('Transaction in block checkout', () => {
     });
     test('Transaction block with Payment API cancelled setting as pending', async ({page, products, gateways}) => {
         //setting as pending
-        await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/admin.php?page=wc-settings&tab=mollie_settings&section=advanced');
+        await page.goto(settingsRoot + '=advanced');
         await page.selectOption('select#mollie-payments-for-woocommerce_order_status_cancelled_payments', 'pending');
         await Promise.all([
             page.waitForNavigation(),
@@ -153,7 +154,7 @@ test.describe('Transaction in block checkout', () => {
     });
     test('Transaction block with Payment API cancelled setting as cancelled', async ({page, products, gateways}) => {
         //setting as cancelled
-        await page.goto(process.env.E2E_URL_TESTSITE + '/wp-admin/admin.php?page=wc-settings&tab=mollie_settings&section=advanced');
+        await page.goto(settingsRoot + '=advanced');
         await page.selectOption('select#mollie-payments-for-woocommerce_order_status_cancelled_payments', 'cancelled');
         await Promise.all([
             page.waitForNavigation(),

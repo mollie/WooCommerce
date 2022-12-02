@@ -98,7 +98,7 @@ async function classicCheckoutPaidTransactionFullRefund(page, testedProduct, tes
     await page.locator('text=This order is no longer editable. Refund >> button').click();
     await page.locator('input[class="refund_order_item_qty"]').fill('1');
     page.on('dialog', dialog => dialog.accept());
-    await page.locator('#woocommerce-order-items > div.inside > div.wc-order-data-row.wc-order-refund-items.wc-order-data-row-toggle > div.refund-actions > button.button.button-primary.do-api-refund').click();
+    await page.locator('refund-actions > button.button.button-primary.do-api-refund').click();
     await expect(page.locator('#select2-order_status-container')).toContainText("Refunded");
 }
 

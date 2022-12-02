@@ -76,15 +76,13 @@ class ApplePayDataObjectTest extends TestCase
 
         $dataObject->orderData('productDetail');
         $shippingAddress = $dataObject->shippingAddress();
-        $shippingAddress['address_1'] = htmlspecialchars_decode($shippingAddress['address_1'], ENT_QUOTES);
-        $shippingAddress['address_2'] = htmlspecialchars_decode($shippingAddress['address_2'], ENT_QUOTES);
         $expectedAddress = [
             'first_name' => $postDummyData->shippingContact['givenName'],
             'last_name' => $postDummyData->shippingContact['familyName'],
             'email' => $postDummyData->shippingContact['emailAddress'],
             'phone' => $postDummyData->shippingContact['phoneNumber'],
-            'address_1' => $postDummyData->shippingContact['addressLines'][0],
-            'address_2' => $postDummyData->shippingContact['addressLines'][1],
+            'address_1' => filter_var($postDummyData->shippingContact['addressLines'][0], FILTER_SANITIZE_SPECIAL_CHARS),
+            'address_2' => filter_var($postDummyData->shippingContact['addressLines'][1], FILTER_SANITIZE_SPECIAL_CHARS),
             'city' => $postDummyData->shippingContact['locality'],
             'state' => $postDummyData->shippingContact['administrativeArea'],
             'postcode' => $postDummyData->shippingContact['postalCode'],

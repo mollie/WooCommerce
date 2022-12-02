@@ -208,12 +208,12 @@ class ApplePayDataObjectHttp
             return;
         }
 
-        $filteredShippingContact = array_map('sanitize_text_field', $data[PropertiesDictionary::SHIPPING_CONTACT]);
+        $filteredShippingContact = $data[PropertiesDictionary::SHIPPING_CONTACT];
         $this->shippingAddress = $this->completeAddress(
             $filteredShippingContact,
             PropertiesDictionary::SHIPPING_CONTACT_INVALID
         );
-        $filteredbillingContact = array_map('sanitize_text_field', $data[PropertiesDictionary::BILLING_CONTACT]);
+        $filteredbillingContact = $data[PropertiesDictionary::BILLING_CONTACT];
         $this->billingAddress = $this->completeAddress(
             $filteredbillingContact,
             PropertiesDictionary::BILLING_CONTACT_INVALID
@@ -366,18 +366,16 @@ class ApplePayDataObjectHttp
         }
 
         return [
-            'first_name' => sanitize_text_field(wp_unslash($data['givenName'])),
-            'last_name' => sanitize_text_field(wp_unslash($data['familyName'])),
-            'email' => isset($data['emailAddress']) ? sanitize_text_field(wp_unslash($data['emailAddress'])) : '',
-            'phone' => isset($data['phoneNumber']) ? sanitize_text_field(wp_unslash($data['phoneNumber'])) : '',
-            'address_1' => isset($data['addressLines'][0])
-                ? sanitize_text_field(wp_unslash($data['addressLines'][0])) : '',
-            'address_2' => isset($data['addressLines'][1])
-                ? sanitize_text_field(wp_unslash($data['addressLines'][1])) : '',
-            'city' => sanitize_text_field(wp_unslash($data['locality'])),
-            'state' => sanitize_text_field(wp_unslash($data['administrativeArea'])),
-            'postcode' => sanitize_text_field(wp_unslash($data['postalCode'])),
-            'country' => strtoupper(sanitize_text_field(wp_unslash($data['countryCode']))),
+            'first_name' => $data['givenName'],
+            'last_name' => $data['familyName'],
+            'email' => $data['emailAddress'] ?? '',
+            'phone' => $data['phoneNumber'] ?? '',
+            'address_1' => $data['addressLines'][0] ?? '',
+            'address_2' => $data['addressLines'][1] ?? '',
+            'city' => $data['locality'],
+            'state' => $data['administrativeArea'],
+            'postcode' => $data['postalCode'],
+            'country' => strtoupper($data['countryCode']),
         ];
     }
 

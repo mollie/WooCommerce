@@ -4,7 +4,7 @@
  */
 const addProductToCart = async (page, testedProductName) => {
     // Go to shop
-    await page.goto(process.env.E2E_URL_TESTSITE + '/shop/');
+    await page.goto('/shop/');
     // Add product to cart
     await page.locator('[data-product_sku="' + testedProductName + '"]').click()
 }

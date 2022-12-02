@@ -6,6 +6,7 @@ const {simple} = require('../Shared/products');
 const {banktransfer, paypal} = require('../Shared/gateways');
 const PRODUCTS = {simple}
 const GATEWAYS = {banktransfer, paypal}
+const {sharedUrl: {gatewaySettingsRoot}} = require('../Shared/sharedUrl');
 
 test.describe('Should show payment settings on classic checkout', () => {
 
@@ -14,7 +15,7 @@ test.describe('Should show payment settings on classic checkout', () => {
         await resetSettings(page);
         await insertAPIKeys(page);
         // Go to shop
-        await page.goto(process.env.E2E_URL_TESTSITE + '/shop/');
+        await page.goto('/shop/');
         // Add product to cart
         const productCartButton = PRODUCTS.simple.name;
         await page.locator('[data-product_sku="' + productCartButton + '"]').click();
@@ -22,7 +23,7 @@ test.describe('Should show payment settings on classic checkout', () => {
     for (const key in GATEWAYS) {
         test(`Should show ${key} default settings`, async ({page}) => {
             // Go to checkout
-            await page.goto(process.env.E2E_URL_TESTSITE + '/checkout');
+            await page.goto('/checkout');
             let testedGateway = GATEWAYS[key]
             //check default title
             await page.locator('#payment_method_mollie_wc_gateway_' + testedGateway.id)
@@ -44,7 +45,7 @@ test.describe('Should show payment settings on classic checkout', () => {
         test(`Should show ${key} custom settings`, async ({page}) => {
             let testedGateway = GATEWAYS[key]
             //set custom settings
-            await page.goto(`${process.env.E2E_URL_TESTSITE}/wp-admin/admin.php?page=wc-settings&tab=checkout&section=mollie_wc_gateway_${testedGateway.id}`)
+            await page.goto(gatewaySettingsRoot + testedGateway.id)
             await page.locator(`input[name="mollie_wc_gateway_${testedGateway.id}_title"]`).fill(`${testedGateway.defaultTitle} edited`);
             await page.locator(`textarea[name="mollie_wc_gateway_${testedGateway.id}_description"]`).fill(`${testedGateway.defaultTitle} description edited`);
             await page.locator(`input[name="mollie_wc_gateway_${testedGateway.id}_display_logo"]`).uncheck();
@@ -62,7 +63,7 @@ test.describe('Should show payment settings on classic checkout', () => {
                 page.locator('text=Save changes').click()
             ]);
             // Go to checkout
-            await page.goto(process.env.E2E_URL_TESTSITE + '/checkout');
+            await page.goto('/checkout');
 
             //check custom title
             await page.locator(`select[name="billing_country"]`).selectOption('ES');

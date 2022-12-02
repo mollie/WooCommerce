@@ -13,7 +13,7 @@ const {sharedUrl: {settingsRoot}} = require('../Shared/sharedUrl');
  */
 async function beforePlacingOrder(page, testedProduct, testedGateway) {
     await addProductToCart(page, testedProduct.name);
-    await page.goto(process.env.E2E_URL_TESTSITE + '/checkout/');
+    await page.goto('/checkout/');
 
     //Capture WooCommerce total amount
     const totalAmount = await page.innerText('.order-total > td > strong > span > bdi');

@@ -48,8 +48,8 @@ class Data
      * @var Logger
      */
     protected $logger;
-    public $pluginId;
-    public $pluginPath;
+    protected $pluginId;
+    protected $pluginPath;
 
     public function __construct(Api $api_helper, Logger $logger, string $pluginId, Settings $settingsHelper, string $pluginPath)
     {
@@ -58,6 +58,16 @@ class Data
         $this->logger = $logger;
         $this->pluginId = $pluginId;
         $this->pluginPath = $pluginPath;
+    }
+
+    public function getPluginId(): string
+    {
+        return $this->pluginId;
+    }
+
+    public function pluginPath(): string
+    {
+        return $this->pluginPath;
     }
 
     public function isBlockPluginActive(): bool
@@ -101,9 +111,10 @@ class Data
 
     /**
      * @param bool $overrideTestMode
-     * @return string
+     *
+     * @return null|string
      */
-    public function getApiKey($overrideTestMode = 2)
+    public function getApiKey($overrideTestMode = 2): ?string
     {
         return $this->settingsHelper->getApiKey($overrideTestMode);
     }
@@ -153,42 +164,10 @@ class Data
         $max_option_name_length = 191;
 
         if ($option_name_length > $max_option_name_length) {
-            trigger_error(sprintf('Transient id %s is to long. Option name %s (%s) will be to long for database column wp_options.option_name which is varchar(%s).', $transient_id, $option_name, $option_name_length, $max_option_name_length), E_USER_WARNING);
+            trigger_error(sprintf('Transient id %s is to long. Option name %s (%s) will be to long for database column wp_options.option_name which is varchar(%s).', esc_html($transient_id), esc_html($option_name), esc_html($option_name_length), esc_html($max_option_name_length)), E_USER_WARNING);
         }
 
         return $transient_id;
-    }
-
-    /**
-     * Called when page 'WooCommerce -> Checkout -> Checkout Options' is saved
-     *
-     * @see \Plugin::init
-     */
-    public function deleteTransients()
-    {
-        $this->logger->log(LogLevel::DEBUG, __METHOD__ . ': Mollie settings saved, delete transients');
-
-        $transient_names = [
-            'api_methods_test',
-            'api_methods_live',
-            'api_issuers_test',
-            'api_issuers_live',
-            'ideal_issuers_test',
-            'ideal_issuers_live',
-            'kbc_issuers_test',
-            'kbc_issuers_live',
-            'giftcard_issuers_test',
-            'giftcard_issuers_live',
-        ];
-
-        $languages = array_keys(apply_filters('wpml_active_languages', []));
-        $languages[] = $this->getCurrentLocale();
-
-        foreach ($transient_names as $transient_name) {
-            foreach ($languages as $language) {
-                delete_transient($this->getTransientId($transient_name . sprintf('_%s', $language)));
-            }
-        }
     }
 
     /**
@@ -198,14 +177,15 @@ class Data
      * @param string $payment_id
      * @param string   $apiKey (default: false)
      * @param bool   $use_cache (default: true)
-     * @return Mollie\Api\Resources\Payment|null
+     *
+     * @return \Mollie\Api\Resources\Payment|null
      */
-    public function getPayment($payment_id, $apiKey, $use_cache = true)
+    public function getPayment($payment_id, $apiKey, $use_cache = true): ?\Mollie\Api\Resources\Payment
     {
         try {
             return $this->api_helper->getApiClient($apiKey)->payments->get($payment_id);
         } catch (\Mollie\Api\Exceptions\ApiException $apiException) {
-            $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Could not load payment %s (', $payment_id) . "): " . $apiException->getMessage() . ' (' . get_class($apiException) . ')');
+            $this->logger->debug(__FUNCTION__ . sprintf(': Could not load payment %s (', $payment_id) . "): " . $apiException->getMessage() . ' (' . get_class($apiException) . ')');
         }
 
         return null;
@@ -225,14 +205,14 @@ class Data
         }
 
         $isSubscriptionPluginActive = $this->isSubscriptionPluginActive();
-        if($isSubscriptionPluginActive){
+        if ($isSubscriptionPluginActive) {
             $result = $this->addRecurringPaymentMethods($apiKey, $test_mode, $use_cache, $result);
         }
 
         return $result;
     }
 
-    public function wooCommerceFiltersForCheckout()
+    public function wooCommerceFiltersForCheckout(): array
     {
 
         $cart = WC()->cart;
@@ -241,7 +221,7 @@ class Data
         $currency = get_woocommerce_currency();
         $customerExistsAndHasCountry = WC()->customer && !empty(WC()->customer->get_billing_country());
         $fallbackToShopCountry = wc_get_base_location()['country'];
-        $billingCountry = $customerExistsAndHasCountry? WC()->customer->get_billing_country() : $fallbackToShopCountry;
+        $billingCountry = $customerExistsAndHasCountry ? WC()->customer->get_billing_country() : $fallbackToShopCountry;
 
         $paymentLocale = $this->settingsHelper->getPaymentLocale();
         try {
@@ -252,7 +232,7 @@ class Data
                 $billingCountry
             );
         } catch (InvalidArgumentException $exception) {
-            $filters = false;
+            $filters = [];
         }
 
         return $filters;
@@ -260,10 +240,8 @@ class Data
     /**
      * @param $order_total
      * @param $currency
-     *
-     * @return int
      */
-    protected function getAmountValue($order_total, $currency)
+    protected function getAmountValue($order_total, $currency): string
     {
         return $this->formatCurrencyValue(
             $order_total,
@@ -365,7 +343,6 @@ class Data
         $transient_id = $this->getTransientId(md5(http_build_query($filters_key)));
 
         try {
-
             if ($use_cache) {
                 // When no cache exists $methods will be `false`
                 $methods =  get_transient($transient_id);
@@ -378,7 +355,7 @@ class Data
                 $filters['resource'] = 'orders';
                 $filters['includeWallets'] = 'applepay';
                 $filters['include'] = 'issuers';
-                if(!$apiKey) {
+                if (!$apiKey) {
                     return [];
                 }
                 $methods = $this->api_helper->getApiClient($apiKey)->methods->allActive($filters);
@@ -408,7 +385,7 @@ class Data
             if ($use_cache) {
                 set_transient($transient_id, [], 60 * 5);
             }
-            $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . ": Could not load Mollie methods (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            $this->logger->debug(__FUNCTION__ . ": Could not load Mollie methods (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
 
             return [];
         }
@@ -460,7 +437,7 @@ class Data
             set_transient($transient_id, $issuers, HOUR_IN_SECONDS);
             return $issuers;
         } catch (\Mollie\Api\Exceptions\ApiException $e) {
-            $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . ": Could not load " . $methodId . " issuers (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            $this->logger->debug(__FUNCTION__ . ": Could not load " . $methodId . " issuers (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
 
         return  [];
@@ -477,7 +454,7 @@ class Data
     public function getMethodWithIssuersById($methodId, $apiKey)
     {
         $method = $this->getCachedMethodById($methodId);
-        if($method){
+        if ($method) {
             return $method;
         }
         if (!$apiKey) {
@@ -495,11 +472,11 @@ class Data
     {
         $apiKey = $this->settingsHelper->getApiKey();
         $cachedMethods = $this->getRegularPaymentMethods($apiKey);
-        if(empty($cachedMethods)){
+        if (empty($cachedMethods)) {
             return false;
         }
-        foreach ($cachedMethods as $cachedMethod){
-            if($cachedMethod['id'] !== $methodId){
+        foreach ($cachedMethods as $cachedMethod) {
+            if ($cachedMethod['id'] !== $methodId) {
                 continue;
             }
             return $cachedMethod;
@@ -520,9 +497,9 @@ class Data
                 $customer = new WC_Customer($user_id);
                 $customer->update_meta_data('mollie_customer_id', $customer_id);
                 $customer->save();
-                $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . ": Stored Mollie customer ID " . $customer_id . " with user " . $user_id);
+                $this->logger->debug(__FUNCTION__ . ": Stored Mollie customer ID " . $customer_id . " with user " . $user_id);
             } catch (Exception $exception) {
-                $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . ": Couldn't load (and save) WooCommerce customer based on user ID " . $user_id);
+                $this->logger->debug(__FUNCTION__ . ": Couldn't load (and save) WooCommerce customer based on user ID " . $user_id);
             }
         }
 
@@ -584,7 +561,7 @@ class Data
             try {
                 $this->api_helper->getApiClient($apiKey)->customers->get($customer_id);
             } catch (\Mollie\Api\Exceptions\ApiException $e) {
-                $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Mollie Customer ID (%s) not valid for user %s on this API key, try to create a new one (', $customer_id, $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . ").");
+                $this->logger->debug(__FUNCTION__ . sprintf(': Mollie Customer ID (%s) not valid for user %s on this API key, try to create a new one (', $customer_id, $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . ").");
                 $customer_id = '';
             }
         }
@@ -612,14 +589,14 @@ class Data
 
                 $customer_id = $customer->id;
 
-                $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Created a Mollie Customer (%s) for WordPress user with ID %s (', $customer_id, $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . ").");
+                $this->logger->debug(__FUNCTION__ . sprintf(': Created a Mollie Customer (%s) for WordPress user with ID %s (', $customer_id, $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . ").");
 
                 return $customer_id;
             } catch (\Mollie\Api\Exceptions\ApiException $e) {
-                $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Could not create Mollie Customer for WordPress user with ID %s (', $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+                $this->logger->debug(__FUNCTION__ . sprintf(': Could not create Mollie Customer for WordPress user with ID %s (', $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
             }
         } else {
-            $this->logger->log(LogLevel::DEBUG, __FUNCTION__ . sprintf(': Mollie Customer ID (%s) found and valid for user %s on this API key. (', $customer_id, $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . ").");
+            $this->logger->debug(__FUNCTION__ . sprintf(': Mollie Customer ID (%s) found and valid for user %s on this API key. (', $customer_id, $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . ").");
         }
 
         return $customer_id;

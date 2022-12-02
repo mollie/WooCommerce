@@ -3,16 +3,16 @@
  * Plugin Name: Mollie Payments for WooCommerce
  * Plugin URI: https://www.mollie.com
  * Description: Accept payments in WooCommerce with the official Mollie plugin
- * Version: 7.3.0
+ * Version: 7.3.4
  * Author: Mollie
  * Author URI: https://www.mollie.com
  * Requires at least: 5.0
- * Tested up to: 6.0
+ * Tested up to: 6.1
  * Text Domain: mollie-payments-for-woocommerce
  * Domain Path: /languages
  * License: GPLv2 or later
  * WC requires at least: 3.0
- * WC tested up to: 6.5
+ * WC tested up to: 7.0
  * Requires PHP: 7.2
  */
 declare(strict_types=1);
@@ -65,12 +65,18 @@ function mollie_wc_plugin_autoload()
     $autoloader = __DIR__ . '/vendor/autoload.php';
     $mollieSdkAutoload = __DIR__ . '/vendor/mollie/mollie-api-php/vendor/autoload.php';
     if (file_exists($autoloader)) {
-        /** @noinspection PhpIncludeInspection */
+        /**
+         * @noinspection PhpIncludeInspection
+         *
+         */
         require $autoloader;
     }
 
     if (file_exists($mollieSdkAutoload)) {
-        /** @noinspection PhpIncludeInspection */
+        /**
+         * @noinspection PhpIncludeInspection
+         * @psalm-suppress MissingFile
+         */
         require $mollieSdkAutoload;
     }
     return true;
@@ -145,12 +151,12 @@ function initialize()
         $properties = PluginProperties::new(__FILE__);
         $bootstrap = Package::new($properties);
         $modules = [
-            new ActivationModule(__FILE__, $properties->version()),
-            new LogModule('mollie-payments-for-woocommerce-'),
+            new ActivationModule(__FILE__, $properties->get('version')),
             new NoticeModule(),
             new SharedModule(),
             new SDKModule(),
             new SettingsModule(),
+            new LogModule('mollie-payments-for-woocommerce-'),
             new AssetsModule(),
             new GatewayModule(),
             new VoucherModule(),

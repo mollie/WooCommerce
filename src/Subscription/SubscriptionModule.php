@@ -12,6 +12,7 @@ use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
+use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
@@ -88,7 +89,10 @@ class SubscriptionModule implements ExecutableModule
     {
         global $wpdb;
         $currentDate = new DateTime();
-        $items = $wpdb->get_results("SELECT * FROM {$wpdb->mollie_pending_payment} WHERE expired_time < {$currentDate->getTimestamp()};");
+        $items = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM {$wpdb->mollie_pending_payment} WHERE expired_time < %s",
+            $currentDate->getTimestamp()
+        ));
         foreach ($items as $item) {
             $order = wc_get_order($item->post_id);
 
@@ -97,8 +101,8 @@ class SubscriptionModule implements ExecutableModule
                 return false;
             }
 
-            if ($order->get_status() === MolliePaymentGateway::STATUS_COMPLETED) {
-                $new_order_status = MolliePaymentGateway::STATUS_FAILED;
+            if ($order->get_status() === SharedDataDictionary::STATUS_COMPLETED) {
+                $new_order_status = SharedDataDictionary::STATUS_FAILED;
                 $paymentMethodId = $order->get_meta('_payment_method_title', true);
                 $molliePaymentId = $order->get_meta('_mollie_payment_id', true);
                 $order->add_order_note(sprintf(
@@ -113,7 +117,7 @@ class SubscriptionModule implements ExecutableModule
                     // Restore order stock
                     $this->dataHelper->restoreOrderStock($order);
 
-                    $this->logger->log(LogLevel::DEBUG, __METHOD__ . " Stock for order {$order->get_id()} restored.");
+                    $this->logger->debug(__METHOD__ . " Stock for order {$order->get_id()} restored.");
                 }
 
                 $wpdb->delete(

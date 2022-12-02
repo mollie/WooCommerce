@@ -15,16 +15,20 @@ class MaybeDisableGateway
      * in the cart
      * Disable if Payments API is selected in advanced settings
      *
-     * @param array $gateways
+     * @param ?array $gateways
      *
      * @return array
      */
-    public function maybeDisableMealVoucherGateway(array $gateways)
+    public function maybeDisableMealVoucherGateway(?array $gateways): array
     {
+        if (!is_array($gateways)) {
+            return [];
+        }
+
         $isWcApiRequest = (bool)filter_input(
             INPUT_GET,
             'wc-api',
-            FILTER_SANITIZE_STRING
+            FILTER_SANITIZE_SPECIAL_CHARS
         );
         /*
          * There are 2 cases where we want to filter the gateway and it's when the checkout
@@ -33,12 +37,11 @@ class MaybeDisableGateway
          * For any other case we want to be sure voucher gateway is included.
          */
         if (
-        ($isWcApiRequest
+            ($isWcApiRequest
             || !doing_action('woocommerce_payment_gateways')
             || !wp_doing_ajax()
             || is_admin())
-        && !has_block('woocommerce/checkout')
-
+            && !has_block('woocommerce/checkout')
         ) {
             return $gateways;
         }
@@ -89,18 +92,17 @@ class MaybeDisableGateway
         $mealvoucherSettings = get_option(
             'mollie_wc_gateway_voucher_settings'
         );
-        if(!$mealvoucherSettings){
+        if (!$mealvoucherSettings) {
             $mealvoucherSettings = get_option(
                 'mollie_wc_gateway_mealvoucher_settings'
             );
         }
         //Check if mealvoucherSettings is an array as to prevent notice from being thrown for PHP 7.4 and up.
-        if (is_array($mealvoucherSettings)) {
+        if (is_array($mealvoucherSettings) && isset($mealvoucherSettings['mealvoucher_category_default'])) {
             $defaultCategory = $mealvoucherSettings['mealvoucher_category_default'];
         } else {
             $defaultCategory = false;
         }
-        $numberOfProducts = 0;
         $productsWithCategory = 0;
         $variationCategory = false;
         foreach ($products as $product) {
@@ -127,7 +129,6 @@ class MaybeDisableGateway
             ) {
                 $productsWithCategory++;
             }
-            $numberOfProducts++;
         }
         if ($productsWithCategory === 0) {
             return 0;

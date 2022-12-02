@@ -5,13 +5,17 @@ namespace Mollie\WooCommerceTests\Functional;
 
 
 use Mollie\Api\MollieApiClient;
+use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\OrderInstructionsService;
+use Mollie\WooCommerce\Payment\OrderLines;
+use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\PaymentService;
 use Mollie\WooCommerce\PaymentMethods\Ideal;
 use Mollie\WooCommerce\SDK\Api;
+use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerceTests\Stubs\Status;
@@ -50,7 +54,8 @@ class HelperMocks extends TestCase
             $this->apiHelper($apiClientMock),
             $this->settingsHelper(),
             $this->pluginId(),
-            $this->loggerMock()
+            $this->loggerMock(),
+            $this->orderLines($apiClientMock)
         );
     }
 
@@ -88,6 +93,12 @@ class HelperMocks extends TestCase
             ]
         );
     }
+    public function orderLines($apiClientMock){
+        return new OrderLines(
+            $this->dataHelper($apiClientMock),
+            $this->pluginId()
+        );
+    }
 
     public function loggerMock()
     {
@@ -99,7 +110,7 @@ class HelperMocks extends TestCase
             Settings::class,
             [
                 'isTestModeEnabled' => true,
-                'getApiKey' => 'test_NtHd7vSyPSpEyuTEwhjsxdjsgVG4SV',
+                'getApiKey' => 'test_NtHd7vSyPSpEyuTEwhjsxdjsgVG4Sx',
                 'getPaymentLocale' => 'en_US',
                 'shouldStoreCustomer' => false,
             ]
@@ -208,6 +219,49 @@ class HelperMocks extends TestCase
             ->willReturn($this->paymentMethodMergedProperties($paymentMethodName, $isSepa, $isSubscription, $settings));
 
         return $paymentMethod;
+    }
+
+    public function mollieGatewayBuilder($paymentMethodName, $isSepa, $isSubscription, $settings, $paymentService = null) {
+        $paymentMethod = $this->paymentMethodBuilder($paymentMethodName, $isSepa, $isSubscription, $settings);
+        $paymentService = $paymentService ?? $this->paymentService();
+        $orderInstructionsService = $this->orderInstructionsService();
+        $mollieOrderService = $this->mollieOrderService();
+        $data = $this->dataHelper();
+        $logger = $this->loggerMock();
+        $notice = $this->noticeMock();
+        $HttpResponseService = new HttpResponse();
+        $mollieObject = $this->getMockBuilder(MollieObject::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $apiClientMock = $this->apiClient();
+
+        $paymentFactory = $this->paymentFactory($apiClientMock);
+        $pluginId = $this->pluginId();
+
+        return $this->buildTesteeMock(
+            MolliePaymentGateway::class,
+            [
+                $paymentMethod,
+                $paymentService,
+                $orderInstructionsService,
+                $mollieOrderService,
+                $data,
+                $logger,
+                $notice,
+                $HttpResponseService,
+                $mollieObject,
+                $paymentFactory,
+                $pluginId
+            ],
+            [
+                'init_form_fields',
+                'initDescription',
+                'initIcon',
+                'get_order_total',
+                'getSelectedIssuer',
+                'get_return_url'
+            ]
+        )->getMock();
     }
 }
 

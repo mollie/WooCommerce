@@ -9,33 +9,26 @@ use Psr\Log\LogLevel;
 
 class PayPalDataObjectHttp
 {
-
     /**
      * @var mixed
      */
-    public $nonce;
+    protected $nonce;
     /**
      * @var mixed|null
      */
-    public $needShipping;
+    protected $needShipping;
     /**
      * @var mixed
      */
-    public $productId;
+    protected $productId;
     /**
      * @var mixed
      */
-    public $productQuantity;
-
-    /**
-     * @var mixed
-     */
-    public $callerPage;
-
+    protected $productQuantity;
     /**
      * @var array
      */
-    public $errors = [];
+    protected $errors = [];
     /**
      * @var Logger
      */
@@ -72,8 +65,17 @@ class PayPalDataObjectHttp
      *
      * @param       $callerPage
      */
-    public function orderData(array $data, $callerPage)
+    public function orderData($callerPage)
     {
+        $nonce = filter_input(INPUT_POST, 'nonce', FILTER_SANITIZE_SPECIAL_CHARS);
+        $isNonceValid = wp_verify_nonce(
+            $nonce,
+            'mollie_PayPal_button'
+        );
+        if (!$isNonceValid) {
+            return;
+        }
+        $data = filter_var_array($_POST, FILTER_SANITIZE_SPECIAL_CHARS);
         $data[PropertiesDictionary::CALLER_PAGE] = $callerPage;
         $this->updateRequiredData(
             $data,
@@ -95,8 +97,7 @@ class PayPalDataObjectHttp
     {
         foreach ($required as $requiredField) {
             if (!array_key_exists($requiredField, $data)) {
-                $this->logger->log(
-                    LogLevel::DEBUG,
+                $this->logger->debug(
                     sprintf('PayPal Data Error: Missing index %s', $requiredField)
                 );
 
@@ -104,8 +105,7 @@ class PayPalDataObjectHttp
                 continue;
             }
             if (!$data[$requiredField]) {
-                $this->logger->log(
-                    LogLevel::DEBUG,
+                $this->logger->debug(
                     sprintf('PayPal Data Error: Missing value for %s', $requiredField)
                 );
                 $this->errors[] = ['errorCode' => 'unknown'];
@@ -129,7 +129,7 @@ class PayPalDataObjectHttp
         foreach ($data as $key => $value) {
             if (in_array($key, $allowedKeys)) {
                 $filterType = $this->filterType($key);
-                $this->$key = filter_var($value, $filterType);
+                $this->$key = $filterType ? filter_var($value, $filterType) : sanitize_text_field(wp_unslash($value));
             }
         }
     }
@@ -153,7 +153,7 @@ class PayPalDataObjectHttp
             case in_array($value, $filterBoolean):
                 return FILTER_VALIDATE_BOOLEAN;
             default:
-                return FILTER_SANITIZE_STRING;
+                return false;
         }
     }
 
@@ -181,5 +181,20 @@ class PayPalDataObjectHttp
         }
         $this->assignDataObjectValues($data);
         return true;
+    }
+
+    public function nonce()
+    {
+        return $this->nonce;
+    }
+
+    public function productId()
+    {
+        return $this->productId;
+    }
+
+    public function productQuantity()
+    {
+        return $this->productQuantity;
     }
 }

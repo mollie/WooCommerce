@@ -12,7 +12,6 @@ use WC_Tax;
 
 class OrderLines
 {
-
     /**
      * Formatted order lines.
      *
@@ -41,24 +40,27 @@ class OrderLines
     /**
      * Mollie_WC_Helper_Order_Lines constructor.
      *
-     * @param object      $order        WooCommerce Order
+     *
      */
-    public function __construct($order, Data $dataHelper, string $pluginId)
+    public function __construct(Data $dataHelper, string $pluginId)
     {
-        $this->order = $order;
         $this->dataHelper = $dataHelper;
-        $this->currency = $this->dataHelper->getOrderCurrency($this->order);
         $this->pluginId = $pluginId;
     }
 
     /**
      * Gets formatted order lines from WooCommerce order.
      *
+     * @param WC_Order $order WooCommerce Order
+     * @param string $voucherDefaultCategory Voucher gaetway default category
+     *
      * @return array
      */
-    public function order_lines()
+    public function order_lines($order, $voucherDefaultCategory)
     {
-        $this->process_items();
+        $this->order = $order;
+        $this->currency = $this->dataHelper->getOrderCurrency($this->order);
+        $this->process_items($voucherDefaultCategory);
         $this->process_shipping();
         $this->process_fees();
         $this->process_gift_cards();
@@ -84,12 +86,12 @@ class OrderLines
      *
      * @access private
      */
-    private function process_items()
+    private function process_items($voucherDefaultCategory)
     {
-        $voucherSettings = get_option('mollie_wc_gateway_voucher_settings')?:get_option('mollie_wc_gateway_mealvoucher_settings');
+        $voucherSettings = get_option('mollie_wc_gateway_voucher_settings') ?: get_option('mollie_wc_gateway_mealvoucher_settings');
         $isMealVoucherEnabled = $voucherSettings ? ($voucherSettings['enabled'] == 'yes') : false;
         if (!$voucherSettings) {
-            $isMealVoucherEnabled = $this->dataHelper->getPaymentMethod('voucher')?true:false;
+            $isMealVoucherEnabled = $this->dataHelper->getPaymentMethod('voucher') ? true : false;
         }
 
         foreach ($this->order->get_items() as $cart_item) {
@@ -133,9 +135,10 @@ class OrderLines
                         ],
                 ];
 
-                if ($isMealVoucherEnabled && $this->get_item_category($product) != "no_category") {
+                if ($isMealVoucherEnabled && $this->get_item_category($product, $voucherDefaultCategory) != "no_category") {
                     $mollie_order_item['category'] = $this->get_item_category(
-                        $product
+                        $product,
+                        $voucherDefaultCategory
                     );
                 }
                 $this->order_lines[] = $mollie_order_item;
@@ -198,7 +201,7 @@ class OrderLines
                     $cart_fee_tax_amount = $cart_fee['total_tax'];
                     $cart_fee_total = ( $cart_fee['total'] + $cart_fee['total_tax'] );
                     /*This is the equation Mollie uses to validate our input*/
-                    $validTax = $cart_fee_total * ($cart_fee_vat_rate / (100 + $cart_fee_vat_rate)) === (float) $cart_fee_tax_amount;
+                    $validTax = ($cart_fee_total * ($cart_fee_vat_rate / (100 + $cart_fee_vat_rate))) === (float) $cart_fee_tax_amount || $cart_fee_total === 0;
                     if (!$validTax) {
                         /*inverse of the equation Mollie uses to validate our input,
                         so we don't fail when cart has mixed taxes*/
@@ -375,12 +378,13 @@ class OrderLines
      *
      * Returns SKU or product ID.
      *
-     * @since  1.0
+     * @since 1.0
+     *
      * @access private
      *
-     * @param  object $product Product object.
+     * @param object $product Product object.
      *
-     * @return string $item_reference Cart item reference.
+     * @return false|string $item_reference Cart item reference.
      */
     private function get_item_reference($product)
     {
@@ -440,22 +444,13 @@ class OrderLines
      * @access private
      *
      * @param  object $product Product object.
+     * @param  string $voucherDefaultCategory Voucher default category.
      *
      * @return string $category Product voucher category.
      */
-    private function get_item_category($product)
+    private function get_item_category($product, $voucherDefaultCategory)
     {
-        $mealvoucherSettings = get_option(
-            'mollie_wc_gateway_voucher_settings'
-        );
-        if(!$mealvoucherSettings){
-            $mealvoucherSettings = get_option(
-                'mollie_wc_gateway_mealvoucher_settings'
-            );
-        }
-
-        $defaultCategory = $mealvoucherSettings? $mealvoucherSettings['mealvoucher_category_default']:Voucher::NO_CATEGORY;
-        $category = $defaultCategory;
+        $category = $voucherDefaultCategory;
 
         if (!$product) {
             return $category;
@@ -539,12 +534,13 @@ class OrderLines
     /**
      * Get shipping method amount.
      *
-     * @since  1.0
+     * @since 1.0
+     *
      * @access private
      *
-     * @return integer $shipping_amount Amount for selected shipping method.
+     * @return string $shipping_amount Amount for selected shipping method.
      */
-    private function get_shipping_amount()
+    private function get_shipping_amount(): string
     {
         return number_format(( WC()->cart->shipping_total + WC()->cart->shipping_tax_total ), 2, '.', '');
     }
@@ -552,10 +548,13 @@ class OrderLines
     /**
      * Get shipping method tax rate.
      *
-     * @since  1.0
+     * @since 1.0
+     *
      * @access private
      *
-     * @return integer $shipping_vat_rate Tax rate for selected shipping method.
+     * @return float|int $shipping_vat_rate Tax rate for selected shipping method.
+     *
+     * @psalm-return 0|float
      */
     private function get_shipping_vat_rate()
     {

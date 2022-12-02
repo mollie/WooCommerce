@@ -7,10 +7,11 @@ trait IssuersDropdownBehavior
     public function dropDownEnabled($gateway)
     {
         $defaultDropdownSetting = true;
-        return $gateway->paymentMethod->getProperty('issuers_dropdown_shown') ?
-            $gateway->paymentMethod->getProperty('issuers_dropdown_shown') === 'yes' :
+        return $gateway->paymentMethod()->getProperty('issuers_dropdown_shown') ?
+            $gateway->paymentMethod()->getProperty('issuers_dropdown_shown') === 'yes' :
             $defaultDropdownSetting;
     }
+
     public function getIssuers($gateway, $dataHelper)
     {
         $testMode = $dataHelper->isTestModeEnabled();
@@ -19,7 +20,7 @@ trait IssuersDropdownBehavior
         return $dataHelper->getMethodIssuers(
             $apiKey,
             $testMode,
-            $gateway->paymentMethod->getProperty('id')
+            $gateway->paymentMethod()->getProperty('id')
         );
     }
 
@@ -30,7 +31,17 @@ trait IssuersDropdownBehavior
             $issuers,
             $selectedIssuer
         );
-        echo wpautop(wptexturize($html));
+        echo wp_kses($html, [
+            'select' => [
+                'name' => [],
+                'id' => [],
+                'class' => [],
+            ],
+            'option' => [
+                'value' => [],
+                'selected' => [],
+            ],
+        ]);
     }
 
     /**
@@ -46,7 +57,7 @@ trait IssuersDropdownBehavior
         $selectedIssuer
     ): string {
 
-        $html = '<select name="' . $gateway->pluginId . '_issuer_'
+        $html = '<select name="' . $gateway->pluginId() . '_issuer_'
             . $gateway->id . '">';
         $html .= $this->dropdownOptions($gateway, $issuers, $selectedIssuer);
         $html .= '</select>';
@@ -67,13 +78,11 @@ trait IssuersDropdownBehavior
         $selectedIssuer
     ): string {
 
-        $description = $gateway->paymentMethod->getProperty(
+        $description = $gateway->paymentMethod()->getProperty(
             'issuers_empty_option'
-        ) ?: $gateway->paymentMethod->getProperty('defaultDescription');
+        ) ?: $gateway->paymentMethod()->getProperty('defaultDescription');
 
-        $html = '<option value="">' . esc_html(
-            __($description, 'mollie-payments-for-woocommerce')
-        ) . '</option>';
+        $html = '<option value="">' . esc_html($description) . '</option>';
         foreach ($issuers as $issuer) {
             $html .= '<option value="' . esc_attr($issuer->id) . '"'
                 . ($selectedIssuer === $issuer->id ? ' selected=""' : '') . '>'

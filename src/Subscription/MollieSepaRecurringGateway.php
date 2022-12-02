@@ -26,7 +26,6 @@ use Psr\Log\LogLevel;
 
 class MollieSepaRecurringGateway extends MollieSubscriptionGateway
 {
-
     const WAITING_CONFIRMATION_PERIOD_DAYS = '21';
 
     protected $recurringMollieMethod = null;
@@ -94,7 +93,7 @@ class MollieSepaRecurringGateway extends MollieSubscriptionGateway
     {
         $result = null;
         if ($this->recurringMollieMethod) {
-            $result = $this->recurringMollieMethod->paymentMethod->getProperty('id');
+            $result = $this->recurringMollieMethod->paymentMethod()->getProperty('id');
         }
 
         return $result;
@@ -107,7 +106,7 @@ class MollieSepaRecurringGateway extends MollieSubscriptionGateway
     {
         $result = null;
         if ($this->recurringMollieMethod) {
-            $result = $this->recurringMollieMethod->paymentMethod->getProperty('title');
+            $result = $this->recurringMollieMethod->paymentMethod()->getProperty('title');
         }
 
         return $result;
@@ -118,7 +117,7 @@ class MollieSepaRecurringGateway extends MollieSubscriptionGateway
      * @param $initial_order_status
      * @param $payment
      */
-    protected function _updateScheduledPaymentOrder($renewal_order, $initial_order_status, $payment)
+    protected function updateScheduledPaymentOrder($renewal_order, $initial_order_status, $payment)
     {
         $this->mollieOrderService->updateOrderStatus(
             $renewal_order,
@@ -222,7 +221,7 @@ class MollieSepaRecurringGateway extends MollieSubscriptionGateway
                     $payment
                 );
             } catch (ApiException $exception) {
-                $this->logger->log(LogLevel::DEBUG, $exception->getMessage());
+                $this->logger->debug($exception->getMessage());
                 return;
             }
 

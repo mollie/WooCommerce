@@ -23,20 +23,17 @@ class SharedModule implements ServiceModule
     public function services(): array
     {
         return [
-            'shared.plugin_id' => static function (): string {
+            'shared.plugin_id' => static function (ContainerInterface $container): string {
                 //Get plugin legacy id
-                return 'mollie-payments-for-woocommerce';
+                return $container->get('properties')->get('textDomain');
             },
-            'shared.plugin_version' => static function (): string {
-                //Get plugin version
-                return '7.3.0';
+            'shared.plugin_version' => static function (ContainerInterface $container): string {
+                return $container->get('properties')->get('version');
             },
-            'shared.plugin_title' => static function (): string {
-                //Get plugin version
-                return 'Mollie Payments for WooCommerce';
+            'shared.plugin_title' => static function (ContainerInterface $container): string {
+                return $container->get('properties')->get('Title');
             },
             'shared.plugin_file' => static function (): string {
-                //Get location of main plugin file TODO handle with properties
                 return plugin_basename(self::PLUGIN_ID . '/' . self::PLUGIN_ID . '.php');
             },
             'shared.plugin_url' => static function (ContainerInterface $container): string {
@@ -62,7 +59,7 @@ class SharedModule implements ServiceModule
                         header(" ", true, $status_code);
                     }
                 }
-            }
+            },
         ];
     }
 }

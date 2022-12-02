@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Gateway;
 
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
+use WC_Cart;
+use WC_Order;
 
 class Surcharge
 {
-
     /**
      * @var string
      */
     public const FIXED_FEE = 'fixed_fee';
-    public const DEFAULT_FEE_LABEL = 'Gateway Fee';
+
     /**
      * @var string
      */
@@ -27,8 +28,19 @@ class Surcharge
      */
     public const FIXED_AND_PERCENTAGE = 'fixed_fee_percentage';
 
+    /**
+     * @return string
+     */
+    public function defaultFeeLabel(): string
+    {
+        return __('Gateway Fee', 'mollie-payments-for-woocommerce');
+    }
 
-
+    /**
+     * @param $description
+     * @param PaymentMethodI $paymentMethod
+     * @return mixed|string
+     */
     public function buildDescriptionWithSurcharge($description, PaymentMethodI $paymentMethod)
     {
         $surchargeType = $paymentMethod->getProperty('payment_surcharge');
@@ -48,6 +60,10 @@ class Surcharge
         return $description;
     }
 
+    /**
+     * @param PaymentMethodI $paymentMethod
+     * @return string
+     */
     public function buildDescriptionWithSurchargeForBlock(PaymentMethodI $paymentMethod)
     {
         $defaultDescription = $paymentMethod->getProperty('description') ?: '';
@@ -60,15 +76,20 @@ class Surcharge
             return $defaultDescription;
         }
         $feeText = $this->feeTextByType($surchargeType, $paymentMethod);
-        $feeText = is_string($feeText)? html_entity_decode($feeText):false;
+        $feeText = is_string($feeText) ? html_entity_decode($feeText) : false;
 
-        return $feeText?:__('A surchage fee might apply');
+        return $feeText ?: __('A surchage fee might apply');
     }
 
-    public function aboveMaxLimit($totalAmount, $gatewaySettings)
+    /**
+     * @param float $totalAmount
+     * @param array $gatewaySettings
+     * @return bool
+     */
+    public function aboveMaxLimit(float $totalAmount, array $gatewaySettings): bool
     {
-        $maxLimit = !empty($gatewaySettings['maximum_limit']) ? $gatewaySettings['maximum_limit'] : 0;
-        if ($maxLimit <= 0) {
+        $maxLimit = !empty($gatewaySettings['maximum_limit']) ? $gatewaySettings['maximum_limit'] : 0.0;
+        if ($maxLimit <= 0.0) {
             return false;
         }
         if ($totalAmount > $maxLimit) {
@@ -77,45 +98,75 @@ class Surcharge
         return false;
     }
 
-    public function calculateFeeAmount($cart, $gatewaySettings)
+    /**
+     * @param WC_Cart $cart
+     * @param array $gatewaySettings
+     * @return float
+     */
+    public function calculateFeeAmount(WC_Cart $cart, array $gatewaySettings): float
     {
         $surchargeType = $gatewaySettings['payment_surcharge'];
         $methodName = sprintf('calculate_%s', $surchargeType);
 
         if (!method_exists($this, $methodName)) {
-            return 0;
+            return 0.0;
         }
-        return $this->$methodName($cart, $gatewaySettings);
+        $amount = $this->$methodName($cart, $gatewaySettings);
+        return $this->subtractTaxesFromValue($amount);
     }
 
-    public function calculateFeeAmountOrder($cart, $gatewaySettings)
+    /**
+     * @param WC_Order $order
+     * @param array $gatewaySettings
+     * @return float|int|mixed
+     */
+    public function calculateFeeAmountOrder(WC_Order $order, array $gatewaySettings)
     {
-        $surchargeType = isset($gatewaySettings['payment_surcharge'])?$gatewaySettings['payment_surcharge']:'';
+        $surchargeType = $gatewaySettings['payment_surcharge'] ?? '';
+        $amount = 0.0;
         switch ($surchargeType) {
             case 'fixed_fee':
-                return $this->calculate_fixed_fee($cart, $gatewaySettings);
+                $amount = $this->calculate_fixed_fee($order, $gatewaySettings);
+                break;
             case 'percentage':
-                return $this->calculate_percentage_order($cart, $gatewaySettings);
+                $amount = $this->calculate_percentage_order($order, $gatewaySettings);
+                break;
             case 'fixed_fee_percentage':
-                return $this->calculate_fixed_fee_percentage_order($cart, $gatewaySettings);
+                $amount = $this->calculate_fixed_fee_percentage_order($order, $gatewaySettings);
+                break;
         }
-        return 0;
+        return $this->subtractTaxesFromValue($amount);
     }
 
-    protected function calculate_no_fee($cart, $gatewaySettings)
+    /**
+     * @param WC_Cart $cart
+     * @param array $gatewaySettings
+     * @return float
+     */
+    protected function calculate_no_fee(WC_Cart $cart, array $gatewaySettings): float
     {
-        return 0;
+        return 0.0;
     }
 
-    protected function calculate_fixed_fee($cart, $gatewaySettings)
+    /**
+     * @param WC_Cart|WC_Order $cart
+     * @param array $gatewaySettings
+     * @return float|int
+     */
+    protected function calculate_fixed_fee($cart, array $gatewaySettings)
     {
-        return !empty($gatewaySettings[Surcharge::FIXED_FEE]) ? (float) $gatewaySettings[Surcharge::FIXED_FEE] : 0;
+        return !empty($gatewaySettings[Surcharge::FIXED_FEE]) ? (float) $gatewaySettings[Surcharge::FIXED_FEE] : 0.0;
     }
 
-    protected function calculate_percentage($cart, $gatewaySettings)
+    /**
+     * @param WC_Cart $cart
+     * @param array $gatewaySettings
+     * @return int|mixed
+     */
+    protected function calculate_percentage(WC_Cart $cart, array $gatewaySettings)
     {
         if (empty($gatewaySettings[Surcharge::PERCENTAGE])) {
-            return 0;
+            return 0.0;
         }
         $percentageFee = $gatewaySettings[Surcharge::PERCENTAGE];
         $subtotal = $cart->get_subtotal() + $cart->get_shipping_total() - $cart->get_discount_total();
@@ -126,10 +177,15 @@ class Surcharge
         return $this->addMaxLimit($fee, $gatewaySettings);
     }
 
-    protected function calculate_percentage_order($order, $gatewaySettings)
+    /**
+     * @param WC_Order $order
+     * @param array $gatewaySettings
+     * @return float|mixed
+     */
+    protected function calculate_percentage_order(WC_Order $order, array $gatewaySettings)
     {
         if (empty($gatewaySettings[Surcharge::PERCENTAGE])) {
-            return 0;
+            return 0.0;
         }
         $percentageFee = $gatewaySettings[Surcharge::PERCENTAGE];
         $total = $order->get_total();
@@ -138,7 +194,12 @@ class Surcharge
         return $this->addMaxLimit($fee, $gatewaySettings);
     }
 
-    protected function calculate_fixed_fee_percentage($cart, $gatewaySettings)
+    /**
+     * @param WC_Cart $cart
+     * @param array $gatewaySettings
+     * @return mixed
+     */
+    protected function calculate_fixed_fee_percentage(WC_Cart $cart, array $gatewaySettings)
     {
         $fixedFee = $this->calculate_fixed_fee($cart, $gatewaySettings);
         $percentageFee = $this->calculate_percentage($cart, $gatewaySettings);
@@ -147,21 +208,32 @@ class Surcharge
         return $this->addMaxLimit($fee, $gatewaySettings);
     }
 
-    protected function calculate_fixed_fee_percentage_order($cart, $gatewaySettings)
+    /**
+     * @param WC_Order $order
+     * @param array $gatewaySettings
+     *
+     * @return mixed
+     */
+    protected function calculate_fixed_fee_percentage_order(WC_Order $order, array $gatewaySettings)
     {
-        $fixedFee = $this->calculate_fixed_fee($cart, $gatewaySettings);
-        $percentageFee = $this->calculate_percentage_order($cart, $gatewaySettings);
+        $fixedFee = $this->calculate_fixed_fee($order, $gatewaySettings);
+        $percentageFee = $this->calculate_percentage_order($order, $gatewaySettings);
         $fee = $fixedFee + $percentageFee;
 
         return $this->addMaxLimit($fee, $gatewaySettings);
     }
 
-    protected function addMaxLimit($fee, $gatewaySettings)
+    /**
+     * @param float $fee
+     * @param array $gatewaySettings
+     * @return float
+     */
+    protected function addMaxLimit(float $fee, array $gatewaySettings): float
     {
         if (empty($gatewaySettings['surcharge_limit'])) {
             return $fee;
         }
-        $maxLimit = $gatewaySettings['surcharge_limit'];
+        $maxLimit = (float)$gatewaySettings['surcharge_limit'];
         if ($fee > $maxLimit) {
             return $maxLimit;
         }
@@ -169,16 +241,27 @@ class Surcharge
     }
 
     /**
-     * @param string $gateway
-     *
-     * @return string
+     * Return amount without the tax, so it can be included within the value
+     * @param float $amount
+     * @return float
      */
-    public function buildFeeName($gateway)
+    protected function subtractTaxesFromValue(float $amount): float
     {
-        return __($gateway, 'mollie-payments-for-woocommerce');
+        if (!wc_tax_enabled() || $amount === 0.0) {
+            return $amount;
+        }
+        $taxRates = \WC_Tax::get_rates();
+        $wcStandardTax = \WC_Tax::calc_inclusive_tax($amount, $taxRates);
+        foreach ($wcStandardTax as $tax) {
+            $amount -= $tax;
+        }
+        return $amount;
     }
 
-
+    /**
+     * @param $paymentMethod
+     * @return false|string
+     */
     protected function name_fixed_fee($paymentMethod)
     {
         if (
@@ -190,9 +273,13 @@ class Surcharge
         $amountFee = $paymentMethod->getProperty(self::FIXED_FEE);
         $currency = get_woocommerce_currency_symbol();
         /* translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency.*/
-        return sprintf(__(' + %1s %2s fee might apply', 'mollie-payments-for-woocommerce'), $currency, $amountFee);
+        return sprintf(__(' + %1$s %2$s fee might apply', 'mollie-payments-for-woocommerce'), $currency, $amountFee);
     }
 
+    /**
+     * @param $paymentMethod
+     * @return false|string
+     */
     protected function name_percentage($paymentMethod)
     {
         if (
@@ -203,9 +290,13 @@ class Surcharge
         }
         $amountFee = $paymentMethod->getProperty(self::PERCENTAGE);
         /* translators: Placeholder 1: Fee amount tag.*/
-        return sprintf(__(' + %1s%% fee might apply', 'mollie-payments-for-woocommerce'), $amountFee);
+        return sprintf(__(' + %1$s%% fee might apply', 'mollie-payments-for-woocommerce'), $amountFee);
     }
 
+    /**
+     * @param $paymentMethod
+     * @return false|string
+     */
     protected function name_fixed_fee_percentage($paymentMethod)
     {
         if (
@@ -222,7 +313,7 @@ class Surcharge
         $currency = get_woocommerce_currency_symbol();
         $amountPercent = $paymentMethod->getProperty(self::PERCENTAGE);
         /* translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency. Placeholder 3: Percentage amount. */
-        return sprintf(__(' + %1s %2s + %3s%% fee might apply', 'mollie-payments-for-woocommerce'), $currency, $amountFix, $amountPercent);
+        return sprintf(__(' + %1$s %2$s + %3$s%% fee might apply', 'mollie-payments-for-woocommerce'), $currency, $amountFix, $amountPercent);
     }
 
     /**
@@ -244,6 +335,18 @@ class Surcharge
                 break;
             default:
                 $feeText = false;
+        }
+        return $feeText ? $this->maybeAddTaxString($feeText) : false;
+    }
+
+    /**
+     * @param string $feeText
+     * @return string
+     */
+    protected function maybeAddTaxString(string $feeText): string
+    {
+        if (wc_tax_enabled()) {
+            $feeText .= __(' (incl. VAT)', 'mollie-payments-for-woocommerce');
         }
         return $feeText;
     }

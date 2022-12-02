@@ -41,18 +41,10 @@ class SurchargeHandlerTest extends TestCase
         $fixedFee = 10.00;
         $percentage = 0;
         $feeLimit = 1;
-        $expectedLabel = 'custom label';
+        $expectedLabel = 'Gateway Fee';
         $expectedAmount = 10.00;
-        $testee = $this->buildTesteeMock(
-            GatewaySurchargeHandler::class,
-            [new Surcharge()],
-            ['surchargeFeeOption']
-        )->getMock();
-
-        $testee->gatewayFeeLabel = 'custom label';
-        expect('mollieWooCommerceIsCheckoutContext')->andReturn(true);
-        expect('WC')->andReturn($this->wooCommerce());
         expect('get_option')->andReturn(
+            'Gateway Fee',
             $this->helperMocks->paymentMethodSettings(
                 [
                     'payment_surcharge' => $paymentSurcharge,
@@ -62,8 +54,16 @@ class SurchargeHandlerTest extends TestCase
                 ]
             )
         );
+        $testee = $this->buildTesteeMock(
+            GatewaySurchargeHandler::class,
+            [new Surcharge()],
+            ['canProcessOrder', 'canProcessGateway', 'orderRemoveFee', 'orderAddFee']
+        )->getMock();
+        expect('mollieWooCommerceIsCheckoutContext')->andReturn(true);
+        expect('wc_tax_enabled')->andReturn(false);
+        expect('WC')->andReturn($this->wooCommerce());
 
-        $cart->expects(self::once())->method('add_fee')->with($expectedLabel, $expectedAmount);
+        $cart->expects(self::once())->method('add_fee')->with($expectedLabel, $expectedAmount, true, 'standard');
         $testee->add_engraving_fees($cart);
     }
 
@@ -81,7 +81,7 @@ class SurchargeHandlerTest extends TestCase
         $fixedFee = 10.00;
         $percentage = 0;
         $feeLimit = 1;
-        $expectedLabel = 'custom label';
+        $expectedLabel = 'Gateway Fee';
         $expectedAmount =  10.00;
         $newTotal = 20.00;
         $expectedData = [
@@ -90,25 +90,8 @@ class SurchargeHandlerTest extends TestCase
             'currency' => 'EUR',
             'newTotal' => $newTotal,
         ];
-        $testee = $this->buildTesteeMock(
-            GatewaySurchargeHandler::class,
-            [new Surcharge()],
-            ['canProcessOrder', 'canProcessGateway', 'orderRemoveFee', 'orderAddFee', 'surchargeFeeOption']
-        )->getMock();
-        $testee->gatewayFeeLabel = 'custom label';
-
-        $testee->expects($this->once())
-            ->method('canProcessOrder')
-            ->willReturn($this->wcOrder(1,'key1'));
-
-        $testee->expects($this->once())
-            ->method('canProcessGateway')
-            ->willReturn('mollie_wc_gateway_ideal');
-        //this method uses all woo functions outside our scope
-        $testee->expects($this->once())
-            ->method('orderRemoveFee');
         expect('get_option')->andReturn(
-            $this->helperMocks->paymentMethodSettings(
+            'Gateway Fee', $this->helperMocks->paymentMethodSettings(
                 [
                     'payment_surcharge' => $paymentSurcharge,
                     'surcharge_limit' => $feeLimit,
@@ -117,6 +100,24 @@ class SurchargeHandlerTest extends TestCase
                 ]
             )
         );
+        $testee = $this->buildTesteeMock(
+            GatewaySurchargeHandler::class,
+            [new Surcharge()],
+            ['canProcessOrder', 'canProcessGateway', 'orderRemoveFee', 'orderAddFee']
+        )->getMock();
+
+        $testee->expects($this->once())
+            ->method('canProcessOrder')
+            ->willReturn($this->wcOrder(1,'key1'));
+
+        $testee->expects($this->once())
+            ->method('canProcessGateway')
+            ->willReturn('mollie_wc_gateway_ideal');
+        expect('wc_tax_enabled')->andReturn(false);
+        //this method uses all woo functions outside our scope
+        $testee->expects($this->once())
+            ->method('orderRemoveFee');
+
         //this method uses all woo functions outside our scope
         $testee->expects($this->once())
             ->method('orderAddFee');

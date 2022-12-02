@@ -6,7 +6,6 @@ namespace Mollie\WooCommerce\PaymentMethods;
 
 class Voucher extends AbstractPaymentMethod implements PaymentMethodI
 {
-
     /**
      * @var string
      */
@@ -34,7 +33,7 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
             'id' => 'voucher',
             'defaultTitle' => __('Voucher', 'mollie-payments-for-woocommerce'),
             'settingsDescription' => '',
-            'defaultDescription' => __('', 'mollie-payments-for-woocommerce'),
+            'defaultDescription' => '',
             'paymentFields' => false,
             'instructions' => false,
             'supports' => [
@@ -50,15 +49,14 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
     public function getFormFields($generalFormFields): array
     {
         $paymentMethodFormFieds = [
-
             'mealvoucher_category_default' => [
                 'title' => __('Select the default products category', 'mollie-payments-for-woocommerce'),
                 'type' => 'select',
                 'options' => [
-                    self::NO_CATEGORY => $this->categoryName(self::NO_CATEGORY),
-                    self::MEAL => $this->categoryName(self::MEAL),
-                    self::ECO => $this->categoryName(self::ECO),
-                    self::GIFT => $this->categoryName(self::GIFT),
+                    self::NO_CATEGORY => __('No category', 'mollie-payments-for-woocommerce'),
+                    self::MEAL => __('Meal', 'mollie-payments-for-woocommerce'),
+                    self::ECO => __('Eco', 'mollie-payments-for-woocommerce'),
+                    self::GIFT => __('Gift', 'mollie-payments-for-woocommerce'),
                 ],
                 'default' => self::NO_CATEGORY,
                 /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
@@ -69,8 +67,22 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
         return array_merge($generalFormFields, $paymentMethodFormFieds);
     }
 
-    private function categoryName($category)
+    /**
+     * Retrieve the default category saved in db option
+     *
+     * @return string
+     */
+    public function voucherDefaultCategory(): string
     {
-        return __(ucwords(str_replace('_', ' ', $category)), 'mollie-payments-for-woocommerce');
+        $mealvoucherSettings = get_option(
+            'mollie_wc_gateway_voucher_settings'
+        );
+        if (!$mealvoucherSettings) {
+            $mealvoucherSettings = get_option(
+                'mollie_wc_gateway_mealvoucher_settings'
+            );
+        }
+
+        return $mealvoucherSettings ? $mealvoucherSettings['mealvoucher_category_default'] : Voucher::NO_CATEGORY;
     }
 }

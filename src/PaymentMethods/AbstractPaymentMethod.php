@@ -4,32 +4,41 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
-
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Payment\PaymentFieldsService;
 use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Shared\SharedDataDictionary;
 
 abstract class AbstractPaymentMethod implements PaymentMethodI
 {
     /**
      * @var string
      */
-    public $id;
+    protected $id;
     /**
      * @var string[]
      */
-    public $config = [];
+    protected $config = [];
     /**
-     * @var array[]
+     * @var array
      */
-    public $settings = [];
+    protected $settings = [];
+    /**
+     * @var IconFactory
+     */
     protected $iconFactory;
+    /**
+     * @var Settings
+     */
     protected $settingsHelper;
     /**
      * @var PaymentFieldsService
      */
-    public $paymentFieldsService;
+    protected $paymentFieldsService;
+    /**
+     * @var Surcharge
+     */
     protected $surcharge;
 
     public function __construct(
@@ -38,68 +47,119 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         PaymentFieldsService $paymentFieldsService,
         Surcharge $surcharge
     ) {
+
         $this->id = $this->getIdFromConfig();
-        $this->settings = $this->getSettings();
-        $this->config = $this->getConfig();
         $this->iconFactory = $iconFactory;
         $this->settingsHelper = $settingsHelper;
         $this->paymentFieldsService = $paymentFieldsService;
         $this->surcharge = $surcharge;
+        $this->config = $this->getConfig();
+        $this->settings = $this->getSettings();
     }
-    public function getIdFromConfig()
+
+    /**
+     * Payment method id accessor
+     * @return string
+     */
+    public function getIdFromConfig(): string
     {
         return $this->getConfig()['id'];
     }
 
+    /**
+     * Access the payment method surcharge applied
+     * @return Surcharge
+     */
     public function surcharge()
     {
         return $this->surcharge;
     }
 
-    public function hasSurcharge()
+    /**
+     * Check if the payment method has surcharge applied
+     * @return bool
+     */
+    public function hasSurcharge(): bool
     {
         return $this->getProperty('payment_surcharge')
             && $this->getProperty('payment_surcharge') !== Surcharge::NO_FEE;
     }
 
+    /**
+     * Check if payment method should show payment fields, like issuers or components
+     * @return bool
+     */
     public function hasPaymentFields(): bool
     {
         return $this->getProperty('paymentFields');
     }
 
+    /**
+     * Payment method custom icon url
+     * @return string
+     */
     public function getIconUrl(): string
     {
         return $this->iconFactory->getIconUrl(
-            $this->getProperty('id')
+            $this->getIdFromConfig()
         );
     }
 
+    /**
+     * Check if payment method should show any icon
+     * @return bool
+     */
     public function shouldDisplayIcon(): bool
     {
         $defaultIconSetting = true;
         return $this->hasProperty('display_logo') ? $this->getProperty('display_logo') === 'yes' : $defaultIconSetting;
     }
 
+    /**
+     * Settings that apply to all payment methods
+     * @return array
+     */
     public function getSharedFormFields()
     {
         return $this->settingsHelper->generalFormFields(
-            $this->getProperty('defaultTitle'),
-            $this->getProperty('defaultDescription'),
-            $this->getProperty('confirmationDelayed')
+            $this->config['defaultTitle'],
+            $this->config['defaultDescription'],
+            $this->config['confirmationDelayed']
         );
     }
 
+    /**
+     * Settings specific to every payment method
+     * @return mixed
+     */
     public function getAllFormFields()
     {
         return $this->getFormFields($this->getSharedFormFields());
     }
 
+    /**
+     * Sets the gateway's payment fields strategy based on payment method
+     * @param $gateway
+     * @return void
+     */
     public function paymentFieldsStrategy($gateway)
     {
         $this->paymentFieldsService->setStrategy($this);
         $this->paymentFieldsService->executeStrategy($gateway);
     }
 
+    /**
+     * @return PaymentFieldsService
+     */
+    public function paymentFieldsService(): PaymentFieldsService
+    {
+        return $this->paymentFieldsService;
+    }
+
+    /**
+     * Access the payment method processed description, surcharge included
+     * @return mixed|string
+     */
     public function getProcessedDescription()
     {
         $description = $this->getProperty('description') === false ? $this->getProperty(
@@ -108,15 +168,29 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         return $this->surcharge->buildDescriptionWithSurcharge($description, $this);
     }
 
-    public function getProcessedDescriptionForBlock()
+    /**
+     * Access the payment method description for the checkout blocks
+     * @return string
+     */
+    public function getProcessedDescriptionForBlock(): string
     {
         return $this->surcharge->buildDescriptionWithSurchargeForBlock($this);
     }
 
-    public function getSettings()
+    /**
+     * Retrieve the user's payment method settings or the default values
+     * if there are no settings saved for this payment method it will save the defaults
+     * @return array
+     */
+    public function getSettings(): array
     {
         $optionName = 'mollie_wc_gateway_' . $this->id . '_settings';
-        return get_option($optionName, false);
+        $settings = get_option($optionName, false);
+        if (!$settings) {
+            $settings = $this->defaultSettings();
+            update_option($optionName, $settings, true);
+        }
+        return $settings;
     }
 
     /**
@@ -130,37 +204,61 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     }
 
     /**
+     * Order status after transaction
      * @return string
      */
     public function getInitialOrderStatus(): string
     {
         if ($this->getProperty('confirmationDelayed')) {
             return $this->getProperty('initial_order_status')
-                ?: MolliePaymentGateway::STATUS_ON_HOLD;
+                ?: SharedDataDictionary::STATUS_ON_HOLD;
         }
 
-        return MolliePaymentGateway::STATUS_PENDING;
+        return SharedDataDictionary::STATUS_PENDING;
     }
 
-    public function getAllSettings(): array
-    {
-        return $this->settings;
-    }
-
+    /**
+     * Retrieve the payment method's property from config or settings
+     * @param string $propertyName
+     * @return false|mixed
+     */
     public function getProperty(string $propertyName)
     {
         $properties = $this->getMergedProperties();
         return $properties[$propertyName] ?? false;
     }
 
+    /**
+     * Check if a certain property exists for this payment method
+     * @param string $propertyName
+     * @return bool
+     */
     public function hasProperty(string $propertyName): bool
     {
         $properties = $this->getMergedProperties();
         return isset($properties[$propertyName]);
     }
 
+    /**
+     * Merge settings with config properties
+     * @return array
+     */
     public function getMergedProperties(): array
     {
-        return $this->settings !== null && is_array($this->settings) ? array_merge($this->config, $this->settings) : $this->config;
+        return array_merge($this->config, $this->getSettings());
+    }
+    /**
+     * Default values for the initial settings saved
+     *
+     * @return array
+     */
+    public function defaultSettings(): array
+    {
+        $fields = $this->getAllFormFields();
+        //remove setting title fields
+        $fields = array_filter($fields, static function ($key) {
+                return !is_numeric($key);
+        }, ARRAY_FILTER_USE_KEY);
+        return array_combine(array_keys($fields), array_column($fields, 'default')) ?: [];
     }
 }

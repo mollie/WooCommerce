@@ -63,7 +63,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 return $this->instantiatePaymentMethodGateways($container);
             },
             'gateway.paymentMethods' => static function (ContainerInterface $container): array {
-                return (new self)->instantiatePaymentMethods($container);
+                return (new self())->instantiatePaymentMethods($container);
             },
             'gateway.paymentMethodsEnabledAtMollie' => static function (ContainerInterface $container): array {
                 $dataHelper = $container->get('settings.data_helper');
@@ -72,11 +72,15 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 assert($settings instanceof Settings);
                 $apiKey = $settings->getApiKey();
                 $methods = $apiKey ? $dataHelper->getAllPaymentMethods($apiKey) : [];
-                foreach ($methods as $key => $method) {
-                    $methods[$method['id']] = $method;
-                    unset($methods[$key]);
+                $enabledMethods = [];
+                foreach ($methods as $method) {
+                    $enabledMethods[] = $method['id'];
                 }
-                return $methods;
+                return $enabledMethods;
+            },
+            'gateway.isSDDGatewayEnabled' => static function (ContainerInterface $container): bool {
+                $enabledMethods = $container->get('gateway.paymentMethodsEnabledAtMollie');
+                return in_array('directdebit', $enabledMethods, true);
             },
             IconFactory::class => static function (ContainerInterface $container): IconFactory {
                 $pluginUrl = $container->get('shared.plugin_url');
@@ -99,7 +103,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $pluginId = $container->get('shared.plugin_id');
                 $paymentCheckoutRedirectService = $container->get(PaymentCheckoutRedirectService::class);
                 assert($paymentCheckoutRedirectService instanceof PaymentCheckoutRedirectService);
-                return new PaymentService($notice, $logger, $paymentFactory, $data, $api, $settings, $pluginId, $paymentCheckoutRedirectService);
+                $voucherDefaultCategory = $container->get('voucher.defaultCategory');
+                return new PaymentService($notice, $logger, $paymentFactory, $data, $api, $settings, $pluginId, $paymentCheckoutRedirectService, $voucherDefaultCategory);
             },
             OrderInstructionsService::class => static function (): OrderInstructionsService {
                 return new OrderInstructionsService();
@@ -148,7 +153,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
             return $this->gatewayClassnames;
         });
 
-        add_filter('woocommerce_payment_gateways', function ($gateways) use ($container) {
+        add_filter('woocommerce_payment_gateways', static function ($gateways) use ($container) {
             $mollieGateways = $container->get('gateway.instances');
             return array_merge($gateways, $mollieGateways);
         });
@@ -228,7 +233,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $checkoutBlockHandler->bootstrapAjaxRequest();
         add_action(
             'woocommerce_rest_checkout_process_payment_with_context',
-            function ($paymentContext) {
+            static function ($paymentContext) {
                 if (strpos($paymentContext->payment_method, 'mollie_wc_gateway_') === false) {
                     return;
                 }
@@ -248,15 +253,19 @@ class GatewayModule implements ServiceModule, ExecutableModule
     /**
      * Disable Bank Transfer Gateway
      *
-     * @param array $gateways
+     * @param ?array $gateways
      * @return array
      */
-    public function maybeDisableBankTransferGateway(array $gateways): array
+    public function maybeDisableBankTransferGateway(?array $gateways): array
     {
-        $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_STRING);
+        if (!is_array($gateways)) {
+            return [];
+        }
+        $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_SPECIAL_CHARS);
+
         $bankTransferSettings = get_option('mollie_wc_gateway_banktransfer_settings', false);
-        $isSettingActivated = false;
-        if ($bankTransferSettings && isset($bankTransferSettings['order_dueDate'])) {
+        $isSettingActivated = $bankTransferSettings && isset($bankTransferSettings['activate_expiry_days_setting']) && $bankTransferSettings['activate_expiry_days_setting'] === "yes";
+        if ($isSettingActivated  && isset($bankTransferSettings['order_dueDate'])) {
             $isSettingActivated = $bankTransferSettings['order_dueDate'] > 0;
         }
 
@@ -284,12 +293,15 @@ class GatewayModule implements ServiceModule, ExecutableModule
     /**
      * Disable Apple Pay Gateway
      *
-     * @param array $gateways
+     * @param ?array $gateways
      * @return array
      */
-    public function maybeDisableApplePayGateway(array $gateways): array
+    public function maybeDisableApplePayGateway(?array $gateways): array
     {
-        $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_STRING);
+        if (!is_array($gateways)) {
+            return [];
+        }
+        $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_SPECIAL_CHARS);
         $wooCommerceSession = mollieWooCommerceSession();
 
         /*
@@ -313,11 +325,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         }
 
         $applePayGatewayClassName = 'mollie_wc_gateway_applepay';
-        $postData = (string)filter_input(
-            INPUT_POST,
-            self::POST_DATA_KEY,
-            FILTER_SANITIZE_STRING
-        ) ?: '';
+        $postData = filter_input(INPUT_POST, self::POST_DATA_KEY, FILTER_SANITIZE_SPECIAL_CHARS) ?? '';
         parse_str($postData, $postData);
 
         $applePayAllowed = isset($postData[self::APPLE_PAY_METHOD_ALLOWED_KEY])
@@ -460,18 +468,13 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $paymentFactory = $container->get(PaymentFactory::class);
         assert($paymentFactory instanceof PaymentFactory);
         $pluginId = $container->get('shared.plugin_id');
-        $methodsEnabledAtMollie = $container->get('gateway.paymentMethodsEnabledAtMollie');
         $gateways = [];
-        if(empty($methodsEnabledAtMollie)){
+        if (empty($paymentMethods)) {
             return $gateways;
         }
 
         foreach ($paymentMethods as $paymentMethod) {
-            $paymentMethodId = $paymentMethod->getProperty('id');
-            if(!$this->paymentMethodEnabledAtMollie($paymentMethodId, $methodsEnabledAtMollie)){
-                continue;
-            }
-
+            $paymentMethodId = $paymentMethod->getIdFromConfig();
             $isSepa = $paymentMethod->getProperty('SEPA');
             $key = 'mollie_wc_gateway_' . $paymentMethodId;
             if ($isSepa) {
@@ -527,11 +530,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
         return $gateways;
     }
 
-    private function paymentMethodEnabledAtMollie($paymentMethodName, $methodsEnabledAtMollie)
-    {
-        return array_key_exists(strtolower($paymentMethodName), $methodsEnabledAtMollie);
-    }
-
     /**
      * @param $container
      * @return array
@@ -539,29 +537,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
     protected function instantiatePaymentMethods($container): array
     {
         $paymentMethods = [];
-        $paymentMethodsNames = [
-            'Banktransfer',
-            'Belfius',
-            'Creditcard',
-            'Directdebit',
-            'Eps',
-            'Giropay',
-            'Ideal',
-            'Kbc',
-            'Klarnapaylater',
-            'Klarnapaynow',
-            'Klarnasliceit',
-            'Bancontact',
-            'Paypal',
-            'Paysafecard',
-            'Przelewy24',
-            'Sofort',
-            'Giftcard',
-            'Applepay',
-            'Mybank',
-            'Voucher',
-            'In3'
-        ];
+        $paymentMethodsNames = $container->get('gateway.paymentMethodsEnabledAtMollie');
         $iconFactory = $container->get(IconFactory::class);
         assert($iconFactory instanceof IconFactory);
         $settingsHelper = $container->get('settings.settings_helper');
@@ -570,15 +546,19 @@ class GatewayModule implements ServiceModule, ExecutableModule
         assert($surchargeService instanceof Surcharge);
         $paymentFieldsService = $container->get(PaymentFieldsService::class);
         assert($paymentFieldsService instanceof PaymentFieldsService);
+        //I need DirectDebit to create SEPA gateway
+        if (!in_array('directdebit', $paymentMethodsNames, true)) {
+            $paymentMethodsNames[] = 'directdebit';
+        }
         foreach ($paymentMethodsNames as $paymentMethodName) {
-            $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . $paymentMethodName;
+            $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . ucfirst($paymentMethodName);
             $paymentMethod = new $paymentMethodClassName(
                 $iconFactory,
                 $settingsHelper,
                 $paymentFieldsService,
                 $surchargeService
             );
-            $paymentMethodId = $paymentMethod->getProperty('id');
+            $paymentMethodId = $paymentMethod->getIdFromConfig();
             $paymentMethods[$paymentMethodId] = $paymentMethod;
         }
 

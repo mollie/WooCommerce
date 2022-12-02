@@ -7,12 +7,14 @@ namespace Mollie\WooCommerce\Payment;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
+use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
 use WC_Order;
@@ -22,7 +24,7 @@ class PaymentService
     public const PAYMENT_METHOD_TYPE_ORDER = 'order';
     public const PAYMENT_METHOD_TYPE_PAYMENT = 'payment';
     /**
-     * @var MolliePaymentGateway
+     * @var MolliePaymentGatewayI
      */
     protected $gateway;
     /**
@@ -48,11 +50,14 @@ class PaymentService
      * @var PaymentCheckoutRedirectService
      */
     protected $paymentCheckoutRedirectService;
-
+    /**
+     * @var string
+     */
+    protected $voucherDefaultCategory;
 
     /**
-	 * PaymentService constructor.
-	 */
+     * PaymentService constructor.
+     */
     public function __construct(
         NoticeInterface $notice,
         Logger $logger,
@@ -61,9 +66,10 @@ class PaymentService
         Api $apiHelper,
         Settings $settingsHelper,
         string $pluginId,
-        PaymentCheckoutRedirectService $paymentCheckoutRedirectService
-    )
-    {
+        PaymentCheckoutRedirectService $paymentCheckoutRedirectService,
+        string $voucherDefaultCategory
+    ) {
+
         $this->notice = $notice;
         $this->logger = $logger;
         $this->paymentFactory = $paymentFactory;
@@ -72,6 +78,7 @@ class PaymentService
         $this->settingsHelper = $settingsHelper;
         $this->pluginId = $pluginId;
         $this->paymentCheckoutRedirectService = $paymentCheckoutRedirectService;
+        $this->voucherDefaultCategory = $voucherDefaultCategory;
     }
 
     public function setGateway($gateway)
@@ -81,21 +88,16 @@ class PaymentService
 
     public function processPayment($orderId, $order, $paymentMethod, $redirectUrl)
     {
-        $this->logger->log(
-            LogLevel::DEBUG,
+        $this->logger->debug(
             "{$paymentMethod->getProperty('id')}: Start process_payment for order {$orderId}",
             [true]
         );
         $initialOrderStatus = $this->processInitialOrderStatus($paymentMethod);
-
-
         $customerId = $this->getUserMollieCustomerId($order);
-
         $apiKey = $this->settingsHelper->getApiKey();
-
         $hasBlocksEnabled = $this->dataHelper->isBlockPluginActive();
         $isClassicCheckout = isset($_REQUEST["wc-ajax"]) && $_REQUEST["wc-ajax"] === "checkout";
-        if($hasBlocksEnabled && !$isClassicCheckout){
+        if ($hasBlocksEnabled && !$isClassicCheckout) {
             $order = $this->correctSurchargeFee($order, $paymentMethod);
         }
 
@@ -140,7 +142,6 @@ class PaymentService
         return ['result' => 'failure'];
     }
 
-
     /**
      * @param WC_Order $order
      * @param PaymentMethodI $paymentMethod
@@ -150,15 +151,14 @@ class PaymentService
         $fees = $order->get_fees();
         $surcharge = $paymentMethod->surcharge();
         $gatewaySettings = $paymentMethod->getMergedProperties();
-        $totalAmount = $order->get_total();
+        $totalAmount = (float) $order->get_total();
         $aboveMaxLimit = $surcharge->aboveMaxLimit($totalAmount, $gatewaySettings);
-        $amount = $aboveMaxLimit? 0 : $surcharge->calculateFeeAmountOrder($order, $gatewaySettings);
+        $amount = $aboveMaxLimit ? 0 : $surcharge->calculateFeeAmountOrder($order, $gatewaySettings);
         $gatewayHasSurcharge = $amount !== 0;
         $gatewayFeeLabel = get_option(
             'mollie-payments-for-woocommerce_gatewayFeeLabel',
-            __(Surcharge::DEFAULT_FEE_LABEL, 'mollie-payments-for-woocommerce')
+            $surcharge->defaultFeeLabel()
         );
-        $surchargeName = $surcharge->buildFeeName($gatewayFeeLabel);
 
         $correctedFee = false;
         foreach ($fees as $fee) {
@@ -166,23 +166,23 @@ class PaymentService
             $feeId = $fee->get_id();
             $hasMollieFee = strpos($feeName, $gatewayFeeLabel) !== false;
             if ($hasMollieFee) {
-                if($amount == (float) $fee->get_amount('edit')){
+                if ($amount == (float)$fee->get_amount('edit')) {
                     $correctedFee = true;
                     continue;
                 }
-                if(!$gatewayHasSurcharge){
+                if (!$gatewayHasSurcharge) {
                     $this->removeOrderFee($order, $feeId);
                     $correctedFee = true;
                     continue;
                 }
                 $this->removeOrderFee($order, $feeId);
-                $this->orderAddFee($order, $amount, $surchargeName);
+                $this->orderAddFee($order, $amount, $gatewayFeeLabel);
                 $correctedFee = true;
             }
         }
         if (!$correctedFee) {
-            if($gatewayHasSurcharge){
-                $this->orderAddFee($order, $amount, $surchargeName);
+            if ($gatewayHasSurcharge) {
+                $this->orderAddFee($order, $amount, $gatewayFeeLabel);
             }
         }
         return $order;
@@ -201,7 +201,6 @@ class PaymentService
         return $order;
     }
 
-
     protected function orderAddFee($order, $amount, $surchargeName)
     {
         $item_fee = new \WC_Order_Item_Fee();
@@ -217,7 +216,7 @@ class PaymentService
     /**
      * Redirect location after successfully completing process_payment
      *
-     * @param WC_Order                  $order
+     * @param WC_Order $order
      * @param MollieOrder|MolliePayment $paymentObject
      *
      * @return string
@@ -228,6 +227,7 @@ class PaymentService
         $paymentObject,
         string $redirectUrl
     ): string {
+
         $this->paymentCheckoutRedirectService->setStrategy($paymentMethod);
         return $this->paymentCheckoutRedirectService->executeStrategy(
             $paymentMethod,
@@ -236,6 +236,7 @@ class PaymentService
             $redirectUrl
         );
     }
+
     /**
      * @param $order
      * @param $test_mode
@@ -246,21 +247,22 @@ class PaymentService
         $order_customer_id = $order->get_customer_id();
         $apiKey = $this->settingsHelper->getApiKey();
 
-        return  $this->dataHelper->getUserMollieCustomerId($order_customer_id, $apiKey);
+        return $this->dataHelper->getUserMollieCustomerId($order_customer_id, $apiKey);
     }
 
     protected function paymentTypeBasedOnGateway($paymentMethod)
     {
-        $optionName = $this->pluginId . '_' .'api_switch';
+        $optionName = $this->pluginId . '_' . 'api_switch';
         $apiSwitchOption = get_option($optionName);
-        $paymentType = $apiSwitchOption?: self::PAYMENT_METHOD_TYPE_ORDER;
+        $paymentType = $apiSwitchOption ?: self::PAYMENT_METHOD_TYPE_ORDER;
         $isBankTransferGateway = $paymentMethod->getProperty('id') === 'banktransfer';
-        if($isBankTransferGateway && $paymentMethod->isExpiredDateSettingActivated()){
+        if ($isBankTransferGateway && $paymentMethod->isExpiredDateSettingActivated()) {
             $paymentType = self::PAYMENT_METHOD_TYPE_PAYMENT;
         }
 
         return $paymentType;
     }
+
     /**
      * CHECK WOOCOMMERCE PRODUCTS
      * Make sure all cart items are real WooCommerce products,
@@ -269,7 +271,7 @@ class PaymentService
      *
      * @param \WC_Order $order
      *
-     * @param  string  $molliePaymentType
+     * @param string $molliePaymentType
      *
      * @return string
      */
@@ -307,11 +309,12 @@ class PaymentService
         }
         return $molliePaymentType;
     }
+
     /**
      * @param MollieOrder $paymentObject
-     * @param \WC_Order                $order
-     * @param                         $customer_id
-     * @param                         $test_mode
+     * @param \WC_Order $order
+     * @param $customer_id
+     * @param $test_mode
      *
      * @return array
      * @throws ApiException
@@ -322,10 +325,12 @@ class PaymentService
         $customer_id,
         $apiKey
     ) {
+
         $molliePaymentType = self::PAYMENT_METHOD_TYPE_ORDER;
         $paymentRequestData = $paymentObject->getPaymentRequestData(
             $order,
-            $customer_id
+            $customer_id,
+            $this->voucherDefaultCategory
         );
 
         $data = array_filter($paymentRequestData);
@@ -344,7 +349,7 @@ class PaymentService
 
         // Create Mollie payment with customer id.
         try {
-            $this->logger->log( LogLevel::DEBUG,
+            $this->logger->debug(
                 'Creating payment object: type Order, first try creating a Mollie Order.'
             );
 
@@ -363,34 +368,38 @@ class PaymentService
                     : '',
                 'orderNumber' => isset($data['orderNumber'])
                     ? $data['orderNumber'] : '',
-                'lines' => isset($data['lines']) ? $data['lines'] : ''
+                'lines' => isset($data['lines']) ? $data['lines'] : '',
             ];
 
-            $this->logger->log( LogLevel::DEBUG, json_encode($apiCallLog));
+            $this->logger->debug(json_encode($apiCallLog));
             $paymentOrder = $paymentObject;
             $paymentObject = $this->apiHelper->getApiClient($apiKey)->orders->create($data);
-            $this->logger->log( LogLevel::DEBUG, json_encode($paymentObject));
+            $this->logger->debug(json_encode($paymentObject));
             $settingsHelper = $this->settingsHelper;
-            if($settingsHelper->getOrderStatusCancelledPayments() === 'cancelled'){
+            if ($settingsHelper->getOrderStatusCancelledPayments() === 'cancelled') {
                 $orderId = $order->get_id();
-                $orderWithPayments = $this->apiHelper->getApiClient($apiKey)->orders->get( $paymentObject->id, [ "embed" => "payments" ] );
+                $orderWithPayments = $this->apiHelper->getApiClient($apiKey)->orders->get(
+                    $paymentObject->id,
+                    ["embed" => "payments"]
+                );
                 $paymentOrder->updatePaymentDataWithOrderData($orderWithPayments, $orderId);
             }
         } catch (ApiException $e) {
             // Don't try to create a Mollie Payment for Klarna payment methods
             $order_payment_method = $order->get_payment_method();
 
-            if ($order_payment_method === 'mollie_wc_gateway_klarnapaylater'
+            if (
+                $order_payment_method === 'mollie_wc_gateway_klarnapaylater'
                 || $order_payment_method === 'mollie_wc_gateway_sliceit'
                 || $order_payment_method === 'mollie_wc_gateway_klarnapaynow'
             ) {
-                $this->logger->log( LogLevel::DEBUG,
+                $this->logger->debug(
                     'Creating payment object: type Order, failed for Klarna payment, stopping process.'
                 );
                 throw $e;
             }
 
-            $this->logger->log( LogLevel::DEBUG,
+            $this->logger->debug(
                 'Creating payment object: type Order, first try failed: '
                 . $e->getMessage()
             );
@@ -400,14 +409,14 @@ class PaymentService
 
             try {
                 if ($e->getField() !== 'payment.customerId') {
-                    $this->logger->log( LogLevel::DEBUG,
+                    $this->logger->debug(
                         'Creating payment object: type Order, did not fail because of incorrect customerId, so trying Payment now.'
                     );
                     throw $e;
                 }
 
                 // Retry without customer id.
-                $this->logger->log( LogLevel::DEBUG,
+                $this->logger->debug(
                     'Creating payment object: type Order, second try, creating a Mollie Order without a customerId.'
                 );
                 $paymentObject = $this->apiHelper->getApiClient(
@@ -418,16 +427,13 @@ class PaymentService
                 $molliePaymentType = self::PAYMENT_METHOD_TYPE_PAYMENT;
             }
         }
-        return array(
-            $paymentObject,
-            $molliePaymentType
-        );
+        return [$paymentObject, $molliePaymentType];
     }
 
     /**
-     * @param \WC_Order                $order
-     * @param                         $customer_id
-     * @param                         $test_mode
+     * @param \WC_Order $order
+     * @param $customer_id
+     * @param $test_mode
      *
      * @return Payment $paymentObject
      * @throws ApiException
@@ -437,6 +443,7 @@ class PaymentService
         $customer_id,
         $apiKey
     ) {
+
         $paymentObject = $this->paymentFactory->getPaymentObject(
             self::PAYMENT_METHOD_TYPE_PAYMENT
         );
@@ -468,10 +475,10 @@ class PaymentService
                 'locale' => isset($data['locale']) ? $data['locale'] : '',
                 'dueDate' => isset($data['dueDate']) ? $data['dueDate'] : '',
                 'metadata' => isset($data['metadata']) ? $data['metadata']
-                    : ''
+                    : '',
             ];
 
-            $this->logger->log( LogLevel::DEBUG, $apiCallLog);
+            $this->logger->debug($apiCallLog);
 
             // Try as simple payment
             $paymentObject = $this->apiHelper->getApiClient(
@@ -479,19 +486,19 @@ class PaymentService
             )->payments->create($data);
         } catch (ApiException $e) {
             $message = $e->getMessage();
-            $this->logger->log( LogLevel::DEBUG, $message);
+            $this->logger->debug($message);
             throw $e;
         }
         return $paymentObject;
     }
 
     /**
-     * @param                         $molliePaymentType
-     * @param                         $orderId
+     * @param $molliePaymentType
+     * @param $orderId
      * @param MollieOrder|MolliePayment $paymentObject
-     * @param \WC_Order                $order
-     * @param                         $customer_id
-     * @param                         $test_mode
+     * @param \WC_Order $order
+     * @param $customer_id
+     * @param $test_mode
      *
      * @return mixed|Payment|MollieOrder
      * @throws ApiException
@@ -508,16 +515,12 @@ class PaymentService
         // PROCESS REGULAR PAYMENT AS MOLLIE ORDER
         //
         if ($molliePaymentType === self::PAYMENT_METHOD_TYPE_ORDER) {
-            $this->logger->log( LogLevel::DEBUG,
+            $this->logger->debug(
                 "{$this->gateway->id}: Create Mollie payment object for order {$orderId}",
                 [true]
             );
 
-            list(
-                $paymentObject,
-                $molliePaymentType
-                )
-                = $this->processAsMollieOrder(
+            list($paymentObject, $molliePaymentType) = $this->processAsMollieOrder(
                 $paymentObject,
                 $order,
                 $customer_id,
@@ -530,7 +533,7 @@ class PaymentService
         //
 
         if ($molliePaymentType === self::PAYMENT_METHOD_TYPE_PAYMENT) {
-            $this->logger->log( LogLevel::DEBUG,
+            $this->logger->debug(
                 'Creating payment object: type Payment, creating a Payment.'
             );
 
@@ -547,18 +550,19 @@ class PaymentService
      * @param $order
      * @param $payment
      */
-    protected function saveMollieInfo( $order, $payment ) {
+    protected function saveMollieInfo($order, $payment)
+    {
         // Get correct Mollie Payment Object
-        $payment_object = $this->paymentFactory->getPaymentObject( $payment );
+        $payment_object = $this->paymentFactory->getPaymentObject($payment);
 
         // Set active Mollie payment
-        $payment_object->setActiveMolliePayment( $order->get_id() );
+        $payment_object->setActiveMolliePayment($order->get_id());
 
         // Get Mollie Customer ID
-        $mollie_customer_id = $payment_object->getMollieCustomerIdFromPaymentObject( $payment_object->data->id );
+        $mollie_customer_id = $payment_object->getMollieCustomerIdFromPaymentObject($payment_object->data()->id);
 
         // Set Mollie customer
-        $this->dataHelper->setUserMollieCustomerId( $order->get_customer_id(), $mollie_customer_id );
+        $this->dataHelper->setUserMollieCustomerId($order->get_customer_id(), $mollie_customer_id);
     }
 
     /**
@@ -567,49 +571,43 @@ class PaymentService
      * @param string $note
      * @param bool $restore_stock
      */
-    public function updateOrderStatus (\WC_Order $order, $new_status, $note = '', $restore_stock = true )
+    public function updateOrderStatus(\WC_Order $order, $new_status, $note = '', $restore_stock = true)
     {
         $order->update_status($new_status, $note);
 
-        switch ($new_status)
-        {
-            case MolliePaymentGateway::STATUS_ON_HOLD:
-
-                if ( $restore_stock === true ) {
-                    if ( ! $order->get_meta( '_order_stock_reduced', true ) ) {
+        switch ($new_status) {
+            case SharedDataDictionary::STATUS_ON_HOLD:
+                if ($restore_stock === true) {
+                    if (!$order->get_meta('_order_stock_reduced', true)) {
                         // Reduce order stock
-                        wc_reduce_stock_levels( $order->get_id() );
+                        wc_reduce_stock_levels($order->get_id());
 
-                        $this->logger->log( LogLevel::DEBUG,  __METHOD__ . ":  Stock for order {$order->get_id()} reduced." );
+                        $this->logger->debug(__METHOD__ . ":  Stock for order {$order->get_id()} reduced.");
                     }
                 }
 
                 break;
 
-            case MolliePaymentGateway::STATUS_PENDING:
-            case MolliePaymentGateway::STATUS_FAILED:
-            case MolliePaymentGateway::STATUS_CANCELLED:
-                if ( $order->get_meta( '_order_stock_reduced', true ) )
-                {
+            case SharedDataDictionary::STATUS_PENDING:
+            case SharedDataDictionary::STATUS_FAILED:
+            case SharedDataDictionary::STATUS_CANCELLED:
+                if ($order->get_meta('_order_stock_reduced', true)) {
                     // Restore order stock
                     $this->dataHelper->restoreOrderStock($order);
 
-                    $this->logger->log( LogLevel::DEBUG, __METHOD__ . " Stock for order {$order->get_id()} restored.");
+                    $this->logger->debug(__METHOD__ . " Stock for order {$order->get_id()} restored.");
                 }
 
                 break;
         }
     }
 
-
-
     /**
      * @param $orderId
      */
     protected function noValidMandateForSubsSwitchFailure($orderId): void
     {
-        $this->logger->log(
-            LogLevel::DEBUG,
+        $this->logger->debug(
             $this->gateway->id . ': Subscription switch failed, no valid mandate for order #' . $orderId
         );
         $this->notice->addNotice(
@@ -624,19 +622,25 @@ class PaymentService
         );
     }
 
-    protected function subsSwitchCompleted($order):array
+    protected function subsSwitchCompleted($order): array
     {
         $order->payment_complete();
 
-        $order->add_order_note( sprintf(
-                                    __( 'Order completed internally because of an existing valid mandate at Mollie.', 'mollie-payments-for-woocommerce' ) ) );
-
-        $this->logger->log( LogLevel::DEBUG,  $this->gateway->id . ': Subscription switch completed, valid mandate for order #' . $orderId );
-
-        return array (
-            'result'   => 'success',
-            'redirect' => $this->gateway->get_return_url( $order ),
+        $order->add_order_note(
+            sprintf(
+                __(
+                    'Order completed internally because of an existing valid mandate at Mollie.',
+                    'mollie-payments-for-woocommerce'
+                )
+            )
         );
+
+        $this->logger->debug($this->gateway->id . ': Subscription switch completed, valid mandate for order #' . $order->get_id());
+
+        return [
+            'result' => 'success',
+            'redirect' => $this->gateway->get_return_url($order),
+        ];
     }
 
     /**
@@ -673,21 +677,20 @@ class PaymentService
         // PROCESS SUBSCRIPTION SWITCH - If this is a subscription switch and customer has a valid mandate, process the order internally
         //
         try {
-            $this->logger->log(LogLevel::DEBUG,  $this->gateway->id . ': Subscription switch started, fetching mandate(s) for order #' . $orderId);
+            $this->logger->debug($this->gateway->id . ': Subscription switch started, fetching mandate(s) for order #' . $orderId);
             $validMandate = $this->processValidMandate($order, $customerId, $apiKey);
-            if ( $validMandate ) {
+            if ($validMandate) {
                 return $this->subsSwitchCompleted($order);
             } else {
                 $this->noValidMandateForSubsSwitchFailure($orderId);
             }
-        }
-        catch ( ApiException $e ) {
-            if ( $e->getField() ) {
+        } catch (ApiException $e) {
+            if ($e->getField()) {
                 throw $e;
             }
         }
 
-        return array ( 'result' => 'failure' );
+        return ['result' => 'failure'];
     }
 
     /**
@@ -696,9 +699,9 @@ class PaymentService
      */
     protected function reportPaymentCreationFailure($orderId, $e): void
     {
-        $this->logger->log(LogLevel::DEBUG,
-                           $this->id . ': Failed to create Mollie payment object for order ' . $orderId . ': ' . $e->getMessage(
-                           )
+        $this->logger->debug(
+            $this->id . ': Failed to create Mollie payment object for order ' . $orderId . ': ' . $e->getMessage(
+            )
         );
 
         /* translators: Placeholder 1: Payment method title */
@@ -726,14 +729,14 @@ class PaymentService
         $paymentObject,
         $order
     ): void {
+
         $dataHelper = $this->dataHelper;
         if ($dataHelper->isSubscription($orderId)) {
             $mandates = $this->apiHelper->getApiClient($apiKey)->customers->get($customerId)->mandates();
             $mandate = $mandates[0];
             $customerId = $mandate->customerId;
             $mandateId = $mandate->id;
-            $this->logger->log(
-                LogLevel::DEBUG,
+            $this->logger->debug(
                 "Mollie Subscription in the order: customer id {$customerId} and mandate id {$mandateId} "
             );
             do_action($this->pluginId . '_after_mandate_created', $paymentObject, $order, $customerId, $mandateId);
@@ -757,7 +760,7 @@ class PaymentService
 
             $order_status = $order->get_status();
 
-            if ($order_status != 'wc-partially-paid ') {
+            if ($order_status !== 'wc-partially-paid ') {
                 $this->updateOrderStatus(
                     $order,
                     $initialOrderStatus,
@@ -775,24 +778,22 @@ class PaymentService
     protected function reportPaymentSuccess($paymentObject, $orderId, $order, $paymentMethod): void
     {
         $paymentMethodTitle = $paymentMethod->getProperty('id');
-        $this->logger->log(
-            LogLevel::DEBUG,
+        $this->logger->debug(
             $paymentMethodTitle . ': Mollie payment object ' . $paymentObject->id . ' (' . $paymentObject->mode . ') created for order ' . $orderId
         );
         $order->add_order_note(
             sprintf(
             /* translators: Placeholder 1: Payment method title, placeholder 2: payment ID */
-                __('%s payment started (%s).', 'mollie-payments-for-woocommerce'),
+                __('%1$s payment started (%2$s).', 'mollie-payments-for-woocommerce'),
                 $paymentMethodTitle,
                 $paymentObject->id . ($paymentObject->mode === 'test' ? (' - ' . __(
-                        'test mode',
-                        'mollie-payments-for-woocommerce'
-                    )) : '')
+                    'test mode',
+                    'mollie-payments-for-woocommerce'
+                )) : '')
             )
         );
 
-        $this->logger->log(
-            LogLevel::DEBUG,
+        $this->logger->debug(
             "For order " . $orderId . " redirect user to Mollie Checkout URL: " . $paymentObject->getCheckoutUrl()
         );
     }
@@ -816,8 +817,8 @@ class PaymentService
      */
     protected function paymentObjectFailure($exception): array
     {
-        $this->logger->log(LogLevel::DEBUG, $exception->getMessage());
-        return array('result' => 'failure');
+        $this->logger->debug($exception->getMessage());
+        return ['result' => 'failure'];
     }
 
     /**
@@ -828,13 +829,13 @@ class PaymentService
         $initialOrderStatus = $paymentMethod->getInitialOrderStatus();
         // Overwrite plugin-wide
         $initialOrderStatus = apply_filters(
-            $this->pluginId . '_initial_order_status', $initialOrderStatus
+            $this->pluginId . '_initial_order_status',
+            $initialOrderStatus
         );
         // Overwrite gateway-wide
-        $initialOrderStatus = apply_filters(
+        return apply_filters(
             $this->pluginId . '_initial_order_status_' . $paymentMethod->getProperty('id'),
             $initialOrderStatus
         );
-        return $initialOrderStatus;
     }
 }

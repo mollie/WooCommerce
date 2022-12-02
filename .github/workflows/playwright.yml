@@ -1,8 +1,6 @@
 name: Playwright Tests
 on:
   workflow_dispatch:
-  push:
-    branches: [ develop, master ]
   pull_request:
     branches: [ develop, master ]
 jobs:

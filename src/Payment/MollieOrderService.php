@@ -144,7 +144,8 @@ class MollieOrderService
             return;
         }
 
-        if ($payment->method === 'paypal' && isset($payment->billingAddress)) {
+        if ($payment->method === 'paypal' && isset($payment->billingAddress) && $order->get_billing_first_name() === '') {
+            $this->logger->debug($this->gateway->id . ": updating address from express button", [true]);
             $this->setBillingAddressAfterPayment($payment, $order);
         }
 

@@ -525,9 +525,8 @@ class MollieObject
      */
     protected function isOrderPaymentStartedByOtherGateway(WC_Order $order)
     {
-        $order_id = $order->get_id();
         // Get the current payment method id for the order
-        $payment_method_id = get_post_meta($order_id, '_payment_method', $single = true);
+        $payment_method_id = $order->get_meta('_payment_method', true);
         // If the current payment method id for the order is not Mollie, return true
         return strpos($payment_method_id, 'mollie') === false;
     }
@@ -694,17 +693,12 @@ class MollieObject
     }
 
     /**
-     * @param $orderId
      * @param string $gatewayId
      * @param WC_Order $order
      */
-    protected function informNotUpdatingStatus($orderId, $gatewayId, WC_Order $order)
+    protected function informNotUpdatingStatus($gatewayId, WC_Order $order)
     {
-        $orderPaymentMethodTitle = get_post_meta(
-            $orderId,
-            '_payment_method_title',
-            $single = true
-        );
+        $orderPaymentMethodTitle = $order->get_meta('_payment_method_title');
 
         // Add message to log
         $this->logger->debug(
@@ -734,7 +728,10 @@ class MollieObject
         $payment = $this->getActiveMolliePayment($order->get_id());
 
         if ($payment->isPaid() && $payment->details) {
-            update_post_meta($order->get_id(), '_paypal_transaction_id', $payment->details->paypalReference);
+            $order->add_meta_data(
+                '_paypal_transaction_id',
+                $payment->details->paypalReference
+            );
             $order->add_order_note(sprintf(
                                    /* translators: Placeholder 1: PayPal consumer name, placeholder 2: PayPal email, placeholder 3: PayPal transaction ID */
                 __("Payment completed by <strong>%1\$s</strong> - %2\$s (PayPal transaction ID: %3\$s)", 'mollie-payments-for-woocommerce'),

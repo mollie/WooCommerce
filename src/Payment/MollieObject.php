@@ -739,6 +739,7 @@ class MollieObject
                 $payment->details->consumerAccount,
                 $payment->details->paypalReference
             ));
+            $order->save();
         }
     }
     /**

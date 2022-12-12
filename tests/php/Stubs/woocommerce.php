@@ -378,7 +378,9 @@ class WooCommerce
     public function api_request_url()
     {
     }
-
+    public function initialize_session(): void
+    {
+    }
 
 }
 

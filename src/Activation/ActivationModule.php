@@ -8,6 +8,7 @@ namespace Mollie\WooCommerce\Activation;
 
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Inpsyde\Modularity\Module\ServiceModule;
 use Inpsyde\Modularity\Package;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
@@ -15,20 +16,90 @@ use Psr\Container\ContainerInterface;
 
 use function Mollie\WooCommerce\mollie_wc_plugin_autoload;
 
-class ActivationModule implements ExecutableModule
+class ActivationModule implements ServiceModule, ExecutableModule
 {
     use ModuleClassNameIdTrait;
 
-    private $baseFile;
-    private $pluginVersion;
-
-    /**
-     * ActivationModule constructor.
-     */
-    public function __construct($baseFile, $pluginVersion)
+    public function services(): array
     {
-        $this->baseFile = $baseFile;
-        $this->pluginVersion = $pluginVersion;
+        return [
+            'activation.loadTextDomain' => function ($container) {
+                $properties = $container->get(Package::PROPERTIES);
+                $basePath = $properties->basePath();
+                load_plugin_textdomain(
+                    'mollie-payments-for-woocommerce',
+                    false,
+                    $basePath . 'languages/'
+                );
+            },
+            'activation.markUpdatedOrNew' => function ($container) {
+                $pluginVersion = $container->get('shared.plugin_version');
+                $dbVersionOption = get_option(SharedDataDictionary::DB_VERSION_PARAM_NAME, '');
+                $dbPluginOption = get_option(SharedDataDictionary::PLUGIN_VERSION_PARAM_NAME, '');
+
+                if ($dbPluginOption === $pluginVersion) {
+                    return;
+                }
+
+                if (!$dbVersionOption && !$dbPluginOption) {
+                    update_option(SharedDataDictionary::NEW_INSTALL_PARAM_NAME, 'yes', true);
+                    update_option(SharedDataDictionary::PLUGIN_VERSION_PARAM_NAME, $pluginVersion, true);
+                    return;
+                }
+
+                update_option(SharedDataDictionary::NEW_INSTALL_PARAM_NAME, 'no', true);
+                update_option(SharedDataDictionary::PLUGIN_VERSION_PARAM_NAME, $pluginVersion, true);
+            },
+            'activation.initDb' => function () {
+                global $wpdb;
+                global $EZSQL_ERROR;
+                $wpdb->mollie_pending_payment = $wpdb->prefix . SharedDataDictionary::PENDING_PAYMENT_DB_TABLE_NAME;
+                if (get_option(SharedDataDictionary::DB_VERSION_PARAM_NAME, '') !== SharedDataDictionary::DB_VERSION) {
+                    $pendingPaymentConfirmTable = $wpdb->prefix . SharedDataDictionary::PENDING_PAYMENT_DB_TABLE_NAME;
+                    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+                    if ($wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $pendingPaymentConfirmTable)) !== $pendingPaymentConfirmTable) {
+                        $sql = "
+					CREATE TABLE " . $pendingPaymentConfirmTable . " (
+                    id int(11) NOT NULL AUTO_INCREMENT,
+                    post_id bigint NOT NULL,
+                    expired_time int NOT NULL,
+                    PRIMARY KEY id (id)
+                );";
+                        dbDelta($sql);
+
+                        /**
+                         * Remove redundant 'DESCRIBE *__mollie_pending_payment' error so it doesn't show up in error logs
+                         */
+                        array_pop($EZSQL_ERROR);
+                    }
+                    update_option(SharedDataDictionary::DB_VERSION_PARAM_NAME, SharedDataDictionary::DB_VERSION);
+                }
+            },
+            'activation.notice.ApiKeyMissing' => function () {
+                //if test/live keys are in db return
+                $liveKeySet = get_option('mollie-payments-for-woocommerce_live_api_key');
+                $testKeySet = get_option('mollie-payments-for-woocommerce_test_api_key');
+                $apiKeysSetted = $liveKeySet || $testKeySet;
+                if ($apiKeysSetted) {
+                    return;
+                }
+
+                $notice = new AdminNotice();
+                /* translators: Placeholder 1: Opening strong tag. Placeholder 2: Closing strong tag. Placeholder 3: Opening link tag to settings. Placeholder 4: Closing link tag.*/
+                $message = sprintf(
+                    esc_html__(
+                        '%1$sMollie Payments for WooCommerce: API keys missing%2$s Please%3$s set your API keys here%4$s.',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                    '<strong>',
+                    '</strong>',
+                    '<a href="' . esc_url(admin_url('admin.php?page=wc-settings&tab=mollie_settings')) . '">',
+                    '</a>'
+                );
+
+                $notice->addNotice('notice-error is-dismissible', $message);
+            }
+        ];
     }
 
     /**
@@ -40,45 +111,18 @@ class ActivationModule implements ExecutableModule
     {
         add_action(
             'init',
-            [$this, 'pluginInit']
+            static function () use ($container) {
+                $container->get('activation.loadTextDomain');
+                $container->get('activation.markUpdatedOrNew');
+                $container->get('activation.initDb');
+                $container->get('activation.notice.ApiKeyMissing');
+            }
         );
 
         $this->handleTranslations();
-        $this->mollieWcNoticeApiKeyMissing();
         $this->appleValidationFileRewriteRules();
         return true;
     }
-
-    /**
-     *
-     */
-    public function initDb()
-    {
-        global $wpdb;
-        global $EZSQL_ERROR;
-        $wpdb->mollie_pending_payment = $wpdb->prefix . SharedDataDictionary::PENDING_PAYMENT_DB_TABLE_NAME;
-        if (get_option(SharedDataDictionary::DB_VERSION_PARAM_NAME, '') !== SharedDataDictionary::DB_VERSION) {
-            $pendingPaymentConfirmTable = $wpdb->prefix . SharedDataDictionary::PENDING_PAYMENT_DB_TABLE_NAME;
-            require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-            if ($wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $pendingPaymentConfirmTable)) !== $pendingPaymentConfirmTable) {
-                $sql = "
-					CREATE TABLE " . $pendingPaymentConfirmTable . " (
-                    id int(11) NOT NULL AUTO_INCREMENT,
-                    post_id bigint NOT NULL,
-                    expired_time int NOT NULL,
-                    PRIMARY KEY id (id)
-                );";
-                dbDelta($sql);
-
-                /**
-                 * Remove redundant 'DESCRIBE *__mollie_pending_payment' error so it doesn't show up in error logs
-                 */
-                array_pop($EZSQL_ERROR);
-            }
-            update_option(SharedDataDictionary::DB_VERSION_PARAM_NAME, SharedDataDictionary::DB_VERSION);
-        }
-    }
-
     /**
      *
      */
@@ -144,67 +188,5 @@ class ActivationModule implements ExecutableModule
                 );
             }
         );
-    }
-
-    /**
-     *
-     */
-    public function mollieWcNoticeApiKeyMissing()
-    {
-        //if test/live keys are in db return
-        $liveKeySet = get_option('mollie-payments-for-woocommerce_live_api_key');
-        $testKeySet = get_option('mollie-payments-for-woocommerce_test_api_key');
-        $apiKeysSetted = $liveKeySet || $testKeySet;
-        if ($apiKeysSetted) {
-            return;
-        }
-
-        $notice = new AdminNotice();
-        /* translators: Placeholder 1: Opening strong tag. Placeholder 2: Closing strong tag. Placeholder 3: Opening link tag to settings. Placeholder 4: Closing link tag.*/
-        $message = sprintf(
-            esc_html__(
-                '%1$sMollie Payments for WooCommerce: API keys missing%2$s Please%3$s set your API keys here%4$s.',
-                'mollie-payments-for-woocommerce'
-            ),
-            '<strong>',
-            '</strong>',
-            '<a href="' . esc_url(admin_url('admin.php?page=wc-settings&tab=mollie_settings')) . '">',
-            '</a>'
-        );
-
-        $notice->addNotice('notice-error is-dismissible', $message);
-    }
-
-    protected function markUpdatedOrNew()
-    {
-        $dbVersionOption = get_option(SharedDataDictionary::DB_VERSION_PARAM_NAME, '');
-        $dbPluginOption = get_option(SharedDataDictionary::PLUGIN_VERSION_PARAM_NAME, '');
-
-        if ($dbPluginOption === $this->pluginVersion) {
-            return;
-        }
-
-        if (!$dbVersionOption && !$dbPluginOption) {
-            update_option(SharedDataDictionary::NEW_INSTALL_PARAM_NAME, 'yes', true);
-            update_option(SharedDataDictionary::PLUGIN_VERSION_PARAM_NAME, $this->pluginVersion, true);
-            return;
-        }
-
-        update_option(SharedDataDictionary::NEW_INSTALL_PARAM_NAME, 'no', true);
-        update_option(SharedDataDictionary::PLUGIN_VERSION_PARAM_NAME, $this->pluginVersion, true);
-    }
-
-    /**
-     *
-     */
-    public function pluginInit()
-    {
-        load_plugin_textdomain(
-            'mollie-payments-for-woocommerce',
-            false,
-            dirname(plugin_basename($this->baseFile)) . '/languages/'
-        );
-        $this->markUpdatedOrNew();
-        $this->initDb();
     }
 }

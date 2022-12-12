@@ -13,14 +13,14 @@ use WP_Error;
 use function Brain\Monkey\Functions\when;
 use function Brain\Monkey\setUp;
 use function Brain\Monkey\tearDown;
-use PHPUnit\Framework\TestCase as PhpUnitTestCase;
 use Xpmock\Reflection;
 use Xpmock\TestCaseTrait;
+use Inpsyde\ModularityTestCase\ModularityTestCase;
 
 /**
  * Class Testcase
  */
-class TestCase extends PhpUnitTestCase
+class TestCase extends ModularityTestCase
 {
     use TestCaseTrait;
     /**

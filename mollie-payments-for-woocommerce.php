@@ -151,7 +151,7 @@ function initialize()
         $properties = PluginProperties::new(__FILE__);
         $bootstrap = Package::new($properties);
         $modules = [
-            new ActivationModule(__FILE__, $properties->get('version')),
+            new ActivationModule(),
             new NoticeModule(),
             new SharedModule(),
             new SDKModule(),

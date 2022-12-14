@@ -86,15 +86,11 @@
         <InvalidArgument errorLevel="suppress"/>
         <InvalidReturnType errorLevel="suppress"/>
         <InvalidReturnStatement errorLevel="suppress"/>
-        <UndefinedDocblockClass errorLevel="suppress"/>
         <FalsableReturnStatement errorLevel="suppress"/>
-        <InvalidParamDefault errorLevel="suppress"/>
         <ImplementedReturnTypeMismatch errorLevel="suppress"/>
         <MoreSpecificImplementedParamType errorLevel="suppress"/>
         <MethodSignatureMismatch errorLevel="suppress"/>
-        <ReservedWord errorLevel="suppress"/>
         <UndefinedThisPropertyFetch errorLevel="suppress"/>
         <NoInterfaceProperties errorLevel="suppress"/>
-        <TypeDoesNotContainType errorLevel="suppress"/>
     </issueHandlers>
 </psalm>

@@ -110,7 +110,7 @@ class Data
     }
 
     /**
-     * @param bool $overrideTestMode
+     * @param int $overrideTestMode
      *
      * @return null|string
      */

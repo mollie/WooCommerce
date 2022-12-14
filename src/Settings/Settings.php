@@ -327,7 +327,7 @@ class Settings
         return !$orderApiSetting || is_string($orderApiSetting) && trim($orderApiSetting) === PaymentService::PAYMENT_METHOD_TYPE_ORDER;
     }
     /**
-     * @param bool $overrideTestMode
+     * @param int $overrideTestMode
      *
      * @return false|string
      */

@@ -169,7 +169,10 @@ class WC_Order
 
     public function update_status()
     {
+    }
 
+    public function needs_payment()
+    {
     }
 }
 class WC_Cart

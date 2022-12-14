@@ -82,6 +82,16 @@ class PaymentModule implements ServiceModule, ExecutableModule
                assert($settingsHelper instanceof Settings);
                return new MollieObject($data, $logger, $paymentFactory, $apiHelper, $settingsHelper, $pluginId);
            },
+            MollieOrder::class => static function (ContainerInterface $container): MollieObject {
+                $paymentFactory = $container->get(PaymentFactory::class);
+                assert($paymentFactory instanceof PaymentFactory);
+                return $paymentFactory->getPaymentObject('order');
+            },
+            MolliePayment::class => static function (ContainerInterface $container): MollieObject {
+                $paymentFactory = $container->get(PaymentFactory::class);
+                assert($paymentFactory instanceof PaymentFactory);
+                return $paymentFactory->getPaymentObject('payment');
+            },
         ];
     }
 

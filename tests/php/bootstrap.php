@@ -8,6 +8,7 @@ if (!file_exists($vendor . 'autoload.php')) {
 }
 
 require_once __DIR__ . '/Stubs/stubs.php';
+require_once __DIR__ . '/Stubs/Mollie/Order.php';
 require_once $vendor . 'brain/monkey/inc/patchwork-loader.php';
 require_once $vendor . 'autoload.php';
 

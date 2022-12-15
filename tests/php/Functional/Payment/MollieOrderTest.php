@@ -205,7 +205,27 @@ class MollieOrderTest extends TestCase
         $mollieOrder->onWebhookExpired($order, $payment, $paymentMethodTitle);
     }
 
+    /**
+     * Test MollieOrder::refund
+     * refunds order
+     *
+     * @test
+     */
+    public function refundOrder() {
+        $this->bootsrapMolliePlugin();
+        $package = $this->createPackage($this->properties, $this->modules);
+        $order = $this->createWCOrder();
 
+        $paymentMethodTitle = 'mollie_wc_gateway_ideal';
+        $mollieOrder = $this->createMollieOrder($package);
+        $payment = $this->createMollieResourcePayment();
+        $paymentId = 'tr_123';
+        $payment->id = $paymentId;
+        $payment->status = 'paid';
+
+
+        $mollieOrder->refund($order, $order->get_id(), $mollieOrder);
+    }
 
     private function createWCOrder($id='1', $orderKey='order-key')
     {

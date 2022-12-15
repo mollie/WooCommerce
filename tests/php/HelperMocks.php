@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Mollie\WooCommerceTests\Functional;
+namespace Mollie\WooCommerceTests;
 
 
 use Mollie\Api\MollieApiClient;
@@ -18,8 +18,6 @@ use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
-use Mollie\WooCommerceTests\Stubs\Status;
-use Mollie\WooCommerceTests\TestCase;
 use Psr\Log\LoggerInterface;
 
 class HelperMocks extends TestCase
@@ -71,20 +69,54 @@ class HelperMocks extends TestCase
      * @return PHPUnit_Framework_MockObject_MockObject
      * @throws PHPUnit_Framework_Exception
      */
-    private function wcOrderItem()
+    public function wcOrderItem()
     {
-        $item = new \WC_Order_Item_Product();
+        $item = $this->createConfiguredMock(
+            'WC_Order_Item_Product',
+            [
+                'get_quantity' => 1,
 
-        $item['quantity'] = 1;
-        $item['variation_id'] = null;
-        $item['product_id'] = 1;
-        $item['line_subtotal_tax']= 0;
-        $item['line_total']= 20;
-        $item['line_subtotal']= 20;
-        $item['line_tax']= 0;
-        $item['tax_status']= '';
-        $item['total']= 20;
-        $item['name']= 'productName';
+
+                'get_total' => 20,
+                'get_name' => 'productName',
+
+
+            ]);
+
+
+        //$item['line_subtotal_tax']= 0;
+        //$item['line_tax']= 0;
+
+        return $item;
+    }
+    /**
+     *
+     * @return PHPUnit_Framework_MockObject_MockObject
+     * @throws PHPUnit_Framework_Exception
+     */
+    public function wcShipping()
+    {
+        $item = $this->createConfiguredMock(
+            'WC_Shipping',
+            [
+                'calculate_shipping' => [
+                    0 => [
+                        'rates' => [
+                            $this->wcShippingRate(
+                                'flat_rate:1',
+                                'Flat1',
+                                '1.00'
+                            ),
+                            $this->wcShippingRate(
+                                'flat_rate:4',
+                                'Flat4',
+                                '4.00'
+                            )
+                        ]
+                    ]
+                ]
+            ]
+        );
 
         return $item;
     }

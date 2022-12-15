@@ -149,8 +149,8 @@ class SurchargeHandlerTest extends TestCase
 
             ]
         );
-        $wc->session = new \WC_Session();
-        $wc->session->chosen_payment_method = 'mollie_wc_gateway_ideal';
+        $wc->wooCommerce->session = new \WC_Session();
+        $wc->wooCommerce->session->chosen_payment_method = 'mollie_wc_gateway_ideal';
         return $wc;
     }
 

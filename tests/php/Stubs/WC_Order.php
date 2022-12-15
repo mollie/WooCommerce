@@ -105,4 +105,95 @@ class WC_Order
     public function set_transaction_id()
     {
     }
+
+    public function needs_payment()
+    {
+    }
+    public function get_order_key()
+    {
+    }
+
+    public function get_status()
+    {
+    }
+
+    public function key_is_valid()
+    {
+    }
+
+    public function add_product()
+    {
+    }
+
+    public function calculate_totals()
+    {
+    }
+
+    public function get_user_id()
+    {
+    }
+
+    public function get_shipping_first_name()
+    {
+    }
+
+    public function get_shipping_last_name()
+    {
+    }
+
+    public function get_billing_address_2()
+    {
+    }
+
+    public function get_billing_postcode()
+    {
+    }
+
+    public function get_billing_state()
+    {
+    }
+
+    public function get_shipping_address_1()
+    {
+    }
+
+    public function get_shipping_address_2()
+    {
+    }
+
+    public function get_shipping_postcode()
+    {
+    }
+
+    public function get_shipping_city()
+    {
+    }
+
+    public function get_shipping_state()
+    {
+    }
+
+    public function get_shipping_methods()
+    {
+    }
+
+    public function delete_meta_data()
+    {
+    }
+
+    public function get_payment_method()
+    {
+    }
+
+    public function get_checkout_payment_url()
+    {
+    }
+
+    public function get_parent()
+    {
+    }
+
+    public function set_payment_method()
+    {
+    }
 }

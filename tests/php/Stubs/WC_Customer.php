@@ -20,4 +20,23 @@ class WC_Customer
     public function save()
     {
     }
+    public function set_shipping_country()
+    {
+    }
+
+    public function set_billing_country()
+    {
+    }
+
+    public function set_shipping_postcode()
+    {
+    }
+
+    public function set_shipping_city()
+    {
+    }
+
+    public function get_shipping_country()
+    {
+    }
 }

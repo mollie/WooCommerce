@@ -63,13 +63,12 @@ class WooCommerceMocks extends TestCase
         $item = $this->createConfiguredMock(
             'WooCommerce',
             [
-
             ]
         );
-        $item->cart = $this->wcCart($subtotal, $shippingTotal, $total, $tax);
-        $item->customer = $this->wcCustomer($country);
-        $item->shipping = $this->wcShipping();
-        $item->session = $this->wcSession();
+        $item->wooCommerce->cart = $this->wcCart($subtotal, $shippingTotal, $total, $tax);
+        $item->wooCommerce->customer = $this->wcCustomer($country);
+        $item->wooCommerce->shipping = $this->wcShipping();
+        $item->wooCommerce->session = $this->wcSession();
 
         return $item;
     }
@@ -99,51 +98,9 @@ class WooCommerceMocks extends TestCase
         return $item;
     }
 
-    /**
-     *
-     * @throws PHPUnit_Framework_Exception
-     */
-    public function wcOrder()
-    {
-        return $this->createConfiguredMock(
-            'Mollie\WooCommerceTests\Stubs\WC_Order',
-            [
-                'get_id' => 11,
-            ]
-        );
-    }
 
-    /**
-     *
-     * @return PHPUnit_Framework_MockObject_MockObject
-     * @throws PHPUnit_Framework_Exception
-     */
-    public function wcShipping()
-    {
-        $item = $this->createConfiguredMock(
-            'WC_Shipping',
-            [
-                'calculate_shipping' => [
-                    0 => [
-                        'rates' => [
-                            $this->wcShippingRate(
-                                'flat_rate:1',
-                                'Flat1',
-                                '1.00'
-                            ),
-                            $this->wcShippingRate(
-                                'flat_rate:4',
-                                'Flat4',
-                                '4.00'
-                            )
-                        ]
-                    ]
-                ]
-            ]
-        );
 
-        return $item;
-    }
+
 
     /**
      *

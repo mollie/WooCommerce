@@ -35,4 +35,24 @@ class WC_Product
     public function is_virtual()
     {
     }
+
+    public function get_type()
+    {
+    }
+
+    public function get_sku()
+    {
+    }
+
+    public function needs_shipping()
+    {
+    }
+
+    public function is_taxable()
+    {
+    }
+
+    public function is_type($type){
+    }
+
 }

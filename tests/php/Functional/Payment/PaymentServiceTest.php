@@ -148,7 +148,7 @@ class PaymentServiceTest extends TestCase
                 'get_id' => $id,
                 'get_order_key' => $orderKey,
                 'get_total' => '20',
-                'get_items' => [$this->wcOrderItem()],
+                'get_items' => $this->wcOrderItem(),
                 'get_billing_first_name' => 'billingggivenName',
                 'get_billing_last_name' => 'billingfamilyName',
                 'get_billing_email' => 'billingemail',
@@ -212,27 +212,10 @@ class PaymentServiceTest extends TestCase
 
         return $item;
     }
-    /**
-     *
-     * @return PHPUnit_Framework_MockObject_MockObject
-     * @throws PHPUnit_Framework_Exception
-     */
+
     private function wcOrderItem()
     {
-        $item = new \WC_Order_Item_Product();
-
-        $item['quantity'] = 1;
-        $item['variation_id'] = null;
-        $item['product_id'] = 1;
-        $item['line_subtotal_tax']= 0;
-        $item['line_total']= 20;
-        $item['line_subtotal']= 20;
-        $item['line_tax']= 0;
-        $item['tax_status']= '';
-        $item['total']= 20;
-        $item['name']= 'productName';
-
-        return $item;
+       return $this->helperMocks->wcOrderItem();
     }
     private function expectedRequestData($order){
 

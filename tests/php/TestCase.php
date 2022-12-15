@@ -62,7 +62,6 @@ class TestCase extends ModularityTestCase
         parent::setUp();
         setUp();
         $this->setupFaker();
-
         when('__')->returnArg(1);
         when('sanitize_text_field')->returnArg();
         when('wp_unslash')->returnArg();

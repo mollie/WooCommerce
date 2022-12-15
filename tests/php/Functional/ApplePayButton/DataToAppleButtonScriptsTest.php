@@ -146,10 +146,10 @@ class ApplePayDirectHandlerTest extends TestCase
 
             ]
         );
-        $item->cart = $this->wcCart($subtotal, $shippingTotal, $total, $tax);
-        $item->customer = $this->wcCustomer();
-        $item->shipping = $this->wcShipping();
-        $item->session = $this->wcSession();
+        $item->wooCommerce->cart = $this->wcCart($subtotal, $shippingTotal, $total, $tax);
+        $item->wooCommerce->customer = $this->wcCustomer();
+        $item->wooCommerce->shipping = $this->wcShipping();
+        $item->wooCommerce->session = $this->wcSession();
 
         return $item;
     }

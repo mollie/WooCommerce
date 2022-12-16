@@ -22,6 +22,7 @@ use Mollie\WooCommerce\SDK\SDKModule;
 use Mollie\WooCommerce\Settings\SettingsModule;
 use Mollie\WooCommerce\Shared\SharedModule;
 use Mollie\WooCommerce\Uninstall\UninstallModule;
+use Mollie\WooCommerceTests\Stubs\WooCommerceMocks;
 use PHPUnit_Framework_MockObject_MockBuilder;
 use PHPUnit_Framework_MockObject_MockObject;
 use WP_Error;
@@ -62,6 +63,8 @@ class TestCase extends ModularityTestCase
         parent::setUp();
         setUp();
         $this->setupFaker();
+        $this->woocommerceMocks = new WooCommerceMocks();
+        $this->helperMocks = new HelperMocks();
         when('__')->returnArg(1);
         when('sanitize_text_field')->returnArg();
         when('wp_unslash')->returnArg();

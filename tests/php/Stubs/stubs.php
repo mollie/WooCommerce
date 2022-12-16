@@ -1,7 +1,6 @@
 <?php
 
 require_once __DIR__ . '/enqueue_scripts.php';
-//require_once __DIR__ . '/woocommerce_functions.php';
 require_once __DIR__ . '/varPolylangTestsStubs.php';
 require_once __DIR__ . '/Status.php';
 require_once __DIR__ . '/WC_Cart.php';

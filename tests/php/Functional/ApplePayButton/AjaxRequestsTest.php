@@ -8,16 +8,11 @@ use Mollie\Api\MollieApiClient;
 use Mollie\WooCommerce\Buttons\ApplePayButton\AppleAjaxRequests;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDataObjectHttp;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ResponsesToApple;
-use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Payment\RefundLineItemsBuilder;
 use Mollie\WooCommerce\Shared\Data;
-use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
-use Mollie\WooCommerceTests\Functional\HelperMocks;
 use Mollie\WooCommerceTests\Stubs\postDTOTestsStubs;
-use Mollie\WooCommerceTests\Stubs\WooCommerceMocks;
 use Mollie\WooCommerceTests\TestCase;
 use PHPUnit_Framework_Exception;
-use WC_Countries;
 
 use function Brain\Monkey\Functions\expect;
 use function Brain\Monkey\Functions\stubs;
@@ -41,17 +36,6 @@ class AjaxRequestsTest extends TestCase
      * @var OrderEndpoint
      */
     private $ordersApiClient;
-    /** @var HelperMocks */
-    private $helperMocks;
-    /** @var WooCommerceMocks */
-    private $wooCommerceMocks;
-
-    public function __construct($name = null, array $data = [], $dataName = '')
-    {
-        parent::__construct($name, $data, $dataName);
-        $this->helperMocks = new HelperMocks();
-        $this->wooCommerceMocks = new WooCommerceMocks();
-    }
 
     public function testValidateMerchant()
     {
@@ -321,27 +305,7 @@ class AjaxRequestsTest extends TestCase
         $total = 0,
         $tax = 0
     ) {
-        return $this->wooCommerceMocks->wooCommerce($subtotal, $shippingTotal, $total, $tax);
-    }
-
-    /**
-     *
-     * @return PHPUnit_Framework_MockObject_MockObject
-     * @throws PHPUnit_Framework_Exception
-     */
-    private function wcCart($subtotal, $shippingTotal, $total, $tax)
-    {
-        return $this->wooCommerceMocks->wcCart($subtotal, $shippingTotal, $total, $tax);
-    }
-
-    /**
-     *
-     * @return PHPUnit_Framework_MockObject_MockObject
-     * @throws PHPUnit_Framework_Exception
-     */
-    private function wcCustomer()
-    {
-        return $this->wooCommerceMocks->wcCustomer();
+        return $this->woocommerceMocks->wooCommerce($subtotal, $shippingTotal, $total, $tax);
     }
 
     /**
@@ -351,46 +315,7 @@ class AjaxRequestsTest extends TestCase
      */
     private function wcCountries()
     {
-        return $this->wooCommerceMocks->wcCountries();
-    }
-
-    /**
-     *
-     * @return PHPUnit_Framework_MockObject_MockObject
-     * @throws PHPUnit_Framework_Exception
-     */
-    private function wcShipping()
-    {
-        return $this->wooCommerceMocks->wcShipping();
-    }
-
-    /**
-     *
-     * @return PHPUnit_Framework_MockObject_MockObject
-     * @throws PHPUnit_Framework_Exception
-     */
-    private function wcShippingRate($id, $label, $cost)
-    {
-        return $this->wooCommerceMocks->wcShippingRate($id, $label, $cost);
-    }
-
-    /**
-     *
-     * @return PHPUnit_Framework_MockObject_MockObject
-     * @throws PHPUnit_Framework_Exception
-     */
-    private function wcSession()
-    {
-        return $this->wooCommerceMocks->wcSession();
-    }
-
-    /**
-     *
-     * @throws PHPUnit_Framework_Exception
-     */
-    private function wcOrder()
-    {
-        return $this->wooCommerceMocks->wcOrder();
+        return $this->woocommerceMocks->wcCountries();
     }
 
     /**

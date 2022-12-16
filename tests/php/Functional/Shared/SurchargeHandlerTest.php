@@ -14,19 +14,6 @@ use function Brain\Monkey\Functions\expect;
 
 class SurchargeHandlerTest extends TestCase
 {
-    protected $pluginUrl;
-    /** @var HelperMocks */
-    private $helperMocks;
-    /**
-     * @var string
-     */
-    protected $pluginPath;
-
-    public function __construct($name = null, array $data = [], $dataName = '')
-    {
-        parent::__construct($name, $data, $dataName);
-        $this->helperMocks = new HelperMocks();
-    }
     /**
      * with all surcharge types
      * GIVEN I'm in the checkout and the surcharge is set
@@ -149,8 +136,8 @@ class SurchargeHandlerTest extends TestCase
 
             ]
         );
-        $wc->wooCommerce->session = new \WC_Session();
-        $wc->wooCommerce->session->chosen_payment_method = 'mollie_wc_gateway_ideal';
+        $wc->session = new \WC_Session();
+        $wc->session->chosen_payment_method = 'mollie_wc_gateway_ideal';
         return $wc;
     }
 

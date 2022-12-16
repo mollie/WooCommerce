@@ -10,7 +10,103 @@ use WC_Countries;
 
 class WooCommerceMocks extends TestCase
 {
+    /**
+     *
+     * @throws PHPUnit_Framework_Exception
+     */
+    public function wcOrder($id, $orderKey)
+    {
+        $item = $this->createConfiguredMock(
+            'WC_Order',
+            [
+                'needs_payment'=> true,
+                'get_id' => $id,
+                'get_order_key' => $orderKey,
+                'get_total' => '20',
+                'get_items' => [$this->wcOrderItem()],
+                'get_billing_first_name' => 'billingggivenName',
+                'get_billing_last_name' => 'billingfamilyName',
+                'get_billing_email' => 'billingemail',
+                'get_shipping_first_name' => 'shippinggivenName',
+                'get_shipping_last_name' => 'shippingfamilyName',
+                'get_billing_address_1' => 'shippingstreetAndNumber',
+                'get_billing_address_2' => 'billingstreetAdditional',
+                'get_billing_postcode' => 'billingpostalCode',
+                'get_billing_city' => 'billingcity',
+                'get_billing_state' => 'billingregion',
+                'get_billing_country' => 'billingcountry',
+                'get_shipping_address_1' => 'shippingstreetAndNumber',
+                'get_shipping_address_2' => 'shippingstreetAdditional',
+                'get_shipping_postcode' => 'shippingpostalCode',
+                'get_shipping_city' => 'shippingcity',
+                'get_shipping_state' => 'shippingregion',
+                'get_shipping_country' => 'shippingcountry',
+                'get_shipping_methods' => false,
+                'get_order_number' => 1,
+                'get_payment_method' => 'mollie_wc_gateway_ideal',
+                'get_currency' => 'EUR',
 
+            ]
+        );
+
+        return $item;
+    }
+    /**
+     *
+     * @return PHPUnit_Framework_MockObject_MockObject
+     * @throws PHPUnit_Framework_Exception
+     */
+    public function wcOrderItem()
+    {
+        $item = $this->createConfiguredMock(
+            'WC_Order_Item_Product',
+            [
+                'get_quantity' => 1,
+
+
+                'get_total' => 20,
+                'get_name' => 'productName',
+
+
+            ]);
+
+
+        //$item['line_subtotal_tax']= 0;
+        //$item['line_tax']= 0;
+
+        return $item;
+    }
+    /**
+     *
+     * @return PHPUnit_Framework_MockObject_MockObject
+     * @throws PHPUnit_Framework_Exception
+     */
+    public function wcShipping()
+    {
+        $item = $this->createConfiguredMock(
+            'WC_Shipping',
+            [
+                'calculate_shipping' => [
+                    0 => [
+                        'rates' => [
+                            $this->wcShippingRate(
+                                'flat_rate:1',
+                                'Flat1',
+                                '1.00'
+                            ),
+                            $this->wcShippingRate(
+                                'flat_rate:4',
+                                'Flat4',
+                                '4.00'
+                            )
+                        ]
+                    ]
+                ]
+            ]
+        );
+
+        return $item;
+    }
     /**
      *
      * @return PHPUnit_Framework_MockObject_MockObject
@@ -53,22 +149,16 @@ class WooCommerceMocks extends TestCase
      * @return PHPUnit_Framework_MockObject_MockObject
      * @throws PHPUnit_Framework_Exception
      */
-    public function wooCommerce(
-        $subtotal = 0,
-        $shippingTotal = 0,
-        $total = 0,
-        $tax = 0,
-        $country = 'IT'
-    ) {
+    public function wcProduct()
+    {
         $item = $this->createConfiguredMock(
-            'WooCommerce',
+            'WC_Product',
             [
+                'get_price' => '1',
+                'get_type' => 'simple',
+                'needs_shipping' => true,
             ]
         );
-        $item->wooCommerce->cart = $this->wcCart($subtotal, $shippingTotal, $total, $tax);
-        $item->wooCommerce->customer = $this->wcCustomer($country);
-        $item->wooCommerce->shipping = $this->wcShipping();
-        $item->wooCommerce->session = $this->wcSession();
 
         return $item;
     }
@@ -78,12 +168,38 @@ class WooCommerceMocks extends TestCase
      * @return PHPUnit_Framework_MockObject_MockObject
      * @throws PHPUnit_Framework_Exception
      */
-    public function wcCart($subtotal, $shippingTotal, $total, $tax)
+    public function wooCommerce(
+        $subtotal = 0,
+        $shippingTotal = 0,
+        $total = 0,
+        $tax = 0,
+        $country = 'IT',
+        $cartNeedsShipping = true
+    ) {
+        $item = $this->createConfiguredMock(
+            'WooCommerce',
+            [
+            ]
+        );
+        $item->cart = $this->wcCart($subtotal, $shippingTotal, $total, $tax, $cartNeedsShipping);
+        $item->customer = $this->wcCustomer($country);
+        $item->shipping = $this->wcShipping();
+        $item->session = $this->wcSession();
+
+        return $item;
+    }
+
+    /**
+     *
+     * @return PHPUnit_Framework_MockObject_MockObject
+     * @throws PHPUnit_Framework_Exception
+     */
+    public function wcCart($subtotal, $shippingTotal, $total, $tax, $needsShipping = true)
     {
         $item = $this->createConfiguredMock(
             'WC_Cart',
             [
-                'needs_shipping' => true,
+                'needs_shipping' => $needsShipping,
                 'get_subtotal' => $subtotal,
                 'is_empty' => true,
                 'get_shipping_total' => $shippingTotal,

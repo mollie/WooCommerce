@@ -15,6 +15,7 @@ use Mollie\WooCommerceTests\TestCase;
 use Mollie_WC_ApplePayButton_DataObjectHttp;
 use Mollie_WC_Helper_Data;
 use Mollie_WC_Payment_RefundLineItemsBuilder;
+use phpDocumentor\Reflection\Types\This;
 use PHPUnit_Framework_Exception;
 use PHPUnit_Framework_MockObject_MockObject;
 
@@ -40,15 +41,6 @@ class AjaxRequestsTest extends TestCase
      * @var OrderEndpoint
      */
     private $ordersApiClient;
-    /** @var HelperMocks */
-    private $helperMocks;
-
-    public function __construct($name = null, array $data = [], $dataName = '')
-    {
-        parent::__construct($name, $data, $dataName);
-        $this->helperMocks = new HelperMocks();
-    }
-
 
     public function testcreateWcOrderSuccess()
     {
@@ -151,14 +143,7 @@ class AjaxRequestsTest extends TestCase
      */
     private function wcOrder()
     {
-        $item = $this->createConfiguredMock(
-            'WC_Order',
-            [
-                'get_id' => 11,
-            ]
-        );
-
-        return $item;
+        return $this->woocommerceMocks->wcOrder('11', 'orderKey');
     }
 
     /**

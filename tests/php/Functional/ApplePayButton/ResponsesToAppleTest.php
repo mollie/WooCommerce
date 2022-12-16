@@ -6,8 +6,6 @@ use Faker;
 use Faker\Generator;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ResponsesToApple;
-use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
-use Mollie\WooCommerceTests\Functional\HelperMocks;
 use Mollie\WooCommerceTests\TestCase;
 
 use function Brain\Monkey\Functions\expect;
@@ -21,13 +19,10 @@ class ResponsesToAppleTest extends TestCase
      * @var Generator
      */
     protected $faker;
-    /** @var HelperMocks */
-    private $helperMocks;
 
     public function __construct($name = null, array $data = [], $dataName = '')
     {
         parent::__construct($name, $data, $dataName);
-        $this->helperMocks = new HelperMocks();
     }
 
     /**

@@ -6,12 +6,10 @@ use Mollie\Api\Endpoints\CustomerEndpoint;
 use Mollie\Api\Endpoints\PaymentEndpoint;
 use Mollie\Api\Resources\Customer;
 use Mollie\Api\Resources\Mandate;
-use Mollie\Api\Resources\MandateCollection;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
-use Mollie\WooCommerceTests\Functional\HelperMocks;
 use Mollie\WooCommerceTests\TestCase;
 
 use function Brain\Monkey\Functions\expect;
@@ -22,15 +20,6 @@ use function Brain\Monkey\Functions\expect;
  */
 class MollieSubscriptionTest extends TestCase
 {
-    /** @var HelperMocks */
-    private $helperMocks;
-
-    public function __construct($name = null, array $data = [], $dataName = '')
-    {
-        parent::__construct($name, $data, $dataName);
-        $this->helperMocks = new HelperMocks();
-    }
-
     /**
      * GIVEN I RECEIVE A WC ORDER WITH SUBSCRIPTION
      * THEN CREATES CORRECT MOLLIE REQUEST ORDER
@@ -141,7 +130,7 @@ class MollieSubscriptionTest extends TestCase
                 'get_id' => $id,
                 'get_order_key' => 'wc_order_hxZniP1zDcnM8',
                 'get_total' => '20',
-                'get_items' => [$this->wcOrderItem()],
+                'get_items' => $this->woocommerceMocks->wcOrderItem(),
                 'get_billing_first_name' => 'billingggivenName',
                 'get_billing_last_name' => 'billingfamilyName',
                 'get_billing_email' => 'billingemail',
@@ -171,24 +160,6 @@ class MollieSubscriptionTest extends TestCase
 
         return $item;
     }
-    private function wcOrderItem()
-    {
-        $item = new \WC_Order_Item_Product();
-
-        $item['quantity'] = 1;
-        $item['variation_id'] = null;
-        $item['product_id'] = 1;
-        $item['line_subtotal_tax']= 0;
-        $item['line_total']= 20;
-        $item['line_subtotal']= 20;
-        $item['line_tax']= 0;
-        $item['tax_status']= '';
-        $item['total']= 20;
-        $item['name']= 'productName';
-
-        return $item;
-    }
-
 }
 
 

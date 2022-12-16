@@ -4,18 +4,13 @@ namespace Mollie\WooCommerceTests\Functional\Payment;
 
 use Mollie\Api\Endpoints\OrderEndpoint;
 use Mollie\Api\MollieApiClient;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
 use Mollie\WooCommerce\Payment\PaymentService;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
-use Mollie\WooCommerceTests\Functional\HelperMocks;
-use Mollie\WooCommerceTests\Stubs\WC_Order_Item_Product;
-use Mollie\WooCommerceTests\Stubs\WC_Settings_API;
+use \WC_Order_Item_Product;
+use \WC_Settings_API;
 use Mollie\WooCommerceTests\TestCase;
-
-
-
 use stdClass;
 
 use function Brain\Monkey\Functions\expect;
@@ -27,15 +22,6 @@ use function Brain\Monkey\Functions\when;
  */
 class PaymentServiceTest extends TestCase
 {
-    /** @var HelperMocks */
-    private $helperMocks;
-
-    public function __construct($name = null, array $data = [], $dataName = '')
-    {
-        parent::__construct($name, $data, $dataName);
-        $this->helperMocks = new HelperMocks();
-    }
-
     /**
      * GIVEN I RECEIVE A WC ORDER (DIFFERENT KIND OF WC PRODUCTS OR SUBSCRIPTIONS)
      * WHEN I PAY WITH ANY GATEWAY (STATUS PAID, AUTHORIZED)
@@ -215,7 +201,7 @@ class PaymentServiceTest extends TestCase
 
     private function wcOrderItem()
     {
-       return $this->helperMocks->wcOrderItem();
+       return $this->woocommerceMocks->wcOrderItem();
     }
     private function expectedRequestData($order){
 

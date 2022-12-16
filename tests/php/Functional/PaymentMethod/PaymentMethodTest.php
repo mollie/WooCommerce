@@ -8,12 +8,11 @@ use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Payment\PaymentFieldsService;
 use Mollie\WooCommerce\PaymentMethods\Creditcard;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
-use Mollie\WooCommerceTests\HelperMocks;
 use Mollie\WooCommerceTests\TestCase;
 
 use function Brain\Monkey\Functions\expect;
 
-class PaymentMethodTest extends HelperMocks
+class PaymentMethodTest extends TestCase
 {
     protected $pluginUrl;
 
@@ -45,7 +44,7 @@ class PaymentMethodTest extends HelperMocks
         expect('get_option')
             ->with($settingOptionName)
             ->andReturn(
-                $this->paymentMethodMergedProperties($paymentMethodName, false, true)
+                $this->helperMocks->paymentMethodMergedProperties($paymentMethodName, false, true)
             );
         expect('esc_url')->with($urlBuild)->andReturn($urlBuild);
         $expectedUrl = '<img src="' . $urlBuild . '" class="mollie-gateway-icon" />';
@@ -74,7 +73,7 @@ class PaymentMethodTest extends HelperMocks
         expect('get_option')
             ->with($settingOptionName)
             ->andReturn(
-                $this->paymentMethodMergedProperties($paymentMethodName, false, true, $testSettings)
+                $this->helperMocks->paymentMethodMergedProperties($paymentMethodName, false, true, $testSettings)
             );
         expect('esc_url')->withAnyArgs()->andReturn($urlBuild);
 
@@ -103,7 +102,7 @@ class PaymentMethodTest extends HelperMocks
         expect('get_option')
             ->with($settingOptionName)
             ->andReturn(
-                $this->paymentMethodMergedProperties($paymentMethodName, false, true, $testSettings)
+                $this->helperMocks->paymentMethodMergedProperties($paymentMethodName, false, true, $testSettings)
             );
         expect('file_exists')->with($testSettings['iconFilePath'])->andReturn(true);
         expect('esc_url')->withAnyArgs()->andReturn($urlBuild);
@@ -136,7 +135,7 @@ class PaymentMethodTest extends HelperMocks
         expect('get_option')
             ->with($settingOptionName)
             ->andReturn(
-                $this->paymentMethodMergedProperties($paymentMethodName, false, true, $testSettings)
+                $this->helperMocks->paymentMethodMergedProperties($paymentMethodName, false, true, $testSettings)
             );
         expect('get_transient')->andReturn(false);
         expect('file_get_contents')->with($assetsImagesPath . 'amex')->andReturn('<svg width="33"></svg>');
@@ -153,8 +152,8 @@ class PaymentMethodTest extends HelperMocks
     public function paymentMethodBuilder($paymentMethodName, $testSettings = [])
     {
         $iconFactory = new IconFactory($this->pluginUrl, $this->pluginPath);
-        $settingsHelper = $this->settingsHelper();
-        $paymentFieldsService = new PaymentFieldsService($this->dataHelper());
+        $settingsHelper = $this->helperMocks->settingsHelper();
+        $paymentFieldsService = new PaymentFieldsService($this->helperMocks->dataHelper());
         $surchargeService = new Surcharge();
 
         $paymentMethod = $this->buildTesteeMock(

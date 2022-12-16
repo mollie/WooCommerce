@@ -3,19 +3,9 @@
 namespace Mollie\WooCommerceTests\Functional\PayPalButton;
 
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
-use Mollie\Api\Endpoints\OrderEndpoint;
-use Mollie\Api\Endpoints\WalletEndpoint;
-use Mollie\Api\MollieApiClient;
 use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPal;
 use Mollie\WooCommerceTests\Stubs\postDTOTestsStubs;
 use Mollie\WooCommerceTests\TestCase;
-use Mollie_WC_ApplePayButton_DataToAppleButtonScripts;
-use Mollie_WC_Helper_Api;
-use Mollie_WC_ApplePayButton_DataObjectHttp;
-use Mollie_WC_Helper_ApplePayDirectHandler;
-use Mollie_WC_Helper_Data;
-use Mollie_WC_Payment_RefundLineItemsBuilder;
-use Mollie_WC_PayPalButton_DataToPayPalScripts;
 use PHPUnit_Framework_Exception;
 use PHPUnit_Framework_MockObject_MockObject;
 use function Brain\Monkey\Functions\stubs;
@@ -24,7 +14,6 @@ use function Brain\Monkey\Functions\when;
 class DataToPayPalButtonScriptsTest extends TestCase
 {
     use MockeryPHPUnitIntegration;
-
 
     /**
      *
@@ -140,114 +129,13 @@ class DataToPayPalButtonScriptsTest extends TestCase
         $total = 0,
         $tax = 0
     ) {
-        $item = $this->createConfiguredMock(
-            'WooCommerce',
-            []
-        );
-        $item->wooCommerce->cart = $this->wcCart($subtotal, $shippingTotal, $total, $tax);
-        $item->wooCommerce->customer = $this->wcCustomer();
-        $item->wooCommerce->shipping = $this->wcShipping();
-        $item->wooCommerce->session = $this->wcSession();
-
-        return $item;
-    }
-
-    /**
-     *
-     * @return PHPUnit_Framework_MockObject_MockObject
-     * @throws PHPUnit_Framework_Exception
-     */
-    private function wcCart($subtotal, $shippingTotal, $total, $tax)
-    {
-        return $this->createConfiguredMock(
-            'WC_Cart',
-            [
-                'needs_shipping' => false,
-                'get_subtotal' => $subtotal,
-                'is_empty' => true,
-                'get_shipping_total' => $shippingTotal,
-                'add_to_cart' => '88888',
-                'get_total_tax' => $tax,
-                'get_total' => $total,
-                'calculate_shipping' => null,
-            ]
-        );
-    }
-
-    /**
-     *
-     * @return PHPUnit_Framework_MockObject_MockObject
-     * @throws PHPUnit_Framework_Exception
-     */
-    private function wcCustomer()
-    {
-        return $this->createConfiguredMock(
-            'WC_Customer',
-            [
-                'get_shipping_country' => 'IT',
-            ]
-        );
-    }
-
-    /**
-     *
-     * @return PHPUnit_Framework_MockObject_MockObject
-     * @throws PHPUnit_Framework_Exception
-     */
-    private function wcShipping()
-    {
-        return $this->createConfiguredMock(
-            'WC_Shipping',
-            [
-                'calculate_shipping' => [
-                    0 => [
-                        'rates' => [
-                            $this->wcShippingRate(
-                                'flat_rate:1',
-                                'Flat1',
-                                '1.00'
-                            ),
-                            $this->wcShippingRate(
-                                'flat_rate:4',
-                                'Flat4',
-                                '4.00'
-                            )
-                        ]
-                    ]
-                ]
-            ]
-        );
-    }
-
-    /**
-     *
-     * @return PHPUnit_Framework_MockObject_MockObject
-     * @throws PHPUnit_Framework_Exception
-     */
-    private function wcShippingRate($id, $label, $cost)
-    {
-        return $this->createConfiguredMock(
-            'WC_Shipping_Rate',
-            [
-                'get_id' => $id,
-                'get_label' => $label,
-                'get_cost' => $cost,
-            ]
-        );
-    }
-
-    /**
-     *
-     * @return PHPUnit_Framework_MockObject_MockObject
-     * @throws PHPUnit_Framework_Exception
-     */
-    private function wcSession()
-    {
-        return $this->createConfiguredMock(
-            'WC_Session',
-            [
-                'set' => null,
-            ]
+       return $this->woocommerceMocks->wooCommerce(
+            $subtotal,
+            $shippingTotal,
+            $total,
+            $tax,
+           'ES',
+           false
         );
     }
 

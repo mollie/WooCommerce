@@ -15,14 +15,6 @@ use function Brain\Monkey\Functions\expect;
 class PayPalDataObjectTest extends TestCase
 {
     use MockeryPHPUnitIntegration;
-    /** @var HelperMocks */
-    private $helperMocks;
-
-    public function __construct($name = null, array $data = [], $dataName = '')
-    {
-        parent::__construct($name, $data, $dataName);
-        $this->helperMocks = new HelperMocks();
-    }
     /**
      *
      */

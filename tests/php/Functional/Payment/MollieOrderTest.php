@@ -2,28 +2,16 @@
 
 namespace Mollie\WooCommerceTests\Functional\Payment;
 
-use Mollie\Api\MollieApiClient;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Payment\MollieOrder;
 use Mollie\WooCommerce\Payment\PaymentService;
-use Mollie\WooCommerceTests\Functional\HelperMocks;
 use Mollie\WooCommerceTests\TestCase;
 
-use WC_Order;
 
 use function Brain\Monkey\Functions\expect;
-use function Brain\Monkey\Functions\when;
 
 class MollieOrderTest extends TestCase
 {
-    private $helperMocks;
-
-    public function setUp(): void
-    {
-        parent::setUp();
-        $this->helperMocks = new HelperMocks();
-    }
-
     /**
      * Test MollieOrder::onWebhookPaid
      * updates order status
@@ -205,31 +193,9 @@ class MollieOrderTest extends TestCase
         $mollieOrder->onWebhookExpired($order, $payment, $paymentMethodTitle);
     }
 
-    /**
-     * Test MollieOrder::refund
-     * refunds order
-     *
-     * @test
-     */
-    public function refundOrder() {
-        $this->bootsrapMolliePlugin();
-        $package = $this->createPackage($this->properties, $this->modules);
-        $order = $this->createWCOrder();
-
-        $paymentMethodTitle = 'mollie_wc_gateway_ideal';
-        $mollieOrder = $this->createMollieOrder($package);
-        $payment = $this->createMollieResourcePayment();
-        $paymentId = 'tr_123';
-        $payment->id = $paymentId;
-        $payment->status = 'paid';
-
-
-        $mollieOrder->refund($order, $order->get_id(), $mollieOrder);
-    }
-
     private function createWCOrder($id='1', $orderKey='order-key')
     {
-        return $this->helperMocks->wcOrder($id, $orderKey);
+        return $this->woocommerceMocks->wcOrder($id, $orderKey);
     }
 
     private function createMollieOrder(\Inpsyde\Modularity\Package $package)

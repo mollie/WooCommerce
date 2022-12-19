@@ -6,20 +6,45 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-versions: [ '7.2', '7.4', '8.1' ]
+        wc-versions: [ '5.9.5', '7.1.0' ]
+        exclude:
+          - php-versions: 7.2
+            wc-versions: 7.1.0
+    
+    name: PHP ${{ matrix.php-versions }} WC ${{ matrix.wc-versions }}
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2
-      with:
-        node-version: '14.x'
-    - name: Install dependencies
-      run: npm ci
-    - name: Install Playwright
-      run: npx playwright install --with-deps
-    - name: Run Playwright tests
-      run: npx playwright test
-    - uses: actions/upload-artifact@v2
-      if: always()
-      with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
+      - uses: satackey/action-docker-layer-caching@v0.0.11
+        continue-on-error: true
+
+      - uses: jonaseberle/github-action-setup-ddev@v1
+        with:
+          autostart: false
+
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v2
+        with:
+            node-version: '14.x'
+      - name: Configure DDEV
+        run: ddev config --php-version ${{ matrix.php-versions }} --web-environment-add="WC_VERSION=${{ matrix.wc-versions }}"
+
+      - name: Start DDEV
+        run: ddev start
+
+      - name: Orchestrate DDEV
+        run: ddev orchestrate -f
+  
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright
+        run: npx playwright install --with-deps
+      - name: Run Playwright tests
+        run: npx playwright test PayPalButtonProduct.classic.spec.js
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30

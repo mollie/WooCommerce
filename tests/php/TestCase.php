@@ -177,6 +177,14 @@ class TestCase extends ModularityTestCase
                 );
             }
         );
+        $this->injectService('settings.data_helper', function () {
+            return $this->createConfiguredMock(
+                'Mollie\WooCommerce\Shared\Data',
+                [
+                    'isBlockPluginActive' => false,
+                ]
+            );
+        });
         when('get_plugin_data')->justReturn([
                                                 'Name' => 'WooCommerce/mollie-payments-for-woocommerce.php',
                                                 'Title' => 'Mollie Payments for WooCommerce',

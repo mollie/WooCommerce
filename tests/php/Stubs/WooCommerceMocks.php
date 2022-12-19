@@ -51,30 +51,15 @@ class WooCommerceMocks extends TestCase
 
         return $item;
     }
-    /**
-     *
-     * @return PHPUnit_Framework_MockObject_MockObject
-     * @throws PHPUnit_Framework_Exception
-     */
+
     public function wcOrderItem()
     {
-        $item = $this->createConfiguredMock(
-            'WC_Order_Item_Product',
-            [
+        return $this->createConfiguredMock(
+            'WC_Order_Item_Product', [
                 'get_quantity' => 1,
-
-
                 'get_total' => 20,
-                'get_name' => 'productName',
-
-
-            ]);
-
-
-        //$item['line_subtotal_tax']= 0;
-        //$item['line_tax']= 0;
-
-        return $item;
+                'get_name' => 'productName']
+        );
     }
     /**
      *

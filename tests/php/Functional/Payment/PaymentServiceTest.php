@@ -37,8 +37,9 @@ class PaymentServiceTest extends TestCase
      * @test
      */
     public function processPayment_Order_success(){
+        $this->bootsrapMolliePlugin();
+        $package = $this->createPackage($this->properties, $this->modules);
         $paymentMethodId = 'Ideal';
-        $isSepa = true;
         $wcOrderId = 1;
         $wcOrderKey = 'wc_order_hxZniP1zDcnM8';
         $wcOrder = $this->wcOrder($wcOrderId, $wcOrderKey);
@@ -57,21 +58,18 @@ class PaymentServiceTest extends TestCase
             []
         );
         $apiClientMock->orders = $orderEndpoints;
-        $voucherDefaultCategory = Voucher::NO_CATEGORY;
-        $testee = new PaymentService(
-            $this->helperMocks->noticeMock(),
-            $this->helperMocks->loggerMock(),
-            $this->helperMocks->paymentFactory($apiClientMock),
-            $this->helperMocks->dataHelper($apiClientMock),
-            $this->helperMocks->apiHelper($apiClientMock),
-            $this->helperMocks->settingsHelper(),
-            $this->helperMocks->pluginId(),
-            $this->paymentCheckoutService($apiClientMock),
-            $voucherDefaultCategory
-        );
+
+
+        $container = $package->container();
+
+        $testee = $container->get(PaymentService::class);
         $gateway = $this->mollieGateway($paymentMethodId, $testee);
         $testee->setGateway($gateway);
 
+        expect('get_option')
+            ->with('mollie-payments-for-woocommerce_api_switch')
+            ->andReturn(false);
+        expect('get_transient')->andReturn(['ideal'=>['id'=>'ideal']]);
         stubs(
             [
                 'admin_url' => 'http://admin.com',
@@ -79,7 +77,8 @@ class PaymentServiceTest extends TestCase
                 'wc_get_product' => $this->wcProduct(),
                 'wc_get_payment_gateway_by_order' => $gateway,
                 'add_query_arg' => 'https://webshop.example.org/wc-api/mollie_return?order_id=1&key=wc_order_hxZniP1zDcnM8',
-                'WC' => $this->wooCommerce()
+                'WC' => $this->wooCommerce(),
+                'get_locale' => 'es_ES',
             ]
         );
         $gateway->expects($this->once())
@@ -88,15 +87,6 @@ class PaymentServiceTest extends TestCase
         $expectedRequestToMollie = $this->expectedRequestData($wcOrder);
         $orderEndpoints->method('create')->with($expectedRequestToMollie);
 
-        /*
-         *  Expectations
-         */
-        expect('is_plugin_active')
-            ->andReturn(false);
-        expect('get_option')
-            ->with('mollie-payments-for-woocommerce_api_switch')
-            ->andReturn(false);
-        expect('get_transient')->andReturn(['ideal'=>['id'=>'ideal']]);
 
         /*
         * Execute Test

@@ -1,7 +1,6 @@
 name: Playwright Tests
 on:
-  workflow_dispatch:
-    branches: [ develop, master ]
+  [workflow_dispatch]
 jobs:
   test:
     timeout-minutes: 60

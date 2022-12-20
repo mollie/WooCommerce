@@ -37,8 +37,6 @@ jobs:
       - name: Orchestrate DDEV
         run: ddev orchestrate
   
-      - name: Install dependencies
-        run: npm ci
       - name: Install Playwright
         run: npx playwright install --with-deps
       - name: Run Playwright tests

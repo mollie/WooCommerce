@@ -4,8 +4,8 @@ const { test } = require('../Shared/base-test');
 const {insertAPIKeys, resetSettings} = require('../Shared/mollieUtils');
 const {sharedUrl: {settingsRoot}} = require('../Shared/sharedUrl');
 test.describe('Should show general settings', () => {
-    test.beforeAll(async ({browser }) => {
-        const page = await browser.newPage();
+    test.beforeAll(async ({browser , baseURL}) => {
+        const page = await browser.newPage({ baseURL: baseURL, extraHTTPHeaders: {'ngrok-skip-browser-warning': '123'}});
         await resetSettings(page);
     });
     test('Should show empty and disconnected', async ({ page , gateways}) => {

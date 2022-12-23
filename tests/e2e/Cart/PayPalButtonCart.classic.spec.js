@@ -7,7 +7,7 @@ const {sharedUrl: {paypalSettings}} = require('../Shared/sharedUrl');
 
 test.describe('PayPal Transaction in classic cart', () => {
     test.beforeAll(async ({browser , config}) => {
-        const page = await browser.newPage({ baseURL: config.projects[0].use.baseURL });
+        const page = await browser.newPage({ baseURL: config.projects[0].use.baseURL, extraHTTPHeaders: {'ngrok-skip-browser-warning': '123'}});
         await resetSettings(page);
         await insertAPIKeys(page);
     });

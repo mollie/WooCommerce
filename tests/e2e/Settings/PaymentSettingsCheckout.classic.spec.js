@@ -10,8 +10,8 @@ const {sharedUrl: {gatewaySettingsRoot}} = require('../Shared/sharedUrl');
 
 test.describe('Should show payment settings on classic checkout', () => {
 
-    test.beforeAll(async ({browser}) => {
-        const page = await browser.newPage();
+    test.beforeAll(async ({browser, baseURL}) => {
+        const page = await browser.newPage({ baseURL: baseURL, extraHTTPHeaders: {'ngrok-skip-browser-warning': '123'}});
         await resetSettings(page);
         await insertAPIKeys(page);
         // Go to shop

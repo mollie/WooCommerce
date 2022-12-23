@@ -25,6 +25,7 @@ jobs:
           autostart: false
 
       - uses: actions/checkout@v1
+        
       - uses: actions/setup-node@v2
         with:
           node-version: '14.x'
@@ -36,14 +37,19 @@ jobs:
 
       - name: Orchestrate DDEV
         run: ddev orchestrate
+        
       - name: Install Playwright
         run: npx playwright install --with-deps
+        
       - name: Install Ngrok
         run: curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list && sudo apt update && sudo apt install ngrok
+      
       - name: Add ngrok Authtoken
         run: ngrok config add-authtoken ${{ secrets.NGROK_AUTHTOKEN1 }}_${{ secrets.NGROK_AUTHTOKEN2 }}
+      
       - name: Run Ngrok
         run: bin/ddev-share-e2e
+      
       - name: Run Playwright tests
         run: npx playwright test PayPalButtonProduct.classic.spec.js
         env:
@@ -52,9 +58,10 @@ jobs:
           E2E_URL_TESTSITE: ${{ secrets.E2E_URL_TESTSITE }}
           MOLLIE_LIVE_API_KEY: ${{ secrets.MOLLIE_LIVE_API_KEY }}
           MOLLIE_TEST_API_KEY: ${{ secrets.MOLLIE_TEST_API_KEY }}
+      
       - uses: actions/upload-artifact@v2
         if: always()
         with:
-          name: test-results
-          path: test-results/
+          name: e2e-results
+          path: tests/e2e/Reports/
           retention-days: 30

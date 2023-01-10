@@ -62,7 +62,7 @@ class Data
 
     public function isBlockPluginActive(): bool
     {
-        return is_plugin_active('woo-gutenberg-products-block/woocommerce-gutenberg-products-block.php');
+        return class_exists('\Automattic\WooCommerce\Blocks\Package');
     }
 
     public function isSubscriptionPluginActive(): bool

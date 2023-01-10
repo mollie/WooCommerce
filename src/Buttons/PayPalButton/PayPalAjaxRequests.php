@@ -213,6 +213,7 @@ class PayPalAjaxRequests
         $order->update_meta_data('_payment_method', 'mollie_wc_gateway_paypal');
         $order->update_meta_data('_payment_method_title', 'PayPal');
         $order->update_meta_data('_mollie_payment_method_button', 'PayPalButton');
+        //this saves the order
         $order->update_status(
             'Processing',
             'PayPal Button order',

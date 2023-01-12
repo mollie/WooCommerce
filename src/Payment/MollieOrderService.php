@@ -91,6 +91,9 @@ class MollieOrderService
             return;
         }
         $gateway = wc_get_payment_gateway_by_order($order);
+        if (!$gateway instanceof MolliePaymentGateway) {
+            return;
+        }
         $this->setGateway($gateway);
         // No Mollie payment id provided
         if (empty($_POST['id'])) {

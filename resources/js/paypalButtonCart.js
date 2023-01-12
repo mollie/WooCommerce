@@ -49,7 +49,7 @@ import {ajaxCallToOrder} from "./paypalButtonUtils";
         const calculateTotal = () => {
             let subtotalPath = document.getElementsByClassName('cart-subtotal')[0].getElementsByClassName('woocommerce-Price-amount')[0].childNodes[0]
             let workingNode = subtotalPath.cloneNode(true);
-            let currency = workingNode.lastChild
+            let currency = workingNode.getElementsByClassName('woocommerce-Price-currencySymbol')[0]
             workingNode.removeChild(currency)
             let total = parseFloat(extractValue(workingNode));
             total += calculateTaxes()

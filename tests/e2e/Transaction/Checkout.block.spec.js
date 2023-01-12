@@ -117,7 +117,7 @@ test.describe('Transaction in block checkout', () => {
     });
     test('Transaction block with Order API cancelled setting as pending', async ({page, products, gateways}) => {
         //setting as pending
-        await page.goto(settingsRoot + '=advanced');
+        await page.goto(settingsRoot + '&section=advanced');
         await page.selectOption('select#mollie-payments-for-woocommerce_order_status_cancelled_payments', 'pending');
         await Promise.all([
             page.waitForNavigation(),
@@ -140,7 +140,7 @@ test.describe('Transaction in block checkout', () => {
     });
     test('Transaction block with Payment API cancelled setting as pending', async ({page, products, gateways}) => {
         //setting as pending
-        await page.goto(settingsRoot + '=advanced');
+        await page.goto(settingsRoot + '&section=advanced');
         await page.selectOption('select#mollie-payments-for-woocommerce_order_status_cancelled_payments', 'pending');
         await Promise.all([
             page.waitForNavigation(),
@@ -154,7 +154,7 @@ test.describe('Transaction in block checkout', () => {
     });
     test('Transaction block with Payment API cancelled setting as cancelled', async ({page, products, gateways}) => {
         //setting as cancelled
-        await page.goto(settingsRoot + '=advanced');
+        await page.goto(settingsRoot + '&section=advanced');
         await page.selectOption('select#mollie-payments-for-woocommerce_order_status_cancelled_payments', 'cancelled');
         await Promise.all([
             page.waitForNavigation(),

@@ -9,9 +9,8 @@ test.describe('Should show general settings', () => {
         await resetSettings(page);
     });
     test('Should show empty and disconnected', async ({ page , gateways}) => {
-        // Go to settings
         await page.goto(settingsRoot);
-        await expect(page.locator('text=No API key provided. Please set your Mollie API keys below.')).toBeVisible();
+        await expect(page.locator('text=API keys missing.')).toBeVisible();
         for ( const gatewayName in gateways ){
             //check default icon with a locator that has disabled and activate
             const title = gateways[gatewayName].defaultTitle

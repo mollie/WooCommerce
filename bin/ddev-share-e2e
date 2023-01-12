@@ -17,5 +17,6 @@ echo "Waiting a few seconds for the service to come up"
 sleep 3
 NGROK_HOST=$(ngrok-url)
 wp-replace "${PROJECT_HOST}" "${NGROK_HOST}"
+echo "Change the baseUrl in tests/e2e/Shared/base-url.js to 'https://${NGROK_HOST}'"
 echo "export const baseUrl = 'https://${NGROK_HOST}';" > tests/e2e/Shared/base-url.js
 echo "Your site is now reachable at https://${NGROK_HOST}"

@@ -115,7 +115,7 @@ async function classicCheckoutPaidTransactionPartialRefund(page, testedProduct, 
 }
 
 test.describe('Transaction in classic checkout', () => {
-    test.beforeAll(async ({browser , baseURL}) => {
+    test.beforeAll(async ({browser, baseURL }) => {
         const page = await browser.newPage({ baseURL: baseURL, extraHTTPHeaders: {'ngrok-skip-browser-warning': '123'}});
         await resetSettings(page);
         await insertAPIKeys(page);
@@ -137,7 +137,7 @@ test.describe('Transaction in classic checkout', () => {
     });
     test('Transaction classic with Order API cancelled setting as pending', async ({page, products, gateways}) => {
         //setting as pending
-        await page.goto(settingsRoot + '=advanced');
+        await page.goto(settingsRoot + '&section=advanced');
         await page.selectOption('select#mollie-payments-for-woocommerce_order_status_cancelled_payments', 'pending');
         await Promise.all([
             page.waitForNavigation(),
@@ -174,7 +174,7 @@ test.describe('Transaction in classic checkout', () => {
     });
     test('Transaction classic with Payment API cancelled setting as pending', async ({page, products, gateways}) => {
         //setting as pending
-        await page.goto(settingsRoot + '=advanced');
+        await page.goto(settingsRoot + '&section=advanced');
         await page.selectOption('select#mollie-payments-for-woocommerce_order_status_cancelled_payments', 'pending');
         await Promise.all([
             page.waitForNavigation(),
@@ -188,7 +188,7 @@ test.describe('Transaction in classic checkout', () => {
     });
     test('Transaction classic with Payment API cancelled setting as cancelled', async ({page, products, gateways}) => {
         //setting as cancelled
-        await page.goto(settingsRoot + '=advanced');
+        await page.goto(settingsRoot + '&section=advanced');
         await page.selectOption('select#mollie-payments-for-woocommerce_order_status_cancelled_payments', 'cancelled');
         await Promise.all([
             page.waitForNavigation(),

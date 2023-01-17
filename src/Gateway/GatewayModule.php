@@ -549,7 +549,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
             $paymentMethodsNames[] = 'directdebit';
         }
         foreach ($paymentMethodsNames as $paymentMethodName) {
-            $paymentMethodName = str_replace('Mollie_WC_Gateway_','',$paymentMethodName);
+            $paymentMethodName = strtolower($paymentMethodName);
+            $paymentMethodName = str_replace('mollie_wc_gateway_','',$paymentMethodName);
             $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . ucfirst($paymentMethodName);
             $paymentMethod = new $paymentMethodClassName(
                 $iconFactory,

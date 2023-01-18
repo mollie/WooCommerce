@@ -35,6 +35,10 @@ class SettingsModule implements ServiceModule, ExecutableModule
      * @var mixed
      */
     protected $dataHelper;
+    /**
+     * @var boolean
+     */
+    protected $isTestNoticePrinted;
 
     public function services(): array
     {
@@ -128,9 +132,18 @@ class SettingsModule implements ServiceModule, ExecutableModule
             10,
             2
         );
-
-        add_action('wp_loaded', function () {
-            $this->maybeTestModeNotice($this->isTestModeEnabled);
+        $this->isTestNoticePrinted = false;
+        add_action('woocommerce_settings_saved', function () {
+            $isNoticePrinted = $this->maybeTestModeNotice();
+            if ($isNoticePrinted) {
+                $this->isTestNoticePrinted = true;
+            }
+        });
+        add_action('admin_init', function () {
+            if ($this->isTestNoticePrinted) {
+                return;
+            }
+            $this->maybeTestModeNotice();
         });
 
         $gateways = $container->get('gateway.instances');
@@ -178,25 +191,29 @@ class SettingsModule implements ServiceModule, ExecutableModule
         return array_merge($action_links, $links);
     }
 
-    public function maybeTestModeNotice($isTestModeEnabled)
+    public function maybeTestModeNotice(): bool
     {
-        if ($isTestModeEnabled) {
-            $notice = new AdminNotice();
-            $message = sprintf(
-                /* translators: Placeholder 1: Opening strong tag. Placeholder 2: Closing strong tag. Placeholder 3: Opening link tag. Placeholder 4: Closing link tag. */
-                esc_html__(
-                    '%1$sMollie Payments for WooCommerce%2$s The test mode is active, %3$s disable it%4$s before deploying into production.',
-                    'mollie-payments-for-woocommerce'
-                ),
-                '<strong>',
-                '</strong>',
-                '<a href="' . esc_url(
-                    admin_url('admin.php?page=wc-settings&tab=mollie_settings')
-                ) . '">',
-                '</a>'
-            );
-            $notice->addNotice('notice-error', $message);
+        $testModeEnabled = get_option('mollie-payments-for-woocommerce_test_mode_enabled', true);
+        $shouldShowNotice = $testModeEnabled === 'yes';
+        if (!$shouldShowNotice) {
+            return false;
         }
+        $notice = new AdminNotice();
+        $message = sprintf(
+        /* translators: Placeholder 1: Opening strong tag. Placeholder 2: Closing strong tag. Placeholder 3: Opening link tag. Placeholder 4: Closing link tag. */
+            esc_html__(
+                '%1$sMollie Payments for WooCommerce%2$s The test mode is active, %3$s disable it%4$s before deploying into production.',
+                'mollie-payments-for-woocommerce'
+            ),
+            '<strong>',
+            '</strong>',
+            '<a href="' . esc_url(
+                admin_url('admin.php?page=wc-settings&tab=mollie_settings')
+            ) . '">',
+            '</a>'
+        );
+        $notice->addNotice('notice-error', $message);
+        return true;
     }
 
     /**

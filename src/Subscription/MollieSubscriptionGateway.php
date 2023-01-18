@@ -405,8 +405,8 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             'mollie_wc_gateway_sofort',
         ];
 
-        $current_method = get_post_meta($renewal_order_id, '_payment_method', $single = true);
-        if (in_array($current_method, $methods_needing_update) && $payment->method === self::DIRECTDEBIT) {
+        $current_method = $renewal_order->get_meta('_payment_method', true);
+        if (in_array($current_method, $methods_needing_update, true) && $payment->method === self::DIRECTDEBIT) {
             try {
                 $renewal_order->set_payment_method('mollie_wc_gateway_directdebit');
                 $renewal_order->set_payment_method_title('SEPA Direct Debit');

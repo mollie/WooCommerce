@@ -916,10 +916,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
 
             if ($payment->isOpen()) {
                 // Add a message to log and order explaining a payment with status "open", only if it hasn't been added already
-                if (
-                    get_post_meta($order_id, '_mollie_open_status_note', true)
-                    !== '1'
-                ) {
+                if ($order->get_meta('_mollie_open_status_note') !== '1') {
                     // Get payment method title
                     $payment_method_title = $this->method_title;
 
@@ -947,12 +944,8 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
                                 )) : '')
                         )
                     );
-
-                    update_post_meta(
-                        $order_id,
-                        '_mollie_open_status_note',
-                        '1'
-                    );
+                    $order->update_meta_data('_mollie_open_status_note', '1');
+                    $order->save();
                 }
 
                 // Update the title on the Order received page to better communicate that the payment is pending.

@@ -54,7 +54,7 @@ class Surcharge
 
         $feeText = $this->feeTextByType($surchargeType, $paymentMethod);
         if ($feeText) {
-            $feeLabel = '<span class="mollie-gateway-fee">' . $feeText . '</span>';
+            $feeLabel = '<p class="mollie-gateway-fee">' . $feeText . '</p>';
             return $description . $feeLabel;
         }
         return $description;

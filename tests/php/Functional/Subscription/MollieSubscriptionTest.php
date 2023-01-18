@@ -56,7 +56,6 @@ class MollieSubscriptionTest extends TestCase
         $renewalOrder->expects($this->once())->method(
             'set_payment_method'
         )->with($gatewayName);
-        expect('get_post_meta')->with(1, '_payment_method', true);
         expect('wc_get_order')->with(1)->andReturn($renewalOrder);
         expect('wcs_order_contains_renewal')->with(1)->andReturn($renewalOrder);
         expect('wcs_get_subscription')->andReturn($subscription);

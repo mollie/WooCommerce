@@ -31,8 +31,10 @@ class PayPalButtonHandler
     public function bootstrap($enabledInProduct, $enabledInCart)
     {
         if($enabledInProduct){
+            $renderPlaceholder = apply_filters('mollie_wc_gateway_paypal_render_placeholder_product', 'woocommerce_before_add_to_cart_quantity');
+            $renderPlaceholder = is_string($renderPlaceholder) ? $renderPlaceholder : 'woocommerce_before_add_to_cart_quantity';
             add_action(
-                    'woocommerce_after_single_product',
+                    $renderPlaceholder,
                     function () {
                         $product = wc_get_product(get_the_id());
                         if (!$product || $product->is_type('subscription') || $product instanceof \WC_Product_Variable_Subscription) {

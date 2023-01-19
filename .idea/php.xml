@@ -1,16 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="MessDetectorOptionsConfiguration">
-    <option name="transferred" value="true" />
-  </component>
-  <component name="PHPCSFixerOptionsConfiguration">
-    <option name="transferred" value="true" />
-  </component>
-  <component name="PHPCodeSnifferOptionsConfiguration">
-    <option name="codingStandard" value="Custom" />
-    <option name="customRuleset" value="$PROJECT_DIR$/phpcs.xml.dist" />
-    <option name="transferred" value="true" />
-  </component>
   <component name="PhpCSFixer">
     <phpcsfixer_settings>
       <PhpCSFixerConfiguration standards="PSR1;PSR2;Symfony;DoctrineAnnotation;PHP70Migration;PHP71Migration" tool_path="$PROJECT_DIR$/vendor/bin/phpcbf" />
@@ -116,9 +105,6 @@
       <path value="$PROJECT_DIR$/vendor/symfony/polyfill-intl-idn" />
       <path value="$PROJECT_DIR$/vendor/paragonie/random_compat" />
       <path value="$PROJECT_DIR$/vendor/php-stubs/wordpress-stubs" />
-      <path value="$PROJECT_DIR$/vendor/modularity-test-case/.git" />
-      <path value="$PROJECT_DIR$/vendor/inpsyde/modularity-test-case" />
-      <path value="$PROJECT_DIR$/vendor/php-stubs/woocommerce-stubs" />
     </include_path>
   </component>
   <component name="PhpInterpreters">
@@ -335,9 +321,6 @@
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="7.2">
     <option name="suggestChangeDefaultLanguageLevel" value="false" />
-  </component>
-  <component name="PhpStanOptionsConfiguration">
-    <option name="transferred" value="true" />
   </component>
   <component name="PhpUnit">
     <phpunit_settings>

@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Activation;
 
+use Automattic\WooCommerce\Utilities\FeaturesUtil;
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Package;
@@ -42,7 +43,7 @@ class ActivationModule implements ExecutableModule
             'init',
             [$this, 'pluginInit']
         );
-
+        $this->declareCompatibleWithHPOS();
         $this->handleTranslations();
         $this->mollieWcNoticeApiKeyMissing();
         $this->appleValidationFileRewriteRules();
@@ -206,5 +207,18 @@ class ActivationModule implements ExecutableModule
         );
         $this->markUpdatedOrNew();
         $this->initDb();
+    }
+
+    /**
+     * @return void
+     */
+    protected function declareCompatibleWithHPOS(): void
+    {
+        $baseFile = $this->baseFile;
+        add_action('before_woocommerce_init', static function () use ($baseFile) {
+            if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+                FeaturesUtil::declare_compatibility('custom_order_tables', $baseFile, true);
+            }
+        });
     }
 }

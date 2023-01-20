@@ -92,6 +92,9 @@ class MollieOrderService
             return;
         }
         $gateway = wc_get_payment_gateway_by_order($order);
+        if (!$gateway instanceof MolliePaymentGateway) {
+            return;
+        }
         $this->setGateway($gateway);
         // No Mollie payment id provided
         $paymentId = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_SPECIAL_CHARS);
@@ -146,7 +149,8 @@ class MollieOrderService
             return;
         }
 
-        if ($payment->method === 'paypal' && isset($payment->billingAddress)) {
+        if ($payment->method === 'paypal' && isset($payment->billingAddress) && $this->isOrderButtonPayment($order)) {
+            $this->logger->debug($this->gateway->id . ": updating address from express button", [true]);
             $this->setBillingAddressAfterPayment($payment, $order);
         }
 
@@ -827,5 +831,10 @@ class MollieOrderService
             . json_encode($processedRefundIds)
         );
         return $processedRefundIds;
+    }
+
+    protected function isOrderButtonPayment(WC_Order $order): bool
+    {
+        return $order->get_meta('_mollie_payment_method_button', false) === 'PayPalButton';
     }
 }

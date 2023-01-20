@@ -475,6 +475,9 @@ class GatewayModule implements ServiceModule, ExecutableModule
 
         foreach ($paymentMethods as $paymentMethod) {
             $paymentMethodId = $paymentMethod->getIdFromConfig();
+            if(! in_array($paymentMethodId, $container->get('gateway.paymentMethodsEnabledAtMollie'))) {
+                continue;
+            }
             $isSepa = $paymentMethod->getProperty('SEPA');
             $key = 'mollie_wc_gateway_' . $paymentMethodId;
             if ($isSepa) {
@@ -537,7 +540,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
     protected function instantiatePaymentMethods($container): array
     {
         $paymentMethods = [];
-        $paymentMethodsNames = $container->get('gateway.paymentMethodsEnabledAtMollie');
+        $paymentMethodsNames = SharedDataDictionary::GATEWAY_CLASSNAMES;
         $iconFactory = $container->get(IconFactory::class);
         assert($iconFactory instanceof IconFactory);
         $settingsHelper = $container->get('settings.settings_helper');
@@ -551,6 +554,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
             $paymentMethodsNames[] = 'directdebit';
         }
         foreach ($paymentMethodsNames as $paymentMethodName) {
+            $paymentMethodName = strtolower($paymentMethodName);
+            $paymentMethodName = str_replace('mollie_wc_gateway_','',$paymentMethodName);
             $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . ucfirst($paymentMethodName);
             $paymentMethod = new $paymentMethodClassName(
                 $iconFactory,

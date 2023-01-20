@@ -33,3 +33,15 @@ To start a sharing session, simply run
 bin/ddev-share
 ```
 
+## Playwright tests locally
+To run the Playwright tests locally inside DDEV, you need to run the following command that will install the dependencies inside the container. (This will not work if your machine has the M1 chip)
+
+```shell
+ddev npx playwright install --with-deps
+```
+
+Then you can run the tests with the following command
+
+```shell
+ddev npx playwright test
+```

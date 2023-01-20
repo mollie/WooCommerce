@@ -29,6 +29,15 @@ class Directdebit extends AbstractPaymentMethod implements PaymentMethodI
     {
         unset($generalFormFields['display_logo']);
         unset($generalFormFields['description']);
+        unset($generalFormFields['enable_custom_logo']);
+        unset($generalFormFields['upload_logo']);
+        unset($generalFormFields['payment_surcharge']);
+        unset($generalFormFields['fixed_fee']);
+        unset($generalFormFields['percentage']);
+        unset($generalFormFields['surcharge_limit']);
+        unset($generalFormFields['maximum_limit']);
+        unset($generalFormFields[2]);
+        unset($generalFormFields[3]);
         return $generalFormFields;
     }
 }

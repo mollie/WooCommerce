@@ -62,7 +62,7 @@ class Data
 
     public function isBlockPluginActive(): bool
     {
-        return is_plugin_active('woo-gutenberg-products-block/woocommerce-gutenberg-products-block.php');
+        return class_exists('\Automattic\WooCommerce\Blocks\Package');
     }
 
     public function isSubscriptionPluginActive(): bool
@@ -611,32 +611,7 @@ class Data
      */
     public function restoreOrderStock(WC_Order $order)
     {
-        foreach ($order->get_items() as $item) {
-            if ($item['product_id'] > 0) {
-                $product = $item->get_product();
-
-                if ($product && $product->exists() && $product->managing_stock()) {
-                    $old_stock = $product->get_stock_quantity();
-
-                    $qty = apply_filters('woocommerce_order_item_quantity', $item['qty'], $order, $item);
-
-                    $new_quantity =  wc_update_product_stock($product, $qty, 'increase');
-
-                    do_action('woocommerce_auto_stock_restored', $product, $item);
-
-                    $order->add_order_note(sprintf(
-                        __('Item #%1$s stock incremented from %2$s to %3$s.', 'woocommerce'),
-                        $item['product_id'],
-                        $old_stock,
-                        $new_quantity
-                    ));
-                }
-            }
-        }
-
-        // Mark order stock as not-reduced
-        $order->delete_meta_data('_order_stock_reduced');
-        $order->save();
+        wc_maybe_increase_stock_levels( $order->get_id() );
     }
 
     /**

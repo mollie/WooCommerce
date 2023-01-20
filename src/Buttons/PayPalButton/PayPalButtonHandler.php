@@ -48,8 +48,10 @@ class PayPalButtonHandler
             );
         }
         if($enabledInCart){
+            $renderPlaceholder = apply_filters('mollie_wc_gateway_paypal_render_placeholder_cart', 'woocommerce_cart_totals_after_order_total');
+            $renderPlaceholder = is_string($renderPlaceholder) ? $renderPlaceholder : 'woocommerce_cart_totals_after_order_total';
             add_action(
-                    'woocommerce_cart_totals_after_order_total',
+                    $renderPlaceholder,
                     function () {
                         $cart = WC()->cart;
                         foreach ($cart->get_cart_contents() as $product){

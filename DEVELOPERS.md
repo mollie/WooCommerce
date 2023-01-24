@@ -33,11 +33,41 @@ To start a sharing session, simply run
 bin/ddev-share
 ```
 
-## Playwright tests locally
-To run the Playwright tests locally inside DDEV, you need to run the following command that will install the dependencies inside the container. (This will not work if your machine has the M1 chip)
+## Playwright tests within DDEV
+To run the Playwright tests locally inside DDEV, you need to run once the following command that will install the dependencies inside the container. (This will not work if your machine has an Apple silicon chip)
 
 ```shell
 ddev npx playwright install --with-deps
+```
+
+Transactions expect webhooks so ngrok should be running. You can start it with the following command:
+
+```shell
+/bin/ddev-share
+```
+
+Then you can run the tests with the following command
+
+```shell
+ddev npx playwright test
+```
+
+## Playwright tests locally
+
+To run the Playwright tests locally, you need to run once the following command that will install the dependencies.
+```shell
+ddev npx playwright install --with-deps
+```
+Transactions expect webhooks so ngrok should be running. You can start it with the following command:
+
+```shell
+/bin/ddev-share
+```
+
+Export the new ngrok URL to the environment variable `BASEURL`:
+
+```shell
+export BASEURL=https://<your-ngrok-url>.ngrok.io
 ```
 
 Then you can run the tests with the following command

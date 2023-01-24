@@ -51,6 +51,7 @@ jobs:
           E2E_AUTH_PW: ${{ secrets.E2E_AUTH_PW }}
           MOLLIE_LIVE_API_KEY: ${{ secrets.MOLLIE_LIVE_API_KEY }}
           MOLLIE_TEST_API_KEY: ${{ secrets.MOLLIE_TEST_API_KEY }}
+          BASEURL: ${{ env.BASEURL }}
       - uses: actions/upload-artifact@v2
         if: always()
         with:

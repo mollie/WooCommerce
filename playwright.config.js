@@ -1,7 +1,6 @@
 const { devices } = require('@playwright/test');
 const {simple, virtual} = require('./tests/e2e/Shared/products');
 const {banktransfer, paypal, creditcard} = require('./tests/e2e/Shared/gateways');
-const baseURL = require('./tests/e2e/Shared/base-url');
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -44,7 +43,7 @@ const config = {
         /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
         actionTimeout: 0,
         /* Base URL to use in actions like `await page.goto('/')`. */
-        baseURL: baseURL.baseUrl,
+        baseURL: process.env.BASEURL,
         storageState: './storageState.json',
         /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
         trace: 'on-first-retry',

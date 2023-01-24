@@ -290,7 +290,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
     public function mollieReturnRedirect()
     {
         if (isset($_GET['filter_flag'])) {
-            $filterFlag = filter_input(INPUT_GET, 'filter_flag', FILTER_SANITIZE_STRING);
+            $filterFlag = sanitize_text_field(wp_unslash($_GET['filter_flag']));
             if ($filterFlag === 'onMollieReturn') {
                 self::onMollieReturn();
             }
@@ -518,7 +518,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
     public function orderByRequest()
     {
         $orderId = filter_input(INPUT_GET, 'order_id', FILTER_SANITIZE_NUMBER_INT) ?: null;
-        $key = filter_input(INPUT_GET, 'key', FILTER_SANITIZE_STRING) ?: null;
+        $key = sanitize_text_field(wp_unslash($_GET['key'])) ?: null;
         $order = wc_get_order($orderId);
 
         if (!$order) {

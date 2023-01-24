@@ -258,7 +258,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
      */
     public function maybeDisableBankTransferGateway(array $gateways): array
     {
-        $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_STRING);
+        $isWcApiRequest = isset($_GET['wc-api']) && sanitize_text_field(wp_unslash($_GET['wc-api']));
         $bankTransferSettings = get_option('mollie_wc_gateway_banktransfer_settings', false);
         $isSettingActivated = $bankTransferSettings && isset($bankTransferSettings['activate_expiry_days_setting']) && $bankTransferSettings['activate_expiry_days_setting'] === "yes";
         if ($isSettingActivated  && isset($bankTransferSettings['order_dueDate'])) {
@@ -294,7 +294,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
      */
     public function maybeDisableApplePayGateway(array $gateways): array
     {
-        $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_STRING);
+        $isWcApiRequest = isset($_GET['wc-api']) && sanitize_text_field(wp_unslash($_GET['wc-api']));
         $wooCommerceSession = mollieWooCommerceSession();
 
         /*
@@ -318,11 +318,9 @@ class GatewayModule implements ServiceModule, ExecutableModule
         }
 
         $applePayGatewayClassName = 'mollie_wc_gateway_applepay';
-        $postData = (string)filter_input(
-            INPUT_POST,
-            self::POST_DATA_KEY,
-            FILTER_SANITIZE_STRING
-        ) ?: '';
+        $postData = isset($_POST[self::POST_DATA_KEY]) ? sanitize_text_field(
+            wp_unslash($_POST[self::POST_DATA_KEY])
+        ) : '';
         parse_str($postData, $postData);
 
         $applePayAllowed = isset($postData[self::APPLE_PAY_METHOD_ALLOWED_KEY])
@@ -472,6 +470,9 @@ class GatewayModule implements ServiceModule, ExecutableModule
 
         foreach ($paymentMethods as $paymentMethod) {
             $paymentMethodId = $paymentMethod->getIdFromConfig();
+            if(! in_array($paymentMethodId, $container->get('gateway.paymentMethodsEnabledAtMollie'))) {
+                continue;
+            }
             $isSepa = $paymentMethod->getProperty('SEPA');
             $key = 'mollie_wc_gateway_' . $paymentMethodId;
             if ($isSepa) {
@@ -534,7 +535,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
     protected function instantiatePaymentMethods($container): array
     {
         $paymentMethods = [];
-        $paymentMethodsNames = $container->get('gateway.paymentMethodsEnabledAtMollie');
+        $paymentMethodsNames = SharedDataDictionary::GATEWAY_CLASSNAMES;
         $iconFactory = $container->get(IconFactory::class);
         assert($iconFactory instanceof IconFactory);
         $settingsHelper = $container->get('settings.settings_helper');
@@ -548,6 +549,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
             $paymentMethodsNames[] = 'directdebit';
         }
         foreach ($paymentMethodsNames as $paymentMethodName) {
+            $paymentMethodName = strtolower($paymentMethodName);
+            $paymentMethodName = str_replace('mollie_wc_gateway_','',$paymentMethodName);
             $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . ucfirst($paymentMethodName);
             $paymentMethod = new $paymentMethodClassName(
                 $iconFactory,

@@ -96,9 +96,12 @@ class MolliePayment extends MollieObject
             'method' => $gateway->paymentMethod->getProperty('id'),
             'issuer' => $selectedIssuer,
             'locale' => $paymentLocale,
-            'metadata' => [
-                'order_id' => $orderId,
-            ],
+            'metadata' => apply_filters(
+                $this->pluginId . '_payment_object_metadata',
+                [
+                    'order_id' => $order->get_id(),
+                ]
+            ),
         ];
 
         $paymentRequestData = $this->addSequenceTypeForSubscriptionsFirstPayments($order->get_id(), $gateway, $paymentRequestData);
@@ -113,8 +116,7 @@ class MolliePayment extends MollieObject
         }
 
         if (isset($_POST['token'])) {
-            $applePayToken = $_POST['token'];
-            $applePayToken = filter_var($applePayToken, FILTER_SANITIZE_STRING);
+            $applePayToken = sanitize_text_field(wp_unslash($_POST['token']));
             $encodedApplePayToken = json_encode($applePayToken);
             $paymentRequestData['applePayPaymentToken'] = $encodedApplePayToken;
         }
@@ -300,7 +302,7 @@ class MolliePayment extends MollieObject
         $newOrderStatus = apply_filters($this->pluginId . '_order_status_cancelled_' . $gateway->id, $newOrderStatus);
 
         // Update order status, but only if there is no payment started by another gateway
-        $this->maybeUpdateStatus($order, $gateway, $newOrderStatus, $orderId);
+        $this->maybeUpdateStatus($order, $gateway, $newOrderStatus);
 
         // User cancelled payment on Mollie or issuer page, add a cancel note.. do not cancel order.
         $order->add_order_note(sprintf(
@@ -401,7 +403,7 @@ class MolliePayment extends MollieObject
         $newOrderStatus = apply_filters($this->pluginId . '_order_status_expired_' . $gateway->id, $newOrderStatus);
 
         // Update order status, but only if there is no payment started by another gateway
-        $this->maybeUpdateStatus($order, $gateway, $newOrderStatus, $orderId);
+        $this->maybeUpdateStatus($order, $gateway, $newOrderStatus);
 
         $order->add_order_note(sprintf(
         /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
@@ -504,11 +506,10 @@ class MolliePayment extends MollieObject
     protected function maybeUpdateStatus(
         WC_Order $order,
         $gateway,
-        $newOrderStatus,
-        $orderId
+        $newOrderStatus
     ) {
         if ($this->isOrderPaymentStartedByOtherGateway($order) || ! is_a($gateway, MolliePaymentGateway::class)) {
-            $this->informNotUpdatingStatus($orderId, $gateway->id, $order);
+            $this->informNotUpdatingStatus($gateway->id, $order);
             return;
         }
         $gateway->paymentService->updateOrderStatus($order, $newOrderStatus);

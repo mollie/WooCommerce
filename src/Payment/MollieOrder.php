@@ -6,6 +6,7 @@ namespace Mollie\WooCommerce\Payment;
 
 use Exception;
 use Mollie\Api\Exceptions\ApiException;
+use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
@@ -158,7 +159,7 @@ class MollieOrder extends MollieObject
             $paymentRequestData['payment']['cardToken'] = $cardToken;
         }
 
-        $applePayToken = filter_input(INPUT_POST, 'token', FILTER_SANITIZE_STRING);
+        $applePayToken = isset($_POST['token'])? sanitize_text_field(wp_unslash($_POST['token'])) : false;
         if ($applePayToken && isset($paymentRequestData['payment'])) {
             $encodedApplePayToken = json_encode($applePayToken);
             $paymentRequestData['payment']['applePayPaymentToken'] = $encodedApplePayToken;
@@ -242,7 +243,7 @@ class MollieOrder extends MollieObject
 
     /**
      * @param WC_Order                   $order
-     * @param \Mollie\Api\Resources\Order $payment
+     * @param Order $payment
      * @param string                     $paymentMethodTitle
      */
     public function onWebhookPaid(WC_Order $order, $payment, $paymentMethodTitle)
@@ -307,7 +308,7 @@ class MollieOrder extends MollieObject
 
     /**
      * @param WC_Order                   $order
-     * @param \Mollie\Api\Resources\Order $payment
+     * @param Order $payment
      * @param string                     $paymentMethodTitle
      */
     public function onWebhookAuthorized(WC_Order $order, $payment, $paymentMethodTitle)
@@ -351,7 +352,7 @@ class MollieOrder extends MollieObject
 
     /**
      * @param WC_Order                   $order
-     * @param \Mollie\Api\Resources\Order $payment
+     * @param Order $payment
      * @param string                     $paymentMethodTitle
      */
     public function onWebhookCompleted(WC_Order $order, $payment, $paymentMethodTitle)
@@ -396,7 +397,7 @@ class MollieOrder extends MollieObject
 
     /**
      * @param WC_Order                   $order
-     * @param \Mollie\Api\Resources\Order $payment
+     * @param Order $payment
      * @param string                     $paymentMethodTitle
      */
     public function onWebhookCanceled(WC_Order $order, $payment, $paymentMethodTitle)
@@ -446,7 +447,6 @@ class MollieOrder extends MollieObject
         $this->maybeUpdateStatus(
             $order,
             $newOrderStatus,
-            $orderId,
             $paymentMethodTitle,
             $payment
         );
@@ -463,7 +463,7 @@ class MollieOrder extends MollieObject
 
     /**
      * @param WC_Order                   $order
-     * @param \Mollie\Api\Resources\Order $payment
+     * @param Order $payment
      * @param string                     $paymentMethodTitle
      */
     public function onWebhookFailed(WC_Order $order, $payment, $paymentMethodTitle)
@@ -500,7 +500,7 @@ class MollieOrder extends MollieObject
 
     /**
      * @param WC_Order                   $order
-     * @param \Mollie\Api\Resources\Order $payment
+     * @param Order $payment
      * @param string                     $paymentMethodTitle
      */
     public function onWebhookExpired(WC_Order $order, $payment, $paymentMethodTitle)
@@ -547,7 +547,6 @@ class MollieOrder extends MollieObject
         $this->maybeUpdateStatus(
             $order,
             $newOrderStatus,
-            $orderId,
             $paymentMethodTitle,
             $payment
         );
@@ -883,7 +882,7 @@ class MollieOrder extends MollieObject
     }
 
     /**
-     * @param \Mollie\Api\Resources\Order $order
+     * @param Order $order
      * @param int                     $orderId
      */
     public function updatePaymentDataWithOrderData($order, $orderId)
@@ -922,20 +921,19 @@ class MollieOrder extends MollieObject
      * @param                             $newOrderStatus
      * @param                             $orderId
      * @param                             $paymentMethodTitle
-     * @param \Mollie\Api\Resources\Order $payment
+     * @param Order $payment
      */
     protected function maybeUpdateStatus(
         WC_Order $order,
         $newOrderStatus,
-        $orderId,
         $paymentMethodTitle,
-        \Mollie\Api\Resources\Order $payment
+        Order $payment
     ) {
         $gateway = wc_get_payment_gateway_by_order($order);
         if (!$this->isOrderPaymentStartedByOtherGateway($order) && is_a($gateway, MolliePaymentGateway::class) ) {
             $gateway->paymentService->updateOrderStatus($order, $newOrderStatus);
         } else {
-            $this->informNotUpdatingStatus($orderId, $gateway->id, $order);
+            $this->informNotUpdatingStatus($gateway->id, $order);
         }
 
         $order->add_order_note(
@@ -1086,24 +1084,23 @@ class MollieOrder extends MollieObject
     }
 
     /**
-     * @param \Mollie\Api\Resources\Order $payment
+     * @param Order $payment
      * @param WC_Order                    $order
      */
     protected function addAddressToPaypalOrder(
-        \Mollie\Api\Resources\Order $payment,
+        Order $payment,
         WC_Order $order
     ) {
 
         $address = $payment->shippingAddress;
-        $filter = FILTER_SANITIZE_STRING;
         $shippingAddress = [
-            'first_name' => filter_var($address->givenName, $filter),
-            'last_name' => filter_var($address->familyName, $filter),
-            'email' => filter_var($address->email, $filter),
-            'postcode' => filter_var($address->postalCode, $filter),
-            'country' => strtoupper(filter_var($address->country, $filter)),
-            'city' => filter_var($address->city, $filter),
-            'address_1' => filter_var($address->streetAndNumber, $filter),
+            'first_name' => sanitize_text_field(wp_unslash($address->givenName)),
+            'last_name' => sanitize_text_field(wp_unslash($address->familyName)),
+            'email' => sanitize_text_field(wp_unslash($address->email)),
+            'postcode' => sanitize_text_field(wp_unslash($address->postalCode)),
+            'country' => strtoupper(sanitize_text_field(wp_unslash($address->country))),
+            'city' => sanitize_text_field(wp_unslash($address->city)),
+            'address_1' => sanitize_text_field(wp_unslash($address->streetAndNumber)),
         ];
 
         $order->set_address($shippingAddress, 'shipping');

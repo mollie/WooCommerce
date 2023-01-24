@@ -286,6 +286,7 @@ class GatewaySurchargeHandler
     {
         $inputGateway = filter_input(INPUT_POST, 'payment_method', FILTER_SANITIZE_SPECIAL_CHARS);
         $gateway = !empty($inputGateway) ? $inputGateway : false;
+
         if (!$gateway) {
             return false;
         }

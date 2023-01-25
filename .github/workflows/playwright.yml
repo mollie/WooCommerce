@@ -43,7 +43,7 @@ jobs:
       - name: Add ngrok Authtoken
         run: ngrok config add-authtoken ${{ secrets.NGROK_AUTHTOKEN1 }}_${{ secrets.NGROK_AUTHTOKEN2 }}
       - name: Run Ngrok
-        run: bin/ddev-share-e2e
+        run: bin/ddev-share --ci
       - name: Run Playwright tests
         run: npx playwright test TestCI.spec.js
         env:

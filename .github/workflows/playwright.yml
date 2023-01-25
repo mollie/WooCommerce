@@ -11,9 +11,6 @@ jobs:
       matrix:
         php-versions: [ '7.4' ]
         wc-versions: [ '5.9.5' ]
-        exclude:
-          - php-versions: 7.2
-            wc-versions: 7.1.0
     
     name: PHP ${{ matrix.php-versions }} WC ${{ matrix.wc-versions }}
     steps:
@@ -43,7 +40,7 @@ jobs:
       - name: Add ngrok Authtoken
         run: ngrok config add-authtoken ${{ secrets.NGROK_AUTHTOKEN1 }}_${{ secrets.NGROK_AUTHTOKEN2 }}
       - name: Run Ngrok
-        run: bin/ddev-share-e2e
+        run: bin/ddev-share --ci
       - name: Run Playwright tests
         run: npx playwright test TestCI.spec.js
         env:
@@ -51,6 +48,7 @@ jobs:
           E2E_AUTH_PW: ${{ secrets.E2E_AUTH_PW }}
           MOLLIE_LIVE_API_KEY: ${{ secrets.MOLLIE_LIVE_API_KEY }}
           MOLLIE_TEST_API_KEY: ${{ secrets.MOLLIE_TEST_API_KEY }}
+          BASEURL: ${{ env.BASEURL }}
       - uses: actions/upload-artifact@v2
         if: always()
         with:

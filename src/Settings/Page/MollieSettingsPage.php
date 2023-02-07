@@ -383,6 +383,11 @@ class MollieSettingsPage extends WC_Settings_Page
         // are required to accept Klarna as payment method
         $content = $this->warnAboutRequiredCheckoutFieldForKlarna($content);
 
+        // Warn users that all default WooCommerce checkout fields
+        // and billing company name
+        // are required to accept Billie as payment method
+        $content = $this->warnAboutRequiredCheckoutFieldForBillie($content);
+
         return $content;
     }
 
@@ -737,5 +742,21 @@ class MollieSettingsPage extends WC_Settings_Page
             }
         }
         return $isKlarnaEnabled;
+    }
+
+    private function warnAboutRequiredCheckoutFieldForBillie(string $content)
+    {
+        $isBillieEnabled = $this->paymentMethods['billie']->getProperty('enabled') === 'yes';
+        if ($isBillieEnabled) {
+            $content .= '<div class="notice notice-warning is-dismissible">';
+            $content .= '<p>';
+            $content .= __(
+                'You have activated Billie. To accept payments, please make sure all default WooCommerce checkout fields are enabled and required. The billing company field is required as well.',
+                'mollie-payments-for-woocommerce'
+            );
+            $content .= '</p>';
+            $content .= '</div>';
+        }
+        return $content;
     }
 }

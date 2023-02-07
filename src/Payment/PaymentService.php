@@ -383,13 +383,16 @@ class PaymentService
         } catch (ApiException $e) {
             // Don't try to create a Mollie Payment for Klarna payment methods
             $order_payment_method = $order->get_payment_method();
+            $orderMandatoryPaymentMethods = [
+                'mollie_wc_gateway_klarnapaylater',
+                'mollie_wc_gateway_klarnasliceit',
+                'mollie_wc_gateway_klarnapaynow',
+                'mollie_wc_gateway_billie',
+            ];
 
-            if ($order_payment_method === 'mollie_wc_gateway_klarnapaylater'
-                || $order_payment_method === 'mollie_wc_gateway_sliceit'
-                || $order_payment_method === 'mollie_wc_gateway_klarnapaynow'
-            ) {
+            if (in_array($order_payment_method, $orderMandatoryPaymentMethods)) {
                 $this->logger->debug(
-                    'Creating payment object: type Order, failed for Klarna payment, stopping process.'
+                    'Creating payment object: type Order failed, stopping process.'
                 );
                 throw $e;
             }

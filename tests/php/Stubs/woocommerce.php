@@ -171,6 +171,10 @@ class WC_Order
     {
 
     }
+
+    public function get_billing_company()
+    {
+    }
 }
 class WC_Cart
 {

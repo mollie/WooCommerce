@@ -15,6 +15,7 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_KlarnaPayLater',
         'Mollie_WC_Gateway_KlarnaPayNow',
         'Mollie_WC_Gateway_KlarnaSliceIt',
+        'Mollie_WC_Gateway_Billie',
         'Mollie_WC_Gateway_PayPal',
         'Mollie_WC_Gateway_BankTransfer',
         'Mollie_WC_Gateway_Sofort',

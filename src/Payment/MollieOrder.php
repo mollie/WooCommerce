@@ -1013,6 +1013,14 @@ class MollieOrder extends MollieObject
                 $order->get_billing_country(),
                 self::MAXIMAL_LENGHT_REGION
             );
+        $billingAddress->organizationName = (ctype_space(
+            $order->get_billing_company()
+        ))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_billing_company(),
+                self::MAXIMAL_LENGHT_ADDRESS
+            );
         return $billingAddress;
     }
 
@@ -1104,5 +1112,15 @@ class MollieOrder extends MollieObject
         ];
 
         $order->set_address($shippingAddress, 'shipping');
+    }
+
+    private function addOrganizationToAddress(stdClass $billingAddress)
+    {
+        $organizationName = 'Billie test organization';//$this->getOrganizationName();
+        $billingAddress->organizationName = $this->maximalFieldLengths(
+            $organizationName,
+            self::MAXIMAL_LENGHT_ADDRESS
+        );
+        return $billingAddress;
     }
 }

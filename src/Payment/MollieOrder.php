@@ -96,11 +96,9 @@ class MollieOrder extends MollieObject
         $returnUrl = $gateway->get_return_url($order);
         $returnUrl = $this->getReturnUrl($order, $returnUrl);
         $webhookUrl = $this->getWebhookUrl($order, $gatewayId);
-        if (
-            $gatewayId !== 'mollie_wc_gateway_paypal'
-            || ($gatewayId === 'mollie_wc_gateway_paypal'
-                && $order->get_billing_first_name() !== '')
-        ) {
+        $isPayPalExpressOrder = $order->get_meta('_mollie_payment_method_button') === 'PayPalButton';
+        $billingAddress = null;
+        if (!$isPayPalExpressOrder) {
             $billingAddress = $this->createBillingAddress($order);
             $shippingAddress = $this->createShippingAddress($order);
         }
@@ -125,7 +123,7 @@ class MollieOrder extends MollieObject
                 'issuer' => $selectedIssuer,
             ],
             'locale' => $paymentLocale,
-            'billingAddress' => $billingAddress ?: null,
+            'billingAddress' => $billingAddress,
             'metadata' => apply_filters(
                 $this->pluginId . '_payment_object_metadata',
                 [
@@ -254,7 +252,6 @@ class MollieOrder extends MollieObject
             $this->logger->debug(__METHOD__ . " called for order {$orderId}");
 
             if ($payment->method === 'paypal') {
-                $this->addAddressToPaypalOrder($payment, $order);
                 $this->addPaypalTransactionIdToOrder($order);
             }
 
@@ -1081,28 +1078,5 @@ class MollieOrder extends MollieObject
                 self::MAXIMAL_LENGHT_REGION
             );
         return $shippingAddress;
-    }
-
-    /**
-     * @param Order $payment
-     * @param WC_Order                    $order
-     */
-    protected function addAddressToPaypalOrder(
-        Order $payment,
-        WC_Order $order
-    ) {
-
-        $address = $payment->shippingAddress;
-        $shippingAddress = [
-            'first_name' => sanitize_text_field(wp_unslash($address->givenName)),
-            'last_name' => sanitize_text_field(wp_unslash($address->familyName)),
-            'email' => sanitize_text_field(wp_unslash($address->email)),
-            'postcode' => sanitize_text_field(wp_unslash($address->postalCode)),
-            'country' => strtoupper(sanitize_text_field(wp_unslash($address->country))),
-            'city' => sanitize_text_field(wp_unslash($address->city)),
-            'address_1' => sanitize_text_field(wp_unslash($address->streetAndNumber)),
-        ];
-
-        $order->set_address($shippingAddress, 'shipping');
     }
 }

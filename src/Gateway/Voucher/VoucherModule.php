@@ -201,7 +201,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
     public function voucherTaxonomyCustomMetaSave($term_id)
     {
 
-        $metaOption = sanitize_text_field(wp_unslash($_POST(['_mollie_voucher_category'])));
+        $metaOption = sanitize_text_field(wp_unslash($_POST['_mollie_voucher_category']));
 
         update_term_meta($term_id, '_mollie_voucher_category', $metaOption);
     }

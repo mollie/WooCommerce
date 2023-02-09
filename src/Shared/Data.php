@@ -451,7 +451,7 @@ class Data
         if (!$apiKey) {
             return false;
         }
-        return $this->api_helper->getApiClient($apiKey)->methods->get(sprintf('%s', $method), [ "include" => "issuers" ]);
+        return $this->api_helper->getApiClient($apiKey)->methods->get(sprintf('%s', $methodId), [ "include" => "issuers" ]);
     }
 
     /**

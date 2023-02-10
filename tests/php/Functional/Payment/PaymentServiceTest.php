@@ -83,17 +83,22 @@ class PaymentServiceTest extends TestCase
             $this->paymentCheckoutService($apiClientMock),
             $voucherDefaultCategory
         );
-        $testee->setGateway($this->createMock(MolliePaymentGateway::class));
+        $gateway = $this->mollieGateway($paymentMethodId, $testee);
+        $testee->setGateway($gateway);
+
         stubs(
             [
                 'admin_url' => 'http://admin.com',
                 'wc_get_order' => $wcOrder,
                 'wc_get_product' => $this->wcProduct(),
-                'wc_get_payment_gateway_by_order' => $this->mollieGateway($paymentMethodId, $testee),
+                'wc_get_payment_gateway_by_order' => $gateway,
                 'add_query_arg' => 'https://webshop.example.org/wc-api/mollie_return?order_id=1&key=wc_order_hxZniP1zDcnM8',
                 'WC' => $this->wooCommerce()
             ]
         );
+        $gateway->expects($this->once())
+            ->method('getSelectedIssuer')
+            ->willReturn('ideal_INGBNL2A');
         $expectedRequestToMollie = $this->expectedRequestData($wcOrder);
         $orderEndpoints->method('create')->with($expectedRequestToMollie);
 
@@ -129,17 +134,7 @@ class PaymentServiceTest extends TestCase
         when('__')->returnArg(1);
     }
     protected function mollieGateway($paymentMethodName, $testee, $isSepa = false, $isSubscription = false){
-        $gateway = $this->createConfiguredMock(
-            MolliePaymentGateway::class,
-            [
-                'getSelectedIssuer' => 'ideal_INGBNL2A',
-                'get_return_url' => 'https://webshop.example.org/wc-api/',
-            ]
-        );
-        $gateway->paymentMethod = $this->helperMocks->paymentMethodBuilder($paymentMethodName, $isSepa, $isSubscription);
-        $gateway->paymentService = $testee;
-
-        return $gateway;
+        return $this->helperMocks->mollieGatewayBuilder($paymentMethodName, $isSepa, $isSubscription, [], $testee);
     }
 
 

@@ -31,11 +31,13 @@
     "@babel/polyfill": "^7.7.0",
     "@babel/preset-env": "^7.4.5",
     "@babel/preset-react": "^7.14.5",
+    "@playwright/test": "^1.21.1",
     "@symfony/webpack-encore": "^0.28.2",
     "@woocommerce/dependency-extraction-webpack-plugin": "^1.7.0",
     "@wordpress/element": "^4.0.4",
     "date-and-time": "^0.14.0",
     "del": "^3.0.0",
+    "dotenv": "^16.0.0",
     "gulp": "^4.0.0",
     "gulp-cli": "^2.0.1",
     "gulp-help-doc": "^1.1.1",
@@ -53,6 +55,13 @@
   "scripts": {
     "watch": "webpack --watch",
     "build": "node_modules/.bin/encore dev --env.basePath=.",
-    "setup": "gulp setup"
+    "setup": "gulp setup",
+    "e2e-simple": "npx playwright test --project=simple-classic",
+    "e2e-block": "npx playwright test --project=simple-block",
+    "e2e-cart-paypal": "npx playwright test --project=cart-paypal",
+    "e2e-product-paypal": "npx playwright test  --project=product-paypal",
+    "e2e-simple-settings": "npx playwright test --project=simple-settings",
+    "e2e-full-settings": "npx playwright test --project=full-settings",
+    "e2e-all": "npx playwright test"
   }
 }

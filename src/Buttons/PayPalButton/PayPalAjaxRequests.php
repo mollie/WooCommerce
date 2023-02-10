@@ -81,15 +81,15 @@ class PayPalAjaxRequests
     public function createWcOrder()
     {
         $payPalRequestDataObject = $this->payPalDataObjectHttp();
-        $payPalRequestDataObject->orderData($_POST, 'productDetail');
-        if (!$this->isNonceValid($payPalRequestDataObject)) {
+        if (!$this->isNonceValid()) {
             return;
         }
+        $payPalRequestDataObject->orderData('productDetail');
 
         $order = wc_create_order();
         $order->add_product(
-            wc_get_product($payPalRequestDataObject->productId),
-            $payPalRequestDataObject->productQuantity
+            wc_get_product($payPalRequestDataObject->productId()),
+            $payPalRequestDataObject->productQuantity()
         );
 
         $surcharge = new Surcharge();
@@ -133,13 +133,11 @@ class PayPalAjaxRequests
      */
     public function createWcOrderFromCart()
     {
-        $payPalRequestDataObject = $this->payPalDataObjectHttp();
-        $payPalRequestDataObject->orderData($_POST, 'cart');
-
-        if (!$this->isNonceValid($payPalRequestDataObject)) {
+        if (!$this->isNonceValid()) {
             return;
         }
-
+        $payPalRequestDataObject = $this->payPalDataObjectHttp();
+        $payPalRequestDataObject->orderData('cart');
         list($cart, $order) = $this->createOrderFromCart();
         $orderId = $order->get_id();
         $order->calculate_totals();
@@ -170,19 +168,17 @@ class PayPalAjaxRequests
 
     public function updateAmount()
     {
-        $payPalRequestDataObject = $this->payPalDataObjectHttp();
-        $payPalRequestDataObject->orderData($_POST, 'productDetail');
-
-        if (!$this->isNonceValid($payPalRequestDataObject)) {
+        if (!$this->isNonceValid()) {
             wp_send_json_error('no nonce');
         }
-
+        $payPalRequestDataObject = $this->payPalDataObjectHttp();
+        $payPalRequestDataObject->orderData('productDetail');
         $order = new WCOrderCalculator();
         $order->set_currency(get_woocommerce_currency());
         $order->set_prices_include_tax('yes' === get_option('woocommerce_prices_include_tax'));
         $order->add_product(
-            wc_get_product($payPalRequestDataObject->productId),
-            $payPalRequestDataObject->productQuantity
+            wc_get_product($payPalRequestDataObject->productId()),
+            $payPalRequestDataObject->productQuantity()
         );
 
         $updatedAmount = $order->calculate_totals();
@@ -253,18 +249,16 @@ class PayPalAjaxRequests
      * Checks if the nonce in the data object is valid
      *
      * @param PayPalDataObjectHttp $PayPalRequestDataObject
-     *
-     * @return bool|int
      */
-    protected function isNonceValid(
-        PayPalDataObjectHttp $PayPalRequestDataObject
-    ) {
-
-        $isNonceValid = wp_verify_nonce(
-            $PayPalRequestDataObject->nonce,
+    protected function isNonceValid(): bool
+    {
+        $nonce = filter_input(INPUT_POST, 'nonce', FILTER_SANITIZE_SPECIAL_CHARS);
+        if (!$nonce) {
+            return false;
+        }
+        return wp_verify_nonce(
+            $nonce,
             'mollie_PayPal_button'
         );
-
-        return $isNonceValid;
     }
 }

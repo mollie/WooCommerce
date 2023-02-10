@@ -37,15 +37,11 @@ class CheckoutBlockService
         $actionName = 'mollie_checkout_blocks_canmakepayment';
         add_action(
             'wp_ajax_' . $actionName,
-            function () {
-                return $this->availableGateways();
-            }
+            [$this, 'availableGateways']
         );
         add_action(
             'wp_ajax_nopriv_' . $actionName,
-            function () {
-                return $this->availableGateways();
-            }
+            [$this, 'availableGateways']
         );
     }
 
@@ -56,10 +52,10 @@ class CheckoutBlockService
      */
     public function availableGateways()
     {
-        $currency = sanitize_text_field(wp_unslash($_POST['currency']));
-        $cartTotal = filter_input(INPUT_POST,'cartTotal', FILTER_SANITIZE_NUMBER_INT);
-        $paymentLocale = sanitize_text_field(wp_unslash($_POST['paymentLocale']));
-        $billingCountry = sanitize_text_field(wp_unslash($_POST['billingCountry']));
+        $currency = filter_input(INPUT_POST, 'currency', FILTER_SANITIZE_SPECIAL_CHARS);
+        $cartTotal = filter_input(INPUT_POST, 'cartTotal', FILTER_SANITIZE_NUMBER_INT);
+        $paymentLocale = filter_input(INPUT_POST, 'paymentLocale', FILTER_SANITIZE_SPECIAL_CHARS);
+        $billingCountry = filter_input(INPUT_POST, 'billingCountry', FILTER_SANITIZE_SPECIAL_CHARS);
         $cartTotal = $cartTotal / 100;
         $availablePaymentMethods = [];
         try {
@@ -78,8 +74,8 @@ class CheckoutBlockService
             $availableGateways = $this->removeNonMollieGateway($availableGateways);
             $availableGateways = $this->maybeRemoveVoucher($availableGateways);
             $filterKey = "{$filters['amount']['currency']}-{$filters['locale']}-{$filters['billingCountry']}";
-            foreach ($availableGateways as $key => $gateway){
-                $availablePaymentMethods[$filterKey][$key] = $gateway->paymentMethod->getProperty('id');
+            foreach ($availableGateways as $key => $gateway) {
+                $availablePaymentMethods[$filterKey][$key] = $gateway->paymentMethod()->getProperty('id');
             }
         }
         wp_send_json_success($availablePaymentMethods);
@@ -95,11 +91,11 @@ class CheckoutBlockService
     protected function maybeRemoveVoucher(array $availableGateways): array
     {
         foreach ($availableGateways as $key => $gateway) {
-            if ($key !=='mollie_wc_gateway_voucher') {
+            if ($key !== 'mollie_wc_gateway_voucher') {
                 continue;
             }
             $shouldRemoveVoucher = $this->voucherDisabler->shouldRemoveVoucher();
-            if($shouldRemoveVoucher){
+            if ($shouldRemoveVoucher) {
                 unset($availableGateways[$key]);
             }
         }

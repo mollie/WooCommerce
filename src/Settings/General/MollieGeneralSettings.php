@@ -4,6 +4,7 @@ namespace Mollie\WooCommerce\Settings\General;
 
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Gateway\Surcharge;
+use Mollie\WooCommerce\Shared\SharedDataDictionary;
 
 class MollieGeneralSettings
 {
@@ -31,7 +32,9 @@ class MollieGeneralSettings
                 'id' => $defaultTitle . '_' . 'title',
                 'title' => sprintf(
                     /* translators: Placeholder 1: Gateway title */
-                    __('%s display settings', 'mollie-payments-for-woocommerce'), $defaultTitle),
+                    __('%s display settings', 'mollie-payments-for-woocommerce'),
+                    $defaultTitle
+                ),
                 'type' => 'title',
             ],
             'title' => [
@@ -96,7 +99,9 @@ class MollieGeneralSettings
                 'id' => $defaultTitle . '_' . 'custom_logo',
                 'title' => sprintf(
                 /* translators: Placeholder 1: Gateway title */
-                    __('%s custom logo', 'mollie-payments-for-woocommerce'), $defaultTitle),
+                    __('%s custom logo', 'mollie-payments-for-woocommerce'),
+                    $defaultTitle
+                ),
                 'type' => 'title',
             ],
             'enable_custom_logo' => [
@@ -132,7 +137,8 @@ class MollieGeneralSettings
                 'title' => sprintf(
                 /* translators: Placeholder 1: Gateway title */
                     __('%s surcharge', 'mollie-payments-for-woocommerce'),
-                    $defaultTitle),
+                    $defaultTitle
+                ),
                 'type' => 'title',
             ],
             'payment_surcharge' => [
@@ -170,7 +176,8 @@ class MollieGeneralSettings
                 'title' => sprintf(
                 /* translators: Placeholder 1: currency */
                     __('Payment surcharge fixed amount in %s', 'mollie-payments-for-woocommerce'),
-                    html_entity_decode(get_woocommerce_currency_symbol())),
+                    html_entity_decode(get_woocommerce_currency_symbol())
+                ),
                 'type' => 'number',
                 'description' => sprintf(
                     __(
@@ -228,7 +235,8 @@ class MollieGeneralSettings
                 'title' => sprintf(
                 /* translators: Placeholder 1: gateway title */
                     __('%s advanced', 'mollie-payments-for-woocommerce'),
-                    $defaultTitle),
+                    $defaultTitle
+                ),
                 'type' => 'title',
             ],
             'activate_expiry_days_setting' => [
@@ -261,17 +269,15 @@ class MollieGeneralSettings
                 ),
                 'type' => 'select',
                 'options' => [
-                    MolliePaymentGateway::STATUS_ON_HOLD => wc_get_order_status_name(
-                        MolliePaymentGateway::STATUS_ON_HOLD
-                    ) . ' (' . __(
+                    SharedDataDictionary::STATUS_ON_HOLD => wc_get_order_status_name(SharedDataDictionary::STATUS_ON_HOLD) . ' (' . __(
                         'default',
                         'mollie-payments-for-woocommerce'
                     ) . ')',
-                    MolliePaymentGateway::STATUS_PENDING => wc_get_order_status_name(
-                        MolliePaymentGateway::STATUS_PENDING
+                    SharedDataDictionary::STATUS_PENDING => wc_get_order_status_name(
+                        SharedDataDictionary::STATUS_PENDING
                     ),
                 ],
-                'default' => MolliePaymentGateway::STATUS_ON_HOLD,
+                'default' => SharedDataDictionary::STATUS_ON_HOLD,
                 /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
                 'description' => sprintf(
                     __(
@@ -279,7 +285,7 @@ class MollieGeneralSettings
                         'mollie-payments-for-woocommerce'
                     ),
                     wc_get_order_status_name(
-                        MolliePaymentGateway::STATUS_ON_HOLD
+                        SharedDataDictionary::STATUS_ON_HOLD
                     ),
                     '<a href="' . admin_url(
                         'admin.php?page=wc-settings&tab=products&section=inventory'

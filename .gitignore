@@ -16,7 +16,9 @@
 /public/css/
 /tools/
 /build/
-/tests/e2e/config/default.json
+/tests/e2e/Shared/default.json
 
 .env
 cypress.json
+test-results/
+playwright-report/

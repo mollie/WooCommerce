@@ -8,21 +8,22 @@ use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Payment\PaymentFieldsService;
 use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Shared\SharedDataDictionary;
 
 abstract class AbstractPaymentMethod implements PaymentMethodI
 {
     /**
      * @var string
      */
-    public $id;
+    protected $id;
     /**
      * @var string[]
      */
-    public $config = [];
+    protected $config = [];
     /**
      * @var array
      */
-    public $settings = [];
+    protected $settings = [];
     /**
      * @var IconFactory
      */
@@ -34,7 +35,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     /**
      * @var PaymentFieldsService
      */
-    public $paymentFieldsService;
+    protected $paymentFieldsService;
     /**
      * @var Surcharge
      */
@@ -78,7 +79,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
      * Check if the payment method has surcharge applied
      * @return bool
      */
-    public function hasSurcharge()
+    public function hasSurcharge(): bool
     {
         return $this->getProperty('payment_surcharge')
             && $this->getProperty('payment_surcharge') !== Surcharge::NO_FEE;
@@ -100,7 +101,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     public function getIconUrl(): string
     {
         return $this->iconFactory->getIconUrl(
-            $this->getProperty('id')
+            $this->getIdFromConfig()
         );
     }
 
@@ -148,6 +149,14 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     }
 
     /**
+     * @return PaymentFieldsService
+     */
+    public function paymentFieldsService(): PaymentFieldsService
+    {
+        return $this->paymentFieldsService;
+    }
+
+    /**
      * Access the payment method processed description, surcharge included
      * @return mixed|string
      */
@@ -161,9 +170,9 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
 
     /**
      * Access the payment method description for the checkout blocks
-     * @return false|string|void
+     * @return string
      */
-    public function getProcessedDescriptionForBlock()
+    public function getProcessedDescriptionForBlock(): string
     {
         return $this->surcharge->buildDescriptionWithSurchargeForBlock($this);
     }
@@ -202,10 +211,10 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     {
         if ($this->getProperty('confirmationDelayed')) {
             return $this->getProperty('initial_order_status')
-                ?: MolliePaymentGateway::STATUS_ON_HOLD;
+                ?: SharedDataDictionary::STATUS_ON_HOLD;
         }
 
-        return MolliePaymentGateway::STATUS_PENDING;
+        return SharedDataDictionary::STATUS_PENDING;
     }
 
     /**
@@ -250,6 +259,6 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         $fields = array_filter($fields, static function ($key) {
                 return !is_numeric($key);
         }, ARRAY_FILTER_USE_KEY);
-        return array_combine(array_keys($fields), array_column($fields, 'default'));
+        return array_combine(array_keys($fields), array_column($fields, 'default')) ?: [];
     }
 }

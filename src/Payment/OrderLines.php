@@ -12,7 +12,6 @@ use WC_Tax;
 
 class OrderLines
 {
-
     /**
      * Formatted order lines.
      *
@@ -89,10 +88,10 @@ class OrderLines
      */
     private function process_items($voucherDefaultCategory)
     {
-        $voucherSettings = get_option('mollie_wc_gateway_voucher_settings')?:get_option('mollie_wc_gateway_mealvoucher_settings');
+        $voucherSettings = get_option('mollie_wc_gateway_voucher_settings') ?: get_option('mollie_wc_gateway_mealvoucher_settings');
         $isMealVoucherEnabled = $voucherSettings ? ($voucherSettings['enabled'] == 'yes') : false;
         if (!$voucherSettings) {
-            $isMealVoucherEnabled = $this->dataHelper->getPaymentMethod('voucher')?true:false;
+            $isMealVoucherEnabled = $this->dataHelper->getPaymentMethod('voucher') ? true : false;
         }
 
         foreach ($this->order->get_items() as $cart_item) {
@@ -379,12 +378,13 @@ class OrderLines
      *
      * Returns SKU or product ID.
      *
-     * @since  1.0
+     * @since 1.0
+     *
      * @access private
      *
-     * @param  object $product Product object.
+     * @param object $product Product object.
      *
-     * @return string $item_reference Cart item reference.
+     * @return false|string $item_reference Cart item reference.
      */
     private function get_item_reference($product)
     {
@@ -534,12 +534,13 @@ class OrderLines
     /**
      * Get shipping method amount.
      *
-     * @since  1.0
+     * @since 1.0
+     *
      * @access private
      *
-     * @return integer $shipping_amount Amount for selected shipping method.
+     * @return string $shipping_amount Amount for selected shipping method.
      */
-    private function get_shipping_amount()
+    private function get_shipping_amount(): string
     {
         return number_format(( WC()->cart->shipping_total + WC()->cart->shipping_tax_total ), 2, '.', '');
     }
@@ -547,10 +548,13 @@ class OrderLines
     /**
      * Get shipping method tax rate.
      *
-     * @since  1.0
+     * @since 1.0
+     *
      * @access private
      *
-     * @return integer $shipping_vat_rate Tax rate for selected shipping method.
+     * @return float|int $shipping_vat_rate Tax rate for selected shipping method.
+     *
+     * @psalm-return 0|float
      */
     private function get_shipping_vat_rate()
     {

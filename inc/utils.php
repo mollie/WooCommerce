@@ -44,7 +44,7 @@ function mollieWooCommerceComponentsStylesForAvailableGateways()
  */
 function mollieWooCommerceCardToken()
 {
-    return $cardToken = filter_input(INPUT_POST, 'cardToken', FILTER_SANITIZE_STRING) ?: '';
+    return $cardToken = filter_input(INPUT_POST, 'cardToken', FILTER_SANITIZE_SPECIAL_CHARS) ?: '';
 }
 
 /**
@@ -112,13 +112,13 @@ function mollieWooCommerceCheckIfNeedShipping($product)
         return false;
     }
     //variations might be virtual
-   if ($product->is_type('variable')) {
-       $variations = $product->get_available_variations();
-       foreach ($variations as $variation) {
-           if($variation["is_virtual"]) {
-               return false;
-           }
-       }
+    if ($product->is_type('variable')) {
+        $variations = $product->get_available_variations();
+        foreach ($variations as $variation) {
+            if ($variation["is_virtual"]) {
+                return false;
+            }
+        }
         return true;
     }
 
@@ -182,7 +182,7 @@ function mollieWooCommerceIsMollieGateway($gateway)
 function mollieWooCommerceFormatCurrencyValue($value, $currency)
 {
     $currenciesWithNoDecimals = ["JPY", "ISK"];
-    if(in_array($currency, $currenciesWithNoDecimals)){
+    if (in_array($currency, $currenciesWithNoDecimals)) {
         return number_format($value, 0, '.', '');
     }
 
@@ -208,7 +208,7 @@ function mollieDeleteWPTranslationFiles()
         'it_IT',
         'nl_BE',
         'nl_NL',
-        'nl_NL_formal'
+        'nl_NL_formal',
     ];
     $translationExtensions = ['.mo', '.po'];
     $destination = WP_LANG_DIR

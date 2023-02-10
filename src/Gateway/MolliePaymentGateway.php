@@ -20,51 +20,31 @@ use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Log\LoggerInterface as Logger;
-use Psr\Log\LogLevel;
 use UnexpectedValueException;
 use WC_Order;
 use WC_Payment_Gateway;
 use WP_Error;
 
-class MolliePaymentGateway extends WC_Payment_Gateway
+class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGatewayI
 {
-    /**
-     * WooCommerce default statuses
-     */
-    public const STATUS_PENDING = 'pending';
-    public const STATUS_PROCESSING = 'processing';
-    public const STATUS_ON_HOLD = 'on-hold';
-    public const STATUS_COMPLETED = 'completed';
-    public const STATUS_CANCELLED = 'cancelled'; // Mollie uses canceled (US English spelling), WooCommerce and this plugin use cancelled.
-    public const STATUS_FAILED = 'failed';
-    public const STATUS_REFUNDED = 'refunded';
-
     /**
      * @var bool
      */
-    public static $alreadyDisplayedInstructions = false;
+    protected static $alreadyDisplayedInstructions = false;
     /**
      * Recurring total, zero does not define a recurring total
      *
      * @var int
      */
-    public $recurring_totals = 0;
+    protected $recurring_totals = 0;
     /**
      * @var PaymentMethodI
      */
-    public $paymentMethod;
+    protected $paymentMethod;
     /**
      * @var string
      */
     protected $default_title;
-    /**
-     * @var string
-     */
-    protected $default_description;
-    /**
-     * @var bool
-     */
-    protected $display_logo;
     /**
      * @var Logger
      */
@@ -76,7 +56,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
     /**
      * @var PaymentService
      */
-    public $paymentService;
+    protected $paymentService;
     /**
      * @var MollieOrderService
      */
@@ -92,7 +72,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
     /**
      * @var Data
      */
-    public $dataService;
+    protected $dataService;
     /**
      * @var MollieObject
      */
@@ -101,8 +81,10 @@ class MolliePaymentGateway extends WC_Payment_Gateway
      * @var PaymentFactory
      */
     protected $paymentFactory;
-    public $pluginId;
-    protected $paymentCheckoutRedirectService;
+    /**
+     * @var string
+     */
+    protected $pluginId;
 
     /**
      *
@@ -195,8 +177,26 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         if ($this->paymentMethod->getProperty('filtersOnBuild')) {
             $this->paymentMethod->filtersOnBuild();
         }
+    }
 
+    public function paymentMethod(): PaymentMethodI
+    {
+        return $this->paymentMethod;
+    }
 
+    public function paymentService()
+    {
+        return $this->paymentService;
+    }
+
+    public function dataService()
+    {
+        return $this->dataService;
+    }
+
+    public function pluginId()
+    {
+        return $this->pluginId;
     }
 
     public function initIcon()
@@ -254,7 +254,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
     protected function initDescription()
     {
         $description = $this->paymentMethod->getProcessedDescription();
-        $this->description = empty($description)? false: $description;
+        $this->description = empty($description) ? false : $description;
     }
 
     /**
@@ -274,9 +274,9 @@ class MolliePaymentGateway extends WC_Payment_Gateway
                 ) . ' ' : '') . sprintf(
                     /* translators: The surrounding %s's Will be replaced by a link to the global setting page */
                     __(
-                                'No API key provided. Please %1$sset you Mollie API key%2$s first.',
-                                'mollie-payments-for-woocommerce'
-                            ),
+                        'No API key provided. Please %1$sset you Mollie API key%2$s first.',
+                        'mollie-payments-for-woocommerce'
+                    ),
                     '<a href="' . $this->dataService->getGlobalSettingsUrl() . '">',
                     '</a>'
                 );
@@ -336,7 +336,8 @@ class MolliePaymentGateway extends WC_Payment_Gateway
     {
         return in_array(
             get_woocommerce_currency(),
-            $this->getSupportedCurrencies()
+            $this->getSupportedCurrencies(),
+            true
         );
     }
 
@@ -421,10 +422,10 @@ class MolliePaymentGateway extends WC_Payment_Gateway
      */
     public function is_available(): bool
     {
-        if(!$this->checkEnabledNorDirectDebit()){
+        if (!$this->checkEnabledNorDirectDebit()) {
             return false;
         }
-        if(!$this->cartAmountAvailable()){
+        if (!$this->cartAmountAvailable()) {
             return true;
         }
 
@@ -562,8 +563,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
                 ->getCancelledMolliePaymentId($order_id);
 
             if ($hasCancelledMolliePayment) {
-                $order_status_cancelled_payments
-                = $this->paymentMethod->getOrderStatusCancelledPayments();
+                $order_status_cancelled_payments = $this->paymentMethod->getOrderStatusCancelledPayments();
 
                 // If user set all cancelled payments to also cancel the order,
                 // redirect to /checkout/order-received/ with a message about the
@@ -588,7 +588,8 @@ class MolliePaymentGateway extends WC_Payment_Gateway
             try {
                 $payment = $this->activePaymentObject($order_id, false);
                 if (
-                !$payment->isOpen() && !$payment->isPending()
+                    !$payment->isOpen()
+                    && !$payment->isPending()
                     && !$payment->isPaid()
                     && !$payment->isAuthorized()
                 ) {
@@ -652,7 +653,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
             )
         );
 
-        return array('result' => 'failure');
+        return ['result' => 'failure'];
     }
     /**
      * Retrieve the payment object
@@ -729,8 +730,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
 
         // Mollie Payment object not found
         if (!$payment_object_id) {
-            $error_message
-            = "Can\'t process refund. Could not find Mollie Payment object id for order $order_id.";
+            $error_message = "Can\'t process refund. Could not find Mollie Payment object id for order $order_id.";
 
             $this->logger->debug(
                 __METHOD__ . ' - ' . $error_message
@@ -751,8 +751,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         }
 
         if (!$payment_object) {
-            $error_message
-            = "Can\'t process refund. Could not find Mollie Payment object data for order $order_id.";
+            $error_message = "Can\'t process refund. Could not find Mollie Payment object data for order $order_id.";
 
             $this->logger->debug(
                 __METHOD__ . ' - ' . $error_message
@@ -825,7 +824,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
             // Mollie payment not found or invalid gateway
             if (
                 !$payment
-                || $payment->method != $this->paymentMethod->getProperty('id')
+                || $payment->method !== $this->paymentMethod->getProperty('id')
             ) {
                 return;
             }
@@ -841,10 +840,10 @@ class MolliePaymentGateway extends WC_Payment_Gateway
                 $instructions = wptexturize($instructions);
 
                 if ($plain_text) {
-                    echo $instructions . PHP_EOL;
+                    echo esc_html($instructions) . PHP_EOL;
                 } else {
                     echo '<section class="woocommerce-order-details woocommerce-info mollie-instructions" >';
-                    echo wpautop($instructions) . PHP_EOL;
+                    echo wp_kses(wpautop($instructions), ['p' => [], 'strong' => []]) . PHP_EOL;
                     echo '</section>';
                 }
             }
@@ -870,11 +869,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
             );
             $order_key = apply_filters(
                 'woocommerce_thankyou_order_key',
-                empty($_GET['key'])
-                    ? ''
-                    : wc_clean(
-                        $_GET['key']
-                    )
+                empty($_GET['key']) ? '' : wc_clean(filter_input(INPUT_GET, 'key', FILTER_SANITIZE_SPECIAL_CHARS))
             );
             if ($order_id > 0) {
                 $order = wc_get_order($order_id);
@@ -885,7 +880,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
 
                 $order_key_db = $order->get_order_key();
 
-                if ($order_key_db != $order_key) {
+                if ($order_key_db !== $order_key) {
                     $order = false;
                 }
             }
@@ -915,7 +910,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
             );
 
             // Mollie payment not found or invalid gateway
-            if (!$payment || $payment->method != $this->paymentMethod->getProperty('id')) {
+            if (!$payment || $payment->method !== $this->paymentMethod->getProperty('id')) {
                 return $title;
             }
 
@@ -1002,7 +997,8 @@ class MolliePaymentGateway extends WC_Payment_Gateway
     {
         $issuer_id = $this->pluginId . '_issuer_' . $this->id;
 
-        return !empty($_POST[$issuer_id]) ? $_POST[$issuer_id] : null;
+        $postedIssuer = filter_input(INPUT_POST, $issuer_id, FILTER_SANITIZE_SPECIAL_CHARS);
+        return !empty($postedIssuer) ? $postedIssuer : null;
     }
 
     /**
@@ -1030,9 +1026,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         }
 
         /* Override show issuers dropdown? */
-        $dropdownDisabled = $this->paymentMethod->hasProperty(
-                'issuers_dropdown_shown'
-            )
+        $dropdownDisabled = $this->paymentMethod->hasProperty('issuers_dropdown_shown')
             && $this->paymentMethod->getProperty('issuers_dropdown_shown')
             === 'no';
         if ($dropdownDisabled) {
@@ -1071,15 +1065,13 @@ class MolliePaymentGateway extends WC_Payment_Gateway
     {
         $customerExistsAndHasCountry = WC()->customer && !empty(WC()->customer->get_billing_country());
         $fallbackToShopCountry = wc_get_base_location()['country'];
-        $billingCountry = $customerExistsAndHasCountry? WC()->customer->get_billing_country() : $fallbackToShopCountry;
+        $billingCountry = $customerExistsAndHasCountry ? WC()->customer->get_billing_country() : $fallbackToShopCountry;
 
-        $billingCountry = apply_filters(
+        return apply_filters(
             $this->pluginId
             . '_is_available_billing_country_for_payment_gateways',
             $billingCountry
         );
-
-        return $billingCountry;
     }
 
     /**
@@ -1097,7 +1089,8 @@ class MolliePaymentGateway extends WC_Payment_Gateway
         $bCountryIsAllowed = empty($allowedCountries)
             || in_array(
                 $billingCountry,
-                $allowedCountries
+                $allowedCountries,
+                true
             );
         if (!$bCountryIsAllowed) {
             $status = false;
@@ -1111,12 +1104,12 @@ class MolliePaymentGateway extends WC_Payment_Gateway
      *
      * @return bool
      */
-    protected function checkEnabledNorDirectDebit():bool
+    protected function checkEnabledNorDirectDebit(): bool
     {
-        if ($this->enabled != 'yes') {
+        if ($this->enabled !== 'yes') {
             return false;
         }
-        if($this->id === SharedDataDictionary::DIRECTDEBIT){
+        if ($this->id === SharedDataDictionary::DIRECTDEBIT) {
             return false;
         }
         return true;

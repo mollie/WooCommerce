@@ -18,18 +18,17 @@ use Psr\Log\LoggerInterface as Logger;
 
 class MollieObject
 {
-
-    public $data;
+    protected $data;
     /**
      * @var string[]
      */
-    const FINAL_STATUSES = ['completed', 'refunded', 'canceled'];
+    protected const FINAL_STATUSES = ['completed', 'refunded', 'canceled'];
 
-    public static $paymentId;
-    public static $customerId;
-    public static $order;
-    public static $payment;
-    public static $shop_country;
+    protected static $paymentId;
+    protected static $customerId;
+    protected static $order;
+    protected static $payment;
+    protected static $shop_country;
     /**
      * @var Logger
      */
@@ -42,6 +41,10 @@ class MollieObject
     protected $apiHelper;
     protected $settingsHelper;
     protected $dataHelper;
+    /**
+     * @var string
+     */
+    protected $pluginId;
 
     public function __construct($data, Logger $logger, PaymentFactory $paymentFactory, Api $apiHelper, Settings $settingsHelper, string $pluginId)
     {
@@ -53,6 +56,16 @@ class MollieObject
         $this->pluginId = $pluginId;
         $base_location = wc_get_base_location();
         static::$shop_country = $base_location['country'];
+    }
+
+    public function data()
+    {
+        return $this->data;
+    }
+
+    public function customerId()
+    {
+        return self::$customerId;
     }
 
     /**
@@ -200,7 +213,7 @@ class MollieObject
             } elseif (wcs_order_contains_renewal($order_id)) {
                 $subscriptions = wcs_get_subscriptions_for_renewal_order($order_id);
             } else {
-                $subscriptions = array();
+                $subscriptions = [];
             }
 
             foreach ($subscriptions as $subscription) {
@@ -499,7 +512,7 @@ class MollieObject
     /**
      * Process a payment object refund
      *
-     * @param object $order
+     * @param WC_Order $order
      * @param int    $orderId
      * @param object $paymentObject
      * @param null   $amount
@@ -571,11 +584,10 @@ class MollieObject
         }
     }
 
-
     protected function addSequenceTypeForSubscriptionsFirstPayments($orderId, $gateway, $paymentRequestData): array
     {
         if ($this->dataHelper->isSubscription($orderId)) {
-            $disable_automatic_payments = apply_filters( $this->pluginId . '_is_automatic_payment_disabled', false );
+            $disable_automatic_payments = apply_filters($this->pluginId . '_is_automatic_payment_disabled', false);
             $supports_subscriptions = $gateway->supports('subscriptions');
 
             if ($supports_subscriptions == true && $disable_automatic_payments == false) {
@@ -641,7 +653,7 @@ class MollieObject
             && wcs_order_contains_renewal($orderId)
         ) {
             if ($gateway instanceof MolliePaymentGateway) {
-                $gateway->paymentService->updateOrderStatus(
+                $gateway->paymentService()->updateOrderStatus(
                     $order,
                     $newOrderStatus,
                     sprintf(
@@ -673,7 +685,7 @@ class MollieObject
                 $emails['WC_Email_Failed_Order']->trigger($orderId);
             }
         } elseif ($gateway instanceof MolliePaymentGateway) {
-            $gateway->paymentService->updateOrderStatus(
+            $gateway->paymentService()->updateOrderStatus(
                 $order,
                 $newOrderStatus,
                 sprintf(
@@ -804,17 +816,17 @@ class MollieObject
     protected function asciiDomainName($url): string
     {
         $parsed = parse_url($url);
-        $scheme = isset($parsed['scheme'])?$parsed['scheme']:'';
-        $domain = isset($parsed['host'])?$parsed['host']:false;
-        $query = isset($parsed['query'])?$parsed['query']:'';
-        $path = isset($parsed['path'])?$parsed['path']:'';
-        if(!$domain){
+        $scheme = isset($parsed['scheme']) ? $parsed['scheme'] : '';
+        $domain = isset($parsed['host']) ? $parsed['host'] : false;
+        $query = isset($parsed['query']) ? $parsed['query'] : '';
+        $path = isset($parsed['path']) ? $parsed['path'] : '';
+        if (!$domain) {
             return $url;
         }
 
         if (function_exists('idn_to_ascii')) {
             $domain = $this->idnEncodeDomain($domain);
-            $url = $scheme . "://". $domain . $path . '?' . $query;
+            $url = $scheme . "://" . $domain . $path . '?' . $query;
         }
 
         return $url;
@@ -846,7 +858,8 @@ class MollieObject
      */
     protected function idnEncodeDomain($domain)
     {
-        if (defined('IDNA_NONTRANSITIONAL_TO_ASCII')
+        if (
+            defined('IDNA_NONTRANSITIONAL_TO_ASCII')
             && defined(
                 'INTL_IDNA_VARIANT_UTS46'
             )
@@ -865,6 +878,7 @@ class MollieObject
         }
         return $domain;
     }
+
     protected function getPaymentDescription($order, $option)
     {
         $description = !$option ? '' : trim($option);
@@ -931,7 +945,7 @@ class MollieObject
         }
 
         // Fall back on default if description turns out empty.
-        return !$description ? __('Order', 'woocommerce' ) . ' ' . $order->get_order_number() : $description;
+        return !$description ? __('Order', 'woocommerce') . ' ' . $order->get_order_number() : $description;
     }
 
     /**

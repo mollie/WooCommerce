@@ -6,7 +6,6 @@ namespace Mollie\WooCommerce\PaymentMethods;
 
 class Bancontact extends AbstractPaymentMethod implements PaymentMethodI
 {
-
     protected function getConfig(): array
     {
         return [

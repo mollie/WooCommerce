@@ -96,42 +96,7 @@ class MollieGatewayTest extends TestCase
     }
 
     private function buildTestee($settings){
-        $paymentMethod = $this->helperMocks->paymentMethodBuilder('Ideal', false, false, $settings);
-        $paymentService = $this->helperMocks->paymentService();
-        $orderInstructionsService = $this->helperMocks->orderInstructionsService();
-        $mollieOrderService = $this->helperMocks->mollieOrderService();
-        $data = $this->helperMocks->dataHelper();
-        $logger = $this->helperMocks->loggerMock();
-        $notice = $this->helperMocks->noticeMock();
-        $HttpResponseService = new HttpResponse();
-        $mollieObject = $this->createMock(MollieObject::class);
-        $apiClientMock = $this->helperMocks->apiClient();
-
-        $paymentFactory = $this->helperMocks->paymentFactory($apiClientMock);
-        $pluginId = $this->helperMocks->pluginId();
-
-        return $this->buildTesteeMock(
-            MolliePaymentGateway::class,
-            [
-                $paymentMethod,
-                $paymentService,
-                $orderInstructionsService,
-                $mollieOrderService,
-                $data,
-                $logger,
-                $notice,
-                $HttpResponseService,
-                $mollieObject,
-                $paymentFactory,
-                $pluginId
-            ],
-            [
-                'init_form_fields',
-                'initDescription',
-                'initIcon',
-                'get_order_total'
-            ]
-        )->getMock();
+        return $this->helperMocks->mollieGatewayBuilder('Ideal', false, false, $settings);
     }
 
     private function wcOrder($id = 1, $meta = false, $parentOrder = false, $status = 'processing')

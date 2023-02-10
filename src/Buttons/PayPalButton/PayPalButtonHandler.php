@@ -11,7 +11,7 @@ class PayPalButtonHandler
      */
     private $ajaxRequests;
     /**
-     * @var string
+     * @var DataToPayPal
      */
     protected $dataPaypal;
 
@@ -75,13 +75,12 @@ class PayPalButtonHandler
      */
     protected function renderPayPalButton()
     {
-        $assetsImagesUrl
-                = $this->dataPaypal->selectedPaypalButtonUrl();
+        $assetsImagesUrl = $this->dataPaypal->selectedPaypalButtonUrl();
 
         ?>
         <div id="mollie-PayPal-button" class="mol-PayPal">
             <?php wp_nonce_field('mollie_PayPal_button'); ?>
-            <input type="image" src="<?php echo esc_url( $assetsImagesUrl)?>" alt="PayPal Button">
+            <input type="image" src="<?php echo esc_url($assetsImagesUrl)?>" alt="PayPal Button">
         </div>
         <?php
     }

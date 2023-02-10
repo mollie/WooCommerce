@@ -1,4 +1,5 @@
 <?php
+
 if (!function_exists('has_block')) {
     /**
      * Check if the current page has block

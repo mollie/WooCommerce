@@ -57,7 +57,6 @@ class PaymentFactory
             || (!is_object($data) && strpos($data, 'ord_') !== false)
             || (is_object($data) && $data->resource === 'order')
         ) {
-
             $refundLineItemsBuilder = new RefundLineItemsBuilder($this->dataHelper);
             $apiKey = $this->settingsHelper->getApiKey();
             $orderItemsRefunded = new OrderItemsRefunder(

@@ -2,6 +2,7 @@
 
 use Mollie\WooCommerce\Payment\PaymentService;
 use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Shared\SharedDataDictionary;
 
 $pluginName = 'mollie-payments-for-woocommerce';
 $nonce_mollie_cleanDb = wp_create_nonce('nonce_mollie_cleanDb');
@@ -9,11 +10,11 @@ $cleanDB_mollie_url = add_query_arg(
     ['cleanDB-mollie' => 1, 'nonce_mollie_cleanDb' => $nonce_mollie_cleanDb]
 );
 $api_payment_description_labels = [
-    '{orderNumber}' => _x( 'Order number', 'Label {orderNumber} description for payment description options', 'mollie-payments-for-woocommerce' ),
-    '{storeName}' => _x( 'Site Title', 'Label {storeName} description for payment description options', 'mollie-payments-for-woocommerce' ),
-    '{customer.firstname}' => _x( 'Customer\'s first name', 'Label {customer.firstname} description for payment description options', 'mollie-payments-for-woocommerce' ),
-    '{customer.lastname}' => _x( 'Customer\'s last name', 'Label {customer.lastname} description for payment description options', 'mollie-payments-for-woocommerce' ),
-    '{customer.company}' => _x( 'Customer\'s company name', 'Label {customer.company} description for payment description options', 'mollie-payments-for-woocommerce' )
+    '{orderNumber}' => _x('Order number', 'Label {orderNumber} description for payment description options', 'mollie-payments-for-woocommerce'),
+    '{storeName}' => _x('Site Title', 'Label {storeName} description for payment description options', 'mollie-payments-for-woocommerce'),
+    '{customer.firstname}' => _x('Customer\'s first name', 'Label {customer.firstname} description for payment description options', 'mollie-payments-for-woocommerce'),
+    '{customer.lastname}' => _x('Customer\'s last name', 'Label {customer.lastname} description for payment description options', 'mollie-payments-for-woocommerce'),
+    '{customer.company}' => _x('Customer\'s company name', 'Label {customer.company} description for payment description options', 'mollie-payments-for-woocommerce'),
 ];
 
 return [
@@ -35,15 +36,15 @@ return [
         'default' => 'pending',
     ],
     [
-        'id' => $pluginName . '_' . Settings::SETTING_NAME_PAYMENT_LOCALE,
+        'id' => $pluginName . '_' . SharedDataDictionary::SETTING_NAME_PAYMENT_LOCALE,
         'title' => __('Payment screen language', 'mollie-payments-for-woocommerce'),
         'type' => 'select',
         'options' => [
-            Settings::SETTING_LOCALE_WP_LANGUAGE => __(
+            SharedDataDictionary::SETTING_LOCALE_WP_LANGUAGE => __(
                 'Automatically send WordPress language',
                 'mollie-payments-for-woocommerce'
             ) . ' (' . __('default', 'mollie-payments-for-woocommerce') . ')',
-            Settings::SETTING_LOCALE_DETECT_BY_BROWSER => __(
+            SharedDataDictionary::SETTING_LOCALE_DETECT_BY_BROWSER => __(
                 'Detect using browser language',
                 'mollie-payments-for-woocommerce'
             ),
@@ -74,7 +75,7 @@ return [
             '<a href="https://www.mollie.com/nl/docs/reference/payments/create" target="_blank">',
             '</a>'
         ),
-        'default' => Settings::SETTING_LOCALE_WP_LANGUAGE,
+        'default' => SharedDataDictionary::SETTING_LOCALE_WP_LANGUAGE,
     ],
     [
         'id' => $pluginName . '_customer_details',
@@ -101,7 +102,7 @@ return [
         'type' => 'select',
         'options' => [
             PaymentService::PAYMENT_METHOD_TYPE_ORDER => ucfirst(
-                    PaymentService::PAYMENT_METHOD_TYPE_ORDER
+                PaymentService::PAYMENT_METHOD_TYPE_ORDER
             ) . ' (' . __('default', 'mollie-payments-for-woocommerce')
                 . ')',
             PaymentService::PAYMENT_METHOD_TYPE_PAYMENT => ucfirst(
@@ -137,10 +138,9 @@ return [
             </div>
             <br style="clear: both;" />
             <p class="description">%3$s',
-
-            _x( 'Available variables', 'Payment description options', 'mollie-payments-for-woocommerce' ),
-            implode( '', array_map(
-                function ($label, $label_description) {
+            _x('Available variables', 'Payment description options', 'mollie-payments-for-woocommerce'),
+            implode('', array_map(
+                static function ($label, $label_description) {
                     return sprintf(
                         '<li style="float: left; margin-right: 5px;">
                             <button type="button"
@@ -152,15 +152,14 @@ return [
                                 %1$s
                             </button>
                         </li>',
-
                         $label,
-                        substr( $label, 1, -1 ),
+                        substr($label, 1, -1),
                         $label_description
                     );
                 },
-                array_keys( $api_payment_description_labels ),
+                array_keys($api_payment_description_labels),
                 $api_payment_description_labels
-            ) ),
+            )),
             /* translators: Placeholder 1: Opening paragraph tag, placeholder 2: Closing paragraph tag */
             sprintf(
                 __(
@@ -196,9 +195,9 @@ return [
         ),
         'type' => 'checkbox',
         'default' => 'no',
-        'desc' => __("Remove options and scheduled actions from database when uninstalling the plugin.", "mollie-payments-for-woocommerce") . ' (<a href="' . esc_attr($cleanDB_mollie_url) . '">' . strtolower(
-                __('Clear now', 'mollie-payments-for-woocommerce')
-            ) . '</a>)',
+        'desc' => __("Remove options and scheduled actions from database when uninstalling the plugin.", "mollie-payments-for-woocommerce") . ' (<a href="' . esc_url($cleanDB_mollie_url) . '">' . strtolower(
+            __('Clear now', 'mollie-payments-for-woocommerce')
+        ) . '</a>)',
     ],
     [
         'id' => $pluginName . '_sectionend',

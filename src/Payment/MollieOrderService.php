@@ -830,6 +830,6 @@ class MollieOrderService
 
     protected function isOrderButtonPayment(WC_Order $order): bool
     {
-        return $order->get_meta('_mollie_payment_method_button', false) === 'PayPalButton';
+        return $order->get_meta('_mollie_payment_method_button') === 'PayPalButton';
     }
 }

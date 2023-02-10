@@ -106,7 +106,9 @@ class PaymentServiceTest extends TestCase
             ->with('mollie-payments-for-woocommerce_api_switch')
             ->andReturn(false);
         expect('get_transient')->andReturn(['ideal'=>['id'=>'ideal']]);
-
+        $wcOrder->expects($this->any())
+            ->method('get_billing_company')
+            ->willReturn('');
         /*
         * Execute Test
         */
@@ -382,6 +384,7 @@ class PaymentServiceTest extends TestCase
         $billingAddress->city = $order->get_billing_city();
         $billingAddress->region = $order->get_billing_state();
         $billingAddress->country = $order->get_billing_country();
+        $billingAddress->organizationName = $order->get_billing_company();
 
         return $billingAddress;
     }

@@ -27,6 +27,7 @@ use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\PaymentFieldsService;
 use Mollie\WooCommerce\Payment\PaymentService;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
+use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Settings\Settings;
@@ -142,6 +143,20 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $isSettingsOrderApi = $settings->isOrderApiSetting();
                 return new OrderMandatoryGatewayDisabler($isSettingsOrderApi);
             },
+            'gateway.isBillieEnabled' => static function (ContainerInterface $container): bool {
+                $settings = $container->get('settings.settings_helper');
+                assert($settings instanceof Settings);
+                $isSettingsOrderApi = $settings->isOrderApiSetting();
+                try {
+                    $billie = $container->get('gateway.paymentMethods')['billie'];
+                    assert($billie instanceof PaymentMethodI);
+                    $isBillieEnabled = $billie->getProperty('enabled') === 'yes';
+                } catch (NotFoundException $e) {
+                    $isBillieEnabled = false;
+                }
+
+                return $isSettingsOrderApi && $isBillieEnabled;
+            },
         ];
     }
 
@@ -197,7 +212,15 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 }
             }
         );
-
+        $isBillieEnabled = $container->get('gateway.isBillieEnabled');
+        if ($isBillieEnabled) {
+            add_filter(
+                'woocommerce_billing_fields',
+                [$this, 'organizationBillingFieldMandatory'],
+                11,
+                1
+            );
+        }
         // Set order to paid and processed when eventually completed without Mollie
         add_action('woocommerce_payment_complete', [$this, 'setOrderPaidByOtherGateway'], 10, 1);
         $appleGateway = isset($container->get('gateway.instances')['mollie_wc_gateway_applepay']) ? $container->get(
@@ -563,5 +586,11 @@ class GatewayModule implements ServiceModule, ExecutableModule
         }
 
         return $paymentMethods;
+    }
+
+    public function organizationBillingFieldMandatory($fields)
+    {
+        $fields['billing_company']['required'] = true;
+        return $fields;
     }
 }

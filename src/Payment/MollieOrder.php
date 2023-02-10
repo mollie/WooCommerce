@@ -1010,6 +1010,14 @@ class MollieOrder extends MollieObject
                 $order->get_billing_country(),
                 self::MAXIMAL_LENGHT_REGION
             );
+        $billingAddress->organizationName = (ctype_space(
+            $order->get_billing_company()
+        ))
+            ? null
+            : $this->maximalFieldLengths(
+                $order->get_billing_company(),
+                self::MAXIMAL_LENGHT_ADDRESS
+            );
         return $billingAddress;
     }
 

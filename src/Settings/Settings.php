@@ -309,7 +309,7 @@ class Settings
         $apiKey = get_option($apiKeyId);
         //TODO add api key filter
 
-        if (!$apiKey && is_admin()) {
+        if (!$apiKey && is_admin() && isset($_POST[$apiKeyId])) {
             $apiKey = sanitize_text_field(wp_unslash($_POST[$apiKeyId]));
         }
 

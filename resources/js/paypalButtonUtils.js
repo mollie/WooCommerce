@@ -7,6 +7,7 @@ export const ajaxCallToOrder = (ajaxUrl) => {
     let preventSpam = false
     const nonce = button.children[0].value
     button.addEventListener('click', (evt) => {
+        evt.preventDefault()
         if(!button){
             return
         }

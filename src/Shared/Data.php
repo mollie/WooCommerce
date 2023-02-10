@@ -410,7 +410,7 @@ class Data
      * @param bool        $test_mode (default: false)
      * @param string|null $methodId
      *
-     * @return array|\Mollie\Api\Resources\Method||\Mollie\Api\Resources\MethodCollection
+     * @return array
      */
     public function getMethodIssuers($apiKey, $test_mode = false, $methodId = null)
     {
@@ -424,6 +424,7 @@ class Data
             }
 
             $method = $this->getMethodWithIssuersById($methodId, $apiKey);
+            is_object($method) && $method = get_object_vars($method);
             $issuers = $method ? $method['issuers'] : [];
             set_transient($transient_id, $issuers, HOUR_IN_SECONDS);
             return $issuers;
@@ -451,7 +452,7 @@ class Data
         if (!$apiKey) {
             return false;
         }
-        return $this->api_helper->getApiClient($apiKey)->methods->get(sprintf('%s', $method), [ "include" => "issuers" ]);
+        return $this->api_helper->getApiClient($apiKey)->methods->get(sprintf('%s', $methodId), [ "include" => "issuers" ]);
     }
 
     /**

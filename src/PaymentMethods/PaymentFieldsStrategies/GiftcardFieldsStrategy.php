@@ -15,16 +15,19 @@ class GiftcardFieldsStrategy implements PaymentFieldsStrategyI
         }
 
         $issuers = $this->getIssuers($gateway, $dataHelper);
-
+        if (empty($issuers)) {
+            return;
+        }
         $selectedIssuer = $gateway->getSelectedIssuer();
 
         $html = '';
 
         // If only one gift card issuers is available, show it without a dropdown
         if (count($issuers) === 1) {
+            $issuer = $issuers[0];
             $issuerImageSvg = $this->checkSvgIssuers($issuers);
             $issuerImageSvg && ($html .= '<img src="' . $issuerImageSvg . '" style="vertical-align:middle" />');
-            $html .= $issuers->description;
+            $html .= $issuer->name;
             echo wpautop(wptexturize($html));
 
             return;

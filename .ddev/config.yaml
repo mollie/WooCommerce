@@ -18,14 +18,14 @@ hooks:
   pre-start:
     - exec-host: "mkdir -p .ddev/wordpress/wp-content/plugins/${DDEV_PROJECT}"
 web_environment:
-  - WP_VERSION=5.9
-  - WP_LOCALE=de_DE
+  - WP_VERSION=6.1
+  - WP_LOCALE=en_US
   - WP_TITLE=Mollie WordPress Test
   - PLUGIN_NAME=mollie-payments-for-woocommerce
   - ADMIN_USER=admin
   - ADMIN_PASS=admin
   - ADMIN_EMAIL=admin@example.com
-  - WC_VERSION=6.1.0
+  - WC_VERSION=7.2.2
 
 hooks:
   post-start:

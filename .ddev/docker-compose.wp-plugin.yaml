@@ -3,5 +3,5 @@ services:
     web:
       volumes:
         - source: ../
-          target: /var/www/html/.ddev/wordpress/wp-content/plugins/mollie-payments-for-woocommerce:ro
+          target: /var/www/html/.ddev/wordpress/wp-content/plugins/mollie-payments-for-woocommerce
           type: bind

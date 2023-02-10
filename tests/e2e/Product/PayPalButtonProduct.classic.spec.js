@@ -5,8 +5,8 @@ const {setOrderAPI, markStatusInMollie, resetSettings, insertAPIKeys} = require(
 const {wooOrderPaidPage, wooOrderDetailsPageVirtual} = require('../Shared/testMollieInWooPage');
 
 test.describe('PayPal Transaction in classic product', () => {
-    test.beforeAll(async ({browser }) => {
-        const page = await browser.newPage();
+    test.beforeAll(async ({browser , baseURL}) => {
+        const page = await browser.newPage({ baseURL: baseURL, extraHTTPHeaders: {'ngrok-skip-browser-warning': '123'}});
         await resetSettings(page);
         await insertAPIKeys(page);
     });

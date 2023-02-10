@@ -4,14 +4,13 @@ const { test } = require('../Shared/base-test');
 const {insertAPIKeys, resetSettings} = require('../Shared/mollieUtils');
 const {sharedUrl: {settingsRoot}} = require('../Shared/sharedUrl');
 test.describe('Should show general settings', () => {
-    test.beforeAll(async ({browser }) => {
-        const page = await browser.newPage();
+    test.beforeAll(async ({browser , baseURL}) => {
+        const page = await browser.newPage({ baseURL: baseURL, extraHTTPHeaders: {'ngrok-skip-browser-warning': '123'}});
         await resetSettings(page);
     });
     test('Should show empty and disconnected', async ({ page , gateways}) => {
-        // Go to settings
         await page.goto(settingsRoot);
-        await expect(page.locator('text=No API key provided. Please set your Mollie API keys below.')).toBeVisible();
+        await expect(page.locator('text=API keys missing.')).toBeVisible();
         for ( const gatewayName in gateways ){
             //check default icon with a locator that has disabled and activate
             const title = gateways[gatewayName].defaultTitle

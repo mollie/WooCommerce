@@ -1,25 +1,57 @@
-name: Playwright Tests
+name: E2E Tests
 on:
-  workflow_dispatch:
-    branches: [ develop, master ]
+  pull-request:
+    branches:
+      - develop
 jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-versions: [ '7.4' ]
+        wc-versions: [ '5.9.5' ]
+    
+    name: PHP ${{ matrix.php-versions }} WC ${{ matrix.wc-versions }}
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2
-      with:
-        node-version: '14.x'
-    - name: Install dependencies
-      run: npm ci
-    - name: Install Playwright
-      run: npx playwright install --with-deps
-    - name: Run Playwright tests
-      run: npx playwright test
-    - uses: actions/upload-artifact@v2
-      if: always()
-      with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
+      - uses: satackey/action-docker-layer-caching@v0.0.11
+        continue-on-error: true
+
+      - uses: jonaseberle/github-action-setup-ddev@v1
+        with:
+          autostart: false
+
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14.x'
+      - name: Configure DDEV
+        run: ddev config --php-version ${{ matrix.php-versions }} --web-environment-add="WC_VERSION=${{ matrix.wc-versions }}"
+
+      - name: Start DDEV
+        run: ddev start
+
+      - name: Orchestrate DDEV
+        run: ddev orchestrate
+      - name: Install Playwright
+        run: npx playwright install --with-deps
+      - name: Install Ngrok
+        run: curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list && sudo apt update && sudo apt install ngrok
+      - name: Add ngrok Authtoken
+        run: ngrok config add-authtoken ${{ secrets.NGROK_AUTHTOKEN1 }}_${{ secrets.NGROK_AUTHTOKEN2 }}
+      - name: Run Ngrok
+        run: bin/ddev-share --ci
+      - name: Run Playwright tests
+        run: npx playwright test TestCI.spec.js
+        env:
+          E2E_AUTH_USERNAME: ${{ secrets.E2E_AUTH_USERNAME }}
+          E2E_AUTH_PW: ${{ secrets.E2E_AUTH_PW }}
+          MOLLIE_LIVE_API_KEY: ${{ secrets.MOLLIE_LIVE_API_KEY }}
+          MOLLIE_TEST_API_KEY: ${{ secrets.MOLLIE_TEST_API_KEY }}
+          BASEURL: ${{ env.BASEURL }}
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: e2e-results
+          path: tests/e2e/Reports/
+          retention-days: 30

@@ -31,7 +31,7 @@ class PayPalButtonHandler
     public function bootstrap($enabledInProduct, $enabledInCart)
     {
         if($enabledInProduct){
-            $renderPlaceholder = apply_filters('mollie_wc_gateway_paypal_render_placeholder_product', 'woocommerce_before_add_to_cart_quantity');
+            $renderPlaceholder = apply_filters('mollie_wc_gateway_paypal_render_hook_product', 'woocommerce_before_add_to_cart_quantity');
             $renderPlaceholder = is_string($renderPlaceholder) ? $renderPlaceholder : 'woocommerce_before_add_to_cart_quantity';
             add_action(
                     $renderPlaceholder,
@@ -48,7 +48,7 @@ class PayPalButtonHandler
             );
         }
         if($enabledInCart){
-            $renderPlaceholder = apply_filters('mollie_wc_gateway_paypal_render_placeholder_cart', 'woocommerce_cart_totals_after_order_total');
+            $renderPlaceholder = apply_filters('mollie_wc_gateway_paypal_render_hook_cart', 'woocommerce_cart_totals_after_order_total');
             $renderPlaceholder = is_string($renderPlaceholder) ? $renderPlaceholder : 'woocommerce_cart_totals_after_order_total';
             add_action(
                     $renderPlaceholder,

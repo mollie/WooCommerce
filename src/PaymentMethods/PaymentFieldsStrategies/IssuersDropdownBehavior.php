@@ -16,7 +16,6 @@ trait IssuersDropdownBehavior
      * @param $dataHelper
      * @return array
      */
-
     public function getIssuers($gateway, $dataHelper)
     {
         $testMode = $dataHelper->isTestModeEnabled();

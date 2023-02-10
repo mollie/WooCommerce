@@ -424,7 +424,8 @@ class Data
             }
 
             $method = $this->getMethodWithIssuersById($methodId, $apiKey);
-            $issuers = $method ? $method->issuers : [];
+            is_object($method) && $method = get_object_vars($method);
+            $issuers = $method ? $method['issuers'] : [];
             set_transient($transient_id, $issuers, HOUR_IN_SECONDS);
             return $issuers;
         } catch (\Mollie\Api\Exceptions\ApiException $e) {

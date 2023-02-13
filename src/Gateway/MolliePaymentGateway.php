@@ -805,8 +805,8 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
      */
     public function displayInstructions(
         WC_Order $order,
-        bool $admin_instructions = false,
-        bool $plain_text = false
+        $admin_instructions = false,
+        $plain_text = false
     ) {
 
         if (!$this::$alreadyDisplayedInstructions) {

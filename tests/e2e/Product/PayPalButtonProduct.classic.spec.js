@@ -3,7 +3,7 @@ const { expect } = require('@playwright/test');
 const { test } = require('../Shared/base-test');
 const {setOrderAPI, markStatusInMollie, resetSettings, insertAPIKeys} = require('../Shared/mollieUtils');
 const {wooOrderPaidPage, wooOrderDetailsPageVirtual} = require('../Shared/testMollieInWooPage');
-
+test.describe.configure({ mode: 'serial' });
 test.describe('PayPal Transaction in classic product', () => {
     test.beforeAll(async ({browser , baseURL}) => {
         const page = await browser.newPage({ baseURL: baseURL, extraHTTPHeaders: {'ngrok-skip-browser-warning': '123'}});

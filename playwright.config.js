@@ -77,8 +77,17 @@ module.exports = defineConfig({
             testMatch: ['**/Transaction/Checkout.classic.spec.js'],
             use: {
                 ...devices['Desktop Chrome'],
-                gateways: {ideal, banktransfer},
+                gateways: {ideal},
                 products: {simple},
+            },
+        },
+        {
+            name: 'product-paypal',
+            testMatch: '**/Product/**',
+            use: {
+                ...devices['Desktop Chrome'],
+                gateways: paypal,
+                products: {simple, virtual},
             },
         },
         /*{

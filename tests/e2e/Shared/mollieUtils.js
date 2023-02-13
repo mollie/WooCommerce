@@ -1,8 +1,10 @@
 const {sharedUrl: {mollieSettingsTab}} = require('../Shared/sharedUrl');
+const {loginAdmin} = require("./wpUtils");
 /**
  * @param {import('@playwright/test').Page} page
  */
 const setOrderAPI = async (page) => {
+    await loginAdmin(page)
     await page.goto(mollieSettingsTab + '&section=advanced');
     await page.selectOption('select#mollie-payments-for-woocommerce_api_switch', 'order')
     await Promise.all([

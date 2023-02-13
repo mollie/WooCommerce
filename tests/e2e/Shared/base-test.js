@@ -4,5 +4,5 @@ const {ideal, banktransfer} = require('../Shared/gateways');
 
 exports.test = base.test.extend({
     products: [simple, { option: true }],
-    gateways: [ideal, banktransfer, { option: true }],
+    gateways: [ideal, { option: true }],
 });

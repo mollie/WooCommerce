@@ -100,7 +100,7 @@ async function classicCheckoutPaidTransactionFullRefund(page, testedProduct, tes
     await page.locator('text=This order is no longer editable. Refund >> button').click();
     await page.locator('input[class="refund_order_item_qty"]').fill('1');
     page.on('dialog', dialog => dialog.accept());
-    await page.locator('refund-actions > button.button.button-primary.do-api-refund').click();
+    await page.getByRole('button', {name: 'Mollie'}).click();
     await expect(page.locator('#select2-order_status-container')).toContainText("Refunded");
 }
 
@@ -113,30 +113,20 @@ async function classicCheckoutPaidTransactionPartialRefund(page, testedProduct, 
     page.on('dialog', dialog => dialog.accept());
     await page.locator('#woocommerce-order-items > div.inside > div.wc-order-data-row.wc-order-refund-items.wc-order-data-row-toggle > div.refund-actions > button.button.button-primary.do-api-refund').click();
     await expect(page.locator('#select2-order_status-container')).toContainText("Processing");
-    await expect(page.locator('#woocommerce-order-notes > div.inside > ul')).toContainText('EUR9.90');
+    await expect(page.getByText('EUR9.90 refunded')).toBeVisible();
 }
-
+test.describe.configure({ mode: 'serial' });
 test.describe('Transaction in classic checkout', () => {
     const failedGateways = ['ideal', 'paypal', 'creditcard'];
-    /*test('Transaction classic with Order API paid', async ({page, products, gateways}) => {
+    test('Transaction classic with Order API paid', async ({page, products, gateways}) => {
         await setOrderAPI(page);
         for (const gateway in gateways) {
             for (const product in products) {
                 await classicCheckoutPaidTransaction(page, products[product], gateways[gateway]);
             }// end loop products
         }// end loop gateways
-    });*/
-    test('Transaction classic with Order API failed', async ({page, products, gateways}) => {
-        //only the gateways that support failed transactions in testing
-        for (const gateway in gateways) {
-            if (failedGateways.includes(gateways[gateway].id)) {
-                for (const product in products) {
-                    await classicCheckoutFailedTransaction(page, products[product], gateways[gateway]);
-                }// end loop products
-            }
-        }// end loop gateways
     });
-    /*test('Transaction classic with Order API cancelled setting as pending', async ({page, products, gateways}) => {
+    test('Transaction classic with Order API cancelled setting as pending', async ({page, products, gateways}) => {
         //setting as pending
         await page.goto(mollieSettingsTab + '&section=advanced');
         await page.selectOption('select#mollie-payments-for-woocommerce_order_status_cancelled_payments', 'pending');
@@ -148,6 +138,16 @@ test.describe('Transaction in classic checkout', () => {
             for (const product in products) {
                 await classicCheckoutCancelledTransactionPending(page, products[product], gateways[gateway]);
             }// end loop products
+        }// end loop gateways
+    });
+    test('Transaction classic with Order API failed setting pending', async ({page, products, gateways}) => {
+        //only the gateways that support failed transactions in testing
+        for (const gateway in gateways) {
+            if (failedGateways.includes(gateways[gateway].id)) {
+                for (const product in products) {
+                    await classicCheckoutFailedTransaction(page, products[product], gateways[gateway]);
+                }// end loop products
+            }
         }// end loop gateways
     });
     test('Transaction classic full refund Order', async ({page, products, gateways}) => {
@@ -163,8 +163,8 @@ test.describe('Transaction in classic checkout', () => {
                 await classicCheckoutPaidTransactionPartialRefund(page, products[product], gateways[gateway]);
             }// end loop products
         }// end loop gateways
-    });}
-    /*test('Transaction classic with Payment API paid', async ({page, products, gateways}) => {
+    });
+    test('Transaction classic with Payment API paid', async ({page, products, gateways}) => {
         //Set Payment API
         await setPaymentAPI(page);
         for (const gateway in gateways) {
@@ -214,5 +214,5 @@ test.describe('Transaction in classic checkout', () => {
                 await classicCheckoutPaidTransactionPartialRefund(page, products[product], gateways[gateway]);
             }// end loop products
         }// end loop gateways
-    });*/
+    });
 });

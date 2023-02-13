@@ -11,7 +11,7 @@ export const wooOrderPaidPage = async (page, mollieOrder, totalAmount, testedGat
         await expect(page.getByText('My company nameJulia CallasCalle Drutal22100 BerlinGermany 1234566788 test@test.')).toBeVisible;
     }
     // Check Mollie method appears
-    await expect(page.getByRole('listitem').filter({ hasText: 'Payment method' })).toContainText(testedGateway.defaultTitle);
+    await expect(page.getByRole('strong').filter({ hasText: testedGateway.defaultTitle })).toBeVisible();
 }
 
 export const wooOrderRetryPage = async (page, mollieOrder, totalAmount, testedGateway) => {
@@ -31,7 +31,7 @@ export const wooOrderDetailsPageOnPaid = async (page, mollieOrder, testedGateway
     await page.goto('/wp-admin/post.php?post=' + mollieOrder + '&action=edit');
 
     // Check order notes has correct text
-    await expect(page.locator('#woocommerce-order-notes > div.inside > ul')).toContainText('Order completed using Mollie – ' + testedGateway.defaultTitle + ' payment');
+    await expect(page.getByText('Order completed using Mollie – ' + testedGateway.defaultTitle + ' payment')).toBeVisible();
 }
 
 export const wooOrderDetailsPageVirtual = async (page, mollieOrder, testedGateway) => {
@@ -47,7 +47,7 @@ export const wooOrderDetailsPageVirtual = async (page, mollieOrder, testedGatewa
 export const wooOrderDetailsPageOnFailed = async (page, mollieOrder, testedGateway) => {
     await page.goto('/wp-admin/edit.php?post_type=shop_order');
     // Check order is in status processing in order page
-    await expect(page.locator('#post-' + mollieOrder + '> td.order_status.column-order_status > mark > span')).toContainText("Failed");
+    await expect(page.locator('#post-' + mollieOrder + '> td.order_status.column-order_status > mark > span')).toContainText("Pending payment");
     await page.goto('/wp-admin/post.php?post=' + mollieOrder + '&action=edit');
 
     // Check order notes has correct text

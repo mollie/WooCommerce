@@ -7,6 +7,7 @@ const {banktransfer, paypal} = require('../Shared/gateways');
 const PRODUCTS = {simple}
 const GATEWAYS = {banktransfer}
 const {sharedUrl: {gatewaySettingsRoot}} = require('../Shared/sharedUrl');
+const {loginAdmin} = require("../Shared/wpUtils");
 test.describe.configure({ mode: 'serial' });
 
 /** @type {import('@playwright/test').Page} */

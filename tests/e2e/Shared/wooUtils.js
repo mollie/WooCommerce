@@ -15,6 +15,7 @@ const addProductToCart = async (page, testedProductName) => {
 const fillCustomerInCheckout = async (page) => {
     await page.locator('input[name="billing_first_name"]').fill('Julia');
     await page.locator('input[name="billing_last_name"]').fill('Callas');
+    await page.locator('input[name="billing_company"]').fill('My company name');
     await page.selectOption('select#billing_country', 'DE');
     await page.locator('input[name="billing_city"]').fill('Berlin');
     await page.locator('input[name="billing_address_1"]').fill('Calle Drutal');

@@ -1,9 +1,9 @@
-const {sharedUrl: {settingsRoot}} = require('../Shared/sharedUrl');
+const {sharedUrl: {mollieSettingsTab}} = require('../Shared/sharedUrl');
 /**
  * @param {import('@playwright/test').Page} page
  */
 const setOrderAPI = async (page) => {
-    await page.goto(settingsRoot + '&section=advanced');
+    await page.goto(mollieSettingsTab + '&section=advanced');
     await page.selectOption('select#mollie-payments-for-woocommerce_api_switch', 'order')
     await Promise.all([
         page.waitForNavigation(),
@@ -15,7 +15,7 @@ const setOrderAPI = async (page) => {
  * @param {import('@playwright/test').Page} page
  */
 const setPaymentAPI = async (page) => {
-    await page.goto(settingsRoot + '&section=advanced');
+    await page.goto(mollieSettingsTab + '&section=advanced');
     await page.selectOption('select#mollie-payments-for-woocommerce_api_switch', 'payment')
     await Promise.all([
         page.waitForNavigation(),
@@ -39,7 +39,7 @@ const markStatusInMollie = async (page, status) =>{
  * @param {import('@playwright/test').Page} page
  */
 const insertAPIKeys = async (page) =>{
-    await page.goto(settingsRoot);
+    await page.goto(mollieSettingsTab);
     await page.locator(`input[name="mollie-payments-for-woocommerce_live_api_key"]`).fill(process.env.MOLLIE_LIVE_API_KEY);
     await page.locator(`input[name="mollie-payments-for-woocommerce_test_mode_enabled"]`).check();
     await page.locator(`input[name="mollie-payments-for-woocommerce_test_api_key"]`).fill(process.env.MOLLIE_TEST_API_KEY);
@@ -53,7 +53,7 @@ const insertAPIKeys = async (page) =>{
  * @param {import('@playwright/test').Page} page
  */
 const resetSettings = async (page) => {
-    await page.goto(settingsRoot + '&section=advanced');
+    await page.goto(mollieSettingsTab + '&section=advanced');
     await Promise.all([
         page.waitForNavigation(),
         await page.locator('text=clear now').click()

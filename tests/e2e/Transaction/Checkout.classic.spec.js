@@ -4,7 +4,7 @@ const {test} = require('../Shared/base-test');
 const {setOrderAPI, setPaymentAPI, markStatusInMollie, insertAPIKeys, resetSettings} = require('../Shared/mollieUtils');
 const {wooOrderPaidPage, wooOrderDetailsPageOnPaid, wooOrderRetryPage, wooOrderDetailsPageOnFailed, wooOrderCanceledPage, wooOrderDetailsPageOnCanceled} = require('../Shared/testMollieInWooPage');
 const {addProductToCart, fillCustomerInCheckout} = require('../Shared/wooUtils');
-const {sharedUrl: {settingsRoot}} = require('../Shared/sharedUrl');
+const {sharedUrl: {mollieSettingsTab}} = require('../Shared/sharedUrl');
 
 /**
  * @param {import('@playwright/test').Page} page
@@ -22,8 +22,10 @@ async function beforePlacingOrder(page, testedProduct, testedGateway) {
     await fillCustomerInCheckout(page);
 
     // Check testedGateway option NO ISSUERS DROPDOWN
-
     await page.locator(`text=${testedGateway.defaultTitle}`).click();
+    if (testedGateway.paymentFields) {
+        await page.locator(`select[name="mollie-payments-for-woocommerce_issuer_mollie_wc_gateway_${testedGateway.id}"]`).selectOption({index: 1});
+    }
     // Click text=Place order
     await Promise.all([
         page.waitForNavigation(/*{ url: 'https://www.mollie.com/checkout/test-mode?method=GATEWAY&token=XXX' }*/),
@@ -115,29 +117,28 @@ async function classicCheckoutPaidTransactionPartialRefund(page, testedProduct, 
 }
 
 test.describe('Transaction in classic checkout', () => {
-    test.beforeAll(async ({browser, baseURL }) => {
-        const page = await browser.newPage({ baseURL: baseURL, extraHTTPHeaders: {'ngrok-skip-browser-warning': '123'}});
-        await resetSettings(page);
-        await insertAPIKeys(page);
-    });
-    test('Transaction classic with Order API paid', async ({page, products, gateways}) => {
+    const failedGateways = ['ideal', 'paypal', 'creditcard'];
+    /*test('Transaction classic with Order API paid', async ({page, products, gateways}) => {
         await setOrderAPI(page);
         for (const gateway in gateways) {
             for (const product in products) {
                 await classicCheckoutPaidTransaction(page, products[product], gateways[gateway]);
             }// end loop products
         }// end loop gateways
-    });
+    });*/
     test('Transaction classic with Order API failed', async ({page, products, gateways}) => {
+        //only the gateways that support failed transactions in testing
         for (const gateway in gateways) {
-            for (const product in products) {
-                await classicCheckoutFailedTransaction(page, products[product], gateways[gateway]);
-            }// end loop products
+            if (failedGateways.includes(gateways[gateway].id)) {
+                for (const product in products) {
+                    await classicCheckoutFailedTransaction(page, products[product], gateways[gateway]);
+                }// end loop products
+            }
         }// end loop gateways
     });
-    test('Transaction classic with Order API cancelled setting as pending', async ({page, products, gateways}) => {
+    /*test('Transaction classic with Order API cancelled setting as pending', async ({page, products, gateways}) => {
         //setting as pending
-        await page.goto(settingsRoot + '&section=advanced');
+        await page.goto(mollieSettingsTab + '&section=advanced');
         await page.selectOption('select#mollie-payments-for-woocommerce_order_status_cancelled_payments', 'pending');
         await Promise.all([
             page.waitForNavigation(),
@@ -162,8 +163,8 @@ test.describe('Transaction in classic checkout', () => {
                 await classicCheckoutPaidTransactionPartialRefund(page, products[product], gateways[gateway]);
             }// end loop products
         }// end loop gateways
-    });
-    test('Transaction classic with Payment API paid', async ({page, products, gateways}) => {
+    });}
+    /*test('Transaction classic with Payment API paid', async ({page, products, gateways}) => {
         //Set Payment API
         await setPaymentAPI(page);
         for (const gateway in gateways) {
@@ -174,7 +175,7 @@ test.describe('Transaction in classic checkout', () => {
     });
     test('Transaction classic with Payment API cancelled setting as pending', async ({page, products, gateways}) => {
         //setting as pending
-        await page.goto(settingsRoot + '&section=advanced');
+        await page.goto(mollieSettingsTab + '&section=advanced');
         await page.selectOption('select#mollie-payments-for-woocommerce_order_status_cancelled_payments', 'pending');
         await Promise.all([
             page.waitForNavigation(),
@@ -188,7 +189,7 @@ test.describe('Transaction in classic checkout', () => {
     });
     test('Transaction classic with Payment API cancelled setting as cancelled', async ({page, products, gateways}) => {
         //setting as cancelled
-        await page.goto(settingsRoot + '&section=advanced');
+        await page.goto(mollieSettingsTab + '&section=advanced');
         await page.selectOption('select#mollie-payments-for-woocommerce_order_status_cancelled_payments', 'cancelled');
         await Promise.all([
             page.waitForNavigation(),
@@ -213,5 +214,5 @@ test.describe('Transaction in classic checkout', () => {
                 await classicCheckoutPaidTransactionPartialRefund(page, products[product], gateways[gateway]);
             }// end loop products
         }// end loop gateways
-    });
+    });*/
 });

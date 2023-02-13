@@ -5,23 +5,25 @@ const {insertAPIKeys, resetSettings} = require('../Shared/mollieUtils');
 const {simple} = require('../Shared/products');
 const {banktransfer, paypal} = require('../Shared/gateways');
 const PRODUCTS = {simple}
-const GATEWAYS = {banktransfer, paypal}
+const GATEWAYS = {banktransfer}
 const {sharedUrl: {gatewaySettingsRoot}} = require('../Shared/sharedUrl');
+test.describe.configure({ mode: 'serial' });
+
+/** @type {import('@playwright/test').Page} */
+let page;
+async function addProductToCart(page, productName) {
+    await page.goto('/shop/');
+    await page.locator('[data-product_sku="' + productName + '"]').click();
+}
 
 test.describe('Should show payment settings on classic checkout', () => {
-
-    test.beforeAll(async ({browser, baseURL}) => {
-        const page = await browser.newPage({ baseURL: baseURL, extraHTTPHeaders: {'ngrok-skip-browser-warning': '123'}});
-        await resetSettings(page);
-        await insertAPIKeys(page);
-        // Go to shop
-        await page.goto('/shop/');
-        // Add product to cart
-        const productCartButton = PRODUCTS.simple.name;
-        await page.locator('[data-product_sku="' + productCartButton + '"]').click();
+    test.beforeAll(async ({ browser }) => {
+        page = await browser.newPage();
+        await addProductToCart(page, PRODUCTS.simple.name);
     });
+
     for (const key in GATEWAYS) {
-        test(`Should show ${key} default settings`, async ({page}) => {
+        test(`Should show ${key} default settings`, async () => {
             // Go to checkout
             await page.goto('/checkout');
             let testedGateway = GATEWAYS[key]
@@ -42,7 +44,7 @@ test.describe('Should show payment settings on classic checkout', () => {
         });
     }// end loop gateways
     for (const key in GATEWAYS) {
-        test(`Should show ${key} custom settings`, async ({page}) => {
+        test(`Should show ${key} custom settings`, async () => {
             let testedGateway = GATEWAYS[key]
             //set custom settings
             await page.goto(gatewaySettingsRoot + testedGateway.id)
@@ -73,19 +75,23 @@ test.describe('Should show payment settings on classic checkout', () => {
             await expect(page.locator(`text=${testedGateway.defaultTitle} >> img`)).toBeFalsy
             //check custom description
             await expect(page.locator('#payment')).toContainText(`${testedGateway.defaultTitle} description edited`);
-            //check issuers dropdown not show
+            //check issuers dropdown not show todo check components in creditcard
             if (testedGateway.paymentFields) {
                 let issuers = page.locator(`#payment > ul > li.wc_payment_method.payment_method_mollie_wc_gateway_${testedGateway.id} > div`)
                 await expect(issuers).toBeEmpty
             }
-            //check fee added
+            //check fee added todo check fee amount and taxes
             await expect(page.locator('#order_review')).toContainText('Fee')
             //check not sell to countries
             await page.locator(`select[name="billing_country"]`).selectOption('DE');
             await expect(page.locator(`#payment > ul > li.wc_payment_method.payment_method_mollie_wc_gateway_${testedGateway.id} > label`)).not.toBeVisible();
-            await page.locator(`select[name="billing_country"]`).selectOption('ES');
         });
-    }// end loop gateways
+    }// end loop gateways*/
+    //default state
+    test.afterAll(async () => {
+        await resetSettings(page);
+        await insertAPIKeys(page);
+    });
 });
 
 

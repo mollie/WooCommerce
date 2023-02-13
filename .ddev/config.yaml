@@ -1,4 +1,4 @@
-name: mollie
+name: mollie-payments-for-woocommerce
 type: php
 docroot: .ddev/wordpress
 php_version: "7.4"

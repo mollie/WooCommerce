@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="MessDetectorOptionsConfiguration">
+    <option name="transferred" value="true" />
+  </component>
+  <component name="PHPCSFixerOptionsConfiguration">
+    <option name="transferred" value="true" />
+  </component>
+  <component name="PHPCodeSnifferOptionsConfiguration">
+    <option name="codingStandard" value="Custom" />
+    <option name="customRuleset" value="$PROJECT_DIR$/phpcs.xml.dist" />
+    <option name="transferred" value="true" />
+  </component>
   <component name="PhpCSFixer">
     <phpcsfixer_settings>
       <PhpCSFixerConfiguration standards="PSR1;PSR2;Symfony;DoctrineAnnotation;PHP70Migration;PHP71Migration" tool_path="$PROJECT_DIR$/vendor/bin/phpcbf" />
@@ -115,6 +126,13 @@
       <path value="$PROJECT_DIR$/vendor/sebastian/object-enumerator" />
       <path value="$PROJECT_DIR$/vendor/sebastian/object-reflector" />
       <path value="$PROJECT_DIR$/vendor/theseer/tokenizer" />
+      <path value="$PROJECT_DIR$/vendor/symfony/css-selector" />
+      <path value="$PROJECT_DIR$/vendor/automattic/jetpack-constants" />
+      <path value="$PROJECT_DIR$/vendor/symfony/yaml" />
+      <path value="$PROJECT_DIR$/vendor/phpunit/phpunit-mock-objects" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php72" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php70" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-intl-idn" />
     </include_path>
   </component>
   <component name="PhpInterpreters">
@@ -329,8 +347,22 @@
       </interpreter>
     </phpInfoCache>
   </component>
+  <component name="PhpProjectServersManager">
+    <servers>
+      <server host="mollie-payments-for-woocommerce.ddev.site" id="9a20d2a4-41f0-42a6-aa78-690b627329a8" name="b96e-178-237-225-191.eu.ngrok.io" use_path_mappings="true">
+        <path_mappings>
+          <mapping local-root="$PROJECT_DIR$" remote-root="/var/www/html/.ddev/wordpress/wp-content/plugins/mollie-payments-for-woocommerce" />
+          <mapping local-root="$PROJECT_DIR$/.ddev/wordpress" remote-root="/var/www/html/.ddev/wordpress" />
+          <mapping local-root="$PROJECT_DIR$/mollie-payments-for-woocommerce.php" remote-root="/var/www/html/.ddev/wordpress/wp-content/plugins/mollie-payments-for-woocommerce/mollie-payments-for-woocommerce.php" />
+        </path_mappings>
+      </server>
+    </servers>
+  </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="7.2">
     <option name="suggestChangeDefaultLanguageLevel" value="false" />
+  </component>
+  <component name="PhpStanOptionsConfiguration">
+    <option name="transferred" value="true" />
   </component>
   <component name="PhpUnit">
     <phpunit_settings>

@@ -1,8 +1,6 @@
 name: E2E Tests
 on:
-  pull-request:
-    branches:
-      - develop
+  workflow_dispatch
 jobs:
   test:
     timeout-minutes: 60

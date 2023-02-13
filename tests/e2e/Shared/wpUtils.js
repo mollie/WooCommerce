@@ -6,8 +6,14 @@ const loginAdmin = async (page)=>{
         page.waitForNavigation(),
         page.locator('input:has-text("Log In")').click()
     ]);
-
 }
 
-module.exports = {loginAdmin};
+async function deactivateWPPlugin(page, pluginName) {
+    await page.getByRole('link', { name: `Deactivate ${pluginName}` }).click();
+}
+async function activateWPPlugin(page, pluginName) {
+    await page.getByRole('link', { name: `Activate ${pluginName}` }).click();
+}
+
+module.exports = {loginAdmin, deactivateWPPlugin, activateWPPlugin};
 

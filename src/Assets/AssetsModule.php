@@ -573,7 +573,6 @@ class AssetsModule implements ExecutableModule
         $pluginPath = $container->get('shared.plugin_path');
         /** @var Settings */
         $settingsHelper = $container->get('settings.settings_helper');
-        global $current_section;
         add_action(
             'init',
             function () use ($container, $hasBlocksEnabled, $settingsHelper, $pluginUrl, $pluginPath, $dataService) {
@@ -602,8 +601,9 @@ class AssetsModule implements ExecutableModule
         );
         add_action(
             'admin_init',
-            function () use ($container, $hasBlocksEnabled, $pluginVersion, $dataService, $pluginUrl, $current_section) {
+            function () use ($container, $hasBlocksEnabled, $pluginVersion, $dataService, $pluginUrl) {
                 if (is_admin()) {
+                    global $current_section;
                     wp_register_script(
                         'mollie_wc_admin_settings',
                         $this->getPluginUrl($pluginUrl, '/public/js/settings.min.js'),

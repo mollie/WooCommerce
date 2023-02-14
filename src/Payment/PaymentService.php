@@ -137,7 +137,8 @@ class PaymentService
                 ),
             ];
         } catch (ApiException $error) {
-            $this->reportPaymentCreationFailure($orderId, $error);
+            $paymentMethodId = $paymentMethod->getProperty('id');
+            $this->reportPaymentCreationFailure($orderId, $error, $paymentMethodId);
         }
         return ['result' => 'failure'];
     }
@@ -698,11 +699,12 @@ class PaymentService
     /**
      * @param $orderId
      * @param $e
+     * @param $paymentMethodId
      */
-    protected function reportPaymentCreationFailure($orderId, $e): void
+    protected function reportPaymentCreationFailure($orderId, $e, $paymentMethodId): void
     {
         $this->logger->debug(
-            $this->id . ': Failed to create Mollie payment object for order ' . $orderId . ': ' . $e->getMessage(
+            $paymentMethodId . ': Failed to create Mollie payment object for order ' . $orderId . ': ' . $e->getMessage(
             )
         );
 

@@ -175,7 +175,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         add_filter('woocommerce_payment_gateways', [$this, 'maybeDisableApplePayGateway'], 20);
         add_filter('woocommerce_payment_gateways', static function ($gateways) use ($container) {
             $orderMandatoryGatewayDisabler = $container->get(OrderMandatoryGatewayDisabler::class);
-
+            assert($orderMandatoryGatewayDisabler instanceof OrderMandatoryGatewayDisabler);
             return $orderMandatoryGatewayDisabler->processGateways($gateways);
         });
          add_filter('woocommerce_payment_gateways', static function ($gateways) {

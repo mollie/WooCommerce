@@ -212,13 +212,13 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 }
             }
         );
-        $isBillieEnabled = $container->get('gateway.isBillieEnabled');
+        $isBillieEnabled = true;//$container->get('gateway.isBillieEnabled');
         if ($isBillieEnabled) {
             add_filter(
-                'woocommerce_billing_fields',
+                'woocommerce_after_checkout_validation',
                 [$this, 'organizationBillingFieldMandatory'],
                 11,
-                1
+                2
             );
         }
         // Set order to paid and processed when eventually completed without Mollie
@@ -593,9 +593,30 @@ class GatewayModule implements ServiceModule, ExecutableModule
         return $paymentMethods;
     }
 
-    public function organizationBillingFieldMandatory($fields)
+    public function organizationBillingFieldMandatory($fields, $errors)
     {
-        $fields['billing_company']['required'] = true;
+        $billiePaymentMethod = "mollie_wc_gateway_billie";
+        if ($fields['payment_method'] === $billiePaymentMethod) {
+            if (!isset($fields['billing_company'])) {
+                $errors->add(
+                    'validation',
+                    __(
+                        'Error processing Billie payment, the company name field is required.',
+                        'mollie-payments-for-woocommerce'
+                    )
+                );
+            }
+            if ($fields['billing_company'] === '') {
+                $errors->add(
+                    'validation',
+                    __(
+                        'Please enter your company name, this is required for Billie payments',
+                        'mollie-payments-for-woocommerce'
+                    )
+                );
+            }
+        }
+
         return $fields;
     }
 }

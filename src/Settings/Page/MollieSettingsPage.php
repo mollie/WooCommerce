@@ -269,7 +269,7 @@ class MollieSettingsPage extends WC_Settings_Page
 
         if (
             isset($_GET['refresh-methods']) &&
-            isset($_GET['nonce_mollie_refresh_methods-methods']) &&
+            isset($_GET['nonce_mollie_refresh_methods']) &&
             wp_verify_nonce(
                 filter_input(INPUT_GET, 'nonce_mollie_refresh_methods', FILTER_SANITIZE_SPECIAL_CHARS),
                 'nonce_mollie_refresh_methods'

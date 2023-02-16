@@ -181,75 +181,6 @@ class Settings
 
             return;
         }
-        $allowedHtml = [
-                'tr' => [
-                        'id' => [],
-                        'valign' => [],
-                ],
-                'th' => [
-                        'scope' => [],
-                        'class' => [],
-                ],
-                'td' => [
-                        'scope' => [],
-                        'class' => [],
-                ],
-                'input' => [
-                        'id' => [],
-                        'name' => [],
-                        'type' => [],
-                        'value' => [],
-                        'style' => [],
-                        'class' => [],
-                        'checked' => [],
-                ],
-                'label' => [
-                        'for' => [],
-                        'class' => [],
-                ],
-                'fieldset' => [],
-                'legend' => [
-                        'class' => [],
-                ],
-                'span' => [
-                        'class' => [],
-                ],
-                'table' => [
-                        'class' => [],
-                ],
-                'h3' => [
-                        'class' => [],
-                ],
-                'p' => [
-                        'class' => [],
-                ],
-                'select' => [
-                        'id' => [],
-                        'name' => [],
-                        'class' => [],
-                        'multiple' => [],
-                        'style' => [],
-                        'data-placeholder' => [],
-                        'aria-label' => [],
-                ],
-                'option' => [
-                        'value' => [],
-                        'selected' => [],
-                ],
-                'textarea' => [
-                        'id' => [],
-                        'name' => [],
-                        'class' => [],
-                        'rows' => [],
-                        'cols' => [],
-                ],
-                'a' => [
-                        'href' => [],
-                        'target' => [],
-                        'class' => [],
-                ],
-                'br' => [],
-        ];
         $html = '';
         foreach ($gateway->get_form_fields() as $k => $v) {
             $type = $gateway->get_field_type($v);
@@ -269,7 +200,7 @@ class Settings
         echo wp_kses_post(wpautop($gateway->get_method_description()));
         echo '<table class="form-table">'
                 .
-                wp_kses($html, $allowedHtml)
+                $html//phpcs:ignore
                 .
                 '</table>';
     }

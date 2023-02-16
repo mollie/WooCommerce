@@ -365,7 +365,6 @@ class MollieOrder extends MollieObject
             $this->logger->debug(__METHOD__ . ' called for order ' . $orderId);
 
             if ($payment->method === 'paypal') {
-                $this->addAddressToPaypalOrder($payment, $order);
                 $this->addPaypalTransactionIdToOrder($order);
             }
             $order->payment_complete($payment->id);

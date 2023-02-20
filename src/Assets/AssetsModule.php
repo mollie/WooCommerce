@@ -460,7 +460,9 @@ class AssetsModule implements ExecutableModule
                 'contentFallback' => __('Please choose a billing country to see the available payment methods', 'mollie-payments-for-woocommerce'),
                 'edit' => $content,
                 'paymentMethodId' => $gatewayKey,
-                'allowedCountries' => $gateway->paymentMethod()->getProperty('allowed_countries'),
+                'allowedCountries' => is_array(
+                    $gateway->paymentMethod()->getProperty('allowed_countries')
+                ) ? $gateway->paymentMethod()->getProperty('allowed_countries') : [],
                 'ariaLabel' => $gateway->paymentMethod()->getProperty('defaultDescription'),
                 'supports' => $this->gatewaySupportsFeatures($gateway->paymentMethod(), $isSepaEnabled),
             ];

@@ -1,3 +1,4 @@
+import {useCallback} from "@wordpress/element";
 
 let onSubmitLocal
 let activePaymentMethodLocal
@@ -7,7 +8,7 @@ let creditCardSelected = new Event("mollie_creditcard_component_selected", {bubb
 const MollieComponent = (props) => {
     let {onSubmit, activePaymentMethod, billing, item, useEffect, ajaxUrl, jQuery, emitResponse, eventRegistration} = props
     const {  responseTypes } = emitResponse;
-    const {onPaymentProcessing} = eventRegistration;
+    const {onPaymentProcessing, onCheckoutValidationBeforeProcessing} = eventRegistration;
     const [ selectedIssuer, selectIssuer ] = wp.element.useState('');
     const issuerKey = 'mollie-payments-for-woocommerce_issuer_' + activePaymentMethod
 
@@ -107,6 +108,29 @@ const MollieComponent = (props) => {
         };
 
     }, [selectedIssuer, onPaymentProcessing])
+
+    useEffect(() => {
+        if (activePaymentMethod === 'mollie_wc_gateway_billie') {
+            jQuery('#shipping > div.wc-block-components-text-input.wc-block-components-address-form__company > label').replaceWith('<label style="color: red" htmlFor="shipping-company">To proceed with Billie, please enter your company name here</label>')
+        } else {
+            jQuery('#shipping > div.wc-block-components-text-input.wc-block-components-address-form__company > label').replaceWith('<label htmlFor="shipping-company">Company name</label>')
+        }
+        const unsubscribeProcessing = onCheckoutValidationBeforeProcessing(
+            () => {
+                if (activePaymentMethod === 'mollie_wc_gateway_billie' && billing.billingData.company === '') {
+
+                    return {
+                        errorMessage: 'Company field is empty. To proceed with Billie payment the company field is required.',
+                    };
+                }
+            }
+        );
+        return () => {
+            unsubscribeProcessing()
+        };
+
+    }, [activePaymentMethod, onCheckoutValidationBeforeProcessing, billing.billingData]);
+
     onSubmitLocal = onSubmit
 
     const updateIssuer = ( changeEvent ) => {

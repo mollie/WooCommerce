@@ -5,7 +5,7 @@ let cachedAvailableGateways
 let creditCardSelected = new Event("mollie_creditcard_component_selected", {bubbles: true});
 
 const MollieComponent = (props) => {
-    let {onSubmit, activePaymentMethod, billing, item, useEffect, ajaxUrl, jQuery, emitResponse, eventRegistration} = props
+    let {onSubmit, activePaymentMethod, billing, item, useEffect, ajaxUrl, jQuery, emitResponse, eventRegistration, companyNameString} = props
     const {  responseTypes } = emitResponse;
     const {onPaymentProcessing, onCheckoutValidationBeforeProcessing} = eventRegistration;
     const [ selectedIssuer, selectIssuer ] = wp.element.useState('');

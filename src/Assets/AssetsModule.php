@@ -465,6 +465,8 @@ class AssetsModule implements ExecutableModule
                 ) ? $gateway->paymentMethod()->getProperty('allowed_countries') : [],
                 'ariaLabel' => $gateway->paymentMethod()->getProperty('defaultDescription'),
                 'supports' => $this->gatewaySupportsFeatures($gateway->paymentMethod(), $isSepaEnabled),
+                'errorMessage' => $gateway->paymentMethod()->getProperty('errorMessage'),
+                'companyPlaceholder' => $gateway->paymentMethod()->getProperty('companyPlaceholder'),
             ];
         }
         $dataToScript['gatewayData'] = $gatewayData;

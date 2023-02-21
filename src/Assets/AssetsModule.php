@@ -33,6 +33,9 @@ class AssetsModule implements ExecutableModule
 
     public function enqueueBlockCheckoutScripts(Data $dataService, array $gatewayInstances): void
     {
+        if (!has_block('woocommerce/checkout')) {
+            return;
+        }
         wp_enqueue_script('mollie_block_index');
         wp_enqueue_style('mollie-gateway-icons');
         wp_localize_script(
@@ -158,16 +161,15 @@ class AssetsModule implements ExecutableModule
                     return;
                 }
             }
-            if (!$cart->needs_shipping()) {
-                $dataToScripts = new DataToPayPal($pluginUrl);
-                wp_enqueue_style('unabledButton');
-                wp_enqueue_script('mollie_paypalButtonCart');
-                wp_localize_script(
-                    'mollie_paypalButtonCart',
-                    'molliepaypalButtonCart',
-                    $dataToScripts->paypalbuttonScriptData()
-                );
-            }
+
+            $dataToScripts = new DataToPayPal($pluginUrl);
+            wp_enqueue_style('unabledButton');
+            wp_enqueue_script('mollie_paypalButtonCart');
+            wp_localize_script(
+                'mollie_paypalButtonCart',
+                'molliepaypalButtonCart',
+                $dataToScripts->paypalbuttonScriptData()
+            );
         }
     }
 
@@ -266,7 +268,7 @@ class AssetsModule implements ExecutableModule
             true
         );
         wp_register_script(
-            'mollie-billie-handles',
+            'mollie-billie-classic-handles',
             $this->getPluginUrl($pluginUrl, '/public/js/mollieBillie.min.js'),
             ['underscore', 'jquery'],
             (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollieBillie.min.js')),
@@ -297,7 +299,7 @@ class AssetsModule implements ExecutableModule
             return;
         }
         wp_enqueue_style('mollie-gateway-icons');
-        wp_enqueue_script('mollie-billie-handles');
+        wp_enqueue_script('mollie-billie-classic-handles');
 
         $applePayGatewayEnabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_applepay_settings', 'enabled');
 

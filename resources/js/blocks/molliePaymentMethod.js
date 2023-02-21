@@ -109,10 +109,10 @@ const MollieComponent = (props) => {
     }, [selectedIssuer, onPaymentProcessing])
 
     useEffect(() => {
-        let companyLabel = jQuery('#shipping > div.wc-block-components-text-input.wc-block-components-address-form__company > label')
+        let companyLabel = jQuery('div.wc-block-components-text-input.wc-block-components-address-form__company > label')
         if (activePaymentMethod === 'mollie_wc_gateway_billie') {
             let message = item.companyPlaceholder
-            companyLabel.replaceWith('<label style="color: red" htmlFor="shipping-company">' + message + '</label>')
+            companyLabel.replaceWith('<label htmlFor="shipping-company">' + message + '</label>')
         } else {
             if (companyNameString !== false) {
                 companyLabel.replaceWith('<label htmlFor="shipping-company">' + companyNameString + '</label>')

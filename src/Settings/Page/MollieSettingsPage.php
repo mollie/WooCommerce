@@ -775,7 +775,7 @@ class MollieSettingsPage extends WC_Settings_Page
             $content .= '<div class="notice notice-warning is-dismissible">';
             $content .= '<p>';
             $content .= __(
-                'You have activated Billie. To accept payments, please make sure all default WooCommerce checkout fields are enabled and required. The billing company field is required as well.',
+                'You have activated Billie. To accept payments, please make sure all default WooCommerce checkout fields are enabled and required. The billing company field is required as well. Make sure to enable the billing company field in the WooCommerce settings if you are using Woocommerce blocks.',
                 'mollie-payments-for-woocommerce'
             );
             $content .= '</p>';

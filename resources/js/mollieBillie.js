@@ -2,7 +2,6 @@
     function ({jQuery}) {
         let gateway = 'mollie_wc_gateway_billie';
         let originalBillingCompanyField = {};
-        removeBillingCompanyField();
         saveOriginalBillingCompanyField();
 
         function usingGateway(gateway)

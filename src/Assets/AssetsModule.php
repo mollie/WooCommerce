@@ -299,7 +299,10 @@ class AssetsModule implements ExecutableModule
             return;
         }
         wp_enqueue_style('mollie-gateway-icons');
-        wp_enqueue_script('mollie-billie-classic-handles');
+        $isBillieEnabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_billie_settings', 'enabled');
+        if ($isBillieEnabled) {
+            wp_enqueue_script('mollie-billie-classic-handles');
+        }
 
         $applePayGatewayEnabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_applepay_settings', 'enabled');
 

@@ -709,7 +709,7 @@ class PaymentService
         );
 
         /* translators: Placeholder 1: Payment method title */
-        $message = sprintf(__('Could not create %s payment.', 'mollie-payments-for-woocommerce'), $this->title);
+        $message = sprintf(__('Could not create %s payment.', 'mollie-payments-for-woocommerce'), $paymentMethodId);
 
         if (defined('WP_DEBUG') && WP_DEBUG) {
             $message .= 'hii ' . $e->getMessage();

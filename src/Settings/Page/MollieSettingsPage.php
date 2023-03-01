@@ -770,7 +770,9 @@ class MollieSettingsPage extends WC_Settings_Page
 
     private function warnAboutRequiredCheckoutFieldForBillie(string $content)
     {
-        $isBillieEnabled = $this->paymentMethods['billie']->getProperty('enabled') === 'yes';
+        $isBillieEnabled = array_key_exists('mollie_wc_gateway_billie', $this->registeredGateways)
+            && array_key_exists('billie', $this->paymentMethods)
+            && $this->paymentMethods['billie']->getProperty('enabled') === 'yes';
         if ($isBillieEnabled) {
             $content .= '<div class="notice notice-warning is-dismissible">';
             $content .= '<p>';

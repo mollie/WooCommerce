@@ -5,28 +5,33 @@ import molliePaymentMethod from './blocks/molliePaymentMethod'
         if (_.isEmpty(mollieBlockData)) {
             return;
         }
-        const { registerPaymentMethod } = wc.wcBlocksRegistry;
-        const { ajaxUrl, filters, gatewayData, availableGateways } = mollieBlockData.gatewayData;
-        const {useEffect} = wp.element;
-        const isAppleSession = typeof window.ApplePaySession === "function"
-        let companyLabel = jQuery('div.wc-block-components-text-input.wc-block-components-address-form__company > label');
-        let companyNameString = companyLabel.text();
-        let isCompanyFieldVisible = companyNameString.length > 0;
-        gatewayData.forEach(item => {
-            let register = () => registerPaymentMethod(molliePaymentMethod(useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, companyNameString));
-            if (item.name === 'mollie_wc_gateway_billie') {
-                if (isCompanyFieldVisible) {
-                    register();
+        window.onload = (event) => {
+            const { registerPaymentMethod } = wc.wcBlocksRegistry;
+            const { ajaxUrl, filters, gatewayData, availableGateways } = mollieBlockData.gatewayData;
+            const {useEffect} = wp.element;
+            const isAppleSession = typeof window.ApplePaySession === "function"
+            let shippingCompany = document.getElementById('shipping-company');
+            let billingCompany = document.getElementById('billing-company');
+            let companyField = shippingCompany ? shippingCompany : billingCompany;
+            let isCompanyFieldVisible = companyField && companyField.style.display !== 'none';
+            let companyNameString = companyField.parentNode.querySelector("label[for='" + companyField.id + "']").innerHTML;
+            gatewayData.forEach(item => {
+                let register = () => registerPaymentMethod(molliePaymentMethod(useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, companyNameString));
+                if (item.name === 'mollie_wc_gateway_billie') {
+                    if (isCompanyFieldVisible) {
+                        register();
+                    }
+                    return;
                 }
-                return;
-            }
-            if (item.name === 'mollie_wc_gateway_applepay' ) {
-                if (isAppleSession && window.ApplePaySession.canMakePayments()) {
-                    register();
+                if (item.name === 'mollie_wc_gateway_applepay' ) {
+                    if (isAppleSession && window.ApplePaySession.canMakePayments()) {
+                        register();
+                    }
+                    return;
                 }
-                return;
-            }
-            register();
-        });
+                register();
+            });
+        };
+
     }
 )(window, wc)

@@ -939,14 +939,7 @@ class MollieOrder extends MollieObject
                 $order->get_billing_country(),
                 self::MAXIMAL_LENGHT_REGION
             );
-        $billingAddress->organizationName = (ctype_space(
-            $order->get_billing_company()
-        ))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_billing_company(),
-                self::MAXIMAL_LENGHT_ADDRESS
-            );
+        $billingAddress->organizationName = $this->billingCompanyField($order);
         return $billingAddress;
     }
 
@@ -1146,5 +1139,36 @@ class MollieOrder extends MollieObject
 
         // drop item from array
         unset($items[$item->get_id()]);
+    }
+
+    /**
+     * @param $order
+     * @return string|null
+     */
+    public function billingCompanyField($order): ?string
+    {
+        if (!trim($order->get_billing_company())) {
+            return $this->checkBillieCompanyField($order);
+        }
+        return $this->maximalFieldLengths(
+            $order->get_billing_company(),
+            self::MAXIMAL_LENGHT_ADDRESS
+        );
+    }
+
+    private function checkBillieCompanyField($order)
+    {
+        $gateway = wc_get_payment_gateway_by_order($order);
+        $isBillieMethodId = $gateway->id === 'mollie_wc_gateway_billie';
+        if ($isBillieMethodId) {
+            $companyFieldPosted = filter_input(INPUT_POST, 'billing_company', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+            if ($companyFieldPosted) {
+                return $this->maximalFieldLengths(
+                    $companyFieldPosted,
+                    self::MAXIMAL_LENGHT_ADDRESS
+                );
+            }
+        }
+        return null;
     }
 }

@@ -212,7 +212,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 }
             }
         );
-        $isBillieEnabled = true;//$container->get('gateway.isBillieEnabled');
+        $isBillieEnabled = $container->get('gateway.isBillieEnabled');
         if ($isBillieEnabled) {
             add_filter(
                 'woocommerce_after_checkout_validation',
@@ -598,13 +598,18 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $billiePaymentMethod = "mollie_wc_gateway_billie";
         if ($fields['payment_method'] === $billiePaymentMethod) {
             if (!isset($fields['billing_company'])) {
-                $errors->add(
-                    'validation',
-                    __(
-                        'Error processing Billie payment, the company name field is required.',
-                        'mollie-payments-for-woocommerce'
-                    )
-                );
+                $companyFieldPosted = filter_input(INPUT_POST, 'billing_company', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+                if ($companyFieldPosted) {
+                    $fields['billing_company'] = $companyFieldPosted;
+                } else {
+                    $errors->add(
+                        'validation',
+                        __(
+                            'Error processing Billie payment, the company name field is required.',
+                            'mollie-payments-for-woocommerce'
+                        )
+                    );
+                }
             }
             if ($fields['billing_company'] === '') {
                 $errors->add(

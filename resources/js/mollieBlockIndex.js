@@ -14,7 +14,7 @@ import molliePaymentMethod from './blocks/molliePaymentMethod'
             let billingCompany = document.getElementById('billing-company');
             let companyField = shippingCompany ? shippingCompany : billingCompany;
             let isCompanyFieldVisible = companyField && companyField.style.display !== 'none';
-            let companyNameString = companyField.parentNode.querySelector("label[for='" + companyField.id + "']").innerHTML;
+            let companyNameString = companyField && companyField.parentNode.querySelector("label[for='" + companyField.id + "']").innerHTML;
             gatewayData.forEach(item => {
                 let register = () => registerPaymentMethod(molliePaymentMethod(useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, companyNameString));
                 if (item.name === 'mollie_wc_gateway_billie') {

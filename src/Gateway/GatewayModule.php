@@ -348,9 +348,9 @@ class GatewayModule implements ServiceModule, ExecutableModule
         }
 
         $applePayGatewayClassName = 'mollie_wc_gateway_applepay';
-        $postData = filter_input(INPUT_POST, self::POST_DATA_KEY, FILTER_SANITIZE_SPECIAL_CHARS) ?? '';
+        // phpcs:ignore
+        $postData = isset($_POST[self::POST_DATA_KEY]) ? wc_clean(wp_unslash($_POST[self::POST_DATA_KEY])) : '';
         parse_str($postData, $postData);
-
         $applePayAllowed = isset($postData[self::APPLE_PAY_METHOD_ALLOWED_KEY])
             && $postData[self::APPLE_PAY_METHOD_ALLOWED_KEY];
 

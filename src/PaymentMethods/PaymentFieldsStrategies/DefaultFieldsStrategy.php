@@ -6,7 +6,6 @@ namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
 class DefaultFieldsStrategy implements PaymentFieldsStrategyI
 {
-
     public function execute($gateway, $dataHelper)
     {
     }

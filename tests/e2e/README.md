@@ -1,13 +1,11 @@
 
-### Setup
-- Set a working WordPress site URL here: tests/e2e/config/default.json
+### Setup E2E tests
+In your test environment
+- Import the products
+- Update the env with url and credentials
+- VSCode has a playwright plugin
 - Install and activate basic auth plugin: https://github.com/WP-API/Basic-Auth
 ```
-$ npm install
+$ npx playwright test
 ```
 
-### Run tests
-```
-$ jest
-$ jest -i ./tests/e2e/specs/single.test.js
-```

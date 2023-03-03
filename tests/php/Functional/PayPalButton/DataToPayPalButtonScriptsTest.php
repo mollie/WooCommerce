@@ -18,9 +18,6 @@ use Mollie_WC_Payment_RefundLineItemsBuilder;
 use Mollie_WC_PayPalButton_DataToPayPalScripts;
 use PHPUnit_Framework_Exception;
 use PHPUnit_Framework_MockObject_MockObject;
-use WC_Countries;
-
-use function Brain\Monkey\Functions\expect;
 use function Brain\Monkey\Functions\stubs;
 use function Brain\Monkey\Functions\when;
 
@@ -32,7 +29,7 @@ class DataToPayPalButtonScriptsTest extends TestCase
     /**
      *
      */
-    public function testApplePayScriptDataOnProduct()
+    public function testPayPalScriptDataOnProduct()
     {
         /*
          * Stubs
@@ -58,9 +55,9 @@ class DataToPayPalButtonScriptsTest extends TestCase
                 'get_bloginfo' => 'test',
                 'is_product' => true,
                 'get_the_id' => $postDummyData->productId,
-                'wc_get_product' => $this->wcProduct(),
                 'admin_url' => 'admin-ajax.php',
-                'get_option'=>['mollie_paypal_button_minimum_amount'=>$minAmount],
+                'get_option' => ['mollie_paypal_button_minimum_amount' => $minAmount],
+                'wc_get_product' => $this->wcProduct(),
             ]
         );
 

@@ -84,7 +84,7 @@ class PaymentMethodsIconUrl
             $svgUrl = $this->pluginUrl . '/' . sprintf('public/images/%s', $paymentMethodName) . self::SVG_FILE_EXTENSION;
         }
 
-        return '<img src="' . esc_attr($svgUrl)
+        return '<img src="' . esc_url($svgUrl)
             . '" class="mollie-gateway-icon" />';
     }
 
@@ -99,12 +99,12 @@ class PaymentMethodsIconUrl
         $gatewaySettings = get_option('mollie_wc_gateway_creditcard_settings', false);
         if ($this->canShowCustomLogo($gatewaySettings)) {
             $url =  $gatewaySettings["iconFileUrl"];
-            return '<img src="' . esc_attr($url)
+            return '<img src="' . esc_url($url)
                 . '" class="mollie-gateway-icon" />';
         }
         $svgUrl = $this->pluginUrl . sprintf('public/images/%ss.svg', PaymentMethod::CREDITCARD);
         return
-            '<img src="' . esc_attr($svgUrl)
+            '<img src="' . esc_url($svgUrl)
             . '" class="mollie-gateway-icon" />';
     }
 
@@ -171,16 +171,17 @@ class PaymentMethodsIconUrl
     {
         $enabledCreditCards = $this->enabledCreditcards();
 
-        $assetsImagesPath
-        = $this->pluginPath . '/' . 'public/images/';
+        $assetsImagesPath = $this->pluginPath . '/' . 'public/images/';
         $cardWidth = PaymentMethodsIconUrl::CREDIT_CARD_ICON_WIDTH;
         $cardsNumber = count($enabledCreditCards);
         $cardsWidth = $cardWidth * $cardsNumber;
         $cardPositionX = 0;
         $actual = get_transient('svg_creditcards_string');
         if (!$actual) {
-            $actual
-            = sprintf('<svg width="%s" height="24" class="mollie-gateway-icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">', $cardsWidth);
+            $actual = sprintf(
+                '<svg width="%s" height="24" class="mollie-gateway-icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">',
+                $cardsWidth
+            );
             foreach ($enabledCreditCards as $creditCard) {
                 $svgString = file_get_contents(
                     $assetsImagesPath . $creditCard

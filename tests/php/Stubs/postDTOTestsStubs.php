@@ -17,7 +17,7 @@ class postDTOTestsStubs
      */
     public $validationUrl;
     /**
-     * @var integer
+     * @var string
      */
     public $productId;
     /**
@@ -67,7 +67,7 @@ class postDTOTestsStubs
         $this->faker = $fakeFactory->create();
         $this->nonce = $this->faker->word;
         $this->validationUrl = $this->faker->url;
-        $this->productId = $this->faker->numberBetween(1, 100);
+        $this->productId = (string) $this->faker->numberBetween(1, 100);
         $this->productQuantity = $this->faker->numberBetween(1, 100);
         $this->callerPage = 'productDetail';
         $this->needShipping = true;

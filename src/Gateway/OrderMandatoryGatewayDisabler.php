@@ -35,7 +35,7 @@ class OrderMandatoryGatewayDisabler
         if (
             ($isWcApiRequest
                 || !doing_action('woocommerce_payment_gateways')
-                || !wp_doing_ajax()
+                || (!wp_doing_ajax() && !is_wc_endpoint_url('order-pay'))
                 || is_admin())
             && !has_block('woocommerce/checkout')
         ) {
@@ -46,9 +46,9 @@ class OrderMandatoryGatewayDisabler
         }
         return array_filter(
             $gateways,
-            function ($gateway) {
+            static function ($gateway) {
                 return !($gateway instanceof MolliePaymentGateway)
-                    || !$gateway->paymentMethod->getProperty('orderMandatory');
+                    || !$gateway->paymentMethod()->getProperty('orderMandatory');
             }
         );
     }

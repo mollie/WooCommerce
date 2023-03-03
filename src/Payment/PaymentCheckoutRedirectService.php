@@ -35,8 +35,8 @@ class PaymentCheckoutRedirectService
             return;
         }
         $className = 'Mollie\\WooCommerce\\PaymentMethods\\PaymentRedirectStrategies\\' . ucfirst(
-                $paymentMethod->getProperty('id')
-            ) . 'RedirectStrategy';
+            $paymentMethod->getProperty('id')
+        ) . 'RedirectStrategy';
         $this->strategy = class_exists($className) ? new $className() : new DefaultRedirectStrategy();
     }
 

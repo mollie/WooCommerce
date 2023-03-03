@@ -11,88 +11,31 @@ use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Payment\PaymentService;
 use Mollie\WooCommerce\Settings\General\MollieGeneralSettings;
+use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use WC_Payment_Gateway;
 
 class Settings
 {
-    /**
-     * @var string
-     */
-    const FILTER_ALLOWED_LANGUAGE_CODE_SETTING = 'mollie.allowed_language_code_setting';
-    /**
-     * @var string
-     */
-    const FILTER_WPML_CURRENT_LOCALE = 'wpml_current_language';
-
-    /**
-     * @var string
-     */
-    const DEFAULT_TIME_PAYMENT_CONFIRMATION_CHECK = '3:00';
-
-    /**
-     * @var string
-     */
-    const SETTING_NAME_PAYMENT_LOCALE = 'payment_locale';
-    /**
-     * @var string
-     */
-    const SETTING_LOCALE_DEFAULT_LANGUAGE = 'en_US';
-    /**
-     * @var string
-     */
-    const SETTING_LOCALE_DETECT_BY_BROWSER = 'detect_by_browser';
-    /**
-     * @var string
-     */
-    const SETTING_LOCALE_WP_LANGUAGE = 'wp_locale';
-
-    /**
-     * @var string[]
-     */
-    const ALLOWED_LANGUAGE_CODES = [
-        'en_US',
-        'nl_NL',
-        'nl_BE',
-        'fr_FR',
-        'fr_BE',
-        'de_DE',
-        'de_AT',
-        'de_CH',
-        'es_ES',
-        'ca_ES',
-        'pt_PT',
-        'it_IT',
-        'nb_NO',
-        'sv_SE',
-        'fi_FI',
-        'da_DK',
-        'is_IS',
-        'hu_HU',
-        'pl_PL',
-        'lv_LV',
-        'lt_LT',
-    ];
-    public $pluginId;
-    public $pluginVersion;
-    public $pluginUrl;
+    protected $pluginId;
+    protected $pluginVersion;
+    protected $pluginUrl;
     protected $cleanDb;
     protected $globalSettingsUrl;
     protected $statusHelper;
-
-    protected $gatewaysWithNamespace;
     protected $apiHelper;
 
     /**
      * Settings constructor.
      */
     public function __construct(
-            $pluginId,
-            $statusHelper,
-            $pluginVersion,
-            $pluginUrl,
-            $apiHelper,
-            $cleanDb
+        $pluginId,
+        $statusHelper,
+        $pluginVersion,
+        $pluginUrl,
+        $apiHelper,
+        $cleanDb
     ) {
+
         $this->pluginId = $pluginId;
         $this->pluginVersion = $pluginVersion;
         $this->pluginUrl = $pluginUrl;
@@ -124,6 +67,11 @@ class Settings
 
     public function processSettings(WC_Payment_Gateway $gateway)
     {
+        $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
+        $isNonceValid = wp_verify_nonce($nonce, 'woocommerce-settings');
+        if (!$isNonceValid) {
+            return;
+        }
         if (isset($_POST['save'])) {
             $this->processAdminOptionCustomLogo($gateway);
             $this->processAdminOptionSurcharge($gateway);
@@ -136,6 +84,11 @@ class Settings
 
     public function processAdminOptionCustomLogo(WC_Payment_Gateway $gateway)
     {
+        $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
+        $isNonceValid = wp_verify_nonce($nonce, 'woocommerce-settings');
+        if (!$isNonceValid) {
+            return;
+        }
         $mollieUploadDirectory = trailingslashit(wp_upload_dir()['basedir'])
             . 'mollie-uploads/' . $gateway->id;
         wp_mkdir_p($mollieUploadDirectory);
@@ -150,16 +103,20 @@ class Settings
         }
         if (
             isset($_POST[$enabledLogoOptionName])
-            && isset($_FILES[$fileOptionName])
+            && isset($_FILES[$fileOptionName]['size'])
+            && isset($_FILES[$fileOptionName]['name'])
             && $_FILES[$fileOptionName]['size'] > 0
         ) {
             if ($_FILES[$fileOptionName]['size'] <= 500000) {
+                $name = filter_var(wp_unslash($_FILES[$fileOptionName]['name']), FILTER_SANITIZE_FULL_SPECIAL_CHARS);
                 $fileName = preg_replace(
                     '#\s+#',
                     '_',
-                    $_FILES[$fileOptionName]['name']
+                    $name
                 );
-                $tempName = $_FILES[$fileOptionName]['tmp_name'];
+                $tempName = isset($_FILES[$fileOptionName]['tmp_name']) ?
+                        filter_var(wp_unslash($_FILES[$fileOptionName]['tmp_name']), FILTER_SANITIZE_FULL_SPECIAL_CHARS)
+                        : 'tmp_name';
                 move_uploaded_file($tempName, $targetLocation . $fileName);
                 $gatewaySettings["iconFileUrl"] = trailingslashit(
                     wp_upload_dir()['baseurl']
@@ -185,6 +142,11 @@ class Settings
 
     public function processAdminOptionSurcharge(WC_Payment_Gateway $gateway)
     {
+        $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
+        $isNonceValid = wp_verify_nonce($nonce, 'woocommerce-settings');
+        if (!$isNonceValid) {
+            return;
+        }
         $paymentSurcharge = $gateway->id . '_payment_surcharge';
 
         if (
@@ -213,13 +175,12 @@ class Settings
     {
 
         if (!$gateway->enabled && count($gateway->errors)) {
-            echo '<div class="inline error"><p><strong>' . __('Gateway Disabled', 'mollie-payments-for-woocommerce') . '</strong>: '
-                . implode('<br/>', $gateway->errors)
+            echo '<div class="inline error"><p><strong>' . esc_html(__('Gateway Disabled', 'mollie-payments-for-woocommerce')) . '</strong>: '
+                . wp_kses_post(implode('<br/>', $gateway->errors))
                 . '</p></div>';
 
             return;
         }
-
         $html = '';
         foreach ($gateway->get_form_fields() as $k => $v) {
             $type = $gateway->get_field_type($v);
@@ -238,19 +199,18 @@ class Settings
         echo '</h2>';
         echo wp_kses_post(wpautop($gateway->get_method_description()));
         echo '<table class="form-table">'
-            .
-            $html
-            .
-            '</table>';
+                .
+                $html//phpcs:ignore
+                .
+                '</table>';
     }
 
     public function multiSelectCountry($gateway)
     {
         $selections = (array)$gateway->get_option('allowed_countries', []);
-        $gatewayId = $gateway->paymentMethod->getProperty('id');
+        $gatewayId = $gateway->paymentMethod()->getProperty('id');
         $id = 'mollie_wc_gateway_' . $gatewayId . '_allowed_countries';
         $title = __('Sell to specific countries', 'mollie-payments-for-woocommerce');
-        $description = '<span class="description">' . wp_kses_post($gateway->get_option('description', '')) . '</span>';
         $countries = WC()->countries->countries;
         asort($countries);
         ob_start();
@@ -299,18 +259,19 @@ class Settings
     }
     /**
      * @param bool $overrideTestMode
-     * @return null|string
+     *
+     * @return false|string
      */
     public function getApiKey($overrideTestMode = 2)
     {
-        $isTestModeEnabled = $overrideTestMode === 2 ? $this->isTestModeEnabled(): $overrideTestMode;
+        $isTestModeEnabled = $overrideTestMode === 2 ? $this->isTestModeEnabled() : $overrideTestMode;
         $settingId = $isTestModeEnabled ? 'test_api_key' : 'live_api_key';
         $apiKeyId = $this->getSettingId($settingId);
         $apiKey = get_option($apiKeyId);
         //TODO add api key filter
-
-        if (!$apiKey && is_admin()) {
-            $apiKey = sanitize_text_field(wp_unslash($_POST[$apiKeyId]));
+        //phpcs:ignore WordPress.Security.NonceVerification
+        if (!$apiKey && is_admin() && isset($_POST[$apiKeyId])) {
+            $apiKey = filter_input(INPUT_POST, $apiKeyId, FILTER_SANITIZE_SPECIAL_CHARS);
         }
 
         return is_string($apiKey) ? trim($apiKey) : false;
@@ -324,7 +285,7 @@ class Settings
     public function getOrderStatusCancelledPayments()
     {
         $defaultCanceledPaymentSetting = 'pending';
-        $orderStatusCanceledPaymentsSetting = get_option($this->getSettingId('order_status_cancelled_payments'))?:$defaultCanceledPaymentSetting;
+        $orderStatusCanceledPaymentsSetting = get_option($this->getSettingId('order_status_cancelled_payments')) ?: $defaultCanceledPaymentSetting;
         return trim($orderStatusCanceledPaymentsSetting);
     }
 
@@ -345,11 +306,11 @@ class Settings
     protected function getPaymentLocaleSetting()
     {
         $option = (string)get_option(
-            $this->getSettingId(self::SETTING_NAME_PAYMENT_LOCALE),
-            self::SETTING_LOCALE_WP_LANGUAGE
+            $this->getSettingId(SharedDataDictionary::SETTING_NAME_PAYMENT_LOCALE),
+            SharedDataDictionary::SETTING_LOCALE_WP_LANGUAGE
         );
 
-        $option = $option ?: self::SETTING_LOCALE_WP_LANGUAGE;
+        $option = $option ?: SharedDataDictionary::SETTING_LOCALE_WP_LANGUAGE;
 
         return trim($option);
     }
@@ -363,26 +324,24 @@ class Settings
     {
         $setting = $this->getPaymentLocaleSetting();
 
-        if ($setting === self::SETTING_LOCALE_DETECT_BY_BROWSER) {
+        if ($setting === SharedDataDictionary::SETTING_LOCALE_DETECT_BY_BROWSER) {
             return $this->browserLanguage();
         }
 
-        $languageCode = $setting === self::SETTING_LOCALE_WP_LANGUAGE
+        $languageCode = $setting === SharedDataDictionary::SETTING_LOCALE_WP_LANGUAGE
             ? $this->getCurrentLocale()
             : $setting;
 
         // TODO Missing Post condition, $languageCode has to be check for a valid
         //      language code.
 
-        return $languageCode ?: self::SETTING_LOCALE_DEFAULT_LANGUAGE;
+        return $languageCode ?: SharedDataDictionary::SETTING_LOCALE_DEFAULT_LANGUAGE;
     }
 
     /**
      * Store customer details at Mollie
-     *
-     * @return string
      */
-    public function shouldStoreCustomer()
+    public function shouldStoreCustomer(): bool
     {
         return get_option($this->getSettingId('customer_details'), 'yes') === 'yes';
     }
@@ -500,7 +459,7 @@ class Settings
 
     public function getPaymentConfirmationCheckTime()
     {
-        $time = strtotime(self::DEFAULT_TIME_PAYMENT_CONFIRMATION_CHECK);
+        $time = strtotime(SharedDataDictionary::DEFAULT_TIME_PAYMENT_CONFIRMATION_CHECK);
         $date = new DateTime();
 
         if ($date->getTimestamp() > $time) {
@@ -526,7 +485,7 @@ class Settings
         $max_option_name_length = 191;
 
         if ($setting_id_length > $max_option_name_length) {
-            trigger_error(sprintf('Setting id %s (%s) to long for database column wp_options.option_name which is varchar(%s).', $setting_id, $setting_id_length, $max_option_name_length), E_USER_WARNING);
+            trigger_error(sprintf('Setting id %s (%s) to long for database column wp_options.option_name which is varchar(%s).', esc_html($setting_id), esc_html($setting_id_length), esc_html($max_option_name_length)), E_USER_WARNING);
         }
 
         return $setting_id;
@@ -541,7 +500,7 @@ class Settings
      */
     protected function getCurrentLocale()
     {
-        $locale = apply_filters(self::FILTER_WPML_CURRENT_LOCALE, get_locale());
+        $locale = apply_filters(SharedDataDictionary::FILTER_WPML_CURRENT_LOCALE, get_locale());
 
         // Convert known exceptions
         $locale = $locale === 'nl_NL_formal' ? 'nl_NL' : $locale;
@@ -559,10 +518,10 @@ class Settings
     protected function browserLanguage()
     {
         if (empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-            return self::SETTING_LOCALE_DEFAULT_LANGUAGE;
+            return SharedDataDictionary::SETTING_LOCALE_DEFAULT_LANGUAGE;
         }
 
-        $httpAcceptedLanguages = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
+        $httpAcceptedLanguages = explode(',', filter_var(wp_unslash($_SERVER['HTTP_ACCEPT_LANGUAGE']), FILTER_SANITIZE_FULL_SPECIAL_CHARS));
         foreach ($httpAcceptedLanguages as $index => $languageCode) {
             $languageCode = explode(';', $languageCode)[0];
             if (strpos($languageCode, '-') !== false) {
@@ -574,7 +533,7 @@ class Settings
         $httpAcceptedLanguages = array_filter($httpAcceptedLanguages);
 
         if ($httpAcceptedLanguages === []) {
-            return self::SETTING_LOCALE_DEFAULT_LANGUAGE;
+            return SharedDataDictionary::SETTING_LOCALE_DEFAULT_LANGUAGE;
         }
 
         return $this->extractValidLanguageCode($httpAcceptedLanguages);
@@ -605,8 +564,8 @@ class Settings
          * @param array $allowedLanguageCodes
          */
         $allowedLanguageCodes = apply_filters(
-            self::FILTER_ALLOWED_LANGUAGE_CODE_SETTING,
-            self::ALLOWED_LANGUAGE_CODES
+            SharedDataDictionary::FILTER_ALLOWED_LANGUAGE_CODE_SETTING,
+            SharedDataDictionary::ALLOWED_LANGUAGE_CODES
         );
 
         if (empty($allowedLanguageCodes)) {
@@ -629,7 +588,7 @@ class Settings
             }
         }
 
-        return self::SETTING_LOCALE_DEFAULT_LANGUAGE;
+        return SharedDataDictionary::SETTING_LOCALE_DEFAULT_LANGUAGE;
     }
 
     /**

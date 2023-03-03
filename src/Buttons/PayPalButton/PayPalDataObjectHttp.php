@@ -9,33 +9,26 @@ use Psr\Log\LogLevel;
 
 class PayPalDataObjectHttp
 {
-
     /**
      * @var mixed
      */
-    public $nonce;
+    protected $nonce;
     /**
      * @var mixed|null
      */
-    public $needShipping;
+    protected $needShipping;
     /**
      * @var mixed
      */
-    public $productId;
+    protected $productId;
     /**
      * @var mixed
      */
-    public $productQuantity;
-
-    /**
-     * @var mixed
-     */
-    public $callerPage;
-
+    protected $productQuantity;
     /**
      * @var array
      */
-    public $errors = [];
+    protected $errors = [];
     /**
      * @var Logger
      */
@@ -72,8 +65,17 @@ class PayPalDataObjectHttp
      *
      * @param       $callerPage
      */
-    public function orderData(array $data, $callerPage)
+    public function orderData($callerPage)
     {
+        $nonce = filter_input(INPUT_POST, 'nonce', FILTER_SANITIZE_SPECIAL_CHARS);
+        $isNonceValid = wp_verify_nonce(
+            $nonce,
+            'mollie_PayPal_button'
+        );
+        if (!$isNonceValid) {
+            return;
+        }
+        $data = filter_var_array($_POST, FILTER_SANITIZE_SPECIAL_CHARS);
         $data[PropertiesDictionary::CALLER_PAGE] = $callerPage;
         $this->updateRequiredData(
             $data,
@@ -179,5 +181,20 @@ class PayPalDataObjectHttp
         }
         $this->assignDataObjectValues($data);
         return true;
+    }
+
+    public function nonce()
+    {
+        return $this->nonce;
+    }
+
+    public function productId()
+    {
+        return $this->productId;
+    }
+
+    public function productQuantity()
+    {
+        return $this->productQuantity;
     }
 }

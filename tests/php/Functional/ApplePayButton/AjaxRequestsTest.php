@@ -6,6 +6,7 @@ use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mollie\Api\Endpoints\OrderEndpoint;
 use Mollie\Api\MollieApiClient;
 use Mollie\WooCommerce\Buttons\ApplePayButton\AppleAjaxRequests;
+use Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDataObjectHttp;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ResponsesToApple;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Payment\RefundLineItemsBuilder;
@@ -87,20 +88,27 @@ class AjaxRequestsTest extends TestCase
                 $this->helperMocks->apiHelper($apiClientMock),
                 $this->helperMocks->settingsHelper(),
             ],
-            ['validationApiWalletsEndpointCall']
+            ['validationApiWalletsEndpointCall', 'isNonceValid', 'applePayDataObjectHttp']
         )->getMock();
-
-
         /*
          * Expectations
          */
+        $applePayDataObjectHttp = $this->createPartialMock(ApplePayDataObjectHttp::class, ['getFilteredRequestData']);
+        $applePayDataObjectHttp->method('getFilteredRequestData')->willReturn($_POST);
+        $testee->expects($this->once())->method('applePayDataObjectHttp')->willReturn(
+            $applePayDataObjectHttp
+        );
         expect('wp_verify_nonce')
-            ->once()
             ->with($_POST['woocommerce-process-checkout-nonce'], 'woocommerce-process_checkout')
             ->andReturn(true);
         $testee->expects($this->once())->method(
+            'isNonceValid'
+        )->willReturn(
+            true
+        );
+        $testee->expects($this->once())->method(
             'validationApiWalletsEndpointCall'
-        )->with('www.testdomain.com', $_POST['validationUrl'])->willReturn(
+        )->with('www.testdomain.com', $_POST['validationUrl'], 'test_NtHd7vSyPSpEyuTEwhjsxdjsgVG4Sx')->willReturn(
             $responseFromMollie
         );
         expect('update_option')
@@ -176,14 +184,18 @@ class AjaxRequestsTest extends TestCase
                 $this->helperMocks->apiHelper($apiClientMock),
                 $this->helperMocks->settingsHelper(),
             ],
-            ['createWCCountries', 'getShippingPackages']
+            ['createWCCountries', 'getShippingPackages', 'applePayDataObjectHttp']
         )->getMock();
 
         /*
          * Expectations
          */
+        $applePayDataObjectHttp = $this->createPartialMock(ApplePayDataObjectHttp::class, ['getFilteredRequestData']);
+        $applePayDataObjectHttp->method('getFilteredRequestData')->willReturn($_POST);
+        $testee->expects($this->once())->method('applePayDataObjectHttp')->willReturn(
+            $applePayDataObjectHttp
+        );
         expect('wp_verify_nonce')
-            ->once()
             ->with($_POST['woocommerce-process-checkout-nonce'], 'woocommerce-process_checkout')
             ->andReturn(true);
         $testee->expects($this->once())
@@ -265,15 +277,20 @@ class AjaxRequestsTest extends TestCase
                 $this->helperMocks->apiHelper($apiClientMock),
                 $this->helperMocks->settingsHelper(),
             ],
-            ['createWCCountries']
+            ['createWCCountries', 'applePayDataObjectHttp']
         )->getMock();
 
 
         /*
          * Expectations
          */
+        $applePayDataObjectHttp = $this->getMockBuilder(ApplePayDataObjectHttp::class)->setConstructorArgs([$logger]
+        )->onlyMethods(['getFilteredRequestData'])->getMock();
+        $applePayDataObjectHttp->method('getFilteredRequestData')->willReturn($_POST);
+        $testee->expects($this->once())->method('applePayDataObjectHttp')->willReturn(
+            $applePayDataObjectHttp
+        );
         expect('wp_verify_nonce')
-            ->once()
             ->with($_POST['woocommerce-process-checkout-nonce'], 'woocommerce-process_checkout')
             ->andReturn(true);
         $testee->expects($this->never())
@@ -290,14 +307,7 @@ class AjaxRequestsTest extends TestCase
     }
 
     public function mollieGateway($paymentMethodName, $isSepa = false, $isSubscription = false){
-        $gateway = $this->createConfiguredMock(
-            MollieSubscriptionGateway::class,
-            [
-            ]
-        );
-        $gateway->paymentMethod = $this->helperMocks->paymentMethodBuilder($paymentMethodName, $isSepa, $isSubscription);
-
-        return $gateway;
+        return $this->helperMocks->mollieGatewayBuilder($paymentMethodName, $isSepa, $isSubscription, []);
     }
 
     /**

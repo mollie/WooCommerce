@@ -6,7 +6,6 @@ namespace Mollie\WooCommerce\PaymentMethods\InstructionStrategies;
 
 class ApplepayInstructionStrategy implements InstructionStrategyI
 {
-
     public function execute(
         $gateway,
         $payment,
@@ -15,17 +14,16 @@ class ApplepayInstructionStrategy implements InstructionStrategyI
     ) {
 
         if ($payment->isPaid() && $payment->details) {
-            return
-                sprintf(
-                    __(
-                    /* translators: Placeholder 1: PayPal consumer name, placeholder 2: PayPal email, placeholder 3: PayPal transaction ID */
-                        'Payment completed by <strong>%1$s</strong> - %2$s (Apple Pay transaction ID: %3$s)',
-                        'mollie-payments-for-woocommerce'
-                    ),
-                    $payment->details->consumerName,
-                    $payment->details->consumerAccount,
-                    $payment->details->paypalReference
-                );
+            return sprintf(
+            /* translators: Placeholder 1: PayPal consumer name, placeholder 2: PayPal email, placeholder 3: PayPal transaction ID */
+                __(
+                    'Payment completed by <strong>%1$s</strong> - %2$s (Apple Pay transaction ID: %3$s)',
+                    'mollie-payments-for-woocommerce'
+                ),
+                $payment->details->consumerName,
+                $payment->details->consumerAccount,
+                $payment->details->paypalReference
+            );
         }
         $defaultStrategy = new DefaultInstructionStrategy();
         return $defaultStrategy->execute($gateway, $payment, $admin_instructions);

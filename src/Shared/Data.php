@@ -48,8 +48,8 @@ class Data
      * @var Logger
      */
     protected $logger;
-    public $pluginId;
-    public $pluginPath;
+    protected $pluginId;
+    protected $pluginPath;
 
     public function __construct(Api $api_helper, Logger $logger, string $pluginId, Settings $settingsHelper, string $pluginPath)
     {
@@ -58,6 +58,16 @@ class Data
         $this->logger = $logger;
         $this->pluginId = $pluginId;
         $this->pluginPath = $pluginPath;
+    }
+
+    public function getPluginId(): string
+    {
+        return $this->pluginId;
+    }
+
+    public function pluginPath(): string
+    {
+        return $this->pluginPath;
     }
 
     public function isBlockPluginActive(): bool
@@ -101,9 +111,10 @@ class Data
 
     /**
      * @param bool $overrideTestMode
-     * @return string
+     *
+     * @return null|string
      */
-    public function getApiKey($overrideTestMode = 2)
+    public function getApiKey($overrideTestMode = 2): ?string
     {
         return $this->settingsHelper->getApiKey($overrideTestMode);
     }
@@ -153,7 +164,7 @@ class Data
         $max_option_name_length = 191;
 
         if ($option_name_length > $max_option_name_length) {
-            trigger_error(sprintf('Transient id %s is to long. Option name %s (%s) will be to long for database column wp_options.option_name which is varchar(%s).', $transient_id, $option_name, $option_name_length, $max_option_name_length), E_USER_WARNING);
+            trigger_error(sprintf('Transient id %s is to long. Option name %s (%s) will be to long for database column wp_options.option_name which is varchar(%s).', esc_html($transient_id), esc_html($option_name), esc_html($option_name_length), esc_html($max_option_name_length)), E_USER_WARNING);
         }
 
         return $transient_id;
@@ -166,9 +177,10 @@ class Data
      * @param string $payment_id
      * @param string   $apiKey (default: false)
      * @param bool   $use_cache (default: true)
-     * @return Mollie\Api\Resources\Payment|null
+     *
+     * @return \Mollie\Api\Resources\Payment|null
      */
-    public function getPayment($payment_id, $apiKey, $use_cache = true)
+    public function getPayment($payment_id, $apiKey, $use_cache = true): ?\Mollie\Api\Resources\Payment
     {
         try {
             return $this->api_helper->getApiClient($apiKey)->payments->get($payment_id);
@@ -193,14 +205,14 @@ class Data
         }
 
         $isSubscriptionPluginActive = $this->isSubscriptionPluginActive();
-        if($isSubscriptionPluginActive){
+        if ($isSubscriptionPluginActive) {
             $result = $this->addRecurringPaymentMethods($apiKey, $test_mode, $use_cache, $result);
         }
 
         return $result;
     }
 
-    public function wooCommerceFiltersForCheckout()
+    public function wooCommerceFiltersForCheckout(): array
     {
 
         $cart = WC()->cart;
@@ -209,7 +221,7 @@ class Data
         $currency = get_woocommerce_currency();
         $customerExistsAndHasCountry = WC()->customer && !empty(WC()->customer->get_billing_country());
         $fallbackToShopCountry = wc_get_base_location()['country'];
-        $billingCountry = $customerExistsAndHasCountry? WC()->customer->get_billing_country() : $fallbackToShopCountry;
+        $billingCountry = $customerExistsAndHasCountry ? WC()->customer->get_billing_country() : $fallbackToShopCountry;
 
         $paymentLocale = $this->settingsHelper->getPaymentLocale();
         try {
@@ -220,7 +232,7 @@ class Data
                 $billingCountry
             );
         } catch (InvalidArgumentException $exception) {
-            $filters = false;
+            $filters = [];
         }
 
         return $filters;
@@ -228,10 +240,8 @@ class Data
     /**
      * @param $order_total
      * @param $currency
-     *
-     * @return int
      */
-    protected function getAmountValue($order_total, $currency)
+    protected function getAmountValue($order_total, $currency): string
     {
         return $this->formatCurrencyValue(
             $order_total,
@@ -333,7 +343,6 @@ class Data
         $transient_id = $this->getTransientId(md5(http_build_query($filters_key)));
 
         try {
-
             if ($use_cache) {
                 // When no cache exists $methods will be `false`
                 $methods =  get_transient($transient_id);
@@ -346,7 +355,7 @@ class Data
                 $filters['resource'] = 'orders';
                 $filters['includeWallets'] = 'applepay';
                 $filters['include'] = 'issuers';
-                if(!$apiKey) {
+                if (!$apiKey) {
                     return [];
                 }
                 $methods = $this->api_helper->getApiClient($apiKey)->methods->allActive($filters);
@@ -410,7 +419,7 @@ class Data
      * @param bool        $test_mode (default: false)
      * @param string|null $methodId
      *
-     * @return array|\Mollie\Api\Resources\Method||\Mollie\Api\Resources\MethodCollection
+     * @return array
      */
     public function getMethodIssuers($apiKey, $test_mode = false, $methodId = null)
     {
@@ -424,6 +433,7 @@ class Data
             }
 
             $method = $this->getMethodWithIssuersById($methodId, $apiKey);
+            is_object($method) && $method = get_object_vars($method);
             $issuers = $method ? $method['issuers'] : [];
             set_transient($transient_id, $issuers, HOUR_IN_SECONDS);
             return $issuers;
@@ -445,13 +455,13 @@ class Data
     public function getMethodWithIssuersById($methodId, $apiKey)
     {
         $method = $this->getCachedMethodById($methodId);
-        if($method){
+        if ($method) {
             return $method;
         }
         if (!$apiKey) {
             return false;
         }
-        return $this->api_helper->getApiClient($apiKey)->methods->get(sprintf('%s', $method), [ "include" => "issuers" ]);
+        return $this->api_helper->getApiClient($apiKey)->methods->get(sprintf('%s', $methodId), [ "include" => "issuers" ]);
     }
 
     /**
@@ -463,11 +473,11 @@ class Data
     {
         $apiKey = $this->settingsHelper->getApiKey();
         $cachedMethods = $this->getRegularPaymentMethods($apiKey);
-        if(empty($cachedMethods)){
+        if (empty($cachedMethods)) {
             return false;
         }
-        foreach ($cachedMethods as $cachedMethod){
-            if($cachedMethod['id'] !== $methodId){
+        foreach ($cachedMethods as $cachedMethod) {
+            if ($cachedMethod['id'] !== $methodId) {
                 continue;
             }
             return $cachedMethod;
@@ -611,7 +621,7 @@ class Data
      */
     public function restoreOrderStock(WC_Order $order)
     {
-        wc_maybe_increase_stock_levels( $order->get_id() );
+        wc_maybe_increase_stock_levels($order->get_id());
     }
 
     /**

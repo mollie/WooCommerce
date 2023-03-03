@@ -69,16 +69,20 @@ class ApplePayDirectHandler
         }
 
         if ($buttonEnabledProduct) {
+            $renderPlaceholder = apply_filters('mollie_wc_gateway_applepay_render_hook_product', 'woocommerce_before_add_to_cart_quantity');
+            $renderPlaceholder = is_string($renderPlaceholder) ? $renderPlaceholder : 'woocommerce_before_add_to_cart_quantity';
             add_action(
-                'woocommerce_after_add_to_cart_form',
+                $renderPlaceholder,
                 function () {
                     $this->applePayDirectButton();
                 }
             );
         }
         if ($buttonEnabledCart) {
+            $renderPlaceholder = apply_filters('mollie_wc_gateway_applepay_render_hook_cart', 'woocommerce_cart_totals_after_order_total');
+            $renderPlaceholder = is_string($renderPlaceholder) ? $renderPlaceholder : 'woocommerce_cart_totals_after_order_total';
             add_action(
-                'woocommerce_cart_totals_after_order_total',
+                $renderPlaceholder,
                 function () {
                     $this->applePayDirectButton();
                 }

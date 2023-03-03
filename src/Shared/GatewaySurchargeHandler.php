@@ -6,11 +6,11 @@ namespace Mollie\WooCommerce\Shared;
 
 use Mollie\WooCommerce\Gateway\Surcharge;
 use WC_Order;
-use \WC_Order_Item_Fee;
+use WC_Order_Item_Fee;
 
 class GatewaySurchargeHandler
 {
-    public $gatewayFeeLabel;
+    protected $gatewayFeeLabel;
     protected $surcharge;
 
     /**
@@ -53,7 +53,7 @@ class GatewaySurchargeHandler
         <?php
     }
 
-    public function enqueueSurchargeScript()
+    public function enqueueSurchargeScript(): void
     {
         if (is_admin() || !mollieWooCommerceIsCheckoutContext()) {
             return;
@@ -178,7 +178,6 @@ class GatewaySurchargeHandler
     public function add_engraving_fees($cart)
     {
         $gateway = $this->chosenGateway();
-
         if (!$gateway) {
             return;
         }
@@ -241,7 +240,7 @@ class GatewaySurchargeHandler
 
     /**
      * @throws \Exception
-     * @var wc_order $order
+     * @param wc_order $order
      */
     protected function orderRemoveFee($order)
     {
@@ -270,8 +269,8 @@ class GatewaySurchargeHandler
 
     protected function canProcessOrder()
     {
-        $inputOrder = filter_input(INPUT_POST, 'orderId', FILTER_SANITIZE_NUMBER_INT);
-        $orderId = !empty($inputOrder) ? $inputOrder : false;
+        $postedOrderId = filter_input(INPUT_POST, 'orderId', FILTER_SANITIZE_NUMBER_INT);
+        $orderId = !empty($postedOrderId) ? $postedOrderId : false;
         if (!$orderId) {
             return false;
         }
@@ -284,9 +283,8 @@ class GatewaySurchargeHandler
 
     protected function canProcessGateway()
     {
-        $inputGateway = filter_input(INPUT_POST, 'payment_method', FILTER_SANITIZE_SPECIAL_CHARS);
-        $gateway = !empty($inputGateway) ? $inputGateway : false;
-
+        $postedMethod = filter_input(INPUT_POST, 'payment_method', FILTER_SANITIZE_SPECIAL_CHARS);
+        $gateway = !empty($postedMethod) ? $postedMethod : false;
         if (!$gateway) {
             return false;
         }

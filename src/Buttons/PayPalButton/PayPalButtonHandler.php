@@ -11,7 +11,7 @@ class PayPalButtonHandler
      */
     private $ajaxRequests;
     /**
-     * @var string
+     * @var DataToPayPal
      */
     protected $dataPaypal;
 
@@ -30,35 +30,39 @@ class PayPalButtonHandler
      */
     public function bootstrap($enabledInProduct, $enabledInCart)
     {
-        if($enabledInProduct){
+        if ($enabledInProduct) {
+            $renderPlaceholder = apply_filters('mollie_wc_gateway_paypal_render_hook_product', 'woocommerce_before_add_to_cart_quantity');
+            $renderPlaceholder = is_string($renderPlaceholder) ? $renderPlaceholder : 'woocommerce_before_add_to_cart_quantity';
             add_action(
-                    'woocommerce_after_single_product',
-                    function () {
-                        $product = wc_get_product(get_the_id());
-                        if (!$product || $product->is_type('subscription') || $product instanceof \WC_Product_Variable_Subscription) {
-                            return;
-                        }
-                        $productNeedShipping = mollieWooCommerceCheckIfNeedShipping($product);
-                        if(!$productNeedShipping){
-                            $this->renderPayPalButton();
-                        }
+                $renderPlaceholder,
+                function () {
+                    $product = wc_get_product(get_the_id());
+                    if (!$product || $product->is_type('subscription') || $product instanceof \WC_Product_Variable_Subscription) {
+                        return;
                     }
+                    $productNeedShipping = mollieWooCommerceCheckIfNeedShipping($product);
+                    if (!$productNeedShipping) {
+                        $this->renderPayPalButton();
+                    }
+                }
             );
         }
-        if($enabledInCart){
+        if ($enabledInCart) {
+            $renderPlaceholder = apply_filters('mollie_wc_gateway_paypal_render_hook_cart', 'woocommerce_cart_totals_after_order_total');
+            $renderPlaceholder = is_string($renderPlaceholder) ? $renderPlaceholder : 'woocommerce_cart_totals_after_order_total';
             add_action(
-                    'woocommerce_cart_totals_after_order_total',
-                    function () {
-                        $cart = WC()->cart;
-                        foreach ($cart->get_cart_contents() as $product){
-                            if($product['data']->is_type('subscription') || $product['data'] instanceof \WC_Product_Subscription_Variation){
-                                return;
-                            }
-                        }
-                        if(!$cart->needs_shipping()){
-                            $this->renderPayPalButton();
+                $renderPlaceholder,
+                function () {
+                    $cart = WC()->cart;
+                    foreach ($cart->get_cart_contents() as $product) {
+                        if ($product['data']->is_type('subscription') || $product['data'] instanceof \WC_Product_Subscription_Variation) {
+                            return;
                         }
                     }
+                    if (!$cart->needs_shipping()) {
+                        $this->renderPayPalButton();
+                    }
+                }
             );
         }
 
@@ -71,13 +75,12 @@ class PayPalButtonHandler
      */
     protected function renderPayPalButton()
     {
-        $assetsImagesUrl
-                = $this->dataPaypal->selectedPaypalButtonUrl();
+        $assetsImagesUrl = $this->dataPaypal->selectedPaypalButtonUrl();
 
         ?>
         <div id="mollie-PayPal-button" class="mol-PayPal">
             <?php wp_nonce_field('mollie_PayPal_button'); ?>
-            <input type="image" src="<?php echo esc_url( $assetsImagesUrl)?>" alt="PayPal Button">
+            <input type="image" src="<?php echo esc_url($assetsImagesUrl)?>" alt="PayPal Button">
         </div>
         <?php
     }

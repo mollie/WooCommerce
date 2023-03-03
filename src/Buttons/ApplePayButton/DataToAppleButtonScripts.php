@@ -10,9 +10,9 @@ class DataToAppleButtonScripts
      * Sets the appropriate data to send to ApplePay script
      * Data differs between product page and cart page
      *
-     * @return array|bool
+     * @return array
      */
-    public function applePayScriptData($isBlock = false)
+    public function applePayScriptData(bool $isBlock = false): array
     {
         $base_location = wc_get_base_location();
         $shopCountryCode = $base_location['country'];
@@ -66,7 +66,7 @@ class DataToAppleButtonScripts
      * @param $currencyCode
      * @param $totalLabel
      *
-     * @return array|bool
+     * @return array
      */
     protected function dataForProductPage(
         $shopCountryCode,
@@ -76,7 +76,7 @@ class DataToAppleButtonScripts
 
         $product = wc_get_product(get_the_id());
         if (!$product) {
-            return false;
+            return [];
         }
         $isVariation = false;
         if ($product->get_type() === 'variable') {

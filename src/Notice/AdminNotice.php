@@ -6,7 +6,7 @@ namespace Mollie\WooCommerce\Notice;
 
 class AdminNotice implements NoticeInterface
 {
-    public function addNotice($level, $message)
+    public function addNotice($level, $message): void
     {
         add_action(
             'admin_notices',

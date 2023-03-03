@@ -29,6 +29,8 @@
     "johnpbloch/wordpress-core": "^5.0",
     "fzaninotto/faker": "^1.9@dev",
     "inpsyde/php-coding-standards": "^1.0.0",
+    "php-stubs/wordpress-stubs": "^5.0@stable",
+    "php-stubs/woocommerce-stubs": "^5.0@stable",
     "vimeo/psalm": "^4.8"
   },
   "autoload": {
@@ -45,7 +47,7 @@
     }
   },
   "scripts": {
-    "check-coding-standards": "vendor/bin/phpcs",
+    "check-coding-standards": "vendor/bin/phpcs --parallel=8 -s",
     "fix-coding-standards": "vendor/bin/phpcbf",
     "tests": "@php ./vendor/phpunit/phpunit/phpunit --coverage-text",
     "tests:no-cov": "@php ./vendor/phpunit/phpunit/phpunit --no-coverage",

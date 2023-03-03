@@ -12,10 +12,12 @@ use Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
+use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
@@ -79,7 +81,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
                $settingsHelper = $container->get('settings.settings_helper');
                assert($settingsHelper instanceof Settings);
                return new MollieObject($data, $logger, $paymentFactory, $apiHelper, $settingsHelper, $pluginId);
-           }
+           },
         ];
     }
 
@@ -189,7 +191,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
                 foreach ($unpaid_orders as $unpaid_order) {
                     $order = wc_get_order($unpaid_order);
                     add_filter('mollie-payments-for-woocommerce_order_status_cancelled', static function ($newOrderStatus) {
-                        return MolliePaymentGateway::STATUS_CANCELLED;
+                        return SharedDataDictionary::STATUS_CANCELLED;
                     });
                     $order->update_status('cancelled', __('Unpaid order cancelled - time limit reached.', 'woocommerce'), true);
                     $this->cancelOrderAtMollie($order->get_id());
@@ -318,7 +320,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
             return;
         }
 
-        /** @var MolliePaymentGateway $gateway */
+        /** @var MolliePaymentGatewayI $gateway */
 
         $gateway->displayInstructions($order);
     }
@@ -513,12 +515,12 @@ class PaymentModule implements ServiceModule, ExecutableModule
     /**
      * Returns the order from the Request first by Id, if not by Key
      *
-     * @return bool|WC_Order
+     * @return WC_Order|\WC_Order_Refund|true
      */
     public function orderByRequest()
     {
         $orderId = filter_input(INPUT_GET, 'order_id', FILTER_SANITIZE_NUMBER_INT) ?: null;
-        $key = sanitize_text_field(wp_unslash($_GET['key'])) ?: null;
+        $key = filter_input(INPUT_GET, 'key', FILTER_SANITIZE_SPECIAL_CHARS) ?? null;
         $order = wc_get_order($orderId);
 
         if (!$order) {

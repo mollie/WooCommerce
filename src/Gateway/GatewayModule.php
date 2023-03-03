@@ -188,6 +188,11 @@ class GatewayModule implements ServiceModule, ExecutableModule
             [$this, 'maybeDisableBankTransferGateway'],
             20
         );
+        add_filter(
+            'woocommerce_payment_gateways',
+            [$this, 'maybeDisableBillieGateway'],
+            20
+        );
         // Disable SEPA as payment option in WooCommerce checkout
         add_filter(
             'woocommerce_available_payment_gateways',
@@ -273,6 +278,39 @@ class GatewayModule implements ServiceModule, ExecutableModule
         return true;
     }
 
+    /**
+     * Disable Bank Transfer Gateway
+     *
+     * @param ?array $gateways
+     * @return array
+     */
+    public function maybeDisableBillieGateway(?array $gateways): array
+    {
+        if (!is_array($gateways)) {
+            return [];
+        }
+        $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_SPECIAL_CHARS);
+
+        /*
+         * There is only one case where we want to filter the gateway and it's when the
+         * pay-page render the available payments methods AND the setting is enabled
+         *
+         * For any other case we want to be sure billie gateway is included.
+         */
+        if (
+            $isWcApiRequest ||
+            is_checkout() && ! is_wc_endpoint_url('order-pay') ||
+            !wp_doing_ajax() && ! is_wc_endpoint_url('order-pay') ||
+            is_admin()
+        ) {
+            return $gateways;
+        }
+        if (isset($gateways['mollie_wc_gateway_billie'])) {
+            unset($gateways['mollie_wc_gateway_billie']);
+        }
+
+        return  $gateways;
+    }
     /**
      * Disable Bank Transfer Gateway
      *

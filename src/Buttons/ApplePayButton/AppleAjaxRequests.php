@@ -36,7 +36,6 @@ class AppleAjaxRequests
     private $reloadCart;
     private $oldCartContents;
 
-
     /**
      * AppleAjaxRequests constructor.
      */
@@ -47,6 +46,7 @@ class AppleAjaxRequests
         Api $apiHelper,
         Settings $settingsHelper
     ) {
+
         $this->responseTemplates = $responseTemplates;
         $this->notice = $notice;
         $this->logger = $logger;
@@ -274,7 +274,6 @@ class AppleAjaxRequests
         return new ApplePayDataObjectHttp($this->logger);
     }
 
-
     /**
      * Returns a WC_Countries instance to check shipping
      *
@@ -295,6 +294,7 @@ class AppleAjaxRequests
     protected function whichCalculateTotals(
         $applePayRequestDataObject
     ) {
+
         if ($applePayRequestDataObject->callerPage === 'productDetail') {
             return $this->calculateTotalsSingleProduct(
                 $applePayRequestDataObject->productId,
@@ -329,6 +329,7 @@ class AppleAjaxRequests
         $customerAddress,
         $shippingMethod = null
     ): array {
+
         $results = [];
         $reloadCart = false;
         if (!WC()->cart->is_empty()) {
@@ -646,6 +647,7 @@ class AppleAjaxRequests
         $validationUrl,
         $apiKey
     ) {
+
         return $this->apiHelper
             ->getApiClient($apiKey)
             ->wallets

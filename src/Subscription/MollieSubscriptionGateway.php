@@ -755,6 +755,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         $data,
         bool $validMandate
     ): array {
+
         $this->logger->debug(
             $this->id . ': Found mandate ID for renewal order ' . $renewal_order_id . ' with customer ID ' . $customer_id
         );

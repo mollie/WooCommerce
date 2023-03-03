@@ -575,6 +575,7 @@ class AssetsModule implements ExecutableModule
     /**
      * @param ContainerInterface $container
      * @return void
+     * @psalm-suppress InvalidGlobal
      *
      */
     protected function setupModuleActions(ContainerInterface $container): void

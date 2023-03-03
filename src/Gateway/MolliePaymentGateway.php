@@ -102,6 +102,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
         PaymentFactory $paymentFactory,
         string $pluginId
     ) {
+
         $this->paymentMethod = $paymentMethod;
         $this->logger = $logger;
         $this->notice = $notice;

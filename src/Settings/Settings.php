@@ -269,7 +269,7 @@ class Settings
         $apiKeyId = $this->getSettingId($settingId);
         $apiKey = get_option($apiKeyId);
         //TODO add api key filter
-
+        //phpcs:ignore WordPress.Security.NonceVerification
         if (!$apiKey && is_admin() && isset($_POST[$apiKeyId])) {
             $apiKey = filter_input(INPUT_POST, $apiKeyId, FILTER_SANITIZE_SPECIAL_CHARS);
         }

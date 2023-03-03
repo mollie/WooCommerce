@@ -27,7 +27,7 @@ class GiftcardFieldsStrategy implements PaymentFieldsStrategyI
             $issuer = $issuers[0];
             $issuerImageSvg = $this->checkSvgIssuers($issuers);
             $issuerImageSvg && ($html .= '<img src="' . $issuerImageSvg . '" style="vertical-align:middle" />');
-            $html .= $issuers->name;
+            $html .= $issuer->name;
             echo esc_html(wpautop(wptexturize($html)));
 
             return;

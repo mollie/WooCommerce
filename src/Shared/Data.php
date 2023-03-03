@@ -621,7 +621,7 @@ class Data
      */
     public function restoreOrderStock(WC_Order $order)
     {
-        wc_maybe_increase_stock_levels( $order->get_id() );
+        wc_maybe_increase_stock_levels($order->get_id());
     }
 
     /**

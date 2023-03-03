@@ -1,8 +1,9 @@
 <?php
+
 namespace Mollie\WooCommerce\PaymentMethods\InstructionStrategies;
 
-trait DirectDebitInstructionTrait {
-
+trait DirectDebitInstructionTrait
+{
     public function executeDirectDebit(
         $gateway,
         $payment,

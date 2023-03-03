@@ -27,6 +27,7 @@ use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\PaymentFieldsService;
 use Mollie\WooCommerce\Payment\PaymentService;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
+use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Settings\Settings;
@@ -63,7 +64,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 return $this->instantiatePaymentMethodGateways($container);
             },
             'gateway.paymentMethods' => static function (ContainerInterface $container): array {
-                return (new self)->instantiatePaymentMethods($container);
+                return (new self())->instantiatePaymentMethods($container);
             },
             'gateway.paymentMethodsEnabledAtMollie' => static function (ContainerInterface $container): array {
                 $dataHelper = $container->get('settings.data_helper');
@@ -142,6 +143,20 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $isSettingsOrderApi = $settings->isOrderApiSetting();
                 return new OrderMandatoryGatewayDisabler($isSettingsOrderApi);
             },
+            'gateway.isBillieEnabled' => static function (ContainerInterface $container): bool {
+                $settings = $container->get('settings.settings_helper');
+                assert($settings instanceof Settings);
+                $isSettingsOrderApi = $settings->isOrderApiSetting();
+                try {
+                    $billie = $container->get('gateway.paymentMethods')['billie'];
+                    assert($billie instanceof PaymentMethodI);
+                    $isBillieEnabled = $billie->getProperty('enabled') === 'yes';
+                } catch (NotFoundException $e) {
+                    $isBillieEnabled = false;
+                }
+
+                return $isSettingsOrderApi && $isBillieEnabled;
+            },
         ];
     }
 
@@ -153,14 +168,14 @@ class GatewayModule implements ServiceModule, ExecutableModule
             return $this->gatewayClassnames;
         });
 
-        add_filter('woocommerce_payment_gateways', function ($gateways) use ($container) {
+        add_filter('woocommerce_payment_gateways', static function ($gateways) use ($container) {
             $mollieGateways = $container->get('gateway.instances');
             return array_merge($gateways, $mollieGateways);
         });
         add_filter('woocommerce_payment_gateways', [$this, 'maybeDisableApplePayGateway'], 20);
         add_filter('woocommerce_payment_gateways', static function ($gateways) use ($container) {
             $orderMandatoryGatewayDisabler = $container->get(OrderMandatoryGatewayDisabler::class);
-
+            assert($orderMandatoryGatewayDisabler instanceof OrderMandatoryGatewayDisabler);
             return $orderMandatoryGatewayDisabler->processGateways($gateways);
         });
          add_filter('woocommerce_payment_gateways', static function ($gateways) {
@@ -171,6 +186,11 @@ class GatewayModule implements ServiceModule, ExecutableModule
         add_filter(
             'woocommerce_payment_gateways',
             [$this, 'maybeDisableBankTransferGateway'],
+            20
+        );
+        add_filter(
+            'woocommerce_payment_gateways',
+            [$this, 'maybeDisableBillieGateway'],
             20
         );
         // Disable SEPA as payment option in WooCommerce checkout
@@ -197,7 +217,15 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 }
             }
         );
-
+        $isBillieEnabled = $container->get('gateway.isBillieEnabled');
+        if ($isBillieEnabled) {
+            add_filter(
+                'woocommerce_after_checkout_validation',
+                [$this, 'organizationBillingFieldMandatory'],
+                11,
+                2
+            );
+        }
         // Set order to paid and processed when eventually completed without Mollie
         add_action('woocommerce_payment_complete', [$this, 'setOrderPaidByOtherGateway'], 10, 1);
         $appleGateway = isset($container->get('gateway.instances')['mollie_wc_gateway_applepay']) ? $container->get(
@@ -233,7 +261,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $checkoutBlockHandler->bootstrapAjaxRequest();
         add_action(
             'woocommerce_rest_checkout_process_payment_with_context',
-            function ($paymentContext) {
+            static function ($paymentContext) {
                 if (strpos($paymentContext->payment_method, 'mollie_wc_gateway_') === false) {
                     return;
                 }
@@ -253,12 +281,49 @@ class GatewayModule implements ServiceModule, ExecutableModule
     /**
      * Disable Bank Transfer Gateway
      *
-     * @param array $gateways
+     * @param ?array $gateways
      * @return array
      */
-    public function maybeDisableBankTransferGateway(array $gateways): array
+    public function maybeDisableBillieGateway(?array $gateways): array
     {
-        $isWcApiRequest = isset($_GET['wc-api']) && sanitize_text_field(wp_unslash($_GET['wc-api']));
+        if (!is_array($gateways)) {
+            return [];
+        }
+        $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_SPECIAL_CHARS);
+
+        /*
+         * There is only one case where we want to filter the gateway and it's when the
+         * pay-page render the available payments methods AND the setting is enabled
+         *
+         * For any other case we want to be sure billie gateway is included.
+         */
+        if (
+            $isWcApiRequest ||
+            is_checkout() && ! is_wc_endpoint_url('order-pay') ||
+            !wp_doing_ajax() && ! is_wc_endpoint_url('order-pay') ||
+            is_admin()
+        ) {
+            return $gateways;
+        }
+        if (isset($gateways['mollie_wc_gateway_billie'])) {
+            unset($gateways['mollie_wc_gateway_billie']);
+        }
+
+        return  $gateways;
+    }
+    /**
+     * Disable Bank Transfer Gateway
+     *
+     * @param ?array $gateways
+     * @return array
+     */
+    public function maybeDisableBankTransferGateway(?array $gateways): array
+    {
+        if (!is_array($gateways)) {
+            return [];
+        }
+        $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_SPECIAL_CHARS);
+
         $bankTransferSettings = get_option('mollie_wc_gateway_banktransfer_settings', false);
         $isSettingActivated = $bankTransferSettings && isset($bankTransferSettings['activate_expiry_days_setting']) && $bankTransferSettings['activate_expiry_days_setting'] === "yes";
         if ($isSettingActivated  && isset($bankTransferSettings['order_dueDate'])) {
@@ -289,12 +354,15 @@ class GatewayModule implements ServiceModule, ExecutableModule
     /**
      * Disable Apple Pay Gateway
      *
-     * @param array $gateways
+     * @param ?array $gateways
      * @return array
      */
-    public function maybeDisableApplePayGateway(array $gateways): array
+    public function maybeDisableApplePayGateway(?array $gateways): array
     {
-        $isWcApiRequest = isset($_GET['wc-api']) && sanitize_text_field(wp_unslash($_GET['wc-api']));
+        if (!is_array($gateways)) {
+            return [];
+        }
+        $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_SPECIAL_CHARS);
         $wooCommerceSession = mollieWooCommerceSession();
 
         /*
@@ -318,11 +386,9 @@ class GatewayModule implements ServiceModule, ExecutableModule
         }
 
         $applePayGatewayClassName = 'mollie_wc_gateway_applepay';
-        $postData = isset($_POST[self::POST_DATA_KEY]) ? sanitize_text_field(
-            wp_unslash($_POST[self::POST_DATA_KEY])
-        ) : '';
+        // phpcs:ignore
+        $postData = isset($_POST[self::POST_DATA_KEY]) ? wc_clean(wp_unslash($_POST[self::POST_DATA_KEY])) : '';
         parse_str($postData, $postData);
-
         $applePayAllowed = isset($postData[self::APPLE_PAY_METHOD_ALLOWED_KEY])
             && $postData[self::APPLE_PAY_METHOD_ALLOWED_KEY];
 
@@ -470,7 +536,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
 
         foreach ($paymentMethods as $paymentMethod) {
             $paymentMethodId = $paymentMethod->getIdFromConfig();
-            if(! in_array($paymentMethodId, $container->get('gateway.paymentMethodsEnabledAtMollie'))) {
+            if (! in_array($paymentMethodId, $container->get('gateway.paymentMethodsEnabledAtMollie'))) {
                 continue;
             }
             $isSepa = $paymentMethod->getProperty('SEPA');
@@ -550,7 +616,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         }
         foreach ($paymentMethodsNames as $paymentMethodName) {
             $paymentMethodName = strtolower($paymentMethodName);
-            $paymentMethodName = str_replace('mollie_wc_gateway_','',$paymentMethodName);
+            $paymentMethodName = str_replace('mollie_wc_gateway_', '', $paymentMethodName);
             $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . ucfirst($paymentMethodName);
             $paymentMethod = new $paymentMethodClassName(
                 $iconFactory,
@@ -563,5 +629,37 @@ class GatewayModule implements ServiceModule, ExecutableModule
         }
 
         return $paymentMethods;
+    }
+
+    public function organizationBillingFieldMandatory($fields, $errors)
+    {
+        $billiePaymentMethod = "mollie_wc_gateway_billie";
+        if ($fields['payment_method'] === $billiePaymentMethod) {
+            if (!isset($fields['billing_company'])) {
+                $companyFieldPosted = filter_input(INPUT_POST, 'billing_company', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+                if ($companyFieldPosted) {
+                    $fields['billing_company'] = $companyFieldPosted;
+                } else {
+                    $errors->add(
+                        'validation',
+                        __(
+                            'Error processing Billie payment, the company name field is required.',
+                            'mollie-payments-for-woocommerce'
+                        )
+                    );
+                }
+            }
+            if ($fields['billing_company'] === '') {
+                $errors->add(
+                    'validation',
+                    __(
+                        'Please enter your company name, this is required for Billie payments',
+                        'mollie-payments-for-woocommerce'
+                    )
+                );
+            }
+        }
+
+        return $fields;
     }
 }

@@ -16,7 +16,6 @@ use Mollie\WooCommerce\Notice\NoticeInterface;
 
 class ConstraintsChecker
 {
-
     /**
      * @var EnvironmentChecker
      */
@@ -57,7 +56,6 @@ class ConstraintsChecker
      * prevents updates
      *
      * @return bool
-     * @throws Exception
      */
     public function handleActivation()
     {
@@ -94,7 +92,6 @@ class ConstraintsChecker
             return true;
         } catch (ConstraintFailedException $exception) {
             $mainException = $exception->getValidationErrors();
-            $errors = [];
             foreach ($mainException as $error) {
                 $errors[] = $error->getMessage();
             }
@@ -106,7 +103,7 @@ class ConstraintsChecker
 
     protected function showNotice(array $errors)
     {
-            $message = sprintf(__('%1$sMollie Payments for WooCommerce is inactive:%2$s', 'mollie-payments-for-woocommerce'), '<p><strong>', '</strong></p>');
+        $message = sprintf(__('%1$sMollie Payments for WooCommerce is inactive:%2$s', 'mollie-payments-for-woocommerce'), '<p><strong>', '</strong></p>');
         foreach ($errors as $error) {
             $message .= sprintf('<p>%s</p>', $error);
         }

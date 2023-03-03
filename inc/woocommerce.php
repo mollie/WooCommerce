@@ -1,4 +1,5 @@
 <?php
+
 if (!function_exists('has_block')) {
     /**
      * Check if the current page has block
@@ -36,20 +37,6 @@ if (!function_exists('untrailingslashit')) {
     function untrailingslashit($string)
     {
         return rtrim($string, '/');
-    }
-}
-
-if (!function_exists('as_unschedule_action')) {
-    /**
-     * @since WooCommerce 3.0.0
-     * @param string $hook
-     * @param array $args
-     * @param string $group
-     * @return bool
-     */
-    function as_unschedule_action($hook, $args = [], $group = '')
-    {
-        return 0;
     }
 }
 

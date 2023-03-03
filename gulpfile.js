@@ -217,7 +217,8 @@ function _archive({baseDir, buildDir, distDir, packageVersion, packageName}) {
                     pump(
                         gulp.src([
                             'inc/**/*.*',
-                            'languages/**/*.*',
+                            'languages/**/*.mo',
+                            'languages/**/*.pot',
                             'pluginEnvironmentChecker/**/*.*',
                             'public/**/*.*',
                             'src/**/*.*',
@@ -226,6 +227,7 @@ function _archive({baseDir, buildDir, distDir, packageVersion, packageName}) {
                             '!node_modules/.package.lock.json',
                             'license.txt',
                             'mollie-payments-for-woocommerce.php',
+                            'uninstall.php',
 
                             // Cleanup
                             '!**/README',

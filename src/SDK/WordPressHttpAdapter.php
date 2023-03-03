@@ -53,7 +53,7 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
     public function versionString()
     {
         global $wp_version;
-        return 'WordPress/'. $wp_version;
+        return 'WordPress/' . $wp_version;
     }
 
     /**
@@ -105,5 +105,4 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
 
         return $body;
     }
-
 }

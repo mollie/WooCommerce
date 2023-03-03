@@ -6,7 +6,6 @@ namespace Mollie\WooCommerce\PaymentMethods;
 
 class Sofort extends AbstractPaymentMethod implements PaymentMethodI
 {
-
     protected function getConfig(): array
     {
         return [

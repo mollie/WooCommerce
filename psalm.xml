@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<psalm
+        errorLevel="4"
+        useDocblockPropertyTypes="true"
+        usePhpDocMethodsWithoutMagicCall="true"
+        strictBinaryOperands="true"
+        ignoreInternalFunctionFalseReturn="false"
+        ignoreInternalFunctionNullReturn="false"
+        hideExternalErrors="true"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="https://getpsalm.org/schema/config"
+        xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+>
+    <projectFiles>
+        <directory name="src" />
+        <file name="mollie-payments-for-woocommerce.php"/>
+        <ignoreFiles>
+            <directory name="vendor" />
+            <directory name="tests" />
+        </ignoreFiles>
+    </projectFiles>
+    <stubs>
+        <file name="inc/functions.php"/>
+        <file name=".psalm/stubs.php"/>
+        <file name="vendor/php-stubs/wordpress-stubs/wordpress-stubs.php"/>
+        <file name="vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php"/>
+    </stubs>
+    <issueHandlers>
+        <MixedAssignment errorLevel="suppress" />
+        <MissingClosureParamType errorLevel="suppress" />
+        <MissingClosureReturnType errorLevel="suppress" />
+        <UnresolvableInclude errorLevel="suppress" />
+        <ParadoxicalCondition errorLevel="suppress" />
+        <UndefinedConstant errorLevel="info" />
+        <AssignmentToVoid errorLevel="info"/>
+        <DeprecatedClass errorLevel="info"/>
+        <DeprecatedConstant errorLevel="info"/>
+        <DeprecatedTrait errorLevel="info"/>
+        <DocblockTypeContradiction errorLevel="info"/>
+        <InvalidDocblock errorLevel="info"/>
+        <InvalidDocblockParamName errorLevel="info"/>
+        <InvalidTemplateParam errorLevel="info"/>
+        <DeprecatedInterface errorLevel="info"/>
+        <DeprecatedMethod errorLevel="info"/>
+        <DeprecatedProperty errorLevel="info"/>
+        <MethodSignatureMustOmitReturnType errorLevel="info"/>
+        <MismatchingDocblockParamType errorLevel="info"/>
+        <MismatchingDocblockReturnType errorLevel="info"/>
+        <MissingDocblockType errorLevel="info"/>
+        <MissingParamType errorLevel="info"/>
+        <MissingTemplateParam errorLevel="info"/>
+        <MissingThrowsDocblock errorLevel="info"/>
+        <MixedArgumentTypeCoercion errorLevel="info"/>
+        <MixedArrayAccess errorLevel="info"/>
+        <MixedArrayAssignment errorLevel="info"/>
+        <MixedArrayOffset errorLevel="info"/>
+        <MixedArrayTypeCoercion errorLevel="info"/>
+        <MixedAssignment errorLevel="info"/>
+        <MixedFunctionCall errorLevel="info"/>
+        <MixedInferredReturnType errorLevel="info"/>
+        <MixedMethodCall errorLevel="info"/>
+        <MixedOperand errorLevel="info"/>
+        <MixedPropertyAssignment errorLevel="info"/>
+        <MixedPropertyFetch errorLevel="info"/>
+        <MixedPropertyTypeCoercion errorLevel="info"/>
+        <MixedReturnStatement errorLevel="info"/>
+        <MixedReturnTypeCoercion errorLevel="info"/>
+        <MixedStringOffsetAssignment errorLevel="info"/>
+        <ParamNameMismatch errorLevel="info"/>
+        <RedundantCastGivenDocblockType errorLevel="info"/>
+        <TooManyArguments>
+            <errorLevel type="suppress">
+                <referencedFunction name="apply_filters" />
+            </errorLevel>
+        </TooManyArguments>
+
+        <UndefinedMethod errorLevel="suppress"/>
+        <UndefinedFunction errorLevel="suppress"/>
+        <UndefinedClass errorLevel="suppress"/>
+        <InvalidScalarArgument errorLevel="suppress"/>
+        <RedundantCast errorLevel="suppress"/>
+        <InvalidOperand errorLevel="suppress"/>
+        <NullArrayAccess errorLevel="suppress"/>
+        <RedundantCondition errorLevel="suppress"/>
+        <NullableReturnStatement errorLevel="suppress"/>
+        <InvalidArgument errorLevel="suppress"/>
+        <InvalidReturnType errorLevel="suppress"/>
+        <InvalidReturnStatement errorLevel="suppress"/>
+        <UndefinedDocblockClass errorLevel="suppress"/>
+        <FalsableReturnStatement errorLevel="suppress"/>
+        <InvalidParamDefault errorLevel="suppress"/>
+        <ImplementedReturnTypeMismatch errorLevel="suppress"/>
+        <MoreSpecificImplementedParamType errorLevel="suppress"/>
+        <MethodSignatureMismatch errorLevel="suppress"/>
+        <ReservedWord errorLevel="suppress"/>
+        <UndefinedThisPropertyFetch errorLevel="suppress"/>
+        <NoInterfaceProperties errorLevel="suppress"/>
+        <TypeDoesNotContainType errorLevel="suppress"/>
+    </issueHandlers>
+</psalm>

@@ -48,7 +48,8 @@ class ApplePayDirectHandlerTest extends TestCase
                 'is_product' => true,
                 'get_the_id' => $postDummyData->productId,
                 'wc_get_product' => $this->wcProduct(),
-                'admin_url' => 'admin-ajax.php'
+                'admin_url' => 'admin-ajax.php',
+                'get_option' => false,
             ]
         );
 

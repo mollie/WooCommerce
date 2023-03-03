@@ -62,7 +62,7 @@ class Surcharge
 
     /**
      * @param PaymentMethodI $paymentMethod
-     * @return false|string|void
+     * @return string
      */
     public function buildDescriptionWithSurchargeForBlock(PaymentMethodI $paymentMethod)
     {
@@ -209,8 +209,9 @@ class Surcharge
     }
 
     /**
-     * @param WC_Cart $order
+     * @param WC_Order $order
      * @param array $gatewaySettings
+     *
      * @return mixed
      */
     protected function calculate_fixed_fee_percentage_order(WC_Order $order, array $gatewaySettings)

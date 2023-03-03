@@ -11,7 +11,15 @@
         if (!id || !price || !ajaxUrl) {
             return
         }
+        function getKeyByValue(object, value) {
+            return Object.keys(object).find(key => object[key] === value);
+        }
         const payPalButton = document.querySelector('#mollie-PayPal-button');
+        const buttonParentNode = payPalButton.parentNode;
+        let positionKey = false;
+        if (buttonParentNode.hasChildNodes()) {
+            positionKey = getKeyByValue(buttonParentNode.children, payPalButton);
+        }
 
         const maybeShowButton = (underRange) => {
             if(underRange){
@@ -42,14 +50,14 @@
             })
         }
         const hideButton = () => {
-            if(payPalButton.parentNode !== null){
-                payPalButton.parentNode.removeChild(payPalButton)
+            if(buttonParentNode !== null){
+                buttonParentNode.removeChild(payPalButton)
             }
         }
         const showButton = () => {
-            const elements = document.getElementsByClassName('entry-summary');
-            const parent = elements[0]
-            parent.appendChild(payPalButton)
+            //if the node has a list of children, we need to insert the button at the correct position
+            let sibling = buttonParentNode.children[positionKey]
+            buttonParentNode.insertBefore(payPalButton, sibling)
         }
         const nonce = payPalButton.children[0].value
         let productId = id
@@ -89,7 +97,8 @@
             return
         }
         let preventSpam = false
-        document.querySelector('#mollie-PayPal-button').addEventListener('click', (evt) => {
+        payPalButton.addEventListener('click', (evt) => {
+            evt.preventDefault();
             if(!(payPalButton.parentNode !== null) || payPalButton.disabled){
                 return
             }

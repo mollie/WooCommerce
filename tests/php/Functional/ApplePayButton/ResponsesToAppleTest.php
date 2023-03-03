@@ -159,12 +159,6 @@ class ResponsesToAppleTest extends TestCase
     }
 
     public function mollieGateway($paymentMethodName, $isSepa = false, $isSubscription = false){
-        $gateway = $this->createConfiguredMock(
-            MollieSubscriptionGateway::class,
-            []
-        );
-        $gateway->paymentMethod = $this->helperMocks->paymentMethodBuilder($paymentMethodName, $isSepa, $isSubscription);
-
-        return $gateway;
+        return $this->helperMocks->mollieGatewayBuilder($paymentMethodName, $isSepa, $isSubscription, []);
     }
 }

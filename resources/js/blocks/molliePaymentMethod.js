@@ -5,9 +5,9 @@ let cachedAvailableGateways
 let creditCardSelected = new Event("mollie_creditcard_component_selected", {bubbles: true});
 
 const MollieComponent = (props) => {
-    let {onSubmit, activePaymentMethod, billing, item, useEffect, ajaxUrl, jQuery, emitResponse, eventRegistration} = props
+    let {onSubmit, activePaymentMethod, billing, item, useEffect, ajaxUrl, jQuery, emitResponse, eventRegistration, companyNameString} = props
     const {  responseTypes } = emitResponse;
-    const {onPaymentProcessing} = eventRegistration;
+    const {onPaymentProcessing, onCheckoutValidationBeforeProcessing} = eventRegistration;
     const [ selectedIssuer, selectIssuer ] = wp.element.useState('');
     const issuerKey = 'mollie-payments-for-woocommerce_issuer_' + activePaymentMethod
 
@@ -107,6 +107,32 @@ const MollieComponent = (props) => {
         };
 
     }, [selectedIssuer, onPaymentProcessing])
+
+    useEffect(() => {
+        let companyLabel = jQuery('div.wc-block-components-text-input.wc-block-components-address-form__company > label')
+        if (activePaymentMethod === 'mollie_wc_gateway_billie') {
+            let message = item.companyPlaceholder
+            companyLabel.replaceWith('<label htmlFor="shipping-company">' + message + '</label>')
+        } else {
+            if (companyNameString !== false) {
+                companyLabel.replaceWith('<label htmlFor="shipping-company">' + companyNameString + '</label>')
+            }
+        }
+        const unsubscribeProcessing = onCheckoutValidationBeforeProcessing(
+            () => {
+                if (activePaymentMethod === 'mollie_wc_gateway_billie' && billing.billingData.company === '') {
+                    return {
+                        errorMessage: item.errorMessage,
+                    };
+                }
+            }
+        );
+        return () => {
+            unsubscribeProcessing()
+        };
+
+    }, [activePaymentMethod, onCheckoutValidationBeforeProcessing, billing.billingData, item, companyNameString]);
+
     onSubmitLocal = onSubmit
 
     const updateIssuer = ( changeEvent ) => {
@@ -122,7 +148,7 @@ const MollieComponent = (props) => {
 }
 
 
-const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery) =>{
+const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, companyNameString) =>{
     let billingCountry = filters.billingCountry
     let cartTotal = filters.cartTotal
     cachedAvailableGateways = availableGateways
@@ -134,7 +160,7 @@ const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, available
     return {
         name: item.name,
         label: <div dangerouslySetInnerHTML={{__html: item.label}}/>,
-        content: <MollieComponent item={item} useEffect={useEffect} ajaxUrl={ajaxUrl} jQuery={jQuery}/>,
+        content: <MollieComponent item={item} useEffect={useEffect} ajaxUrl={ajaxUrl} jQuery={jQuery} companyNameString={companyNameString}/>,
         edit: <div>{item.edit}</div>,
         paymentMethodId: item.paymentMethodId,
         canMakePayment: ({cartTotals, billingData}) => {

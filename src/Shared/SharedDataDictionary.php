@@ -15,6 +15,7 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_KlarnaPayLater',
         'Mollie_WC_Gateway_KlarnaPayNow',
         'Mollie_WC_Gateway_KlarnaSliceIt',
+        'Mollie_WC_Gateway_Billie',
         'Mollie_WC_Gateway_PayPal',
         'Mollie_WC_Gateway_BankTransfer',
         'Mollie_WC_Gateway_Sofort',
@@ -70,4 +71,69 @@ class SharedDataDictionary
     public const NEW_INSTALL_PARAM_NAME = 'mollie-new-install';
     public const PENDING_PAYMENT_DB_TABLE_NAME = 'mollie_pending_payment';
     public const DB_VERSION = '1.0';
+
+    /**
+     * WooCommerce default statuses
+     */
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_ON_HOLD = 'on-hold';
+    public const STATUS_FAILED = 'failed';
+    public const STATUS_COMPLETED = 'completed';
+    public const STATUS_PROCESSING = 'processing';
+    public const STATUS_REFUNDED = 'refunded';
+    public const STATUS_CANCELLED = 'cancelled';
+    /**
+     * @var string
+     */
+    public const FILTER_ALLOWED_LANGUAGE_CODE_SETTING = 'mollie.allowed_language_code_setting';
+    /**
+     * @var string
+     */
+    public const DEFAULT_TIME_PAYMENT_CONFIRMATION_CHECK = '3:00';
+    /**
+     * @var string
+     */
+    public const FILTER_WPML_CURRENT_LOCALE = 'wpml_current_language';
+    /**
+     * @var string
+     */
+    public const SETTING_LOCALE_WP_LANGUAGE = 'wp_locale';
+    /**
+     * @var string
+     */
+    public const SETTING_LOCALE_DETECT_BY_BROWSER = 'detect_by_browser';
+    /**
+     * @var string[]
+     */
+    public const ALLOWED_LANGUAGE_CODES = [
+        'en_US',
+        'nl_NL',
+        'nl_BE',
+        'fr_FR',
+        'fr_BE',
+        'de_DE',
+        'de_AT',
+        'de_CH',
+        'es_ES',
+        'ca_ES',
+        'pt_PT',
+        'it_IT',
+        'nb_NO',
+        'sv_SE',
+        'fi_FI',
+        'da_DK',
+        'is_IS',
+        'hu_HU',
+        'pl_PL',
+        'lv_LV',
+        'lt_LT',
+    ];
+    /**
+     * @var string
+     */
+    public const SETTING_NAME_PAYMENT_LOCALE = 'payment_locale';
+    /**
+     * @var string
+     */
+    public const SETTING_LOCALE_DEFAULT_LANGUAGE = 'en_US';
 }

@@ -6,7 +6,6 @@ namespace Mollie\WooCommerce\PaymentMethods\InstructionStrategies;
 
 class DefaultInstructionStrategy implements InstructionStrategyI
 {
-
     public function execute(
         $gateway,
         $payment,

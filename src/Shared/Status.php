@@ -33,6 +33,7 @@ class Status
         CompatibilityChecker $compatibilityChecker,
         string $pluginTitle
     ) {
+
         $this->compatibilityChecker = $compatibilityChecker;
         $this->pluginTitle = $pluginTitle;
     }

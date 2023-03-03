@@ -76,9 +76,10 @@ class AjaxRequestsTest extends TestCase
         );
         $logger = $this->helperMocks->loggerMock();
         $paypalGateway = $this->mollieGateway('paypal', false, true);
-
+        expect('wp_verify_nonce')
+            ->andReturn(true);
         $dataObject = new PayPalDataObjectHttp($logger);
-        $dataObject->orderData($_POST, 'productDetail');
+        $dataObject->orderData('productDetail');
 
 
         /*
@@ -95,16 +96,14 @@ class AjaxRequestsTest extends TestCase
                 'updateOrderPostMeta',
                 'processOrderPayment',
                 'addShippingMethodsToOrder',
+                'isNonceValid',
             ]
         )->getMock();
 
         /*
          * Expectations
          */
-        expect('wp_verify_nonce')
-            ->once()
-            ->with($_POST['nonce'], 'mollie_PayPal_button')
-            ->andReturn(true);
+
         expect('wc_get_product')
             ->once();
         expect('get_option')
@@ -127,7 +126,14 @@ class AjaxRequestsTest extends TestCase
         $testee->expects($this->once())->method(
             'processOrderPayment'
         )->with($orderId)->willReturn(['result' => 'success']);
-
+        expect('wp_verify_nonce')
+            ->with($_POST['nonce'], 'woocommerce-process_checkout')
+            ->andReturn(true);
+        $testee->expects($this->once())->method(
+            'isNonceValid'
+        )->willReturn(
+            true
+        );
         /*
          * Execute Test
          */
@@ -135,14 +141,7 @@ class AjaxRequestsTest extends TestCase
     }
 
     public function mollieGateway($paymentMethodName, $isSepa = false, $isSubscription = false){
-        $gateway = $this->createConfiguredMock(
-            MollieSubscriptionGateway::class,
-            [
-            ]
-        );
-        $gateway->paymentMethod = $this->helperMocks->paymentMethodBuilder($paymentMethodName, $isSepa, $isSubscription);
-
-        return $gateway;
+        return $this->helperMocks->mollieGatewayBuilder($paymentMethodName, $isSepa, $isSubscription, []);
     }
 
     /**

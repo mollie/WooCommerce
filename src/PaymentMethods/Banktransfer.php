@@ -8,7 +8,6 @@ use WC_Order;
 
 class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
 {
-
     /**
      * @var int
      */

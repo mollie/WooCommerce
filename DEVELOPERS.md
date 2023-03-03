@@ -26,6 +26,7 @@ You will often need to test and debug webhooks which require your development en
 DDEV provides integration with `ngrok` via the `ddev share` command. Unfortunately, this is not very helpful with WordPress
 since it needs correct URLs in the database.
 Therefore, we have a wrapper command that sets up & restores the URLs in the database before and after a sharing session.
+You will need to have ngrok and jq command previously installed. You also need to sign up for an ngrok account and connect with the token, if you have not done it before. 
 
 To start a sharing session, simply run 
 ```shell

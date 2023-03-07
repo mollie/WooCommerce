@@ -197,6 +197,7 @@ import {request} from './applePayRequest.js';
             }
         }
         document.querySelector('#mollie_applepay_button').addEventListener('click', (evt) => {
+            evt.preventDefault()
             applePaySession()
         })
     }

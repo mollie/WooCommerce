@@ -236,7 +236,7 @@ class AppleAjaxRequests
 
         $cartItemKey = $cart->add_to_cart(
             filter_input(INPUT_POST, 'productId'),
-            filter_input(INPUT_POST, 'productQuantity')
+            (bool) filter_input(INPUT_POST, 'productQuantity', FILTER_VALIDATE_INT)
         );
         $this->addAddressesToOrder($applePayRequestDataObject);
 
@@ -297,16 +297,16 @@ class AppleAjaxRequests
 
         if ($applePayRequestDataObject->callerPage === 'productDetail') {
             return $this->calculateTotalsSingleProduct(
-                $applePayRequestDataObject->productId,
-                $applePayRequestDataObject->productQuantity,
-                $applePayRequestDataObject->simplifiedContact,
-                $applePayRequestDataObject->shippingMethod
+                $applePayRequestDataObject->productId(),
+                $applePayRequestDataObject->productQuantity(),
+                $applePayRequestDataObject->simplifiedContact(),
+                $applePayRequestDataObject->shippingMethod()
             );
         }
         if ($applePayRequestDataObject->callerPage === 'cart') {
             return $this->calculateTotalsCartPage(
-                $applePayRequestDataObject->simplifiedContact,
-                $applePayRequestDataObject->shippingMethod
+                $applePayRequestDataObject->simplifiedContact(),
+                $applePayRequestDataObject->shippingMethod()
             );
         }
         return false;

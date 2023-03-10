@@ -27,19 +27,35 @@ import {request} from './applePayRequest.js';
             productQuantity = event.currentTarget.value
         })
 
+        function disableButton(appleButton) {
+            appleButton.disabled = true;
+            appleButton.classList.add("buttonDisabled");
+        }
+
+        function enableButton(appleButton) {
+            appleButton.disabled = false;
+            appleButton.classList.remove("buttonDisabled");
+        }
+
         if (isVariation) {
             let appleButton = document.querySelector('#mollie_applepay_button');
+            jQuery('.single_variation_wrap').on('hide_variation', function (event, variation) {
+                disableButton(appleButton);
+                return;
+            });
             jQuery('.single_variation_wrap').on('show_variation', function (event, variation) {
                 // Fired when the user selects all the required dropdowns / attributes
                 // and a final variation is selected / shown
+                if (!variation.is_in_stock) {
+                    disableButton(appleButton);
+                    return;
+                }
                 if (variation.variation_id) {
                     productId = variation.variation_id
                 }
-                appleButton.disabled = false;
-                appleButton.classList.remove("buttonDisabled");
+                enableButton(appleButton);
             });
-            appleButton.disabled = true;
-            appleButton.classList.add("buttonDisabled");
+            disableButton(appleButton);
         }
         const amountWithoutTax = productQuantity * price
         let applePaySession = () => {

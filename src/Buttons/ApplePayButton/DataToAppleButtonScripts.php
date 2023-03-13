@@ -79,7 +79,7 @@ class DataToAppleButtonScripts
             return [];
         }
         $isVariation = false;
-        if ($product->get_type() === 'variable') {
+        if ($product->get_type() === 'variable' || $product->get_type() === 'variable-subscription') {
             $isVariation = true;
         }
         $productNeedShipping = $this->checkIfNeedShipping($product);

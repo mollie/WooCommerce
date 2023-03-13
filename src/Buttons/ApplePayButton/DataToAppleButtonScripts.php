@@ -85,6 +85,7 @@ class DataToAppleButtonScripts
         $productNeedShipping = $this->checkIfNeedShipping($product);
         $productId = get_the_id();
         $productPrice = $product->get_price();
+        $productStock = $product->get_stock_status();
 
         return [
             'product' => [
@@ -92,6 +93,7 @@ class DataToAppleButtonScripts
                 'id' => $productId,
                 'price' => $productPrice,
                 'isVariation' => $isVariation,
+                'stock' => $productStock,
             ],
             'shop' => [
                 'countryCode' => $shopCountryCode,

@@ -8,12 +8,13 @@ import {request} from './applePayRequest.js';
             return
         }
 
-        const {product: {id, needShipping = true, isVariation = false, price}, shop: {countryCode, currencyCode = 'EUR', totalLabel = ''}, ajaxUrl} = mollieApplePayDirectData
+        const {product: {id, needShipping = true, isVariation = false, price, stock}, shop: {countryCode, currencyCode = 'EUR', totalLabel = ''}, ajaxUrl} = mollieApplePayDirectData
 
         if (!id || !price || !countryCode || !ajaxUrl) {
             return
         }
-        if(!maybeShowButton()){
+        let outOfStock = stock === 'outofstock'
+        if (outOfStock || !maybeShowButton()){
             return
         }
 

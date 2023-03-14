@@ -506,11 +506,14 @@ class AssetsModule implements ExecutableModule
      */
     protected function enqueueIconSettings(?string $current_section): void
     {
+        $uri = isset($_SERVER['REQUEST_URI']) ? wc_clean(wp_unslash($_SERVER['REQUEST_URI'])) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        if (is_string($uri) && strpos($uri, 'tab=mollie_settings')) {
+            wp_enqueue_style('mollie-gateway-icons');
+        }
         if (!$current_section || strpos($current_section, 'mollie_wc_gateway_') === false) {
             return;
         }
         wp_enqueue_script('mollie_wc_gateway_settings');
-        wp_enqueue_style('mollie-gateway-icons');
         $settingsName = "{$current_section}_settings";
         $gatewaySettings = get_option($settingsName, false);
         $message = __('No custom logo selected', 'mollie-payments-for-woocommerce');

@@ -36,7 +36,7 @@ class ApplePayDataObjectHttp
     /**
      * @var array|mixed
      */
-    protected $shippingMethod;
+    protected $shippingMethod = [];
     /**
      * @var string[]
      */
@@ -241,7 +241,7 @@ class ApplePayDataObjectHttp
                 $this->errors[] = ['errorCode' => 'unknown'];
                 continue;
             }
-            if (!$data[$requiredField]) {
+            if ($data[$requiredField] === null || $data[$requiredField] === '') {
                 $this->logger->debug(
                     sprintf('ApplePay Data Error: Missing value for %s', $requiredField)
                 );
@@ -442,7 +442,7 @@ class ApplePayDataObjectHttp
 
     public function shippingMethod(): array
     {
-        return $this->shippingMethod;
+        return $this->shippingMethod ?? [];
     }
 
     public function needShipping(): bool
@@ -453,6 +453,11 @@ class ApplePayDataObjectHttp
     public function productId(): string
     {
         return $this->productId;
+    }
+
+    public function productQuantity(): string
+    {
+        return $this->productQuantity;
     }
 
     public function nonce()

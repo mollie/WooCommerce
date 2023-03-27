@@ -19,7 +19,7 @@ import {maybeShowButton} from './maybeShowApplePayButton.js';
         let selectedShippingMethod = []
         let redirectionUrl = ''
         let applePaySession = () => {
-            const session = new ApplePaySession(3, request(countryCode, currencyCode, totalLabel, subtotal))
+            const session = new ApplePaySession(3, request(countryCode, currencyCode, totalLabel, Math.round(subtotal)))
             session.begin()
             session.onshippingmethodselected = function (event) {
                 jQuery.ajax({
@@ -172,11 +172,13 @@ import {maybeShowButton} from './maybeShowApplePayButton.js';
         jQuery(document.body).on('updated_cart_totals', function (event) {
             maybeShowButton()
             document.querySelector('#mollie_applepay_button').addEventListener('click', (evt) => {
+                evt.preventDefault()
                 applePaySession()
             })
         })
 
         document.querySelector('#mollie_applepay_button').addEventListener('click', (evt) => {
+            evt.preventDefault()
             applePaySession()
         })
     }

@@ -312,6 +312,9 @@ class WC_Product
     public function is_type($type){
     }
 
+    public function get_stock_status()
+    {
+    }
 
 }
 

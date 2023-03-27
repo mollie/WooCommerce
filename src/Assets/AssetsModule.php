@@ -19,8 +19,6 @@ use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Psr\Container\ContainerInterface;
 
-use function Psalm\getPsalmHelpText;
-
 class AssetsModule implements ExecutableModule
 {
     use ModuleClassNameIdTrait;
@@ -111,6 +109,15 @@ class AssetsModule implements ExecutableModule
     public function enqueueApplePayDirectScripts(): void
     {
         if (mollieWooCommerceIsApplePayDirectEnabled('product') && is_product()) {
+            $product = wc_get_product(get_the_id());
+            if (!$product) {
+                return;
+            }
+
+            if ($product->is_type('subscription') && !is_user_logged_in()) {
+                return;
+            }
+
             $dataToScripts = new DataToAppleButtonScripts();
             wp_enqueue_style('mollie-applepaydirect');
             wp_enqueue_script('mollie_applepaydirect');
@@ -121,6 +128,10 @@ class AssetsModule implements ExecutableModule
             );
         }
         if (mollieWooCommerceIsApplePayDirectEnabled('cart') && is_cart()) {
+            $cart = WC()->cart;
+            if ($this->cartHasSubscription($cart) && !is_user_logged_in()) {
+                return;
+            }
             $dataToScripts = new DataToAppleButtonScripts();
             wp_enqueue_style('mollie-applepaydirect');
             wp_enqueue_script('mollie_applepaydirectCart');
@@ -143,25 +154,23 @@ class AssetsModule implements ExecutableModule
                 return;
             }
             $productNeedShipping = mollieWooCommerceCheckIfNeedShipping($product);
-            if (!$productNeedShipping) {
-                $dataToScripts = new DataToPayPal($pluginUrl);
-                wp_enqueue_style('unabledButton');
-                wp_enqueue_script('mollie_paypalButton');
-                wp_localize_script(
-                    'mollie_paypalButton',
-                    'molliepaypalbutton',
-                    $dataToScripts->paypalbuttonScriptData()
-                );
+            if ($productNeedShipping) {
+                return;
             }
+            $dataToScripts = new DataToPayPal($pluginUrl);
+            wp_enqueue_style('unabledButton');
+            wp_enqueue_script('mollie_paypalButton');
+            wp_localize_script(
+                'mollie_paypalButton',
+                'molliepaypalbutton',
+                $dataToScripts->paypalbuttonScriptData()
+            );
         }
         if (mollieWooCommerceIsPayPalButtonEnabled('cart') && is_cart()) {
             $cart = WC()->cart;
-            foreach ($cart->get_cart_contents() as $product) {
-                if ($product['data']->is_type('subscription')) {
-                    return;
-                }
+            if ($this->cartHasSubscription($cart)) {
+                return;
             }
-
             $dataToScripts = new DataToPayPal($pluginUrl);
             wp_enqueue_style('unabledButton');
             wp_enqueue_script('mollie_paypalButtonCart');
@@ -565,7 +574,10 @@ class AssetsModule implements ExecutableModule
     protected function cartHasSubscription(\WC_Cart $cart): bool
     {
         foreach ($cart->cart_contents as $cart_content) {
-            if ($cart_content['data'] instanceof \WC_Product_Subscription_Variation) {
+            if (
+                $cart_content['data'] instanceof \WC_Product_Subscription
+                || $cart_content['data'] instanceof \WC_Product_Subscription_Variation
+            ) {
                 return true;
             }
         }

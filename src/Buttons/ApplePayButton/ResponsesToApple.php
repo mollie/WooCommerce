@@ -179,14 +179,14 @@ class ResponsesToApple
         $response = [];
         $response[] =  $this->appleItemFormat(
             'Subtotal',
-            $paymentDetails['subtotal'],
+            round(floatval($paymentDetails['subtotal']), 2),
             $type
         );
 
         if ($paymentDetails['shipping']['amount']) {
             $response[] = $this->appleItemFormat(
                 $paymentDetails['shipping']['label'] ?: '',
-                $paymentDetails['shipping']['amount'],
+                round(floatval($paymentDetails['shipping']['amount']), 2),
                 $type
             );
         }
@@ -194,11 +194,11 @@ class ResponsesToApple
         if ($issetFeeAmount) {
             $response[] = $this->appleItemFormat(
                 $paymentDetails['fee']['label'] ?: '',
-                $paymentDetails['fee']['amount'],
+                round(floatval($paymentDetails['fee']['amount']), 2),
                 $type
             );
         }
-        $response[] = $this->appleItemFormat('Estimated Tax', $paymentDetails['taxes'], $type);
+        $response[] = $this->appleItemFormat('Estimated Tax', round(floatval($paymentDetails['taxes']), 2), $type);
         return $response;
     }
 

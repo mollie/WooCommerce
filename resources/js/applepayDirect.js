@@ -8,12 +8,13 @@ import {request} from './applePayRequest.js';
             return
         }
 
-        const {product: {id, needShipping = true, isVariation = false, price}, shop: {countryCode, currencyCode = 'EUR', totalLabel = ''}, ajaxUrl} = mollieApplePayDirectData
+        const {product: {id, needShipping = true, isVariation = false, price, stock}, shop: {countryCode, currencyCode = 'EUR', totalLabel = ''}, ajaxUrl} = mollieApplePayDirectData
 
         if (!id || !price || !countryCode || !ajaxUrl) {
             return
         }
-        if(!maybeShowButton()){
+        let outOfStock = stock === 'outofstock'
+        if (outOfStock || !maybeShowButton()){
             return
         }
 
@@ -27,19 +28,35 @@ import {request} from './applePayRequest.js';
             productQuantity = event.currentTarget.value
         })
 
+        function disableButton(appleButton) {
+            appleButton.disabled = true;
+            appleButton.classList.add("buttonDisabled");
+        }
+
+        function enableButton(appleButton) {
+            appleButton.disabled = false;
+            appleButton.classList.remove("buttonDisabled");
+        }
+
         if (isVariation) {
             let appleButton = document.querySelector('#mollie_applepay_button');
+            jQuery('.single_variation_wrap').on('hide_variation', function (event, variation) {
+                disableButton(appleButton);
+                return;
+            });
             jQuery('.single_variation_wrap').on('show_variation', function (event, variation) {
                 // Fired when the user selects all the required dropdowns / attributes
                 // and a final variation is selected / shown
+                if (!variation.is_in_stock) {
+                    disableButton(appleButton);
+                    return;
+                }
                 if (variation.variation_id) {
                     productId = variation.variation_id
                 }
-                appleButton.disabled = false;
-                appleButton.classList.remove("buttonDisabled");
+                enableButton(appleButton);
             });
-            appleButton.disabled = true;
-            appleButton.classList.add("buttonDisabled");
+            disableButton(appleButton);
         }
         const amountWithoutTax = productQuantity * price
         let applePaySession = () => {
@@ -197,6 +214,7 @@ import {request} from './applePayRequest.js';
             }
         }
         document.querySelector('#mollie_applepay_button').addEventListener('click', (evt) => {
+            evt.preventDefault()
             applePaySession()
         })
     }

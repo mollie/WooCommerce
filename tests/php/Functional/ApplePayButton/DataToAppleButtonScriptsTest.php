@@ -30,6 +30,7 @@ class ApplePayDirectHandlerTest extends TestCase
                 'id' => $postDummyData->productId,
                 'price' => '1',
                 'isVariation' => false,
+                'stock' => 'instock',
             ],
             'shop' => [
                 'countryCode' => 'IT',
@@ -123,6 +124,8 @@ class ApplePayDirectHandlerTest extends TestCase
                 'get_price' => '1',
                 'get_type' => 'simple',
                 'needs_shipping' => true,
+                'get_stock_status' => 'instock',
+
             ]
         );
 

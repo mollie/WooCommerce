@@ -162,7 +162,7 @@ function _clean({baseDir, buildDir}) {
 function _copy({baseDir, buildDir, distDir}) {
     return function copy(done) {
         pump(
-            src([`**/*.*`, `!${buildDir}/**/*.*`, `!${distDir}/**/*.*`, '!.git/**/*.*', '!vendor/**/*.*', '!node_modules/**/*.*'], {base: baseDir, cwd: baseDir, dot: true}),
+            src([`**/*.*`, `!${buildDir}/**/*.*`, `!${distDir}/**/*.*`, '!.git/**/*.*', '!vendor/**/*.*', '!node_modules/**/*.*', '!.ddev/**/*.*', '!.github/**/*.*', '!.psalm/**/*.*'], {base: baseDir, cwd: baseDir, dot: true}),
             dest(buildDir),
             done
         )

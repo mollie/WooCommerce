@@ -154,8 +154,8 @@ class PaymentService
         $gatewaySettings = $paymentMethod->getMergedProperties();
         $totalAmount = (float) $order->get_total();
         $aboveMaxLimit = $surcharge->aboveMaxLimit($totalAmount, $gatewaySettings);
-        $amount = $aboveMaxLimit ? 0 : $surcharge->calculateFeeAmountOrder($order, $gatewaySettings);
-        $gatewayHasSurcharge = $amount !== 0;
+        $amount = $aboveMaxLimit ? 0.0 : $surcharge->calculateFeeAmountOrder($order, $gatewaySettings);
+        $gatewayHasSurcharge = $amount !== 0.0;
         $gatewayFeeLabel = get_option(
             'mollie-payments-for-woocommerce_gatewayFeeLabel',
             $surcharge->defaultFeeLabel()

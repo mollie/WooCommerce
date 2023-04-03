@@ -307,7 +307,7 @@ class MollieSettingsPage extends WC_Settings_Page
         ) . '">' . strtolower(__('Disabled', 'mollie-payments-for-woocommerce')) . '</span>';
 
         $content .= '<br /><br />';
-        $content .= '<div style="width:1000px;height:350px; background:white; padding:10px; margin-top:10px;">';
+        $content .= '<div id="mol-icons-container">';
 
         if ($testMode) {
             $content .= '<strong>' . __('Test mode enabled.', 'mollie-payments-for-woocommerce') . '</strong> ';
@@ -333,12 +333,12 @@ class MollieSettingsPage extends WC_Settings_Page
             __('Refresh', 'mollie-payments-for-woocommerce')
         ) . '</a>)';
 
-        $content .= '<ul style="width: 1000px; padding:20px 0 0 10px">';
+        $content .= '<ul class="mol-responsive-table-3">';
 
         $mollieGateways = $this->registeredGateways;//this are the gateways enabled
         $paymentMethods = $this->paymentMethods;
         if (empty($mollieGateways)) {
-            $content .= '<li style="float: left; width: 32%; height:32px;">';
+            $content .= '<li>';
             $content .= __("No payment methods available", "mollie-payments-for-woocommerce");
             $content .= '</li></ul></div>';
             $content .= '<div class="clear"></div>';
@@ -348,7 +348,7 @@ class MollieSettingsPage extends WC_Settings_Page
             $paymentMethodId = $paymentMethod->getProperty('id');
             $gatewayKey = 'mollie_wc_gateway_' . $paymentMethodId;
             $paymentMethodEnabledAtMollie = array_key_exists($gatewayKey, $mollieGateways);
-            $content .= '<li style="float: left; width: 32%; height:32px;">';
+            $content .= '<li>';
             $content .= $paymentMethod->getIconUrl();
             $content .= ' ' . esc_html($paymentMethod->getProperty('defaultTitle'));
             if ($paymentMethodEnabledAtMollie) {

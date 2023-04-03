@@ -79,6 +79,22 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 }
                 return $enabledMethods;
             },
+            'gateway.listAllMethodsAvailable' => static function (ContainerInterface $container): array {
+                $dataHelper = $container->get('settings.data_helper');
+                assert($dataHelper instanceof Data);
+                $settings = $container->get('settings.settings_helper');
+                assert($settings instanceof Settings);
+                $apiKey = $settings->getApiKey();
+                $methods = $apiKey ? $dataHelper->getAllAvailablePaymentMethods() : [];
+                $availableMethods = [];
+                $implementedMethods = $container->get('gateway.classnames');
+                foreach ($methods as $method) {
+                    if (in_array('Mollie_WC_Gateway_' . ucfirst($method['id']), $implementedMethods, true)) {
+                        $availableMethods[] = $method;
+                    }
+                }
+                return $availableMethods;
+            },
             'gateway.isSDDGatewayEnabled' => static function (ContainerInterface $container): bool {
                 $enabledMethods = $container->get('gateway.paymentMethodsEnabledAtMollie');
                 return in_array('directdebit', $enabledMethods, true);
@@ -601,7 +617,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
     protected function instantiatePaymentMethods($container): array
     {
         $paymentMethods = [];
-        $paymentMethodsNames = SharedDataDictionary::GATEWAY_CLASSNAMES;
+        $listAllAvailabePaymentMethods = $container->get('gateway.listAllMethodsAvailable');
         $iconFactory = $container->get(IconFactory::class);
         assert($iconFactory instanceof IconFactory);
         $settingsHelper = $container->get('settings.settings_helper');
@@ -610,24 +626,30 @@ class GatewayModule implements ServiceModule, ExecutableModule
         assert($surchargeService instanceof Surcharge);
         $paymentFieldsService = $container->get(PaymentFieldsService::class);
         assert($paymentFieldsService instanceof PaymentFieldsService);
-        //I need DirectDebit to create SEPA gateway
-        if (!in_array('directdebit', $paymentMethodsNames, true)) {
-            $paymentMethodsNames[] = 'directdebit';
-        }
-        foreach ($paymentMethodsNames as $paymentMethodName) {
-            $paymentMethodName = strtolower($paymentMethodName);
-            $paymentMethodName = str_replace('mollie_wc_gateway_', '', $paymentMethodName);
-            $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . ucfirst($paymentMethodName);
-            $paymentMethod = new $paymentMethodClassName(
+        foreach ($listAllAvailabePaymentMethods as $paymentMethodAvailable) {
+            $paymentMethodId = $paymentMethodAvailable['id'];
+            $paymentMethods[$paymentMethodId] = $this->buildPaymentMethod(
+                $paymentMethodId,
                 $iconFactory,
                 $settingsHelper,
                 $paymentFieldsService,
-                $surchargeService
+                $surchargeService,
+                $paymentMethods
             );
-            $paymentMethodId = $paymentMethod->getIdFromConfig();
-            $paymentMethods[$paymentMethodId] = $paymentMethod;
         }
 
+        //I need DirectDebit to create SEPA gateway
+        if (!in_array('directdebit', array_keys($paymentMethods), true)) {
+            $paymentMethodId = 'directdebit';
+            $paymentMethods[$paymentMethodId] = $this->buildPaymentMethod(
+                $paymentMethodId,
+                $iconFactory,
+                $settingsHelper,
+                $paymentFieldsService,
+                $surchargeService,
+                $paymentMethods
+            );
+        }
         return $paymentMethods;
     }
 
@@ -661,5 +683,33 @@ class GatewayModule implements ServiceModule, ExecutableModule
         }
 
         return $fields;
+    }
+
+    /**
+     * @param string $id
+     * @param IconFactory $iconFactory
+     * @param Settings $settingsHelper
+     * @param PaymentFieldsService $paymentFieldsService
+     * @param Surcharge $surchargeService
+     * @param array $paymentMethods
+     * @return PaymentMethodI
+     */
+    public function buildPaymentMethod(
+        string $id,
+        IconFactory $iconFactory,
+        Settings $settingsHelper,
+        PaymentFieldsService $paymentFieldsService,
+        Surcharge $surchargeService,
+        array $paymentMethods
+    ): PaymentMethodI {
+        $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . ucfirst($id);
+        $paymentMethod = new $paymentMethodClassName(
+            $iconFactory,
+            $settingsHelper,
+            $paymentFieldsService,
+            $surchargeService
+        );
+
+        return $paymentMethod;
     }
 }

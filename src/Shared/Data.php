@@ -679,6 +679,58 @@ class Data
         return apply_filters($this->pluginId . '_is_subscription_payment', $isSubscription, $orderId);
     }
 
+    public function getAllAvailablePaymentMethods($use_cache = true)
+    {
+        $apiKey = $this->settingsHelper->getApiKey();
+        $methods = false;
+        $transient_id = $this->getTransientId(md5('mollie_available_methods'));
+
+        try {
+            if ($use_cache) {
+                // When no cache exists $methods will be `false`
+                $methods =  get_transient($transient_id);
+            } else {
+                delete_transient($transient_id);
+            }
+
+            // No cache exists, call the API and cache the result
+            if ($methods === false) {
+                if (!$apiKey) {
+                    return [];
+                }
+                $methods = $this->api_helper->getApiClient($apiKey)->methods->allAvailable();
+
+                $methods_cleaned = [];
+
+                foreach ($methods as $method) {
+                    $public_properties = get_object_vars($method); // get only the public properties of the object
+                    $methods_cleaned[] = $public_properties;
+                }
+
+                // $methods_cleaned is empty array when the API doesn't return any methods, cache the empty array
+                $methods = $methods_cleaned;
+
+                // Set new transients (as cache)
+                if ($use_cache) {
+                    set_transient($transient_id, $methods, HOUR_IN_SECONDS);
+                }
+            }
+
+            return $methods;
+        } catch (\Mollie\Api\Exceptions\ApiException $e) {
+            /**
+             * Cache the result for a short period
+             * to prevent hammering the API with requests that are likely to fail again
+             */
+            if ($use_cache) {
+                set_transient($transient_id, [], 60 * 5);
+            }
+            $this->logger->debug(__FUNCTION__ . ": Could not load Mollie all available methods");
+
+            return [];
+        }
+    }
+
     /**
      * @param $apiKey
      * @param bool $test_mode

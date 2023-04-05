@@ -22,7 +22,7 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_Giftcard',
         'Mollie_WC_Gateway_Mybank',
         'Mollie_WC_Gateway_Bancontact',
-        'Mollie_WC_Gateway_EPS',
+        'Mollie_WC_Gateway_Eps',
         'Mollie_WC_Gateway_Giropay',
         'Mollie_WC_Gateway_Przelewy24',
         'Mollie_WC_Gateway_Kbc',

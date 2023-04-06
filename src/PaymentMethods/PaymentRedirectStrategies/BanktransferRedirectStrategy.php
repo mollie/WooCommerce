@@ -16,10 +16,11 @@ class BanktransferRedirectStrategy implements PaymentRedirectStrategyI
      * Redirect location after successfully completing process_payment
      *
      * @param PaymentMethodI $paymentMethod
-     * @param WC_Order  $order
-     * @param MollieOrder|MolliePayment $payment_object
-     *
+     * @param WC_Order $order
+     * @param $paymentObject
+     * @param string $redirectUrl
      * @return string
+     * @throws \Exception
      */
     public function execute(PaymentMethodI $paymentMethod, $order, $paymentObject, string $redirectUrl): string
     {
@@ -32,6 +33,12 @@ class BanktransferRedirectStrategy implements PaymentRedirectStrategyI
             );
         }
 
-        return $paymentObject->getCheckoutUrl();
+        $checkoutUrl = $paymentObject->getCheckoutUrl();
+
+        if ($checkoutUrl) {
+            return $checkoutUrl;
+        }
+
+        throw new \Exception(__('There was a problem. Please, try another payment method', 'mollie-payments-for-woocommerce'));
     }
 }

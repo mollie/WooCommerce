@@ -221,6 +221,7 @@ class PaymentService
      * @param MollieOrder|MolliePayment $paymentObject
      *
      * @return string
+     * @throws \Exception
      */
     public function getProcessPaymentRedirect(
         PaymentMethodI $paymentMethod,
@@ -230,12 +231,17 @@ class PaymentService
     ): string {
 
         $this->paymentCheckoutRedirectService->setStrategy($paymentMethod);
-        return $this->paymentCheckoutRedirectService->executeStrategy(
-            $paymentMethod,
-            $order,
-            $paymentObject,
-            $redirectUrl
-        );
+        try {
+            return $this->paymentCheckoutRedirectService->executeStrategy(
+                $paymentMethod,
+                $order,
+                $paymentObject,
+                $redirectUrl
+            );
+        } catch (\Exception $e) {
+            $this->logger->debug($e->getMessage());
+            throw $e;
+        }
     }
 
     /**

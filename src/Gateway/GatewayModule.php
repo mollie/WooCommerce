@@ -163,14 +163,11 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $settings = $container->get('settings.settings_helper');
                 assert($settings instanceof Settings);
                 $isSettingsOrderApi = $settings->isOrderApiSetting();
-                try {
-                    $billie = $container->get('gateway.paymentMethods')['billie'];
-                    assert($billie instanceof PaymentMethodI);
+                $billie = isset($container->get('gateway.paymentMethods')['billie']) ? $container->get('gateway.paymentMethods')['billie'] : null;
+                $isBillieEnabled = false;
+                if ($billie instanceof PaymentMethodI) {
                     $isBillieEnabled = $billie->getProperty('enabled') === 'yes';
-                } catch (NotFoundException $e) {
-                    $isBillieEnabled = false;
                 }
-
                 return $isSettingsOrderApi && $isBillieEnabled;
             },
         ];

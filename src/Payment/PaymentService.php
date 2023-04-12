@@ -220,28 +220,22 @@ class PaymentService
      * @param WC_Order $order
      * @param MollieOrder|MolliePayment $paymentObject
      *
-     * @return string
-     * @throws \Exception
+     *
      */
     public function getProcessPaymentRedirect(
         PaymentMethodI $paymentMethod,
         $order,
         $paymentObject,
         string $redirectUrl
-    ): string {
+    ) {
 
         $this->paymentCheckoutRedirectService->setStrategy($paymentMethod);
-        try {
-            return $this->paymentCheckoutRedirectService->executeStrategy(
-                $paymentMethod,
-                $order,
-                $paymentObject,
-                $redirectUrl
-            );
-        } catch (\Exception $e) {
-            $this->logger->debug($e->getMessage());
-            throw $e;
-        }
+        return $this->paymentCheckoutRedirectService->executeStrategy(
+            $paymentMethod,
+            $order,
+            $paymentObject,
+            $redirectUrl
+        );
     }
 
     /**

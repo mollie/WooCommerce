@@ -19,10 +19,9 @@ class BanktransferRedirectStrategy implements PaymentRedirectStrategyI
      * @param WC_Order $order
      * @param $paymentObject
      * @param string $redirectUrl
-     * @return string
-     * @throws \Exception
+     * @return string|null
      */
-    public function execute(PaymentMethodI $paymentMethod, $order, $paymentObject, string $redirectUrl): string
+    public function execute(PaymentMethodI $paymentMethod, $order, $paymentObject, string $redirectUrl)
     {
         if ($paymentMethod->getProperty('skip_mollie_payment_screen') === 'yes') {
             return add_query_arg(
@@ -33,12 +32,6 @@ class BanktransferRedirectStrategy implements PaymentRedirectStrategyI
             );
         }
 
-        $checkoutUrl = $paymentObject->getCheckoutUrl();
-
-        if ($checkoutUrl) {
-            return $checkoutUrl;
-        }
-
-        throw new \Exception(__('There was a problem. Please, try another payment method', 'mollie-payments-for-woocommerce'));
+        return $paymentObject->getCheckoutUrl();
     }
 }

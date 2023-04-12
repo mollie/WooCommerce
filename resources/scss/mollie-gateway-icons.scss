@@ -14,3 +14,21 @@ label .mollie-gateway-icon{
 #mol-paypal-settings-icon{
   margin-left:1em;
 }
+#mol-icons-container{
+  background:white;
+}
+.mol-responsive-table-3{
+  display:flex;
+  flex-wrap:wrap;
+  background: white;
+  padding: 10px;
+}
+.mol-responsive-table-3 > * {
+  width:100%;
+  padding-top: 8px;
+}
+@media (min-width:768px) {
+  .mol-responsive-table-3 > * {
+    width:calc(100% / 3);
+  }
+}

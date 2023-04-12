@@ -40,6 +40,9 @@ class PaymentCheckoutRedirectService
         $this->strategy = class_exists($className) ? new $className() : new DefaultRedirectStrategy();
     }
 
+    /**
+     * @throws \Exception
+     */
     public function executeStrategy($paymentMethod, $order, $paymentObject, $redirectUrl)
     {
         return $this->strategy->execute($paymentMethod, $order, $paymentObject, $redirectUrl);

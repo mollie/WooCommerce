@@ -14,11 +14,12 @@ class DefaultRedirectStrategy implements PaymentRedirectStrategyI
     /**
      * Redirect location after successfully completing process_payment
      *
-     * @param WC_Order  $order
+     * @param WC_Order $order
      * @param MollieOrder|MolliePayment $payment_object
+     *
      */
-    public function execute(PaymentMethodI $paymentMethod, $order, $paymentObject, string $redirectUrl): string
+    public function execute(PaymentMethodI $paymentMethod, $order, $paymentObject, string $redirectUrl)
     {
-        return $paymentObject->getCheckoutUrl();
+            return $paymentObject->getCheckoutUrl();
     }
 }

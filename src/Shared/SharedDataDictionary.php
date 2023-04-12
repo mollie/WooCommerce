@@ -8,28 +8,28 @@ class SharedDataDictionary
 {
     public const DIRECTDEBIT = 'mollie_wc_gateway_directdebit';
     public const GATEWAY_CLASSNAMES = [
-        'Mollie_WC_Gateway_ApplePay',
+        'Mollie_WC_Gateway_Applepay',
         'Mollie_WC_Gateway_Ideal',
         'Mollie_WC_Gateway_Creditcard',
         'Mollie_WC_Gateway_In3',
-        'Mollie_WC_Gateway_KlarnaPayLater',
-        'Mollie_WC_Gateway_KlarnaPayNow',
-        'Mollie_WC_Gateway_KlarnaSliceIt',
+        'Mollie_WC_Gateway_Klarnapaylater',
+        'Mollie_WC_Gateway_Klarnapaynow',
+        'Mollie_WC_Gateway_Klarnasliceit',
         'Mollie_WC_Gateway_Billie',
-        'Mollie_WC_Gateway_PayPal',
-        'Mollie_WC_Gateway_BankTransfer',
+        'Mollie_WC_Gateway_Paypal',
+        'Mollie_WC_Gateway_Banktransfer',
         'Mollie_WC_Gateway_Sofort',
         'Mollie_WC_Gateway_Giftcard',
-        'Mollie_WC_Gateway_MyBank',
+        'Mollie_WC_Gateway_Mybank',
         'Mollie_WC_Gateway_Bancontact',
-        'Mollie_WC_Gateway_EPS',
+        'Mollie_WC_Gateway_Eps',
         'Mollie_WC_Gateway_Giropay',
         'Mollie_WC_Gateway_Przelewy24',
         'Mollie_WC_Gateway_Kbc',
         'Mollie_WC_Gateway_Belfius',
         'Mollie_WC_Gateway_Paysafecard',
         'Mollie_WC_Gateway_Voucher',
-        'Mollie_WC_Gateway_DirectDebit',
+        'Mollie_WC_Gateway_Directdebit',
     ];
 
     public const MOLLIE_OPTIONS_NAMES = [

@@ -16,12 +16,12 @@ class BanktransferRedirectStrategy implements PaymentRedirectStrategyI
      * Redirect location after successfully completing process_payment
      *
      * @param PaymentMethodI $paymentMethod
-     * @param WC_Order  $order
-     * @param MollieOrder|MolliePayment $payment_object
-     *
-     * @return string
+     * @param WC_Order $order
+     * @param $paymentObject
+     * @param string $redirectUrl
+     * @return string|null
      */
-    public function execute(PaymentMethodI $paymentMethod, $order, $paymentObject, string $redirectUrl): string
+    public function execute(PaymentMethodI $paymentMethod, $order, $paymentObject, string $redirectUrl)
     {
         if ($paymentMethod->getProperty('skip_mollie_payment_screen') === 'yes') {
             return add_query_arg(

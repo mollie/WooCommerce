@@ -97,6 +97,7 @@ class DataToPayPal
         $productNeedShipping = mollieWooCommerceCheckIfNeedShipping($product);
         $productId = get_the_id();
         $productPrice = $product->get_price();
+        $productStock = $product->get_stock_status();
 
         return [
             'product' => [
@@ -105,6 +106,7 @@ class DataToPayPal
                 'price' => $productPrice,
                 'isVariation' => $isVariation,
                 'minFee' => $minAmount,
+                'stock' => $productStock,
             ],
             'ajaxUrl' => admin_url('admin-ajax.php'),
         ];

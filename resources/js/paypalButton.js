@@ -1,3 +1,4 @@
+import {maybeShowButton} from "./maybeShowApplePayButton";
 
 (
     function ({_, molliepaypalbutton, jQuery}) {
@@ -6,7 +7,7 @@
             return
         }
 
-        const {product: {id, needShipping = true, isVariation = false, price, minFee}, ajaxUrl} = molliepaypalbutton
+        const {product: {id, needShipping = true, isVariation = false, price, minFee, stock}, ajaxUrl} = molliepaypalbutton
 
         if (!id || !price || !ajaxUrl) {
             return
@@ -59,6 +60,11 @@
             let sibling = buttonParentNode.children[positionKey]
             buttonParentNode.insertBefore(payPalButton, sibling)
         }
+        let outOfStock = stock === 'outofstock'
+        if (outOfStock) {
+            hideButton()
+            return
+        }
         const nonce = payPalButton.children[0].value
         let productId = id
         let productQuantity = 1
@@ -80,7 +86,7 @@
                 fadeButton();
                 // Fired when the user selects all the required dropdowns / attributes
                 // and a final variation is selected / shown
-                if (variation.is_virtual && variation.variation_id) {
+                if (variation.is_virtual && variation.is_in_stock && variation.variation_id) {
                     productId = variation.variation_id
                     payPalButton.disabled = false;
                     payPalButton.classList.remove("buttonDisabled");

@@ -31,8 +31,8 @@ class PayPalButtonHandler
     public function bootstrap($enabledInProduct, $enabledInCart)
     {
         if ($enabledInProduct) {
-            $renderPlaceholder = apply_filters('mollie_wc_gateway_paypal_render_hook_product', 'woocommerce_before_add_to_cart_quantity');
-            $renderPlaceholder = is_string($renderPlaceholder) ? $renderPlaceholder : 'woocommerce_before_add_to_cart_quantity';
+            $renderPlaceholder = apply_filters('mollie_wc_gateway_paypal_render_hook_product', 'woocommerce_after_add_to_cart_form');
+            $renderPlaceholder = is_string($renderPlaceholder) ? $renderPlaceholder : 'woocommerce_after_add_to_cart_form';
             add_action(
                 $renderPlaceholder,
                 function () {

@@ -386,6 +386,15 @@ class PaymentService
                 $paymentOrder->updatePaymentDataWithOrderData($orderWithPayments, $orderId);
             }
         } catch (ApiException $e) {
+            //check if the exception is an outage, if so bail, log and inform user
+            $isMollieOutage = $this->apiHelper->isMollieOutageException($e);
+            if ($isMollieOutage) {
+                $this->logger->debug(
+                    "Creating payment object: type Order failed due to a Mollie outage, stopping process. Check Mollie status at https://status.mollie.com/. {$e->getMessage()}"
+                );
+
+                throw new ApiException(__('Payment failed due to: Mollie is out of service. Please try again later.', 'mollie-payments-for-woocommerce'));
+            }
             // Don't try to create a Mollie Payment for Klarna payment methods
             $order_payment_method = $order->get_payment_method();
             $orderMandatoryPaymentMethods = [
@@ -488,6 +497,14 @@ class PaymentService
                 $apiKey
             )->payments->create($data);
         } catch (ApiException $e) {
+            $isMollieOutage = $this->apiHelper->isMollieOutageException($e);
+            if ($isMollieOutage) {
+                $this->logger->debug(
+                    "Creating payment object: type Order failed due to a Mollie outage, stopping process. Check Mollie status at https://status.mollie.com/. {$e->getMessage()}"
+                );
+
+                throw new ApiException(__('Payment failed due to: Mollie is out of service. Please try again later.', 'mollie-payments-for-woocommerce'));
+            }
             $message = $e->getMessage();
             $this->logger->debug($message);
             throw $e;

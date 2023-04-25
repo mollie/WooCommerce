@@ -259,6 +259,8 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         $fields = array_filter($fields, static function ($key) {
                 return !is_numeric($key);
         }, ARRAY_FILTER_USE_KEY);
+        //we don't save the default description, in case the language changes
+        unset($fields['description']);
         return array_combine(array_keys($fields), array_column($fields, 'default')) ?: [];
     }
 }

@@ -40,12 +40,17 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
      * @var Surcharge
      */
     protected $surcharge;
+    /**
+     * @var array
+     */
+    private $apiPaymentMethod;
 
     public function __construct(
         IconFactory $iconFactory,
         Settings $settingsHelper,
         PaymentFieldsService $paymentFieldsService,
-        Surcharge $surcharge
+        Surcharge $surcharge,
+        array $apiPaymentMethod
     ) {
 
         $this->id = $this->getIdFromConfig();
@@ -55,6 +60,17 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         $this->surcharge = $surcharge;
         $this->config = $this->getConfig();
         $this->settings = $this->getSettings();
+        $this->apiPaymentMethod = $apiPaymentMethod;
+    }
+
+    public function title(): string
+    {
+        $title = $this->getProperty('title');
+        $useApiTitle = $this->getProperty('use_api_title');
+        if ($useApiTitle !== 'no' || !$title) {
+            return $this->getApiTitle();
+        }
+         return $title;
     }
 
     /**
@@ -121,8 +137,9 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
      */
     public function getSharedFormFields()
     {
+        $defaultTitle = $this->getApiTitle();
         return $this->settingsHelper->generalFormFields(
-            $this->config['defaultTitle'],
+            $defaultTitle,
             $this->config['defaultDescription'],
             $this->config['confirmationDelayed']
         );
@@ -259,8 +276,15 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         $fields = array_filter($fields, static function ($key) {
                 return !is_numeric($key);
         }, ARRAY_FILTER_USE_KEY);
-        //we don't save the default description, in case the language changes
+        //we don't save the default description or title, in case the language changes
         unset($fields['description']);
+        unset($fields['title']);
         return array_combine(array_keys($fields), array_column($fields, 'default')) ?: [];
+    }
+
+    private function getApiTitle()
+    {
+        $apiTitle = $this->apiPaymentMethod['description'];
+        return $apiTitle ?: $this->config['defaultTitle'];
     }
 }

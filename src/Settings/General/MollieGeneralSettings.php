@@ -51,6 +51,15 @@ class MollieGeneralSettings
                 'default' => $defaultTitle,
                 'desc_tip' => true,
             ],
+            'use_api_title' => [
+                'title' => __(
+                    'Use API dynamic title',
+                    'mollie-payments-for-woocommerce'
+                ),
+                'type' => 'checkbox',
+                'label' => __('Retrieve the gateway title from Mollie', 'mollie-payments-for-woocommerce'),
+                'default' => 'yes',
+            ],
             'description' => [
                 'title' => __('Description', 'mollie-payments-for-woocommerce'),
                 'type' => 'textarea',

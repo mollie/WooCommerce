@@ -234,7 +234,16 @@ class GatewayModule implements ServiceModule, ExecutableModule
         if ($isBillieEnabled) {
             add_filter(
                 'woocommerce_after_checkout_validation',
-                [$this, 'organizationBillingFieldMandatory'],
+                [$this, 'BillieFieldsMandatory'],
+                11,
+                2
+            );
+        }
+        $isIn3Enabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_in3_settings', 'enabled');
+        if ($isIn3Enabled) {
+            add_filter(
+                'woocommerce_after_checkout_validation',
+                [$this, 'in3FieldsMandatory'],
                 11,
                 2
             );
@@ -650,36 +659,22 @@ class GatewayModule implements ServiceModule, ExecutableModule
         return $paymentMethods;
     }
 
-    public function organizationBillingFieldMandatory($fields, $errors)
+    public function BillieFieldsMandatory($fields, $errors)
     {
-        $billiePaymentMethod = "mollie_wc_gateway_billie";
-        if ($fields['payment_method'] === $billiePaymentMethod) {
-            if (!isset($fields['billing_company'])) {
-                $companyFieldPosted = filter_input(INPUT_POST, 'billing_company', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
-                if ($companyFieldPosted) {
-                    $fields['billing_company'] = $companyFieldPosted;
-                } else {
-                    $errors->add(
-                        'validation',
-                        __(
-                            'Error processing Billie payment, the company name field is required.',
-                            'mollie-payments-for-woocommerce'
-                        )
-                    );
-                }
-            }
-            if ($fields['billing_company'] === '') {
-                $errors->add(
-                    'validation',
-                    __(
-                        'Please enter your company name, this is required for Billie payments',
-                        'mollie-payments-for-woocommerce'
-                    )
-                );
-            }
-        }
+        $gatewayName = "mollie_wc_gateway_billie";
+        $field = 'billing_company';
+        $paymentMethodName = 'Billie';
+        return $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $field, $errors, $paymentMethodName);
+    }
 
-        return $fields;
+    public function in3FieldsMandatory($fields, $errors)
+    {
+        $gatewayName = "mollie_wc_gateway_in3";
+        $phoneField = 'billing_phone';
+        $birthdateField = 'billing_birthdate';
+        $paymentMethodName = 'in3';
+        $fields = $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $phoneField, $errors, $paymentMethodName);
+        return $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $birthdateField, $errors, $paymentMethodName);
     }
 
     /**
@@ -708,5 +703,53 @@ class GatewayModule implements ServiceModule, ExecutableModule
         );
 
         return $paymentMethod;
+    }
+
+    /**
+     * Some payment methods require mandatory fields, this function will add them to the checkout fields array
+     * @param $fields
+     * @param string $gatewayName
+     * @param string $field
+     * @param $errors
+     * @param string $paymentMethodName
+     * @return mixed
+     */
+    public function addPaymentMethodMandatoryFields($fields, string $gatewayName, string $field, $errors, string $paymentMethodName)
+    {
+        if ($fields['payment_method'] !== $gatewayName) {
+            return $fields;
+        }
+        if (!isset($fields[$field])) {
+            $fieldPosted = filter_input(INPUT_POST, $field, FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+            if ($fieldPosted) {
+                $fields[$field] = $fieldPosted;
+            } else {
+                $errors->add(
+                    'validation',
+                    sprintf(
+                        __(
+                            'Error processing %1$s payment, the %2$s field is required.',
+                            'mollie-payments-for-woocommerce'
+                        ),
+                        $paymentMethodName,
+                        $field
+                    )
+                );
+            }
+        }
+        if ($fields[$field] === '') {
+            $errors->add(
+                'validation',
+                sprintf(
+                    __(
+                        'Please enter your %1$s, this is required for %2$s payments',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                    $field,
+                    $paymentMethodName
+                )
+            );
+        }
+        return $fields;
     }
 }

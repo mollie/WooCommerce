@@ -65,9 +65,11 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
 
     public function title(): string
     {
-        $title = $this->getProperty('title');
+        $titleIsDefault = $this->titleIsDefault();
         $useApiTitle = $this->getProperty('use_api_title');
-        if ($useApiTitle !== 'no' || !$title) {
+        $title = $this->getProperty('title');
+        //new installations or installations that saved the default one should use the api title
+        if ($useApiTitle !== 'no' || !$title || $titleIsDefault) {
             return $this->getApiTitle();
         }
          return $title;
@@ -286,5 +288,15 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     {
         $apiTitle = $this->apiPaymentMethod['description'];
         return $apiTitle ?: $this->config['defaultTitle'];
+    }
+
+    protected function titleIsDefault(): bool
+    {
+        $savedTitle = $this->getProperty('title');
+        if (!$savedTitle) {
+            return false;
+        }
+
+        return $savedTitle === $this->config['defaultTitle'];
     }
 }

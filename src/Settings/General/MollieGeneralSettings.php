@@ -58,7 +58,7 @@ class MollieGeneralSettings
                 ),
                 'type' => 'checkbox',
                 'label' => __('Retrieve the gateway title from Mollie', 'mollie-payments-for-woocommerce'),
-                'default' => 'yes',
+                'default' => 'no',
             ],
             'description' => [
                 'title' => __('Description', 'mollie-payments-for-woocommerce'),

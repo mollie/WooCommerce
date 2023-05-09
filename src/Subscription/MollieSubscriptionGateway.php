@@ -347,7 +347,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                 'result' => 'success',
             ];
         } catch (ApiException $e) {
-            $this->logger->debug("{$this->id} : Failed to create payment for order {$renewal_order_id},with customer {$customer_id} and mandate {$mandateId}. New status failed. API error:  {$e->getMessage()}");
+            $this->logger->debug("{$this->id} : Failed to create payment for order {$renewal_order_id}, with customer {$customer_id} and mandate {$mandateId}. New status failed. API error: {$e->getMessage()}");
             /* translators: Placeholder 1: Payment method title */
             $message = sprintf(__('Could not create %s renewal payment.', 'mollie-payments-for-woocommerce'), $this->title);
             $message .= ' ' . $e->getMessage();

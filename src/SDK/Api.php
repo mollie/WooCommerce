@@ -71,4 +71,15 @@ class Api
     {
         return apply_filters($this->pluginId . '_api_endpoint', \Mollie\Api\MollieApiClient::API_ENDPOINT);
     }
+
+    public function isMollieOutageException(\Mollie\Api\Exceptions\ApiException $e): bool
+    {
+        //see https://status.mollie.com/
+        $outageCode = [400, 500];
+
+        if (in_array($e->getCode(), $outageCode, true)) {
+            return true;
+        }
+        return false;
+    }
 }

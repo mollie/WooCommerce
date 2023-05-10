@@ -114,6 +114,9 @@ class PaymentServiceTest extends TestCase
         $wcOrder->expects($this->any())
             ->method('get_billing_company')
             ->willReturn('');
+        $wcOrder->expects($this->any())
+            ->method('get_billing_phone')
+            ->willReturn('+1234567890');
         /*
         * Execute Test
         */
@@ -162,6 +165,7 @@ class PaymentServiceTest extends TestCase
                 'get_billing_city' => 'billingcity',
                 'get_billing_state' => 'billingregion',
                 'get_billing_country' => 'billingcountry',
+                'get_billing_phone' => '+1234567890',
                 'get_shipping_address_1' => 'shippingstreetAndNumber',
                 'get_shipping_address_2' => 'shippingstreetAdditional',
                 'get_shipping_postcode' => 'shippingpostalCode',
@@ -380,6 +384,7 @@ class PaymentServiceTest extends TestCase
         $billingAddress->region = $order->get_billing_state();
         $billingAddress->country = $order->get_billing_country();
         $billingAddress->organizationName = $order->get_billing_company();
+        $billingAddress->phone = $order->get_billing_phone();
 
         return $billingAddress;
     }

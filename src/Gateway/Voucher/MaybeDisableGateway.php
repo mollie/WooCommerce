@@ -33,8 +33,7 @@ class MaybeDisableGateway
         // To exclude we are in Checkout or Order Pay page. These are the other options where gateways are required.
         $notInCheckoutOrPayPage = $isWcApiRequest
             || !doing_action('woocommerce_payment_gateways')
-            || (!wp_doing_ajax() && !is_wc_endpoint_url('order-pay'))
-            || is_admin();
+            || (!wp_doing_ajax() && !is_wc_endpoint_url('order-pay'));
         $notHasBlocks = !has_block('woocommerce/checkout');
         /*
          * There are 3 cases where we want to filter the gateway and it's when the checkout
@@ -43,7 +42,7 @@ class MaybeDisableGateway
          *
          * For any other case we want to be sure voucher gateway is included.
          */
-        if ($notInCheckoutOrPayPage && $notHasBlocks) {
+        if (($notInCheckoutOrPayPage && $notHasBlocks) || is_admin()) {
             return $gateways;
         }
         $mealVoucherGatewayIndex = false;

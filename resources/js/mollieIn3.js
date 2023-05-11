@@ -31,12 +31,7 @@ import {maybeRequireField, saveOriginalField} from "./wooCheckoutFieldsUtility";
             + '</p>'
         jQuery(function () {
             jQuery('body')
-                .on('updated_checkout', function () {
-                    phoneField = maybeRequireField(phoneField, positionPhoneField, phoneMarkup, inputPhoneName, phoneId, originalPhone, gateway);
-                    birthField = maybeRequireField(birthField, positionBirthField, birthMarkup, inputBirthName, birthId, originalBirth, gateway);
-                });
-            jQuery('body')
-                .on('payment_method_selected', function () {
+                .on('updated_checkout payment_method_selected', function () {
                     phoneField = maybeRequireField(phoneField, positionPhoneField, phoneMarkup, inputPhoneName, phoneId, originalPhone, gateway);
                     birthField = maybeRequireField(birthField, positionBirthField, birthMarkup, inputBirthName, birthId, originalBirth, gateway);
                 });

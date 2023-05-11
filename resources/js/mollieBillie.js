@@ -19,11 +19,7 @@ import {maybeRequireField, saveOriginalField} from "./wooCheckoutFieldsUtility";
 
         jQuery(function () {
             jQuery('body')
-                .on('updated_checkout', function () {
-                    companyField = maybeRequireField(companyField, positionCompanyField, companyMarkup, inputCompanyName, companyFieldId, originalBillingCompanyField, gateway);
-                });
-            jQuery('body')
-                .on('payment_method_selected', function () {
+                .on('updated_checkout payment_method_selected', function () {
                     companyField = maybeRequireField(companyField, positionCompanyField, companyMarkup, inputCompanyName, companyFieldId, originalBillingCompanyField, gateway);
                 });
         });

@@ -18,9 +18,9 @@ import molliePaymentMethod from './blocks/molliePaymentMethod'
                 return shippingCompany ? shippingCompany : billingCompany;
             }
 
-            function isFieldVisible(companyField)
+            function isFieldVisible(field)
             {
-                return companyField && companyField.style.display !== 'none';
+                return field && field.style.display !== 'none';
             }
 
             let companyField = getCompanyField();

@@ -394,9 +394,10 @@ class PaymentService
                 'mollie_wc_gateway_klarnasliceit',
                 'mollie_wc_gateway_klarnapaynow',
                 'mollie_wc_gateway_billie',
+                'mollie_wc_gateway_in3',
             ];
 
-            if (in_array($order_payment_method, $orderMandatoryPaymentMethods)) {
+            if (in_array($order_payment_method, $orderMandatoryPaymentMethods, true)) {
                 $this->logger->debug(
                     'Creating payment object: type Order failed, stopping process.'
                 );

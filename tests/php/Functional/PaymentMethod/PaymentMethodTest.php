@@ -160,7 +160,7 @@ class PaymentMethodTest extends TestCase
 
         $paymentMethod = $this->buildTesteeMock(
             Creditcard::class,
-            [$iconFactory, $settingsHelper, $paymentFieldsService, $surchargeService],
+            [$iconFactory, $settingsHelper, $paymentFieldsService, $surchargeService, []],
             ['getConfig', 'getSettings', 'getInitialOrderStatus', 'getIdFromConfig']
         )->getMock();
 

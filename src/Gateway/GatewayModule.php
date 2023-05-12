@@ -631,7 +631,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $settingsHelper,
                 $paymentFieldsService,
                 $surchargeService,
-                $paymentMethods
+                $paymentMethodAvailable
             );
         }
 
@@ -644,7 +644,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $settingsHelper,
                 $paymentFieldsService,
                 $surchargeService,
-                $paymentMethods
+                []
             );
         }
         return $paymentMethods;
@@ -697,14 +697,15 @@ class GatewayModule implements ServiceModule, ExecutableModule
         Settings $settingsHelper,
         PaymentFieldsService $paymentFieldsService,
         Surcharge $surchargeService,
-        array $paymentMethods
+        array $apiMethod
     ): PaymentMethodI {
         $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . ucfirst($id);
         $paymentMethod = new $paymentMethodClassName(
             $iconFactory,
             $settingsHelper,
             $paymentFieldsService,
-            $surchargeService
+            $surchargeService,
+            $apiMethod
         );
 
         return $paymentMethod;

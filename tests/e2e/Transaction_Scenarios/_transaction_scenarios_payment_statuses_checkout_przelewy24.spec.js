@@ -5,6 +5,7 @@ const {noticeLines, checkExpiredAtMollie, classicCheckoutTransaction} = require(
 const {wooOrderPaidPage, wooOrderRetryPage, wooOrderDetailsPage} = require("../Shared/testMollieInWooPage");
 
 test.describe('_Transaction scenarios_Payment statuses Checkout - Przelewy24', () => {
+    const productQuantity = 1;
     test.beforeEach(async ({ page , context, gateways}) => {
         context.method = gateways.przelewy24;
         context.methodName = normalizedName(context.method.defaultTitle);
@@ -50,7 +51,7 @@ test.describe('_Transaction scenarios_Payment statuses Checkout - Przelewy24', (
     ];
 
     testData.forEach(({ testId, mollieStatus, wooStatus, notice, action }) => {
-        test(`[TestId-${testId}] Validate the submission of an order with Bancontact as payment method and payment mark as "${mollieStatus}"`, async ({ page, products, context }) => {
+        test(`[TestId-${testId}] Validate the submission of an order with Przelewy24 as payment method and payment mark as "${mollieStatus}"`, async ({ page, products, context }) => {
             const result = await classicCheckoutTransaction(page, products.simple, context.method, productQuantity, mollieStatus);
             await action(page, result, context);
             await wooOrderDetailsPage(page, result.mollieOrder, context.method, wooStatus, notice(context));

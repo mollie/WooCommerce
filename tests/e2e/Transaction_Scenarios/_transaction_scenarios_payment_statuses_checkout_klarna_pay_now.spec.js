@@ -1,34 +1,60 @@
 const { expect } = require('@playwright/test');
 const { test } = require('../Shared/base-test');
+const {normalizedName} = require("../Shared/gateways");
+const {noticeLines, checkExpiredAtMollie, classicCheckoutTransaction} = require("../Shared/mollieUtils");
+const {wooOrderPaidPage, wooOrderRetryPage, wooOrderDetailsPage} = require("../Shared/testMollieInWooPage");
 
 test.describe('_Transaction scenarios_Payment statuses Checkout - Klarna Pay Now', () => {
-  test.beforeEach(async ({ page }) => {
-    //code before each
-  });
-   
+    const productQuantity = 1;
+    test.beforeEach(async ({ page , context, gateways}) => {
+        context.method = gateways.billie;
+        context.methodName = normalizedName(context.method.defaultTitle);
+        await page.goto('/shop/');
+    });
+    const testData = [
+        {
+            testId: "C3397",
+            mollieStatus: "Authorized",
+            wooStatus: "Processing",
+            notice: context => noticeLines.authorized(context.methodName),
+            action: async (page, result, context) => {
+                await wooOrderPaidPage(page, result.mollieOrder, result.totalAmount, context.method);
+            }
+        },
+        {
+            testId: "C3398",
+            mollieStatus: "Failed",
+            wooStatus: "Pending payment",
+            notice: context => noticeLines.failed(context.method.id),
+            action: async (page) => {
+                await wooOrderRetryPage(page);
+            }
+        },
+        {
+            testId: "C3399",
+            mollieStatus: "Canceled",
+            wooStatus: "Pending payment",
+            notice: context => noticeLines.failed(context.method.id),
+            action: async (page) => {
+                await wooOrderRetryPage(page);
+            }
+        },
+        {
+            testId: "C3400",
+            mollieStatus: "Expired",
+            wooStatus: "Pending payment",
+            notice: context => noticeLines.expired(context.method.id),
+            action: async (page) => {
+                await checkExpiredAtMollie(page);
+            }
+        },
+    ];
 
-//TestId-C3397
-test.skip('Validate the submission of an order with Klarna Pay Now as payment method and payment mark as "Authorized"', async ({ page}) => {
-  // Your code here...
-});
-
-
-//TestId-C3398
-test.skip('Validate the submission of an order with Klarna Pay Now as payment method and payment mark as "Failed"', async ({ page}) => {
-  // Your code here...
-});
-
-
-//TestId-C3399
-test.skip('Validate the submission of an order with Klarna Pay Now as payment method and payment mark as "Cancelled"', async ({ page}) => {
-  // Your code here...
-});
-
-
-//TestId-C3400
-test.skip('Validate the submission of an order with Klarna Pay Now as payment method and payment mark as "Expired"', async ({ page}) => {
-  // Your code here...
-});
-
-
+    testData.forEach(({ testId, mollieStatus, wooStatus, notice, action }) => {
+        test(`[TestId-${testId}] Validate the submission of an order with Klarna Pay Now as payment method and payment mark as "${mollieStatus}"`, async ({ page, products, context }) => {
+            const result = await classicCheckoutTransaction(page, products.simple, context.method, productQuantity, mollieStatus);
+            await action(page, result, context);
+            await wooOrderDetailsPage(page, result.mollieOrder, context.method, wooStatus, notice(context));
+        });
+    });
 });

@@ -10,7 +10,6 @@ const {
 } = require('../Shared/mollieUtils');
 const {wooOrderPaidPage, wooOrderDetailsPage, wooOrderRetryPage} = require("../Shared/testMollieInWooPage");
 const {normalizedName} = require("../Shared/gateways");
-const productQuantity = 1;
 
 // Set up parameters or perform actions before all tests
 test.beforeAll(async ({browser}) => {
@@ -23,6 +22,7 @@ test.beforeAll(async ({browser}) => {
     await setOrderAPI(page);*/
 });
 test.describe('_Transaction scenarios_Payment statuses Checkout - Bancontact', () => {
+    const productQuantity = 1;
   test.beforeEach(async ({ page , context, gateways}) => {
       context.method = gateways.bancontact;
       context.methodName = normalizedName(context.method.defaultTitle);

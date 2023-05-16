@@ -10,6 +10,7 @@ const settingsNames = {
     fixedFee: (method) => `mollie_wc_gateway_${method}_fixed_fee`,
     percentage: (method) => `mollie_wc_gateway_${method}_percentage`,
     limitFee: (method) => `mollie_wc_gateway_${method}_maximum_limit`,
+    components: (method) => `mollie_wc_gateway_${method}_mollie_components_enabled`,
 }
 
 const noticeLines = {
@@ -19,6 +20,7 @@ const noticeLines = {
     failed: (method) => `${method} payment started`,
     canceled: (method) => `${method} payment started`,
     expired: (method) => `${method} payment started`,
+    authorized: (method) => `Order authorized using Mollie – ${method} payment`,
 }
 /**
  * @param {import('@playwright/test').Page} page
@@ -54,6 +56,19 @@ const markStatusInMollie = async (page, status) =>{
     await page.locator('text=' + status).click();
     await page.locator('text=Continue').click();
     return mollieOrder;
+}
+
+const processMollieCheckout = async (page, status) => {
+    const expectedUrl = 'https://www.mollie.com/checkout/test-mode?';
+
+    if (page.url().toString().startsWith(expectedUrl)) {
+        return await markStatusInMollie(page, status);
+    } else {
+        // find the first button
+        const button = await page.$('button');
+        await button.click();
+        return await markStatusInMollie(page, status);
+    }
 }
 
 /**
@@ -138,8 +153,8 @@ const beforePlacingOrder = async (page, testedProduct, testedGateway, productQua
 const classicCheckoutTransaction = async (page, testedProduct, testedGateway, productQuantity = 1, status = "Paid") => {
     const totalAmount = await beforePlacingOrder(page, testedProduct, testedGateway, productQuantity);
     // IN MOLLIE
-    // Capture order number in Mollie and mark as paid
-    const mollieOrder = await markStatusInMollie(page, status);
+    // Capture order number in Mollie and mark as required
+    const mollieOrder = await processMollieCheckout(page, status);
 
     return {mollieOrder: mollieOrder, totalAmount: totalAmount};
 }

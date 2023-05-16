@@ -36,6 +36,14 @@ const fillCustomerInCheckout = async (page) => {
     await page.locator('input[name="billing_postcode"]').fill('22100');
     await page.locator('input[name="billing_phone"]').fill('1234566788');
     await page.locator('input[name="billing_email"]').fill('test@test.com');
+    const canFillCompany = await page.locator('input[name="billing_company"]').isVisible();
+    if (canFillCompany) {
+        await page.locator('input[name="billing_company"]').fill('Test company');
+    }
+    const canFillBirthDate = await page.locator('input[name="billing_birthdate"]').isVisible();
+    if (canFillBirthDate) {
+        await page.locator('input[name="billing_birthdate"]').fill('01-01-1990');
+    }
 }
 
 /**

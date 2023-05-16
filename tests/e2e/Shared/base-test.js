@@ -1,8 +1,8 @@
 const base = require('@playwright/test');
-const {simple} = require('../Shared/products');
-const {ideal, banktransfer} = require('../Shared/gateways');
+const {allProducts} = require('./products');
+const {allMethods} = require('./gateways');
 
 exports.test = base.test.extend({
-    products: [simple, { option: true }],
-    gateways: [ideal, { option: true }],
+    products: [allProducts, { option: true }],
+    gateways: [allMethods, { option: true }],
 });

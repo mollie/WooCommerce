@@ -1,12 +1,27 @@
+const wooUrls = {
+    settingsPaymentTab: '/wp-admin/admin.php?page=wc-settings&tab=checkout'
+}
+async function gotoWPPage(page, url) {
+    await page.goto(url);
+}
+async function gotoWooPaymentTab(page) {
+    await gotoWPPage(page, wooUrls.settingsPaymentTab);
+}
 /**
  * @param {import('@playwright/test').Page} page
- * @param testedProductName
+ * @param productSku
  */
-const addProductToCart = async (page, testedProductName) => {
-    // Go to shop
+const addProductToCart = async (page, productSku) => {
     await page.goto('/shop/');
-    // Add product to cart
-    await page.locator('[data-product_sku="' + testedProductName + '"]').click()
+    await page.locator('[data-product_sku="' + productSku + '"].add_to_cart_button').click()
+}
+
+const emptyCart = async (page) => {
+    await page.goto('/cart/');
+    const canRemove = await page.locator('text=Remove').isVisible();
+    if (canRemove) {
+        await page.locator('text=Remove').click();
+    }
 }
 
 /**
@@ -15,7 +30,6 @@ const addProductToCart = async (page, testedProductName) => {
 const fillCustomerInCheckout = async (page) => {
     await page.locator('input[name="billing_first_name"]').fill('Julia');
     await page.locator('input[name="billing_last_name"]').fill('Callas');
-    await page.locator('input[name="billing_company"]').fill('My company name');
     await page.selectOption('select#billing_country', 'DE');
     await page.locator('input[name="billing_city"]').fill('Berlin');
     await page.locator('input[name="billing_address_1"]').fill('Calle Drutal');
@@ -34,4 +48,10 @@ const fillCustomerInBlockCheckout = async (page) => {
     await page.locator('input[name="billing_last_name"]').fill('Callas');
 }
 
-module.exports = {addProductToCart, fillCustomerInCheckout, fillCustomerInBlockCheckout}
+const placeOrderCheckout = async (page) => {
+    // Click text=Place order
+    await page.locator('text=Place order').click()
+}
+
+
+module.exports = {addProductToCart, fillCustomerInCheckout, fillCustomerInBlockCheckout, gotoWooPaymentTab, placeOrderCheckout, emptyCart}

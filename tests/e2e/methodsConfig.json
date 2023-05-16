@@ -1,0 +1,340 @@
+{
+  "applepay": {
+    "id": "applepay",
+    "defaultTitle": "__(\"Apple Pay\", \"mollie-payments-for-woocommerce\")",
+    "settingsDescription": "__(\"To accept payments via Apple Pay\", \"mollie-payments-for-woocommerce\")",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": true,
+    "supports": [
+      "products",
+      "refunds",
+      "subscriptions"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": false,
+    "SEPA": false,
+    "Subscription": true
+  },
+  "bancontact": {
+    "id": "bancontact",
+    "defaultTitle": "__(\"Bancontact\", \"mollie-payments-for-woocommerce\")",
+    "settingsDescription": "",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": false,
+    "supports": [
+      "products",
+      "refunds"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": true,
+    "SEPA": true
+  },
+  "banktransfer": {
+    "id": "banktransfer",
+    "defaultTitle": "__(\"Bank transfer\", \"mollie-payments-for-woocommerce\")",
+    "settingsDescription": "",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": true,
+    "supports": [
+      "products",
+      "refunds"
+    ],
+    "filtersOnBuild": true,
+    "confirmationDelayed": true,
+    "SEPA": false,
+    "customRedirect": true
+  },
+  "belfius": {
+    "id": "belfius",
+    "defaultTitle": "__(\"Belfius Pay Button\", \"mollie-payments-for-woocommerce\")",
+    "settingsDescription": "",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": false,
+    "supports": [
+      "products",
+      "refunds"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": true,
+    "SEPA": true
+  },
+  "billie": {
+    "id": "billie",
+    "defaultTitle": "__(\"Billie\", \"mollie-payments-for-woocommerce\")",
+    "settingsDescription": "__(\"To accept payments via Billie, all default WooCommerce checkout fields should be enabled and required.\",\"mollie-payments-for-woocommerce\")",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": false,
+    "supports": [
+      "products",
+      "refunds"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": false,
+    "SEPA": false,
+    "orderMandatory": true,
+    "errorMessage": "__(\"Company field is empty. To proceed with Billie payment the company field is required.\",\"mollie-payments-for-woocommerce\")",
+    "companyPlaceholder": "__(\"To proceed with Billie, please enter your company name here.\", \"mollie-payments-for-woocommerce\")"
+  },
+  "creditcard": {
+    "id": "creditcard",
+    "defaultTitle": "__(\"Credit/Debit Card\", \"mollie-payments-for-woocommerce\")",
+    "settingsDescription": "",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": true,
+    "supports": [
+      "products",
+      "refunds",
+      "subscriptions"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": false,
+    "SEPA": false,
+    "Subscription": true
+  },
+  "directdebit": {
+    "id": "directdebit",
+    "defaultTitle": "__(\"SEPA Direct Debit\", \"mollie-payments-for-woocommerce\")",
+    "settingsDescription": "__(\"SEPA Direct Debit is used for recurring payments with WooCommerce Subscriptions, and will not be shown in the WooCommerce checkout for regular payments! You also need to enable iDEAL and/or other \"first\" payment methods if you want to use SEPA Direct Debit.\", \"mollie-payments-for-woocommerce\")",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": true,
+    "supports": [
+      "products",
+      "refunds"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": false,
+    "SEPA": true
+  },
+  "eps": {
+    "id": "eps",
+    "defaultTitle": "__(\"eps\", \"mollie-payments-for-woocommerce\")",
+    "settingsDescription": "",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": false,
+    "supports": [
+      "products",
+      "refunds"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": true,
+    "SEPA": true
+  },
+  "giftcard": {
+    "id": "giftcard",
+    "defaultTitle": "__(\"Gift cards\", \"mollie-payments-for-woocommerce\")",
+    "settingsDescription": "",
+    "defaultDescription": "__(\"Select your gift card\", \"mollie-payments-for-woocommerce\")",
+    "paymentFields": true,
+    "instructions": false,
+    "supports": [
+      "products"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": false,
+    "SEPA": false
+  },
+  "giropay": {
+    "id": "giropay",
+    "defaultTitle": "__(\"giropay\", \"mollie-payments-for-woocommerce\")",
+    "settingsDescription": "",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": false,
+    "supports": [
+      "products",
+      "refunds"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": true,
+    "SEPA": true
+  },
+  "ideal": {
+    "id": "ideal",
+    "defaultTitle": "__(\"iDEAL\", \"mollie-payments-for-woocommerce\")",
+    "settingsDescription": "",
+    "defaultDescription": "__(\"Select your bank\", \"mollie-payments-for-woocommerce\")",
+    "paymentFields": true,
+    "instructions": true,
+    "supports": [
+      "products",
+      "refunds"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": true,
+    "SEPA": true
+  },
+  "in3": {
+    "id": "in3",
+    "defaultTitle": "__(\"Pay in 3 instalments, 0% interest\", \"mollie-payments-for-woocommerce\")",
+    "settingsDescription": "",
+    "defaultDescription": "__(\"Pay in 3 instalments, 0% interest\",\"mollie-payments-for-woocommerce\")",
+    "paymentFields": false,
+    "instructions": false,
+    "supports": [
+      "products",
+      "refunds"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": false,
+    "SEPA": false,
+    "orderMandatory": true
+  },
+  "kbc": {
+    "id": "kbc",
+    "defaultTitle": "__(\"KBC/CBC Payment Button\", \"mollie-payments-for-woocommerce\")",
+    "settingsDescription": "",
+    "defaultDescription": "__(\"Select your bank\", \"mollie-payments-for-woocommerce\")",
+    "paymentFields": true,
+    "instructions": false,
+    "supports": [
+      "products",
+      "refunds"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": true,
+    "SEPA": true
+  },
+  "klarnapaylater": {
+    "id": "klarnapaylater",
+    "defaultTitle": "__(\"Pay later.\", \"mollie-payments-for-woocommerce\")",
+    "settingsDescription": "__(\"To accept payments via Klarna, all default WooCommerce checkout fields should be enabled and required.\", \"mollie-payments-for-woocommerce\")",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": false,
+    "supports": [
+      "products",
+      "refunds"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": false,
+    "SEPA": false,
+    "orderMandatory": true
+  },
+  "klarnapaynow": {
+    "id": "klarnapaynow",
+    "defaultTitle": "__(\"Pay now.\", \"mollie-payments-for-woocommerce\")",
+    "settingsDescription": "__(\"To accept payments via Klarna, all default WooCommerce checkout fields should be enabled and required.\", \"mollie-payments-for-woocommerce\")",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": false,
+    "supports": [
+      "products",
+      "refunds"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": false,
+    "SEPA": false,
+    "orderMandatory": true
+  },
+  "klarnasliceit": {
+    "id": "klarnasliceit",
+    "defaultTitle": "__(\"Slice it.\", \"mollie-payments-for-woocommerce\")",
+    "settingsDescription": "__(\"To accept payments via Klarna, all default WooCommerce checkout fields should be enabled and required.\", \"mollie-payments-for-woocommerce\")",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": false,
+    "supports": [
+      "products",
+      "refunds"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": false,
+    "SEPA": false,
+    "orderMandatory": true
+  },
+  "mybank": {
+    "id": "mybank",
+    "defaultTitle": "__(\"MyBank\", \"mollie-payments-for-woocommerce\")",
+    "settingsDescription": "__(\"To accept payments via MyBank\", \"mollie-payments-for-woocommerce\")",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": true,
+    "supports": [
+      "products",
+      "refunds"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": false,
+    "SEPA": true
+  },
+  "paypal": {
+    "id": "paypal",
+    "defaultTitle": "__(\"PayPal\", \"mollie-payments-for-woocommerce\")",
+    "settingsDescription": "",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": true,
+    "supports": [
+      "products",
+      "refunds"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": false,
+    "SEPA": false
+  },
+  "paysafecard": {
+    "id": "paysafecard",
+    "defaultTitle": "__(\"paysafecard\", \"mollie-payments-for-woocommerce\")",
+    "settingsDescription": "",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": false,
+    "supports": [],
+    "filtersOnBuild": false,
+    "confirmationDelayed": false,
+    "SEPA": false
+  },
+  "przelewy24": {
+    "id": "przelewy24",
+    "defaultTitle": "__(\"Przelewy24\", \"mollie-payments-for-woocommerce\")",
+    "settingsDescription": "__(\"To accept payments via Przelewy24, a customer email is required for every payment.\", \"mollie-payments-for-woocommerce\")",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": true,
+    "supports": [
+      "products",
+      "refunds"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": false,
+    "SEPA": false
+  },
+  "sofort": {
+    "id": "sofort",
+    "defaultTitle": "__(\"SOFORT Banking\", \"mollie-payments-for-woocommerce\")",
+    "settingsDescription": "",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": true,
+    "supports": [
+      "products",
+      "refunds"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": true,
+    "SEPA": true
+  },
+  "voucher": {
+    "id": "voucher",
+    "defaultTitle": "__(\"Vouchers\", \"mollie-payments-for-woocommerce\")",
+    "settingsDescription": "",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": false,
+    "supports": [
+      "products"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": false,
+    "SEPA": false,
+    "orderMandatory": true
+  }
+}

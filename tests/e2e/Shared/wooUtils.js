@@ -27,10 +27,10 @@ const emptyCart = async (page) => {
 /**
  * @param {import('@playwright/test').Page} page
  */
-const fillCustomerInCheckout = async (page) => {
+const fillCustomerInCheckout = async (page, country = "DE") => {
     await page.locator('input[name="billing_first_name"]').fill('Julia');
     await page.locator('input[name="billing_last_name"]').fill('Callas');
-    await page.selectOption('select#billing_country', 'DE');
+    await page.selectOption('select#billing_country', country);
     await page.locator('input[name="billing_city"]').fill('Berlin');
     await page.locator('input[name="billing_address_1"]').fill('Calle Drutal');
     await page.locator('input[name="billing_postcode"]').fill('22100');
@@ -49,6 +49,28 @@ const fillCustomerInCheckout = async (page) => {
 /**
  * @param {import('@playwright/test').Page} page
  */
+const fillCustomerInCheckoutBlock = async (page, country = 'Germany') => {
+    await page.getByLabel('First name').fill('Julia');
+    await page.getByLabel('Last name').fill('Callas');
+    await page.getByLabel('Country/Region').fill(country);
+    await page.getByLabel('City').fill('Berlin');
+    await page.getByLabel('Address', { exact: true }).fill('Calle Drutal');
+    await page.getByLabel('Postal code').fill('22100');
+    await page.getByLabel('Phone').fill('1234566788');
+    await page.getByLabel('Email address').fill('test@test.com');
+    const canFillCompany = await page.getByLabel('Company').isVisible();
+    if (canFillCompany) {
+        await page.getByLabel('Company').fill('Test company');
+    }
+    //const canFillBirthDate = await page.locator('input[name="billing_birthdate"]').isVisible();
+    /*if (canFillBirthDate) {
+        await page.locator('input[name="billing_birthdate"]').fill('01-01-1990');
+    }*/
+}
+
+/**
+ * @param {import('@playwright/test').Page} page
+ */
 const fillCustomerInBlockCheckout = async (page) => {
     // Fill input[name="billing_first_name"]
     await page.locator('input[name="billing_first_name"]').fill('Julia');
@@ -62,4 +84,4 @@ const placeOrderCheckout = async (page) => {
 }
 
 
-module.exports = {addProductToCart, fillCustomerInCheckout, fillCustomerInBlockCheckout, gotoWooPaymentTab, placeOrderCheckout, emptyCart}
+module.exports = {addProductToCart, fillCustomerInCheckout, fillCustomerInBlockCheckout, fillCustomerInCheckoutBlock, gotoWooPaymentTab, placeOrderCheckout, emptyCart}

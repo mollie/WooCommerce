@@ -5,6 +5,7 @@ const {
 } = require('../../Shared/mollieUtils');
 const {sharedUrl: {gatewaySettingsRoot}} = require('../../Shared/sharedUrl');
 const {selectOptionSetting, fillNumberSettings} = require("../../Shared/wpUtils");
+const {expect} = require("@playwright/test");
 
 test.describe('_Mollie Settings tab_Payment method settings - SEPA Bank Transfer settings', () => {
     test.beforeEach(async ({page, context, gateways}) => {
@@ -22,7 +23,7 @@ test.skip('Validate expiry time for SEPA Bank Transfer', async ({ page}) => {
 
 
 //TestId-C136529
-test.skip('Validate  Bank Transfer surcharge with no Fee, no fee will be added to total', async ({ page, products, context}) => {
+test('Validate  Bank Transfer surcharge with no Fee, no fee will be added to total', async ({ page, products, context}) => {
     await selectOptionSetting(page, context.surchargeSetting, context.tabUrl, 'no_fee');
     const result = await classicCheckoutTransaction(page, products.simple, context.method)
     let total = result.totalAmount.slice(0, -1).trim();

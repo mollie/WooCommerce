@@ -5,6 +5,7 @@ const {
 } = require('../../Shared/mollieUtils');
 const {sharedUrl: {gatewaySettingsRoot}} = require('../../Shared/sharedUrl');
 const {selectOptionSetting, fillNumberSettings} = require("../../Shared/wpUtils");
+const {expect} = require("@playwright/test");
 
 test.describe('_Mollie Settings tab_Payment method settings - iDEAL settings', () => {
     test.beforeEach(async ({page, context, gateways}) => {
@@ -28,7 +29,7 @@ test.skip('Validate expiry time for IDEAL', async ({ page}) => {
 
 
 //TestId-C130856
-test.skip('Validate iDEAL surcharge with no Fee, no fee will be added to total', async ({ page, products, context}) => {
+test('Validate iDEAL surcharge with no Fee, no fee will be added to total', async ({ page, products, context}) => {
     await selectOptionSetting(page, context.surchargeSetting, context.tabUrl, 'no_fee');
     const result = await classicCheckoutTransaction(page, products.simple, context.method)
     let total = result.totalAmount.slice(0, -1).trim();

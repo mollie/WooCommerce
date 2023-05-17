@@ -5,6 +5,7 @@ const {
 } = require('../../Shared/mollieUtils');
 const {sharedUrl: {gatewaySettingsRoot}} = require('../../Shared/sharedUrl');
 const {selectOptionSetting, fillNumberSettings} = require("../../Shared/wpUtils");
+const {expect} = require("@playwright/test");
 
 test.describe('_Mollie Settings tab_Payment method settings - Voucher settings', () => {
     test.beforeEach(async ({page, context, gateways}) => {
@@ -28,7 +29,7 @@ test.skip('Validate Voucher payment method is visible when there is a combinatio
 
 
 //TestId-C129813
-test.skip('Validate  Voucher surcharge with no Fee, no fee will be added to total', async ({ page, products, context}) => {
+test('Validate  Voucher surcharge with no Fee, no fee will be added to total', async ({ page, products, context}) => {
     await selectOptionSetting(page, context.surchargeSetting, context.tabUrl, 'no_fee');
     const result = await classicCheckoutTransaction(page, products.simple, context.method)
     let total = result.totalAmount.slice(0, -1).trim();

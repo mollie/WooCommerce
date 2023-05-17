@@ -4,6 +4,7 @@ const {wooOrderPaidPage, wooOrderDetailsPageOnPaid, wooOrderRetryPage, wooOrderD
 const {addProductToCart, fillCustomerInCheckout} = require('../Shared/wooUtils');
 const {normalizedName} = require("./gateways");
 const {expect} = require("@playwright/test");
+const {fillCustomerInCheckoutBlock} = require("./wooUtils");
 
 const settingsNames = {
     surcharge: (method) => `mollie_wc_gateway_${method}_payment_surcharge`,
@@ -116,18 +117,47 @@ const resetSettings = async (page) => {
  * @param testedGateway
  * @param productQuantity
  */
-const beforePlacingOrder = async (page, testedProduct, testedGateway, productQuantity) => {
-    for (let i = productQuantity; i >0; i--) {
+const beforePlacingOrder = async (page, testedProduct, testedGateway, productQuantity, checkoutUrl) => {
+    /*for (let i = productQuantity; i >0; i--) {
         await addProductToCart(page, testedProduct.sku);
-    }
+    }*/
 
-    await page.goto('/checkout/');
+    await page.goto(checkoutUrl);
 
     //Capture WooCommerce total amount
     const totalAmount = await page.innerText('.order-total > td > strong > span > bdi');
 
     // CUSTOMER DETAILS
     await fillCustomerInCheckout(page);
+
+    // Check testedGateway option NO ISSUERS DROPDOWN
+    const title = normalizedName(testedGateway.defaultTitle);
+    await page.getByText(title, { exact: true }).click();
+    if (testedGateway.paymentFields) {
+        await page.locator(`select[name="mollie-payments-for-woocommerce_issuer_mollie_wc_gateway_${testedGateway.id}"]`).selectOption({index: 1});
+    }
+    // Click text=Place order
+    await Promise.all([
+        page.waitForNavigation(/*{ url: 'https://www.mollie.com/checkout/test-mode?method=GATEWAY&token=XXX' }*/),
+        page.locator('text=Place order').click()
+    ]);
+    return totalAmount;
+}
+
+const beforePlacingOrderBlock = async (page, testedProduct, testedGateway, productQuantity, checkoutUrl) => {
+    /*for (let i = productQuantity; i >0; i--) {
+        await addProductToCart(page, testedProduct.sku);
+    }*/
+
+    await page.goto(checkoutUrl);
+
+    //Capture WooCommerce total amount
+    let totalLine = await page.locator('div').filter({ hasText: /^Total/ }).first()
+    let totalAmount = await totalLine.innerText('.woocommerce-Price-amount amount > bdi');
+    // totalAmount is "Total\n72,00 €" and we need to remove the "Total\n" part
+    totalAmount = totalAmount.substring(6, totalAmount.length);
+    // CUSTOMER DETAILS
+    await fillCustomerInCheckoutBlock(page);
 
     // Check testedGateway option NO ISSUERS DROPDOWN
     const title = normalizedName(testedGateway.defaultTitle);
@@ -150,8 +180,14 @@ const beforePlacingOrder = async (page, testedProduct, testedGateway, productQua
  * @param productQuantity
  * @param status
  */
-const classicCheckoutTransaction = async (page, testedProduct, testedGateway, productQuantity = 1, status = "Paid") => {
-    const totalAmount = await beforePlacingOrder(page, testedProduct, testedGateway, productQuantity);
+const classicCheckoutTransaction = async (page, testedProduct, testedGateway, productQuantity = 1, status = "Paid", checkoutUrl ='/checkout/') => {
+    let whichCheckout = checkoutUrl === '/checkout/' ? 'classic' : 'block';
+    let totalAmount;
+    if (whichCheckout === 'classic') {
+        totalAmount = await beforePlacingOrder(page, testedProduct, testedGateway, productQuantity, checkoutUrl);
+    } else {
+        totalAmount = await beforePlacingOrderBlock(page, testedProduct, testedGateway, productQuantity, checkoutUrl);
+    }
     // IN MOLLIE
     // Capture order number in Mollie and mark as required
     const mollieOrder = await processMollieCheckout(page, status);
@@ -195,6 +231,7 @@ module.exports = {
     insertIncorrectAPIKeys,
     resetSettings,
     beforePlacingOrder,
+    beforePlacingOrderBlock,
     classicCheckoutTransaction,
     classicCheckoutPaidTransactionFullRefund,
     classicCheckoutPaidTransactionPartialRefund,

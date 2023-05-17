@@ -5,6 +5,7 @@ const {
 } = require('../../Shared/mollieUtils');
 const {sharedUrl: {gatewaySettingsRoot}} = require('../../Shared/sharedUrl');
 const {selectOptionSetting, fillNumberSettings} = require("../../Shared/wpUtils");
+const {expect} = require("@playwright/test");
 
 test.describe('_Mollie Settings tab_Payment method settings - MyBank settings', () => {
     test.beforeEach(async ({page, context, gateways}) => {

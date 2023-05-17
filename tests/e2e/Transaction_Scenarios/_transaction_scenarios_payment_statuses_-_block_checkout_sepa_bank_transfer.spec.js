@@ -3,44 +3,36 @@ const { test } = require('../Shared/base-test');
 const {normalizedName} = require("../Shared/gateways");
 const {noticeLines, checkExpiredAtMollie, classicCheckoutTransaction} = require("../Shared/mollieUtils");
 const {wooOrderPaidPage, wooOrderRetryPage, wooOrderDetailsPage} = require("../Shared/testMollieInWooPage");
+const {sharedUrl} = require("../Shared/sharedUrl");
 
-test.describe('_Transaction scenarios_Payment statuses Checkout - Klarna Pay later', () => {
+test.describe('_Transaction scenarios_Payment statuses - Block Checkout - SEPA Bank Transfer', () => {
     const productQuantity = 1;
     test.beforeEach(async ({ page , context, gateways}) => {
-        context.method = gateways.klarnapaylater;
+        context.method = gateways.banktransfer;
         context.methodName = normalizedName(context.method.defaultTitle);
         await page.goto('/shop/');
     });
     const testData = [
         {
-            testId: "C3401",
-            mollieStatus: "Authorized",
+            testId: "C420284",
+            mollieStatus: "Paid",
             wooStatus: "Processing",
-            notice: context => noticeLines.authorized(context.methodName),
+            notice: context => noticeLines.paid(context.methodName),
             action: async (page, result, context) => {
                 await wooOrderPaidPage(page, result.mollieOrder, result.totalAmount, context.method);
             }
         },
         {
-            testId: "C3402",
-            mollieStatus: "Failed",
+            testId: "C420283",
+            mollieStatus: "Open",
             wooStatus: "Pending payment",
-            notice: context => noticeLines.failed(context.method.id),
-            action: async (page) => {
-                await wooOrderRetryPage(page);
+            notice: context => noticeLines.open(context.methodName),
+            action: async (page, result, context) => {
+                await wooOrderPaidPage(page, result.mollieOrder, result.totalAmount, context.method);
             }
         },
         {
-            testId: "C3403",
-            mollieStatus: "Canceled",
-            wooStatus: "Pending payment",
-            notice: context => noticeLines.failed(context.method.id),
-            action: async (page) => {
-                await wooOrderRetryPage(page);
-            }
-        },
-        {
-            testId: "C3404",
+            testId: "C420285",
             mollieStatus: "Expired",
             wooStatus: "Pending payment",
             notice: context => noticeLines.expired(context.method.id),
@@ -51,8 +43,8 @@ test.describe('_Transaction scenarios_Payment statuses Checkout - Klarna Pay lat
     ];
 
     testData.forEach(({ testId, mollieStatus, wooStatus, notice, action }) => {
-        test(`[TestId-${testId}] Validate the submission of an order with Klarna Pay later as payment method and payment mark as "${mollieStatus}"`, async ({ page, products, context }) => {
-            const result = await classicCheckoutTransaction(page, products.simple, context.method, productQuantity, mollieStatus);
+        test(`[TestId-${testId}] Validate the submission of an order with SEPA bank transfer as payment method and payment mark as "${mollieStatus} on block checkout"`, async ({ page, products, context }) => {
+            const result = await classicCheckoutTransaction(page, products.simple, context.method, productQuantity, mollieStatus, sharedUrl.blocksCheckout);
             await action(page, result, context);
             await wooOrderDetailsPage(page, result.mollieOrder, context.method, wooStatus, notice(context));
         });

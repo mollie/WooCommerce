@@ -5,6 +5,7 @@ const {
 } = require('../../Shared/mollieUtils');
 const {sharedUrl: {gatewaySettingsRoot}} = require('../../Shared/sharedUrl');
 const {selectOptionSetting, fillNumberSettings} = require("../../Shared/wpUtils");
+const {expect} = require("@playwright/test");
 
 test.describe('_Mollie Settings tab_Payment method settings - Klarna Pay Now settings', () => {
     test.beforeEach(async ({page, context, gateways}) => {
@@ -16,7 +17,7 @@ test.describe('_Mollie Settings tab_Payment method settings - Klarna Pay Now set
    
 
 //TestId-C136519
-test.skip('Validate  Klarna Pay Now surcharge with no Fee, no fee will be added to total', async ({ page, products, context}) => {
+test('Validate  Klarna Pay Now surcharge with no Fee, no fee will be added to total', async ({ page, products, context}) => {
     await selectOptionSetting(page, context.surchargeSetting, context.tabUrl, 'no_fee');
     const result = await classicCheckoutTransaction(page, products.simple, context.method)
     let total = result.totalAmount.slice(0, -1).trim();

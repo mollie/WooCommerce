@@ -4,7 +4,9 @@ const {wooOrderPaidPage, wooOrderDetailsPageOnPaid, wooOrderRetryPage, wooOrderD
 const {addProductToCart, fillCustomerInCheckout} = require('../Shared/wooUtils');
 const {normalizedName} = require("./gateways");
 const {expect} = require("@playwright/test");
-const {fillCustomerInCheckoutBlock} = require("./wooUtils");
+const {fillCustomerInCheckoutBlock, selectPaymentMethodInCheckout, captureTotalAmountCheckout,
+    captureTotalAmountBlockCheckout
+} = require("./wooUtils");
 
 const settingsNames = {
     surcharge: (method) => `mollie_wc_gateway_${method}_payment_surcharge`,
@@ -125,14 +127,14 @@ const beforePlacingOrder = async (page, testedProduct, testedGateway, productQua
     await page.goto(checkoutUrl);
 
     //Capture WooCommerce total amount
-    const totalAmount = await page.innerText('.order-total > td > strong > span > bdi');
+    const totalAmount = await captureTotalAmountCheckout(page);
 
     // CUSTOMER DETAILS
     await fillCustomerInCheckout(page);
 
     // Check testedGateway option NO ISSUERS DROPDOWN
     const title = normalizedName(testedGateway.defaultTitle);
-    await page.getByText(title, { exact: true }).click();
+    await selectPaymentMethodInCheckout(page, title);
     if (testedGateway.paymentFields) {
         await page.locator(`select[name="mollie-payments-for-woocommerce_issuer_mollie_wc_gateway_${testedGateway.id}"]`).selectOption({index: 1});
     }
@@ -152,10 +154,7 @@ const beforePlacingOrderBlock = async (page, testedProduct, testedGateway, produ
     await page.goto(checkoutUrl);
 
     //Capture WooCommerce total amount
-    let totalLine = await page.locator('div').filter({ hasText: /^Total/ }).first()
-    let totalAmount = await totalLine.innerText('.woocommerce-Price-amount amount > bdi');
-    // totalAmount is "Total\n72,00 €" and we need to remove the "Total\n" part
-    totalAmount = totalAmount.substring(6, totalAmount.length);
+    const totalAmount = await captureTotalAmountBlockCheckout(page);
     // CUSTOMER DETAILS
     await fillCustomerInCheckoutBlock(page);
 
@@ -236,6 +235,7 @@ module.exports = {
     classicCheckoutPaidTransactionFullRefund,
     classicCheckoutPaidTransactionPartialRefund,
     checkExpiredAtMollie,
+    processMollieCheckout,
     settingsNames,
     noticeLines,
 };

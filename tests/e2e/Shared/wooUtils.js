@@ -78,10 +78,60 @@ const fillCustomerInBlockCheckout = async (page) => {
     await page.locator('input[name="billing_last_name"]').fill('Callas');
 }
 
+const selectPaymentMethodInCheckout = async (page, paymentMethod) => {
+    await page.getByText(paymentMethod, { exact: true }).click();
+}
+
 const placeOrderCheckout = async (page) => {
     // Click text=Place order
     await page.locator('text=Place order').click()
 }
 
+const placeOrderPayPage = async (page) => {
+    // Click text=Place order
+    await page.getByRole('button', { name: 'Pay for order' }).click()
+}
 
-module.exports = {addProductToCart, fillCustomerInCheckout, fillCustomerInBlockCheckout, fillCustomerInCheckoutBlock, gotoWooPaymentTab, placeOrderCheckout, emptyCart}
+const captureTotalAmountCheckout = async (page) => {
+    return await page.innerText('.order-total > td > strong > span > bdi');
+}
+
+const captureTotalAmountPayPage = async (page) => {
+    return await page.innerText('.woocommerce-Price-amount.amount > bdi');
+}
+
+const captureTotalAmountBlockCheckout = async (page) => {
+    let totalLine = await page.locator('div').filter({ hasText: /^Total/ }).first()
+    let totalAmount = await totalLine.innerText('.woocommerce-Price-amount amount > bdi');
+    // totalAmount is "Total\n72,00 €" and we need to remove the "Total\n" part
+    return totalAmount.substring(6, totalAmount.length);
+}
+
+const createManualOrder = async (page, productLabel = 'Beanie') => {
+    await page.goto('wp-admin/post-new.php?post_type=shop_order');
+    await page.click('text=Add item(s)');
+    await page.click('text=Add product(s)');
+    await page.getByRole('combobox', { name: 'Search for a product…' }).locator('span').nth(2).click();
+    await page.locator('span > .select2-search__field').fill(productLabel);
+    await page.click('text=' + productLabel);
+    await page.locator('#btn-ok').click();
+    await page.waitForTimeout(2000);
+    await page.getByRole('button', { name: 'Create' }).click();
+    await page.click('text=Customer payment page');
+}
+
+module.exports = {
+    addProductToCart,
+    fillCustomerInCheckout,
+    fillCustomerInBlockCheckout,
+    fillCustomerInCheckoutBlock,
+    gotoWooPaymentTab,
+    placeOrderCheckout,
+    emptyCart,
+    placeOrderPayPage,
+    selectPaymentMethodInCheckout,
+    captureTotalAmountCheckout,
+    captureTotalAmountBlockCheckout,
+    captureTotalAmountPayPage,
+    createManualOrder,
+}

@@ -7,7 +7,7 @@ const {wooOrderPaidPage, wooOrderRetryPage, wooOrderDetailsPage} = require("../S
 test.describe('_Transaction scenarios_Payment statuses Checkout - Klarna Slice it', () => {
     const productQuantity = 1;
     test.beforeEach(async ({ page , context, gateways}) => {
-        context.method = gateways.billie;
+        context.method = gateways.klarnasliceit;
         context.methodName = normalizedName(context.method.defaultTitle);
         await page.goto('/shop/');
     });

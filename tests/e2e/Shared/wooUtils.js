@@ -1,3 +1,5 @@
+const path = require("path");
+const fs = require("fs");
 const wooUrls = {
     settingsPaymentTab: '/wp-admin/admin.php?page=wc-settings&tab=checkout'
 }
@@ -18,9 +20,9 @@ const addProductToCart = async (page, productSku) => {
 
 const emptyCart = async (page) => {
     await page.goto('/cart/');
-    const canRemove = await page.locator('text=Remove').isVisible();
+    const canRemove = await page.getByRole('cell', { name: 'Remove this item' }).isVisible();
     if (canRemove) {
-        await page.locator('text=Remove').click();
+        await page.getByRole('cell', { name: 'Remove this item' }).click();
     }
 }
 
@@ -120,6 +122,18 @@ const createManualOrder = async (page, productLabel = 'Beanie') => {
     await page.click('text=Customer payment page');
 }
 
+const getLogByName = async (name, dirname) => {
+    const currentDate = new Date().toISOString().split('T')[0];
+    // Construct the relative path to the log file
+    const logsDirectory = path.join(dirname, '..', '..', '..', '.ddev', 'wordpress', 'wp-content', 'uploads', 'wc-logs');
+    const files = fs.readdirSync(logsDirectory);
+    const matchingFiles = files.filter(file => file.includes(`${name}-${currentDate}-`));
+    // Select the first matching file
+    const logFileName = matchingFiles[0];
+    const logFilePath = path.join(logsDirectory, logFileName);
+    return fs.readFileSync(logFilePath, 'utf-8');
+}
+
 module.exports = {
     addProductToCart,
     fillCustomerInCheckout,
@@ -134,4 +148,5 @@ module.exports = {
     captureTotalAmountBlockCheckout,
     captureTotalAmountPayPage,
     createManualOrder,
+    getLogByName
 }

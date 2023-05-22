@@ -13,13 +13,13 @@ const {normalizedName} = require("../Shared/gateways");
 
 // Set up parameters or perform actions before all tests
 test.beforeAll(async ({browser}) => {
-    /*// Create a new page instance
+    // Create a new page instance
     const page = await browser.newPage();
     // Reset to the default state
     await resetSettings(page);
     await insertAPIKeys(page);
     // Orders API
-    await setOrderAPI(page);*/
+    await setOrderAPI(page);
 });
 test.describe('_Transaction scenarios_Payment statuses Checkout - Bancontact', () => {
     const productQuantity = 1;

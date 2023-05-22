@@ -120,9 +120,9 @@ const resetSettings = async (page) => {
  * @param productQuantity
  */
 const beforePlacingOrder = async (page, testedProduct, testedGateway, productQuantity, checkoutUrl) => {
-    /*for (let i = productQuantity; i >0; i--) {
+    for (let i = productQuantity; i >0; i--) {
         await addProductToCart(page, testedProduct.sku);
-    }*/
+    }
 
     await page.goto(checkoutUrl);
 

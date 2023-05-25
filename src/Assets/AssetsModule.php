@@ -468,16 +468,11 @@ class AssetsModule implements ExecutableModule
                 $content .= $issuers;
                 $issuers = false;
             }
-            $title = $gateway->paymentMethod()->getProperty('title');
-            $shouldUseDefaultTitle = $title === false && is_string($gateway->paymentMethod()->getProperty(
-                'defaultTitle'
-            ));
-            $title = $shouldUseDefaultTitle ? $gateway->paymentMethod()->getProperty('defaultTitle') : $title;
+            $title = $gateway->paymentMethod()->title();
             $labelMarkup = "<span style='margin-right: 1em'>{$title}</span>{$gateway->icon}";
             $hasSurcharge = $gateway->paymentMethod()->hasSurcharge();
-            $name = $gateway->paymentMethod()->title();
             $gatewayData[] = [
-                'name' => $name,
+                'name' => $gatewayKey,
                 'label' => $labelMarkup,
                 'content' => $content,
                 'issuers' => $issuers,

@@ -12,5 +12,6 @@ const normalizedName = (name) => {
 const getMethodNames = () => {
     return Object.values(methodsConfig).map((method) => normalizedName(method.defaultTitle));
 };
+const allMethodsIds = Object.keys(methodsConfig);
 const allMethods = methodsConfig;
-module.exports = {banktransfer, ideal, creditcard, paypal, normalizedName, getMethodNames, allMethods};
+module.exports = {banktransfer, ideal, creditcard, paypal, normalizedName, getMethodNames, allMethods, allMethodsIds};

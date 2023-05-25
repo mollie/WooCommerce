@@ -286,7 +286,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
 
     private function getApiTitle()
     {
-        $apiTitle = $this->apiPaymentMethod['description']?? null;
+        $apiTitle = $this->apiPaymentMethod['description'] ?? null;
         return $apiTitle ?: $this->config['defaultTitle'];
     }
 

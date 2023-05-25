@@ -31,7 +31,7 @@
     "@babel/polyfill": "^7.7.0",
     "@babel/preset-env": "^7.4.5",
     "@babel/preset-react": "^7.14.5",
-    "@playwright/test": "^1.30.0",
+    "@playwright/test": "^1.33.0",
     "@symfony/webpack-encore": "^0.28.2",
     "@woocommerce/dependency-extraction-webpack-plugin": "^1.7.0",
     "@wordpress/data": "^6.1.5",

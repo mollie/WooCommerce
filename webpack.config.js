@@ -30,6 +30,7 @@ function configJavaScript ({ basePath })
     .addEntry('paypalButtonBlockComponent.min', './resources/js/paypalButtonBlockComponent.js')
     .addEntry('applepayButtonBlockComponent.min', './resources/js/applepayButtonBlockComponent.js')
     .addEntry('mollieBillie.min', './resources/js/mollieBillie.js')
+    .addEntry('mollieIn3.min', './resources/js/mollieIn3.js')
     .enableSourceMaps(!Encore.isProduction())
 
   return extractEncoreConfig('javascript-configuration')

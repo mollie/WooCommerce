@@ -120,9 +120,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
         // Use gateway class name as gateway id
         $this->gatewayId();
         // Set gateway title (visible in admin)
-        $this->method_title = 'Mollie - ' . $this->paymentMethod->getProperty(
-            'defaultTitle'
-        );
+        $this->method_title = 'Mollie - ' . $this->paymentMethod->title();
         $this->method_description = $this->paymentMethod->getProperty(
             'settingsDescription'
         );
@@ -131,8 +129,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
         // Load the settings.
         $this->init_form_fields();
         $this->init_settings();
-        $this->title = $this->paymentMethod->hasProperty('title')
-            ? $this->paymentMethod->getProperty('title') : $this->paymentMethod->getProperty('defaultTitle');
+        $this->title = $this->paymentMethod->title();
 
         $this->initDescription();
         $this->initIcon();

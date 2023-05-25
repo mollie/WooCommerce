@@ -1,49 +1,17 @@
-const banktransfer = {
-    'id': 'banktransfer',
-    'defaultTitle': 'Bank Transfer',
-    'settingsDescription': '',
-    'defaultDescription': '',
-    'paymentFields': false,
-    'instructions': true,
-    'supports': [
-        'products',
-        'refunds',
-    ],
-    'filtersOnBuild': true,
-    'confirmationDelayed': true,
-    'SEPA': false,
-    'customRedirect': true,
+const methodsConfig = require('../methodsConfig.json')
+
+
+const banktransfer = methodsConfig.banktransfer;
+const ideal = methodsConfig.ideal;
+const creditcard = methodsConfig.creditcard;
+const paypal = methodsConfig.paypal;
+const normalizedName = (name) => {
+    name = name.replace('\", \"mollie-payments-for-woocommerce\")', '');
+    return name.replace('__(\"', '');
 }
-const ideal = {
-    'id': 'ideal',
-    'defaultTitle': 'iDeal',
-    'settingsDescription': '',
-    'defaultDescription': 'Select your bank',
-    'paymentFields': true,
-    'instructions': true,
-    'supports': [
-        'products',
-        'refunds',
-    ],
-    'SEPA': true
-}
-const creditcard = {
-    'id': 'creditcard',
-    'defaultTitle': 'Credit card',
-}
-const paypal = {
-    'id' : 'paypal',
-    'defaultTitle' : 'PayPal',
-    'settingsDescription' : '',
-    'defaultDescription' : '',
-    'paymentFields' : false,
-    'instructions' : true,
-    'supports' : [
-        'products',
-        'refunds',
-    ],
-    'filtersOnBuild' : false,
-    'confirmationDelayed' : false,
-    'SEPA' : false,
-}
-module.exports = {banktransfer, ideal, creditcard, paypal};
+const getMethodNames = () => {
+    return Object.values(methodsConfig).map((method) => normalizedName(method.defaultTitle));
+};
+const allMethodsIds = Object.keys(methodsConfig);
+const allMethods = methodsConfig;
+module.exports = {banktransfer, ideal, creditcard, paypal, normalizedName, getMethodNames, allMethods, allMethodsIds};

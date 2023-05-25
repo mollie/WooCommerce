@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
+use DateTime;
 use Exception;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Payment;
@@ -164,7 +165,10 @@ class MollieOrder extends MollieObject
             $encodedApplePayToken = json_encode($applePayToken);
             $paymentRequestData['payment']['applePayPaymentToken'] = $encodedApplePayToken;
         }
-
+        $customerBirthdate = $this->getCustomerBirthdate($order);
+        if ($customerBirthdate) {
+            $paymentRequestData['consumerDateOfBirth'] = $customerBirthdate;
+        }
         return $paymentRequestData;
     }
 
@@ -940,6 +944,9 @@ class MollieOrder extends MollieObject
                 self::MAXIMAL_LENGHT_REGION
             );
         $billingAddress->organizationName = $this->billingCompanyField($order);
+        $billingAddress->phone = (ctype_space($order->get_billing_phone()))
+            ? null
+            : $this->getFormatedPhoneNumber($order->get_billing_phone());
         return $billingAddress;
     }
 
@@ -1159,6 +1166,9 @@ class MollieOrder extends MollieObject
     private function checkBillieCompanyField($order)
     {
         $gateway = wc_get_payment_gateway_by_order($order);
+        if (!$gateway || !$gateway->id) {
+            return null;
+        }
         $isBillieMethodId = $gateway->id === 'mollie_wc_gateway_billie';
         if ($isBillieMethodId) {
             $companyFieldPosted = filter_input(INPUT_POST, 'billing_company', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
@@ -1168,6 +1178,40 @@ class MollieOrder extends MollieObject
                     self::MAXIMAL_LENGHT_ADDRESS
                 );
             }
+        }
+        return null;
+    }
+
+    protected function getCustomerBirthdate($order)
+    {
+        $gateway = wc_get_payment_gateway_by_order($order);
+        if (!$gateway || !isset($gateway->id)) {
+            return null;
+        }
+        $methodId = $gateway->id === 'mollie_wc_gateway_in3';
+        if ($methodId) {
+            $fieldPosted = filter_input(INPUT_POST, 'billing_birthdate', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+            if (!$fieldPosted) {
+                return null;
+            }
+            $format = "Y-m-d";
+            $pattern = "/(\d{1,2})[\s,\/-]+(\d{1,2})[\s,\/-]+(\d{4})/";
+            if (preg_match($pattern, $fieldPosted, $matches)) {
+                $date = $matches[3] . "-" . $matches[2] . "-" . $matches[1];
+                return date($format, strtotime($date));
+            }
+        }
+        return null;
+    }
+
+    protected function getFormatedPhoneNumber(string $phone)
+    {
+        //remove whitespaces and all non numerical characters except +
+        $phone = preg_replace('/[^0-9+]+/', '', $phone);
+
+        //check that $phone is in E164 format
+        if ($phone !== null && preg_match('/^\+[1-9]\d{1,14}$/', $phone)) {
+            return $phone;
         }
         return null;
     }

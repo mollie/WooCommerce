@@ -66,10 +66,15 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     public function title(): string
     {
         $titleIsDefault = $this->titleIsDefault();
-        $useApiTitle = $this->getProperty('use_api_title');
+        $useApiTitle = $this->getProperty(SharedDataDictionary::USE_API_TITLE) === 'yes';
+        if ($titleIsDefault && $useApiTitle === false) {
+            $this->updateMethodOption(SharedDataDictionary::USE_API_TITLE, 'yes');
+            $useApiTitle = true;
+        }
+
         $title = $this->getProperty('title');
         //new installations or installations that saved the default one should use the api title
-        if ($useApiTitle !== 'no' || $title === false || $titleIsDefault) {
+        if ($useApiTitle || $title === false || $titleIsDefault) {
             return $this->getApiTitle();
         }
          return $title;
@@ -282,6 +287,20 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         unset($fields['description']);
         unset($fields['title']);
         return array_combine(array_keys($fields), array_column($fields, 'default')) ?: [];
+    }
+
+    /**
+     * Update the payment method's settings
+     * @param string $optionName
+     * @param string $newValue
+     * @return void
+     */
+    public function updateMethodOption(string $optionName, string $newValue)
+    {
+        $settingName = 'mollie_wc_gateway_' . $this->id . '_settings';
+        $settings = get_option($settingName, false);
+        $settings[$optionName] = $newValue;
+        update_option($settingName, $settings, true);
     }
 
     private function getApiTitle()

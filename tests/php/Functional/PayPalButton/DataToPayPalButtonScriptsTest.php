@@ -42,7 +42,8 @@ class DataToPayPalButtonScriptsTest extends TestCase
                 'id' => $postDummyData->productId,
                 'price' => '1',
                 'isVariation' => false,
-                'minFee' =>$minAmount
+                'minFee' =>$minAmount,
+                'stock' => null
             ],
             'ajaxUrl' => 'admin-ajax.php'
         ];

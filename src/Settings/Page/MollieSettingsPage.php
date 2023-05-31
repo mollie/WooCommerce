@@ -350,7 +350,7 @@ class MollieSettingsPage extends WC_Settings_Page
             $paymentMethodEnabledAtMollie = array_key_exists($gatewayKey, $mollieGateways);
             $content .= '<li>';
             $content .= $paymentMethod->getIconUrl();
-            $content .= ' ' . esc_html($paymentMethod->getProperty('defaultTitle'));
+            $content .= ' ' . esc_html($paymentMethod->title());
             if ($paymentMethodEnabledAtMollie) {
                 $content .= $iconAvailable;
                 $content .= ' <a href="' . $this->getGatewaySettingsUrl($gatewayKey) . '">' . strtolower(

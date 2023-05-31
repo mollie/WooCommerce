@@ -386,6 +386,7 @@ class PaymentService
                 $paymentOrder->updatePaymentDataWithOrderData($orderWithPayments, $orderId);
             }
         } catch (ApiException $e) {
+            $this->handleMollieOutage($e);
             // Don't try to create a Mollie Payment for Klarna payment methods
             $order_payment_method = $order->get_payment_method();
             $orderMandatoryPaymentMethods = [
@@ -393,9 +394,10 @@ class PaymentService
                 'mollie_wc_gateway_klarnasliceit',
                 'mollie_wc_gateway_klarnapaynow',
                 'mollie_wc_gateway_billie',
+                'mollie_wc_gateway_in3',
             ];
 
-            if (in_array($order_payment_method, $orderMandatoryPaymentMethods)) {
+            if (in_array($order_payment_method, $orderMandatoryPaymentMethods, true)) {
                 $this->logger->debug(
                     'Creating payment object: type Order failed, stopping process.'
                 );
@@ -488,6 +490,7 @@ class PaymentService
                 $apiKey
             )->payments->create($data);
         } catch (ApiException $e) {
+            $this->handleMollieOutage($e);
             $message = $e->getMessage();
             $this->logger->debug($message);
             throw $e;
@@ -841,5 +844,28 @@ class PaymentService
             $this->pluginId . '_initial_order_status_' . $paymentMethod->getProperty('id'),
             $initialOrderStatus
         );
+    }
+
+    /**
+     * Check if the exception is an outage, if so bail, log and inform user
+     * @param ApiException $e
+     * @return void
+     * @throws ApiException
+     */
+    public function handleMollieOutage(ApiException $e): void
+    {
+        $isMollieOutage = $this->apiHelper->isMollieOutageException($e);
+        if ($isMollieOutage) {
+            $this->logger->debug(
+                "Creating payment object: type Order failed due to a Mollie outage, stopping process. Check Mollie status at https://status.mollie.com/. {$e->getMessage()}"
+            );
+
+            throw new ApiException(
+                __(
+                    'Payment failed due to: Mollie is out of service. Please try again later.',
+                    'mollie-payments-for-woocommerce'
+                )
+            );
+        }
     }
 }

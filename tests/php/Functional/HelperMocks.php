@@ -204,7 +204,7 @@ class HelperMocks extends TestCase
     {
         $paymentMethod = $this->createPartialMock(
             Ideal::class,
-            ['getConfig', 'getInitialOrderStatus', 'getMergedProperties', 'getSettings']
+            ['getConfig', 'getInitialOrderStatus', 'getMergedProperties', 'getSettings', 'title']
         );
         $paymentMethod
             ->method('getConfig')
@@ -217,6 +217,9 @@ class HelperMocks extends TestCase
         $paymentMethod
             ->method('getMergedProperties')
             ->willReturn($this->paymentMethodMergedProperties($paymentMethodName, $isSepa, $isSubscription, $settings));
+        $paymentMethod
+            ->method('title')
+            ->willReturn($paymentMethodName);
 
         return $paymentMethod;
     }

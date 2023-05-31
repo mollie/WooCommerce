@@ -175,6 +175,9 @@ class WC_Order
     public function get_billing_company()
     {
     }
+    public function get_billing_phone()
+    {
+    }
 }
 class WC_Cart
 {

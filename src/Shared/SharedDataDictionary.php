@@ -136,4 +136,8 @@ class SharedDataDictionary
      * @var string
      */
     public const SETTING_LOCALE_DEFAULT_LANGUAGE = 'en_US';
+    /**
+     * @var string
+     */
+    public const USE_API_TITLE = 'use_api_title';
 }

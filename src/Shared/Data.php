@@ -683,7 +683,10 @@ class Data
     {
         $apiKey = $this->settingsHelper->getApiKey();
         $methods = false;
-        $transient_id = $this->getTransientId(md5('mollie_available_methods'));
+        $locale = $this->getPaymentLocale();
+        $filters_key = [];
+        $filters_key['locale'] = $locale;
+        $transient_id = $this->getTransientId(md5(http_build_query($filters_key)));
 
         try {
             if ($use_cache) {
@@ -698,7 +701,7 @@ class Data
                 if (!$apiKey) {
                     return [];
                 }
-                $methods = $this->api_helper->getApiClient($apiKey)->methods->allAvailable();
+                $methods = $this->api_helper->getApiClient($apiKey)->methods->allAvailable($filters_key);
 
                 $methods_cleaned = [];
 

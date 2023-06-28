@@ -2,13 +2,10 @@ function usingGateway(gateway)
 {
     return jQuery('form[name="checkout"] input[name="payment_method"]:checked').val() === gateway;
 }
-function showField(billingField, positionField, fieldMarkup)
-{
-    if ((billingField).length <= 0) {
-        jQuery(positionField)
-            .closest('p')
-            .after(fieldMarkup);
-    }
+function showField(field, positionField, fieldMarkup) {
+    jQuery(positionField)
+        .find('p')
+        .after(fieldMarkup);
 }
 function requireField(inputName, fieldId)
 {
@@ -54,14 +51,20 @@ export function saveOriginalField(inputName, originalField)
     originalField = { isVisible, isRequired };
     return originalField;
 }
-export function maybeRequireField(billingField, positionField, fieldMarkup, inputName, fieldId, originalField, gateway)
+export function maybeRequireField(field, positionField, fieldMarkup, inputName, fieldId, originalField, gateway)
 {
     if (usingGateway(gateway)) {
-        showField(billingField, positionField, fieldMarkup);
-        requireField(inputName, fieldId);
-        return jQuery('form[name="checkout"] p#' + fieldId);
+        if (!originalField.isVisible) {
+            showField(field, positionField, fieldMarkup);
+            requireField(inputName, fieldId);
+            return jQuery('form[name="checkout"] p#' + fieldId);
+        }
+        if (!originalField.isRequired) {
+            requireField(inputName, fieldId);
+            return jQuery('form[name="checkout"] p#' + fieldId);
+        }
     } else {
-        restoreOriginalField(billingField, positionField, fieldMarkup, inputName, fieldId, originalField);
+        restoreOriginalField(field, positionField, fieldMarkup, inputName, fieldId, originalField);
         return false;
     }
 }

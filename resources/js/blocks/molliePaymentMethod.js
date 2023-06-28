@@ -228,7 +228,7 @@ const MollieComponent = (props) => {
         fields.push(fieldMarkup("billing-birthdate", "date", birthdateField, updateBirthdate, inputBirthdate));
         if (!isFieldVisible(getPhoneField())) {
             const phoneField = item.phonePlaceholder ? item.phonePlaceholder : "Phone";
-            fields.push(fieldMarkup("billing-phone", "phone", phoneField, updatePhone, inputPhone));
+            fields.push(fieldMarkup("billing-phone", "tel", phoneField, updatePhone, inputPhone));
         }
 
         return <>{fields}</>;

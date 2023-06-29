@@ -1191,6 +1191,7 @@ class MollieOrder extends MollieObject
         }
         $methodId = $gateway->id === 'mollie_wc_gateway_in3';
         if ($methodId) {
+            //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             $fieldPosted = wc_clean(wp_unslash($_POST["billing_birthdate"] ?? ''));
             if ($fieldPosted === '' || !is_string($fieldPosted)) {
                 return null;

@@ -944,7 +944,7 @@ class MollieOrder extends MollieObject
                 self::MAXIMAL_LENGHT_REGION
             );
         $billingAddress->organizationName = $this->billingCompanyField($order);
-        $phone = !empty($order->get_billing_phone())? $order->get_billing_phone() : $order->get_shipping_phone();
+        $phone = !empty($order->get_billing_phone()) ? $order->get_billing_phone() : $order->get_shipping_phone();
         $billingAddress->phone = (ctype_space($phone))
             ? null
             : $this->getFormatedPhoneNumber($phone);

@@ -580,13 +580,31 @@ class MollieObject
                     $payment->mandateId
                 );
                 $order->save();
+                $subscriptions = wcs_get_subscriptions_for_renewal_order($order->get_id());
+                $subscription = array_pop($subscriptions);
+                if (!$subscription) {
+                    return;
+                }
+                $subscription->update_meta_data(
+                    '_mollie_payment_id',
+                    $payment->id
+                );
+                $subscription->save();
+                $subcriptionParentOrder = $subscription->get_parent();
+                if ($subcriptionParentOrder) {
+                    $subcriptionParentOrder->update_meta_data(
+                        '_mollie_mandate_id',
+                        $payment->mandateId
+                    );
+                    $subcriptionParentOrder->save();
+                }
             }
         }
     }
 
     protected function addSequenceTypeForSubscriptionsFirstPayments($orderId, $gateway, $paymentRequestData): array
     {
-        if ($this->dataHelper->isSubscription($orderId)) {
+        if ($this->dataHelper->isSubscription($orderId) || $this->dataHelper->isWcSubscription($orderId)) {
             $disable_automatic_payments = apply_filters($this->pluginId . '_is_automatic_payment_disabled', false);
             $supports_subscriptions = $gateway->supports('subscriptions');
 

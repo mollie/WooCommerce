@@ -740,6 +740,10 @@ class PaymentService
         $dataHelper = $this->dataHelper;
         if ($dataHelper->isSubscription($orderId)) {
             $mandates = $this->apiHelper->getApiClient($apiKey)->customers->get($customerId)->mandates();
+            if (!isset($mandates[0])) {
+                return;
+            }
+            // madates are sorted by date, so the first one is the newest
             $mandate = $mandates[0];
             $customerId = $mandate->customerId;
             $mandateId = $mandate->id;

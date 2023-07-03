@@ -25,7 +25,7 @@ module.exports = defineConfig({
         ['list'],
         ['junit', testRailOptions]
     ],
-    globalSetup: './tests/e2e/globalSetup.js',
+    globalSetup: './globalSetup.js',
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
     use: {
         baseURL: process.env.BASEURL,
@@ -38,7 +38,7 @@ module.exports = defineConfig({
     projects: [
         {
             name: 'plugins-page',
-            testDir: './tests/e2e/Plugins page',
+            testDir: './Plugins page',
             use: {
                 ...devices['Desktop Chrome'],
                 testIdAttribute: 'data-slug'
@@ -46,28 +46,28 @@ module.exports = defineConfig({
         },
         {
             name: 'woo-payments-tab',
-            testDir: './tests/e2e/WooCommerce Payments tab',
+            testDir: './WooCommerce Payments tab',
             use: {
                 ...devices['Desktop Chrome']
             }
         },
         {
             name: 'transaction-scenarios',
-            testDir: './tests/e2e/Transaction Scenarios',
+            testDir: './Transaction Scenarios',
             use: {
                 ...devices['Desktop Chrome']
             }
         },
         {
             name: 'mollie-settings-tab',
-            testDir: './tests/e2e/Mollie Settings tab',
+            testDir: './Mollie Settings tab',
             use: {
                 ...devices['Desktop Chrome']
             }
         },
         {
             name: 'error-handling',
-            testDir: './tests/e2e/Error Handling',
+            testDir: './Error Handling',
             use: {
                 ...devices['Desktop Chrome']
             }

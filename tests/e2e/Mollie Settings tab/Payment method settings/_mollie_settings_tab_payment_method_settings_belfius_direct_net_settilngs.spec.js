@@ -2,7 +2,7 @@ const { expect } = require('@playwright/test');
 const { test } = require('../../Shared/base-test');
 const {
     settingsNames,
-    classicCheckoutTransaction, noFeeAdded, fixedFeeTest, percentageFeeTest, fixedAndPercentageFeeTest,
+    checkoutTransaction, noFeeAdded, fixedFeeTest, percentageFeeTest, fixedAndPercentageFeeTest,
     fixedFeeUnderLimitTest, percentageFeeUnderLimitTest, fixedAndPercentageUnderLimit, fixedFeeOverLimit,
     percentageFeeOverLimit, fixedFeeAndPercentageOverLimit
 } = require('../../Shared/mollieUtils');

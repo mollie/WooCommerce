@@ -54,14 +54,9 @@
   "scripts": {
     "watch": "webpack --watch",
     "build": "node_modules/.bin/encore dev --env.basePath=.",
-    "setup": "gulp setup",
-    "e2e-activation": "npx playwright test --project=activation",
-    "e2e-simple": "npx playwright test --project=simple-classic",
-    "e2e-block": "npx playwright test --project=simple-block",
-    "e2e-cart-paypal": "npx playwright test --project=cart-paypal",
-    "e2e-product-paypal": "npx playwright test  --project=product-paypal",
-    "e2e-simple-settings": "npx playwright test --project=simple-settings",
-    "e2e-full-settings": "npx playwright test --project=full-settings",
-    "e2e-all": "npx playwright test"
+    "setup": "gulp setup"
+  },
+  "dependencies": {
+    "@woocommerce/woocommerce-rest-api": "^1.0.1"
   }
 }

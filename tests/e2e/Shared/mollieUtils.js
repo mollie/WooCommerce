@@ -194,7 +194,7 @@ const beforePlacingOrderBlock = async (page, testedProduct, testedGateway, produ
  * @param productQuantity
  * @param status
  */
-const classicCheckoutTransaction = async (page, testedProduct, testedGateway, productQuantity = 1, status = "Paid", checkoutUrl ='/checkout/') => {
+const checkoutTransaction = async (page, testedProduct, testedGateway, productQuantity = 1, status = "Paid", checkoutUrl ='/checkout/') => {
     let whichCheckout = checkoutUrl === '/checkout/' ? 'classic' : 'block';
     let totalAmount;
     if (whichCheckout === 'classic') {
@@ -242,7 +242,7 @@ const fixedFeeTest = async (page, context, products) => {
     await selectOptionSetting(page, context.surchargeSetting, context.tabUrl, 'fixed_fee');
     const fixedFeeSetting = settingsNames.fixedFee(context.method.id);
     await fillNumberSettings(page, fixedFeeSetting, context.tabUrl, fee);
-    const result = await classicCheckoutTransaction(page, products.simple, context.method)
+    const result = await checkoutTransaction(page, products.simple, context.method)
     let total = parseFloat(result.totalAmount.replace(",", ".").replace(/[^\d.-]/g, ""));
     let expected = parseFloat(products.simple.price.replace(",", ".").replace(/[^\d.-]/g, "")) + fee;
     expect(total).toEqual(expected);
@@ -253,7 +253,7 @@ const percentageFeeTest = async (page, context, products) => {
     await selectOptionSetting(page, context.surchargeSetting, context.tabUrl, 'percentage');
     const percentageFeeSetting = settingsNames.percentage(context.method.id);
     await fillNumberSettings(page, percentageFeeSetting, context.tabUrl, fee);
-    const result = await classicCheckoutTransaction(page, products.simple, context.method)
+    const result = await checkoutTransaction(page, products.simple, context.method)
     let total = parseFloat(result.totalAmount.replace(",", ".").replace(/[^\d.-]/g, ""));
     let productPrice = parseFloat(products.simple.price.replace(",", ".").replace(/[^\d.-]/g, ""));
     let expected = productPrice + (productPrice * fee / 100);
@@ -267,7 +267,7 @@ const fixedAndPercentageFeeTest = async (page, context, products) => {
     await fillNumberSettings(page, fixedFeeSetting, context.tabUrl, fee);
     const percentageFeeSetting = settingsNames.percentage(context.method.id);
     await fillNumberSettings(page, percentageFeeSetting, context.tabUrl, fee);
-    const result = await classicCheckoutTransaction(page, products.simple, context.method)
+    const result = await checkoutTransaction(page, products.simple, context.method)
     let total = parseFloat(result.totalAmount.replace(",", ".").replace(/[^\d.-]/g, ""));
     let productPrice = parseFloat(products.simple.price.replace(",", ".").replace(/[^\d.-]/g, ""));
     let expected = productPrice + fee + (productPrice * fee / 100);
@@ -282,7 +282,7 @@ const fixedFeeUnderLimitTest = async (page, context, products) => {
     await fillNumberSettings(page, fixedFeeSetting, context.tabUrl, fee);
     const limitFeeSetting = settingsNames.limitFee(context.method.id);
     await fillNumberSettings(page, limitFeeSetting, context.tabUrl, limit);
-    const result = await classicCheckoutTransaction(page, products.simple, context.method)
+    const result = await checkoutTransaction(page, products.simple, context.method)
     let total = parseFloat(result.totalAmount.replace(",", ".").replace(/[^\d.-]/g, ""));
     let expected = parseFloat(products.simple.price.replace(",", ".").replace(/[^\d.-]/g, "")) + fee;
     expect(total).toEqual(expected);
@@ -296,7 +296,7 @@ const percentageFeeUnderLimitTest = async (page, context, products) => {
     await fillNumberSettings(page, percentageFeeSetting, context.tabUrl, fee);
     const limitFeeSetting = settingsNames.limitFee(context.method.id);
     await fillNumberSettings(page, limitFeeSetting, context.tabUrl, limit);
-    const result = await classicCheckoutTransaction(page, products.simple, context.method)
+    const result = await checkoutTransaction(page, products.simple, context.method)
     let total = parseFloat(result.totalAmount.replace(",", ".").replace(/[^\d.-]/g, ""));
     let productPrice = parseFloat(products.simple.price.replace(",", ".").replace(/[^\d.-]/g, ""));
     let expected = productPrice + (productPrice * fee / 100);
@@ -313,7 +313,7 @@ const fixedAndPercentageUnderLimit = async (page, context, products) => {
     await fillNumberSettings(page, percentageFeeSetting, context.tabUrl, fee);
     const limitFeeSetting = settingsNames.limitFee(context.method.id);
     await fillNumberSettings(page, limitFeeSetting, context.tabUrl, limit);
-    const result = await classicCheckoutTransaction(page, products.simple, context.method)
+    const result = await checkoutTransaction(page, products.simple, context.method)
     let total = parseFloat(result.totalAmount.replace(",", ".").replace(/[^\d.-]/g, ""));
     let productPrice = parseFloat(products.simple.price.replace(",", ".").replace(/[^\d.-]/g, ""));
     let expected = productPrice + fee + (productPrice * fee / 100);
@@ -329,7 +329,7 @@ const fixedFeeOverLimit = async (page, context, products) => {
     await fillNumberSettings(page, fixedFeeSetting, context.tabUrl, fee);
     const limitFeeSetting = settingsNames.limitFee(context.method.id);
     await fillNumberSettings(page, limitFeeSetting, context.tabUrl, limit);
-    const result = await classicCheckoutTransaction(page, products.simple, context.method, productQuantity);
+    const result = await checkoutTransaction(page, products.simple, context.method, productQuantity);
     let total = parseFloat(result.totalAmount.replace(",", ".").replace(/[^\d.-]/g, ""));
     let expected = parseFloat(products.simple.price.replace(",", ".").replace(/[^\d.-]/g, "")) * productQuantity;
     expect(total).toEqual(expected);
@@ -344,7 +344,7 @@ const percentageFeeOverLimit = async (page, context, products) => {
     await fillNumberSettings(page, percentageFeeSetting, context.tabUrl, fee);
     const limitFeeSetting = settingsNames.limitFee(context.method.id);
     await fillNumberSettings(page, limitFeeSetting, context.tabUrl, limit);
-    const result = await classicCheckoutTransaction(page, products.simple, context.method, productQuantity)
+    const result = await checkoutTransaction(page, products.simple, context.method, productQuantity)
     let total = parseFloat(result.totalAmount.replace(",", ".").replace(/[^\d.-]/g, ""));
     let productPrice = parseFloat(products.simple.price.replace(",", ".").replace(/[^\d.-]/g, "")) * productQuantity;
     expect(total).toEqual(productPrice);
@@ -361,7 +361,7 @@ const fixedFeeAndPercentageOverLimit = async (page, context, products) => {
     await fillNumberSettings(page, percentageFeeSetting, context.tabUrl, fee);
     const limitFeeSetting = settingsNames.limitFee(context.method.id);
     await fillNumberSettings(page, limitFeeSetting, context.tabUrl, limit);
-    const result = await classicCheckoutTransaction(page, products.simple, context.method, productQuantity)
+    const result = await checkoutTransaction(page, products.simple, context.method, productQuantity)
     let total = parseFloat(result.totalAmount.replace(",", ".").replace(/[^\d.-]/g, ""));
     let productPrice = parseFloat(products.simple.price.replace(",", ".").replace(/[^\d.-]/g, "")) * productQuantity;
     expect(total).toEqual(productPrice);
@@ -369,7 +369,7 @@ const fixedFeeAndPercentageOverLimit = async (page, context, products) => {
 
 const noFeeAdded = async (page, context, products) => {
     await selectOptionSetting(page, context.surchargeSetting, context.tabUrl, 'no_fee');
-    const result = await classicCheckoutTransaction(page, products.simple, context.method)
+    const result = await checkoutTransaction(page, products.simple, context.method)
     let total = result.totalAmount.slice(0, -1).trim();
     let expected = products.simple.price.slice(0, -1).trim();
     expect(expected).toEqual(total);
@@ -384,7 +384,7 @@ module.exports = {
     resetSettings,
     beforePlacingOrder,
     beforePlacingOrderBlock,
-    classicCheckoutTransaction,
+    checkoutTransaction,
     classicCheckoutPaidTransactionFullRefund,
     classicCheckoutPaidTransactionPartialRefund,
     checkExpiredAtMollie,

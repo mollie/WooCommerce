@@ -1,8 +1,11 @@
 const path = require("path");
 const fs = require("fs");
+const {manualOrder} = require("./manualOrder");
 const wooUrls = {
     settingsPaymentTab: '/wp-admin/admin.php?page=wc-settings&tab=checkout'
 }
+const WooCommerceRestApi = require("@woocommerce/woocommerce-rest-api").default;
+// import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api"; // Supports ESM
 async function gotoWPPage(page, url) {
     await page.goto(url);
 }
@@ -64,10 +67,10 @@ const fillCustomerInCheckoutBlock = async (page, country = 'Germany') => {
     if (canFillCompany) {
         await page.getByLabel('Company').fill('Test company');
     }
-    //const canFillBirthDate = await page.locator('input[name="billing_birthdate"]').isVisible();
-    /*if (canFillBirthDate) {
+    const canFillBirthDate = await page.locator('input[name="billing_birthdate"]').isVisible();
+    if (canFillBirthDate) {
         await page.locator('input[name="billing_birthdate"]').fill('01-01-1990');
-    }*/
+    }
 }
 
 /**
@@ -109,17 +112,25 @@ const captureTotalAmountBlockCheckout = async (page) => {
     return totalAmount.substring(6, totalAmount.length);
 }
 
+
+const WooCommerce = new WooCommerceRestApi({
+    url: process.env.BASEURL,
+    consumerKey: process.env.WOO_REST_CONSUMER_KEY,
+    consumerSecret: process.env.WOO_REST_CONSUMER_SECRET,
+    version: 'wc/v3'
+});
 const createManualOrder = async (page, productLabel = 'Beanie') => {
-    await page.goto('wp-admin/post-new.php?post_type=shop_order');
-    await page.click('text=Add item(s)');
-    await page.click('text=Add product(s)');
-    await page.getByRole('combobox', { name: 'Search for a product…' }).locator('span').nth(2).click();
-    await page.locator('span > .select2-search__field').fill(productLabel);
-    await page.click('text=' + productLabel);
-    await page.locator('#btn-ok').click();
-    await page.waitForTimeout(2000);
-    await page.getByRole('button', { name: 'Create' }).click();
-    await page.click('text=Customer payment page');
+    try {
+        const response = await WooCommerce.post("orders", manualOrder);
+        const url = `/checkout/order-pay/${response.data.id}?pay_for_order=true&key=${response.data.order_key}`;
+        return {
+            url: url,
+            orderId: response.data.id,
+            orderKey: response.data.order_key
+        };
+    } catch (error) {
+        console.log(error.response.data);
+    }
 }
 
 const getLogByName = async (name, dirname) => {

@@ -25,7 +25,7 @@ jobs:
         run: composer validate
 
       - name: Upgrade Dependencies
-        run: composer require --dev -W brianium/paratest:^6
+        run: composer require --dev vimeo/psalm:^5.13
         if: ${{ matrix.php-versions == '8.0' || matrix.php-versions == '8.1' }}
 
       - name: install dependencies

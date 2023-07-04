@@ -13,9 +13,9 @@ function getCompanyField()
 
 function getPhoneField()
 {
-    let shippingPhone = document.getElementById('shipping-phone');
-    let billingPhone = document.getElementById('billing-phone');
-    return billingPhone ? billingPhone : shippingPhone;
+    const shippingPhone = document.getElementById('shipping-phone');
+    const billingPhone = document.getElementById('billing-phone');
+    return billingPhone || shippingPhone;
 }
 
 const MollieComponent = (props) => {

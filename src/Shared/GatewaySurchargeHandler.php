@@ -99,7 +99,7 @@ class GatewaySurchargeHandler
         }
         $this->orderRemoveFee($order);
          $gatewaySettings = $this->gatewaySettings($gatewayName);
-        $orderAmount = $order->get_total();
+        $orderAmount = (float) $order->get_total();
         if ($this->surcharge->aboveMaxLimit($orderAmount, $gatewaySettings)) {
             return;
         }
@@ -283,7 +283,12 @@ class GatewaySurchargeHandler
 
     protected function canProcessGateway()
     {
-        $postedMethod = filter_input(INPUT_POST, 'payment_method', FILTER_SANITIZE_SPECIAL_CHARS);
+        // phpcs:ignore WordPress.Security.NonceVerification
+        if (!isset($_POST['method'])) {
+            return false;
+        }
+        // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $postedMethod = wc_clean(wp_unslash($_POST['method']));
         $gateway = !empty($postedMethod) ? $postedMethod : false;
         if (!$gateway) {
             return false;

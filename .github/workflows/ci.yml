@@ -24,12 +24,8 @@ jobs:
       - name: Validate composer.json and composer.lock
         run: composer validate
 
-      - name: Upgrade Dependencies
-        run: composer require --dev -W vimeo/psalm:^5.13
-        if: ${{ matrix.php-versions == '8.0' || matrix.php-versions == '8.1' }}
-
       - name: install dependencies
-        run: composer install --no-interaction --optimize-autoloader
+        run: composer update --prefer-dist --no-progress
 
       - name: dump autoload
         run: composer dump-autoload

@@ -488,6 +488,8 @@ class AssetsModule implements ExecutableModule
                 'supports' => $this->gatewaySupportsFeatures($gateway->paymentMethod(), $isSepaEnabled),
                 'errorMessage' => $gateway->paymentMethod()->getProperty('errorMessage'),
                 'companyPlaceholder' => $gateway->paymentMethod()->getProperty('companyPlaceholder'),
+                'phonePlaceholder' => $gateway->paymentMethod()->getProperty('phonePlaceholder'),
+                'birthdatePlaceholder' => $gateway->paymentMethod()->getProperty('birthdatePlaceholder'),
             ];
         }
         $dataToScript['gatewayData'] = $gatewayData;

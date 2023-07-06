@@ -11,7 +11,6 @@ const MollieComponent = (props) => {
     const [ inputPhone, selectPhone ] = wp.element.useState('');
     const [ inputBirthdate, selectBirthdate ] = wp.element.useState('');
     const [ inputCompany, selectCompany ] = wp.element.useState('');
-
     const issuerKey = 'mollie-payments-for-woocommerce_issuer_' + activePaymentMethod
     const {companyNameString, phoneString} = requiredFields
     function getPhoneField()
@@ -86,7 +85,6 @@ const MollieComponent = (props) => {
             complete: (jqXHR, textStatus) => {
             },
             success: (response, textStatus, jqXHR) => {
-                console.log(response)
                 handleFees(response)
             },
             error: (jqXHR, textStatus, errorThrown) => {
@@ -97,6 +95,7 @@ const MollieComponent = (props) => {
 
     useEffect(() => {
         const onProcessingPayment = () => {
+            const tokenVal = jQuery('.mollie-components > input').val()
             return {
                 type: responseTypes.SUCCESS,
                 meta: {
@@ -107,6 +106,7 @@ const MollieComponent = (props) => {
                         billing_phone: inputPhone,
                         billing_company: inputCompany,
                         billing_birthdate: inputBirthdate,
+                        cardToken: tokenVal,
                     }
                 },
             };

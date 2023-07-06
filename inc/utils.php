@@ -45,7 +45,7 @@ function mollieWooCommerceComponentsStylesForAvailableGateways()
 function mollieWooCommerceCardToken()
 {
     //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-    return wc_clean(wp_unslash($_POST["cardtoken"] ?? ''));
+    return wc_clean(wp_unslash($_POST["cardtoken"] ?? $_POST["cardToken"] ?? ''));
 }
 
 /**

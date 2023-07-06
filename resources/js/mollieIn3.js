@@ -2,12 +2,12 @@ import {maybeRequireField, saveOriginalField} from "./wooCheckoutFieldsUtility";
 
 (
     function ({jQuery}) {
+        let positionField = 'li.wc_payment_method.payment_method_mollie_wc_gateway_in3';
         let gateway = 'mollie_wc_gateway_in3';
         let inputPhoneName = 'billing_phone';
         let originalPhone = saveOriginalField(inputPhoneName, {});
         let phoneId = 'billing_phone_field';
         let phoneField = jQuery('form[name="checkout"] p#billing_phone_field');
-        let positionPhoneField = '#payment > ul > li.wc_payment_method.payment_method_mollie_wc_gateway_in3 > div';
         let phoneMarkup = '<p class="form-row form-row-wide" id="billing_phone_field" data-priority="30">'
             + '<label for="billing_phone" class="">Phone'
             + '<abbr className="required" title="required">*</abbr>'
@@ -20,7 +20,6 @@ import {maybeRequireField, saveOriginalField} from "./wooCheckoutFieldsUtility";
         let originalBirth = saveOriginalField(inputBirthName, {});
         let birthId = 'billing_birthdate_field';
         let birthField = jQuery('form[name="checkout"] p#billing_birthdate_field');
-        let positionBirthField = '#payment > ul > li.wc_payment_method.payment_method_mollie_wc_gateway_in3 > div';
         let birthMarkup = '<p class="form-row form-row-wide" id="billing_birthdate_field" data-priority="30">'
             + '<label for="billing_birthdate" class="">Birth date'
             + '<abbr className="required" title="required">*</abbr>'
@@ -32,8 +31,8 @@ import {maybeRequireField, saveOriginalField} from "./wooCheckoutFieldsUtility";
         jQuery(function () {
             jQuery('body')
                 .on('updated_checkout payment_method_selected', function () {
-                    phoneField = maybeRequireField(phoneField, positionPhoneField, phoneMarkup, inputPhoneName, phoneId, originalPhone, gateway);
-                    birthField = maybeRequireField(birthField, positionBirthField, birthMarkup, inputBirthName, birthId, originalBirth, gateway);
+                    phoneField = maybeRequireField(phoneField, positionField, phoneMarkup, inputPhoneName, phoneId, originalPhone, gateway);
+                    birthField = maybeRequireField(birthField, positionField, birthMarkup, inputBirthName, birthId, originalBirth, gateway);
                 });
         });
     }

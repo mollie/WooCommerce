@@ -3,23 +3,8 @@ let onSubmitLocal
 let activePaymentMethodLocal
 let cachedAvailableGateways
 let creditCardSelected = new Event("mollie_creditcard_component_selected", {bubbles: true});
-
-function getCompanyField()
-{
-    let shippingCompany = document.getElementById('shipping-company');
-    let billingCompany = document.getElementById('billing-company');
-    return shippingCompany ? shippingCompany : billingCompany;
-}
-
-function getPhoneField()
-{
-    const shippingPhone = document.getElementById('shipping-phone');
-    const billingPhone = document.getElementById('billing-phone');
-    return billingPhone || shippingPhone;
-}
-
 const MollieComponent = (props) => {
-    let {onSubmit, activePaymentMethod, billing, item, useEffect, ajaxUrl, jQuery, emitResponse, eventRegistration, requiredFields, shippingData} = props
+    let {onSubmit, activePaymentMethod, billing, item, useEffect, ajaxUrl, jQuery, emitResponse, eventRegistration, requiredFields, shippingData, isCompanyFieldVisible, isPhoneFieldVisible} = props
     const {  responseTypes } = emitResponse;
     const {onPaymentSetup, onCheckoutValidation} = eventRegistration;
     const [ selectedIssuer, selectIssuer ] = wp.element.useState('');
@@ -29,9 +14,11 @@ const MollieComponent = (props) => {
 
     const issuerKey = 'mollie-payments-for-woocommerce_issuer_' + activePaymentMethod
     const {companyNameString, phoneString} = requiredFields
-    function isFieldVisible(field)
+    function getPhoneField()
     {
-        return field && field.style.display !== 'none';
+        const shippingPhone = document.getElementById('shipping-phone');
+        const billingPhone = document.getElementById('billing-phone');
+        return billingPhone || shippingPhone;
     }
     function updateTotalLabel(newTotal, currency) {
         let feeText = newTotal + " " + currency
@@ -94,11 +81,12 @@ const MollieComponent = (props) => {
             method: 'POST',
             data: {
                 action: 'mollie_checkout_blocks_surchage',
-                payment_method: activePaymentMethod
+                method: activePaymentMethod
             },
             complete: (jqXHR, textStatus) => {
             },
             success: (response, textStatus, jqXHR) => {
+                console.log(response)
                 handleFees(response)
             },
             error: (jqXHR, textStatus, errorThrown) => {
@@ -147,7 +135,7 @@ const MollieComponent = (props) => {
                 companyLabel.replaceWith('<label htmlFor="shipping-company">' + companyNameString + '</label>')
             }
         }
-        let isCompanyEmpty = billing.billingData.company === '' && shippingData.shippingAddress.company === ''
+        let isCompanyEmpty = (billing.billingData.company === '' && shippingData.shippingAddress.company === '') && inputCompany === '';
         const unsubscribeProcessing = onCheckoutValidation(
             () => {
                 if (activePaymentMethod === 'mollie_wc_gateway_billie' && isCompanyEmpty) {
@@ -161,11 +149,11 @@ const MollieComponent = (props) => {
             unsubscribeProcessing()
         };
 
-    }, [activePaymentMethod, onCheckoutValidation, billing.billingData, item, companyNameString]);
+    }, [activePaymentMethod, onCheckoutValidation, billing.billingData, item, companyNameString, inputCompany]);
 
     useEffect(() => {
-        let phoneLabel = getPhoneField().labels[0];
-        if (phoneLabel.length === 0) {
+        let phoneLabel = getPhoneField()?.labels?.[0] ?? null;
+        if (!phoneLabel || phoneLabel.length === 0) {
             return
         }
         if (activePaymentMethod === 'mollie_wc_gateway_in3') {
@@ -175,7 +163,7 @@ const MollieComponent = (props) => {
                 phoneLabel.innerText = phoneString
             }
         }
-        let isPhoneEmpty = billing.billingData.phone === '' && shippingData.shippingAddress.phone === ''
+        let isPhoneEmpty = (billing.billingData.phone === '' && shippingData.shippingAddress.phone === '') && inputPhone === '';
         let isBirthdateEmpty = inputBirthdate === ''
         const unsubscribeProcessing = onCheckoutValidation(
 
@@ -191,7 +179,7 @@ const MollieComponent = (props) => {
             unsubscribeProcessing()
         };
 
-    }, [activePaymentMethod, onCheckoutValidation, billing.billingData, shippingData.shippingAddress, item, phoneString, inputBirthdate]);
+    }, [activePaymentMethod, onCheckoutValidation, billing.billingData, shippingData.shippingAddress, item, phoneString, inputBirthdate, inputPhone]);
 
     onSubmitLocal = onSubmit
     const updateIssuer = ( changeEvent ) => {
@@ -211,22 +199,27 @@ const MollieComponent = (props) => {
         return <div><p>{item.content}</p><select name={issuerKey} dangerouslySetInnerHTML={ {__html: item.issuers} } value={selectedIssuer} onChange={updateIssuer}></select></div>
     }
 
+    if(item.name === "mollie_wc_gateway_creditcard"){
+        return <div dangerouslySetInnerHTML={ {__html: item.content} }></div>;
+    }
+
     function fieldMarkup(id, fieldType, label, action, value) {
         return <div><label htmlFor={id} dangerouslySetInnerHTML={{ __html: label }}></label><input type={fieldType} name={id} id={id} placeholder={label} value={value} onChange={action}/></div>
     }
+
     if (item.name === "mollie_wc_gateway_billie"){
-        if(!isFieldVisible(getCompanyField())) {
-            const companyField = item.companyPlaceholder ? item.companyPlaceholder : "Company name";
-            return fieldMarkup("billing-company","text", companyField, updateCompany, inputCompany);
+        if(isCompanyFieldVisible) {
+           return;
         }
-        return;
+        const companyField = item.companyPlaceholder ? item.companyPlaceholder : "Company name";
+        return fieldMarkup("billing-company","text", companyField, updateCompany, inputCompany);
     }
 
     if (item.name === "mollie_wc_gateway_in3"){
         let fields = [];
         const birthdateField = item.birthdatePlaceholder ? item.birthdatePlaceholder : "Birthdate";
         fields.push(fieldMarkup("billing-birthdate", "date", birthdateField, updateBirthdate, inputBirthdate));
-        if (!isFieldVisible(getPhoneField())) {
+        if (!isPhoneFieldVisible) {
             const phoneField = item.phonePlaceholder ? item.phonePlaceholder : "Phone";
             fields.push(fieldMarkup("billing-phone", "tel", phoneField, updatePhone, inputPhone));
         }
@@ -238,26 +231,18 @@ const MollieComponent = (props) => {
 }
 
 
-const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery) =>{
+const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isCompanyFieldVisible, isPhoneFieldVisible) =>{
     let billingCountry = filters.billingCountry
     let cartTotal = filters.cartTotal
     cachedAvailableGateways = availableGateways
     let changedBillingCountry = filters.billingCountry
-    let companyField = getCompanyField();
-    const companyNameString = companyField && companyField.parentNode.querySelector('label') ? companyField.parentNode.querySelector('label').innerHTML : false;
-    let phoneField = getPhoneField();
-    const phoneString = phoneField && phoneField.parentNode.querySelector('label') ? phoneField.parentNode.querySelector('label').innerHTML : false;
-    let requiredFields = {
-        'companyNameString': companyNameString,
-        'phoneString': phoneString,
-    }
     document.addEventListener('mollie_components_ready_to_submit', function () {
         onSubmitLocal()
     })
     return {
         name: item.name,
         label: <div dangerouslySetInnerHTML={{__html: item.label}}/>,
-        content: <MollieComponent item={item} useEffect={useEffect} ajaxUrl={ajaxUrl} jQuery={jQuery} requiredFields={requiredFields}/>,
+        content: <MollieComponent item={item} useEffect={useEffect} ajaxUrl={ajaxUrl} jQuery={jQuery} requiredFields={requiredFields} isCompayFieldVisible={isCompanyFieldVisible} isPhoneFieldVisible={isPhoneFieldVisible}/>,
         edit: <div>{item.edit}</div>,
         paymentMethodId: item.paymentMethodId,
         canMakePayment: ({cartTotals, billingData}) => {

@@ -2,9 +2,9 @@ function usingGateway(gateway)
 {
     return jQuery('form[name="checkout"] input[name="payment_method"]:checked').val() === gateway;
 }
-function showField(field, positionField, fieldMarkup) {
+function showField(positionField, fieldMarkup) {
     jQuery(positionField)
-        .find('p')
+        .find('label[for^="payment_method_mollie_wc_gateway"]')
         .after(fieldMarkup);
 }
 function requireField(inputName, fieldId)
@@ -30,7 +30,7 @@ function restoreOriginalField(billingField, positionField, fieldMarkup, inputNam
     let currentRequired = field.prop('required');
     if (currentVisibility !== originalField.isVisible) {
         if (originalField.isVisible) {
-            showField(billingField, positionField, fieldMarkup);
+            showField(positionField, fieldMarkup);
         } else {
             removeField(fieldId);
         }
@@ -55,7 +55,7 @@ export function maybeRequireField(field, positionField, fieldMarkup, inputName, 
 {
     if (usingGateway(gateway)) {
         if (!originalField.isVisible) {
-            showField(field, positionField, fieldMarkup);
+            showField(positionField, fieldMarkup);
             requireField(inputName, fieldId);
             return jQuery('form[name="checkout"] p#' + fieldId);
         }

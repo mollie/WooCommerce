@@ -165,7 +165,8 @@ class GatewaySurchargeHandler
         }
         $feeAmount = $this->surcharge->calculateFeeAmount($cart, $gatewaySettings);
         $feeAmountTaxed = $feeAmount + $cart->get_fee_tax();
-        $newTotal = (float) $cart->get_total('edit');
+        $cart->add_fee($this->gatewayFeeLabel, $feeAmount, true, 'standard');
+        $newTotal = (float) $cart->get_total('edit') + $feeAmountTaxed;
         $data = [
                 'amount' => $feeAmountTaxed,
                 'name' => $this->gatewayFeeLabel,

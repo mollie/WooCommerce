@@ -1172,13 +1172,15 @@ class MollieOrder extends MollieObject
         }
         $isBillieMethodId = $gateway->id === 'mollie_wc_gateway_billie';
         if ($isBillieMethodId) {
-            $companyFieldPosted = filter_input(INPUT_POST, 'billing_company', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
-            if ($companyFieldPosted) {
-                return $this->maximalFieldLengths(
-                    $companyFieldPosted,
-                    self::MAXIMAL_LENGHT_ADDRESS
-                );
+            //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            $fieldPosted = wc_clean(wp_unslash($_POST["billing_company"] ?? ''));
+            if ($fieldPosted === '' || !is_string($fieldPosted)) {
+                return null;
             }
+            return $this->maximalFieldLengths(
+                $fieldPosted,
+                self::MAXIMAL_LENGHT_ADDRESS
+            );
         }
         return null;
     }

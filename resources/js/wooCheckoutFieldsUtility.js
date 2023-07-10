@@ -54,7 +54,8 @@ export function saveOriginalField(inputName, originalField)
 export function maybeRequireField(field, positionField, fieldMarkup, inputName, fieldId, originalField, gateway)
 {
     if (usingGateway(gateway)) {
-        if (!originalField.isVisible) {
+        const field = jQuery("#" + inputName);
+        if (!originalField.isVisible && field.length === 0) {
             showField(positionField, fieldMarkup);
             requireField(inputName, fieldId);
             return jQuery('form[name="checkout"] p#' + fieldId);

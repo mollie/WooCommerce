@@ -253,6 +253,7 @@ function componentByName (name, mollie, settings, mollieComponentsMap)
 
 function unmountComponents (mollieComponentsMap)
 {
+    console.log(mollieComponentsMap)
   mollieComponentsMap.forEach(component => component.unmount())
 }
 
@@ -338,8 +339,11 @@ function initializeComponents (
    * Mollie does not allow to keep a copy of the mounted components.
    *
    * We have to mount every time the components but we cannot recreate them.
+   * But only unmount if they exists.
    */
-  unmountComponents(mollieComponentsMap)
+    if (jQuery("#cardHolder").length > 0) {
+        unmountComponents(mollieComponentsMap)
+    }
 
   enabledGateways.forEach(gateway =>
   {

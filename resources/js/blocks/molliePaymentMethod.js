@@ -204,7 +204,7 @@ const MollieComponent = (props) => {
     }
 
     function fieldMarkup(id, fieldType, label, action, value) {
-        return <div><label htmlFor={id} dangerouslySetInnerHTML={{ __html: label }}></label><input type={fieldType} name={id} id={id} placeholder={label} value={value} onChange={action}/></div>
+        return <div><label htmlFor={id} dangerouslySetInnerHTML={{ __html: label }}></label><input type={fieldType} name={id} id={id} value={value} onChange={action}/></div>
     }
 
     if (item.name === "mollie_wc_gateway_billie"){

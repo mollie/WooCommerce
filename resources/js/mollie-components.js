@@ -253,7 +253,6 @@ function componentByName (name, mollie, settings, mollieComponentsMap)
 
 function unmountComponents (mollieComponentsMap)
 {
-    console.log(mollieComponentsMap)
   mollieComponentsMap.forEach(component => component.unmount())
 }
 

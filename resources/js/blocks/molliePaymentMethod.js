@@ -242,7 +242,7 @@ const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, available
     return {
         name: item.name,
         label: <div dangerouslySetInnerHTML={{__html: item.label}}/>,
-        content: <MollieComponent item={item} useEffect={useEffect} ajaxUrl={ajaxUrl} jQuery={jQuery} requiredFields={requiredFields} isCompayFieldVisible={isCompanyFieldVisible} isPhoneFieldVisible={isPhoneFieldVisible}/>,
+        content: <MollieComponent item={item} useEffect={useEffect} ajaxUrl={ajaxUrl} jQuery={jQuery} requiredFields={requiredFields} isCompanyFieldVisible={isCompanyFieldVisible} isPhoneFieldVisible={isPhoneFieldVisible}/>,
         edit: <div>{item.edit}</div>,
         paymentMethodId: item.paymentMethodId,
         canMakePayment: ({cartTotals, billingData}) => {

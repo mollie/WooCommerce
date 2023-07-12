@@ -586,7 +586,7 @@ class MollieObject
                     return;
                 }
                 $subscription->update_meta_data('_mollie_payment_id', $payment->id);
-                $subscription->set_payment_method('mollie_wc_gateway_'.$payment->method);
+                $subscription->set_payment_method('mollie_wc_gateway_' . $payment->method);
                 $subscription->save();
                 $subcriptionParentOrder = $subscription->get_parent();
                 if ($subcriptionParentOrder) {

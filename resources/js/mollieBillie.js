@@ -7,7 +7,7 @@ import {maybeRequireField, saveOriginalField} from "./wooCheckoutFieldsUtility";
         let originalBillingCompanyField = saveOriginalField(inputCompanyName, {});
         let companyFieldId = 'billing_company_field';
         let companyField = jQuery('form[name="checkout"] p#billing_company_field');
-        let positionCompanyField = 'form[name="checkout"] input[name="billing_last_name"]';
+        let positionCompanyField = 'li.wc_payment_method.payment_method_mollie_wc_gateway_billie';
         let companyMarkup = '<p class="form-row form-row-wide" id="billing_company_field" data-priority="30">'
             + '<label for="billing_company" class="">Company name&nbsp;'
             + '<abbr className="required" title="required">*</abbr>'

@@ -15,7 +15,7 @@ class Paysafecard extends AbstractPaymentMethod implements PaymentMethodI
             'defaultDescription' => '',
             'paymentFields' => false,
             'instructions' => false,
-            'supports' => [],
+            'supports' => ['products'],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
             'SEPA' => false,

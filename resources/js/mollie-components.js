@@ -27,7 +27,13 @@ function gatewayContainer (container)
 
 function containerForGateway (gateway, container)
 {
-  return container ? container.querySelector(`.payment_method_mollie_wc_gateway_${gateway}`) : null
+    if(!container) {
+        return null
+    }
+    let parentInBlock = container.querySelector('label[for="radio-control-wc-payment-method-options-mollie_wc_gateway_creditcard"]');
+    parentInBlock = parentInBlock ? parentInBlock.closest('div') : null
+    const parentInClassic = container.querySelector(`.payment_method_mollie_wc_gateway_${gateway}`)
+    return parentInBlock || parentInClassic
 }
 
 function noticeContainer (container)
@@ -110,7 +116,6 @@ function tokenElementWithin (container)
 async function retrievePaymentToken (mollie)
 {
   const { token, error } = await mollie.createToken(SELECTOR_TOKEN_ELEMENT)
-
   if (error) {
     throw new Error(error.message || '')
   }
@@ -333,8 +338,11 @@ function initializeComponents (
    * Mollie does not allow to keep a copy of the mounted components.
    *
    * We have to mount every time the components but we cannot recreate them.
+   * But only unmount if they exists.
    */
-  unmountComponents(mollieComponentsMap)
+    if (jQuery("#cardHolder").length > 0) {
+        unmountComponents(mollieComponentsMap)
+    }
 
   enabledGateways.forEach(gateway =>
   {

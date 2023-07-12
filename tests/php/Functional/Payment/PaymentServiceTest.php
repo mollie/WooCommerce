@@ -93,7 +93,8 @@ class PaymentServiceTest extends TestCase
                 'wc_get_product' => $this->wcProduct(),
                 'wc_get_payment_gateway_by_order' => $gateway,
                 'add_query_arg' => 'https://webshop.example.org/wc-api/mollie_return?order_id=1&key=wc_order_hxZniP1zDcnM8',
-                'WC' => $this->wooCommerce()
+                'WC' => $this->wooCommerce(),
+                'wc_clean' => null,
             ]
         );
         $gateway->expects($this->once())

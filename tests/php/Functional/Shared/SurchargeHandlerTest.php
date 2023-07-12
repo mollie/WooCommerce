@@ -62,6 +62,7 @@ class SurchargeHandlerTest extends TestCase
         expect('mollieWooCommerceIsCheckoutContext')->andReturn(true);
         expect('wc_tax_enabled')->andReturn(false);
         expect('WC')->andReturn($this->wooCommerce());
+        expect('is_admin')->andReturn(false);
 
         $cart->expects(self::once())->method('add_fee')->with($expectedLabel, $expectedAmount, true, 'standard');
         $testee->add_engraving_fees($cart);

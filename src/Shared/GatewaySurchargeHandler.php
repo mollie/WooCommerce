@@ -178,6 +178,9 @@ class GatewaySurchargeHandler
 
     public function add_engraving_fees($cart)
     {
+        if (is_admin() || !mollieWooCommerceIsCheckoutContext()) {
+            return;
+        }
         $gateway = $this->chosenGateway();
         if (!$gateway) {
             return;

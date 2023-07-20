@@ -261,6 +261,13 @@ class AssetsModule implements ExecutableModule
             (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollie-components.min.js')),
             true
         );
+        wp_register_script(
+            'mollie-components-blocks',
+            $this->getPluginUrl($pluginUrl, '/public/js/mollie-components-blocks.min.js'),
+            ['underscore', 'jquery', 'mollie', 'babel-polyfill'],
+            (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollie-components-blocks.min.js')),
+            true
+        );
 
         wp_register_style(
             'unabledButton',
@@ -367,49 +374,60 @@ class AssetsModule implements ExecutableModule
         }
 
         wp_enqueue_style('mollie-components');
-        wp_enqueue_script('mollie-components');
-
-        wp_localize_script(
-            'mollie-components',
-            'mollieComponentsSettings',
-            [
-                'merchantProfileId' => $merchantProfileId,
-                'options' => [
-                    'locale' => $locale,
-                    'testmode' => $settingsHelper->isTestModeEnabled(),
+        $object_name = 'mollieComponentsSettings';
+        $data = [
+            'merchantProfileId' => $merchantProfileId,
+            'options' => [
+                'locale' => $locale,
+                'testmode' => $settingsHelper->isTestModeEnabled(),
+            ],
+            'enabledGateways' => $gatewayNames,
+            'componentsSettings' => $mollieComponentsStylesGateways,
+            'componentsAttributes' => [
+                [
+                    'name' => 'cardHolder',
+                    'label' => esc_html__('Name on card', 'mollie-payments-for-woocommerce'),
                 ],
-                'enabledGateways' => $gatewayNames,
-                'componentsSettings' => $mollieComponentsStylesGateways,
-                'componentsAttributes' => [
-                    [
-                        'name' => 'cardHolder',
-                        'label' => esc_html__('Name on card', 'mollie-payments-for-woocommerce'),
-                    ],
-                    [
-                        'name' => 'cardNumber',
-                        'label' => esc_html__('Card number', 'mollie-payments-for-woocommerce'),
-                    ],
-                    [
-                        'name' => 'expiryDate',
-                        'label' => esc_html__('Expiry date', 'mollie-payments-for-woocommerce'),
-                    ],
-                    [
-                        'name' => 'verificationCode',
-                        'label' => esc_html__(
-                            'CVC/CVV',
-                            'mollie-payments-for-woocommerce'
-                        ),
-                    ],
+                [
+                    'name' => 'cardNumber',
+                    'label' => esc_html__('Card number', 'mollie-payments-for-woocommerce'),
                 ],
-                'messages' => [
-                    'defaultErrorMessage' => esc_html__(
-                        'An unknown error occurred, please check the card fields.',
+                [
+                    'name' => 'expiryDate',
+                    'label' => esc_html__('Expiry date', 'mollie-payments-for-woocommerce'),
+                ],
+                [
+                    'name' => 'verificationCode',
+                    'label' => esc_html__(
+                        'CVC/CVV',
                         'mollie-payments-for-woocommerce'
                     ),
                 ],
-                'isCheckout' => is_checkout(),
-                'isCheckoutPayPage' => is_checkout_pay_page(),
-            ]
+            ],
+            'messages' => [
+                'defaultErrorMessage' => esc_html__(
+                    'An unknown error occurred, please check the card fields.',
+                    'mollie-payments-for-woocommerce'
+                ),
+            ],
+            'isCheckout' => is_checkout(),
+            'isCheckoutPayPage' => is_checkout_pay_page(),
+        ];
+        if (has_block("woocommerce/checkout")){
+            wp_enqueue_script('mollie-components-blocks');
+            wp_localize_script(
+                'mollie-components-blocks',
+                $object_name,
+                $data
+            );
+            return;
+        }
+
+        wp_enqueue_script('mollie-components');
+        wp_localize_script(
+            'mollie-components',
+            $object_name,
+            $data
         );
     }
 

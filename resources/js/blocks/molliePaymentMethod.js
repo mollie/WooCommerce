@@ -96,7 +96,6 @@ const MollieComponent = (props) => {
             },
             success: (response, textStatus, jqXHR) => {
                 handleFees(response)
-                console.log(response.data.cart)
             },
             error: (jqXHR, textStatus, errorThrown) => {
                 console.warn(textStatus, errorThrown)

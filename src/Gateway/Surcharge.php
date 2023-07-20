@@ -111,8 +111,7 @@ class Surcharge
         if (!method_exists($this, $methodName)) {
             return 0.0;
         }
-        $amount = $this->$methodName($cart, $gatewaySettings);
-        return $this->subtractTaxesFromValue($amount);
+        return $this->$methodName($cart, $gatewaySettings);
     }
 
     /**
@@ -135,7 +134,7 @@ class Surcharge
                 $amount = $this->calculate_fixed_fee_percentage_order($order, $gatewaySettings);
                 break;
         }
-        return $this->subtractTaxesFromValue($amount);
+        return $amount;
     }
 
     /**
@@ -238,24 +237,6 @@ class Surcharge
             return $maxLimit;
         }
         return $fee;
-    }
-
-    /**
-     * Return amount without the tax, so it can be included within the value
-     * @param float $amount
-     * @return float
-     */
-    protected function subtractTaxesFromValue(float $amount): float
-    {
-        if (!wc_tax_enabled() || $amount === 0.0) {
-            return $amount;
-        }
-        $taxRates = \WC_Tax::get_rates();
-        $wcStandardTax = \WC_Tax::calc_inclusive_tax($amount, $taxRates);
-        foreach ($wcStandardTax as $tax) {
-            $amount -= $tax;
-        }
-        return $amount;
     }
 
     /**

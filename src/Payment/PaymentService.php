@@ -208,8 +208,7 @@ class PaymentService
         $item_fee->set_name($surchargeName);
         $item_fee->set_amount($amount);
         $item_fee->set_total($amount);
-        $item_fee->set_tax_status('none');
-
+        $item_fee->set_tax_status('taxable');
         $order->add_item($item_fee);
         $order->calculate_totals();
     }

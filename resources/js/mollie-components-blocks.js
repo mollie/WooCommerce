@@ -25,11 +25,7 @@ function gatewayContainer (container)
 
 function containerForGateway (gateway, container)
 {
-    if(!container) {
-        return null
-    }
-    let parentInBlock = container.querySelector('label[for="radio-control-wc-payment-method-options-mollie_wc_gateway_creditcard"]');
-    return parentInBlock ? parentInBlock.closest('div') : null
+    return container ? container.querySelector(`.payment_method_mollie_wc_gateway_${gateway}`) : null
 }
 
 function noticeContainer (container)
@@ -98,7 +94,7 @@ function scrollToNotice (jQuery)
    ---------------------------------------------------------------- */
 function createTokenFieldWithin (container)
 {
-    container && container.insertAdjacentHTML(
+    container.insertAdjacentHTML(
         'beforeend',
         '<input type="hidden" name="cardToken" class="cardToken" value="" />'
     )
@@ -151,16 +147,10 @@ function turnBlockListenerOff (target)
 
 function isGatewaySelected (gateway)
 {
-    const gatewayContainer = containerForGateway(gateway, document)
-    const gatewayInput = gatewayContainer
-        ? gatewayContainer.querySelector(`#radio-control-wc-payment-method-options-mollie_wc_gateway_${gateway}`)
-        : null
-
-    if (!gatewayInput) {
-        return false
+    const gatewayBlockInput = document.getElementById("radio-control-wc-payment-method-options-mollie_wc_gateway_creditcard")
+    if(gatewayBlockInput) {
+        return gatewayBlockInput.checked || false
     }
-
-    return gatewayInput.checked || false
 }
 
 async function submitForm (evt)
@@ -245,7 +235,6 @@ function componentByName (name, mollie, settings, mollieComponentsMap)
 
 function unmountComponents (mollieComponentsMap)
 {
-    console.log(mollieComponentsMap)
     mollieComponentsMap.forEach(component => {
         try {
             component.unmount()
@@ -308,7 +297,6 @@ function mountComponents (
                     baseContainer
                 )
             } catch (err) {
-                console.log(err)
             }
 
         }
@@ -344,7 +332,7 @@ function initializeComponents (
      *
      * We have to mount every time the components but we cannot recreate them.
      */
-    //unmountComponents(mollieComponentsMap)
+    unmountComponents(mollieComponentsMap)
 
     enabledGateways.forEach(gateway =>
     {
@@ -416,7 +404,8 @@ function initializeComponents (
 }
 
 (
-    function ({ _, Mollie, mollieComponentsSettings, jQuery }) {
+    function ({ _, Mollie, mollieComponentsSettings, jQuery })
+    {
         if (_.isEmpty(mollieComponentsSettings) || !_.isFunction(Mollie)) {
             return
         }

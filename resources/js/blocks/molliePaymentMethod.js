@@ -237,7 +237,7 @@ const MollieComponent = (props) => {
         return <>{fields}</>;
     }
 
-    return
+    return <div><p></p></div>
 }
 
 

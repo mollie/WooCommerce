@@ -3,14 +3,22 @@ let onSubmitLocal
 let activePaymentMethodLocal
 let cachedAvailableGateways
 let creditCardSelected = new Event("mollie_creditcard_component_selected", {bubbles: true});
-
 const MollieComponent = (props) => {
-    let {onSubmit, activePaymentMethod, billing, item, useEffect, ajaxUrl, jQuery, emitResponse, eventRegistration, companyNameString} = props
+    let {onSubmit, activePaymentMethod, billing, item, useEffect, ajaxUrl, jQuery, emitResponse, eventRegistration, requiredFields, shippingData, isCompanyFieldVisible, isPhoneFieldVisible} = props
     const {  responseTypes } = emitResponse;
-    const {onPaymentProcessing, onCheckoutValidationBeforeProcessing} = eventRegistration;
+    const {onPaymentSetup, onCheckoutValidation} = eventRegistration;
     const [ selectedIssuer, selectIssuer ] = wp.element.useState('');
+    const [ inputPhone, selectPhone ] = wp.element.useState('');
+    const [ inputBirthdate, selectBirthdate ] = wp.element.useState('');
+    const [ inputCompany, selectCompany ] = wp.element.useState('');
     const issuerKey = 'mollie-payments-for-woocommerce_issuer_' + activePaymentMethod
-
+    const {companyNameString, phoneString} = requiredFields
+    function getPhoneField()
+    {
+        const shippingPhone = document.getElementById('shipping-phone');
+        const billingPhone = document.getElementById('billing-phone');
+        return billingPhone || shippingPhone;
+    }
     function updateTotalLabel(newTotal, currency) {
         let feeText = newTotal + " " + currency
         let totalSpan = "<span class='wc-block-formatted-money-amount wc-block-components-formatted-money-amount wc-block-components-totals-item__value'>" + feeText + "</span>"
@@ -72,7 +80,7 @@ const MollieComponent = (props) => {
             method: 'POST',
             data: {
                 action: 'mollie_checkout_blocks_surchage',
-                payment_method: activePaymentMethod
+                method: activePaymentMethod
             },
             complete: (jqXHR, textStatus) => {
             },
@@ -87,29 +95,38 @@ const MollieComponent = (props) => {
 
     useEffect(() => {
         const onProcessingPayment = () => {
+            const tokenVal = jQuery('.mollie-components > input').val()
             return {
                 type: responseTypes.SUCCESS,
                 meta: {
                     paymentMethodData: {
                         payment_method: activePaymentMethod,
                         payment_method_title: item.title,
-                        [issuerKey]: selectedIssuer
+                        [issuerKey]: selectedIssuer,
+                        billing_phone: inputPhone,
+                        billing_company: inputCompany,
+                        billing_birthdate: inputBirthdate,
+                        cardToken: tokenVal,
                     }
                 },
             };
         }
 
-        const unsubscribePaymentProcessing = onPaymentProcessing(
+        const unsubscribePaymentProcessing = onPaymentSetup(
             onProcessingPayment
         );
         return () => {
             unsubscribePaymentProcessing()
         };
 
-    }, [selectedIssuer, onPaymentProcessing])
+    }, [selectedIssuer, onPaymentSetup, inputPhone, inputCompany, inputBirthdate])
 
     useEffect(() => {
         let companyLabel = jQuery('div.wc-block-components-text-input.wc-block-components-address-form__company > label')
+        if (companyLabel.length === 0) {
+            return
+        }
+
         if (activePaymentMethod === 'mollie_wc_gateway_billie') {
             let message = item.companyPlaceholder
             companyLabel.replaceWith('<label htmlFor="shipping-company">' + message + '</label>')
@@ -118,9 +135,10 @@ const MollieComponent = (props) => {
                 companyLabel.replaceWith('<label htmlFor="shipping-company">' + companyNameString + '</label>')
             }
         }
-        const unsubscribeProcessing = onCheckoutValidationBeforeProcessing(
+        let isCompanyEmpty = (billing.billingData.company === '' && shippingData.shippingAddress.company === '') && inputCompany === '';
+        const unsubscribeProcessing = onCheckoutValidation(
             () => {
-                if (activePaymentMethod === 'mollie_wc_gateway_billie' && billing.billingData.company === '') {
+                if (activePaymentMethod === 'mollie_wc_gateway_billie' && isCompanyEmpty) {
                     return {
                         errorMessage: item.errorMessage,
                     };
@@ -131,36 +149,100 @@ const MollieComponent = (props) => {
             unsubscribeProcessing()
         };
 
-    }, [activePaymentMethod, onCheckoutValidationBeforeProcessing, billing.billingData, item, companyNameString]);
+    }, [activePaymentMethod, onCheckoutValidation, billing.billingData, item, companyNameString, inputCompany]);
+
+    useEffect(() => {
+        let phoneLabel = getPhoneField()?.labels?.[0] ?? null;
+        if (!phoneLabel || phoneLabel.length === 0) {
+            return
+        }
+        if (activePaymentMethod === 'mollie_wc_gateway_in3') {
+            phoneLabel.innerText = item.phonePlaceholder
+        } else {
+            if (phoneString !== false) {
+                phoneLabel.innerText = phoneString
+            }
+        }
+        let isPhoneEmpty = (billing.billingData.phone === '' && shippingData.shippingAddress.phone === '') && inputPhone === '';
+        let isBirthdateEmpty = inputBirthdate === ''
+        const unsubscribeProcessing = onCheckoutValidation(
+
+            () => {
+                if (activePaymentMethod === 'mollie_wc_gateway_in3' && (isPhoneEmpty || isBirthdateEmpty)) {
+                    return {
+                        errorMessage: item.errorMessage,
+                    };
+                }
+            }
+        );
+        return () => {
+            unsubscribeProcessing()
+        };
+
+    }, [activePaymentMethod, onCheckoutValidation, billing.billingData, shippingData.shippingAddress, item, phoneString, inputBirthdate, inputPhone]);
 
     onSubmitLocal = onSubmit
-
     const updateIssuer = ( changeEvent ) => {
         selectIssuer( changeEvent.target.value )
     };
+    const updateCompany = ( changeEvent ) => {
+        selectCompany( changeEvent.target.value )
+    };
+    const updatePhone = ( changeEvent ) => {
+        selectPhone( changeEvent.target.value )
+    }
+    const updateBirthdate = ( changeEvent ) => {
+        selectBirthdate( changeEvent.target.value )
+    }
 
     if (item.issuers && item.name !== "mollie_wc_gateway_creditcard"){
         return <div><p>{item.content}</p><select name={issuerKey} dangerouslySetInnerHTML={ {__html: item.issuers} } value={selectedIssuer} onChange={updateIssuer}></select></div>
     }
 
-    return <div dangerouslySetInnerHTML={ {__html: item.content} }/>
+    if(item.name === "mollie_wc_gateway_creditcard"){
+        return <div dangerouslySetInnerHTML={ {__html: item.content} }></div>;
+    }
 
+    function fieldMarkup(id, fieldType, label, action, value) {
+        return <div><label htmlFor={id} dangerouslySetInnerHTML={{ __html: label }}></label><input type={fieldType} name={id} id={id} value={value} onChange={action}/></div>
+    }
+
+    if (item.name === "mollie_wc_gateway_billie"){
+        if(isCompanyFieldVisible) {
+           return;
+        }
+        const companyField = item.companyPlaceholder ? item.companyPlaceholder : "Company name";
+        return fieldMarkup("billing-company","text", companyField, updateCompany, inputCompany);
+    }
+
+    if (item.name === "mollie_wc_gateway_in3"){
+        let fields = [];
+        const birthdateField = item.birthdatePlaceholder ? item.birthdatePlaceholder : "Birthdate";
+        fields.push(fieldMarkup("billing-birthdate", "date", birthdateField, updateBirthdate, inputBirthdate));
+        if (!isPhoneFieldVisible) {
+            const phoneField = item.phonePlaceholder ? item.phonePlaceholder : "Phone";
+            fields.push(fieldMarkup("billing-phone", "tel", phoneField, updatePhone, inputPhone));
+        }
+
+        return <>{fields}</>;
+    }
+
+    return
 }
 
 
-const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, companyNameString) =>{
+const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isCompanyFieldVisible, isPhoneFieldVisible) =>{
     let billingCountry = filters.billingCountry
     let cartTotal = filters.cartTotal
     cachedAvailableGateways = availableGateways
     let changedBillingCountry = filters.billingCountry
-
     document.addEventListener('mollie_components_ready_to_submit', function () {
         onSubmitLocal()
     })
     return {
         name: item.name,
         label: <div dangerouslySetInnerHTML={{__html: item.label}}/>,
-        content: <MollieComponent item={item} useEffect={useEffect} ajaxUrl={ajaxUrl} jQuery={jQuery} companyNameString={companyNameString}/>,
+        content: <MollieComponent item={item} useEffect={useEffect} ajaxUrl={ajaxUrl} jQuery={jQuery} requiredFields={requiredFields} isCompanyFieldVisible={isCompanyFieldVisible} isPhoneFieldVisible={isPhoneFieldVisible}/>,
         edit: <div>{item.edit}</div>,
         paymentMethodId: item.paymentMethodId,
         canMakePayment: ({cartTotals, billingData}) => {
@@ -212,7 +294,6 @@ const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, available
                         },
                     })
                 }
-
             }
 
             if (!cachedAvailableGateways.hasOwnProperty(currentFilterKey)) {

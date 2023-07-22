@@ -27,10 +27,10 @@ class Billie extends AbstractPaymentMethod implements PaymentMethodI
             'SEPA' => false,
             'orderMandatory' => true,
             'errorMessage' => __(
-                'Company field is empty. To proceed with Billie payment the company field is required.',
+                'Company field is empty. The company field is required.',
                 'mollie-payments-for-woocommerce'
             ),
-            'companyPlaceholder' => __('To proceed with Billie, please enter your company name here.', 'mollie-payments-for-woocommerce'),
+            'companyPlaceholder' => __('Please enter your company name here.', 'mollie-payments-for-woocommerce'),
         ];
     }
 

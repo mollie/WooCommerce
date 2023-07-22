@@ -1,7 +1,7 @@
 name: mollie-payments-for-woocommerce
 type: wordpress
 docroot: .ddev/wordpress
-php_version: "7.4"
+php_version: "7.2"
 webserver_type: nginx-fpm
 router_http_port: "80"
 router_https_port: "443"
@@ -22,15 +22,15 @@ hooks:
 use_dns_when_possible: true
 composer_version: "2"
 web_environment:
-- BASEURL=https://534a-88-17-126-42.ngrok-free.app
-- ' WP_VERSION=6.1'
-- ' WP_LOCALE=en_US'
-- ' WP_TITLE=Mollie WordPress Test'
-- ' PLUGIN_NAME=mollie-payments-for-woocommerce'
-- ' ADMIN_USER=admin'
-- ' ADMIN_PASS=admin'
-- ' ADMIN_EMAIL=admin@example.com'
-- ' WC_VERSION=7.2.2'
+- BASEURL=https://fd8d-88-17-29-100.ngrok-free.app
+- WP_VERSION=6.1
+- WP_LOCALE=en_US
+- WP_TITLE=Mollie WordPress Test
+- PLUGIN_NAME=mollie-payments-for-woocommerce
+- ADMIN_USER=admin
+- ADMIN_PASS=admin
+- ADMIN_EMAIL=admin@example.com
+- WC_VERSION=7.2.2
 nodejs_version: "16"
 
 # Key features of ddev's config.yaml:

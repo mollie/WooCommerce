@@ -99,7 +99,7 @@ class GatewaySurchargeHandler
         }
         $this->orderRemoveFee($order);
          $gatewaySettings = $this->gatewaySettings($gatewayName);
-        $orderAmount = $order->get_total();
+        $orderAmount = (float) $order->get_total();
         if ($this->surcharge->aboveMaxLimit($orderAmount, $gatewaySettings)) {
             return;
         }
@@ -165,7 +165,8 @@ class GatewaySurchargeHandler
         }
         $feeAmount = $this->surcharge->calculateFeeAmount($cart, $gatewaySettings);
         $feeAmountTaxed = $feeAmount + $cart->get_fee_tax();
-        $newTotal = (float) $cart->get_total('edit');
+        $cart->add_fee($this->gatewayFeeLabel, $feeAmount, true, 'standard');
+        $newTotal = (float) $cart->get_total('edit') + $feeAmountTaxed;
         $data = [
                 'amount' => $feeAmountTaxed,
                 'name' => $this->gatewayFeeLabel,
@@ -177,6 +178,9 @@ class GatewaySurchargeHandler
 
     public function add_engraving_fees($cart)
     {
+        if (is_admin() || !mollieWooCommerceIsCheckoutContext()) {
+            return;
+        }
         $gateway = $this->chosenGateway();
         if (!$gateway) {
             return;
@@ -283,7 +287,12 @@ class GatewaySurchargeHandler
 
     protected function canProcessGateway()
     {
-        $postedMethod = filter_input(INPUT_POST, 'payment_method', FILTER_SANITIZE_SPECIAL_CHARS);
+        // phpcs:ignore WordPress.Security.NonceVerification
+        if (!isset($_POST['method'])) {
+            return false;
+        }
+        // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $postedMethod = wc_clean(wp_unslash($_POST['method']));
         $gateway = !empty($postedMethod) ? $postedMethod : false;
         if (!$gateway) {
             return false;

@@ -2,13 +2,10 @@ function usingGateway(gateway)
 {
     return jQuery('form[name="checkout"] input[name="payment_method"]:checked').val() === gateway;
 }
-function showField(billingField, positionField, fieldMarkup)
-{
-    if ((billingField).length <= 0) {
-        jQuery(positionField)
-            .closest('p')
-            .after(fieldMarkup);
-    }
+function showField(positionField, fieldMarkup) {
+    jQuery(positionField)
+        .find('label[for^="payment_method_mollie_wc_gateway"]')
+        .after(fieldMarkup);
 }
 function requireField(inputName, fieldId)
 {
@@ -33,7 +30,7 @@ function restoreOriginalField(billingField, positionField, fieldMarkup, inputNam
     let currentRequired = field.prop('required');
     if (currentVisibility !== originalField.isVisible) {
         if (originalField.isVisible) {
-            showField(billingField, positionField, fieldMarkup);
+            showField(positionField, fieldMarkup);
         } else {
             removeField(fieldId);
         }
@@ -54,14 +51,21 @@ export function saveOriginalField(inputName, originalField)
     originalField = { isVisible, isRequired };
     return originalField;
 }
-export function maybeRequireField(billingField, positionField, fieldMarkup, inputName, fieldId, originalField, gateway)
+export function maybeRequireField(field, positionField, fieldMarkup, inputName, fieldId, originalField, gateway)
 {
     if (usingGateway(gateway)) {
-        showField(billingField, positionField, fieldMarkup);
-        requireField(inputName, fieldId);
-        return jQuery('form[name="checkout"] p#' + fieldId);
+        const field = jQuery("#" + inputName);
+        if (!originalField.isVisible && field.length === 0) {
+            showField(positionField, fieldMarkup);
+            requireField(inputName, fieldId);
+            return jQuery('form[name="checkout"] p#' + fieldId);
+        }
+        if (!originalField.isRequired) {
+            requireField(inputName, fieldId);
+            return jQuery('form[name="checkout"] p#' + fieldId);
+        }
     } else {
-        restoreOriginalField(billingField, positionField, fieldMarkup, inputName, fieldId, originalField);
+        restoreOriginalField(field, positionField, fieldMarkup, inputName, fieldId, originalField);
         return false;
     }
 }

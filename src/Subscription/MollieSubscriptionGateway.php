@@ -292,6 +292,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                     $paymentMethodUsed = 'mollie_wc_gateway_' . $payment->method;
                     if ($paymentMethodUsed !== $renewalOrderMethod) {
                         $renewal_order->set_payment_method($paymentMethodUsed);
+                        $renewal_order->save();
                     }
 
                     //update the valid mandate for this order
@@ -761,12 +762,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         );
 
         $mandate = $mollieApiClient->customers->get($customer_id)->getMandate($mandateId);
-        $bothDirectDebit = $mandate->method === self::DIRECTDEBIT
-            && $isRenewalMethodDirectDebit;
-        $bothCreditcard = $mandate->method !== self::DIRECTDEBIT
-            && !$isRenewalMethodDirectDebit;
-        $samePaymentMethodAsMandate = $bothDirectDebit || $bothCreditcard;
-        if ($mandate->status === 'valid' && $samePaymentMethodAsMandate) {
+        if ($mandate->status === 'valid') {
             $data['method'] = $mandate->method;
             $data['mandateId'] = $mandateId;
             $validMandate = true;

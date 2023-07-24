@@ -2,7 +2,6 @@ const SELECTOR_TOKEN_ELEMENT = '.cardToken'
 const SELECTOR_MOLLIE_COMPONENTS_CONTAINER = '.mollie-components'
 const SELECTOR_FORM = 'form'
 const SELECTOR_MOLLIE_GATEWAY_CONTAINER = '.wc_payment_methods'
-const SELECTOR_MOLLIE_GATEWAY_BLOCK_CONTAINER = '.wc-block-components-radio-control'
 
 const SELECTOR_MOLLIE_NOTICE_CONTAINER = '#mollie-notice'
 
@@ -20,9 +19,7 @@ function returnTrue ()
    ---------------------------------------------------------------- */
 function gatewayContainer (container)
 {
-    let checkoutContainer = container ? container.querySelector(SELECTOR_MOLLIE_GATEWAY_CONTAINER) : null
-    let blockContainer = container ? container.querySelector(SELECTOR_MOLLIE_GATEWAY_BLOCK_CONTAINER) : null
-  return checkoutContainer ? checkoutContainer : blockContainer
+  return container ? container.querySelector(SELECTOR_MOLLIE_GATEWAY_CONTAINER) : null
 }
 
 function containerForGateway (gateway, container)
@@ -153,11 +150,6 @@ function isGatewaySelected (gateway)
   const gatewayInput = gatewayContainer
     ? gatewayContainer.querySelector(`#payment_method_mollie_wc_gateway_${gateway}`)
     : null
-    //if we are in blocks then the input is different
-    const gatewayBlockInput = document.getElementById("radio-control-wc-payment-method-options-mollie_wc_gateway_creditcard")
-    if(gatewayBlockInput){
-        return gatewayBlockInput.checked || false
-    }
 
   if (!gatewayInput) {
     return false
@@ -198,12 +190,6 @@ async function submitForm (evt)
   turnMollieComponentsSubmissionOff($form)
 
   token && setTokenValueToField(token, tokenElementWithin(gatewayContainer))
-    if(evt.type === 'click'){
-        turnBlockListenerOff(jQuery(evt.target))
-        let readyToSubmitBlock = new Event("mollie_components_ready_to_submit", {bubbles: true});
-        document.documentElement.dispatchEvent(readyToSubmitBlock);
-        return
-    }
 
   $form.submit()
 }
@@ -429,17 +415,6 @@ function initializeComponents (
             )
             return
         }
-
-        document.addEventListener("mollie_creditcard_component_selected", function(event) {
-            setTimeout(function(){
-                initializeComponents(
-                    jQuery,
-                    mollie,
-                    mollieComponentsSettings,
-                    mollieComponentsMap
-                )
-            },500);
-        });
 
         function checkInit() {
             return function () {

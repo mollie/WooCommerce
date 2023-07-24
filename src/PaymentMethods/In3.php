@@ -22,6 +22,12 @@ class In3 extends AbstractPaymentMethod implements PaymentMethodI
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
             'orderMandatory' => true,
+            'errorMessage' => __(
+                'Required field is empty. Phone and birthdate fields are required.',
+                'mollie-payments-for-woocommerce'
+            ),
+            'phonePlaceholder' => __('Please enter your phone here. +00..', 'mollie-payments-for-woocommerce'),
+            'birthdatePlaceholder' => __('Please enter your birthdate here.', 'mollie-payments-for-woocommerce'),
         ];
     }
 

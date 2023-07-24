@@ -208,8 +208,7 @@ class PaymentService
         $item_fee->set_name($surchargeName);
         $item_fee->set_amount($amount);
         $item_fee->set_total($amount);
-        $item_fee->set_tax_status('none');
-
+        $item_fee->set_tax_status('taxable');
         $order->add_item($item_fee);
         $order->calculate_totals();
     }
@@ -740,6 +739,10 @@ class PaymentService
         $dataHelper = $this->dataHelper;
         if ($dataHelper->isSubscription($orderId)) {
             $mandates = $this->apiHelper->getApiClient($apiKey)->customers->get($customerId)->mandates();
+            if (!isset($mandates[0])) {
+                return;
+            }
+            // madates are sorted by date, so the first one is the newest
             $mandate = $mandates[0];
             $customerId = $mandate->customerId;
             $mandateId = $mandate->id;

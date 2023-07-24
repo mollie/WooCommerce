@@ -65,16 +65,10 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
 
     public function title(): string
     {
-        $titleIsDefault = $this->titleIsDefault();
         $useApiTitle = $this->getProperty(SharedDataDictionary::USE_API_TITLE) === 'yes';
-        if ($titleIsDefault && $useApiTitle === false) {
-            $this->updateMethodOption(SharedDataDictionary::USE_API_TITLE, 'yes');
-            $useApiTitle = true;
-        }
-
         $title = $this->getProperty('title');
-        //new installations or installations that saved the default one should use the api title
-        if ($useApiTitle || $title === false || $titleIsDefault) {
+        //new installations should use the api title
+        if ($useApiTitle || $title === false) {
             return $this->getApiTitle();
         }
          return $title;

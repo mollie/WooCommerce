@@ -25,10 +25,18 @@ const MollieComponent = (props) => {
         let total = jQuery('.wc-block-components-totals-footer-item .wc-block-formatted-money-amount:first')
         total.replaceWith(totalSpan)
     }
+    function updateTaxesLabel(newTotal, currency) {
+        let feeText = newTotal + " " + currency
+
+        let totalSpan = "<span class='wc-block-formatted-money-amount wc-block-components-formatted-money-amount wc-block-components-totals-item__value'>" + feeText + "</span>"
+        let total = jQuery('div.wp-block-woocommerce-checkout-order-summary-taxes-block.wc-block-components-totals-wrapper > div > span.wc-block-formatted-money-amount.wc-block-components-formatted-money-amount.wc-block-components-totals-item__value:first')
+        total.replaceWith(totalSpan)
+    }
 
     function hideFee(fee, response) {
         fee?.hide()
-        updateTotalLabel(response.data.newTotal, '');
+        updateTotalLabel(response.data.newTotal.toFixed(2).replace('.', ','), response.data.currency);
+        updateTaxesLabel(response.data.totalTax.toFixed(2).replace('.', ','), response.data.currency);
     }
 
     function feeMarkup(response) {
@@ -47,12 +55,14 @@ const MollieComponent = (props) => {
     function replaceFee(fee, newFee, response) {
         fee.replaceWith(newFee)
         updateTotalLabel(response.data.newTotal.toFixed(2).replace('.', ','), response.data.currency);
+        updateTaxesLabel(response.data.totalTax.toFixed(2).replace('.', ','), response.data.currency);
     }
 
     function insertNewFee(newFee, response) {
         const subtotal = jQuery('.wc-block-components-totals-item:first')
         subtotal.after(newFee)
         updateTotalLabel(response.data.newTotal.toFixed(2).replace('.', ','), response.data.currency);
+        updateTaxesLabel(response.data.totalTax.toFixed(2).replace('.', ','), response.data.currency);
     }
 
     function handleFees(response) {
@@ -227,7 +237,7 @@ const MollieComponent = (props) => {
         return <>{fields}</>;
     }
 
-    return
+    return <div><p></p></div>
 }
 
 

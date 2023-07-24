@@ -413,7 +413,7 @@ class AssetsModule implements ExecutableModule
             'isCheckout' => is_checkout(),
             'isCheckoutPayPage' => is_checkout_pay_page(),
         ];
-        if (has_block("woocommerce/checkout")){
+        if (has_block("woocommerce/checkout")) {
             wp_enqueue_script('mollie-components-blocks');
             wp_localize_script(
                 'mollie-components-blocks',

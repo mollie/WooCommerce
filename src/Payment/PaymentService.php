@@ -392,6 +392,7 @@ class PaymentService
                 'mollie_wc_gateway_klarnapaylater',
                 'mollie_wc_gateway_klarnasliceit',
                 'mollie_wc_gateway_klarnapaynow',
+                'mollie_wc_gateway_klarna',
                 'mollie_wc_gateway_billie',
                 'mollie_wc_gateway_in3',
             ];

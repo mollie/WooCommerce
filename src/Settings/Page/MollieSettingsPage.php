@@ -753,7 +753,7 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     protected function isKlarnaEnabled(): bool
     {
-        $klarnaGateways = ['klarnapaylater', 'klarnasliceit', 'klarnapaynow'];
+        $klarnaGateways = ['klarnapaylater', 'klarnasliceit', 'klarnapaynow', 'klarna'];
         $isKlarnaEnabled = false;
         foreach ($klarnaGateways as $klarnaGateway) {
             if (

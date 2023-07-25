@@ -95,6 +95,20 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 }
                 return $availableMethods;
             },
+            'gateway.getPaymentMethodsAfterFeatureFlag' => static function (ContainerInterface $container):array {
+                $availablePaymentMethods = $container->get('gateway.listAllMethodsAvailable');
+                $klarnaOneFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.klarna_one_enabled', getenv('MOL_KLARNA_ENABLED') === '1');
+                //remove other klarna, leave only klarna one
+                if ($klarnaOneFlag) {
+                    return array_filter($availablePaymentMethods, static function ($method) {
+                        return $method['id'] !== 'klarnapaylater' && $method['id'] !== 'klarnasliceit' && $method['id'] !== 'klarnapaynow';
+                    });
+                }
+                //remove klarna one from available payment methods
+                return array_filter($availablePaymentMethods, static function ($method) {
+                    return $method['id'] !== 'klarna';
+                });
+            },
             'gateway.isSDDGatewayEnabled' => static function (ContainerInterface $container): bool {
                 $enabledMethods = $container->get('gateway.paymentMethodsEnabledAtMollie');
                 return in_array('directdebit', $enabledMethods, true);
@@ -588,7 +602,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
     protected function instantiatePaymentMethods($container): array
     {
         $paymentMethods = [];
-        $listAllAvailabePaymentMethods = $container->get('gateway.listAllMethodsAvailable');
+        $listAllAvailablePaymentMethods = $container->get('gateway.getPaymentMethodsAfterFeatureFlag');
         $iconFactory = $container->get(IconFactory::class);
         assert($iconFactory instanceof IconFactory);
         $settingsHelper = $container->get('settings.settings_helper');
@@ -597,7 +611,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         assert($surchargeService instanceof Surcharge);
         $paymentFieldsService = $container->get(PaymentFieldsService::class);
         assert($paymentFieldsService instanceof PaymentFieldsService);
-        foreach ($listAllAvailabePaymentMethods as $paymentMethodAvailable) {
+        foreach ($listAllAvailablePaymentMethods as $paymentMethodAvailable) {
             $paymentMethodId = $paymentMethodAvailable['id'];
             $paymentMethods[$paymentMethodId] = $this->buildPaymentMethod(
                 $paymentMethodId,

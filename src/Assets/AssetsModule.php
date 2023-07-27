@@ -315,26 +315,30 @@ class AssetsModule implements ExecutableModule
     /**
      * Enqueue Frontend only scripts
      *
+     * @param $container Container
      * @return void
      */
-    public function enqueueFrontendScripts()
+    public function enqueueFrontendScripts($container)
     {
         if (is_admin() || !mollieWooCommerceIsCheckoutContext()) {
             return;
         }
         wp_enqueue_style('mollie-gateway-icons');
         $isBillieEnabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_billie_settings', 'enabled');
-        if ($isBillieEnabled) {
+        $allMethodsEnabledAtMollie = $container->get('gateway.paymentMethodsEnabledAtMollie');
+        $isBillieEnabledAtMollie = in_array('billie', $allMethodsEnabledAtMollie, true);
+        if ($isBillieEnabled && $isBillieEnabledAtMollie) {
             wp_enqueue_script('mollie-billie-classic-handles');
         }
         $isIn3Enabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_in3_settings', 'enabled');
-        if ($isIn3Enabled) {
+        $isIn3EnabledAtMollie = in_array('in3', $allMethodsEnabledAtMollie, true);
+        if ($isIn3Enabled && $isIn3EnabledAtMollie) {
             wp_enqueue_script('mollie-in3-classic-handles');
         }
 
         $applePayGatewayEnabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_applepay_settings', 'enabled');
-
-        if (!$applePayGatewayEnabled) {
+        $isAppleEnabledAtMollie = in_array('applepay', $allMethodsEnabledAtMollie, true);
+        if (!$applePayGatewayEnabled || !$isAppleEnabledAtMollie) {
             return;
         }
         wp_enqueue_style('unabledButton');
@@ -640,7 +644,10 @@ class AssetsModule implements ExecutableModule
                 self::registerFrontendScripts($pluginUrl, $pluginPath);
 
                 // Enqueue Scripts
-                add_action('wp_enqueue_scripts', [$this, 'enqueueFrontendScripts']);
+                add_action('wp_enqueue_scripts', function () use ($container) {
+                    $this->enqueueFrontendScripts($container);
+
+                });
                 add_action('wp_enqueue_scripts', function () use ($settingsHelper) {
                     $this->enqueueComponentsAssets($settingsHelper);
                 });

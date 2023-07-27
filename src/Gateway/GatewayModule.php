@@ -99,16 +99,12 @@ class GatewayModule implements ServiceModule, ExecutableModule
             'gateway.getKlarnaPaymentMethodsAfterFeatureFlag' => static function (ContainerInterface $container): array {
                 $availablePaymentMethods = $container->get('gateway.listAllMethodsAvailable');
                 $klarnaOneFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.klarna_one_enabled', getenv('MOL_KLARNA_ENABLED') === '1');
-                //remove other klarna, leave only klarna one
-                if ($klarnaOneFlag) {
+                if (!$klarnaOneFlag) {
                     return array_filter($availablePaymentMethods, static function ($method) {
-                        return $method['id'] !== Constants::KLARNAPAYLATER && $method['id'] !== Constants::KLARNASLICEIT && $method['id'] !== Constants::KLARNAPAYNOW;
+                        return $method['id'] !== Constants::KLARNA;
                     });
                 }
-                //remove klarna one from available payment methods
-                return array_filter($availablePaymentMethods, static function ($method) {
-                    return $method['id'] !== Constants::KLARNA;
-                });
+                return $availablePaymentMethods;
             },
             'gateway.isSDDGatewayEnabled' => static function (ContainerInterface $container): bool {
                 $enabledMethods = $container->get('gateway.paymentMethodsEnabledAtMollie');

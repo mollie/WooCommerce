@@ -4,7 +4,6 @@ namespace Mollie\WooCommerce\PaymentMethods;
 
 class Constants
 {
-
     public const KLARNAPAYLATER = 'klarnapaylater';
     public const KLARNASLICEIT = 'klarnasliceit';
     public const KLARNAPAYNOW = 'klarnapaynow';

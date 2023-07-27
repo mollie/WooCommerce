@@ -36,7 +36,7 @@ use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Mollie\WooCommerce\Subscription\MollieSepaRecurringGateway;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
-use PaymentMethods\Constants;
+use Mollie\WooCommerce\PaymentMethods\Constants;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 

@@ -17,7 +17,7 @@ use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
-use PaymentMethods\Constants;
+use Mollie\WooCommerce\PaymentMethods\Constants;
 use Psr\Container\ContainerInterface;
 
 class AssetsModule implements ExecutableModule

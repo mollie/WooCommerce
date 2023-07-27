@@ -1,6 +1,6 @@
 <?php
 
-namespace PaymentMethods;
+namespace Mollie\WooCommerce\PaymentMethods;
 
 class Constants
 {

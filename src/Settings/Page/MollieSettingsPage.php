@@ -6,7 +6,7 @@ namespace Mollie\WooCommerce\Settings\Page;
 
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
-use PaymentMethods\Constants;
+use Mollie\WooCommerce\PaymentMethods\Constants;
 use WC_Admin_Settings;
 use WC_Gateway_BACS;
 use WC_Settings_Page;

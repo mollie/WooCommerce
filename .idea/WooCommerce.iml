@@ -8,6 +8,7 @@
       <sourceFolder url="file://$MODULE_DIR$/tests/php/Unit" isTestSource="true" packagePrefix="Mollie\WooCommerceTests\Unit\" />
       <sourceFolder url="file://$MODULE_DIR$/tests/php/Functional" isTestSource="true" packagePrefix="Mollie\WooCommerceTests\Functional\" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/.ddev/wordpress/wp-includes/sodium_compat/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/sebastian/recursion-context" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/phpunit/php-timer" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/sebastian/exporter" />

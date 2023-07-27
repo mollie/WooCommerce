@@ -23,6 +23,7 @@ use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
+use PaymentMethods\Constants;
 use WC_Order;
 
 class MollieSubscriptionGateway extends MolliePaymentGateway
@@ -36,7 +37,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         'mollie_wc_gateway_ideal',
         'mollie_wc_gateway_kbc',
         'mollie_wc_gateway_sofort', ];
-    protected const DIRECTDEBIT = 'directdebit';
+    protected const DIRECTDEBIT = Constants::DIRECTDEBIT;
 
     protected $isSubscriptionPayment = false;
     protected $apiHelper;

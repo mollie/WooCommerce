@@ -36,6 +36,7 @@ use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Mollie\WooCommerce\Subscription\MollieSepaRecurringGateway;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
+use PaymentMethods\Constants;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 
@@ -101,17 +102,17 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 //remove other klarna, leave only klarna one
                 if ($klarnaOneFlag) {
                     return array_filter($availablePaymentMethods, static function ($method) {
-                        return $method['id'] !== 'klarnapaylater' && $method['id'] !== 'klarnasliceit' && $method['id'] !== 'klarnapaynow';
+                        return $method['id'] !== Constants::KLARNAPAYLATER && $method['id'] !== Constants::KLARNASLICEIT && $method['id'] !== Constants::KLARNAPAYNOW;
                     });
                 }
                 //remove klarna one from available payment methods
                 return array_filter($availablePaymentMethods, static function ($method) {
-                    return $method['id'] !== 'klarna';
+                    return $method['id'] !== Constants::KLARNA;
                 });
             },
             'gateway.isSDDGatewayEnabled' => static function (ContainerInterface $container): bool {
                 $enabledMethods = $container->get('gateway.paymentMethodsEnabledAtMollie');
-                return in_array('directdebit', $enabledMethods, true);
+                return in_array(Constants::DIRECTDEBIT, $enabledMethods, true);
             },
             IconFactory::class => static function (ContainerInterface $container): IconFactory {
                 $pluginUrl = $container->get('shared.plugin_url');
@@ -543,7 +544,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
             $isSepa = $paymentMethod->getProperty('SEPA');
             $key = 'mollie_wc_gateway_' . $paymentMethodId;
             if ($isSepa) {
-                $directDebit = $paymentMethods['directdebit'];
+                $directDebit = $paymentMethods[Constants::DIRECTDEBIT];
                 $gateways[$key] = new MollieSepaRecurringGateway(
                     $directDebit,
                     $paymentMethod,
@@ -624,8 +625,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
         }
 
         //I need DirectDebit to create SEPA gateway
-        if (!in_array('directdebit', array_keys($paymentMethods), true)) {
-            $paymentMethodId = 'directdebit';
+        if (!in_array(Constants::DIRECTDEBIT, array_keys($paymentMethods), true)) {
+            $paymentMethodId = Constants::DIRECTDEBIT;
             $paymentMethods[$paymentMethodId] = $this->buildPaymentMethod(
                 $paymentMethodId,
                 $iconFactory,

@@ -17,6 +17,7 @@ use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
+use PaymentMethods\Constants;
 use Psr\Container\ContainerInterface;
 
 class AssetsModule implements ExecutableModule
@@ -472,7 +473,7 @@ class AssetsModule implements ExecutableModule
             /** @var string $gatewayId */
             $gatewayId = is_string($gateway->paymentMethod()->getProperty('id')) ? $gateway->paymentMethod()->getProperty('id') : "";
 
-            if ($gateway->enabled !== 'yes' || $gatewayId === 'directdebit') {
+            if ($gateway->enabled !== 'yes' || $gatewayId === Constants::DIRECTDEBIT) {
                 continue;
             }
             $content = $gateway->paymentMethod()->getProcessedDescriptionForBlock();

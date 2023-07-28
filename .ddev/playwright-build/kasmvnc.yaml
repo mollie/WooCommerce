@@ -1,0 +1,14 @@
+#ddev-generated
+# Remove the line above if you don't want this file to be overwritten when you run
+# ddev get julienloizelet/ddev-playwright
+#
+# This file comes from https://github.com/julienloizelet/ddev-playwright
+#
+logging:
+    log_writer_name: all
+    log_dest: syslog
+    level: 100
+
+network:
+    ssl:
+        require_ssl: false

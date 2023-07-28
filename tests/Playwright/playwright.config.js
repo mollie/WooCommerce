@@ -16,7 +16,7 @@ const testRailOptions = {
  * @see https://playwright.dev/docs/test-configuration
  */
 module.exports = defineConfig({
-    testDir: './tests/e2e',
+    testDir: './tests',
     /* Run tests in files in parallel */
     fullyParallel: false,
     timeout: 320000,
@@ -32,13 +32,16 @@ module.exports = defineConfig({
         storageState: './storageState.json',
         extraHTTPHeaders: {'ngrok-skip-browser-warning': '123'},
         actionTimeout: 120000,
+        ignoreHTTPSErrors: true,
+        /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+        trace: 'on-first-retry',
     },
 
     /* Configure projects for major browsers */
     projects: [
         {
             name: 'plugins-page',
-            testDir: './Plugins page',
+            testDir: './tests/Plugins page',
             use: {
                 ...devices['Desktop Chrome'],
                 testIdAttribute: 'data-slug'
@@ -46,28 +49,28 @@ module.exports = defineConfig({
         },
         {
             name: 'woo-payments-tab',
-            testDir: './WooCommerce Payments tab',
+            testDir: './tests/WooCommerce Payments tab',
             use: {
                 ...devices['Desktop Chrome']
             }
         },
         {
             name: 'transaction-scenarios',
-            testDir: './Transaction Scenarios',
+            testDir: './tests/Transaction Scenarios',
             use: {
                 ...devices['Desktop Chrome']
             }
         },
         {
             name: 'mollie-settings-tab',
-            testDir: './Mollie Settings tab',
+            testDir: './tests/Mollie Settings tab',
             use: {
                 ...devices['Desktop Chrome']
             }
         },
         {
             name: 'error-handling',
-            testDir: './Error Handling',
+            testDir: './tests/Error Handling',
             use: {
                 ...devices['Desktop Chrome']
             }

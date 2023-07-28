@@ -1,0 +1,38 @@
+#ddev-generated
+# Remove the line above if you don't want this file to be overwritten when you run
+# ddev get julienloizelet/ddev-playwright
+#
+# This file comes from https://github.com/julienloizelet/ddev-playwright
+#
+services:
+  playwright:
+    build:
+      context: playwright-build
+    container_name: ddev-${DDEV_SITENAME}-playwright
+    hostname: ${DDEV_SITENAME}-playwright
+    # These labels ensure this service is discoverable by ddev.
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT
+    environment:
+      # Modify the PLAYWRIGHT_TEST_DIR folder path to suit your needs
+      - PLAYWRIGHT_TEST_DIR=tests/Playwright
+      - NETWORK_IFACE=eth0
+      - DISPLAY=:1
+      - VIRTUAL_HOST=$DDEV_HOSTNAME
+      - HTTP_EXPOSE=8443:8444,9322:9323
+      - HTTPS_EXPOSE=8444:8444,9323:9323
+      - DDEV_UID=${DDEV_UID}
+      - DDEV_GID=${DDEV_GID}
+    expose:
+      - "8444"
+      - "9323"
+    depends_on:
+      - web
+    volumes:
+      - .:/mnt/ddev_config
+      - ddev-global-cache:/mnt/ddev-global-cache
+      - ../:/var/www/html:rw
+    external_links:
+      - ddev-router:${DDEV_HOSTNAME}
+    working_dir: /var/www/html

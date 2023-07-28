@@ -1,4 +1,4 @@
-const methodsConfig = require('../methodsConfig.json')
+const methodsConfig = require('./methodsConfig.json')
 
 
 const banktransfer = methodsConfig.banktransfer;

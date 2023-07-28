@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cea1ff9bf85bcfc84018e2cbe6806299",
+    "content-hash": "08ed061076326ed4c72999e92368f69c",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1943,23 +1943,23 @@
         },
         {
             "name": "php-stubs/woocommerce-stubs",
-            "version": "v5.9.1",
+            "version": "v7.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-stubs/woocommerce-stubs.git",
-                "reference": "486ccff117badfab94c404065d37a77d632d7db5"
+                "reference": "3a2f522e29451490c357af550227795d2b0fc55a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/486ccff117badfab94c404065d37a77d632d7db5",
-                "reference": "486ccff117badfab94c404065d37a77d632d7db5",
+                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/3a2f522e29451490c357af550227795d2b0fc55a",
+                "reference": "3a2f522e29451490c357af550227795d2b0fc55a",
                 "shasum": ""
             },
             "require": {
-                "php-stubs/wordpress-stubs": "^5.3.0"
+                "php-stubs/wordpress-stubs": "^5.3 || ^6.0"
             },
             "require-dev": {
-                "php": "~7.1",
+                "php": "~7.1 || ~8.0",
                 "php-stubs/generator": "^0.8.0"
             },
             "suggest": {
@@ -1981,9 +1981,9 @@
             ],
             "support": {
                 "issues": "https://github.com/php-stubs/woocommerce-stubs/issues",
-                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v5.9.1"
+                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v7.9.0"
             },
-            "time": "2022-04-30T06:35:48+00:00"
+            "time": "2023-07-17T22:41:38+00:00"
         },
         {
             "name": "php-stubs/wordpress-stubs",
@@ -4684,8 +4684,7 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "fzaninotto/faker": 20,
-        "php-stubs/wordpress-stubs": 0,
-        "php-stubs/woocommerce-stubs": 0
+        "php-stubs/wordpress-stubs": 0
     },
     "prefer-stable": false,
     "prefer-lowest": false,

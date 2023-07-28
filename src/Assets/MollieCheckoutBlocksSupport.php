@@ -13,7 +13,6 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
     protected $name = "mollie";
     /** @var string $scriptHandle */
     protected $scriptHandle = "mollie_block_index";
-
     /** @var Data */
     protected $dataService;
     /** @var array */
@@ -22,8 +21,13 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
     protected $registerScriptUrl;
     /** @var string $registerScriptVersion */
     protected $registerScriptVersion;
-    public function __construct(Data $dataService, array $gatewayInstances, string $registerScriptUrl, string $registerScriptVersion)
-    {
+
+    public function __construct(
+        Data $dataService,
+        array $gatewayInstances,
+        string $registerScriptUrl,
+        string $registerScriptVersion
+    ) {
         $this->dataService = $dataService;
         $this->gatewayInstances = $gatewayInstances;
         $this->registerScriptUrl = $registerScriptUrl;
@@ -35,7 +39,7 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
         //
     }
 
-    public function get_payment_method_script_handles()
+    public function get_payment_method_script_handles(): array
     {
         wp_register_script(
             $this->scriptHandle,
@@ -53,15 +57,6 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
             ]
         );
         return [$this->scriptHandle];
-    }
-
-    public function get_payment_method_data()
-    {
-        return [
-            'title' => "Credit card",
-            'description' => "Credit card description",
-            'supports' => $this->get_supported_features(),
-        ];
     }
 
     private function gatewayDataForWCBlocks(Data $dataService, array $gatewayInstances): array
@@ -102,7 +97,6 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
         $isSepaEnabled = isset($gatewayInstances['mollie_wc_gateway_directdebit']) && $gatewayInstances['mollie_wc_gateway_directdebit']->enabled === 'yes';
         /** @var MolliePaymentGateway $gateway */
         foreach ($gatewayInstances as $gatewayKey => $gateway) {
-            /** @var string $gatewayId */
             $gatewayId = is_string($gateway->paymentMethod()->getProperty('id')) ? $gateway->paymentMethod(
             )->getProperty('id') : "";
 
@@ -158,7 +152,7 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
         $supports = (array)$paymentMethod->getProperty('supports');
         $isSepaPaymentMethod = (bool)$paymentMethod->getProperty('SEPA');
         if ($isSepaEnabled && $isSepaPaymentMethod) {
-            array_push($supports, 'subscriptions');
+            $supports[] = 'subscriptions';
         }
 
         return $supports;

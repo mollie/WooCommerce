@@ -90,7 +90,8 @@ class PaymentService
     public function processPayment($orderId, $order, $paymentMethod, $redirectUrl)
     {
         $this->logger->debug(
-            "{$paymentMethod->getProperty('id')}: Start process_payment for order {$orderId}"
+            "{$paymentMethod->getProperty('id')}: Start process_payment for order {$orderId}",
+            [true]
         );
         $initialOrderStatus = $this->processInitialOrderStatus($paymentMethod);
         $customerId = $this->getUserMollieCustomerId($order);
@@ -522,7 +523,8 @@ class PaymentService
         //
         if ($molliePaymentType === self::PAYMENT_METHOD_TYPE_ORDER) {
             $this->logger->debug(
-                "{$this->gateway->id}: Create Mollie payment object for order {$orderId}"
+                "{$this->gateway->id}: Create Mollie payment object for order {$orderId}",
+                [true]
             );
 
             list($paymentObject, $molliePaymentType) = $this->processAsMollieOrder(

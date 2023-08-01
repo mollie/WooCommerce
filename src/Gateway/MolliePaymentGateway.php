@@ -570,12 +570,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
                 if ($order_status_cancelled_payments === 'cancelled') {
                     return $this->get_return_url($order);
                 } else {
-
-                    wc_add_notice(__(
-                                      'You have cancelled your payment. Please complete your order with a different payment method.',
-                                      'mollie-payments-for-woocommerce'
-                                  ), "error");
-
+                    wc_add_notice(__('You have cancelled your payment. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'), "error");
                     $this->notice->addNotice(
                         'notice',
                         __(
@@ -583,7 +578,6 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
                             'mollie-payments-for-woocommerce'
                         )
                     );
-
                     // Return to order payment page
                     return $failedRedirect;
                 }
@@ -597,12 +591,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
                     && !$payment->isPaid()
                     && !$payment->isAuthorized()
                 ) {
-
-                    wc_add_notice(__(
-                                      'Your payment was not successful. Please complete your order with a different payment method.',
-                                      'mollie-payments-for-woocommerce'
-                                  ), "error");
-
+                    wc_add_notice(__('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'), "error");
                     $this->notice->addNotice(
                         'notice',
                         __(
@@ -617,12 +606,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
                     $this->paymentMethod->debugGiftcardDetails($payment, $order);
                 }
             } catch (UnexpectedValueException $exc) {
-
-                wc_add_notice(__(
-                                  'Your payment was not successful. Please complete your order with a different payment method.',
-                                  'mollie-payments-for-woocommerce'
-                              ), "error");
-
+                wc_add_notice(__('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'), "error");
                 $this->notice->addNotice(
                     'notice',
                     __(

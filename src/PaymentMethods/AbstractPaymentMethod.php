@@ -117,6 +117,9 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
      */
     public function getIconUrl(): string
     {
+        if (isset($this->apiPaymentMethod["image"]) && property_exists($this->apiPaymentMethod["image"], "svg")) {
+            return $this->iconFactory->getExternalIconHtml($this->apiPaymentMethod["image"]->svg);
+        }
         return $this->iconFactory->getIconUrl(
             $this->getIdFromConfig()
         );

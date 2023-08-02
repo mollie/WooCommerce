@@ -173,14 +173,14 @@ class PaymentModule implements ServiceModule, ExecutableModule
                 continue;
             }
             $heldDurationInSeconds = $heldDuration * 60;
-            if ($gateway === 'mollie_wc_gateway_bankTransfer') {
+            if ($gateway === 'Mollie_WC_Gateway_Banktransfer') {
                 $durationInHours = absint($heldDuration) * 24;
                 $durationInMinutes = $durationInHours * 60;
                 $heldDurationInSeconds = $durationInMinutes * 60;
             }
             $args = [
                 'limit' => -1,
-                'status' => 'pending',
+                'status' => ['wc-on-hold', 'wc-pending'],
                 'payment_method' => strtolower($gateway),
                 'date_modified' => '<' . (time() - $heldDurationInSeconds),
                 'return' => 'ids',

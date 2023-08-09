@@ -1,0 +1,15 @@
+name: Create release package
+on:
+  workflow_dispatch:
+    inputs:
+      PACKAGE_VERSION:
+        description: 'Package Version'
+        required: true
+jobs:
+  create_archive:
+    uses: inpsyde/reusable-workflows/.github/workflows/build-plugin-archive.yml@main
+    with:
+      PLUGIN_VERSION: ${{ inputs.PACKAGE_VERSION }}
+      #PLUGIN_MAIN_FILE: index.php
+      PRE_SCRIPT: |
+        echo 'hello world!';

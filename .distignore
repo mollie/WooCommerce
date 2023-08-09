@@ -1,0 +1,11 @@
+.distignore
+.ddev
+.git*
+tests/
+resources/
+vendor/**/test*
+*.lock
+composer.json
+package.json
+package-lock.json
+*.xml.*

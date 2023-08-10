@@ -1027,6 +1027,9 @@ msgstr "Deze tekst wordt weergegeven als eerste optie in de KBC/CBC-uitgevers dr
 msgid "Klarna Pay later"
 msgstr "Klarna betaal later"
 
+msgid "Pay with Klarna"
+msgstr "Betaal met Klarna"
+
 #: ../src/PaymentMethods/Klarnapaylater.php:14, ../src/PaymentMethods/Klarnapaynow.php:14, ../src/PaymentMethods/Klarnasliceit.php:15
 msgid "To accept payments via Klarna, all default WooCommerce checkout fields should be enabled and required."
 msgstr "Om betalingen via Klarna te accepteren, moeten alle standaard WooCommerce-afrekenvelden zijn geactiveerd en verplicht zijn gesteld."

@@ -36,6 +36,7 @@ use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Mollie\WooCommerce\Subscription\MollieSepaRecurringGateway;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
+use Mollie\WooCommerce\PaymentMethods\Constants;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 
@@ -95,9 +96,19 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 }
                 return $availableMethods;
             },
+            'gateway.getKlarnaPaymentMethodsAfterFeatureFlag' => static function (ContainerInterface $container): array {
+                $availablePaymentMethods = $container->get('gateway.listAllMethodsAvailable');
+                $klarnaOneFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.klarna_one_enabled', getenv('MOL_KLARNA_ENABLED') === '1');
+                if (!$klarnaOneFlag) {
+                    return array_filter($availablePaymentMethods, static function ($method) {
+                        return $method['id'] !== Constants::KLARNA;
+                    });
+                }
+                return $availablePaymentMethods;
+            },
             'gateway.isSDDGatewayEnabled' => static function (ContainerInterface $container): bool {
                 $enabledMethods = $container->get('gateway.paymentMethodsEnabledAtMollie');
-                return in_array('directdebit', $enabledMethods, true);
+                return in_array(Constants::DIRECTDEBIT, $enabledMethods, true);
             },
             IconFactory::class => static function (ContainerInterface $container): IconFactory {
                 $pluginUrl = $container->get('shared.plugin_url');
@@ -529,7 +540,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
             $isSepa = $paymentMethod->getProperty('SEPA');
             $key = 'mollie_wc_gateway_' . $paymentMethodId;
             if ($isSepa) {
-                $directDebit = $paymentMethods['directdebit'];
+                $directDebit = $paymentMethods[Constants::DIRECTDEBIT];
                 $gateways[$key] = new MollieSepaRecurringGateway(
                     $directDebit,
                     $paymentMethod,
@@ -588,7 +599,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
     protected function instantiatePaymentMethods($container): array
     {
         $paymentMethods = [];
-        $listAllAvailabePaymentMethods = $container->get('gateway.listAllMethodsAvailable');
+        $listAllAvailablePaymentMethods = $container->get('gateway.getKlarnaPaymentMethodsAfterFeatureFlag');
         $iconFactory = $container->get(IconFactory::class);
         assert($iconFactory instanceof IconFactory);
         $settingsHelper = $container->get('settings.settings_helper');
@@ -597,7 +608,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         assert($surchargeService instanceof Surcharge);
         $paymentFieldsService = $container->get(PaymentFieldsService::class);
         assert($paymentFieldsService instanceof PaymentFieldsService);
-        foreach ($listAllAvailabePaymentMethods as $paymentMethodAvailable) {
+        foreach ($listAllAvailablePaymentMethods as $paymentMethodAvailable) {
             $paymentMethodId = $paymentMethodAvailable['id'];
             $paymentMethods[$paymentMethodId] = $this->buildPaymentMethod(
                 $paymentMethodId,
@@ -610,8 +621,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
         }
 
         //I need DirectDebit to create SEPA gateway
-        if (!in_array('directdebit', array_keys($paymentMethods), true)) {
-            $paymentMethodId = 'directdebit';
+        if (!in_array(Constants::DIRECTDEBIT, array_keys($paymentMethods), true)) {
+            $paymentMethodId = Constants::DIRECTDEBIT;
             $paymentMethods[$paymentMethodId] = $this->buildPaymentMethod(
                 $paymentMethodId,
                 $iconFactory,

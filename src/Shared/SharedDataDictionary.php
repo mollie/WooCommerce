@@ -12,6 +12,7 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_Ideal',
         'Mollie_WC_Gateway_Creditcard',
         'Mollie_WC_Gateway_In3',
+        'Mollie_WC_Gateway_Klarna',
         'Mollie_WC_Gateway_Klarnapaylater',
         'Mollie_WC_Gateway_Klarnapaynow',
         'Mollie_WC_Gateway_Klarnasliceit',

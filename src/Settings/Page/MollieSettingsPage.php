@@ -6,6 +6,7 @@ namespace Mollie\WooCommerce\Settings\Page;
 
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
+use Mollie\WooCommerce\PaymentMethods\Constants;
 use WC_Admin_Settings;
 use WC_Gateway_BACS;
 use WC_Settings_Page;
@@ -753,7 +754,7 @@ class MollieSettingsPage extends WC_Settings_Page
      */
     protected function isKlarnaEnabled(): bool
     {
-        $klarnaGateways = ['klarnapaylater', 'klarnasliceit', 'klarnapaynow'];
+        $klarnaGateways = [Constants::KLARNAPAYLATER, Constants::KLARNASLICEIT, Constants::KLARNAPAYNOW, Constants::KLARNA];
         $isKlarnaEnabled = false;
         foreach ($klarnaGateways as $klarnaGateway) {
             if (

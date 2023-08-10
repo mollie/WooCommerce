@@ -1,0 +1,16 @@
+name: Create release package
+on:
+  workflow_dispatch:
+    inputs:
+      PACKAGE_VERSION:
+        description: 'Package Version'
+        required: true
+jobs:
+  create_archive:
+    uses: inpsyde/reusable-workflows/.github/workflows/build-plugin-archive.yml@main
+    with:
+      PLUGIN_VERSION: ${{ inputs.PACKAGE_VERSION }}
+      PHP_VERSION: 7.2
+      PLUGIN_MAIN_FILE: mollie-payments-for-woocommerce.php
+      PRE_SCRIPT: |
+        echo 'hello world!';

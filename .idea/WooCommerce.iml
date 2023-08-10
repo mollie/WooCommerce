@@ -34,7 +34,6 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/sebastian/environment" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/sebastian/type" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/mockery/mockery" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/polyfill-php73" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/phar-io/version" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/dealerdirect/phpcodesniffer-composer-installer" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/polyfill-ctype" />
@@ -77,8 +76,9 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/brain/monkey" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/php-stubs/woocommerce-stubs" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/php-stubs/wordpress-stubs" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/doctrine/deprecations" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/phpstan/phpdoc-parser" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/doctrine/deprecations" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/inpsyde/composer-assets-compiler" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

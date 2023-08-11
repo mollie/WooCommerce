@@ -4,8 +4,16 @@
 tests/
 resources/
 vendor/**/test*
+languages/*.po
 *.lock
 composer.json
 package.json
 package-lock.json
+patchwork.json
 *.xml.*
+*.sh
+*.config.*
+*.md
+gulpfile.js
+changelog.txt
+psalm.xml

@@ -1,21 +1,20 @@
 <component name="InspectionProjectProfileManager">
   <profile version="1.0">
     <option name="myName" value="Project Default" />
-    <inspection_tool class="PhpCSFixerValidationInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="PhpCSValidationInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <scope name="WordPress Core" level="WEAK WARNING" enabled="false">
+        <option name="CODING_STANDARD" value="Custom" />
+        <option name="CUSTOM_RULESET_PATH" value="$PROJECT_DIR$/phpcs.xml.dist" />
+      </scope>
       <option name="CODING_STANDARD" value="Custom" />
       <option name="CUSTOM_RULESET_PATH" value="$PROJECT_DIR$/phpcs.xml.dist" />
-      <option name="EXTENSIONS" value="php,js,css,inc" />
     </inspection_tool>
-    <inspection_tool class="PhpCompoundNamespaceDepthInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
-    <inspection_tool class="PhpLongTypeFormInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
-    <inspection_tool class="PhpMissingVisibilityInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
-    <inspection_tool class="PhpModifierOrderInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
-    <inspection_tool class="PhpNewClassMissingParameterListInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
-    <inspection_tool class="PhpSeparateElseIfInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
-    <inspection_tool class="PhpTraitsUseListInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
-    <inspection_tool class="PhpVarUsageInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="PsalmGlobal" enabled="true" level="ERROR" enabled_by_default="true" editorAttributes="ERRORS_ATTRIBUTES">
+      <scope name="WordPress Core" level="ERROR" enabled="false">
+        <option name="showInfo" value="true" />
+        <option name="findUnusedCode" value="true" />
+        <option name="findUnusedSuppress" value="true" />
+      </scope>
       <option name="showInfo" value="true" />
       <option name="findUnusedCode" value="true" />
       <option name="findUnusedSuppress" value="true" />

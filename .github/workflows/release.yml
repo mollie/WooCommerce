@@ -7,7 +7,7 @@ on:
         required: true
 jobs:
   create_archive:
-    uses: inpsyde/reusable-workflows/.github/workflows/build-plugin-archive.yml@feature/compiler-flags-in-archive-creation
+    uses: inpsyde/reusable-workflows/.github/workflows/build-plugin-archive.yml@main
     with:
       PLUGIN_VERSION: ${{ inputs.PACKAGE_VERSION }}
       PHP_VERSION: 7.2

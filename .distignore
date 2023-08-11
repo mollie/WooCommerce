@@ -5,6 +5,7 @@ tests/
 resources/
 vendor/**/test*
 languages/*.po
+bin/
 *.lock
 composer.json
 package.json

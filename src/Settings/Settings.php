@@ -85,58 +85,34 @@ class Settings
     public function processAdminOptionCustomLogo(WC_Payment_Gateway $gateway)
     {
         $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
-        $isNonceValid = wp_verify_nonce($nonce, 'woocommerce-settings');
+        $isNonceValid = $nonce && wp_verify_nonce($nonce, 'woocommerce-settings');
         if (!$isNonceValid) {
             return;
         }
-        $mollieUploadDirectory = trailingslashit(wp_upload_dir()['basedir'])
-            . 'mollie-uploads/' . $gateway->id;
-        wp_mkdir_p($mollieUploadDirectory);
-        $targetLocation = $mollieUploadDirectory . '/';
-        $fileOptionName = $gateway->id . '_upload_logo';
         $enabledLogoOptionName = $gateway->id . '_enable_custom_logo';
         $gatewaySettings = get_option(sprintf('%s_settings', $gateway->id), []);
         if (!isset($_POST[$enabledLogoOptionName])) {
             $gatewaySettings["iconFileUrl"] = null;
             $gatewaySettings["iconFilePath"] = null;
             update_option(sprintf('%s_settings', $gateway->id), $gatewaySettings);
+            return;
         }
+        $fileOptionName = $gateway->id . '_upload_logo';
         if (
-            isset($_POST[$enabledLogoOptionName])
-            && isset($_FILES[$fileOptionName]['size'])
-            && isset($_FILES[$fileOptionName]['name'])
-            && $_FILES[$fileOptionName]['size'] > 0
+                !empty($_FILES[$fileOptionName]['size'])
+                && !empty($_FILES[$fileOptionName]['name'])
+                && is_string($_FILES[$fileOptionName]['name'])
+                && !empty($_FILES[$fileOptionName]['tmp_name'])
+                && is_string($_FILES[$fileOptionName]['tmp_name'])
+
         ) {
-            if ($_FILES[$fileOptionName]['size'] <= 500000) {
-                $name = filter_var(wp_unslash($_FILES[$fileOptionName]['name']), FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-                $fileName = preg_replace(
-                    '#\s+#',
-                    '_',
-                    $name
-                );
-                $tempName = isset($_FILES[$fileOptionName]['tmp_name']) ?
-                        filter_var(wp_unslash($_FILES[$fileOptionName]['tmp_name']), FILTER_SANITIZE_FULL_SPECIAL_CHARS)
-                        : 'tmp_name';
-                move_uploaded_file($tempName, $targetLocation . $fileName);
-                $gatewaySettings["iconFileUrl"] = trailingslashit(
-                    wp_upload_dir()['baseurl']
-                ) . 'mollie-uploads/' . $gateway->id . '/' . $fileName;
-                $gatewaySettings["iconFilePath"] = trailingslashit(
-                    wp_upload_dir()['basedir']
-                ) . 'mollie-uploads/' . $gateway->id . '/' . $fileName;
-                update_option(sprintf('%s_settings', $gateway->id), $gatewaySettings);
-            } else {
-                $notice = new AdminNotice();
-                $message = sprintf(
-                    esc_html__(
-                        '%1$sMollie Payments for WooCommerce%2$s Unable to upload the file. Size must be under 500kb.',
-                        'mollie-payments-for-woocommerce'
-                    ),
-                    '<strong>',
-                    '</strong>'
-                );
-                $notice->addNotice('notice-error is-dismissible', $message);
+            $name = filter_var(wp_unslash($_FILES[$fileOptionName]['name']), FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $tempName = filter_var(wp_unslash($_FILES[$fileOptionName]['tmp_name']), FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $size = filter_var(wp_unslash($_FILES[$fileOptionName]['size']), FILTER_SANITIZE_NUMBER_INT);
+            if (!$this->validateUploadedFile($name, $tempName, (int) $size)) {
+                return;
             }
+            $this->processUploadedFile($name, $tempName, $gateway);
         }
     }
 
@@ -654,5 +630,73 @@ class Settings
         }
 
         return $merchantProfileId;
+    }
+
+    protected function validateUploadedFile(string $fileName, string $fileTempName, int $fileSize): bool
+    {
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'JPG', 'JPEG', 'PNG', 'GIF', 'SVG'];
+        $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION);
+        $extensionNotAllowed = !in_array($fileExtension, $allowedExtensions);
+        if (!class_exists('finfo')) {
+            return false;
+        }
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        if (!$finfo) {
+            return false;
+        }
+        $fileMimeType = finfo_file($finfo, $fileTempName);
+        finfo_close($finfo);
+        $fileIsNotAnImage = !$fileMimeType || strpos($fileMimeType, 'image') === false;
+        $invalidFileSize = $fileSize > 500000 || $fileSize === 0;
+        $notice = new AdminNotice();
+        if ($extensionNotAllowed || $fileIsNotAnImage) {
+            $message = sprintf(
+                    esc_html__(
+                            '%1$sMollie Payments for WooCommerce%2$s Unable to upload the file. Only jpg, jpeg, png and gif files are allowed.',
+                            'mollie-payments-for-woocommerce'
+                    ),
+                    '<strong>',
+                    '</strong>'
+            );
+            $notice->addNotice('notice-error is-dismissible', $message);
+            return false;
+        }
+
+        if ($invalidFileSize) {
+            $message = sprintf(
+                    esc_html__(
+                            '%1$sMollie Payments for WooCommerce%2$s Unable to upload the file. Size must be under 500kb.',
+                            'mollie-payments-for-woocommerce'
+                    ),
+                    '<strong>',
+                    '</strong>'
+            );
+            $notice->addNotice('notice-error is-dismissible', $message);
+            return false;
+        }
+        return true;
+    }
+
+    protected function processUploadedFile(string $name, string $tempName, WC_Payment_Gateway $gateway)
+    {
+        $mollieUploadDirectory = trailingslashit(wp_upload_dir()['basedir'])
+                . 'mollie-uploads/' . $gateway->id;
+        wp_mkdir_p($mollieUploadDirectory);
+        $targetLocation = $mollieUploadDirectory . '/';
+
+        $fileName = preg_replace(
+                '#\s+#',
+                '_',
+                $name
+        );
+
+        move_uploaded_file($tempName, $targetLocation . $fileName);
+        $gatewaySettings["iconFileUrl"] = trailingslashit(
+                        wp_upload_dir()['baseurl']
+                ) . 'mollie-uploads/' . $gateway->id . '/' . $fileName;
+        $gatewaySettings["iconFilePath"] = trailingslashit(
+                        wp_upload_dir()['basedir']
+                ) . 'mollie-uploads/' . $gateway->id . '/' . $fileName;
+        update_option(sprintf('%s_settings', $gateway->id), $gatewaySettings);
     }
 }

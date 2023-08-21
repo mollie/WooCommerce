@@ -159,8 +159,7 @@ class MollieOrder extends MollieObject
         if ($cardToken && isset($paymentRequestData['payment'])) {
             $paymentRequestData['payment']['cardToken'] = $cardToken;
         }
-
-        $applePayToken = filter_input(INPUT_POST, 'token', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+        $applePayToken = wc_clean(wp_unslash($_POST["token"] ?? ''));
         if ($applePayToken && isset($paymentRequestData['payment'])) {
             $encodedApplePayToken = json_encode($applePayToken);
             $paymentRequestData['payment']['applePayPaymentToken'] = $encodedApplePayToken;

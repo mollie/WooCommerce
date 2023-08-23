@@ -90,7 +90,8 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         return $settings["iconFileUrl"] ?? null;
     }
 
-    public function isCreditCardSelectorEnabled(){
+    public function isCreditCardSelectorEnabled()
+    {
         $settings = $this->getSettings();
         return isset($settings[PaymentMethodsIconUrl::MOLLIE_CREDITCARD_ICONS_ENABLER]) ? $settings[PaymentMethodsIconUrl::MOLLIE_CREDITCARD_ICONS_ENABLER] === "yes" :  null;
     }
@@ -129,8 +130,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
      */
     public function getIconUrl(): string
     {
-
-        if($uploadedImageUrl = $this->getUploadedImage()){
+        if ($uploadedImageUrl = $this->getUploadedImage()) {
             return $this->iconFactory->getExternalIconHtml($uploadedImageUrl);
         }
 

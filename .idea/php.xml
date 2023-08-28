@@ -101,6 +101,11 @@
       <path value="$PROJECT_DIR$/vendor/coenjacobs/mozart" />
       <path value="$PROJECT_DIR$/vendor/inpsyde/modularity" />
       <path value="$PROJECT_DIR$/vendor/psr/container" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php73" />
+      <path value="$PROJECT_DIR$/vendor/symfony/finder" />
+      <path value="$PROJECT_DIR$/vendor/league/flysystem" />
+      <path value="$PROJECT_DIR$/vendor/league/mime-type-detection" />
+      <path value="$PROJECT_DIR$/vendor/coenjacobs/mozart" />
     </include_path>
   </component>
   <component name="PhpInterpreters">

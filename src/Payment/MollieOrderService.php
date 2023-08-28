@@ -614,7 +614,7 @@ class MollieOrderService
             'email' => $billingAddress->email,
             'phone' => null,
             'address_1' => $billingAddress->streetAndNumber,
-            'address_2' => null,
+            'address_2' => property_exists($billingAddress, "streetAdditional") ? $billingAddress->streetAdditional : null,
             'city' => $billingAddress->city,
             'state' => null,
             'postcode' => $billingAddress->postalCode,

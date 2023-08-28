@@ -4,6 +4,7 @@
   "type": "wordpress-plugin",
   "license": "GPL-2.0-or-later",
   "minimum-stability": "dev",
+  "prefer-stable": true,
   "authors": [
     {
       "name": "Mollie B.V.",
@@ -30,6 +31,7 @@
     "johnpbloch/wordpress-core": "^5.0",
     "fzaninotto/faker": "^1.9@dev",
     "inpsyde/php-coding-standards": "^1.0.0",
+    "inpsyde/composer-assets-compiler": "^2.5",
     "php-stubs/wordpress-stubs": "^5.0@stable",
     "php-stubs/woocommerce-stubs": "7.9.0",
     "vimeo/psalm": "^4.8 || ^5.13.0"
@@ -62,14 +64,23 @@
     }
   ],
   "extra": {
-    "installer-disable": true
+    "installer-disable": true,
+    "composer-asset-compiler": {
+      "auto-run": false,
+      "dependencies": "install",
+      "script": "build",
+      "default-env": {
+        "WEBPACK_ENV": "production"
+      }
+    }
   },
   "config": {
     "allow-plugins": {
       "dealerdirect/phpcodesniffer-composer-installer": true,
       "composer/package-versions-deprecated": true,
       "automattic/jetpack-autoloader": false,
-      "composer/installers": true
+      "composer/installers": true,
+      "inpsyde/composer-assets-compiler": true
     }
   }
 }

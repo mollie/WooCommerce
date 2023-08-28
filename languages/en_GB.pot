@@ -1027,6 +1027,9 @@ msgstr ""
 msgid "Klarna Pay later"
 msgstr ""
 
+msgid "Pay with Klarna"
+msgstr ""
+
 #: ../src/PaymentMethods/Klarnapaylater.php:14, ../src/PaymentMethods/Klarnapaynow.php:14, ../src/PaymentMethods/Klarnasliceit.php:15
 msgid "To accept payments via Klarna, all default WooCommerce checkout fields should be enabled and required."
 msgstr ""

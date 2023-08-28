@@ -1027,6 +1027,9 @@ msgstr "Este texto se mostrará como la primera opción en el menú desplegable 
 msgid "Klarna Pay later"
 msgstr "Klarna Pay later"
 
+msgid "Pay with Klarna"
+msgstr "Paga en 3 plazos sin intereses"
+
 #: ../src/PaymentMethods/Klarnapaylater.php:14, ../src/PaymentMethods/Klarnapaynow.php:14, ../src/PaymentMethods/Klarnasliceit.php:15
 msgid "To accept payments via Klarna, all default WooCommerce checkout fields should be enabled and required."
 msgstr "Para aceptar los pagos vía Klarna, todos los campos predeterminados del proceso de pago de WooCommerce deben estar habilitados y ser obligatorios."

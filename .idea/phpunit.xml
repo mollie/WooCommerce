@@ -3,6 +3,7 @@
   <component name="PHPUnit">
     <option name="directories">
       <list>
+        <option value="$PROJECT_DIR$/.ddev/wordpress/wp-includes/sodium_compat/tests" />
         <option value="$PROJECT_DIR$/tests" />
       </list>
     </option>

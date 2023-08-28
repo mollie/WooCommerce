@@ -33,7 +33,7 @@
     "inpsyde/php-coding-standards": "^1.0.0",
     "inpsyde/composer-assets-compiler": "^2.5",
     "php-stubs/wordpress-stubs": "^5.0@stable",
-    "php-stubs/woocommerce-stubs": "^5.0@stable",
+    "php-stubs/woocommerce-stubs": "7.9.0",
     "vimeo/psalm": "^4.8 || ^5.13.0"
   },
   "autoload": {

@@ -15,7 +15,6 @@ use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPal;
 use Mollie\WooCommerce\Components\AcceptedLocaleValuesDictionary;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
-use Mollie\WooCommerce\PaymentMethods\Constants;
 use Psr\Container\ContainerInterface;
 
 class AssetsModule implements ExecutableModule
@@ -559,7 +558,7 @@ class AssetsModule implements ExecutableModule
 
         add_action(
             'init',
-            function () use ($hasBlocksEnabled, $settingsHelper, $pluginUrl, $pluginPath) {
+            function () use ($container, $hasBlocksEnabled, $settingsHelper, $pluginUrl, $pluginPath) {
                 self::registerFrontendScripts($pluginUrl, $pluginPath);
 
                 // Enqueue Scripts

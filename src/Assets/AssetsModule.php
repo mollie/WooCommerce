@@ -559,7 +559,7 @@ class AssetsModule implements ExecutableModule
 
         add_action(
             'init',
-            function () use ($hasBlocksEnabled, $settingsHelper, $pluginUrl, $pluginPath) {
+            function () use ($container, $hasBlocksEnabled, $settingsHelper, $pluginUrl, $pluginPath) {
                 self::registerFrontendScripts($pluginUrl, $pluginPath);
 
                 // Enqueue Scripts

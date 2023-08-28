@@ -136,7 +136,7 @@ class GatewaySurchargeHandler
         $this->cartRemoveFee();
         WC()->cart->calculate_totals();
         $newTotal = (float) WC()->cart->get_totals()['total'];
-        $totalTax  = WC()->cart->get_totals()['total_tax'];
+        $totalTax = WC()->cart->get_totals()['total_tax'];
         $noSurchargeData = [
 
                 'amount' => false,
@@ -171,7 +171,7 @@ class GatewaySurchargeHandler
         $feeAmount = $this->surcharge->calculateFeeAmount(WC()->cart, $gatewaySettings);
 
         $label = $this->gatewayFeeLabel;
-        add_action('woocommerce_cart_calculate_fees', function () use ($label, $feeAmount) {
+        add_action('woocommerce_cart_calculate_fees', static function () use ($label, $feeAmount) {
             global $woocommerce;
             $woocommerce->cart->add_fee($label, $feeAmount, true, 'standard');
         });
@@ -182,7 +182,7 @@ class GatewaySurchargeHandler
             $feeAmountTaxed = $feeAmountTaxed + (float) WC()->cart->get_totals()['fee_tax'];
         }
         $newTotal = (float) WC()->cart->get_totals()['total'];
-        $totalTax  = WC()->cart->get_totals()['total_tax'];
+        $totalTax = WC()->cart->get_totals()['total_tax'];
         $data = [
                 'amount' => $feeAmountTaxed,
                 'name' => $this->gatewayFeeLabel,
@@ -285,7 +285,7 @@ class GatewaySurchargeHandler
     protected function cartRemoveFee()
     {
         $label = $this->gatewayFeeLabel;
-        add_action('woocommerce_before_calculate_totals', function () use ($label) {
+        add_action('woocommerce_before_calculate_totals', static function () use ($label) {
             $fees = WC()->cart->get_fees();
             foreach ($fees as $key => $fee) {
                 if ($fees[$key]->name === $label) {
@@ -295,6 +295,7 @@ class GatewaySurchargeHandler
             WC()->cart->fees_api()->set_fees($fees);
         });
     }
+
     protected function orderAddFee($order, $amount, $surchargeName)
     {
         $item_fee = new WC_Order_Item_Fee();

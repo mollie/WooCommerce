@@ -139,12 +139,17 @@
       <path value="$PROJECT_DIR$/vendor/doctrine/deprecations" />
       <path value="$PROJECT_DIR$/vendor/phpstan/phpdoc-parser" />
       <path value="$PROJECT_DIR$/vendor/inpsyde/composer-assets-compiler" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php73" />
+      <path value="$PROJECT_DIR$/vendor/symfony/finder" />
+      <path value="$PROJECT_DIR$/vendor/league/flysystem" />
+      <path value="$PROJECT_DIR$/vendor/league/mime-type-detection" />
+      <path value="$PROJECT_DIR$/vendor/coenjacobs/mozart" />
     </include_path>
   </component>
   <component name="PhpInterpreters">
     <interpreters>
-      <interpreter id="52b49461-5bc3-4708-8d5d-ae6e32b31b9c" name="DDEV" home="docker-compose://DATA" false="false" debugger_id="php.debugger.XDebug">
-        <remote_data INTERPRETER_PATH="php7.4" HELPERS_PATH="/opt/.phpstorm_helpers" VALID="true" RUN_AS_ROOT_VIA_SUDO="false" DOCKER_ACCOUNT_NAME="Docker" DOCKER_COMPOSE_SERVICE_NAME="web" DOCKER_REMOTE_PROJECT_PATH="/opt/project">
+      <interpreter id="52b49461-5bc3-4708-8d5d-ae6e32b31b9c" name="DDEV" home="docker-compose://DATA" debugger_id="php.debugger.XDebug">
+        <remote_data INTERPRETER_PATH="php7.4" HELPERS_PATH="/opt/.phpstorm_helpers" INITIALIZED="false" VALID="true" RUN_AS_ROOT_VIA_SUDO="false" DOCKER_ACCOUNT_NAME="Docker" DOCKER_COMPOSE_SERVICE_NAME="web" DOCKER_REMOTE_PROJECT_PATH="/opt/project">
           <type_data command="EXEC" />
           <dockerComposeConfigurationPaths>
             <item value="$PROJECT_DIR$/.ddev/.ddev-docker-compose-full.yaml" />
@@ -236,6 +241,17 @@
         </phpinfo>
       </interpreter>
     </phpInfoCache>
+  </component>
+  <component name="PhpProjectServersManager">
+    <servers>
+      <server host="mollie-payments-for-woocommerce.ddev.site" id="9a20d2a4-41f0-42a6-aa78-690b627329a8" name="b96e-178-237-225-191.eu.ngrok.io" use_path_mappings="true">
+        <path_mappings>
+          <mapping local-root="$PROJECT_DIR$" remote-root="/var/www/html/.ddev/wordpress/wp-content/plugins/mollie-payments-for-woocommerce" />
+          <mapping local-root="$PROJECT_DIR$/.ddev/wordpress" remote-root="/var/www/html/.ddev/wordpress" />
+          <mapping local-root="$PROJECT_DIR$/mollie-payments-for-woocommerce.php" remote-root="/var/www/html/.ddev/wordpress/wp-content/plugins/mollie-payments-for-woocommerce/mollie-payments-for-woocommerce.php" />
+        </path_mappings>
+      </server>
+    </servers>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="7.2">
     <option name="suggestChangeDefaultLanguageLevel" value="false" />

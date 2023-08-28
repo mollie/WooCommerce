@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="de.php_perfect.intellij.ddev.settings.DdevSettingsState">
+    <option name="ddevBinary" value="/usr/bin/ddev" />
+  </component>
+</project>

@@ -646,7 +646,6 @@ class AssetsModule implements ExecutableModule
                 // Enqueue Scripts
                 add_action('wp_enqueue_scripts', function () use ($container) {
                     $this->enqueueFrontendScripts($container);
-
                 });
                 add_action('wp_enqueue_scripts', function () use ($settingsHelper) {
                     $this->enqueueComponentsAssets($settingsHelper);

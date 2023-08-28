@@ -104,7 +104,6 @@ class Settings
                 && is_string($_FILES[$fileOptionName]['name'])
                 && !empty($_FILES[$fileOptionName]['tmp_name'])
                 && is_string($_FILES[$fileOptionName]['tmp_name'])
-
         ) {
             $name = filter_var(wp_unslash($_FILES[$fileOptionName]['name']), FILTER_SANITIZE_FULL_SPECIAL_CHARS);
             $tempName = filter_var(wp_unslash($_FILES[$fileOptionName]['tmp_name']), FILTER_SANITIZE_FULL_SPECIAL_CHARS);
@@ -651,12 +650,12 @@ class Settings
         $notice = new AdminNotice();
         if ($extensionNotAllowed || $fileIsNotAnImage) {
             $message = sprintf(
-                    esc_html__(
-                            '%1$sMollie Payments for WooCommerce%2$s Unable to upload the file. Only jpg, jpeg, png and gif files are allowed.',
-                            'mollie-payments-for-woocommerce'
-                    ),
-                    '<strong>',
-                    '</strong>'
+                esc_html__(
+                    '%1$sMollie Payments for WooCommerce%2$s Unable to upload the file. Only jpg, jpeg, png and gif files are allowed.',
+                    'mollie-payments-for-woocommerce'
+                ),
+                '<strong>',
+                '</strong>'
             );
             $notice->addNotice('notice-error is-dismissible', $message);
             return false;
@@ -664,12 +663,12 @@ class Settings
 
         if ($invalidFileSize) {
             $message = sprintf(
-                    esc_html__(
-                            '%1$sMollie Payments for WooCommerce%2$s Unable to upload the file. Size must be under 500kb.',
-                            'mollie-payments-for-woocommerce'
-                    ),
-                    '<strong>',
-                    '</strong>'
+                esc_html__(
+                    '%1$sMollie Payments for WooCommerce%2$s Unable to upload the file. Size must be under 500kb.',
+                    'mollie-payments-for-woocommerce'
+                ),
+                '<strong>',
+                '</strong>'
             );
             $notice->addNotice('notice-error is-dismissible', $message);
             return false;
@@ -685,18 +684,18 @@ class Settings
         $targetLocation = $mollieUploadDirectory . '/';
 
         $fileName = preg_replace(
-                '#\s+#',
-                '_',
-                $name
+            '#\s+#',
+            '_',
+            $name
         );
 
         move_uploaded_file($tempName, $targetLocation . $fileName);
         $gatewaySettings["iconFileUrl"] = trailingslashit(
-                        wp_upload_dir()['baseurl']
-                ) . 'mollie-uploads/' . $gateway->id . '/' . $fileName;
+            wp_upload_dir()['baseurl']
+        ) . 'mollie-uploads/' . $gateway->id . '/' . $fileName;
         $gatewaySettings["iconFilePath"] = trailingslashit(
-                        wp_upload_dir()['basedir']
-                ) . 'mollie-uploads/' . $gateway->id . '/' . $fileName;
+            wp_upload_dir()['basedir']
+        ) . 'mollie-uploads/' . $gateway->id . '/' . $fileName;
         update_option(sprintf('%s_settings', $gateway->id), $gatewaySettings);
     }
 }

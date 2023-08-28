@@ -83,6 +83,19 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         return $this->getConfig()['id'];
     }
 
+    public function getUploadedImage()
+    {
+        $settings = $this->getSettings();
+
+        return $settings["iconFileUrl"] ?? null;
+    }
+
+    public function isCreditCardSelectorEnabled()
+    {
+        $settings = $this->getSettings();
+        return isset($settings[PaymentMethodsIconUrl::MOLLIE_CREDITCARD_ICONS_ENABLER]) ? $settings[PaymentMethodsIconUrl::MOLLIE_CREDITCARD_ICONS_ENABLER] === "yes" :  null;
+    }
+
     /**
      * Access the payment method surcharge applied
      * @return Surcharge
@@ -117,6 +130,13 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
      */
     public function getIconUrl(): string
     {
+        if ($uploadedImageUrl = $this->getUploadedImage()) {
+            return $this->iconFactory->getExternalIconHtml($uploadedImageUrl);
+        }
+
+        if (isset($this->apiPaymentMethod["image"]) && property_exists($this->apiPaymentMethod["image"], "svg") && !$this->isCreditCardSelectorEnabled()) {
+            return $this->iconFactory->getExternalIconHtml($this->apiPaymentMethod["image"]->svg);
+        }
         return $this->iconFactory->getIconUrl(
             $this->getIdFromConfig()
         );
@@ -265,6 +285,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     {
         return array_merge($this->config, $this->getSettings());
     }
+
     /**
      * Default values for the initial settings saved
      *

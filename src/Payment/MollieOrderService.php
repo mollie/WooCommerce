@@ -608,9 +608,7 @@ class MollieOrderService
      */
     protected function findRefundsByLine($payment): array
     {
-        return array_filter($payment->_embedded->refunds, static function ($refund) {
-            return $refund;
-        });
+        return $payment->_embedded->refunds;
     }
 
     /**

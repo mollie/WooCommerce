@@ -1,5 +1,6 @@
 #! /bin/bash
 
+cd languages
 #copy potFile
 cp en_GB.pot en_GB.po
 echo "en_GB.po created"

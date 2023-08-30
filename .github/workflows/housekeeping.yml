@@ -1,0 +1,55 @@
+name: Housekeeping
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore:
+      # We expect PRs to be merged when they are "clean". After merge, we don't need to re-trigger on develop
+      - 'develop'
+
+jobs:
+  housekeeping:
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the changed files back to the repository.
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: "actions/checkout@v2"
+      - name: Store branch and latest SHA
+        id: git
+        run: |
+          echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+      - uses: "shivammathur/setup-php@v2"
+        with:
+          php-version: "7.2"
+      - uses: "ramsey/composer-install@v2"
+        with:
+          composer-options: "--prefer-dist"
+      - name: "Run PHPCBF"
+        run: "composer fix-coding-standards || true"
+
+      - name: "Install node modules"
+        run: "npm install"
+
+      - name: "Install WP-CLI"
+        run: |
+          mkdir ~/wp-cli && cd ~/wp-cli
+          curl -L https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output wp
+          chmod +x wp
+          sudo ln -s ~/wp-cli/wp /usr/local/bin/wp
+      - name: "Create updated .pot file"
+        run: |
+          wp i18n make-pot . ./languages/en_GB.pot --skip-audit --allow-root
+      
+      # For now, any workflow run would result in a commit due to the updated timestamp even if there are no changes in translations
+      # We should figure out a way to only set the timestamp when there are new translations, but for now,
+      # let's just remove that timestamp entirely
+      - name: "Remove POT-Creation-Date"
+        run: sed -i '/POT-Creation-Date/d' ./languages/en_GB.pot
+
+      - uses: "stefanzweifel/git-auto-commit-action@v4"
+        with:
+          push_options: --force
+          # This task should never update dependencies
+          file_pattern: :!*.lock

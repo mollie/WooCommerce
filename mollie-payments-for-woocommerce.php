@@ -19,8 +19,8 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce;
 
-use Inpsyde\Modularity\Package;
-use Inpsyde\Modularity\Properties\PluginProperties;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Package;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Properties\PluginProperties;
 use Mollie\WooCommerce\Activation\ActivationModule;
 use Mollie\WooCommerce\Activation\ConstraintsChecker;
 use Mollie\WooCommerce\Assets\AssetsModule;

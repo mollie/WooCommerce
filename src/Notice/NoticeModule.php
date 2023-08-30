@@ -6,10 +6,10 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Notice;
 
-use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
-use Inpsyde\Modularity\Module\ServiceModule;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\Notice\AdminNotice;
-use Psr\Container\ContainerInterface;
+use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
 use Mollie\WooCommerce\Notice\NoticeInterface as Notice;
 
 class NoticeModule implements ServiceModule

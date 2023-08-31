@@ -6,12 +6,12 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Shared;
 
-use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
-use Inpsyde\Modularity\Module\ServiceModule;
-use Inpsyde\Modularity\Package;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ServiceModule;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Package;
 use Mollie\Api\CompatibilityChecker;
 use Mollie\WooCommerce\SDK\Api;
-use Psr\Container\ContainerInterface;
+use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 
 class SharedModule implements ServiceModule

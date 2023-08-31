@@ -6,15 +6,15 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\SDK;
 
-use Inpsyde\Modularity\Module\ExecutableModule;
-use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
-use Inpsyde\Modularity\Module\ServiceModule;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Gateway\AbstractGateway;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Plugin;
 use Mollie\WooCommerce\SDK\HttpResponse;
-use Psr\Container\ContainerInterface;
+use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
 
 class SDKModule implements ExecutableModule, ServiceModule
 {

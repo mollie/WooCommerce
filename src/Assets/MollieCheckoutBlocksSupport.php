@@ -100,7 +100,7 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
             $gatewayId = is_string($gateway->paymentMethod()->getProperty('id')) ? $gateway->paymentMethod(
             )->getProperty('id') : "";
 
-            if ($gateway->enabled !== 'yes' || $gatewayId === 'directdebit') {
+            if ($gateway->enabled !== 'yes' || ($gatewayId === 'directdebit' && !is_admin())) {
                 continue;
             }
             $content = $gateway->paymentMethod()->getProcessedDescriptionForBlock();

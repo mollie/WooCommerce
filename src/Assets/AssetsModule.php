@@ -32,7 +32,10 @@ class AssetsModule implements ExecutableModule
         if (!has_block('woocommerce/checkout')) {
             return;
         }
+        wp_enqueue_script(MollieCheckoutBlocksSupport::getScriptHandle());
         wp_enqueue_style('mollie-gateway-icons');
+
+        MollieCheckoutBlocksSupport::localizeWCBlocksData($dataService, $gatewayInstances);
     }
 
     public function registerButtonsBlockScripts(string $pluginUrl, string $pluginPath): void
@@ -49,7 +52,7 @@ class AssetsModule implements ExecutableModule
                         '/public/js/paypalButtonBlockComponent.min.js'
                     ),
                     [],
-                    (string) filemtime(
+                    (string)filemtime(
                         $this->getPluginPath(
                             $pluginPath,
                             '/public/js/paypalButtonBlockComponent.min.js'
@@ -73,7 +76,7 @@ class AssetsModule implements ExecutableModule
                         '/public/js/applepayButtonBlockComponent.min.js'
                     ),
                     [],
-                    (string) filemtime(
+                    (string)filemtime(
                         $this->getPluginPath(
                             $pluginPath,
                             '/public/js/applepayButtonBlockComponent.min.js'
@@ -183,7 +186,7 @@ class AssetsModule implements ExecutableModule
             'babel-polyfill',
             $this->getPluginUrl($pluginUrl, '/public/js/babel-polyfill.min.js'),
             [],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/js/babel-polyfill.min.js')),
+            (string)filemtime($this->getPluginPath($pluginPath, '/public/js/babel-polyfill.min.js')),
             true
         );
 
@@ -191,56 +194,56 @@ class AssetsModule implements ExecutableModule
             'mollie_wc_gateway_applepay',
             $this->getPluginUrl($pluginUrl, '/public/js/applepay.min.js'),
             [],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/js/applepay.min.js')),
+            (string)filemtime($this->getPluginPath($pluginPath, '/public/js/applepay.min.js')),
             true
         );
         wp_register_style(
             'mollie-gateway-icons',
             $this->getPluginUrl($pluginUrl, '/public/css/mollie-gateway-icons.min.css'),
             [],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/css/mollie-gateway-icons.min.css')),
+            (string)filemtime($this->getPluginPath($pluginPath, '/public/css/mollie-gateway-icons.min.css')),
             'screen'
         );
         wp_register_style(
             'mollie-components',
             $this->getPluginUrl($pluginUrl, '/public/css/mollie-components.min.css'),
             [],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/css/mollie-components.min.css')),
+            (string)filemtime($this->getPluginPath($pluginPath, '/public/css/mollie-components.min.css')),
             'screen'
         );
         wp_register_style(
             'mollie-applepaydirect',
             $this->getPluginUrl($pluginUrl, '/public/css/mollie-applepaydirect.min.css'),
             [],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/css/mollie-applepaydirect.min.css')),
+            (string)filemtime($this->getPluginPath($pluginPath, '/public/css/mollie-applepaydirect.min.css')),
             'screen'
         );
         wp_register_script(
             'mollie_applepaydirect',
             $this->getPluginUrl($pluginUrl, '/public/js/applepayDirect.min.js'),
             ['underscore', 'jquery'],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/js/applepayDirect.min.js')),
+            (string)filemtime($this->getPluginPath($pluginPath, '/public/js/applepayDirect.min.js')),
             true
         );
         wp_register_script(
             'mollie_paypalButton',
             $this->getPluginUrl($pluginUrl, '/public/js/paypalButton.min.js'),
             ['underscore', 'jquery'],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/js/paypalButton.min.js')),
+            (string)filemtime($this->getPluginPath($pluginPath, '/public/js/paypalButton.min.js')),
             true
         );
         wp_register_script(
             'mollie_paypalButtonCart',
             $this->getPluginUrl($pluginUrl, '/public/js/paypalButtonCart.min.js'),
             ['underscore', 'jquery'],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/js/paypalButtonCart.min.js')),
+            (string)filemtime($this->getPluginPath($pluginPath, '/public/js/paypalButtonCart.min.js')),
             true
         );
         wp_register_script(
             'mollie_applepaydirectCart',
             $this->getPluginUrl($pluginUrl, '/public/js/applepayDirectCart.min.js'),
             ['underscore', 'jquery'],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/js/applepayDirectCart.min.js')),
+            (string)filemtime($this->getPluginPath($pluginPath, '/public/js/applepayDirectCart.min.js')),
             true
         );
         wp_register_script('mollie', 'https://js.mollie.com/v1/mollie.js', [], date("d"), true);
@@ -248,14 +251,14 @@ class AssetsModule implements ExecutableModule
             'mollie-components',
             $this->getPluginUrl($pluginUrl, '/public/js/mollie-components.min.js'),
             ['underscore', 'jquery', 'mollie', 'babel-polyfill'],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollie-components.min.js')),
+            (string)filemtime($this->getPluginPath($pluginPath, '/public/js/mollie-components.min.js')),
             true
         );
         wp_register_script(
             'mollie-components-blocks',
             $this->getPluginUrl($pluginUrl, '/public/js/mollie-components-blocks.min.js'),
             ['underscore', 'jquery', 'mollie', 'babel-polyfill'],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollie-components-blocks.min.js')),
+            (string)filemtime($this->getPluginPath($pluginPath, '/public/js/mollie-components-blocks.min.js')),
             true
         );
 
@@ -263,40 +266,39 @@ class AssetsModule implements ExecutableModule
             'unabledButton',
             $this->getPluginUrl($pluginUrl, '/public/css/unabledButton.min.css'),
             [],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/css/unabledButton.min.css')),
+            (string)filemtime($this->getPluginPath($pluginPath, '/public/css/unabledButton.min.css')),
             'screen'
         );
         wp_register_script(
             'gatewaySurcharge',
             $this->getPluginUrl($pluginUrl, '/public/js/gatewaySurcharge.min.js'),
             ['underscore', 'jquery'],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/js/gatewaySurcharge.min.js')),
+            (string)filemtime($this->getPluginPath($pluginPath, '/public/js/gatewaySurcharge.min.js')),
             true
         );
         wp_register_script(
             'mollie-billie-classic-handles',
             $this->getPluginUrl($pluginUrl, '/public/js/mollieBillie.min.js'),
             ['underscore', 'jquery'],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollieBillie.min.js')),
+            (string)filemtime($this->getPluginPath($pluginPath, '/public/js/mollieBillie.min.js')),
             true
         );
         wp_register_script(
             'mollie-in3-classic-handles',
             $this->getPluginUrl($pluginUrl, '/public/js/mollieIn3.min.js'),
             ['underscore', 'jquery'],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollieIn3.min.js')),
+            (string)filemtime($this->getPluginPath($pluginPath, '/public/js/mollieIn3.min.js')),
             true
         );
     }
 
     public function registerBlockScripts(string $pluginUrl, string $pluginPath): void
     {
-
         wp_register_script(
             'mollie_block_index',
             $this->getPluginUrl($pluginUrl, '/public/js/mollieBlockIndex.min.js'),
             ['wc-blocks-registry', 'underscore', 'jquery'],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollieBlockIndex.min.js')),
+            (string)filemtime($this->getPluginPath($pluginPath, '/public/js/mollieBlockIndex.min.js')),
             true
         );
     }
@@ -357,7 +359,7 @@ class AssetsModule implements ExecutableModule
         }
 
         $locale = get_locale();
-        $locale =  str_replace('_formal', '', $locale);
+        $locale = str_replace('_formal', '', $locale);
         $allowedLocaleValues = AcceptedLocaleValuesDictionary::ALLOWED_LOCALES_KEYS_MAP;
         if (!in_array($locale, $allowedLocaleValues, true)) {
             $locale = AcceptedLocaleValuesDictionary::DEFAULT_LOCALE_VALUE;
@@ -436,7 +438,10 @@ class AssetsModule implements ExecutableModule
      */
     protected function enqueueIconSettings(?string $current_section): void
     {
-        $uri = isset($_SERVER['REQUEST_URI']) ? wc_clean(wp_unslash($_SERVER['REQUEST_URI'])) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $uri = isset($_SERVER['REQUEST_URI']) ? wc_clean(
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            wp_unslash($_SERVER['REQUEST_URI'])
+        ) : '';
         if (is_string($uri) && strpos($uri, 'tab=mollie_settings')) {
             wp_enqueue_style('mollie-gateway-icons');
         }
@@ -534,16 +539,27 @@ class AssetsModule implements ExecutableModule
         add_action(
             'woocommerce_blocks_loaded',
             function () use ($dataService, $gatewayInstances, $pluginUrl, $pluginPath, $hasBlocksEnabled) {
-                if ($hasBlocksEnabled && class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+                if (
+                    $hasBlocksEnabled && is_admin() && class_exists(
+                        'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType'
+                    )
+                ) {
                     add_action(
                         'woocommerce_blocks_payment_method_type_registration',
-                        function (PaymentMethodRegistry $paymentMethodRegistry) use ($dataService, $gatewayInstances, $pluginUrl, $pluginPath) {
+                        function (PaymentMethodRegistry $paymentMethodRegistry) use (
+                            $dataService,
+                            $gatewayInstances,
+                            $pluginUrl,
+                            $pluginPath
+                        ) {
                             $paymentMethodRegistry->register(
                                 new MollieCheckoutBlocksSupport(
                                     $dataService,
                                     $gatewayInstances,
                                     $this->getPluginUrl($pluginUrl, '/public/js/mollieBlockIndex.min.js'),
-                                    (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollieBlockIndex.min.js'))
+                                    (string)filemtime(
+                                        $this->getPluginPath($pluginPath, '/public/js/mollieBlockIndex.min.js')
+                                    )
                                 )
                             );
                         }
@@ -554,7 +570,7 @@ class AssetsModule implements ExecutableModule
 
         add_action(
             'init',
-            function () use ($hasBlocksEnabled, $settingsHelper, $pluginUrl, $pluginPath) {
+            function () use ($container, $hasBlocksEnabled, $settingsHelper, $pluginUrl, $pluginPath, $dataService) {
                 self::registerFrontendScripts($pluginUrl, $pluginPath);
 
                 // Enqueue Scripts
@@ -568,6 +584,12 @@ class AssetsModule implements ExecutableModule
                 });
 
                 if ($hasBlocksEnabled) {
+                    /** @var array */
+                    $gatewayInstances = $container->get('gateway.instances');
+                    self::registerBlockScripts($pluginUrl, $pluginPath);
+                    add_action('wp_enqueue_scripts', function () use ($dataService, $gatewayInstances) {
+                        $this->enqueueBlockCheckoutScripts($dataService, $gatewayInstances);
+                    });
                     $this->registerButtonsBlockScripts($pluginUrl, $pluginPath);
                 }
             }
@@ -614,12 +636,6 @@ class AssetsModule implements ExecutableModule
                         $pluginVersion,
                         true
                     );
-
-                    if ($hasBlocksEnabled) {
-                        /** @var array */
-                        $gatewayInstances = $container->get('gateway.instances');
-                        $this->enqueueBlockCheckoutScripts($dataService, $gatewayInstances);
-                    }
 
                     $this->enqueueIconSettings($current_section);
                 }

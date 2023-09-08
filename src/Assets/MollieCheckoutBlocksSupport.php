@@ -10,9 +10,10 @@ use Mollie\WooCommerce\Shared\Data;
 
 final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
 {
+    /** @var string $name */
     protected $name = "mollie";
     /** @var string $scriptHandle */
-    protected $scriptHandle = "mollie_block_index";
+    private static $scriptHandle = "mollie_block_index";
     /** @var Data */
     protected $dataService;
     /** @var array */
@@ -28,6 +29,7 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
         string $registerScriptUrl,
         string $registerScriptVersion
     ) {
+
         $this->dataService = $dataService;
         $this->gatewayInstances = $gatewayInstances;
         $this->registerScriptUrl = $registerScriptUrl;
@@ -39,27 +41,40 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
         //
     }
 
+    public static function getScriptHandle()
+    {
+
+        return self::$scriptHandle;
+    }
+
     public function get_payment_method_script_handles(): array
     {
         wp_register_script(
-            $this->scriptHandle,
+            self::$scriptHandle,
             $this->registerScriptUrl,
             ['wc-blocks-registry', 'underscore', 'jquery'],
             $this->registerScriptVersion,
             true
         );
 
-        wp_localize_script(
-            $this->scriptHandle,
-            'mollieBlockData',
-            [
-                'gatewayData' => $this->gatewayDataForWCBlocks($this->dataService, $this->gatewayInstances),
-            ]
-        );
-        return [$this->scriptHandle];
+        self::localizeWCBlocksData($this->dataService, $this->gatewayInstances);
+
+        return [self::$scriptHandle];
     }
 
-    private function gatewayDataForWCBlocks(Data $dataService, array $gatewayInstances): array
+    public static function localizeWCBlocksData($dataService, $gatewayInstances)
+    {
+
+        wp_localize_script(
+            self::$scriptHandle,
+            'mollieBlockData',
+            [
+                'gatewayData' => self::gatewayDataForWCBlocks($dataService, $gatewayInstances),
+            ]
+        );
+    }
+
+    public static function gatewayDataForWCBlocks(Data $dataService, array $gatewayInstances): array
     {
         $filters = $dataService->wooCommerceFiltersForCheckout();
         $availableGateways = WC()->payment_gateways()->get_available_payment_gateways();
@@ -134,7 +149,7 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
                     $gateway->paymentMethod()->getProperty('allowed_countries')
                 ) ? $gateway->paymentMethod()->getProperty('allowed_countries') : [],
                 'ariaLabel' => $gateway->paymentMethod()->getProperty('defaultDescription'),
-                'supports' => $this->gatewaySupportsFeatures($gateway->paymentMethod(), $isSepaEnabled),
+                'supports' => self::gatewaySupportsFeatures($gateway->paymentMethod(), $isSepaEnabled),
                 'errorMessage' => $gateway->paymentMethod()->getProperty('errorMessage'),
                 'companyPlaceholder' => $gateway->paymentMethod()->getProperty('companyPlaceholder'),
                 'phonePlaceholder' => $gateway->paymentMethod()->getProperty('phonePlaceholder'),
@@ -147,7 +162,7 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
         return $dataToScript;
     }
 
-    public function gatewaySupportsFeatures(PaymentMethodI $paymentMethod, bool $isSepaEnabled): array
+    public static function gatewaySupportsFeatures(PaymentMethodI $paymentMethod, bool $isSepaEnabled): array
     {
         $supports = (array)$paymentMethod->getProperty('supports');
         $isSepaPaymentMethod = (bool)$paymentMethod->getProperty('SEPA');

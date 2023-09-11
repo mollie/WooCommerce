@@ -591,6 +591,12 @@ class AssetsModule implements ExecutableModule
                 });
 
                 if ($hasBlocksEnabled) {
+                    /** @var array */
+                    $gatewayInstances = $container->get('gateway.instances');
+                    self::registerBlockScripts($pluginUrl, $pluginPath);
+                    add_action('wp_enqueue_scripts', function () use ($dataService, $gatewayInstances) {
+                        $this->enqueueBlockCheckoutScripts($dataService, $gatewayInstances);
+                    });
                     $this->registerButtonsBlockScripts($pluginUrl, $pluginPath);
                 }
             }

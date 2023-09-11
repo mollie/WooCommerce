@@ -65,7 +65,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
 
     public function title(): string
     {
-        $useApiTitle = apply_filters('mollie_wc_gateway_use_api_title', $this->isUseApiTitleChecked(),$this->id);
+        $useApiTitle = apply_filters('mollie_wc_gateway_use_api_title', $this->isUseApiTitleChecked(), $this->id);
         $title = $this->getProperty('title');
         //new installations should use the api title
         if ($useApiTitle || $title === false) {

@@ -134,7 +134,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
             return $this->iconFactory->getExternalIconHtml($uploadedImageUrl);
         }
 
-        $useAPIImage = apply_filters('mollie_wc_gateway_use_api_image', $this->isUseApiTitleChecked(), $this->id);
+        $useAPIImage = apply_filters('mollie_wc_gateway_use_api_icon', $this->isUseApiTitleChecked(), $this->id);
 
         if (isset($this->apiPaymentMethod["image"]) && property_exists($this->apiPaymentMethod["image"], "svg") && !$this->isCreditCardSelectorEnabled() && $useAPIImage) {
             return $this->iconFactory->getExternalIconHtml($this->apiPaymentMethod["image"]->svg);

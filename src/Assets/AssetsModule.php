@@ -32,7 +32,10 @@ class AssetsModule implements ExecutableModule
         if (!has_block('woocommerce/checkout')) {
             return;
         }
+        wp_enqueue_script(MollieCheckoutBlocksSupport::getScriptHandle());
         wp_enqueue_style('mollie-gateway-icons');
+
+        MollieCheckoutBlocksSupport::localizeWCBlocksData($dataService, $gatewayInstances);
     }
 
     public function registerButtonsBlockScripts(string $pluginUrl, string $pluginPath): void
@@ -361,7 +364,7 @@ class AssetsModule implements ExecutableModule
         }
 
         $locale = get_locale();
-        $locale =  str_replace('_formal', '', $locale);
+        $locale = str_replace('_formal', '', $locale);
         $allowedLocaleValues = AcceptedLocaleValuesDictionary::ALLOWED_LOCALES_KEYS_MAP;
         if (!in_array($locale, $allowedLocaleValues, true)) {
             $locale = AcceptedLocaleValuesDictionary::DEFAULT_LOCALE_VALUE;
@@ -440,7 +443,10 @@ class AssetsModule implements ExecutableModule
      */
     protected function enqueueIconSettings(?string $current_section): void
     {
-        $uri = isset($_SERVER['REQUEST_URI']) ? wc_clean(wp_unslash($_SERVER['REQUEST_URI'])) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $uri = isset($_SERVER['REQUEST_URI']) ? wc_clean(
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            wp_unslash($_SERVER['REQUEST_URI'])
+        ) : '';
         if (is_string($uri) && strpos($uri, 'tab=mollie_settings')) {
             wp_enqueue_style('mollie-gateway-icons');
         }
@@ -538,16 +544,27 @@ class AssetsModule implements ExecutableModule
         add_action(
             'woocommerce_blocks_loaded',
             function () use ($dataService, $gatewayInstances, $pluginUrl, $pluginPath, $hasBlocksEnabled) {
-                if ($hasBlocksEnabled && class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+                if (
+                    $hasBlocksEnabled && is_admin() && class_exists(
+                        'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType'
+                    )
+                ) {
                     add_action(
                         'woocommerce_blocks_payment_method_type_registration',
-                        function (PaymentMethodRegistry $paymentMethodRegistry) use ($dataService, $gatewayInstances, $pluginUrl, $pluginPath) {
+                        function (PaymentMethodRegistry $paymentMethodRegistry) use (
+                            $dataService,
+                            $gatewayInstances,
+                            $pluginUrl,
+                            $pluginPath
+                        ) {
                             $paymentMethodRegistry->register(
                                 new MollieCheckoutBlocksSupport(
                                     $dataService,
                                     $gatewayInstances,
                                     $this->getPluginUrl($pluginUrl, '/public/js/mollieBlockIndex.min.js'),
-                                    (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollieBlockIndex.min.js'))
+                                    (string)filemtime(
+                                        $this->getPluginPath($pluginPath, '/public/js/mollieBlockIndex.min.js')
+                                    )
                                 )
                             );
                         }
@@ -558,7 +575,7 @@ class AssetsModule implements ExecutableModule
 
         add_action(
             'init',
-            function () use ($container, $hasBlocksEnabled, $settingsHelper, $pluginUrl, $pluginPath) {
+            function () use ($container, $hasBlocksEnabled, $settingsHelper, $pluginUrl, $pluginPath, $dataService) {
                 self::registerFrontendScripts($pluginUrl, $pluginPath);
 
                 // Enqueue Scripts
@@ -620,12 +637,6 @@ class AssetsModule implements ExecutableModule
                         $pluginVersion,
                         true
                     );
-
-                    if ($hasBlocksEnabled) {
-                        /** @var array */
-                        $gatewayInstances = $container->get('gateway.instances');
-                        $this->enqueueBlockCheckoutScripts($dataService, $gatewayInstances);
-                    }
 
                     $this->enqueueIconSettings($current_section);
                 }

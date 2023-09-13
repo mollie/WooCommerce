@@ -84,6 +84,12 @@ class PaymentMethodsIconUrl
             $svgUrl = $this->pluginUrl . '/' . sprintf('public/images/%s', $paymentMethodName) . self::SVG_FILE_EXTENSION;
         }
 
+        return $this->generateIconHtml($svgUrl);
+    }
+
+    public function generateIconHtml($svgUrl)
+    {
+
         return '<img src="' . esc_url($svgUrl)
             . '" class="mollie-gateway-icon" />';
     }

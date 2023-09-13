@@ -24,6 +24,7 @@
         <file name=".psalm/stubs.php"/>
         <file name="vendor/php-stubs/wordpress-stubs/wordpress-stubs.php"/>
         <file name="vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php"/>
+        <file name="vendor/php-stubs/woocommerce-stubs/woocommerce-packages-stubs.php"/>
     </stubs>
     <issueHandlers>
         <MixedAssignment errorLevel="suppress" />

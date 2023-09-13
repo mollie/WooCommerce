@@ -6,19 +6,16 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Assets;
 
-use Inpsyde\Modularity\Module\ExecutableModule;
-use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Buttons\ApplePayButton\DataToAppleButtonScripts;
 use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPal;
 use Mollie\WooCommerce\Components\AcceptedLocaleValuesDictionary;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
-use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
-use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
-use Mollie\WooCommerce\PaymentMethods\Constants;
-use Psr\Container\ContainerInterface;
+use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
 
 class AssetsModule implements ExecutableModule
 {
@@ -35,15 +32,10 @@ class AssetsModule implements ExecutableModule
         if (!has_block('woocommerce/checkout')) {
             return;
         }
-        wp_enqueue_script('mollie_block_index');
+        wp_enqueue_script(MollieCheckoutBlocksSupport::getScriptHandle());
         wp_enqueue_style('mollie-gateway-icons');
-        wp_localize_script(
-            'mollie_block_index',
-            'mollieBlockData',
-            [
-                'gatewayData' => $this->gatewayDataForWCBlocks($dataService, $gatewayInstances),
-            ]
-        );
+
+        MollieCheckoutBlocksSupport::localizeWCBlocksData($dataService, $gatewayInstances);
     }
 
     public function registerButtonsBlockScripts(string $pluginUrl, string $pluginPath): void
@@ -372,7 +364,7 @@ class AssetsModule implements ExecutableModule
         }
 
         $locale = get_locale();
-        $locale =  str_replace('_formal', '', $locale);
+        $locale = str_replace('_formal', '', $locale);
         $allowedLocaleValues = AcceptedLocaleValuesDictionary::ALLOWED_LOCALES_KEYS_MAP;
         if (!in_array($locale, $allowedLocaleValues, true)) {
             $locale = AcceptedLocaleValuesDictionary::DEFAULT_LOCALE_VALUE;
@@ -436,102 +428,6 @@ class AssetsModule implements ExecutableModule
         );
     }
 
-    protected function gatewayDataForWCBlocks(Data $dataService, array $gatewayInstances): array
-    {
-        $filters = $dataService->wooCommerceFiltersForCheckout();
-        $availableGateways = WC()->payment_gateways()->get_available_payment_gateways();
-        $availablePaymentMethods = [];
-        /**
-         * @var MolliePaymentGatewayI $gateway
-         * psalm-suppress  UnusedForeachValue
-         */
-        foreach ($availableGateways as $key => $gateway) {
-            if (strpos($key, 'mollie_wc_gateway_') === false) {
-                unset($availableGateways[$key]);
-            }
-        }
-        if (
-            isset($filters['amount']['currency'])
-            && isset($filters['locale'])
-            && isset($filters['billingCountry'])
-        ) {
-            $filterKey = "{$filters['amount']['currency']}-{$filters['locale']}-{$filters['billingCountry']}";
-            foreach ($availableGateways as $key => $gateway) {
-                $availablePaymentMethods[$filterKey][$key] = $gateway->paymentMethod()->getProperty('id');
-            }
-        }
-
-        $dataToScript = [
-            'ajaxUrl' => admin_url('admin-ajax.php'),
-            'filters' => [
-                'currency' => isset($filters['amount']['currency']) ? $filters['amount']['currency'] : false,
-                'cartTotal' => isset($filters['amount']['value']) ? $filters['amount']['value'] : false,
-                'paymentLocale' => isset($filters['locale']) ? $filters['locale'] : false,
-                'billingCountry' => isset($filters['billingCountry']) ? $filters['billingCountry'] : false,
-                        ],
-        ];
-        $gatewayData = [];
-        $isSepaEnabled = isset($gatewayInstances['mollie_wc_gateway_directdebit']) && $gatewayInstances['mollie_wc_gateway_directdebit']->enabled === 'yes';
-        /** @var MolliePaymentGateway $gateway */
-        foreach ($gatewayInstances as $gatewayKey => $gateway) {
-            /** @var string $gatewayId */
-            $gatewayId = is_string($gateway->paymentMethod()->getProperty('id')) ? $gateway->paymentMethod()->getProperty('id') : "";
-
-            if ($gateway->enabled !== 'yes' || $gatewayId === Constants::DIRECTDEBIT) {
-                continue;
-            }
-            $content = $gateway->paymentMethod()->getProcessedDescriptionForBlock();
-            $issuers = false;
-            if ($gateway->paymentMethod()->getProperty('paymentFields') === true) {
-                $paymentFieldsService = $gateway->paymentMethod()->paymentFieldsService();
-                $paymentFieldsService->setStrategy($gateway->paymentMethod());
-                $issuers = $gateway->paymentMethod()->paymentFieldsService()->getStrategyMarkup($gateway);
-            }
-            if ($gatewayId === 'creditcard') {
-                $content .= $issuers;
-                $issuers = false;
-            }
-            $title = $gateway->paymentMethod()->title();
-            $labelMarkup = "<span style='margin-right: 1em'>{$title}</span>{$gateway->icon}";
-            $hasSurcharge = $gateway->paymentMethod()->hasSurcharge();
-            $gatewayData[] = [
-                'name' => $gatewayKey,
-                'label' => $labelMarkup,
-                'content' => $content,
-                'issuers' => $issuers,
-                'hasSurcharge' => $hasSurcharge,
-                'title' => $title,
-                'contentFallback' => __('Please choose a billing country to see the available payment methods', 'mollie-payments-for-woocommerce'),
-                'edit' => $content,
-                'paymentMethodId' => $gatewayKey,
-                'allowedCountries' => is_array(
-                    $gateway->paymentMethod()->getProperty('allowed_countries')
-                ) ? $gateway->paymentMethod()->getProperty('allowed_countries') : [],
-                'ariaLabel' => $gateway->paymentMethod()->getProperty('defaultDescription'),
-                'supports' => $this->gatewaySupportsFeatures($gateway->paymentMethod(), $isSepaEnabled),
-                'errorMessage' => $gateway->paymentMethod()->getProperty('errorMessage'),
-                'companyPlaceholder' => $gateway->paymentMethod()->getProperty('companyPlaceholder'),
-                'phonePlaceholder' => $gateway->paymentMethod()->getProperty('phonePlaceholder'),
-                'birthdatePlaceholder' => $gateway->paymentMethod()->getProperty('birthdatePlaceholder'),
-            ];
-        }
-        $dataToScript['gatewayData'] = $gatewayData;
-        $dataToScript['availableGateways'] = $availablePaymentMethods;
-
-        return $dataToScript;
-    }
-
-    public function gatewaySupportsFeatures(PaymentMethodI $paymentMethod, bool $isSepaEnabled): array
-    {
-        $supports = (array) $paymentMethod->getProperty('supports');
-        $isSepaPaymentMethod = (bool) $paymentMethod->getProperty('SEPA');
-        if ($isSepaEnabled && $isSepaPaymentMethod) {
-            array_push($supports, 'subscriptions');
-        }
-
-        return $supports;
-    }
-
     protected function getPluginUrl(string $pluginUrl, string $path = ''): string
     {
         return $pluginUrl . ltrim($path, '/');
@@ -547,7 +443,10 @@ class AssetsModule implements ExecutableModule
      */
     protected function enqueueIconSettings(?string $current_section): void
     {
-        $uri = isset($_SERVER['REQUEST_URI']) ? wc_clean(wp_unslash($_SERVER['REQUEST_URI'])) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $uri = isset($_SERVER['REQUEST_URI']) ? wc_clean(
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            wp_unslash($_SERVER['REQUEST_URI'])
+        ) : '';
         if (is_string($uri) && strpos($uri, 'tab=mollie_settings')) {
             wp_enqueue_style('mollie-gateway-icons');
         }
@@ -638,6 +537,42 @@ class AssetsModule implements ExecutableModule
         $pluginPath = $container->get('shared.plugin_path');
         /** @var Settings */
         $settingsHelper = $container->get('settings.settings_helper');
+        $gatewayInstances = $container->get('gateway.instances');
+
+        /** Add support to Mollie blocks for Woocommerce checkout blocks functionality */
+        //https://github.com/woocommerce/woocommerce-blocks/blob/trunk/docs/third-party-developers/extensibility/checkout-payment-methods/payment-method-integration.md#putting-it-all-together
+        add_action(
+            'woocommerce_blocks_loaded',
+            function () use ($dataService, $gatewayInstances, $pluginUrl, $pluginPath, $hasBlocksEnabled) {
+                if (
+                    $hasBlocksEnabled && is_admin() && class_exists(
+                        'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType'
+                    )
+                ) {
+                    add_action(
+                        'woocommerce_blocks_payment_method_type_registration',
+                        function (PaymentMethodRegistry $paymentMethodRegistry) use (
+                            $dataService,
+                            $gatewayInstances,
+                            $pluginUrl,
+                            $pluginPath
+                        ) {
+                            $paymentMethodRegistry->register(
+                                new MollieCheckoutBlocksSupport(
+                                    $dataService,
+                                    $gatewayInstances,
+                                    $this->getPluginUrl($pluginUrl, '/public/js/mollieBlockIndex.min.js'),
+                                    (string)filemtime(
+                                        $this->getPluginPath($pluginPath, '/public/js/mollieBlockIndex.min.js')
+                                    )
+                                )
+                            );
+                        }
+                    );
+                }
+            }
+        );
+
         add_action(
             'init',
             function () use ($container, $hasBlocksEnabled, $settingsHelper, $pluginUrl, $pluginPath, $dataService) {
@@ -708,12 +643,6 @@ class AssetsModule implements ExecutableModule
                         $pluginVersion,
                         true
                     );
-
-                    if ($hasBlocksEnabled) {
-                        /** @var array */
-                        $gatewayInstances = $container->get('gateway.instances');
-                        $this->enqueueBlockCheckoutScripts($dataService, $gatewayInstances);
-                    }
 
                     $this->enqueueIconSettings($current_section);
                 }

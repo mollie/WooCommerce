@@ -140,5 +140,5 @@ class SharedDataDictionary
     /**
      * @var string
      */
-    public const USE_API_TITLE = 'use_api_title';
+    public const USE_API_TITLE_AND_IMAGE = 'use_api_title';
 }

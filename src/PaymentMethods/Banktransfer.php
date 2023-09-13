@@ -82,7 +82,7 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
 
     public function filtersOnBuild()
     {
-        add_filter('woocommerce_' . $this->getProperty('id') . '_args', function (array $args, \WC_Order $order): array {
+        add_filter('woocommerce_mollie_wc_gateway_' . $this->getProperty('id') . '_args', function (array $args, \WC_Order $order): array {
             return $this->addPaymentArguments($args, $order);
         }, 10, 2);
     }
@@ -99,11 +99,14 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
             $expiry_date = date("Y-m-d", strtotime(sprintf('+%s days', $expiry_days)));
 
             // Add dueDate at the correct location
-            if (isset($args['payment'])) {
-                $args['payment']['dueDate'] = $expiry_date;
-            } else {
-                $args['dueDate'] = $expiry_date;
+            if ($this->isExpiredDateSettingActivated()) {
+                if (isset($args['payment'])) {
+                    $args['payment']['dueDate'] = $expiry_date;
+                } else {
+                    $args['dueDate'] = $expiry_date;
+                }
             }
+
             $email = (ctype_space($order->get_billing_email())) ? null
                 : $order->get_billing_email();
             if ($email) {
@@ -114,7 +117,6 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
         return $args;
     }
 
-    //TODO is this needed??
     public function isExpiredDateSettingActivated()
     {
         $expiryDays = $this->getProperty(

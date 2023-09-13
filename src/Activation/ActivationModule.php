@@ -7,14 +7,11 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Activation;
 
 use Automattic\WooCommerce\Utilities\FeaturesUtil;
-use Inpsyde\Modularity\Module\ExecutableModule;
-use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
-use Inpsyde\Modularity\Package;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
-use Psr\Container\ContainerInterface;
-
-use function Mollie\WooCommerce\mollie_wc_plugin_autoload;
+use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
 
 class ActivationModule implements ExecutableModule
 {

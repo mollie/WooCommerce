@@ -99,10 +99,12 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
             $expiry_date = date("Y-m-d", strtotime(sprintf('+%s days', $expiry_days)));
 
             // Add dueDate at the correct location
-            if (isset($args['payment'])) {
-                $args['payment']['dueDate'] = $expiry_date;
-            } else {
-                $args['dueDate'] = $expiry_date;
+            if($this->isExpiredDateSettingActivated()) {
+                if (isset($args['payment'])) {
+                    $args['payment']['dueDate'] = $expiry_date;
+                } else {
+                    $args['dueDate'] = $expiry_date;
+                }
             }
             $email = (ctype_space($order->get_billing_email())) ? null
                 : $order->get_billing_email();
@@ -114,7 +116,6 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
         return $args;
     }
 
-    //TODO is this needed??
     public function isExpiredDateSettingActivated()
     {
         $expiryDays = $this->getProperty(

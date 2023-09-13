@@ -464,7 +464,7 @@ msgctxt "Mollie Components Settings"
 msgid "Background Color for invalid input."
 msgstr ""
 
-#: src/Activation/ActivationModule.php:144
+#: src/Activation/ActivationModule.php:141
 msgid "%1$sMollie Payments for WooCommerce: API keys missing%2$s Please%3$s set your API keys here%4$s."
 msgstr ""
 
@@ -476,32 +476,32 @@ msgstr ""
 msgid "%1$sCorrect the above errors to use Mollie Payments for Woocommerce%2$s"
 msgstr ""
 
-#: src/Assets/AssetsModule.php:394
+#: src/Assets/AssetsModule.php:386
 msgid "Name on card"
 msgstr ""
 
-#: src/Assets/AssetsModule.php:398
+#: src/Assets/AssetsModule.php:390
 msgid "Card number"
 msgstr ""
 
-#: src/Assets/AssetsModule.php:402
+#: src/Assets/AssetsModule.php:394
 msgid "Expiry date"
 msgstr ""
 
-#: src/Assets/AssetsModule.php:406
+#: src/Assets/AssetsModule.php:398
 msgid "CVC/CVV"
 msgstr ""
 
-#: src/Assets/AssetsModule.php:413
+#: src/Assets/AssetsModule.php:405
 msgid "An unknown error occurred, please check the card fields."
 msgstr ""
 
-#: src/Assets/AssetsModule.php:504
-msgid "Please choose a billing country to see the available payment methods"
+#: src/Assets/AssetsModule.php:459
+msgid "No custom logo selected"
 msgstr ""
 
-#: src/Assets/AssetsModule.php:560
-msgid "No custom logo selected"
+#: src/Assets/MollieCheckoutBlocksSupport.php:142
+msgid "Please choose a billing country to see the available payment methods"
 msgstr ""
 
 #. translators: Placeholder 1: Payment method title
@@ -520,11 +520,11 @@ msgstr ""
 msgid "%1$sApple Pay Validation Error%2$s Check %3$sApple Server requirements page%4$s to fix it in order to make the Apple Pay button work"
 msgstr ""
 
-#: src/Gateway/GatewayModule.php:708
+#: src/Gateway/GatewayModule.php:655
 msgid "Error processing %1$s payment, the %2$s field is required."
 msgstr ""
 
-#: src/Gateway/GatewayModule.php:722
+#: src/Gateway/GatewayModule.php:669
 msgid "Please enter your %1$s, this is required for %2$s payments"
 msgstr ""
 
@@ -579,14 +579,14 @@ msgstr ""
 #: src/Payment/MollieOrder.php:463
 #: src/Payment/MollieOrder.php:534
 #: src/Payment/MollieOrder.php:877
-#: src/Payment/MollieOrderService.php:171
-#: src/Payment/MollieOrderService.php:437
-#: src/Payment/MollieOrderService.php:500
-#: src/Payment/MollieOrderService.php:714
-#: src/Payment/MolliePayment.php:235
-#: src/Payment/MolliePayment.php:322
-#: src/Payment/MolliePayment.php:398
-#: src/Payment/MolliePayment.php:422
+#: src/Payment/MollieOrderService.php:183
+#: src/Payment/MollieOrderService.php:487
+#: src/Payment/MollieOrderService.php:550
+#: src/Payment/MollieOrderService.php:763
+#: src/Payment/MolliePayment.php:236
+#: src/Payment/MolliePayment.php:323
+#: src/Payment/MolliePayment.php:399
+#: src/Payment/MolliePayment.php:423
 #: src/Payment/PaymentService.php:801
 #: src/Subscription/MollieSepaRecurringGateway.php:137
 #: src/Subscription/MollieSepaRecurringGateway.php:204
@@ -628,77 +628,77 @@ msgid "Mollie Settings"
 msgstr ""
 
 #: src/Gateway/Voucher/VoucherModule.php:109
-#: src/Gateway/Voucher/VoucherModule.php:145
-#: src/Gateway/Voucher/VoucherModule.php:168
+#: src/Gateway/Voucher/VoucherModule.php:149
+#: src/Gateway/Voucher/VoucherModule.php:172
 msgid "Mollie Voucher Category"
 msgstr ""
 
 #: src/Gateway/Voucher/VoucherModule.php:112
-#: src/Gateway/Voucher/VoucherModule.php:147
-#: src/Gateway/Voucher/VoucherModule.php:172
+#: src/Gateway/Voucher/VoucherModule.php:151
+#: src/Gateway/Voucher/VoucherModule.php:176
 msgid "--Please choose an option--"
 msgstr ""
 
 #: src/Gateway/Voucher/VoucherModule.php:113
-#: src/Gateway/Voucher/VoucherModule.php:148
-#: src/Gateway/Voucher/VoucherModule.php:177
-#: src/Gateway/Voucher/VoucherModule.php:239
-#: src/Gateway/Voucher/VoucherModule.php:294
+#: src/Gateway/Voucher/VoucherModule.php:152
+#: src/Gateway/Voucher/VoucherModule.php:181
+#: src/Gateway/Voucher/VoucherModule.php:243
+#: src/Gateway/Voucher/VoucherModule.php:298
 msgid "No Category"
 msgstr ""
 
 #: src/Gateway/Voucher/VoucherModule.php:114
-#: src/Gateway/Voucher/VoucherModule.php:149
-#: src/Gateway/Voucher/VoucherModule.php:180
-#: src/Gateway/Voucher/VoucherModule.php:240
-#: src/Gateway/Voucher/VoucherModule.php:295
+#: src/Gateway/Voucher/VoucherModule.php:153
+#: src/Gateway/Voucher/VoucherModule.php:184
+#: src/Gateway/Voucher/VoucherModule.php:244
+#: src/Gateway/Voucher/VoucherModule.php:299
 #: src/PaymentMethods/Voucher.php:57
 msgid "Meal"
 msgstr ""
 
 #: src/Gateway/Voucher/VoucherModule.php:115
-#: src/Gateway/Voucher/VoucherModule.php:150
-#: src/Gateway/Voucher/VoucherModule.php:183
-#: src/Gateway/Voucher/VoucherModule.php:241
-#: src/Gateway/Voucher/VoucherModule.php:296
+#: src/Gateway/Voucher/VoucherModule.php:154
+#: src/Gateway/Voucher/VoucherModule.php:187
+#: src/Gateway/Voucher/VoucherModule.php:245
+#: src/Gateway/Voucher/VoucherModule.php:300
 #: src/PaymentMethods/Voucher.php:58
 msgid "Eco"
 msgstr ""
 
 #: src/Gateway/Voucher/VoucherModule.php:116
-#: src/Gateway/Voucher/VoucherModule.php:151
-#: src/Gateway/Voucher/VoucherModule.php:186
-#: src/Gateway/Voucher/VoucherModule.php:242
-#: src/Gateway/Voucher/VoucherModule.php:297
+#: src/Gateway/Voucher/VoucherModule.php:155
+#: src/Gateway/Voucher/VoucherModule.php:190
+#: src/Gateway/Voucher/VoucherModule.php:246
+#: src/Gateway/Voucher/VoucherModule.php:301
 #: src/PaymentMethods/Voucher.php:59
 msgid "Gift"
 msgstr ""
 
-#: src/Gateway/Voucher/VoucherModule.php:153
-#: src/Gateway/Voucher/VoucherModule.php:190
+#: src/Gateway/Voucher/VoucherModule.php:157
+#: src/Gateway/Voucher/VoucherModule.php:194
 msgid "Select a voucher category to apply to all products with this category"
 msgstr ""
 
-#: src/Gateway/Voucher/VoucherModule.php:224
+#: src/Gateway/Voucher/VoucherModule.php:228
 #: src/PaymentMethods/Voucher.php:53
 msgid "Select the default products category"
 msgstr ""
 
-#: src/Gateway/Voucher/VoucherModule.php:228
+#: src/Gateway/Voucher/VoucherModule.php:232
 msgid "Products voucher category"
 msgstr ""
 
-#: src/Gateway/Voucher/VoucherModule.php:235
-#: src/Gateway/Voucher/VoucherModule.php:293
+#: src/Gateway/Voucher/VoucherModule.php:239
+#: src/Gateway/Voucher/VoucherModule.php:297
 msgid "Same as default category"
 msgstr ""
 
 #. translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting
-#: src/Gateway/Voucher/VoucherModule.php:247
+#: src/Gateway/Voucher/VoucherModule.php:251
 msgid "In order to process it, all products in the order must have a category. To disable the product from voucher selection select \"No category\" option."
 msgstr ""
 
-#: src/Gateway/Voucher/VoucherModule.php:290
+#: src/Gateway/Voucher/VoucherModule.php:294
 msgid "Mollie Voucher category"
 msgstr ""
 
@@ -755,7 +755,7 @@ msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
 #: src/Payment/MollieOrder.php:277
-#: src/Payment/MolliePayment.php:233
+#: src/Payment/MolliePayment.php:234
 #: src/Subscription/MollieSepaRecurringGateway.php:210
 msgid "Order completed using %1$s payment (%2$s)."
 msgstr ""
@@ -808,50 +808,54 @@ msgid "%1$sx %2$s refunded for %3$s%4$s in WooCommerce and at Mollie.%5$s Refund
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment status, placeholder 3: payment ID
-#: src/Payment/MollieOrderService.php:168
+#: src/Payment/MollieOrderService.php:180
 msgid "%1$s payment %2$s (%3$s), not processed."
 msgstr ""
 
-#: src/Payment/MollieOrderService.php:400
+#: src/Payment/MollieOrderService.php:447
 msgid "New chargeback %s processed! Order note and order status updated."
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: src/Payment/MollieOrderService.php:432
+#: src/Payment/MollieOrderService.php:482
 msgid "%1$s payment charged back via Mollie (%2$s). You will need to manually review the payment (and adjust product stocks if you use it)."
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: src/Payment/MollieOrderService.php:494
+#: src/Payment/MollieOrderService.php:544
 msgid "%1$s payment charged back via Mollie (%2$s). Subscription status updated, please review (and adjust product stocks if you use it)."
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: src/Payment/MollieOrderService.php:701
+#: src/Payment/MollieOrderService.php:750
 msgid "%1$s payment %2$s via Mollie (%3$s %4$s). You will need to manually review the payment (and adjust product stocks if you use it)."
 msgstr ""
 
-#: src/Payment/MollieOrderService.php:814
+#: src/Payment/MollieOrderService.php:935
 msgid "New refund %s processed in Mollie Dashboard! Order note added, but order not updated."
 msgstr ""
 
+#: src/Payment/MollieOrderService.php:979
+msgid "Refund %s applied to Woocommerce order."
+msgstr ""
+
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: src/Payment/MolliePayment.php:320
+#: src/Payment/MolliePayment.php:321
 msgid "%1$s payment (%2$s) cancelled ."
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: src/Payment/MolliePayment.php:396
+#: src/Payment/MolliePayment.php:397
 msgid "%1$s payment expired (%2$s) but not cancelled because of another pending payment (%3$s)."
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: src/Payment/MolliePayment.php:420
+#: src/Payment/MolliePayment.php:421
 msgid "%1$s payment expired (%2$s)."
 msgstr ""
 
 #. translators: Placeholder 1: currency, placeholder 2: refunded amount, placeholder 3: optional refund reason, placeholder 4: payment ID, placeholder 5: refund ID
-#: src/Payment/MolliePayment.php:496
+#: src/Payment/MolliePayment.php:497
 msgid "Refunded %1$s%2$s%3$s - Payment: %4$s, Refund: %5$s"
 msgstr ""
 
@@ -1720,11 +1724,11 @@ msgid "%s display settings"
 msgstr ""
 
 #: src/Settings/General/MollieGeneralSettings.php:55
-msgid "Use API dynamic title"
+msgid "Use API dynamic title and gateway logo"
 msgstr ""
 
 #: src/Settings/General/MollieGeneralSettings.php:60
-msgid "Retrieve the gateway title from Mollie"
+msgid "Retrieve the gateway title and logo from the Mollie API"
 msgstr ""
 
 #: src/Settings/General/MollieGeneralSettings.php:83

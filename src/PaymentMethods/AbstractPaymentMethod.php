@@ -65,7 +65,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
 
     public function title(): string
     {
-        $useApiTitle = $this->getProperty(SharedDataDictionary::USE_API_TITLE) === 'yes';
+        $useApiTitle = apply_filters('mollie_wc_gateway_use_api_title', $this->isUseApiTitleChecked(), $this->id);
         $title = $this->getProperty('title');
         //new installations should use the api title
         if ($useApiTitle || $title === false) {
@@ -81,6 +81,19 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     public function getIdFromConfig(): string
     {
         return $this->getConfig()['id'];
+    }
+
+    public function getUploadedImage()
+    {
+        $settings = $this->getSettings();
+
+        return $settings["iconFileUrl"] ?? null;
+    }
+
+    public function isCreditCardSelectorEnabled()
+    {
+        $settings = $this->getSettings();
+        return isset($settings[PaymentMethodsIconUrl::MOLLIE_CREDITCARD_ICONS_ENABLER]) ? $settings[PaymentMethodsIconUrl::MOLLIE_CREDITCARD_ICONS_ENABLER] === "yes" :  null;
     }
 
     /**
@@ -117,6 +130,15 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
      */
     public function getIconUrl(): string
     {
+        if ($uploadedImageUrl = $this->getUploadedImage()) {
+            return $this->iconFactory->getExternalIconHtml($uploadedImageUrl);
+        }
+
+        $useAPIImage = apply_filters('mollie_wc_gateway_use_api_icon', $this->isUseApiTitleChecked(), $this->id);
+
+        if (isset($this->apiPaymentMethod["image"]) && property_exists($this->apiPaymentMethod["image"], "svg") && !$this->isCreditCardSelectorEnabled() && $useAPIImage) {
+            return $this->iconFactory->getExternalIconHtml($this->apiPaymentMethod["image"]->svg);
+        }
         return $this->iconFactory->getIconUrl(
             $this->getIdFromConfig()
         );
@@ -265,6 +287,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     {
         return array_merge($this->config, $this->getSettings());
     }
+
     /**
      * Default values for the initial settings saved
      *
@@ -301,6 +324,11 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     {
         $apiTitle = $this->apiPaymentMethod['description'] ?? null;
         return $apiTitle ?: $this->config['defaultTitle'];
+    }
+
+    private function isUseApiTitleChecked(): bool
+    {
+        return $this->getProperty(SharedDataDictionary::USE_API_TITLE_AND_IMAGE) === 'yes';
     }
 
     protected function titleIsDefault(): bool

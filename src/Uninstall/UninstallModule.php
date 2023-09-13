@@ -6,8 +6,8 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Uninstall;
 
-use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
-use Inpsyde\Modularity\Module\ServiceModule;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 
 class UninstallModule implements ServiceModule

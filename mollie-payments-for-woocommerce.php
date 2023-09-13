@@ -3,7 +3,7 @@
  * Plugin Name: Mollie Payments for WooCommerce
  * Plugin URI: https://www.mollie.com
  * Description: Accept payments in WooCommerce with the official Mollie plugin
- * Version: 7.3.12
+ * Version: 7.4.0-beta
  * Author: Mollie
  * Author URI: https://www.mollie.com
  * Requires at least: 5.0
@@ -11,7 +11,7 @@
  * Text Domain: mollie-payments-for-woocommerce
  * Domain Path: /languages
  * License: GPLv2 or later
- * WC requires at least: 3.0
+ * WC requires at least: 3.9
  * WC tested up to: 8.0
  * Requires PHP: 7.2
  */
@@ -19,8 +19,8 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce;
 
-use Inpsyde\Modularity\Package;
-use Inpsyde\Modularity\Properties\PluginProperties;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Package;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Properties\PluginProperties;
 use Mollie\WooCommerce\Activation\ActivationModule;
 use Mollie\WooCommerce\Activation\ConstraintsChecker;
 use Mollie\WooCommerce\Assets\AssetsModule;

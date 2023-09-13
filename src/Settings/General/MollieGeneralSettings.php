@@ -53,11 +53,11 @@ class MollieGeneralSettings
             ],
             'use_api_title' => [
                 'title' => __(
-                    'Use API dynamic title',
+                    'Use API dynamic title and gateway logo',
                     'mollie-payments-for-woocommerce'
                 ),
                 'type' => 'checkbox',
-                'label' => __('Retrieve the gateway title from Mollie', 'mollie-payments-for-woocommerce'),
+                'label' => __('Retrieve the gateway title and logo from the Mollie API', 'mollie-payments-for-woocommerce'),
                 'default' => 'no',
             ],
             'description' => [

@@ -6,9 +6,9 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Gateway;
 
-use Inpsyde\Modularity\Module\ExecutableModule;
-use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
-use Inpsyde\Modularity\Module\ServiceModule;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\BlockService\CheckoutBlockService;
 use Mollie\WooCommerce\Buttons\ApplePayButton\AppleAjaxRequests;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDirectHandler;
@@ -37,7 +37,7 @@ use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Mollie\WooCommerce\Subscription\MollieSepaRecurringGateway;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
 use Mollie\WooCommerce\PaymentMethods\Constants;
-use Psr\Container\ContainerInterface;
+use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 
 class GatewayModule implements ServiceModule, ExecutableModule
@@ -196,7 +196,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
             $mollieGateways = $container->get('gateway.instances');
             return array_merge($gateways, $mollieGateways);
         });
-        add_filter('woocommerce_payment_gateways', [$this, 'maybeDisableApplePayGateway'], 20);
         add_filter('woocommerce_payment_gateways', static function ($gateways) use ($container) {
             $orderMandatoryGatewayDisabler = $container->get(OrderMandatoryGatewayDisabler::class);
             assert($orderMandatoryGatewayDisabler instanceof OrderMandatoryGatewayDisabler);
@@ -347,58 +346,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
         unset($gateways[$bankTransferGatewayClassName]);
 
         return  $gateways;
-    }
-
-    /**
-     * Disable Apple Pay Gateway
-     *
-     * @param ?array $gateways
-     * @return array
-     */
-    public function maybeDisableApplePayGateway(?array $gateways): array
-    {
-        if (!is_array($gateways)) {
-            return [];
-        }
-        $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_SPECIAL_CHARS);
-        $wooCommerceSession = mollieWooCommerceSession();
-
-        /*
-         * There is only one case where we want to filter the gateway and it's when the checkout
-         * page render the available payments methods.
-         *
-         * For any other case we want to be sure apple pay gateway is included.
-         */
-        if (
-            $isWcApiRequest ||
-            !$wooCommerceSession instanceof \WC_Session ||
-            !doing_action('woocommerce_payment_gateways') ||
-            !wp_doing_ajax() && ! is_wc_endpoint_url('order-pay') ||
-            is_admin()
-        ) {
-            return $gateways;
-        }
-
-        if ($wooCommerceSession->get(self::APPLE_PAY_METHOD_ALLOWED_KEY, false)) {
-            return $gateways;
-        }
-
-        $applePayGatewayClassName = 'mollie_wc_gateway_applepay';
-        // phpcs:ignore
-        $postData = isset($_POST[self::POST_DATA_KEY]) ? wc_clean(wp_unslash($_POST[self::POST_DATA_KEY])) : '';
-        parse_str($postData, $postData);
-        $applePayAllowed = isset($postData[self::APPLE_PAY_METHOD_ALLOWED_KEY])
-            && $postData[self::APPLE_PAY_METHOD_ALLOWED_KEY];
-
-        if (!$applePayAllowed) {
-            unset($gateways[$applePayGatewayClassName]);
-        }
-
-        if ($applePayAllowed) {
-            $wooCommerceSession->set(self::APPLE_PAY_METHOD_ALLOWED_KEY, true);
-        }
-
-        return $gateways;
     }
 
     public function gatewaySurchargeHandling(Surcharge $surcharge)

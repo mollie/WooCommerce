@@ -1,9 +1,9 @@
 .mollie-gateway-icon {
   vertical-align: bottom;
-  height: 24px;
 }
 label .mollie-gateway-icon{
   float:right;
+  max-height: 24px !important;
 }
 .mollie-gateway-icon svg{
   float:right;

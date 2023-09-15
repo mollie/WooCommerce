@@ -40,7 +40,7 @@ while IFS= read -r line; do
     fi
 done < "$POT_FILE"
 
-echo 'msgid,msgstr,msgctxt,location' > $CSV_FILE
+echo 'msgid,msgstr,msgctxt,location,-de_DE, -de_DE_formal, -es_ES, -fr_FR, -it_IT, -nl_NL, -nl_NL_formal, -nl_BE, -nl_BE_formal' > $CSV_FILE
 location=""
 msgid=""
 msgstr=""
@@ -64,7 +64,7 @@ while IFS= read -r line; do
     fi
 
     if [[ "$line" =~ ^msgstr ]]; then
-        echo "\"$msgid\",\"$msgstr\",\"$msgctxt\",\"$location\"" >> $CSV_FILE
+        echo "\"$msgid\",\"$msgstr\",\"$msgctxt\",\"$location\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\" " >> $CSV_FILE
         location=""
         msgid=""
         msgstr=""

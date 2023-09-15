@@ -1,0 +1,27 @@
+me: CSV-To-PO
+
+on:
+  workflow_dispatch:
+    inputs:
+      PACKAGE_VERSION:
+        description: 'Package Version'
+        required: true
+jobs:
+  languages-diff:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: "Create CSV of diff translations"
+        run: |
+          chmod +x ./csv-to-po.sh 
+          ./csv-to-po.sh 
+      - name: Set artifact name
+        id: set-artifact-name
+        run: echo "artifact=mollie-payments-for-woocommerce-languages-${{ inputs.PACKAGE_VERSION }}" >> $GITHUB_OUTPUT
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.set-artifact-name.outputs.artifact }}
+          path: languages/*

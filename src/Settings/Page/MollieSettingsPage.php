@@ -415,7 +415,7 @@ class MollieSettingsPage extends WC_Settings_Page
         $sepaGatewayAllowed = !empty($this->registeredGateways["mollie_wc_gateway_directdebit"]);
         if ($sepaGatewayAllowed && !$isSepaEnabled) {
             $warning_message = __(
-                'You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL and/or other "first" payment methods.',
+                "You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL and/or other 'first' payment methods.",
                 'mollie-payments-for-woocommerce'
             );
 

@@ -1,4 +1,4 @@
-me: Languages-diff
+name: Languages-diff
 
 on:
   workflow_dispatch:

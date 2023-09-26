@@ -83,7 +83,7 @@ return [
         /* translators: Placeholder 1: enabled or disabled */
         'desc' => sprintf(
             __(
-                'Should Mollie store customers name and email address for Single Click Payments? Default <code>%1$s</code>. Required if WooCommerce Subscriptions is being used! Read more about <a href="https://help.mollie.com/hc/en-us/articles/115000671249-What-are-single-click-payments-and-how-does-it-work-">%2$s</a> and how it improves your conversion.',
+                'Should Mollie store customers name and email address for Single Click Payments? Default <code>%1$s</code>. Required if WooCommerce Subscriptions is being used! Read more about <a href=\'https://help.mollie.com/hc/en-us/articles/115000671249-What-are-single-click-payments-and-how-does-it-work-\'>%2$s</a> and how it improves your conversion.',
                 'mollie-payments-for-woocommerce'
             ),
             strtolower(__('Enabled', 'mollie-payments-for-woocommerce')),

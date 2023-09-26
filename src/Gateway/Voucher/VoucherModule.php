@@ -249,7 +249,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
                                 'default' => $defaultCategory,
                             /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
                                 'description' => __(
-                                    'In order to process it, all products in the order must have a category. To disable the product from voucher selection select "No category" option.',
+                                    "In order to process it, all products in the order must have a category. To disable the product from voucher selection select 'No category' option.",
                                     'mollie-payments-for-woocommerce'
                                 ),
                                 'desc_tip' => true,

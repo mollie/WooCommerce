@@ -82,4 +82,15 @@ class Api
         }
         return false;
     }
+
+    public function isMollieFraudException(\Mollie\Api\Exceptions\ApiException $e): bool
+    {
+        $isFraudCode = $e->getCode() === 422;
+        $isFraudMessage = strpos($e->getMessage(), 'The payment was declined due to suspected fraud') !== false;
+
+        if ($isFraudCode && $isFraudMessage) {
+            return true;
+        }
+        return false;
+    }
 }

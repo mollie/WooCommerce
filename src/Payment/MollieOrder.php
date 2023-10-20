@@ -371,6 +371,13 @@ class MollieOrder extends MollieObject
             if ($payment->method === 'paypal') {
                 $this->addPaypalTransactionIdToOrder($order);
             }
+            add_filter('woocommerce_valid_order_statuses_for_payment_complete', static function ($statuses) {
+                $statuses[] = 'processing';
+                return $statuses;
+            });
+            add_filter('woocommerce_payment_complete_order_status', static function ($status) use ($order) {
+                return $order->get_status() === 'processing' ? 'completed' : $status;
+            });
             $order->payment_complete($payment->id);
             // Add messages to log
             $this->logger->debug(__METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for order ' . $orderId);

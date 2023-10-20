@@ -30,7 +30,8 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
     /**
      * @var bool
      */
-    protected static $alreadyDisplayedInstructions = false;
+    protected static $alreadyDisplayedAdminInstructions = false;
+    protected static $alreadyDisplayedCustomerInstructions = false;
     /**
      * Recurring total, zero does not define a recurring total
      *
@@ -115,7 +116,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
         $this->paymentFactory = $paymentFactory;
         $this->pluginId = $pluginId;
 
-            // No plugin id, gateway id is unique enough
+        // No plugin id, gateway id is unique enough
         $this->plugin_id = '';
         // Use gateway class name as gateway id
         $this->gatewayId();
@@ -152,6 +153,12 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
         );
         add_action(
             'woocommerce_email_after_order_table',
+            [$this, 'displayInstructions'],
+            10,
+            3
+        );
+        add_action(
+            'woocommerce_email_order_meta',
             [$this, 'displayInstructions'],
             10,
             3
@@ -267,17 +274,17 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
                 $test_mode = $this->dataService->isTestModeEnabled();
 
                 $this->errors[] = ($test_mode ? __(
-                    'Test mode enabled.',
-                    'mollie-payments-for-woocommerce'
-                ) . ' ' : '') . sprintf(
+                            'Test mode enabled.',
+                            'mollie-payments-for-woocommerce'
+                        ) . ' ' : '') . sprintf(
                     /* translators: The surrounding %s's Will be replaced by a link to the global setting page */
-                    __(
-                        'No API key provided. Please %1$sset you Mollie API key%2$s first.',
-                        'mollie-payments-for-woocommerce'
-                    ),
-                    '<a href="' . $this->dataService->getGlobalSettingsUrl() . '">',
-                    '</a>'
-                );
+                        __(
+                            'No API key provided. Please %1$sset you Mollie API key%2$s first.',
+                            'mollie-payments-for-woocommerce'
+                        ),
+                        '<a href="' . $this->dataService->getGlobalSettingsUrl() . '">',
+                        '</a>'
+                    );
 
                 return false;
             }
@@ -806,8 +813,9 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
         $admin_instructions = false,
         $plain_text = false
     ) {
-
-        if (!$this::$alreadyDisplayedInstructions) {
+        if (($admin_instructions && !$this::$alreadyDisplayedAdminInstructions)
+            || (!$admin_instructions && !$this::$alreadyDisplayedCustomerInstructions)
+        ) {
             $order_payment_method = $order->get_payment_method();
 
             // Invalid gateway
@@ -852,7 +860,12 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
                 }
             }
         }
-        $this::$alreadyDisplayedInstructions = true;
+        if ($admin_instructions && !$this::$alreadyDisplayedAdminInstructions) {
+            $this::$alreadyDisplayedAdminInstructions = true;
+        }
+        if (!$admin_instructions && !$this::$alreadyDisplayedCustomerInstructions) {
+            $this::$alreadyDisplayedCustomerInstructions = true;
+        }
     }
 
     /**

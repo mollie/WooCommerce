@@ -836,6 +836,12 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
 
             if (!empty($instructions)) {
                 $instructions = wptexturize($instructions);
+                //save instructions in order meta
+                $order->update_meta_data(
+                    '_mollie_payment_instructions',
+                    $instructions
+                );
+                $order->save();
 
                 if ($plain_text) {
                     echo esc_html($instructions) . PHP_EOL;

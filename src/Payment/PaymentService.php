@@ -387,6 +387,8 @@ class PaymentService
             }
         } catch (ApiException $e) {
             $this->handleMollieOutage($e);
+            //if exception is 422 do not try to create a payment
+            $this->handleMollieFraudRejection($e);
             // Don't try to create a Mollie Payment for Klarna payment methods
             $order_payment_method = $order->get_payment_method();
             $orderMandatoryPaymentMethods = [
@@ -868,6 +870,29 @@ class PaymentService
             throw new ApiException(
                 __(
                     'Payment failed due to: Mollie is out of service. Please try again later.',
+                    'mollie-payments-for-woocommerce'
+                )
+            );
+        }
+    }
+
+    /**
+     * Check if the exception is a fraud rejection, if so bail, log and inform user
+     * @param ApiException $e
+     * @return void
+     * @throws ApiException
+     */
+    public function handleMollieFraudRejection(ApiException $e): void
+    {
+        $isMollieFraudException = $this->apiHelper->isMollieFraudException($e);
+        if ($isMollieFraudException) {
+            $this->logger->debug(
+                "Creating payment object: The payment was declined due to suspected fraud, stopping process."
+            );
+
+            throw new ApiException(
+                __(
+                    'Payment failed due to:  The payment was declined due to suspected fraud.',
                     'mollie-payments-for-woocommerce'
                 )
             );

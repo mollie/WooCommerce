@@ -274,17 +274,17 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
                 $test_mode = $this->dataService->isTestModeEnabled();
 
                 $this->errors[] = ($test_mode ? __(
-                            'Test mode enabled.',
-                            'mollie-payments-for-woocommerce'
-                        ) . ' ' : '') . sprintf(
+                    'Test mode enabled.',
+                    'mollie-payments-for-woocommerce'
+                ) . ' ' : '') . sprintf(
                     /* translators: The surrounding %s's Will be replaced by a link to the global setting page */
-                        __(
-                            'No API key provided. Please %1$sset you Mollie API key%2$s first.',
-                            'mollie-payments-for-woocommerce'
-                        ),
-                        '<a href="' . $this->dataService->getGlobalSettingsUrl() . '">',
-                        '</a>'
-                    );
+                    __(
+                        'No API key provided. Please %1$sset you Mollie API key%2$s first.',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                    '<a href="' . $this->dataService->getGlobalSettingsUrl() . '">',
+                    '</a>'
+                );
 
                 return false;
             }
@@ -813,7 +813,9 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
         $admin_instructions = false,
         $plain_text = false
     ) {
-        if (($admin_instructions && !$this::$alreadyDisplayedAdminInstructions)
+
+        if (
+            ($admin_instructions && !$this::$alreadyDisplayedAdminInstructions)
             || (!$admin_instructions && !$this::$alreadyDisplayedCustomerInstructions)
         ) {
             $order_payment_method = $order->get_payment_method();

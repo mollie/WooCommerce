@@ -7,17 +7,24 @@ namespace Mollie\WooCommerce\SDK;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Exceptions\CurlConnectTimeoutException;
 use Mollie\Api\HttpAdapter\MollieHttpAdapterInterface;
+use WP_Error;
 
 class WordPressHttpAdapter implements MollieHttpAdapterInterface
 {
     /**
-     * Default response timeout (in seconds).
-     */
-    const DEFAULT_TIMEOUT = 10;
-    /**
      * HTTP status code for an empty ok response.
      */
     const HTTP_NO_CONTENT = 204;
+
+    /**
+     * The maximum number of retries
+     */
+    public const MAX_RETRIES = 5;
+
+    /**
+     * The amount of milliseconds the delay is being increased with on each retry.
+     */
+    public const DELAY_INCREASE_MS = 1000;
 
     /**
      * @param string $httpMethod
@@ -35,19 +42,22 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
             'method' => $httpMethod,
             'body' => $httpBody,
             'headers' => $headers,
-            'user-agent' => $headers['User-Agent'],
-            'sslverify' => true,
-            'timeout' => self::DEFAULT_TIMEOUT,
+            'user-agent' => $headers['User-Agent']
         ];
-        $response = wp_remote_request($url, $args);
+        $message = '';
+        $code = 0;
+        for ($i = 0; $i <= self::MAX_RETRIES; $i++) {
+            usleep($i * self::DELAY_INCREASE_MS);
+            $response = wp_remote_request($url, $args);
 
-        if (is_wp_error($response)) {
+            if (!is_wp_error($response)) {
+                return $this->parseResponse($response);
+            }
             $message =  $response->get_error_message() ?? 'Unknown error';
             $code = is_int($response->get_error_code()) ? $response->get_error_code() : 0;
-            throw new ApiException($message, $code);
         }
 
-        return $this->parseResponse($response);
+        throw new ApiException("Unable to connect to Mollie. Maximum number of retries (". self::MAX_RETRIES .") reached. " . $message, $code);
     }
 
     public function versionString()

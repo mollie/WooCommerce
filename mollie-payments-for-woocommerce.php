@@ -19,6 +19,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce;
 
+use Mollie\WooCommerce\MerchantCapture\MerchantCaptureModule;
 use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Package;
 use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Properties\PluginProperties;
 use Mollie\WooCommerce\Activation\ActivationModule;
@@ -161,6 +162,7 @@ function initialize()
             new GatewayModule(),
             new VoucherModule(),
             new PaymentModule(),
+            new MerchantCaptureModule(),
             new UninstallModule(),
         ];
         $modules = apply_filters('mollie_wc_plugin_modules', $modules);

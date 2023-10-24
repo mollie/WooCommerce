@@ -25,8 +25,6 @@ class PaymentService
     public const PAYMENT_METHOD_TYPE_ORDER = 'order';
     public const PAYMENT_METHOD_TYPE_PAYMENT = 'payment';
 
-    public const PAYMENT_METHOD_TYPE_CAPTURE = 'capture';
-
     /**
      * @var MolliePaymentGatewayI
      */

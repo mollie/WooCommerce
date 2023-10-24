@@ -339,7 +339,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
         // To disable automatic shipping and capturing of the Mollie order when a WooCommerce order status is updated to completed,
         // store an option 'mollie-payments-for-woocommerce_disableShipOrderAtMollie' with value 1
-        if (get_option($this->pluginId . '_' . 'disableShipOrderAtMollie', '0') === '1') {
+        if (apply_filters('mollie_wc_gateway_disable_ship_and_capture', get_option($this->pluginId . '_' . 'disableShipOrderAtMollie', '0') === '1', $order)) {
             return;
         }
 

@@ -24,6 +24,7 @@ class PaymentService
 {
     public const PAYMENT_METHOD_TYPE_ORDER = 'order';
     public const PAYMENT_METHOD_TYPE_PAYMENT = 'payment';
+
     /**
      * @var MolliePaymentGatewayI
      */
@@ -369,8 +370,7 @@ class PaymentService
                     : '',
                 'orderNumber' => isset($data['orderNumber'])
                     ? $data['orderNumber'] : '',
-                'lines' => isset($data['lines']) ? $data['lines'] : '',
-            ];
+                'lines' => isset($data['lines']) ? $data['lines'] : '', ];
 
             $this->logger->debug(json_encode($apiCallLog));
             $paymentOrder = $paymentObject;
@@ -552,6 +552,7 @@ class PaymentService
                 $apiKey
             );
         }
+
         return $paymentObject;
     }
 

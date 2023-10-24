@@ -453,6 +453,10 @@ class MolliePayment extends MollieObject
                 return new WP_Error('1', $errorMessage);
             }
 
+            if ($paymentObject->isAuthorized()) {
+                return true;
+            }
+
             if (! $paymentObject->isPaid()) {
                 $errorMessage = "Can not refund payment $paymentObject->id for WooCommerce order $orderId as it is not paid.";
 

@@ -264,8 +264,8 @@ class MollieGeneralSettings
                         'mollie-payments-for-woocommerce'
                     )
                 ),
-                'custom_attributes' => ['step' => '1', 'min' => '0', 'max' => '526000'],
-                'default' => '0',
+                'custom_attributes' => ['step' => '1', 'min' => '10', 'max' => '526000'],
+                'default' => '10',
                 'desc_tip' => false,
             ],
         ];

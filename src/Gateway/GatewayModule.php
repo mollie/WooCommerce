@@ -19,6 +19,7 @@ use Mollie\WooCommerce\Buttons\PayPalButton\PayPalAjaxRequests;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalButtonHandler;
 use Mollie\WooCommerce\Gateway\Voucher\MaybeDisableGateway;
 use Mollie\WooCommerce\Notice\AdminNotice;
+use Mollie\WooCommerce\Notice\FrontendNotice;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrderService;
@@ -480,8 +481,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
     {
         $logger = $container->get(Logger::class);
         assert($logger instanceof Logger);
-        $notice = $container->get(AdminNotice::class);
-        assert($notice instanceof AdminNotice);
+        $notice = $container->get(FrontendNotice::class);
+        assert($notice instanceof FrontendNotice);
         $paymentService = $container->get(PaymentService::class);
         assert($paymentService instanceof PaymentService);
         $mollieOrderService = $container->get(MollieOrderService::class);

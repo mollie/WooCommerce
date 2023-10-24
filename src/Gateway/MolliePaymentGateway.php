@@ -578,13 +578,12 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
                     return $this->get_return_url($order);
                 } else {
                     $this->notice->addNotice(
-                        'notice',
+                        'error',
                         __(
                             'You have cancelled your payment. Please complete your order with a different payment method.',
                             'mollie-payments-for-woocommerce'
                         )
                     );
-
                     // Return to order payment page
                     return $failedRedirect;
                 }
@@ -599,7 +598,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
                     && !$payment->isAuthorized()
                 ) {
                     $this->notice->addNotice(
-                        'notice',
+                        'error',
                         __(
                             'Your payment was not successful. Please complete your order with a different payment method.',
                             'mollie-payments-for-woocommerce'
@@ -613,7 +612,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
                 }
             } catch (UnexpectedValueException $exc) {
                 $this->notice->addNotice(
-                    'notice',
+                    'error',
                     __(
                         'Your payment was not successful. Please complete your order with a different payment method.',
                         'mollie-payments-for-woocommerce'

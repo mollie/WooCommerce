@@ -2,13 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Mollie Payments for WooCommerce 7.4.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/WooCommerce\n"
+"Project-Id-Version: Mollie Payments for WooCommerce 7.4.1-beta\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/html\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2023-10-20T15:51:47+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.8.1\n"
 "X-Domain: mollie-payments-for-woocommerce\n"
@@ -508,7 +509,7 @@ msgstr ""
 #: src/Buttons/ApplePayButton/AppleAjaxRequests.php:700
 #: src/Buttons/PayPalButton/PayPalAjaxRequests.php:113
 #: src/Buttons/PayPalButton/PayPalAjaxRequests.php:157
-#: src/Payment/PaymentService.php:716
+#: src/Payment/PaymentService.php:718
 msgid "Could not create %s payment."
 msgstr ""
 
@@ -520,85 +521,89 @@ msgstr ""
 msgid "%1$sApple Pay Validation Error%2$s Check %3$sApple Server requirements page%4$s to fix it in order to make the Apple Pay button work"
 msgstr ""
 
-#: src/Gateway/GatewayModule.php:655
+#: src/Gateway/GatewayModule.php:326
+msgid "Mollie Payment Details"
+msgstr ""
+
+#: src/Gateway/GatewayModule.php:682
 msgid "Error processing %1$s payment, the %2$s field is required."
 msgstr ""
 
-#: src/Gateway/GatewayModule.php:669
+#: src/Gateway/GatewayModule.php:696
 msgid "Please enter your %1$s, this is required for %2$s payments"
 msgstr ""
 
-#: src/Gateway/MolliePaymentGateway.php:269
+#: src/Gateway/MolliePaymentGateway.php:276
 #: src/Settings/Page/MollieSettingsPage.php:314
 msgid "Test mode enabled."
 msgstr ""
 
 #. translators: The surrounding %s's Will be replaced by a link to the global setting page
-#: src/Gateway/MolliePaymentGateway.php:274
+#: src/Gateway/MolliePaymentGateway.php:281
 msgid "No API key provided. Please %1$sset you Mollie API key%2$s first."
 msgstr ""
 
 #. translators: Placeholder 1: payment method title. The surrounding %s's Will be replaced by a link to the Mollie profile
-#: src/Gateway/MolliePaymentGateway.php:289
+#: src/Gateway/MolliePaymentGateway.php:296
 msgid "%1$s not enabled in your Mollie profile. You can enable it by editing your %2$sMollie profile%3$s."
 msgstr ""
 
 #. translators: Placeholder 1: WooCommerce currency, placeholder 2: Supported Mollie currencies
-#: src/Gateway/MolliePaymentGateway.php:304
+#: src/Gateway/MolliePaymentGateway.php:311
 msgid "Current shop currency %1$s not supported by Mollie. Read more about %2$ssupported currencies and payment methods.%3$s "
 msgstr ""
 
-#: src/Gateway/MolliePaymentGateway.php:575
+#: src/Gateway/MolliePaymentGateway.php:582
 msgid "You have cancelled your payment. Please complete your order with a different payment method."
 msgstr ""
 
-#: src/Gateway/MolliePaymentGateway.php:596
-#: src/Gateway/MolliePaymentGateway.php:610
+#: src/Gateway/MolliePaymentGateway.php:603
+#: src/Gateway/MolliePaymentGateway.php:617
 msgid "Your payment was not successful. Please complete your order with a different payment method."
 msgstr ""
 
-#: src/Gateway/MolliePaymentGateway.php:646
+#: src/Gateway/MolliePaymentGateway.php:653
 msgid "Could not load order %s"
 msgstr ""
 
-#: src/Gateway/MolliePaymentGateway.php:899
+#: src/Gateway/MolliePaymentGateway.php:918
 msgid "Order cancelled"
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: src/Gateway/MolliePaymentGateway.php:933
+#: src/Gateway/MolliePaymentGateway.php:952
 msgid "%1$s payment still pending (%2$s) but customer already returned to the store. Status should be updated automatically in the future, if it doesn't this might indicate a communication issue between the site and Mollie."
 msgstr ""
 
-#: src/Gateway/MolliePaymentGateway.php:939
+#: src/Gateway/MolliePaymentGateway.php:958
 #: src/Payment/MollieObject.php:682
 #: src/Payment/MollieObject.php:714
 #: src/Payment/MollieOrder.php:281
 #: src/Payment/MollieOrder.php:338
-#: src/Payment/MollieOrder.php:382
-#: src/Payment/MollieOrder.php:463
-#: src/Payment/MollieOrder.php:534
-#: src/Payment/MollieOrder.php:877
-#: src/Payment/MollieOrderService.php:171
-#: src/Payment/MollieOrderService.php:437
-#: src/Payment/MollieOrderService.php:500
-#: src/Payment/MollieOrderService.php:714
+#: src/Payment/MollieOrder.php:389
+#: src/Payment/MollieOrder.php:470
+#: src/Payment/MollieOrder.php:541
+#: src/Payment/MollieOrder.php:884
+#: src/Payment/MollieOrderService.php:172
+#: src/Payment/MollieOrderService.php:438
+#: src/Payment/MollieOrderService.php:501
+#: src/Payment/MollieOrderService.php:715
 #: src/Payment/MolliePayment.php:236
 #: src/Payment/MolliePayment.php:323
 #: src/Payment/MolliePayment.php:399
 #: src/Payment/MolliePayment.php:423
-#: src/Payment/PaymentService.php:801
+#: src/Payment/PaymentService.php:803
 #: src/Subscription/MollieSepaRecurringGateway.php:137
 #: src/Subscription/MollieSepaRecurringGateway.php:204
 #: src/Subscription/MollieSubscriptionGateway.php:458
 msgid "test mode"
 msgstr ""
 
-#: src/Gateway/MolliePaymentGateway.php:950
+#: src/Gateway/MolliePaymentGateway.php:969
 msgid ", payment pending."
 msgstr ""
 
-#: src/Gateway/MolliePaymentGateway.php:982
+#: src/Gateway/MolliePaymentGateway.php:1001
 msgid "Your order has been cancelled."
 msgstr ""
 
@@ -766,72 +771,72 @@ msgid "Order authorized using %1$s payment (%2$s). Set order to completed in Woo
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: src/Payment/MollieOrder.php:380
+#: src/Payment/MollieOrder.php:387
 msgid "Order completed at Mollie for %1$s order (%2$s). At least one order line completed. Remember: Completed status for an order at Mollie is not the same as Completed status in WooCommerce!"
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: src/Payment/MollieOrder.php:461
+#: src/Payment/MollieOrder.php:468
 msgid "%1$s order (%2$s) cancelled ."
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: src/Payment/MollieOrder.php:532
+#: src/Payment/MollieOrder.php:539
 msgid "%1$s order expired (%2$s) but not cancelled because of another pending payment (%3$s)."
 msgstr ""
 
-#: src/Payment/MollieOrder.php:627
+#: src/Payment/MollieOrder.php:634
 msgctxt "Order note error"
 msgid "The sum of refunds for all order lines is not identical to the refund amount, so this refund will be processed as a payment amount refund, not an order line refund."
 msgstr ""
 
-#: src/Payment/MollieOrder.php:759
+#: src/Payment/MollieOrder.php:766
 msgctxt "Order note error"
 msgid "Can not refund order amount that has status %1$s at Mollie."
 msgstr ""
 
-#: src/Payment/MollieOrder.php:781
+#: src/Payment/MollieOrder.php:788
 msgid "Amount refund of %1$s%2$s refunded in WooCommerce and at Mollie.%3$s Refund ID: %4$s."
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: src/Payment/MollieOrder.php:872
+#: src/Payment/MollieOrder.php:879
 msgid "%1$s order (%2$s) expired ."
 msgstr ""
 
-#: src/Payment/MollieOrder.php:1095
+#: src/Payment/MollieOrder.php:1102
 msgid "%1$sx %2$s cancelled for %3$s%4$s in WooCommerce and at Mollie."
 msgstr ""
 
-#: src/Payment/MollieOrder.php:1119
+#: src/Payment/MollieOrder.php:1126
 msgid "%1$sx %2$s refunded for %3$s%4$s in WooCommerce and at Mollie.%5$s Refund ID: %6$s."
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment status, placeholder 3: payment ID
-#: src/Payment/MollieOrderService.php:168
+#: src/Payment/MollieOrderService.php:169
 msgid "%1$s payment %2$s (%3$s), not processed."
 msgstr ""
 
-#: src/Payment/MollieOrderService.php:400
+#: src/Payment/MollieOrderService.php:401
 msgid "New chargeback %s processed! Order note and order status updated."
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: src/Payment/MollieOrderService.php:432
+#: src/Payment/MollieOrderService.php:433
 msgid "%1$s payment charged back via Mollie (%2$s). You will need to manually review the payment (and adjust product stocks if you use it)."
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: src/Payment/MollieOrderService.php:494
+#: src/Payment/MollieOrderService.php:495
 msgid "%1$s payment charged back via Mollie (%2$s). Subscription status updated, please review (and adjust product stocks if you use it)."
 msgstr ""
 
 #. translators: Placeholder 1: payment method title, placeholder 2: payment ID
-#: src/Payment/MollieOrderService.php:701
+#: src/Payment/MollieOrderService.php:702
 msgid "%1$s payment %2$s via Mollie (%3$s %4$s). You will need to manually review the payment (and adjust product stocks if you use it)."
 msgstr ""
 
-#: src/Payment/MollieOrderService.php:814
+#: src/Payment/MollieOrderService.php:815
 msgid "New refund %s processed in Mollie Dashboard! Order note added, but order not updated."
 msgstr ""
 
@@ -930,33 +935,37 @@ msgctxt "Order note info"
 msgid "Order could not be canceled at Mollie, because order status is "
 msgstr ""
 
-#: src/Payment/PaymentService.php:622
+#: src/Payment/PaymentService.php:624
 msgid "Subscription switch failed, no valid mandate found. Place a completely new order to change your subscription."
 msgstr ""
 
-#: src/Payment/PaymentService.php:628
+#: src/Payment/PaymentService.php:630
 msgid "Failed switching subscriptions, no valid mandate."
 msgstr ""
 
-#: src/Payment/PaymentService.php:638
+#: src/Payment/PaymentService.php:640
 msgid "Order completed internally because of an existing valid mandate at Mollie."
 msgstr ""
 
-#: src/Payment/PaymentService.php:779
+#: src/Payment/PaymentService.php:781
 #: src/Subscription/MollieSepaRecurringGateway.php:126
 #: src/Subscription/MollieSubscriptionGateway.php:449
 msgid "Awaiting payment confirmation."
 msgstr ""
 
 #. translators: Placeholder 1: Payment method title, placeholder 2: payment ID
-#: src/Payment/PaymentService.php:799
+#: src/Payment/PaymentService.php:801
 #: src/Subscription/MollieSepaRecurringGateway.php:135
 #: src/Subscription/MollieSubscriptionGateway.php:456
 msgid "%1$s payment started (%2$s)."
 msgstr ""
 
-#: src/Payment/PaymentService.php:869
+#: src/Payment/PaymentService.php:871
 msgid "Payment failed due to: Mollie is out of service. Please try again later."
+msgstr ""
+
+#: src/Payment/PaymentService.php:894
+msgid "Payment failed due to:  The payment was declined due to suspected fraud."
 msgstr ""
 
 #: src/Payment/RefundLineItemsBuilder.php:126
@@ -1149,6 +1158,7 @@ msgstr ""
 #: src/PaymentMethods/Ideal.php:17
 #: src/PaymentMethods/Ideal.php:55
 #: src/PaymentMethods/Kbc.php:16
+#: src/PaymentMethods/Kbc.php:60
 msgid "Select your bank"
 msgstr ""
 
@@ -1272,6 +1282,10 @@ msgstr ""
 
 #: src/PaymentMethods/Kbc.php:39
 msgid "If you disable this, a dropdown with various KBC/CBC banks will not be shown in the WooCommerce checkout, so users will select a KBC/CBC bank on the Mollie payment page after checkout."
+msgstr ""
+
+#: src/PaymentMethods/Kbc.php:54
+msgid "This text will be displayed as the first option in the KBC/CBC issuers drop down, if nothing is entered, 'Select your bank' will be shown. Only if the above 'Show KBC/CBC banks dropdown' is enabled."
 msgstr ""
 
 #: src/PaymentMethods/Klarna.php:13
@@ -1838,7 +1852,7 @@ msgid "Initial order status"
 msgstr ""
 
 #: src/Settings/General/MollieGeneralSettings.php:292
-msgid "Some payment methods take longer than a few hours to complete. The initial order state is then set to '%1$s'. This ensures the order is not cancelled when the setting %2$s is used."
+msgid "Some payment methods take longer than a few hours to complete. The initial order state is then set to '%1$s'. This ensures the order is not cancelled when the setting %2$s is used. This will also prevent the order to be canceled when expired."
 msgstr ""
 
 #: src/Settings/Page/MollieSettingsPage.php:112

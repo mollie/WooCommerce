@@ -1,27 +1,31 @@
 (function (ApplePaySession) {
 
-  document.addEventListener('DOMContentLoaded', function () {
-    var applePayMethodElement = document.querySelector(
-      '.payment_method_mollie_wc_gateway_applepay',
-    )
+  document.addEventListener('DOMContentLoaded', hideApplyPaymentMethodIfCantPay)
+  jQuery("body").on("updated_checkout", hideApplyPaymentMethodIfCantPay);
 
-    var woocommerceCheckoutForm = document.querySelector(
-      'form.woocommerce-checkout',
-    )
 
-    if (!woocommerceCheckoutForm) {
-      return
-    }
+  function hideApplyPaymentMethodIfCantPay(){
+      var applePayMethodElement = document.querySelector(
+          '.payment_method_mollie_wc_gateway_applepay',
+      )
 
-    if (!ApplePaySession || !ApplePaySession.canMakePayments()) {
-      applePayMethodElement &&
-      applePayMethodElement.parentNode.removeChild(applePayMethodElement)
-      return
-    }
+      var woocommerceCheckoutForm = document.querySelector(
+          'form.woocommerce-checkout, #order_review'
+      )
 
-    woocommerceCheckoutForm.insertAdjacentHTML(
-      'beforeend',
-      '<input type="hidden" name="mollie_apple_pay_method_allowed" value="1" />',
-    )
-  })
+      if (!woocommerceCheckoutForm) {
+          return
+      }
+
+      if (!ApplePaySession || !ApplePaySession.canMakePayments()) {
+          applePayMethodElement &&
+          applePayMethodElement.parentNode.removeChild(applePayMethodElement)
+          return
+      }
+
+      woocommerceCheckoutForm.insertAdjacentHTML(
+          'beforeend',
+          '<input type="hidden" name="mollie_apple_pay_method_allowed" value="1" />',
+      )
+  }
 })(window.ApplePaySession)

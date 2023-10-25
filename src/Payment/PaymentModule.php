@@ -6,9 +6,9 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
-use Inpsyde\Modularity\Module\ExecutableModule;
-use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
-use Inpsyde\Modularity\Module\ServiceModule;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
@@ -18,7 +18,7 @@ use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
-use Psr\Container\ContainerInterface;
+use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
 use RuntimeException;
@@ -339,7 +339,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
         // To disable automatic shipping and capturing of the Mollie order when a WooCommerce order status is updated to completed,
         // store an option 'mollie-payments-for-woocommerce_disableShipOrderAtMollie' with value 1
-        if (get_option($this->pluginId . '_' . 'disableShipOrderAtMollie', '0') === '1') {
+        if (apply_filters('mollie_wc_gateway_disable_ship_and_capture', get_option($this->pluginId . '_' . 'disableShipOrderAtMollie', '0') === '1', $order)) {
             return;
         }
 

@@ -18,6 +18,7 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
      * HTTP status code for an empty ok response.
      */
     const HTTP_NO_CONTENT = 204;
+    const PAYMENT_HTTP_NO_CONTENT = 202;
 
     /**
      * @param string $httpMethod
@@ -65,7 +66,7 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
         $statusCode = wp_remote_retrieve_response_code($response);
         $httpBody = wp_remote_retrieve_body($response);
         if (empty($httpBody)) {
-            if ($statusCode === self::HTTP_NO_CONTENT) {
+            if ($statusCode === self::HTTP_NO_CONTENT || $statusCode === self::PAYMENT_HTTP_NO_CONTENT) {
                 return null;
             }
 

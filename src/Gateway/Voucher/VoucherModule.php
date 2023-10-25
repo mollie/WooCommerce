@@ -22,11 +22,11 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Gateway\Voucher;
 
-use Inpsyde\Modularity\Module\ExecutableModule;
-use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
-use Inpsyde\Modularity\Module\ServiceModule;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
-use Psr\Container\ContainerInterface;
+use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
 
 class VoucherModule implements ExecutableModule, ServiceModule
 {
@@ -128,7 +128,11 @@ class VoucherModule implements ExecutableModule, ServiceModule
     {
         $post_id = $product->get_id();
         $optionName = Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION;
-        check_ajax_referer('inlineeditnonce', '_inline_edit');
+
+        if (wp_doing_ajax()) {
+            check_ajax_referer('inlineeditnonce', '_inline_edit');
+        }
+
         if (isset($_REQUEST[$optionName])) {
             $option = filter_var(wp_unslash($_REQUEST[$optionName]), FILTER_SANITIZE_SPECIAL_CHARS);
             update_post_meta($post_id, $optionName, wc_clean($option));
@@ -245,7 +249,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
                                 'default' => $defaultCategory,
                             /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
                                 'description' => __(
-                                    'In order to process it, all products in the order must have a category. To disable the product from voucher selection select "No category" option.',
+                                    "In order to process it, all products in the order must have a category. To disable the product from voucher selection select 'No category' option.",
                                     'mollie-payments-for-woocommerce'
                                 ),
                                 'desc_tip' => true,

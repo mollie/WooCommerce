@@ -10,8 +10,9 @@ import molliePaymentMethod from './blocks/molliePaymentMethod'
             const { ajaxUrl, filters, gatewayData, availableGateways } = mollieBlockData.gatewayData;
             const {useEffect} = wp.element;
             const isAppleSession = typeof window.ApplePaySession === "function"
-            function getCompanyField()
-            {
+            const isBlockEditor = !!wp?.blockEditor;
+
+            function getCompanyField() {
                 let shippingCompany = document.getElementById('shipping-company');
                 let billingCompany = document.getElementById('billing-company');
                 return shippingCompany ? shippingCompany : billingCompany;
@@ -39,8 +40,8 @@ import molliePaymentMethod from './blocks/molliePaymentMethod'
             }
             gatewayData.forEach(item => {
                 let register = () => registerPaymentMethod(molliePaymentMethod(useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isCompanyFieldVisible, isPhoneFieldVisible));
-                if (item.name === 'mollie_wc_gateway_applepay' ) {
-                    if (isAppleSession && window.ApplePaySession.canMakePayments()) {
+                if (item.name === 'mollie_wc_gateway_applepay'  && !isBlockEditor) {
+                    if ((isAppleSession && window.ApplePaySession.canMakePayments())) {
                         register();
                     }
                     return;

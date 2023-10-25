@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce;
 
-use Inpsyde\Modularity\Package;
-use Inpsyde\Modularity\Properties\PluginProperties;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Package;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Properties\PluginProperties;
 use Mollie\WooCommerce\Uninstall\CleanDb;
 use Mollie\WooCommerce\Uninstall\UninstallModule;
 use Throwable;

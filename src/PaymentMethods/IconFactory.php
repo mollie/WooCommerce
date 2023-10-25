@@ -28,6 +28,11 @@ class IconFactory
         return $this->iconFactory()->svgUrlForPaymentMethod($paymentMethodName);
     }
 
+    public function getExternalIconHtml($svgIconUrl): string
+    {
+        return $this->iconFactory()->generateIconHtml($svgIconUrl);
+    }
+
     /**
      * Singleton of the class that handles icons (API/fallback)
      * @return PaymentMethodsIconUrl|null

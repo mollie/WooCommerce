@@ -136,7 +136,7 @@ class GatewaySurchargeHandler
         $this->cartRemoveFee();
         WC()->cart->calculate_totals();
         $newTotal = (float) WC()->cart->get_totals()['total'];
-        $totalTax  = WC()->cart->get_totals()['total_tax'];
+        $totalTax = WC()->cart->get_totals()['total_tax'];
         $noSurchargeData = [
 
                 'amount' => false,
@@ -171,25 +171,25 @@ class GatewaySurchargeHandler
         $feeAmount = $this->surcharge->calculateFeeAmount(WC()->cart, $gatewaySettings);
 
         $label = $this->gatewayFeeLabel;
-        add_action( 'woocommerce_cart_calculate_fees', function() use ($label, $feeAmount) {
+        add_action('woocommerce_cart_calculate_fees', static function () use ($label, $feeAmount) {
             global $woocommerce;
             $woocommerce->cart->add_fee($label, $feeAmount, true, 'standard');
         });
         WC()->cart->calculate_totals();
         $feeAmountTaxed = (float) WC()->cart->get_totals()['fee_total'];
-        $taxDisplayMode = get_option( 'woocommerce_tax_display_shop' );
+        $taxDisplayMode = get_option('woocommerce_tax_display_shop');
         if ($taxDisplayMode === 'incl') {
             $feeAmountTaxed = $feeAmountTaxed + (float) WC()->cart->get_totals()['fee_tax'];
         }
         $newTotal = (float) WC()->cart->get_totals()['total'];
-        $totalTax  = WC()->cart->get_totals()['total_tax'];
+        $totalTax = WC()->cart->get_totals()['total_tax'];
         $data = [
                 'amount' => $feeAmountTaxed,
                 'name' => $this->gatewayFeeLabel,
                 'currency' => get_woocommerce_currency_symbol(),
                 'newTotal' => $newTotal,
                 'totalTax' => $totalTax,
-                'cart' => WC()->cart->get_totals()
+                'cart' => WC()->cart->get_totals(),
         ];
 
         wp_send_json_success($data);
@@ -285,16 +285,17 @@ class GatewaySurchargeHandler
     protected function cartRemoveFee()
     {
         $label = $this->gatewayFeeLabel;
-        add_action( 'woocommerce_before_calculate_totals', function () use ($label) {
+        add_action('woocommerce_before_calculate_totals', static function () use ($label) {
             $fees = WC()->cart->get_fees();
             foreach ($fees as $key => $fee) {
-                if($fees[$key]->name === $label) {
+                if ($fees[$key]->name === $label) {
                     unset($fees[$key]);
                 }
             }
             WC()->cart->fees_api()->set_fees($fees);
-        } );
+        });
     }
+
     protected function orderAddFee($order, $amount, $surchargeName)
     {
         $item_fee = new WC_Order_Item_Fee();

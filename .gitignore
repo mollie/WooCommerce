@@ -17,7 +17,7 @@
 /tools/
 /build/
 /tests/e2e/Shared/default.json
-
+package-lock.json
 .env
 cypress.json
 test-results/

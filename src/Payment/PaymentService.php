@@ -15,6 +15,7 @@ use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
+use Mollie\WooCommerce\PaymentMethods\Constants;
 use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
 use WC_Order;
@@ -23,6 +24,7 @@ class PaymentService
 {
     public const PAYMENT_METHOD_TYPE_ORDER = 'order';
     public const PAYMENT_METHOD_TYPE_PAYMENT = 'payment';
+
     /**
      * @var MolliePaymentGatewayI
      */
@@ -255,7 +257,7 @@ class PaymentService
         $optionName = $this->pluginId . '_' . 'api_switch';
         $apiSwitchOption = get_option($optionName);
         $paymentType = $apiSwitchOption ?: self::PAYMENT_METHOD_TYPE_ORDER;
-        $isBankTransferGateway = $paymentMethod->getProperty('id') === 'banktransfer';
+        $isBankTransferGateway = $paymentMethod->getProperty('id') === Constants::BANKTRANSFER;
         if ($isBankTransferGateway && $paymentMethod->isExpiredDateSettingActivated()) {
             $paymentType = self::PAYMENT_METHOD_TYPE_PAYMENT;
         }
@@ -368,8 +370,7 @@ class PaymentService
                     : '',
                 'orderNumber' => isset($data['orderNumber'])
                     ? $data['orderNumber'] : '',
-                'lines' => isset($data['lines']) ? $data['lines'] : '',
-            ];
+                'lines' => isset($data['lines']) ? $data['lines'] : '', ];
 
             $this->logger->debug(json_encode($apiCallLog));
             $paymentOrder = $paymentObject;
@@ -386,12 +387,15 @@ class PaymentService
             }
         } catch (ApiException $e) {
             $this->handleMollieOutage($e);
+            //if exception is 422 do not try to create a payment
+            $this->handleMollieFraudRejection($e);
             // Don't try to create a Mollie Payment for Klarna payment methods
             $order_payment_method = $order->get_payment_method();
             $orderMandatoryPaymentMethods = [
                 'mollie_wc_gateway_klarnapaylater',
                 'mollie_wc_gateway_klarnasliceit',
                 'mollie_wc_gateway_klarnapaynow',
+                'mollie_wc_gateway_klarna',
                 'mollie_wc_gateway_billie',
                 'mollie_wc_gateway_in3',
             ];
@@ -548,6 +552,7 @@ class PaymentService
                 $apiKey
             );
         }
+
         return $paymentObject;
     }
 
@@ -763,7 +768,7 @@ class PaymentService
 // Update initial order status for payment methods where the payment status will be delivered after a couple of days.
         // See: https://www.mollie.com/nl/docs/status#expiry-times-per-payment-method
         // Status is only updated if the new status is not the same as the default order status (pending)
-        if (($paymentObject->method === 'banktransfer') || ($paymentObject->method === 'directdebit')) {
+        if (($paymentObject->method === Constants::BANKTRANSFER) || ($paymentObject->method === Constants::DIRECTDEBIT)) {
             // Don't change the status of the order if it's Partially Paid
             // This adds support for WooCommerce Deposits (by Webtomizer)
             // See https://github.com/mollie/WooCommerce/issues/138
@@ -866,6 +871,29 @@ class PaymentService
             throw new ApiException(
                 __(
                     'Payment failed due to: Mollie is out of service. Please try again later.',
+                    'mollie-payments-for-woocommerce'
+                )
+            );
+        }
+    }
+
+    /**
+     * Check if the exception is a fraud rejection, if so bail, log and inform user
+     * @param ApiException $e
+     * @return void
+     * @throws ApiException
+     */
+    public function handleMollieFraudRejection(ApiException $e): void
+    {
+        $isMollieFraudException = $this->apiHelper->isMollieFraudException($e);
+        if ($isMollieFraudException) {
+            $this->logger->debug(
+                "Creating payment object: The payment was declined due to suspected fraud, stopping process."
+            );
+
+            throw new ApiException(
+                __(
+                    'Payment failed due to:  The payment was declined due to suspected fraud.',
                     'mollie-payments-for-woocommerce'
                 )
             );

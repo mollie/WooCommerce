@@ -155,11 +155,7 @@ const beforePlacingOrder = async (page, testedProduct, testedGateway, productQua
 }
 
 const beforePlacingOrderBlock = async (page, testedProduct, testedGateway, productQuantity, checkoutUrl) => {
-    for (let i = productQuantity; i >0; i--) {
-        await addProductToCart(page, testedProduct.sku);
-    }
-
-    await page.goto(checkoutUrl);
+    //await page.goto(checkoutUrl);
 
     //Capture WooCommerce total amount
     const totalAmount = await captureTotalAmountBlockCheckout(page);

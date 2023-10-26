@@ -26,6 +26,15 @@ const addProductToCart = async (page, baseUrl, productId, productQuantity) => {
     );
 }
 
+/**
+ * @param {import('@playwright/test').Page} page
+ * @param productSku
+ */
+const addProductToCartBlock = async (page, productSku) => {
+    await page.goto('/shop/');
+    await page.locator('[data-product_sku="' + productSku + '"].add_to_cart_button').click()
+}
+
 const emptyCart = async (page) => {
     await page.goto('/cart/');
     const canRemove = await page.getByRole('cell', { name: 'Remove this item' }).isVisible();
@@ -112,6 +121,7 @@ const captureTotalAmountPayPage = async (page) => {
 
 const captureTotalAmountBlockCheckout = async (page) => {
     let totalLine = await page.locator('div').filter({ hasText: /^Total/ }).first()
+    console.log(totalLine)
     let totalAmount = await totalLine.innerText('.woocommerce-Price-amount amount > bdi');
     // totalAmount is "Total\n72,00 €" and we need to remove the "Total\n" part
     return totalAmount.substring(6, totalAmount.length);
@@ -185,5 +195,6 @@ module.exports = {
     createManualOrder,
     getLogByName,
     fetchOrderStatus,
-    fetchOrderNotes
+    fetchOrderNotes,
+    addProductToCartBlock
 }

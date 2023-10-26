@@ -15,7 +15,7 @@ export const testData = [
         methodId: "bancontact",
         testId: "C420231",
         mollieStatus: "Open",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.open(context.methodName),
         action: async (page, result, context) => {
             await wooOrderPaidPage(page, result.mollieOrder, result.totalAmount, context.method);
@@ -25,7 +25,7 @@ export const testData = [
         methodId: "bancontact",
         testId: "C420232",
         mollieStatus: "Failed",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -35,7 +35,7 @@ export const testData = [
         methodId: "bancontact",
         testId: "C420233",
         mollieStatus: "Canceled",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -45,7 +45,7 @@ export const testData = [
         methodId: "bancontact",
         testId: "C420234",
         mollieStatus: "Expired",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.expired(context.method.id),
         action: async (page) => {
             await checkExpiredAtMollie(page);
@@ -65,7 +65,7 @@ export const testData = [
         methodId: "belfius",
         testId: "C420299",
         mollieStatus: "Failed",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -75,7 +75,7 @@ export const testData = [
         methodId: "belfius",
         testId: "C420300",
         mollieStatus: "Canceled",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -85,7 +85,7 @@ export const testData = [
         methodId: "belfius",
         testId: "C420301",
         mollieStatus: "Expired",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.expired(context.method.id),
         action: async (page) => {
             await checkExpiredAtMollie(page);
@@ -105,7 +105,7 @@ export const testData = [
         methodId: "eps",
         testId: "C420261",
         mollieStatus: "Failed",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -115,7 +115,7 @@ export const testData = [
         methodId: "eps",
         testId: "C420262",
         mollieStatus: "Canceled",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -125,7 +125,7 @@ export const testData = [
         methodId: "eps",
         testId: "C420263",
         mollieStatus: "Expired",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.expired(context.method.id),
         action: async (page) => {
             await checkExpiredAtMollie(page);
@@ -145,7 +145,7 @@ export const testData = [
         methodId: "giropay",
         testId: "C420291",
         mollieStatus: "Failed",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -155,7 +155,7 @@ export const testData = [
         methodId: "giropay",
         testId: "C420292",
         mollieStatus: "Canceled",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -165,7 +165,7 @@ export const testData = [
         methodId: "giropay",
         testId: "C420293",
         mollieStatus: "Expired",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.expired(context.method.id),
         action: async (page) => {
             await checkExpiredAtMollie(page);
@@ -185,7 +185,7 @@ export const testData = [
         methodId: "ideal",
         testId: "C420245",
         mollieStatus: "Open",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.open(context.methodName),
         action: async (page, result, context) => {
             await wooOrderPaidPage(page, result.mollieOrder, result.totalAmount, context.method);
@@ -195,7 +195,7 @@ export const testData = [
         methodId: "ideal",
         testId: "C420246",
         mollieStatus: "Failed",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -205,7 +205,7 @@ export const testData = [
         methodId: "ideal",
         testId: "C420248",
         mollieStatus: "Canceled",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -215,7 +215,7 @@ export const testData = [
         methodId: "ideal",
         testId: "C420247",
         mollieStatus: "Expired",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.expired(context.method.id),
         action: async (page) => {
             await checkExpiredAtMollie(page);
@@ -235,7 +235,7 @@ export const testData = [
         methodId: "kbc",
         testId: "C420264",
         mollieStatus: "Failed",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -245,7 +245,7 @@ export const testData = [
         methodId: "kbc",
         testId: "C420265",
         mollieStatus: "Canceled",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -255,7 +255,7 @@ export const testData = [
         methodId: "kbc",
         testId: "C420266",
         mollieStatus: "Expired",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.expired(context.method.id),
         action: async (page) => {
             await checkExpiredAtMollie(page);
@@ -275,7 +275,7 @@ export const testData = [
         methodId: "klarnapaylater",
         testId: "C420250",
         mollieStatus: "Failed",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -285,7 +285,7 @@ export const testData = [
         methodId: "klarnapaylater",
         testId: "C420251",
         mollieStatus: "Canceled",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -295,7 +295,7 @@ export const testData = [
         methodId: "klarnapaylater",
         testId: "C420252",
         mollieStatus: "Expired",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.expired(context.method.id),
         action: async (page) => {
             await checkExpiredAtMollie(page);
@@ -315,7 +315,7 @@ export const testData = [
         methodId: "klarnapaynow",
         testId: "C420280",
         mollieStatus: "Failed",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -325,7 +325,7 @@ export const testData = [
         methodId: "klarnapaynow",
         testId: "C420281",
         mollieStatus: "Canceled",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -335,7 +335,7 @@ export const testData = [
         methodId: "klarnapaynow",
         testId: "C420282",
         mollieStatus: "Expired",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.expired(context.method.id),
         action: async (page) => {
             await checkExpiredAtMollie(page);
@@ -355,7 +355,7 @@ export const testData = [
         methodId: "klarnasliceit",
         testId: "C420224",
         mollieStatus: "Failed",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -365,7 +365,7 @@ export const testData = [
         methodId: "klarnasliceit",
         testId: "C420225",
         mollieStatus: "Canceled",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -375,7 +375,7 @@ export const testData = [
         methodId: "klarnasliceit",
         testId: "C420226",
         mollieStatus: "Expired",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.expired(context.method.id),
         action: async (page) => {
             await checkExpiredAtMollie(page);
@@ -395,7 +395,7 @@ export const testData = [
         methodId: "mybank",
         testId: "C420287",
         mollieStatus: "Failed",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -405,7 +405,7 @@ export const testData = [
         methodId: "mybank",
         testId: "C420288",
         mollieStatus: "Canceled",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -415,7 +415,7 @@ export const testData = [
         methodId: "mybank",
         testId: "C420289",
         mollieStatus: "Expired",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.expired(context.method.id),
         action: async (page) => {
             await checkExpiredAtMollie(page);
@@ -435,7 +435,7 @@ export const testData = [
         methodId: "paypal",
         testId: "C420254",
         mollieStatus: "Pending",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.methodName.toLowerCase()),
         action: async (page, result, context) => {
             await wooOrderPaidPage(page, result.mollieOrder, result.totalAmount, context.method);
@@ -445,7 +445,7 @@ export const testData = [
         methodId: "paypal",
         testId: "C420255",
         mollieStatus: "Failed",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -455,7 +455,7 @@ export const testData = [
         methodId: "paypal",
         testId: "C420256",
         mollieStatus: "Canceled",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -465,7 +465,7 @@ export const testData = [
         methodId: "paypal",
         testId: "C420257",
         mollieStatus: "Expired",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.expired(context.method.id),
         action: async (page) => {
             await checkExpiredAtMollie(page);
@@ -485,7 +485,7 @@ export const testData = [
         methodId: "paysafecard",
         testId: "C420307",
         mollieStatus: "Canceled",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -495,7 +495,7 @@ export const testData = [
         methodId: "paysafecard",
         testId: "C420308",
         mollieStatus: "Expired",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.expired(context.method.id),
         action: async (page) => {
             await checkExpiredAtMollie(page);
@@ -515,7 +515,7 @@ export const testData = [
         methodId: "przelewy24",
         testId: "C420236",
         mollieStatus: "Failed",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -525,7 +525,7 @@ export const testData = [
         methodId: "przelewy24",
         testId: "C420237",
         mollieStatus: "Canceled",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -535,7 +535,7 @@ export const testData = [
         methodId: "przelewy24",
         testId: "C420238",
         mollieStatus: "Expired",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.expired(context.method.id),
         action: async (page) => {
             await checkExpiredAtMollie(page);
@@ -585,7 +585,7 @@ export const testData = [
         methodId: "sofort",
         testId: "C420229",
         mollieStatus: "Canceled",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.failed(context.method.id),
         action: async (page) => {
             await wooOrderRetryPage(page);
@@ -595,7 +595,7 @@ export const testData = [
         methodId: "sofort",
         testId: "C420228",
         mollieStatus: "Expired",
-        wooStatus: "Pending payment",
+        wooStatus: "Pending",
         notice: context => noticeLines.expired(context.method.id),
         action: async (page) => {
             await checkExpiredAtMollie(page);

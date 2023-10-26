@@ -717,7 +717,9 @@ class PaymentService
             $message .= 'hii ' . $e->getMessage();
         }
 
-        $this->notice->addNotice('error', $message);
+        add_action('before_woocommerce_pay_form', function() use($message){
+            wc_print_notice($message, 'error');
+        });
     }
 
     /**

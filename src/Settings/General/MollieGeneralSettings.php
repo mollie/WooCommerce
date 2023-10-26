@@ -258,14 +258,14 @@ class MollieGeneralSettings
             'order_dueDate' => [
                 'title' => sprintf(__('Expiry time', 'mollie-payments-for-woocommerce')),
                 'type' => 'number',
+                'custom_attributes' => ['step' => '1', 'min' => '10', 'max' => '526000'],
                 'description' => sprintf(
                     __(
-                        'Number of MINUTES after the order will expire and will be canceled at Mollie and WooCommerce. A value of 0 means no expiry time will be considered.',
+                        'Number of MINUTES after the order will expire and will be canceled at Mollie and WooCommerce.',
                         'mollie-payments-for-woocommerce'
                     )
                 ),
-                'custom_attributes' => ['step' => '1', 'min' => '0', 'max' => '526000'],
-                'default' => '0',
+                'default' => '10',
                 'desc_tip' => false,
             ],
         ];

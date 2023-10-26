@@ -5,7 +5,6 @@ const wooUrls = {
     settingsPaymentTab: '/wp-admin/admin.php?page=wc-settings&tab=checkout'
 }
 const WooCommerceRestApi = require("@woocommerce/woocommerce-rest-api").default;
-// import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api"; // Supports ESM
 async function gotoWPPage(page, url) {
     await page.goto(url);
 }
@@ -16,9 +15,15 @@ async function gotoWooPaymentTab(page) {
  * @param {import('@playwright/test').Page} page
  * @param productSku
  */
-const addProductToCart = async (page, productSku) => {
-    await page.goto('/shop/');
-    await page.locator('[data-product_sku="' + productSku + '"].add_to_cart_button').click()
+const addProductToCart = async (page, baseUrl, productId, productQuantity) => {
+    const href = await page.evaluate(
+        ({baseUrl, productId, productQuantity}) => location.href = `${baseUrl}/checkout/?add-to-cart=${productId}&quantity=${productQuantity}`,
+        {
+            baseUrl,
+            productId,
+            productQuantity
+        }
+    );
 }
 
 const emptyCart = async (page) => {
@@ -133,6 +138,25 @@ const createManualOrder = async (page, productLabel = 'Beanie') => {
     }
 }
 
+const fetchOrderStatus = async (orderId) => {
+    try {
+        const response = await WooCommerce.get(`orders/${orderId}`);
+        return response.data.status; // This will contain the order's status
+    } catch (error) {
+        console.log('Error fetching order status:', error);
+        return null;
+    }
+};
+const fetchOrderNotes = async (orderId) => {
+    try {
+        const response = await WooCommerce.get(`orders/${orderId}/notes`);
+        return response.data;  // This will contain an array of order notes
+    } catch (error) {
+        console.log('Error fetching order notes:', error);
+        return null;
+    }
+};
+
 const getLogByName = async (name, dirname) => {
     const currentDate = new Date().toISOString().split('T')[0];
     // Construct the relative path to the log file
@@ -159,5 +183,7 @@ module.exports = {
     captureTotalAmountBlockCheckout,
     captureTotalAmountPayPage,
     createManualOrder,
-    getLogByName
+    getLogByName,
+    fetchOrderStatus,
+    fetchOrderNotes
 }

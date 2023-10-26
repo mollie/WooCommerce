@@ -1,5 +1,6 @@
 const allProducts = {
     simple: {
+        'id': 14,
         "title": "Beanie",
         'link': '/product/beanie/',
         'sku': 'woo-beanie',
@@ -10,6 +11,7 @@ const allProducts = {
         'downloadable': 'no',
     },
     virtual: {
+        'id': 18,
         "title": "Album",
         'link': '/product/album/',
         'sku': 'woo-album',
@@ -20,6 +22,7 @@ const allProducts = {
         'downloadable': 'yes',
     },
     variation: {
+        'id': 13,
         "title": "V-Neck T-Shirt",
         'link': "/product/v-neck-t-shirt/",
         'sku': "woo-vneck-tee",
@@ -29,6 +32,7 @@ const allProducts = {
         'virtual': 'no',
         'downloadable': 'no',
     }, variationRed: {
+        'id': 20,
         "title": "V-Neck T-Shirt - Red",
         'link': '/product/v-neck-t-shirt/?attribute_pa_color=red',
         'sku': "woo-vneck-tee-red",
@@ -39,6 +43,7 @@ const allProducts = {
         'downloadable': 'no',
     },
     variationGreen: {
+        'id': 21,
         "title": "V-Neck T-Shirt - Green",
         'link': '/product/v-neck-t-shirt/?attribute_pa_color=green',
         'sku': "woo-vneck-tee-green",

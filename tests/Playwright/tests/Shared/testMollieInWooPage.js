@@ -1,4 +1,5 @@
 import {normalizedName} from "./gateways";
+import {fetchOrderNotes, fetchOrderStatus} from "./wooUtils";
 
 const { expect } = require('@playwright/test');
 const {sharedUrl} = require("./sharedUrl");
@@ -37,14 +38,13 @@ export const wooOrderCanceledPage = async (page, mollieOrder, totalAmount, teste
 }
 
 export const wooOrderDetailsPage = async (page, mollieOrder, testedGateway, status, notice) => {
-    await page.goto('/wp-admin/edit.php?post_type=shop_order');
-    if (status === 'Expired') {
-        await page.waitForTimeout(2000);
-    }
-    // Check order is in status processing in order page
-    await expect(page.locator('#post-' + mollieOrder + '> td.order_status.column-order_status > mark > span')).toContainText(status);
-    await page.goto('/wp-admin/post.php?post=' + mollieOrder + '&action=edit');
+    // Check order is in status processing
+    const orderStatus = await fetchOrderStatus(mollieOrder);
+    await expect(orderStatus.toUpperCase()).toBe(status.toUpperCase());
 
     // Check order notes has correct text
-    await expect(page.locator('#woocommerce-order-notes > div.inside > ul')).toContainText(notice);
+    const orderNotesArray = await fetchOrderNotes(mollieOrder);
+    const lastOrderNote = orderNotesArray[0].note;
+
+    await expect(lastOrderNote.toLowerCase()).toContain(notice.toLowerCase());
 }

@@ -17,13 +17,13 @@ const settingsNames = {
 }
 
 const noticeLines = {
-    paid: (method) => `Order completed using Mollie – ${method} payment`,
-    open: (method) => `Mollie – ${method} payment still pending`,
-    completed: (method) => `Order completed using Mollie – ${method} payment`,
+    paid: (method) => `Order completed using Mollie - ${method} payment`,
+    open: (method) => `${method} payment started`,
+    completed: (method) => `Order completed using Mollie - ${method} payment`,
     failed: (method) => `${method} payment started`,
     canceled: (method) => `${method} payment started`,
     expired: (method) => `${method} payment started`,
-    authorized: (method) => `Order authorized using Mollie – ${method} payment`,
+    authorized: (method) => `Order authorized using Mollie - ${method} payment`,
 }
 /**
  * @param {import('@playwright/test').Page} page
@@ -73,7 +73,6 @@ const fillCreditCardForm = async (page) => {
 const processMollieCheckout = async (page, status) => {
     const expectedUrl = 'https://www.mollie.com/checkout/test-mode?';
     const creditCardUrl = 'https://www.mollie.com/checkout/credit-card';
-    console.log(page.url().toString());
     if (page.url().toString().startsWith(creditCardUrl)) {
         await fillCreditCardForm(page);
         return await markStatusInMollie(page, status);
@@ -135,12 +134,6 @@ const resetSettings = async (page) => {
  * @param productQuantity
  */
 const beforePlacingOrder = async (page, testedProduct, testedGateway, productQuantity, checkoutUrl) => {
-    for (let i = productQuantity; i >0; i--) {
-        await addProductToCart(page, testedProduct.sku);
-    }
-
-    await page.goto(checkoutUrl);
-
     //Capture WooCommerce total amount
     const totalAmount = await captureTotalAmountCheckout(page);
 

@@ -167,6 +167,11 @@ class PaymentModule implements ServiceModule, ExecutableModule
         foreach ($classNames as $gateway) {
             $gatewayName = strtolower($gateway) . '_settings';
             $gatewaySettings = get_option($gatewayName);
+
+            if (empty($gatewaySettings["activate_expiry_days_setting"]) || $gatewaySettings["activate_expiry_days_setting"] === 'no') {
+                continue;
+            }
+
             $heldDuration = isset($gatewaySettings) && isset($gatewaySettings['order_dueDate']) ? $gatewaySettings['order_dueDate'] : 0;
 
             if ($heldDuration < 1) {

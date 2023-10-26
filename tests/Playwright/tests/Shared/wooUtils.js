@@ -13,7 +13,9 @@ async function gotoWooPaymentTab(page) {
 }
 /**
  * @param {import('@playwright/test').Page} page
- * @param productSku
+ * @param baseUrl
+ * @param productId
+ * @param productQuantity
  */
 const addProductToCart = async (page, baseUrl, productId, productQuantity) => {
     const href = await page.evaluate(
@@ -28,11 +30,16 @@ const addProductToCart = async (page, baseUrl, productId, productQuantity) => {
 
 /**
  * @param {import('@playwright/test').Page} page
- * @param productSku
+ * @param baseUrl
+ * @param productId
+ * @param productQuantity
  */
-const addProductToCartBlock = async (page, productSku) => {
+const addProductToCartBlock = async (page, productId, productQuantity) => {
     await page.goto('/shop/');
-    await page.locator('[data-product_sku="' + productSku + '"].add_to_cart_button').click()
+    const addToCartButton = `button[data-product_id="${productId}"]`;
+    await page.click( addToCartButton );
+    const cartTextSpan = page.locator(`span[data-wc-text="selectors.woocommerce.addToCartText"]:has-text(' in cart')`);
+    await cartTextSpan.waitFor();
 }
 
 const emptyCart = async (page) => {

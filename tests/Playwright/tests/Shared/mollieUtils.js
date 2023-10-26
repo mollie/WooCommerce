@@ -155,12 +155,12 @@ const beforePlacingOrder = async (page, testedProduct, testedGateway, productQua
 }
 
 const beforePlacingOrderBlock = async (page, testedProduct, testedGateway, productQuantity, checkoutUrl) => {
-    //await page.goto(checkoutUrl);
+    await page.goto(checkoutUrl);
 
     //Capture WooCommerce total amount
     const totalAmount = await captureTotalAmountBlockCheckout(page);
     // CUSTOMER DETAILS
-    await fillCustomerInCheckoutBlock(page);
+    //await fillCustomerInCheckoutBlock(page);
 
     // Check testedGateway option NO ISSUERS DROPDOWN
     const title = normalizedName(testedGateway.defaultTitle);

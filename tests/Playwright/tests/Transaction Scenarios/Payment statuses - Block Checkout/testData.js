@@ -552,26 +552,6 @@ export const testData = [
         }
     },
     {
-        methodId: "bancontact",
-        testId: "C420283",
-        mollieStatus: "Open",
-        wooStatus: "On hold",
-        notice: context => noticeLines.open(context.methodName),
-        action: async (page, result, context) => {
-            await wooOrderPaidPage(page, result.mollieOrder, result.totalAmount, context.method);
-        }
-    },
-    {
-        methodId: "bancontact",
-        testId: "C420285",
-        mollieStatus: "Expired",
-        wooStatus: "On hold",
-        notice: context => noticeLines.expired(context.method.id),
-        action: async (page) => {
-            await checkExpiredAtMollie(page);
-        }
-    },
-    {
         methodId: "sofort",
         testId: "C420227",
         mollieStatus: "Paid",

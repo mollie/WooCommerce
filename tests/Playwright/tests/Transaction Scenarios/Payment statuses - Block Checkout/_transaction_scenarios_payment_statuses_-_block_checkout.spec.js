@@ -5,6 +5,7 @@ const {wooOrderDetailsPage} = require("../../Shared/testMollieInWooPage");
 const {sharedUrl} = require("../../Shared/sharedUrl");
 const {emptyCart, addProductToCart, addProductToCartBlock} = require("../../Shared/wooUtils");
 const {testData} = require("./testData");
+const {expect} = require("@playwright/test");
 /*test.beforeAll(async ({browser}) => {
     // Create a new page instance
     const page = await browser.newPage();
@@ -28,7 +29,8 @@ testData.forEach(({methodId, testId, mollieStatus, wooStatus, notice, action}) =
                                                                                                                                                                      context
 
         }) => {
-            await addProductToCartBlock(page, products.simple.sku);
+            const productId = products.simple.id;
+            await addProductToCartBlock(page, productId, productQuantity);
             const result = await checkoutTransaction(page, products.simple, context.method, productQuantity, mollieStatus, sharedUrl.blocksCheckout);
             await action(page, result, context);
             await wooOrderDetailsPage(page, result.mollieOrder, context.method, wooStatus, notice(context));

@@ -178,7 +178,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
                 continue;
             }
             $heldDurationInSeconds = $heldDuration * 60;
-            if ($gateway === 'mollie_wc_gateway_bankTransfer') {
+            if ($gateway === 'Mollie_WC_Gateway_Banktransfer') {
                 $durationInHours = absint($heldDuration) * 24;
                 $durationInMinutes = $durationInHours * 60;
                 $heldDurationInSeconds = $durationInMinutes * 60;
@@ -479,6 +479,12 @@ class PaymentModule implements ServiceModule, ExecutableModule
      */
     public function handleExpiryDateCancelation($paymentMethods)
     {
+        add_action(
+            'init',
+            [$this, 'cancelOrderOnExpiryDate'],
+            11,
+            2
+        );
         if (!$this->IsExpiryDateEnabled($paymentMethods)) {
             as_unschedule_action('mollie_woocommerce_cancel_unpaid_orders');
             return;

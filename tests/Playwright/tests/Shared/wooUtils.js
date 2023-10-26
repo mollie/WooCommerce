@@ -123,7 +123,8 @@ const captureTotalAmountCheckout = async (page) => {
 }
 
 const captureTotalAmountPayPage = async (page) => {
-    return await page.innerText('.woocommerce-Price-amount.amount > bdi');
+    const totalSelector = 'tr:last-child >> td.product-total >> .woocommerce-Price-amount.amount >> bdi';
+    return await page.innerText(totalSelector);
 }
 
 const captureTotalAmountBlockCheckout = async (page) => {

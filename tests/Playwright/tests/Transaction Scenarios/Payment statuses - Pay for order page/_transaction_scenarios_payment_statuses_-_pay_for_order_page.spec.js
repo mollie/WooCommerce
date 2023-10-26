@@ -9,7 +9,7 @@ const {
 const {processMollieCheckout, resetSettings, insertAPIKeys, setOrderAPI} = require("../../Shared/mollieUtils");
 const {wooOrderDetailsPage} = require("../../Shared/testMollieInWooPage");
 const {testData} = require("./testData");
-test.beforeAll(async ({browser}) => {
+/*test.beforeAll(async ({browser}) => {
     // Create a new page instance
     const page = await browser.newPage();
     const context = await browser.newContext();
@@ -19,7 +19,7 @@ test.beforeAll(async ({browser}) => {
     await insertAPIKeys(context.page);
     // Orders API
     await setOrderAPI(context.page);
-});
+});*/
 testData.forEach(({methodId, testId, mollieStatus, wooStatus, notice, action}) => {
     test.describe(`_Transaction scenarios_Payment statuses - Pay for order page - ${methodId}`, () => {
         test.beforeEach(async ({page, context, gateways}) => {

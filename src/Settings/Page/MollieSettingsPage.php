@@ -146,10 +146,10 @@ class MollieSettingsPage extends WC_Settings_Page
         ) . '</p>';
 
         $presentation = ''
-            . '<div style="width:1000px"><div style="font-weight:bold;"><a href="https://github.com/mollie/WooCommerce/wiki">' . __(
+            . '<div style="width:1000px"><div style="font-weight:bold;"><a href="https://help.mollie.com/hc/en-us/sections/12858723658130-Mollie-for-WooCommerce">' . __(
                 'Plugin Documentation',
                 'mollie-payments-for-woocommerce'
-            ) . '</a> | <a href="https://mollie.inpsyde.com/docs/how-to-request-support-via-website-widget/">' . __(
+            ) . '</a> | <a href="https://www.mollie.com/contact/merchants">' . __(
                 'Contact Support',
                 'mollie-payments-for-woocommerce'
             ) . '</a></div></div>'

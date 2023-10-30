@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Gateway;
 
+use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
 use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
 use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ServiceModule;
@@ -18,6 +19,7 @@ use Mollie\WooCommerce\Buttons\PayPalButton\PayPalAjaxRequests;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalButtonHandler;
 use Mollie\WooCommerce\Gateway\Voucher\MaybeDisableGateway;
 use Mollie\WooCommerce\Notice\AdminNotice;
+use Mollie\WooCommerce\Notice\FrontendNotice;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrderService;
@@ -39,6 +41,7 @@ use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
+use WP_Post;
 
 class GatewayModule implements ServiceModule, ExecutableModule
 {
@@ -301,8 +304,33 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $order->save();
             }
         );
-
+        add_action('add_meta_boxes_woocommerce_page_wc-orders', [$this, 'addShopOrderMetabox'], 10);
         return true;
+    }
+
+    /**
+     * @param Object $post
+     * @return void
+     */
+    public function addShopOrderMetabox(object $post)
+    {
+        if (! $post instanceof \WC_Order) {
+            return;
+        }
+        $meta = $post->get_meta('_mollie_payment_instructions');
+        if (empty($meta)) {
+            return;
+        }
+        $screen = wc_get_container()->get(CustomOrdersTableController::class)->custom_orders_table_usage_is_enabled()
+            ? wc_get_page_screen_id('shop-order')
+            : 'shop_order';
+        add_meta_box('mollie_order_details', __('Mollie Payment Details', 'mollie-payments-for-woocommerce'), static function () use ($meta) {
+            $allowedTags = ['strong' => []];
+            printf(
+                '<p style="border-bottom:solid 1px #eee;padding-bottom:13px;">%s</p>',
+                wp_kses($meta, $allowedTags)
+            );
+        }, $screen, 'side', 'high');
     }
 
     /**
@@ -453,8 +481,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
     {
         $logger = $container->get(Logger::class);
         assert($logger instanceof Logger);
-        $notice = $container->get(AdminNotice::class);
-        assert($notice instanceof AdminNotice);
+        $notice = $container->get(FrontendNotice::class);
+        assert($notice instanceof FrontendNotice);
         $paymentService = $container->get(PaymentService::class);
         assert($paymentService instanceof PaymentService);
         $mollieOrderService = $container->get(MollieOrderService::class);

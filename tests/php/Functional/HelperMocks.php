@@ -7,6 +7,7 @@ namespace Mollie\WooCommerceTests\Functional;
 use Mollie\Api\MollieApiClient;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Notice\AdminNotice;
+use Mollie\WooCommerce\Payment\MollieOrder;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\OrderInstructionsService;
 use Mollie\WooCommerce\Payment\OrderLines;
@@ -59,6 +60,12 @@ class HelperMocks extends TestCase
         );
     }
 
+    public function mollieOrderMock()
+    {
+        return $this->getMockBuilder(MollieOrder::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+    }
     public function noticeMock()
     {
         return $this->getMockBuilder(AdminNotice::class)

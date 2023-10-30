@@ -30,7 +30,8 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
     /**
      * @var bool
      */
-    protected static $alreadyDisplayedInstructions = false;
+    protected static $alreadyDisplayedAdminInstructions = false;
+    protected static $alreadyDisplayedCustomerInstructions = false;
     /**
      * Recurring total, zero does not define a recurring total
      *
@@ -115,7 +116,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
         $this->paymentFactory = $paymentFactory;
         $this->pluginId = $pluginId;
 
-            // No plugin id, gateway id is unique enough
+        // No plugin id, gateway id is unique enough
         $this->plugin_id = '';
         // Use gateway class name as gateway id
         $this->gatewayId();
@@ -152,6 +153,12 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
         );
         add_action(
             'woocommerce_email_after_order_table',
+            [$this, 'displayInstructions'],
+            10,
+            3
+        );
+        add_action(
+            'woocommerce_email_order_meta',
             [$this, 'displayInstructions'],
             10,
             3
@@ -571,13 +578,12 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
                     return $this->get_return_url($order);
                 } else {
                     $this->notice->addNotice(
-                        'notice',
+                        'error',
                         __(
                             'You have cancelled your payment. Please complete your order with a different payment method.',
                             'mollie-payments-for-woocommerce'
                         )
                     );
-
                     // Return to order payment page
                     return $failedRedirect;
                 }
@@ -592,7 +598,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
                     && !$payment->isAuthorized()
                 ) {
                     $this->notice->addNotice(
-                        'notice',
+                        'error',
                         __(
                             'Your payment was not successful. Please complete your order with a different payment method.',
                             'mollie-payments-for-woocommerce'
@@ -606,7 +612,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
                 }
             } catch (UnexpectedValueException $exc) {
                 $this->notice->addNotice(
-                    'notice',
+                    'error',
                     __(
                         'Your payment was not successful. Please complete your order with a different payment method.',
                         'mollie-payments-for-woocommerce'
@@ -807,7 +813,10 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
         $plain_text = false
     ) {
 
-        if (!$this::$alreadyDisplayedInstructions) {
+        if (
+            ($admin_instructions && !$this::$alreadyDisplayedAdminInstructions)
+            || (!$admin_instructions && !$this::$alreadyDisplayedCustomerInstructions)
+        ) {
             $order_payment_method = $order->get_payment_method();
 
             // Invalid gateway
@@ -836,6 +845,12 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
 
             if (!empty($instructions)) {
                 $instructions = wptexturize($instructions);
+                //save instructions in order meta
+                $order->update_meta_data(
+                    '_mollie_payment_instructions',
+                    $instructions
+                );
+                $order->save();
 
                 if ($plain_text) {
                     echo esc_html($instructions) . PHP_EOL;
@@ -846,7 +861,12 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
                 }
             }
         }
-        $this::$alreadyDisplayedInstructions = true;
+        if ($admin_instructions && !$this::$alreadyDisplayedAdminInstructions) {
+            $this::$alreadyDisplayedAdminInstructions = true;
+        }
+        if (!$admin_instructions && !$this::$alreadyDisplayedCustomerInstructions) {
+            $this::$alreadyDisplayedCustomerInstructions = true;
+        }
     }
 
     /**

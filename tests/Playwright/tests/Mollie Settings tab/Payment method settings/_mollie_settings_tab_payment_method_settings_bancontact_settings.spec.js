@@ -10,7 +10,7 @@ const {
 } = require('../../Shared/mollieUtils');
 const {sharedUrl: {gatewaySettingsRoot}} = require('../../Shared/sharedUrl');
 // Set up parameters or perform actions before all tests
-test.beforeAll(async ({browser}) => {
+/*test.beforeAll(async ({browser}) => {
     // Create a new page instance
     const page = await browser.newPage();
     // Reset to the default state
@@ -18,7 +18,7 @@ test.beforeAll(async ({browser}) => {
     await insertAPIKeys(page);
     // Orders API
     await setOrderAPI(page);
-});
+});*/
 
 test.describe('_Mollie Settings tab_Payment method settings - Bancontact settings', () => {
     test.beforeEach(async ({page, context, gateways}) => {

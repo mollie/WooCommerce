@@ -156,6 +156,17 @@ const createManualOrder = async (page, productLabel = 'Beanie') => {
     }
 }
 
+const updateMethodSetting = async (method, payload) => {
+    try {
+        const response = await WooCommerce.put(
+            `payment_gateways/${method}`,
+            payload);
+       return response.data;
+    } catch (error) {
+        console.log(error.response.data);
+    }
+}
+
 const fetchOrderStatus = async (orderId) => {
     try {
         const response = await WooCommerce.get(`orders/${orderId}`);
@@ -204,5 +215,6 @@ module.exports = {
     getLogByName,
     fetchOrderStatus,
     fetchOrderNotes,
-    addProductToCartBlock
+    addProductToCartBlock,
+    updateMethodSetting
 }

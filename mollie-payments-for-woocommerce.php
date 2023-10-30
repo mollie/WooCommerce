@@ -167,7 +167,6 @@ function initialize()
         ];
         $modules = apply_filters('mollie_wc_plugin_modules', $modules);
         $bootstrap->boot(...$modules);
-        add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
     } catch (Throwable $throwable) {
         handleException($throwable);
     }

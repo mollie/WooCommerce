@@ -83,7 +83,7 @@ return [
         /* translators: Placeholder 1: enabled or disabled */
         'desc' => sprintf(
             __(
-                'Should Mollie store customers name and email address for Single Click Payments? Default <code>%1$s</code>. Required if WooCommerce Subscriptions is being used! Read more about <a href="https://help.mollie.com/hc/en-us/articles/115000671249-What-are-single-click-payments-and-how-does-it-work-">%2$s</a> and how it improves your conversion.',
+                'Should Mollie store customers name and email address for Single Click Payments? Default <code>%1$s</code>. Required if WooCommerce Subscriptions is being used! Read more about <a href=\'https://help.mollie.com/hc/en-us/articles/115000671249-What-are-single-click-payments-and-how-does-it-work-\'>%2$s</a> and how it improves your conversion.',
                 'mollie-payments-for-woocommerce'
             ),
             strtolower(__('Enabled', 'mollie-payments-for-woocommerce')),
@@ -198,6 +198,36 @@ return [
         'desc' => __("Remove options and scheduled actions from database when uninstalling the plugin.", "mollie-payments-for-woocommerce") . ' (<a href="' . esc_url($cleanDB_mollie_url) . '">' . strtolower(
             __('Clear now', 'mollie-payments-for-woocommerce')
         ) . '</a>)',
+    ],
+    [
+        'id' => $pluginName . '_place_payment_onhold',
+        'title' => __('Placing payments on Hold', 'mollie-payments-for-woocommerce'),
+        'type' => 'select',
+        'desc_tip' => true,
+        'options' => [
+            'immediate_capture' => __('Capture payments immediately', 'mollie-payments-for-woocommerce'),
+            'later_capture' => __('Authorize payments for a later capture', 'mollie-payments-for-woocommerce'),
+        ],
+        'default' => 'immediate_capture',
+        'desc' => sprintf(
+            __(
+                'Authorized payment can be captured or voided by changing the order status instead of doing it manually.',
+                'mollie-payments-for-woocommerce'
+            )
+        ),
+    ],
+    [
+        'id' => $pluginName . '_capture_or_void',
+        'title' => __(
+            'Capture or void on status change',
+            'mollie-payments-for-woocommerce'
+        ),
+        'type' => 'checkbox',
+        'default' => 'no',
+        'desc' => __(
+            'Capture authorized payments automatically when setting the order status to Processing or Completed. Void the payment by setting the order status Canceled.',
+            'mollie-payments-for-woocommerce'
+        ),
     ],
     [
         'id' => $pluginName . '_sectionend',

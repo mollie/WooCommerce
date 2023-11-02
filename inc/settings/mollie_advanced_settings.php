@@ -17,7 +17,7 @@ $api_payment_description_labels = [
     '{customer.company}' => _x('Customer\'s company name', 'Label {customer.company} description for payment description options', 'mollie-payments-for-woocommerce'),
 ];
 
-return [
+$mollieAdvancedSettings =  [
     [
         'id' => $pluginName . '_title',
         'title' => __('Mollie advanced settings', 'mollie-payments-for-woocommerce'),
@@ -198,39 +198,8 @@ return [
         'desc' => __("Remove options and scheduled actions from database when uninstalling the plugin.", "mollie-payments-for-woocommerce") . ' (<a href="' . esc_url($cleanDB_mollie_url) . '">' . strtolower(
             __('Clear now', 'mollie-payments-for-woocommerce')
         ) . '</a>)',
-    ],
-    [
-        'id' => $pluginName . '_place_payment_onhold',
-        'title' => __('Placing payments on Hold', 'mollie-payments-for-woocommerce'),
-        'type' => 'select',
-        'desc_tip' => true,
-        'options' => [
-            'immediate_capture' => __('Capture payments immediately', 'mollie-payments-for-woocommerce'),
-            'later_capture' => __('Authorize payments for a later capture', 'mollie-payments-for-woocommerce'),
-        ],
-        'default' => 'immediate_capture',
-        'desc' => sprintf(
-            __(
-                'Authorized payment can be captured or voided by changing the order status instead of doing it manually.',
-                'mollie-payments-for-woocommerce'
-            )
-        ),
-    ],
-    [
-        'id' => $pluginName . '_capture_or_void',
-        'title' => __(
-            'Capture or void on status change',
-            'mollie-payments-for-woocommerce'
-        ),
-        'type' => 'checkbox',
-        'default' => 'no',
-        'desc' => __(
-            'Capture authorized payments automatically when setting the order status to Processing or Completed. Void the payment by setting the order status Canceled.',
-            'mollie-payments-for-woocommerce'
-        ),
-    ],
-    [
-        'id' => $pluginName . '_sectionend',
-        'type' => 'sectionend',
-    ],
+    ]
 ];
+
+
+return apply_filters('inpsyde.mollie-advanced-settings', $mollieAdvancedSettings, $pluginName);

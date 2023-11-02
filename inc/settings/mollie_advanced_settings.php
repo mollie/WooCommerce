@@ -198,8 +198,7 @@ $mollieAdvancedSettings =  [
         'desc' => __("Remove options and scheduled actions from database when uninstalling the plugin.", "mollie-payments-for-woocommerce") . ' (<a href="' . esc_url($cleanDB_mollie_url) . '">' . strtolower(
             __('Clear now', 'mollie-payments-for-woocommerce')
         ) . '</a>)',
-    ]
+    ],
 ];
-
 
 return apply_filters('inpsyde.mollie-advanced-settings', $mollieAdvancedSettings, $pluginName);

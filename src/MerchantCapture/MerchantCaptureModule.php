@@ -126,19 +126,23 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
     public function run(ContainerInterface $container): bool
     {
         $pluginId = $container->get('shared.plugin_id');
-        add_action($pluginId . '_after_webhook_action', static function (Payment $payment, WC_Order $order) use ($container) {
+        add_action(
+        /**
+         * @throws \WC_Data_Exception
+         */ $pluginId . '_after_webhook_action', static function (Payment $payment, WC_Order $order) use ($container) {
             if ($payment->isAuthorized()) {
                 if (!$payment->getAmountCaptured() == 0.0) {
                     return;
                 }
                 $order->set_status(SharedDataDictionary::STATUS_ON_HOLD);
                 $order->update_meta_data(self::ORDER_PAYMENT_STATUS_META_KEY, ManualCaptureStatus::STATUS_AUTHORIZED);
+                $order->set_transaction_id($payment->id);
                 $order->save();
             } elseif ($payment->isPaid() && ($container->get('merchant.manual_capture.is_waiting'))($order)) {
                 $order->update_meta_data(self::ORDER_PAYMENT_STATUS_META_KEY, ManualCaptureStatus::STATUS_CAPTURED);
                 $order->save();
             }
-        }, 10, 2);
+        },  10, 2);
 
         add_action('woocommerce_order_refunded', static function (int $orderId) use ($container) {
             $order = wc_get_order($orderId);

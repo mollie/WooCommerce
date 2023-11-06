@@ -1,4 +1,3 @@
-const { expect } = require('@playwright/test');
 const { test } = require('../Shared/base-test');
 const {getLogByName} = require("../Shared/wooUtils");
 const assert = require('assert');

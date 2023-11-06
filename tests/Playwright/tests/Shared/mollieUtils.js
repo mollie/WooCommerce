@@ -5,7 +5,7 @@ const {addProductToCart, fillCustomerInCheckout} = require('../Shared/wooUtils')
 const {normalizedName} = require("./gateways");
 const {expect} = require("@playwright/test");
 const {fillCustomerInCheckoutBlock, selectPaymentMethodInCheckout, captureTotalAmountCheckout,
-    captureTotalAmountBlockCheckout
+    captureTotalAmountBlockCheckout, parseTotalAmount
 } = require("./wooUtils");
 
 const settingsNames = {
@@ -228,78 +228,11 @@ const checkExpiredAtMollie = async (page) => {
     await expect(page.getByText('The payment has been set to expired successfully.')).toBeVisible();
 }
 
-const fixedFeeTest = async (page, context, products) => {
-    const result = await checkoutTransaction(page, products.simple, context.method)
-    let total = parseFloat(result.totalAmount.replace(",", ".").replace(/[^\d.-]/g, ""));
-    let expected = parseFloat(products.simple.price.replace(",", ".").replace(/[^\d.-]/g, "")) + fee;
-    expect(total).toEqual(expected);
-}
-
-const percentageFeeTest = async (page, context, products) => {
-    const result = await checkoutTransaction(page, products.simple, context.method)
-    let total = parseFloat(result.totalAmount.replace(",", ".").replace(/[^\d.-]/g, ""));
-    let productPrice = parseFloat(products.simple.price.replace(",", ".").replace(/[^\d.-]/g, ""));
-    let expected = productPrice + (productPrice * fee / 100);
-    expect(total).toEqual(expected);
-}
-
-const fixedAndPercentageFeeTest = async (page, context, products) => {
-    const result = await checkoutTransaction(page, products.simple, context.method)
-    let total = parseFloat(result.totalAmount.replace(",", ".").replace(/[^\d.-]/g, ""));
-    let productPrice = parseFloat(products.simple.price.replace(",", ".").replace(/[^\d.-]/g, ""));
-    let expected = productPrice + fee + (productPrice * fee / 100);
-    expect(total).toEqual(expected);
-}
-
-const fixedFeeUnderLimitTest = async (page, context, products) => {
-    const result = await checkoutTransaction(page, products.simple, context.method)
-    let total = parseFloat(result.totalAmount.replace(",", ".").replace(/[^\d.-]/g, ""));
-    let expected = parseFloat(products.simple.price.replace(",", ".").replace(/[^\d.-]/g, "")) + fee;
-    expect(total).toEqual(expected);
-}
-
-const percentageFeeUnderLimitTest = async (page, context, products) => {
-    const result = await checkoutTransaction(page, products.simple, context.method)
-    let total = parseFloat(result.totalAmount.replace(",", ".").replace(/[^\d.-]/g, ""));
-    let productPrice = parseFloat(products.simple.price.replace(",", ".").replace(/[^\d.-]/g, ""));
-    let expected = productPrice + (productPrice * fee / 100);
-    expect(total).toEqual(expected);
-}
-
-const fixedAndPercentageUnderLimit = async (page, context, products) => {
-    const result = await checkoutTransaction(page, products.simple, context.method)
-    let total = parseFloat(result.totalAmount.replace(",", ".").replace(/[^\d.-]/g, ""));
-    let productPrice = parseFloat(products.simple.price.replace(",", ".").replace(/[^\d.-]/g, ""));
-    let expected = productPrice + fee + (productPrice * fee / 100);
-    expect(total).toEqual(expected);
-}
-
-const fixedFeeOverLimit = async (page, context, products) => {
-    const result = await checkoutTransaction(page, products.simple, context.method, productQuantity);
-    let total = parseFloat(result.totalAmount.replace(",", ".").replace(/[^\d.-]/g, ""));
-    let expected = parseFloat(products.simple.price.replace(",", ".").replace(/[^\d.-]/g, "")) * productQuantity;
-    expect(total).toEqual(expected);
-}
-
-const percentageFeeOverLimit = async (page, context, products) => {
-    const result = await checkoutTransaction(page, products.simple, context.method, productQuantity)
-    let total = parseFloat(result.totalAmount.replace(",", ".").replace(/[^\d.-]/g, ""));
-    let productPrice = parseFloat(products.simple.price.replace(",", ".").replace(/[^\d.-]/g, "")) * productQuantity;
-    expect(total).toEqual(productPrice);
-}
-
-const fixedFeeAndPercentageOverLimit = async (page, context, products) => {
-    const result = await checkoutTransaction(page, products.simple, context.method, productQuantity)
-    let total = parseFloat(result.totalAmount.replace(",", ".").replace(/[^\d.-]/g, ""));
-    let productPrice = parseFloat(products.simple.price.replace(",", ".").replace(/[^\d.-]/g, "")) * productQuantity;
-    expect(total).toEqual(productPrice);
-}
-
-const noFeeAdded = async (page, context, products) => {
-    const result = await checkoutTransaction(page, products.simple, context.method)
-    let total = result.totalAmount.slice(0, -1).trim();
-    let expected = products.simple.price.slice(0, -1).trim();
-    expect(expected).toEqual(total);
+const noFeeAdded = async (page, method, products, expectedAmount) => {
+    const result = await checkoutTransaction(page, products.simple, method)
+    let received = result.totalAmount.slice(0, -1).trim();
+    received = parseTotalAmount(received);
+    expect(received).toEqual(expectedAmount);
 }
 
 module.exports = {
@@ -318,14 +251,5 @@ module.exports = {
     processMollieCheckout,
     settingsNames,
     noticeLines,
-    fixedFeeTest,
-    percentageFeeTest,
-    fixedAndPercentageFeeTest,
-    fixedFeeUnderLimitTest,
-    percentageFeeUnderLimitTest,
-    fixedAndPercentageUnderLimit,
-    fixedFeeOverLimit,
-    percentageFeeOverLimit,
-    fixedFeeAndPercentageOverLimit,
     noFeeAdded
 };

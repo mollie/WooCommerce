@@ -19,7 +19,9 @@ async function gotoWooPaymentTab(page) {
  */
 const addProductToCart = async (page, baseUrl, productId, productQuantity) => {
     const href = await page.evaluate(
-        ({baseUrl, productId, productQuantity}) => location.href = `${baseUrl}/checkout/?add-to-cart=${productId}&quantity=${productQuantity}`,
+        ({baseUrl, productId, productQuantity}) => {
+            location.href = `${baseUrl}/checkout?add-to-cart=${productId}&quantity=${productQuantity}`
+        },
         {
             baseUrl,
             productId,
@@ -105,7 +107,7 @@ const fillCustomerInBlockCheckout = async (page) => {
 }
 
 const selectPaymentMethodInCheckout = async (page, paymentMethod) => {
-    await page.getByText(paymentMethod, { exact: true }).click();
+    await page.locator('label').filter({ hasText: paymentMethod }).click();
 }
 
 const placeOrderCheckout = async (page) => {
@@ -120,6 +122,12 @@ const placeOrderPayPage = async (page) => {
 
 const captureTotalAmountCheckout = async (page) => {
     return await page.innerText('.order-total > td > strong > span > bdi');
+}
+
+const parseTotalAmount = (totalAmount) => {
+    // "€30.80" => 30.80
+    const numberStr = totalAmount.replace(/[^\d.]/g, '');
+    return parseFloat(numberStr);
 }
 
 const captureTotalAmountPayPage = async (page) => {
@@ -157,6 +165,8 @@ const createManualOrder = async (page, productLabel = 'Beanie') => {
 }
 
 const updateMethodSetting = async (method, payload) => {
+    console.log(method, payload)
+    method = 'mollie_wc_gateway_'+method.toLowerCase();
     try {
         const response = await WooCommerce.put(
             `payment_gateways/${method}`,
@@ -216,5 +226,6 @@ module.exports = {
     fetchOrderStatus,
     fetchOrderNotes,
     addProductToCartBlock,
-    updateMethodSetting
+    updateMethodSetting,
+    parseTotalAmount
 }

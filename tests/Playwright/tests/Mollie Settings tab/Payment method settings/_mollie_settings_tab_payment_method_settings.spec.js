@@ -79,4 +79,18 @@ test.skip('[C420332] Validate that initial order status can be set to "Pending p
         await page.click('text=Save changes');
         await expect(await page.getByRole('combobox', {name: 'Initial order status'})).toHaveValue('pending');
     });
+    test.skip('[C93487] Validate expiry time for Bancontact', async ({ page}) => {
+        // Your code here...
+    });
+    test.skip('[C3362] Validate that the iDEAL issuer list available in payment selection', async ({ page}) => {
+        // Your code here...
+    });
+
+
+    test.skip('[C89358] Validate expiry time for IDEAL', async ({ page}) => {
+        // Your code here...
+    });
+    test.skip('[C127228] Validate expiry time for SEPA Bank Transfer', async ({ page}) => {
+        // Your code here...
+    });
 });

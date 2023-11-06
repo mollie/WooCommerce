@@ -202,7 +202,7 @@ $mollieAdvancedSettings =  [
     [
         'id' => $pluginName . '_sectionend',
         'type' => 'sectionend',
-    ]
+    ],
 ];
 
 return apply_filters('inpsyde.mollie-advanced-settings', $mollieAdvancedSettings, $pluginName);

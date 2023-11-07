@@ -88,6 +88,25 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                 'merchant.manual_capture.on_status_change_enabled' => static function () {
                     return get_option('mollie-payments-for-woocommerce_capture_or_void', false);
                 },
+                'merchant.manual_capture.cart_can_be_captured' => static function (): bool {
+                    if (!class_exists(\WC_Product_Subscription::class)) {
+                        return true;
+                    }
+                    $cart = WC()->cart;
+                    if (!is_a($cart, \WC_Cart::class)) {
+                        return false;
+                    }
+                    $cartItems = $cart->get_cart_contents();
+
+                    foreach ($cartItems as $cartItemData) {
+                        $cartItem = $cartItemData['data'];
+
+                        if (is_a($cartItem, \WC_Product_Subscription::class)) {
+                            return false;
+                        }
+                    }
+                    return true;
+                },
                 CapturePayment::class => static function ($container) {
                     return static function (int $orderId) use ($container) {
                         /** @var Api $api */

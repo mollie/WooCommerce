@@ -1,4 +1,4 @@
-const {noticeLines, checkExpiredAtMollie} = require("../../Shared/mollieUtils");
+const {noticeLines} = require("../../Shared/mollieUtils");
 const {wooOrderPaidPage, wooOrderRetryPage} = require("../../Shared/testMollieInWooPage");
 export const testData = [
     {
@@ -38,7 +38,7 @@ export const testData = [
        wooStatus: "Pending",
        notice: context => noticeLines.expired(context.method.id),
        action: async (page) => {
-           await checkExpiredAtMollie(page);
+           await wooOrderRetryPage(page);
        }
    },
   {
@@ -88,7 +88,7 @@ export const testData = [
       wooStatus: "Cancelled",
       notice: context => noticeLines.expired(context.method.id),
       action: async (page) => {
-          await checkExpiredAtMollie(page);
+          await wooOrderRetryPage(page);
       }
   },
   {
@@ -128,7 +128,7 @@ export const testData = [
       wooStatus: "Pending",
       notice: context => noticeLines.expired(context.method.id),
       action: async (page) => {
-          await checkExpiredAtMollie(page);
+          await wooOrderRetryPage(page);
       }
   },
   {
@@ -168,7 +168,7 @@ export const testData = [
       wooStatus: "Pending",
       notice: context => noticeLines.expired(context.method.id),
       action: async (page) => {
-          await checkExpiredAtMollie(page);
+          await wooOrderRetryPage(page);
       }
   },
   {
@@ -218,7 +218,7 @@ export const testData = [
       wooStatus: "Pending",
       notice: context => noticeLines.expired(context.method.id),
       action: async (page) => {
-          await checkExpiredAtMollie(page);
+          await wooOrderRetryPage(page);
       }
   },
   {
@@ -258,7 +258,7 @@ export const testData = [
       wooStatus: "Pending",
       notice: context => noticeLines.expired(context.method.id),
       action: async (page) => {
-          await checkExpiredAtMollie(page);
+          await wooOrderRetryPage(page);
       }
   },
   {
@@ -298,7 +298,7 @@ export const testData = [
       wooStatus: "Pending",
       notice: context => noticeLines.expired(context.method.id),
       action: async (page) => {
-          await checkExpiredAtMollie(page);
+          await wooOrderRetryPage(page);
       }
   },
   {
@@ -338,7 +338,7 @@ export const testData = [
       wooStatus: "Pending",
       notice: context => noticeLines.expired(context.method.id),
       action: async (page) => {
-          await checkExpiredAtMollie(page);
+          await wooOrderRetryPage(page);
       }
   },
   {
@@ -378,7 +378,7 @@ export const testData = [
       wooStatus: "Pending",
       notice: context => noticeLines.expired(context.method.id),
       action: async (page) => {
-          await checkExpiredAtMollie(page);
+          await wooOrderRetryPage(page);
       }
   },
   {
@@ -418,7 +418,7 @@ export const testData = [
       wooStatus: "Pending",
       notice: context => noticeLines.expired(context.method.id),
       action: async (page) => {
-          await checkExpiredAtMollie(page);
+          await wooOrderRetryPage(page);
       }
   },
   {
@@ -468,7 +468,7 @@ export const testData = [
       wooStatus: "Pending",
       notice: context => noticeLines.expired(context.method.id),
       action: async (page) => {
-          await checkExpiredAtMollie(page);
+          await wooOrderRetryPage(page);
       }
   },
   {
@@ -498,7 +498,7 @@ export const testData = [
       wooStatus: "Pending",
       notice: context => noticeLines.expired(context.method.id),
       action: async (page) => {
-          await checkExpiredAtMollie(page);
+          await wooOrderRetryPage(page);
       }
   },
   {
@@ -538,7 +538,7 @@ export const testData = [
       wooStatus: "Pending",
       notice: context => noticeLines.expired(context.method.id),
       action: async (page) => {
-          await checkExpiredAtMollie(page);
+          await wooOrderRetryPage(page);
       }
   },
   {
@@ -555,7 +555,7 @@ export const testData = [
       methodId: "banktransfer",
       testId: "C420398",
       mollieStatus: "Open",
-      wooStatus: "On hold",
+      wooStatus: "on-hold",
       notice: context => noticeLines.open(context.methodName),
       action: async (page, result, context) => {
           await wooOrderPaidPage(page, result.mollieOrder, result.totalAmount, context.method);
@@ -565,10 +565,10 @@ export const testData = [
       methodId: "banktransfer",
       testId: "C420400",
       mollieStatus: "Expired",
-      wooStatus: "On hold",
+      wooStatus: "on-hold",
       notice: context => noticeLines.expired(context.method.id),
       action: async (page) => {
-          await checkExpiredAtMollie(page);
+          await wooOrderRetryPage(page);
       }
   },
   {
@@ -598,7 +598,7 @@ export const testData = [
       wooStatus: "Pending",
       notice: context => noticeLines.expired(context.method.id),
       action: async (page) => {
-          await checkExpiredAtMollie(page);
+          await wooOrderRetryPage(page);
       }
   },
   {
@@ -638,7 +638,7 @@ export const testData = [
       wooStatus: "Pending",
       notice: context => noticeLines.expired(context.method.id),
       action: async (page) => {
-          await checkExpiredAtMollie(page);
+          await wooOrderRetryPage(page);
       }
   },
   {
@@ -678,7 +678,7 @@ export const testData = [
       wooStatus: "Pending",
       notice: context => noticeLines.expired(context.method.id),
       action: async (page) => {
-          await checkExpiredAtMollie(page);
+          await wooOrderRetryPage(page);
       }
   },
 ];

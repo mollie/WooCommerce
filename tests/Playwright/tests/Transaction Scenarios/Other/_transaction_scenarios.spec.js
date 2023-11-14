@@ -1,5 +1,5 @@
 const { expect } = require('@playwright/test');
-const { test } = require('../Shared/base-test');
+const { test } = require('../../Shared/base-test');
 
 test.describe(' - Transaction scenarios', () => {
   test.beforeEach(async ({ page }) => {

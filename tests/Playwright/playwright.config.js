@@ -16,25 +16,32 @@ const testRailOptions = {
  * @see https://playwright.dev/docs/test-configuration
  */
 module.exports = defineConfig({
+    retries: 0,
     testDir: './tests',
     /* Run tests in files in parallel */
     fullyParallel: false,
-    timeout: 320000,
+    //timeout: 120000,
     /* Reporter to use. See https://playwright.dev/docs/test-reporters */
     reporter: [
-        ['list'],
+        ['line'],
         ['junit', testRailOptions]
     ],
     globalSetup: './globalSetup.js',
+
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
     use: {
         baseURL: process.env.BASEURL,
         storageState: './storageState.json',
         extraHTTPHeaders: {'ngrok-skip-browser-warning': '123'},
-        actionTimeout: 120000,
+        //actionTimeout: 120000,
         ignoreHTTPSErrors: true,
         /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
         trace: 'on-first-retry',
+        video: {
+            mode: 'on-first-retry',
+            size: {width: 1280, height: 720},
+            dir: './videos'
+        }
     },
 
     /* Configure projects for major browsers */

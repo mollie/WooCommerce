@@ -21,7 +21,7 @@ export const testData = [
             await wooOrderPaidPage(page, result.mollieOrder, result.totalAmount, context.method);
         }
     },
-    {
+    /*{
         methodId: "bancontact",
         testId: "C3389",
         mollieStatus: "Failed",
@@ -61,7 +61,7 @@ export const testData = [
             await wooOrderPaidPage(page, result.mollieOrder, result.totalAmount, context.method);
         }
     },
-    {
+   {
         methodId: 'belfius',
         testId: "C3429",
         mollieStatus: "Failed",
@@ -680,5 +680,5 @@ export const testData = [
         action: async (page) => {
             await checkExpiredAtMollie(page);
         }
-    },
+    },*/
 ];

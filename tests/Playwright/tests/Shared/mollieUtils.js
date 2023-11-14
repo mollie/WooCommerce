@@ -64,12 +64,19 @@ const markStatusInMollie = async (page, status) =>{
 }
 
 const fillCreditCardForm = async (page) => {
-    await page.getByLabel('Card holder').fill('test');
+    let container = await page.locator('div[data-testid="mollie-container--cardHolder"]');
+    let input = await container.locator('input[data-component-type="cardHolder"][type="text"]');
+    await input.fill('Name');
+    container = await page.locator('div[data-testid="mollie-container--cardNumber"]');
+    input = await container.locator('input[data-component-type="cardNumber"][type="text"]');
+    await input.fill('4543474002249996');
+    container = await page.locator('div[data-testid="mollie-container--expiryDate"]');
+    input = await container.locator('input[data-component-type="expiryDate"][type="text"]');
+    await input.fill('12/25');
+    container = await page.locator('div[data-testid="mollie-container--verificationCode"]');
+    input = await container.locator('input[data-component-type="verificationCode"][type="text"]');
+    await input.fill('123');
 
-
-    await page.getByLabel('Card number').fill('4543474002249996');
-    await page.locator('iframe[name="expiryDate-input"]').fill('12/25');
-    await page.locator('iframe[name="verificationCode-input"]').fill( '123');
     await page.getByRole('button', { name: 'Pay ›' }).click();
 };
 const processMollieCheckout = async (page, status) => {
@@ -77,8 +84,8 @@ const processMollieCheckout = async (page, status) => {
     const creditCardUrl = 'https://www.mollie.com/checkout/credit-card';
     if (page.url().toString().startsWith(creditCardUrl)) {
         await fillCreditCardForm(page);
-        return await markStatusInMollie(page, status);
-    }
+        await page.waitForTimeout(5000);
+        return await markStatusInMollie(page, status);}
 
     if (page.url().toString().startsWith(expectedUrl)) {
         return await markStatusInMollie(page, status);
@@ -170,11 +177,8 @@ const beforePlacingOrderBlock = async (page, testedProduct, testedGateway, produ
     if (testedGateway.paymentFields) {
         await page.locator(`select[name="mollie-payments-for-woocommerce_issuer_mollie_wc_gateway_${testedGateway.id}"]`).selectOption({index: 1});
     }
-    // Click text=Place order
-    await Promise.all([
-        page.waitForNavigation(/*{ url: 'https://www.mollie.com/checkout/test-mode?method=GATEWAY&token=XXX' }*/),
-        page.locator('text=Place order').click()
-    ]);
+    await page.getByRole('button', { name: 'Place Order' }).click();
+    await page.waitForTimeout(2000)
     return totalAmount;
 }
 
@@ -195,6 +199,7 @@ const checkoutTransaction = async (page, testedProduct, testedGateway, productQu
     }
     // IN MOLLIE
     // Capture order number in Mollie and mark as required
+    await page.waitForTimeout(2000);
     const mollieOrder = await processMollieCheckout(page, status);
 
     return {mollieOrder: mollieOrder, totalAmount: totalAmount};

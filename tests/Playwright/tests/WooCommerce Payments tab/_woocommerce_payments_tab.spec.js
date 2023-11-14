@@ -2,16 +2,8 @@ const {expect} = require('@playwright/test');
 const {test} = require('../Shared/base-test');
 const {gotoWooPaymentTab} = require("../Shared/wooUtils");
 const {getMethodNames} = require("../Shared/gateways");
-const {resetSettings, insertAPIKeys, setOrderAPI} = require("../Shared/mollieUtils");
 
 test.describe(' - WooCommerce Payments tab', () => {
-    test.beforeAll(async ({browser}) => {
-        // Create a new page instance
-        const page = await browser.newPage();
-        // Reset to the default state
-        await resetSettings(page);
-        await insertAPIKeys(page);
-    });
     test.beforeEach(async ({page}) => {
         await gotoWooPaymentTab(page);
     });
@@ -31,6 +23,7 @@ test.describe(' - WooCommerce Payments tab', () => {
             return foundMethods.every((found) => found === true);
         }, methodNames);
         expect(allMethodsPresent).toBe(true);
+        await page.context().close();
     });
 
     test.skip('[C419985] Validate that all payment methods can be managed', async ({page}) => {

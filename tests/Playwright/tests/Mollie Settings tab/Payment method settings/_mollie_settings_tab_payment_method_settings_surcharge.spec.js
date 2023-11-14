@@ -330,13 +330,10 @@ for (const [testAction, testActionData] of Object.entries(testData)) {
     let randomMethod = testActionData.methods[0];
     let beforeAllRan = false;
     for (const [methodName, testId] of Object.entries(testActionData.methods)) {
-        if(methodName=== 'applepay') {
-            test.use(webkit);
-        }
-        test(testActionData.description(testId, methodName) , async ({page, products, context}) => {
+        test(testActionData.description(testId, methodName) , async ({page, products, baseURL}) => {
             await updateMethodSetting(methodName, testActionData.payload);
             if(!beforeAllRan) {
-                await addProductToCart(page, context._options.baseURL, products.simple.id, testActionData.productQuantity);
+                await addProductToCart(baseURL, products.simple.id, testActionData.productQuantity);
                 const keys = Object.keys(testActionData.methods);
                 randomMethod = keys[Math.floor(Math.random() * Object.entries(testActionData.methods).length)];
                 beforeAllRan = true;
@@ -358,5 +355,17 @@ for (const [testAction, testActionData] of Object.entries(testData)) {
             }
         });
     }
+
 };
+test.skip('[C420161] Validate change of the Surcharge gateway fee label on classic checkout', async ({ page}) => {
+    // Your code here...
+});
+
+test.skip('[C420162] Validate change of the Surcharge gateway fee label on block checkout', async ({ page}) => {
+    // Your code here...
+});
+
+test.skip('[C420163] Validate change of the Surcharge gateway fee label on order pay page', async ({ page}) => {
+    // Your code here...
+});
 

@@ -9,36 +9,43 @@ const {wooOrderDetailsPage} = require("../../Shared/testMollieInWooPage");
 const {normalizedName} = require("../../Shared/gateways");
 const {emptyCart, addProductToCart} = require("../../Shared/wooUtils");
 const {testData} = require("./testData");
-// Set up parameters or perform actions before all tests
-/*test.beforeAll(async ({browser}) => {
-    // Create a new page instance
-    const page = await browser.newPage();
-    const context = await browser.newContext();
-    context.page = page;
-    // Reset to the default state
-    await resetSettings(context.page);
-    await insertAPIKeys(context.page);
-    // Orders API
-    await setOrderAPI(context.page);
-});*/
 
 testData.forEach(({methodId, testId, mollieStatus, wooStatus, notice, action}) => {
     test.describe(`_Transaction scenarios_Payment statuses Checkout - ${methodId}`, () => {
         const productQuantity = 1;
-        test.beforeEach(async ({page, context, gateways}) => {
+        test.beforeEach(async ({browser, page, context, gateways}) => {
             context.method = gateways[methodId];
             context.methodName = normalizedName(context.method.defaultTitle);
 
         });
-        test(`[${testId}] Validate the submission of an order with ${methodId} as payment method and payment mark as "${mollieStatus}"`, async ({
-                                                                                                                                                   page,
-                                                                                                                                                   products,
-                                                                                                                                                   context
-                                                                                                                                               }) => {
-            await addProductToCart(page, context._options.baseURL, products.simple.id, productQuantity);
-            const result = await checkoutTransaction(page, products.simple, context.method, productQuantity, mollieStatus);
+        test(
+            `[${testId}] Validate the submission of an order with ${methodId} as payment method and payment mark as "${mollieStatus}"`,
+            async ({page,products,context,baseURL, gateways}
+            ) => {
+            await addProductToCart(baseURL, products.simple.id, productQuantity);
+            await page.goto('/checkout/');
+            const result = await checkoutTransaction(page, products.simple, gateways[methodId], productQuantity, mollieStatus);
             await action(page, result, context);
-            await wooOrderDetailsPage(page, result.mollieOrder, context.method, wooStatus, notice(context));
+            await wooOrderDetailsPage(page, result.mollieOrder, gateways[methodId], wooStatus, notice(context));
         });
+        test.afterEach(async ({page, context}) => {
+            await context.close()
+        });
+
     });
+});
+test.skip('[C420148] Validate that order status after cancelled payment is set to pending status', async ({ page}) => {
+    await page.selectOption('select[name="mollie-payments-for-woocommerce_order_status_cancelled_payments"]', 'pending');
+    await page.click('text=Save changes');
+});
+
+test.skip('[C420149] Validate that order status after cancelled payment is set to cancelled status', async ({ page}) => {
+    await page.selectOption('select[name="mollie-payments-for-woocommerce_order_status_cancelled_payments"]', 'cancelled');
+    await page.click('text=Save changes');
+});
+test.skip('[C3367] Validate the creation of an order using the Orders API', async ({page}) => {
+    // This is duplicated all transactions tests are done using orders api
+});
+test.skip('[C3368] Validate the creation of an order using the Payments API', async ({page}) => {
+    // This is duplicated we have already tests for this
 });

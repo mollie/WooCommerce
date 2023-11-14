@@ -7,13 +7,11 @@ const {expect} = require("@playwright/test");
 
 test.describe('_Mollie Settings tab - Payment method settings', () => {
     // Set up parameters or perform actions before all tests
-    test.beforeAll(async ({browser, products}) => {
-        const page = await browser.newPage();
-        await addProductToCart(page, products.simple.sku);
+    test.beforeAll(async ({baseURL, products}) => {
+        await addProductToCart(baseURL, products.simple.id, 5);
     });
-    test.afterAll(async ({browser, products, gateways}) => {
-        const page = await browser.newPage();
-        await emptyCart(page);
+    test.afterAll(async ({baseURL}) => {
+        await emptyCart(baseURL);
     });
 
     test.beforeEach(async ({page, context, gateways}) => {

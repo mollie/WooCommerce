@@ -1,5 +1,5 @@
 const { expect } = require('@playwright/test');
-const { test } = require('../Shared/base-test');
+const { test } = require('../../Shared/base-test');
 
 test.describe('_Transaction scenarios_Different cards - VISA', () => {
   test.beforeEach(async ({ page }) => {

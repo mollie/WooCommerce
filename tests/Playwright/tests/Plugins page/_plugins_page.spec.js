@@ -8,7 +8,7 @@ const {deactivateWPPlugin, activateWPPlugin, gotoWPPlugins} = require("../Shared
 
 //TestId-C3317
     test('[C3317] Validate installation of the latest plugin version', async ({page}) => {
-        await expect(page.getByTestId('mollie-payments-for-woocommerce')).toHaveText(/7.3.9/); //TODO: remove this and retrieve the version from the plugin
+        await expect(page.getByTestId('mollie-payments-for-woocommerce')).toHaveText(/7.4.1/); //TODO: remove this and retrieve the version from the plugin
     });
 
 //TestId-C419986

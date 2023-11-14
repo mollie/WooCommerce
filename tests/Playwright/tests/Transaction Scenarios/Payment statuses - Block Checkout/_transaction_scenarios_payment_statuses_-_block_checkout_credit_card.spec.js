@@ -1,19 +1,17 @@
-const { expect } = require('@playwright/test');
 const { test } = require('../../Shared/base-test');
-const {normalizedName} = require("../../Shared/gateways");
-const {noticeLines, checkExpiredAtMollie, settingsNames, classicCheckoutTransaction} = require("../../Shared/mollieUtils");
+const {noticeLines, checkExpiredAtMollie, settingsNames, checkoutTransaction} = require("../../Shared/mollieUtils");
 const {wooOrderPaidPage, wooOrderRetryPage, wooOrderDetailsPage} = require("../../Shared/testMollieInWooPage");
-const {sharedUrl} = require("../../Shared/sharedUrl");
-const {disableCheckboxSetting} = require("../../Shared/wpUtils");
-const {emptyCart} = require("../../Shared/wooUtils");
+const {updateMethodSetting, addProductToCart} = require("../../Shared/wooUtils");
 
 test.describe('_Transaction scenarios_Payment statuses - Block Checkout - Credit card', () => {
     const productQuantity = 1;
-    test.beforeEach(async ({ page , context, gateways}) => {
-        context.method = gateways.creditcard;
-        context.methodName = normalizedName(context.method.defaultTitle);
-        await emptyCart(page);
-        await page.goto('/shop/');
+    test.beforeAll(async ({ gateways }) => {
+        const payload = {
+            "settings": {
+                [settingsNames.components]: 'no',
+            }
+        }
+        await updateMethodSetting(gateways.creditcard.id, payload);
     });
     const testData = [
         {
@@ -65,12 +63,10 @@ test.describe('_Transaction scenarios_Payment statuses - Block Checkout - Credit
 
 
     testData.forEach(({ testId, mollieStatus, wooStatus, notice, action }) => {
-        test.skip(`[${testId}] Validate the submission of an order with Credit Card (Mollie Payment Screen) as payment method and payment mark as "${mollieStatus}"`, async ({ page, products, context }) => {
-            //mollie components disabled
-            const settingsTab = sharedUrl.gatewaySettingsRoot + context.method.id;
-            const settingsName = settingsNames.components(context.method.id);
-            await disableCheckboxSetting(page, settingsName, settingsTab);
-            const result = await classicCheckoutTransaction(page, products.simple, context.method, productQuantity, mollieStatus, sharedUrl.blocksCheckout);
+        test.skip(`[${testId}] Validate the submission of an order with Credit Card (Mollie Payment Screen) as payment method and payment mark as "${mollieStatus}"`, async ({ page, products, context, baseURL, gateways }) => {
+            await addProductToCart(baseURL, products.simple.id, productQuantity);
+            await page.goto('/checkout/');
+            const result = await checkoutTransaction(page, products.simple, gateways.creditcard, productQuantity, mollieStatus);
             await action(page, result, context);
             await wooOrderDetailsPage(page, result.mollieOrder, context.method, wooStatus, notice(context));
         });

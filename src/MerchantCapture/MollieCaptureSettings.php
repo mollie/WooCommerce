@@ -10,6 +10,11 @@ class MollieCaptureSettings
     {
         $mollieCaptureSettings = [
             [
+                'id' => $pluginName . '_capture_empty_title',
+                'title' => '',
+                'type' => 'title',
+            ],
+            [
                 'id' => $pluginName . '_place_payment_onhold',
                 'title' => __('Placing payments on Hold', 'mollie-payments-for-woocommerce'),
                 'type' => 'select',
@@ -40,7 +45,7 @@ class MollieCaptureSettings
                 ),
             ],
             [
-                'id' => $pluginName . '_sectionend',
+                'id' => $pluginName . '_capture_sectionend',
                 'type' => 'sectionend',
             ],
         ];

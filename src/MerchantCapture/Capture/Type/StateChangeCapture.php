@@ -26,8 +26,8 @@ class StateChangeCapture
         /** When the webhook process is activated we don't need automatic status change. Status change is handled
          *  by the webhook logic.
          */
-        add_action($pluginId . '_before_webhook_payment_action', function(){
-            remove_action('woocommerce_order_status_changed', [$this, "orderStatusChange"], 10, 3);
+        add_action($pluginId . '_before_webhook_payment_action', function () {
+            remove_action('woocommerce_order_status_changed', [$this, "orderStatusChange"]);
         });
     }
 

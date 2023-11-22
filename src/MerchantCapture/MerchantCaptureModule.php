@@ -135,6 +135,7 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
             add_action(
                 $pluginId . '_after_webhook_action',
                 static function (Payment $payment, WC_Order $order) use ($container) {
+
                     if ($payment->isAuthorized()) {
                         if (!$payment->getAmountCaptured() == 0.0) {
                             return;
@@ -154,6 +155,17 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                         $order->update_meta_data(
                             self::ORDER_PAYMENT_STATUS_META_KEY,
                             ManualCaptureStatus::STATUS_CAPTURED
+                        );
+                        $order->save();
+                    } elseif (
+                        $payment->isCanceled()  && (
+                            ($container->get('merchant.manual_capture.is_waiting'))($order) ||
+                            ($container->get('merchant.manual_capture.is_authorized'))($order)
+                        )
+                    ) {
+                        $order->update_meta_data(
+                            self::ORDER_PAYMENT_STATUS_META_KEY,
+                            ManualCaptureStatus::STATUS_VOIDED
                         );
                         $order->save();
                     }

@@ -78,4 +78,9 @@ class In3FieldsStrategy implements PaymentFieldsStrategyI
         </p>
         <?php
     }
+
+    public function getFieldMarkup($gateway, $dataHelper)
+    {
+        return "";
+    }
 }

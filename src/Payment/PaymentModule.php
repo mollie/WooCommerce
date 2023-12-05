@@ -185,7 +185,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
             }
             $args = [
                 'limit' => -1,
-                'status' => 'pending',
+                'status' => ['wc-on-hold', 'wc-pending'],
                 'payment_method' => strtolower($gateway),
                 'date_modified' => '<' . (time() - $heldDurationInSeconds),
                 'return' => 'ids',

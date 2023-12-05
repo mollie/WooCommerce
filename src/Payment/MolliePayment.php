@@ -69,6 +69,7 @@ class MolliePayment extends MollieObject
         $storeCustomer = $settingsHelper->shouldStoreCustomer();
 
         $gateway = wc_get_payment_gateway_by_order($order);
+        $gatewaySettings = property_exists($gateway, "settings") ? $gateway->settings : [];
 
         if (!$gateway || !($gateway instanceof MolliePaymentGateway)) {
             return ['result' => 'failure'];
@@ -123,6 +124,19 @@ class MolliePayment extends MollieObject
             $encodedApplePayToken = json_encode($applePayToken);
             $paymentRequestData['applePayPaymentToken'] = $encodedApplePayToken;
         }
+
+        if (
+            $gateway->id === "mollie_wc_gateway_banktransfer" &&
+            !empty($gatewaySettings["activate_expiry_days_setting"]) &&
+            $gatewaySettings["activate_expiry_days_setting"] === 'yes' &&
+            !empty($gatewaySettings["order_dueDate"]) &&
+            is_numeric($gatewaySettings["order_dueDate"])
+        ) {
+            $dueDateTimestamp = time() + (intval($gatewaySettings["order_dueDate"]) * 24 * 60 * 60);
+            // https://docs.mollie.com/reference/v2/payments-api/create-payment#bank-transfer
+            $paymentRequestData["dueDate"] = date("Y-m-d", $dueDateTimestamp);
+        }
+
         return $paymentRequestData;
     }
 

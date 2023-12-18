@@ -199,6 +199,9 @@ class Data
      */
     public function getAllPaymentMethods($apiKey, $test_mode = false, $use_cache = true)
     {
+        if(!$apiKey) {
+            $apiKey = $this->getApiKey($test_mode);
+        }
         $result = $this->getRegularPaymentMethods($apiKey, $test_mode, $use_cache);
         if (!is_array($result)) {
             $result = unserialize($result);
@@ -312,8 +315,17 @@ class Data
         if ($use_cache && ! empty(self::$regular_api_methods)) {
             return self::$regular_api_methods;
         }
-
-        self::$regular_api_methods = $this->getApiPaymentMethods($use_cache);
+        $test_mode = $this->isTestModeEnabled();
+        $methods = $this->getAllAvailablePaymentMethods($use_cache);
+        // We cannot access allActive for all methods so we filter them out here
+        $filtered_methods = array_filter($methods, function ($method) use ($test_mode) {
+            if ($test_mode === "live") {
+                return $method['status'] === "activated";
+            } else {
+                return in_array($method['status'], ["activated", "pending-review"]);
+            }
+        });
+        self::$regular_api_methods = $filtered_methods;
 
         return self::$regular_api_methods;
     }
@@ -679,14 +691,21 @@ class Data
         return apply_filters($this->pluginId . '_is_subscription_payment', $isSubscription, $orderId);
     }
 
-    public function getAllAvailablePaymentMethods($use_cache = true)
+    public function getAllAvailablePaymentMethods($use_cache = true, $filters = [])
     {
         $apiKey = $this->settingsHelper->getApiKey();
         $methods = false;
         $locale = $this->getPaymentLocale();
+        $test_mode = $this->isTestModeEnabled();
         $filters_key = [];
         $filters_key['locale'] = $locale;
+        $filters_key['mode'] = ( $test_mode ? 'test' : 'live' );
+        $filters_key['api'] = 'methods';
         $transient_id = $this->getTransientId(md5(http_build_query($filters_key)));
+        $filters['include'] = 'issuers';
+        $filters['locale'] = $locale;
+        $keysAllowed = ['amount' => '', 'locale' => '', 'issuers' => ''];
+        $filters = array_intersect_key($filters, $keysAllowed);
 
         try {
             if ($use_cache) {
@@ -701,8 +720,7 @@ class Data
                 if (!$apiKey) {
                     return [];
                 }
-                $methods = $this->api_helper->getApiClient($apiKey)->methods->allAvailable($filters_key);
-
+                $methods = $this->api_helper->getApiClient($apiKey)->methods->allAvailable($filters);
                 $methods_cleaned = [];
 
                 foreach ($methods as $method) {

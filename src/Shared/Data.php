@@ -199,7 +199,7 @@ class Data
      */
     public function getAllPaymentMethods($apiKey, $test_mode = false, $use_cache = true)
     {
-        if(!$apiKey) {
+        if (!$apiKey) {
             $apiKey = $this->getApiKey($test_mode);
         }
         $result = $this->getRegularPaymentMethods($apiKey, $test_mode, $use_cache);
@@ -693,6 +693,7 @@ class Data
 
     public function getAllAvailablePaymentMethods($use_cache = true, $filters = [])
     {
+
         $apiKey = $this->settingsHelper->getApiKey();
         $methods = false;
         $locale = $this->getPaymentLocale();
@@ -714,7 +715,6 @@ class Data
             } else {
                 delete_transient($transient_id);
             }
-
             // No cache exists, call the API and cache the result
             if ($methods === false) {
                 if (!$apiKey) {

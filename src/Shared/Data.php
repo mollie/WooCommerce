@@ -199,9 +199,6 @@ class Data
      */
     public function getAllPaymentMethods($apiKey, $test_mode = false, $use_cache = true)
     {
-        if (!$apiKey) {
-            $apiKey = $this->getApiKey($test_mode);
-        }
         $result = $this->getRegularPaymentMethods($apiKey, $test_mode, $use_cache);
         if (!is_array($result)) {
             $result = unserialize($result);
@@ -691,23 +688,16 @@ class Data
         return apply_filters($this->pluginId . '_is_subscription_payment', $isSubscription, $orderId);
     }
 
-    public function getAllAvailablePaymentMethods($use_cache = true, $filters = [])
+    public function getAllAvailablePaymentMethods($use_cache = true)
     {
 
         $apiKey = $this->settingsHelper->getApiKey();
         $methods = false;
         $locale = $this->getPaymentLocale();
-        $test_mode = $this->isTestModeEnabled();
         $filters_key = [];
         $filters_key['locale'] = $locale;
-        $filters_key['mode'] = ( $test_mode ? 'test' : 'live' );
-        $filters_key['api'] = 'methods';
+        $filters_key['include'] = 'issuers';
         $transient_id = $this->getTransientId(md5(http_build_query($filters_key)));
-        $filters['include'] = 'issuers';
-        $filters['locale'] = $locale;
-        $keysAllowed = ['amount' => '', 'locale' => '', 'issuers' => ''];
-        $filters = array_intersect_key($filters, $keysAllowed);
-
         try {
             if ($use_cache) {
                 // When no cache exists $methods will be `false`
@@ -720,7 +710,7 @@ class Data
                 if (!$apiKey) {
                     return [];
                 }
-                $methods = $this->api_helper->getApiClient($apiKey)->methods->allAvailable($filters);
+                $methods = $this->api_helper->getApiClient($apiKey)->methods->allAvailable($filters_key);
                 $methods_cleaned = [];
 
                 foreach ($methods as $method) {

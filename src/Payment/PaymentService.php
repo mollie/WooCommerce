@@ -486,7 +486,7 @@ class PaymentService
                     : '',
             ];
 
-            $this->logger->debug($apiCallLog);
+            $this->logger->debug(json_encode($apiCallLog));
 
             // Try as simple payment
             $paymentObject = $this->apiHelper->getApiClient(

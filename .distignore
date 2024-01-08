@@ -16,5 +16,14 @@ patchwork.json
 *.config.*
 *.md
 gulpfile.js
+webpack.config.js
+readme.md
 changelog.txt
 psalm.xml
+node_modules/
+.babelrc
+.composer_compiled_assets
+.editorconfig
+.env.example
+.idea/
+.psalm/

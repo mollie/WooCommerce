@@ -16,5 +16,8 @@ patchwork.json
 *.config.*
 *.md
 gulpfile.js
+webpack.config.js
+readme.md
 changelog.txt
 psalm.xml
+node_modules/

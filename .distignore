@@ -21,3 +21,9 @@ readme.md
 changelog.txt
 psalm.xml
 node_modules/
+.babelrc
+.composer_compiled_assets
+.editorconfig
+.env.examples
+.idea/
+.psalm/

@@ -48,11 +48,13 @@
     "pump": "^3.0.0",
     "sass": "^1.52.1",
     "sass-loader": "^7.0.1",
-    "wp-pot": "^1.10.2"
+    "webpack-cli": "^5.1.4",
+    "wp-pot": "^1.10.2",
+    "webpack": "^5.89.0"
   },
   "scripts": {
     "watch": "webpack --watch",
-    "build": "node_modules/.bin/encore dev --env.basePath=.",
+    "build": "BASE_PATH=. node_modules/.bin/encore dev",
     "setup": "gulp setup",
     "e2e-activation": "npx playwright test --project=activation",
     "e2e-simple": "npx playwright test --project=simple-classic",

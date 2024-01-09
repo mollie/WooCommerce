@@ -24,6 +24,7 @@ class PaymentService
 {
     public const PAYMENT_METHOD_TYPE_ORDER = 'order';
     public const PAYMENT_METHOD_TYPE_PAYMENT = 'payment';
+
     /**
      * @var MolliePaymentGatewayI
      */
@@ -369,8 +370,7 @@ class PaymentService
                     : '',
                 'orderNumber' => isset($data['orderNumber'])
                     ? $data['orderNumber'] : '',
-                'lines' => isset($data['lines']) ? $data['lines'] : '',
-            ];
+                'lines' => isset($data['lines']) ? $data['lines'] : '', ];
 
             $this->logger->debug(json_encode($apiCallLog));
             $paymentOrder = $paymentObject;
@@ -387,6 +387,8 @@ class PaymentService
             }
         } catch (ApiException $e) {
             $this->handleMollieOutage($e);
+            //if exception is 422 do not try to create a payment
+            $this->handleMollieFraudRejection($e);
             // Don't try to create a Mollie Payment for Klarna payment methods
             $order_payment_method = $order->get_payment_method();
             $orderMandatoryPaymentMethods = [
@@ -550,6 +552,7 @@ class PaymentService
                 $apiKey
             );
         }
+
         return $paymentObject;
     }
 
@@ -719,7 +722,9 @@ class PaymentService
             $message .= 'hii ' . $e->getMessage();
         }
 
-        $this->notice->addNotice('error', $message);
+        add_action('before_woocommerce_pay_form', static function () use ($message) {
+            wc_print_notice($message, 'error');
+        });
     }
 
     /**
@@ -868,6 +873,29 @@ class PaymentService
             throw new ApiException(
                 __(
                     'Payment failed due to: Mollie is out of service. Please try again later.',
+                    'mollie-payments-for-woocommerce'
+                )
+            );
+        }
+    }
+
+    /**
+     * Check if the exception is a fraud rejection, if so bail, log and inform user
+     * @param ApiException $e
+     * @return void
+     * @throws ApiException
+     */
+    public function handleMollieFraudRejection(ApiException $e): void
+    {
+        $isMollieFraudException = $this->apiHelper->isMollieFraudException($e);
+        if ($isMollieFraudException) {
+            $this->logger->debug(
+                "Creating payment object: The payment was declined due to suspected fraud, stopping process."
+            );
+
+            throw new ApiException(
+                __(
+                    'Payment failed due to:  The payment was declined due to suspected fraud.',
                     'mollie-payments-for-woocommerce'
                 )
             );

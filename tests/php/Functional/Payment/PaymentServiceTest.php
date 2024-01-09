@@ -3,6 +3,7 @@
 namespace Mollie\WooCommerceTests\Functional\Payment;
 
 use Mollie\Api\Endpoints\OrderEndpoint;
+use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\MollieApiClient;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
@@ -127,6 +128,64 @@ class PaymentServiceTest extends TestCase
         );
         $arrayResult = $testee->processPayment(1, $wcOrder, $paymentMethod, $processPaymentRedirect);
         self::assertEquals($expectedResult, $arrayResult);
+    }
+
+    /**
+     * @test
+     * @throws ApiException
+     */
+    public function processAsMollieOrder_BailsIf_FraudException()
+    {
+        stubs([
+            'array_filter' => [],
+              ]);
+        $mockedException = new TestApiException();
+        $mockedException->setTestCode(422);
+        $mockedException->setTestMessage('The payment was declined due to suspected fraud');
+        $orderEndpointsMock = $this->createConfiguredMock(
+            OrderEndpoint::class,
+            [
+                'create' => new MollieOrderResponse(),
+            ]
+        );
+        $paymentMethodId = 'Ideal';
+        $orderEndpointsMock->method('create')->with([])
+            ->will($this->throwException($mockedException));
+
+        $apiClientMock = $this->createMock(MollieApiClient::class);
+        $apiClientMock->orders = $orderEndpointsMock;
+        $voucherDefaultCategory = Voucher::NO_CATEGORY;
+
+        $testee = new PaymentService(
+            $this->helperMocks->noticeMock(),
+            $this->helperMocks->loggerMock(),
+            $this->helperMocks->paymentFactory($apiClientMock),
+            $this->helperMocks->dataHelper($apiClientMock),
+            $this->helperMocks->apiHelper($apiClientMock),
+            $this->helperMocks->settingsHelper(),
+            $this->helperMocks->pluginId(),
+            $this->paymentCheckoutService($apiClientMock),
+            $voucherDefaultCategory
+        );
+        $gateway = $this->mollieGateway($paymentMethodId, $testee);
+        $testee->setGateway($gateway);
+        $wcOrderId = 1;
+        $wcOrderKey = 'wc_order_hxZniP1zDcnM8';
+        $wcOrder = $this->wcOrder($wcOrderId, $wcOrderKey);
+        $cusomerId = 1;
+        $apiKey = 'test_test';
+        $method = new \ReflectionMethod(PaymentService::class, 'processAsMollieOrder');
+        $method->setAccessible(true);
+
+        $this->expectException(ApiException::class);
+
+        $method->invoke(
+            $testee,
+            $this->helperMocks->mollieOrderMock(),
+            $wcOrder,
+            $cusomerId,
+            $apiKey
+        );
     }
 
 
@@ -449,6 +508,16 @@ class MollieOrderResponse
         return 'https://www.mollie.com/payscreen/order/checkout/wvndyu';
     }
 
+}
+
+class TestApiException extends \Mollie\Api\Exceptions\ApiException {
+    public function setTestCode($code) {
+        $this->code = $code;
+    }
+
+    public function setTestMessage($message) {
+        $this->message = $message;
+    }
 }
 
 

@@ -105,6 +105,10 @@ class Surcharge
      */
     public function calculateFeeAmount(WC_Cart $cart, array $gatewaySettings): float
     {
+        if (!isset($gatewaySettings['payment_surcharge'])) {
+            return 0.0;
+        }
+
         $surchargeType = $gatewaySettings['payment_surcharge'];
         $methodName = sprintf('calculate_%s', $surchargeType);
 
@@ -154,7 +158,7 @@ class Surcharge
      */
     protected function calculate_fixed_fee($cart, array $gatewaySettings)
     {
-        return !empty($gatewaySettings[Surcharge::FIXED_FEE]) ? (float) $gatewaySettings[Surcharge::FIXED_FEE] : 0.0;
+        return !empty($gatewaySettings[Surcharge::FIXED_FEE]) ? (float)$gatewaySettings[Surcharge::FIXED_FEE] : 0.0;
     }
 
     /**
@@ -294,7 +298,12 @@ class Surcharge
         $currency = get_woocommerce_currency_symbol();
         $amountPercent = $paymentMethod->getProperty(self::PERCENTAGE);
         /* translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency. Placeholder 3: Percentage amount. */
-        return sprintf(__(' + %1$s %2$s + %3$s%% fee might apply', 'mollie-payments-for-woocommerce'), $currency, $amountFix, $amountPercent);
+        return sprintf(
+            __(' + %1$s %2$s + %3$s%% fee might apply', 'mollie-payments-for-woocommerce'),
+            $currency,
+            $amountFix,
+            $amountPercent
+        );
     }
 
     /**

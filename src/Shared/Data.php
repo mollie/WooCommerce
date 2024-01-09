@@ -77,7 +77,7 @@ class Data
 
     public function isSubscriptionPluginActive(): bool
     {
-        $subscriptionPlugin = is_plugin_active('woocommerce-subscriptions/woocommerce-subscriptions.php');
+        $subscriptionPlugin = class_exists('WC_Subscriptions');
         return apply_filters('mollie_wc_subscription_plugin_active', $subscriptionPlugin);
     }
 

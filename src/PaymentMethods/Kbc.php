@@ -10,19 +10,19 @@ class Kbc extends AbstractPaymentMethod implements PaymentMethodI
     protected function getConfig(): array
     {
         return [
-            'id' => 'kbc',
-            'defaultTitle' => __('KBC/CBC Payment Button', 'mollie-payments-for-woocommerce'),
-            'settingsDescription' => '',
-            'defaultDescription' => __('Select your bank', 'mollie-payments-for-woocommerce'),
-            'paymentFields' => true,
-            'instructions' => false,
-            'supports' => [
-                'products',
-                'refunds',
-            ],
-            'filtersOnBuild' => false,
-            'confirmationDelayed' => true,
-            'SEPA' => true,
+        'id' => 'kbc',
+        'defaultTitle' => __('KBC/CBC Payment Button', 'mollie-payments-for-woocommerce'),
+        'settingsDescription' => '',
+        'defaultDescription' => __('Select your bank', 'mollie-payments-for-woocommerce'),
+        'paymentFields' => true,
+        'instructions' => false,
+        'supports' => [
+            'products',
+            'refunds',
+        ],
+        'filtersOnBuild' => false,
+        'confirmationDelayed' => true,
+        'SEPA' => true,
         ];
     }
 
@@ -52,7 +52,7 @@ class Kbc extends AbstractPaymentMethod implements PaymentMethodI
                 'type' => 'text',
                 'description' => sprintf(
                     __(
-                        'This text will be displayed as the first option in the KBC/CBC issuers drop down, if nothing is entered, "Select your bank" will be shown. Only if the above \'\'Show KBC/CBC banks dropdown\' is enabled.',
+                        "This text will be displayed as the first option in the KBC/CBC issuers drop down, if nothing is entered, 'Select your bank' will be shown. Only if the above 'Show KBC/CBC banks dropdown' is enabled.",
                         'mollie-payments-for-woocommerce'
                     ),
                     $this->getConfig()['defaultTitle']

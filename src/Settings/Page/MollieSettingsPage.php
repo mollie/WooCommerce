@@ -146,10 +146,10 @@ class MollieSettingsPage extends WC_Settings_Page
         ) . '</p>';
 
         $presentation = ''
-            . '<div style="width:1000px"><div style="font-weight:bold;"><a href="https://github.com/mollie/WooCommerce/wiki">' . __(
+            . '<div style="width:1000px"><div style="font-weight:bold;"><a href="https://help.mollie.com/hc/en-us/sections/12858723658130-Mollie-for-WooCommerce">' . __(
                 'Plugin Documentation',
                 'mollie-payments-for-woocommerce'
-            ) . '</a> | <a href="https://mollie.inpsyde.com/docs/how-to-request-support-via-website-widget/">' . __(
+            ) . '</a> | <a href="https://www.mollie.com/contact/merchants">' . __(
                 'Contact Support',
                 'mollie-payments-for-woocommerce'
             ) . '</a></div></div>'
@@ -415,7 +415,7 @@ class MollieSettingsPage extends WC_Settings_Page
         $sepaGatewayAllowed = !empty($this->registeredGateways["mollie_wc_gateway_directdebit"]);
         if ($sepaGatewayAllowed && !$isSepaEnabled) {
             $warning_message = __(
-                'You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL and/or other "first" payment methods.',
+                "You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL and/or other 'first' payment methods.",
                 'mollie-payments-for-woocommerce'
             );
 

@@ -7,7 +7,7 @@ on:
         required: true
 jobs:
   create_archive:
-    uses: inpsyde/reusable-workflows/.github/workflows/build-plugin-archive.yml@main
+    uses: inpsyde/reusable-workflows/.github/workflows/build-plugin-archive.yml@task/build-plugin-archive-without-dep-dependencies
     with:
       PLUGIN_VERSION: ${{ inputs.PACKAGE_VERSION }}
       PHP_VERSION: 7.2

@@ -53,11 +53,11 @@ class MollieGeneralSettings
             ],
             'use_api_title' => [
                 'title' => __(
-                    'Use API dynamic title',
+                    'Use API dynamic title and gateway logo',
                     'mollie-payments-for-woocommerce'
                 ),
                 'type' => 'checkbox',
-                'label' => __('Retrieve the gateway title from Mollie', 'mollie-payments-for-woocommerce'),
+                'label' => __('Retrieve the gateway title and logo from the Mollie API', 'mollie-payments-for-woocommerce'),
                 'default' => 'no',
             ],
             'description' => [
@@ -258,14 +258,14 @@ class MollieGeneralSettings
             'order_dueDate' => [
                 'title' => sprintf(__('Expiry time', 'mollie-payments-for-woocommerce')),
                 'type' => 'number',
+                'custom_attributes' => ['step' => '1', 'min' => '10', 'max' => '526000'],
                 'description' => sprintf(
                     __(
-                        'Number of MINUTES after the order will expire and will be canceled at Mollie and WooCommerce. A value of 0 means no expiry time will be considered.',
+                        'Number of MINUTES after the order will expire and will be canceled at Mollie and WooCommerce.',
                         'mollie-payments-for-woocommerce'
                     )
                 ),
-                'custom_attributes' => ['step' => '1', 'min' => '0', 'max' => '526000'],
-                'default' => '0',
+                'default' => '10',
                 'desc_tip' => false,
             ],
         ];
@@ -290,7 +290,7 @@ class MollieGeneralSettings
                 /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
                 'description' => sprintf(
                     __(
-                        'Some payment methods take longer than a few hours to complete. The initial order state is then set to \'%1$s\'. This ensures the order is not cancelled when the setting %2$s is used.',
+                        'Some payment methods take longer than a few hours to complete. The initial order state is then set to \'%1$s\'. This ensures the order is not cancelled when the setting %2$s is used. This will also prevent the order to be canceled when expired.',
                         'mollie-payments-for-woocommerce'
                     ),
                     wc_get_order_status_name(

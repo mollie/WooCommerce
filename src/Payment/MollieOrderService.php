@@ -80,7 +80,7 @@ class MollieOrderService
         $data_helper = $this->data;
         $order = wc_get_order($order_id);
 
-        if (!$order) {
+        if (!$order instanceof WC_Order) {
             $this->httpResponse->setHttpResponseCode(404);
             $this->logger->debug(__METHOD__ . ":  Could not find order $order_id.");
             return;
@@ -135,7 +135,11 @@ class MollieOrderService
 
         // Log a message that webhook was called, doesn't mean the payment is actually processed
         $this->logger->debug($this->gateway->id . ": Mollie payment object {$payment->id} (" . $payment->mode . ") webhook call for order {$order->get_id()}.", [true]);
+        // Get payment method title
+        $payment_method_title = $this->getPaymentMethodTitle($payment);
 
+        // Create the method name based on the payment status
+        $method_name = 'onWebhook' . ucfirst($payment->status);
         // Order does not need a payment
         if (! $this->orderNeedsPayment($order)) {
             // TODO David: move to payment object?
@@ -145,7 +149,10 @@ class MollieOrderService
             // Check and process a possible refund or chargeback
             $this->processRefunds($order, $payment);
             $this->processChargebacks($order, $payment);
-
+            //if the order gets updated to completed at mollie, we need to update the order status
+            if ($order->get_status() === 'processing' && $payment->isCompleted() && method_exists($payment_object, 'onWebhookCompleted')) {
+                $payment_object->onWebhookCompleted($order, $payment, $payment_method_title);
+            }
             return;
         }
 
@@ -153,12 +160,6 @@ class MollieOrderService
             $this->logger->debug($this->gateway->id . ": updating address from express button", [true]);
             $this->setBillingAddressAfterPayment($payment, $order);
         }
-
-        // Get payment method title
-        $payment_method_title = $this->getPaymentMethodTitle($payment);
-
-        // Create the method name based on the payment status
-        $method_name = 'onWebhook' . ucfirst($payment->status);
 
         if (method_exists($payment_object, $method_name)) {
             $payment_object->{$method_name}($order, $payment, $payment_method_title);
@@ -172,6 +173,7 @@ class MollieOrderService
             ));
         }
 
+        do_action($this->pluginId . '_after_webhook_action', $payment, $order);
         // Status 200
     }
     /**

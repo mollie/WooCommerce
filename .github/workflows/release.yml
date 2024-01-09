@@ -13,7 +13,5 @@ jobs:
       PHP_VERSION: 7.2
       PLUGIN_MAIN_FILE: mollie-payments-for-woocommerce.php
       ARCHIVE_NAME: mollie-payments-for-woocommerce
-      PRE_SCRIPT: |
-        ls
-        pwd
-        cd .. && mv WooCommerce mollie-payments-for-woocommerce && cd mollie-payments-for-woocommerce
+      POST_SCRIPT: |
+        mv dist/WooCommerce dist/mollie-payments-for-woocommerce

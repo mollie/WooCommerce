@@ -55,9 +55,10 @@ function configCss ({ basePath })
 
 function config (env)
 {
-  const config = [
-    configJavaScript(env),
-    configCss(env)
+    const basePath = process.env.BASE_PATH || '.';
+    const config = [
+    configJavaScript({basePath}),
+    configCss({basePath})
   ]
 
   return [...config]

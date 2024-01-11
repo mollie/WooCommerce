@@ -154,8 +154,8 @@ class MollieOrderService
                 $order->get_status() === 'processing'
                 && method_exists($payment, 'isCompleted')
                 && $payment->isCompleted()
-                && method_exists($payment_object, 'onWebhookCompleted'
-                )) {
+                && method_exists($payment_object, 'onWebhookCompleted')
+            ) {
                 $payment_object->onWebhookCompleted($order, $payment, $payment_method_title);
             }
             return;

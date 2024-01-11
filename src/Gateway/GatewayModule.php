@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Gateway;
 
+use Automattic\WooCommerce\Admin\Overrides\Order;
 use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
 use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
 use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
@@ -57,6 +58,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
      * @var mixed
      */
     protected $pluginId;
+
+    const FIELD_IN3_BIRTHDATE = 'billing_birthdate';
 
     public function services(): array
     {
@@ -254,6 +257,11 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 [$this, 'in3FieldsMandatory'],
                 11,
                 2
+            );
+            add_action(
+                'woocommerce_before_pay_action',
+                [$this, 'in3FieldsMandatoryPayForOrder'],
+                11
             );
         }
         // Set order to paid and processed when eventually completed without Mollie
@@ -622,10 +630,30 @@ class GatewayModule implements ServiceModule, ExecutableModule
     {
         $gatewayName = "mollie_wc_gateway_in3";
         $phoneField = 'billing_phone';
-        $birthdateField = 'billing_birthdate';
+        $birthdateField = self::FIELD_IN3_BIRTHDATE;
         $paymentMethodName = 'in3';
         $fields = $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $phoneField, $errors, $paymentMethodName);
         return $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $birthdateField, $errors, $paymentMethodName);
+    }
+
+    /**
+     * @param Order $order
+     */
+    public function in3FieldsMandatoryPayForOrder(Order $order)
+    {
+        $birthdateValue = filter_input(INPUT_POST, self::FIELD_IN3_BIRTHDATE, FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+        if (!$birthdateValue) {
+            wc_add_notice(
+                sprintf(
+                    __(
+                        'Error processing %1$s payment, the birthdate field is required.',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                    $order->get_payment_method_title()
+                ),
+                'error'
+            );
+        }
     }
 
     /**

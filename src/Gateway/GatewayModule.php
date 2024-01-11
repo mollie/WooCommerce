@@ -60,6 +60,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
     protected $pluginId;
 
     const FIELD_IN3_BIRTHDATE = 'billing_birthdate';
+    const GATEWAY_NAME_IN3 = "mollie_wc_gateway_in3";
 
     public function services(): array
     {
@@ -641,15 +642,18 @@ class GatewayModule implements ServiceModule, ExecutableModule
      */
     public function in3FieldsMandatoryPayForOrder(Order $order)
     {
+        $paymentMethod = filter_input(INPUT_POST, 'payment_method', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+
+        if ($paymentMethod !== self::GATEWAY_NAME_IN3) {
+            return;
+        }
+
         $birthdateValue = filter_input(INPUT_POST, self::FIELD_IN3_BIRTHDATE, FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
         if (!$birthdateValue) {
             wc_add_notice(
-                sprintf(
-                    __(
-                        'Error processing %1$s payment, the birthdate field is required.',
-                        'mollie-payments-for-woocommerce'
-                    ),
-                    $order->get_payment_method_title()
+                __(
+                    'Error processing the payment, the birthdate field is required.',
+                    'mollie-payments-for-woocommerce'
                 ),
                 'error'
             );

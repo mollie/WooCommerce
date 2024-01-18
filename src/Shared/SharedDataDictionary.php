@@ -31,6 +31,7 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_Paysafecard',
         'Mollie_WC_Gateway_Voucher',
         'Mollie_WC_Gateway_Directdebit',
+        'Mollie_WC_Gateway_Blik',
         'Mollie_WC_Gateway_Twint',
     ];
 

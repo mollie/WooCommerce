@@ -37,7 +37,10 @@ class ManualCapture
 
     public function sendManualCaptureMode(array $paymentData): array
     {
-        if ($this->container->get('merchant.manual_capture.enabled')) {
+        if (
+            $this->container->get('merchant.manual_capture.enabled') &&
+            $this->container->get('merchant.manual_capture.cart_can_be_captured')
+        ) {
             $paymentData['captureMode'] = 'manual';
         }
         return $paymentData;

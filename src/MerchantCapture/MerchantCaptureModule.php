@@ -144,38 +144,29 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
 
     public function run(ContainerInterface $container): bool
     {
-        add_action('init', static function () use ($container) {
-            $pluginId = $container->get('shared.plugin_id');
-            $captureSettings = new MollieCaptureSettings();
-
-            if (!apply_filters('mollie_wc_gateway_enable_merchant_capture_module', false)) {
-                return;
-            }
-
-            add_action(
-                $pluginId . '_after_webhook_action',
-                static function (Payment $payment, WC_Order $order) use ($container) {
-                    if ($payment->isAuthorized()) {
-                        if (!$payment->getAmountCaptured() == 0.0) {
-                            return;
-                        }
-                        $order->set_status(SharedDataDictionary::STATUS_ON_HOLD);
-                        $order->update_meta_data(
-                            self::ORDER_PAYMENT_STATUS_META_KEY,
-                            ManualCaptureStatus::STATUS_AUTHORIZED
-                        );
-                        $order->save();
-                    } elseif ($payment->isPaid() && ($container->get('merchant.manual_capture.is_waiting'))($order)) {
-                        $order->update_meta_data(
-                            self::ORDER_PAYMENT_STATUS_META_KEY,
-                            ManualCaptureStatus::STATUS_CAPTURED
-                        );
-                        $order->save();
+        $pluginId = $container->get('shared.plugin_id');
+        $captureSettings = new MollieCaptureSettings();
+        add_action(
+        /**
+         * @throws \WC_Data_Exception
+         */            $pluginId . '_after_webhook_action',
+            static function (Payment $payment, WC_Order $order) use ($container) {
+                if ($payment->isAuthorized()) {
+                    if (!$payment->getAmountCaptured() == 0.0) {
+                        return;
                     }
-                },
-                10,
-                2
-            );
+                    $order->set_status(SharedDataDictionary::STATUS_ON_HOLD);
+                    $order->update_meta_data(self::ORDER_PAYMENT_STATUS_META_KEY, ManualCaptureStatus::STATUS_AUTHORIZED);
+                    $order->set_transaction_id($payment->id);
+                    $order->save();
+                } elseif ($payment->isPaid() && ($container->get('merchant.manual_capture.is_waiting'))($order)) {
+                    $order->update_meta_data(self::ORDER_PAYMENT_STATUS_META_KEY, ManualCaptureStatus::STATUS_CAPTURED);
+                    $order->save();
+                }
+            },
+                       10,
+                       2
+        );
 
             add_action('woocommerce_order_refunded', static function (int $orderId) use ($container) {
                 $order = wc_get_order($orderId);
@@ -232,8 +223,6 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
             new OrderListPaymentColumn();
             new ManualCapture($container);
             new StateChangeCapture($container);
-        });
-
         return true;
     }
 }

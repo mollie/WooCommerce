@@ -164,8 +164,8 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                     $order->save();
                 }
             },
-                       10,
-                       2
+            10,
+            2
         );
 
             add_action('woocommerce_order_refunded', static function (int $orderId) use ($container) {

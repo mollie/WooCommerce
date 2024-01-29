@@ -18,7 +18,7 @@ class StatusRenderer
             );
         } elseif ($molliePaymentStatus === ManualCaptureStatus::STATUS_VOIDED) {
             (new StatusButton())(
-                __('Payment voided', 'mollie-payments-for-woocommerce'),
+                __('Payment canceled', 'mollie-payments-for-woocommerce'),
                 SharedDataDictionary::STATUS_CANCELLED
             );
         } elseif ($molliePaymentStatus === ManualCaptureStatus::STATUS_CAPTURED) {

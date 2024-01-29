@@ -283,13 +283,6 @@ class AssetsModule implements ExecutableModule
             (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollieBillie.min.js')),
             true
         );
-        wp_register_script(
-            'mollie-in3-classic-handles',
-            $this->getPluginUrl($pluginUrl, '/public/js/mollieIn3.min.js'),
-            ['underscore', 'jquery'],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollieIn3.min.js')),
-            true
-        );
     }
 
     public function registerBlockScripts(string $pluginUrl, string $pluginPath): void
@@ -321,11 +314,6 @@ class AssetsModule implements ExecutableModule
         $isBillieEnabledAtMollie = in_array('billie', $allMethodsEnabledAtMollie, true);
         if ($isBillieEnabled && $isBillieEnabledAtMollie) {
             wp_enqueue_script('mollie-billie-classic-handles');
-        }
-        $isIn3Enabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_in3_settings', 'enabled');
-        $isIn3EnabledAtMollie = in_array('in3', $allMethodsEnabledAtMollie, true);
-        if ($isIn3Enabled && $isIn3EnabledAtMollie) {
-            wp_enqueue_script('mollie-in3-classic-handles');
         }
 
         $applePayGatewayEnabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_applepay_settings', 'enabled');

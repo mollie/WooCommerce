@@ -88,6 +88,25 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                 'merchant.manual_capture.on_status_change_enabled' => static function () {
                     return get_option('mollie-payments-for-woocommerce_capture_or_void', false);
                 },
+                'merchant.manual_capture.cart_can_be_captured' => static function (): bool {
+                    if (!class_exists(\WC_Product_Subscription::class)) {
+                        return true;
+                    }
+                    $cart = WC()->cart;
+                    if (!is_a($cart, \WC_Cart::class)) {
+                        return false;
+                    }
+                    $cartItems = $cart->get_cart_contents();
+
+                    foreach ($cartItems as $cartItemData) {
+                        $cartItem = $cartItemData['data'];
+
+                        if (is_a($cartItem, \WC_Product_Subscription::class)) {
+                            return false;
+                        }
+                    }
+                    return true;
+                },
                 CapturePayment::class => static function ($container) {
                     return static function (int $orderId) use ($container) {
                         /** @var Api $api */
@@ -128,14 +147,14 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
         add_action('init', static function () use ($container) {
             $pluginId = $container->get('shared.plugin_id');
             $captureSettings = new MollieCaptureSettings();
-
-            if (!apply_filters('mollie_wc_gateway_enable_merchant_capture_module', false)) {
+            if (!apply_filters('mollie_wc_gateway_enable_merchant_capture_module', true)) {
                 return;
             }
 
             add_action(
                 $pluginId . '_after_webhook_action',
                 static function (Payment $payment, WC_Order $order) use ($container) {
+
                     if ($payment->isAuthorized()) {
                         if (!$payment->getAmountCaptured() == 0.0) {
                             return;
@@ -145,11 +164,28 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                             self::ORDER_PAYMENT_STATUS_META_KEY,
                             ManualCaptureStatus::STATUS_AUTHORIZED
                         );
+                        $order->set_transaction_id($payment->id);
                         $order->save();
-                    } elseif ($payment->isPaid() && ($container->get('merchant.manual_capture.is_waiting'))($order)) {
+                    } elseif (
+                        $payment->isPaid() && (
+                            ($container->get('merchant.manual_capture.is_waiting'))($order) ||
+                            ($container->get('merchant.manual_capture.is_authorized'))($order)
+                        )
+                    ) {
                         $order->update_meta_data(
                             self::ORDER_PAYMENT_STATUS_META_KEY,
                             ManualCaptureStatus::STATUS_CAPTURED
+                        );
+                        $order->save();
+                    } elseif (
+                        $payment->isCanceled()  && (
+                            ($container->get('merchant.manual_capture.is_waiting'))($order) ||
+                            ($container->get('merchant.manual_capture.is_authorized'))($order)
+                        )
+                    ) {
+                        $order->update_meta_data(
+                            self::ORDER_PAYMENT_STATUS_META_KEY,
+                            ManualCaptureStatus::STATUS_VOIDED
                         );
                         $order->save();
                     }
@@ -199,7 +235,7 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                     if ($disableShipAndCapture) {
                         return true;
                     }
-                    return $container->get('merchant.manual_capture.is_waiting')($order);
+                    return $container->get('merchant.manual_capture.is_waiting')($order) || $container->get('merchant.manual_capture.is_authorized')($order);
                 },
                 10,
                 2

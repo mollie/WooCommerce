@@ -167,6 +167,7 @@ class MollieOrderService
         }
 
         if (method_exists($payment_object, $method_name)) {
+            do_action($this->pluginId . '_before_webhook_payment_action', $payment, $order);
             $payment_object->{$method_name}($order, $payment, $payment_method_title);
         } else {
             $order->add_order_note(sprintf(

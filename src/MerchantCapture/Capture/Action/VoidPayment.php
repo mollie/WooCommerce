@@ -25,7 +25,7 @@ class VoidPayment extends AbstractPaymentCaptureAction
             $this->logger->error($exception->getMessage());
             $this->order->add_order_note(
                 __(
-                    'Payment Void Failed. We encountered an issue while canceling the pre-authorized payment.',
+                    'Payment cancelation failed. We encountered an issue while canceling the pre-authorized payment.',
                     'mollie-payments-for-woocommerce'
                 )
             );

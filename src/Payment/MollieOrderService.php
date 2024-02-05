@@ -150,7 +150,12 @@ class MollieOrderService
             $this->processRefunds($order, $payment);
             $this->processChargebacks($order, $payment);
             //if the order gets updated to completed at mollie, we need to update the order status
-            if ($order->get_status() === 'processing' && $payment->isCompleted() && method_exists($payment_object, 'onWebhookCompleted')) {
+            if (
+                $order->get_status() === 'processing'
+                && method_exists($payment, 'isCompleted')
+                && $payment->isCompleted()
+                && method_exists($payment_object, 'onWebhookCompleted')
+            ) {
                 $payment_object->onWebhookCompleted($order, $payment, $payment_method_title);
             }
             return;
@@ -162,6 +167,7 @@ class MollieOrderService
         }
 
         if (method_exists($payment_object, $method_name)) {
+            do_action($this->pluginId . '_before_webhook_payment_action', $payment, $order);
             $payment_object->{$method_name}($order, $payment, $payment_method_title);
         } else {
             $order->add_order_note(sprintf(

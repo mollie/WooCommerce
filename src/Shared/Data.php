@@ -87,12 +87,12 @@ class Data
     public function isValidApiKeyProvided()
     {
         $settings = $this->settingsHelper;
-        $api_key = $settings->getApiKey();
+        $apiKey = $settings->getApiKey();
 
-        return !empty($api_key)
+        return !empty($apiKey)
             && preg_match(
                 '/^(live|test)_\w{30,}$/',
-                $api_key
+                $apiKey
             );
     }
 
@@ -172,41 +172,41 @@ class Data
 
     /**
      * Get Mollie payment from cache or load from Mollie
-     * Skip cache by setting $use_cache to false
+     * Skip cache by setting $useCache to false
      *
-     * @param string $payment_id
+     * @param string $paymentId
      * @param string   $apiKey (default: false)
-     * @param bool   $use_cache (default: true)
+     * @param bool   $useCache (default: true)
      *
      * @return \Mollie\Api\Resources\Payment|null
      */
-    public function getPayment($payment_id, $apiKey, $use_cache = true): ?\Mollie\Api\Resources\Payment
+    public function getPayment($paymentId, $apiKey, $useCache = true): ?\Mollie\Api\Resources\Payment
     {
         try {
-            return $this->api_helper->getApiClient($apiKey)->payments->get($payment_id);
+            return $this->api_helper->getApiClient($apiKey)->payments->get($paymentId);
         } catch (\Mollie\Api\Exceptions\ApiException $apiException) {
-            $this->logger->debug(__FUNCTION__ . sprintf(': Could not load payment %s (', $payment_id) . "): " . $apiException->getMessage() . ' (' . get_class($apiException) . ')');
+            $this->logger->debug(__FUNCTION__ . sprintf(': Could not load payment %s (', $paymentId) . "): " . $apiException->getMessage() . ' (' . get_class($apiException) . ')');
         }
 
         return null;
     }
 
     /**
-     * @param bool $test_mode
-     * @param bool $use_cache
+     * @param bool $testMode
+     * @param bool $useCache
      *
      * @return array|mixed|\Mollie\Api\Resources\Method[]|\Mollie\Api\Resources\MethodCollection
      */
-    public function getAllPaymentMethods($apiKey, $test_mode = false, $use_cache = true)
+    public function getAllPaymentMethods($apiKey, $testMode = false, $useCache = true)
     {
-        $result = $this->getRegularPaymentMethods($apiKey, $test_mode, $use_cache);
+        $result = $this->getRegularPaymentMethods($apiKey, $testMode, $useCache);
         if (!is_array($result)) {
             $result = unserialize($result);
         }
 
         $isSubscriptionPluginActive = $this->isSubscriptionPluginActive();
         if ($isSubscriptionPluginActive) {
-            $result = $this->addRecurringPaymentMethods($apiKey, $test_mode, $use_cache, $result);
+            $result = $this->addRecurringPaymentMethods($apiKey, $testMode, $useCache, $result);
         }
 
         return $result;
@@ -238,13 +238,13 @@ class Data
         return $filters;
     }
     /**
-     * @param $order_total
+     * @param $orderTotal
      * @param $currency
      */
-    protected function getAmountValue($order_total, $currency): string
+    protected function getAmountValue($orderTotal, $currency): string
     {
         return $this->formatCurrencyValue(
-            $order_total,
+            $orderTotal,
             $currency
         );
     }
@@ -301,49 +301,58 @@ class Data
     }
 
     /**
-     * @param bool $test_mode
-     * @param bool $use_cache
+     * @param bool $testMode
+     * @param bool $useCache
      *
      * @return array|mixed|\Mollie\Api\Resources\Method[]|\Mollie\Api\Resources\MethodCollection
      */
-    public function getRegularPaymentMethods($apiKey, $test_mode = false, $use_cache = true)
+    public function getRegularPaymentMethods($apiKey, $testMode = false, $useCache = true)
     {
         // Already initialized
-        if ($use_cache && ! empty(self::$regular_api_methods)) {
+        if ($useCache && ! empty(self::$regular_api_methods)) {
             return self::$regular_api_methods;
         }
-
-        self::$regular_api_methods = $this->getApiPaymentMethods($use_cache);
+        $testMode = $this->isTestModeEnabled();
+        $methods = $this->getAllAvailablePaymentMethods($useCache);
+        // We cannot access allActive for all methods so we filter them out here
+        $filtered_methods = array_filter($methods, function ($method) use ($testMode) {
+            if ($testMode === "live") {
+                return $method['status'] === "activated";
+            } else {
+                return in_array($method['status'], ["activated", "pending-review"]);
+            }
+        });
+        self::$regular_api_methods = $filtered_methods;
 
         return self::$regular_api_methods;
     }
 
-    public function getRecurringPaymentMethods($apiKey, $test_mode = false, $use_cache = true)
+    public function getRecurringPaymentMethods($apiKey, $testMode = false, $useCache = true)
     {
         // Already initialized
-        if ($use_cache && ! empty(self::$recurring_api_methods)) {
+        if ($useCache && ! empty(self::$recurring_api_methods)) {
             return self::$recurring_api_methods;
         }
 
-        self::$recurring_api_methods = $this->getApiPaymentMethods($use_cache, [ 'sequenceType' => 'recurring' ]);
+        self::$recurring_api_methods = $this->getApiPaymentMethods($useCache, [ 'sequenceType' => 'recurring' ]);
 
         return self::$recurring_api_methods;
     }
 
-    public function getApiPaymentMethods($use_cache = true, $filters = [])
+    public function getApiPaymentMethods($useCache = true, $filters = [])
     {
-        $test_mode = $this->isTestModeEnabled();
+        $testMode = $this->isTestModeEnabled();
         $apiKey = $this->settingsHelper->getApiKey();
 
         $methods = false;
 
         $filters_key = $filters;
-        $filters_key['mode'] = ( $test_mode ? 'test' : 'live' );
+        $filters_key['mode'] = ( $testMode ? 'test' : 'live' );
         $filters_key['api'] = 'methods';
         $transient_id = $this->getTransientId(md5(http_build_query($filters_key)));
 
         try {
-            if ($use_cache) {
+            if ($useCache) {
                 // When no cache exists $methods will be `false`
                 $methods =  get_transient($transient_id);
             } else {
@@ -371,7 +380,7 @@ class Data
                 $methods = $methods_cleaned;
 
                 // Set new transients (as cache)
-                if ($use_cache) {
+                if ($useCache) {
                     set_transient($transient_id, $methods, HOUR_IN_SECONDS);
                 }
             }
@@ -382,27 +391,27 @@ class Data
              * Cache the result for a short period
              * to prevent hammering the API with requests that are likely to fail again
              */
-            if ($use_cache) {
+            if ($useCache) {
                 set_transient($transient_id, [], 60 * 5);
             }
-            $this->logger->debug(__FUNCTION__ . ": Could not load Mollie methods (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            $this->logger->debug(__FUNCTION__ . ": Could not load Mollie methods (" . ( $testMode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
 
             return [];
         }
     }
 
     /**
-     * @param bool $test_mode
+     * @param bool $testMode
      * @param      $method
      *
      * @return mixed|\Mollie\Api\Resources\Method|null
      */
     public function getPaymentMethod($method)
     {
-        $test_mode = $this->isTestModeEnabled();
+        $testMode = $this->isTestModeEnabled();
         $apiKey = $this->settingsHelper->getApiKey();
 
-        $payment_methods = $this->getAllPaymentMethods($apiKey, $test_mode);
+        $payment_methods = $this->getAllPaymentMethods($apiKey, $testMode);
 
         foreach ($payment_methods as $payment_method) {
             if ($payment_method['id'] === $method) {
@@ -416,15 +425,15 @@ class Data
     /**
      * Get issuers for payment method (e.g. for iDEAL, KBC/CBC payment button, gift cards)
      *
-     * @param bool        $test_mode (default: false)
+     * @param bool        $testMode (default: false)
      * @param string|null $methodId
      *
      * @return array
      */
-    public function getMethodIssuers($apiKey, $test_mode = false, $methodId = null)
+    public function getMethodIssuers($apiKey, $testMode = false, $methodId = null)
     {
         try {
-            $transient_id = $this->getTransientId($methodId . '_issuers_' . ($test_mode ? 'test' : 'live'));
+            $transient_id = $this->getTransientId($methodId . '_issuers_' . ($testMode ? 'test' : 'live'));
 
             // When no cache exists $issuers will be `false`
             $issuers = get_transient($transient_id);
@@ -438,7 +447,7 @@ class Data
             set_transient($transient_id, $issuers, HOUR_IN_SECONDS);
             return $issuers;
         } catch (\Mollie\Api\Exceptions\ApiException $e) {
-            $this->logger->debug(__FUNCTION__ . ": Could not load " . $methodId . " issuers (" . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            $this->logger->debug(__FUNCTION__ . ": Could not load " . $methodId . " issuers (" . ( $testMode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
 
         return  [];
@@ -486,21 +495,21 @@ class Data
     }
 
     /**
-     * @param int         $user_id
-     * @param string|null $customer_id
+     * @param int         $userId
+     * @param string|null $customerId
      *
      * @return $this
      */
-    public function setUserMollieCustomerId($user_id, $customer_id)
+    public function setUserMollieCustomerId($userId, $customerId)
     {
-        if (! empty($customer_id)) {
+        if (! empty($customerId)) {
             try {
-                $customer = new WC_Customer($user_id);
-                $customer->update_meta_data('mollie_customer_id', $customer_id);
+                $customer = new WC_Customer($userId);
+                $customer->update_meta_data('mollie_customer_id', $customerId);
                 $customer->save();
-                $this->logger->debug(__FUNCTION__ . ": Stored Mollie customer ID " . $customer_id . " with user " . $user_id);
+                $this->logger->debug(__FUNCTION__ . ": Stored Mollie customer ID " . $customerId . " with user " . $userId);
             } catch (Exception $exception) {
-                $this->logger->debug(__FUNCTION__ . ": Couldn't load (and save) WooCommerce customer based on user ID " . $user_id);
+                $this->logger->debug(__FUNCTION__ . ": Couldn't load (and save) WooCommerce customer based on user ID " . $userId);
             }
         }
 
@@ -509,14 +518,14 @@ class Data
 
     /**
      * @param $orderId
-     * @param $customer_id
+     * @param $customerId
      * @return $this
      */
-    public function setUserMollieCustomerIdAtSubscription($orderId, $customer_id)
+    public function setUserMollieCustomerIdAtSubscription($orderId, $customerId)
     {
-        if (!empty($customer_id)) {
+        if (!empty($customerId)) {
             $order = wc_get_order($orderId);
-            $order->update_meta_data('_mollie_customer_id', $customer_id);
+            $order->update_meta_data('_mollie_customer_id', $customerId);
             $order->save();
         }
 
@@ -524,53 +533,53 @@ class Data
     }
 
     /**
-     * @param int  $user_id
-     * @param bool $test_mode
+     * @param int  $userId
+     * @param bool $testMode
      * @return null|string
      */
-    public function getUserMollieCustomerId($user_id, $apiKey)
+    public function getUserMollieCustomerId($userId, $apiKey)
     {
         // Guest users can't buy subscriptions and don't need a Mollie customer ID
         // https://github.com/mollie/WooCommerce/issues/132
-        if (empty($user_id)) {
+        if (empty($userId)) {
             return null;
         }
         $isTestModeEnabled = $this->isTestModeEnabled();
 
-        $customer = new WC_Customer($user_id);
-        $customer_id = $customer->get_meta('mollie_customer_id');
+        $customer = new WC_Customer($userId);
+        $customerId = $customer->get_meta('mollie_customer_id');
 
         // If there is no Mollie Customer ID set, check the most recent active subscription
-        if (empty($customer_id)) {
+        if (empty($customerId)) {
                 $customer_latest_subscription = wc_get_orders([
                     'limit' => 1,
-                    'customer' => $user_id,
+                    'customer' => $userId,
                     'type' => 'shop_subscription',
                     'status' => 'wc-active',
                 ]);
 
             if (! empty($customer_latest_subscription)) {
-                $customer_id = get_post_meta($customer_latest_subscription[0]->get_id(), '_mollie_customer_id', $single = true);
+                $customerId = get_post_meta($customer_latest_subscription[0]->get_id(), '_mollie_customer_id', $single = true);
 
                 // Store this customer ID as user meta too
-                $this->setUserMollieCustomerId($user_id, $customer_id);
+                $this->setUserMollieCustomerId($userId, $customerId);
             }
         }
 
         // If there is a Mollie Customer ID set, check that customer ID is valid for this API key
-        if (! empty($customer_id)) {
+        if (! empty($customerId)) {
             try {
-                $this->api_helper->getApiClient($apiKey)->customers->get($customer_id);
+                $this->api_helper->getApiClient($apiKey)->customers->get($customerId);
             } catch (\Mollie\Api\Exceptions\ApiException $e) {
-                $this->logger->debug(__FUNCTION__ . sprintf(': Mollie Customer ID (%s) not valid for user %s on this API key, try to create a new one (', $customer_id, $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . ").");
-                $customer_id = '';
+                $this->logger->debug(__FUNCTION__ . sprintf(': Mollie Customer ID (%s) not valid for user %s on this API key, try to create a new one (', $customerId, $userId) . ( $isTestModeEnabled ? 'test' : 'live' ) . ").");
+                $customerId = '';
             }
         }
 
         // If there is no Mollie Customer ID set, try to create a new Mollie Customer
-        if (empty($customer_id)) {
+        if (empty($customerId)) {
             try {
-                $userdata = get_userdata($user_id);
+                $userdata = get_userdata($userId);
 
                 // Get the best name for use as Mollie Customer name
                 $user_full_name = $userdata->first_name . ' ' . $userdata->last_name;
@@ -583,35 +592,35 @@ class Data
                 $customer = $this->api_helper->getApiClient($apiKey)->customers->create([
                     'name' => trim($user_full_name),
                     'email' => trim($userdata->user_email),
-                    'metadata' =>  [ 'user_id' => $user_id ],
+                    'metadata' =>  [ 'user_id' => $userId ],
                 ]);
 
-                $this->setUserMollieCustomerId($user_id, $customer->id);
+                $this->setUserMollieCustomerId($userId, $customer->id);
 
-                $customer_id = $customer->id;
+                $customerId = $customer->id;
 
-                $this->logger->debug(__FUNCTION__ . sprintf(': Created a Mollie Customer (%s) for WordPress user with ID %s (', $customer_id, $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . ").");
+                $this->logger->debug(__FUNCTION__ . sprintf(': Created a Mollie Customer (%s) for WordPress user with ID %s (', $customerId, $userId) . ( $isTestModeEnabled ? 'test' : 'live' ) . ").");
 
-                return $customer_id;
+                return $customerId;
             } catch (\Mollie\Api\Exceptions\ApiException $e) {
-                $this->logger->debug(__FUNCTION__ . sprintf(': Could not create Mollie Customer for WordPress user with ID %s (', $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+                $this->logger->debug(__FUNCTION__ . sprintf(': Could not create Mollie Customer for WordPress user with ID %s (', $userId) . ( $isTestModeEnabled ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
             }
         } else {
-            $this->logger->debug(__FUNCTION__ . sprintf(': Mollie Customer ID (%s) found and valid for user %s on this API key. (', $customer_id, $user_id) . ( $isTestModeEnabled ? 'test' : 'live' ) . ").");
+            $this->logger->debug(__FUNCTION__ . sprintf(': Mollie Customer ID (%s) found and valid for user %s on this API key. (', $customerId, $userId) . ( $isTestModeEnabled ? 'test' : 'live' ) . ").");
         }
 
-        return $customer_id;
+        return $customerId;
     }
 
     /**
      * Get active Mollie payment mode for order
      *
-     * @param int $order_id
+     * @param int $orderId
      * @return string test or live
      */
-    public function getActiveMolliePaymentMode($order_id)
+    public function getActiveMolliePaymentMode($orderId)
     {
-        $order = wc_get_order($order_id);
+        $order = wc_get_order($orderId);
 
         return $order->get_meta('_mollie_payment_mode', true);
     }
@@ -679,30 +688,28 @@ class Data
         return apply_filters($this->pluginId . '_is_subscription_payment', $isSubscription, $orderId);
     }
 
-    public function getAllAvailablePaymentMethods($use_cache = true)
+    public function getAllAvailablePaymentMethods($useCache = true)
     {
         $apiKey = $this->settingsHelper->getApiKey();
         $methods = false;
         $locale = $this->getPaymentLocale();
         $filters_key = [];
         $filters_key['locale'] = $locale;
+        $filters_key['include'] = 'issuers';
         $transient_id = $this->getTransientId(md5(http_build_query($filters_key)));
-
         try {
-            if ($use_cache) {
+            if ($useCache) {
                 // When no cache exists $methods will be `false`
                 $methods =  get_transient($transient_id);
             } else {
                 delete_transient($transient_id);
             }
-
             // No cache exists, call the API and cache the result
             if ($methods === false) {
                 if (!$apiKey) {
                     return [];
                 }
                 $methods = $this->api_helper->getApiClient($apiKey)->methods->allAvailable($filters_key);
-
                 $methods_cleaned = [];
 
                 foreach ($methods as $method) {
@@ -714,7 +721,7 @@ class Data
                 $methods = $methods_cleaned;
 
                 // Set new transients (as cache)
-                if ($use_cache) {
+                if ($useCache) {
                     set_transient($transient_id, $methods, HOUR_IN_SECONDS);
                 }
             }
@@ -725,7 +732,7 @@ class Data
              * Cache the result for a short period
              * to prevent hammering the API with requests that are likely to fail again
              */
-            if ($use_cache) {
+            if ($useCache) {
                 set_transient($transient_id, [], 60 * 5);
             }
             $this->logger->debug(__FUNCTION__ . ": Could not load Mollie all available methods");
@@ -736,14 +743,14 @@ class Data
 
     /**
      * @param $apiKey
-     * @param bool $test_mode
-     * @param bool $use_cache
+     * @param bool $testMode
+     * @param bool $useCache
      * @param $result
      * @return mixed
      */
-    protected function addRecurringPaymentMethods($apiKey, bool $test_mode, bool $use_cache, $result)
+    protected function addRecurringPaymentMethods($apiKey, bool $testMode, bool $useCache, $result)
     {
-        $recurringPaymentMethods = $this->getRecurringPaymentMethods($apiKey, $test_mode, $use_cache);
+        $recurringPaymentMethods = $this->getRecurringPaymentMethods($apiKey, $testMode, $useCache);
         if (!is_array($recurringPaymentMethods)) {
             $recurringPaymentMethods = unserialize($recurringPaymentMethods);
         }

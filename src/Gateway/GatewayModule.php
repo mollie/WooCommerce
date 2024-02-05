@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Gateway;
 
+use Automattic\WooCommerce\Admin\Overrides\Order;
 use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
 use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
 use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
@@ -58,6 +59,9 @@ class GatewayModule implements ServiceModule, ExecutableModule
      */
     protected $pluginId;
 
+    const FIELD_IN3_BIRTHDATE = 'billing_birthdate';
+    const GATEWAY_NAME_IN3 = "mollie_wc_gateway_in3";
+
     public function services(): array
     {
         return [
@@ -101,7 +105,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
             },
             'gateway.getKlarnaPaymentMethodsAfterFeatureFlag' => static function (ContainerInterface $container): array {
                 $availablePaymentMethods = $container->get('gateway.listAllMethodsAvailable');
-                $klarnaOneFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.klarna_one_enabled', getenv('MOL_KLARNA_ENABLED') === '1');
+                $klarnaOneFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.klarna_one_enabled', true);
                 if (!$klarnaOneFlag) {
                     return array_filter($availablePaymentMethods, static function ($method) {
                         return $method['id'] !== Constants::KLARNA;
@@ -254,6 +258,11 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 [$this, 'in3FieldsMandatory'],
                 11,
                 2
+            );
+            add_action(
+                'woocommerce_before_pay_action',
+                [$this, 'in3FieldsMandatoryPayForOrder'],
+                11
             );
         }
         // Set order to paid and processed when eventually completed without Mollie
@@ -614,18 +623,44 @@ class GatewayModule implements ServiceModule, ExecutableModule
     {
         $gatewayName = "mollie_wc_gateway_billie";
         $field = 'billing_company';
-        $paymentMethodName = 'Billie';
-        return $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $field, $errors, $paymentMethodName);
+        $companyLabel = __('Company', 'mollie-payments-for-woocommerce');
+        return $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $field, $companyLabel, $errors);
     }
 
     public function in3FieldsMandatory($fields, $errors)
     {
         $gatewayName = "mollie_wc_gateway_in3";
         $phoneField = 'billing_phone';
-        $birthdateField = 'billing_birthdate';
-        $paymentMethodName = 'in3';
-        $fields = $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $phoneField, $errors, $paymentMethodName);
-        return $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $birthdateField, $errors, $paymentMethodName);
+        $birthdateField = self::FIELD_IN3_BIRTHDATE;
+        $phoneLabel = __('Phone', 'mollie-payments-for-woocommerce');
+        $birthDateLabel = __('Birthdate', 'mollie-payments-for-woocommerce');
+        $fields = $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $phoneField, $phoneLabel, $errors);
+        return $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $birthdateField, $birthDateLabel, $errors);
+    }
+
+    /**
+     * @param Order $order
+     */
+    public function in3FieldsMandatoryPayForOrder(Order $order)
+    {
+        $paymentMethod = filter_input(INPUT_POST, 'payment_method', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+
+        if ($paymentMethod !== self::GATEWAY_NAME_IN3) {
+            return;
+        }
+
+        $birthdateValue = filter_input(INPUT_POST, self::FIELD_IN3_BIRTHDATE, FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+        $birthDateLabel = __('Birthdate', 'mollie-payments-for-woocommerce');
+
+        if (!$birthdateValue) {
+            wc_add_notice(
+                sprintf(
+                    __('%s is a required field.', 'woocommerce'),
+                    "<strong>$birthDateLabel</strong>"
+                ),
+                'error'
+            );
+        }
     }
 
     /**
@@ -664,10 +699,9 @@ class GatewayModule implements ServiceModule, ExecutableModule
      * @param string $gatewayName
      * @param string $field
      * @param $errors
-     * @param string $paymentMethodName
      * @return mixed
      */
-    public function addPaymentMethodMandatoryFields($fields, string $gatewayName, string $field, $errors, string $paymentMethodName)
+    public function addPaymentMethodMandatoryFields($fields, string $gatewayName, string $field, string $fieldLabel, $errors)
     {
         if ($fields['payment_method'] !== $gatewayName) {
             return $fields;
@@ -680,29 +714,13 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $errors->add(
                     'validation',
                     sprintf(
-                        __(
-                            'Error processing %1$s payment, the %2$s field is required.',
-                            'mollie-payments-for-woocommerce'
-                        ),
-                        $paymentMethodName,
-                        $field
+                        __('%s is a required field.', 'woocommerce'),
+                        "<strong>$fieldLabel</strong>"
                     )
                 );
             }
         }
-        if ($fields[$field] === '') {
-            $errors->add(
-                'validation',
-                sprintf(
-                    __(
-                        'Please enter your %1$s, this is required for %2$s payments',
-                        'mollie-payments-for-woocommerce'
-                    ),
-                    $field,
-                    $paymentMethodName
-                )
-            );
-        }
+
         return $fields;
     }
 }

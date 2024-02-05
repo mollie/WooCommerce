@@ -199,6 +199,10 @@ $mollieAdvancedSettings =  [
             __('Clear now', 'mollie-payments-for-woocommerce')
         ) . '</a>)',
     ],
+    [
+        'id' => $pluginName . '_sectionend',
+        'type' => 'sectionend',
+    ],
 ];
 
 return apply_filters('inpsyde.mollie-advanced-settings', $mollieAdvancedSettings, $pluginName);

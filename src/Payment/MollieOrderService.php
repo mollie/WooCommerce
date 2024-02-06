@@ -179,9 +179,7 @@ class MollieOrderService
             ));
         }
 
-        if ($payment instanceof Payment) {
-            do_action($this->pluginId . '_after_webhook_action', $payment, $order);
-        }
+        do_action($this->pluginId . '_after_webhook_action', $payment, $order);
         // Status 200
     }
     /**

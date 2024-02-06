@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\MerchantCapture;
 
-use Automattic\WooCommerce\Admin\Overrides\Order;
+use WC_Order;
 use Mollie\WooCommerce\MerchantCapture\UI\StatusRenderer;
 
 class OrderListPaymentColumn
@@ -16,7 +16,7 @@ class OrderListPaymentColumn
 
         # HPOS hooks
         add_filter('woocommerce_shop_order_list_table_columns', [$this, 'renderColumn']);
-        add_action('woocommerce_shop_order_list_table_custom_column', function (string $column, Order $order) {
+        add_action('woocommerce_shop_order_list_table_custom_column', function (string $column, WC_Order $order) {
             $this->renderColumnValue($column, $order->get_id());
         }, 10, 2);
     }

@@ -147,7 +147,7 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
         add_action('init', static function () use ($container) {
             $pluginId = $container->get('shared.plugin_id');
             $captureSettings = new MollieCaptureSettings();
-            if (!apply_filters('mollie_wc_gateway_enable_merchant_capture_module', true)) {
+            if (!apply_filters('mollie_wc_gateway_enable_merchant_capture_module', false)) {
                 return;
             }
 

@@ -153,7 +153,11 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
 
             add_action(
                 $pluginId . '_after_webhook_action',
-                static function (Payment $payment, WC_Order $order) use ($container) {
+                static function ($payment, WC_Order $order) use ($container) {
+
+                    if (!$payment instanceof Payment) {
+                        return;
+                    }
 
                     if ($payment->isAuthorized()) {
                         if (!$payment->getAmountCaptured() == 0.0) {

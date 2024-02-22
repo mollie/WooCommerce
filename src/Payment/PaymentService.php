@@ -342,6 +342,14 @@ class PaymentService
             $data,
             $order
         );
+        $this->logger->debug(
+            json_encode($data, JSON_PRETTY_PRINT)
+        );
+        /*$data = apply_filters(
+            'woocommerce_mollie_wc_gateway_' . $this->gateway->id . '_args',
+            $data,
+            $order
+        );*/
 
         do_action(
             $this->pluginId . '_create_payment',
@@ -464,6 +472,11 @@ class PaymentService
 
         $data = apply_filters(
             'woocommerce_' . $this->gateway->id . '_args',
+            $data,
+            $order
+        );
+        $data = apply_filters(
+            'woocommerce_' . $this->gateway->id . 'payment_args',
             $data,
             $order
         );

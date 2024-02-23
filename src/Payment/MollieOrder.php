@@ -371,6 +371,13 @@ class MollieOrder extends MollieObject
             if ($payment->method === 'paypal') {
                 $this->addPaypalTransactionIdToOrder($order);
             }
+            add_filter('woocommerce_valid_order_statuses_for_payment_complete', static function ($statuses) {
+                $statuses[] = 'processing';
+                return $statuses;
+            });
+            add_filter('woocommerce_payment_complete_order_status', static function ($status) use ($order) {
+                return $order->get_status() === 'processing' ? 'completed' : $status;
+            });
             $order->payment_complete($payment->id);
             // Add messages to log
             $this->logger->debug(__METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for order ' . $orderId);
@@ -944,11 +951,22 @@ class MollieOrder extends MollieObject
                 self::MAXIMAL_LENGHT_REGION
             );
         $billingAddress->organizationName = $this->billingCompanyField($order);
-        $phone = !empty($order->get_billing_phone()) ? $order->get_billing_phone() : $order->get_shipping_phone();
+        $phone = $this->getPhoneNumber($order);
         $billingAddress->phone = (ctype_space($phone))
             ? null
             : $this->getFormatedPhoneNumber($phone);
         return $billingAddress;
+    }
+
+    protected function getPhoneNumber($order)
+    {
+
+        $phone = !empty($order->get_billing_phone()) ? $order->get_billing_phone() : $order->get_shipping_phone();
+        if (empty($phone)) {
+            //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            $phone =  wc_clean(wp_unslash($_POST['billing_phone'] ?? ''));
+        }
+        return $phone;
     }
 
     /**

@@ -26,9 +26,13 @@ class GiftcardFieldsStrategy implements PaymentFieldsStrategyI
         if (count($issuers) === 1) {
             $issuer = $issuers[0];
             $issuerImageSvg = $this->checkSvgIssuers($issuers);
-            $issuerImageSvg && ($html .= '<img src="' . $issuerImageSvg . '" style="vertical-align:middle" />');
-            $html .= $issuer->name;
-            echo esc_html(wpautop(wptexturize($html)));
+            if ($issuerImageSvg && isset($issuer->name)) {
+                $issuerImageSvg = esc_url($issuerImageSvg);
+                $issuerName = esc_html($issuer->name);
+                $html .= '<img src="' . $issuerImageSvg . '" style="vertical-align:middle" />' . $issuerName;
+            }
+            //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+            echo wpautop(wptexturize($html));
 
             return;
         }

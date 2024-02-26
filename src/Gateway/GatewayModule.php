@@ -6,7 +6,6 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Gateway;
 
-use Automattic\WooCommerce\Admin\Overrides\Order;
 use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
 use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
 use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
@@ -639,9 +638,9 @@ class GatewayModule implements ServiceModule, ExecutableModule
     }
 
     /**
-     * @param Order $order
+     * @param $order
      */
-    public function in3FieldsMandatoryPayForOrder(Order $order)
+    public function in3FieldsMandatoryPayForOrder($order)
     {
         $paymentMethod = filter_input(INPUT_POST, 'payment_method', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
 

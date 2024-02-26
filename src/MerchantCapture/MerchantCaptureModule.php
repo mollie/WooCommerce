@@ -147,13 +147,17 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
         add_action('init', static function () use ($container) {
             $pluginId = $container->get('shared.plugin_id');
             $captureSettings = new MollieCaptureSettings();
-            if (!apply_filters('mollie_wc_gateway_enable_merchant_capture_module', false)) {
+            if (!apply_filters('mollie_wc_gateway_enable_merchant_capture_module', true)) {
                 return;
             }
 
             add_action(
                 $pluginId . '_after_webhook_action',
-                static function (Payment $payment, WC_Order $order) use ($container) {
+                static function ($payment, WC_Order $order) use ($container) {
+
+                    if (!$payment instanceof Payment) {
+                        return;
+                    }
 
                     if ($payment->isAuthorized()) {
                         if (!$payment->getAmountCaptured() == 0.0) {

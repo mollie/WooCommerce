@@ -82,7 +82,7 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
 
     public function filtersOnBuild()
     {
-        add_filter('woocommerce_mollie_wc_gateway_' . $this->getProperty('id') . '_args', function (array $args, \WC_Order $order): array {
+        add_filter('woocommerce_mollie_wc_gateway_' . $this->getProperty('id') . 'payment_args', function (array $args, \WC_Order $order): array {
             return $this->addPaymentArguments($args, $order);
         }, 10, 2);
     }

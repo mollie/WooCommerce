@@ -38,7 +38,7 @@ class MollieSubscriptionTest extends TestCase
      * THEN THE ORDER NOTES ARE CREATED
      * @test
      */
-    public function renewSubcriptionPaymentTest()
+    public function renewSubscriptionPaymentTest()
     {
         $gatewayName = 'mollie_wc_gateway_ideal';
         $renewalOrder = $this->wcOrder();

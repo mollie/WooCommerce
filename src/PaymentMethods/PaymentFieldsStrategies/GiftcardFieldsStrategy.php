@@ -31,7 +31,7 @@ class GiftcardFieldsStrategy implements PaymentFieldsStrategyI
                 $issuerName = esc_html($issuer->name);
                 $html .= '<img src="' . $issuerImageSvg . '" style="vertical-align:middle" />' . $issuerName;
             }
-
+            //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
             echo wpautop(wptexturize($html));
 
             return;

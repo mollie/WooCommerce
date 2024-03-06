@@ -249,6 +249,11 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 11,
                 2
             );
+            add_action(
+                'woocommerce_checkout_posted_data',
+                [$this, 'switchFields'],
+                11
+            );
         }
         $isIn3Enabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_in3_settings', 'enabled');
         if ($isIn3Enabled) {
@@ -261,6 +266,30 @@ class GatewayModule implements ServiceModule, ExecutableModule
             add_action(
                 'woocommerce_before_pay_action',
                 [$this, 'in3FieldsMandatoryPayForOrder'],
+                11
+            );
+            add_action(
+                'woocommerce_checkout_posted_data',
+                [$this, 'switchFields'],
+                11
+            );
+        }
+        $isBancomatPayEnabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_bancomatpay_settings', 'enabled');
+        if ($isBancomatPayEnabled) {
+            add_filter(
+                'woocommerce_after_checkout_validation',
+                [$this, 'bancomatpayFieldsMandatory'],
+                11,
+                2
+            );
+            add_action(
+                'woocommerce_before_pay_action',
+                [$this, 'bancomatpayFieldsMandatoryPayForOrder'],
+                11
+            );
+            add_action(
+                'woocommerce_checkout_posted_data',
+                [$this, 'switchFields'],
                 11
             );
         }
@@ -621,7 +650,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
     public function BillieFieldsMandatory($fields, $errors)
     {
         $gatewayName = "mollie_wc_gateway_billie";
-        $field = 'billing_company';
+        $field = 'billing_company_billie';
         $companyLabel = __('Company', 'mollie-payments-for-woocommerce');
         return $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $field, $companyLabel, $errors);
     }
@@ -629,13 +658,22 @@ class GatewayModule implements ServiceModule, ExecutableModule
     public function in3FieldsMandatory($fields, $errors)
     {
         $gatewayName = "mollie_wc_gateway_in3";
-        $phoneField = 'billing_phone';
+        $phoneField = 'billing_phone_in3';
         $birthdateField = self::FIELD_IN3_BIRTHDATE;
         $phoneLabel = __('Phone', 'mollie-payments-for-woocommerce');
         $birthDateLabel = __('Birthdate', 'mollie-payments-for-woocommerce');
         $fields = $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $phoneField, $phoneLabel, $errors);
         return $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $birthdateField, $birthDateLabel, $errors);
     }
+
+    public function bancomatpayFieldsMandatory($fields, $errors)
+    {
+        $gatewayName = "mollie_wc_gateway_bancomatpay";
+        $phoneField = 'billing_phone_bancomatpay';
+        $phoneLabel = __('Phone', 'mollie-payments-for-woocommerce');
+        return $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $phoneField, $phoneLabel, $errors);
+    }
+
 
     /**
      * @param $order
@@ -656,6 +694,31 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 sprintf(
                     __('%s is a required field.', 'woocommerce'),
                     "<strong>$birthDateLabel</strong>"
+                ),
+                'error'
+            );
+        }
+    }
+
+    /**
+     * @param $order
+     */
+    public function bancomatpayFieldsMandatoryPayForOrder($order)
+    {
+        $paymentMethod = filter_input(INPUT_POST, 'payment_method', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+
+        if ($paymentMethod !== 'mollie_wc_gateway_bancomatpay') {
+            return;
+        }
+
+        $phoneValue = filter_input(INPUT_POST, 'billing_phone_bancomatpay', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+        $phoneLabel = __('Phone', 'mollie-payments-for-woocommerce');
+
+        if (!$phoneValue) {
+            wc_add_notice(
+                sprintf(
+                    __('%s is a required field.', 'woocommerce'),
+                    "<strong>$phoneLabel</strong>"
                 ),
                 'error'
             );
@@ -721,5 +784,29 @@ class GatewayModule implements ServiceModule, ExecutableModule
         }
 
         return $fields;
+    }
+
+
+    public function switchFields($data)
+    {
+        if (isset($data['payment_method']) && $data['payment_method'] === 'mollie_wc_gateway_in3') {
+            $fieldPosted = filter_input(INPUT_POST, 'billing_phone_in3', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+            if ($fieldPosted) {
+                $data['billing_phone'] = !empty($fieldPosted) ? $fieldPosted : $data['billing_phone'];
+            }
+        }
+        if (isset($data['payment_method']) && $data['payment_method'] === 'mollie_wc_gateway_bancomatpay') {
+            $fieldPosted = filter_input(INPUT_POST, 'billing_phone_bancomatpay', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+            if ($fieldPosted) {
+                $data['billing_phone'] = !empty($fieldPosted) ? $fieldPosted : $data['billing_phone'];
+            }
+        }
+        if (isset($data['payment_method']) && $data['payment_method'] === 'mollie_wc_gateway_billie') {
+            $fieldPosted = filter_input(INPUT_POST, 'billing_company_billie', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+            if ($fieldPosted) {
+                $data['billing_company'] = !empty($fieldPosted) ? $fieldPosted : $data['billing_company'];
+            }
+        }
+        return $data;
     }
 }

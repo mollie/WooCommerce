@@ -4,33 +4,25 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
-class In3FieldsStrategy implements PaymentFieldsStrategyI
+class BancomatpayFieldsStrategy implements PaymentFieldsStrategyI
 {
-    const FIELD_BIRTHDATE = "billing_birthdate";
-    const FIELD_PHONE = "billing_phone_in3";
+    const FIELD_PHONE = "billing_phone_bancomatpay";
 
     public function execute($gateway, $dataHelper)
     {
-        $showBirthdateField = false;
         $showPhoneField = false;
 
         if (is_checkout_pay_page()) {
             $order = $this->getOrderIdOnPayForOrderPage();
             $showPhoneField = empty($order->get_billing_phone());
-            $showBirthdateField = true;
         }
 
         if (is_checkout() && !is_checkout_pay_page()) {
                 $showPhoneField = true;
-                $showBirthdateField = true;
         }
 
         if ($showPhoneField) {
             $this->phoneNumber();
-        }
-
-        if ($showBirthdateField) {
-            $this->dateOfBirth();
         }
     }
 
@@ -39,21 +31,6 @@ class In3FieldsStrategy implements PaymentFieldsStrategyI
         global $wp;
         $orderId = absint($wp->query_vars['order-pay']);
         return wc_get_order($orderId);
-    }
-
-    protected function dateOfBirth()
-    {
-        ?>
-        <p class="form-row form-row-wide" id="billing_birthdate_field">
-            <label for="<?= esc_attr(self::FIELD_BIRTHDATE); ?>" class=""><?= esc_html__('Birthdate', 'mollie-payments-for-woocommerce'); ?>
-                <abbr class="required" title="required">*</abbr>
-            </label>
-            <span class="woocommerce-input-wrapper">
-                <input type="date" class="input-text " name="<?= esc_attr(self::FIELD_BIRTHDATE); ?>"
-                       id="<?= esc_attr(self::FIELD_BIRTHDATE); ?>" value=""
-                       autocomplete="birthdate"></span>
-        </p>
-        <?php
     }
 
     protected function phoneNumber()

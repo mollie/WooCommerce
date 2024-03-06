@@ -33,6 +33,7 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_Directdebit',
         'Mollie_WC_Gateway_Blik',
         'Mollie_WC_Gateway_Twint',
+        'Mollie_WC_Gateway_Bancomatpay',
     ];
 
     public const MOLLIE_OPTIONS_NAMES = [

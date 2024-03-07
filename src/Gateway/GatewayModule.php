@@ -102,12 +102,18 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 }
                 return $availableMethods;
             },
-            'gateway.getKlarnaPaymentMethodsAfterFeatureFlag' => static function (ContainerInterface $container): array {
+            'gateway.getPaymentMethodsAfterFeatureFlag' => static function (ContainerInterface $container): array {
                 $availablePaymentMethods = $container->get('gateway.listAllMethodsAvailable');
                 $klarnaOneFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.klarna_one_enabled', true);
                 if (!$klarnaOneFlag) {
                     return array_filter($availablePaymentMethods, static function ($method) {
                         return $method['id'] !== Constants::KLARNA;
+                    });
+                }
+                $bancomatpayFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.bancomatpay_enabled', false);
+                if (!$bancomatpayFlag) {
+                    return array_filter($availablePaymentMethods, static function ($method) {
+                        return $method['id'] !== Constants::BANCOMATPAY;
                     });
                 }
                 return $availablePaymentMethods;
@@ -611,7 +617,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
     protected function instantiatePaymentMethods($container): array
     {
         $paymentMethods = [];
-        $listAllAvailablePaymentMethods = $container->get('gateway.getKlarnaPaymentMethodsAfterFeatureFlag');
+        $listAllAvailablePaymentMethods = $container->get('gateway.getPaymentMethodsAfterFeatureFlag');
         $iconFactory = $container->get(IconFactory::class);
         assert($iconFactory instanceof IconFactory);
         $settingsHelper = $container->get('settings.settings_helper');

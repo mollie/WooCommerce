@@ -274,6 +274,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 [$this, 'switchFields'],
                 11
             );
+            add_action( 'woocommerce_rest_checkout_process_payment_with_context', [$this, 'addPhoneWhenRest'],11 );
+
         }
         $isBancomatPayEnabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_bancomatpay_settings', 'enabled');
         if ($isBancomatPayEnabled) {
@@ -293,6 +295,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 [$this, 'switchFields'],
                 11
             );
+            add_action( 'woocommerce_rest_checkout_process_payment_with_context', [$this, 'addPhoneWhenRest'],11 );
         }
         // Set order to paid and processed when eventually completed without Mollie
         add_action('woocommerce_payment_complete', [$this, 'setOrderPaidByOtherGateway'], 10, 1);
@@ -871,5 +874,19 @@ class GatewayModule implements ServiceModule, ExecutableModule
     private function isPhoneValid($billing_phone)
     {
         return preg_match('/^\+[1-9]\d{1,14}$/', $billing_phone);
+    }
+
+    public function addPhoneWhenRest($arrayContext)
+    {
+        $context = $arrayContext;
+        $phoneMandatoryGateways = ['mollie_wc_gateway_in3', 'mollie_wc_gateway_bancomatpay'];
+        $paymentMethod = $context->payment_data['payment_method'];
+        if (in_array($paymentMethod, $phoneMandatoryGateways)) {
+            $billingPhone = $context->payment_data['billing_phone'];
+            if ($billingPhone) {
+                $context->order->set_billing_phone($billingPhone);
+                $context->order->save();
+            }
+        }
     }
 }

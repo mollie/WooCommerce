@@ -255,11 +255,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 11,
                 2
             );
-            add_action(
-                'woocommerce_checkout_posted_data',
-                [$this, 'switchFields'],
-                11
-            );
         }
         $isIn3Enabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_in3_settings', 'enabled');
         if ($isIn3Enabled) {
@@ -656,7 +651,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
     public function BillieFieldsMandatory($fields, $errors)
     {
         $gatewayName = "mollie_wc_gateway_billie";
-        $field = 'billing_company_billie';
+        $field = 'billing_company';
         $companyLabel = __('Company', 'mollie-payments-for-woocommerce');
         return $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $field, $companyLabel, $errors);
     }
@@ -668,7 +663,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $birthdateField = self::FIELD_IN3_BIRTHDATE;
         $phoneLabel = __('Phone', 'mollie-payments-for-woocommerce');
         $birthDateLabel = __('Birthdate', 'mollie-payments-for-woocommerce');
-        $fields = $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $phoneField, $phoneLabel, $errors);
+        $fields = $this->addPaymentMethodMandatoryFieldsPhoneVerification($fields, $gatewayName, $phoneField, $phoneLabel, $errors);
         return $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $birthdateField, $birthDateLabel, $errors);
     }
 
@@ -677,7 +672,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $gatewayName = "mollie_wc_gateway_bancomatpay";
         $phoneField = 'billing_phone_bancomatpay';
         $phoneLabel = __('Phone', 'mollie-payments-for-woocommerce');
-        return $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $phoneField, $phoneLabel, $errors);
+        return $this->addPaymentMethodMandatoryFieldsPhoneVerification($fields, $gatewayName, $phoneField, $phoneLabel, $errors);
     }
 
 
@@ -704,6 +699,21 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 'error'
             );
         }
+        $phoneValue = filter_input(INPUT_POST, 'billing_phone_in3', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+        $phoneValue = $phoneValue && $this->isPhoneValid($phoneValue) ? $phoneValue : false;
+        $phoneLabel = __('Phone', 'mollie-payments-for-woocommerce');
+
+        if (!$phoneValue) {
+            wc_add_notice(
+                sprintf(
+                    __('%s is a required field. Valid phone format +000000000', 'mollie-payments-for-woocommerce'),
+                    "<strong>$phoneLabel</strong>"
+                ),
+                'error'
+            );
+        } else {
+            $order->set_billing_phone($phoneValue);
+        }
     }
 
     /**
@@ -718,16 +728,19 @@ class GatewayModule implements ServiceModule, ExecutableModule
         }
 
         $phoneValue = filter_input(INPUT_POST, 'billing_phone_bancomatpay', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+        $phoneValue = $phoneValue && $this->isPhoneValid($phoneValue) ? $phoneValue : false;
         $phoneLabel = __('Phone', 'mollie-payments-for-woocommerce');
 
         if (!$phoneValue) {
             wc_add_notice(
                 sprintf(
-                    __('%s is a required field.', 'woocommerce'),
+                    __('%s is a required field. Valid phone format +00000000000', 'mollie-payments-for-woocommerce'),
                     "<strong>$phoneLabel</strong>"
                 ),
                 'error'
             );
+        } else {
+            $order->set_billing_phone($phoneValue);
         }
     }
 
@@ -792,6 +805,45 @@ class GatewayModule implements ServiceModule, ExecutableModule
         return $fields;
     }
 
+    public function addPaymentMethodMandatoryFieldsPhoneVerification(
+        $fields,
+        string $gatewayName,
+        string $field,
+        string $fieldLabel,
+        $errors
+    ) {
+        if ($fields['payment_method'] !== $gatewayName) {
+            return $fields;
+        }
+        if (isset($fields['billing_phone']) && $this->isPhoneValid($fields['billing_phone'])) {
+            return $fields;
+        }
+        $fieldPosted = filter_input(INPUT_POST, $field, FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+        if (!$fieldPosted) {
+            $errors->add(
+                'validation',
+                sprintf(
+                    __('%s is a required field.', 'woocommerce'),
+                    "<strong>$fieldLabel</strong>"
+                )
+            );
+            return $fields;
+        }
+
+        if (!$this->isPhoneValid($fieldPosted)) {
+            $errors->add(
+                'validation',
+                sprintf(
+                    __('%s is not a valid phone number. Valid phone format +00000000000', 'woocommerce'),
+                    "<strong>$fieldLabel</strong>"
+                )
+            );
+            return $fields;
+        } else {
+            $fields['billing_phone'] = $fieldPosted;
+        }
+        return $fields;
+    }
 
     public function switchFields($data)
     {
@@ -814,5 +866,10 @@ class GatewayModule implements ServiceModule, ExecutableModule
             }
         }
         return $data;
+    }
+
+    private function isPhoneValid($billing_phone)
+    {
+        return preg_match('/^\+[1-9]\d{1,14}$/', $billing_phone);
     }
 }

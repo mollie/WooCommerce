@@ -14,7 +14,7 @@ class BancomatpayFieldsStrategy implements PaymentFieldsStrategyI
 
         if (is_checkout_pay_page()) {
             $order = $this->getOrderIdOnPayForOrderPage();
-            $showPhoneField = empty($order->get_billing_phone());
+            $showPhoneField = empty($order->get_billing_phone()) || !$this->isPhoneValid($order->get_billing_phone());
         }
 
         if (is_checkout() && !is_checkout_pay_page()) {
@@ -52,5 +52,10 @@ class BancomatpayFieldsStrategy implements PaymentFieldsStrategyI
     public function getFieldMarkup($gateway, $dataHelper)
     {
         return "";
+    }
+
+    private function isPhoneValid(string $get_billing_phone)
+    {
+        return preg_match('/^\+[0-9]{11,13}$/', $get_billing_phone) === 1;
     }
 }

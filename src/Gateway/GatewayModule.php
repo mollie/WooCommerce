@@ -346,6 +346,17 @@ class GatewayModule implements ServiceModule, ExecutableModule
             }
         );
         add_action('add_meta_boxes_woocommerce_page_wc-orders', [$this, 'addShopOrderMetabox'], 10);
+        add_filter( 'woocommerce_form_field_args', static function ($args, $key, $value) use ($container) {
+            if ($key !== 'billing_phone') {
+                return $args;
+            }
+            if ($args['required'] === true) {
+                update_option('mollie_wc_is_phone_required_flag', true);
+            }else{
+                update_option('mollie_wc_is_phone_required_flag', false);
+            }
+            return $args;
+        }, 10, 3);
         return true;
     }
 
@@ -873,7 +884,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
 
     private function isPhoneValid($billing_phone)
     {
-        return preg_match('/^\+[1-9]\d{1,14}$/', $billing_phone);
+        return preg_match('/^\+[1-9]\d{10,13}$/', $billing_phone);
     }
 
     public function addPhoneWhenRest($arrayContext)

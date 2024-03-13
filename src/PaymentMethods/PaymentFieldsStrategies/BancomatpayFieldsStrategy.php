@@ -11,18 +11,21 @@ class BancomatpayFieldsStrategy implements PaymentFieldsStrategyI
     public function execute($gateway, $dataHelper)
     {
         $showPhoneField = false;
+        $isPhoneRequired = get_option('mollie_wc_is_phone_required_flag');
+        $phoneValue = false;
 
         if (is_checkout_pay_page()) {
             $order = $this->getOrderIdOnPayForOrderPage();
-            $showPhoneField = empty($order->get_billing_phone()) || !$this->isPhoneValid($order->get_billing_phone());
+            $phoneValue = $order->get_billing_phone();
+            $showPhoneField = true;
         }
 
-        if (is_checkout() && !is_checkout_pay_page()) {
-                $showPhoneField = true;
+        if (is_checkout() && !is_checkout_pay_page() && !$isPhoneRequired) {
+            $showPhoneField = true;
         }
 
         if ($showPhoneField) {
-            $this->phoneNumber();
+            $this->phoneNumber($phoneValue);
         }
     }
 
@@ -33,8 +36,9 @@ class BancomatpayFieldsStrategy implements PaymentFieldsStrategyI
         return wc_get_order($orderId);
     }
 
-    protected function phoneNumber()
+    protected function phoneNumber($phoneValue)
     {
+        $phoneValue = $phoneValue ?: '';
         ?>
         <p class="form-row form-row-wide" id="billing_phone_field">
             <label for="<?= esc_attr(self::FIELD_PHONE); ?>" class=""><?= esc_html__('Phone', 'mollie-payments-for-woocommerce'); ?>
@@ -43,7 +47,7 @@ class BancomatpayFieldsStrategy implements PaymentFieldsStrategyI
             <span class="woocommerce-input-wrapper">
         <input type="tel" class="input-text " name="<?= esc_attr(self::FIELD_PHONE); ?>" id="<?= esc_attr(self::FIELD_PHONE); ?>"
                placeholder="+00000000000"
-               value="" autocomplete="phone">
+               value="<?= esc_attr($phoneValue); ?>" autocomplete="phone">
         </span>
         </p>
         <?php
@@ -52,10 +56,5 @@ class BancomatpayFieldsStrategy implements PaymentFieldsStrategyI
     public function getFieldMarkup($gateway, $dataHelper)
     {
         return "";
-    }
-
-    private function isPhoneValid(string $get_billing_phone)
-    {
-        return preg_match('/^\+[0-9]{11,13}$/', $get_billing_phone) === 1;
     }
 }

@@ -19,7 +19,7 @@ class Bancomatpay extends AbstractPaymentMethod implements PaymentMethodI
                 'products',
                 'refunds',
             ],
-            'filtersOnBuild' => false,
+            'filtersOnBuild' => true,
             'confirmationDelayed' => false,
             'errorMessage' => __(
                 'Required field is empty. Phone field is required.',
@@ -32,5 +32,25 @@ class Bancomatpay extends AbstractPaymentMethod implements PaymentMethodI
     public function getFormFields($generalFormFields): array
     {
         return $generalFormFields;
+    }
+
+    public function filtersOnBuild()
+    {
+        add_filter('woocommerce_mollie_wc_gateway_' . $this->getProperty('id') . 'payment_args', function (array $args, \WC_Order $order): array {
+            return $this->addPaymentArguments($args, $order);
+        }, 10, 2);
+    }
+    /**
+     * @param WC_Order $order
+     * @return array
+     */
+    public function addPaymentArguments(array $args, $order)
+    {
+        $phone = $order->get_billing_phone();
+        if (!empty($phone)) {
+            $args['billingAddress']['phone'] = $phone;
+        }
+
+        return $args;
     }
 }

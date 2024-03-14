@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Gateway;
 
 use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
+use Automattic\WooCommerce\StoreApi\Exceptions\RouteException;
 use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
 use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ServiceModule;
@@ -274,8 +275,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 [$this, 'switchFields'],
                 11
             );
-            add_action( 'woocommerce_rest_checkout_process_payment_with_context', [$this, 'addPhoneWhenRest'],11 );
-
+            add_action('woocommerce_rest_checkout_process_payment_with_context', [$this, 'addPhoneWhenRest'], 11);
         }
         $isBancomatPayEnabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_bancomatpay_settings', 'enabled');
         if ($isBancomatPayEnabled) {
@@ -295,7 +295,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 [$this, 'switchFields'],
                 11
             );
-            add_action( 'woocommerce_rest_checkout_process_payment_with_context', [$this, 'addPhoneWhenRest'],11 );
+            add_action('woocommerce_rest_checkout_process_payment_with_context', [$this, 'addPhoneWhenRest'], 11);
         }
         // Set order to paid and processed when eventually completed without Mollie
         add_action('woocommerce_payment_complete', [$this, 'setOrderPaidByOtherGateway'], 10, 1);
@@ -346,13 +346,13 @@ class GatewayModule implements ServiceModule, ExecutableModule
             }
         );
         add_action('add_meta_boxes_woocommerce_page_wc-orders', [$this, 'addShopOrderMetabox'], 10);
-        add_filter( 'woocommerce_form_field_args', static function ($args, $key, $value) use ($container) {
+        add_filter('woocommerce_form_field_args', static function ($args, $key, $value) use ($container) {
             if ($key !== 'billing_phone') {
                 return $args;
             }
             if ($args['required'] === true) {
                 update_option('mollie_wc_is_phone_required_flag', true);
-            }else{
+            } else {
                 update_option('mollie_wc_is_phone_required_flag', false);
             }
             return $args;
@@ -897,6 +897,13 @@ class GatewayModule implements ServiceModule, ExecutableModule
             if ($billingPhone) {
                 $context->order->set_billing_phone($billingPhone);
                 $context->order->save();
+            } else {
+                $message = __('Please introduce a valid phone number. +00000000000', 'mollie-payments-for-woocommerce');
+                throw new RouteException(
+                    'woocommerce_rest_checkout_process_payment_error',
+                    $message,
+                    402
+                );
             }
         }
     }

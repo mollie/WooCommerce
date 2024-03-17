@@ -235,15 +235,15 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         $subscriptions = wcs_get_subscriptions_for_renewal_order($renewal_order->get_id());
         $subscription = array_pop($subscriptions); // Just need one valid subscription
         $subscription_mollie_payment_id = $subscription->get_meta('_mollie_payment_id');
-        $subcriptionParentOrder = $subscription->get_parent();
-        $mandateId = !empty($subcriptionParentOrder) ? $subcriptionParentOrder->get_meta('_mollie_mandate_id') : null;
+        $subscriptionParentOrder = $subscription->get_parent();
+        $mandateId = !empty($subscriptionParentOrder) ? $subscriptionParentOrder->get_meta('_mollie_mandate_id') : null;
 
         if (! empty($subscription_mollie_payment_id) && ! empty($subscription)) {
             $customer_id = $this->restore_mollie_customer_id_and_mandate($customer_id, $subscription_mollie_payment_id, $subscription);
         }
 
         // Get all data for the renewal payment
-        $initialPaymentUsedOrderAPI = $this->initialPaymentUsedOrderAPI($subcriptionParentOrder);
+        $initialPaymentUsedOrderAPI = $this->initialPaymentUsedOrderAPI($subscriptionParentOrder);
         $data = $this->subscriptionObject->getRecurringPaymentRequestData($renewal_order, $customer_id, $initialPaymentUsedOrderAPI);
 
         // Allow filtering the renewal payment data
@@ -301,14 +301,14 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                         (property_exists($payment, 'mandateId')
                             && $payment->mandateId !== null)
                         && $payment->mandateId !== $mandateId
-                        && !empty($subcriptionParentOrder)
+                        && !empty($subscriptionParentOrder)
                     ) {
                         $this->logger->debug("{$this->id}: updating to mandate {$payment->mandateId}");
-                        $subcriptionParentOrder->update_meta_data(
+                        $subscriptionParentOrder->update_meta_data(
                             '_mollie_mandate_id',
                             $payment->mandateId
                         );
-                        $subcriptionParentOrder->save();
+                        $subscriptionParentOrder->save();
                         $mandateId = $payment->mandateId;
                     }
                 } else {
@@ -722,15 +722,15 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
     }
 
     /**
-     * @param $subcriptionParentOrder
+     * @param $subscriptionParentOrder
      * @return bool
      */
-    protected function initialPaymentUsedOrderAPI($subcriptionParentOrder): bool
+    protected function initialPaymentUsedOrderAPI($subscriptionParentOrder): bool
     {
-        if (!$subcriptionParentOrder) {
+        if (!$subscriptionParentOrder) {
             return false;
         }
-        $orderIdMeta = $subcriptionParentOrder->get_meta('_mollie_order_id');
+        $orderIdMeta = $subscriptionParentOrder->get_meta('_mollie_order_id');
 
         $parentOrderMeta = $orderIdMeta ?: PaymentService::PAYMENT_METHOD_TYPE_PAYMENT;
 

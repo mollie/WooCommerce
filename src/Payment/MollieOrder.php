@@ -951,11 +951,22 @@ class MollieOrder extends MollieObject
                 self::MAXIMAL_LENGHT_REGION
             );
         $billingAddress->organizationName = $this->billingCompanyField($order);
-        $phone = !empty($order->get_billing_phone()) ? $order->get_billing_phone() : $order->get_shipping_phone();
+        $phone = $this->getPhoneNumber($order);
         $billingAddress->phone = (ctype_space($phone))
             ? null
             : $this->getFormatedPhoneNumber($phone);
         return $billingAddress;
+    }
+
+    protected function getPhoneNumber($order)
+    {
+
+        $phone = !empty($order->get_billing_phone()) ? $order->get_billing_phone() : $order->get_shipping_phone();
+        if (empty($phone)) {
+            //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            $phone =  wc_clean(wp_unslash($_POST['billing_phone'] ?? ''));
+        }
+        return $phone;
     }
 
     /**

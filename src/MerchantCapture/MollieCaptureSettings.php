@@ -10,6 +10,11 @@ class MollieCaptureSettings
     {
         $mollieCaptureSettings = [
             [
+                'id' => $pluginName . '_capture_empty_title',
+                'title' => '',
+                'type' => 'title',
+            ],
+            [
                 'id' => $pluginName . '_place_payment_onhold',
                 'title' => __('Placing payments on Hold', 'mollie-payments-for-woocommerce'),
                 'type' => 'select',
@@ -21,7 +26,7 @@ class MollieCaptureSettings
                 'default' => 'immediate_capture',
                 'desc' => sprintf(
                     __(
-                        'Authorized payment can be captured or voided by changing the order status instead of doing it manually.',
+                        'Authorized payment can be captured or canceled by changing the order status instead of doing it manually.',
                         'mollie-payments-for-woocommerce'
                     )
                 ),
@@ -29,18 +34,18 @@ class MollieCaptureSettings
             [
                 'id' => $pluginName . '_capture_or_void',
                 'title' => __(
-                    'Capture or void on status change',
+                    'Capture or cancel on status change',
                     'mollie-payments-for-woocommerce'
                 ),
                 'type' => 'checkbox',
                 'default' => 'no',
                 'desc' => __(
-                    'Capture authorized payments automatically when setting the order status to Processing or Completed. Void the payment by setting the order status Canceled.',
+                    'Capture authorized payments automatically when setting the order status to Processing or Completed. Cancel the payment by setting the order status Canceled.',
                     'mollie-payments-for-woocommerce'
                 ),
             ],
             [
-                'id' => $pluginName . '_sectionend',
+                'id' => $pluginName . '_capture_sectionend',
                 'type' => 'sectionend',
             ],
         ];

@@ -112,7 +112,7 @@ class PaymentServiceTest extends TestCase
         expect('get_option')
             ->with('mollie-payments-for-woocommerce_api_switch')
             ->andReturn(false);
-        expect('get_transient')->andReturn(['ideal'=>['id'=>'ideal']]);
+        expect('get_transient')->andReturn(['ideal'=>['id'=>'ideal', 'status'=>'activated']]);
         $wcOrder->expects($this->any())
             ->method('get_billing_company')
             ->willReturn('');

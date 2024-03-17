@@ -30,8 +30,6 @@ function configJavaScript ({ basePath })
     .addEntry('mollieBlockIndex.min', './resources/js/mollieBlockIndex.js')
     .addEntry('paypalButtonBlockComponent.min', './resources/js/paypalButtonBlockComponent.js')
     .addEntry('applepayButtonBlockComponent.min', './resources/js/applepayButtonBlockComponent.js')
-    .addEntry('mollieBillie.min', './resources/js/mollieBillie.js')
-    .addEntry('mollieIn3.min', './resources/js/mollieIn3.js')
     .enableSourceMaps(!Encore.isProduction())
 
   return extractEncoreConfig('javascript-configuration')
@@ -55,9 +53,10 @@ function configCss ({ basePath })
 
 function config (env)
 {
-  const config = [
-    configJavaScript(env),
-    configCss(env)
+    const basePath = process.env.BASE_PATH || '.';
+    const config = [
+    configJavaScript({basePath}),
+    configCss({basePath})
   ]
 
   return [...config]

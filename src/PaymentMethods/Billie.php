@@ -16,7 +16,7 @@ class Billie extends AbstractPaymentMethod implements PaymentMethodI
                 'mollie-payments-for-woocommerce'
             ),
             'defaultDescription' => '',
-            'paymentFields' => false,
+            'paymentFields' => true,
             'instructions' => false,
             'supports' => [
                 'products',

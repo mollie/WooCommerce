@@ -276,13 +276,6 @@ class AssetsModule implements ExecutableModule
             (string) filemtime($this->getPluginPath($pluginPath, '/public/js/gatewaySurcharge.min.js')),
             true
         );
-        wp_register_script(
-            'mollie-billie-classic-handles',
-            $this->getPluginUrl($pluginUrl, '/public/js/mollieBillie.min.js'),
-            ['underscore', 'jquery'],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollieBillie.min.js')),
-            true
-        );
     }
 
     public function registerBlockScripts(string $pluginUrl, string $pluginPath): void

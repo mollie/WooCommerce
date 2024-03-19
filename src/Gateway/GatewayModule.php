@@ -893,6 +893,10 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $phoneMandatoryGateways = ['mollie_wc_gateway_in3', 'mollie_wc_gateway_bancomatpay'];
         $paymentMethod = $context->payment_data['payment_method'];
         if (in_array($paymentMethod, $phoneMandatoryGateways)) {
+            $billingPhone = $context->order->get_billing_phone();
+            if (!empty($billingPhone) && $this->isPhoneValid($billingPhone)) {
+                return;
+            }
             $billingPhone = $context->payment_data['billing_phone'];
             if ($billingPhone) {
                 $context->order->set_billing_phone($billingPhone);

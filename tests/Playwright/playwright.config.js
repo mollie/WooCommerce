@@ -26,7 +26,7 @@ module.exports = defineConfig({
         ['line'],
         ['junit', testRailOptions]
     ],
-    globalSetup: './globalSetup.js',
+    //globalSetup: './globalSetup.js',
 
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
     use: {
@@ -47,41 +47,84 @@ module.exports = defineConfig({
     /* Configure projects for major browsers */
     projects: [
         {
-            name: 'plugins-page',
-            testDir: './tests/Plugins page',
+            name: 'setup-default-settings-merchant',
+            testMatch: './tests/Shared/setup-default-settings-merchant.spec.js',
             use: {
                 ...devices['Desktop Chrome'],
-                testIdAttribute: 'data-slug'
+                baseURL: process.env.BASEURL_DEFAULT_80
+            }
+        },
+        /*{
+            name: 'setup-settings-merchant',
+            testMatch: './tests/Shared/setup-default-settings-merchant.spec.js',
+            use: {
+                ...devices['Desktop Chrome'],
+                baseURL: process.env.BASEURL_SETTINGS_80
             }
         },
         {
-            name: 'woo-payments-tab',
+            name: 'setup-payment-api-merchant',
+            testMatch: './tests/Shared/setup-default-settings-merchant.spec.js',
+            use: {
+                ...devices['Desktop Chrome'],
+                baseURL: process.env.BASEURL_PAYMENT_80
+            }
+        },
+        {
+            name: 'plugins-page-80',
+            testDir: './tests/Plugins page',
+            dependencies: ['setup-settings-merchant'],
+            use: {
+                ...devices['Desktop Chrome'],
+                testIdAttribute: 'data-slug',
+                baseURL: process.env.BASEURL_SETTINGS_80
+            }
+        },
+        {
+            name: 'woo-payments-tab-80',
             testDir: './tests/WooCommerce Payments tab',
+            dependencies: ['setup-default-settings-merchant'],
             use: {
-                ...devices['Desktop Chrome']
+                ...devices['Desktop Chrome'],
+                baseURL: process.env.BASEURL_DEFAULT_80
+            }
+        },*/
+        {
+            name: 'transaction-scenarios-orders-80',
+            testDir: './tests/transaction',
+            dependencies: ['setup-default-settings-merchant'],
+            use: {
+                ...devices['Desktop Chrome'],
+                baseURL: process.env.BASEURL_DEFAULT_80
             }
         },
-        {
-            name: 'transaction-scenarios',
+        /*{
+            name: 'transaction-scenarios-payments-80',
             testDir: './tests/Transaction Scenarios',
+            dependencies: ['setup-payment-api-merchant'],
             use: {
-                ...devices['Desktop Chrome']
+                ...devices['Desktop Chrome'],
+                baseURL: process.env.BASEURL_PAYMENT_80
             }
         },
         {
-            name: 'mollie-settings-tab',
+            name: 'mollie-settings-tab-80',
             testDir: './tests/Mollie Settings tab',
+            dependencies: ['setup-settings-merchant'],
             use: {
-                ...devices['Desktop Chrome']
+                ...devices['Desktop Chrome'],
+                baseURL: process.env.BASEURL_SETTINGS_80
             }
         },
         {
-            name: 'error-handling',
+            name: 'error-handling-80',
             testDir: './tests/Error Handling',
+            dependencies: ['setup-default-settings-merchant'],
             use: {
-                ...devices['Desktop Chrome']
+                ...devices['Desktop Chrome'],
+                baseURL: process.env.BASEURL_DEFAULT_80
             }
-        },
+        },*/
     ],
 });
 

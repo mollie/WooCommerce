@@ -23,8 +23,8 @@
     "psr/log":"^1.1.4"
   },
   "require-dev": {
-    "inpsyde/modularity": "^1.3.0",
-    "psr/container": "1.0.0",
+    "inpsyde/modularity": "^1.7.4",
+    "psr/container": "^1.1.0",
     "phpunit/phpunit": "^8",
     "brain/monkey": "^2.3",
     "ptrofimov/xpmock": "^1",
@@ -34,7 +34,8 @@
     "inpsyde/composer-assets-compiler": "^2.5",
     "php-stubs/wordpress-stubs": "^5.0@stable",
     "php-stubs/woocommerce-stubs": "7.9.0",
-    "vimeo/psalm": "^4.8 || ^5.13.0"
+    "vimeo/psalm": "^4.8 || ^5.13.0",
+    "coenjacobs/mozart": "^0.6.0"
   },
   "autoload": {
     "psr-4": {

@@ -73,20 +73,16 @@ class ContainerConfigurator
      */
     public function addService(string $id, callable $service): void
     {
-        if ($this->hasService($id)) {
-            /*
-             * We are being intentionally permissive here,
-             * allowing a simple workflow for *intentional* overrides
-             * while accepting the (small?) risk of *accidental* overrides
-             * that could be hard to notice and debug.
-             */
-
-            /*
-             * Clear a factory flag in case it was a factory.
-             * If needs be, it will get re-added after this function completes.
-             */
-            unset($this->factoryIds[$id]);
-        }
+        /*
+         * We are being intentionally permissive here,
+         * allowing a simple workflow for *intentional* overrides
+         * while accepting the (small?) risk of *accidental* overrides
+         * that could be hard to notice and debug.
+         *
+         * Clear a factory flag in case it was a factory.
+         * If needs be, it will get re-added after this function completes.
+         */
+        unset($this->factoryIds[$id]);
 
         $this->services[$id] = $service;
     }

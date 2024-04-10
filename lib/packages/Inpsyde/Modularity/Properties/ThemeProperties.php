@@ -26,15 +26,15 @@ class ThemeProperties extends BaseProperties
      */
     protected const HEADERS = [
         self::PROP_AUTHOR => 'Author',
-        self::PROP_AUTHOR_URI => 'Author URI',
+        self::PROP_AUTHOR_URI => 'AuthorURI',
         self::PROP_DESCRIPTION => 'Description',
-        self::PROP_DOMAIN_PATH => 'Domain Path',
-        self::PROP_NAME => 'Theme Name',
-        self::PROP_TEXTDOMAIN => 'Text Domain',
-        self::PROP_URI => 'Theme URI',
+        self::PROP_DOMAIN_PATH => 'DomainPath',
+        self::PROP_NAME => 'Name',
+        self::PROP_TEXTDOMAIN => 'TextDomain',
+        self::PROP_URI => 'ThemeURI',
         self::PROP_VERSION => 'Version',
-        self::PROP_REQUIRES_WP => 'Requires at least',
-        self::PROP_REQUIRES_PHP => 'Requires PHP',
+        self::PROP_REQUIRES_WP => 'RequiresWP',
+        self::PROP_REQUIRES_PHP => 'RequiresPHP',
 
         // additional headers
         self::PROP_STATUS => 'Status',
@@ -72,7 +72,7 @@ class ThemeProperties extends BaseProperties
         }
 
         $baseName = $theme->get_stylesheet();
-        $basePath = $theme->get_template_directory();
+        $basePath = $theme->get_stylesheet_directory();
         $baseUrl = (string) trailingslashit($theme->get_stylesheet_directory_uri());
 
         parent::__construct(

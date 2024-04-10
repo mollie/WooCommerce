@@ -17,6 +17,7 @@ class PluginProperties extends BaseProperties
      * Custom properties for Plugins.
      */
     public const PROP_NETWORK = 'network';
+    public const PROP_REQUIRES_PLUGINS = 'requiresPlugins';
     /**
      * Available methods of Properties::__call()
      * from plugin headers.
@@ -37,12 +38,18 @@ class PluginProperties extends BaseProperties
 
         // additional headers
         self::PROP_NETWORK => 'Network',
+        self::PROP_REQUIRES_PLUGINS => 'RequiresPlugins',
     ];
 
     /**
      * @var string
      */
-    private $pluginFile;
+    private $pluginMainFile;
+
+    /**
+     * @var string
+     */
+    private $pluginBaseName;
 
     /**
      * @var bool|null
@@ -80,7 +87,9 @@ class PluginProperties extends BaseProperties
             require_once ABSPATH . 'wp-admin/includes/plugin.php';
         }
 
-        $pluginData = get_plugin_data($pluginMainFile);
+        // $markup = false, to avoid an incorrect early wptexturize call. Also we probably don't want HTML here anyway
+        // @see https://core.trac.wordpress.org/ticket/49965
+        $pluginData = get_plugin_data($pluginMainFile, false);
         $properties = Properties::DEFAULT_PROPERTIES;
 
         // Map pluginData to internal structure.
@@ -90,18 +99,26 @@ class PluginProperties extends BaseProperties
         }
         $properties = array_merge($properties, $pluginData);
 
-        $this->pluginFile = $pluginMainFile;
+        $this->pluginMainFile = wp_normalize_path($pluginMainFile);
 
-        $baseName = plugin_basename($pluginMainFile);
+        $this->pluginBaseName = plugin_basename($pluginMainFile);
         $basePath = plugin_dir_path($pluginMainFile);
         $baseUrl = plugins_url('/', $pluginMainFile);
 
         parent::__construct(
-            $baseName,
+            $this->pluginBaseName,
             $basePath,
             $baseUrl,
             $properties
         );
+    }
+
+    /**
+     * @return string
+     */
+    public function pluginMainFile(): string
+    {
+        return $this->pluginMainFile;
     }
 
     /**
@@ -115,6 +132,16 @@ class PluginProperties extends BaseProperties
     }
 
     /**
+     * @return array
+     */
+    public function requiresPlugins(): array
+    {
+        $value = $this->get(self::PROP_REQUIRES_PLUGINS);
+
+        return $value && is_string($value) ? explode(',', $value) : [];
+    }
+
+    /**
      * @return bool
      */
     public function isActive(): bool
@@ -123,7 +150,7 @@ class PluginProperties extends BaseProperties
             if (!function_exists('is_plugin_active')) {
                 require_once ABSPATH . 'wp-admin/includes/plugin.php';
             }
-            $this->isActive = is_plugin_active($this->pluginFile);
+            $this->isActive = is_plugin_active($this->pluginBaseName);
         }
 
         return $this->isActive;
@@ -138,7 +165,7 @@ class PluginProperties extends BaseProperties
             if (!function_exists('is_plugin_active_for_network')) {
                 require_once ABSPATH . 'wp-admin/includes/plugin.php';
             }
-            $this->isNetworkActive = is_plugin_active_for_network($this->pluginFile);
+            $this->isNetworkActive = is_plugin_active_for_network($this->pluginBaseName);
         }
 
         return $this->isNetworkActive;
@@ -155,7 +182,7 @@ class PluginProperties extends BaseProperties
              * @psalm-suppress MixedArgument
              */
             $muPluginDir = wp_normalize_path(WPMU_PLUGIN_DIR);
-            $this->isMu = strpos($this->pluginFile, $muPluginDir) === 0;
+            $this->isMu = strpos($this->pluginMainFile, $muPluginDir) === 0;
         }
 
         return $this->isMu;

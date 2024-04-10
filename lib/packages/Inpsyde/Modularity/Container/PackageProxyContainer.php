@@ -34,9 +34,8 @@ class PackageProxyContainer implements ContainerInterface
      *
      * @throws \Exception
      */
-    public function get($id)
+    public function get(string $id)
     {
-        assert(is_string($id));
         $this->assertPackageBooted($id);
 
         return $this->container->get($id);
@@ -48,10 +47,8 @@ class PackageProxyContainer implements ContainerInterface
      *
      * @throws \Exception
      */
-    public function has($id)
+    public function has(string $id): bool
     {
-        assert(is_string($id));
-
         return $this->tryContainer() && $this->container->has($id);
     }
 
@@ -67,7 +64,11 @@ class PackageProxyContainer implements ContainerInterface
             return true;
         }
 
-        if ($this->package->statusIs(Package::STATUS_BOOTED)) {
+        /** TODO: We need a better way to deal with status checking besides equality */
+        if (
+            $this->package->statusIs(Package::STATUS_READY)
+            || $this->package->statusIs(Package::STATUS_BOOTED)
+        ) {
             $this->container = $this->package->container();
         }
 
@@ -90,8 +91,8 @@ class PackageProxyContainer implements ContainerInterface
 
         $name = $this->package->name();
         $status = $this->package->statusIs(Package::STATUS_FAILED)
-            ? 'failed booting'
-            : 'is not booted yet';
+            ? 'is errored'
+            : 'is not ready yet';
 
         throw new class ("Error retrieving service {$id} because package {$name} {$status}.")
             extends \Exception

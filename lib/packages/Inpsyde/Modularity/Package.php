@@ -72,7 +72,22 @@ class Package
     public const ACTION_READY = 'ready';
 
     /**
-     * Custom action which is triggered when application failed to boot.
+     * Custom action which is triggered when a failure happens during the building stage.
+     *
+     * @example
+     * <code>
+     * $package = Package::new();
+     *
+     * add_action(
+     *      $package->hookName(Package::ACTION_FAILED_BUILD),
+     *      $callback
+     * );
+     * </code>
+     */
+    public const ACTION_FAILED_BUILD = 'failed-build';
+
+    /**
+     * Custom action which is triggered when a failure happens during the booting stage.
      *
      * @example
      * <code>
@@ -103,7 +118,7 @@ class Package
      * <code>
      * $package = Package::new();
      * $package->moduleIs(SomeModule::class, Package::MODULE_ADDED); // false
-     * $package->boot(new SomeModule());
+     * $package->addModule(new SomeModule());
      * $package->moduleIs(SomeModule::class, Package::MODULE_ADDED); // true
      * </code>
      */
@@ -129,6 +144,8 @@ class Package
      */
     public const STATUS_IDLE = 2;
     public const STATUS_INITIALIZED = 4;
+    public const STATUS_MODULES_ADDED = 5;
+    public const STATUS_READY = 7;
     public const STATUS_BOOTED = 8;
     public const STATUS_FAILED = -8;
 
@@ -176,6 +193,21 @@ class Package
     private $containerConfigurator;
 
     /**
+     * @var bool
+     */
+    private $built = false;
+
+    /**
+     * @var bool
+     */
+    private $hasContainer = false;
+
+    /**
+     * @var \Throwable|null
+     */
+    private $lastError = null;
+
+    /**
      * @param Properties $properties
      * @param ContainerInterface[] $containers
      *
@@ -211,23 +243,36 @@ class Package
      */
     public function addModule(Module $module): Package
     {
-        $this->assertStatus(self::STATUS_IDLE, 'access Container');
+        try {
+            $this->assertStatus(self::STATUS_IDLE, sprintf('add module %s', $module->id()));
 
-        $registeredServices = $this->addModuleServices($module, self::MODULE_REGISTERED);
-        $registeredFactories = $this->addModuleServices($module, self::MODULE_REGISTERED_FACTORIES);
-        $extended = $this->addModuleServices($module, self::MODULE_EXTENDED);
-        $isExecutable = $module instanceof ExecutableModule;
+            $registeredServices = $this->addModuleServices(
+                $module,
+                self::MODULE_REGISTERED
+            );
+            $registeredFactories = $this->addModuleServices(
+                $module,
+                self::MODULE_REGISTERED_FACTORIES
+            );
+            $extended = $this->addModuleServices(
+                $module,
+                self::MODULE_EXTENDED
+            );
+            $isExecutable = $module instanceof ExecutableModule;
 
-        // ExecutableModules are collected and executed on Package::boot()
-        // when the Container is being compiled.
-        if ($isExecutable) {
-            /** @var ExecutableModule $module */
-            $this->executables[] = $module;
+            // ExecutableModules are collected and executed on Package::boot()
+            // when the Container is being compiled.
+            if ($isExecutable) {
+                /** @var ExecutableModule $module */
+                $this->executables[] = $module;
+            }
+
+            $added = $registeredServices || $registeredFactories || $extended || $isExecutable;
+            $status = $added ? self::MODULE_ADDED : self::MODULE_NOT_ADDED;
+            $this->moduleProgress($module->id(), $status);
+        } catch (\Throwable $throwable) {
+            $this->handleFailure($throwable, self::ACTION_FAILED_BUILD);
         }
-
-        $added = $registeredServices || $registeredFactories || $extended || $isExecutable;
-        $status = $added ? self::MODULE_ADDED : self::MODULE_NOT_ADDED;
-        $this->moduleProgress($module->id(), $status);
 
         return $this;
     }
@@ -239,68 +284,107 @@ class Package
      */
     public function connect(Package $package): bool
     {
-        if (($package === $this)) {
-            return false;
-        }
-
-        $packageName = $package->name();
-        $errorData = ['package' => $packageName, 'status' => $this->status];
-
-        // Don't connect, if already connected
-        if (array_key_exists($packageName, $this->connectedPackages)) {
-            do_action(
-                $this->hookName(self::ACTION_FAILED_CONNECTION),
-                $packageName,
-                new \WP_Error('already_connected', 'already connected', $errorData)
-            );
-
-            return false;
-        }
-
-        // Don't connect, if already booted or boot failed
-        if (in_array($this->status, [self::STATUS_BOOTED, self::STATUS_FAILED], true)) {
-            $this->connectedPackages[$packageName] = false;
-            do_action(
-                $this->hookName(self::ACTION_FAILED_CONNECTION),
-                $packageName,
-                new \WP_Error('no_connect_status', 'no connect status', $errorData)
-            );
-
-            return false;
-        }
-
-        $this->connectedPackages[$packageName] = true;
-
-        // We put connected package's properties in this package's container, so that in modules
-        // "run" method we can access them if we need to.
-        $this->containerConfigurator->addService(
-            sprintf('%s.%s', $package->name(), self::PROPERTIES),
-            static function () use ($package): Properties {
-                return $package->properties();
+        try {
+            if ($package === $this) {
+                return false;
             }
-        );
 
-        // If the other package is booted, we can obtain a container, otherwise
-        // we build a proxy container
-        $container = $package->statusIs(self::STATUS_BOOTED)
-            ? $package->container()
-            : new PackageProxyContainer($package);
+            $packageName = $package->name();
+            $errorData = ['package' => $packageName, 'status' => $this->status];
+            $errorMessage = "Failed connecting package {$packageName}";
 
-        $this->containerConfigurator->addContainer($container);
+            // Don't connect, if already connected
+            if (array_key_exists($packageName, $this->connectedPackages)) {
+                $error = "{$errorMessage} because it was already connected.";
+                do_action(
+                    $this->hookName(self::ACTION_FAILED_CONNECTION),
+                    $packageName,
+                    new \WP_Error('already_connected', $error, $errorData)
+                );
 
-        do_action(
-            $this->hookName(self::ACTION_PACKAGE_CONNECTED),
-            $packageName,
-            $this->status,
-            $container instanceof PackageProxyContainer
-        );
+                throw new \Exception($error, 0, $this->lastError);
+            }
 
-        return true;
+            // Don't connect, if already booted or boot failed
+            $failed = $this->statusIs(self::STATUS_FAILED);
+            if ($failed || $this->statusIs(self::STATUS_BOOTED)) {
+                $status = $failed ? 'errored' : 'booted';
+                $error = "{$errorMessage} to a {$status} package.";
+                do_action(
+                    $this->hookName(self::ACTION_FAILED_CONNECTION),
+                    $packageName,
+                    new \WP_Error("no_connect_on_{$status}", $error, $errorData)
+                );
+
+                throw new \Exception($error, 0, $this->lastError);
+            }
+
+            $this->connectedPackages[$packageName] = true;
+
+            // We put connected package's properties in this package's container, so that in modules
+            // "run" method we can access them if we need to.
+            $this->containerConfigurator->addService(
+                sprintf('%s.%s', $package->name(), self::PROPERTIES),
+                static function () use ($package): Properties {
+                    return $package->properties();
+                }
+            );
+
+            // If the other package is booted, we can obtain a container, otherwise
+            // we build a proxy container
+            $container = $package->statusIs(self::STATUS_BOOTED)
+                ? $package->container()
+                : new PackageProxyContainer($package);
+
+            $this->containerConfigurator->addContainer($container);
+
+            do_action(
+                $this->hookName(self::ACTION_PACKAGE_CONNECTED),
+                $packageName,
+                $this->status,
+                $container instanceof PackageProxyContainer
+            );
+
+            return true;
+        } catch (\Throwable $throwable) {
+            if (isset($packageName)) {
+                $this->connectedPackages[$packageName] = false;
+            }
+            $this->handleFailure($throwable, self::ACTION_FAILED_BUILD);
+
+            return false;
+        }
     }
 
     /**
-     * @param Module ...$defaultModules
-     *
+     * @return static
+     */
+    public function build(): Package
+    {
+        try {
+            // Don't allow building the application multiple times.
+            $this->assertStatus(self::STATUS_IDLE, 'build package');
+
+            do_action(
+                $this->hookName(self::ACTION_INIT),
+                $this
+            );
+            // Changing the status here ensures we can not call this method again, and also we can not
+            // add new modules, because both this and `addModule()` methods check for idle status.
+            // For backward compatibility, adding new modules via `boot()` will still be possible, even
+            // if deprecated, at the condition that the container was not yet accessed at that point.
+            $this->progress(self::STATUS_INITIALIZED);
+        } catch (\Throwable $throwable) {
+            $this->handleFailure($throwable, self::ACTION_FAILED_BUILD);
+        } finally {
+            $this->built = true;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param Module ...$defaultModules Deprecated, use `addModule()` to add default modules.
      * @return bool
      *
      * @throws \Throwable
@@ -308,35 +392,26 @@ class Package
     public function boot(Module ...$defaultModules): bool
     {
         try {
-            // don't allow to boot the application multiple times.
-            $this->assertStatus(self::STATUS_IDLE, 'execute boot');
+            // Call build() if not called yet, and ensure any new module passed here is added
+            // as well, throwing if the container was already built.
+            $this->doBuild(...$defaultModules);
 
-            // Add default Modules to the Application.
-            array_map([$this, 'addModule'], $defaultModules);
+            // Don't allow booting the application multiple times.
+            $this->assertStatus(self::STATUS_MODULES_ADDED, 'boot application', '<');
+            $this->assertStatus(self::STATUS_FAILED, 'boot application', '!=');
 
-            do_action(
-                $this->hookName(self::ACTION_INIT),
-                $this
-            );
-            // we want to lock adding new Modules and Containers now
-            // to process everything and be able to compile the container.
-            $this->progress(self::STATUS_INITIALIZED);
+            $this->progress(self::STATUS_MODULES_ADDED);
 
-            if (count($this->executables) > 0) {
-                $this->doExecute();
-            }
+            $this->doExecute();
+
+            $this->progress(self::STATUS_READY);
 
             do_action(
                 $this->hookName(self::ACTION_READY),
                 $this
             );
         } catch (\Throwable $throwable) {
-            $this->progress(self::STATUS_FAILED);
-            do_action($this->hookName(self::ACTION_FAILED_BOOT), $throwable);
-
-            if ($this->properties->isDebug()) {
-                throw $throwable;
-            }
+            $this->handleFailure($throwable, self::ACTION_FAILED_BOOT);
 
             return false;
         }
@@ -344,6 +419,60 @@ class Package
         $this->progress(self::STATUS_BOOTED);
 
         return true;
+    }
+
+    /**
+     * @param Module ...$defaultModules
+     * @return void
+     */
+    private function doBuild(Module ...$defaultModules): void
+    {
+        if ($defaultModules) {
+            $this->deprecatedArgument(
+                sprintf(
+                    'Passing default modules to %1$s::boot() is deprecated since version 1.7.0.'
+                    . ' Please add modules via %1$s::addModule().',
+                    __CLASS__
+                ),
+                __METHOD__,
+                '1.7.0'
+            );
+        }
+
+        if (!$this->built) {
+            array_map([$this, 'addModule'], $defaultModules);
+            $this->build();
+
+            return;
+        }
+
+        if (
+            !$defaultModules
+            || ($this->status >= self::STATUS_MODULES_ADDED)
+            || ($this->statusIs(self::STATUS_FAILED))
+        ) {
+            // if we don't have default modules, there's nothing to do, and if the status is beyond
+            // "modules added" or is failed, we do nothing as well and let `boot()` throw.
+            return;
+        }
+
+        $backup = $this->status;
+
+        try {
+            // simulate idle status to prevent `addModule()` from throwing
+            // only if we don't have a container yet
+            $this->hasContainer or $this->status = self::STATUS_IDLE;
+
+            foreach ($defaultModules as $defaultModule) {
+                // If a module was added by `build()` or `addModule()` we can skip it, a
+                // deprecation was trigger to make it noticeable without breakage
+                if (!$this->moduleIs($defaultModule->id(), self::MODULE_ADDED)) {
+                    $this->addModule($defaultModule);
+                }
+            }
+        } finally {
+            $this->status = $backup;
+        }
     }
 
     /**
@@ -410,23 +539,23 @@ class Package
 
     /**
      * @param string $moduleId
-     * @param string $type
+     * @param string $status
      * @param list<string>|null $serviceIds
      *
      * @return  void
      */
-    private function moduleProgress(string $moduleId, string $type, ?array $serviceIds = null)
+    private function moduleProgress(string $moduleId, string $status, ?array $serviceIds = null)
     {
-        isset($this->moduleStatus[$type]) or $this->moduleStatus[$type] = [];
-        $this->moduleStatus[$type][] = $moduleId;
+        isset($this->moduleStatus[$status]) or $this->moduleStatus[$status] = [];
+        $this->moduleStatus[$status][] = $moduleId;
 
         if (!$serviceIds || !$this->properties->isDebug()) {
-            $this->moduleStatus[self::MODULES_ALL][] = "{$moduleId} {$type}";
+            $this->moduleStatus[self::MODULES_ALL][] = "{$moduleId} {$status}";
 
             return;
         }
 
-        $description = sprintf('%s %s (%s)', $moduleId, $type, implode(', ', $serviceIds));
+        $description = sprintf('%s %s (%s)', $moduleId, $status, implode(', ', $serviceIds));
         $this->moduleStatus[self::MODULES_ALL][] = $description;
     }
 
@@ -507,7 +636,8 @@ class Package
      */
     public function container(): ContainerInterface
     {
-        $this->assertStatus(self::STATUS_INITIALIZED, 'access Container', '>=');
+        $this->assertStatus(self::STATUS_INITIALIZED, 'obtain the container instance', '>=');
+        $this->hasContainer = true;
 
         return $this->containerConfigurator->createReadOnlyContainer();
     }
@@ -539,6 +669,25 @@ class Package
     }
 
     /**
+     * @param \Throwable $throwable
+     * @param Package::ACTION_FAILED_* $action
+     * @return void
+     * @throws \Throwable
+     */
+    private function handleFailure(\Throwable $throwable, string $action): void
+    {
+        $this->progress(self::STATUS_FAILED);
+        $hook = $this->hookName($action);
+        did_action($hook) or do_action($hook, $throwable);
+
+        if ($this->properties->isDebug()) {
+            throw $throwable;
+        }
+
+        $this->lastError = $throwable;
+    }
+
+    /**
      * @param int $status
      * @param string $action
      * @param string $operator
@@ -549,7 +698,30 @@ class Package
     private function assertStatus(int $status, string $action, string $operator = '=='): void
     {
         if (!version_compare((string) $this->status, (string) $status, $operator)) {
-            throw new \Exception(sprintf("Can't %s at this point of application.", $action));
+            throw new \Exception(
+                sprintf("Can't %s at this point of application.", $action),
+                0,
+                $this->lastError
+            );
+        }
+    }
+
+    /**
+     * Similar to WP's `_deprecated_argument()`, but executes regardless of WP_DEBUG and without
+     * translated message (so without attempting loading translation files).
+     *
+     * @param string $message
+     * @param string $function
+     * @param string $version
+     *
+     * @return void
+     */
+    private function deprecatedArgument(string $message, string $function, string $version): void
+    {
+        do_action('deprecated_argument_run', $function, $message, $version);
+
+        if (apply_filters('deprecated_argument_trigger_error', true)) {
+            trigger_error($message, \E_USER_DEPRECATED);
         }
     }
 }

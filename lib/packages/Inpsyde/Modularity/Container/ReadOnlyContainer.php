@@ -61,10 +61,8 @@ class ReadOnlyContainer implements ContainerInterface
      *
      * @return mixed
      */
-    public function get($id)
+    public function get(string $id)
     {
-        assert(is_string($id));
-
         if (array_key_exists($id, $this->resolvedServices)) {
             return $this->resolvedServices[$id];
         }
@@ -100,10 +98,8 @@ class ReadOnlyContainer implements ContainerInterface
      *
      * @return bool
      */
-    public function has($id)
+    public function has(string $id): bool
     {
-        assert(is_string($id));
-
         if (array_key_exists($id, $this->services)) {
             return true;
         }

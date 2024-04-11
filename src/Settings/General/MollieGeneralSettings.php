@@ -28,7 +28,7 @@ class MollieGeneralSettings
                 ),
                 'default' => 'yes',
             ],
-            'display'=>[
+            'display' => [
                 'id' => $defaultTitle . '_' . 'title',
                 'title' => sprintf(
                     /* translators: Placeholder 1: Gateway title */
@@ -114,7 +114,7 @@ class MollieGeneralSettings
                 'default' => $defaultDescription,
                 'desc_tip' => true,
             ],
-            'sales'=>[
+            'sales' => [
                 'id' => $defaultTitle . '_' . 'title',
                 'title' => sprintf(__(
                     'Sales countries',
@@ -132,7 +132,7 @@ class MollieGeneralSettings
                 'default' => [],
                 'type' => 'multi_select_countries',
             ],
-            'surcharge'=>[
+            'surcharge' => [
                 'id' => $defaultTitle . '_' . 'surcharge',
                 'title' => sprintf(
                 /* translators: Placeholder 1: Gateway title */
@@ -230,7 +230,7 @@ class MollieGeneralSettings
                 'default' => '0.00',
                 'desc_tip' => true,
             ],
-            'advanced' =>[
+            'advanced' => [
                 'id' => $defaultTitle . '_' . 'advanced',
                 'title' => sprintf(
                 /* translators: Placeholder 1: gateway title */

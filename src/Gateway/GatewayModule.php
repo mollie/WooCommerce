@@ -111,7 +111,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                         return $method['id'] !== Constants::KLARNA;
                     });
                 }
-                $bancomatpayFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.bancomatpay_enabled', false);
+                $bancomatpayFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.bancomatpay_enabled', true);
                 if (!$bancomatpayFlag) {
                     return array_filter($availablePaymentMethods, static function ($method) {
                         return $method['id'] !== Constants::BANCOMATPAY;

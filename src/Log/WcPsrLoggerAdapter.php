@@ -80,7 +80,7 @@ class WcPsrLoggerAdapter extends AbstractLogger
         }
 
         if (\WC_Log_Levels::get_level_severity($wcLevel) < \WC_Log_Levels::get_level_severity($this->loggingLevel)) {
-            throw new InvalidArgumentException("Unknown log level ${$wcLevel}");
+            throw new InvalidArgumentException("Unknown log level {$wcLevel}");
         }
 
         if (isset($context['source']) && $context['source'] !== $this-> loggerSource) {

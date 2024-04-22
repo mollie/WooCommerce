@@ -705,7 +705,7 @@ class Data
                 delete_transient($transient_id);
             }
             // No cache exists, call the API and cache the result
-            if ($methods === false) {
+            if (empty($methods)) {
                 if (!$apiKey) {
                     return [];
                 }
@@ -720,8 +720,8 @@ class Data
                 // $methods_cleaned is empty array when the API doesn't return any methods, cache the empty array
                 $methods = $methods_cleaned;
 
-                // Set new transients (as cache)
-                if ($useCache) {
+                // Set new transients (as cache) only if we have something in
+                if ($useCache && !empty($methods)) {
                     set_transient($transient_id, $methods, HOUR_IN_SECONDS);
                 }
             }

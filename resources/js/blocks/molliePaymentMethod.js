@@ -214,7 +214,9 @@ const MollieComponent = (props) => {
     }
 
     function fieldMarkup(id, fieldType, label, action, value) {
-        return <div><label htmlFor={id} dangerouslySetInnerHTML={{ __html: label }}></label><input type={fieldType} name={id} id={id} value={value} onChange={action}/></div>
+        const className = "wc-block-components-text-input wc-block-components-address-form__" + id;
+        return <div>
+            <input type={fieldType} name={id} id={id} value={value} onChange={action}></input><label htmlFor={id} dangerouslySetInnerHTML={{ __html: label }}></label></div>
     }
 
     if (item.name === "mollie_wc_gateway_billie"){
@@ -231,7 +233,7 @@ const MollieComponent = (props) => {
         fields.push(fieldMarkup("billing-birthdate", "date", birthdateField, updateBirthdate, inputBirthdate));
         if (!isPhoneFieldVisible) {
             const phoneField = item.phonePlaceholder ? item.phonePlaceholder : "Phone";
-            fields.push(fieldMarkup("billing-phone", "tel", phoneField, updatePhone, inputPhone));
+            fields.push(fieldMarkup("billing-phone-in3", "tel", phoneField, updatePhone, inputPhone));
         }
 
         return <>{fields}</>;

@@ -467,6 +467,11 @@ class PaymentService
             $data,
             $order
         );
+        $data = apply_filters(
+            'woocommerce_' . $this->gateway->id . 'payment_args',
+            $data,
+            $order
+        );
 
         try {
             // Only enable this for hardcore debugging!
@@ -486,7 +491,7 @@ class PaymentService
                     : '',
             ];
 
-            $this->logger->debug($apiCallLog);
+            $this->logger->debug(json_encode($apiCallLog, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
             // Try as simple payment
             $paymentObject = $this->apiHelper->getApiClient(
@@ -524,6 +529,21 @@ class PaymentService
         // PROCESS REGULAR PAYMENT AS MOLLIE ORDER
         //
         if ($molliePaymentType === self::PAYMENT_METHOD_TYPE_ORDER) {
+            // if the capture is set to manual, and this is a credit card payment, we need to create a payment instead of an order
+            $captureType = get_option('mollie-payments-for-woocommerce_place_payment_onhold');
+            if ($captureType === 'later_capture' && $this->gateway->id === 'mollie_wc_gateway_creditcard') {
+                $this->logger->debug(
+                    "{$this->gateway->id}: Create payment for order {$orderId} capture set to manual",
+                    [true]
+                );
+
+                $paymentObject = $this->processAsMolliePayment(
+                    $order,
+                    $customer_id,
+                    $apiKey
+                );
+                return $paymentObject;
+            }
             $this->logger->debug(
                 "{$this->gateway->id}: Create Mollie payment object for order {$orderId}",
                 [true]

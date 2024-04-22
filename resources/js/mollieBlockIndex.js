@@ -7,33 +7,30 @@ import molliePaymentMethod from './blocks/molliePaymentMethod'
         }
         window.onload = (event) => {
             const { registerPaymentMethod } = wc.wcBlocksRegistry;
+            const { checkoutData, defaultFields } = wc.wcSettings.allSettings;
+            const { billing_address, shipping_address } = checkoutData;
             const { ajaxUrl, filters, gatewayData, availableGateways } = mollieBlockData.gatewayData;
             const {useEffect} = wp.element;
             const isAppleSession = typeof window.ApplePaySession === "function"
             const isBlockEditor = !!wp?.blockEditor;
 
             function getCompanyField() {
-                let shippingCompany = document.getElementById('shipping-company');
-                let billingCompany = document.getElementById('billing-company');
+                let shippingCompany = shipping_address.company ?? false;
+                let billingCompany = billing_address.company ?? false;
                 return shippingCompany ? shippingCompany : billingCompany;
             }
 
             function getPhoneField()
             {
-                const shippingPhone = document.getElementById('shipping-phone');
-                const billingPhone = document.getElementById('billing-phone');
+                const shippingPhone = shipping_address.phone ?? false;
+                const billingPhone = billing_address.phone ?? false
                 return billingPhone || shippingPhone;
             }
-            function isFieldVisible(field)
-            {
-                return field && field.style.display !== 'none';
-            }
-            let companyField = getCompanyField();
-            const isCompanyFieldVisible = companyField && isFieldVisible(companyField);
-            const companyNameString = companyField && companyField.parentNode.querySelector('label') ? companyField.parentNode.querySelector('label').innerHTML : false;
-            let phoneField = getPhoneField();
-            const isPhoneFieldVisible = phoneField && isFieldVisible(phoneField);
-            const phoneString = phoneField && phoneField.parentNode.querySelector('label') ? phoneField.parentNode.querySelector('label').innerHTML : false;
+
+            const isCompanyFieldVisible = getCompanyField();
+            const companyNameString = defaultFields.company.label
+            const isPhoneFieldVisible = getPhoneField();
+            const phoneString = defaultFields.phone.label
             let requiredFields = {
                 'companyNameString': companyNameString,
                 'phoneString': phoneString,

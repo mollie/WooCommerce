@@ -568,7 +568,7 @@ class AppleAjaxRequests
                         $cart,
                         $customerAddress,
                         $shippingMethodId,
-                        $shippingMethodId['identifier']
+                        $shippingMethodId['identifier'] ?? null
                     );
             }
             $cart->calculate_shipping();

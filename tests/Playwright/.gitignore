@@ -1,5 +1,5 @@
-node_modules
-pw-browsers
-test-results
-.env
-yarn.lock
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

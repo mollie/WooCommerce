@@ -98,7 +98,6 @@
       <path value="$PROJECT_DIR$/vendor/psr/container" />
       <path value="$PROJECT_DIR$/vendor/inpsyde/modularity" />
       <path value="$PROJECT_DIR$/vendor/automattic/jetpack-autoloader" />
-      <path value="$PROJECT_DIR$/vendor/league/container" />
       <path value="$PROJECT_DIR$/vendor/woocommerce/woocommerce-blocks" />
       <path value="$PROJECT_DIR$/vendor/woocommerce/woocommerce-admin" />
       <path value="$PROJECT_DIR$/vendor/woocommerce/woocommerce" />
@@ -126,10 +125,6 @@
       <path value="$PROJECT_DIR$/vendor/phpspec/prophecy" />
       <path value="$PROJECT_DIR$/vendor/doctrine/deprecations" />
       <path value="$PROJECT_DIR$/vendor/phpstan/phpdoc-parser" />
-      <path value="$PROJECT_DIR$/vendor/symfony/finder" />
-      <path value="$PROJECT_DIR$/vendor/league/flysystem" />
-      <path value="$PROJECT_DIR$/vendor/league/mime-type-detection" />
-      <path value="$PROJECT_DIR$/vendor/coenjacobs/mozart" />
     </include_path>
   </component>
   <component name="PhpInterpreters">

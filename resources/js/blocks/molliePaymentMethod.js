@@ -191,36 +191,6 @@ const MollieComponent = (props) => {
 
     }, [activePaymentMethod, onCheckoutValidation, billing.billingData, shippingData.shippingAddress, item, phoneString, inputBirthdate, inputPhone]);
 
-    useEffect(() => {
-        let phoneLabel = getPhoneField()?.labels?.[0] ?? null;
-        if (!phoneLabel || phoneLabel.length === 0) {
-            return
-        }
-        if (activePaymentMethod === 'mollie_wc_gateway_bancomatpay') {
-            phoneLabel.innerText = item.phonePlaceholder
-        } else {
-            if (phoneString !== false) {
-                phoneLabel.innerText = phoneString
-            }
-        }
-        let isPhoneEmpty = (billing.billingData.phone === '' && shippingData.shippingAddress.phone === '') && inputPhone === '';
-        const unsubscribeProcessing = onCheckoutValidation(
-
-            () => {
-                if (activePaymentMethod === 'mollie_wc_gateway_bancomatpay' && isPhoneEmpty) {
-                    return {
-                        errorMessage: item.errorMessage,
-                    };
-                }
-            }
-        );
-        return () => {
-            unsubscribeProcessing()
-        };
-
-    }, [activePaymentMethod, onCheckoutValidation, billing.billingData, shippingData.shippingAddress, item, phoneString, inputPhone]);
-
-
     onSubmitLocal = onSubmit
     const updateIssuer = ( changeEvent ) => {
         selectIssuer( changeEvent.target.value )
@@ -264,16 +234,6 @@ const MollieComponent = (props) => {
         if (!isPhoneFieldVisible) {
             const phoneField = item.phonePlaceholder ? item.phonePlaceholder : "Phone";
             fields.push(fieldMarkup("billing-phone-in3", "tel", phoneField, updatePhone, inputPhone));
-        }
-
-        return <>{fields}</>;
-    }
-
-    if (item.name === "mollie_wc_gateway_bancomatpay"){
-        let fields = [];
-        if (!isPhoneFieldVisible) {
-            const phoneField = item.phonePlaceholder ? item.phonePlaceholder : "Phone";
-            fields.push(fieldMarkup("billing-phone-bancomatpay", "tel", phoneField, updatePhone, inputPhone));
         }
 
         return <>{fields}</>;

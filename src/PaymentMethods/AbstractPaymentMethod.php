@@ -297,9 +297,9 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     {
         $fields = $this->getAllFormFields();
         //remove setting title fields
-        $fields = array_filter($fields, static function ($key) {
-                return !is_numeric($key);
-        }, ARRAY_FILTER_USE_KEY);
+        $fields = array_filter($fields, static function ($field) {
+                return isset($field['type']) && $field['type'] !== 'title';
+        });
         //we don't save the default description or title, in case the language changes
         unset($fields['description']);
         unset($fields['title']);

@@ -111,7 +111,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                         return $method['id'] !== Constants::KLARNA;
                     });
                 }
-                $bancomatpayFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.bancomatpay_enabled', false);
+                $bancomatpayFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.bancomatpay_enabled', true);
                 if (!$bancomatpayFlag) {
                     return array_filter($availablePaymentMethods, static function ($method) {
                         return $method['id'] !== Constants::BANCOMATPAY;
@@ -277,26 +277,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
             );
             add_action('woocommerce_rest_checkout_process_payment_with_context', [$this, 'addPhoneWhenRest'], 11);
         }
-        $isBancomatPayEnabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_bancomatpay_settings', 'enabled');
-        if ($isBancomatPayEnabled) {
-            add_filter(
-                'woocommerce_after_checkout_validation',
-                [$this, 'bancomatpayFieldsMandatory'],
-                11,
-                2
-            );
-            add_action(
-                'woocommerce_before_pay_action',
-                [$this, 'bancomatpayFieldsMandatoryPayForOrder'],
-                11
-            );
-            add_action(
-                'woocommerce_checkout_posted_data',
-                [$this, 'switchFields'],
-                11
-            );
-            add_action('woocommerce_rest_checkout_process_payment_with_context', [$this, 'addPhoneWhenRest'], 11);
-        }
+
         // Set order to paid and processed when eventually completed without Mollie
         add_action('woocommerce_payment_complete', [$this, 'setOrderPaidByOtherGateway'], 10, 1);
         $appleGateway = isset($container->get('gateway.instances')['mollie_wc_gateway_applepay']) ? $container->get(
@@ -681,15 +662,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
         return $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $birthdateField, $birthDateLabel, $errors);
     }
 
-    public function bancomatpayFieldsMandatory($fields, $errors)
-    {
-        $gatewayName = "mollie_wc_gateway_bancomatpay";
-        $phoneField = 'billing_phone_bancomatpay';
-        $phoneLabel = __('Phone', 'mollie-payments-for-woocommerce');
-        return $this->addPaymentMethodMandatoryFieldsPhoneVerification($fields, $gatewayName, $phoneField, $phoneLabel, $errors);
-    }
-
-
     /**
      * @param $order
      */
@@ -721,34 +693,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
             wc_add_notice(
                 sprintf(
                     __('%s is a required field. Valid phone format +000000000', 'mollie-payments-for-woocommerce'),
-                    "<strong>$phoneLabel</strong>"
-                ),
-                'error'
-            );
-        } else {
-            $order->set_billing_phone($phoneValue);
-        }
-    }
-
-    /**
-     * @param $order
-     */
-    public function bancomatpayFieldsMandatoryPayForOrder($order)
-    {
-        $paymentMethod = filter_input(INPUT_POST, 'payment_method', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
-
-        if ($paymentMethod !== 'mollie_wc_gateway_bancomatpay') {
-            return;
-        }
-
-        $phoneValue = filter_input(INPUT_POST, 'billing_phone_bancomatpay', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
-        $phoneValue = $phoneValue && $this->isPhoneValid($phoneValue) ? $phoneValue : false;
-        $phoneLabel = __('Phone', 'mollie-payments-for-woocommerce');
-
-        if (!$phoneValue) {
-            wc_add_notice(
-                sprintf(
-                    __('%s is a required field. Valid phone format +00000000000', 'mollie-payments-for-woocommerce'),
                     "<strong>$phoneLabel</strong>"
                 ),
                 'error'
@@ -867,12 +811,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $data['billing_phone'] = !empty($fieldPosted) ? $fieldPosted : $data['billing_phone'];
             }
         }
-        if (isset($data['payment_method']) && $data['payment_method'] === 'mollie_wc_gateway_bancomatpay') {
-            $fieldPosted = filter_input(INPUT_POST, 'billing_phone_bancomatpay', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
-            if ($fieldPosted) {
-                $data['billing_phone'] = !empty($fieldPosted) ? $fieldPosted : $data['billing_phone'];
-            }
-        }
         if (isset($data['payment_method']) && $data['payment_method'] === 'mollie_wc_gateway_billie') {
             $fieldPosted = filter_input(INPUT_POST, 'billing_company_billie', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
             if ($fieldPosted) {
@@ -890,7 +828,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
     public function addPhoneWhenRest($arrayContext)
     {
         $context = $arrayContext;
-        $phoneMandatoryGateways = ['mollie_wc_gateway_in3', 'mollie_wc_gateway_bancomatpay'];
+        $phoneMandatoryGateways = ['mollie_wc_gateway_in3'];
         $paymentMethod = $context->payment_data['payment_method'];
         if (in_array($paymentMethod, $phoneMandatoryGateways)) {
             $billingPhone = $context->order->get_billing_phone();

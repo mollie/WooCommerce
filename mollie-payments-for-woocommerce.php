@@ -14,6 +14,7 @@
  * WC requires at least: 3.9
  * WC tested up to: 8.7
  * Requires PHP: 7.2
+ * Requires Plugins: woocommerce
  */
 declare(strict_types=1);
 

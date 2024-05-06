@@ -174,11 +174,16 @@ const MollieComponent = (props) => {
             }
         }
         let isPhoneEmpty = (billing.billingData.phone === '' && shippingData.shippingAddress.phone === '') && inputPhone === '';
-        let isBirthdateEmpty = inputBirthdate === ''
+        let isBirthdateValid = inputBirthdate === ''
+        let today = new Date();
+        let birthdate = new Date(inputBirthdate);
+        if (birthdate > today) {
+            isBirthdateValid = false
+        }
         const unsubscribeProcessing = onCheckoutValidation(
 
             () => {
-                if (activePaymentMethod === 'mollie_wc_gateway_in3' && (isPhoneEmpty || isBirthdateEmpty)) {
+                if (activePaymentMethod === 'mollie_wc_gateway_in3' && (isPhoneEmpty || isBirthdateValid)) {
                     return {
                         errorMessage: item.errorMessage,
                     };

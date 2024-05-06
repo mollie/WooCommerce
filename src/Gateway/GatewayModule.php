@@ -8,6 +8,7 @@ namespace Mollie\WooCommerce\Gateway;
 
 use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
 use Automattic\WooCommerce\StoreApi\Exceptions\RouteException;
+use DateTime;
 use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
 use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ServiceModule;
@@ -276,6 +277,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 11
             );
             add_action('woocommerce_rest_checkout_process_payment_with_context', [$this, 'addPhoneWhenRest'], 11);
+            add_action('woocommerce_rest_checkout_process_payment_with_context', [$this, 'addBirthdateWhenRest'], 11);
         }
 
         // Set order to paid and processed when eventually completed without Mollie
@@ -659,7 +661,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $phoneLabel = __('Phone', 'mollie-payments-for-woocommerce');
         $birthDateLabel = __('Birthdate', 'mollie-payments-for-woocommerce');
         $fields = $this->addPaymentMethodMandatoryFieldsPhoneVerification($fields, $gatewayName, $phoneField, $phoneLabel, $errors);
-        return $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $birthdateField, $birthDateLabel, $errors);
+        return $this->addPaymentMethodMandatoryFieldsBirthVerification($fields, $gatewayName, $birthdateField, $birthDateLabel, $errors);
     }
 
     /**
@@ -675,6 +677,25 @@ class GatewayModule implements ServiceModule, ExecutableModule
 
         $birthdateValue = filter_input(INPUT_POST, self::FIELD_IN3_BIRTHDATE, FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
         $birthDateLabel = __('Birthdate', 'mollie-payments-for-woocommerce');
+        if (!$birthdateValue) {
+            wc_add_notice(
+                sprintf(
+                    __('%s is a required field.', 'woocommerce'),
+                    "<strong>$birthDateLabel</strong>"
+                ),
+                'error'
+            );
+        }
+        $birthdateValue = $birthdateValue && $this->isBirthValid($birthdateValue) ? $birthdateValue : false;
+        if (!$birthdateValue) {
+            wc_add_notice(
+                sprintf(
+                    __('%s is not a valid birthdate value.', 'woocommerce'),
+                    "<strong>$birthDateLabel</strong>"
+                ),
+                'error'
+            );
+        }
 
         if (!$birthdateValue) {
             wc_add_notice(
@@ -803,6 +824,46 @@ class GatewayModule implements ServiceModule, ExecutableModule
         return $fields;
     }
 
+    public function addPaymentMethodMandatoryFieldsBirthVerification(
+        $fields,
+        string $gatewayName,
+        string $field,
+        string $fieldLabel,
+        $errors
+    ) {
+        if ($fields['payment_method'] !== $gatewayName) {
+            return $fields;
+        }
+        if (isset($fields['billing_birthdate']) && $this->isBirthValid($fields['billing_birthdate'])) {
+            return $fields;
+        }
+        $fieldPosted = filter_input(INPUT_POST, $field, FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+        if (!$fieldPosted) {
+            $errors->add(
+                'validation',
+                sprintf(
+                    __('%s is a required field.', 'woocommerce'),
+                    "<strong>$fieldLabel</strong>"
+                )
+            );
+            return $fields;
+        }
+
+        if (!$this->isBirthValid($fieldPosted)) {
+            $errors->add(
+                'validation',
+                sprintf(
+                    __('%s is not a valid birthdate value.', 'woocommerce'),
+                    "<strong>$fieldLabel</strong>"
+                )
+            );
+            return $fields;
+        } else {
+            $fields['billing_birthdate'] = $fieldPosted;
+        }
+        return $fields;
+    }
+
     public function switchFields($data)
     {
         if (isset($data['payment_method']) && $data['payment_method'] === 'mollie_wc_gateway_in3') {
@@ -825,6 +886,16 @@ class GatewayModule implements ServiceModule, ExecutableModule
         return preg_match('/^\+[1-9]\d{10,13}$/', $billing_phone);
     }
 
+    private function isBirthValid($billing_birthdate)
+    {
+        $today = new DateTime();
+        $birthdate = DateTime::createFromFormat('Y-m-d', $billing_birthdate);
+        if ($birthdate >= $today) {
+            return false;
+        }
+        return true;
+    }
+
     public function addPhoneWhenRest($arrayContext)
     {
         $context = $arrayContext;
@@ -841,6 +912,27 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $context->order->save();
             } else {
                 $message = __('Please introduce a valid phone number. +00000000000', 'mollie-payments-for-woocommerce');
+                throw new RouteException(
+                    'woocommerce_rest_checkout_process_payment_error',
+                    $message,
+                    402
+                );
+            }
+        }
+    }
+
+    public function addBirthdateWhenRest($arrayContext)
+    {
+        $context = $arrayContext;
+        $birthMandatoryGateways = ['mollie_wc_gateway_in3'];
+        $paymentMethod = $context->payment_data['payment_method'];
+        if (in_array($paymentMethod, $birthMandatoryGateways)) {
+            $billingBirthdate = $context->payment_data['billing_birthdate'];
+            if ($billingBirthdate && $this->isBirthValid($billingBirthdate)) {
+                $context->order->update_meta_data('billing_birthdate', $billingBirthdate);
+                $context->order->save();
+            } else {
+                $message = __('Please introduce a valid birthdate number.', 'mollie-payments-for-woocommerce');
                 throw new RouteException(
                     'woocommerce_rest_checkout_process_payment_error',
                     $message,

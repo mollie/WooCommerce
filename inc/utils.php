@@ -187,8 +187,8 @@ function mollieWooCommerceFormatCurrencyValue($value, $currency)
         return number_format($value, 0, '.', '');
     }
     // trying to avoid floating point issues
-    $value= $value * 1000;
-    $value= (int) $value / 1000; //drop the last decimal after the third
+    $value = $value * 1000;
+    $value = (int) $value / 1000; //drop the last decimal after the third
     $value = round($value, 3);
     $value = round($value, 2, PHP_ROUND_HALF_DOWN); //round down, as seems woo like it :)
     return number_format($value, 2, '.', '');

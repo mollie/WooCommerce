@@ -15,6 +15,7 @@ use WC_Order;
 use WC_Payment_Gateway;
 use Psr\Log\LoggerInterface as Logger;
 use stdClass;
+
 class MollieObject
 {
     public const MAXIMAL_LENGHT_ADDRESS = 100;

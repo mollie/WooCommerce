@@ -1014,6 +1014,4 @@ class MollieOrder extends MollieObject
         }
         return null;
     }
-
-
 }

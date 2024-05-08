@@ -104,6 +104,9 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 }
                 return $availableMethods;
             },
+            'gateway.featureFlag.CustomGateway' => static function (ContainerInterface $container): bool {
+                return apply_filters('inpsyde.feature-flags.mollie-woocommerce.pos_enabled', true);
+            },
             'gateway.getPaymentMethodsAfterFeatureFlag' => static function (ContainerInterface $container): array {
                 $availablePaymentMethods = $container->get('gateway.listAllMethodsAvailable');
                 $klarnaOneFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.klarna_one_enabled', true);
@@ -117,6 +120,10 @@ class GatewayModule implements ServiceModule, ExecutableModule
                     return array_filter($availablePaymentMethods, static function ($method) {
                         return $method['id'] !== Constants::BANCOMATPAY;
                     });
+                }
+                $customGatewayFlag = $container->get('gateway.featureFlag.CustomGateway');
+                if ($customGatewayFlag) {
+                    $availablePaymentMethods[] = ['id' => Constants::CUSTOM];
                 }
                 return $availablePaymentMethods;
             },
@@ -544,7 +551,11 @@ class GatewayModule implements ServiceModule, ExecutableModule
 
         foreach ($paymentMethods as $paymentMethod) {
             $paymentMethodId = $paymentMethod->getIdFromConfig();
-            if (! in_array($paymentMethodId, $container->get('gateway.paymentMethodsEnabledAtMollie'))) {
+            $featureFlagCustomGateway = $container->get('gateway.featureFlag.CustomGateway');
+            if (
+                !in_array($paymentMethodId, $container->get('gateway.paymentMethodsEnabledAtMollie'))
+                && ($paymentMethodId === Constants::CUSTOM && !$featureFlagCustomGateway)
+            ) {
                 continue;
             }
             $isSepa = $paymentMethod->getProperty('SEPA');

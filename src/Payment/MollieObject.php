@@ -1073,8 +1073,8 @@ class MollieObject
         //remove whitespaces and all non numerical characters except +
         $phone = preg_replace('/[^0-9+]+/', '', $phone);
 
-        //check that $phone is in E164 format
-        if ($phone !== null && preg_match('/^\+[1-9]\d{1,14}$/', $phone)) {
+        //check that $phone is in E164 format or can be changed by api
+        if ($phone !== null && preg_match('/^\+[1-9]\d{10,13}$|^[1-9]\d{9,13}$/', $phone)) {
             return $phone;
         }
         return null;

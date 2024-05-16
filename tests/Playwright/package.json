@@ -1,14 +1,8 @@
 {
-  "name": "playwright",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {},
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@playwright/test": "^1.43.1",
-    "@types/node": "^20.12.7"
+  "license": "MIT",
+  "dependencies": {
+    "@playwright/test": "^1.34.2",
+    "@woocommerce/woocommerce-rest-api": "^1.0.1",
+    "dotenv": "^16.0.3"
   }
 }

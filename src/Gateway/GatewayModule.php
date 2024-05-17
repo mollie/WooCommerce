@@ -707,9 +707,18 @@ class GatewayModule implements ServiceModule, ExecutableModule
             );
         }
         $phoneValue = filter_input(INPUT_POST, 'billing_phone_in3', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
-        $phoneValue = $phoneValue && $this->isPhoneValid($phoneValue) ? $phoneValue : null;
-
-        if ($phoneValue) {
+        $phoneValid = $phoneValue && $this->isPhoneValid($phoneValue) ? $phoneValue : null;
+        $phoneLabel = __('Phone', 'mollie-payments-for-woocommerce');
+        if (!$phoneValue) {
+            wc_add_notice(
+                sprintf(
+                    __('%s is a required field. Valid phone format +000000000', 'mollie-payments-for-woocommerce'),
+                    "<strong>$phoneLabel</strong>"
+                ),
+                'error'
+            );
+        }
+        if ($phoneValid) {
             $order->set_billing_phone($phoneValue);
         }
     }
@@ -785,10 +794,10 @@ class GatewayModule implements ServiceModule, ExecutableModule
         if ($fields['payment_method'] !== $gatewayName) {
             return $fields;
         }
-        if (isset($fields['billing_phone']) && $this->isPhoneValid($fields['billing_phone'])) {
+        if (!empty($fields['billing_phone']) && $this->isPhoneValid($fields['billing_phone'])) {
             return $fields;
         }
-        if (isset($fields['billing_phone']) && !$this->isPhoneValid($fields['billing_phone'])) {
+        if (!empty($fields['billing_phone']) && !$this->isPhoneValid($fields['billing_phone'])) {
             $fields['billing_phone'] = null;
             return $fields;
         }
@@ -797,7 +806,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
             $errors->add(
                 'validation',
                 sprintf(
-                    __('%s is a required field.', 'woocommerce'),
+                    __('%s is a required field. Valid phone format +000000000', 'woocommerce'),
                     "<strong>$fieldLabel</strong>"
                 )
             );
@@ -823,7 +832,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         if ($fields['payment_method'] !== $gatewayName) {
             return $fields;
         }
-        if (isset($fields['billing_birthdate']) && $this->isBirthValid($fields['billing_birthdate'])) {
+        if (!empty($fields['billing_birthdate']) && $this->isBirthValid($fields['billing_birthdate'])) {
             return $fields;
         }
         $fieldPosted = filter_input(INPUT_POST, $field, FILTER_SANITIZE_SPECIAL_CHARS) ?? false;

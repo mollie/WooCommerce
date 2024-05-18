@@ -655,11 +655,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
     {
         $gatewayName = "mollie_wc_gateway_in3";
         $phoneField = 'billing_phone_in3';
-        $birthdateField = self::FIELD_IN3_BIRTHDATE;
         $phoneLabel = __('Phone', 'mollie-payments-for-woocommerce');
-        $birthDateLabel = __('Birthdate', 'mollie-payments-for-woocommerce');
-        $fields = $this->addPaymentMethodMandatoryFieldsPhoneVerification($fields, $gatewayName, $phoneField, $phoneLabel, $errors);
-        return $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $birthdateField, $birthDateLabel, $errors);
+        return $this->addPaymentMethodMandatoryFieldsPhoneVerification($fields, $gatewayName, $phoneField, $phoneLabel, $errors);
     }
 
     /**
@@ -673,18 +670,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
             return;
         }
 
-        $birthdateValue = filter_input(INPUT_POST, self::FIELD_IN3_BIRTHDATE, FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
-        $birthDateLabel = __('Birthdate', 'mollie-payments-for-woocommerce');
-
-        if (!$birthdateValue) {
-            wc_add_notice(
-                sprintf(
-                    __('%s is a required field.', 'woocommerce'),
-                    "<strong>$birthDateLabel</strong>"
-                ),
-                'error'
-            );
-        }
         $phoneValue = filter_input(INPUT_POST, 'billing_phone_in3', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
         $phoneValid = $phoneValue && $this->isPhoneValid($phoneValue) ? $phoneValue : null;
 
@@ -800,7 +785,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
 
     private function isPhoneValid($billing_phone)
     {
-        return preg_match('/^\+[1-9]\d{10,13}$/', $billing_phone);
+        return preg_match('/^\+[1-9]\d{10,13}$|^[1-9]\d{9,13}$/', $billing_phone);
     }
 
     public function addPhoneWhenRest($arrayContext)

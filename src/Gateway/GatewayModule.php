@@ -692,7 +692,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         if (!$phoneValue) {
             wc_add_notice(
                 sprintf(
-                    __('%s is a required field. Valid phone format +000000000', 'mollie-payments-for-woocommerce'),
+                    __('%s is a required field. Valid phone format +316xxxxxxxx', 'mollie-payments-for-woocommerce'),
                     "<strong>$phoneLabel</strong>"
                 ),
                 'error'
@@ -786,7 +786,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
             $errors->add(
                 'validation',
                 sprintf(
-                    __('%s is a required field. Valid phone format +000000000', 'woocommerce'),
+                    __('%s is a required field. Valid phone format +316xxxxxxxx', 'woocommerce'),
                     "<strong>$fieldLabel</strong>"
                 )
             );

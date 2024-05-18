@@ -687,17 +687,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         }
         $phoneValue = filter_input(INPUT_POST, 'billing_phone_in3', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
         $phoneValid = $phoneValue && $this->isPhoneValid($phoneValue) ? $phoneValue : null;
-        $phoneLabel = __('Phone', 'mollie-payments-for-woocommerce');
 
-        if (!$phoneValue) {
-            wc_add_notice(
-                sprintf(
-                    __('%s is a required field. Valid phone format +316xxxxxxxx', 'mollie-payments-for-woocommerce'),
-                    "<strong>$phoneLabel</strong>"
-                ),
-                'error'
-            );
-        }
         if ($phoneValid) {
             $order->set_billing_phone($phoneValue);
         }
@@ -782,23 +772,12 @@ class GatewayModule implements ServiceModule, ExecutableModule
             return $fields;
         }
         $fieldPosted = filter_input(INPUT_POST, $field, FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
-        if (!$fieldPosted) {
-            $errors->add(
-                'validation',
-                sprintf(
-                    __('%s is a required field. Valid phone format +316xxxxxxxx', 'woocommerce'),
-                    "<strong>$fieldLabel</strong>"
-                )
-            );
-            return $fields;
-        }
 
-        if (!$this->isPhoneValid($fieldPosted)) {
-            $fields['billing_phone'] = null;
-            return $fields;
-        } else {
+        if ($fieldPosted && !$this->isPhoneValid($fieldPosted)) {
             $fields['billing_phone'] = $fieldPosted;
+            return $fields;
         }
+        $fields['billing_phone'] = null;
         return $fields;
     }
 

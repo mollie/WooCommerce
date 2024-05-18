@@ -173,12 +173,11 @@ const MollieComponent = (props) => {
                 phoneLabel.innerText = phoneString
             }
         }
-        let isPhoneEmpty = (billing.billingData.phone === '' && shippingData.shippingAddress.phone === '') && inputPhone === '';
         let isBirthdateEmpty = inputBirthdate === ''
         const unsubscribeProcessing = onCheckoutValidation(
 
             () => {
-                if (activePaymentMethod === 'mollie_wc_gateway_in3' && (isPhoneEmpty || isBirthdateEmpty)) {
+                if (activePaymentMethod === 'mollie_wc_gateway_in3' &&  isBirthdateEmpty) {
                     return {
                         errorMessage: item.errorMessage,
                     };

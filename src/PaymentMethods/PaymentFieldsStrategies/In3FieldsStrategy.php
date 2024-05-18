@@ -51,7 +51,6 @@ class In3FieldsStrategy implements PaymentFieldsStrategyI
         ?>
         <p class="form-row form-row-wide" id="billing_birthdate_field">
             <label for="<?= esc_attr(self::FIELD_BIRTHDATE); ?>" class=""><?= esc_html__('Birthdate', 'mollie-payments-for-woocommerce'); ?>
-                <abbr class="required" title="required">*</abbr>
             </label>
             <span class="woocommerce-input-wrapper">
                 <input type="date" class="input-text " name="<?= esc_attr(self::FIELD_BIRTHDATE); ?>"
@@ -67,7 +66,6 @@ class In3FieldsStrategy implements PaymentFieldsStrategyI
         ?>
         <p class="form-row form-row-wide" id="billing_phone_field">
             <label for="<?= esc_attr(self::FIELD_PHONE); ?>" class=""><?= esc_html__('Phone', 'mollie-payments-for-woocommerce'); ?>
-                <abbr class="required" title="required">*</abbr>
             </label>
             <span class="woocommerce-input-wrapper">
         <input type="tel" class="input-text " name="<?= esc_attr(self::FIELD_PHONE); ?>" id="<?= esc_attr(self::FIELD_PHONE); ?>"

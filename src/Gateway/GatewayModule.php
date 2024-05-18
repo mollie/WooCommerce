@@ -821,7 +821,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
 
     private function isPhoneValid($billing_phone)
     {
-        return preg_match('/^\+[1-9]\d{10,13}$/', $billing_phone);
+        return preg_match('/^\+[1-9]\d{10,13}$|^[1-9]\d{9,13}$/', $billing_phone);
     }
 
     public function addPhoneWhenRest($arrayContext)

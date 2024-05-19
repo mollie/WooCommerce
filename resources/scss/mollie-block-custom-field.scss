@@ -1,0 +1,28 @@
+/* Style the container to match WooCommerce styling */
+.custom-input {
+  margin-bottom: 1.5em;
+  display: flex;
+  flex-direction: column;
+}
+
+.custom-input label {
+  margin-bottom: 0.5em;
+  font-weight: bold;
+}
+
+#billing-birthdate,
+#billing-phone-in3 {
+  width: 100%;
+  padding: 0.75em;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 1em;
+  margin-bottom: 1.25em;
+}
+
+#billing-birthdate {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}

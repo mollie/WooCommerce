@@ -327,16 +327,13 @@ class GatewayModule implements ServiceModule, ExecutableModule
             }
         );
         add_action('add_meta_boxes_woocommerce_page_wc-orders', [$this, 'addShopOrderMetabox'], 10);
-        add_filter('woocommerce_form_field_args', static function ($args, $key, $value) use ($container) {
-            if ($key !== 'billing_phone') {
-                return $args;
-            }
-            if ($args['required'] === true) {
-                update_option('mollie_wc_is_phone_required_flag', true);
-            } else {
+        add_filter('woocommerce_checkout_fields', static function ($fields) use ($container) {
+            if (!isset($fields['billing']['billing_phone'])) {
                 update_option('mollie_wc_is_phone_required_flag', false);
+            } else {
+                update_option('mollie_wc_is_phone_required_flag', true);
             }
-            return $args;
+            return $fields;
         }, 10, 3);
         return true;
     }

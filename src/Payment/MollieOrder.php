@@ -1226,9 +1226,22 @@ class MollieOrder extends MollieObject
     {
         //remove whitespaces and all non numerical characters except +
         $phone = preg_replace('/[^0-9+]+/', '', $phone);
+        if (!is_string($phone)) {
+            return null;
+        }
+        //check if phone starts with 06 and replace with +316
+        $startsWith06 = preg_match('/^06/', $phone);
+        if ($startsWith06) {
+            $prefix = '+316';
+            $phone = substr($phone, 2);
+            if (!$phone) {
+                return null;
+            }
+            $phone = $prefix . $phone;
+        }
 
         //check that $phone is in E164 format or can be changed by api
-        if ($phone !== null && preg_match('/^\+[1-9]\d{10,13}$|^[1-9]\d{9,13}$/', $phone)) {
+        if (preg_match('/^\+[1-9]\d{10,13}$|^[1-9]\d{9,13}$/', $phone)) {
             return $phone;
         }
         return null;

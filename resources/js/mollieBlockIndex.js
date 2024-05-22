@@ -22,9 +22,11 @@ import molliePaymentMethod from './blocks/molliePaymentMethod'
 
             function getPhoneField()
             {
-                const shippingPhone = shipping_address.phone ?? false;
-                const billingPhone = billing_address.phone ?? false
-                return billingPhone || shippingPhone;
+                const phoneFieldDataset = document.querySelector('[data-show-phone-field]');
+                if (!phoneFieldDataset) {
+                    return true;
+                }
+                return phoneFieldDataset.dataset.showPhoneField !== "false"
             }
 
             const isCompanyFieldVisible = getCompanyField();

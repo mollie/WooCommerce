@@ -46,7 +46,7 @@ class BancomatpayFieldsStrategy implements PaymentFieldsStrategyI
             </label>
             <span class="woocommerce-input-wrapper">
         <input type="tel" class="input-text " name="<?= esc_attr(self::FIELD_PHONE); ?>" id="<?= esc_attr(self::FIELD_PHONE); ?>"
-               placeholder="+00000000000"
+               placeholder="+39xxxxxxxxx"
                value="<?= esc_attr($phoneValue); ?>" autocomplete="phone">
         </span>
         </p>

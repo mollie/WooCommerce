@@ -668,6 +668,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         }
 
         $phoneValue = filter_input(INPUT_POST, 'billing_phone_in3', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+        $phoneValue = transformPhoneToNLFormat($phoneValue);
         $phoneValid = $phoneValue && $this->isPhoneValid($phoneValue) ? $phoneValue : null;
 
         if ($phoneValid) {

@@ -1230,15 +1230,7 @@ class MollieOrder extends MollieObject
             return null;
         }
         //check if phone starts with 06 and replace with +316
-        $startsWith06 = preg_match('/^06/', $phone);
-        if ($startsWith06) {
-            $prefix = '+316';
-            $phone = substr($phone, 2);
-            if (!$phone) {
-                return null;
-            }
-            $phone = $prefix . $phone;
-        }
+        $phone = transformPhoneToNLFormat($phone);
 
         //check that $phone is in E164 format or can be changed by api
         if (preg_match('/^\+[1-9]\d{10,13}$|^[1-9]\d{9,13}$/', $phone)) {

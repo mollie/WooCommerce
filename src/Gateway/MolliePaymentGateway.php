@@ -1014,8 +1014,8 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
     public function getSelectedIssuer(): ?string
     {
         $issuer_id = $this->pluginId . '_issuer_' . $this->id;
-
-        $postedIssuer = sanitize_text_field($_POST[$issuer_id] ?? '');
+        //phpcs:ignore WordPress.Security.NonceVerification
+        $postedIssuer = wc_clean(wp_unslash($_POST[$issuer_id] ?? ''));
         return !empty($postedIssuer) ? $postedIssuer : null;
     }
 

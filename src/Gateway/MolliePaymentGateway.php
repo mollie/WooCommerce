@@ -1015,7 +1015,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
     {
         $issuer_id = $this->pluginId . '_issuer_' . $this->id;
 
-        $postedIssuer = filter_input(INPUT_POST, $issuer_id, FILTER_SANITIZE_SPECIAL_CHARS);
+        $postedIssuer = sanitize_text_field($_POST[$issuer_id] ?? '');
         return !empty($postedIssuer) ? $postedIssuer : null;
     }
 

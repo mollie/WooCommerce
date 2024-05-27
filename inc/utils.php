@@ -226,3 +226,17 @@ function mollieDeleteWPTranslationFiles()
         }
     }
 }
+
+function transformPhoneToNLFormat($phone)
+{
+    $startsWith06 = preg_match('/^06/', $phone);
+    if ($startsWith06) {
+        $prefix = '+316';
+        $phone = substr($phone, 2);
+        if (!$phone) {
+            return null;
+        }
+        $phone = $prefix . $phone;
+    }
+    return $phone;
+}

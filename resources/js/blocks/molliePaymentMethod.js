@@ -161,6 +161,41 @@ const MollieComponent = (props) => {
 
     }, [activePaymentMethod, onCheckoutValidation, billing.billingData, item, companyNameString, inputCompany]);
 
+    useEffect(() => {
+        let phoneLabel = getPhoneField()?.labels?.[0] ?? null;
+        if (!phoneLabel || phoneLabel.length === 0) {
+            return
+        }
+        if (activePaymentMethod === 'mollie_wc_gateway_in3') {
+            phoneLabel.innerText = item.phonePlaceholder
+        } else {
+            if (phoneString !== false) {
+                phoneLabel.innerText = phoneString
+            }
+        }
+        let isPhoneEmpty = (billing.billingData.phone === '' && shippingData.shippingAddress.phone === '') && inputPhone === '';
+        let isBirthdateValid = inputBirthdate === ''
+        let today = new Date();
+        let birthdate = new Date(inputBirthdate);
+        if (birthdate > today) {
+            isBirthdateValid = false
+        }
+        const unsubscribeProcessing = onCheckoutValidation(
+
+            () => {
+                if (activePaymentMethod === 'mollie_wc_gateway_in3' && (isPhoneEmpty || isBirthdateValid)) {
+                    return {
+                        errorMessage: item.errorMessage,
+                    };
+                }
+            }
+        );
+        return () => {
+            unsubscribeProcessing()
+        };
+
+    }, [activePaymentMethod, onCheckoutValidation, billing.billingData, shippingData.shippingAddress, item, phoneString, inputBirthdate, inputPhone]);
+
     onSubmitLocal = onSubmit
     const updateIssuer = ( changeEvent ) => {
         selectIssuer( changeEvent.target.value )

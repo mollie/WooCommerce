@@ -8,6 +8,7 @@ namespace Mollie\WooCommerce\Gateway;
 
 use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
 use Automattic\WooCommerce\StoreApi\Exceptions\RouteException;
+use DateTime;
 use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
 use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ServiceModule;
@@ -276,6 +277,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 11
             );
             add_action('woocommerce_rest_checkout_process_payment_with_context', [$this, 'addPhoneWhenRest'], 11);
+            add_action('woocommerce_rest_checkout_process_payment_with_context', [$this, 'addBirthdateWhenRest'], 11);
         }
 
         // Set order to paid and processed when eventually completed without Mollie
@@ -786,6 +788,16 @@ class GatewayModule implements ServiceModule, ExecutableModule
         return preg_match('/^\+[1-9]\d{10,13}$|^[1-9]\d{9,13}$|^06\d{9,13}$/', $billing_phone);
     }
 
+    private function isBirthValid($billing_birthdate)
+    {
+        $today = new DateTime();
+        $birthdate = DateTime::createFromFormat('Y-m-d', $billing_birthdate);
+        if ($birthdate >= $today) {
+            return false;
+        }
+        return true;
+    }
+
     public function addPhoneWhenRest($arrayContext)
     {
         $context = $arrayContext;
@@ -805,6 +817,27 @@ class GatewayModule implements ServiceModule, ExecutableModule
             if ($billingPhone && $this->isPhoneValid($billingPhone)) {
                 $context->order->set_billing_phone($billingPhone);
                 $context->order->save();
+            }
+        }
+    }
+
+    public function addBirthdateWhenRest($arrayContext)
+    {
+        $context = $arrayContext;
+        $birthMandatoryGateways = ['mollie_wc_gateway_in3'];
+        $paymentMethod = $context->payment_data['payment_method'];
+        if (in_array($paymentMethod, $birthMandatoryGateways)) {
+            $billingBirthdate = $context->payment_data['billing_birthdate'];
+            if ($billingBirthdate && $this->isBirthValid($billingBirthdate)) {
+                $context->order->update_meta_data('billing_birthdate', $billingBirthdate);
+                $context->order->save();
+            } else {
+                $message = __('Please introduce a valid birthdate number.', 'mollie-payments-for-woocommerce');
+                throw new RouteException(
+                    'woocommerce_rest_checkout_process_payment_error',
+                    $message,
+                    402
+                );
             }
         }
     }

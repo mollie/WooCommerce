@@ -174,11 +174,16 @@ const MollieComponent = (props) => {
             }
         }
         let isPhoneEmpty = (billing.billingData.phone === '' && shippingData.shippingAddress.phone === '') && inputPhone === '';
-        let isBirthdateEmpty = inputBirthdate === ''
+        let isBirthdateValid = inputBirthdate === ''
+        let today = new Date();
+        let birthdate = new Date(inputBirthdate);
+        if (birthdate > today) {
+            isBirthdateValid = false
+        }
         const unsubscribeProcessing = onCheckoutValidation(
 
             () => {
-                if (activePaymentMethod === 'mollie_wc_gateway_in3' && (isPhoneEmpty || isBirthdateEmpty)) {
+                if (activePaymentMethod === 'mollie_wc_gateway_in3' && (isPhoneEmpty || isBirthdateValid)) {
                     return {
                         errorMessage: item.errorMessage,
                     };
@@ -190,36 +195,6 @@ const MollieComponent = (props) => {
         };
 
     }, [activePaymentMethod, onCheckoutValidation, billing.billingData, shippingData.shippingAddress, item, phoneString, inputBirthdate, inputPhone]);
-
-    useEffect(() => {
-        let phoneLabel = getPhoneField()?.labels?.[0] ?? null;
-        if (!phoneLabel || phoneLabel.length === 0) {
-            return
-        }
-        if (activePaymentMethod === 'mollie_wc_gateway_bancomatpay') {
-            phoneLabel.innerText = item.phonePlaceholder
-        } else {
-            if (phoneString !== false) {
-                phoneLabel.innerText = phoneString
-            }
-        }
-        let isPhoneEmpty = (billing.billingData.phone === '' && shippingData.shippingAddress.phone === '') && inputPhone === '';
-        const unsubscribeProcessing = onCheckoutValidation(
-
-            () => {
-                if (activePaymentMethod === 'mollie_wc_gateway_bancomatpay' && isPhoneEmpty) {
-                    return {
-                        errorMessage: item.errorMessage,
-                    };
-                }
-            }
-        );
-        return () => {
-            unsubscribeProcessing()
-        };
-
-    }, [activePaymentMethod, onCheckoutValidation, billing.billingData, shippingData.shippingAddress, item, phoneString, inputPhone]);
-
 
     onSubmitLocal = onSubmit
     const updateIssuer = ( changeEvent ) => {
@@ -245,12 +220,14 @@ const MollieComponent = (props) => {
 
     function fieldMarkup(id, fieldType, label, action, value) {
         const className = "wc-block-components-text-input wc-block-components-address-form__" + id;
-        return <div>
-            <input type={fieldType} name={id} id={id} value={value} onChange={action}></input><label htmlFor={id} dangerouslySetInnerHTML={{ __html: label }}></label></div>
+        return <div class="custom-input">
+            <label htmlFor={id} dangerouslySetInnerHTML={{__html: label}}></label>
+            <input type={fieldType} name={id} id={id} value={value} onChange={action}></input>
+        </div>
     }
 
-    if (item.name === "mollie_wc_gateway_billie"){
-        if(isCompanyFieldVisible) {
+    if (item.name === "mollie_wc_gateway_billie") {
+        if (isCompanyFieldVisible) {
            return;
         }
         const companyField = item.companyPlaceholder ? item.companyPlaceholder : "Company name";
@@ -261,19 +238,9 @@ const MollieComponent = (props) => {
         let fields = [];
         const birthdateField = item.birthdatePlaceholder ? item.birthdatePlaceholder : "Birthdate";
         fields.push(fieldMarkup("billing-birthdate", "date", birthdateField, updateBirthdate, inputBirthdate));
-        if (!isPhoneFieldVisible) {
+        if (isPhoneFieldVisible === false) {
             const phoneField = item.phonePlaceholder ? item.phonePlaceholder : "Phone";
             fields.push(fieldMarkup("billing-phone-in3", "tel", phoneField, updatePhone, inputPhone));
-        }
-
-        return <>{fields}</>;
-    }
-
-    if (item.name === "mollie_wc_gateway_bancomatpay"){
-        let fields = [];
-        if (!isPhoneFieldVisible) {
-            const phoneField = item.phonePlaceholder ? item.phonePlaceholder : "Phone";
-            fields.push(fieldMarkup("billing-phone-bancomatpay", "tel", phoneField, updatePhone, inputPhone));
         }
 
         return <>{fields}</>;

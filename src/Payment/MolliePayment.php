@@ -123,6 +123,7 @@ class MolliePayment extends MollieObject
             $encodedApplePayToken = json_encode($applePayToken);
             $paymentRequestData['applePayPaymentToken'] = $encodedApplePayToken;
         }
+        $paymentRequestData = $this->addCustomRequestFields($order, $paymentRequestData, $gateway);
         return $paymentRequestData;
     }
 
@@ -529,5 +530,22 @@ class MolliePayment extends MollieObject
             return;
         }
         $gateway->paymentService()->updateOrderStatus($order, $newOrderStatus);
+    }
+
+    protected function addCustomRequestFields($order, array $paymentRequestData, MolliePaymentGateway $gateway)
+    {
+        if ($gateway->paymentMethod()->hasProperty('paymentAPIfields')) {
+            $paymentAPIfields = $gateway->paymentMethod()->getProperty('paymentAPIfields');
+            foreach ($paymentAPIfields as $field) {
+                if (!method_exists($this, 'create' . ucfirst($field))) {
+                    continue;
+                }
+                $value = $this->{'create' . ucfirst($field)}($order);
+                if ($value) {
+                    $paymentRequestData[$field] = $value;
+                }
+            }
+        }
+        return $paymentRequestData;
     }
 }

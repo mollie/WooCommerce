@@ -46,6 +46,7 @@ function configCss ({ basePath })
     .addStyleEntry('mollie-gateway-icons.min', './resources/scss/mollie-gateway-icons.scss')
     .addStyleEntry('unabledButton.min', './resources/scss/unabledButton.scss')
     .addStyleEntry('mollie-applepaydirect.min', './resources/scss/mollie-applepaydirect.scss')
+    .addStyleEntry('mollie-block-custom-field.min', './resources/scss/mollie-block-custom-field.scss')
     .enableSourceMaps(!Encore.isProduction())
 
   return extractEncoreConfig('css-configuration')

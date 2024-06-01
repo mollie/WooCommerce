@@ -98,6 +98,7 @@
       <path value="$PROJECT_DIR$/vendor/psr/container" />
       <path value="$PROJECT_DIR$/vendor/inpsyde/modularity" />
       <path value="$PROJECT_DIR$/vendor/automattic/jetpack-autoloader" />
+      <path value="$PROJECT_DIR$/vendor/league/container" />
       <path value="$PROJECT_DIR$/vendor/woocommerce/woocommerce-blocks" />
       <path value="$PROJECT_DIR$/vendor/woocommerce/woocommerce-admin" />
       <path value="$PROJECT_DIR$/vendor/woocommerce/woocommerce" />
@@ -125,12 +126,20 @@
       <path value="$PROJECT_DIR$/vendor/phpspec/prophecy" />
       <path value="$PROJECT_DIR$/vendor/doctrine/deprecations" />
       <path value="$PROJECT_DIR$/vendor/phpstan/phpdoc-parser" />
+      <path value="$PROJECT_DIR$/vendor/symfony/finder" />
+      <path value="$PROJECT_DIR$/vendor/league/flysystem" />
+      <path value="$PROJECT_DIR$/vendor/league/mime-type-detection" />
+      <path value="$PROJECT_DIR$/vendor/coenjacobs/mozart" />
+      <path value="$PROJECT_DIR$/.ddev/wordpress/wp-content/plugins/environment-configurator/vendor/composer" />
+      <path value="$PROJECT_DIR$/.ddev/wordpress/wp-content/plugins/query-monitor/vendor/composer" />
+      <path value="$PROJECT_DIR$/.ddev/wordpress/wp-content/plugins/environment-configurator/vendor/psr/container" />
+      <path value="$PROJECT_DIR$/.ddev/wordpress/wp-content/plugins/environment-configurator/vendor/inpsyde/modularity" />
     </include_path>
   </component>
   <component name="PhpInterpreters">
     <interpreters>
-      <interpreter id="52b49461-5bc3-4708-8d5d-ae6e32b31b9c" name="DDEV" home="docker-compose://DATA" debugger_id="php.debugger.XDebug">
-        <remote_data INTERPRETER_PATH="php7.4" HELPERS_PATH="/opt/.phpstorm_helpers" INITIALIZED="false" VALID="true" RUN_AS_ROOT_VIA_SUDO="false" DOCKER_ACCOUNT_NAME="Docker" DOCKER_COMPOSE_SERVICE_NAME="web" DOCKER_REMOTE_PROJECT_PATH="/opt/project">
+      <interpreter id="52b49461-5bc3-4708-8d5d-ae6e32b31b9c" name="DDEV" home="docker-compose://DATA" auto="false" debugger_id="php.debugger.XDebug">
+        <remote_data INTERPRETER_PATH="php7.4" HELPERS_PATH="/opt/.phpstorm_helpers" VALID="true" RUN_AS_ROOT_VIA_SUDO="false" DOCKER_ACCOUNT_NAME="Docker" DOCKER_COMPOSE_SERVICE_NAME="web" DOCKER_REMOTE_PROJECT_PATH="/opt/project">
           <type_data command="EXEC" />
           <dockerComposeConfigurationPaths>
             <item value="$PROJECT_DIR$/.ddev/.ddev-docker-compose-full.yaml" />

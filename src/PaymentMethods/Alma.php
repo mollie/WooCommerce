@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
-class Bancomatpay extends AbstractPaymentMethod implements PaymentMethodI
+class Alma extends AbstractPaymentMethod implements PaymentMethodI
 {
-    public function getConfig(): array
+    protected function getConfig(): array
     {
         return [
-            'id' => 'bancomatpay',
-            'defaultTitle' => __('Bancomat Pay', 'mollie-payments-for-woocommerce'),
+            'id' => 'alma',
+            'defaultTitle' => __('Alma', 'mollie-payments-for-woocommerce'),
             'settingsDescription' => '',
             'defaultDescription' => '',
             'paymentFields' => false,
@@ -21,6 +21,11 @@ class Bancomatpay extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
+            'SEPA' => false,
+            'paymentAPIfields' => [
+                'billingAddress',
+                'shippingAddress',
+            ],
         ];
     }
 

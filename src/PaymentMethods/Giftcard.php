@@ -73,6 +73,11 @@ class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
 
     public function getFormFields($generalFormFields): array
     {
+        $searchKey = 'advanced';
+        $keys = array_keys($generalFormFields);
+        $index = array_search($searchKey, $keys);
+        $before = array_slice($generalFormFields, 0, $index + 1, true);
+        $after = array_slice($generalFormFields, $index + 1, null, true);
         $paymentMethodFormFields =  [
             'issuers_dropdown_shown' => [
                 'title' => __(
@@ -105,6 +110,8 @@ class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
                 'default' => __('Select your gift card', 'mollie-payments-for-woocommerce'),
             ],
         ];
-        return array_merge($generalFormFields, $paymentMethodFormFields);
+        $before = array_merge($before, $paymentMethodFormFields);
+        $formFields = array_merge($before, $after);
+        return $formFields;
     }
 }

@@ -118,6 +118,12 @@ class GatewayModule implements ServiceModule, ExecutableModule
                         return $method['id'] !== Constants::BANCOMATPAY;
                     });
                 }
+                $almaFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.alma_enabled', false);
+                if (!$almaFlag) {
+                    return array_filter($availablePaymentMethods, static function ($method) {
+                        return $method['id'] !== Constants::ALMA;
+                    });
+                }
                 return $availablePaymentMethods;
             },
             'gateway.isSDDGatewayEnabled' => static function (ContainerInterface $container): bool {

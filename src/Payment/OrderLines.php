@@ -560,7 +560,7 @@ class OrderLines
     {
         $shipping_vat_rate = 0;
         if (WC()->cart->shipping_tax_total > 0) {
-            $shipping_vat_rate = round(WC()->cart->shipping_tax_total / WC()->cart->shipping_total, 2) * 100;
+            $shipping_vat_rate = round(WC()->cart->shipping_tax_total / WC()->cart->shipping_total, 4) * 100;
         }
 
         return $shipping_vat_rate;

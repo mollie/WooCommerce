@@ -340,6 +340,4 @@ class Surcharge
         }
         return $feeText;
     }
-
-
 }

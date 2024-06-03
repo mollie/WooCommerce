@@ -334,13 +334,18 @@ for (const [testAction, testActionData] of Object.entries(testData)) {
             await updateMethodSetting(methodName, testActionData.payload);
             if(!beforeAllRan) {
                 await emptyCart(baseURL);
-                await addProductToCart(baseURL, products.surcharge.id, testActionData.productQuantity);
+                let productQuantity = testActionData.productQuantity;
+                if(methodName === 'in3' || methodName === 'klarnasliceit'){
+                    productQuantity = 10;
+                }
+                await addProductToCart(baseURL, products.surcharge.id, productQuantity);
                 const keys = Object.keys(testActionData.methods);
                 randomMethod = keys[Math.floor(Math.random() * Object.entries(testActionData.methods).length)];
                 console.log('randomMethod', randomMethod)
                 beforeAllRan = true;
             }
             await page.goto('/checkout/');
+            await
             await selectPaymentMethodInCheckout(page, methodName);
             let totalAmount = await captureTotalAmountCheckout(page);
             totalAmount = parseTotalAmount(totalAmount);

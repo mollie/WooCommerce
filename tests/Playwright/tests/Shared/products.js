@@ -1,6 +1,6 @@
 const allProducts = {
     surcharge: {
-        'id': 16,//117,
+        'id': 14,//117,
         "title": "Surcharge",
         'link': '/product/surcharge/',
         'sku': 'woo-surcharge',
@@ -11,7 +11,7 @@ const allProducts = {
         'downloadable': 'no',
     },
     simple: {
-        'id': 15,//11,
+        'id': 13,//11,
         "title": "Beanie",
         'link': '/product/beanie/',
         'sku': 'woo-beanie',

@@ -6,11 +6,11 @@ const {sharedUrl} = require("../../Shared/sharedUrl");
 const {emptyCart, addProductToCart} = require("../../Shared/wooUtils");
 const {testData} = require("./testData");
 const {expect} = require("@playwright/test");
-test('basic test', async ({ page }) => {
+/*test('basic test', async ({ page }) => {
     await page.goto('https://playwright.dev/');
     const title = page.locator('.navbar__inner .navbar__title');
     await expect(title).toHaveText('Playwright');
-});
+});*/
 testData.forEach(({methodId, testId, mollieStatus, wooStatus, notice, action}) => {
     test.describe(`_Transaction scenarios_Payment statuses - Block Checkout - ${methodId}`, () => {
         let productQuantity = 1;

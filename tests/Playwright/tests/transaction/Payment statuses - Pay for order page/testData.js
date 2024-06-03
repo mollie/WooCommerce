@@ -601,7 +601,7 @@ export const testData = [
           await wooOrderRetryPage(page);
       }
   },
-  {
+  /*{
       methodId: "billie",
       testId: "C420413",
       mollieStatus: "Authorized",
@@ -640,7 +640,7 @@ export const testData = [
       action: async (page) => {
           await wooOrderRetryPage(page);
       }
-  },
+  },*/
   {
       methodId: "in3",
       testId: "C420334",

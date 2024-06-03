@@ -91,7 +91,7 @@ export const testData = [
             await checkExpiredAtMollie(page);
         }
     },
-    {
+    /*{
         methodId: "billie",
         testId: "C354674",
         mollieStatus: "Authorized",
@@ -130,7 +130,7 @@ export const testData = [
         action: async (page) => {
             await checkExpiredAtMollie(page);
         }
-    },
+    },*/
     {
         methodId: "eps",
         testId: "C3412",

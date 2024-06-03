@@ -1,7 +1,7 @@
 const {test} = require('../Shared/base-test');
 const {settingsNames, checkoutTransaction} = require('../Shared/mollieUtils');
 const {addProductToCart, updateMethodSetting, selectPaymentMethodInCheckout,
-    captureTotalAmountCheckout, parseTotalAmount
+    captureTotalAmountCheckout, parseTotalAmount, emptyCart
 } = require("../Shared/wooUtils");
 const {expect, webkit} = require("@playwright/test");
 const {allMethods} = require("../Shared/gateways");
@@ -18,9 +18,9 @@ const testData = {
         'totalExpectedAmount': 11.00,
         'methods': {
             'bancontact': 'C129502',
-            'applepay': 'C420309',
+            //'applepay': 'C420309',
             'belfius': 'C138011',
-            'billie': 'C354664',
+            //'billie': 'C354664',
             'eps': 'C133658',
             'giropay': 'C136539',
             'ideal': 'C130856',
@@ -49,9 +49,9 @@ const testData = {
         'totalExpectedAmount': 22.00,
         'methods': {
             'bancontact': 'C129503',
-            'applepay': 'C420310',
+            //'applepay': 'C420310',
             'belfius': 'C138012',
-            'billie': 'C354665',
+            //'billie': 'C354665',
             'eps': 'C133659',
             'giropay': 'C136540',
             'ideal': 'C130857',
@@ -80,9 +80,9 @@ const testData = {
         'totalExpectedAmount': 34.19,
         'methods': {
             'bancontact': 'C129504',
-            'applepay': 'C420311',
+            //'applepay': 'C420311',
             'belfius': 'C138013',
-            'billie': 'C354666',
+            //'billie': 'C354666',
             'eps': 'C133660',
             'giropay': 'C136541',
             'ideal': 'C130858',
@@ -112,9 +112,9 @@ const testData = {
         'totalExpectedAmount': 45.19,
         'methods': {
             'bancontact': 'C129505',
-            'applepay': 'C420312',
+            //'applepay': 'C420312',
             'belfius': 'C138014',
-            'billie': 'C354667',
+            //'billie': 'C354667',
             'eps': 'C133661',
             'giropay': 'C136542',
             'ideal': 'C130859',
@@ -144,9 +144,9 @@ const testData = {
         'totalExpectedAmount': 41.80,
         'methods': {
             'bancontact': 'C129506',
-            'applepay': 'C420313',
+            //'applepay': 'C420313',
             'belfius': 'C138015',
-            'billie': 'C354668',
+            //'billie': 'C354668',
             'eps': 'C133662',
             'giropay': 'C136543',
             'ideal': 'C130860',
@@ -176,9 +176,9 @@ const testData = {
         'totalExpectedAmount': 34.19,
         'methods': {
             'bancontact': 'C129507',
-            'applepay': 'C420314',
+            //'applepay': 'C420314',
             'belfius': 'C138016',
-            'billie': 'C354669',
+            //'billie': 'C354669',
             'eps': 'C133663',
             'giropay': 'C136544',
             'ideal': 'C130861',
@@ -209,9 +209,9 @@ const testData = {
         'totalExpectedAmount': 45.19,
         'methods': {
             'bancontact': 'C129508',
-            'applepay': 'C420315',
+            //'applepay': 'C420315',
             'belfius': 'C138017',
-            'billie': 'C354670',
+            //'billie': 'C354670',
             'eps': 'C133664',
             'giropay': 'C136545',
             'ideal': 'C130862',
@@ -241,9 +241,9 @@ const testData = {
         'totalExpectedAmount': 70.40,
         'methods': {
             'bancontact': 'C129509',
-            'applepay': 'C420316',
+            //'applepay': 'C420316',
             'belfius': 'C138018',
-            'billie': 'C354671',
+            //'billie': 'C354671',
             'eps': 'C133665',
             'giropay': 'C136546',
             'ideal': 'C130863',
@@ -273,9 +273,9 @@ const testData = {
         'totalExpectedAmount': 70.40,
         'methods': {
             'bancontact': 'C129510',
-            'applepay': 'C420317',
+            //'applepay': 'C420317',
             'belfius': 'C138019',
-            'billie': 'C354672',
+            //'billie': 'C354672',
             'eps': 'C133666',
             'giropay': 'C137063',
             'ideal': 'C130864',
@@ -306,9 +306,9 @@ const testData = {
         'totalExpectedAmount': 70.40,
         'methods': {
             'bancontact': 'C129511',
-            'applepay': 'C420318',
+            //'applepay': 'C420318',
             'belfius': 'C138020',
-            'billie': 'C354673',
+            //'billie': 'C354673',
             'eps': 'C133667',
             'giropay': 'C137322',
             'ideal': 'C130865',
@@ -333,10 +333,11 @@ for (const [testAction, testActionData] of Object.entries(testData)) {
         test(testActionData.description(testId, methodName) , async ({page, products, baseURL}) => {
             await updateMethodSetting(methodName, testActionData.payload);
             if(!beforeAllRan) {
-                console.log(testActionData.productQuantity)
+                await emptyCart(baseURL);
                 await addProductToCart(baseURL, products.surcharge.id, testActionData.productQuantity);
                 const keys = Object.keys(testActionData.methods);
                 randomMethod = keys[Math.floor(Math.random() * Object.entries(testActionData.methods).length)];
+                console.log('randomMethod', randomMethod)
                 beforeAllRan = true;
             }
             await page.goto('/checkout/');

@@ -60,11 +60,14 @@ const emptyCart = async (baseUrl) => {
 /**
  * @param {import('@playwright/test').Page} page
  */
-const fillCustomerInCheckoutBlock = async (page, country = 'Germany') => {
-    if(await page.getByText(country).first().isVisible()) {
+const fillCustomerInCheckout = async (page, country = 'Germany') => {
+    const countryIsSet = await page.getByText(country).first().isVisible()
+    const canEdit = await page.getByText('Edit').first().isVisible();
+    const isBlockCheckout = page.url().includes('checkout-block');
+    if(isBlockCheckout && countryIsSet) {
         return;
     }
-    if (await page.getByText('Edit').isVisible()) {
+    if (isBlockCheckout && canEdit) {
         await page.getByText('Edit').click();
     }
     await page.getByLabel('First name').first().fill('Julia');
@@ -232,7 +235,7 @@ const manualOrder = (productId, productQuantity, country, postcode) => {
 
 module.exports = {
     addProductToCart,
-    fillCustomerInCheckoutBlock,
+    fillCustomerInCheckoutBlock: fillCustomerInCheckout,
     gotoWooPaymentTab,
     placeOrderCheckout,
     emptyCart,

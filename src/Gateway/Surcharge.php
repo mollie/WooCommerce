@@ -171,7 +171,7 @@ class Surcharge
         if (empty($gatewaySettings[Surcharge::PERCENTAGE])) {
             return 0.0;
         }
-        $percentageFee = $gatewaySettings[Surcharge::PERCENTAGE];
+        $percentageFee = (float) $gatewaySettings[Surcharge::PERCENTAGE];
         $subtotal = $cart->get_subtotal() + $cart->get_shipping_total() - $cart->get_discount_total();
         $taxes = $cart->get_subtotal_tax() + $cart->get_shipping_tax() - $cart->get_discount_tax();
         $total = $subtotal + $taxes;
@@ -190,7 +190,7 @@ class Surcharge
         if (empty($gatewaySettings[Surcharge::PERCENTAGE])) {
             return 0.0;
         }
-        $percentageFee = $gatewaySettings[Surcharge::PERCENTAGE];
+        $percentageFee = (float) $gatewaySettings[Surcharge::PERCENTAGE];
         $total = $order->get_total();
         $fee = $total * ($percentageFee / 100);
 

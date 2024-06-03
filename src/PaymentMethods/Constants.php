@@ -12,4 +12,6 @@ class Constants
     public const BANKTRANSFER = 'banktransfer';
 
     public const BANCOMATPAY = 'bancomatpay';
+
+    public const ALMA = 'alma';
 }

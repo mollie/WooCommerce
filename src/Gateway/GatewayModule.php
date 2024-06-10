@@ -808,8 +808,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
     {
         $context = $arrayContext;
         $phoneMandatoryGateways = ['mollie_wc_gateway_in3'];
-        $paymentMethod = $context->payment_data['payment_method'];
-        if (in_array($paymentMethod, $phoneMandatoryGateways)) {
+        $paymentMethod = $context->payment_data['payment_method'] ?? null;
+        if ($paymentMethod && in_array($paymentMethod, $phoneMandatoryGateways)) {
             $billingPhone = $context->order->get_billing_phone();
             if (!empty($billingPhone) && $this->isPhoneValid($billingPhone)) {
                 return;
@@ -819,7 +819,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $context->order->save();
                 return;
             }
-            $billingPhone = $context->payment_data['billing_phone'];
+            $billingPhone = $context->payment_data['billing_phone'] ?? null;
             if ($billingPhone && $this->isPhoneValid($billingPhone)) {
                 $context->order->set_billing_phone($billingPhone);
                 $context->order->save();
@@ -831,9 +831,9 @@ class GatewayModule implements ServiceModule, ExecutableModule
     {
         $context = $arrayContext;
         $birthMandatoryGateways = ['mollie_wc_gateway_in3'];
-        $paymentMethod = $context->payment_data['payment_method'];
-        if (in_array($paymentMethod, $birthMandatoryGateways)) {
-            $billingBirthdate = $context->payment_data['billing_birthdate'];
+        $paymentMethod = $context->payment_data['payment_method'] ?? null;
+        if ($paymentMethod && in_array($paymentMethod, $birthMandatoryGateways)) {
+            $billingBirthdate = $context->payment_data['billing_birthdate'] ?? null;
             if ($billingBirthdate && $this->isBirthValid($billingBirthdate)) {
                 $context->order->update_meta_data('billing_birthdate', $billingBirthdate);
                 $context->order->save();

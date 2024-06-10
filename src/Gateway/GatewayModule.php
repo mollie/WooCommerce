@@ -108,19 +108,19 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $availablePaymentMethods = $container->get('gateway.listAllMethodsAvailable');
                 $klarnaOneFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.klarna_one_enabled', true);
                 if (!$klarnaOneFlag) {
-                    return array_filter($availablePaymentMethods, static function ($method) {
+                    $availablePaymentMethods = array_filter($availablePaymentMethods, static function ($method) {
                         return $method['id'] !== Constants::KLARNA;
                     });
                 }
                 $bancomatpayFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.bancomatpay_enabled', true);
                 if (!$bancomatpayFlag) {
-                    return array_filter($availablePaymentMethods, static function ($method) {
+                    $availablePaymentMethods = array_filter($availablePaymentMethods, static function ($method) {
                         return $method['id'] !== Constants::BANCOMATPAY;
                     });
                 }
                 $almaFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.alma_enabled', true);
                 if (!$almaFlag) {
-                    return array_filter($availablePaymentMethods, static function ($method) {
+                    $availablePaymentMethods = array_filter($availablePaymentMethods, static function ($method) {
                         return $method['id'] !== Constants::ALMA;
                     });
                 }

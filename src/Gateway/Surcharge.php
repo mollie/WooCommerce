@@ -66,7 +66,7 @@ class Surcharge
      */
     public function buildDescriptionWithSurchargeForBlock(PaymentMethodI $paymentMethod)
     {
-        $defaultDescription = $paymentMethod->getProperty('description') ?: '';
+        $defaultDescription = $paymentMethod->getProperty('description') ?: ($paymentMethod->getProperty('defaultDescription') ?: '');
         $surchargeType = $paymentMethod->getProperty('payment_surcharge');
 
         if (

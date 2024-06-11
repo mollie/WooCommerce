@@ -337,7 +337,7 @@ class Surcharge
     protected function maybeAddTaxString(string $feeText): string
     {
         if (wc_tax_enabled()) {
-            $feeText .= __(' (incl. VAT)', 'mollie-payments-for-woocommerce');
+            $feeText .= __(' (excl. VAT)', 'mollie-payments-for-woocommerce');
         }
         return $feeText;
     }

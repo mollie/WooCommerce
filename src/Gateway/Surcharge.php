@@ -66,7 +66,7 @@ class Surcharge
      */
     public function buildDescriptionWithSurchargeForBlock(PaymentMethodI $paymentMethod)
     {
-        $defaultDescription = $paymentMethod->getProperty('description') ?: '';
+        $defaultDescription = $paymentMethod->getProperty('description') ?: ($paymentMethod->getProperty('defaultDescription') ?: '');
         $surchargeType = $paymentMethod->getProperty('payment_surcharge');
 
         if (
@@ -76,9 +76,10 @@ class Surcharge
             return $defaultDescription;
         }
         $feeText = $this->feeTextByType($surchargeType, $paymentMethod);
-        $feeText = is_string($feeText) ? html_entity_decode($feeText) : false;
+        $feeText = is_string($feeText) ? $defaultDescription . ' ' . html_entity_decode($feeText) : false;
+        $defaultFeeText = $defaultDescription . ' ' . __('A surchage fee might apply');
 
-        return $feeText ?: __('A surchage fee might apply');
+        return $feeText ?: $defaultFeeText;
     }
 
     /**
@@ -336,7 +337,7 @@ class Surcharge
     protected function maybeAddTaxString(string $feeText): string
     {
         if (wc_tax_enabled()) {
-            $feeText .= __(' (incl. VAT)', 'mollie-payments-for-woocommerce');
+            $feeText .= __(' (excl. VAT)', 'mollie-payments-for-woocommerce');
         }
         return $feeText;
     }

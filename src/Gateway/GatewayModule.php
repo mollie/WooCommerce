@@ -108,19 +108,19 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $availablePaymentMethods = $container->get('gateway.listAllMethodsAvailable');
                 $klarnaOneFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.klarna_one_enabled', true);
                 if (!$klarnaOneFlag) {
-                    return array_filter($availablePaymentMethods, static function ($method) {
+                    $availablePaymentMethods = array_filter($availablePaymentMethods, static function ($method) {
                         return $method['id'] !== Constants::KLARNA;
                     });
                 }
                 $bancomatpayFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.bancomatpay_enabled', true);
                 if (!$bancomatpayFlag) {
-                    return array_filter($availablePaymentMethods, static function ($method) {
+                    $availablePaymentMethods = array_filter($availablePaymentMethods, static function ($method) {
                         return $method['id'] !== Constants::BANCOMATPAY;
                     });
                 }
-                $almaFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.alma_enabled', false);
+                $almaFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.alma_enabled', true);
                 if (!$almaFlag) {
-                    return array_filter($availablePaymentMethods, static function ($method) {
+                    $availablePaymentMethods = array_filter($availablePaymentMethods, static function ($method) {
                         return $method['id'] !== Constants::ALMA;
                     });
                 }
@@ -808,8 +808,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
     {
         $context = $arrayContext;
         $phoneMandatoryGateways = ['mollie_wc_gateway_in3'];
-        $paymentMethod = $context->payment_data['payment_method'];
-        if (in_array($paymentMethod, $phoneMandatoryGateways)) {
+        $paymentMethod = $context->payment_data['payment_method'] ?? null;
+        if ($paymentMethod && in_array($paymentMethod, $phoneMandatoryGateways)) {
             $billingPhone = $context->order->get_billing_phone();
             if (!empty($billingPhone) && $this->isPhoneValid($billingPhone)) {
                 return;
@@ -819,7 +819,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $context->order->save();
                 return;
             }
-            $billingPhone = $context->payment_data['billing_phone'];
+            $billingPhone = $context->payment_data['billing_phone'] ?? null;
             if ($billingPhone && $this->isPhoneValid($billingPhone)) {
                 $context->order->set_billing_phone($billingPhone);
                 $context->order->save();
@@ -831,9 +831,9 @@ class GatewayModule implements ServiceModule, ExecutableModule
     {
         $context = $arrayContext;
         $birthMandatoryGateways = ['mollie_wc_gateway_in3'];
-        $paymentMethod = $context->payment_data['payment_method'];
-        if (in_array($paymentMethod, $birthMandatoryGateways)) {
-            $billingBirthdate = $context->payment_data['billing_birthdate'];
+        $paymentMethod = $context->payment_data['payment_method'] ?? null;
+        if ($paymentMethod && in_array($paymentMethod, $birthMandatoryGateways)) {
+            $billingBirthdate = $context->payment_data['billing_birthdate'] ?? null;
             if ($billingBirthdate && $this->isBirthValid($billingBirthdate)) {
                 $context->order->update_meta_data('billing_birthdate', $billingBirthdate);
                 $context->order->save();

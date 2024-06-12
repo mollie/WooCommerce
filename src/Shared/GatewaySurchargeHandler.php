@@ -77,7 +77,7 @@ class GatewaySurchargeHandler
         }
         $order->calculate_totals();
         $orderAmount = $order->get_total();
-        if ($this->surcharge->aboveMaxLimit($orderAmount, $gatewaySettings)) {
+        if ($this->surcharge->aboveMaxLimit(floatval($orderAmount), $gatewaySettings)) {
             return $order;
         }
         $amount = $this->surcharge->calculateFeeAmountOrder($order, $gatewaySettings);

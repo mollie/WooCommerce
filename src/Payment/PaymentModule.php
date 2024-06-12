@@ -384,7 +384,8 @@ class PaymentModule implements ServiceModule, ExecutableModule
             }
 
             if ($mollie_order->isPaid() || $mollie_order->isAuthorized()) {
-                $this->apiHelper->getApiClient($apiKey)->orders->get($mollie_order_id)->shipAll();
+                $shipmentTrackingData = apply_filters('mollie_shipment_tracking_data', [], $order);
+                $this->apiHelper->getApiClient($apiKey)->orders->get($mollie_order_id)->shipAll($shipmentTrackingData);
                 $message = _x('Order successfully updated to shipped at Mollie, capture of funds underway.', 'Order note info', 'mollie-payments-for-woocommerce');
                 $order->add_order_note($message);
                 $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - Order successfully updated to shipped at Mollie, capture of funds underway.');

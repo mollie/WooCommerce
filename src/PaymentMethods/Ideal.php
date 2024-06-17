@@ -14,7 +14,7 @@ class Ideal extends AbstractPaymentMethod implements PaymentMethodI
             'id' => 'ideal',
             'defaultTitle' => __('iDEAL', 'mollie-payments-for-woocommerce'),
             'settingsDescription' => '',
-            'defaultDescription' => __('', 'mollie-payments-for-woocommerce'),
+            'defaultDescription' => '',
             'paymentFields' => false,
             'instructions' => true,
             'supports' => [

@@ -464,13 +464,20 @@ class Data
     public function getMethodWithIssuersById($methodId, $apiKey)
     {
         $method = $this->getCachedMethodById($methodId);
-        if ($method) {
+        if ($method === false) {
+            $method = [];
+        }
+        if (!empty($method['issuers'])) {
             return $method;
         }
         if (!$apiKey) {
             return false;
         }
-        return $this->api_helper->getApiClient($apiKey)->methods->get(sprintf('%s', $methodId), [ "include" => "issuers" ]);
+        $methodWithIssuers = $this->api_helper->getApiClient($apiKey)->methods->get(sprintf('%s', $methodId), [ "include" => "issuers" ]);
+        if (!empty($methodWithIssuers->issuers)) {
+            $method['issuers'] = $methodWithIssuers->issuers;
+        }
+        return $method;
     }
 
     /**
@@ -695,7 +702,6 @@ class Data
         $locale = $this->getPaymentLocale();
         $filters_key = [];
         $filters_key['locale'] = $locale;
-        $filters_key['include'] = 'issuers';
         $transient_id = $this->getTransientId(md5(http_build_query($filters_key)));
         try {
             if ($useCache) {

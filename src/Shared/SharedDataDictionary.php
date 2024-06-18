@@ -71,6 +71,18 @@ class SharedDataDictionary
         'mollie-plugin-version',
         'mollie-new-install',
         'mollie_wc_is_phone_required_flag',
+        '_transient_mollie-wc-ideal_issuers_live',
+        '_transient_mollie-wc-ideal_issuers_test',
+        '_transient_timeout_mollie-wc-ideal_issuers_live',
+        '_transient_timeout_mollie-wc-ideal_issuers_test',
+        '_transient_timeout_mollie-wc-kbc_issuers_live',
+        '_transient_timeout_mollie-wc-kbc_issuers_test',
+        '_transient_mollie-wc-kbc_issuers_live',
+        '_transient_mollie-wc-kbc_issuers_test',
+        '_transient_timeout_mollie-wc-giftcard_issuers_test',
+        '_transient_mollie-wc-giftcard_issuers_test',
+        '_transient_timeout_mollie-wc-giftcard_issuers_live',
+        '_transient_mollie-wc-giftcard_issuers_live',
     ];
     public const DB_VERSION_PARAM_NAME = 'mollie-db-version';
     public const PLUGIN_VERSION_PARAM_NAME = 'mollie-plugin-version';

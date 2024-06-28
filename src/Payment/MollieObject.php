@@ -543,7 +543,7 @@ class MollieObject
     protected function isOrderPaymentStartedByOtherGateway(WC_Order $order)
     {
         // Get the current payment method id for the order
-        $payment_method_id = $order->get_meta('_payment_method', true);
+        $payment_method_id = $order->get_payment_method();
         // If the current payment method id for the order is not Mollie, return true
         return strpos($payment_method_id, 'mollie') === false;
     }
@@ -1079,7 +1079,7 @@ class MollieObject
         $phone = transformPhoneToNLFormat($phone);
 
         //check that $phone is in E164 format or can be changed by api
-        if (preg_match('/^\+[1-9]\d{10,13}$|^[1-9]\d{9,13}$/', $phone)) {
+        if (is_string($phone) && preg_match('/^\+[1-9]\d{10,13}$|^[1-9]\d{9,13}$/', $phone)) {
             return $phone;
         }
         return null;

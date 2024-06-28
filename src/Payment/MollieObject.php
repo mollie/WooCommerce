@@ -543,7 +543,7 @@ class MollieObject
     protected function isOrderPaymentStartedByOtherGateway(WC_Order $order)
     {
         // Get the current payment method id for the order
-        $payment_method_id = $order->get_meta('_payment_method', true);
+        $payment_method_id = $order->get_payment_method();
         // If the current payment method id for the order is not Mollie, return true
         return strpos($payment_method_id, 'mollie') === false;
     }

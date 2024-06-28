@@ -1079,7 +1079,7 @@ class MollieObject
         $phone = transformPhoneToNLFormat($phone);
 
         //check that $phone is in E164 format or can be changed by api
-        if (preg_match('/^\+[1-9]\d{10,13}$|^[1-9]\d{9,13}$/', $phone)) {
+        if (is_string($phone) && preg_match('/^\+[1-9]\d{10,13}$|^[1-9]\d{9,13}$/', $phone)) {
             return $phone;
         }
         return null;

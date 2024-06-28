@@ -24,7 +24,6 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_Mybank',
         'Mollie_WC_Gateway_Bancontact',
         'Mollie_WC_Gateway_Eps',
-        'Mollie_WC_Gateway_Giropay',
         'Mollie_WC_Gateway_Przelewy24',
         'Mollie_WC_Gateway_Kbc',
         'Mollie_WC_Gateway_Belfius',

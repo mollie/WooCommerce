@@ -14,7 +14,7 @@ class CapturePayment extends AbstractPaymentCaptureAction
     {
         try {
             $payment = $this->order->get_payment_method();
-            if (strpos($payment, 'mollie') === false ) {
+            if (strpos($payment, 'mollie') === false) {
                 return;
             }
 

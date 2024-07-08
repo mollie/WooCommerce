@@ -210,7 +210,7 @@ class PaymentServiceTest extends TestCase
             [
                 'get_id' => $id,
                 'get_order_key' => $orderKey,
-                'get_total' => '40',
+                'get_total' => 40.00,
                 'get_items' => [$this->wcOrderItem()],
                 'get_billing_first_name' => 'billingggivenName',
                 'get_billing_last_name' => 'billingfamilyName',

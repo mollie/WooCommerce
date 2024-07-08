@@ -73,7 +73,7 @@ class OrderLines
 
     private function process_missmatch()
     {
-        $orderTotal = $this->order->get_total();
+        $orderTotal = (float) $this->order->get_total();
         $orderTotalRounded = round($orderTotal, 2);
         $linesTotal = array_sum(array_map(function ($line) {
             return $line['totalAmount']['value'];

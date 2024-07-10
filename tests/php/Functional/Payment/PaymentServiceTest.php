@@ -98,9 +98,7 @@ class PaymentServiceTest extends TestCase
                 'wc_clean' => null,
             ]
         );
-        $gateway->expects($this->once())
-            ->method('getSelectedIssuer')
-            ->willReturn('ideal_INGBNL2A');
+
         $expectedRequestToMollie = $this->expectedRequestData($wcOrder);
         $orderEndpoints->method('create')->with($expectedRequestToMollie);
 
@@ -212,7 +210,7 @@ class PaymentServiceTest extends TestCase
             [
                 'get_id' => $id,
                 'get_order_key' => $orderKey,
-                'get_total' => '20',
+                'get_total' => 40.00,
                 'get_items' => [$this->wcOrderItem()],
                 'get_billing_first_name' => 'billingggivenName',
                 'get_billing_last_name' => 'billingfamilyName',
@@ -307,7 +305,7 @@ class PaymentServiceTest extends TestCase
         return [
             'amount' => [
                 'currency' => 'EUR',
-                'value' => '20.00'
+                'value' => '40.00'
             ],
             'redirectUrl' =>
                 'https://webshop.example.org/wc-api/mollie_return?order_id=1&key=wc_order_hxZniP1zDcnM8',
@@ -317,7 +315,7 @@ class PaymentServiceTest extends TestCase
                 'ideal',
             'payment' =>
                 [
-                    'issuer' => 'ideal_INGBNL2A'
+                    'issuer' => null
                 ],
             'locale' => 'en_US',
             'billingAddress' => $this->billingAddress($order),

@@ -13,6 +13,11 @@ class CapturePayment extends AbstractPaymentCaptureAction
     public function __invoke()
     {
         try {
+            $payment = $this->order->get_payment_method();
+            if (strpos($payment, 'mollie') === false) {
+                return;
+            }
+
             $paymentId = $this->order->get_meta('_mollie_payment_id');
 
             if (!$paymentId) {

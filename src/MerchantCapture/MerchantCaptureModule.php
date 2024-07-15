@@ -250,7 +250,7 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                 10,
                 2
             );
-            new OrderListPaymentColumn();
+            new OrderListPaymentColumn($container);
             new ManualCapture($container);
             new StateChangeCapture($container);
         });

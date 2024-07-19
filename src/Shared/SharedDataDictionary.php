@@ -35,6 +35,7 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_Twint',
         'Mollie_WC_Gateway_Bancomatpay',
         'Mollie_WC_Gateway_Alma',
+        'Mollie_WC_Gateway_Payconiq',
     ];
 
     public const MOLLIE_OPTIONS_NAMES = [

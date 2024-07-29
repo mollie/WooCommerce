@@ -240,3 +240,13 @@ function transformPhoneToNLFormat($phone)
     }
     return $phone;
 }
+
+function isMollieBirthValid($billing_birthdate)
+{
+    $today = new DateTime();
+    $birthdate = DateTime::createFromFormat('Y-m-d', $billing_birthdate);
+    if ($birthdate >= $today) {
+        return false;
+    }
+    return true;
+}

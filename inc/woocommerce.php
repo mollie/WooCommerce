@@ -36,6 +36,9 @@ if (!function_exists('untrailingslashit')) {
      */
     function untrailingslashit($string)
     {
+        if ($string === null) {
+            return '';
+        }
         return rtrim($string, '/');
     }
 }

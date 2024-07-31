@@ -64,10 +64,46 @@ class OrderLines
         $this->process_shipping();
         $this->process_fees();
         $this->process_gift_cards();
+        $this->process_missmatch();
 
         return  [
             'lines' => $this->get_order_lines(),
         ];
+    }
+
+    private function process_missmatch()
+    {
+        $orderTotal = (float) $this->order->get_total();
+        $orderTotalRounded = round($orderTotal, 2);
+        $linesTotal = array_sum(array_map(function ($line) {
+            return $line['totalAmount']['value'];
+        }, $this->order_lines));
+        $orderTotalDiff = $orderTotalRounded - $linesTotal;
+        if (abs($orderTotalDiff) > 0) {
+            $missmatch =  [
+                'type' => 'surcharge',
+                'name' => __('Rounding difference', 'mollie-payments-for-woocommerce'),
+                'quantity' => 1,
+                'vatRate' => 0,
+                'unitPrice' =>  [
+                    'currency' => $this->currency,
+                    'value' => $this->dataHelper->formatCurrencyValue($orderTotalDiff, $this->currency),
+                ],
+                'totalAmount' =>  [
+                    'currency' => $this->currency,
+                    'value' => $this->dataHelper->formatCurrencyValue($orderTotalDiff, $this->currency),
+                ],
+                'vatAmount' =>  [
+                    'currency' => $this->currency,
+                    'value' => $this->dataHelper->formatCurrencyValue(0, $this->currency),
+                ],
+                'metadata' =>  [
+                    'order_item_id' => 'rounding_diff',
+                ],
+            ];
+
+            $this->order_lines[] = $missmatch;
+        }
     }
 
     /**

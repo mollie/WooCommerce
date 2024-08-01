@@ -63,13 +63,21 @@ class RivertyFieldsStrategy implements PaymentFieldsStrategyI
     protected function phoneNumber($phoneValue)
     {
         $phoneValue = $phoneValue ?: '';
+        $country = WC()->customer->get_billing_country();
+        $countryCodes = [
+            'BE' => '+32xxxxxxxxx',
+            'NL' => '+316xxxxxxxx',
+            'DE' => '+49xxxxxxxxx',
+            'AT' => '+43xxxxxxxxx',
+        ];
+        $placeholder = in_array($country, array_keys($countryCodes)) ? $countryCodes[$country] : $countryCodes['NL'];
         ?>
         <p class="form-row form-row-wide" id="billing_phone_field">
             <label for="<?= esc_attr(self::FIELD_PHONE); ?>" class=""><?= esc_html__('Phone', 'mollie-payments-for-woocommerce'); ?>
             </label>
             <span class="woocommerce-input-wrapper">
         <input type="tel" class="input-text " name="<?= esc_attr(self::FIELD_PHONE); ?>" id="<?= esc_attr(self::FIELD_PHONE); ?>"
-               placeholder="+316xxxxxxxx"
+               placeholder="<?= esc_attr($placeholder); ?>"
                value="<?= esc_attr($phoneValue); ?>" autocomplete="phone">
         </span>
         </p>

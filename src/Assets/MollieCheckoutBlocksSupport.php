@@ -76,6 +76,9 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
 
     public static function gatewayDataForWCBlocks(Data $dataService, array $gatewayInstances): array
     {
+        if (is_admin() && !is_ajax()) {
+            return [];
+        }
         $filters = $dataService->wooCommerceFiltersForCheckout();
         $availableGateways = WC()->payment_gateways()->get_available_payment_gateways();
         $availablePaymentMethods = [];
@@ -132,6 +135,14 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
             $title = $gateway->paymentMethod()->title();
             $labelMarkup = "<span style='margin-right: 1em'>{$title}</span>{$gateway->icon}";
             $hasSurcharge = $gateway->paymentMethod()->hasSurcharge();
+            $countryCodes = [
+                'BE' => '+32xxxxxxxxx',
+                'NL' => '+316xxxxxxxx',
+                'DE' => '+49xxxxxxxxx',
+                'AT' => '+43xxxxxxxxx',
+            ];
+            $country = WC()->customer->get_billing_country();
+            $phonePlaceholder = in_array($country, array_keys($countryCodes)) ? $countryCodes[$country] : $countryCodes['NL'];
             $gatewayData[] = [
                 'name' => $gatewayKey,
                 'label' => $labelMarkup,
@@ -152,7 +163,8 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
                 'supports' => self::gatewaySupportsFeatures($gateway->paymentMethod(), $isSepaEnabled),
                 'errorMessage' => $gateway->paymentMethod()->getProperty('errorMessage'),
                 'companyPlaceholder' => $gateway->paymentMethod()->getProperty('companyPlaceholder'),
-                'phonePlaceholder' => $gateway->paymentMethod()->getProperty('phonePlaceholder'),
+                'phoneLabel' => $gateway->paymentMethod()->getProperty('phoneLabel'),
+                'phonePlaceholder' => $phonePlaceholder,
                 'birthdatePlaceholder' => $gateway->paymentMethod()->getProperty('birthdatePlaceholder'),
             ];
         }

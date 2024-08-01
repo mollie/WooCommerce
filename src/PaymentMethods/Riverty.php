@@ -86,20 +86,12 @@ class Riverty extends AbstractPaymentMethod implements PaymentMethodI
      */
     public function addBirthdateWhenRest($context)
     {
-        $birthMandatoryGateways = ['mollie_wc_gateway_riverty'];
         $paymentMethod = $context->payment_data['payment_method'] ?? null;
-        if ($paymentMethod && in_array($paymentMethod, $birthMandatoryGateways)) {
+        if ($paymentMethod) {
             $billingBirthdate = $context->payment_data['billing_birthdate'] ?? null;
             if ($billingBirthdate && $this->isBirthValid($billingBirthdate)) {
                 $context->order->update_meta_data('billing_birthdate', $billingBirthdate);
                 $context->order->save();
-            } else {
-                $message = __('Please introduce a valid birthdate number.', 'mollie-payments-for-woocommerce');
-                throw new RouteException(
-                    'woocommerce_rest_checkout_process_payment_error',
-                    $message,
-                    402
-                );
             }
         }
     }

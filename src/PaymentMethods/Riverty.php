@@ -48,6 +48,26 @@ class Riverty extends AbstractPaymentMethod implements PaymentMethodI
         );
         add_action('woocommerce_rest_checkout_process_payment_with_context', [$this, 'addPhoneWhenRest'], 11);
         add_action('woocommerce_rest_checkout_process_payment_with_context', [$this, 'addBirthdateWhenRest'], 11);
+        add_action('woocommerce_before_pay_action', [$this, 'fieldsMandatoryPayForOrder'], 11);
+    }
+
+    /**
+     * @param $order
+     */
+    public function fieldsMandatoryPayForOrder($order)
+    {
+        $paymentMethod = filter_input(INPUT_POST, 'payment_method', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+
+        if ($paymentMethod !== 'mollie_wc_gateway_riverty') {
+            return;
+        }
+
+        $phoneValue = filter_input(INPUT_POST, 'billing_phone_riverty', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+        $phoneValid = $phoneValue || null;
+
+        if ($phoneValid) {
+            $order->set_billing_phone($phoneValue);
+        }
     }
 
     public function switchFields($data)

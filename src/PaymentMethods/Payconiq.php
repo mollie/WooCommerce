@@ -15,7 +15,7 @@ class Payconiq extends AbstractPaymentMethod implements PaymentMethodI
             'defaultDescription' => '',
             'paymentFields' => false,
             'instructions' => false,
-            'supports' => ['products'],
+            'supports' => ['products', 'refunds'],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
             'SEPA' => false,

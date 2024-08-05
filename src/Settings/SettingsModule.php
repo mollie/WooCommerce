@@ -16,7 +16,7 @@ use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\Status;
 use Mollie\WooCommerce\Uninstall\CleanDb;
 use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
-use Psr\Log\LoggerInterface as Logger;
+use Mollie\WooCommerce\Vendor\Psr\Log\LoggerInterface as Logger;
 
 class SettingsModule implements ServiceModule, ExecutableModule
 {

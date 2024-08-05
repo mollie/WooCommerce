@@ -13,7 +13,7 @@ use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use WC_Order;
 use WC_Payment_Gateway;
-use Psr\Log\LoggerInterface as Logger;
+use Mollie\WooCommerce\Vendor\Psr\Log\LoggerInterface as Logger;
 use stdClass;
 
 class MollieObject

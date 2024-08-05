@@ -13,7 +13,7 @@ use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
-use Psr\Log\LogLevel;
+use Mollie\WooCommerce\Vendor\Psr\Log\LogLevel;
 use WC_Order;
 use WC_Payment_Gateway;
 use WC_Subscriptions_Manager;

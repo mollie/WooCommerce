@@ -19,8 +19,7 @@
     "php": ">=7.2",
     "ext-intl": "*",
     "ext-json": "*",
-    "mollie/mollie-api-php": "^v2.40",
-    "psr/log":"^1.1.4"
+    "mollie/mollie-api-php": "^v2.40"
   },
   "require-dev": {
     "inpsyde/modularity": "^1.3.0",
@@ -34,7 +33,8 @@
     "inpsyde/composer-assets-compiler": "^2.5",
     "php-stubs/wordpress-stubs": "^5.0@stable",
     "php-stubs/woocommerce-stubs": "7.9.0",
-    "vimeo/psalm": "^4.8 || ^5.13.0"
+    "vimeo/psalm": "^4.8 || ^5.13.0",
+    "psr/log": "^1.1.4"
   },
   "autoload": {
     "psr-4": {
@@ -85,7 +85,8 @@
       "classmap_directory": "/lib/classes/",
       "classmap_prefix": "MOL_",
       "packages": [
-        "psr/container", 
+        "psr/container",
+        "psr/log",
         "inpsyde/modularity"
       ],
       "delete_vendor_directories": true

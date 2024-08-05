@@ -21,8 +21,8 @@ use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\SDK\InvalidApiKey;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
-use Psr\Log\LoggerInterface as Logger;
-use Psr\Log\LogLevel;
+use Mollie\WooCommerce\Vendor\Psr\Log\LoggerInterface as Logger;
+use Mollie\WooCommerce\Vendor\Psr\Log\LogLevel;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use WC_Order;
 

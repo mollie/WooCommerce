@@ -794,14 +794,9 @@ class GatewayModule implements ServiceModule, ExecutableModule
         return preg_match('/^\+[1-9]\d{10,13}$|^[1-9]\d{9,13}$|^06\d{9,13}$/', $billing_phone);
     }
 
-    private function isBirthValid($billing_birthdate)
+    private function isBirthValid($billing_birthdate): bool
     {
-        $today = new DateTime();
-        $birthdate = DateTime::createFromFormat('Y-m-d', $billing_birthdate);
-        if ($birthdate >= $today) {
-            return false;
-        }
-        return true;
+        return isMollieBirthValid($billing_birthdate);
     }
 
     public function addPhoneWhenRest($arrayContext)

@@ -13,6 +13,7 @@ use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
 use Mollie\WooCommerceTests\Stubs\WC_Order_Item_Product;
 use Mollie\WooCommerceTests\Stubs\WC_Settings_API;
+use Mollie\WooCommerceTests\Stubs\WC_Product;
 use Mollie\WooCommerceTests\TestCase;
 
 
@@ -263,7 +264,7 @@ class PaymentServiceTest extends TestCase
     {
 
         $item = $this->createConfiguredMock(
-            'WC_Product',
+            WC_Product::class,
             [
                 'get_price' => '1',
                 'get_id'=>'1',

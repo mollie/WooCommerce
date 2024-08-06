@@ -5,6 +5,7 @@ namespace Mollie\WooCommerceTests\Functional\ApplePayButton;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mollie\WooCommerce\Buttons\ApplePayButton\DataToAppleButtonScripts;
 use Mollie\WooCommerceTests\Stubs\postDTOTestsStubs;
+use Mollie\WooCommerceTests\Stubs\WC_Product;
 use Mollie\WooCommerceTests\TestCase;
 
 use function Brain\Monkey\Functions\stubs;
@@ -119,7 +120,7 @@ class ApplePayDirectHandlerTest extends TestCase
     private function wcProduct()
     {
         $item = $this->createConfiguredMock(
-            'WC_Product',
+            WC_Product::class,
             [
                 'get_price' => '1',
                 'get_type' => 'simple',

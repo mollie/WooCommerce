@@ -1002,7 +1002,11 @@ class MollieOrder extends MollieObject
         if (!$gateway || !isset($gateway->id)) {
             return null;
         }
-        $methodId = $gateway->id === 'mollie_wc_gateway_in3';
+        if (strpos($gateway->id, 'mollie_wc_gateway_') === false) {
+            return null;
+        }
+        $additionalFields = $gateway->paymentMethod()->getProperty('additionalFields');
+        $methodId = $additionalFields && in_array('birthdate', $additionalFields, true);
         if ($methodId) {
             //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             $fieldPosted = wc_clean(wp_unslash($_POST["billing_birthdate"] ?? ''));

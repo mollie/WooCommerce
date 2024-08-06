@@ -9,9 +9,9 @@ namespace Mollie\WooCommerce\Log;
 use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
-use Psr\Log\AbstractLogger;
-use Psr\Log\LoggerInterface as Logger;
-use Psr\Log\NullLogger;
+use Mollie\WooCommerce\Vendor\Psr\Log\AbstractLogger;
+use Mollie\WooCommerce\Vendor\Psr\Log\LoggerInterface as Logger;
+use Mollie\WooCommerce\Vendor\Psr\Log\NullLogger;
 
 class LogModule implements ServiceModule
 {

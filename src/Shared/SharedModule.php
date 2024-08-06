@@ -12,7 +12,7 @@ use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Package;
 use Mollie\Api\CompatibilityChecker;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
-use Psr\Log\LoggerInterface as Logger;
+use Mollie\WooCommerce\Vendor\Psr\Log\LoggerInterface as Logger;
 
 class SharedModule implements ServiceModule
 {

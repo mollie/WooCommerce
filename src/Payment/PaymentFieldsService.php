@@ -8,7 +8,7 @@ use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\DefaultFieldsStrategy;
 use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\PaymentFieldsStrategyI;
 use Mollie\WooCommerce\Shared\Data;
-use Psr\Log\LoggerInterface as Logger;
+use Mollie\WooCommerce\Vendor\Psr\Log\LoggerInterface as Logger;
 
 class PaymentFieldsService
 {

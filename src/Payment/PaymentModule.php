@@ -19,8 +19,8 @@ use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
-use Psr\Log\LoggerInterface as Logger;
-use Psr\Log\LogLevel;
+use Mollie\WooCommerce\Vendor\Psr\Log\LoggerInterface as Logger;
+use Mollie\WooCommerce\Vendor\Psr\Log\LogLevel;
 use RuntimeException;
 use WC_Order;
 

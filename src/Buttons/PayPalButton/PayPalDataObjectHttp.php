@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Buttons\PayPalButton;
 
-use Psr\Log\LoggerInterface as Logger;
-use Psr\Log\LogLevel;
+use Mollie\WooCommerce\Vendor\Psr\Log\LoggerInterface as Logger;
+use Mollie\WooCommerce\Vendor\Psr\Log\LogLevel;
 
 class PayPalDataObjectHttp
 {

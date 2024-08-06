@@ -42,7 +42,7 @@ use Mollie\WooCommerce\Subscription\MollieSepaRecurringGateway;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
-use Psr\Log\LoggerInterface as Logger;
+use Mollie\WooCommerce\Vendor\Psr\Log\LoggerInterface as Logger;
 use WP_Post;
 
 class GatewayModule implements ServiceModule, ExecutableModule

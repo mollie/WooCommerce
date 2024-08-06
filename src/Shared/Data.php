@@ -9,8 +9,8 @@ use InvalidArgumentException;
 use Mollie\Api\Resources\Method;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
-use Psr\Log\LoggerInterface as Logger;
-use Psr\Log\LogLevel;
+use Mollie\WooCommerce\Vendor\Psr\Log\LoggerInterface as Logger;
+use Mollie\WooCommerce\Vendor\Psr\Log\LogLevel;
 use WC_Customer;
 use WC_Order;
 

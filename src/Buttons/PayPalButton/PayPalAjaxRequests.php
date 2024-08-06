@@ -7,8 +7,8 @@ namespace Mollie\WooCommerce\Buttons\PayPalButton;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
-use Psr\Log\LoggerInterface as Logger;
-use Psr\Log\LogLevel;
+use Mollie\WooCommerce\Vendor\Psr\Log\LoggerInterface as Logger;
+use Mollie\WooCommerce\Vendor\Psr\Log\LogLevel;
 use WC_Data_Exception;
 
 class PayPalAjaxRequests

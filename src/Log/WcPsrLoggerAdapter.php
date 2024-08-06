@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Log;
 
 use InvalidArgumentException;
-use Psr\Log\AbstractLogger;
-use Psr\Log\LoggerTrait;
-use Psr\Log\LogLevel;
+use Mollie\WooCommerce\Vendor\Psr\Log\AbstractLogger;
+use Mollie\WooCommerce\Vendor\Psr\Log\LoggerTrait;
+use Mollie\WooCommerce\Vendor\Psr\Log\LogLevel;
 
 class WcPsrLoggerAdapter extends AbstractLogger
 {

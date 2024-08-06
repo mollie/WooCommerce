@@ -6,7 +6,7 @@ namespace Mollie\WooCommerce\MerchantCapture\Capture\Action;
 
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
-use Psr\Log\LoggerInterface;
+use Mollie\WooCommerce\Vendor\Psr\Log\LoggerInterface;
 
 class AbstractPaymentCaptureAction
 {

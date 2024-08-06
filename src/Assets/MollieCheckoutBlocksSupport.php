@@ -76,9 +76,6 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
 
     public static function gatewayDataForWCBlocks(Data $dataService, array $gatewayInstances): array
     {
-        if (is_admin() && !is_ajax()) {
-            return [];
-        }
         $filters = $dataService->wooCommerceFiltersForCheckout();
         $availableGateways = WC()->payment_gateways()->get_available_payment_gateways();
         $availablePaymentMethods = [];
@@ -141,7 +138,7 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
                 'DE' => '+49xxxxxxxxx',
                 'AT' => '+43xxxxxxxxx',
             ];
-            $country = WC()->customer->get_billing_country();
+            $country = WC()->customer ? WC()->customer->get_billing_country() : '';
             $phonePlaceholder = in_array($country, array_keys($countryCodes)) ? $countryCodes[$country] : $countryCodes['NL'];
             $gatewayData[] = [
                 'name' => $gatewayKey,

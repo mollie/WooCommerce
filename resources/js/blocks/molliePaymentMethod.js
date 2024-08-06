@@ -223,7 +223,12 @@ const MollieComponent = (props) => {
            return;
         }
         const companyField = item.companyPlaceholder ? item.companyPlaceholder : "Company name";
-        return fieldMarkup("billing-company","text", companyField, updateCompany, inputCompany);
+        return (
+            <>
+                <div><p>{item.content}</p></div>
+                {fieldMarkup("billing-company","text", companyField, updateCompany, inputCompany)}
+            </>
+        );
     }
 
     useEffect(() => {
@@ -243,8 +248,9 @@ const MollieComponent = (props) => {
         const phoneLabel = item.phoneLabel || "Phone";
         return (
             <>
+                <div><p>{item.content}</p></div>
                 {fieldMarkup("billing-birthdate", "date", birthdateField, updateBirthdate, inputBirthdate)}
-                {!isPhoneFieldVisible && fieldMarkup("billing-phone-in3", "tel",phoneLabel, updatePhone, inputPhone, phoneField)}
+                {!isPhoneFieldVisible && fieldMarkup("billing-phone-in3", "tel", phoneLabel, updatePhone, inputPhone, phoneField)}
             </>
         );
     }
@@ -255,6 +261,7 @@ const MollieComponent = (props) => {
         const phoneLabel = item.phoneLabel || "Phone";
         return (
             <>
+                <div><p>{item.content}</p></div>
                 {fieldMarkup("billing-birthdate", "date", birthdateField, updateBirthdate, inputBirthdate)}
                 {!isPhoneFieldVisible && fieldMarkup("billing-phone-riverty", "tel", phoneLabel, updatePhone, inputPhone, phoneField)}
             </>

@@ -157,7 +157,7 @@ class MollieOrder extends MollieObject
         //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         $applePayToken = wc_clean(wp_unslash($_POST["token"] ?? ''));
         if ($applePayToken && isset($paymentRequestData['payment'])) {
-            $encodedApplePayToken = json_encode($applePayToken);
+            $encodedApplePayToken = wp_json_encode($applePayToken);
             $paymentRequestData['payment']['applePayPaymentToken'] = $encodedApplePayToken;
         }
         $customerBirthdate = $this->getCustomerBirthdate($order);

@@ -322,7 +322,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             $this->updateFirstPaymentMethodToRecurringPaymentMethod($renewal_order, $renewal_order_id, $payment);
 
             // Log successful creation of payment
-            $this->logger->debug($this->id . ': Renewal payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $renewal_order_id . ' payment json response: ' . json_encode($payment));
+            $this->logger->debug($this->id . ': Renewal payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $renewal_order_id . ' payment json response: ' . wp_json_encode($payment));
 
             // Unset & set active Mollie payment
             // Get correct Mollie Payment Object

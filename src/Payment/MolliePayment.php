@@ -120,7 +120,7 @@ class MolliePayment extends MollieObject
         //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         $applePayToken = wc_clean(wp_unslash($_POST["token"] ?? ''));
         if ($applePayToken) {
-            $encodedApplePayToken = json_encode($applePayToken);
+            $encodedApplePayToken = wp_json_encode($applePayToken);
             $paymentRequestData['applePayPaymentToken'] = $encodedApplePayToken;
         }
         $paymentRequestData = $this->addCustomRequestFields($order, $paymentRequestData, $gateway);

@@ -40,7 +40,7 @@ class CapturePayment extends AbstractPaymentCaptureAction
             ];
             $this->logger->debug(
                 'SEND AN ORDER CAPTURE, orderId: ' . $this->order->get_id(
-                ) . ' transactionId: ' . $paymentId . 'Capture data: ' . json_encode($captureData)
+                ) . ' transactionId: ' . $paymentId . 'Capture data: ' . wp_json_encode($captureData)
             );
             $paymentCapturesApi->createForId($paymentId, $captureData);
             $this->order->update_meta_data(

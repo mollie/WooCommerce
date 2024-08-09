@@ -835,7 +835,7 @@ class MollieObject
      */
     protected function asciiDomainName($url): string
     {
-        $parsed = parse_url($url);
+        $parsed = wp_parse_url($url);
         $scheme = isset($parsed['scheme']) ? $parsed['scheme'] : '';
         $domain = isset($parsed['host']) ? $parsed['host'] : false;
         $query = isset($parsed['query']) ? $parsed['query'] : '';

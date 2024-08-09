@@ -116,7 +116,7 @@ class AppleAjaxRequests
         //we cannot access the endpoint in testmode, we override it to be testMode = false
         $apiKey = $this->settingsHelper->getApiKey(false);
         $validationUrl = $applePayRequestDataObject->validationUrl();
-        $completeDomain = parse_url(get_site_url(), PHP_URL_HOST);
+        $completeDomain = wp_parse_url(get_site_url(), PHP_URL_HOST);
         $removeHttp = ["https://", "http://"];
         $regex = '/.+\.\w+\/?((\w*\/*)*)/i';
         $domain = str_replace($removeHttp, "", $completeDomain);

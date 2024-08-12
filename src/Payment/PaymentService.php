@@ -398,6 +398,7 @@ class PaymentService
                 'mollie_wc_gateway_klarna',
                 'mollie_wc_gateway_billie',
                 'mollie_wc_gateway_in3',
+                'mollie_wc_gateway_riverty',
             ];
 
             if (in_array($order_payment_method, $orderMandatoryPaymentMethods, true)) {

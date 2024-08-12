@@ -179,7 +179,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
             'yes';
         $this->enabled = $isEnabledAtWoo;
 
-        if ($this->paymentMethod->getProperty('filtersOnBuild')) {
+        if ($this->enabled && $this->paymentMethod->getProperty('filtersOnBuild')) {
             $this->paymentMethod->filtersOnBuild();
         }
     }

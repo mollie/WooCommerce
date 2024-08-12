@@ -277,6 +277,13 @@ class AssetsModule implements ExecutableModule
             (string) filemtime($this->getPluginPath($pluginPath, '/public/js/gatewaySurcharge.min.js')),
             true
         );
+        wp_register_script(
+            'mollie-riverty-classic-handles',
+            $this->getPluginUrl($pluginUrl, '/public/js/rivertyCountryPlaceholder.min.js'),
+            ['jquery'],
+            (string) filemtime($this->getPluginPath($pluginPath, '/public/js/rivertyCountryPlaceholder.min.js')),
+            true
+        );
     }
 
     public function registerBlockScripts(string $pluginUrl, string $pluginPath): void
@@ -310,11 +317,11 @@ class AssetsModule implements ExecutableModule
             return;
         }
         wp_enqueue_style('mollie-gateway-icons');
-        $isBillieEnabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_billie_settings', 'enabled');
         $allMethodsEnabledAtMollie = $container->get('gateway.paymentMethodsEnabledAtMollie');
-        $isBillieEnabledAtMollie = in_array('billie', $allMethodsEnabledAtMollie, true);
-        if ($isBillieEnabled && $isBillieEnabledAtMollie) {
-            wp_enqueue_script('mollie-billie-classic-handles');
+        $isRivertyEnabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_riverty_settings', 'enabled');
+        $isRivertyEnabledAtMollie = in_array('riverty', $allMethodsEnabledAtMollie, true);
+        if ($isRivertyEnabled && $isRivertyEnabledAtMollie) {
+            wp_enqueue_script('mollie-riverty-classic-handles');
         }
 
         $applePayGatewayEnabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_applepay_settings', 'enabled');

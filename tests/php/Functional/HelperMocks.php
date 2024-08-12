@@ -10,6 +10,7 @@ use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Payment\MollieOrder;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\OrderInstructionsService;
+use Mollie\WooCommerce\Payment\OrderItemsRefunder;
 use Mollie\WooCommerce\Payment\OrderLines;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\PaymentFactory;
@@ -99,6 +100,13 @@ class HelperMocks extends TestCase
 
             ]
         );
+    }
+
+    public function orderItemsRefunder()
+    {
+        return $this->getMockBuilder(OrderItemsRefunder::class)
+            ->disableOriginalConstructor()
+            ->getMock();
     }
     public function orderLines($apiClientMock){
         return new OrderLines(

@@ -197,17 +197,17 @@ const MollieComponent = (props) => {
     }, [activePaymentMethod, onCheckoutValidation, billing.billingData, shippingData.shippingAddress, item, phoneString, inputBirthdate, inputPhone]);
 
     onSubmitLocal = onSubmit
-    const updateIssuer = ( changeEvent ) => {
-        selectIssuer( changeEvent.target.value )
-    };
-    const updateCompany = ( changeEvent ) => {
-        selectCompany( changeEvent.target.value )
-    };
-    const updatePhone = ( changeEvent ) => {
-        selectPhone( changeEvent.target.value )
-    }
-    const updateBirthdate = ( changeEvent ) => {
-        selectBirthdate( changeEvent.target.value )
+    const updateIssuer = (e) => selectIssuer(e.target.value);
+    const updateCompany = (e) => selectCompany(e.target.value);
+    const updatePhone = (e) => selectPhone(e.target.value);
+    const updateBirthdate = (e) => selectBirthdate( e.target.value );
+
+    function fieldMarkup(id, fieldType, label, action, value, placeholder = null) {
+        const className = "wc-block-components-text-input wc-block-components-address-form__" + id;
+        return <div class="custom-input">
+            <label htmlFor={id} dangerouslySetInnerHTML={{__html: label}}></label>
+            <input type={fieldType} name={id} id={id} value={value} onChange={action} placeholder={placeholder}></input>
+        </div>
     }
 
     if (item.issuers && item.name !== "mollie_wc_gateway_creditcard"){
@@ -218,37 +218,58 @@ const MollieComponent = (props) => {
         return <div dangerouslySetInnerHTML={ {__html: item.content} }></div>;
     }
 
-    function fieldMarkup(id, fieldType, label, action, value) {
-        const className = "wc-block-components-text-input wc-block-components-address-form__" + id;
-        return <div class="custom-input">
-            <label htmlFor={id} dangerouslySetInnerHTML={{__html: label}}></label>
-            <input type={fieldType} name={id} id={id} value={value} onChange={action}></input>
-        </div>
-    }
-
     if (item.name === "mollie_wc_gateway_billie") {
         if (isCompanyFieldVisible) {
            return;
         }
         const companyField = item.companyPlaceholder ? item.companyPlaceholder : "Company name";
-        return fieldMarkup("billing-company","text", companyField, updateCompany, inputCompany);
+        return (
+            <>
+                <div><p>{item.content}</p></div>
+                {fieldMarkup("billing-company","text", companyField, updateCompany, inputCompany)}
+            </>
+        );
     }
 
-    if (item.name === "mollie_wc_gateway_in3"){
-        let fields = [];
-        const birthdateField = item.birthdatePlaceholder ? item.birthdatePlaceholder : "Birthdate";
-        fields.push(fieldMarkup("billing-birthdate", "date", birthdateField, updateBirthdate, inputBirthdate));
-        if (isPhoneFieldVisible === false) {
-            const phoneField = item.phonePlaceholder ? item.phonePlaceholder : "Phone";
-            fields.push(fieldMarkup("billing-phone-in3", "tel", phoneField, updatePhone, inputPhone));
-        }
+    useEffect(() => {
+        const countryCodes = {
+            BE: '+32xxxxxxxxx',
+            NL: '+316xxxxxxxx',
+            DE: '+49xxxxxxxxx',
+            AT: '+43xxxxxxxxx',
+        };
+        const country = billing.billingData.country;
+        item.phonePlaceholder = countryCodes[country] || countryCodes['NL'];
+    }, [billing.billingData.country]);
 
-        return <>{fields}</>;
+    if (item.name === "mollie_wc_gateway_in3") {
+        const birthdateField = item.birthdatePlaceholder || "Birthdate";
+        const phoneField = item.phonePlaceholder || "+316xxxxxxxx";
+        const phoneLabel = item.phoneLabel || "Phone";
+        return (
+            <>
+                <div><p>{item.content}</p></div>
+                {fieldMarkup("billing-birthdate", "date", birthdateField, updateBirthdate, inputBirthdate)}
+                {!isPhoneFieldVisible && fieldMarkup("billing-phone-in3", "tel", phoneLabel, updatePhone, inputPhone, phoneField)}
+            </>
+        );
+    }
+
+    if (item.name === "mollie_wc_gateway_riverty") {
+        const birthdateField = item.birthdatePlaceholder || "Birthdate";
+        const phoneField = item.phonePlaceholder || "+316xxxxxxxx";
+        const phoneLabel = item.phoneLabel || "Phone";
+        return (
+            <>
+                <div><p>{item.content}</p></div>
+                {fieldMarkup("billing-birthdate", "date", birthdateField, updateBirthdate, inputBirthdate)}
+                {!isPhoneFieldVisible && fieldMarkup("billing-phone-riverty", "tel", phoneLabel, updatePhone, inputPhone, phoneField)}
+            </>
+        );
     }
 
     return <div><p>{item.content}</p></div>
 }
-
 
 const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isCompanyFieldVisible, isPhoneFieldVisible) =>{
     let billingCountry = filters.billingCountry

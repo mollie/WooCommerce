@@ -8,7 +8,14 @@ import molliePaymentMethod from './blocks/molliePaymentMethod'
         window.onload = (event) => {
             const { registerPaymentMethod } = wc.wcBlocksRegistry;
             const { checkoutData, defaultFields } = wc.wcSettings.allSettings;
-            const { billing_address, shipping_address } = checkoutData;
+            let billing_address, shipping_address;
+
+            if (checkoutData) {
+                ({ billing_address, shipping_address } = checkoutData);
+            } else {
+                billing_address = {};
+                shipping_address = {};
+            }
             const { ajaxUrl, filters, gatewayData, availableGateways } = mollieBlockData.gatewayData;
             const {useEffect} = wp.element;
             const isAppleSession = typeof window.ApplePaySession === "function"

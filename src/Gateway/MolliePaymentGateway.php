@@ -688,7 +688,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
 
         if ($activePaymentObject === null) {
             throw new UnexpectedValueException(
-                "Active Payment Object is not a valid Payment Resource instance. Order ID: {$orderId}"
+                esc_html__("Active Payment Object is not a valid Payment Resource instance. Order ID: {$orderId}", 'mollie-payments-for-woocommerce')
             );
         }
 

@@ -833,10 +833,9 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $context->order->update_meta_data('billing_birthdate', $billingBirthdate);
                 $context->order->save();
             } else {
-                $message = __('Please introduce a valid birthdate number.', 'mollie-payments-for-woocommerce');
                 throw new RouteException(
                     'woocommerce_rest_checkout_process_payment_error',
-                    $message,
+                    esc_html__('Please introduce a valid birthdate number.', 'mollie-payments-for-woocommerce'),
                     402
                 );
             }

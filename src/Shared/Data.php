@@ -270,21 +270,21 @@ class Data
         $amountValue = $this->getAmountValue($orderTotal, $currency);
         if ($amountValue <= 0) {
             throw new InvalidArgumentException(
-                sprintf('Amount %s is not valid.', $amountValue)
+                esc_html__(sprintf('Amount %s is not valid.', $amountValue), 'mollie-payments-for-woocommerce')
             );
         }
 
         // Check if currency is in ISO 4217 alpha-3 format (ex: EUR)
         if (!preg_match('/^[a-zA-Z]{3}$/', $currency)) {
             throw new InvalidArgumentException(
-                sprintf('Currency %s is not valid.', $currency)
+                esc_html__(sprintf('Currency %s is not valid.', $currency), 'mollie-payments-for-woocommerce')
             );
         }
 
         // Check if billing country is in ISO 3166-1 alpha-2 format (ex: NL)
         if (!preg_match('/^[a-zA-Z]{2}$/', $billingCountry)) {
             throw new InvalidArgumentException(
-                sprintf('Billing Country %s is not valid.', $billingCountry)
+                esc_html__(sprintf('Billing Country %s is not valid.', $billingCountry), 'mollie-payments-for-woocommerce')
             );
         }
 

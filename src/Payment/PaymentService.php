@@ -649,7 +649,7 @@ class PaymentService
             )
         );
         throw new ApiException(
-            __('Failed switching subscriptions, no valid mandate.', 'mollie-payments-for-woocommerce')
+            esc_html__('Failed switching subscriptions, no valid mandate.', 'mollie-payments-for-woocommerce')
         );
     }
 
@@ -892,7 +892,7 @@ class PaymentService
             );
 
             throw new ApiException(
-                __(
+                esc_html__(
                     'Payment failed due to: Mollie is out of service. Please try again later.',
                     'mollie-payments-for-woocommerce'
                 )
@@ -915,7 +915,7 @@ class PaymentService
             );
 
             throw new ApiException(
-                __(
+                esc_html__(
                     'Payment failed due to:  The payment was declined due to suspected fraud.',
                     'mollie-payments-for-woocommerce'
                 )

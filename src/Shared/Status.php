@@ -190,12 +190,12 @@ class Status
         } catch (\Mollie\Api\Exceptions\ApiException $apiException) {
             if ($apiException->getMessage() === 'Error executing API call (401: Unauthorized Request): Missing authentication, or failed to authenticate. Documentation: https://docs.mollie.com/guides/authentication') {
                 throw new \Mollie\Api\Exceptions\ApiException(
-                    'incorrect API key or other authentication issue. Please check your API keys!'
+                    esc_html__('incorrect API key or other authentication issue. Please check your API keys!', 'mollie-payments-for-woocommerce')
                 );
             }
 
             throw new \Mollie\Api\Exceptions\ApiException(
-                $apiException->getMessage()
+                esc_html__($apiException->getMessage(), 'mollie-payments-for-woocommerce')
             );
         }
     }

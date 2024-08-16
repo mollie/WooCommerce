@@ -60,6 +60,6 @@ class EnvironmentChecker implements ConstraintInterface {
 	 */
 	protected function __($string, $params = [])
 	{
-		return vsprintf($string, $params);
+		return esc_html(vsprintf($string, $params));
 	}
 }

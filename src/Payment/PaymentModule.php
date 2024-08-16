@@ -540,14 +540,14 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
         if (!$order) {
             throw new RuntimeException(
-                "Could not find order by order Id {$orderId}",
+                esc_html__("Could not find order by order Id {$orderId}"),
                 404
             );
         }
 
         if (!$order->key_is_valid($key)) {
             throw new RuntimeException(
-                "Invalid key given. Key {$key} does not match the order id: {$orderId}",
+                esc_html__("Invalid key given. Key {$key} does not match the order id: {$orderId}"),
                 401
             );
         }

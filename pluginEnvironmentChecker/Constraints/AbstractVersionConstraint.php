@@ -64,7 +64,7 @@ abstract class AbstractVersionConstraint implements ConstraintInterface
 			$this,
 			$actualVersion,
 			[$this->error],
-			$this->message
+			esc_html($this->message)
 		);
 	}
 }

@@ -38,7 +38,7 @@ class PluginConstraint extends AbstractVersionConstraint
 				$this,
 				$this->requiredPluginName,
 				[$this->error],
-				$this->message
+				esc_html($this->message)
 			);
 		}
 
@@ -48,7 +48,7 @@ class PluginConstraint extends AbstractVersionConstraint
 				$this,
 				$this->requiredPluginName,
 				[$this->error],
-				"Cannot find absolute path to {$this->pluginDisplayName} plugin"
+				esc_html("Cannot find absolute path to {$this->pluginDisplayName} plugin")
 			);
 		}
 		if (!function_exists('get_plugin_data')) {

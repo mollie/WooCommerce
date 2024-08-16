@@ -83,25 +83,6 @@ class ActivationModule implements ExecutableModule
     public function handleTranslations(): void
     {
         add_action('core_upgrade_preamble', 'mollieDeleteWPTranslationFiles');
-        add_filter(
-            'site_transient_update_plugins',
-            static function ($value) {
-                if (isset($value->translations)) {
-                    $i = 0;
-                    foreach ($value->translations as $translation) {
-                        if (
-                            $translation["slug"]
-                            === "mollie-payments-for-woocommerce"
-                        ) {
-                            unset($value->translations[$i]);
-                        }
-                        $i++;
-                    }
-                }
-
-                return $value;
-            }
-        );
     }
 
     /**
@@ -180,6 +161,7 @@ class ActivationModule implements ExecutableModule
             false,
             dirname(plugin_basename($this->baseFile)) . '/languages/'
         );
+
         $this->markUpdatedOrNew();
         $this->initDb();
     }

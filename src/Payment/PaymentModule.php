@@ -513,7 +513,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
         foreach ($paymentMethods as $paymentMethod) {
             $optionName = "mollie_wc_gateway_{$paymentMethod->getProperty('id')}_settings";
             $option = get_option($optionName, false);
-            if ($option && $option['enabled'] !== 'yes') {
+            if (!empty($option) && isset($option['enabled']) && $option['enabled'] !== 'yes') {
                 continue;
             }
             if (!empty($option["activate_expiry_days_setting"]) && $option["activate_expiry_days_setting"] === 'yes') {

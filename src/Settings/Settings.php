@@ -678,24 +678,33 @@ class Settings
 
     protected function processUploadedFile(string $name, string $tempName, WC_Payment_Gateway $gateway)
     {
-        $mollieUploadDirectory = trailingslashit(wp_upload_dir()['basedir'])
-                . 'mollie-uploads/' . $gateway->id;
-        wp_mkdir_p($mollieUploadDirectory);
-        $targetLocation = $mollieUploadDirectory . '/';
-
         $fileName = preg_replace(
             '#\s+#',
             '_',
             $name
         );
 
-        move_uploaded_file($tempName, $targetLocation . $fileName);
-        $gatewaySettings["iconFileUrl"] = trailingslashit(
-            wp_upload_dir()['baseurl']
-        ) . 'mollie-uploads/' . $gateway->id . '/' . $fileName;
-        $gatewaySettings["iconFilePath"] = trailingslashit(
-            wp_upload_dir()['basedir']
-        ) . 'mollie-uploads/' . $gateway->id . '/' . $fileName;
-        update_option(sprintf('%s_settings', $gateway->id), $gatewaySettings);
+        if (!function_exists( 'wp_handle_upload')) {
+            require_once(ABSPATH . 'wp-admin/includes/file.php');
+        }
+
+        $upload_overrides = array('test_form' => false);
+        $file =  $_FILES[$gateway->id . '_upload_logo'] ?? [];
+        if (!empty($file)) {
+            $file = array(
+                    'name' => $file['name'],
+                    'type' => $file['type'],
+                    'tmp_name' => $file['tmp_name'],
+                    'error' => $file['error'],
+                    'size' => $file['size']
+            );
+
+            $movefile = wp_handle_upload($file, $upload_overrides);
+            if($movefile) {
+                $gatewaySettings["iconFileUrl"] = $movefile['url'];
+                $gatewaySettings["iconFilePath"] = $movefile['file'];
+                update_option(sprintf('%s_settings', $gateway->id), $gatewaySettings);
+            }
+        }
     }
 }

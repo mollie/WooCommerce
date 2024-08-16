@@ -324,7 +324,7 @@ class OrderLines
     {
         $item_name = $cart_item->get_name();
 
-        return html_entity_decode(strip_tags($item_name));
+        return html_entity_decode(wp_strip_all_tags($item_name));
     }
 
     /**

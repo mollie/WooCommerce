@@ -22,7 +22,6 @@ class MollieOrder extends MollieObject
     public const ACTION_AFTER_REFUND_AMOUNT_CREATED = 'mollie-payments-for-woocommerce' . '_refund_amount_created';
     public const ACTION_AFTER_REFUND_ORDER_CREATED = 'mollie-payments-for-woocommerce' . '_refund_order_created';
 
-
     protected static $paymentId;
     protected static $customerId;
     protected static $order;
@@ -825,8 +824,6 @@ class MollieOrder extends MollieObject
             $payment->update();
         }
     }
-
-
 
     /**
      * @param WC_Order                    $order

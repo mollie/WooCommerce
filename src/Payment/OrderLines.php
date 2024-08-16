@@ -75,7 +75,7 @@ class OrderLines
     {
         $orderTotal = (float) $this->order->get_total();
         $orderTotalRounded = round($orderTotal, 2);
-        $linesTotal = array_sum(array_map(function ($line) {
+        $linesTotal = array_sum(array_map(static function ($line) {
             return $line['totalAmount']['value'];
         }, $this->order_lines));
         $orderTotalDiff = $orderTotalRounded - $linesTotal;

@@ -684,23 +684,24 @@ class Settings
             $name
         );
 
-        if (!function_exists( 'wp_handle_upload')) {
+        if (!function_exists('wp_handle_upload')) {
             require_once(ABSPATH . 'wp-admin/includes/file.php');
         }
 
-        $upload_overrides = array('test_form' => false);
-        $file =  $_FILES[$gateway->id . '_upload_logo'] ?? [];
+        $upload_overrides = ['test_form' => false];
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $file =  wp_unslash($_FILES[$gateway->id . '_upload_logo']) ?? [];
         if (!empty($file)) {
-            $file = array(
+            $file = [
                     'name' => $file['name'],
                     'type' => $file['type'],
                     'tmp_name' => $file['tmp_name'],
                     'error' => $file['error'],
-                    'size' => $file['size']
-            );
+                    'size' => $file['size'],
+            ];
 
             $movefile = wp_handle_upload($file, $upload_overrides);
-            if($movefile) {
+            if ($movefile) {
                 $gatewaySettings["iconFileUrl"] = $movefile['url'];
                 $gatewaySettings["iconFilePath"] = $movefile['file'];
                 update_option(sprintf('%s_settings', $gateway->id), $gatewaySettings);

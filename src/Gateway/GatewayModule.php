@@ -752,6 +752,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         string $fieldLabel,
         $errors
     ) {
+
         if ($fields['payment_method'] !== $gatewayName) {
             return $fields;
         }

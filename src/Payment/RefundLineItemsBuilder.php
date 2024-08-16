@@ -63,8 +63,7 @@ class RefundLineItemsBuilder
                         sprintf(
                             'Cannot refund %s item because it was not found in Mollie order. Aborting refund process. Try to do a refund by amount.',
                             $toRefundItemId
-
-                    ),
+                        ),
                         'mollie-payments-for-woocommerce'
                     )
                 );

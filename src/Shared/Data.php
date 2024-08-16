@@ -270,21 +270,21 @@ class Data
         $amountValue = $this->getAmountValue($orderTotal, $currency);
         if ($amountValue <= 0) {
             throw new InvalidArgumentException(
-                esc_html__(sprintf('Amount %s is not valid.', $amountValue), 'mollie-payments-for-woocommerce')
+                sprintf(esc_html__('Amount %s is not valid.', 'mollie-payments-for-woocommerce'), $amountValue)
             );
         }
 
         // Check if currency is in ISO 4217 alpha-3 format (ex: EUR)
         if (!preg_match('/^[a-zA-Z]{3}$/', $currency)) {
             throw new InvalidArgumentException(
-                esc_html__(sprintf('Currency %s is not valid.', $currency), 'mollie-payments-for-woocommerce')
+                sprintf(esc_html__('Currency %s is not valid.','mollie-payments-for-woocommerce'), $currency)
             );
         }
 
         // Check if billing country is in ISO 3166-1 alpha-2 format (ex: NL)
         if (!preg_match('/^[a-zA-Z]{2}$/', $billingCountry)) {
             throw new InvalidArgumentException(
-                esc_html__(sprintf('Billing Country %s is not valid.', $billingCountry), 'mollie-payments-for-woocommerce')
+                sprintf(esc_html__('Billing Country %s is not valid.', 'mollie-payments-for-woocommerce'), $billingCountry)
             );
         }
 
@@ -315,7 +315,7 @@ class Data
         $testMode = $this->isTestModeEnabled();
         $methods = $this->getAllAvailablePaymentMethods($useCache);
         // We cannot access allActive for all methods so we filter them out here
-        $filtered_methods = array_filter($methods, function ($method) use ($testMode) {
+        $filtered_methods = array_filter($methods, static function ($method) use ($testMode) {
             if ($testMode === "live") {
                 return $method['status'] === "activated";
             } else {

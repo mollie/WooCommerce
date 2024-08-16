@@ -277,7 +277,7 @@ class Data
         // Check if currency is in ISO 4217 alpha-3 format (ex: EUR)
         if (!preg_match('/^[a-zA-Z]{3}$/', $currency)) {
             throw new InvalidArgumentException(
-                sprintf(esc_html__('Currency %s is not valid.','mollie-payments-for-woocommerce'), $currency)
+                sprintf(esc_html__('Currency %s is not valid.', 'mollie-payments-for-woocommerce'), $currency)
             );
         }
 

@@ -59,12 +59,12 @@ class RefundLineItemsBuilder
 
             if ($toRefundRemoteItem === null) {
                 throw new UnexpectedValueException(
-                    esc_html__(
-                        sprintf(
+                    sprintf(
+                        esc_html__(
                             'Cannot refund %s item because it was not found in Mollie order. Aborting refund process. Try to do a refund by amount.',
-                            $toRefundItemId
+                            'mollie-payments-for-woocommerce'
                         ),
-                        'mollie-payments-for-woocommerce'
+                        $toRefundItemId
                     )
                 );
             }

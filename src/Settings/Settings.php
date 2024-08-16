@@ -690,7 +690,7 @@ class Settings
 
         $upload_overrides = ['test_form' => false];
         // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        $file =  wp_unslash($_FILES[$gateway->id . '_upload_logo']) ?? [];
+        $file = isset($_FILES[$gateway->id . '_upload_logo']) ? wp_unslash($_FILES[$gateway->id . '_upload_logo']) : [];
         if (!empty($file)) {
             $file = [
                     'name' => $file['name'],

@@ -712,7 +712,7 @@ class MollieOrder extends MollieObject
                         );
 
                         $this->logger->debug(__METHOD__ . " - Order $orderId: " . $noteMessage);
-                        throw new Exception(esc_html__($noteMessage, 'mollie-payments-for-woocommerce'));
+                        throw new Exception(esc_html(sprintf("%s", $noteMessage)));
                     }
 
                     $this->processOrderItemsRefund(
@@ -766,7 +766,7 @@ class MollieOrder extends MollieObject
             );
             $order->add_order_note($noteMessage);
             $this->logger->debug(__METHOD__ . ' - ' . $noteMessage);
-            throw new Exception(esc_html__($noteMessage, 'mollie-payments-for-woocommerce'));
+            throw new Exception(esc_html(sprintf("%s", $noteMessage)));
         }
 
         if ($paymentObject->isPaid() || $paymentObject->isShipping() || $paymentObject->isCompleted()) {

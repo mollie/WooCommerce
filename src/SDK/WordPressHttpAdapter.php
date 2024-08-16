@@ -45,7 +45,7 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
         if (is_wp_error($response)) {
             $message =  $response->get_error_message() ?? 'Unknown error';
             $code = is_int($response->get_error_code()) ? $response->get_error_code() : 0;
-            throw new ApiException(esc_html__($message), $code);
+            throw new ApiException(esc_html($message), $code);
         }
 
         return $this->parseResponse($response);
@@ -70,22 +70,22 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
                 return null;
             }
 
-            throw new ApiException(esc_html__("No response body found."));
+            throw new ApiException(esc_html("No response body found."));
         }
 
         $body = @json_decode($httpBody);
 
         // GUARDS
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new ApiException(esc_html__("Unable to decode Mollie response: '{$response}'."));
+            throw new ApiException(esc_html("Unable to decode Mollie response: '{$response}'."));
         }
 
         if (isset($body->error)) {
-            throw new ApiException(esc_html__($body->error->message));
+            throw new ApiException(esc_html($body->error->message));
         }
 
         if ($statusCode >= 400) {
-            $message = esc_html__("Error executing API call ({$body->status}: {$body->title}): {$body->detail}");
+            $message = esc_html("Error executing API call ({$body->status}: {$body->title}): {$body->detail}");
 
             $field = null;
 
@@ -101,7 +101,7 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
                 $message .= ". Request body: {$httpBody}";
             }
 
-            throw new ApiException(esc_html__($message), $statusCode, esc_html__($field));
+            throw new ApiException(esc_html($message), $statusCode, esc_html($field));
         }
 
         return $body;

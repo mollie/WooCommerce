@@ -3,7 +3,7 @@ Contributors: daanvm, danielhuesken, davdebcom, dinamiko, syde, l.vangunst, ndij
 Tags: mollie, payments, payment gateway, woocommerce, credit card, apple pay, ideal, bancontact, klarna, sofort, giropay, woocommerce subscriptions 
 Requires at least: 3.8
 Tested up to: 6.6
-Stable tag: 7.6.0
+Stable tag: 7.7.0
 Requires PHP: 7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -221,6 +221,20 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= 7.7.0 - 12-08-2024 =
+
+* Added - Payconiq payment method 
+* Added - Riverty payment method 
+* Fix - Declaring compatibility in WP Editor 
+* Security - Enhanced object reference security
+
+= 7.6.0 - 10-07-2024 =
+
+* Added - Trustly payment method
+* Deprecated - Giropay payment method ([Giropay Depreciation FAQ](https://help.mollie.com/hc/en-gb/articles/19745480480786-Giropay-Depreciation-FAQ))
+* Fixed - Mollie hooks into unrelated orders
+* Fixed - Notices and type errors after 7.5.5 update
+* Fixed - Rounding issues with products including tax
 = 7.5.5 - 18-06-2024 =
 
 * Feature Flag - Enable Bancomat Pay & Alma feature flag by default (official launch 2024-07-01)

@@ -1011,7 +1011,7 @@ class MollieOrder extends MollieObject
                 return null;
             }
             $format = "Y-m-d";
-            returngmdate($format, (int) strtotime($fieldPosted));
+            return gmdate($format, (int) strtotime($fieldPosted));
         }
         return null;
     }

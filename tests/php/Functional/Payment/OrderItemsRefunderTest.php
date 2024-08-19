@@ -21,6 +21,7 @@ use PHPUnit_Framework_MockObject_MockObject;
 use stdClass;
 use UnexpectedValueException;
 use function Brain\Monkey\Actions\expectDone as expectedActionDone;
+use function Brain\Monkey\Functions\stubs;
 use function Brain\Monkey\Functions\when;
 
 /**
@@ -196,6 +197,11 @@ class OrderItemsRefunderTest extends TestCase
          * Stubs
          */
         $order = new \WC_Order();
+        stubs(
+            [
+                'esc_html__' => null
+            ]
+        );
         // Passing null is the key here, this will throw the exception because of invalid value.
         /** @var WC_Order_Item $orderItem */
         $orderItem = $this->orderItem(['meta' => null]);
@@ -242,6 +248,11 @@ class OrderItemsRefunderTest extends TestCase
          * Stubs
          */
         $order = new \WC_Order();
+        stubs(
+            [
+                'esc_html__' => null
+            ]
+        );
         /** @var WC_Order_Item $orderItem */
         $orderItem = $this->orderItem(['meta' => uniqid()]);
         $orderLineItem = $this->orderLineItem(
@@ -289,6 +300,11 @@ class OrderItemsRefunderTest extends TestCase
         $order = new \WC_Order();
         $remoteOrder = $this->remoteOrder([]);
         $refundReason = uniqid();
+        stubs(
+            [
+                'esc_html__' => null
+            ]
+        );
 
         /*
          * Sut

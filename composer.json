@@ -23,7 +23,7 @@
     "psr/log":"^1.1.4"
   },
   "require-dev": {
-    "inpsyde/modularity": "^1.8.0",
+    "inpsyde/modularity": "^1.3.0",
     "psr/container": "1.0.0",
     "phpunit/phpunit": "^8",
     "brain/monkey": "^2.3",

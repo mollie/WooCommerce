@@ -215,9 +215,10 @@ class PaymentModule implements ServiceModule, ExecutableModule
         WC_Order $order,
         array $data
     ) {
+
         $orderNote = sprintf(
         /* translators: Placeholder 1: number of items. */
-        __(
+            __(
                 '%1$s items refunded in WooCommerce and at Mollie.',
                 'mollie-payments-for-woocommerce'
             ),
@@ -236,7 +237,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
     {
         $orderNote = sprintf(
         /* translators: Placeholder 1: number of items. */
-        __(
+            __(
                 '%1$s items cancelled in WooCommerce and at Mollie.',
                 'mollie-payments-for-woocommerce'
             ),

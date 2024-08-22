@@ -250,7 +250,8 @@ class OrderItemsRefunderTest extends TestCase
         $order = new \WC_Order();
         stubs(
             [
-                'esc_html__' => null
+                'esc_html__' => null,
+                'esc_html' => null
             ]
         );
         /** @var WC_Order_Item $orderItem */
@@ -302,7 +303,7 @@ class OrderItemsRefunderTest extends TestCase
         $refundReason = uniqid();
         stubs(
             [
-                'esc_html__' => null
+                'esc_html__' => null,
             ]
         );
 

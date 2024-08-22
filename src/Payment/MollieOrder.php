@@ -757,7 +757,7 @@ class MollieOrder extends MollieObject
         if ($paymentObject->isCreated() || $paymentObject->isAuthorized() || $paymentObject->isShipping()) {
             $noteMessage = sprintf(
             /* translators: Placeholder 1: payment status.*/
-            _x(
+                _x(
                     'Can not refund order amount that has status %1$s at Mollie.',
                     'Order note error',
                     'mollie-payments-for-woocommerce'
@@ -779,7 +779,7 @@ class MollieOrder extends MollieObject
             ]);
             $noteMessage = sprintf(
             /* translators: Placeholder 1: Currency. Placeholder 2: Refund amount. Placeholder 3: Reason. Placeholder 4: Refund id.*/
-            __('Amount refund of %1$s%2$s refunded in WooCommerce and at Mollie.%3$s Refund ID: %4$s.', 'mollie-payments-for-woocommerce'),
+                __('Amount refund of %1$s%2$s refunded in WooCommerce and at Mollie.%3$s Refund ID: %4$s.', 'mollie-payments-for-woocommerce'),
                 $this->dataHelper->getOrderCurrency($order),
                 $amount,
                 ( ! empty($reason) ? ' Reason: ' . $reason . '.' : '' ),
@@ -936,7 +936,7 @@ class MollieOrder extends MollieObject
             if ($refund === null) {
                 $noteMessage = sprintf(
                 /* translators: Placeholder 1: Number of items. Placeholder 2: Name of item. Placeholder 3: Currency. Placeholder 4: Amount.*/
-                __(
+                    __(
                         '%1$sx %2$s cancelled for %3$s%4$s in WooCommerce and at Mollie.',
                         'mollie-payments-for-woocommerce'
                     ),
@@ -960,7 +960,7 @@ class MollieOrder extends MollieObject
             );
             $noteMessage = sprintf(
             /* translators: Placeholder 1: Number of items. Placeholder 2: Name of item. Placeholder 3: Currency. Placeholder 4: Amount. Placeholder 5: Reason. Placeholder 6: Refund Id. */
-            __(
+                __(
                     '%1$sx %2$s refunded for %3$s%4$s in WooCommerce and at Mollie.%5$s Refund ID: %6$s.',
                     'mollie-payments-for-woocommerce'
                 ),

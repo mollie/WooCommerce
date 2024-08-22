@@ -272,8 +272,8 @@ class Data
             throw new InvalidArgumentException(
                 sprintf(
                 /* translators: Placeholder 1: amount value */
-                esc_html__('Amount %s is not valid.', 'mollie-payments-for-woocommerce'),
-                esc_html($amountValue)
+                    esc_html__('Amount %s is not valid.', 'mollie-payments-for-woocommerce'),
+                    esc_html($amountValue)
                 )
             );
         }

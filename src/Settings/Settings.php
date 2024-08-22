@@ -665,7 +665,7 @@ class Settings
         if ($invalidFileSize) {
             $message = sprintf(
             /* translators: Placeholder 1: opening tag Placeholder 2: closing tag */
-            esc_html__(
+                esc_html__(
                     '%1$sMollie Payments for WooCommerce%2$s Unable to upload the file. Size must be under 500kb.',
                     'mollie-payments-for-woocommerce'
                 ),

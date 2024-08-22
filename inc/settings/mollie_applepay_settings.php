@@ -45,9 +45,9 @@ return [
         'id' => 'display_logo',
         'title' => __('Display logo', 'mollie-payments-for-woocommerce'),
         'desc' => __(
-                'Display logo',
-                'mollie-payments-for-woocommerce'
-            ),
+            'Display logo',
+            'mollie-payments-for-woocommerce'
+        ),
         'desc_tip' => true,
         'type' => 'checkbox',
         'default' => 'yes',
@@ -88,7 +88,7 @@ return [
         'title' => __('Enable Apple Pay Button on Cart page', 'mollie-payments-for-woocommerce'),
         'desc' => sprintf(
         /* translators: Placeholder 1: enabled or disabled */
-        __(
+            __(
                 'Enable the Apple Pay direct buy button on the Cart page',
                 'mollie-payments-for-woocommerce'
             ),
@@ -104,7 +104,7 @@ return [
         'title' => __('Enable Apple Pay Button on Product page', 'mollie-payments-for-woocommerce'),
         'desc' => sprintf(
         /* translators: Placeholder 1: enabled or disabled */
-        __(
+            __(
                 'Enable the Apple Pay direct buy button on the Product page',
                 'mollie-payments-for-woocommerce'
             ),

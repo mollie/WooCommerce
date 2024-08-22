@@ -340,7 +340,8 @@ class RefundLineItemsBuilderTest extends TestCase
         $currency = uniqid();
         stubs(
             [
-                'esc_html__' => null
+                'esc_html__' => null,
+                'esc_html' => null
             ]
         );
 

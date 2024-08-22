@@ -105,13 +105,19 @@ class ConstraintsChecker
     {
         $message = sprintf(
         /* translators: Placeholder 1: opening tags Placeholder 2: closing tags */
-        __('%1$sMollie Payments for WooCommerce is inactive:%2$s', 'mollie-payments-for-woocommerce'), '<p><strong>', '</strong></p>');
+            __('%1$sMollie Payments for WooCommerce is inactive:%2$s', 'mollie-payments-for-woocommerce'),
+            '<p><strong>',
+            '</strong></p>'
+        );
         foreach ($errors as $error) {
             $message .= sprintf('<p>%s</p>', $error);
         }
         $message .= sprintf(
         /* translators: Placeholder 1: opening tags Placeholder 2: closing tags */
-        __('%1$sCorrect the above errors to use Mollie Payments for Woocommerce%2$s', 'mollie-payments-for-woocommerce'), '<p>', '</p>');
+            __('%1$sCorrect the above errors to use Mollie Payments for Woocommerce%2$s', 'mollie-payments-for-woocommerce'),
+            '<p>',
+            '</p>'
+        );
         $errorLevel = 'notice-error';
         $this->notice->addNotice($errorLevel, $message);
     }

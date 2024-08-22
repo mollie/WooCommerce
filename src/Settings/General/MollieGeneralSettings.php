@@ -93,9 +93,9 @@ class MollieGeneralSettings
                 'type' => 'file',
                 'custom_attributes' => ['accept' => '.png, .jpeg, .svg, image/png, image/jpeg'],
                 'description' => __(
-                        'Upload a custom icon for this gateway. The feature must be enabled.',
-                        'mollie-payments-for-woocommerce'
-                    ),
+                    'Upload a custom icon for this gateway. The feature must be enabled.',
+                    'mollie-payments-for-woocommerce'
+                ),
                 'desc_tip' => true,
             ],
             'description' => [
@@ -191,9 +191,9 @@ class MollieGeneralSettings
                 'title' => __('Payment surcharge percentage amount %', 'mollie-payments-for-woocommerce'),
                 'type' => 'number',
                 'description' => __(
-                        'Control the percentage fee added on checkout. Default 0.00',
-                        'mollie-payments-for-woocommerce'
-                    ),
+                    'Control the percentage fee added on checkout. Default 0.00',
+                    'mollie-payments-for-woocommerce'
+                ),
                 'custom_attributes' => ['step' => '0.01', 'min' => '0.00', 'max' => '999'],
                 'default' => '0.00',
                 'desc_tip' => true,
@@ -223,9 +223,9 @@ class MollieGeneralSettings
                 ),
                 'type' => 'number',
                 'description' => __(
-                        'Maximum order amount to apply surcharge. If the order is above this number the surcharge will not apply. Default 0, means no maximum',
-                        'mollie-payments-for-woocommerce'
-                    ),
+                    'Maximum order amount to apply surcharge. If the order is above this number the surcharge will not apply. Default 0, means no maximum',
+                    'mollie-payments-for-woocommerce'
+                ),
                 'custom_attributes' => ['step' => '0.01', 'min' => '0.00', 'max' => '999'],
                 'default' => '0.00',
                 'desc_tip' => true,
@@ -260,7 +260,7 @@ class MollieGeneralSettings
                 'default' => SharedDataDictionary::STATUS_ON_HOLD,
                 'description' => sprintf(
                 /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
-                __(
+                    __(
                         'Some payment methods take longer than a few hours to complete. The initial order state is then set to \'%1$s\'. This ensures the order is not cancelled when the setting %2$s is used. This will also prevent the order to be canceled when expired.',
                         'mollie-payments-for-woocommerce'
                     ),
@@ -289,9 +289,9 @@ class MollieGeneralSettings
             'type' => 'number',
             'custom_attributes' => ['step' => '1', 'min' => '10', 'max' => '526000'],
             'description' => __(
-                    'Number of MINUTES after the order will expire and will be canceled at Mollie and WooCommerce.',
-                    'mollie-payments-for-woocommerce'
-                ),
+                'Number of MINUTES after the order will expire and will be canceled at Mollie and WooCommerce.',
+                'mollie-payments-for-woocommerce'
+            ),
             'default' => '10',
             'desc_tip' => false,
         ];

@@ -110,7 +110,7 @@ class PayPalAjaxRequests
         } else {
             $message = sprintf(
             /* translators: Placeholder 1: Payment method title */
-            __(
+                __(
                     'Could not create %s payment.',
                     'mollie-payments-for-woocommerce'
                 ),
@@ -154,7 +154,7 @@ class PayPalAjaxRequests
         } else {
             $message = sprintf(
             /* translators: Placeholder 1: Payment method title */
-            __(
+                __(
                     'Could not create %s payment.',
                     'mollie-payments-for-woocommerce'
                 ),

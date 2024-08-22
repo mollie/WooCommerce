@@ -72,7 +72,7 @@ $mollieAdvancedSettings =  [
         ],
         'desc' => sprintf(
         /* translators: Placeholder 1: link tag Placeholder 2: closing tag */
-        __('Sending a language (or locale) is required. The option \'Automatically send WordPress language\' will try to get the customer\'s language in WordPress (and respects multilanguage plugins) and convert it to a format Mollie understands. If this fails, or if the language is not supported, it will fall back to American English. You can also select one of the locales currently supported by Mollie, that will then be used for all customers.', 'mollie-payments-for-woocommerce'),
+            __('Sending a language (or locale) is required. The option \'Automatically send WordPress language\' will try to get the customer\'s language in WordPress (and respects multilanguage plugins) and convert it to a format Mollie understands. If this fails, or if the language is not supported, it will fall back to American English. You can also select one of the locales currently supported by Mollie, that will then be used for all customers.', 'mollie-payments-for-woocommerce'),
             '<a href="https://www.mollie.com/nl/docs/reference/payments/create" target="_blank">',
             '</a>'
         ),
@@ -113,7 +113,7 @@ $mollieAdvancedSettings =  [
         'default' => PaymentService::PAYMENT_METHOD_TYPE_ORDER,
         'desc' => sprintf(
         /* translators: Placeholder 1: opening link tag, placeholder 2: closing link tag */
-        __(
+            __(
                 'Click %1$shere%2$s to read more about the differences between the Payments and Orders API',
                 'mollie-payments-for-woocommerce'
             ),
@@ -163,7 +163,7 @@ $mollieAdvancedSettings =  [
             )),
             sprintf(
             /* translators: Placeholder 1: Opening paragraph tag, placeholder 2: Closing paragraph tag */
-            __(
+                __(
                     'Select among the available variables the description to be used for this transaction.%1$s(Note: this only works when the method is set to Payments API)%2$s',
                     'mollie-payments-for-woocommerce'
                 ),
@@ -182,9 +182,9 @@ $mollieAdvancedSettings =  [
         'custom_attributes' => ['maxlength' => '30'],
         'default' => __('Gateway Fee', 'mollie-payments-for-woocommerce'),
         'desc' => __(
-                'This is the label will appear in frontend when the surcharge applies',
-                'mollie-payments-for-woocommerce'
-            ),
+            'This is the label will appear in frontend when the surcharge applies',
+            'mollie-payments-for-woocommerce'
+        ),
     ],
     [
         'id' => $pluginName . '_removeOptionsAndTransients',

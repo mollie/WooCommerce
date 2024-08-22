@@ -405,7 +405,7 @@ class MollieOrderService
                 $order->add_order_note(
                     sprintf(
                     /* translators: Placeholder 1: Chargeback to process id. */
-                    __(
+                        __(
                             'New chargeback %s processed! Order note and order status updated.',
                             'mollie-payments-for-woocommerce'
                         ),
@@ -819,7 +819,7 @@ class MollieOrderService
             $order->add_order_note(
                 sprintf(
                 /* translators: Placeholder 1: Refund to process id. */
-                __(
+                    __(
                         'New refund %s processed in Mollie Dashboard! Order note added, but order not updated.',
                         'mollie-payments-for-woocommerce'
                     ),

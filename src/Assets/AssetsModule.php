@@ -247,7 +247,7 @@ class AssetsModule implements ExecutableModule
             (string) filemtime($this->getPluginPath($pluginPath, '/public/js/applepayDirectCart.min.js')),
             true
         );
-        wp_register_script('mollie', 'https://js.mollie.com/v1/mollie.js', [], date("d"), true);
+        wp_register_script('mollie', 'https://js.mollie.com/v1/mollie.js', [], gmdate("d"), true);
         wp_register_script(
             'mollie-components',
             $this->getPluginUrl($pluginUrl, '/public/js/mollie-components.min.js'),

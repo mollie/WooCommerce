@@ -15,8 +15,8 @@ class MybankInstructionStrategy implements InstructionStrategyI
 
         if ($payment->isPaid() && $payment->details) {
             return sprintf(
+            /* translators: Placeholder 1: Mollie_WC_Gateway_MyBank consumer name, placeholder 2: Consumer Account number */
                 __(
-                /* translators: Placeholder 1: Mollie_WC_Gateway_MyBank consumer name, placeholder 2: Consumer Account number */
                     'Payment completed by <strong>%1$s</strong> - %2$s',
                     'mollie-payments-for-woocommerce'
                 ),

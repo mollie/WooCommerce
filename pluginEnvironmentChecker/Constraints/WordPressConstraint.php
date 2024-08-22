@@ -12,7 +12,7 @@ class WordPressConstraint extends AbstractVersionConstraint
 	public function __construct($requiredVersion)
 	{
 		parent::__construct($requiredVersion);
-		$this->error = 'Wordpress version incompatibility';
+		$this->error = esc_html('Wordpress version incompatibility');
 	}
 
     /**
@@ -24,6 +24,7 @@ class WordPressConstraint extends AbstractVersionConstraint
 	    $this->message = 'WordPress version has to be '
 		    . $this->requiredVersion
 		    . ' or higher. Please update your WordPress version';
+        $this->message = esc_html($this->message);
 
 	    return $this->checkVersion(
 		    $WPCurrentVersion

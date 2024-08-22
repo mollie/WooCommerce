@@ -282,7 +282,16 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                     );
                 }
             } catch (ApiException $e) {
-                throw new ApiException(sprintf(__('The customer (%s) could not be used or found. ', 'mollie-payments-for-woocommerce') . $e->getMessage(), $customer_id));
+                throw new ApiException(
+                    sprintf(
+                    /* translators: Placeholder 1: customer id. */
+                        __(
+                            'The customer (%s) could not be used or found. ',
+                            'mollie-payments-for-woocommerce'
+                        ) . $e->getMessage(),
+                        $customer_id
+                    )
+                );
             }
 
             // Check that there is at least one valid mandate
@@ -312,7 +321,16 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                         $mandateId = $payment->mandateId;
                     }
                 } else {
-                    throw new ApiException(sprintf(__('The customer (%s) does not have a valid mandate.', 'mollie-payments-for-woocommerce-mandate-problem'), $customer_id));
+                    throw new ApiException(
+                        sprintf(
+                        /* translators: Placeholder 1: customer id. */
+                            __(
+                                'The customer (%s) does not have a valid mandate.',
+                                'mollie-payments-for-woocommerce-mandate-problem'
+                            ),
+                            $customer_id
+                        )
+                    );
                 }
             } catch (ApiException $e) {
                 throw $e;
@@ -322,7 +340,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             $this->updateFirstPaymentMethodToRecurringPaymentMethod($renewal_order, $renewal_order_id, $payment);
 
             // Log successful creation of payment
-            $this->logger->debug($this->id . ': Renewal payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $renewal_order_id . ' payment json response: ' . json_encode($payment));
+            $this->logger->debug($this->id . ': Renewal payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $renewal_order_id . ' payment json response: ' . wp_json_encode($payment));
 
             // Unset & set active Mollie payment
             // Get correct Mollie Payment Object

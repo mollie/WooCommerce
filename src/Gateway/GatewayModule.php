@@ -735,6 +735,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $errors->add(
                     'validation',
                     sprintf(
+                    /* translators: Placeholder 1: field name. */
                         __('%s is a required field.', 'woocommerce'),
                         "<strong>$fieldLabel</strong>"
                     )
@@ -752,6 +753,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         string $fieldLabel,
         $errors
     ) {
+
         if ($fields['payment_method'] !== $gatewayName) {
             return $fields;
         }
@@ -833,10 +835,9 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $context->order->update_meta_data('billing_birthdate', $billingBirthdate);
                 $context->order->save();
             } else {
-                $message = __('Please introduce a valid birthdate number.', 'mollie-payments-for-woocommerce');
                 throw new RouteException(
                     'woocommerce_rest_checkout_process_payment_error',
-                    $message,
+                    esc_html__('Please introduce a valid birthdate number.', 'mollie-payments-for-woocommerce'),
                     402
                 );
             }

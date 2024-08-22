@@ -52,6 +52,7 @@ class CreditcardFieldsStrategy implements PaymentFieldsStrategyI
 
     protected function lockIcon($dataHelper)
     {
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading local file is OK.
         return file_get_contents(
             $dataHelper->pluginPath() . '/' . 'public/images/lock-icon.svg'
         );
@@ -59,6 +60,7 @@ class CreditcardFieldsStrategy implements PaymentFieldsStrategyI
 
     protected function mollieLogo($dataHelper)
     {
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading local file is OK.
         return file_get_contents(
             $dataHelper->pluginPath() . '/' . 'public/images/mollie-logo.svg'
         );

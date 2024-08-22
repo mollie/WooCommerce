@@ -27,6 +27,7 @@ class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
         $orderNoteLine = "";
         foreach ($details->giftcards as $giftcard) {
             $orderNoteLine .= sprintf(
+            /* translators: Placeholder 1: giftcard issuer, Placeholder 2: amount value, Placeholder 3: currency */
                 esc_html_x(
                     'Mollie - Giftcard details: %1$s %2$s %3$s.',
                     'Placeholder 1: giftcard issuer, Placeholder 2: amount value, Placeholder 3: currency',
@@ -39,6 +40,7 @@ class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
         }
         if ($details->remainderMethod) {
             $orderNoteLine .= sprintf(
+            /* translators: Placeholder 1: Method Placeholder 2: Value Placeholder 3: currency */
                 esc_html_x(
                     ' Remainder: %1$s %2$s %3$s.',
                     'Placeholder 1: remainder method, Placeholder 2: amount value, Placeholder 3: currency',

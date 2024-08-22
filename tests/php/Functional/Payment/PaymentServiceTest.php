@@ -97,6 +97,8 @@ class PaymentServiceTest extends TestCase
                 'add_query_arg' => 'https://webshop.example.org/wc-api/mollie_return?order_id=1&key=wc_order_hxZniP1zDcnM8',
                 'WC' => $this->wooCommerce(),
                 'wc_clean' => null,
+                'wp_parse_url' => null,
+                'wp_strip_all_tags' => null
             ]
         );
 
@@ -137,6 +139,7 @@ class PaymentServiceTest extends TestCase
     {
         stubs([
             'array_filter' => [],
+            'esc_html__' =>null
               ]);
         $mockedException = new TestApiException();
         $mockedException->setTestCode(422);

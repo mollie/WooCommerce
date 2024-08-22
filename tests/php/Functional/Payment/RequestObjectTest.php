@@ -115,7 +115,9 @@ class RequestObjectTest extends TestCase
                   'WC' => $this->wooCommerce(),
                   'get_option' => ['enabled' => false],
                   'wc_get_product' => $wrapperMock,
-                  'wc_clean' => false
+                  'wc_clean' => false,
+                  'wp_parse_url' => null,
+                  'wp_strip_all_tags' => null
               ]);
         $apiClientMock = $this->createConfiguredMock(
             MollieApiClient::class,

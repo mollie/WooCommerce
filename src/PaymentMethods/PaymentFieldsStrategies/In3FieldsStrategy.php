@@ -50,11 +50,11 @@ class In3FieldsStrategy implements PaymentFieldsStrategyI
     {
         ?>
         <p class="form-row form-row-wide" id="billing_birthdate_field">
-            <label for="<?= esc_attr(self::FIELD_BIRTHDATE); ?>" class=""><?= esc_html__('Birthdate', 'mollie-payments-for-woocommerce'); ?>
+            <label for="<?php echo esc_attr(self::FIELD_BIRTHDATE); ?>" class=""><?php echo esc_html__('Birthdate', 'mollie-payments-for-woocommerce'); ?>
             </label>
             <span class="woocommerce-input-wrapper">
-                <input type="date" class="input-text " name="<?= esc_attr(self::FIELD_BIRTHDATE); ?>"
-                       id="<?= esc_attr(self::FIELD_BIRTHDATE); ?>" value=""
+                <input type="date" class="input-text " name="<?php echo esc_attr(self::FIELD_BIRTHDATE); ?>"
+                       id="<?php echo esc_attr(self::FIELD_BIRTHDATE); ?>" value=""
                        autocomplete="birthdate"></span>
         </p>
         <?php
@@ -65,12 +65,12 @@ class In3FieldsStrategy implements PaymentFieldsStrategyI
         $phoneValue = $phoneValue ?: '';
         ?>
         <p class="form-row form-row-wide" id="billing_phone_field">
-            <label for="<?= esc_attr(self::FIELD_PHONE); ?>" class=""><?= esc_html__('Phone', 'mollie-payments-for-woocommerce'); ?>
+            <label for="<?php echo esc_attr(self::FIELD_PHONE); ?>" class=""><?php echo esc_html__('Phone', 'mollie-payments-for-woocommerce'); ?>
             </label>
             <span class="woocommerce-input-wrapper">
-        <input type="tel" class="input-text " name="<?= esc_attr(self::FIELD_PHONE); ?>" id="<?= esc_attr(self::FIELD_PHONE); ?>"
+        <input type="tel" class="input-text " name="<?php echo esc_attr(self::FIELD_PHONE); ?>" id="<?php echo esc_attr(self::FIELD_PHONE); ?>"
                placeholder="+316xxxxxxxx"
-               value="<?= esc_attr($phoneValue); ?>" autocomplete="phone">
+               value="<?php echo esc_attr($phoneValue); ?>" autocomplete="phone">
         </span>
         </p>
         <?php

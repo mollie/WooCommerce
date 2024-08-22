@@ -102,8 +102,9 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
             if ($httpBody) {
                 $message .= ". Request body: {$httpBody}";
             }
-
+            // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new ApiException(esc_html($message), $statusCode, esc_html($field));
+            // phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
 
         return $body;

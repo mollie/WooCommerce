@@ -735,6 +735,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 $errors->add(
                     'validation',
                     sprintf(
+                    /* translators: Placeholder 1: field name. */
                         __('%s is a required field.', 'woocommerce'),
                         "<strong>$fieldLabel</strong>"
                     )

@@ -755,9 +755,9 @@ class MollieOrder extends MollieObject
         $apiKey = $this->settingsHelper->getApiKey();
 
         if ($paymentObject->isCreated() || $paymentObject->isAuthorized() || $paymentObject->isShipping()) {
-            /* translators: Placeholder 1: payment status.*/
             $noteMessage = sprintf(
-                _x(
+            /* translators: Placeholder 1: payment status.*/
+            _x(
                     'Can not refund order amount that has status %1$s at Mollie.',
                     'Order note error',
                     'mollie-payments-for-woocommerce'
@@ -777,9 +777,9 @@ class MollieOrder extends MollieObject
                 ],
                 'description' => $reason,
             ]);
-            /* translators: Placeholder 1: Currency. Placeholder 2: Refund amount. Placeholder 3: Reason. Placeholder 4: Refund id.*/
             $noteMessage = sprintf(
-                __('Amount refund of %1$s%2$s refunded in WooCommerce and at Mollie.%3$s Refund ID: %4$s.', 'mollie-payments-for-woocommerce'),
+            /* translators: Placeholder 1: Currency. Placeholder 2: Refund amount. Placeholder 3: Reason. Placeholder 4: Refund id.*/
+            __('Amount refund of %1$s%2$s refunded in WooCommerce and at Mollie.%3$s Refund ID: %4$s.', 'mollie-payments-for-woocommerce'),
                 $this->dataHelper->getOrderCurrency($order),
                 $amount,
                 ( ! empty($reason) ? ' Reason: ' . $reason . '.' : '' ),
@@ -934,9 +934,9 @@ class MollieOrder extends MollieObject
             );
 
             if ($refund === null) {
-                /* translators: Placeholder 1: Number of items. Placeholder 2: Name of item. Placeholder 3: Currency. Placeholder 4: Amount.*/
                 $noteMessage = sprintf(
-                    __(
+                /* translators: Placeholder 1: Number of items. Placeholder 2: Name of item. Placeholder 3: Currency. Placeholder 4: Amount.*/
+                __(
                         '%1$sx %2$s cancelled for %3$s%4$s in WooCommerce and at Mollie.',
                         'mollie-payments-for-woocommerce'
                     ),
@@ -958,9 +958,9 @@ class MollieOrder extends MollieObject
                     $order
                 ) . wc_format_decimal($itemRefundAmount) . (!empty($reason) ? ', reason: ' . $reason : '')
             );
-            /* translators: Placeholder 1: Number of items. Placeholder 2: Name of item. Placeholder 3: Currency. Placeholder 4: Amount. Placeholder 5: Reason. Placeholder 6: Refund Id. */
             $noteMessage = sprintf(
-                __(
+            /* translators: Placeholder 1: Number of items. Placeholder 2: Name of item. Placeholder 3: Currency. Placeholder 4: Amount. Placeholder 5: Reason. Placeholder 6: Refund Id. */
+            __(
                     '%1$sx %2$s refunded for %3$s%4$s in WooCommerce and at Mollie.%5$s Refund ID: %6$s.',
                     'mollie-payments-for-woocommerce'
                 ),

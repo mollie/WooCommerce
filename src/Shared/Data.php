@@ -270,21 +270,33 @@ class Data
         $amountValue = $this->getAmountValue($orderTotal, $currency);
         if ($amountValue <= 0) {
             throw new InvalidArgumentException(
-                sprintf(esc_html__('Amount %s is not valid.', 'mollie-payments-for-woocommerce'), esc_html($amountValue))
+                sprintf(
+                /* translators: Placeholder 1: amount value */
+                esc_html__('Amount %s is not valid.', 'mollie-payments-for-woocommerce'),
+                esc_html($amountValue)
+                )
             );
         }
 
         // Check if currency is in ISO 4217 alpha-3 format (ex: EUR)
         if (!preg_match('/^[a-zA-Z]{3}$/', $currency)) {
             throw new InvalidArgumentException(
-                sprintf(esc_html__('Currency %s is not valid.', 'mollie-payments-for-woocommerce'), esc_html($currency))
+                sprintf(
+                /* translators: Placeholder 1: currency */
+                    esc_html__('Currency %s is not valid.', 'mollie-payments-for-woocommerce'),
+                    esc_html($currency)
+                )
             );
         }
 
         // Check if billing country is in ISO 3166-1 alpha-2 format (ex: NL)
         if (!preg_match('/^[a-zA-Z]{2}$/', $billingCountry)) {
             throw new InvalidArgumentException(
-                sprintf(esc_html__('Billing Country %s is not valid.', 'mollie-payments-for-woocommerce'), esc_html($billingCountry))
+                sprintf(
+                /* translators: Placeholder 1: billing country */
+                    esc_html__('Billing Country %s is not valid.', 'mollie-payments-for-woocommerce'),
+                    esc_html($billingCountry)
+                )
             );
         }
 

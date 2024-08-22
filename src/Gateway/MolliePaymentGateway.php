@@ -649,6 +649,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
         $this->notice->addNotice(
             'error',
             sprintf(
+            /* translators: Placeholder 1: order id. */
                 __(
                     'Could not load order %s',
                     'mollie-payments-for-woocommerce'

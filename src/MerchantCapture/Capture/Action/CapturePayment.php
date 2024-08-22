@@ -49,7 +49,8 @@ class CapturePayment extends AbstractPaymentCaptureAction
             );
             $this->order->add_order_note(
                 sprintf(
-                    __(
+                /* translators: Placeholder 1: Order price */
+                __(
                         'The payment capture of %s has been sent successfully, and we are currently awaiting confirmation.',
                         'mollie-payments-for-woocommerce'
                     ),

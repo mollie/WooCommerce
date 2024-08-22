@@ -282,7 +282,16 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                     );
                 }
             } catch (ApiException $e) {
-                throw new ApiException(sprintf(__('The customer (%s) could not be used or found. ', 'mollie-payments-for-woocommerce') . $e->getMessage(), $customer_id));
+                throw new ApiException(
+                    sprintf(
+                    /* translators: Placeholder 1: customer id. */
+                        __(
+                            'The customer (%s) could not be used or found. ',
+                            'mollie-payments-for-woocommerce'
+                        ) . $e->getMessage(),
+                        $customer_id
+                    )
+                );
             }
 
             // Check that there is at least one valid mandate
@@ -312,7 +321,16 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
                         $mandateId = $payment->mandateId;
                     }
                 } else {
-                    throw new ApiException(sprintf(__('The customer (%s) does not have a valid mandate.', 'mollie-payments-for-woocommerce-mandate-problem'), $customer_id));
+                    throw new ApiException(
+                        sprintf(
+                        /* translators: Placeholder 1: customer id. */
+                            __(
+                                'The customer (%s) does not have a valid mandate.',
+                                'mollie-payments-for-woocommerce-mandate-problem'
+                            ),
+                            $customer_id
+                        )
+                    );
                 }
             } catch (ApiException $e) {
                 throw $e;

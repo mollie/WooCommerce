@@ -27,8 +27,8 @@ return [
     [
         'id' => 'title',
         'title' => __('Title', 'mollie-payments-for-woocommerce'),
-        /* translators: Placeholder 1: Gateway title */
         'desc' => sprintf(
+            /* translators: Placeholder 1: Gateway title */
             __(
                 'This controls the title which the user sees during checkout. Default <code>%s</code>',
                 'mollie-payments-for-woocommerce'
@@ -44,12 +44,10 @@ return [
     [
         'id' => 'display_logo',
         'title' => __('Display logo', 'mollie-payments-for-woocommerce'),
-        'desc' => sprintf(
-            __(
+        'desc' => __(
                 'Display logo',
                 'mollie-payments-for-woocommerce'
-            )
-        ),
+            ),
         'desc_tip' => true,
         'type' => 'checkbox',
         'default' => 'yes',
@@ -59,8 +57,8 @@ return [
     [
         'id' => 'description',
         'title' => __('Description', 'mollie-payments-for-woocommerce'),
-        /* translators: Placeholder 1: Gateway description */
         'desc' => sprintf(
+            /* translators: Placeholder 1: Gateway description */
             __(
                 'Payment method description that the customer will see on your checkout. Default <code>%s</code>',
                 'mollie-payments-for-woocommerce'
@@ -88,9 +86,9 @@ return [
     [
         'id' => 'mollie_apple_pay_button_enabled_cart',
         'title' => __('Enable Apple Pay Button on Cart page', 'mollie-payments-for-woocommerce'),
-        /* translators: Placeholder 1: enabled or disabled */
         'desc' => sprintf(
-            __(
+        /* translators: Placeholder 1: enabled or disabled */
+        __(
                 'Enable the Apple Pay direct buy button on the Cart page',
                 'mollie-payments-for-woocommerce'
             ),
@@ -104,9 +102,9 @@ return [
     [
         'id' => 'mollie_apple_pay_button_enabled_product',
         'title' => __('Enable Apple Pay Button on Product page', 'mollie-payments-for-woocommerce'),
-        /* translators: Placeholder 1: enabled or disabled */
         'desc' => sprintf(
-            __(
+        /* translators: Placeholder 1: enabled or disabled */
+        __(
                 'Enable the Apple Pay direct buy button on the Product page',
                 'mollie-payments-for-woocommerce'
             ),

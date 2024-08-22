@@ -650,6 +650,7 @@ class Settings
         $notice = new AdminNotice();
         if ($extensionNotAllowed || $fileIsNotAnImage) {
             $message = sprintf(
+            /* translators: Placeholder 1: opening tag Placeholder 2: closing tag */
                 esc_html__(
                     '%1$sMollie Payments for WooCommerce%2$s Unable to upload the file. Only jpg, jpeg, png and gif files are allowed.',
                     'mollie-payments-for-woocommerce'
@@ -663,7 +664,8 @@ class Settings
 
         if ($invalidFileSize) {
             $message = sprintf(
-                esc_html__(
+            /* translators: Placeholder 1: opening tag Placeholder 2: closing tag */
+            esc_html__(
                     '%1$sMollie Payments for WooCommerce%2$s Unable to upload the file. Size must be under 500kb.',
                     'mollie-payments-for-woocommerce'
                 ),

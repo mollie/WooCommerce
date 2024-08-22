@@ -193,8 +193,8 @@ class Status
                     esc_html__('incorrect API key or other authentication issue. Please check your API keys!', 'mollie-payments-for-woocommerce')
                 );
             }
-            $message = esc_html($apiException->getMessage());
-            throw new \Mollie\Api\Exceptions\ApiException($message);
+            $message = $apiException->getMessage();
+            throw new \Mollie\Api\Exceptions\ApiException(esc_html($message));
         }
     }
 }

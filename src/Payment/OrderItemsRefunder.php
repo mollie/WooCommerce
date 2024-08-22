@@ -167,7 +167,7 @@ class OrderItemsRefunder
                             'Impossible to retrieve the order item ID related to the remote item: %1$s. Try to do a refund by amount.',
                             'mollie-payments-for-woocommerce'
                         ),
-                        $remoteItem->id
+                        esc_html($remoteItem->id)
                     )
                 );
             }

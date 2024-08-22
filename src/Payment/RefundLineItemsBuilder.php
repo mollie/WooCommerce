@@ -64,7 +64,7 @@ class RefundLineItemsBuilder
                             'Cannot refund %s item because it was not found in Mollie order. Aborting refund process. Try to do a refund by amount.',
                             'mollie-payments-for-woocommerce'
                         ),
-                        $toRefundItemId
+                        esc_html($toRefundItemId)
                     )
                 );
             }

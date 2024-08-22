@@ -45,7 +45,9 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
         if (is_wp_error($response)) {
             $message =  $response->get_error_message() ?? 'Unknown error';
             $code = is_int($response->get_error_code()) ? $response->get_error_code() : 0;
+            // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new ApiException(esc_html($message), $code);
+            // phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
 
         return $this->parseResponse($response);

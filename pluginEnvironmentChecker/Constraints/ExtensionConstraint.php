@@ -15,7 +15,7 @@ class ExtensionConstraint extends AbstractVersionConstraint
 	public function __construct($requiredVersion)
 	{
 		parent::__construct($requiredVersion);
-		$this->error = 'Required Extension not loaded';
+		$this->error = esc_html('Required Extension not loaded');
 	}
 
 	/**
@@ -25,18 +25,21 @@ class ExtensionConstraint extends AbstractVersionConstraint
 	{
 		$this->message = $this->requiredVersion
 			. ' extension is required. Enable it in your server or ask your webhoster to enable it for you.';
+        $this->message = esc_html($this->message);
 		if (function_exists('extension_loaded')
 			&& !extension_loaded(
 				$this->requiredVersion
 			)
 		) {
-			throw new ConstraintFailedException(
+            // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+            throw new ConstraintFailedException(
 				$this,
 				$this->requiredVersion,
 				[$this->error],
 				$this->message
 			);
-		}
+            // phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+        }
 		return true;
 	}
 }

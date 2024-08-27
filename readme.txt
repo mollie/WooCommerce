@@ -3,7 +3,7 @@ Contributors: daanvm, danielhuesken, davdebcom, dinamiko, syde, l.vangunst, ndij
 Tags: mollie, payments, payment gateway, woocommerce, credit card, apple pay, ideal, bancontact, klarna, sofort, giropay, woocommerce subscriptions 
 Requires at least: 3.8
 Tested up to: 6.6
-Stable tag: 7.7.0
+Stable tag: 7.8.0
 Requires PHP: 7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -220,6 +220,11 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 
 == Changelog ==
+
+= 7.8.0 - 27-08-2024 =
+
+* Added - Satispay payment method 
+* Security - Remove Mollie SDK examples folder and some CS fixes
 
 = 7.7.0 - 12-08-2024 =
 

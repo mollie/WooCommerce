@@ -118,7 +118,7 @@ class OrderItemsRefunder
 
             if (!$toRefundItemId) {
                 throw new UnexpectedValueException(
-                    __(
+                    esc_html__(
                         'One of the WooCommerce order items does not have the refund item ID meta value associated to Mollie Order item.',
                         'mollie-payments-for-woocommerce'
                     )
@@ -163,11 +163,12 @@ class OrderItemsRefunder
             if (!$orderItemId) {
                 throw new UnexpectedValueException(
                     sprintf(
-                        __(
+                        /* translators: Placeholder 1: item id. */
+                        esc_html__(
                             'Impossible to retrieve the order item ID related to the remote item: %1$s. Try to do a refund by amount.',
                             'mollie-payments-for-woocommerce'
                         ),
-                        $remoteItem->id
+                        esc_html($remoteItem->id)
                     )
                 );
             }
@@ -187,7 +188,7 @@ class OrderItemsRefunder
     {
         if (empty($items) || empty($remoteItems)) {
             throw new UnexpectedValueException(
-                __(
+                esc_html__(
                     'Empty WooCommerce order items or mollie order lines.',
                     'mollie-payments-for-woocommerce'
                 )

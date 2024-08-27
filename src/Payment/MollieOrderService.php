@@ -269,7 +269,7 @@ class MollieOrderService
         $refundIds = $this->findRefundIds($payment);
         // Check for new refund
         $this->logger->debug(
-            __METHOD__ . " All refund IDs for {$logId}: " . json_encode(
+            __METHOD__ . " All refund IDs for {$logId}: " . wp_json_encode(
                 $refundIds
             )
         );
@@ -293,7 +293,7 @@ class MollieOrderService
         $this->logger->debug(
             __METHOD__
             . " Refunds that need to be processed for {$logId}: "
-            . json_encode($refundsToProcess)
+            . wp_json_encode($refundsToProcess)
         );
         $order = wc_get_order($orderId);
 
@@ -348,7 +348,7 @@ class MollieOrderService
             }
 
             $this->logger->debug(
-                __METHOD__ . " All chargeback IDs for {$logId}: " . json_encode(
+                __METHOD__ . " All chargeback IDs for {$logId}: " . wp_json_encode(
                     $chargebackIds
                 )
             );
@@ -365,7 +365,7 @@ class MollieOrderService
 
             $this->logger->debug(
                 __METHOD__ . " Already processed chargebacks for {$logId}: "
-                . json_encode($processedChargebackIds)
+                . wp_json_encode($processedChargebackIds)
             );
 
             // Order the chargeback arrays by value (chargeback ID)
@@ -382,7 +382,7 @@ class MollieOrderService
                 $this->logger->debug(
                     __METHOD__
                     . " Chargebacks that need to be processed for {$logId}: "
-                    . json_encode($chargebacksToProcess)
+                    . wp_json_encode($chargebacksToProcess)
                 );
             } else {
                 // No new chargebacks, stop processing.
@@ -402,9 +402,9 @@ class MollieOrderService
                     __METHOD__
                     . " New chargeback {$chargebackToProcess} for {$logId}. Order note and order status updated."
                 );
-                /* translators: Placeholder 1: Chargeback to process id. */
                 $order->add_order_note(
                     sprintf(
+                    /* translators: Placeholder 1: Chargeback to process id. */
                         __(
                             'New chargeback %s processed! Order note and order status updated.',
                             'mollie-payments-for-woocommerce'
@@ -466,7 +466,7 @@ class MollieOrderService
             $this->logger->debug(
                 __METHOD__
                 . " Updated, all processed chargebacks for {$logId}: "
-                . json_encode($processedChargebackIds)
+                . wp_json_encode($processedChargebackIds)
             );
 
             $order->save();
@@ -797,7 +797,7 @@ class MollieOrderService
 
         $this->logger->debug(
             __METHOD__ . " Already processed refunds for {$logId}: "
-            . json_encode($processedRefundIds)
+            . wp_json_encode($processedRefundIds)
         );
         return $processedRefundIds;
     }
@@ -816,9 +816,9 @@ class MollieOrderService
                 __METHOD__
                 . " New refund {$refundToProcess} processed in Mollie Dashboard for {$logId} Order note added, but order not updated."
             );
-            /* translators: Placeholder 1: Refund to process id. */
             $order->add_order_note(
                 sprintf(
+                /* translators: Placeholder 1: Refund to process id. */
                     __(
                         'New refund %s processed in Mollie Dashboard! Order note added, but order not updated.',
                         'mollie-payments-for-woocommerce'
@@ -836,7 +836,7 @@ class MollieOrderService
         );
         $this->logger->debug(
             __METHOD__ . " Updated, all processed refunds for {$logId}: "
-            . json_encode($processedRefundIds)
+            . wp_json_encode($processedRefundIds)
         );
         return $processedRefundIds;
     }

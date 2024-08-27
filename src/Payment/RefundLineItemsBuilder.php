@@ -59,7 +59,14 @@ class RefundLineItemsBuilder
 
             if ($toRefundRemoteItem === null) {
                 throw new UnexpectedValueException(
-                    sprintf('Cannot refund %s item because it was not found in Mollie order. Aborting refund process. Try to do a refund by amount.', $toRefundItemId)
+                    sprintf(
+                    /* translators: Placeholder 1: item id. */
+                        esc_html__(
+                            'Cannot refund %s item because it was not found in Mollie order. Aborting refund process. Try to do a refund by amount.',
+                            'mollie-payments-for-woocommerce'
+                        ),
+                        esc_html($toRefundItemId)
+                    )
                 );
             }
 
@@ -123,7 +130,7 @@ class RefundLineItemsBuilder
 
         if ($toRefundRemoteItemAmount !== $toRefundItemAmount) {
             throw new PartialRefundException(
-                __(
+                esc_html__(
                     "Mollie doesn't allow a partial refund of the full amount or quantity of at least one order line. Trying to process this as an amount refund instead.",
                     'mollie-payments-for-woocommerce'
                 )

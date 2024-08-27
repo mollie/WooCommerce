@@ -18,7 +18,7 @@ class PluginConstraint extends AbstractVersionConstraint
 	public function __construct($requiredVersion, $requiredPluginName, $pluginDisplayName)
 	{
 		parent::__construct($requiredVersion, $requiredPluginName);
-		$this->error = 'Plugin incompatibility';
+		$this->error = esc_html('Plugin incompatibility');
 		$this->requiredPluginName = $requiredPluginName;
 		$this->pluginDisplayName = $pluginDisplayName;
 	}
@@ -33,23 +33,26 @@ class PluginConstraint extends AbstractVersionConstraint
 		if (!$isPluginActive) {
 			$this->message
 				= "The {$this->pluginDisplayName} plugin must be active. Please install & activate {$this->pluginDisplayName}";
-
+            // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 			throw new ConstraintFailedException(
 				$this,
-				$this->requiredPluginName,
+                esc_html($this->requiredPluginName),
 				[$this->error],
-				$this->message
+				esc_html($this->message)
 			);
-		}
+            // phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+        }
 
 		$pathToPluginFile = $this->absolutePathToPlugin();
 		if (!$pathToPluginFile) {
-			throw new ConstraintFailedException(
+            // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+            throw new ConstraintFailedException(
 				$this,
-				$this->requiredPluginName,
+                esc_html($this->requiredPluginName),
 				[$this->error],
-				"Cannot find absolute path to {$this->pluginDisplayName} plugin"
+				esc_html("Cannot find absolute path to {$this->pluginDisplayName} plugin")
 			);
+            // phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 		if (!function_exists('get_plugin_data')) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
@@ -59,7 +62,7 @@ class PluginConstraint extends AbstractVersionConstraint
 		$this->message = "The {$this->pluginDisplayName} plugin has to be version "
 			. $this->requiredVersion
 			. " or higher. Please update your {$this->pluginDisplayName} version.";
-
+        $this->message = esc_html($this->message);
 		return $this->checkVersion(
 			$currentVersion
 		);

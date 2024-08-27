@@ -372,10 +372,10 @@ class PaymentService
                     ? $data['orderNumber'] : '',
                 'lines' => isset($data['lines']) ? $data['lines'] : '', ];
 
-            $this->logger->debug(json_encode($apiCallLog));
+            $this->logger->debug(wp_json_encode($apiCallLog));
             $paymentOrder = $paymentObject;
             $paymentObject = $this->apiHelper->getApiClient($apiKey)->orders->create($data);
-            $this->logger->debug(json_encode($paymentObject));
+            $this->logger->debug(wp_json_encode($paymentObject));
             $settingsHelper = $this->settingsHelper;
             if ($settingsHelper->getOrderStatusCancelledPayments() === 'cancelled') {
                 $orderId = $order->get_id();
@@ -492,7 +492,7 @@ class PaymentService
                     : '',
             ];
 
-            $this->logger->debug(json_encode($apiCallLog, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+            $this->logger->debug(wp_json_encode($apiCallLog, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
             // Try as simple payment
             $paymentObject = $this->apiHelper->getApiClient(
@@ -649,7 +649,7 @@ class PaymentService
             )
         );
         throw new ApiException(
-            __('Failed switching subscriptions, no valid mandate.', 'mollie-payments-for-woocommerce')
+            esc_html__('Failed switching subscriptions, no valid mandate.', 'mollie-payments-for-woocommerce')
         );
     }
 
@@ -892,7 +892,7 @@ class PaymentService
             );
 
             throw new ApiException(
-                __(
+                esc_html__(
                     'Payment failed due to: Mollie is out of service. Please try again later.',
                     'mollie-payments-for-woocommerce'
                 )
@@ -915,7 +915,7 @@ class PaymentService
             );
 
             throw new ApiException(
-                __(
+                esc_html__(
                     'Payment failed due to:  The payment was declined due to suspected fraud.',
                     'mollie-payments-for-woocommerce'
                 )

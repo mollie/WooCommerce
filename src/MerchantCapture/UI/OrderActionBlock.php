@@ -11,7 +11,7 @@ class OrderActionBlock
         echo "<li class='wide'>";
         foreach ($paragraphs as $paragraph) {
             ?>
-            <p><?= wp_kses($paragraph, ['mark' => ['class' => []], 'span' => []]); ?></p>
+            <p><?php echo wp_kses($paragraph, ['mark' => ['class' => []], 'span' => []]); ?></p>
             <?php
         }
         echo '</li>';

@@ -189,6 +189,7 @@ class PaymentMethodsIconUrl
                 $cardsWidth
             );
             foreach ($enabledCreditCards as $creditCard) {
+                // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading local file is OK.
                 $svgString = file_get_contents(
                     $assetsImagesPath . $creditCard
                 );

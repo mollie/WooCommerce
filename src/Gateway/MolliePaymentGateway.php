@@ -649,6 +649,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
         $this->notice->addNotice(
             'error',
             sprintf(
+            /* translators: Placeholder 1: order id. */
                 __(
                     'Could not load order %s',
                     'mollie-payments-for-woocommerce'
@@ -688,7 +689,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
 
         if ($activePaymentObject === null) {
             throw new UnexpectedValueException(
-                "Active Payment Object is not a valid Payment Resource instance. Order ID: {$orderId}"
+                esc_html(sprintf("Active Payment Object is not a valid Payment Resource instance. Order ID: %s", $orderId))
             );
         }
 
@@ -887,7 +888,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
             );
             $order_key = apply_filters(
                 'woocommerce_thankyou_order_key',
-                empty($_GET['key']) ? '' : wc_clean(filter_input(INPUT_GET, 'key', FILTER_SANITIZE_SPECIAL_CHARS))
+                empty($_GET['key']) ? '' : wc_clean(filter_input(INPUT_GET, 'key', FILTER_SANITIZE_SPECIAL_CHARS))// WPCS: input var ok, CSRF ok.
             );
             if ($order_id > 0) {
                 $order = wc_get_order($order_id);

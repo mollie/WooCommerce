@@ -116,7 +116,7 @@ class AppleAjaxRequests
         //we cannot access the endpoint in testmode, we override it to be testMode = false
         $apiKey = $this->settingsHelper->getApiKey(false);
         $validationUrl = $applePayRequestDataObject->validationUrl();
-        $completeDomain = parse_url(get_site_url(), PHP_URL_HOST);
+        $completeDomain = wp_parse_url(get_site_url(), PHP_URL_HOST);
         $removeHttp = ["https://", "http://"];
         $regex = '/.+\.\w+\/?((\w*\/*)*)/i';
         $domain = str_replace($removeHttp, "", $completeDomain);
@@ -695,8 +695,8 @@ class AppleAjaxRequests
                         )
                     );
                 } else {
-                    /* translators: Placeholder 1: Payment method title */
                     $message = sprintf(
+                    /* translators: Placeholder 1: Payment method title */
                         __(
                             'Could not create %s payment.',
                             'mollie-payments-for-woocommerce'

@@ -217,6 +217,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
     ) {
 
         $orderNote = sprintf(
+        /* translators: Placeholder 1: number of items. */
             __(
                 '%1$s items refunded in WooCommerce and at Mollie.',
                 'mollie-payments-for-woocommerce'
@@ -235,6 +236,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
     public function addOrderNoteForCancelledLineItems(array $data, WC_Order $order)
     {
         $orderNote = sprintf(
+        /* translators: Placeholder 1: number of items. */
             __(
                 '%1$s items cancelled in WooCommerce and at Mollie.',
                 'mollie-payments-for-woocommerce'
@@ -513,7 +515,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
         foreach ($paymentMethods as $paymentMethod) {
             $optionName = "mollie_wc_gateway_{$paymentMethod->getProperty('id')}_settings";
             $option = get_option($optionName, false);
-            if ($option && $option['enabled'] !== 'yes') {
+            if (!empty($option) && isset($option['enabled']) && $option['enabled'] !== 'yes') {
                 continue;
             }
             if (!empty($option["activate_expiry_days_setting"]) && $option["activate_expiry_days_setting"] === 'yes') {
@@ -540,14 +542,14 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
         if (!$order) {
             throw new RuntimeException(
-                "Could not find order by order Id {$orderId}",
+                esc_html("Could not find order by order Id {$orderId}"),
                 404
             );
         }
 
         if (!$order->key_is_valid($key)) {
             throw new RuntimeException(
-                "Invalid key given. Key {$key} does not match the order id: {$orderId}",
+                esc_html("Invalid key given. Key {$key} does not match the order id: {$orderId}"),
                 401
             );
         }

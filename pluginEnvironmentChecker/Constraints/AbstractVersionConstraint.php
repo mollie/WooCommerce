@@ -36,7 +36,7 @@ abstract class AbstractVersionConstraint implements ConstraintInterface
 	public function __construct($requiredVersion, $requiredPluginName = null)
 	{
 		$this->requiredVersion = $requiredVersion;
-		$this->requiredPluginName = $requiredPluginName;
+		$this->requiredPluginName = esc_html($requiredPluginName);
 		$this->error = '';
 		$this->message = '';
 	}
@@ -60,11 +60,13 @@ abstract class AbstractVersionConstraint implements ConstraintInterface
 		if ($result) {
 			return $result;
 		}
-		throw new ConstraintFailedException(
+        // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+        throw new ConstraintFailedException(
 			$this,
 			$actualVersion,
 			[$this->error],
-			$this->message
+			esc_html($this->message)
 		);
-	}
+        // phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+    }
 }

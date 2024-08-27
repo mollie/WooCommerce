@@ -4,6 +4,7 @@
 tests/
 resources/
 vendor/**/test*
+vendor/mollie/mollie-api-php/examples/
 languages/*.po
 bin/
 *.lock

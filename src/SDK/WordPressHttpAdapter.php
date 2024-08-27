@@ -45,7 +45,9 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
         if (is_wp_error($response)) {
             $message =  $response->get_error_message() ?? 'Unknown error';
             $code = is_int($response->get_error_code()) ? $response->get_error_code() : 0;
-            throw new ApiException($message, $code);
+            // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+            throw new ApiException(esc_html($message), $code);
+            // phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
 
         return $this->parseResponse($response);
@@ -70,22 +72,22 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
                 return null;
             }
 
-            throw new ApiException("No response body found.");
+            throw new ApiException(esc_html("No response body found."));
         }
 
         $body = @json_decode($httpBody);
 
         // GUARDS
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new ApiException("Unable to decode Mollie response: '{$response}'.");
+            throw new ApiException(esc_html("Unable to decode Mollie response: '{$response}'."));
         }
 
         if (isset($body->error)) {
-            throw new ApiException($body->error->message);
+            throw new ApiException(esc_html($body->error->message));
         }
 
         if ($statusCode >= 400) {
-            $message = "Error executing API call ({$body->status}: {$body->title}): {$body->detail}";
+            $message = esc_html("Error executing API call ({$body->status}: {$body->title}): {$body->detail}");
 
             $field = null;
 
@@ -100,8 +102,9 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
             if ($httpBody) {
                 $message .= ". Request body: {$httpBody}";
             }
-
-            throw new ApiException($message, $statusCode, $field);
+            // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+            throw new ApiException(esc_html($message), $statusCode, esc_html($field));
+            // phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
 
         return $body;

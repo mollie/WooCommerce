@@ -22,7 +22,6 @@ class MollieOrder extends MollieObject
     public const ACTION_AFTER_REFUND_AMOUNT_CREATED = 'mollie-payments-for-woocommerce' . '_refund_amount_created';
     public const ACTION_AFTER_REFUND_ORDER_CREATED = 'mollie-payments-for-woocommerce' . '_refund_order_created';
 
-
     protected static $paymentId;
     protected static $customerId;
     protected static $order;
@@ -157,7 +156,7 @@ class MollieOrder extends MollieObject
         //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         $applePayToken = wc_clean(wp_unslash($_POST["token"] ?? ''));
         if ($applePayToken && isset($paymentRequestData['payment'])) {
-            $encodedApplePayToken = json_encode($applePayToken);
+            $encodedApplePayToken = wp_json_encode($applePayToken);
             $paymentRequestData['payment']['applePayPaymentToken'] = $encodedApplePayToken;
         }
         $customerBirthdate = $this->getCustomerBirthdate($order);
@@ -713,7 +712,7 @@ class MollieOrder extends MollieObject
                         );
 
                         $this->logger->debug(__METHOD__ . " - Order $orderId: " . $noteMessage);
-                        throw new Exception($noteMessage);
+                        throw new Exception(esc_html(sprintf("%s", $noteMessage)));
                     }
 
                     $this->processOrderItemsRefund(
@@ -756,8 +755,8 @@ class MollieOrder extends MollieObject
         $apiKey = $this->settingsHelper->getApiKey();
 
         if ($paymentObject->isCreated() || $paymentObject->isAuthorized() || $paymentObject->isShipping()) {
-            /* translators: Placeholder 1: payment status.*/
             $noteMessage = sprintf(
+            /* translators: Placeholder 1: payment status.*/
                 _x(
                     'Can not refund order amount that has status %1$s at Mollie.',
                     'Order note error',
@@ -767,7 +766,7 @@ class MollieOrder extends MollieObject
             );
             $order->add_order_note($noteMessage);
             $this->logger->debug(__METHOD__ . ' - ' . $noteMessage);
-            throw new Exception($noteMessage);
+            throw new Exception(esc_html(sprintf("%s", $noteMessage)));
         }
 
         if ($paymentObject->isPaid() || $paymentObject->isShipping() || $paymentObject->isCompleted()) {
@@ -778,8 +777,8 @@ class MollieOrder extends MollieObject
                 ],
                 'description' => $reason,
             ]);
-            /* translators: Placeholder 1: Currency. Placeholder 2: Refund amount. Placeholder 3: Reason. Placeholder 4: Refund id.*/
             $noteMessage = sprintf(
+            /* translators: Placeholder 1: Currency. Placeholder 2: Refund amount. Placeholder 3: Reason. Placeholder 4: Refund id.*/
                 __('Amount refund of %1$s%2$s refunded in WooCommerce and at Mollie.%3$s Refund ID: %4$s.', 'mollie-payments-for-woocommerce'),
                 $this->dataHelper->getOrderCurrency($order),
                 $amount,
@@ -825,8 +824,6 @@ class MollieOrder extends MollieObject
             $payment->update();
         }
     }
-
-
 
     /**
      * @param WC_Order                    $order
@@ -937,8 +934,8 @@ class MollieOrder extends MollieObject
             );
 
             if ($refund === null) {
-                /* translators: Placeholder 1: Number of items. Placeholder 2: Name of item. Placeholder 3: Currency. Placeholder 4: Amount.*/
                 $noteMessage = sprintf(
+                /* translators: Placeholder 1: Number of items. Placeholder 2: Name of item. Placeholder 3: Currency. Placeholder 4: Amount.*/
                     __(
                         '%1$sx %2$s cancelled for %3$s%4$s in WooCommerce and at Mollie.',
                         'mollie-payments-for-woocommerce'
@@ -961,8 +958,8 @@ class MollieOrder extends MollieObject
                     $order
                 ) . wc_format_decimal($itemRefundAmount) . (!empty($reason) ? ', reason: ' . $reason : '')
             );
-            /* translators: Placeholder 1: Number of items. Placeholder 2: Name of item. Placeholder 3: Currency. Placeholder 4: Amount. Placeholder 5: Reason. Placeholder 6: Refund Id. */
             $noteMessage = sprintf(
+            /* translators: Placeholder 1: Number of items. Placeholder 2: Name of item. Placeholder 3: Currency. Placeholder 4: Amount. Placeholder 5: Reason. Placeholder 6: Refund Id. */
                 __(
                     '%1$sx %2$s refunded for %3$s%4$s in WooCommerce and at Mollie.%5$s Refund ID: %6$s.',
                     'mollie-payments-for-woocommerce'
@@ -1014,7 +1011,7 @@ class MollieOrder extends MollieObject
                 return null;
             }
             $format = "Y-m-d";
-            return date($format, (int) strtotime($fieldPosted));
+            return gmdate($format, (int) strtotime($fieldPosted));
         }
         return null;
     }

@@ -38,6 +38,7 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_Trustly',
         'Mollie_WC_Gateway_Payconiq',
         'Mollie_WC_Gateway_Riverty',
+        'Mollie_WC_Gateway_Satispay',
     ];
 
     public const MOLLIE_OPTIONS_NAMES = [

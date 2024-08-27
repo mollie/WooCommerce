@@ -75,7 +75,7 @@ class OrderLines
     {
         $orderTotal = (float) $this->order->get_total();
         $orderTotalRounded = round($orderTotal, 2);
-        $linesTotal = array_sum(array_map(function ($line) {
+        $linesTotal = array_sum(array_map(static function ($line) {
             return $line['totalAmount']['value'];
         }, $this->order_lines));
         $orderTotalDiff = $orderTotalRounded - $linesTotal;
@@ -324,7 +324,7 @@ class OrderLines
     {
         $item_name = $cart_item->get_name();
 
-        return html_entity_decode(strip_tags($item_name));
+        return html_entity_decode(wp_strip_all_tags($item_name));
     }
 
     /**

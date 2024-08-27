@@ -42,13 +42,15 @@ class EnvironmentChecker implements ConstraintInterface {
 
 		$errCount = count($this->errors);
 		if ($errCount) {
-			throw new ConstraintFailedException(
+            // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+            throw new ConstraintFailedException(
 				$this,
 				'General Checker',
 				$this->errors,
-				$this->__('Validation failed with %1$d errors', [$errCount])
+				$this->esc_html__('Validation failed with %1$d errors', [$errCount])
 			);
-		}
+            // phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+        }
 	}
 
 	/**
@@ -60,6 +62,6 @@ class EnvironmentChecker implements ConstraintInterface {
 	 */
 	protected function __($string, $params = [])
 	{
-		return vsprintf($string, $params);
+		return esc_html(vsprintf($string, $params));
 	}
 }

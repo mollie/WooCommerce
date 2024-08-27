@@ -71,6 +71,7 @@ $mollieAdvancedSettings =  [
             'lt_LT' => __('Lithuanian', 'mollie-payments-for-woocommerce'),
         ],
         'desc' => sprintf(
+        /* translators: Placeholder 1: link tag Placeholder 2: closing tag */
             __('Sending a language (or locale) is required. The option \'Automatically send WordPress language\' will try to get the customer\'s language in WordPress (and respects multilanguage plugins) and convert it to a format Mollie understands. If this fails, or if the language is not supported, it will fall back to American English. You can also select one of the locales currently supported by Mollie, that will then be used for all customers.', 'mollie-payments-for-woocommerce'),
             '<a href="https://www.mollie.com/nl/docs/reference/payments/create" target="_blank">',
             '</a>'
@@ -80,8 +81,8 @@ $mollieAdvancedSettings =  [
     [
         'id' => $pluginName . '_customer_details',
         'title' => __('Store customer details at Mollie', 'mollie-payments-for-woocommerce'),
-        /* translators: Placeholder 1: enabled or disabled */
         'desc' => sprintf(
+        /* translators: Placeholder 1: enabled or disabled Placeholder 2: translated string */
             __(
                 'Should Mollie store customers name and email address for Single Click Payments? Default <code>%1$s</code>. Required if WooCommerce Subscriptions is being used! Read more about <a href=\'https://help.mollie.com/hc/en-us/articles/115000671249-What-are-single-click-payments-and-how-does-it-work-\'>%2$s</a> and how it improves your conversion.',
                 'mollie-payments-for-woocommerce'
@@ -110,8 +111,8 @@ $mollieAdvancedSettings =  [
             ),
         ],
         'default' => PaymentService::PAYMENT_METHOD_TYPE_ORDER,
-        /* translators: Placeholder 1: opening link tag, placeholder 2: closing link tag */
         'desc' => sprintf(
+        /* translators: Placeholder 1: opening link tag, placeholder 2: closing link tag */
             __(
                 'Click %1$shere%2$s to read more about the differences between the Payments and Orders API',
                 'mollie-payments-for-woocommerce'
@@ -160,8 +161,8 @@ $mollieAdvancedSettings =  [
                 array_keys($api_payment_description_labels),
                 $api_payment_description_labels
             )),
-            /* translators: Placeholder 1: Opening paragraph tag, placeholder 2: Closing paragraph tag */
             sprintf(
+            /* translators: Placeholder 1: Opening paragraph tag, placeholder 2: Closing paragraph tag */
                 __(
                     'Select among the available variables the description to be used for this transaction.%1$s(Note: this only works when the method is set to Payments API)%2$s',
                     'mollie-payments-for-woocommerce'
@@ -180,11 +181,9 @@ $mollieAdvancedSettings =  [
         'type' => 'text',
         'custom_attributes' => ['maxlength' => '30'],
         'default' => __('Gateway Fee', 'mollie-payments-for-woocommerce'),
-        'desc' => sprintf(
-            __(
-                'This is the label will appear in frontend when the surcharge applies',
-                'mollie-payments-for-woocommerce'
-            )
+        'desc' => __(
+            'This is the label will appear in frontend when the surcharge applies',
+            'mollie-payments-for-woocommerce'
         ),
     ],
     [

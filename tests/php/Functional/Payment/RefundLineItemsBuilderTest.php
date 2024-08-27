@@ -13,6 +13,7 @@ use PHPUnit_Framework_MockObject_MockObject;
 use stdClass;
 use UnexpectedValueException;
 use function Brain\Monkey\Actions\expectDone as expectedActionDone;
+use function Brain\Monkey\Functions\stubs;
 use function Brain\Monkey\Functions\when;
 
 /**
@@ -278,6 +279,11 @@ class RefundLineItemsBuilderTest extends TestCase
          */
         $reason = uniqid();
         $currency = uniqid();
+        stubs(
+            [
+                'esc_html__' => null
+            ]
+        );
 
         $toRefundItem = $this->wooCommerceOrderItem(-1, mt_rand(-100, -1), 0);
         $toRefundRemoteItem = $this->orderLineItem(
@@ -332,6 +338,12 @@ class RefundLineItemsBuilderTest extends TestCase
          */
         $reason = uniqid();
         $currency = uniqid();
+        stubs(
+            [
+                'esc_html__' => null,
+                'esc_html' => null
+            ]
+        );
 
         $toRefundItemId = uniqid();
         $toRefundItem = $this->wooCommerceOrderItem(-1, mt_rand(-100, -1), 0);

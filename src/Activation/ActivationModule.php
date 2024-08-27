@@ -83,25 +83,6 @@ class ActivationModule implements ExecutableModule
     public function handleTranslations(): void
     {
         add_action('core_upgrade_preamble', 'mollieDeleteWPTranslationFiles');
-        add_filter(
-            'site_transient_update_plugins',
-            static function ($value) {
-                if (isset($value->translations)) {
-                    $i = 0;
-                    foreach ($value->translations as $translation) {
-                        if (
-                            $translation["slug"]
-                            === "mollie-payments-for-woocommerce"
-                        ) {
-                            unset($value->translations[$i]);
-                        }
-                        $i++;
-                    }
-                }
-
-                return $value;
-            }
-        );
     }
 
     /**
@@ -136,8 +117,8 @@ class ActivationModule implements ExecutableModule
         }
 
         $notice = new AdminNotice();
-        /* translators: Placeholder 1: Opening strong tag. Placeholder 2: Closing strong tag. Placeholder 3: Opening link tag to settings. Placeholder 4: Closing link tag.*/
         $message = sprintf(
+        /* translators: Placeholder 1: Opening strong tag. Placeholder 2: Closing strong tag. Placeholder 3: Opening link tag to settings. Placeholder 4: Closing link tag.*/
             esc_html__(
                 '%1$sMollie Payments for WooCommerce: API keys missing%2$s Please%3$s set your API keys here%4$s.',
                 'mollie-payments-for-woocommerce'
@@ -180,6 +161,7 @@ class ActivationModule implements ExecutableModule
             false,
             dirname(plugin_basename($this->baseFile)) . '/languages/'
         );
+
         $this->markUpdatedOrNew();
         $this->initDb();
     }

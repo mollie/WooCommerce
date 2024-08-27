@@ -108,8 +108,8 @@ class PayPalAjaxRequests
         ) {
             wp_send_json_success($result);
         } else {
-            /* translators: Placeholder 1: Payment method title */
             $message = sprintf(
+            /* translators: Placeholder 1: Payment method title */
                 __(
                     'Could not create %s payment.',
                     'mollie-payments-for-woocommerce'
@@ -152,8 +152,8 @@ class PayPalAjaxRequests
         ) {
             wp_send_json_success($result);
         } else {
-            /* translators: Placeholder 1: Payment method title */
             $message = sprintf(
+            /* translators: Placeholder 1: Payment method title */
                 __(
                     'Could not create %s payment.',
                     'mollie-payments-for-woocommerce'

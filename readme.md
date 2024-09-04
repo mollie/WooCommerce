@@ -36,6 +36,7 @@ European and local payment methods:
 * KBC/CBC payment button (Belgium)
 * Klarna One (UK)
 * Klarna Pay now (Netherlands, Belgium, Germany, Austria, Finland)
+* Payconiq (Belgium, Luxembourg)
 * Przelewy24 (Poland)
 * Satispay (EU)
 * SEPA – Credit Transfer (EU)
@@ -56,6 +57,7 @@ Pay after delivery payment methods:
 * iDEAL in3 – Pay in 3 installments, 0% interest
 * Klarna Pay later (Netherlands, Belgium, Germany, Austria, Finland)
 * Klarna Slice it (Germany, Austria, Finland)
+* Riverty (Netherlands, Belgium, Germany, Austria)
 
 ### Get started with Mollie
 

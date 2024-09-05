@@ -6,12 +6,12 @@ const {sharedUrl} = require("../../../utils/sharedUrl");
 const {emptyCart, addProductToCart} = require("../../../utils/wooUtils");
 const {blockCheckoutTransaction} = require("../../../test-data/block-checkout-transaction");
 
-test.describe('Preconditions', async () => {
+/*test.describe('Preconditions', async () => {
     test('Reset settings', async ({page, baseURL}) => {
         await resetSettings(page);
         await insertAPIKeys(page);
     });
-});
+});*/
 
 blockCheckoutTransaction.forEach(({methodId, testId, mollieStatus, wooStatus, notice, action}) => {
     test.describe(`_Transaction scenarios_Payment statuses - Block Checkout - ${methodId}`, () => {

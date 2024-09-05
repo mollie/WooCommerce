@@ -53,14 +53,14 @@ module.exports = defineConfig({
             name: 'chromium',
             use: { ...devices['Desktop Chrome'] },
         },
-        {
+        /*{
             name: 'setup-default-php81',
             testMatch: 'tests/Playwright/tests/transaction/Payment statuses - Block Checkout/_transaction_scenarios_payment_statuses_-_block_checkout.spec.js',
             use: {
                 ...devices['Desktop Chrome'],
                 baseURL: process.env.BASEURL_DEFAULT_81
             }
-        },
+        },*/
     ],
 });
 

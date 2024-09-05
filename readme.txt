@@ -34,23 +34,24 @@ Credit & Debit Cards:
 
 European and local payment methods:
 
-* iDEAL (Netherlands)
-* Bancontact (Belgium)
 * Bancomat Pay (Italy)
-* Blik (Poland)
-* Przelewy24 (Poland)
-* Giropay (Germany)
-* EPS (Austria)
-* SOFORT Banking (EU)
+* Bancontact (Belgium)
 * Belfius (Belgium)
-* KBC/CBC payment button (Belgium)
-* SEPA - Credit Transfer (EU)
-* SEPA - Direct Debit (EU)
+* Blik (Poland)
+* EPS (Austria)
 * Gift cards (Netherlands)
-* Klarna Pay now (Netherlands, Belgium, Germany, Austria, Finland)
+* iDEAL (Netherlands)
+* KBC/CBC payment button (Belgium)
 * Klarna One (UK)
-* Vouchers (Netherlands, Belgium)
+* Klarna Pay now (Netherlands, Belgium, Germany, Austria, Finland)
+* Payconiq (Belgium, Luxembourg)
+* Przelewy24 (Poland)
+* Satispay (EU)
+* SEPA – Credit Transfer (EU)
+* SEPA – Direct Debit (EU)
+* SOFORT Banking (EU)
 * TWINT (Switzerland)
+* Vouchers (Netherlands, Belgium)
 
 International payment methods:
 
@@ -60,11 +61,11 @@ International payment methods:
 
 Pay after delivery payment methods:
 
+* Billie – Pay by Invoice for Businesses
+* iDEAL in3 – Pay in 3 installments, 0% interest
 * Klarna Pay later (Netherlands, Belgium, Germany, Austria, Finland)
 * Klarna Slice it (Germany, Austria, Finland)
-* Billie - Pay by Invoice for Businesses
-* iDEAL in3 - Pay in 3 installments, 0% interest
-
+* Riverty (Netherlands, Belgium, Germany, Austria)
 
 = Get started with Mollie =
 
@@ -93,8 +94,6 @@ Once your Mollie account has been approved, you can start accepting payments.
 * WordPress Multisite support
 * Works well with multilingual plugins like WPML/Polylang
 
-Contact info@mollie.com if you have any questions or comments about this plugin.
-
 = Join the Mollie Community =
 
 Become part of Mollie's growing community and gain access to our comprehensive support network, including a [Discord Developer Community](https://discord.gg/y2rbjqszbs) to stay connected and informed.
@@ -102,6 +101,8 @@ Become part of Mollie's growing community and gain access to our comprehensive s
 > **Your success is our mission. With Mollie, simplify your payments and focus on growing your business.**
 
 [Sign up today](https://my.mollie.com/dashboard/signup) and start enhancing your WooCommerce store with Mollie's advanced payment solutions.
+
+Feel free to contact info@mollie.com if you have any questions or comments about this plugin.
 
 = More about Mollie =
 

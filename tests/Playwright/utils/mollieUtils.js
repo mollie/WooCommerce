@@ -168,13 +168,14 @@ const beforePlacingOrder = async (page, testedProduct, testedGateway, productQua
     if (canFillBirthDate) {
         await page.locator('input[name="billing_birthdate"]').first().fill('1990-01-01');
     }
+    const totalAmount = await captureTotalAmountCheckout(page);
     // Click text=Place order
     await Promise.all([
         page.waitForNavigation(/*{ url: 'https://www.mollie.com/checkout/test-mode?method=GATEWAY&token=XXX' }*/),
         page.locator('text=Place order').click()
     ]);
     //Capture WooCommerce total amount
-    const totalAmount = await captureTotalAmountCheckout(page);
+
     return totalAmount;
 }
 

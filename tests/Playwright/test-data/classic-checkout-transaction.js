@@ -1,7 +1,7 @@
 const {noticeLines, checkExpiredAtMollie} = require("../utils/mollieUtils");
 const {wooOrderPaidPage, wooOrderRetryPage} = require("../utils/testMollieInWooPage");
 export const classicCheckoutTransaction = [
-   /* {
+    {
         methodId: "bancontact",
         testId: "C3387",
         mollieStatus: "Paid",
@@ -160,7 +160,7 @@ export const classicCheckoutTransaction = [
         action: async (page) => {
             await wooOrderRetryPage(page);
         }
-    },*/
+    },
     {
         methodId: "eps",
         testId: "C3415",

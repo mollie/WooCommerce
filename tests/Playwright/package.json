@@ -1,0 +1,8 @@
+{
+  "license": "MIT",
+  "dependencies": {
+    "@playwright/test": "^1.34.2",
+    "@woocommerce/woocommerce-rest-api": "^1.0.1",
+    "dotenv": "^16.0.3"
+  }
+}

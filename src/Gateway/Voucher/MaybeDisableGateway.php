@@ -85,7 +85,7 @@ class MaybeDisableGateway
      *
      * @return int
      */
-    public function numberProductsWithCategory()
+    public function numberProductsWithCategory(): int
     {
         $cart = WC()->cart;
         $products = $cart->get_cart_contents();
@@ -107,7 +107,7 @@ class MaybeDisableGateway
         $variationCategory = false;
         foreach ($products as $product) {
             $postmeta = get_post_meta($product['product_id']);
-            $localCategory = array_key_exists(
+            $localCategory = is_array($postmeta) && array_key_exists(
                 Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
                 $postmeta
             ) ? $postmeta[Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION][0] : false;
@@ -140,8 +140,8 @@ class MaybeDisableGateway
      * Check if a product has a default/local category associated
      * that is not No Category
      *
-     * @param string $defaultCategory
-     * @param string $localCategory
+     * @param bool|string $defaultCategory
+     * @param bool|string $localCategory
      *
      * @param bool|string $variationCategory
      * @return bool false if no category

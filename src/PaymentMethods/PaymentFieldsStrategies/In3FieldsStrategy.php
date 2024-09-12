@@ -50,7 +50,7 @@ class In3FieldsStrategy implements PaymentFieldsStrategyI
 
     protected function dateOfBirth($birthValue)
     {
-        $birthValue = $birthValue?: '';
+        $birthValue = $birthValue ?: '';
         ?>
         <p class="form-row form-row-wide" id="billing_birthdate_field">
             <label for="<?php echo esc_attr(self::FIELD_BIRTHDATE); ?>" class=""><?php echo esc_html__('Birthdate', 'mollie-payments-for-woocommerce'); ?>

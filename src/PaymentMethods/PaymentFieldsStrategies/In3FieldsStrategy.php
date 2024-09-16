@@ -7,6 +7,7 @@ namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 class In3FieldsStrategy implements PaymentFieldsStrategyI
 {
     use PaymentFieldsStrategiesTrait;
+
     const FIELD_BIRTHDATE = "billing_birthdate";
     const FIELD_PHONE = "billing_phone_in3";
 

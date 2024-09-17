@@ -91,7 +91,7 @@ class PaymentMethodsIconUrl
     {
 
         return '<img src="' . esc_url($svgUrl)
-            . '" class="mollie-gateway-icon" />';
+            . '" class="mollie-gateway-icon" alt=""/>';
     }
 
     public function getCreditcardIcon()

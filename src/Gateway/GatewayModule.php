@@ -691,7 +691,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
      * @param PaymentFieldsService $paymentFieldsService
      * @param Surcharge $surchargeService
      * @param array $paymentMethods
-     * @return PaymentMethodI
+     * @return PaymentMethodI | array
      */
     public function buildPaymentMethod(
         string $id,
@@ -700,10 +700,14 @@ class GatewayModule implements ServiceModule, ExecutableModule
         PaymentFieldsService $paymentFieldsService,
         Surcharge $surchargeService,
         array $apiMethod
-    ): PaymentMethodI {
-        $scopedPrefix = array_shift(explode('\\', __NAMESPACE__));
+    ) {
+        $namespaceParts = explode('\\', __NAMESPACE__);
+        if (!(count($namespaceParts) >= 2)) {
+            return [];
+        }
+        $scopedPrefix = $namespaceParts[0] . '\\' . $namespaceParts[1];
         $transformedId = ucfirst($id);
-        $paymentMethodClassName = $scopedPrefix . '\\Mollie\\WooCommerce\\PaymentMethods\\' . $transformedId;
+        $paymentMethodClassName = $scopedPrefix . '\Mollie\WooCommerce\PaymentMethods\\' . $transformedId;
         $paymentMethod = new $paymentMethodClassName(
             $iconFactory,
             $settingsHelper,

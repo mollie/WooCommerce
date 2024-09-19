@@ -51,7 +51,7 @@ return [
             if ($filePath === 'src/Gateway/GatewayModule.php') {
                 return preg_replace(
                     "%\$class = 'Mollie\\\\WooCommerce\\\\PaymentMethod\\\\' . \$transformedId;%",
-                    '$class = \'' . $prefix . '\\\\Humbug\\\\Format\\\\Type\\\\\' . $type;',
+                    '$class = \'' . $prefix . '\\\\Mollie\\\\WooCommerce\\\\PaymentMethod\\\\\' . $transformedId;',
                     $content
                 );
             }

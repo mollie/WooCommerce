@@ -6,8 +6,8 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Notice;
 
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ServiceModule;
+use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Inpsyde\Modularity\Module\ServiceModule;
 
 class NoticeModule implements ServiceModule
 {

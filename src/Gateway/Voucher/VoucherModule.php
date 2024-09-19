@@ -22,11 +22,11 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Gateway\Voucher;
 
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ServiceModule;
+use Inpsyde\Modularity\Module\ExecutableModule;
+use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
-use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 
 class VoucherModule implements ExecutableModule, ServiceModule
 {

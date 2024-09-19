@@ -43,9 +43,27 @@ $finders = [
 return [
     'prefix' => 'Syde\\Vendor', // string|null
     'finders' => $finders,      // list<Finder>
-    'patchers' => [], // list<callable(string $filePath, string $prefix, string $contents): string>
+    'patchers' => [
+        static function (string $filePath, string $prefix, string $content): string {
+            //
+            // PHP-Parser patch conditions for file targets
+            //
+            if ($filePath === 'src/Gateway/GatewayModule.php') {
+                return preg_replace(
+                    "%\$class = 'Mollie\\\\WooCommerce\\\\PaymentMethod\\\\' . \$transformedId;%",
+                    '$class = \'' . $prefix . '\\\\Humbug\\\\Format\\\\Type\\\\\' . $type;',
+                    $content
+                );
+            }
+
+            return $content;
+        },
+    ], // list<callable(string $filePath, string $prefix, string $contents): string>
     'exclude-files' => [
-        'vendor/symfony/polyfill-php80/Resources/stubs/Stringable.php'
+        'vendor/symfony/polyfill-php80/Resources/stubs/Stringable.php',
+        'inc/functions.php',
+        'inc/utils.php',
+        'inc/woocommerce.php'
     ], // list<string>
     'exclude-namespaces' => [
         'Composer',
@@ -55,6 +73,9 @@ return [
     ], // list<string|regex>
     'exclude-constants' => array_merge($wp_constants, [
         'WC_VERSION',
+        'M4W_FILE',
+        'M4W_PLUGIN_DIR',
+        'M4W_PLUGIN_URL'
     ]), // list<string|regex>
     'exclude-classes' => array_merge($wp_classes, [
         'WooCommerce',

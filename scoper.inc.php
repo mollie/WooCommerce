@@ -41,24 +41,9 @@ $finders = [
 ];
 
 return [
-    'prefix' => 'Syde\\Vendor', // string|null
+    'prefix' => 'Mollie', // string|null
     'finders' => $finders,      // list<Finder>
-    'patchers' => [
-        static function (string $filePath, string $prefix, string $content): string {
-            //
-            // PHP-Parser patch conditions for file targets
-            //
-            if ($filePath === 'src/Gateway/GatewayModule.php') {
-                return preg_replace(
-                    "%\$class = 'Mollie\\\\WooCommerce\\\\PaymentMethod\\\\' . \$transformedId;%",
-                    '$class = \'' . $prefix . '\\\\Mollie\\\\WooCommerce\\\\PaymentMethod\\\\\' . $transformedId;',
-                    $content
-                );
-            }
-
-            return $content;
-        },
-    ], // list<callable(string $filePath, string $prefix, string $contents): string>
+    'patchers' => [], // list<callable(string $filePath, string $prefix, string $contents): string>
     'exclude-files' => [
         'vendor/symfony/polyfill-php80/Resources/stubs/Stringable.php',
         'inc/functions.php',
@@ -70,6 +55,7 @@ return [
         'Automattic',
         '^WooCommerce',
         'Inpsyde\Assets',
+        'Mollie'
     ], // list<string|regex>
     'exclude-constants' => array_merge($wp_constants, [
         'WC_VERSION',

@@ -701,13 +701,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
         Surcharge $surchargeService,
         array $apiMethod
     ) {
-        $namespaceParts = explode('\\', __NAMESPACE__);
-        if (!(count($namespaceParts) >= 2)) {
-            return [];
-        }
-        $scopedPrefix = $namespaceParts[0] . '\\' . $namespaceParts[1];
         $transformedId = ucfirst($id);
-        $paymentMethodClassName = $scopedPrefix . '\Mollie\WooCommerce\PaymentMethods\\' . $transformedId;
+        $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . $transformedId;
         $paymentMethod = new $paymentMethodClassName(
             $iconFactory,
             $settingsHelper,

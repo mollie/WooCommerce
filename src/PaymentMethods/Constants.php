@@ -10,8 +10,7 @@ class Constants
     public const KLARNA = 'klarna';
     public const DIRECTDEBIT = 'directdebit';
     public const BANKTRANSFER = 'banktransfer';
-
     public const BANCOMATPAY = 'bancomatpay';
-
     public const ALMA = 'alma';
+    public const SWISH = 'swish';
 }

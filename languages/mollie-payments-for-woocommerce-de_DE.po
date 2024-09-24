@@ -1235,7 +1235,7 @@ msgstr "Wir haben keinen endgültigen Zahlungsstatus erhalten."
 
 #: src/PaymentMethods/InstructionStrategies/DefaultInstructionStrategy.php:25
 msgid "We have not received a definite payment status. You will receive an email as soon as we receive a confirmation of the bank/merchant."
-msgstr "Wir haben keinen endgültigen Zahlungsstatus erhalten. Sie erhalten eine E-Mail, sobald wir eine Bestätigung der Bank oder des Händlers erhalten."
+msgstr "Wir haben keinen endgültigen Zahlungsstatus erhalten. Du erhältst eine E-Mail, sobald wir eine Bestätigung der Bank oder des Händlers erhalten."
 
 #. translators: Placeholder 1: payment method
 #: src/PaymentMethods/InstructionStrategies/DefaultInstructionStrategy.php:33

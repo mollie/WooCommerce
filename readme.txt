@@ -222,6 +222,21 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= 7.8.1 - 01-09-2024 =
+
+* Feature Flag - Initiative - Swish payment method - under flag add_filter('inpsyde.feature-flags.mollie-woocommerce.swish_enabled', false);
+* Fixed - Unable to make PayPal payments when surcharge is enabled on product and cart pages.
+* Fixed - Cancel order on expiry date should no longer trigger on WP init.
+* Fixed - Display of Payment Status column in orders overview when capturing payments immediately.
+* Fixed - Incorrect data type handling in MaybeDisableGateway.php.
+* Fixed - Prevented dependency conflicts, such as for psr/log.
+* Fixed - Italian translation for integration microcopy.
+* Fixed - Improved accessibility of gateway icons (a11y improvement).
+* Fixed - Undefined property warning in Apple Pay payments related to stdClass::$cardHolder. (author @mklepaczewski )
+* Fixed - German translation issue in order confirmation email.
+* Fixed - Populate birthdate on pay page for in3 and Riverty.
+* Fixed - Missing translation update for surcharge string.
+
 = 7.8.0 - 27-08-2024 =
 
 * Added - Satispay payment method 

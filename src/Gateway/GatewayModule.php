@@ -9,9 +9,9 @@ namespace Mollie\WooCommerce\Gateway;
 use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
 use Automattic\WooCommerce\StoreApi\Exceptions\RouteException;
 use DateTime;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ServiceModule;
+use Inpsyde\Modularity\Module\ExecutableModule;
+use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\BlockService\CheckoutBlockService;
 use Mollie\WooCommerce\Buttons\ApplePayButton\AppleAjaxRequests;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDirectHandler;
@@ -41,7 +41,7 @@ use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Mollie\WooCommerce\Subscription\MollieSepaRecurringGateway;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
 use Mollie\WooCommerce\PaymentMethods\Constants;
-use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use WP_Post;
 
@@ -691,7 +691,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
      * @param PaymentFieldsService $paymentFieldsService
      * @param Surcharge $surchargeService
      * @param array $paymentMethods
-     * @return PaymentMethodI
+     * @return PaymentMethodI | array
      */
     public function buildPaymentMethod(
         string $id,
@@ -700,9 +700,9 @@ class GatewayModule implements ServiceModule, ExecutableModule
         PaymentFieldsService $paymentFieldsService,
         Surcharge $surchargeService,
         array $apiMethod
-    ): PaymentMethodI {
-
-        $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . ucfirst($id);
+    ) {
+        $transformedId = ucfirst($id);
+        $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . $transformedId;
         $paymentMethod = new $paymentMethodClassName(
             $iconFactory,
             $settingsHelper,

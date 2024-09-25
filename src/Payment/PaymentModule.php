@@ -481,12 +481,6 @@ class PaymentModule implements ServiceModule, ExecutableModule
      */
     public function handleExpiryDateCancelation($paymentMethods)
     {
-        add_action(
-            'init',
-            [$this, 'cancelOrderOnExpiryDate'],
-            11,
-            2
-        );
         if (!$this->IsExpiryDateEnabled($paymentMethods)) {
             as_unschedule_action('mollie_woocommerce_cancel_unpaid_orders');
             return;

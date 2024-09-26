@@ -8,7 +8,7 @@ class In3FieldsStrategy implements PaymentFieldsStrategyI
 {
     use PaymentFieldsStrategiesTrait;
 
-    const FIELD_BIRTHDATE = "billing_birthdate";
+    const FIELD_BIRTHDATE = "billing_birthdate_in3";
     const FIELD_PHONE = "billing_phone_in3";
 
     public function execute($gateway, $dataHelper)
@@ -24,7 +24,7 @@ class In3FieldsStrategy implements PaymentFieldsStrategyI
             $showPhoneField = true;
             $order = $this->getOrderIdOnPayForOrderPage();
             $phoneValue = $order->get_billing_phone();
-            $birthValue = $order->get_meta('billing_birthdate');
+            $birthValue = $order->get_meta(self::FIELD_BIRTHDATE);
         }
 
         if (is_checkout() && !is_checkout_pay_page() && !$isPhoneRequired) {

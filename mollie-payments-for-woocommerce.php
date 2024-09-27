@@ -13,7 +13,7 @@
  * License: GPLv2 or later
  * WC requires at least: 3.9
  * WC tested up to: 9.3
- * Requires PHP: 7.2
+ * Requires PHP: 7.4
  * Requires Plugins: woocommerce
  */
 declare(strict_types=1);

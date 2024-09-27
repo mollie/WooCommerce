@@ -211,7 +211,7 @@ function mollieDeleteWPTranslationFiles()
         'nl_NL',
         'nl_NL_formal',
         'en_GB',
-        'nl_BE_formal'
+        'nl_BE_formal',
     ];
     $translationExtensions = ['.mo', '.po', '.l10n.php'];
     $destination = WP_LANG_DIR

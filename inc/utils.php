@@ -210,8 +210,10 @@ function mollieDeleteWPTranslationFiles()
         'nl_BE',
         'nl_NL',
         'nl_NL_formal',
+        'en_GB',
+        'nl_BE_formal'
     ];
-    $translationExtensions = ['.mo', '.po'];
+    $translationExtensions = ['.mo', '.po', '.l10n.php'];
     $destination = WP_LANG_DIR
         . '/plugins/mollie-payments-for-woocommerce-';
     foreach ($languageExtensions as $languageExtension) {

@@ -6,15 +6,14 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Settings;
 
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\SDK\Api;
-use Mollie\WooCommerce\Settings\Page\MollieSettingsPage;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\Status;
 use Mollie\WooCommerce\Uninstall\CleanDb;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 
@@ -113,6 +112,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
         $this->dataHelper = $container->get('settings.data_helper');
         assert($this->dataHelper instanceof Data);
         $pluginPath = $container->get('shared.plugin_path');
+        $pluginUrl = $container->get('shared.plugin_url');
 
         $paymentMethods = $container->get('gateway.paymentMethods');
         // Add settings link to plugins page
@@ -148,7 +148,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
 
         $gateways = $container->get('gateway.instances');
         $isSDDGatewayEnabled = $container->get('gateway.isSDDGatewayEnabled');
-        $this->initMollieSettingsPage($isSDDGatewayEnabled, $gateways, $pluginPath, $paymentMethods);
+        $this->initMollieSettingsPage($isSDDGatewayEnabled, $gateways, $pluginPath, $pluginUrl, $paymentMethods);
         add_action(
             'woocommerce_admin_settings_sanitize_option',
             [$this->settingsHelper, 'updateMerchantIdOnApiKeyChanges'],
@@ -247,10 +247,11 @@ class SettingsModule implements ServiceModule, ExecutableModule
      * @param $isSDDGatewayEnabled
      * @param $gateways
      * @param $pluginPath
+     * @param $pluginUrl
      * @param $paymentMethods
      * @return void
      */
-    protected function initMollieSettingsPage($isSDDGatewayEnabled, $gateways, $pluginPath, $paymentMethods): void
+    protected function initMollieSettingsPage($isSDDGatewayEnabled, $gateways, $pluginPath, $pluginUrl, $paymentMethods): void
     {
         if (!$isSDDGatewayEnabled) {
             //remove directdebit gateway from gateways list
@@ -258,10 +259,11 @@ class SettingsModule implements ServiceModule, ExecutableModule
         }
         add_filter(
             'woocommerce_get_settings_pages',
-            function ($settings) use ($pluginPath, $gateways, $paymentMethods) {
+            function ($settings) use ($pluginPath, $pluginUrl, $gateways, $paymentMethods) {
                 $settings[] = new MollieSettingsPage(
                     $this->settingsHelper,
                     $pluginPath,
+                    $pluginUrl,
                     $gateways,
                     $paymentMethods,
                     $this->isTestModeEnabled,

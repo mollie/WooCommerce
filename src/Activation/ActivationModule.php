@@ -82,7 +82,13 @@ class ActivationModule implements ExecutableModule
      */
     public function handleTranslations(): void
     {
-        add_action('core_upgrade_preamble', 'mollieDeleteWPTranslationFiles');
+        add_action('upgrader_process_complete', 'mollieUpdateCompleted', 10, 2);
+        // we need to handle this version specifically, we can remove this on the next
+        $translationFlag = get_option('mollie_plugin_update_translation');
+        if ($translationFlag !== 'yes') {
+            mollieDeleteWPTranslationFiles();
+            update_option('mollie_plugin_update_translation', 'yes');
+        }
     }
 
     /**

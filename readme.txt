@@ -222,9 +222,9 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 7.8.1 - 01-09-2024 =
+= 7.8.1-beta - 01-09-2024 =
 
-* Feature Flag - Initiative - Swish payment method - under flag add_filter('inpsyde.feature-flags.mollie-woocommerce.swish_enabled', false);
+* Feature Flag - Initiative - Swish payment method.
 * Fixed - Unable to make PayPal payments when surcharge is enabled on product and cart pages.
 * Fixed - Cancel order on expiry date should no longer trigger on WP init.
 * Fixed - Display of Payment Status column in orders overview when capturing payments immediately.

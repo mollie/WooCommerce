@@ -190,15 +190,15 @@ function mollieWooCommerceFormatCurrencyValue($value, $currency)
     return number_format($value, 2, '.', '');
 }
 
-function mollieUpdateCompleted( $upgrader_object, $options ) {
+function mollieUpdateCompleted($upgrader_object, $options)
+{
     //whenever something gets updated they update the languages, we need to delete them
     mollieDeleteWPTranslationFiles();
 }
 
-
 function mollieDeleteWPTranslationFiles()
 {
-    if ( ! function_exists( 'WP_Filesystem' ) ) {
+    if (!function_exists('WP_Filesystem')) {
         require_once ABSPATH . '/wp-admin/includes/file.php';
     }
     WP_Filesystem();

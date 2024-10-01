@@ -190,8 +190,17 @@ function mollieWooCommerceFormatCurrencyValue($value, $currency)
     return number_format($value, 2, '.', '');
 }
 
+function mollieUpdateCompleted($upgrader_object, $options)
+{
+    //whenever something gets updated they update the languages, we need to delete them
+    mollieDeleteWPTranslationFiles();
+}
+
 function mollieDeleteWPTranslationFiles()
 {
+    if (!function_exists('WP_Filesystem')) {
+        require_once ABSPATH . '/wp-admin/includes/file.php';
+    }
     WP_Filesystem();
     global $wp_filesystem;
     if (!$wp_filesystem) {
@@ -210,8 +219,10 @@ function mollieDeleteWPTranslationFiles()
         'nl_BE',
         'nl_NL',
         'nl_NL_formal',
+        'en_GB',
+        'nl_BE_formal',
     ];
-    $translationExtensions = ['.mo', '.po'];
+    $translationExtensions = ['.mo', '.po', '.l10n.php'];
     $destination = WP_LANG_DIR
         . '/plugins/mollie-payments-for-woocommerce-';
     foreach ($languageExtensions as $languageExtension) {

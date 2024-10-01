@@ -39,6 +39,7 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_Payconiq',
         'Mollie_WC_Gateway_Riverty',
         'Mollie_WC_Gateway_Satispay',
+        'Mollie_WC_Gateway_Swish',
     ];
 
     public const MOLLIE_OPTIONS_NAMES = [
@@ -87,6 +88,7 @@ class SharedDataDictionary
         '_transient_mollie-wc-giftcard_issuers_test',
         '_transient_timeout_mollie-wc-giftcard_issuers_live',
         '_transient_mollie-wc-giftcard_issuers_live',
+        'mollie_plugin_update_translation',
     ];
     public const DB_VERSION_PARAM_NAME = 'mollie-db-version';
     public const PLUGIN_VERSION_PARAM_NAME = 'mollie-plugin-version';

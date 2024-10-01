@@ -4,7 +4,7 @@ Tags: mollie, payments, payment gateway, woocommerce, credit card, apple pay, id
 Requires at least: 3.8
 Tested up to: 6.6
 Stable tag: 7.8.0
-Requires PHP: 7.2
+Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -221,6 +221,21 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 
 == Changelog ==
+
+= 7.8.1-beta - 01-09-2024 =
+
+* Feature Flag - Initiative - Swish payment method.
+* Fixed - Unable to make PayPal payments when surcharge is enabled on product and cart pages.
+* Fixed - Cancel order on expiry date should no longer trigger on WP init.
+* Fixed - Display of Payment Status column in orders overview when capturing payments immediately.
+* Fixed - Incorrect data type handling in MaybeDisableGateway.php.
+* Fixed - Prevented dependency conflicts, such as for psr/log.
+* Fixed - Italian translation for integration microcopy.
+* Fixed - Improved accessibility of gateway icons (a11y improvement).
+* Fixed - Undefined property warning in Apple Pay payments related to stdClass::$cardHolder. (author @mklepaczewski )
+* Fixed - German translation issue in order confirmation email.
+* Fixed - Populate birthdate on pay page for in3 and Riverty.
+* Fixed - Missing translation update for surcharge string.
 
 = 7.8.0 - 27-08-2024 =
 

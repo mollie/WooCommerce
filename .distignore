@@ -3,6 +3,7 @@
 .git*
 tests/
 resources/
+!vendor/mollie/mollie-api-php/Resources
 vendor/**/test*
 vendor/mollie/mollie-api-php/examples/
 languages/*.po

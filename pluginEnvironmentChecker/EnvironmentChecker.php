@@ -60,8 +60,9 @@ class EnvironmentChecker implements ConstraintInterface {
 	 * @param array $params The param values to interpolate into the string.
 	 * @return string The translated string with params interpolated.
 	 */
-	protected function __($string, $params = [])
+	protected function esc_html__($string, $params = [])
 	{
-		return esc_html(vsprintf($string, $params));
+        $interpolated = vsprintf($string, $params);
+		return $interpolated && esc_html__($interpolated, 'mollie-payments-for-woocommerce');
 	}
 }

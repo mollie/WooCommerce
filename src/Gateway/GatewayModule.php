@@ -106,25 +106,25 @@ class GatewayModule implements ServiceModule, ExecutableModule
             },
             'gateway.getPaymentMethodsAfterFeatureFlag' => static function (ContainerInterface $container): array {
                 $availablePaymentMethods = $container->get('gateway.listAllMethodsAvailable');
-                $klarnaOneFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.klarna_one_enabled', true);
+                $klarnaOneFlag = (bool) apply_filters('inpsyde.feature-flags.mollie-woocommerce.klarna_one_enabled', true);
                 if (!$klarnaOneFlag) {
                     $availablePaymentMethods = array_filter($availablePaymentMethods, static function ($method) {
                         return $method['id'] !== Constants::KLARNA;
                     });
                 }
-                $bancomatpayFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.bancomatpay_enabled', true);
+                $bancomatpayFlag = (bool) apply_filters('inpsyde.feature-flags.mollie-woocommerce.bancomatpay_enabled', true);
                 if (!$bancomatpayFlag) {
                     $availablePaymentMethods = array_filter($availablePaymentMethods, static function ($method) {
                         return $method['id'] !== Constants::BANCOMATPAY;
                     });
                 }
-                $almaFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.alma_enabled', true);
+                $almaFlag = (bool) apply_filters('inpsyde.feature-flags.mollie-woocommerce.alma_enabled', true);
                 if (!$almaFlag) {
                     $availablePaymentMethods = array_filter($availablePaymentMethods, static function ($method) {
                         return $method['id'] !== Constants::ALMA;
                     });
                 }
-                $swishFlag = apply_filters('inpsyde.feature-flags.mollie-woocommerce.swish_enabled', false);
+                $swishFlag = (bool) apply_filters('inpsyde.feature-flags.mollie-woocommerce.swish_enabled', false);
                 if (!$swishFlag) {
                     $availablePaymentMethods = array_filter($availablePaymentMethods, static function ($method) {
                         return $method['id'] !== Constants::SWISH;

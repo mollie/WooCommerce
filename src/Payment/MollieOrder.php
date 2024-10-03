@@ -1005,11 +1005,15 @@ class MollieOrder extends MollieObject
         $additionalFields = $gateway->paymentMethod()->getProperty('additionalFields');
         $methodId = $additionalFields && in_array('birthdate', $additionalFields, true);
         if ($methodId) {
+            $optionName = 'billing_birthdate_' . $gateway->paymentMethod()->getProperty('id');
             //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $fieldPosted = wc_clean(wp_unslash($_POST["billing_birthdate"] ?? ''));
+            $fieldPosted = wc_clean(wp_unslash($_POST[$optionName] ?? ''));
             if ($fieldPosted === '' || !is_string($fieldPosted)) {
                 return null;
             }
+
+            $order->update_meta_data($optionName, $fieldPosted);
+            $order->save();
             $format = "Y-m-d";
             return gmdate($format, (int) strtotime($fieldPosted));
         }

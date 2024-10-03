@@ -4,7 +4,7 @@ Tags: mollie, payments, payment gateway, woocommerce, credit card, apple pay, id
 Requires at least: 3.8
 Tested up to: 6.6
 Stable tag: 7.8.0
-Requires PHP: 7.2
+Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,23 +34,24 @@ Credit & Debit Cards:
 
 European and local payment methods:
 
-* iDEAL (Netherlands)
-* Bancontact (Belgium)
 * Bancomat Pay (Italy)
-* Blik (Poland)
-* Przelewy24 (Poland)
-* Giropay (Germany)
-* EPS (Austria)
-* SOFORT Banking (EU)
+* Bancontact (Belgium)
 * Belfius (Belgium)
-* KBC/CBC payment button (Belgium)
-* SEPA - Credit Transfer (EU)
-* SEPA - Direct Debit (EU)
+* Blik (Poland)
+* EPS (Austria)
 * Gift cards (Netherlands)
-* Klarna Pay now (Netherlands, Belgium, Germany, Austria, Finland)
+* iDEAL (Netherlands)
+* KBC/CBC payment button (Belgium)
 * Klarna One (UK)
-* Vouchers (Netherlands, Belgium)
+* Klarna Pay now (Netherlands, Belgium, Germany, Austria, Finland)
+* Payconiq (Belgium, Luxembourg)
+* Przelewy24 (Poland)
+* Satispay (EU)
+* SEPA – Credit Transfer (EU)
+* SEPA – Direct Debit (EU)
+* SOFORT Banking (EU)
 * TWINT (Switzerland)
+* Vouchers (Netherlands, Belgium)
 
 International payment methods:
 
@@ -60,11 +61,11 @@ International payment methods:
 
 Pay after delivery payment methods:
 
+* Billie – Pay by Invoice for Businesses
+* iDEAL in3 – Pay in 3 installments, 0% interest
 * Klarna Pay later (Netherlands, Belgium, Germany, Austria, Finland)
 * Klarna Slice it (Germany, Austria, Finland)
-* Billie - Pay by Invoice for Businesses
-* iDEAL in3 - Pay in 3 installments, 0% interest
-
+* Riverty (Netherlands, Belgium, Germany, Austria)
 
 = Get started with Mollie =
 
@@ -93,8 +94,6 @@ Once your Mollie account has been approved, you can start accepting payments.
 * WordPress Multisite support
 * Works well with multilingual plugins like WPML/Polylang
 
-Contact info@mollie.com if you have any questions or comments about this plugin.
-
 = Join the Mollie Community =
 
 Become part of Mollie's growing community and gain access to our comprehensive support network, including a [Discord Developer Community](https://discord.gg/y2rbjqszbs) to stay connected and informed.
@@ -102,6 +101,8 @@ Become part of Mollie's growing community and gain access to our comprehensive s
 > **Your success is our mission. With Mollie, simplify your payments and focus on growing your business.**
 
 [Sign up today](https://my.mollie.com/dashboard/signup) and start enhancing your WooCommerce store with Mollie's advanced payment solutions.
+
+Feel free to contact info@mollie.com if you have any questions or comments about this plugin.
 
 = More about Mollie =
 
@@ -220,6 +221,21 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 
 == Changelog ==
+
+= 7.8.1-beta - 01-09-2024 =
+
+* Feature Flag - Initiative - Swish payment method.
+* Fixed - Unable to make PayPal payments when surcharge is enabled on product and cart pages.
+* Fixed - Cancel order on expiry date should no longer trigger on WP init.
+* Fixed - Display of Payment Status column in orders overview when capturing payments immediately.
+* Fixed - Incorrect data type handling in MaybeDisableGateway.php.
+* Fixed - Prevented dependency conflicts, such as for psr/log.
+* Fixed - Italian translation for integration microcopy.
+* Fixed - Improved accessibility of gateway icons (a11y improvement).
+* Fixed - Undefined property warning in Apple Pay payments related to stdClass::$cardHolder. (author @mklepaczewski )
+* Fixed - German translation issue in order confirmation email.
+* Fixed - Populate birthdate on pay page for in3 and Riverty.
+* Fixed - Missing translation update for surcharge string.
 
 = 7.8.0 - 27-08-2024 =
 

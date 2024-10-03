@@ -91,7 +91,7 @@ class PaymentMethodsIconUrl
     {
 
         return '<img src="' . esc_url($svgUrl)
-            . '" class="mollie-gateway-icon" />';
+            . '" class="mollie-gateway-icon" alt=""/>';
     }
 
     public function getCreditcardIcon()
@@ -106,12 +106,12 @@ class PaymentMethodsIconUrl
         if ($this->canShowCustomLogo($gatewaySettings)) {
             $url =  $gatewaySettings["iconFileUrl"];
             return '<img src="' . esc_url($url)
-                . '" class="mollie-gateway-icon" />';
+                . '" class="mollie-gateway-icon" alt=""/>';
         }
         $svgUrl = $this->pluginUrl . sprintf('public/images/%ss.svg', PaymentMethod::CREDITCARD);
         return
             '<img src="' . esc_url($svgUrl)
-            . '" class="mollie-gateway-icon" />';
+            . '" class="mollie-gateway-icon" alt=""/>';
     }
 
     protected function canShowCustomLogo($gatewaySettings): bool

@@ -57,23 +57,23 @@ class Header extends AbstractSection
         ?>
         <div class="mollie-section mollie-section--header">
             <div class="mollie-settings-header">
-                <img class="mollie-settings-header__image" src="<?= $this->pluginUrl; ?>public/images/logo/black.svg"
+                <img class="mollie-settings-header__image" src="<?= esc_url($this->pluginUrl); ?>public/images/logo/black.svg"
                      alt=""/>
                 <p class="mollie-settings-header__description">
                     <strong>
-                        <?= __(
+                        <?= esc_html(__(
                             'Effortless payments for your customers, designed for growth',
                             'mollie-payments-for-woocommerce'
-                        ); ?>
+                        )); ?>
                     </strong>
                 </p>
                 <div class="mollie-settings-header__buttons">
                     <a href="https://help.mollie.com/hc/en-us/sections/12858723658130-Mollie-for-WooCommerce"
                        target="_blank" class="button-secondary">
-                        <?= __('Mollie Plugin Documentation', 'mollie-payments-for-woocommerce'); ?>
+                        <?= esc_html(__('Mollie Plugin Documentation', 'mollie-payments-for-woocommerce')); ?>
                     </a>
                     <a href="https://www.mollie.com/contact/merchants" target="_blank" class="button-secondary">
-                        <?= __('Contact Mollie Support', 'mollie-payments-for-woocommerce'); ?>
+                        <?= esc_html(__('Contact Mollie Support', 'mollie-payments-for-woocommerce')); ?>
                     </a>
                 </div>
             </div>

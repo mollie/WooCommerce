@@ -23,9 +23,9 @@ class PaymentMethods extends AbstractSection
     {
         ob_start();
         ?>
-        <div class="mollie-section">
+        <div class="mollie-section mollie-section--pm">
             <div class="mollie-settings-pm">
-                <?= $this->renderGateways(); ?>
+                <?= $this->renderGateways(); // WPCS: XSS ok. ?>
             </div>
         </div>
         <?php
@@ -36,16 +36,6 @@ class PaymentMethods extends AbstractSection
     {
         $this->refreshIfRequested();
         $this->cleanDbIfRequested();
-
-        $messageEnabled = '<span class="mollie-settings-pm__status mollie-settings-pm__status--enabled">' . __(
-            'enabled',
-            'mollie-payments-for-woocommerce'
-        ) . '</span>';
-
-        $messageDisabled = '<span class="mollie-settings-pm__status mollie-settings-pm__status--disabled">' . __(
-            'disabled',
-            'mollie-payments-for-woocommerce'
-        ) . '</span>';
 
         $titleActivePaymentMethods = __(
             'Currently Active Payment Methods',
@@ -70,42 +60,10 @@ class PaymentMethods extends AbstractSection
         foreach ($this->paymentMethods as $paymentMethod) {
             $paymentMethodId = $paymentMethod->getProperty('id');
             $gatewayKey = 'mollie_wc_gateway_' . $paymentMethodId;
-            $enabledAtMollie = array_key_exists($gatewayKey, $this->mollieGateways);
-            $enabledInWoo = ($paymentMethod->getSettings())['enabled'] === 'yes';
-            $paymentGatewayButton = '<div class="mollie-settings-pm__single">';
-            $paymentGatewayButton .= $paymentMethod->getIconUrl();
-            $paymentGatewayButton .= $paymentMethod->title();
-            $documentationLink = $paymentMethod->getProperty('docs');
-            $moreInformation = '';
+            $enabledInMollie = array_key_exists($gatewayKey, $this->mollieGateways);
 
-            if ($documentationLink) {
-                $moreInformation = "<a class='mollie-settings-pm__info' href='" . $documentationLink . "'>" . __(
-                    'More information',
-                    'mollie-payments-for-woocommerce'
-                ) . '</a>';
-            }
-
-            if ($enabledAtMollie) {
-                if ($enabledInWoo) {
-                    $paymentGatewayButton .= $messageEnabled;
-                } else {
-                    $paymentGatewayButton .= $messageDisabled;
-                }
-                $paymentGatewayButton .= '<a class="button-secondary" href="' . $this->getGatewaySettingsUrl(
-                    $gatewayKey
-                ) . '">' . __(
-                    'Manage Payment Method',
-                    'mollie-payments-for-woocommerce'
-                ) . '</a>';
-            } else {
-                $paymentGatewayButton .= $moreInformation;
-                $paymentGatewayButton .= ' <a class="button-secondary" href="https://my.mollie.com/dashboard/settings/profiles?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">' .
-                        __('Activate Payment Method', 'mollie-payments-for-woocommerce')
-                        . '</a>';
-            }
-
-            $paymentGatewayButton .= '</div>';
-            if ($enabledAtMollie) {
+            $paymentGatewayButton = $this->paymentGatewayButton($paymentMethod, $enabledInMollie);
+            if ($enabledInMollie) {
                 $activatedGateways .= $paymentGatewayButton;
             } else {
                 $deactivatedGateways .= $paymentGatewayButton;
@@ -128,10 +86,10 @@ class PaymentMethods extends AbstractSection
         ob_start();
         ?>
         <div class="mollie-settings-pm__wrap">
-            <h3><?= $title; ?></h3>
-            <p><?= $description; ?></p>
+            <h3><?= esc_html($title); ?></h3>
+            <p><?= esc_html($description); ?></p>
             <div class="mollie-settings-pm__list">
-                <?= $html; ?>
+                <?= $html; // WPCS: XSS ok. ?>
             </div>
         </div>
         <?php
@@ -150,6 +108,10 @@ class PaymentMethods extends AbstractSection
         ob_start();
         ?>
         <style>
+            .mollie-section--pm {
+                margin-top: 40px;
+            }
+
             .mollie-settings-pm {
                 background-color: #fff;
                 padding: 16px;
@@ -198,6 +160,12 @@ class PaymentMethods extends AbstractSection
                 padding-right: 16px;
             }
 
+            @media screen and (max-width: 1100px) {
+                .mollie-settings-pm__single {
+                    width: 100%;
+                }
+            }
+
         </style>
 
         <?php
@@ -228,7 +196,6 @@ class PaymentMethods extends AbstractSection
 
     protected function cleanDbIfRequested()
     {
-
         if (
                 isset($_GET['cleanDB-mollie']) && wp_verify_nonce(
                     filter_input(INPUT_GET, 'nonce_mollie_cleanDb', FILTER_SANITIZE_SPECIAL_CHARS),
@@ -242,5 +209,53 @@ class PaymentMethods extends AbstractSection
                 $paymentMethod->getSettings();
             }
         }
+    }
+
+    protected function paymentGatewayButton(AbstractPaymentMethod $paymentMethod, $enabledInMollie): string
+    {
+        $documentationLink = $paymentMethod->getProperty('docs');
+        $paymentMethodId = $paymentMethod->getProperty('id');
+        $gatewayKey = 'mollie_wc_gateway_' . $paymentMethodId;
+        $button = '<a class="button-secondary" href="' . $this->getGatewaySettingsUrl(
+            $gatewayKey
+        ) . '">' . esc_html(__(
+            'Manage Payment Method',
+            'mollie-payments-for-woocommerce'
+        )) . '</a>';
+        $messageOrLink = '';
+        $enabledInWoo = ($paymentMethod->getSettings())['enabled'] === 'yes';
+
+        if ($enabledInMollie && $enabledInWoo) {
+            $messageOrLink = '<span class="mollie-settings-pm__status mollie-settings-pm__status--enabled">' . esc_html(__(
+                'enabled',
+                'mollie-payments-for-woocommerce'
+            )) . '</span>';
+        } elseif ($enabledInMollie && !$enabledInWoo) {
+            $messageOrLink = '<span class="mollie-settings-pm__status mollie-settings-pm__status--disabled">' . esc_html(__(
+                'disabled',
+                'mollie-payments-for-woocommerce'
+            )) . '</span>';
+        } else {
+            if ($documentationLink) {
+                $messageOrLink = "<a class='mollie-settings-pm__info' href='" . $documentationLink . "'>" . esc_html(__(
+                    'More information',
+                    'mollie-payments-for-woocommerce'
+                )) . '</a>';
+            }
+            $button = '<a class="button-secondary" href="https://my.mollie.com/dashboard/settings/profiles?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">' .
+                    esc_html(__('Activate Payment Method', 'mollie-payments-for-woocommerce'))
+                    . '</a>';
+        }
+
+        ob_start();
+        ?>
+        <div class="mollie-settings-pm__single">
+            <?= $paymentMethod->getIconUrl();  // WPCS: XSS ok.?>
+            <?= esc_html($paymentMethod->title());?>
+            <?= $messageOrLink;  // WPCS: XSS ok.?>
+            <?= $button;  // WPCS: XSS ok.?>
+        </div>
+        <?php
+        return ob_get_clean();
     }
 }

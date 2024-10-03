@@ -35,9 +35,9 @@ class Advanced extends AbstractSection
                 'type' => 'select',
                 'options' => [
                     SharedDataDictionary::SETTING_LOCALE_WP_LANGUAGE => __(
-                            'Automatically send WordPress language',
-                            'mollie-payments-for-woocommerce'
-                        ) . ' (' . __('default', 'mollie-payments-for-woocommerce') . ')',
+                        'Automatically send WordPress language',
+                        'mollie-payments-for-woocommerce'
+                    ) . ' (' . __('default', 'mollie-payments-for-woocommerce') . ')',
                     SharedDataDictionary::SETTING_LOCALE_DETECT_BY_BROWSER => __(
                         'Detect using browser language',
                         'mollie-payments-for-woocommerce'
@@ -97,8 +97,8 @@ class Advanced extends AbstractSection
                 'type' => 'select',
                 'options' => [
                     PaymentService::PAYMENT_METHOD_TYPE_ORDER => ucfirst(
-                            PaymentService::PAYMENT_METHOD_TYPE_ORDER
-                        ) . ' (' . __('default', 'mollie-payments-for-woocommerce')
+                        PaymentService::PAYMENT_METHOD_TYPE_ORDER
+                    ) . ' (' . __('default', 'mollie-payments-for-woocommerce')
                         . ')',
                     PaymentService::PAYMENT_METHOD_TYPE_PAYMENT => ucfirst(
                         PaymentService::PAYMENT_METHOD_TYPE_PAYMENT
@@ -189,8 +189,8 @@ class Advanced extends AbstractSection
                 'type' => 'checkbox',
                 'default' => 'no',
                 'desc' => __("Remove options and scheduled actions from database when uninstalling the plugin.", "mollie-payments-for-woocommerce") . ' (<a href="' . esc_url($this->cleanDbUrl()) . '">' . strtolower(
-                        __('Clear now', 'mollie-payments-for-woocommerce')
-                    ) . '</a>)',
+                    __('Clear now', 'mollie-payments-for-woocommerce')
+                ) . '</a>)',
             ],
             [
                 'id' => $this->settings->getSettingId('sectionend'),
@@ -205,7 +205,9 @@ class Advanced extends AbstractSection
         );
     }
 
-    protected function paymentDescriptionLabels(): array{
+    protected function paymentDescriptionLabels(): array
+    {
+
         return  [
             '{orderNumber}' => _x('Order number', 'Label {orderNumber} description for payment description options', 'mollie-payments-for-woocommerce'),
             '{storeName}' => _x('Site Title', 'Label {storeName} description for payment description options', 'mollie-payments-for-woocommerce'),
@@ -215,7 +217,9 @@ class Advanced extends AbstractSection
         ];
     }
 
-    protected function cleanDbUrl(): string{
+    protected function cleanDbUrl(): string
+    {
+
         return add_query_arg(
             ['cleanDB-mollie' => 1, 'nonce_mollie_cleanDb' => wp_create_nonce('nonce_mollie_cleanDb')]
         );

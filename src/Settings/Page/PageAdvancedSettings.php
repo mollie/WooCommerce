@@ -33,7 +33,7 @@ class PageAdvancedSettings extends AbstractPage
             Header::class,
             Notices::class,
             Tabs::class,
-            Advanced::class
+            Advanced::class,
         ];
     }
 }

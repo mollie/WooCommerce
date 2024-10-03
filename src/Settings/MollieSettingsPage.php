@@ -56,18 +56,18 @@ class MollieSettingsPage extends WC_Settings_Page
                 <th scope="row" class="titledesc">
                     <label for="<?php
                     echo esc_attr($value['id']); ?>"><?php
-                        echo esc_html($value['title']); ?></label>
+                        echo esc_html($value['title']);  ?></label>
                 </th>
                 <td class="forminp">
                     <?php
                     if (!empty($value['value'])) : ?>
-                        <?= $value['value']; ?>
+                        <?= $value['value']; // WPCS: XSS ok. ?>
                         <?php
                     endif; ?>
 
                     <?php
                     if (!empty($value['desc'])) : ?>
-                        <p class="description"><?= $value['desc']; ?></p>
+                        <p class="description"><?= $value['desc']; // WPCS: XSS ok. ?></p>
                         <?php
                     endif; ?>
                 </td>
@@ -77,7 +77,7 @@ class MollieSettingsPage extends WC_Settings_Page
 
         add_action('woocommerce_admin_field_mollie_content', static function ($value): void {
             if (!empty($value['value'])) {
-                echo $value['value'];
+                echo $value['value']; // WPCS: XSS ok.
             }
         });
     }
@@ -151,8 +151,8 @@ class MollieSettingsPage extends WC_Settings_Page
         $sepaGatewayAllowed = !empty($this->registeredGateways["mollie_wc_gateway_directdebit"]);
         if ($sepaGatewayAllowed && !$isSepaEnabled) {
             $warning_message = __(
-                    "You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL and/or other 'first' payment methods.",
-                    'mollie-payments-for-woocommerce'
+                "You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL and/or other 'first' payment methods.",
+                'mollie-payments-for-woocommerce'
             );
 
             $content .= '<div class="notice notice-warning is-dismissible"><p>';
@@ -177,8 +177,8 @@ class MollieSettingsPage extends WC_Settings_Page
         if ($woocommerce_banktransfer_gateway->is_available()) {
             $content .= '<div class="notice notice-warning is-dismissible"><p>';
             $content .= __(
-                    'You have the WooCommerce default Direct Bank Transfer (BACS) payment gateway enabled in WooCommerce. Mollie strongly advices only using Bank Transfer via Mollie and disabling the default WooCommerce BACS payment gateway to prevent possible conflicts.',
-                    'mollie-payments-for-woocommerce'
+                'You have the WooCommerce default Direct Bank Transfer (BACS) payment gateway enabled in WooCommerce. Mollie strongly advices only using Bank Transfer via Mollie and disabling the default WooCommerce BACS payment gateway to prevent possible conflicts.',
+                'mollie-payments-for-woocommerce'
             );
             $content .= '</p></div> ';
 
@@ -193,44 +193,4 @@ class MollieSettingsPage extends WC_Settings_Page
      *
      * @return string
      */
-    protected function warnAboutRequiredCheckoutFieldForKlarna($content): string
-    {
-        $isKlarnaEnabled = $this->isKlarnaEnabled();
-        if ($isKlarnaEnabled) {
-            $content .= '<div class="notice notice-warning is-dismissible"><p>';
-            $content .= sprintf(
-            /* translators: Placeholder 1: Opening link tag. Placeholder 2: Closing link tag. Placeholder 3: Opening link tag. Placeholder 4: Closing link tag. */
-                    __(
-                            'You have activated Klarna. To accept payments, please make sure all default WooCommerce checkout fields are enabled and required. For more information, go to %1$sKlarna Pay Later documentation%2$s or  %3$sKlarna Slice it documentation%4$s',
-                            'mollie-payments-for-woocommerce'
-                    ),
-                    '<a href="https://github.com/mollie/WooCommerce/wiki/Setting-up-Klarna-Pay-later-gateway">',
-                    '</a>',
-                    '<a href=" https://github.com/mollie/WooCommerce/wiki/Setting-up-Klarna-Slice-it-gateway">',
-                    '</a>'
-            );
-            $content .= '</p></div> ';
-
-            return $content;
-        }
-
-        return $content;
-    }
-
-    protected function isKlarnaEnabled(): bool
-    {
-        $klarnaGateways = [Constants::KLARNAPAYLATER, Constants::KLARNASLICEIT, Constants::KLARNAPAYNOW, Constants::KLARNA];
-        $isKlarnaEnabled = false;
-        foreach ($klarnaGateways as $klarnaGateway) {
-            if (
-                    array_key_exists('mollie_wc_gateway_' . $klarnaGateway, $this->mollieGateways)
-                    && array_key_exists($klarnaGateway, $this->paymentMethods)
-                    && $this->paymentMethods[$klarnaGateway]->getProperty('enabled') === 'yes'
-            ) {
-                $isKlarnaEnabled = true;
-                break;
-            }
-        }
-        return $isKlarnaEnabled;
-    }
 }

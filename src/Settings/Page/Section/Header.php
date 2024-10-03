@@ -10,10 +10,10 @@ class Header extends AbstractSection
     {
         return [
                 [
-                        'id' => $this->settings->getSettingId('header'),
-                        'type' => 'mollie_content',
-                        'value' => $this->content()
-                ]
+                    'id' => $this->settings->getSettingId('header'),
+                    'type' => 'mollie_content',
+                    'value' => $this->content(),
+                ],
         ];
     }
 
@@ -62,8 +62,8 @@ class Header extends AbstractSection
                 <p class="mollie-settings-header__description">
                     <strong>
                         <?= __(
-                                'Effortless payments for your customers, designed for growth',
-                                'mollie-payments-for-woocommerce'
+                            'Effortless payments for your customers, designed for growth',
+                            'mollie-payments-for-woocommerce'
                         ); ?>
                     </strong>
                 </p>

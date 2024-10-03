@@ -10,10 +10,10 @@ class Notices extends AbstractSection
     {
         return [
                 [
-                        'id' => $this->settings->getSettingId('notices'),
-                        'type' => 'mollie_content',
-                        'value' => $this->content()
-                ]
+                    'id' => $this->settings->getSettingId('notices'),
+                    'type' => 'mollie_content',
+                    'value' => $this->content(),
+                ],
         ];
     }
 

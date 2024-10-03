@@ -26,6 +26,7 @@ class Alma extends AbstractPaymentMethod implements PaymentMethodI
                 'billingAddress',
                 'shippingAddress',
             ],
+            'docs' => 'https://www.mollie.com/gb/payments/alma',
         ];
     }
 

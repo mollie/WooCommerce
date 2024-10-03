@@ -6,25 +6,50 @@ namespace Mollie\WooCommerce\Settings\Page;
 
 use Mollie\WooCommerce\Settings\Page\Section\AbstractSection;
 use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Shared\Data;
 
 abstract class AbstractPage
 {
     protected Settings $settings;
     protected string $pluginUrl;
+    protected string $currentSection;
+    protected bool $connectionStatus;
+    protected bool $testModeEnabled;
+    protected array $pages;
+    protected array $mollieGateways;
+    protected array $paymentMethods;
+    protected Data $dataHelper;
 
-    public function __construct(Settings $settings, string $pluginUrl)
-    {
+    public function __construct(
+        Settings $settings,
+        string $pluginUrl,
+        array $pages,
+        string $currentSection,
+        bool $connectionStatus,
+        bool $testModeEnabled,
+        array $mollieGateways,
+        array $paymentMethods,
+        Data $dataHelper
+    ) {
+
         $this->settings = $settings;
         $this->pluginUrl = $pluginUrl;
+        $this->currentSection = $currentSection;
+        $this->connectionStatus = $connectionStatus;
+        $this->testModeEnabled = $testModeEnabled;
+        $this->pages = $pages;
+        $this->mollieGateways = $mollieGateways;
+        $this->paymentMethods = $paymentMethods;
+        $this->dataHelper = $dataHelper;
     }
 
-    abstract public function isTab(): bool;
+    abstract public static function isTab(): bool;
 
-    abstract public function slug(): string;
+    abstract public static function slug(): string;
 
-    public function tabName(): string
+    public static function tabName(): string
     {
-        return '';
+        return 'tabName';
     }
 
     protected function sections(): array
@@ -39,16 +64,26 @@ abstract class AbstractPage
 
         foreach ($this->sections() as $sectionClass) {
             /** @var AbstractSection $section */
-            $section = new $sectionClass($this->settings, $this->pluginUrl);
+            $section = new $sectionClass(
+                $this->settings,
+                $this->pluginUrl,
+                $this->pages,
+                $this->currentSection,
+                $this->connectionStatus,
+                $this->testModeEnabled,
+                $this->mollieGateways,
+                $this->paymentMethods,
+                $this->dataHelper
+            );
             foreach ($section->config() as $field) {
                 $settings[] = $field;
             }
-            $styles[$sectionClass] = preg_replace('/\s+/', '', $section->styles());
+            $styles[$sectionClass] = $section->styles();
         }
         array_unshift($settings, [
             'id' => $this->settings->getSettingId('styles'),
             'type' => 'mollie_content',
-            'value' => implode($styles)
+            'value' => implode($styles),
         ]);
         return $settings;
     }

@@ -4,15 +4,37 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Settings\Page;
 
-class PagePaymentMethods extends AbstractPage {
+use Mollie\WooCommerce\Settings\Page\Section\ConnectionStatusFields;
+use Mollie\WooCommerce\Settings\Page\Section\Header;
+use Mollie\WooCommerce\Settings\Page\Section\Notices;
+use Mollie\WooCommerce\Settings\Page\Section\PaymentMethods;
+use Mollie\WooCommerce\Settings\Page\Section\Tabs;
 
-    public function isTab(): bool
+class PagePaymentMethods extends AbstractPage
+{
+    public static function isTab(): bool
     {
-        // TODO: Implement isTab() method.
+        return true;
     }
 
-    public function slug(): string
+    public static function tabName(): string
+    {
+        return __('Payment methods', 'mollie-payments-for-woocommerce');
+    }
+
+    public static function slug(): string
     {
         return 'mollie_payment_methods';
+    }
+
+    public function sections(): array
+    {
+        return [
+            Header::class,
+            Notices::class,
+            Tabs::class,
+            ConnectionStatusFields::class,
+            PaymentMethods::class,
+        ];
     }
 }

@@ -4,15 +4,36 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Settings\Page;
 
-class PageAdvancedSettings extends AbstractPage {
+use Mollie\WooCommerce\Settings\Page\Section\Advanced;
+use Mollie\WooCommerce\Settings\Page\Section\ConnectionFields;
+use Mollie\WooCommerce\Settings\Page\Section\Header;
+use Mollie\WooCommerce\Settings\Page\Section\Notices;
+use Mollie\WooCommerce\Settings\Page\Section\Tabs;
 
-    public function isTab(): bool
+class PageAdvancedSettings extends AbstractPage
+{
+    public static function isTab(): bool
     {
-        // TODO: Implement isTab() method.
+        return true;
     }
 
-    public function slug(): string
+    public static function tabName(): string
+    {
+        return __('Advanced settings', 'mollie-payments-for-woocommerce');
+    }
+
+    public static function slug(): string
     {
         return 'mollie_advanced';
+    }
+
+    public function sections(): array
+    {
+        return [
+            Header::class,
+            Notices::class,
+            Tabs::class,
+            Advanced::class
+        ];
     }
 }

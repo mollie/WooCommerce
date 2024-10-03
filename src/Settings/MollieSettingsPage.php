@@ -10,33 +10,36 @@ use Mollie\WooCommerce\Settings\Page\PageApiKeys;
 use Mollie\WooCommerce\Settings\Page\PageNoApiKey;
 use Mollie\WooCommerce\Settings\Page\PagePaymentMethods;
 use Mollie\WooCommerce\Shared\Data;
+use Mollie\WooCommerce\PaymentMethods\Constants;
+use WC_Gateway_BACS;
 use WC_Settings_Page;
 
 class MollieSettingsPage extends WC_Settings_Page
 {
-    protected Settings $settingsHelper;
+    protected Settings $settings;
     protected string $pluginPath;
     protected string $pluginUrl;
-    protected array $gateways;
+    protected array $mollieGateways;
     protected array $paymentMethods;
     protected bool $isTestModeEnabled;
     protected Data $dataHelper;
 
     public function __construct(
-            Settings $settingsHelper,
-            string $pluginPath,
-            string $pluginUrl,
-            array $gateways,
-            array $paymentMethods,
-            bool $isTestModeEnabled,
-            Data $dataHelper
+        Settings $settings,
+        string $pluginPath,
+        string $pluginUrl,
+        array $mollieGateways,
+        array $paymentMethods,
+        bool $isTestModeEnabled,
+        Data $dataHelper
     ) {
+
         $this->id = 'mollie_settings';
         $this->label = __('Mollie Settings', 'mollie-payments-for-woocommerce');
-        $this->settingsHelper = $settingsHelper;
+        $this->settings = $settings;
         $this->pluginPath = $pluginPath;
         $this->pluginUrl = $pluginUrl;
-        $this->gateways = $gateways;
+        $this->mollieGateways = $mollieGateways;
         $this->isTestModeEnabled = $isTestModeEnabled;
         $this->dataHelper = $dataHelper;
         $this->paymentMethods = $paymentMethods;
@@ -57,9 +60,15 @@ class MollieSettingsPage extends WC_Settings_Page
                 </th>
                 <td class="forminp">
                     <?php
-                    if (!empty($value['value'])): ?>
+                    if (!empty($value['value'])) : ?>
                         <?= $value['value']; ?>
+                        <?php
+                    endif; ?>
+
                     <?php
+                    if (!empty($value['desc'])) : ?>
+                        <p class="description"><?= $value['desc']; ?></p>
+                        <?php
                     endif; ?>
                 </td>
             </tr>
@@ -76,8 +85,8 @@ class MollieSettingsPage extends WC_Settings_Page
     public function outputSections()
     {
         add_action(
-                'woocommerce_sections_' . $this->id,
-                [$this, 'output_sections']
+            'woocommerce_sections_' . $this->id,
+            [$this, 'output_sections']
         );
     }
 
@@ -87,30 +96,141 @@ class MollieSettingsPage extends WC_Settings_Page
                 PageNoApiKey::class,
                 PageApiKeys::class,
                 PagePaymentMethods::class,
-                PageAdvancedSettings::class
+                PageAdvancedSettings::class,
         ];
     }
 
     public function get_settings($currentSection = '')
     {
+        $defaultSection = $currentSection;
+        $connectionStatus = $this->settings->getConnectionStatus();
+
+        if (!$connectionStatus) {
+            $defaultSection = PageNoApiKey::slug();
+        }
+
+        if ($connectionStatus && $defaultSection === PageNoApiKey::slug()) {
+            $defaultSection = PageApiKeys::slug();
+        }
+
+        if ($defaultSection === '') {
+            $defaultSection = PageApiKeys::slug();
+        }
+
         $mollieSettings = null;
         foreach ($this->pages() as $pageClass) {
             /** @var AbstractPage $page */
-            $page = new $pageClass($this->settingsHelper, $this->pluginUrl);
-            if ($page->slug() === $currentSection) {
+            $page = new $pageClass(
+                $this->settings,
+                $this->pluginUrl,
+                $this->pages(),
+                $defaultSection,
+                $connectionStatus,
+                $this->isTestModeEnabled,
+                $this->mollieGateways,
+                $this->paymentMethods,
+                $this->dataHelper
+            );
+            if ($page::slug() === $defaultSection) {
                 $mollieSettings = $page->settings();
                 break;
             }
         }
 
-        if (!$mollieSettings) {
-            $mollieSettings = (new PageNoApiKey($this->settingsHelper, $this->pluginUrl))->settings();
+        return apply_filters(
+            'woocommerce_get_settings_' . $this->id,
+            $mollieSettings,
+            $currentSection
+        );
+    }
+
+    protected function checkDirectDebitStatus($content): string
+    {
+        $hasCustomSepaSettings = $this->paymentMethods["directdebit"]->getProperty('enabled') !== false;
+        $isSepaEnabled = !$hasCustomSepaSettings || $this->paymentMethods["directdebit"]->getProperty('enabled') === 'yes';
+        $sepaGatewayAllowed = !empty($this->registeredGateways["mollie_wc_gateway_directdebit"]);
+        if ($sepaGatewayAllowed && !$isSepaEnabled) {
+            $warning_message = __(
+                    "You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL and/or other 'first' payment methods.",
+                    'mollie-payments-for-woocommerce'
+            );
+
+            $content .= '<div class="notice notice-warning is-dismissible"><p>';
+            $content .= $warning_message;
+            $content .= '</p></div> ';
+
+            return $content;
         }
 
-        return apply_filters(
-                'woocommerce_get_settings_' . $this->id,
-                $mollieSettings,
-                $currentSection
-        );
+        return $content;
+    }
+
+    /**
+     * @param $content
+     *
+     * @return string
+     */
+    protected function checkMollieBankTransferNotBACS($content): string
+    {
+        $woocommerce_banktransfer_gateway = new WC_Gateway_BACS();
+
+        if ($woocommerce_banktransfer_gateway->is_available()) {
+            $content .= '<div class="notice notice-warning is-dismissible"><p>';
+            $content .= __(
+                    'You have the WooCommerce default Direct Bank Transfer (BACS) payment gateway enabled in WooCommerce. Mollie strongly advices only using Bank Transfer via Mollie and disabling the default WooCommerce BACS payment gateway to prevent possible conflicts.',
+                    'mollie-payments-for-woocommerce'
+            );
+            $content .= '</p></div> ';
+
+            return $content;
+        }
+
+        return $content;
+    }
+
+    /**
+     * @param $content
+     *
+     * @return string
+     */
+    protected function warnAboutRequiredCheckoutFieldForKlarna($content): string
+    {
+        $isKlarnaEnabled = $this->isKlarnaEnabled();
+        if ($isKlarnaEnabled) {
+            $content .= '<div class="notice notice-warning is-dismissible"><p>';
+            $content .= sprintf(
+            /* translators: Placeholder 1: Opening link tag. Placeholder 2: Closing link tag. Placeholder 3: Opening link tag. Placeholder 4: Closing link tag. */
+                    __(
+                            'You have activated Klarna. To accept payments, please make sure all default WooCommerce checkout fields are enabled and required. For more information, go to %1$sKlarna Pay Later documentation%2$s or  %3$sKlarna Slice it documentation%4$s',
+                            'mollie-payments-for-woocommerce'
+                    ),
+                    '<a href="https://github.com/mollie/WooCommerce/wiki/Setting-up-Klarna-Pay-later-gateway">',
+                    '</a>',
+                    '<a href=" https://github.com/mollie/WooCommerce/wiki/Setting-up-Klarna-Slice-it-gateway">',
+                    '</a>'
+            );
+            $content .= '</p></div> ';
+
+            return $content;
+        }
+
+        return $content;
+    }
+
+    protected function isKlarnaEnabled(): bool
+    {
+        $klarnaGateways = [Constants::KLARNAPAYLATER, Constants::KLARNASLICEIT, Constants::KLARNAPAYNOW, Constants::KLARNA];
+        $isKlarnaEnabled = false;
+        foreach ($klarnaGateways as $klarnaGateway) {
+            if (
+                    array_key_exists('mollie_wc_gateway_' . $klarnaGateway, $this->mollieGateways)
+                    && array_key_exists($klarnaGateway, $this->paymentMethods)
+                    && $this->paymentMethods[$klarnaGateway]->getProperty('enabled') === 'yes'
+            ) {
+                $isKlarnaEnabled = true;
+                break;
+            }
+        }
+        return $isKlarnaEnabled;
     }
 }

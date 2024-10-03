@@ -4,15 +4,38 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Settings\Page;
 
-class PageApiKeys extends AbstractPage {
+use Mollie\WooCommerce\Settings\Page\Section\ConnectionFields;
+use Mollie\WooCommerce\Settings\Page\Section\Header;
+use Mollie\WooCommerce\Settings\Page\Section\InstructionsNotConnected;
+use Mollie\WooCommerce\Settings\Page\Section\InstructionsConnected;
+use Mollie\WooCommerce\Settings\Page\Section\Notices;
+use Mollie\WooCommerce\Settings\Page\Section\Tabs;
 
-    public function isTab(): bool
+class PageApiKeys extends AbstractPage
+{
+    public static function isTab(): bool
     {
-        // TODO: Implement isTab() method.
+        return true;
     }
 
-    public function slug(): string
+    public static function slug(): string
     {
         return 'mollie_api_keys';
+    }
+
+    public static function tabName(): string
+    {
+        return __('API keys', 'mollie-payments-for-woocommerce');
+    }
+
+    public function sections(): array
+    {
+        return [
+            Header::class,
+            Notices::class,
+            Tabs::class,
+            InstructionsConnected::class,
+            ConnectionFields::class,
+        ];
     }
 }

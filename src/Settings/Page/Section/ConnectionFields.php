@@ -6,14 +6,17 @@ namespace Mollie\WooCommerce\Settings\Page\Section;
 
 class ConnectionFields extends AbstractSection
 {
+    use ConnectionStatusTrait;
+
     public function config(): array
     {
         return [
             [
                 'id' => $this->settings->getSettingId('title'),
                 'title' => '',
-                'type' => 'title'
+                'type' => 'title',
             ],
+            $this->connectionStatusField($this->settings, $this->connectionStatus),
             [
                 'id' => $this->settings->getSettingId('test_mode_enabled'),
                 'title' => __('Mollie Payment Mode', 'mollie-payments-for-woocommerce'),
@@ -21,8 +24,12 @@ class ConnectionFields extends AbstractSection
                 'type' => 'select',
                 'options' => [
                     'no' => 'Live API',
-                    'yes' => 'Test API'
+                    'yes' => 'Test API',
                 ],
+                'desc' => __(
+                    'Select <strong>Live API</strong> to receive real payments and <strong>Test API</strong> to test transactions without a fee.',
+                    'mollie-payments-for-woocommerce'
+                ),
                 'desc_tip' => __(
                     'Enable test mode if you want to test the plugin without using real payments.',
                     'mollie-payments-for-woocommerce'
@@ -34,14 +41,11 @@ class ConnectionFields extends AbstractSection
                 'default' => '',
                 'type' => 'text',
                 'desc' => sprintf(
-                /* translators: Placeholder 1: API key mode (live or test). The surrounding %s's Will be replaced by a link to the Mollie profile */
                     __(
-                        'The API key is used to connect to Mollie. You can find your <strong>%1$s</strong> API key in your %2$sMollie account%3$s',
+                        "Use your <a href='%s' target='_blank'>Live API key</a> when you're ready to receive real payments.",
                         'mollie-payments-for-woocommerce'
                     ),
-                    'live',
-                    '<a href="https://my.mollie.com/dashboard/developers/api-keys?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">',
-                    '</a>'
+                    'https://my.mollie.com/dashboard/developers/api-keys?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner'
                 ),
                 'css' => 'width: 350px',
                 'placeholder' => __(
@@ -55,14 +59,11 @@ class ConnectionFields extends AbstractSection
                 'default' => '',
                 'type' => 'text',
                 'desc' => sprintf(
-                /* translators: Placeholder 1: API key mode (live or test). The surrounding %s's Will be replaced by a link to the Mollie profile */
                     __(
-                        'The API key is used to connect to Mollie. You can find your <strong>%1$s</strong> API key in your %2$sMollie account%3$s',
+                        "Use your <a href='%s' target='_blank'>Test APl key</a> to check the connection and test transactions without a fee.",
                         'mollie-payments-for-woocommerce'
                     ),
-                    'test',
-                    '<a href="https://my.mollie.com/dashboard/developers/api-keys?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">',
-                    '</a>'
+                    'https://my.mollie.com/dashboard/developers/api-keys?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner'
                 ),
                 'css' => 'width: 350px',
                 'placeholder' => __(
@@ -74,7 +75,13 @@ class ConnectionFields extends AbstractSection
                 'id' => $this->settings->getSettingId('debug'),
                 'title' => __('Debug Log', 'mollie-payments-for-woocommerce'),
                 'type' => 'checkbox',
-                'desc' => __('Log plugin events.', 'mollie-payments-for-woocommerce'),
+                'desc' => sprintf(
+                    __(
+                        "Log plugin events. <a href='%s'>View logs</a>",
+                        'mollie-payments-for-woocommerce'
+                    ),
+                    $this->settings->getLogsUrl()
+                ),
                 'default' => 'yes',
             ],
             [

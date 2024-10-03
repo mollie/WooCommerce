@@ -490,7 +490,7 @@ class AssetsModule implements ExecutableModule
         if (
             $current_screen->id !== 'woocommerce_page_wc-settings'
             || $current_tab !== 'mollie_settings'
-            || $current_section !== 'advanced'
+            || $current_section !== 'mollie_advanced'
         ) {
             return;
         }

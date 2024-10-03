@@ -326,7 +326,7 @@ class ApplePayDataObjectHttp
                     sprintf('ApplePay Data Error: Missing value for %s', $requiredField)
                 );
                 $this->errors[]
- = [
+                = [
                     'errorCode' => $errorCode,
                     'contactField' => $errorValue,
                 ];

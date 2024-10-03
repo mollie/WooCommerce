@@ -25,10 +25,10 @@ class Notices extends AbstractSection
         ob_start();
         ?>
         <div class="mollie-section mollie-section--notices">
-            <?= $this->warnAboutRequiredCheckoutFieldForBillie(); // WPCS: XSS ok.?>
-            <?= $this->warnAboutRequiredCheckoutFieldForKlarna(); // WPCS: XSS ok.?>
-            <?= $this->warnMollieBankTransferNotBACS(); // WPCS: XSS ok.?>
-            <?= $this->warnDirectDebitStatus(); // WPCS: XSS ok.?>
+            <?= $this->warnAboutRequiredCheckoutFieldForBillie(); // WPCS: XSS ok.     ?>
+            <?= $this->warnAboutRequiredCheckoutFieldForKlarna(); // WPCS: XSS ok.     ?>
+            <?= $this->warnMollieBankTransferNotBACS(); // WPCS: XSS ok.     ?>
+            <?= $this->warnDirectDebitStatus(); // WPCS: XSS ok.     ?>
         </div>
         <?php
         return ob_get_clean();
@@ -38,18 +38,18 @@ class Notices extends AbstractSection
     {
         $hasCustomSepaSettings = $this->paymentMethods["directdebit"]->getProperty('enabled') !== false;
         $isSepaEnabled = !$hasCustomSepaSettings || $this->paymentMethods["directdebit"]->getProperty(
-            'enabled'
-        ) === 'yes';
+                        'enabled'
+                ) === 'yes';
         $sepaGatewayAllowed = !empty($this->mollieGateways["mollie_wc_gateway_directdebit"]);
 
         if (!($sepaGatewayAllowed && !$isSepaEnabled)) {
             return '';
         }
         return $this->notice(
-            __(
-                "You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL and/or other 'first' payment methods.",
-                'mollie-payments-for-woocommerce'
-            )
+                __(
+                        "You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL and/or other 'first' payment methods.",
+                        'mollie-payments-for-woocommerce'
+                )
         );
     }
 
@@ -63,10 +63,10 @@ class Notices extends AbstractSection
             return '';
         }
         return $this->notice(
-            __(
-                'You have activated Billie. To accept payments, please make sure all default WooCommerce checkout fields are enabled and required. The billing company field is required as well. Make sure to enable the billing company field in the WooCommerce settings if you are using Woocommerce blocks.',
-                'mollie-payments-for-woocommerce'
-            )
+                __(
+                        'You have activated Billie. To accept payments, please make sure all default WooCommerce checkout fields are enabled and required. The billing company field is required as well. Make sure to enable the billing company field in the WooCommerce settings if you are using Woocommerce blocks.',
+                        'mollie-payments-for-woocommerce'
+                )
         );
     }
 
@@ -76,17 +76,17 @@ class Notices extends AbstractSection
             return '';
         }
         return $this->notice(
-            sprintf(
+                sprintf(
                 /* translators: Placeholder 1: Opening link tag. Placeholder 2: Closing link tag. Placeholder 3: Opening link tag. Placeholder 4: Closing link tag. */
-                __(
-                    'You have activated Klarna. To accept payments, please make sure all default WooCommerce checkout fields are enabled and required. For more information, go to %1$sKlarna Pay Later documentation%2$s or  %3$sKlarna Slice it documentation%4$s',
-                    'mollie-payments-for-woocommerce'
-                ),
-                '<a href="https://github.com/mollie/WooCommerce/wiki/Setting-up-Klarna-Pay-later-gateway">',
-                '</a>',
-                '<a href=" https://github.com/mollie/WooCommerce/wiki/Setting-up-Klarna-Slice-it-gateway">',
-                '</a>'
-            )
+                        __(
+                                'You have activated Klarna. To accept payments, please make sure all default WooCommerce checkout fields are enabled and required. For more information, go to %1$sKlarna Pay Later documentation%2$s or  %3$sKlarna Slice it documentation%4$s',
+                                'mollie-payments-for-woocommerce'
+                        ),
+                        '<a href="https://github.com/mollie/WooCommerce/wiki/Setting-up-Klarna-Pay-later-gateway">',
+                        '</a>',
+                        '<a href=" https://github.com/mollie/WooCommerce/wiki/Setting-up-Klarna-Slice-it-gateway">',
+                        '</a>'
+                )
         );
     }
 
@@ -98,10 +98,10 @@ class Notices extends AbstractSection
         }
 
         return $this->notice(
-            __(
-                'You have the WooCommerce default Direct Bank Transfer (BACS) payment gateway enabled in WooCommerce. Mollie strongly advices only using Bank Transfer via Mollie and disabling the default WooCommerce BACS payment gateway to prevent possible conflicts.',
-                'mollie-payments-for-woocommerce'
-            )
+                __(
+                        'You have the WooCommerce default Direct Bank Transfer (BACS) payment gateway enabled in WooCommerce. Mollie strongly advices only using Bank Transfer via Mollie and disabling the default WooCommerce BACS payment gateway to prevent possible conflicts.',
+                        'mollie-payments-for-woocommerce'
+                )
         );
     }
 
@@ -129,9 +129,10 @@ class Notices extends AbstractSection
 
     protected function notice(string $message)
     {
+        //notice-warning is-dismissible
         ob_start();
         ?>
-        <div class="notice notice-warning is-dismissible">
+        <div class="mollie-notice">
             <p>
                 <?= wp_kses($message, [
                         'a' => [
@@ -140,7 +141,49 @@ class Notices extends AbstractSection
                         ],
                 ]); ?>
             </p>
+            <button type="button" class="notice-dismiss">
+                <span class="screen-reader-text">Dismiss this notice.</span>
+            </button>
         </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    public function styles(): string
+    {
+        ob_start();
+        ?>
+        <style>
+            .mollie-notice {
+                margin: 15px 0;
+                background: #fff;
+                border: 1px solid #c3c4c7;
+                border-left-width: 4px;
+                border-left-color: #dba617;
+                box-shadow: 0 1px 1px rgba(0, 0, 0, .04);
+                padding: 12px 12px;
+                box-sizing: border-box;
+                position: relative;
+            }
+
+            .mollie-notice p {
+                margin: 0;
+                padding-right: 40px;
+            }
+
+            .mollie-notice button::before {
+                background: 0 0;
+                color: #787c82;
+                content: "\f153";
+                display: block;
+                font: normal 16px / 20px dashicons;
+                speak: never;
+                height: 20px;
+                text-align: center;
+                width: 20px;
+                -webkit-font-smoothing: antialiased;
+            }
+        </style>
         <?php
         return ob_get_clean();
     }

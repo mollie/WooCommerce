@@ -640,9 +640,30 @@ class AssetsModule implements ExecutableModule
                         true
                     );
 
+                    wp_register_script(
+                        'mollie_wc_settings_2024',
+                        $this->getPluginUrl(
+                            $pluginUrl,
+                            '/public/js/mollie-settings-2024.min.js'
+                        ),
+                        ['underscore', 'jquery'],
+                        $pluginVersion,
+                        true
+                    );
+                    $this->enqueueMollieSettings();
                     $this->enqueueIconSettings($current_section);
                 }
             }
         );
+    }
+
+    protected function enqueueMollieSettings(){
+        $uri = isset($_SERVER['REQUEST_URI']) ? wc_clean(
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            wp_unslash($_SERVER['REQUEST_URI'])
+        ) : '';
+        if (is_string($uri) && strpos($uri, 'tab=mollie_settings')) {
+            wp_enqueue_script('mollie_wc_settings_2024');
+        }
     }
 }

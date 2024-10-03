@@ -84,13 +84,7 @@ class PaymentMethodsIconUrl
             $svgUrl = $this->pluginUrl . '/' . sprintf('public/images/%s', $paymentMethodName) . self::SVG_FILE_EXTENSION;
         }
 
-        return wp_kses($this->generateIconHtml($svgUrl), [
-            'img' => [
-                'src' => [],
-                'class' => [],
-                'alt' => [],
-            ],
-        ]);
+        return $this->generateIconHtml($svgUrl);
     }
 
     public function generateIconHtml(string $svgUrl): string

@@ -657,7 +657,9 @@ class AssetsModule implements ExecutableModule
         );
     }
 
-    protected function enqueueMollieSettings(){
+    protected function enqueueMollieSettings()
+    {
+
         $uri = isset($_SERVER['REQUEST_URI']) ? wc_clean(
         // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             wp_unslash($_SERVER['REQUEST_URI'])

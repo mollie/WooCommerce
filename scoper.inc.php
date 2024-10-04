@@ -55,7 +55,8 @@ return [
         'Automattic',
         '^WooCommerce',
         'Inpsyde\Assets',
-        'Mollie'
+        'Mollie',
+        '^WCS_Retry_Manager'
     ], // list<string|regex>
     'exclude-constants' => array_merge($wp_constants, [
         'WC_VERSION',

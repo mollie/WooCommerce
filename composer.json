@@ -16,15 +16,16 @@
     }
   ],
   "require": {
-    "php": ">=7.2",
+    "php": ">=7.4",
     "ext-intl": "*",
     "ext-json": "*",
     "mollie/mollie-api-php": "^v2.40",
-    "psr/log":"^1.1.4"
-  },
-  "require-dev": {
     "inpsyde/modularity": "^1.3.0",
     "psr/container": "1.0.0",
+    "psr/log":"^1.1.4",
+    "sniccowp/php-scoper-wordpress-excludes": "^6.6"
+  },
+  "require-dev": {
     "phpunit/phpunit": "^8",
     "brain/monkey": "^2.3",
     "ptrofimov/xpmock": "^1",
@@ -39,8 +40,7 @@
   "autoload": {
     "psr-4": {
       "Mollie\\WooCommerce\\": "src/",
-      "Inpsyde\\EnvironmentChecker\\": "pluginEnvironmentChecker",
-      "Mollie\\WooCommerce\\Vendor\\": "lib/packages/"
+      "Inpsyde\\EnvironmentChecker\\": "pluginEnvironmentChecker"
     }
   },
   "autoload-dev": {
@@ -78,17 +78,6 @@
       "pre-commit": [
         "vendor/bin/phpcbf"
       ]
-    },
-    "mozart": {
-      "dep_namespace": "Mollie\\WooCommerce\\Vendor\\",
-      "dep_directory": "/lib/packages/",
-      "classmap_directory": "/lib/classes/",
-      "classmap_prefix": "MOL_",
-      "packages": [
-        "psr/container", 
-        "inpsyde/modularity"
-      ],
-      "delete_vendor_directories": true
     }
   },
   "config": {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\MerchantCapture\Capture\Type;
 
 use Mollie\WooCommerce\MerchantCapture\Capture\Action\CapturePayment;
-use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 
 class ManualCapture
 {

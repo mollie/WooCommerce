@@ -623,7 +623,7 @@ msgid " + %1$s %2$s + %3$s%% fee might apply"
 msgstr ""
 
 #: src/Gateway/Surcharge.php:330
-msgid " (incl. VAT)"
+msgid " (excl. VAT)"
 msgstr ""
 
 #: src/Gateway/Voucher/VoucherModule.php:79

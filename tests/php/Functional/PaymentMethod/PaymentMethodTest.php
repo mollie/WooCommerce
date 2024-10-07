@@ -49,7 +49,7 @@ class PaymentMethodTest extends TestCase
                 $this->helperMocks->paymentMethodMergedProperties($paymentMethodName, false, true)
             );
         expect('esc_url')->with($urlBuild)->andReturn($urlBuild);
-        $expectedUrl = '<img src="' . $urlBuild . '" class="mollie-gateway-icon" />';
+        $expectedUrl = '<img src="' . $urlBuild . '" class="mollie-gateway-icon" alt=""/>';
         $iconUrl = $testee->getIconUrl();
         self::assertEquals($expectedUrl, $iconUrl);
     }
@@ -79,7 +79,7 @@ class PaymentMethodTest extends TestCase
             );
         expect('esc_url')->withAnyArgs()->andReturn($urlBuild);
 
-        $expectedUrl = '<img src="' . $urlBuild . '" class="mollie-gateway-icon" />';
+        $expectedUrl = '<img src="' . $urlBuild . '" class="mollie-gateway-icon" alt=""/>';
         $iconUrl = $testee->getIconUrl();
         self::assertEquals($expectedUrl, $iconUrl);
     }
@@ -109,7 +109,7 @@ class PaymentMethodTest extends TestCase
         expect('file_exists')->with($testSettings['iconFilePath'])->andReturn(true);
         expect('esc_url')->withAnyArgs()->andReturn($urlBuild);
 
-        $expectedUrl = '<img src="' . $urlBuild . '" class="mollie-gateway-icon" />';
+        $expectedUrl = '<img src="' . $urlBuild . '" class="mollie-gateway-icon" alt=""/>';
         $iconUrl = $testee->getIconUrl();
         self::assertEquals($expectedUrl, $iconUrl);
     }

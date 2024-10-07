@@ -612,8 +612,8 @@ msgid " + %1$s %2$s + %3$s%% fee might apply"
 msgstr " + %1$s %2$s + %3$s%% de frais peuvent s’appliquer"
 
 #: src/Gateway/Surcharge.php:330
-msgid " (incl. VAT)"
-msgstr " (TTC)"
+msgid " (excl. VAT)"
+msgstr " (HTVA)"
 
 #: src/Gateway/Voucher/VoucherModule.php:79
 #: src/Settings/Page/MollieSettingsPage.php:50

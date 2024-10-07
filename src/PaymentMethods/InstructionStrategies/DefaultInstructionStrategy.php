@@ -17,14 +17,14 @@ class DefaultInstructionStrategy implements InstructionStrategyI
             if ($admin_instructions) {
                 // Message to admin
                 return __(
-                    'We have not received a definite payment status.',
-                    'mollie-payments-for-woocommerce'
+                    "We have not received a definite payment status.",
+                    "mollie-payments-for-woocommerce"
                 );
             } else {
                 // Message to customer
                 return __(
-                    'We have not received a definite payment status. You will receive an email as soon as we receive a confirmation of the bank/merchant.',
-                    'mollie-payments-for-woocommerce'
+                    "We have not received a definite payment status. You will receive an email as soon as we receive a confirmation of the bank/merchant.",
+                    "mollie-payments-for-woocommerce"
                 );
             }
         } elseif ($payment->isPaid()) {

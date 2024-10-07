@@ -7,11 +7,11 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Activation;
 
 use Automattic\WooCommerce\Utilities\FeaturesUtil;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Inpsyde\Modularity\Module\ExecutableModule;
+use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
-use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 
 class ActivationModule implements ExecutableModule
 {
@@ -82,7 +82,13 @@ class ActivationModule implements ExecutableModule
      */
     public function handleTranslations(): void
     {
-        add_action('core_upgrade_preamble', 'mollieDeleteWPTranslationFiles');
+        add_action('upgrader_process_complete', 'mollieUpdateCompleted', 10, 2);
+        // we need to handle this version specifically, we can remove this on the next
+        $translationFlag = get_option('mollie_plugin_update_translation');
+        if ($translationFlag !== 'yes') {
+            mollieDeleteWPTranslationFiles();
+            update_option('mollie_plugin_update_translation', 'yes');
+        }
     }
 
     /**

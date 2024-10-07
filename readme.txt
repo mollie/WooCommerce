@@ -222,7 +222,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 7.8.1-beta - 01-09-2024 =
+= 7.8.1 - 07-09-2024 =
 
 * Feature Flag - Initiative - Swish payment method.
 * Fixed - Unable to make PayPal payments when surcharge is enabled on product and cart pages.

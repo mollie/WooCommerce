@@ -10,8 +10,6 @@ use Mollie\WooCommerce\Settings\Page\PageApiKeys;
 use Mollie\WooCommerce\Settings\Page\PageNoApiKey;
 use Mollie\WooCommerce\Settings\Page\PagePaymentMethods;
 use Mollie\WooCommerce\Shared\Data;
-use Mollie\WooCommerce\PaymentMethods\Constants;
-use WC_Gateway_BACS;
 use WC_Settings_Page;
 
 class MollieSettingsPage extends WC_Settings_Page
@@ -143,54 +141,4 @@ class MollieSettingsPage extends WC_Settings_Page
             $currentSection
         );
     }
-
-    protected function checkDirectDebitStatus($content): string
-    {
-        $hasCustomSepaSettings = $this->paymentMethods["directdebit"]->getProperty('enabled') !== false;
-        $isSepaEnabled = !$hasCustomSepaSettings || $this->paymentMethods["directdebit"]->getProperty('enabled') === 'yes';
-        $sepaGatewayAllowed = !empty($this->registeredGateways["mollie_wc_gateway_directdebit"]);
-        if ($sepaGatewayAllowed && !$isSepaEnabled) {
-            $warning_message = __(
-                "You have WooCommerce Subscriptions activated, but not SEPA Direct Debit. Enable SEPA Direct Debit if you want to allow customers to pay subscriptions with iDEAL and/or other 'first' payment methods.",
-                'mollie-payments-for-woocommerce'
-            );
-
-            $content .= '<div class="notice notice-warning is-dismissible"><p>';
-            $content .= $warning_message;
-            $content .= '</p></div> ';
-
-            return $content;
-        }
-
-        return $content;
-    }
-
-    /**
-     * @param $content
-     *
-     * @return string
-     */
-    protected function checkMollieBankTransferNotBACS($content): string
-    {
-        $woocommerce_banktransfer_gateway = new WC_Gateway_BACS();
-
-        if ($woocommerce_banktransfer_gateway->is_available()) {
-            $content .= '<div class="notice notice-warning is-dismissible"><p>';
-            $content .= __(
-                'You have the WooCommerce default Direct Bank Transfer (BACS) payment gateway enabled in WooCommerce. Mollie strongly advices only using Bank Transfer via Mollie and disabling the default WooCommerce BACS payment gateway to prevent possible conflicts.',
-                'mollie-payments-for-woocommerce'
-            );
-            $content .= '</p></div> ';
-
-            return $content;
-        }
-
-        return $content;
-    }
-
-    /**
-     * @param $content
-     *
-     * @return string
-     */
 }

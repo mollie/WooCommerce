@@ -222,6 +222,10 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= 7.8.2 - 08-09-2024 =
+
+* Fixed - Subscription renewal status on-hold instead of active
+
 = 7.8.1 - 07-09-2024 =
 
 * Feature Flag - Initiative - Swish payment method.

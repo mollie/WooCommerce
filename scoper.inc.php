@@ -66,7 +66,7 @@ return [
     'exclude-classes' => array_merge($wp_classes, [
         'WooCommerce',
         '/^WC_/',
-        '^WCS_Retry_Manager'
+        '\WCS_Retry_Manager'
     ]),     // list<string|regex>
     'exclude-functions' => array_merge($wp_functions, [
         '/^wc/',

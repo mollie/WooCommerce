@@ -82,7 +82,7 @@ class ResponsesToAppleTest extends TestCase
         $logger = $this->helperMocks->loggerMock();
         $appleGateway = $this->mollieGateway('applepay', false, true);
         $responsesTemplate = new ResponsesToApple($logger, $appleGateway);
-        $response = $responsesTemplate->appleFormattedResponse($paymentDetails);
+        $response = $responsesTemplate->appleFormattedResponse($paymentDetails, $applePayRequestDataObject);
 
         self::assertEquals($response, $expectedResponse);
     }
@@ -143,7 +143,7 @@ class ResponsesToAppleTest extends TestCase
         $logger = $this->helperMocks->loggerMock();
         $appleGateway = $this->mollieGateway('applepay', false, true);
         $responsesTemplate = new ResponsesToApple($logger, $appleGateway);
-        $response = $responsesTemplate->appleFormattedResponse($paymentDetails);
+        $response = $responsesTemplate->appleFormattedResponse($paymentDetails, $applePayRequestDataObject);
 
         self::assertEquals($response, $expectedResponse);
     }

@@ -5,7 +5,6 @@ export const ApplePayButtonComponent = ({cart, extensions}) => {
     const mollieApplePayBlockDataCart = window.mollieApplePayBlockDataCart || window.mollieBlockData.mollieApplePayBlockDataCart
     const nonce = document.getElementById("woocommerce-process-checkout-nonce").value
     let updatedContactInfo = []
-    let selectedShippingMethod = []
     let redirectionUrl = ''
     const {
         product: {needShipping = true, subtotal},
@@ -13,10 +12,18 @@ export const ApplePayButtonComponent = ({cart, extensions}) => {
         ajaxUrl,
     } = mollieApplePayBlockDataCart
 
+    const findSelectedShippingMethod = (shippingRates) => {
+        let shippingRate = shippingRates.find((shippingMethod) => shippingMethod.selected === true)
+        return shippingRate ? shippingRate.rate_id : ''
+    }
+
     let applePaySession = () => {
         const session = new ApplePaySession(3, request(countryCode, currencyCode, totalLabel, subtotal))
-        console.log('ApplePaySession', session)
+        const store = wp.data.select('wc/store/cart')
+        const shippingRates = store.getShippingRates()[0].shipping_rates
+        let selectedShippingMethod = findSelectedShippingMethod(shippingRates, selectedShippingMethod)
         session.onshippingmethodselected = function (event) {
+            console.log(selectedShippingMethod)
             jQuery.ajax({
                 url: ajaxUrl,
                 method: 'POST',
@@ -31,6 +38,7 @@ export const ApplePayButtonComponent = ({cart, extensions}) => {
                 },
                 success: (applePayShippingMethodUpdate, textStatus, jqXHR) => {
                     let response = applePayShippingMethodUpdate.data
+                    console.log(response)
                     selectedShippingMethod = event.shippingMethod
                     if (applePayShippingMethodUpdate.success === false) {
                         response.errors = createAppleErrors(response.errors)
@@ -74,6 +82,7 @@ export const ApplePayButtonComponent = ({cart, extensions}) => {
             })
         }
         session.onvalidatemerchant = (applePayValidateMerchantEvent) => {
+            console.log(selectedShippingMethod)
             jQuery.ajax({
                 url: ajaxUrl,
                 method: 'POST',

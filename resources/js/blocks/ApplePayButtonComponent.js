@@ -14,7 +14,14 @@ export const ApplePayButtonComponent = ({cart, extensions}) => {
 
     const findSelectedShippingMethod = (shippingRates) => {
         let shippingRate = shippingRates.find((shippingMethod) => shippingMethod.selected === true)
-        return shippingRate ? shippingRate.rate_id : ''
+        const appleFormattedRate = {
+            amount: '',
+            detail: '',
+            label: shippingRate.name,
+            identifier: shippingRate.rate_id,
+            selected: shippingRate.selected,
+        }
+        return shippingRate ? appleFormattedRate : ''
     }
 
     let applePaySession = () => {
@@ -23,7 +30,6 @@ export const ApplePayButtonComponent = ({cart, extensions}) => {
         const shippingRates = store.getShippingRates()[0].shipping_rates
         let selectedShippingMethod = findSelectedShippingMethod(shippingRates, selectedShippingMethod)
         session.onshippingmethodselected = function (event) {
-            console.log(selectedShippingMethod)
             jQuery.ajax({
                 url: ajaxUrl,
                 method: 'POST',
@@ -61,6 +67,7 @@ export const ApplePayButtonComponent = ({cart, extensions}) => {
                     callerPage: 'cart',
                     needShipping: needShipping,
                     'woocommerce-process-checkout-nonce': nonce,
+                    shippingMethod: selectedShippingMethod,
                 },
                 complete: (jqXHR, textStatus) => {
                 },

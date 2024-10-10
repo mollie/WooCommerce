@@ -64,12 +64,13 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
 
     public static function localizeWCBlocksData($dataService, $gatewayInstances)
     {
-
+        wp_enqueue_style('mollie-applepaydirect');
         wp_localize_script(
             self::$scriptHandle,
             'mollieBlockData',
             [
                 'gatewayData' => self::gatewayDataForWCBlocks($dataService, $gatewayInstances),
+                'mollieApplePayBlockDataCart' => $dataService->mollieApplePayBlockDataCart(),
             ]
         );
     }

@@ -74,13 +74,13 @@ class AssetsModule implements ExecutableModule
                     'mollie_applepayButtonBlock',
                     $this->getPluginUrl(
                         $pluginUrl,
-                        '/public/js/applepayButtonBlockComponent.min.js'
+                        '/public/js/applepayButtonBlock.min.js'
                     ),
                     [],
                     (string) filemtime(
                         $this->getPluginPath(
                             $pluginPath,
-                            '/public/js/applepayButtonBlockComponent.min.js'
+                            '/public/js/applepayButtonBlock.min.js'
                         )
                     ),
                     true

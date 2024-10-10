@@ -3,6 +3,8 @@
 }
 .apple-pay-button {
   display: inline-block;
+  width: 100%;
+  height: 41px;
   -webkit-appearance: -apple-pay-button;
   -apple-pay-button-type: checkout; /* also: check-out, book, or subscribe */
 }

@@ -89,7 +89,6 @@ export const ApplePayButtonComponent = ({cart, extensions}) => {
             })
         }
         session.onvalidatemerchant = (applePayValidateMerchantEvent) => {
-            console.log(selectedShippingMethod)
             jQuery.ajax({
                 url: ajaxUrl,
                 method: 'POST',

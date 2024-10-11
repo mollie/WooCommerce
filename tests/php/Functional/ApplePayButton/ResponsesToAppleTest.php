@@ -71,7 +71,8 @@ class ResponsesToAppleTest extends TestCase
             ]
 
         ];
-
+        //shippingMethods is null this is not going to run
+        $applePayRequestDataObject = [];
         expect('get_bloginfo')
             ->once()
             ->with('name')
@@ -107,6 +108,8 @@ class ResponsesToAppleTest extends TestCase
             'taxes' => $taxes,
             'total' => $total
         ];
+        //shippingMethods is null this is not going to run
+        $applePayRequestDataObject = [];
         $expectedResponse = [
             'newLineItems'=>[
                 [

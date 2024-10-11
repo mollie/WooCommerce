@@ -14,7 +14,7 @@ class DataToAppleButtonScripts
      */
     public function applePayScriptData(bool $isBlock = false): array
     {
-        if(is_admin()) {
+        if (is_admin()) {
             return [];
         }
         $base_location = wc_get_base_location();

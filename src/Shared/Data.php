@@ -788,7 +788,8 @@ class Data
         return $result;
     }
 
-    public function mollieApplePayBlockDataCart() {
+    public function mollieApplePayBlockDataCart()
+    {
         $dataToScripts = new DataToAppleButtonScripts();
         return $dataToScripts->applePayScriptData(true);
     }

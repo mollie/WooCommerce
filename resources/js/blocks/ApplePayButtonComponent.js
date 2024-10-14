@@ -43,11 +43,8 @@ export const ApplePayButtonComponent = ({cart, extensions}) => {
                     simplifiedContact: updatedContactInfo,
                     'woocommerce-process-checkout-nonce': nonce,
                 },
-                complete: (jqXHR, textStatus) => {
-                },
                 success: (applePayShippingMethodUpdate, textStatus, jqXHR) => {
                     let response = applePayShippingMethodUpdate.data
-                    console.log(response)
                     selectedShippingMethod = event.shippingMethod
                     if (applePayShippingMethodUpdate.success === false) {
                         response.errors = createAppleErrors(response.errors)
@@ -71,8 +68,6 @@ export const ApplePayButtonComponent = ({cart, extensions}) => {
                     needShipping: needShipping,
                     'woocommerce-process-checkout-nonce': nonce,
                     shippingMethod: selectedShippingMethod,
-                },
-                complete: (jqXHR, textStatus) => {
                 },
                 success: (applePayShippingContactUpdate, textStatus, jqXHR) => {
                     let response = applePayShippingContactUpdate.data
@@ -99,8 +94,6 @@ export const ApplePayButtonComponent = ({cart, extensions}) => {
                     action: 'mollie_apple_pay_validation',
                     validationUrl: applePayValidateMerchantEvent.validationURL,
                     'woocommerce-process-checkout-nonce': nonce,
-                },
-                complete: (jqXHR, textStatus) => {
                 },
                 success: (merchantSession, textStatus, jqXHR) => {
                     if (merchantSession.success === true) {

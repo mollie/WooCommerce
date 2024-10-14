@@ -27,9 +27,12 @@ export const ApplePayButtonComponent = ({cart, extensions}) => {
     let applePaySession = () => {
         const session = new ApplePaySession(3, request(countryCode, currencyCode, totalLabel, subtotal))
         const store = wp.data.select('wc/store/cart')
-        const shippingRates = store.getShippingRates()[0].shipping_rates
-        let selectedShippingMethod = findSelectedShippingMethod(shippingRates, selectedShippingMethod)
-        session.onshippingmethodselected = function (event) {
+        const shippingRates = store.getShippingRates()?.[0]?.shipping_rates;
+        let selectedShippingMethod = '';
+        if (shippingRates && shippingRates.length > 0) {
+            selectedShippingMethod = findSelectedShippingMethod(shippingRates, selectedShippingMethod);
+        }
+            session.onshippingmethodselected = function (event) {
             jQuery.ajax({
                 url: ajaxUrl,
                 method: 'POST',

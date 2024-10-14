@@ -149,9 +149,6 @@ export const ApplePayButtonComponent = ({cart, extensions}) => {
                     'payment_method': 'mollie_wc_gateway_applepay',
                     '_wp_http_referer': '/?wc-ajax=update_order_review'
                 },
-                complete: (jqXHR, textStatus) => {
-
-                },
                 success: (authorizationResult, textStatus, jqXHR) => {
                     let result = authorizationResult.data
                     if (authorizationResult.success === true) {

@@ -47,20 +47,6 @@ if (!defined('M4W_PLUGIN_URL')) {
     define('M4W_PLUGIN_URL', plugin_dir_url(M4W_FILE));
 }
 
-/**
- * Called when plugin is activated
- */
-function mollie_wc_plugin_activation_hook()
-{
-    require_once __DIR__ . '/inc/functions.php';
-
-    if (!mollie_wc_plugin_autoload()) {
-        return;
-    }
-
-    mollieDeleteWPTranslationFiles();
-}
-
 
 function mollie_wc_plugin_autoload()
 {
@@ -174,5 +160,3 @@ function initialize()
 }
 
 add_action('plugins_loaded', __NAMESPACE__ . '\\initialize');
-
-register_activation_hook(M4W_FILE, __NAMESPACE__ . '\mollie_wc_plugin_activation_hook');

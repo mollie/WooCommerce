@@ -34,6 +34,12 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_Blik',
         'Mollie_WC_Gateway_Twint',
         'Mollie_WC_Gateway_Bancomatpay',
+        'Mollie_WC_Gateway_Alma',
+        'Mollie_WC_Gateway_Trustly',
+        'Mollie_WC_Gateway_Payconiq',
+        'Mollie_WC_Gateway_Riverty',
+        'Mollie_WC_Gateway_Satispay',
+        'Mollie_WC_Gateway_Swish',
     ];
 
     public const MOLLIE_OPTIONS_NAMES = [
@@ -70,6 +76,19 @@ class SharedDataDictionary
         'mollie-plugin-version',
         'mollie-new-install',
         'mollie_wc_is_phone_required_flag',
+        '_transient_mollie-wc-ideal_issuers_live',
+        '_transient_mollie-wc-ideal_issuers_test',
+        '_transient_timeout_mollie-wc-ideal_issuers_live',
+        '_transient_timeout_mollie-wc-ideal_issuers_test',
+        '_transient_timeout_mollie-wc-kbc_issuers_live',
+        '_transient_timeout_mollie-wc-kbc_issuers_test',
+        '_transient_mollie-wc-kbc_issuers_live',
+        '_transient_mollie-wc-kbc_issuers_test',
+        '_transient_timeout_mollie-wc-giftcard_issuers_test',
+        '_transient_mollie-wc-giftcard_issuers_test',
+        '_transient_timeout_mollie-wc-giftcard_issuers_live',
+        '_transient_mollie-wc-giftcard_issuers_live',
+        'mollie_plugin_update_translation',
     ];
     public const DB_VERSION_PARAM_NAME = 'mollie-db-version';
     public const PLUGIN_VERSION_PARAM_NAME = 'mollie-plugin-version';

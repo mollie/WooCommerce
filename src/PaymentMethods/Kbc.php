@@ -28,6 +28,11 @@ class Kbc extends AbstractPaymentMethod implements PaymentMethodI
 
     public function getFormFields($generalFormFields): array
     {
+        $searchKey = 'advanced';
+        $keys = array_keys($generalFormFields);
+        $index = array_search($searchKey, $keys);
+        $before = array_slice($generalFormFields, 0, $index + 1, true);
+        $after = array_slice($generalFormFields, $index + 1, null, true);
         $paymentMethodFormFieds =   [
             'issuers_dropdown_shown' => [
                 'title' => __(
@@ -60,6 +65,8 @@ class Kbc extends AbstractPaymentMethod implements PaymentMethodI
                 'default' => __('Select your bank', 'mollie-payments-for-woocommerce'),
             ],
         ];
-        return array_merge($generalFormFields, $paymentMethodFormFieds);
+        $before = array_merge($before, $paymentMethodFormFieds);
+        $formFields = array_merge($before, $after);
+        return $formFields;
     }
 }

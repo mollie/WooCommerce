@@ -13,6 +13,7 @@ use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
 use Mollie\WooCommerceTests\Stubs\WC_Order_Item_Product;
 use Mollie\WooCommerceTests\Stubs\WC_Settings_API;
+use Mollie\WooCommerceTests\Stubs\WC_Product;
 use Mollie\WooCommerceTests\TestCase;
 
 
@@ -96,11 +97,11 @@ class PaymentServiceTest extends TestCase
                 'add_query_arg' => 'https://webshop.example.org/wc-api/mollie_return?order_id=1&key=wc_order_hxZniP1zDcnM8',
                 'WC' => $this->wooCommerce(),
                 'wc_clean' => null,
+                'wp_parse_url' => null,
+                'wp_strip_all_tags' => null
             ]
         );
-        $gateway->expects($this->once())
-            ->method('getSelectedIssuer')
-            ->willReturn('ideal_INGBNL2A');
+
         $expectedRequestToMollie = $this->expectedRequestData($wcOrder);
         $orderEndpoints->method('create')->with($expectedRequestToMollie);
 
@@ -118,7 +119,7 @@ class PaymentServiceTest extends TestCase
             ->willReturn('');
         $wcOrder->expects($this->any())
             ->method('get_billing_phone')
-            ->willReturn('+1234567890');
+            ->willReturn('+34345678900');
         /*
         * Execute Test
         */
@@ -138,6 +139,7 @@ class PaymentServiceTest extends TestCase
     {
         stubs([
             'array_filter' => [],
+            'esc_html__' =>null
               ]);
         $mockedException = new TestApiException();
         $mockedException->setTestCode(422);
@@ -212,7 +214,7 @@ class PaymentServiceTest extends TestCase
             [
                 'get_id' => $id,
                 'get_order_key' => $orderKey,
-                'get_total' => '20',
+                'get_total' => 40.00,
                 'get_items' => [$this->wcOrderItem()],
                 'get_billing_first_name' => 'billingggivenName',
                 'get_billing_last_name' => 'billingfamilyName',
@@ -225,7 +227,7 @@ class PaymentServiceTest extends TestCase
                 'get_billing_city' => 'billingcity',
                 'get_billing_state' => 'billingregion',
                 'get_billing_country' => 'billingcountry',
-                'get_billing_phone' => '+1234567890',
+                'get_billing_phone' => '+34345678900',
                 'get_shipping_address_1' => 'shippingstreetAndNumber',
                 'get_shipping_address_2' => 'shippingstreetAdditional',
                 'get_shipping_postcode' => 'shippingpostalCode',
@@ -265,7 +267,7 @@ class PaymentServiceTest extends TestCase
     {
 
         $item = $this->createConfiguredMock(
-            'WC_Product',
+            WC_Product::class,
             [
                 'get_price' => '1',
                 'get_id'=>'1',
@@ -307,7 +309,7 @@ class PaymentServiceTest extends TestCase
         return [
             'amount' => [
                 'currency' => 'EUR',
-                'value' => '20.00'
+                'value' => '40.00'
             ],
             'redirectUrl' =>
                 'https://webshop.example.org/wc-api/mollie_return?order_id=1&key=wc_order_hxZniP1zDcnM8',
@@ -317,7 +319,7 @@ class PaymentServiceTest extends TestCase
                 'ideal',
             'payment' =>
                 [
-                    'issuer' => 'ideal_INGBNL2A'
+                    'issuer' => null
                 ],
             'locale' => 'en_US',
             'billingAddress' => $this->billingAddress($order),

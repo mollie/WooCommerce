@@ -4,25 +4,33 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\MerchantCapture;
 
-use Automattic\WooCommerce\Admin\Overrides\Order;
+use WC_Order;
 use Mollie\WooCommerce\MerchantCapture\UI\StatusRenderer;
+use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
 
 class OrderListPaymentColumn
 {
-    public function __construct()
+    /** @var ContainerInterface $container */
+    private $container;
+    public function __construct($container)
     {
+        $this->container = $container;
         add_filter('manage_edit-shop_order_columns', [$this, 'renderColumn']);
         add_action('manage_shop_order_posts_custom_column', [$this, 'renderColumnValue'], 10, 2);
 
         # HPOS hooks
         add_filter('woocommerce_shop_order_list_table_columns', [$this, 'renderColumn']);
-        add_action('woocommerce_shop_order_list_table_custom_column', function (string $column, Order $order) {
+        add_action('woocommerce_shop_order_list_table_custom_column', function (string $column, WC_Order $order) {
             $this->renderColumnValue($column, $order->get_id());
         }, 10, 2);
     }
 
     public function renderColumn(array $columns): array
     {
+        if (!$this->container->get('merchant.manual_capture.enabled')) {
+            return $columns;
+        }
+
         $newColumns = [];
         $mollieColumnAdded = false;
 

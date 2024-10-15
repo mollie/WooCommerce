@@ -67,7 +67,7 @@ class AjaxRequestsTest extends TestCase
         stubs(
             [
                 'get_site_url' => 'http://www.testdomain.com',
-
+                'wp_parse_url' =>null
             ]
         );
         list($logger, $responsesTemplate) = $this->responsesToApple();

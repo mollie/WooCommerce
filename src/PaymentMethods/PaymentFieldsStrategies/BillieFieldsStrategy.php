@@ -37,11 +37,11 @@ class BillieFieldsStrategy implements PaymentFieldsStrategyI
     {
         ?>
         <p class="form-row form-row-wide" id="billing_company_field">
-            <label for="<?= esc_attr(self::FIELD_COMPANY); ?>" class=""><?= esc_html__('Company', 'mollie-payments-for-woocommerce'); ?>
+            <label for="<?php echo esc_attr(self::FIELD_COMPANY); ?>" class=""><?php echo esc_html__('Company', 'mollie-payments-for-woocommerce'); ?>
                 <abbr class="required" title="required">*</abbr>
             </label>
             <span class="woocommerce-input-wrapper">
-        <input type="tel" class="input-text " name="<?= esc_attr(self::FIELD_COMPANY); ?>" id="<?= esc_attr(self::FIELD_COMPANY); ?>"
+        <input type="tel" class="input-text " name="<?php echo esc_attr(self::FIELD_COMPANY); ?>" id="<?php echo esc_attr(self::FIELD_COMPANY); ?>"
                placeholder="Company name"
                value="" autocomplete="organization">
         </span>

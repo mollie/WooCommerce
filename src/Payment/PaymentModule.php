@@ -6,9 +6,9 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ServiceModule;
+use Inpsyde\Modularity\Module\ExecutableModule;
+use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
@@ -18,7 +18,7 @@ use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
-use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
 use RuntimeException;
@@ -217,6 +217,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
     ) {
 
         $orderNote = sprintf(
+        /* translators: Placeholder 1: number of items. */
             __(
                 '%1$s items refunded in WooCommerce and at Mollie.',
                 'mollie-payments-for-woocommerce'
@@ -235,6 +236,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
     public function addOrderNoteForCancelledLineItems(array $data, WC_Order $order)
     {
         $orderNote = sprintf(
+        /* translators: Placeholder 1: number of items. */
             __(
                 '%1$s items cancelled in WooCommerce and at Mollie.',
                 'mollie-payments-for-woocommerce'
@@ -479,12 +481,6 @@ class PaymentModule implements ServiceModule, ExecutableModule
      */
     public function handleExpiryDateCancelation($paymentMethods)
     {
-        add_action(
-            'init',
-            [$this, 'cancelOrderOnExpiryDate'],
-            11,
-            2
-        );
         if (!$this->IsExpiryDateEnabled($paymentMethods)) {
             as_unschedule_action('mollie_woocommerce_cancel_unpaid_orders');
             return;
@@ -513,7 +509,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
         foreach ($paymentMethods as $paymentMethod) {
             $optionName = "mollie_wc_gateway_{$paymentMethod->getProperty('id')}_settings";
             $option = get_option($optionName, false);
-            if ($option && $option['enabled'] !== 'yes') {
+            if (!empty($option) && isset($option['enabled']) && $option['enabled'] !== 'yes') {
                 continue;
             }
             if (!empty($option["activate_expiry_days_setting"]) && $option["activate_expiry_days_setting"] === 'yes') {
@@ -540,14 +536,14 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
         if (!$order) {
             throw new RuntimeException(
-                "Could not find order by order Id {$orderId}",
+                esc_html("Could not find order by order Id {$orderId}"),
                 404
             );
         }
 
         if (!$order->key_is_valid($key)) {
             throw new RuntimeException(
-                "Invalid key given. Key {$key} does not match the order id: {$orderId}",
+                esc_html("Invalid key given. Key {$key} does not match the order id: {$orderId}"),
                 401
             );
         }

@@ -37,8 +37,8 @@ class ApplePayDirectHandler
     public function bootstrap($buttonEnabledProduct, $buttonEnabledCart)
     {
         if (!$this->isApplePayCompatible()) {
-            /* translators: Placeholder 1: Opening strong tag. Placeholder 2: Closing strong tag. Placeholder 3: Opening link tag to documentation. Placeholder 4: Closing link tag.*/
             $message = sprintf(
+            /* translators: Placeholder 1: Opening strong tag. Placeholder 2: Closing strong tag. Placeholder 3: Opening link tag to documentation. Placeholder 4: Closing link tag.*/
                 esc_html__(
                     '%1$sServer not compliant with Apple requirements%2$s Check %3$sApple Server requirements page%4$s to fix it in order to make the Apple Pay button work',
                     'mollie-payments-for-woocommerce'
@@ -53,15 +53,13 @@ class ApplePayDirectHandler
         }
 
         if (!$this->merchantValidated()) {
-            /* translators: Placeholder 1: Opening strong tag. Placeholder 2: Closing strong tag. Placeholder 3: Opening link tag to documentation. Placeholder 4: Closing link tag.*/
             $message = sprintf(
+            /* translators: Placeholder 1: Opening link tag to documentation. Placeholder 2: Closing link tag.*/
                 esc_html__(
-                    '%1$sApple Pay Validation Error%2$s Check %3$sApple Server requirements page%4$s to fix it in order to make the Apple Pay button work',
+                    'Apple Pay Validation Error: Please review the %1$sApple Server requirements%2$s. If everything appears correct, click the Apple Pay button to retry validation.',
                     'mollie-payments-for-woocommerce'
                 ),
-                '<strong>',
-                '</strong>',
-                '<a href="https://developer.apple.com/documentation/apple_pay_on_the_web/setting_up_your_server">',
+                '<a href="https://developer.apple.com/documentation/apple_pay_on_the_web/setting_up_your_server" target="_blank">',
                 '</a>'
             );
 

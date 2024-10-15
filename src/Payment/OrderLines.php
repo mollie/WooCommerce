@@ -64,10 +64,46 @@ class OrderLines
         $this->process_shipping();
         $this->process_fees();
         $this->process_gift_cards();
+        $this->process_missmatch();
 
         return  [
             'lines' => $this->get_order_lines(),
         ];
+    }
+
+    private function process_missmatch()
+    {
+        $orderTotal = (float) $this->order->get_total();
+        $orderTotalRounded = round($orderTotal, 2);
+        $linesTotal = array_sum(array_map(static function ($line) {
+            return $line['totalAmount']['value'];
+        }, $this->order_lines));
+        $orderTotalDiff = $orderTotalRounded - $linesTotal;
+        if (abs($orderTotalDiff) > 0) {
+            $missmatch =  [
+                'type' => 'surcharge',
+                'name' => __('Rounding difference', 'mollie-payments-for-woocommerce'),
+                'quantity' => 1,
+                'vatRate' => 0,
+                'unitPrice' =>  [
+                    'currency' => $this->currency,
+                    'value' => $this->dataHelper->formatCurrencyValue($orderTotalDiff, $this->currency),
+                ],
+                'totalAmount' =>  [
+                    'currency' => $this->currency,
+                    'value' => $this->dataHelper->formatCurrencyValue($orderTotalDiff, $this->currency),
+                ],
+                'vatAmount' =>  [
+                    'currency' => $this->currency,
+                    'value' => $this->dataHelper->formatCurrencyValue(0, $this->currency),
+                ],
+                'metadata' =>  [
+                    'order_item_id' => 'rounding_diff',
+                ],
+            ];
+
+            $this->order_lines[] = $missmatch;
+        }
     }
 
     /**
@@ -288,7 +324,7 @@ class OrderLines
     {
         $item_name = $cart_item->get_name();
 
-        return html_entity_decode(strip_tags($item_name));
+        return html_entity_decode(wp_strip_all_tags($item_name));
     }
 
     /**
@@ -560,7 +596,7 @@ class OrderLines
     {
         $shipping_vat_rate = 0;
         if (WC()->cart->shipping_tax_total > 0) {
-            $shipping_vat_rate = round(WC()->cart->shipping_tax_total / WC()->cart->shipping_total, 2) * 100;
+            $shipping_vat_rate = round(WC()->cart->shipping_tax_total / WC()->cart->shipping_total, 4) * 100;
         }
 
         return $shipping_vat_rate;

@@ -14,6 +14,7 @@ class In3 extends AbstractPaymentMethod implements PaymentMethodI
             'settingsDescription' => '',
             'defaultDescription' => __('Pay in 3 instalments, 0% interest', 'mollie-payments-for-woocommerce'),
             'paymentFields' => true,
+            'additionalFields' => ['birthdate', 'phone'],
             'instructions' => false,
             'supports' => [
                 'products',
@@ -23,10 +24,10 @@ class In3 extends AbstractPaymentMethod implements PaymentMethodI
             'confirmationDelayed' => false,
             'orderMandatory' => true,
             'errorMessage' => __(
-                'Required field is empty. Phone and birthdate fields are required.',
+                'Required field is empty or invalid. Phone (+316xxxxxxxx) and birthdate fields are required.',
                 'mollie-payments-for-woocommerce'
             ),
-            'phonePlaceholder' => __('Please enter your phone here. +00..', 'mollie-payments-for-woocommerce'),
+            'phonePlaceholder' => __('Please enter your phone here. +316xxxxxxxx', 'mollie-payments-for-woocommerce'),
             'birthdatePlaceholder' => __('Please enter your birthdate here.', 'mollie-payments-for-woocommerce'),
         ];
     }

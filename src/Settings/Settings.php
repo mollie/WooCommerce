@@ -650,6 +650,7 @@ class Settings
         $notice = new AdminNotice();
         if ($extensionNotAllowed || $fileIsNotAnImage) {
             $message = sprintf(
+            /* translators: Placeholder 1: opening tag Placeholder 2: closing tag */
                 esc_html__(
                     '%1$sMollie Payments for WooCommerce%2$s Unable to upload the file. Only jpg, jpeg, png and gif files are allowed.',
                     'mollie-payments-for-woocommerce'
@@ -663,6 +664,7 @@ class Settings
 
         if ($invalidFileSize) {
             $message = sprintf(
+            /* translators: Placeholder 1: opening tag Placeholder 2: closing tag */
                 esc_html__(
                     '%1$sMollie Payments for WooCommerce%2$s Unable to upload the file. Size must be under 500kb.',
                     'mollie-payments-for-woocommerce'
@@ -678,24 +680,34 @@ class Settings
 
     protected function processUploadedFile(string $name, string $tempName, WC_Payment_Gateway $gateway)
     {
-        $mollieUploadDirectory = trailingslashit(wp_upload_dir()['basedir'])
-                . 'mollie-uploads/' . $gateway->id;
-        wp_mkdir_p($mollieUploadDirectory);
-        $targetLocation = $mollieUploadDirectory . '/';
-
         $fileName = preg_replace(
             '#\s+#',
             '_',
             $name
         );
 
-        move_uploaded_file($tempName, $targetLocation . $fileName);
-        $gatewaySettings["iconFileUrl"] = trailingslashit(
-            wp_upload_dir()['baseurl']
-        ) . 'mollie-uploads/' . $gateway->id . '/' . $fileName;
-        $gatewaySettings["iconFilePath"] = trailingslashit(
-            wp_upload_dir()['basedir']
-        ) . 'mollie-uploads/' . $gateway->id . '/' . $fileName;
-        update_option(sprintf('%s_settings', $gateway->id), $gatewaySettings);
+        if (!function_exists('wp_handle_upload')) {
+            require_once(ABSPATH . 'wp-admin/includes/file.php');
+        }
+
+        $upload_overrides = ['test_form' => false];
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $file = isset($_FILES[$gateway->id . '_upload_logo']) ? wp_unslash($_FILES[$gateway->id . '_upload_logo']) : [];
+        if (!empty($file)) {
+            $file = [
+                    'name' => $file['name'],
+                    'type' => $file['type'],
+                    'tmp_name' => $file['tmp_name'],
+                    'error' => $file['error'],
+                    'size' => $file['size'],
+            ];
+
+            $movefile = wp_handle_upload($file, $upload_overrides);
+            if ($movefile) {
+                $gatewaySettings["iconFileUrl"] = $movefile['url'];
+                $gatewaySettings["iconFilePath"] = $movefile['file'];
+                update_option(sprintf('%s_settings', $gateway->id), $gatewaySettings);
+            }
+        }
     }
 }

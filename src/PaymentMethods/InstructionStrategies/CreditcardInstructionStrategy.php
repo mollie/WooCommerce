@@ -14,10 +14,11 @@ class CreditcardInstructionStrategy implements InstructionStrategyI
     ) {
 
         if ($payment->isPaid() && $payment->details) {
+            $cardHolder = isset($payment->details->cardHolder) ? $payment->details->cardHolder : 'Unknown';
             return sprintf(
             /* translators: Placeholder 1: card holder */
                 __('Payment completed by <strong>%s</strong>', 'mollie-payments-for-woocommerce'),
-                $payment->details->cardHolder
+                $cardHolder
             );
         }
         $defaultStrategy = new DefaultInstructionStrategy();

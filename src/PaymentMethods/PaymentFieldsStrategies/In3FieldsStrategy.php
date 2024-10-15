@@ -6,7 +6,9 @@ namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
 class In3FieldsStrategy implements PaymentFieldsStrategyI
 {
-    const FIELD_BIRTHDATE = "billing_birthdate";
+    use PaymentFieldsStrategiesTrait;
+
+    const FIELD_BIRTHDATE = "billing_birthdate_in3";
     const FIELD_PHONE = "billing_phone_in3";
 
     public function execute($gateway, $dataHelper)
@@ -15,12 +17,14 @@ class In3FieldsStrategy implements PaymentFieldsStrategyI
         $showPhoneField = false;
         $isPhoneRequired = get_option('mollie_wc_is_phone_required_flag');
         $phoneValue = false;
+        $birthValue = false;
 
         if (is_checkout_pay_page()) {
             $showBirthdateField = true;
             $showPhoneField = true;
             $order = $this->getOrderIdOnPayForOrderPage();
             $phoneValue = $order->get_billing_phone();
+            $birthValue = $order->get_meta(self::FIELD_BIRTHDATE);
         }
 
         if (is_checkout() && !is_checkout_pay_page() && !$isPhoneRequired) {
@@ -35,30 +39,8 @@ class In3FieldsStrategy implements PaymentFieldsStrategyI
         }
 
         if ($showBirthdateField) {
-            $this->dateOfBirth();
+            $this->dateOfBirth($birthValue);
         }
-    }
-
-    protected function getOrderIdOnPayForOrderPage()
-    {
-        global $wp;
-        $orderId = absint($wp->query_vars['order-pay']);
-        return wc_get_order($orderId);
-    }
-
-    protected function dateOfBirth()
-    {
-        ?>
-        <p class="form-row form-row-wide" id="billing_birthdate_field">
-            <label for="<?= esc_attr(self::FIELD_BIRTHDATE); ?>" class=""><?= esc_html__('Birthdate', 'mollie-payments-for-woocommerce'); ?>
-                <abbr class="required" title="required">*</abbr>
-            </label>
-            <span class="woocommerce-input-wrapper">
-                <input type="date" class="input-text " name="<?= esc_attr(self::FIELD_BIRTHDATE); ?>"
-                       id="<?= esc_attr(self::FIELD_BIRTHDATE); ?>" value=""
-                       autocomplete="birthdate"></span>
-        </p>
-        <?php
     }
 
     protected function phoneNumber($phoneValue)
@@ -66,13 +48,12 @@ class In3FieldsStrategy implements PaymentFieldsStrategyI
         $phoneValue = $phoneValue ?: '';
         ?>
         <p class="form-row form-row-wide" id="billing_phone_field">
-            <label for="<?= esc_attr(self::FIELD_PHONE); ?>" class=""><?= esc_html__('Phone', 'mollie-payments-for-woocommerce'); ?>
-                <abbr class="required" title="required">*</abbr>
+            <label for="<?php echo esc_attr(self::FIELD_PHONE); ?>" class=""><?php echo esc_html__('Phone', 'mollie-payments-for-woocommerce'); ?>
             </label>
             <span class="woocommerce-input-wrapper">
-        <input type="tel" class="input-text " name="<?= esc_attr(self::FIELD_PHONE); ?>" id="<?= esc_attr(self::FIELD_PHONE); ?>"
-               placeholder="+00000000000"
-               value="<?= esc_attr($phoneValue); ?>" autocomplete="phone">
+        <input type="tel" class="input-text " name="<?php echo esc_attr(self::FIELD_PHONE); ?>" id="<?php echo esc_attr(self::FIELD_PHONE); ?>"
+               placeholder="+316xxxxxxxx"
+               value="<?php echo esc_attr($phoneValue); ?>" autocomplete="phone">
         </span>
         </p>
         <?php

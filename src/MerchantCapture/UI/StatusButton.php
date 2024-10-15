@@ -9,7 +9,7 @@ class StatusButton
     public function __invoke(string $text, string $status)
     {
         ?>
-        <mark class="order-status status-<?= esc_html($status); ?>"><span><?= esc_html($text); ?></span></mark>
+        <mark class="order-status status-<?php echo esc_html($status); ?>"><span><?php echo esc_html($text); ?></span></mark>
         <?php
     }
 }

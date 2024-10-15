@@ -8,7 +8,14 @@ import molliePaymentMethod from './blocks/molliePaymentMethod'
         window.onload = (event) => {
             const { registerPaymentMethod } = wc.wcBlocksRegistry;
             const { checkoutData, defaultFields } = wc.wcSettings.allSettings;
-            const { billing_address, shipping_address } = checkoutData;
+            let billing_address, shipping_address;
+
+            if (checkoutData) {
+                ({ billing_address, shipping_address } = checkoutData);
+            } else {
+                billing_address = {};
+                shipping_address = {};
+            }
             const { ajaxUrl, filters, gatewayData, availableGateways } = mollieBlockData.gatewayData;
             const {useEffect} = wp.element;
             const isAppleSession = typeof window.ApplePaySession === "function"
@@ -22,9 +29,11 @@ import molliePaymentMethod from './blocks/molliePaymentMethod'
 
             function getPhoneField()
             {
-                const shippingPhone = shipping_address.phone ?? false;
-                const billingPhone = billing_address.phone ?? false
-                return billingPhone || shippingPhone;
+                const phoneFieldDataset = document.querySelector('[data-show-phone-field]');
+                if (!phoneFieldDataset) {
+                    return true;
+                }
+                return phoneFieldDataset.dataset.showPhoneField !== "false"
             }
 
             const isCompanyFieldVisible = getCompanyField();

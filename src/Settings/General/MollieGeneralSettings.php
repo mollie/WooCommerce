@@ -21,14 +21,14 @@ class MollieGeneralSettings
                     'mollie-payments-for-woocommerce'
                 ),
                 'type' => 'checkbox',
-                /* translators: Placeholder 1: Gateway title */
                 'label' => sprintf(
+                /* translators: Placeholder 1: Gateway title */
                     __('Enable %s', 'mollie-payments-for-woocommerce'),
                     $defaultTitle
                 ),
                 'default' => 'yes',
             ],
-            [
+            'display' => [
                 'id' => $defaultTitle . '_' . 'title',
                 'title' => sprintf(
                     /* translators: Placeholder 1: Gateway title */
@@ -36,20 +36,6 @@ class MollieGeneralSettings
                     $defaultTitle
                 ),
                 'type' => 'title',
-            ],
-            'title' => [
-                'title' => __('Title', 'mollie-payments-for-woocommerce'),
-                'type' => 'text',
-                /* translators: Placeholder 1: Gateway title */
-                'description' => sprintf(
-                    __(
-                        'This controls the title which the user sees during checkout. Default <code>%s</code>',
-                        'mollie-payments-for-woocommerce'
-                    ),
-                    $defaultTitle
-                ),
-                'default' => $defaultTitle,
-                'desc_tip' => true,
             ],
             'use_api_title' => [
                 'title' => __(
@@ -60,18 +46,18 @@ class MollieGeneralSettings
                 'label' => __('Retrieve the gateway title and logo from the Mollie API', 'mollie-payments-for-woocommerce'),
                 'default' => 'no',
             ],
-            'description' => [
-                'title' => __('Description', 'mollie-payments-for-woocommerce'),
-                'type' => 'textarea',
-                /* translators: Placeholder 1: Gateway description */
+            'title' => [
+                'title' => __('Title', 'mollie-payments-for-woocommerce'),
+                'type' => 'text',
                 'description' => sprintf(
+                /* translators: Placeholder 1: Gateway title */
                     __(
-                        'Payment method description that the customer will see on your checkout. Default <code>%s</code>',
+                        'This controls the title which the user sees during checkout. Default <code>%s</code>',
                         'mollie-payments-for-woocommerce'
                     ),
-                    $defaultDescription
+                    $defaultTitle
                 ),
-                'default' => $defaultDescription,
+                'default' => $defaultTitle,
                 'desc_tip' => true,
             ],
             'display_logo' => [
@@ -85,33 +71,6 @@ class MollieGeneralSettings
                     'mollie-payments-for-woocommerce'
                 ),
                 'default' => 'yes',
-            ],
-            [
-                'id' => $defaultTitle . '_' . 'title',
-                'title' => sprintf(__(
-                    'Sales countries',
-                    'mollie-payments-for-woocommerce'
-                )),
-                'type' => 'title',
-            ],
-            'allowed_countries' => [
-                'title' => __(
-                    'Sell to specific countries',
-                    'mollie-payments-for-woocommerce'
-                ),
-                'desc' => '',
-                'css' => 'min-width: 350px;',
-                'default' => [],
-                'type' => 'multi_select_countries',
-            ],
-            [
-                'id' => $defaultTitle . '_' . 'custom_logo',
-                'title' => sprintf(
-                /* translators: Placeholder 1: Gateway title */
-                    __('%s custom logo', 'mollie-payments-for-woocommerce'),
-                    $defaultTitle
-                ),
-                'type' => 'title',
             ],
             'enable_custom_logo' => [
                 'title' => __(
@@ -133,15 +92,45 @@ class MollieGeneralSettings
                 'default' => null,
                 'type' => 'file',
                 'custom_attributes' => ['accept' => '.png, .jpeg, .svg, image/png, image/jpeg'],
-                'description' => sprintf(
-                    __(
-                        'Upload a custom icon for this gateway. The feature must be enabled.',
-                        'mollie-payments-for-woocommerce'
-                    )
+                'description' => __(
+                    'Upload a custom icon for this gateway. The feature must be enabled.',
+                    'mollie-payments-for-woocommerce'
                 ),
                 'desc_tip' => true,
             ],
-            [
+            'description' => [
+                'title' => __('Description', 'mollie-payments-for-woocommerce'),
+                'type' => 'textarea',
+                'description' => sprintf(
+                /* translators: Placeholder 1: Gateway description */
+                    __(
+                        'Payment method description that the customer will see on your checkout. Default <code>%s</code>',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                    $defaultDescription
+                ),
+                'default' => $defaultDescription,
+                'desc_tip' => true,
+            ],
+            'sales' => [
+                'id' => $defaultTitle . '_' . 'title',
+                'title' => __(
+                    'Sales countries',
+                    'mollie-payments-for-woocommerce'
+                ),
+                'type' => 'title',
+            ],
+            'allowed_countries' => [
+                'title' => __(
+                    'Sell to specific countries',
+                    'mollie-payments-for-woocommerce'
+                ),
+                'desc' => '',
+                'css' => 'min-width: 350px;',
+                'default' => [],
+                'type' => 'multi_select_countries',
+            ],
+            'surcharge' => [
                 'id' => $defaultTitle . '_' . 'surcharge',
                 'title' => sprintf(
                 /* translators: Placeholder 1: Gateway title */
@@ -201,19 +190,20 @@ class MollieGeneralSettings
             'percentage' => [
                 'title' => __('Payment surcharge percentage amount %', 'mollie-payments-for-woocommerce'),
                 'type' => 'number',
-                'description' => sprintf(
-                    __(
-                        'Control the percentage fee added on checkout. Default 0.00',
-                        'mollie-payments-for-woocommerce'
-                    )
+                'description' => __(
+                    'Control the percentage fee added on checkout. Default 0.00',
+                    'mollie-payments-for-woocommerce'
                 ),
                 'custom_attributes' => ['step' => '0.01', 'min' => '0.00', 'max' => '999'],
                 'default' => '0.00',
                 'desc_tip' => true,
             ],
             'surcharge_limit' => [
+                'title' => sprintf(
                 /* translators: Placeholder 1: currency */
-                'title' => sprintf(__('Payment surcharge limit in %s', 'mollie-payments-for-woocommerce'), html_entity_decode(get_woocommerce_currency_symbol())),
+                    __('Payment surcharge limit in %s', 'mollie-payments-for-woocommerce'),
+                    html_entity_decode(get_woocommerce_currency_symbol())
+                ),
                 'type' => 'number',
                 'description' => sprintf(
                     __(
@@ -226,20 +216,21 @@ class MollieGeneralSettings
                 'desc_tip' => true,
             ],
             'maximum_limit' => [
+                'title' => sprintf(
                 /* translators: Placeholder 1: currency */
-                'title' => sprintf(__('Surcharge only under this limit, in %s', 'mollie-payments-for-woocommerce'), html_entity_decode(get_woocommerce_currency_symbol())),
+                    __('Surcharge only under this limit, in %s', 'mollie-payments-for-woocommerce'),
+                    html_entity_decode(get_woocommerce_currency_symbol())
+                ),
                 'type' => 'number',
-                'description' => sprintf(
-                    __(
-                        'Maximum order amount to apply surcharge. If the order is above this number the surcharge will not apply. Default 0, means no maximum',
-                        'mollie-payments-for-woocommerce'
-                    )
+                'description' => __(
+                    'Maximum order amount to apply surcharge. If the order is above this number the surcharge will not apply. Default 0, means no maximum',
+                    'mollie-payments-for-woocommerce'
                 ),
                 'custom_attributes' => ['step' => '0.01', 'min' => '0.00', 'max' => '999'],
                 'default' => '0.00',
                 'desc_tip' => true,
             ],
-            [
+            'advanced' => [
                 'id' => $defaultTitle . '_' . 'advanced',
                 'title' => sprintf(
                 /* translators: Placeholder 1: gateway title */
@@ -247,26 +238,6 @@ class MollieGeneralSettings
                     $defaultTitle
                 ),
                 'type' => 'title',
-            ],
-            'activate_expiry_days_setting' => [
-                'title' => __('Activate expiry time setting', 'mollie-payments-for-woocommerce'),
-                'label' => __('Enable expiry time for payments', 'mollie-payments-for-woocommerce'),
-                'description' => __('Enable this option if you want to be able to set the time after which the order will expire.', 'mollie-payments-for-woocommerce'),
-                'type' => 'checkbox',
-                'default' => 'no',
-            ],
-            'order_dueDate' => [
-                'title' => sprintf(__('Expiry time', 'mollie-payments-for-woocommerce')),
-                'type' => 'number',
-                'custom_attributes' => ['step' => '1', 'min' => '10', 'max' => '526000'],
-                'description' => sprintf(
-                    __(
-                        'Number of MINUTES after the order will expire and will be canceled at Mollie and WooCommerce.',
-                        'mollie-payments-for-woocommerce'
-                    )
-                ),
-                'default' => '10',
-                'desc_tip' => false,
             ],
         ];
 
@@ -287,8 +258,8 @@ class MollieGeneralSettings
                     ),
                 ],
                 'default' => SharedDataDictionary::STATUS_ON_HOLD,
-                /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
                 'description' => sprintf(
+                /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
                     __(
                         'Some payment methods take longer than a few hours to complete. The initial order state is then set to \'%1$s\'. This ensures the order is not cancelled when the setting %2$s is used. This will also prevent the order to be canceled when expired.',
                         'mollie-payments-for-woocommerce'
@@ -305,6 +276,25 @@ class MollieGeneralSettings
                 ),
             ];
         }
+
+        $formFields['activate_expiry_days_setting'] = [
+            'title' => __('Activate expiry time setting', 'mollie-payments-for-woocommerce'),
+            'label' => __('Enable expiry time for payments', 'mollie-payments-for-woocommerce'),
+            'description' => __('Enable this option if you want to be able to set the time after which the order will expire.', 'mollie-payments-for-woocommerce'),
+            'type' => 'checkbox',
+            'default' => 'no',
+        ];
+        $formFields['order_dueDate'] = [
+            'title' => __('Expiry time', 'mollie-payments-for-woocommerce'),
+            'type' => 'number',
+            'custom_attributes' => ['step' => '1', 'min' => '10', 'max' => '526000'],
+            'description' => __(
+                'Number of MINUTES after the order will expire and will be canceled at Mollie and WooCommerce.',
+                'mollie-payments-for-woocommerce'
+            ),
+            'default' => '10',
+            'desc_tip' => false,
+        ];
 
         return $formFields;
     }

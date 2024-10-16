@@ -173,7 +173,10 @@ export const ApplePayButtonComponent = ({cart, extensions}) => {
         <button
             id="mollie_applepay_button"
             className="apple-pay-button apple-pay-button-black"
-            onClick={applePaySession}
+            onClick={(event) => {
+                event.preventDefault();
+                applePaySession();
+            }}
         >
         </button>
     );

@@ -355,7 +355,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
         $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - Try to process completed order for a potential capture at Mollie.');
 
         // Does WooCommerce order contain a Mollie Order?
-        $mollie_order_id = ( $mollie_order_id = $order->get_meta('_mollie_order_id', true) ) ? $mollie_order_id : false;
+        $mollie_order_id = ( $mollie_order_id = $order->get_meta(MolliePaymentGateway::ORDER_ID_META_KEY, true) ) ? $mollie_order_id : false;
         // Is it a payment? you cannot ship a payment
         if ($mollie_order_id === false || substr($mollie_order_id, 0, 3) === 'tr_') {
             $message = _x('Processing a payment, no capture needed', 'Order note info', 'mollie-payments-for-woocommerce');
@@ -426,7 +426,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
         $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - Try to process cancelled order at Mollie.');
 
-        $mollie_order_id = ( $mollie_order_id = $order->get_meta('_mollie_order_id', true) ) ? $mollie_order_id : false;
+        $mollie_order_id = ( $mollie_order_id = $order->get_meta(MolliePaymentGateway::ORDER_ID_META_KEY, true) ) ? $mollie_order_id : false;
 
         if ($mollie_order_id === false) {
             $message = _x('Order contains Mollie payment method, but not a valid Mollie Order ID. Canceling order failed.', 'Order note info', 'mollie-payments-for-woocommerce');

@@ -27,6 +27,7 @@ use WP_Error;
 
 class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGatewayI
 {
+    const ORDER_ID_META_KEY = '_mollie_order_id';
     /**
      * @var bool
      */
@@ -1029,8 +1030,8 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
      */
     public function get_transaction_url($order): string
     {
-        $isPaymentApi = substr($order->get_meta('_mollie_order_id', true), 0, 3) === 'tr_'  ;
-        $resource = ($order->get_meta('_mollie_order_id', true) && !$isPaymentApi) ? 'orders' : 'payments';
+        $isPaymentApi = substr($order->get_meta(MolliePaymentGateway::ORDER_ID_META_KEY, true), 0, 3) === 'tr_'  ;
+        $resource = ($order->get_meta(MolliePaymentGateway::ORDER_ID_META_KEY, true) && !$isPaymentApi) ? 'orders' : 'payments';
 
         $this->view_transaction_url = 'https://my.mollie.com/dashboard/'
             . $resource . '/%s?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner';

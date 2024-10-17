@@ -171,7 +171,7 @@ class MollieObject
     {
         static::$order = wc_get_order($order_id);
 
-        static::$order->update_meta_data('_mollie_order_id', $this->data->id);
+        static::$order->update_meta_data(MolliePaymentGateway::ORDER_ID_META_KEY, $this->data->id);
         static::$order->update_meta_data('_mollie_payment_id', static::$paymentId);
         static::$order->update_meta_data('_mollie_payment_mode', $this->data->mode);
 
@@ -325,7 +325,7 @@ class MollieObject
     public function getActiveMollieOrderId($order_id)
     {
         $order = wc_get_order($order_id);
-        return $order->get_meta('_mollie_order_id', true);
+        return $order->get_meta(MolliePaymentGateway::ORDER_ID_META_KEY, true);
     }
 
     /**

@@ -748,7 +748,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         if (!$subscriptionParentOrder) {
             return false;
         }
-        $orderIdMeta = $subscriptionParentOrder->get_meta('_mollie_order_id');
+        $orderIdMeta = $subscriptionParentOrder->get_meta(MolliePaymentGateway::ORDER_ID_META_KEY);
 
         $parentOrderMeta = $orderIdMeta ?: PaymentService::PAYMENT_METHOD_TYPE_PAYMENT;
 

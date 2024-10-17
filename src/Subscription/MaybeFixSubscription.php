@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Subscription;
 
+use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+
 class MaybeFixSubscription
 {
     public function maybeFix()
@@ -39,7 +41,7 @@ class MaybeFixSubscription
                 $parent = $subscription->get_parent();
                 if ($parent) {
                     $subscription->update_meta_data('_mollie_customer_id', $parent->get_meta('_mollie_customer_id'));
-                    $subscription->update_meta_data('_mollie_order_id', $parent->get_meta('_mollie_order_id'));
+                    $subscription->update_meta_data(MolliePaymentGateway::ORDER_ID_META_KEY, $parent->get_meta(MolliePaymentGateway::ORDER_ID_META_KEY));
                     $subscription->update_meta_data('_mollie_payment_id', $parent->get_meta('_mollie_payment_id'));
                     $subscription->update_meta_data('_mollie_payment_mode', $parent->get_meta('_mollie_payment_mode'));
                     $subscription->save();

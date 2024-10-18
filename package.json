@@ -53,7 +53,7 @@
     "webpack": "^5.89.0"
   },
   "scripts": {
-    "watch": "webpack --watch",
+    "watch": "BASE_PATH=. node_modules/.bin/encore dev --watch",
     "build": "BASE_PATH=. node_modules/.bin/encore dev",
     "setup": "gulp setup",
     "e2e-activation": "npx playwright test --project=activation",

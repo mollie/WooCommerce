@@ -14,6 +14,9 @@ class DataToAppleButtonScripts
      */
     public function applePayScriptData(bool $isBlock = false): array
     {
+        if (is_admin()) {
+            return [];
+        }
         $base_location = wc_get_base_location();
         $shopCountryCode = $base_location['country'];
         $currencyCode = get_woocommerce_currency();

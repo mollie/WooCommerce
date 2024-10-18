@@ -1,10 +1,12 @@
 import molliePaymentMethod from './blocks/molliePaymentMethod'
+import ApplePayButtonComponent from './blocks/ApplePayButtonComponent'
 
 (
     function ({ mollieBlockData, wc, _, jQuery}) {
         if (_.isEmpty(mollieBlockData)) {
             return;
         }
+
         window.onload = (event) => {
             const { registerPaymentMethod } = wc.wcBlocksRegistry;
             const { checkoutData, defaultFields } = wc.wcSettings.allSettings;
@@ -47,8 +49,24 @@ import molliePaymentMethod from './blocks/molliePaymentMethod'
             gatewayData.forEach(item => {
                 let register = () => registerPaymentMethod(molliePaymentMethod(useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isCompanyFieldVisible, isPhoneFieldVisible));
                 if (item.name === 'mollie_wc_gateway_applepay'  && !isBlockEditor) {
+                     const {isExpressEnabled} = item;
                     if ((isAppleSession && window.ApplePaySession.canMakePayments())) {
                         register();
+                        if (isExpressEnabled !== true) {
+                            return;
+                        }
+                        const {registerExpressPaymentMethod} = wc.wcBlocksRegistry;
+                        registerExpressPaymentMethod({
+                            name: 'mollie_wc_gateway_applepay_express',
+                            content: <ApplePayButtonComponent />,
+                            edit: <ApplePayButtonComponent />,
+                            ariaLabel: 'Apple Pay',
+                            canMakePayment: () => true,
+                            paymentMethodId: 'mollie_wc_gateway_applepay',
+                            supports: {
+                                features: ['products'],
+                            },
+                        })
                     }
                     return;
                 }

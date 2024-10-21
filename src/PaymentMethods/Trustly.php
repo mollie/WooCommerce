@@ -21,7 +21,7 @@ class Trustly extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => true,
-            'SEPA' => false,
+            'SEPA' => true,
         ];
     }
 

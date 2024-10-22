@@ -26,6 +26,7 @@ use Inpsyde\Modularity\Properties\PluginProperties;
 use Mollie\WooCommerce\Activation\ActivationModule;
 use Mollie\WooCommerce\Activation\ConstraintsChecker;
 use Mollie\WooCommerce\Assets\AssetsModule;
+use Mollie\WooCommerce\PluginApi\PluginApiModule;
 use Mollie\WooCommerce\Shared\SharedModule;
 use Mollie\WooCommerce\Gateway\GatewayModule;
 use Mollie\WooCommerce\Gateway\Voucher\VoucherModule;
@@ -165,6 +166,7 @@ function initialize()
             new PaymentModule(),
             new MerchantCaptureModule(),
             new UninstallModule(),
+            new PluginApiModule(),
         ];
         $modules = apply_filters('mollie_wc_plugin_modules', $modules);
         $bootstrap->boot(...$modules);

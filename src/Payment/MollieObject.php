@@ -73,6 +73,12 @@ class MollieObject
         return self::$customerId;
     }
 
+    /**
+     * @param int $order_id
+     * @param float|null $amount
+     * @param string $reason
+     * @return bool|WP_Error
+     */
     public function processRefund(int $order_id, ?float $amount, string $reason)
     {
         // Get the WooCommerce order
@@ -485,6 +491,12 @@ class MollieObject
     {
         $order = wc_get_order($orderId);
 
+        if (!$order) {
+            // Order not found, log and exit early.
+            $this->logger->debug(__METHOD__ . ' - Order not found.');
+            return;
+        }
+
         // Does WooCommerce order contain a Mollie payment?
         if (strstr($order->get_payment_method(), 'mollie_wc_gateway_') === false) {
             return;
@@ -617,6 +629,12 @@ class MollieObject
     public function shipAndCaptureOrderAtMollie($order_id)
     {
         $order = wc_get_order($order_id);
+
+        if (!$order) {
+            // Order not found, log and exit early.
+            $this->logger->debug(__METHOD__ . ' - Order not found.');
+            return;
+        }
 
         // Does WooCommerce order contain a Mollie payment?
         if (strstr($order->get_payment_method(), 'mollie_wc_gateway_') === false) {

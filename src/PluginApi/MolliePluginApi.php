@@ -54,6 +54,7 @@ class MolliePluginApi {
 
     /**
      * Captures the Mollie order for the given WooCommerce order.
+     * Logs the result of the operation.
      *
      * @param \WC_Order $wcOrder The WooCommerce order.
      */
@@ -67,7 +68,7 @@ class MolliePluginApi {
      * @param \WC_Order $wcOrder The WooCommerce order.
      * @param float $amount The refund amount.
      * @param string $reason The reason for the refund.
-     * @return \WP_Error|array The result of the refund operation.
+     * @return \WP_Error|bool The result of the refund operation.
      */
     public function refundOrder(\WC_Order $wcOrder, float $amount, string $reason = '') {
         return $this->mollieObject->processRefund($wcOrder->get_id(), $amount , $reason);
@@ -75,6 +76,7 @@ class MolliePluginApi {
 
     /**
      * Voids the authorization for the given WooCommerce order.
+     * Logs the result of the operation.
      *
      * @param \WC_Order $wcOrder The WooCommerce order.
      */
@@ -84,6 +86,7 @@ class MolliePluginApi {
 
     /**
      * Cancels the Order at Mollie and also in WooCommerce if was not already done.
+     * Logs the result of the operation.
      *
      * @param \WC_Order $wcOrder The WooCommerce order.
      */
@@ -93,6 +96,7 @@ class MolliePluginApi {
 
     /**
      * Ship all order lines and capture an order at Mollie.
+     * Logs the result of the operation.
      *
      * @param string $orderId The WooCommerce order ID.
      */

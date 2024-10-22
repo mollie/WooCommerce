@@ -709,70 +709,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
      */
     public function process_refund($order_id, $amount = null, $reason = '')
     {
-        // Get the WooCommerce order
-        $order = wc_get_order($order_id);
-
-        // WooCommerce order not found
-        if (!$order) {
-            $error_message = "Could not find WooCommerce order $order_id.";
-
-            $this->logger->debug(
-                __METHOD__ . ' - ' . $error_message
-            );
-
-            return new WP_Error('1', $error_message);
-        }
-
-        // Check if there is a Mollie Payment Order object connected to this WooCommerce order
-        $payment_object_id = $this->paymentObject()->getActiveMollieOrderId(
-            $order_id
-        );
-
-        // If there is no Mollie Payment Order object, try getting a Mollie Payment Payment object
-        if (!$payment_object_id) {
-            $payment_object_id = $this->paymentObject()
-                ->getActiveMolliePaymentId($order_id);
-        }
-
-        // Mollie Payment object not found
-        if (!$payment_object_id) {
-            $error_message = "Can\'t process refund. Could not find Mollie Payment object id for order $order_id.";
-
-            $this->logger->debug(
-                __METHOD__ . ' - ' . $error_message
-            );
-
-            return new WP_Error('1', $error_message);
-        }
-
-        try {
-            $payment_object = $this->paymentFactory
-                ->getPaymentObject(
-                    $payment_object_id
-                );
-        } catch (ApiException $exception) {
-            $exceptionMessage = $exception->getMessage();
-            $this->logger->debug($exceptionMessage);
-            return new WP_Error('error', $exceptionMessage);
-        }
-
-        if (!$payment_object) {
-            $error_message = "Can\'t process refund. Could not find Mollie Payment object data for order $order_id.";
-
-            $this->logger->debug(
-                __METHOD__ . ' - ' . $error_message
-            );
-
-            return new WP_Error('1', $error_message);
-        }
-
-        return $payment_object->refund(
-            $order,
-            $order_id,
-            $payment_object,
-            $amount,
-            $reason
-        );
+        return $this->paymentObject()->processRefund($order_id, $amount, $reason);
     }
 
     /**

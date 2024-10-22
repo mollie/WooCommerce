@@ -2,20 +2,21 @@
 
 namespace Mollie\WooCommerce\PluginApi;
 
+use Closure;
 use Mollie\WooCommerce\MerchantCapture\Capture\Action\CapturePayment;
 use Mollie\WooCommerce\MerchantCapture\Capture\Action\VoidPayment;
 use Mollie\WooCommerce\Payment\MollieObject;
 
 class MolliePluginApi {
     private static $instance = null;
-    private CapturePayment $capturePayment;
-    private VoidPayment $voidPayment;
+    private Closure $capturePayment;
+    private Closure $voidPayment;
 
     private MollieObject $mollieObject;
 
     private function __construct(
-        CapturePayment $capturePayment,
-        VoidPayment $voidPayment,
+        Closure $capturePayment,
+        Closure $voidPayment,
         MollieObject $mollieObject
     ) {
         $this->capturePayment = $capturePayment;
@@ -27,8 +28,8 @@ class MolliePluginApi {
      * Initializes the MolliePluginApi with necessary dependencies.
      */
     public static function init(
-        CapturePayment $capturePayment,
-        VoidPayment $voidPayment,
+        Closure $capturePayment,
+        Closure $voidPayment,
         MollieObject $mollieObject
     ): void {
         if (self::$instance === null) {
@@ -59,7 +60,7 @@ class MolliePluginApi {
      * @param \WC_Order $wcOrder The WooCommerce order.
      */
     public function captureOrder(\WC_Order $wcOrder): void {
-        $this->capturePayment($wcOrder->get_id());
+        ($this->capturePayment)($wcOrder->get_id());
     }
 
     /**
@@ -81,7 +82,7 @@ class MolliePluginApi {
      * @param \WC_Order $wcOrder The WooCommerce order.
      */
     public function voidOrder(\WC_Order $wcOrder): void {
-        $this->voidPayment($wcOrder->get_id());
+        ($this->voidPayment)($wcOrder->get_id());
     }
 
     /**

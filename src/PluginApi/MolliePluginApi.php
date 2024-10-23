@@ -3,8 +3,6 @@
 namespace Mollie\WooCommerce\PluginApi;
 
 use Closure;
-use Mollie\WooCommerce\MerchantCapture\Capture\Action\CapturePayment;
-use Mollie\WooCommerce\MerchantCapture\Capture\Action\VoidPayment;
 use Mollie\WooCommerce\Payment\MollieObject;
 
 class MolliePluginApi {

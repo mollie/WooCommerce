@@ -5,11 +5,11 @@ namespace Mollie\WooCommerce\PluginApi;
 use Closure;
 use Mollie\WooCommerce\Payment\MollieObject;
 
-class MolliePluginApi {
+class MolliePluginApi
+{
     private static $instance = null;
     private Closure $capturePayment;
     private Closure $voidPayment;
-
     private MollieObject $mollieObject;
 
     private function __construct(
@@ -17,6 +17,7 @@ class MolliePluginApi {
         Closure $voidPayment,
         MollieObject $mollieObject
     ) {
+
         $this->capturePayment = $capturePayment;
         $this->voidPayment = $voidPayment;
         $this->mollieObject = $mollieObject;
@@ -30,6 +31,7 @@ class MolliePluginApi {
         Closure $voidPayment,
         MollieObject $mollieObject
     ): void {
+
         if (self::$instance === null) {
             self::$instance = new self(
                 $capturePayment,
@@ -44,7 +46,9 @@ class MolliePluginApi {
      *
      * @throws \LogicException If the API has not been initialized.
      */
-    public static function getInstance(): self {
+    public static function getInstance(): self
+    {
+
         if (self::$instance === null) {
             throw new \LogicException('MolliePluginApi has not been initialized.');
         }
@@ -57,7 +61,9 @@ class MolliePluginApi {
      *
      * @param \WC_Order $wcOrder The WooCommerce order.
      */
-    public function captureOrder(\WC_Order $wcOrder): void {
+    public function captureOrder(\WC_Order $wcOrder): void
+    {
+
         ($this->capturePayment)($wcOrder->get_id());
     }
 
@@ -69,8 +75,10 @@ class MolliePluginApi {
      * @param string $reason The reason for the refund.
      * @return \WP_Error|bool The result of the refund operation.
      */
-    public function refundOrder(\WC_Order $wcOrder, float $amount, string $reason = '') {
-        return $this->mollieObject->processRefund($wcOrder->get_id(), $amount , $reason);
+    public function refundOrder(\WC_Order $wcOrder, float $amount, string $reason = '')
+    {
+
+        return $this->mollieObject->processRefund($wcOrder->get_id(), $amount, $reason);
     }
 
     /**
@@ -79,7 +87,9 @@ class MolliePluginApi {
      *
      * @param \WC_Order $wcOrder The WooCommerce order.
      */
-    public function voidOrder(\WC_Order $wcOrder): void {
+    public function voidOrder(\WC_Order $wcOrder): void
+    {
+
         ($this->voidPayment)($wcOrder->get_id());
     }
 
@@ -89,7 +99,9 @@ class MolliePluginApi {
      *
      * @param \WC_Order $wcOrder The WooCommerce order.
      */
-    public function cancelOrder(string $orderId): void {
+    public function cancelOrder(string $orderId): void
+    {
+
         $this->mollieObject->cancelOrderAtMollie($orderId);
     }
 

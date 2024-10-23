@@ -17,7 +17,9 @@ class PluginApiModule implements ExecutableModule
 {
     use ModuleClassNameIdTrait;
 
-    public function run (ContainerInterface $container): bool {
+    public function run(ContainerInterface $container): bool
+    {
+
         MolliePluginApi::init(
             $container->get(CapturePayment::class),
             $container->get(VoidPayment::class),

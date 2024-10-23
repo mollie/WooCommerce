@@ -700,7 +700,6 @@ class MollieObject
         return;
     }
 
-
     public function getMolliePaymentIdFromPaymentObject()
     {
     }

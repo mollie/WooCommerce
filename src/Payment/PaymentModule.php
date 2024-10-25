@@ -105,7 +105,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
         // Show Mollie instructions on order details page
         add_action('woocommerce_order_details_after_order_table', [ $this, 'onOrderDetails' ], 10, 1);
         // Custom filter to choose on which action to cancel orders at Mollie
-        $cancelOrderAction = apply_filters('mollie-payments-for-woocommerce_cancel_order', 'woocommerce_order_status_cancelled');
+        $cancelOrderAction = apply_filters('mollie-payments-for-woocommerce_cancel_order_action', 'woocommerce_order_status_cancelled');
         // Cancel order at Mollie (for Orders API/Klarna)
         add_action($cancelOrderAction, function ($orderId) use ($container) {
             $mollieObject = $container->get(MollieObject::class);
@@ -113,7 +113,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
             $mollieObject->cancelOrderAtMollie($orderId);
         });
         // Custom filter to choose on which action to ship and capture orders at Mollie
-        $captureOrderAction = apply_filters('mollie-payments-for-woocommerce_ship_capture_order', 'woocommerce_order_status_completed');
+        $captureOrderAction = apply_filters('mollie-payments-for-woocommerce_ship_capture_order_action', 'woocommerce_order_status_completed');
         // Capture order at Mollie (for Orders API/Klarna)
         add_action($captureOrderAction, function ($orderId) use ($container) {
             $mollieObject = $container->get(MollieObject::class);

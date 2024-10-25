@@ -857,7 +857,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
                     echo esc_html($instructions) . PHP_EOL;
                 } else {
                     echo '<section class="woocommerce-order-details woocommerce-info mollie-instructions" >';
-                    echo wp_kses(wpautop($instructions), ['p' => [], 'strong' => []]) . PHP_EOL;
+                    echo wp_kses(wpautop($instructions), ['p' => [], 'strong' => [],  'br' => []]) . PHP_EOL;
                     echo '</section>';
                 }
             }

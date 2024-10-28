@@ -601,7 +601,12 @@ class MollieOrder extends MollieObject
             $refunds = $order->get_refunds();
 
             // Get latest refund
-            $woocommerceRefund = wc_get_order($refunds[0]);
+            $woocommerceRefund = isset($refunds[0]) ? wc_get_order($refunds[0]) : false;
+
+            if(empty($woocommerceRefund)) {
+                $this->logger->debug(__METHOD__ . ' - No WooCoommerce refunds found for order ' . $orderId . ' perfoming an amount refund to Mollie API');
+                return $this->refund_amount($order, $amount, $paymentObject, $reason);
+            }
 
             // Get order items from refund
             $items = $woocommerceRefund->get_items([ 'line_item', 'fee', 'shipping' ]);

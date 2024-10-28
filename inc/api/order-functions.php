@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Inc\Api;
 
+use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\PluginApi\MolliePluginApi;
 use WC_Order;
 
@@ -35,7 +36,7 @@ function mollie_capture_order(WC_Order $wc_order): void
  * @param WC_Order $wc_order The WC order.
  * @param float $amount The refund amount.
  * @param string $reason The reason for the refund.
- * @return \WP_Error|bool The result of the refund operation.
+ * @return \WP_Error|Refund The result of the refund operation.
  */
 function mollie_refund_order(WC_Order $wc_order, float $amount, string $reason = '')
 {

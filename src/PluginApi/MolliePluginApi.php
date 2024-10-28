@@ -3,6 +3,7 @@
 namespace Mollie\WooCommerce\PluginApi;
 
 use Closure;
+use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Payment\MollieObject;
 
 class MolliePluginApi
@@ -73,12 +74,16 @@ class MolliePluginApi
      * @param \WC_Order $wcOrder The WooCommerce order.
      * @param float $amount The refund amount.
      * @param string $reason The reason for the refund.
-     * @return \WP_Error|bool The result of the refund operation.
+     * @return \WP_Error|Refund The result of the refund operation.
      */
     public function refundOrder(\WC_Order $wcOrder, float $amount, string $reason = '')
     {
-
-        return $this->mollieObject->processRefund($wcOrder->get_id(), $amount, $reason);
+        $mollieRefund = null;
+        add_action('mollie-payments-for-woocommerce_refund_amount_created', function ($refund, $order, $amount) use (&$mollieRefund) {
+            $mollieRefund = $refund;
+        }, 10, 3);
+        $refundCreated = $this->mollieObject->processRefund($wcOrder->get_id(), $amount, $reason);
+        return $refundCreated ? $mollieRefund : new \WP_Error('mollie_refund_failed', __('Refund failed', 'mollie-payments-for-woocommerce'));
     }
 
     /**

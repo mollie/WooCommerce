@@ -22,7 +22,8 @@ use function Mollie\WooCommerce\Inc\Api\mollie_refund_order;
 add_action('init', function () {
     $order_id = 123;
     $order = wc_get_order($order_id);
-    mollie_refund_order($order);
+    $refund = mollie_refund_order($order, 10.00, 'Refund reason');
+    // $refund is an instance of Mollie\Api\Resources\Refund
 });
 ```
 

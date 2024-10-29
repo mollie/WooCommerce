@@ -87,7 +87,7 @@ class PaymentMethodsIconUrl
         return $this->generateIconHtml($svgUrl);
     }
 
-    public function generateIconHtml($svgUrl)
+    public function generateIconHtml(string $svgUrl): string
     {
 
         return '<img src="' . esc_url($svgUrl)

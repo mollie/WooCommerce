@@ -707,6 +707,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
         Surcharge $surchargeService,
         array $apiMethod
     ) {
+
         $transformedId = ucfirst($id);
         $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . $transformedId;
         $paymentMethod = new $paymentMethodClassName(

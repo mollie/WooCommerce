@@ -22,6 +22,7 @@ class Sofort extends AbstractPaymentMethod implements PaymentMethodI
             'filtersOnBuild' => false,
             'confirmationDelayed' => true,
             'SEPA' => true,
+            'docs' => 'https://help.mollie.com/hc/en-us/articles/20904206772626-SOFORT-Deprecation-30-September-2024',
         ];
     }
 

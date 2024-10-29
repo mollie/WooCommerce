@@ -22,6 +22,7 @@ class Trustly extends AbstractPaymentMethod implements PaymentMethodI
             'filtersOnBuild' => false,
             'confirmationDelayed' => true,
             'SEPA' => false,
+            'docs' => 'https://www.mollie.com/gb/payments/trustly',
         ];
     }
 

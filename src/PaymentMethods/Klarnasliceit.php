@@ -26,6 +26,7 @@ class Klarnasliceit extends AbstractPaymentMethod implements PaymentMethodI
             'confirmationDelayed' => false,
             'SEPA' => false,
             'orderMandatory' => true,
+            'docs' => 'https://www.mollie.com/gb/payments/klarna',
         ];
     }
 

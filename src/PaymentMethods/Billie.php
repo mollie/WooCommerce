@@ -31,6 +31,7 @@ class Billie extends AbstractPaymentMethod implements PaymentMethodI
                 'mollie-payments-for-woocommerce'
             ),
             'companyPlaceholder' => __('Please enter your company name here.', 'mollie-payments-for-woocommerce'),
+            'docs' => 'https://www.mollie.com/gb/payments/billie',
         ];
     }
 

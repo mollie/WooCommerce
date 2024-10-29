@@ -172,7 +172,7 @@ class MollieOrder extends MollieObject
         self::$customerId = $this->getMollieCustomerIdFromPaymentObject();
 
         self::$order = wc_get_order($orderId);
-        self::$order->update_meta_data('_mollie_order_id', $this->data->id);
+        self::$order->update_meta_data(MolliePaymentGateway::ORDER_ID_META_KEY, $this->data->id);
         self::$order->save();
 
         return parent::setActiveMolliePayment($orderId);
@@ -511,7 +511,7 @@ class MollieOrder extends MollieObject
     public function onWebhookExpired(WC_Order $order, $payment, $paymentMethodTitle)
     {
         $orderId = $order->get_id();
-        $molliePaymentId = $order->get_meta('_mollie_order_id', true);
+        $molliePaymentId = $order->get_meta(MolliePaymentGateway::ORDER_ID_META_KEY, true);
 
         // Add messages to log
         $this->logger->debug(__METHOD__ . ' called for order ' . $orderId);
@@ -601,7 +601,12 @@ class MollieOrder extends MollieObject
             $refunds = $order->get_refunds();
 
             // Get latest refund
-            $woocommerceRefund = wc_get_order($refunds[0]);
+            $woocommerceRefund = isset($refunds[0]) ? wc_get_order($refunds[0]) : false;
+
+            if(empty($woocommerceRefund)) {
+                $this->logger->debug(__METHOD__ . ' - No WooCoommerce refunds found for order ' . $orderId . ' perfoming an amount refund to Mollie API');
+                return $this->refund_amount($order, $amount, $paymentObject, $reason);
+            }
 
             // Get order items from refund
             $items = $woocommerceRefund->get_items([ 'line_item', 'fee', 'shipping' ]);

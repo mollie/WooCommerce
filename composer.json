@@ -48,7 +48,10 @@
       "Mollie\\WooCommerceTests\\": "tests/php",
       "Mollie\\WooCommerceTests\\Unit\\": "tests/php/Unit",
       "Mollie\\WooCommerceTests\\Functional\\": "tests/php/Functional"
-    }
+    },
+    "files": [
+      "inc/api/order-functions.php"
+    ]
   },
   "scripts": {
     "check-coding-standards": "vendor/bin/phpcs --parallel=8 -s",

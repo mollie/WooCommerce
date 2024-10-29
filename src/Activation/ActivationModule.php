@@ -40,9 +40,10 @@ class ActivationModule implements ExecutableModule
             'init',
             [$this, 'pluginInit']
         );
+
+        add_action('admin_init', [$this, 'mollieWcNoticeApiKeyMissing']);
         $this->declareCompatibleWithHPOS();
         $this->handleTranslations();
-        $this->mollieWcNoticeApiKeyMissing();
         $this->appleValidationFileRewriteRules();
         return true;
     }

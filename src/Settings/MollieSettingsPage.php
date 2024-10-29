@@ -10,6 +10,7 @@ use Mollie\WooCommerce\Settings\Page\PageApiKeys;
 use Mollie\WooCommerce\Settings\Page\PageNoApiKey;
 use Mollie\WooCommerce\Settings\Page\PagePaymentMethods;
 use Mollie\WooCommerce\Shared\Data;
+use WC_Admin_Settings;
 use WC_Settings_Page;
 
 class MollieSettingsPage extends WC_Settings_Page
@@ -130,7 +131,7 @@ class MollieSettingsPage extends WC_Settings_Page
                 $this->dataHelper
             );
             if ($page::slug() === $defaultSection) {
-                $mollieSettings = $page->settings();
+                $mollieSettings = $this->hideKeysIntoStars($page->settings());
                 break;
             }
         }
@@ -140,5 +141,126 @@ class MollieSettingsPage extends WC_Settings_Page
             $mollieSettings,
             $currentSection
         );
+    }
+
+    /**
+     * @param $settings
+     *
+     * @return array
+     */
+    protected function hideKeysIntoStars($settings): array
+    {
+        $liveKeyName = 'mollie-payments-for-woocommerce_live_api_key';
+        $testKeyName = 'mollie-payments-for-woocommerce_test_api_key';
+        $liveValue = get_option($liveKeyName);
+        $testValue = get_option($testKeyName);
+
+        foreach ($settings as $key => $setting) {
+            if (
+                    ($setting['id']
+                            === $liveKeyName
+                            && $liveValue)
+                    || ($setting['id']
+                            === $testKeyName
+                            && $testValue)
+            ) {
+                $settings[$key]['value'] = '**********';
+            }
+        }
+        return $settings;
+    }
+
+    /**
+     * Save settings
+     *
+     * @since 1.0
+     */
+    public function save()
+    {
+        global $current_section;
+
+        $settings = $this->get_settings($current_section);
+        $settings = $this->saveApiKeys($settings);
+        WC_Admin_Settings::save_fields($settings);
+    }
+
+    /**
+     * @param $settings
+     *
+     * @return array
+     */
+    protected function saveApiKeys($settings)
+    {
+        $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
+        $isNonceValid = wp_verify_nonce(
+            $nonce,
+            'woocommerce-settings'
+        );
+        if (!$isNonceValid) {
+            return $settings;
+        }
+        $liveKeyName = 'mollie-payments-for-woocommerce_live_api_key';
+        $testKeyName = 'mollie-payments-for-woocommerce_test_api_key';
+        $liveValueInDb = get_option($liveKeyName);
+        $testValueInDb = get_option($testKeyName);
+        $postedLiveValue = isset($_POST[$liveKeyName]) ? sanitize_text_field(wp_unslash($_POST[$liveKeyName])) : '';
+        $postedTestValue = isset($_POST[$testKeyName]) ? sanitize_text_field(wp_unslash($_POST[$testKeyName])) : '';
+
+        foreach ($settings as $setting) {
+            if (
+                    $setting['id']
+                    === $liveKeyName
+                    && $liveValueInDb
+            ) {
+                if ($postedLiveValue === '**********') {
+                    $_POST[$liveKeyName] = $liveValueInDb;
+                } else {
+                    $pattern = '/^live_\w{30,}$/';
+                    $this->validateApiKeyOrRemove(
+                        $pattern,
+                        $postedLiveValue,
+                        $liveKeyName
+                    );
+                }
+            } elseif (
+                    $setting['id']
+                    === $testKeyName
+                    && $testValueInDb
+            ) {
+                if ($postedTestValue === '**********') {
+                    $_POST[$testKeyName] = $testValueInDb;
+                } else {
+                    $pattern = '/^test_\w{30,}$/';
+                    $this->validateApiKeyOrRemove(
+                        $pattern,
+                        $postedTestValue,
+                        $testKeyName
+                    );
+                }
+            }
+        }
+        return $settings;
+    }
+
+    /**
+     * @param       $pattern
+     * @param       $value
+     * @param       $keyName
+     *
+     */
+    protected function validateApiKeyOrRemove($pattern, $value, $keyName)
+    {
+        $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
+        $isNonceValid = wp_verify_nonce(
+            $nonce,
+            'woocommerce-settings'
+        );
+        if (!$isNonceValid) {
+            return;
+        }
+        $hasApiFormat = preg_match($pattern, $value);
+        if (!$hasApiFormat) {
+            unset($_POST[$keyName]);
+        }
     }
 }

@@ -194,7 +194,8 @@ class SettingsModule implements ServiceModule, ExecutableModule
     public function maybeTestModeNotice(): bool
     {
         $testModeEnabled = get_option('mollie-payments-for-woocommerce_test_mode_enabled', true);
-        $shouldShowNotice = $testModeEnabled === 'yes';
+        $testKeyEntered = get_option('mollie-payments-for-woocommerce_test_api_key', true);
+        $shouldShowNotice = $testModeEnabled === 'yes' && !empty($testKeyEntered);
         if (!$shouldShowNotice) {
             return false;
         }

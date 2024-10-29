@@ -72,19 +72,6 @@ class ConnectionFields extends AbstractSection
                 ),
             ],
             [
-                'id' => $this->settings->getSettingId('debug'),
-                'title' => __('Debug Log', 'mollie-payments-for-woocommerce'),
-                'type' => 'checkbox',
-                'desc' => sprintf(
-                    __(
-                        "Log plugin events. <a href='%s'>View logs</a>",
-                        'mollie-payments-for-woocommerce'
-                    ),
-                    $this->settings->getLogsUrl()
-                ),
-                'default' => 'yes',
-            ],
-            [
                 'id' => $this->settings->getSettingId('sectionend'),
                 'type' => 'sectionend',
             ],

@@ -29,8 +29,8 @@ trait ConnectionStatusTrait
             );
         }
         if ($testMode) {
-            return __('Successfully connected with Test API &#x2713;', 'mollie-payments-for-woocommerce');
+            return __('Successfully connected with <strong>Test API</strong> &#x2713;', 'mollie-payments-for-woocommerce');
         }
-        return __('Successfully connected with Live API &#x2713;', 'mollie-payments-for-woocommerce');
+        return __('Successfully connected with <strong>Live API</strong> &#x2713;', 'mollie-payments-for-woocommerce');
     }
 }

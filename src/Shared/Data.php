@@ -7,6 +7,7 @@ namespace Mollie\WooCommerce\Shared;
 use Exception;
 use InvalidArgumentException;
 use Mollie\Api\Resources\Method;
+use Mollie\WooCommerce\Buttons\ApplePayButton\DataToAppleButtonScripts;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Psr\Log\LoggerInterface as Logger;
@@ -785,5 +786,11 @@ class Data
             }
         }
         return $result;
+    }
+
+    public function mollieApplePayBlockDataCart()
+    {
+        $dataToScripts = new DataToAppleButtonScripts();
+        return $dataToScripts->applePayScriptData(true);
     }
 }

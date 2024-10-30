@@ -21,6 +21,7 @@ class Bancomatpay extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
+            'docs' => 'https://www.mollie.com/gb/payments/bancomat-pay',
         ];
     }
 

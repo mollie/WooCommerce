@@ -11,6 +11,7 @@ class Advanced extends AbstractSection
 {
     public function config(): array
     {
+        $this->cleanDbIfRequested();
         $config = [
             [
                 'id' => $this->settings->getSettingId('title'),
@@ -245,4 +246,22 @@ class Advanced extends AbstractSection
         <?php
         return ob_get_clean();
     }
+
+    protected function cleanDbIfRequested()
+    {
+        if (
+            isset($_GET['cleanDB-mollie']) && wp_verify_nonce(
+                filter_input(INPUT_GET, 'nonce_mollie_cleanDb', FILTER_SANITIZE_SPECIAL_CHARS),
+                'nonce_mollie_cleanDb'
+            )
+        ) {
+            $cleaner = $this->settings->cleanDb();
+            $cleaner->cleanAll();
+            //set default settings
+            foreach ($this->paymentMethods as $paymentMethod) {
+                $paymentMethod->getSettings();
+            }
+        }
+    }
+
 }

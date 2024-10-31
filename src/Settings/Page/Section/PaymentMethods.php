@@ -35,7 +35,6 @@ class PaymentMethods extends AbstractSection
     public function renderGateways(): string
     {
         $this->refreshIfRequested();
-        $this->cleanDbIfRequested();
 
         $titleActivePaymentMethods = __(
             'Currently Active Payment Methods',
@@ -191,23 +190,6 @@ class PaymentMethods extends AbstractSection
                 unset($methods[$key]);
             }
             $this->mollieGateways = $methods;
-        }
-    }
-
-    protected function cleanDbIfRequested()
-    {
-        if (
-                isset($_GET['cleanDB-mollie']) && wp_verify_nonce(
-                    filter_input(INPUT_GET, 'nonce_mollie_cleanDb', FILTER_SANITIZE_SPECIAL_CHARS),
-                    'nonce_mollie_cleanDb'
-                )
-        ) {
-            $cleaner = $this->settings->cleanDb();
-            $cleaner->cleanAll();
-            //set default settings
-            foreach ($this->paymentMethods as $paymentMethod) {
-                $paymentMethod->getSettings();
-            }
         }
     }
 

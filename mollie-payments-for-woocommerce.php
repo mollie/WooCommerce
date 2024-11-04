@@ -153,7 +153,10 @@ function initialize()
             new UninstallModule(),
         ];
         $modules = apply_filters('mollie_wc_plugin_modules', $modules);
-        $bootstrap->boot(...$modules);
+        foreach ($modules as $module) {
+            $bootstrap->addModule($module);
+        }
+        $bootstrap->boot();
     } catch (Throwable $throwable) {
         handleException($throwable);
     }

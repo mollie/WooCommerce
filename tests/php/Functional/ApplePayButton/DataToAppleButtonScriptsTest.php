@@ -52,6 +52,7 @@ class ApplePayDirectHandlerTest extends TestCase
                 'wc_get_product' => $this->wcProduct(),
                 'admin_url' => 'admin-ajax.php',
                 'get_option' => false,
+                'is_admin' => false,
             ]
         );
 
@@ -97,6 +98,7 @@ class ApplePayDirectHandlerTest extends TestCase
                 'admin_url' => 'admin-ajax.php',
                 'WC' => $this->wooCommerce($subtotal),
                 'wp_nonce_field'=> 'testNonce',
+                'is_admin' => false,
             ]
         );
 

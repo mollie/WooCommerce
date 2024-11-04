@@ -206,7 +206,7 @@ class MollieSettingsPage extends WC_Settings_Page
                 'valueInDb' => get_option('mollie-payments-for-woocommerce_live_api_key'),
                 'postedValue' => isset($_POST['mollie-payments-for-woocommerce_live_api_key'])
                     ? sanitize_text_field(wp_unslash($_POST['mollie-payments-for-woocommerce_live_api_key']))
-                    : ''
+                    : '',
             ],
             'test' => [
                 'keyName' => 'mollie-payments-for-woocommerce_test_api_key',
@@ -214,32 +214,13 @@ class MollieSettingsPage extends WC_Settings_Page
                 'valueInDb' => get_option('mollie-payments-for-woocommerce_test_api_key'),
                 'postedValue' => isset($_POST['mollie-payments-for-woocommerce_test_api_key'])
                     ? sanitize_text_field(wp_unslash($_POST['mollie-payments-for-woocommerce_test_api_key']))
-                    : ''
-            ]
+                    : '',
+            ],
         ];
 
         foreach ($settings as $setting) {
-            foreach ($apiKeys as $type => $apiKey) {
-                if ($setting['id'] === $apiKey['keyName']) {
-                    if ($apiKey['postedValue'] === '**********') {
-                        // If placeholder is detected but no DB value, validate as new key
-                        if (!$apiKey['valueInDb']) {
-                            $this->validateApiKeyOrRemove(
-                                $apiKey['pattern'],
-                                '', // No DB value; treat as new
-                                $apiKey['keyName']
-                            );
-                        } else {
-                            $_POST[$apiKey['keyName']] = $apiKey['valueInDb'];
-                        }
-                    } else {
-                        $this->validateApiKeyOrRemove(
-                            $apiKey['pattern'],
-                            $apiKey['postedValue'],
-                            $apiKey['keyName']
-                        );
-                    }
-                }
+            foreach ($apiKeys as $apiKey) {
+                $this->processApiKeys($setting['id'], $apiKey);
             }
         }
         return $settings;
@@ -264,6 +245,35 @@ class MollieSettingsPage extends WC_Settings_Page
         $hasApiFormat = preg_match($pattern, $value);
         if (!$hasApiFormat) {
             unset($_POST[$keyName]);
+        }
+    }
+
+    /**
+     * @param $id
+     * @param array $apiKey
+     * @return void
+     */
+    public function processApiKeys($id, array $apiKey): void
+    {
+        if ($id === $apiKey['keyName']) {
+            if ($apiKey['postedValue'] === '**********') {
+                // If placeholder is detected but no DB value, validate as new key
+                if (!$apiKey['valueInDb']) {
+                    $this->validateApiKeyOrRemove(
+                        $apiKey['pattern'],
+                        '', // No DB value; treat as new
+                        $apiKey['keyName']
+                    );
+                } else {
+                    $_POST[$apiKey['keyName']] = $apiKey['valueInDb'];
+                }
+            } else {
+                $this->validateApiKeyOrRemove(
+                    $apiKey['pattern'],
+                    $apiKey['postedValue'],
+                    $apiKey['keyName']
+                );
+            }
         }
     }
 }

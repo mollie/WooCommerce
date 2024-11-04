@@ -199,43 +199,46 @@ class MollieSettingsPage extends WC_Settings_Page
         if (!$isNonceValid) {
             return $settings;
         }
-        $liveKeyName = 'mollie-payments-for-woocommerce_live_api_key';
-        $testKeyName = 'mollie-payments-for-woocommerce_test_api_key';
-        $liveValueInDb = get_option($liveKeyName);
-        $testValueInDb = get_option($testKeyName);
-        $postedLiveValue = isset($_POST[$liveKeyName]) ? sanitize_text_field(wp_unslash($_POST[$liveKeyName])) : '';
-        $postedTestValue = isset($_POST[$testKeyName]) ? sanitize_text_field(wp_unslash($_POST[$testKeyName])) : '';
+        $apiKeys = [
+            'live' => [
+                'keyName' => 'mollie-payments-for-woocommerce_live_api_key',
+                'pattern' => '/^live_\w{30,}$/',
+                'valueInDb' => get_option('mollie-payments-for-woocommerce_live_api_key'),
+                'postedValue' => isset($_POST['mollie-payments-for-woocommerce_live_api_key'])
+                    ? sanitize_text_field(wp_unslash($_POST['mollie-payments-for-woocommerce_live_api_key']))
+                    : ''
+            ],
+            'test' => [
+                'keyName' => 'mollie-payments-for-woocommerce_test_api_key',
+                'pattern' => '/^test_\w{30,}$/',
+                'valueInDb' => get_option('mollie-payments-for-woocommerce_test_api_key'),
+                'postedValue' => isset($_POST['mollie-payments-for-woocommerce_test_api_key'])
+                    ? sanitize_text_field(wp_unslash($_POST['mollie-payments-for-woocommerce_test_api_key']))
+                    : ''
+            ]
+        ];
 
         foreach ($settings as $setting) {
-            if (
-                    $setting['id']
-                    === $liveKeyName
-                    && $liveValueInDb
-            ) {
-                if ($postedLiveValue === '**********') {
-                    $_POST[$liveKeyName] = $liveValueInDb;
-                } else {
-                    $pattern = '/^live_\w{30,}$/';
-                    $this->validateApiKeyOrRemove(
-                        $pattern,
-                        $postedLiveValue,
-                        $liveKeyName
-                    );
-                }
-            } elseif (
-                    $setting['id']
-                    === $testKeyName
-                    && $testValueInDb
-            ) {
-                if ($postedTestValue === '**********') {
-                    $_POST[$testKeyName] = $testValueInDb;
-                } else {
-                    $pattern = '/^test_\w{30,}$/';
-                    $this->validateApiKeyOrRemove(
-                        $pattern,
-                        $postedTestValue,
-                        $testKeyName
-                    );
+            foreach ($apiKeys as $type => $apiKey) {
+                if ($setting['id'] === $apiKey['keyName']) {
+                    if ($apiKey['postedValue'] === '**********') {
+                        // If placeholder is detected but no DB value, validate as new key
+                        if (!$apiKey['valueInDb']) {
+                            $this->validateApiKeyOrRemove(
+                                $apiKey['pattern'],
+                                '', // No DB value; treat as new
+                                $apiKey['keyName']
+                            );
+                        } else {
+                            $_POST[$apiKey['keyName']] = $apiKey['valueInDb'];
+                        }
+                    } else {
+                        $this->validateApiKeyOrRemove(
+                            $apiKey['pattern'],
+                            $apiKey['postedValue'],
+                            $apiKey['keyName']
+                        );
+                    }
                 }
             }
         }

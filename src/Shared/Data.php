@@ -113,9 +113,9 @@ class Data
     /**
      * @param bool $overrideTestMode
      *
-     * @return null|string
+     * @return false|string
      */
-    public function getApiKey($overrideTestMode = 2): ?string
+    public function getApiKey($overrideTestMode = 2)
     {
         return $this->settingsHelper->getApiKey($overrideTestMode);
     }

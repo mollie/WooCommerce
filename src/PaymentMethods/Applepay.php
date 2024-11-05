@@ -30,6 +30,19 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
 
     public function getFormFields($generalFormFields): array
     {
+        $notice = [
+            'notice' => [
+                'title' =>
+
+                    __(
+                        '<p>Important: The Cart & Express Checkout Smart Button Stylings may be controlled in the Editor on the Block Checkout configuration.</p>',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                'type' => 'title',
+                'class' => 'notice notice-warning',
+                'css' => 'padding:20px;',
+            ],
+        ];
         $paymentMethodFormFieds = [
             'mollie_apple_pay_button_enabled_cart' => [
                 'title' => __('Enable Apple Pay Button on Cart page', 'mollie-payments-for-woocommerce'),
@@ -56,6 +69,6 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
                 'default' => 'no',
             ],
         ];
-        return array_merge($generalFormFields, $paymentMethodFormFieds);
+        return array_merge($notice, $generalFormFields, $paymentMethodFormFieds);
     }
 }

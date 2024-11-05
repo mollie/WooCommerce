@@ -22,6 +22,7 @@ class Giropay extends AbstractPaymentMethod implements PaymentMethodI
             'filtersOnBuild' => false,
             'confirmationDelayed' => true,
             'SEPA' => true,
+            'docs' => 'https://help.mollie.com/hc/en-gb/articles/19745480480786-Giropay-Depreciation-FAQ',
         ];
     }
 

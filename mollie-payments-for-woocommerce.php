@@ -3,11 +3,11 @@
  * Plugin Name: Mollie Payments for WooCommerce
  * Plugin URI: https://www.mollie.com
  * Description: Accept payments in WooCommerce with the official Mollie plugin
- * Version: 7.8.2
+ * Version: 7.9.0-beta
  * Author: Mollie
  * Author URI: https://www.mollie.com
  * Requires at least: 5.0
- * Tested up to: 6.6
+ * Tested up to: 6.7
  * Text Domain: mollie-payments-for-woocommerce
  * Domain Path: /languages
  * License: GPLv2 or later
@@ -45,20 +45,6 @@ define('M4W_PLUGIN_DIR', dirname(M4W_FILE));
 // Plugin folder URL.
 if (!defined('M4W_PLUGIN_URL')) {
     define('M4W_PLUGIN_URL', plugin_dir_url(M4W_FILE));
-}
-
-/**
- * Called when plugin is activated
- */
-function mollie_wc_plugin_activation_hook()
-{
-    require_once __DIR__ . '/inc/functions.php';
-
-    if (!mollie_wc_plugin_autoload()) {
-        return;
-    }
-
-    mollieDeleteWPTranslationFiles();
 }
 
 
@@ -167,12 +153,13 @@ function initialize()
             new UninstallModule(),
         ];
         $modules = apply_filters('mollie_wc_plugin_modules', $modules);
-        $bootstrap->boot(...$modules);
+        foreach ($modules as $module) {
+            $bootstrap->addModule($module);
+        }
+        $bootstrap->boot();
     } catch (Throwable $throwable) {
         handleException($throwable);
     }
 }
 
 add_action('plugins_loaded', __NAMESPACE__ . '\\initialize');
-
-register_activation_hook(M4W_FILE, __NAMESPACE__ . '\mollie_wc_plugin_activation_hook');

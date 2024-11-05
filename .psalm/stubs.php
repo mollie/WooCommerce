@@ -4,7 +4,6 @@ function as_unschedule_action($string) {}
 function mollieWooCommerceIsCheckoutContext() {}
 function wcs_get_subscriptions($subs) {}
 function mollieWooCommerceFormatCurrencyValue($value, $currency){}
-function mollieDeleteWPTranslationFiles(){}
 function mollieWooCommerceIsPayPalButtonEnabled($page){}
 function mollieWooCommerceIsApplePayDirectEnabled($page){}
 function mollieWooCommerceCheckIfNeedShipping($product){}

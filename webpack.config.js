@@ -31,7 +31,8 @@ function configJavaScript ({ basePath })
     .addEntry('paypalButtonBlockComponent.min', './resources/js/paypalButtonBlockComponent.js')
     .addEntry('applepayButtonBlock.min', './resources/js/applepayButtonBlock.js')
     .addEntry('rivertyCountryPlaceholder.min', './resources/js/rivertyCountryPlaceholder.js')
-    .enableSourceMaps(!Encore.isProduction())
+      .addEntry('mollie-settings-2024.min', './resources/js/mollie-settings-2024.js')
+      .enableSourceMaps(!Encore.isProduction())
 
   return extractEncoreConfig('javascript-configuration')
 }

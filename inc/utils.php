@@ -190,50 +190,6 @@ function mollieWooCommerceFormatCurrencyValue($value, $currency)
     return number_format($value, 2, '.', '');
 }
 
-function mollieUpdateCompleted($upgrader_object, $options)
-{
-    //whenever something gets updated they update the languages, we need to delete them
-    mollieDeleteWPTranslationFiles();
-}
-
-function mollieDeleteWPTranslationFiles()
-{
-    if (!function_exists('WP_Filesystem')) {
-        require_once ABSPATH . '/wp-admin/includes/file.php';
-    }
-    WP_Filesystem();
-    global $wp_filesystem;
-    if (!$wp_filesystem) {
-        return;
-    }
-    $remote_destination = $wp_filesystem->find_folder(WP_LANG_DIR);
-    if (!$wp_filesystem->exists($remote_destination)) {
-        return;
-    }
-    $languageExtensions = [
-        'de_DE',
-        'de_DE_formal',
-        'es_ES',
-        'fr_FR',
-        'it_IT',
-        'nl_BE',
-        'nl_NL',
-        'nl_NL_formal',
-        'en_GB',
-        'nl_BE_formal',
-    ];
-    $translationExtensions = ['.mo', '.po', '.l10n.php'];
-    $destination = WP_LANG_DIR
-        . '/plugins/mollie-payments-for-woocommerce-';
-    foreach ($languageExtensions as $languageExtension) {
-        foreach ($translationExtensions as $translationExtension) {
-            $file = $destination . $languageExtension
-                . $translationExtension;
-            $wp_filesystem->delete($file, false);
-        }
-    }
-}
-
 function transformPhoneToNLFormat($phone)
 {
     $startsWith06 = preg_match('/^06/', $phone);

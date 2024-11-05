@@ -1,4 +1,5 @@
 import {ApplePayButtonComponent} from "./blocks/ApplePayButtonComponent";
+import {ApplePayButtonEditorComponent} from "./blocks/ApplePayButtonEditorComponent";
 
 (
     function ({mollieApplePayBlockDataCart}) {
@@ -15,7 +16,7 @@ import {ApplePayButtonComponent} from "./blocks/ApplePayButtonComponent";
         registerExpressPaymentMethod({
             name: 'mollie_wc_gateway_applepay_express',
             content: < ApplePayButtonComponent/>,
-            edit: < ApplePayButtonComponent/>,
+            edit: < ApplePayButtonEditorComponent/>,
             ariaLabel: 'Apple Pay',
             canMakePayment: () => true,
             paymentMethodId: 'mollie_wc_gateway_applepay',

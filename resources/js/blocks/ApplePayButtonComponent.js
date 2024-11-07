@@ -11,11 +11,10 @@ export const ApplePayButtonComponent = ({ buttonAttributes = {} }) => {
         shop: {countryCode, currencyCode = 'EUR', totalLabel = ''},
         ajaxUrl,
     } = mollieApplePayBlockDataCart
-    const { useMemo } = wp.element;
-    const style = useMemo(() => ({
+    const style = {
         height: `${buttonAttributes.height || 48}px`,
         borderRadius: `${buttonAttributes.borderRadius || 4}px`
-    }), [buttonAttributes.height, buttonAttributes.borderRadius]);
+    }
 
     const findSelectedShippingMethod = (shippingRates) => {
         let shippingRate = shippingRates.find((shippingMethod) => shippingMethod.selected === true)

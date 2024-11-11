@@ -1,0 +1,62 @@
+{
+  "name": "mollie-playwright-tests",
+  "version": "1.0.0",
+  "description": "Playwright e2e tests for Mollie",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inpsyde/playwright-tests.git"
+  },
+  "author": {
+    "name": "Inpsyde GmbH",
+    "email": "hello@inpsyde.com",
+    "url": "https://inpsyde.com/"
+  },
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/inpsyde/playwright-tests/issues"
+  },
+  "homepage": "https://github.com/inpsyde/playwright-tests#readme",
+  "dependencies": {
+    "@inpsyde/playwright-utils": "^2.0.0-beta.2",
+    "dotenv": "^16.3.1",
+    "dotenv-cli": "^7.3.0",
+    "playwright": "^1.40.1",
+    "yarn": "^1.22.21"
+  },
+  "devDependencies": {
+    "@percy/cli": "^1.28.0",
+    "@percy/playwright": "^1.0.4",
+    "@playwright/test": "^1.38.1",
+    "@types/node": "^20.8.4",
+    "@wordpress/scripts": "^25.0.0"
+  },
+  "scripts": {
+    "setup:tests": "npm install && npx playwright install",
+    "setup:utils": "npm run setup:tests && cd ./playwright-utils && yarn devLocal",
+    "lint:md": "wp-scripts lint-md-docs ./**/*.md README.md",
+    "lint:js": "wp-scripts lint-js ./**/*.{ts,tsx,mjs} projects/**/.*/*.{ts,tsx,mjs}",
+    "lint:js:fix": "wp-scripts lint-js --fix ./**/*.{ts,tsx,mjs} ./**/**/*.{ts,tsx,mjs} ./**/.*/*.{ts,tsx,mjs} ./**/**/.*/*.{ts,tsx,mjs}",
+    "all": "npx playwright test --project=all --workers=1",
+    "sequential": "npx playwright test --project=sequential --workers=1",
+    "parallel-transaction-eur-classic": "npx playwright test --project=transaction-eur-classic --workers=5",
+    "parallel-transaction-eur-block": "npx playwright test --project=transaction-eur-block --workers=3",
+    "transaction-non-eur": "npx playwright test --project=transaction-non-eur workers=1",
+    "parallel-surcharge": "npx playwright test --project=surcharge --workers=3",
+    "parallel-transactions": "npm run parallel-transaction-eur-block & npm run parallel-transaction-eur-classic",
+    "all-with-parallel": "npm run sequential & npm run parallel-surcharge & npm run parallel-transactions"
+  },
+  "eslintConfig": {
+    "extends": [
+      "plugin:@wordpress/eslint-plugin/recommended"
+    ],
+    "rules": {
+      "@wordpress/dependency-group": "error",
+      "@wordpress/no-unsafe-wp-apis": "off",
+      "no-console": "off"
+    }
+  },
+  "workspaces": [
+    "playwright-utils"
+  ]
+}

@@ -50,7 +50,7 @@ __\* - Currently the `@inpsyde/playwright-utils` needs to be installed locally (
 
 1. Remove `"workspaces": [ "playwright-utils" ]` from `package.json`.
 
-2. In the root of the monorepo run following command:
+2. In the test project (`./tests/qa`) run following command:
 
 ```bash
 npm run setup:tests
@@ -62,7 +62,7 @@ npm run setup:tests
 
 2. Delete `@inpsyde/playwright-utils` from `/node_modules`.
 
-3. In the root of the monorepo run following command:
+3. In the test project (`./tests/qa`) run following command:
 
 	```bash
 	git clone https://github.com/inpsyde/playwright-utils.git
@@ -144,14 +144,14 @@ npx playwright test --project=all
 	"scripts": {
 		"all": "npx playwright test --project=all --workers=1",
 		"sequential": "npx playwright test --project=sequential --workers=1",
-		"parallel-surcharge": "npx playwright test --project=surcharge --workers=3"
+		"parallel-transaction-eur-block": "npx playwright test --project=transaction-eur-block --workers=3"
 	},
 	```
 
 	Run script with the following command:
 
 	```bash
-	npm run parallel-transactions
+	npm run parallel-transaction-eur-block
 	```
 
 	\* - there's a number of tests which can be executed in parallel to speed up test execution (see `projects` section in `playwright.config.ts`).
@@ -202,6 +202,8 @@ npx playwright test --project=all
 	```bash
 	npx playwright test --grep --% "C123^|C124^|C125" --debug
 	```
+
+	\* - command for restarting failed/skipped tests is posted to the terminal after the execution.
 
 10. Report bugs (if any) and attach them to the test-runs of failed tests.
 

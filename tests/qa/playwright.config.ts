@@ -99,7 +99,6 @@ export default defineConfig( {
 			dependencies: [ 'setup-woocommerce' ],
 			fullyParallel: false,
 			testIgnore: [
-				'surcharge.spec.ts',
 				'eur-checkout-classic.spec.ts',
 				'eur-checkout.spec.ts',
 				'eur-pay-for-order.spec.ts',
@@ -114,12 +113,6 @@ export default defineConfig( {
 				'non-eur-pay-for-order.spec.ts',
 			],
 			fullyParallel: false,
-		},
-		{
-			name: 'surcharge',
-			dependencies: [ 'setup-mollie', 'setup-pages-classic' ],
-			testMatch: [ 'surcharge.spec.ts' ],
-			fullyParallel: true,
 		},
 		{
 			name: 'transaction-eur-classic',

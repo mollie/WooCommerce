@@ -44,7 +44,7 @@ for ( const surcharge of allTests ) {
 			const gateway = gateways[ tested.gateway ];
 			const country = gateway.country;
 
-			test( `${ tested.testId } | ${ surcharge.title } "${ gateway.name } "`, async ( {
+			test( `${ tested.testId } | ${ surcharge.title } "${ gateway.name }"`, async ( {
 				mollieApi,
 				utils,
 				classicCheckout,

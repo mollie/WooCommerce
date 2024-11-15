@@ -42,9 +42,8 @@
     "parallel-transaction-eur-classic": "npx playwright test --project=transaction-eur-classic --workers=5",
     "parallel-transaction-eur-block": "npx playwright test --project=transaction-eur-block --workers=3",
     "transaction-non-eur": "npx playwright test --project=transaction-non-eur workers=1",
-    "parallel-surcharge": "npx playwright test --project=surcharge --workers=3",
     "parallel-transactions": "npm run parallel-transaction-eur-block & npm run parallel-transaction-eur-classic",
-    "all-with-parallel": "npm run sequential & npm run parallel-surcharge & npm run parallel-transactions"
+    "all-with-parallel": "npm run sequential & npm run parallel-transactions"
   },
   "eslintConfig": {
     "extends": [

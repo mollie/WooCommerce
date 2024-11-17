@@ -1,16 +1,15 @@
 /**
  * Internal dependencies
  */
-import { test } from '../../utils';
-import { testPaymentStatusCheckout } from './.test-scenarios';
-import { createShopOrder, paymentStatusCheckoutEur } from './.test-data';
-import { shopSettings } from '../../resources';
+import { test } from '../../../utils';
+import { testPaymentStatusOnCheckout } from './.test-scenarios';
+import { createShopOrder, checkoutNonEur } from './.test-data';
+import { shopSettings } from '../../../resources';
 
 test.beforeAll( async ( { utils }, testInfo ) => {
 	if ( testInfo.project.name !== 'all' ) {
 		return;
 	}
-
 	await utils.configureStore( {
 		settings: {
 			general: shopSettings.germany.general,
@@ -21,7 +20,7 @@ test.beforeAll( async ( { utils }, testInfo ) => {
 	await utils.cleanReconnectMollie();
 } );
 
-for ( const testData of paymentStatusCheckoutEur ) {
+for ( const testData of checkoutNonEur ) {
 	const order = createShopOrder( testData );
-	testPaymentStatusCheckout( testData.testId, order );
+	testPaymentStatusOnCheckout( testData.testId, order );
 }

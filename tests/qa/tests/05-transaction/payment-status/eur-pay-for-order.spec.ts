@@ -1,10 +1,10 @@
 /**
  * Internal dependencies
  */
-import { test } from '../../utils';
-import { testPaymentStatusPayForOrder } from './.test-scenarios';
-import { createShopOrder, paymentStatusPayForOrderEur } from './.test-data';
-import { shopSettings } from '../../resources';
+import { test } from '../../../utils';
+import { testPaymentStatusOnPayForOrder } from './.test-scenarios';
+import { createShopOrder, payForOrderEur } from './.test-data';
+import { shopSettings } from '../../../resources';
 
 test.beforeAll( async ( { utils }, testInfo ) => {
 	if ( testInfo.project.name !== 'all' ) {
@@ -20,7 +20,7 @@ test.beforeAll( async ( { utils }, testInfo ) => {
 	await utils.cleanReconnectMollie();
 } );
 
-for ( const testData of paymentStatusPayForOrderEur ) {
+for ( const testData of payForOrderEur ) {
 	const order = createShopOrder( testData );
-	testPaymentStatusPayForOrder( testData.testId, order );
+	testPaymentStatusOnPayForOrder( testData.testId, order );
 }

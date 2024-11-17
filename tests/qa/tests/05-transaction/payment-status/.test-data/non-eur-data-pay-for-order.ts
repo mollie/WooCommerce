@@ -1,53 +1,53 @@
 /**
  * Internal dependencies
  */
-import { MollieTestData } from '../../../resources';
+import { MollieTestData } from '../../../../resources';
 
-export const paymentStatusCheckoutNonEur: MollieTestData.PaymentStatus[] = [
+export const payForOrderNonEur: MollieTestData.PaymentStatus[] = [
 	{
-		testId: 'C3007271',
+		testId: 'C3007279',
 		gatewaySlug: 'twint',
 		paymentStatus: 'paid',
 		orderStatus: 'processing',
 	},
 	{
-		testId: 'C3007272',
+		testId: 'C3007280',
 		gatewaySlug: 'twint',
 		paymentStatus: 'failed',
 		orderStatus: 'pending',
 	},
 	{
-		testId: 'C3007273',
+		testId: 'C3007281',
 		gatewaySlug: 'twint',
 		paymentStatus: 'canceled',
 		orderStatus: 'pending',
 	},
 	{
-		testId: 'C3007274',
+		testId: 'C3007282',
 		gatewaySlug: 'twint',
 		paymentStatus: 'expired',
 		orderStatus: 'pending',
 	},
 	{
-		testId: 'C3007275',
+		testId: 'C3007287',
 		gatewaySlug: 'blik',
 		paymentStatus: 'paid',
 		orderStatus: 'processing',
 	},
 	{
-		testId: 'C3007276',
+		testId: 'C3007288',
 		gatewaySlug: 'blik',
 		paymentStatus: 'failed',
 		orderStatus: 'pending',
 	},
 	{
-		testId: 'C3007277',
+		testId: 'C3007289',
 		gatewaySlug: 'blik',
 		paymentStatus: 'canceled',
 		orderStatus: 'pending',
 	},
 	{
-		testId: 'C3007278',
+		testId: 'C3007290',
 		gatewaySlug: 'blik',
 		paymentStatus: 'expired',
 		orderStatus: 'pending',

@@ -7,7 +7,7 @@ import {
 	guests,
 	orders,
 	products,
-} from '../../../resources';
+} from '../../../../resources';
 
 export const createShopOrder = (
 	testData: MollieTestData.PaymentStatus
@@ -17,10 +17,16 @@ export const createShopOrder = (
 		...orders.default,
 		products: [ products.mollieSimple100 ],
 		payment: {
-			gateway,
-			billingCompany: testData.billingCompany,
-			card: testData.card,
-			bankIssuer: testData.bankIssuer,
+			gateway: {
+				...gateway,
+				settings: {
+					...gateway.settings,
+					mollie_components_enabled: testData.mollieComponentsEnabled, // for card tests with mollie components
+				},
+			},
+			billingCompany: testData.billingCompany, // for billie tests
+			card: testData.card, // for card tests
+			bankIssuer: testData.bankIssuer, // for kbc tests
 			status: testData.paymentStatus,
 		},
 		orderStatus: testData.orderStatus,

@@ -1,9 +1,9 @@
 /**
  * Internal dependencies
  */
-import { MollieTestData } from '../../../resources';
+import { MollieTestData } from '../../../../resources';
 
-export const paymentStatusCheckoutClassicNonEur: MollieTestData.PaymentStatus[] =
+export const classicCheckoutNonEur: MollieTestData.PaymentStatus[] =
 	[
 		{
 			testId: 'C300724',

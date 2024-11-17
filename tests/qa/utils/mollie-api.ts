@@ -10,13 +10,12 @@ import { MollieSettings } from '../resources';
 export class MollieApi extends WooCommerceApi {
 	updateMollieGateway = async (
 		gatewaySlug: string,
-		settings: MollieSettings.Gateway
+		data: MollieSettings.Gateway
 	) => {
-		const requestData = { settings };
 		const response = await this.wcRequest(
 			'put',
 			`payment_gateways/mollie_wc_gateway_${ gatewaySlug }`,
-			requestData
+			{ settings: data }
 		);
 		return response;
 	};

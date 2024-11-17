@@ -89,14 +89,14 @@ export class MollieHostedCheckout extends WpPage {
 
 		if (
 			payment.gateway.slug === 'kbc' &&
-			! payment.gateway.settings.kbcShowBanksDropdown
+			payment.gateway.settings.issuers_dropdown_shown === 'no'
 		) {
 			await this.payWithBank( payment.bankIssuer );
 		}
 
 		if (
 			payment.gateway.slug === 'creditcard' &&
-			! payment.gateway.settings.enableMollieComponents
+			payment.gateway.settings.mollie_components_enabled === 'no'
 		) {
 			await this.payWithCard( payment.card );
 		}

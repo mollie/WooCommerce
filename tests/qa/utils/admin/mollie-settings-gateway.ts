@@ -178,13 +178,13 @@ export class MollieSettingsGateway extends WooCommerceAdminPage {
 	 * @param data
 	 */
 	setup = async ( data: MollieSettings.Gateway = this.gateway.settings ) => {
-		if ( data.enableGateway !== undefined ) {
-			await this.enableGatewayCheckbox().setChecked( data.enableGateway );
+		if ( data.enabled !== undefined ) {
+			await this.enableGatewayCheckbox().setChecked( data.enabled );
 		}
 
-		if ( data.useApiTitle !== undefined ) {
+		if ( data.use_api_title !== undefined ) {
 			await this.useApiDynamicTitleAndGatewayLogoCheckbox().setChecked(
-				data.useApiTitle
+				data.use_api_title === 'yes'
 			);
 		}
 
@@ -192,17 +192,17 @@ export class MollieSettingsGateway extends WooCommerceAdminPage {
 			await this.titleInput().fill( data.title );
 		}
 
-		if ( data.displayLogo !== undefined ) {
-			await this.displayLogoCheckbox().setChecked( data.displayLogo );
+		if ( data.display_logo !== undefined ) {
+			await this.displayLogoCheckbox().setChecked( data.display_logo === 'yes' );
 		}
 
-		if ( data.enableCustomLogo !== undefined ) {
+		if ( data.enable_custom_logo !== undefined ) {
 			await this.enableCustomLogoCheckbox().setChecked(
-				data.enableCustomLogo
+				data.enable_custom_logo === 'yes'
 			);
 		}
 
-		if ( data.enableCustomLogo === true && data.customLogoPath ) {
+		if ( data.enable_custom_logo === 'yes' && data.custom_logo_path ) {
 			await this.uploadCustomLogoButton().setInputFiles(
 				'./resources/files/mollie-test-logo.png'
 			);
@@ -212,10 +212,10 @@ export class MollieSettingsGateway extends WooCommerceAdminPage {
 			await this.descriptionTextarea().fill( data.description );
 		}
 
-		if ( data.sellToCountries && data.sellToCountries.length > 0 ) {
+		if ( data[ 'allowed_countries[]' ] && data[ 'allowed_countries[]' ].length > 0 ) {
 			await this.selectNoneButton().click();
-			if ( data.sellToCountries.length ) {
-				for ( const country of data.sellToCountries ) {
+			if ( data[ 'allowed_countries[]' ].length ) {
+				for ( const country of data[ 'allowed_countries[]' ] ) {
 					await this.sellToSpecificCountriesCombobox().click();
 					await this.dropdownOption( country ).click();
 				}
@@ -252,145 +252,145 @@ export class MollieSettingsGateway extends WooCommerceAdminPage {
 			}
 		}
 
-		if ( data.activateExpiryDaysSetting !== undefined ) {
+		if ( data.activate_expiry_days_setting !== undefined ) {
 			await this.activateExpiryTimeSettingCheckbox().setChecked(
-				data.activateExpiryDaysSetting
+				data.activate_expiry_days_setting === 'yes'
 			);
 		}
 
-		if ( data.orderDueDate ) {
-			await this.expiryTimeInput().fill( data.orderDueDate );
+		if ( data.order_dueDate ) {
+			await this.expiryTimeInput().fill( data.order_dueDate );
 		}
 
-		if ( data.showIssuersDropdown ) {
+		if ( data.issuers_dropdown_shown ) {
 			await this.showIssuersDropdownCheckbox().setChecked(
-				data.showIssuersDropdown
+				data.issuers_dropdown_shown === 'yes'
 			);
 		}
 
-		if ( data.initialOrderStatus ) {
+		if ( data.initial_order_status ) {
 			await this.initialOrderStatusSelect().selectOption(
-				data.initialOrderStatus
+				data.initial_order_status
 			);
 		}
 
-		if ( data.banktransferSkipMolliePaymentScreen !== undefined ) {
+		if ( data.skip_mollie_payment_screen !== undefined ) {
 			await this.skipMolliePaymentScreenCheckbox().setChecked(
-				data.banktransferSkipMolliePaymentScreen
+				data.skip_mollie_payment_screen === 'yes'
 			);
 		}
 
-		if ( data.enableApplePayButtonOnCart !== undefined ) {
+		if ( data.mollie_apple_pay_button_enabled_cart !== undefined ) {
 			await this.enableApplePayButtonOnCartCheckbox().setChecked(
-				data.enableApplePayButtonOnCart
+				data.mollie_apple_pay_button_enabled_cart === 'yes'
 			);
 		}
 
-		if ( data.enableApplePayButtonOnProduct !== undefined ) {
+		if ( data.mollie_apple_pay_button_enabled_product !== undefined ) {
 			await this.enableApplePayButtonOnProductCheckbox().setChecked(
-				data.enableApplePayButtonOnProduct
+				data.mollie_apple_pay_button_enabled_product === 'yes'
 			);
 		}
 
-		if ( data.enableApplePayExpressButtonOnCheckout !== undefined ) {
+		if ( data.mollie_apple_pay_button_enabled_express_checkout !== undefined ) {
 			await this.enableApplePayExpressButtonOnCheckoutCheckbox().setChecked(
-				data.enableApplePayExpressButtonOnCheckout
+				data.mollie_apple_pay_button_enabled_express_checkout === 'yes'
 			);
 		}
 
-		if ( data.paypalDisplayOnCart !== undefined ) {
+		if ( data.mollie_paypal_button_enabled_cart !== undefined ) {
 			await this.paypalDisplayOnCartCheckbox().setChecked(
-				data.paypalDisplayOnCart
+				data.mollie_paypal_button_enabled_cart === 'yes'
 			);
 		}
 
-		if ( data.paypalDisplayOnProduct !== undefined ) {
+		if ( data.mollie_paypal_button_enabled_product !== undefined ) {
 			await this.paypalDisplayOnProductCheckbox().setChecked(
-				data.paypalDisplayOnProduct
+				data.mollie_paypal_button_enabled_product === 'yes'
 			);
 		}
 
-		if ( data.paypalButtonTextLanguageAndColor ) {
+		if ( data.paypal_color ) {
 			await this.paypalButtonTextLanguageAndColorSelect().selectOption(
-				data.paypalButtonTextLanguageAndColor
+				data.paypal_color
 			);
 		}
 
-		if ( data.paypalMinimumAmountToDisplayButton ) {
+		if ( data.mollie_paypal_button_minimum_amount ) {
 			await this.paypalMinimumAmountToDisplayButtonInput().fill(
-				data.paypalMinimumAmountToDisplayButton
+				data.mollie_paypal_button_minimum_amount
 			);
 		}
 
-		if ( data.giftcardShowDropdown !== undefined ) {
+		if ( data.issuers_dropdown_shown !== undefined ) {
 			await this.giftcardsShowDropdownCheckbox().setChecked(
-				data.giftcardShowDropdown
+				data.issuers_dropdown_shown === 'yes'
 			);
 		}
 
-		if ( data.kbcShowBanksDropdown !== undefined ) {
+		if ( data.issuers_dropdown_shown !== undefined ) {
 			await this.kbcShowBanksDropdownCheckbox().setChecked(
-				data.kbcShowBanksDropdown
+				data.issuers_dropdown_shown === 'yes'
 			);
 		}
 
-		if ( data.issuersEmptyOption ) {
+		if ( data.issuers_empty_option ) {
 			await this.kbcIssuersEmptyOptionInput().fill(
-				data.issuersEmptyOption
+				data.issuers_empty_option
 			);
 		}
 
-		if ( data.voucherDefaultProductsCategory ) {
+		if ( data.mealvoucher_category_default ) {
 			await this.voucherDefaultProductsCategorySelect().selectOption(
-				data.voucherDefaultProductsCategory
+				data.mealvoucher_category_default
 			);
 		}
 
-		if ( data.enableMollieCreditcardIcons !== undefined ) {
+		if ( data.mollie_creditcard_icons_enabler !== undefined ) {
 			await this.enableIconsSelectorCheckbox().setChecked(
-				data.enableMollieCreditcardIcons
+				data.mollie_creditcard_icons_enabler === 'yes'
 			);
 		}
 
-		if ( data.enableMollieCreditcardIconsAmex !== undefined ) {
+		if ( data.mollie_creditcard_icons_amex !== undefined ) {
 			await this.showAmericanExpressIconCheckbox().setChecked(
-				data.enableMollieCreditcardIconsAmex
+				data.mollie_creditcard_icons_amex === 'yes'
 			);
 		}
 
-		if ( data.enableMollieCreditcardIconsCartaSi !== undefined ) {
+		if ( data.mollie_creditcard_icons_cartasi !== undefined ) {
 			await this.showCartaSiIconCheckbox().setChecked(
-				data.enableMollieCreditcardIconsCartaSi
+				data.mollie_creditcard_icons_cartasi === 'yes'
 			);
 		}
 
-		if ( data.enableMollieCreditcardICarteBancaire !== undefined ) {
+		if ( data.mollie_creditcard_icons_cartebancaire !== undefined ) {
 			await this.showCarteBancaireIconCheckbox().setChecked(
-				data.enableMollieCreditcardICarteBancaire
+				data.mollie_creditcard_icons_cartebancaire === 'yes'
 			);
 		}
 
-		if ( data.enableMollieCreditcardIconsMaestro !== undefined ) {
+		if ( data.mollie_creditcard_icons_maestro !== undefined ) {
 			await this.showMaestroIconCheckbox().setChecked(
-				data.enableMollieCreditcardIconsMaestro
+				data.mollie_creditcard_icons_maestro === 'yes'
 			);
 		}
 
-		if ( data.enableMollieCreditcardIconsMastercard !== undefined ) {
+		if ( data.mollie_creditcard_icons_mastercard !== undefined ) {
 			await this.showMastercardIconCheckbox().setChecked(
-				data.enableMollieCreditcardIconsMastercard
+				data.mollie_creditcard_icons_mastercard === 'yes'
 			);
 		}
 
-		if ( data.enableMollieCreditcardIconsVisa !== undefined ) {
+		if ( data.mollie_creditcard_icons_visa !== undefined ) {
 			await this.showVisaIconCheckbox().setChecked(
-				data.enableMollieCreditcardIconsVisa
+				data.mollie_creditcard_icons_visa === 'yes'
 			);
 		}
 
-		if ( data.enableMollieCreditcardIconsVpay !== undefined ) {
+		if ( data.mollie_creditcard_icons_vpay !== undefined ) {
 			await this.showVpayIconCheckbox().setChecked(
-				data.enableMollieCreditcardIconsVpay
+				data.mollie_creditcard_icons_vpay === 'yes'
 			);
 		}
 	};

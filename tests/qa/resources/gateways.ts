@@ -4,12 +4,12 @@
 import { MollieGateway, MollieSettings } from './types';
 
 export const defaultGatewaySettings: MollieSettings.Gateway = {
-	enableGateway: true,
-	useApiTitle: false,
-	displayLogo: true,
-	enableCustomLogo: false,
+	enabled: true,
+	use_api_title: 'no',
+	display_logo: 'yes',
+	enable_custom_logo: 'no',
 	description: '',
-	sellToCountries: [],
+	'allowed_countries[]': [],
 
 	payment_surcharge: 'no_fee',
 	fixed_fee: '',
@@ -17,9 +17,9 @@ export const defaultGatewaySettings: MollieSettings.Gateway = {
 	percentage: '',
 	surcharge_limit: '',
 
-	activateExpiryDaysSetting: false,
-	orderDueDate: '10',
-	enableMollieComponents: false,
+	activate_expiry_days_setting: 'no',
+	order_dueDate: '10',
+	mollie_components_enabled: 'no',
 };
 
 const alma: MollieGateway = {
@@ -42,9 +42,9 @@ const applepay: MollieGateway = {
 	settings: {
 		...defaultGatewaySettings,
 		title: 'Apple Pay',
-		enableApplePayButtonOnCart: false,
-		enableApplePayButtonOnProduct: false,
-		enableApplePayExpressButtonOnCheckout: false,
+		mollie_apple_pay_button_enabled_cart: 'no',
+		mollie_apple_pay_button_enabled_product: 'no',
+		mollie_apple_pay_button_enabled_express_checkout: 'no',
 	},
 };
 
@@ -80,7 +80,7 @@ const bancontact: MollieGateway = {
 	settings: {
 		...defaultGatewaySettings,
 		title: 'Bancontact',
-		initialOrderStatus: 'on-hold',
+		initial_order_status: 'on-hold',
 	},
 };
 
@@ -92,9 +92,9 @@ const banktransfer: MollieGateway = {
 	settings: {
 		...defaultGatewaySettings,
 		title: 'Bank transfer',
-		initialOrderStatus: 'on-hold',
-		orderDueDate: '12',
-		banktransferSkipMolliePaymentScreen: false,
+		initial_order_status: 'on-hold',
+		order_dueDate: '12',
+		skip_mollie_payment_screen: 'no',
 	},
 };
 
@@ -106,7 +106,7 @@ const belfius: MollieGateway = {
 	settings: {
 		...defaultGatewaySettings,
 		title: 'Belfius Pay Button',
-		initialOrderStatus: 'on-hold',
+		initial_order_status: 'on-hold',
 	},
 };
 
@@ -143,15 +143,15 @@ const creditcard: MollieGateway = {
 	settings: {
 		...defaultGatewaySettings,
 		title: 'Card',
-		enableMollieComponents: false,
-		enableMollieCreditcardIcons: false,
-		enableMollieCreditcardIconsAmex: false,
-		enableMollieCreditcardIconsCartaSi: false,
-		enableMollieCreditcardICarteBancaire: false,
-		enableMollieCreditcardIconsMaestro: false,
-		enableMollieCreditcardIconsMastercard: false,
-		enableMollieCreditcardIconsVisa: false,
-		enableMollieCreditcardIconsVpay: false,
+		mollie_components_enabled: 'no',
+		mollie_creditcard_icons_enabler: 'no',
+		mollie_creditcard_icons_amex: 'no',
+		mollie_creditcard_icons_cartasi: 'no',
+		mollie_creditcard_icons_cartebancaire: 'no',
+		mollie_creditcard_icons_maestro: 'no',
+		mollie_creditcard_icons_mastercard: 'no',
+		mollie_creditcard_icons_visa: 'no',
+		mollie_creditcard_icons_vpay: 'no',
 	},
 };
 
@@ -163,7 +163,7 @@ const directdebit: MollieGateway = {
 	settings: {
 		...defaultGatewaySettings,
 		title: 'SEPA Direct Debit',
-		initialOrderStatus: 'on-hold',
+		initial_order_status: 'on-hold',
 	},
 };
 
@@ -175,7 +175,7 @@ const eps: MollieGateway = {
 	settings: {
 		...defaultGatewaySettings,
 		title: 'eps',
-		initialOrderStatus: 'on-hold',
+		initial_order_status: 'on-hold',
 	},
 };
 
@@ -188,8 +188,8 @@ const giftcard: MollieGateway = {
 		...defaultGatewaySettings,
 		title: 'Gift cards',
 		description: 'Select your gift card',
-		showIssuersDropdown: true,
-		issuersEmptyOption: 'Select your gift card',
+		issuers_dropdown_shown: 'no',
+		issuers_empty_option: 'Select your gift card',
 	},
 };
 
@@ -202,7 +202,7 @@ const ideal: MollieGateway = {
 	settings: {
 		...defaultGatewaySettings,
 		title: 'iDEAL',
-		initialOrderStatus: 'on-hold',
+		initial_order_status: 'on-hold',
 	},
 };
 
@@ -228,9 +228,9 @@ const kbc: MollieGateway = {
 		...defaultGatewaySettings,
 		title: 'KBC/CBC Payment Button',
 		description: 'Select your bank',
-		showIssuersDropdown: true,
-		issuersEmptyOption: 'Select your bank',
-		initialOrderStatus: 'on-hold',
+		issuers_dropdown_shown: 'yes',
+		issuers_empty_option: 'Select your bank',
+		initial_order_status: 'on-hold',
 	},
 };
 
@@ -287,10 +287,10 @@ const paypal: MollieGateway = {
 	settings: {
 		...defaultGatewaySettings,
 		title: 'PayPal',
-		paypalDisplayOnCart: false,
-		paypalDisplayOnProduct: false,
-		paypalButtonTextLanguageAndColor: 'en-buy-pill-blue',
-		paypalMinimumAmountToDisplayButton: '0',
+		mollie_paypal_button_enabled_cart: 'no',
+		mollie_paypal_button_enabled_product: 'no',
+		paypal_color: 'en-buy-pill-blue',
+		mollie_paypal_button_minimum_amount: '0',
 	},
 };
 
@@ -359,7 +359,7 @@ const trustly: MollieGateway = {
 	settings: {
 		...defaultGatewaySettings,
 		title: 'Trustly',
-		initialOrderStatus: 'on-hold',
+		initial_order_status: 'on-hold',
 	},
 };
 
@@ -383,7 +383,7 @@ const voucher: MollieGateway = {
 	settings: {
 		...defaultGatewaySettings,
 		title: 'Vouchers',
-		voucherDefaultProductsCategory: 'no_category',
+		mealvoucher_category_default: 'no_category',
 	},
 };
 
@@ -396,7 +396,7 @@ const giropay: MollieGateway = {
 	settings: {
 		...defaultGatewaySettings,
 		title: 'Giropay',
-		initialOrderStatus: 'on-hold',
+		initial_order_status: 'on-hold',
 	},
 };
 

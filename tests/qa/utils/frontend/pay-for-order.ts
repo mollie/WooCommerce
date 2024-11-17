@@ -54,7 +54,7 @@ export class PayForOrder extends PayForOrderBase {
 
 		if (
 			data.payment.gateway.slug === 'kbc' &&
-			data.payment.gateway.settings.kbcShowBanksDropdown
+			data.payment.gateway.settings.issuers_dropdown_shown === 'yes'
 		) {
 			await this.kbcIssuerSelect().selectOption(
 				data.payment.bankIssuer
@@ -87,14 +87,14 @@ export class PayForOrder extends PayForOrderBase {
 
 		if (
 			data.payment.gateway.slug === 'giftcard' &&
-			data.payment.gateway.settings.giftcardsShowDropdown
+			data.payment.gateway.settings.issuers_dropdown_shown === 'yes'
 		) {
 			await this.giftCardSelect().selectOption( 'fashioncheque' );
 		}
 
 		if (
 			data.payment.gateway.slug === 'creditcard' &&
-			data.payment.gateway.settings.enableMollieComponents
+			data.payment.gateway.settings.mollie_components_enabled === 'yes'
 		) {
 			await this.cardNumberInput().fill( data.payment.card.card_number );
 			await this.cardHolderInput().fill( data.payment.card.card_holder );

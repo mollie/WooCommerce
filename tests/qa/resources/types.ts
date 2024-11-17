@@ -135,14 +135,15 @@ export namespace MollieSettings {
 		| 'gift';
 
 	export type Gateway = {
-		enableGateway?: boolean;
-		useApiTitle?: boolean;
+		enabled?:  boolean;
+		use_api_title?: 'yes' | 'no';
 		title?: string;
-		displayLogo?: boolean;
-		enableCustomLogo?: boolean;
-		customLogoPath?: string;
+		display_logo?: 'yes' | 'no';
+		enable_custom_logo?: 'yes' | 'no';
+		custom_logo_path?: string;
+		upload_logo?: string;
 		description?: string;
-		sellToCountries?: string[];
+		'allowed_countries[]'?: string[];
 
 		payment_surcharge?: PaymentSurcharge;
 		fixed_fee?: string;
@@ -150,38 +151,34 @@ export namespace MollieSettings {
 		percentage?: string;
 		surcharge_limit?: string;
 
-		activateExpiryDaysSetting?: boolean;
-		orderDueDate?: string;
-		showIssuersDropdown?: boolean;
-		initialOrderStatus?: InitialOrderStatus;
-		enableMollieComponents?: boolean;
-		issuersEmptyOption?: string;
+		activate_expiry_days_setting?: 'yes' | 'no';
+		order_dueDate?: string;
+		issuers_dropdown_shown?: 'yes' | 'no';
+		initial_order_status?: InitialOrderStatus;
+		mollie_components_enabled?: 'yes' | 'no';
+		issuers_empty_option?: string;
 
-		banktransferSkipMolliePaymentScreen?: boolean;
+		skip_mollie_payment_screen?: 'yes' | 'no'; // banktransfer
 
-		enableApplePayButtonOnCart?: boolean;
-		enableApplePayButtonOnProduct?: boolean;
-		enableApplePayExpressButtonOnCheckout?: boolean;
+		mollie_apple_pay_button_enabled_cart?: 'yes' | 'no'; // applepay
+		mollie_apple_pay_button_enabled_product?: 'yes' | 'no'; // applepay
+		mollie_apple_pay_button_enabled_express_checkout?: 'yes' | 'no'; // applepay
 
-		paypalDisplayOnCart?: boolean;
-		paypalDisplayOnProduct?: boolean;
-		paypalButtonTextLanguageAndColor?: PaypalButtonTextLanguageAndColor;
-		paypalMinimumAmountToDisplayButton?: string;
+		mollie_paypal_button_enabled_cart?: 'yes' | 'no'; // paypal
+		mollie_paypal_button_enabled_product?: 'yes' | 'no'; // paypal
+		paypal_color?: PaypalButtonTextLanguageAndColor; // paypal
+		mollie_paypal_button_minimum_amount?: string; // paypal
 
-		giftcardShowDropdown?: boolean;
+		mealvoucher_category_default?: VoucherProductCategory; // voucher
 
-		kbcShowBanksDropdown?: boolean;
-
-		voucherDefaultProductsCategory?: VoucherProductCategory;
-
-		enableMollieCreditcardIcons?: boolean;
-		enableMollieCreditcardIconsAmex?: boolean;
-		enableMollieCreditcardIconsCartaSi?: boolean;
-		enableMollieCreditcardICarteBancaire?: boolean;
-		enableMollieCreditcardIconsMaestro?: boolean;
-		enableMollieCreditcardIconsMastercard?: boolean;
-		enableMollieCreditcardIconsVisa?: boolean;
-		enableMollieCreditcardIconsVpay?: boolean;
+		mollie_creditcard_icons_enabler?: 'yes' | 'no'; // creditcard
+		mollie_creditcard_icons_amex?: 'yes' | 'no'; // creditcard
+		mollie_creditcard_icons_cartasi?: 'yes' | 'no'; // creditcard
+		mollie_creditcard_icons_cartebancaire?: 'yes' | 'no'; // creditcard
+		mollie_creditcard_icons_maestro?: 'yes' | 'no'; // creditcard
+		mollie_creditcard_icons_mastercard?: 'yes' | 'no'; // creditcard
+		mollie_creditcard_icons_visa?: 'yes' | 'no'; // creditcard
+		mollie_creditcard_icons_vpay?: 'yes' | 'no'; // creditcard
 	};
 }
 
@@ -239,6 +236,7 @@ export namespace MollieTestData {
 		paymentStatus: MolliePaymentStatus;
 		orderStatus: WooCommerce.OrderStatus;
 		card?: WooCommerce.CreditCard;
+		mollieComponentsEnabled?: 'yes' | 'no';
 		bankIssuer?: string;
 		billingCompany?: string;
 	};

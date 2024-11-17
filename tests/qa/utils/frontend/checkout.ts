@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Checkout as CheckoutBase } from '@inpsyde/playwright-utils/build';
+import { Checkout as CheckoutBase, expect } from '@inpsyde/playwright-utils/build';
 
 export class Checkout extends CheckoutBase {
 	// Locators
@@ -56,7 +56,7 @@ export class Checkout extends CheckoutBase {
 
 		if (
 			data.payment.gateway.slug === 'kbc' &&
-			data.payment.gateway.settings.kbcShowBanksDropdown
+			data.payment.gateway.settings.issuers_dropdown_shown === 'yes'
 		) {
 			await this.kbcIssuerSelect().selectOption(
 				data.payment.bankIssuer
@@ -89,7 +89,7 @@ export class Checkout extends CheckoutBase {
 
 		if (
 			data.payment.gateway.slug === 'giftcard' &&
-			data.payment.gateway.settings.giftcardsShowDropdown &&
+			data.payment.gateway.settings.issuers_dropdown_shown === 'yes' &&
 			( await this.giftCardSelect().isVisible() )
 		) {
 			await this.giftCardSelect().selectOption( 'fashioncheque' );
@@ -97,8 +97,13 @@ export class Checkout extends CheckoutBase {
 
 		if (
 			data.payment.gateway.slug === 'creditcard' &&
-			data.payment.gateway.settings.enableMollieComponents
+			data.payment.gateway.settings.mollie_components_enabled === 'yes'
 		) {
+			// card input fields are loaded in iframes with delay
+			// unfortunately without timeout and clicking below the fields
+			// expiry date and cvv are not being filled
+			await this.page.waitForTimeout( 1000 );
+			await this.page.getByText( 'Secure payments provided by' ).click();
 			await this.cardNumberInput().fill( data.payment.card.card_number );
 			await this.cardHolderInput().fill( data.payment.card.card_holder );
 			await this.cardExpiryDateInput().fill(

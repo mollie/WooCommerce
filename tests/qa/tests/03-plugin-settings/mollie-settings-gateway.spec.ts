@@ -45,8 +45,8 @@ test.describe( `Payment method settings "${ gateway.name }"`, () => {
 		annotateGateway( gateway.slug ),
 		async ( { utils, mollieSettingsGateway, classicCheckout } ) => {
 			await mollieSettingsGateway.setup( {
-				enableCustomLogo: true,
-				customLogoPath: './resources/files/mollie-test-logo.png',
+				enable_custom_logo: "yes",
+				custom_logo_path: './resources/files/mollie-test-logo.png',
 			} );
 			await mollieSettingsGateway.saveChanges();
 
@@ -88,7 +88,7 @@ test.describe( `Payment method settings "${ gateway.name }"`, () => {
 		annotateGateway( gateway.slug ),
 		async ( { utils, mollieSettingsGateway, classicCheckout } ) => {
 			await mollieSettingsGateway.setup( {
-				sellToCountries: [ 'Spain' ],
+				'allowed_countries[]': [ 'Spain' ],
 			} );
 			await mollieSettingsGateway.saveChanges();
 

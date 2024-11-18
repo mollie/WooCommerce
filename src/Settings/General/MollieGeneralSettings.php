@@ -138,6 +138,7 @@ class MollieGeneralSettings
                     $defaultTitle
                 ),
                 'type' => 'title',
+                'description' => __('Please be aware that surcharges for specific payment methods are regulated in many regions. Ensure compliance with local laws and regulations when applying such fees.', 'mollie-payments-for-woocommerce'),
             ],
             'payment_surcharge' => [
                 'title' => __(

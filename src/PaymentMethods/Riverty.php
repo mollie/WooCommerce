@@ -37,6 +37,13 @@ class Riverty extends AbstractPaymentMethod implements PaymentMethodI
 
     public function getFormFields($generalFormFields): array
     {
+
+        unset($generalFormFields['surcharge']);
+        unset($generalFormFields['payment_surcharge']);
+        unset($generalFormFields['fixed_fee']);
+        unset($generalFormFields['percentage']);
+        unset($generalFormFields['surcharge_limit']);
+        unset($generalFormFields['maximum_limit']);
         return $generalFormFields;
     }
 

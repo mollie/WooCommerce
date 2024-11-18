@@ -77,7 +77,7 @@ class Surcharge
         }
         $feeText = $this->feeTextByType($surchargeType, $paymentMethod);
         $feeText = is_string($feeText) ? $defaultDescription . ' ' . html_entity_decode($feeText) : false;
-        $defaultFeeText = $defaultDescription . ' ' . __('A surchage fee might apply');
+        $defaultFeeText = $defaultDescription . ' ' . __('A surchage fee will apply');
 
         return $feeText ?: $defaultFeeText;
     }
@@ -259,7 +259,7 @@ class Surcharge
         $amountFee = $paymentMethod->getProperty(self::FIXED_FEE);
         $currency = get_woocommerce_currency_symbol();
         /* translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency.*/
-        return sprintf(__(' + %1$s %2$s fee might apply', 'mollie-payments-for-woocommerce'), $currency, $amountFee);
+        return sprintf(__(' + %1$s %2$s fee will apply', 'mollie-payments-for-woocommerce'), $currency, $amountFee);
     }
 
     /**
@@ -276,7 +276,7 @@ class Surcharge
         }
         $amountFee = $paymentMethod->getProperty(self::PERCENTAGE);
         /* translators: Placeholder 1: Fee amount tag.*/
-        return sprintf(__(' + %1$s%% fee might apply', 'mollie-payments-for-woocommerce'), $amountFee);
+        return sprintf(__(' + %1$s%% fee will apply', 'mollie-payments-for-woocommerce'), $amountFee);
     }
 
     /**
@@ -300,7 +300,7 @@ class Surcharge
         $amountPercent = $paymentMethod->getProperty(self::PERCENTAGE);
         return sprintf(
         /* translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency. Placeholder 3: Percentage amount. */
-            __(' + %1$s %2$s + %3$s%% fee might apply', 'mollie-payments-for-woocommerce'),
+            __(' + %1$s %2$s + %3$s%% fee will apply', 'mollie-payments-for-woocommerce'),
             $currency,
             $amountFix,
             $amountPercent

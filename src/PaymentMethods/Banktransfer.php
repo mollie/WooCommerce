@@ -42,6 +42,7 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
             'confirmationDelayed' => true,
             'SEPA' => false,
             'customRedirect' => true,
+            'docs' => 'https://www.mollie.com/gb/payments/bank-transfer',
         ];
     }
 

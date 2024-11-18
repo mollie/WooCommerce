@@ -6,7 +6,7 @@ resources/
 !vendor/mollie/mollie-api-php/Resources
 vendor/**/test*
 vendor/mollie/mollie-api-php/examples/
-languages/*.po
+languages/
 bin/
 *.lock
 composer.json

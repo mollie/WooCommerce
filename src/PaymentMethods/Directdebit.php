@@ -22,6 +22,7 @@ class Directdebit extends AbstractPaymentMethod implements PaymentMethodI
             'filtersOnBuild' => false,
             'confirmationDelayed' => true,
             'SEPA' => false,
+            'docs' => 'https://www.mollie.com/gb/payments/direct-debit',
         ];
     }
 

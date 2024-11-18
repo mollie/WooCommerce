@@ -3,8 +3,33 @@
 }
 .apple-pay-button {
   display: inline-block;
+  width: 100%;
   -webkit-appearance: -apple-pay-button;
   -apple-pay-button-type: checkout; /* also: check-out, book, or subscribe */
+}
+
+@media (max-width: 480px) {
+  .apple-pay-button {
+    height: 41px;
+    min-height: 40px;
+    max-height: 47px;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 1024px) {
+  .apple-pay-button {
+    height: 48px;
+    min-height: 48px;
+    max-height: 55px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .apple-pay-button {
+    height: 56px;
+    min-height: 56px;
+    max-height: 64px;
+  }
 }
 
 .apple-pay-button-black {

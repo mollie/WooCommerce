@@ -74,13 +74,13 @@ class AssetsModule implements ExecutableModule
                     'mollie_applepayButtonBlock',
                     $this->getPluginUrl(
                         $pluginUrl,
-                        '/public/js/applepayButtonBlockComponent.min.js'
+                        '/public/js/applepayButtonBlock.min.js'
                     ),
                     [],
                     (string) filemtime(
                         $this->getPluginPath(
                             $pluginPath,
-                            '/public/js/applepayButtonBlockComponent.min.js'
+                            '/public/js/applepayButtonBlock.min.js'
                         )
                     ),
                     true
@@ -490,7 +490,7 @@ class AssetsModule implements ExecutableModule
         if (
             $current_screen->id !== 'woocommerce_page_wc-settings'
             || $current_tab !== 'mollie_settings'
-            || $current_section !== 'advanced'
+            || $current_section !== 'mollie_advanced'
         ) {
             return;
         }
@@ -640,9 +640,32 @@ class AssetsModule implements ExecutableModule
                         true
                     );
 
+                    wp_register_script(
+                        'mollie_wc_settings_2024',
+                        $this->getPluginUrl(
+                            $pluginUrl,
+                            '/public/js/mollie-settings-2024.min.js'
+                        ),
+                        ['underscore', 'jquery'],
+                        $pluginVersion,
+                        true
+                    );
+                    $this->enqueueMollieSettings();
                     $this->enqueueIconSettings($current_section);
                 }
             }
         );
+    }
+
+    protected function enqueueMollieSettings()
+    {
+
+        $uri = isset($_SERVER['REQUEST_URI']) ? wc_clean(
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            wp_unslash($_SERVER['REQUEST_URI'])
+        ) : '';
+        if (is_string($uri) && strpos($uri, 'tab=mollie_settings')) {
+            wp_enqueue_script('mollie_wc_settings_2024');
+        }
     }
 }

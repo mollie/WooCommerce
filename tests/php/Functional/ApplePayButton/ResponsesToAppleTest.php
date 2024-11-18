@@ -71,7 +71,8 @@ class ResponsesToAppleTest extends TestCase
             ]
 
         ];
-
+        //shippingMethods is null this is not going to run
+        $applePayRequestDataObject = [];
         expect('get_bloginfo')
             ->once()
             ->with('name')
@@ -82,7 +83,7 @@ class ResponsesToAppleTest extends TestCase
         $logger = $this->helperMocks->loggerMock();
         $appleGateway = $this->mollieGateway('applepay', false, true);
         $responsesTemplate = new ResponsesToApple($logger, $appleGateway);
-        $response = $responsesTemplate->appleFormattedResponse($paymentDetails);
+        $response = $responsesTemplate->appleFormattedResponse($paymentDetails, $applePayRequestDataObject);
 
         self::assertEquals($response, $expectedResponse);
     }
@@ -107,6 +108,8 @@ class ResponsesToAppleTest extends TestCase
             'taxes' => $taxes,
             'total' => $total
         ];
+        //shippingMethods is null this is not going to run
+        $applePayRequestDataObject = [];
         $expectedResponse = [
             'newLineItems'=>[
                 [
@@ -143,7 +146,7 @@ class ResponsesToAppleTest extends TestCase
         $logger = $this->helperMocks->loggerMock();
         $appleGateway = $this->mollieGateway('applepay', false, true);
         $responsesTemplate = new ResponsesToApple($logger, $appleGateway);
-        $response = $responsesTemplate->appleFormattedResponse($paymentDetails);
+        $response = $responsesTemplate->appleFormattedResponse($paymentDetails, $applePayRequestDataObject);
 
         self::assertEquals($response, $expectedResponse);
     }

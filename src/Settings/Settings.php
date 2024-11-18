@@ -332,7 +332,7 @@ class Settings
     /**
      * @return string
      */
-    public function getLogsUrl()
+    public function getLogsUrl(): string
     {
         return admin_url('admin.php?page=wc-status&tab=logs');
     }
@@ -382,6 +382,24 @@ class Settings
     {
         $option = ['id' => $optionName];
         $this->updateMerchantIdOnApiKeyChanges($value, $option);
+    }
+
+    public function getConnectionStatus(): bool
+    {
+
+        $status = $this->statusHelper;
+        if (!$status->isCompatible()) {
+            return false;
+        }
+
+        try {
+            $apiKey = $this->getApiKey();
+            $apiClient = $this->apiHelper->getApiClient($apiKey);
+            $status->getMollieApiStatus($apiClient);
+            return true;
+        } catch (\Mollie\Api\Exceptions\ApiException $e) {
+            return false;
+        }
     }
 
     /**
@@ -447,6 +465,10 @@ class Settings
         return $date->getTimestamp();
     }
 
+    public function getPluginId()
+    {
+        return $this->pluginId;
+    }
     /**
      * @param string $setting
      *

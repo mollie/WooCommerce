@@ -29,9 +29,10 @@ function configJavaScript ({ basePath })
     .addEntry('mollie-components-blocks.min', './resources/js/mollie-components-blocks.js')
     .addEntry('mollieBlockIndex.min', './resources/js/mollieBlockIndex.js')
     .addEntry('paypalButtonBlockComponent.min', './resources/js/paypalButtonBlockComponent.js')
-    .addEntry('applepayButtonBlockComponent.min', './resources/js/applepayButtonBlockComponent.js')
+    .addEntry('applepayButtonBlock.min', './resources/js/applepayButtonBlock.js')
     .addEntry('rivertyCountryPlaceholder.min', './resources/js/rivertyCountryPlaceholder.js')
-    .enableSourceMaps(!Encore.isProduction())
+      .addEntry('mollie-settings-2024.min', './resources/js/mollie-settings-2024.js')
+      .enableSourceMaps(!Encore.isProduction())
 
   return extractEncoreConfig('javascript-configuration')
 }

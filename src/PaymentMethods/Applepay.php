@@ -31,8 +31,8 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
     public function getFormFields($generalFormFields): array
     {
 
-        $checkout_page_id = wc_get_page_id( 'checkout' );
-        $edit_checkout_page_link = get_edit_post_link( $checkout_page_id );
+        $checkout_page_id = wc_get_page_id('checkout');
+        $edit_checkout_page_link = get_edit_post_link($checkout_page_id);
 
         $notice = [
             'notice' => [
@@ -42,7 +42,7 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
                         '<p>The appearance of the Apple Pay button can be controlled in the <a href="%1$s">Checkout page editor</a>.</p>',
                         'mollie-payments-for-woocommerce'
                     ),
-                    esc_url( $edit_checkout_page_link )
+                    esc_url($edit_checkout_page_link)
                 ),
                 'type' => 'title',
                 'class' => 'notice notice-warning',

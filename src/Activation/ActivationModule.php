@@ -148,12 +148,6 @@ class ActivationModule implements ExecutableModule
      */
     public function pluginInit()
     {
-        load_plugin_textdomain(
-            'mollie-payments-for-woocommerce',
-            false,
-            dirname(plugin_basename($this->baseFile)) . '/languages/'
-        );
-
         $this->markUpdatedOrNew();
         $this->initDb();
     }

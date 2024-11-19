@@ -162,4 +162,4 @@ function initialize()
     }
 }
 
-add_action('plugins_loaded', __NAMESPACE__ . '\\initialize');
+add_action('init', __NAMESPACE__ . '\\initialize');

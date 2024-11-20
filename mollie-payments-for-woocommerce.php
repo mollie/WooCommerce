@@ -162,4 +162,4 @@ function initialize()
     }
 }
 
-add_action('init', __NAMESPACE__ . '\\initialize');
+add_action('after_setup_theme', __NAMESPACE__ . '\\initialize');

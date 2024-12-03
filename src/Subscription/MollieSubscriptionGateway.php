@@ -344,7 +344,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
 
             // Unset & set active Mollie payment
             // Get correct Mollie Payment Object
-            $payment_object = $this->paymentFactory->getPaymentObject($payment);
+            $payment_object = $this->paymentFactory->getPaymentObject($payment, $this->paymentMethod());
             $payment_object->unsetActiveMolliePayment($renewal_order_id);
             $payment_object->setActiveMolliePayment($renewal_order_id);
 
@@ -619,7 +619,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             $subscription_id = $subscription->get_id();
 
             // Get full payment object from Mollie API
-            $payment_object_resource = $this->paymentFactory->getPaymentObject($mollie_payment_id);
+            $payment_object_resource = $this->paymentFactory->getPaymentObject($mollie_payment_id, $this->paymentMethod());
 
             //
             // If there is no known customer ID, try to get it from the API

@@ -25,8 +25,9 @@ class BancomatpayFieldsStrategy implements PaymentFieldsStrategyI
         }
 
         if ($showPhoneField) {
-            $this->phoneNumber($phoneValue);
+            return $this->phoneNumber($phoneValue);
         }
+        return "";
     }
 
     protected function getOrderIdOnPayForOrderPage()
@@ -39,18 +40,22 @@ class BancomatpayFieldsStrategy implements PaymentFieldsStrategyI
     protected function phoneNumber($phoneValue)
     {
         $phoneValue = $phoneValue ?: '';
-        ?>
-        <p class="form-row form-row-wide" id="billing_phone_field">
-            <label for="<?php echo esc_attr(self::FIELD_PHONE); ?>" class=""><?php echo esc_html__('Phone', 'mollie-payments-for-woocommerce'); ?>
-                <abbr class="required" title="required">*</abbr>
-            </label>
-            <span class="woocommerce-input-wrapper">
-        <input type="tel" class="input-text " name="<?php echo esc_attr(self::FIELD_PHONE); ?>" id="<?php echo esc_attr(self::FIELD_PHONE); ?>"
-               placeholder="+39xxxxxxxxx"
-               value="<?php echo esc_attr($phoneValue); ?>" autocomplete="phone">
-        </span>
-        </p>
-        <?php
+        return '
+            <p class="form-row form-row-wide" id="billing_phone_field">
+                <label for="' . esc_attr(self::FIELD_PHONE) . '" class="">' . esc_html__(
+                                    'Phone',
+                                    'mollie-payments-for-woocommerce'
+                            ) . '
+                    <abbr class="required" title="required">*</abbr>
+                </label>
+                <span class="woocommerce-input-wrapper">
+                    <input type="tel" class="input-text" name="' . esc_attr(self::FIELD_PHONE) . '" id="' . esc_attr(
+                                    self::FIELD_PHONE
+                            ) . '"
+                           placeholder="+39xxxxxxxxx"
+                           value="' . esc_attr($phoneValue) . '" autocomplete="phone">
+                </span>
+            </p>';
     }
 
     public function getFieldMarkup($gateway, $dataHelper)

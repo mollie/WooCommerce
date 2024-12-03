@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
+use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Payment;
@@ -11,6 +12,7 @@ use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use WC_Order;
 use WC_Payment_Gateway;
 use Psr\Log\LoggerInterface as Logger;
@@ -49,6 +51,10 @@ class MollieObject
      * @var string
      */
     protected $pluginId;
+    /**
+     * @var null
+     */
+    private $paymentMethod;
 
     public function __construct($data, Logger $logger, PaymentFactory $paymentFactory, Api $apiHelper, Settings $settingsHelper, string $pluginId)
     {
@@ -60,6 +66,7 @@ class MollieObject
         $this->pluginId = $pluginId;
         $base_location = wc_get_base_location();
         static::$shop_country = $base_location['country'];
+        $this->paymentMethod = null;
     }
 
     public function data()
@@ -143,7 +150,53 @@ class MollieObject
     protected function getPaymentRequestData($order, $customerId, $voucherDefaultCategory = Voucher::NO_CATEGORY)
     {
     }
+    /**
+     * @return string|NULL
+     */
+    public function getSelectedIssuer($gatewayId): ?string
+    {
+        $issuer_id = $this->pluginId . '_issuer_' . $gatewayId;
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $postedIssuer = wc_clean(wp_unslash($_POST[$issuer_id] ?? ''));
+        return !empty($postedIssuer) ? $postedIssuer : null;
+    }
 
+    /**
+     * @param \WC_Order $order
+     * @param string $new_status
+     * @param string $note
+     * @param bool $restore_stock
+     */
+    public function updateOrderStatus(\WC_Order $order, $new_status, $note = '', $restore_stock = true)
+    {
+        $order->update_status($new_status, $note);
+
+        switch ($new_status) {
+            case SharedDataDictionary::STATUS_ON_HOLD:
+                if ($restore_stock === true) {
+                    if (!$order->get_meta('_order_stock_reduced', true)) {
+                        // Reduce order stock
+                        wc_reduce_stock_levels($order->get_id());
+
+                        $this->logger->debug(__METHOD__ . ":  Stock for order {$order->get_id()} reduced.");
+                    }
+                }
+
+                break;
+
+            case SharedDataDictionary::STATUS_PENDING:
+            case SharedDataDictionary::STATUS_FAILED:
+            case SharedDataDictionary::STATUS_CANCELLED:
+                if ($order->get_meta('_order_stock_reduced', true)) {
+                    // Restore order stock
+                    $this->dataHelper->restoreOrderStock($order);
+
+                    $this->logger->debug(__METHOD__ . " Stock for order {$order->get_id()} restored.");
+                }
+
+                break;
+        }
+    }
     /**
      * Save active Mollie payment id for order
      *
@@ -364,7 +417,8 @@ class MollieObject
 
             try {
                 $mollie_order = $this->paymentFactory->getPaymentObject(
-                    $mollie_order
+                    $mollie_order,
+                    $this->paymentMethod
                 );
             } catch (ApiException $exception) {
                 $this->logger->debug($exception->getMessage());
@@ -672,8 +726,8 @@ class MollieObject
             function_exists('wcs_order_contains_renewal')
             && wcs_order_contains_renewal($orderId)
         ) {
-            if ($gateway instanceof MolliePaymentGateway) {
-                $gateway->paymentService()->updateOrderStatus(
+            if ($gateway instanceof PaymentGateway) {
+                $this->updateOrderStatus(
                     $order,
                     $newOrderStatus,
                     sprintf(
@@ -704,8 +758,8 @@ class MollieObject
             ) {
                 $emails['WC_Email_Failed_Order']->trigger($orderId);
             }
-        } elseif ($gateway instanceof MolliePaymentGateway) {
-            $gateway->paymentService()->updateOrderStatus(
+        } elseif ($gateway instanceof PaymentGateway) {
+            $this->updateOrderStatus(
                 $order,
                 $newOrderStatus,
                 sprintf(

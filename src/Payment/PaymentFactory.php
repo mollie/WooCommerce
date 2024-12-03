@@ -49,7 +49,7 @@ class PaymentFactory
      * @return bool|MollieOrder|MolliePayment
      * @throws ApiException
      */
-    public function getPaymentObject($data)
+    public function getPaymentObject($data, $paymentMethod = null)
     {
 
         if (
@@ -73,7 +73,8 @@ class PaymentFactory
                 $this->settingsHelper,
                 $this->dataHelper,
                 $this->logger,
-                $this->orderLines
+                $this->orderLines,
+                $paymentMethod
             );
         }
 
@@ -88,7 +89,8 @@ class PaymentFactory
                 $this->apiHelper,
                 $this->settingsHelper,
                 $this->dataHelper,
-                $this->logger
+                $this->logger,
+                $paymentMethod
             );
         }
 

@@ -8,7 +8,7 @@ class BillieFieldsStrategy implements PaymentFieldsStrategyI
 {
     const FIELD_COMPANY = "billing_company";
 
-    public function execute($gateway, $dataHelper)
+    public function execute($gateway, $dataHelper): string
     {
         $showCompanyField = false;
 
@@ -22,8 +22,9 @@ class BillieFieldsStrategy implements PaymentFieldsStrategyI
         }
 
         if ($showCompanyField) {
-            $this->company();
+            return $this->company();
         }
+        return "";
     }
 
     protected function getOrderIdOnPayForOrderPage()
@@ -35,19 +36,24 @@ class BillieFieldsStrategy implements PaymentFieldsStrategyI
 
     protected function company()
     {
-        ?>
-        <p class="form-row form-row-wide" id="billing_company_field">
-            <label for="<?php echo esc_attr(self::FIELD_COMPANY); ?>" class=""><?php echo esc_html__('Company', 'mollie-payments-for-woocommerce'); ?>
-                <abbr class="required" title="required">*</abbr>
-            </label>
-            <span class="woocommerce-input-wrapper">
-        <input type="tel" class="input-text " name="<?php echo esc_attr(self::FIELD_COMPANY); ?>" id="<?php echo esc_attr(self::FIELD_COMPANY); ?>"
-               placeholder="Company name"
-               value="" autocomplete="organization">
+        return '
+    <p class="form-row form-row-wide" id="billing_company_field">
+        <label for="' . esc_attr(self::FIELD_COMPANY) . '" class="">' . esc_html__(
+                        'Company',
+                        'mollie-payments-for-woocommerce'
+                ) . '
+            <abbr class="required" title="required">*</abbr>
+        </label>
+        <span class="woocommerce-input-wrapper">
+            <input type="tel" class="input-text" name="' . esc_attr(self::FIELD_COMPANY) . '" id="' . esc_attr(
+                        self::FIELD_COMPANY
+                ) . '"
+                   placeholder="Company name"
+                   value="" autocomplete="organization">
         </span>
-        </p>
-        <?php
+    </p>';
     }
+
 
     public function getFieldMarkup($gateway, $dataHelper)
     {

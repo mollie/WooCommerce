@@ -80,6 +80,7 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
         $filters = $dataService->wooCommerceFiltersForCheckout();
         $availableGateways = WC()->payment_gateways()->get_available_payment_gateways();
         $availablePaymentMethods = [];
+
         /**
          * @var MolliePaymentGatewayI $gateway
          * psalm-suppress  UnusedForeachValue
@@ -96,7 +97,9 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
         ) {
             $filterKey = "{$filters['amount']['currency']}-{$filters['locale']}-{$filters['billingCountry']}";
             foreach ($availableGateways as $key => $gateway) {
-                $availablePaymentMethods[$filterKey][$key] = $gateway->paymentMethod()->getProperty('id');
+                $gatewayId = $gateway->id;
+                $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
+                $availablePaymentMethods[$filterKey][$key] = $methodId;
             }
         }
 

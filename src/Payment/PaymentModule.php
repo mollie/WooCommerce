@@ -99,11 +99,17 @@ class PaymentModule implements ServiceModule, ExecutableModule
         $this->gatewayClassnames = $container->get('gateway.classnames');
 
         // Listen to return URL call
-        add_action('woocommerce_api_mollie_return', [ $this, 'onMollieReturn' ]);
-        add_action('template_redirect', [ $this, 'mollieReturnRedirect' ]);
+        add_action('woocommerce_api_mollie_return', function () use ($container) {
+            $this->onMollieReturn($container);
+        }, 10, 1);
+        add_action('template_redirect', function () use ($container) {
+            $this->mollieReturnRedirect($container);
+        });
 
         // Show Mollie instructions on order details page
-        add_action('woocommerce_order_details_after_order_table', [ $this, 'onOrderDetails' ], 10, 1);
+        add_action('woocommerce_order_details_after_order_table', function (WC_Order $order) use ($container) {
+            $this->onOrderDetails($order, $container);
+        }, 10, 1);
 
         // Cancel order at Mollie (for Orders API/Klarna)
         add_action('woocommerce_order_status_cancelled', [ $this, 'cancelOrderAtMollie' ]);
@@ -252,7 +258,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
      * Old Payment return url callback
      *
      */
-    public function onMollieReturn()
+    public function onMollieReturn($container)
     {
         try {
             $order = self::orderByRequest();
@@ -264,6 +270,8 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
         $gateway = wc_get_payment_gateway_by_order($order);
         $orderId = $order->get_id();
+        $oldGatewayInstances = $container->get('gateway.instances');
+        $mollieGatewayHelper = $oldGatewayInstances[$gateway->id];
 
         if (!$gateway) {
             $gatewayName = $order->get_payment_method();
@@ -275,13 +283,14 @@ class PaymentModule implements ServiceModule, ExecutableModule
             return;
         }
 
-        if (!($gateway instanceof MolliePaymentGateway)) {
+        if (!($gateway instanceof PaymentGateway)) {
             $this->httpResponse->setHttpResponseCode(400);
-            $this->logger->debug(__METHOD__ . ": Invalid gateway {get_class($gateway)} for this plugin. Order {$orderId}.");
+            $gatewayClass = get_class($gateway);
+            $this->logger->debug(__METHOD__ . ": Invalid gateway {$gatewayClass} for this plugin. Order {$orderId}.");
             return;
         }
 
-        $redirect_url = $gateway->getReturnRedirectUrlForOrder($order);
+        $redirect_url = $mollieGatewayHelper->getReturnRedirectUrlForOrder($order);
 
         // Add utm_nooverride query string
         $redirect_url = add_query_arg(['utm_nooverride' => 1], $redirect_url);
@@ -296,12 +305,12 @@ class PaymentModule implements ServiceModule, ExecutableModule
      * New Payment return url callback
      *
      */
-    public function mollieReturnRedirect()
+    public function mollieReturnRedirect($container)
     {
         if (isset($_GET['filter_flag'])) {
             $filterFlag = sanitize_text_field(wp_unslash($_GET['filter_flag']));
             if ($filterFlag === 'onMollieReturn') {
-                self::onMollieReturn();
+                self::onMollieReturn($container);
             }
         }
     }
@@ -309,7 +318,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
     /**
      * @param WC_Order $order
      */
-    public function onOrderDetails(WC_Order $order)
+    public function onOrderDetails(WC_Order $order, ContainerInterface $container)
     {
         if (is_order_received_page()) {
             /**
@@ -323,13 +332,14 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
         $gateway = wc_get_payment_gateway_by_order($order);
 
-        if (!$gateway || !($gateway instanceof MolliePaymentGateway)) {
+        if (!$gateway || !($gateway instanceof PaymentGateway)) {
             return;
         }
 
-        /** @var MolliePaymentGatewayI $gateway */
 
-        $gateway->displayInstructions($order);
+        $oldGatewayInstances = $container->get('gateway.instances');
+        $mollieGatewayHelper = $oldGatewayInstances[$gateway->id];
+        $mollieGatewayHelper->displayInstructions($order);
     }
     /**
      * Ship all order lines and capture an order at Mollie.

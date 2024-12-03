@@ -11,14 +11,14 @@ class In3FieldsStrategy implements PaymentFieldsStrategyI
     const FIELD_BIRTHDATE = "billing_birthdate_in3";
     const FIELD_PHONE = "billing_phone_in3";
 
-    public function execute($gateway, $dataHelper)
+    public function execute($gateway, $dataHelper): string
     {
         $showBirthdateField = false;
         $showPhoneField = false;
         $isPhoneRequired = get_option('mollie_wc_is_phone_required_flag');
         $phoneValue = false;
         $birthValue = false;
-
+        $html = '';
         if (is_checkout_pay_page()) {
             $showBirthdateField = true;
             $showPhoneField = true;
@@ -35,28 +35,29 @@ class In3FieldsStrategy implements PaymentFieldsStrategyI
         }
 
         if ($showPhoneField) {
-            $this->phoneNumber($phoneValue);
+            $html .= $this->phoneNumber($phoneValue);
         }
 
         if ($showBirthdateField) {
-            $this->dateOfBirth($birthValue);
+            $html .= $this->dateOfBirth($birthValue);
         }
+        return $html;
     }
 
     protected function phoneNumber($phoneValue)
     {
         $phoneValue = $phoneValue ?: '';
-        ?>
-        <p class="form-row form-row-wide" id="billing_phone_field">
-            <label for="<?php echo esc_attr(self::FIELD_PHONE); ?>" class=""><?php echo esc_html__('Phone', 'mollie-payments-for-woocommerce'); ?>
-            </label>
-            <span class="woocommerce-input-wrapper">
-        <input type="tel" class="input-text " name="<?php echo esc_attr(self::FIELD_PHONE); ?>" id="<?php echo esc_attr(self::FIELD_PHONE); ?>"
-               placeholder="+316xxxxxxxx"
-               value="<?php echo esc_attr($phoneValue); ?>" autocomplete="phone">
-        </span>
-        </p>
-        <?php
+        $html = '<p class="form-row form-row-wide" id="billing_phone_field">';
+        $html .= '<label for="' . esc_attr(self::FIELD_PHONE) . '" class="">' . esc_html__(
+                        'Phone',
+                        'mollie-payments-for-woocommerce'
+                ) . '</label>';
+        $html .= '<span class="woocommerce-input-wrapper">';
+        $html .= '<input type="tel" class="input-text " name="' . esc_attr(self::FIELD_PHONE) . '" id="' . esc_attr(
+                        self::FIELD_PHONE
+                ) . '" placeholder="+316xxxxxxxx" value="' . esc_attr($phoneValue) . '" autocomplete="phone">';
+        $html .= '</span></p>';
+        return $html;
     }
 
     public function getFieldMarkup($gateway, $dataHelper)

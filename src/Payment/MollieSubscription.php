@@ -2,6 +2,7 @@
 
 namespace Mollie\WooCommerce\Payment;
 
+use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\Api\Types\SequenceType;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\SDK\Api;
@@ -33,7 +34,7 @@ class MollieSubscription extends MollieObject
         $paymentLocale = $this->settingsHelper->getPaymentLocale();
         $gateway = wc_get_payment_gateway_by_order($order);
 
-        if (! $gateway || ! ( $gateway instanceof MolliePaymentGateway )) {
+        if (! $gateway || ! ( $gateway instanceof PaymentGateway )) {
             return  [ 'result' => 'failure' ];
         }
         $gatewayId = $gateway->id;

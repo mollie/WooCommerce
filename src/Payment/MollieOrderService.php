@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
+use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Payment;
@@ -92,7 +93,7 @@ class MollieOrderService
             return;
         }
         $gateway = wc_get_payment_gateway_by_order($order);
-        if (!$gateway instanceof MolliePaymentGateway) {
+        if (!$gateway instanceof PaymentGateway) {
             return;
         }
         $this->setGateway($gateway);
@@ -110,7 +111,8 @@ class MollieOrderService
         // Load the payment from Mollie, do not use cache
         try {
             $payment_object = $this->paymentFactory->getPaymentObject(
-                $payment_object_id
+                $payment_object_id,
+                null
             );
         } catch (ApiException $exception) {
             $this->httpResponse->setHttpResponseCode(400);
@@ -144,7 +146,7 @@ class MollieOrderService
         if (! $this->orderNeedsPayment($order)) {
             // TODO David: move to payment object?
             // Add a debug message that order was already paid for
-            $this->gateway->handlePaidOrderWebhook($order, $payment);
+            $this->handlePaidOrderWebhook($order, $payment);
 
             // Check and process a possible refund or chargeback
             $this->processRefunds($order, $payment);
@@ -182,6 +184,26 @@ class MollieOrderService
         do_action($this->pluginId . '_after_webhook_action', $payment, $order);
         // Status 200
     }
+
+    /**
+     * @param $order
+     * @param $payment
+     */
+    public function handlePaidOrderWebhook($order, $payment)
+    {
+        // Duplicate webhook call
+        $this->httpResponse->setHttpResponseCode(204);
+
+        $order = wc_get_order($order);
+        $order_id = $order->get_id();
+
+        $this->logger->debug(
+            __METHOD__ . ' - ' . $this->id
+            . ": Order $order_id does not need a payment by Mollie (payment {$payment->id}).",
+            [true]
+        );
+    }
+
     /**
      * @param WC_Order $order
      *
@@ -190,34 +212,36 @@ class MollieOrderService
     public function orderNeedsPayment(WC_Order $order)
     {
         $order_id = $order->get_id();
+        $gateway = wc_get_payment_gateway_by_order($order);
+        $paymentMethod = $gateway->locate('getPaymentMethod')($gateway->id);
 
         // Check whether the order is processed and paid via another gateway
         if ($this->isOrderPaidByOtherGateway($order)) {
-            $this->logger->debug(__METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: no, previously processed by other (non-Mollie) gateway.', [true]);
+            $this->logger->debug(__METHOD__ . ' ' . $gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: no, previously processed by other (non-Mollie) gateway.', [true]);
 
             return false;
         }
 
         // Check whether the order is processed and paid via Mollie
         if (! $this->isOrderPaidAndProcessed($order)) {
-            $this->logger->debug(__METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, order not previously processed by Mollie gateway.', [true]);
+            $this->logger->debug(__METHOD__ . ' ' . $gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, order not previously processed by Mollie gateway.', [true]);
 
             return true;
         }
 
         if ($order->needs_payment()) {
-            $this->logger->debug(__METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, WooCommerce thinks order needs payment.', [true]);
+            $this->logger->debug(__METHOD__ . ' ' . $gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, WooCommerce thinks order needs payment.', [true]);
 
             return true;
         }
 
         // Has initial order status 'on-hold'
         if (
-            $this->gateway->paymentMethod()->getInitialOrderStatus() === SharedDataDictionary::STATUS_ON_HOLD
+            $paymentMethod->getInitialOrderStatus() === SharedDataDictionary::STATUS_ON_HOLD
             && $order->has_status(SharedDataDictionary::STATUS_ON_HOLD)
         ) {
             $this->logger->debug(
-                __METHOD__ . ' ' . $this->gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, has status On-Hold. ',
+                __METHOD__ . ' ' . $gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, has status On-Hold. ',
                 [true]
             );
             return true;
@@ -734,10 +758,8 @@ class MollieOrderService
     protected function getPaymentMethodTitle($payment)
     {
         $payment_method_title = '';
-        if (!($this->gateway instanceof MolliePaymentGateway)) {
-            return $payment_method_title;
-        }
-        if ($payment->method === $this->gateway->paymentMethod()->getProperty('id')) {
+
+        if ($payment->method === $this->gateway->id) {
             $payment_method_title = $this->gateway->method_title;
         }
         return $payment_method_title;

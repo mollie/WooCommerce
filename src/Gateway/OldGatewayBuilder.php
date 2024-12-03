@@ -1,0 +1,113 @@
+<?php
+
+namespace Mollie\WooCommerce\Gateway;
+
+use Mollie\WooCommerce\Notice\FrontendNotice;
+use Mollie\WooCommerce\Payment\MollieObject;
+use Mollie\WooCommerce\Payment\MollieOrderService;
+use Mollie\WooCommerce\Payment\OrderInstructionsService;
+use Mollie\WooCommerce\Payment\PaymentFactory;
+use Mollie\WooCommerce\Payment\PaymentService;
+use Mollie\WooCommerce\PaymentMethods\Constants;
+use Mollie\WooCommerce\SDK\Api;
+use Mollie\WooCommerce\SDK\HttpResponse;
+use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Shared\Data;
+use Mollie\WooCommerce\Subscription\MollieSepaRecurringGateway;
+use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
+use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface as Logger;
+
+class OldGatewayBuilder
+{
+    public function instantiatePaymentMethodGateways(ContainerInterface $container): array
+    {
+        $logger = $container->get(Logger::class);
+        assert($logger instanceof Logger);
+        $notice = $container->get(FrontendNotice::class);
+        assert($notice instanceof FrontendNotice);
+        $paymentService = $container->get(PaymentService::class);
+        assert($paymentService instanceof PaymentService);
+        $mollieOrderService = $container->get(MollieOrderService::class);
+        assert($mollieOrderService instanceof MollieOrderService);
+        $HttpResponseService = $container->get('SDK.HttpResponse');
+        assert($HttpResponseService instanceof HttpResponse);
+        $settingsHelper = $container->get('settings.settings_helper');
+        assert($settingsHelper instanceof Settings);
+        $apiHelper = $container->get('SDK.api_helper');
+        assert($apiHelper instanceof Api);
+        $paymentMethods = $container->get('gateway.paymentMethods');
+        $data = $container->get('settings.data_helper');
+        assert($data instanceof Data);
+        $orderInstructionsService = new OrderInstructionsService();
+        $mollieObject = $container->get(MollieObject::class);
+        assert($mollieObject instanceof MollieObject);
+        $paymentFactory = $container->get(PaymentFactory::class);
+        assert($paymentFactory instanceof PaymentFactory);
+        $pluginId = $container->get('shared.plugin_id');
+        $gateways = [];
+        if (empty($paymentMethods)) {
+            return $gateways;
+        }
+
+        foreach ($paymentMethods as $paymentMethod) {
+            $paymentMethodId = $paymentMethod->getIdFromConfig();
+            if (! in_array($paymentMethodId, $container->get('gateway.paymentMethodsEnabledAtMollie'))) {
+                continue;
+            }
+            $isSepa = $paymentMethod->getProperty('SEPA');
+            $key = 'mollie_wc_gateway_' . $paymentMethodId;
+            if ($isSepa) {
+                $directDebit = $paymentMethods[Constants::DIRECTDEBIT];
+                $gateways[$key] = new MollieSepaRecurringGateway(
+                    $directDebit,
+                    $paymentMethod,
+                    $paymentService,
+                    $orderInstructionsService,
+                    $mollieOrderService,
+                    $data,
+                    $logger,
+                    $notice,
+                    $HttpResponseService,
+                    $settingsHelper,
+                    $mollieObject,
+                    $paymentFactory,
+                    $pluginId,
+                    $apiHelper
+                );
+            } elseif ($paymentMethod->getProperty('Subscription')) {
+                $gateways[$key] = new MollieSubscriptionGateway(
+                    $paymentMethod,
+                    $paymentService,
+                    $orderInstructionsService,
+                    $mollieOrderService,
+                    $data,
+                    $logger,
+                    $notice,
+                    $HttpResponseService,
+                    $settingsHelper,
+                    $mollieObject,
+                    $paymentFactory,
+                    $pluginId,
+                    $apiHelper
+                );
+            } else {
+                $gateways[$key] = new MolliePaymentGateway(
+                    $paymentMethod,
+                    $paymentService,
+                    $orderInstructionsService,
+                    $mollieOrderService,
+                    $data,
+                    $logger,
+                    $notice,
+                    $HttpResponseService,
+                    $mollieObject,
+                    $paymentFactory,
+                    $pluginId
+                );
+            }
+        }
+        return $gateways;
+    }
+
+}

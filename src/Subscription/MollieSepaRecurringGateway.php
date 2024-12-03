@@ -218,7 +218,8 @@ class MollieSepaRecurringGateway extends MollieSubscriptionGateway
 
             try {
                 $payment_object = $this->paymentFactory->getPaymentObject(
-                    $payment
+                    $payment,
+                    $this->paymentMethod()
                 );
             } catch (ApiException $exception) {
                 $this->logger->debug($exception->getMessage());

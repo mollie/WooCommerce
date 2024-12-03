@@ -86,10 +86,14 @@ class PaymentService
     public function setGateway($gateway)
     {
         $this->gateway = $gateway;
+
     }
 
-    public function processPayment($orderId, $order, $paymentMethod, $redirectUrl)
+    public function processPayment($order, $paymentGateway)
     {
+        $orderId = $order->get_id();
+        $redirectUrl = $this->gateway->get_return_url($order);
+        $paymentMethod = $this->gateway->paymentMethod();
         $this->logger->debug(
             "{$paymentMethod->getProperty('id')}: Start process_payment for order {$orderId}",
             [true]
@@ -110,7 +114,7 @@ class PaymentService
         $molliePaymentType = $this->paymentTypeBasedOnGateway($paymentMethod);
         $molliePaymentType = $this->paymentTypeBasedOnProducts($order, $molliePaymentType);
         try {
-            $paymentObject = $this->paymentFactory->getPaymentObject($molliePaymentType);
+            $paymentObject = $this->paymentFactory->getPaymentObject($molliePaymentType, $paymentMethod);
         } catch (ApiException $exception) {
             return $this->paymentObjectFailure($exception);
         }
@@ -325,14 +329,16 @@ class PaymentService
         MollieOrder $paymentObject,
         $order,
         $customer_id,
-        $apiKey
+        $apiKey,
+        $paymentMethod
     ) {
 
         $molliePaymentType = self::PAYMENT_METHOD_TYPE_ORDER;
         $paymentRequestData = $paymentObject->getPaymentRequestData(
             $order,
             $customer_id,
-            $this->voucherDefaultCategory
+            $this->voucherDefaultCategory,
+
         );
 
         $data = array_filter($paymentRequestData);
@@ -450,11 +456,13 @@ class PaymentService
     protected function processAsMolliePayment(
         \WC_Order $order,
         $customer_id,
-        $apiKey
+        $apiKey,
+        $paymentMethod
     ) {
 
         $paymentObject = $this->paymentFactory->getPaymentObject(
-            self::PAYMENT_METHOD_TYPE_PAYMENT
+            self::PAYMENT_METHOD_TYPE_PAYMENT,
+            $paymentMethod
         );
         $paymentRequestData = $paymentObject->getPaymentRequestData(
             $order,
@@ -526,12 +534,14 @@ class PaymentService
         $customer_id,
         $apiKey
     ) {
+        $paymentMethod = $this->gateway->paymentMethod();
         //
         // PROCESS REGULAR PAYMENT AS MOLLIE ORDER
         //
         if ($molliePaymentType === self::PAYMENT_METHOD_TYPE_ORDER) {
             // if the capture is set to manual, and this is a credit card payment, we need to create a payment instead of an order
             $captureType = get_option('mollie-payments-for-woocommerce_place_payment_onhold');
+
             if ($captureType === 'later_capture' && $this->gateway->id === 'mollie_wc_gateway_creditcard') {
                 $this->logger->debug(
                     "{$this->gateway->id}: Create payment for order {$orderId} capture set to manual",
@@ -541,7 +551,8 @@ class PaymentService
                 $paymentObject = $this->processAsMolliePayment(
                     $order,
                     $customer_id,
-                    $apiKey
+                    $apiKey,
+                    $paymentMethod
                 );
                 return $paymentObject;
             }
@@ -554,7 +565,8 @@ class PaymentService
                 $paymentObject,
                 $order,
                 $customer_id,
-                $apiKey
+                $apiKey,
+                $paymentMethod
             );
         }
 
@@ -570,7 +582,8 @@ class PaymentService
             $paymentObject = $this->processAsMolliePayment(
                 $order,
                 $customer_id,
-                $apiKey
+                $apiKey,
+                $paymentMethod
             );
         }
 
@@ -584,7 +597,7 @@ class PaymentService
     protected function saveMollieInfo($order, $payment)
     {
         // Get correct Mollie Payment Object
-        $payment_object = $this->paymentFactory->getPaymentObject($payment);
+        $payment_object = $this->paymentFactory->getPaymentObject($payment, $this->gateway->paymentMethod());
 
         // Set active Mollie payment
         $payment_object->setActiveMolliePayment($order->get_id());
@@ -684,7 +697,8 @@ class PaymentService
     protected function processValidMandate($order, ?string $customerId, $apiKey): bool
     {
         $paymentObject = $this->paymentFactory->getPaymentObject(
-            self::PAYMENT_METHOD_TYPE_PAYMENT
+            self::PAYMENT_METHOD_TYPE_PAYMENT,
+            $this->gateway->paymentMethod()
         );
         $paymentRequestData = $paymentObject->getPaymentRequestData($order, $customerId);
         $data = array_filter($paymentRequestData);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Payment;
 
 use Exception;
+use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Payment;
 use Mollie\Api\Resources\Order;
@@ -43,7 +44,17 @@ class MollieOrder extends MollieObject
      * @param OrderItemsRefunder $orderItemsRefunder
      * @param $data
      */
-    public function __construct(OrderItemsRefunder $orderItemsRefunder, $data, $pluginId, Api $apiHelper, $settingsHelper, $dataHelper, $logger, OrderLines $orderLines)
+    public function __construct(
+        OrderItemsRefunder $orderItemsRefunder,
+        $data,
+        $pluginId,
+        Api $apiHelper,
+        $settingsHelper,
+        $dataHelper,
+        $logger,
+        OrderLines $orderLines,
+        $paymentMethod
+    )
     {
         $this->data = $data;
         $this->orderItemsRefunder = $orderItemsRefunder;
@@ -53,6 +64,7 @@ class MollieOrder extends MollieObject
         $this->dataHelper = $dataHelper;
         $this->logger = $logger;
         $this->orderLines = $orderLines;
+        $this->paymentMethod = $paymentMethod;
     }
 
     public function getPaymentObject($paymentId, $testMode = false, $useCache = true)
@@ -84,12 +96,12 @@ class MollieOrder extends MollieObject
 
         $gateway = wc_get_payment_gateway_by_order($order);
 
-        if (! $gateway || ! ( $gateway instanceof MolliePaymentGateway )) {
+        if (! $gateway || ! ( $gateway instanceof PaymentGateway )) {
             return  [ 'result' => 'failure' ];
         }
 
         $gatewayId = $gateway->id;
-        $selectedIssuer = $gateway->getSelectedIssuer();
+        $selectedIssuer = $this->getSelectedIssuer($gatewayId);
         $returnUrl = $gateway->get_return_url($order);
         $returnUrl = $this->getReturnUrl($order, $returnUrl);
         $webhookUrl = $this->getWebhookUrl($order, $gatewayId);
@@ -103,6 +115,7 @@ class MollieOrder extends MollieObject
         // Generate order lines for Mollie Orders
         $orderLinesHelper = $this->orderLines;
         $orderLines = $orderLinesHelper->order_lines($order, $voucherDefaultCategory);
+        $methodId = substr($gateway->id, strrpos($gateway->id, '_') + 1);
 
         // Build the Mollie order data
         $paymentRequestData = [
@@ -115,7 +128,7 @@ class MollieOrder extends MollieObject
             ],
             'redirectUrl' => $returnUrl,
             'webhookUrl' => $webhookUrl,
-            'method' => $gateway->paymentMethod()->getProperty('id'),
+            'method' => $methodId,
             'payment' => [
                 'issuer' => $selectedIssuer,
             ],
@@ -840,8 +853,8 @@ class MollieOrder extends MollieObject
     ) {
 
         $gateway = wc_get_payment_gateway_by_order($order);
-        if (!$this->isOrderPaymentStartedByOtherGateway($order) && is_a($gateway, MolliePaymentGateway::class)) {
-            $gateway->paymentService()->updateOrderStatus($order, $newOrderStatus);
+        if (!$this->isOrderPaymentStartedByOtherGateway($order) && is_a($gateway, PaymentGateway::class)) {
+            $this->updateOrderStatus($order, $newOrderStatus);
         } else {
             $this->informNotUpdatingStatus($gateway->id, $order);
         }
@@ -1002,10 +1015,10 @@ class MollieOrder extends MollieObject
         if (strpos($gateway->id, 'mollie_wc_gateway_') === false) {
             return null;
         }
-        $additionalFields = $gateway->paymentMethod()->getProperty('additionalFields');
+        $additionalFields = $this->paymentMethod->getProperty('additionalFields');
         $methodId = $additionalFields && in_array('birthdate', $additionalFields, true);
         if ($methodId) {
-            $optionName = 'billing_birthdate_' . $gateway->paymentMethod()->getProperty('id');
+            $optionName = 'billing_birthdate_' . $this->paymentMethod->getProperty('id');
             //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             $fieldPosted = wc_clean(wp_unslash($_POST[$optionName] ?? ''));
             if ($fieldPosted === '' || !is_string($fieldPosted)) {

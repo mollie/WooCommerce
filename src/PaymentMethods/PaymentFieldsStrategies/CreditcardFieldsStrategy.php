@@ -8,30 +8,27 @@ use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 
 class CreditcardFieldsStrategy implements PaymentFieldsStrategyI
 {
-    public function execute($gateway, $dataHelper)
+    public function execute($gateway, $dataHelper): string
     {
         if (!$this->isMollieComponentsEnabled($gateway->paymentMethod())) {
-            return;
+            return '';
         }
         $gateway->has_fields = true;
-        $allowedHtml = $this->svgAllowedHtml()
+        $allowedHtml = $this->svgAllowedHtml();
 
-        ?>
-        <div class="mollie-components"></div>
-        <p class="mollie-components-description">
-            <?php
-            printf(
-            /* translators: Placeholder 1: Lock icon. Placeholder 2: Mollie logo. */
-                esc_html(__(
-                    '%1$s Secure payments provided by %2$s',
-                    'mollie-payments-for-woocommerce'
-                )),
+        $output = '<div class="mollie-components"></div>';
+        $output .= '<p class="mollie-components-description">';
+        $output .= sprintf(
+                esc_html__(
+                        '%1$s Secure payments provided by %2$s',
+                        'mollie-payments-for-woocommerce'
+                ),
                 wp_kses($this->lockIcon($dataHelper), $allowedHtml),
                 wp_kses($this->mollieLogo($dataHelper), $allowedHtml)
-            );
-            ?>
-        </p>
-        <?php
+        );
+        $output .= '</p>';
+
+        return $output;
     }
 
     public function getFieldMarkup($gateway, $dataHelper)

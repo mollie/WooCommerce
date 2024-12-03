@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
+use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Payment;
@@ -23,8 +24,12 @@ class MolliePayment extends MollieObject
 {
     public const ACTION_AFTER_REFUND_PAYMENT_CREATED = 'mollie-payments-for-woocommerce' . '_refund_payment_created';
     protected $pluginId;
+    /**
+     * @var mixed
+     */
+    private $paymentMethod;
 
-    public function __construct($data, $pluginId, Api $apiHelper, $settingsHelper, $dataHelper, $logger)
+    public function __construct($data, $pluginId, Api $apiHelper, $settingsHelper, $dataHelper, $logger, $paymentMethod)
     {
         $this->data = $data;
         $this->pluginId = $pluginId;
@@ -32,6 +37,7 @@ class MolliePayment extends MollieObject
         $this->settingsHelper = $settingsHelper;
         $this->dataHelper = $dataHelper;
         $this->logger = $logger;
+        $this->paymentMethod = $paymentMethod;
     }
 
     public function getPaymentObject($paymentId, $testMode = false, $useCache = true)
@@ -70,12 +76,12 @@ class MolliePayment extends MollieObject
 
         $gateway = wc_get_payment_gateway_by_order($order);
 
-        if (!$gateway || !($gateway instanceof MolliePaymentGateway)) {
+        if (!$gateway || !($gateway instanceof PaymentGateway)) {
             return ['result' => 'failure'];
         }
 
         $gatewayId = $gateway->id;
-        $selectedIssuer = $gateway->getSelectedIssuer();
+        $selectedIssuer = $this->getSelectedIssuer($gatewayId);
         $returnUrl = $gateway->get_return_url($order);
         $returnUrl = $this->getReturnUrl($order, $returnUrl);
         $webhookUrl = $this->getWebhookUrl($order, $gatewayId);
@@ -96,7 +102,7 @@ class MolliePayment extends MollieObject
             'description' => $paymentDescription,
             'redirectUrl' => $returnUrl,
             'webhookUrl' => $webhookUrl,
-            'method' => $gateway->paymentMethod()->getProperty('id'),
+            'method' => $this->paymentMethod->getProperty('id'),
             'issuer' => $selectedIssuer,
             'locale' => $paymentLocale,
             'metadata' => apply_filters(
@@ -123,7 +129,7 @@ class MolliePayment extends MollieObject
             $encodedApplePayToken = wp_json_encode($applePayToken);
             $paymentRequestData['applePayPaymentToken'] = $encodedApplePayToken;
         }
-        $paymentRequestData = $this->addCustomRequestFields($order, $paymentRequestData, $gateway);
+        $paymentRequestData = $this->addCustomRequestFields($order, $paymentRequestData);
         return $paymentRequestData;
     }
 
@@ -515,7 +521,7 @@ class MolliePayment extends MollieObject
 
     /**
      * @param WC_Order $order
-     * @param MolliePaymentGatewayI $gateway
+     * @param PaymentGateway $gateway
      * @param                    $newOrderStatus
      * @param                    $orderId
      */
@@ -525,17 +531,17 @@ class MolliePayment extends MollieObject
         $newOrderStatus
     ) {
 
-        if ($this->isOrderPaymentStartedByOtherGateway($order) || ! is_a($gateway, MolliePaymentGateway::class)) {
+        if ($this->isOrderPaymentStartedByOtherGateway($order) || ! is_a($gateway, PaymentGateway::class)) {
             $this->informNotUpdatingStatus($gateway->id, $order);
             return;
         }
-        $gateway->paymentService()->updateOrderStatus($order, $newOrderStatus);
+        $this->updateOrderStatus($order, $newOrderStatus);
     }
 
-    protected function addCustomRequestFields($order, array $paymentRequestData, MolliePaymentGateway $gateway)
+    protected function addCustomRequestFields($order, array $paymentRequestData)
     {
-        if ($gateway->paymentMethod()->hasProperty('paymentAPIfields')) {
-            $paymentAPIfields = $gateway->paymentMethod()->getProperty('paymentAPIfields');
+        if ($this->paymentMethod->hasProperty('paymentAPIfields')) {
+            $paymentAPIfields = $this->paymentMethod->getProperty('paymentAPIfields');
             foreach ($paymentAPIfields as $field) {
                 if (!method_exists($this, 'create' . ucfirst($field))) {
                     continue;

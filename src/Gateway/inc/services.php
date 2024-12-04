@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 use Dhii\Services\Factory;
 use Inpsyde\PaymentGateway\PaymentRequestValidatorInterface;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Inpsyde\PaymentGateway\RefundProcessorInterface;
 use Mollie\WooCommerce\Gateway\OldGatewayBuilder;
 use Mollie\WooCommerce\Gateway\OrderMandatoryGatewayDisabler;
-use Mollie\WooCommerce\Gateway\RefundProcessor;
+use Mollie\WooCommerce\Gateway\Refund\RefundProcessor;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\AdminNotice;
-use Mollie\WooCommerce\Notice\NoticeInterface;
-use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\OrderInstructionsService;
 use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
@@ -29,8 +27,6 @@ use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
-use Mollie\WooCommerce\Subscription\MollieSepaRecurringGateway;
-use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 
@@ -238,7 +234,7 @@ return static function (): array {
             return $paymentService;
         };
         $dynamicServices["payment_gateway.$gatewayId.refund_processor"] = static function (ContainerInterface $container
-        ) use ($gatewayId): PaymentService {
+        ) use ($gatewayId): RefundProcessorInterface {
             $getProperty = $container->get('gateway.getPropertyByGatewayId');
             $supports = $getProperty($gatewayId, 'supports');
             $supportsRefunds = $supports && in_array('refunds', $supports, true);
@@ -308,6 +304,12 @@ return static function (): array {
         };
         $dynamicServices["payment_gateway.$gatewayId.option_key"] = static function (ContainerInterface $container) use ($gatewayId) {
             return $gatewayId . '_settings';
+        };
+        $dynamicServices["payment_gateway.$gatewayId.supports"] = static function (ContainerInterface $container) use ($gatewayId) {
+            $paymentMethods = $container->get('gateway.paymentMethods');
+            $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
+            $paymentMethod = $paymentMethods[$methodId];
+            return $paymentMethod->getProperty('supports');
         };
     }
 

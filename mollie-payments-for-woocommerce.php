@@ -159,6 +159,6 @@ function initialize()
 add_action(
 /**
  * @throws Throwable
- */ 'plugins_loaded', static function () {
+ */ 'after_setup_theme', static function () {
     initialize();
 });

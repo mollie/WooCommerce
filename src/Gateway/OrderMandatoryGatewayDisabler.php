@@ -4,19 +4,23 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Gateway;
 
+use Inpsyde\PaymentGateway\PaymentGateway;
+
 class OrderMandatoryGatewayDisabler
 {
     /**
      * @var bool
      */
     protected $isSettingsOrderApi;
+    private array $paymentMethods;
 
     /**
      * OrderMandatoryGatewayDisabler constructor.
      */
-    public function __construct(bool $isSettingsOrderApi)
+    public function __construct(bool $isSettingsOrderApi, array $paymentMethods)
     {
         $this->isSettingsOrderApi = $isSettingsOrderApi;
+        $this->paymentMethods = $paymentMethods;
     }
 
     /**
@@ -44,11 +48,17 @@ class OrderMandatoryGatewayDisabler
         if ($this->isSettingsOrderApi) {
             return $gateways;
         }
+        $paymentMethods = $this->paymentMethods;
         return array_filter(
             $gateways,
-            static function ($gateway) {
-                return !($gateway instanceof MolliePaymentGateway)
-                    || !$gateway->paymentMethod()->getProperty('orderMandatory');
+            static function ($gateway) use ($paymentMethods) {
+                if (!($gateway instanceof PaymentGateway)) {
+                    return true;
+                }
+                $gatewayId = $gateway->id;
+                $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
+                $method = $paymentMethods[$methodId] ?? null;
+                return !$method->getProperty('orderMandatory');
             }
         );
     }

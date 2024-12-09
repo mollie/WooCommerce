@@ -164,7 +164,8 @@ return static function (): array {
             $settings = $container->get('settings.settings_helper');
             assert($settings instanceof Settings);
             $isSettingsOrderApi = $settings->isOrderApiSetting();
-            return new OrderMandatoryGatewayDisabler($isSettingsOrderApi);
+            $paymentMethods = $container->get('gateway.paymentMethods');
+            return new OrderMandatoryGatewayDisabler($isSettingsOrderApi, $paymentMethods);
         },
         'payment_gateway.getRefundProcessor' => static function (ContainerInterface $container): callable {
             return static function (string $gatewayId) use ($container): RefundProcessor {

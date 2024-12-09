@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Subscription;
 
 use Exception;
+use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Payment\MollieObject;
@@ -658,13 +659,13 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             // Get the WooCommerce payment gateway for this subscription
             $gateway = wc_get_payment_gateway_by_order($subscription);
 
-            if (! $gateway || ! ( $gateway instanceof MolliePaymentGateway )) {
+            if (! $gateway || ! ( $gateway instanceof PaymentGateway )) {
                 $this->logger->debug(__METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: stopped processing, not a Mollie payment gateway, could not restore customer ID.');
 
                 return $mollie_customer_id;
             }
-
-            $mollie_method = $gateway->paymentMethod->getProperty('id');
+            $gatewayId = $gateway->id;
+            $mollie_method = substr($gatewayId, strrpos($gatewayId, '_') + 1);
 
             // Check that first payment method is related to SEPA Direct Debit and update
             $methods_needing_update =  [

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Gateway\Voucher;
 
+use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Payment\PaymentService;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
@@ -30,10 +31,12 @@ class MaybeDisableGateway
             'wc-api',
             FILTER_SANITIZE_SPECIAL_CHARS
         );
+        $isCheckoutPage = is_checkout();
+        $isOrderPayPage = is_wc_endpoint_url('order-pay');
         // To exclude we are in Checkout or Order Pay page. These are the other options where gateways are required.
         $notInCheckoutOrPayPage = $isWcApiRequest
             || !doing_action('woocommerce_payment_gateways')
-            || (!wp_doing_ajax() && !is_wc_endpoint_url('order-pay'));
+            || (!wp_doing_ajax() && !$isOrderPayPage && !$isCheckoutPage);
         $notHasBlocks = !has_block('woocommerce/checkout');
         /*
          * There are 3 cases where we want to filter the gateway and it's when the checkout
@@ -47,7 +50,7 @@ class MaybeDisableGateway
         }
         $mealVoucherGatewayIndex = false;
         foreach ($gateways as $key => $gateway) {
-            if (!($gateway instanceof MolliePaymentGateway)) {
+            if (!($gateway instanceof PaymentGateway)) {
                 continue;
             }
             if ($gateway->id === 'mollie_wc_gateway_voucher') {

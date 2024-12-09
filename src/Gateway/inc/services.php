@@ -24,6 +24,7 @@ use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\PaymentFieldsRende
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\SDK\HttpResponse;
+use Mollie\WooCommerce\Settings\General\MultiCountrySettingsField;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
@@ -214,6 +215,20 @@ return static function (): array {
                 return $container->get('gateway.instances');
             };
         },
+        'gateway.subscriptionHooks' => static function (): array {
+            return [
+                'subscriptions',
+                'subscription_cancellation',
+                'subscription_suspension',
+                'subscription_reactivation',
+                'subscription_amount_changes',
+                'subscription_date_changes',
+                'multiple_subscriptions',
+                'subscription_payment_method_change',
+                'subscription_payment_method_change_admin',
+                'subscription_payment_method_change_customer',
+            ];
+        },
 
     ];
     $paymentMethods = SharedDataDictionary::GATEWAY_CLASSNAMES;
@@ -280,6 +295,20 @@ return static function (): array {
 
             return $paymentMethod->title();
         };
+        $dynamicServices["payment_gateway.$gatewayId.method_title"] = static function (ContainerInterface $container) use ($gatewayId) {
+            $paymentMethods = $container->get('gateway.paymentMethods');
+            $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
+            $paymentMethod = $paymentMethods[$methodId];
+
+            return 'Mollie - ' . $paymentMethod->title();
+        };
+        $dynamicServices["payment_gateway.$gatewayId.method_description"] = static function (ContainerInterface $container) use ($gatewayId) {
+            $paymentMethods = $container->get('gateway.paymentMethods');
+            $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
+            $paymentMethod = $paymentMethods[$methodId];
+
+            return $paymentMethod->getProperty('settingsDescription');
+        };
         $dynamicServices["payment_gateway.$gatewayId.description"] = static function (ContainerInterface $container) use ($gatewayId) {
             $paymentMethods = $container->get('gateway.paymentMethods');
             $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
@@ -309,7 +338,22 @@ return static function (): array {
             $paymentMethods = $container->get('gateway.paymentMethods');
             $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
             $paymentMethod = $paymentMethods[$methodId];
-            return $paymentMethod->getProperty('supports');
+            $supports = $paymentMethod->getProperty('supports');
+            $isSepa = $paymentMethod->getProperty('SEPA') === true;
+            $isSubscription = $paymentMethod->getProperty('Subscription') === true;
+            $subscriptionHooks = $container->get('gateway.subscriptionHooks');
+            if ($isSepa || $isSubscription) {
+                $supports = array_merge($supports, $subscriptionHooks);
+            }
+            return $supports;
+
+        };
+        $dynamicServices["payment_gateway.$gatewayId.settings_field_renderer.multi_select_countries"] = static function (ContainerInterface $container) use ($gatewayId) {
+            $paymentMethods = $container->get('gateway.paymentMethods');
+            $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
+            $paymentMethod = $paymentMethods[$methodId];
+
+            return new MultiCountrySettingsField($paymentMethod);
         };
     }
 

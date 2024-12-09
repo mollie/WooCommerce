@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
+use Inpsyde\PaymentGateway\PaymentProcessorInterface;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Payment;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
-use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
@@ -17,10 +16,9 @@ use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use Psr\Log\LoggerInterface as Logger;
-use Psr\Log\LogLevel;
 use WC_Order;
 
-class PaymentService
+class PaymentService implements PaymentProcessorInterface
 {
     public const PAYMENT_METHOD_TYPE_ORDER = 'order';
     public const PAYMENT_METHOD_TYPE_PAYMENT = 'payment';
@@ -89,7 +87,7 @@ class PaymentService
 
     }
 
-    public function processPayment($order, $paymentGateway)
+    public function processPayment($order, $paymentGateway): array
     {
         $orderId = $order->get_id();
         $redirectUrl = $this->gateway->get_return_url($order);

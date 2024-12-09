@@ -340,4 +340,15 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
 
         return $savedTitle === $this->config['defaultTitle'];
     }
+
+    /**
+     * @return string|NULL
+     */
+    public function getSelectedIssuer(): ?string
+    {
+        $issuer_id = $this->settingsHelper->getPluginId() . '_issuer_' . $this->id;
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $postedIssuer = wc_clean(wp_unslash($_POST[$issuer_id] ?? ''));
+        return !empty($postedIssuer) ? $postedIssuer : null;
+    }
 }

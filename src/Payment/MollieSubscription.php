@@ -11,18 +11,23 @@ use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
 class MollieSubscription extends MollieObject
 {
     protected $pluginId;
+    /**
+     * @var mixed
+     */
+    private $paymentMethod;
 
     /**
      * Molliesubscription constructor.
      *
      */
-    public function __construct($pluginId, Api $apiHelper, $settingsHelper, $dataHelper, $logger)
+    public function __construct($pluginId, Api $apiHelper, $settingsHelper, $dataHelper, $logger, $paymentMethod)
     {
         $this->pluginId = $pluginId;
         $this->apiHelper = $apiHelper;
         $this->settingsHelper = $settingsHelper;
         $this->dataHelper = $dataHelper;
         $this->logger = $logger;
+        $this->paymentMethod = $paymentMethod;
     }
     /**
      * @param $order
@@ -38,10 +43,11 @@ class MollieSubscription extends MollieObject
             return  [ 'result' => 'failure' ];
         }
         $gatewayId = $gateway->id;
+        $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
         $optionName = $this->pluginId . '_api_payment_description';
         $option = get_option($optionName);
         $paymentDescription = $this->getRecurringPaymentDescription($order, $option, $initialPaymentUsedOrderAPI);
-        $selectedIssuer = $gateway->getSelectedIssuer();
+        $selectedIssuer = $this->paymentMethod->getSelectedIssuer();
         $returnUrl = $gateway->get_return_url($order);
         $returnUrl = $this->getReturnUrl($order, $returnUrl);
         $webhookUrl = $this->getWebhookUrl($order, $gatewayId);
@@ -57,7 +63,7 @@ class MollieSubscription extends MollieObject
                                 'description' => $paymentDescription,
                                 'redirectUrl' => $returnUrl,
                                 'webhookUrl' => $webhookUrl,
-                                'method' => $gateway->paymentMethod()->getProperty('id'),
+                                'method' => $methodId,
                                 'issuer' => $selectedIssuer,
                                 'locale' => $paymentLocale,
                                 'metadata' =>  [

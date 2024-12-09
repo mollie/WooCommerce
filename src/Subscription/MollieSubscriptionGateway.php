@@ -86,7 +86,8 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             $apiHelper,
             $settingsHelper,
             $dataService,
-            $logger
+            $logger,
+            $paymentMethod,
         );
 
         if (class_exists('WC_Subscriptions_Order')) {
@@ -506,6 +507,15 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
      */
     public function add_subscription_payment_meta($payment_meta, $subscription)
     {
+        if($this->id !== $subscription->get_payment_method()) {
+            return $payment_meta;
+        }
+        $parent = $subscription->get_parent();
+        $subscription->update_meta_data('_mollie_customer_id', $parent->get_meta('_mollie_customer_id'));
+        $subscription->update_meta_data('_mollie_order_id', $parent->get_meta('_mollie_order_id'));
+        $subscription->update_meta_data('_mollie_payment_id', $parent->get_meta('_mollie_payment_id'));
+        $subscription->update_meta_data('_mollie_payment_mode', $parent->get_meta('_mollie_payment_mode'));
+        $subscription->save();
         $mollie_payment_id = $subscription->get_meta('_mollie_payment_id', true);
         $mollie_payment_mode = $subscription->get_meta('_mollie_payment_mode', true);
         $mollie_customer_id = $subscription->get_meta('_mollie_customer_id', true);

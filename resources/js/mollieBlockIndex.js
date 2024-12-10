@@ -3,41 +3,37 @@ import ApplePayButtonComponent from './blocks/ApplePayButtonComponent'
 import ApplePayButtonEditorComponent from './blocks/ApplePayButtonEditorComponent'
 
 (
-    function ({ mollieBlockData, wc, _, jQuery}) {
+    function ({mollieBlockData, wc, _, jQuery}) {
         if (_.isEmpty(mollieBlockData)) {
             return;
         }
+        const {registerPaymentMethod} = wc.wcBlocksRegistry;
+        const {checkoutData, defaultFields} = wc.wcSettings.allSettings;
+        let billing_address, shipping_address;
+        if (checkoutData) {
+            ({billing_address, shipping_address} = checkoutData);
+        } else {
+            billing_address = {};
+            shipping_address = {};
+        }
+        const {ajaxUrl, filters, gatewayData, availableGateways} = mollieBlockData.gatewayData;
+        const {useEffect} = wp.element;
+        const isAppleSession = typeof window.ApplePaySession === "function"
+        const isBlockEditor = !!wp?.blockEditor;
 
-        window.onload = (event) => {
-            const { registerPaymentMethod } = wc.wcBlocksRegistry;
-            const { checkoutData, defaultFields } = wc.wcSettings.allSettings;
-            let billing_address, shipping_address;
+        function getCompanyField() {
+            let shippingCompany = shipping_address.company ?? false;
+            let billingCompany = billing_address.company ?? false;
+            return shippingCompany ? shippingCompany : billingCompany;
+        }
 
-            if (checkoutData) {
-                ({ billing_address, shipping_address } = checkoutData);
-            } else {
-                billing_address = {};
-                shipping_address = {};
+        function getPhoneField() {
+            const phoneFieldDataset = document.querySelector('[data-show-phone-field]');
+            if (!phoneFieldDataset) {
+                return true;
             }
-            const { ajaxUrl, filters, gatewayData, availableGateways } = mollieBlockData.gatewayData;
-            const {useEffect} = wp.element;
-            const isAppleSession = typeof window.ApplePaySession === "function"
-            const isBlockEditor = !!wp?.blockEditor;
-
-            function getCompanyField() {
-                let shippingCompany = shipping_address.company ?? false;
-                let billingCompany = billing_address.company ?? false;
-                return shippingCompany ? shippingCompany : billingCompany;
-            }
-
-            function getPhoneField()
-            {
-                const phoneFieldDataset = document.querySelector('[data-show-phone-field]');
-                if (!phoneFieldDataset) {
-                    return true;
-                }
-                return phoneFieldDataset.dataset.showPhoneField !== "false"
-            }
+            return phoneFieldDataset.dataset.showPhoneField !== "false"
+        }
 
             const isCompanyFieldVisible = getCompanyField();
             const companyNameString = defaultFields.company.label
@@ -77,7 +73,6 @@ import ApplePayButtonEditorComponent from './blocks/ApplePayButtonEditorComponen
                 }
                 register();
             });
-        };
 
     }
 )(window, wc)

@@ -1,16 +1,17 @@
 let cachedAvailableGateways = {};
 
-function useMollieAvailableGateways(billing, filters, ajaxUrl, jQuery, item) {
-    const { billingData: { country }, cartTotal: { value }, currency: { code } } = billing;
+function useMollieAvailableGateways(billing, currencyCode, cartTotal, filters, ajaxUrl, jQuery, item) {
+    const country = billing.country;
+    const code = currencyCode;
+    const value = cartTotal;
     const [localGateways, setLocalGateways] = wp.element.useState(cachedAvailableGateways);
 
     wp.element.useEffect(() => {
-        if (!country) return;
+        if (!country || !item) return;
         const currencyCode = code;
         const cartTotal = value;
         const currentFilterKey = currencyCode + "-" + filters.paymentLocale + "-" + country;
         if (cachedAvailableGateways.hasOwnProperty(currentFilterKey)) {
-            console.log('Using cached available gateways:', cachedAvailableGateways);
             setLocalGateways(cachedAvailableGateways);
             return;
         }
@@ -28,31 +29,36 @@ function useMollieAvailableGateways(billing, filters, ajaxUrl, jQuery, item) {
             success: (response) => {
                 cachedAvailableGateways = { ...cachedAvailableGateways, ...response.data };
                 setLocalGateways(cachedAvailableGateways);
-                console.log('Fetched available gateways:', cachedAvailableGateways);
+                const { extensionCartUpdate } = window.wc.blocksCheckout;
+                //I just need to trigger a refresh of the checkout page
+                extensionCartUpdate({ namespace: 'mollie-payments-for-woocommerce', data: {} });
             },
             error: (jqXHR, textStatus, errorThrown) => {
                 console.warn('Failed to fetch available gateways:', textStatus, errorThrown);
             },
         });
-    }, [billing, filters.paymentLocale, ajaxUrl, jQuery, item]);
+    }, [billing, currencyCode, filters.paymentLocale, ajaxUrl, jQuery, item]);
 
     return localGateways;
+}
+
+// Component that runs the hook but does not render anything.
+function MollieGatewayUpdater({ billing, currencyCode, cartTotal, filters, ajaxUrl, jQuery, item }) {
+
+    useMollieAvailableGateways(billing, currencyCode, cartTotal, filters, ajaxUrl, jQuery, item);
+    return null;
 }
 
 let onSubmitLocal
 let activePaymentMethodLocal
 let creditCardSelected = new Event("mollie_creditcard_component_selected", {bubbles: true});
 const MollieComponent = (props) => {
-    let {onSubmit, activePaymentMethod, billing, item, useEffect, ajaxUrl, jQuery, emitResponse, eventRegistration, requiredFields, shippingData, isCompanyFieldVisible, isPhoneFieldVisible, filters} = props
+    let {onSubmit, activePaymentMethod, billing, item, useEffect, ajaxUrl, jQuery, emitResponse, eventRegistration, requiredFields, shippingData, isCompanyFieldVisible, isPhoneFieldVisible} = props
     const {  responseTypes } = emitResponse;
     const {onPaymentSetup, onCheckoutValidation} = eventRegistration;
-    const availableGateways = useMollieAvailableGateways(
-        billing,
-        filters,
-        ajaxUrl,
-        jQuery,
-        item
-    );
+    if (!item || !item.name) {
+        return <div>Loading payment methods...</div>;
+    }
     const [ selectedIssuer, selectIssuer ] = wp.element.useState('');
     const [ inputPhone, selectPhone ] = wp.element.useState('');
     const [ inputBirthdate, selectBirthdate ] = wp.element.useState('');
@@ -317,8 +323,32 @@ const MollieComponent = (props) => {
     return <div><p>{item.content}</p></div>
 }
 
+const Label = ({ item, filters, ajaxUrl, jQuery }) => {
+    const cartData = wp.data.useSelect((select) =>
+            select('wc/store/cart').getCartData(),
+        []
+    );
+    const cartTotals = wp.data.useSelect( (select) => select('wc/store/cart').getCartTotals(), [ ] );
+    const cartTotal = cartTotals?.total_price || 0;
+    return (
+        <>
+            <div dangerouslySetInnerHTML={{ __html: item.label }}/>
+            <MollieGatewayUpdater
+                billing={cartData.billingAddress}
+                currencyCode={wcSettings.currency.code}
+                filters={filters}
+                ajaxUrl={ajaxUrl}
+                jQuery={jQuery}
+                item={item}
+                cartTotal={cartTotal}
+            />
+        </>
+    );
+};
+
 const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isCompanyFieldVisible, isPhoneFieldVisible) =>{
     cachedAvailableGateways = availableGateways
+
 
     document.addEventListener('mollie_components_ready_to_submit', function () {
         onSubmitLocal()
@@ -330,7 +360,12 @@ const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, available
     }
     return {
         name: item.name,
-        label: <div dangerouslySetInnerHTML={{__html: item.label}}/>,
+        label:<Label
+            item={item}
+            ajaxUrl={ajaxUrl}
+            jQuery={jQuery}
+            filters={filters}
+        />,
         content: <MollieComponent
             item={item}
             useEffect={useEffect}
@@ -338,8 +373,7 @@ const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, available
             jQuery={jQuery}
             requiredFields={requiredFields}
             isCompanyFieldVisible={isCompanyFieldVisible}
-            isPhoneFieldVisible={isPhoneFieldVisible}
-            filters={filters}/>,
+            isPhoneFieldVisible={isPhoneFieldVisible}/>,
         edit: <div>{item.edit}</div>,
         paymentMethodId: item.paymentMethodId,
         canMakePayment: ({cartTotals, billingData}) => {

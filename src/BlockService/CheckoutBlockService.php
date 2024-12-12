@@ -73,7 +73,7 @@ class CheckoutBlockService
             $availableGateways = WC()->payment_gateways()->get_available_payment_gateways();
             $availableGateways = $this->removeNonMollieGateway($availableGateways);
             $availableGateways = $this->maybeRemoveVoucher($availableGateways);
-            $filterKey = "{$filters['amount']['currency']}-{$filters['locale']}-{$filters['billingCountry']}";
+            $filterKey = "{$filters['amount']['currency']}-{$filters['billingCountry']}";
             foreach ($availableGateways as $key => $gateway) {
                 $availablePaymentMethods[$filterKey][$key] = $gateway->paymentMethod()->getProperty('id');
             }

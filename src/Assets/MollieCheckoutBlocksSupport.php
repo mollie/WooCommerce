@@ -94,7 +94,7 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
             && isset($filters['locale'])
             && isset($filters['billingCountry'])
         ) {
-            $filterKey = "{$filters['amount']['currency']}-{$filters['locale']}-{$filters['billingCountry']}";
+            $filterKey = "{$filters['amount']['currency']}-{$filters['billingCountry']}";
             foreach ($availableGateways as $key => $gateway) {
                 $availablePaymentMethods[$filterKey][$key] = $gateway->paymentMethod()->getProperty('id');
             }

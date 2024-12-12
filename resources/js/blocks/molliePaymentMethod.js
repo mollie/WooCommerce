@@ -1,18 +1,41 @@
 let cachedAvailableGateways = {};
 
+function loadCachedAvailableGateways() {
+    const storedData = localStorage.getItem('cachedAvailableGateways');
+    if (storedData) {
+        try {
+            cachedAvailableGateways = JSON.parse(storedData);
+        } catch (e) {
+            console.warn('Error parsing cachedAvailableGateways from localStorage:', e);
+            cachedAvailableGateways = {};
+        }
+    }
+}
+
+function saveCachedAvailableGateways() {
+    localStorage.setItem('cachedAvailableGateways', JSON.stringify(cachedAvailableGateways));
+}
+
+loadCachedAvailableGateways();
+function setAvailableGateways(country, currencyCode, data) {
+    cachedAvailableGateways = {
+        ...cachedAvailableGateways,
+        ...data
+    };
+    saveCachedAvailableGateways();
+}
 function useMollieAvailableGateways(billing, currencyCode, cartTotal, filters, ajaxUrl, jQuery, item) {
     const country = billing.country;
     const code = currencyCode;
     const value = cartTotal;
-    const [localGateways, setLocalGateways] = wp.element.useState(cachedAvailableGateways);
+
 
     wp.element.useEffect(() => {
         if (!country || !item) return;
         const currencyCode = code;
         const cartTotal = value;
-        const currentFilterKey = currencyCode + "-" + filters.paymentLocale + "-" + country;
+        const currentFilterKey = currencyCode + "-" + country;
         if (cachedAvailableGateways.hasOwnProperty(currentFilterKey)) {
-            setLocalGateways(cachedAvailableGateways);
             return;
         }
         jQuery.ajax({
@@ -23,15 +46,14 @@ function useMollieAvailableGateways(billing, currencyCode, cartTotal, filters, a
                 currentGateway: item,
                 currency: currencyCode,
                 billingCountry: country,
-                cartTotal: cartTotal,
+                cartTotal,
                 paymentLocale: filters.paymentLocale
             },
             success: (response) => {
-                cachedAvailableGateways = { ...cachedAvailableGateways, ...response.data };
-                setLocalGateways(cachedAvailableGateways);
-                const { extensionCartUpdate } = window.wc.blocksCheckout;
-                //I just need to trigger a refresh of the checkout page
-                extensionCartUpdate({ namespace: 'mollie-payments-for-woocommerce', data: {} });
+                setAvailableGateways(country, currencyCode, response.data);
+                const cartTotals = wp.data.select('wc/store/cart').getCartTotals();
+                // Dispatch them again to trigger a re-render:
+                wp.data.dispatch('wc/store/cart').setCartData({...cartTotals});
             },
             error: (jqXHR, textStatus, errorThrown) => {
                 console.warn('Failed to fetch available gateways:', textStatus, errorThrown);
@@ -39,7 +61,7 @@ function useMollieAvailableGateways(billing, currencyCode, cartTotal, filters, a
         });
     }, [billing, currencyCode, filters.paymentLocale, ajaxUrl, jQuery, item]);
 
-    return localGateways;
+    return cachedAvailableGateways;
 }
 
 // Component that runs the hook but does not render anything.
@@ -347,8 +369,6 @@ const Label = ({ item, filters, ajaxUrl, jQuery }) => {
 };
 
 const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isCompanyFieldVisible, isPhoneFieldVisible) =>{
-    cachedAvailableGateways = availableGateways
-
 
     document.addEventListener('mollie_components_ready_to_submit', function () {
         onSubmitLocal()
@@ -357,6 +377,12 @@ const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, available
         if (item.name === "mollie_wc_gateway_creditcard") {
             document.documentElement.dispatchEvent(creditCardSelected);
         }
+    }
+
+    // On first load, if availableGateways is not empty, store it
+    if (_.isEmpty(cachedAvailableGateways) && !_.isEmpty(availableGateways)) {
+        cachedAvailableGateways = availableGateways;
+        saveCachedAvailableGateways();
     }
     return {
         name: item.name,
@@ -383,10 +409,10 @@ const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, available
             if (cartTotals <= 0) {
                 return true
             }
-
+            loadCachedAvailableGateways();
             const currencyCode = cartTotals?.currency_code;
             const country = billingData?.country;
-            const currentFilterKey = currencyCode + "-" + filters.paymentLocale + "-" + country;
+            const currentFilterKey = currencyCode + "-" + country;
 
             creditcardSelectedEvent();
             if (!cachedAvailableGateways.hasOwnProperty(currentFilterKey)) {

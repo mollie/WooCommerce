@@ -20,6 +20,7 @@ import ApplePayButtonEditorComponent from './blocks/ApplePayButtonEditorComponen
         const {useEffect} = wp.element;
         const isAppleSession = typeof window.ApplePaySession === "function"
         const isBlockEditor = !!wp?.blockEditor;
+        localStorage.removeItem('cachedAvailableGateways');
 
         function getCompanyField() {
             let shippingCompany = shipping_address.company ?? false;

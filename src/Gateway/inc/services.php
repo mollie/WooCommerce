@@ -158,7 +158,7 @@ return static function (): array {
             $data = $container->get('settings.data_helper');
             assert($data instanceof Data);
             $pluginId = $container->get('shared.plugin_id');
-            return new MollieOrderService($HttpResponseService, $logger, $paymentFactory, $data, $pluginId);
+            return new MollieOrderService($HttpResponseService, $logger, $paymentFactory, $data, $pluginId, $container);
         },
         OrderMandatoryGatewayDisabler::class => static function (ContainerInterface $container): OrderMandatoryGatewayDisabler {
             $settings = $container->get('settings.settings_helper');

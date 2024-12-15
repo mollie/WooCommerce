@@ -13,6 +13,7 @@ use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
+use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
 use WC_Order;
@@ -37,6 +38,7 @@ class MollieOrderService
      */
     protected $data;
     protected $pluginId;
+    private ContainerInterface $container;
 
     /**
      * PaymentService constructor.
@@ -46,7 +48,8 @@ class MollieOrderService
         Logger $logger,
         PaymentFactory $paymentFactory,
         Data $data,
-        string $pluginId
+        string $pluginId,
+        ContainerInterface $container
     ) {
 
         $this->httpResponse = $httpResponse;
@@ -54,6 +57,7 @@ class MollieOrderService
         $this->paymentFactory = $paymentFactory;
         $this->data = $data;
         $this->pluginId = $pluginId;
+        $this->container = $container;
     }
 
     public function setGateway($gateway)
@@ -213,7 +217,7 @@ class MollieOrderService
     {
         $order_id = $order->get_id();
         $gateway = wc_get_payment_gateway_by_order($order);
-        $paymentMethod = $gateway->locate('getPaymentMethod')($gateway->id);
+        $paymentMethod = $this->container->get('payment_gateway.getPaymentMethod')($gateway->id);
 
         // Check whether the order is processed and paid via another gateway
         if ($this->isOrderPaidByOtherGateway($order)) {

@@ -8,7 +8,6 @@ namespace Mollie\WooCommerce\Gateway;
 
 use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
 use Automattic\WooCommerce\StoreApi\Exceptions\RouteException;
-use DateTime;
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ExtendingModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
@@ -22,29 +21,18 @@ use Mollie\WooCommerce\Buttons\PayPalButton\PayPalAjaxRequests;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalButtonHandler;
 use Mollie\WooCommerce\Gateway\Voucher\MaybeDisableGateway;
 use Mollie\WooCommerce\Notice\AdminNotice;
-use Mollie\WooCommerce\Notice\FrontendNotice;
 use Mollie\WooCommerce\Notice\NoticeInterface;
-use Mollie\WooCommerce\Payment\MollieObject;
-use Mollie\WooCommerce\Payment\MollieOrderService;
-use Mollie\WooCommerce\Payment\OrderInstructionsService;
-use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
-use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\PaymentFieldsService;
-use Mollie\WooCommerce\Payment\PaymentService;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
-use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
-use Mollie\WooCommerce\Shared\SharedDataDictionary;
-use Mollie\WooCommerce\Subscription\MollieSepaRecurringGateway;
-use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
+use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
-use WP_Post;
 
 class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
 {
@@ -71,11 +59,6 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         add_filter($this->pluginId . '_retrieve_payment_gateways', function () {
             return $this->gatewayClassnames;
         });
-
-        /*add_filter('woocommerce_payment_gateways', static function ($gateways) use ($container) {
-            $mollieGateways = $container->get('gateway.instances');
-            return array_merge($gateways, $mollieGateways);
-        });*/
         add_filter('woocommerce_payment_gateways', static function ($gateways) use ($container) {
             $orderMandatoryGatewayDisabler = $container->get(OrderMandatoryGatewayDisabler::class);
             assert($orderMandatoryGatewayDisabler instanceof OrderMandatoryGatewayDisabler);
@@ -366,7 +349,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
     /**
      * Bootstrap the ApplePay button logic if feature enabled
      */
-    public function mollieApplePayDirectHandling(NoticeInterface $notice, Logger $logger, Api $apiHelper, Settings $settingsHelper, MollieSubscriptionGateway $appleGateway)
+    public function mollieApplePayDirectHandling(NoticeInterface $notice, Logger $logger, Api $apiHelper, Settings $settingsHelper, MollieSubscriptionGatewayHandler $appleGateway)
     {
         $buttonEnabledCart = mollieWooCommerceIsApplePayDirectEnabled('cart');
         $buttonEnabledProduct = mollieWooCommerceIsApplePayDirectEnabled('product');
@@ -403,50 +386,6 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
     }
 
 
-
-    /**
-     * @param $container
-     * @return array
-     */
-    protected function instantiatePaymentMethods($container): array
-    {
-        $paymentMethods = [];
-        $listAllAvailablePaymentMethods = $container->get('gateway.getPaymentMethodsAfterFeatureFlag');
-        $iconFactory = $container->get(IconFactory::class);
-        assert($iconFactory instanceof IconFactory);
-        $settingsHelper = $container->get('settings.settings_helper');
-        assert($settingsHelper instanceof Settings);
-        $surchargeService = $container->get(Surcharge::class);
-        assert($surchargeService instanceof Surcharge);
-        $paymentFieldsService = $container->get(PaymentFieldsService::class);
-        assert($paymentFieldsService instanceof PaymentFieldsService);
-        foreach ($listAllAvailablePaymentMethods as $paymentMethodAvailable) {
-            $paymentMethodId = $paymentMethodAvailable['id'];
-            $paymentMethods[$paymentMethodId] = $this->buildPaymentMethod(
-                $paymentMethodId,
-                $iconFactory,
-                $settingsHelper,
-                $paymentFieldsService,
-                $surchargeService,
-                $paymentMethodAvailable
-            );
-        }
-
-        //I need DirectDebit to create SEPA gateway
-        if (!in_array(Constants::DIRECTDEBIT, array_keys($paymentMethods), true)) {
-            $paymentMethodId = Constants::DIRECTDEBIT;
-            $paymentMethods[$paymentMethodId] = $this->buildPaymentMethod(
-                $paymentMethodId,
-                $iconFactory,
-                $settingsHelper,
-                $paymentFieldsService,
-                $surchargeService,
-                []
-            );
-        }
-        return $paymentMethods;
-    }
-
     public function BillieFieldsMandatory($fields, $errors)
     {
         $gatewayName = "mollie_wc_gateway_billie";
@@ -481,37 +420,6 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         if ($phoneValid) {
             $order->set_billing_phone($phoneValue);
         }
-    }
-
-    /**
-     * @param string $id
-     * @param IconFactory $iconFactory
-     * @param Settings $settingsHelper
-     * @param PaymentFieldsService $paymentFieldsService
-     * @param Surcharge $surchargeService
-     * @param array $paymentMethods
-     * @return PaymentMethodI | array
-     */
-    public function buildPaymentMethod(
-        string $id,
-        IconFactory $iconFactory,
-        Settings $settingsHelper,
-        PaymentFieldsService $paymentFieldsService,
-        Surcharge $surchargeService,
-        array $apiMethod
-    ) {
-
-        $transformedId = ucfirst($id);
-        $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . $transformedId;
-        $paymentMethod = new $paymentMethodClassName(
-            $iconFactory,
-            $settingsHelper,
-            $paymentFieldsService,
-            $surchargeService,
-            $apiMethod
-        );
-
-        return $paymentMethod;
     }
 
     /**

@@ -27,7 +27,7 @@ use Psr\Log\LogLevel;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use WC_Order;
 
-class MollieSubscriptionGateway extends MolliePaymentGateway
+class MollieSubscriptionGatewayHandler extends MolliePaymentGateway
 {
     protected const PAYMENT_TEST_MODE = 'test';
     protected const METHODS_NEEDING_UPDATE = ['mollie_wc_gateway_bancontact',

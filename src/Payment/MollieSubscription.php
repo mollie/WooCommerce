@@ -6,7 +6,7 @@ use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\Api\Types\SequenceType;
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\SDK\Api;
-use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
+use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
 
 class MollieSubscription extends MollieObject
 {
@@ -98,10 +98,10 @@ class MollieSubscription extends MollieObject
      * Validate in the checkout if the gateway is available for subscriptions
      *
      * @param bool $status
-     * @param MollieSubscriptionGateway $subscriptionGateway
+     * @param MollieSubscriptionGatewayHandler $subscriptionGateway
      * @return bool
      */
-    public function isAvailableForSubscriptions(bool $status, MollieSubscriptionGateway $subscriptionGateway, $orderTotal): bool
+    public function isAvailableForSubscriptions(bool $status, MollieSubscriptionGatewayHandler $subscriptionGateway, $orderTotal): bool
     {
         $subscriptionPluginActive = class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin');
         if (!$subscriptionPluginActive) {

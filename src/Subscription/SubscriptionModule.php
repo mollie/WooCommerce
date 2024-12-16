@@ -42,18 +42,8 @@ class SubscriptionModule implements ExecutableModule
         assert($this->dataHelper instanceof Data);
         $this->settingsHelper = $container->get('settings.settings_helper');
         assert($this->settingsHelper instanceof Settings);
-        $this->maybeFixSubscriptions();
         $this->schedulePendingPaymentOrdersExpirationCheck();
         return true;
-    }
-
-    /**
-     * See MOL-322, MOL-405
-     */
-    public function maybeFixSubscriptions()
-    {
-        $fixer = new MaybeFixSubscription();
-        $fixer->maybeFix();
     }
 
     /**

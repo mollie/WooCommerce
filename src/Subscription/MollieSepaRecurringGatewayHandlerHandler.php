@@ -24,7 +24,7 @@ use Mollie\WooCommerce\Shared\Data;
 use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
 
-class MollieSepaRecurringGateway extends MollieSubscriptionGateway
+class MollieSepaRecurringGatewayHandlerHandler extends MollieSubscriptionGatewayHandler
 {
     const WAITING_CONFIRMATION_PERIOD_DAYS = '21';
 

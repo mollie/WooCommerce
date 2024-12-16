@@ -13,7 +13,7 @@ use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\SDK\WordPressHttpAdapter;
-use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
+use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
 use Mollie\WooCommerceTests\Stubs\WooCommerceMocks;
 use Mollie\WooCommerceTests\TestCase;

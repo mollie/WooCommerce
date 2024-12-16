@@ -8,7 +8,7 @@ use Mollie\Api\Endpoints\OrderEndpoint;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalAjaxRequests;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalDataObjectHttp;
 use Mollie\WooCommerce\Gateway\Surcharge;
-use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
+use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
 use Mollie\WooCommerceTests\Stubs\postDTOTestsStubs;
 use Mollie\WooCommerceTests\TestCase;

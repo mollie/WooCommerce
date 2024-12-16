@@ -25,7 +25,7 @@ use WC_Order;
 use WC_Payment_Gateway;
 use WP_Error;
 
-class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGatewayI
+class MolliePaymentGatewayHandler extends WC_Payment_Gateway implements MolliePaymentGatewayI
 {
     /**
      * @var bool

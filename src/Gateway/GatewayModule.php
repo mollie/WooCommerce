@@ -385,6 +385,78 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         }
     }
 
+    /**
+     * @param $container
+     * @return array
+     */
+    protected function instantiatePaymentMethods($container): array
+    {
+        $paymentMethods = [];
+        $listAllAvailablePaymentMethods = $container->get('gateway.getPaymentMethodsAfterFeatureFlag');
+        $iconFactory = $container->get(IconFactory::class);
+        assert($iconFactory instanceof IconFactory);
+        $settingsHelper = $container->get('settings.settings_helper');
+        assert($settingsHelper instanceof Settings);
+        $surchargeService = $container->get(Surcharge::class);
+        assert($surchargeService instanceof Surcharge);
+        $paymentFieldsService = $container->get(PaymentFieldsService::class);
+        assert($paymentFieldsService instanceof PaymentFieldsService);
+        foreach ($listAllAvailablePaymentMethods as $paymentMethodAvailable) {
+            $paymentMethodId = $paymentMethodAvailable['id'];
+            $paymentMethods[$paymentMethodId] = $this->buildPaymentMethod(
+                $paymentMethodId,
+                $iconFactory,
+                $settingsHelper,
+                $paymentFieldsService,
+                $surchargeService,
+                $paymentMethodAvailable
+            );
+        }
+
+        //I need DirectDebit to create SEPA gateway
+        if (!in_array(Constants::DIRECTDEBIT, array_keys($paymentMethods), true)) {
+            $paymentMethodId = Constants::DIRECTDEBIT;
+            $paymentMethods[$paymentMethodId] = $this->buildPaymentMethod(
+                $paymentMethodId,
+                $iconFactory,
+                $settingsHelper,
+                $paymentFieldsService,
+                $surchargeService,
+                []
+            );
+        }
+        return $paymentMethods;
+    }
+    /**
+     * @param string $id
+     * @param IconFactory $iconFactory
+     * @param Settings $settingsHelper
+     * @param PaymentFieldsService $paymentFieldsService
+     * @param Surcharge $surchargeService
+     * @param array $paymentMethods
+     * @return PaymentMethodI | array
+     */
+    public function buildPaymentMethod(
+        string $id,
+        IconFactory $iconFactory,
+        Settings $settingsHelper,
+        PaymentFieldsService $paymentFieldsService,
+        Surcharge $surchargeService,
+        array $apiMethod
+    ) {
+
+        $transformedId = ucfirst($id);
+        $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . $transformedId;
+        $paymentMethod = new $paymentMethodClassName(
+            $iconFactory,
+            $settingsHelper,
+            $paymentFieldsService,
+            $surchargeService,
+            $apiMethod
+        );
+
+        return $paymentMethod;
+    }
 
     public function BillieFieldsMandatory($fields, $errors)
     {

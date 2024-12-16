@@ -3,7 +3,7 @@
 namespace Mollie\WooCommerce\Assets;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\Shared\Data;
@@ -114,7 +114,7 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
         ];
         $gatewayData = [];
         $isSepaEnabled = isset($gatewayInstances['mollie_wc_gateway_directdebit']) && $gatewayInstances['mollie_wc_gateway_directdebit']->enabled === 'yes';
-        /** @var MolliePaymentGateway $gateway */
+        /** @var MolliePaymentGatewayHandler $gateway */
         foreach ($gatewayInstances as $gatewayKey => $gateway) {
             $method = $gateway->paymentMethod();
             $gatewayId = is_string($method->getProperty('id')) ? $method->getProperty('id') : "";

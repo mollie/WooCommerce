@@ -8,7 +8,7 @@ use DateInterval;
 use DateTime;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Types\SequenceType;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrderService;
@@ -24,7 +24,7 @@ use Mollie\WooCommerce\Shared\Data;
 use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
 
-class MollieSepaRecurringGatewayHandlerHandler extends MollieSubscriptionGatewayHandler
+class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
 {
     const WAITING_CONFIRMATION_PERIOD_DAYS = '21';
 
@@ -66,7 +66,7 @@ class MollieSepaRecurringGatewayHandlerHandler extends MollieSubscriptionGateway
             $pluginId,
             $apiHelper
         );
-        $directDebit = new MolliePaymentGateway(
+        $directDebit = new MolliePaymentGatewayHandler(
             $directDebitPaymentMethod,
             $paymentService,
             $orderInstructionsService,

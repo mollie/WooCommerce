@@ -12,7 +12,7 @@ use Inpsyde\Modularity\Module\ServiceModule;
 use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Refund;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\SDK\HttpResponse;
@@ -326,7 +326,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
              * Do not show instruction again below details on order received page
              * Instructions already displayed on top of order received page by $gateway->thankyou_page()
              *
-             * @see MolliePaymentGateway::thankyou_page
+             * @see MolliePaymentGatewayHandler::thankyou_page
              */
             return;
         }

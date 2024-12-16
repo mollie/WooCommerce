@@ -7,7 +7,7 @@ namespace Mollie\WooCommerce\Subscription;
 use Exception;
 use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\Api\Exceptions\ApiException;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieSubscription;
 use Mollie\WooCommerce\Payment\OrderInstructionsService;
@@ -27,7 +27,7 @@ use Psr\Log\LogLevel;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use WC_Order;
 
-class MollieSubscriptionGatewayHandler extends MolliePaymentGateway
+class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
 {
     protected const PAYMENT_TEST_MODE = 'test';
     protected const METHODS_NEEDING_UPDATE = ['mollie_wc_gateway_bancontact',

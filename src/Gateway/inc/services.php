@@ -37,7 +37,6 @@ return static function (): array {
             return SharedDataDictionary::GATEWAY_CLASSNAMES;
         },
         'gateway.instances' => static function (ContainerInterface $container): array {
-            //TODO remove this
             $oldGatewayBuilder = new OldGatewayBuilder();
             return $oldGatewayBuilder->instantiatePaymentMethodGateways($container);
         },

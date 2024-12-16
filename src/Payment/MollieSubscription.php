@@ -4,7 +4,7 @@ namespace Mollie\WooCommerce\Payment;
 
 use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\Api\Types\SequenceType;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
 

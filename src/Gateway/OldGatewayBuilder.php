@@ -13,7 +13,7 @@ use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
-use Mollie\WooCommerce\Subscription\MollieSepaRecurringGatewayHandlerHandler;
+use Mollie\WooCommerce\Subscription\MollieSepaRecurringGatewayHandler;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
@@ -59,7 +59,7 @@ class OldGatewayBuilder
             $key = 'mollie_wc_gateway_' . $paymentMethodId;
             if ($isSepa) {
                 $directDebit = $paymentMethods[Constants::DIRECTDEBIT];
-                $gateways[$key] = new MollieSepaRecurringGatewayHandlerHandler(
+                $gateways[$key] = new MollieSepaRecurringGatewayHandler(
                     $directDebit,
                     $paymentMethod,
                     $paymentService,
@@ -92,7 +92,7 @@ class OldGatewayBuilder
                     $apiHelper
                 );
             } else {
-                $gateways[$key] = new MolliePaymentGateway(
+                $gateways[$key] = new MolliePaymentGatewayHandler(
                     $paymentMethod,
                     $paymentService,
                     $orderInstructionsService,

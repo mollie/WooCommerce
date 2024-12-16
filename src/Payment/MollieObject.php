@@ -9,6 +9,7 @@ use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
+use Mollie\WooCommerce\Payment\Request\RequestFactory;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
@@ -55,8 +56,17 @@ class MollieObject
      * @var null
      */
     private $paymentMethod;
+    protected RequestFactory $requestFactory;
 
-    public function __construct($data, Logger $logger, PaymentFactory $paymentFactory, Api $apiHelper, Settings $settingsHelper, string $pluginId)
+    public function __construct(
+        $data,
+        Logger $logger,
+        PaymentFactory $paymentFactory,
+        Api $apiHelper,
+        Settings $settingsHelper,
+        string $pluginId,
+        RequestFactory $requestFactory
+    )
     {
         $this->data = $data;
         $this->logger = $logger;
@@ -67,6 +77,7 @@ class MollieObject
         $base_location = wc_get_base_location();
         static::$shop_country = $base_location['country'];
         $this->paymentMethod = null;
+        $this->requestFactory = $requestFactory;
     }
 
     public function data()
@@ -657,24 +668,6 @@ class MollieObject
             }
         }
     }
-
-    protected function addSequenceTypeForSubscriptionsFirstPayments($orderId, $gateway, $paymentRequestData): array
-    {
-        if ($this->dataHelper->isSubscription($orderId) || $this->dataHelper->isWcSubscription($orderId)) {
-            $disable_automatic_payments = apply_filters($this->pluginId . '_is_automatic_payment_disabled', false);
-            $supports_subscriptions = $gateway->supports('subscriptions');
-
-            if ($supports_subscriptions == true && $disable_automatic_payments == false) {
-                $paymentRequestData = $this->addSequenceTypeFirst($paymentRequestData);
-            }
-        }
-        return $paymentRequestData;
-    }
-
-    public function addSequenceTypeFirst($paymentRequestData)
-    {
-    }
-
     /**
      * @param $order
      */

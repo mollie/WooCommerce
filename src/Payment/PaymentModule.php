@@ -50,40 +50,14 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
     public function services(): array
     {
-        return [
-            OrderLines::class => static function (ContainerInterface $container): OrderLines {
-                $data = $container->get('settings.data_helper');
-                $pluginId = $container->get('shared.plugin_id');
-                return new OrderLines($data, $pluginId);
-            },
-           PaymentFactory::class => static function (ContainerInterface $container): PaymentFactory {
-               $settingsHelper = $container->get('settings.settings_helper');
-               assert($settingsHelper instanceof Settings);
-               $apiHelper = $container->get('SDK.api_helper');
-               assert($apiHelper instanceof Api);
-               $data = $container->get('settings.data_helper');
-               assert($data instanceof Data);
-               $pluginId = $container->get('shared.plugin_id');
-               $logger = $container->get(Logger::class);
-               assert($logger instanceof Logger);
-               $orderLines = $container->get(OrderLines::class);
-               return new PaymentFactory($data, $apiHelper, $settingsHelper, $pluginId, $logger, $orderLines);
-           },
-           MollieObject::class => static function (ContainerInterface $container): MollieObject {
-               $logger = $container->get(Logger::class);
-               assert($logger instanceof Logger);
-               $data = $container->get('settings.data_helper');
-               assert($data instanceof Data);
-               $apiHelper = $container->get('SDK.api_helper');
-               assert($apiHelper instanceof Api);
-               $pluginId = $container->get('shared.plugin_id');
-               $paymentFactory = $container->get(PaymentFactory::class);
-               assert($paymentFactory instanceof PaymentFactory);
-               $settingsHelper = $container->get('settings.settings_helper');
-               assert($settingsHelper instanceof Settings);
-               return new MollieObject($data, $logger, $paymentFactory, $apiHelper, $settingsHelper, $pluginId);
-           },
-        ];
+        static $services;
+
+        if ($services === null) {
+
+            $services = require_once __DIR__ . '/inc/services.php';
+        }
+
+        return $services();
     }
 
     public function run(ContainerInterface $container): bool

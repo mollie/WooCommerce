@@ -90,94 +90,9 @@ class MollieOrder extends MollieObject
      */
     public function getPaymentRequestData($order, $customerId, $voucherDefaultCategory = Voucher::NO_CATEGORY)
     {
-        $settingsHelper = $this->settingsHelper;
-        $paymentLocale = $settingsHelper->getPaymentLocale();
-        $storeCustomer = $settingsHelper->shouldStoreCustomer();
-
-        $gateway = wc_get_payment_gateway_by_order($order);
-
-        if (! $gateway || ! ( $gateway instanceof PaymentGateway )) {
-            return  [ 'result' => 'failure' ];
-        }
-
-        $gatewayId = $gateway->id;
-        $selectedIssuer = $this->getSelectedIssuer($gatewayId);
-        $returnUrl = $gateway->get_return_url($order);
-        $returnUrl = $this->getReturnUrl($order, $returnUrl);
-        $webhookUrl = $this->getWebhookUrl($order, $gatewayId);
-        $isPayPalExpressOrder = $order->get_meta('_mollie_payment_method_button') === 'PayPalButton';
-        $billingAddress = null;
-        if (!$isPayPalExpressOrder) {
-            $billingAddress = $this->createBillingAddress($order);
-            $shippingAddress = $this->createShippingAddress($order);
-        }
-
-        // Generate order lines for Mollie Orders
-        $orderLinesHelper = $this->orderLines;
-        $orderLines = $orderLinesHelper->order_lines($order, $voucherDefaultCategory);
-        $methodId = substr($gateway->id, strrpos($gateway->id, '_') + 1);
-
-        // Build the Mollie order data
-        $paymentRequestData = [
-            'amount' => [
-                'currency' => $this->dataHelper->getOrderCurrency($order),
-                'value' => $this->dataHelper->formatCurrencyValue(
-                    $order->get_total(),
-                    $this->dataHelper->getOrderCurrency($order)
-                ),
-            ],
-            'redirectUrl' => $returnUrl,
-            'webhookUrl' => $webhookUrl,
-            'method' => $methodId,
-            'payment' => [
-                'issuer' => $selectedIssuer,
-            ],
-            'locale' => $paymentLocale,
-            'billingAddress' => $billingAddress,
-            'metadata' => apply_filters(
-                $this->pluginId . '_payment_object_metadata',
-                [
-                    'order_id' => $order->get_id(),
-                    'order_number' => $order->get_order_number(),
-                ]
-            ),
-            'lines' => $orderLines['lines'],
-            'orderNumber' => $order->get_order_number(),
-        ];
-
-        $paymentRequestData = $this->addSequenceTypeForSubscriptionsFirstPayments($order->get_id(), $gateway, $paymentRequestData);
-
-        // Only add shippingAddress if all required fields are set
-        if (
-            !empty($shippingAddress->streetAndNumber)
-            && !empty($shippingAddress->postalCode)
-            && !empty($shippingAddress->city)
-            && !empty($shippingAddress->country)
-        ) {
-            $paymentRequestData['shippingAddress'] = $shippingAddress;
-        }
-
-        // Only store customer at Mollie if setting is enabled
-        if ($storeCustomer) {
-            $paymentRequestData['payment']['customerId'] = $customerId;
-        }
-
-        $cardToken = mollieWooCommerceCardToken();
-        if ($cardToken && isset($paymentRequestData['payment'])) {
-            $paymentRequestData['payment']['cardToken'] = $cardToken;
-        }
-        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        $applePayToken = wc_clean(wp_unslash($_POST["token"] ?? ''));
-        if ($applePayToken && isset($paymentRequestData['payment'])) {
-            $encodedApplePayToken = wp_json_encode($applePayToken);
-            $paymentRequestData['payment']['applePayPaymentToken'] = $encodedApplePayToken;
-        }
-        $customerBirthdate = $this->getCustomerBirthdate($order);
-        if ($customerBirthdate) {
-            $paymentRequestData['consumerDateOfBirth'] = $customerBirthdate;
-        }
-        return $paymentRequestData;
+        return $this->requestFactory->createRequest('order', $order, $customerId);
     }
+
 
     public function setActiveMolliePayment($orderId)
     {
@@ -246,12 +161,6 @@ class MollieOrder extends MollieObject
         }
 
         return $ibanDetails;
-    }
-
-    public function addSequenceTypeFirst($paymentRequestData)
-    {
-        $paymentRequestData['payment']['sequenceType'] = 'first';
-        return $paymentRequestData;
     }
 
     /**
@@ -1004,32 +913,5 @@ class MollieOrder extends MollieObject
 
         // drop item from array
         unset($items[$item->get_id()]);
-    }
-
-    protected function getCustomerBirthdate($order)
-    {
-        $gateway = wc_get_payment_gateway_by_order($order);
-        if (!$gateway || !isset($gateway->id)) {
-            return null;
-        }
-        if (strpos($gateway->id, 'mollie_wc_gateway_') === false) {
-            return null;
-        }
-        $additionalFields = $this->paymentMethod->getProperty('additionalFields');
-        $methodId = $additionalFields && in_array('birthdate', $additionalFields, true);
-        if ($methodId) {
-            $optionName = 'billing_birthdate_' . $this->paymentMethod->getProperty('id');
-            //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $fieldPosted = wc_clean(wp_unslash($_POST[$optionName] ?? ''));
-            if ($fieldPosted === '' || !is_string($fieldPosted)) {
-                return null;
-            }
-
-            $order->update_meta_data($optionName, $fieldPosted);
-            $order->save();
-            $format = "Y-m-d";
-            return gmdate($format, (int) strtotime($fieldPosted));
-        }
-        return null;
     }
 }

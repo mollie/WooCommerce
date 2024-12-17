@@ -9,13 +9,18 @@ use WC_Order;
 
 class ApplePayTokenDecorator implements RequestDecoratorInterface
 {
-    public function decorate(array $requestData, WC_Order $order): array
+    public function decorate(array $requestData, WC_Order $order, $context): array
     {
         // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         $applePayToken = wc_clean(wp_unslash($_POST["token"] ?? ''));
-        if ($applePayToken && isset($requestData['payment'])) {
-            $encodedApplePayToken = wp_json_encode($applePayToken);
-            $requestData['payment']['applePayPaymentToken'] = $encodedApplePayToken;
+        if (!$applePayToken) {
+            return $requestData;
+        }
+        $encodedApplePayToken = wp_json_encode($applePayToken);
+        if($context === 'order') {
+            $requestData['payment']['applePayToken'] = $encodedApplePayToken;
+        } elseif ($context === 'payment') {
+            $requestData['applePayToken'] = $encodedApplePayToken;
         }
         return $requestData;
     }

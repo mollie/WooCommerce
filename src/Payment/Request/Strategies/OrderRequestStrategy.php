@@ -3,13 +3,14 @@
 namespace Mollie\WooCommerce\Payment\Request;
 
 use Inpsyde\PaymentGateway\PaymentGateway;
-use Mollie\WooCommerce\Payment\Request\RequestStrategyInterface;
+use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Shared\Data;
 use WC_Order;
 
 class OrderRequestStrategy implements RequestStrategyInterface
 {
-    private $dataHelper;
-    private $settingsHelper;
+    private Data $dataHelper;
+    private Settings $settingsHelper;
     private array $decorators;
 
     public function __construct($dataHelper, $settingsHelper, array $decorators) {
@@ -27,33 +28,8 @@ class OrderRequestStrategy implements RequestStrategyInterface
             return  [ 'result' => 'failure' ];
         }
 
-        $gatewayId = $gateway->id;
-        $paymentLocale = $settingsHelper->getPaymentLocale();
-        $selectedIssuer = $this->getSelectedIssuer($gatewayId);
-        $returnUrl = $gateway->get_return_url($order);
-        $returnUrl = $this->getReturnUrl($order, $returnUrl);
-        $webhookUrl = $this->getWebhookUrl($order, $gatewayId);
-        $isPayPalExpressOrder = $order->get_meta('_mollie_payment_method_button') === 'PayPalButton';
-        $billingAddress = null;
-        if (!$isPayPalExpressOrder) {
-            $billingAddress = $this->createBillingAddress($order);
-            $shippingAddress = $this->createShippingAddress($order);
-        }
-        // Only add shippingAddress if all required fields are set
-        if (
-            !empty($shippingAddress->streetAndNumber)
-            && !empty($shippingAddress->postalCode)
-            && !empty($shippingAddress->city)
-            && !empty($shippingAddress->country)
-        ) {
-            $requestData['shippingAddress'] = $shippingAddress;
-        }
-
-        // Generate order lines for Mollie Orders
-        $orderLinesHelper = $this->orderLines;
-        $orderLines = $orderLinesHelper->order_lines($order, $voucherDefaultCategory);
         $methodId = substr($gateway->id, strrpos($gateway->id, '_') + 1);
-
+        $paymentLocale = $settingsHelper->getPaymentLocale();
         // Build the Mollie order data
         $requestData = [
             'amount' => [
@@ -63,22 +39,15 @@ class OrderRequestStrategy implements RequestStrategyInterface
                     $this->dataHelper->getOrderCurrency($order)
                 ),
             ],
-            'redirectUrl' => $returnUrl,
-            'webhookUrl' => $webhookUrl,
             'method' => $methodId,
-            'payment' => [
-                'issuer' => $selectedIssuer,
-            ],
             'locale' => $paymentLocale,
-            'billingAddress' => $billingAddress,
             'metadata' => apply_filters(
-                $this->pluginId . '_payment_object_metadata',
+                $this->dataHelper->getPluginId() . '_payment_object_metadata',
                 [
                     'order_id' => $order->get_id(),
                     'order_number' => $order->get_order_number(),
                 ]
             ),
-            'lines' => $orderLines['lines'],
             'orderNumber' => $order->get_order_number(),
         ];
 

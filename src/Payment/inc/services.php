@@ -3,10 +3,16 @@
 declare(strict_types=1);
 
 
+use Mollie\WooCommerce\Payment\Decorator\AddCustomRequestFieldsDecorator;
+use Mollie\WooCommerce\Payment\Decorator\AddressDecorator;
 use Mollie\WooCommerce\Payment\Decorator\AddSequenceTypeForSubscriptionsDecorator;
 use Mollie\WooCommerce\Payment\Decorator\ApplePayTokenDecorator;
 use Mollie\WooCommerce\Payment\Decorator\CardTokenDecorator;
+use Mollie\WooCommerce\Payment\Decorator\OrderLinesDecorator;
+use Mollie\WooCommerce\Payment\Decorator\PaymentDescriptionDecorator;
+use Mollie\WooCommerce\Payment\Decorator\SelectedIssuerDecorator;
 use Mollie\WooCommerce\Payment\Decorator\StoreCustomerDecorator;
+use Mollie\WooCommerce\Payment\Decorator\UrlDecorator;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\OrderLines;
 use Mollie\WooCommerce\Payment\PaymentFactory;
@@ -61,7 +67,30 @@ return static function (): array {
             $pluginId = $container->get('shared.plugin_id');
             return new AddSequenceTypeForSubscriptionsDecorator($dataHelper, $pluginId);
         },
-
+        OrderLinesDecorator::class => static function (ContainerInterface $container): OrderLinesDecorator {
+            $orderLines = $container->get(OrderLines::class);
+            $voucherDefaultCategory = $container->get('voucher.defaultCategory');
+            return new OrderLinesDecorator($orderLines, $voucherDefaultCategory);
+        },
+        AddressDecorator::class => static function (): AddressDecorator {
+            return new AddressDecorator();
+        },
+        UrlDecorator::class => static function (ContainerInterface $container): UrlDecorator {
+            $pluginId = $container->get('shared.plugin_id');
+            return new UrlDecorator($pluginId);
+        },
+        SelectedIssuerDecorator::class => static function (ContainerInterface $container): SelectedIssuerDecorator {
+            $pluginId = $container->get('shared.plugin_id');
+            return new SelectedIssuerDecorator($pluginId);
+        },
+        PaymentDescriptionDecorator::class => static function (ContainerInterface $container): PaymentDescriptionDecorator {
+            $dataHelper = $container->get('settings.data_helper');
+            return new PaymentDescriptionDecorator($dataHelper);
+        },
+        AddCustomRequestFieldsDecorator::class => static function (ContainerInterface $container): AddCustomRequestFieldsDecorator {
+            $paymentMethod = $container->get('payment.method');
+            return new AddCustomRequestFieldsDecorator($paymentMethod, $container);
+        },
         'request.strategy.order' => static function (ContainerInterface $container): RequestStrategyInterface {
             $dataHelper = $container->get('settings.data_helper');
             $settingsHelper = $container->get('settings.settings_helper');
@@ -73,7 +102,11 @@ return static function (): array {
                     $container->get(ApplePayTokenDecorator::class),
                     $container->get(CardTokenDecorator::class),
                     $container->get(StoreCustomerDecorator::class),
-
+                    $container->get(AddSequenceTypeForSubscriptionsDecorator::class),
+                    $container->get(OrderLinesDecorator::class),
+                    $container->get(AddressDecorator::class),
+                    $container->get(UrlDecorator::class),
+                    $container->get(SelectedIssuerDecorator::class),
                 ]
             );
         },
@@ -81,7 +114,14 @@ return static function (): array {
             $dataHelper = $container->get('settings.data_helper');
             $settingsHelper = $container->get('settings.settings_helper');
             $decorators = [
-
+                $container->get(SelectedIssuerDecorator::class),
+                $container->get(UrlDecorator::class),
+                $container->get(AddSequenceTypeForSubscriptionsDecorator::class),
+                $container->get(ApplePayTokenDecorator::class),
+                $container->get(CardTokenDecorator::class),
+                $container->get(StoreCustomerDecorator::class),
+                $container->get(PaymentDescriptionDecorator::class),
+                $container->get(AddCustomRequestFieldsDecorator::class),
             ];
             return new PaymentRequestStrategy($dataHelper, $settingsHelper, $decorators);
         },

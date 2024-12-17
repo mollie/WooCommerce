@@ -26,18 +26,8 @@ class PaymentRequestStrategy implements RequestStrategyInterface
             return ['result' => 'failure'];
         }
         $settingsHelper = $this->settingsHelper;
-        $optionName = $this->pluginId . '_' . 'api_payment_description';
-        $option = get_option($optionName);
-        $paymentDescription = $this->getPaymentDescription($order, $option);
+        $methodId = substr($gateway->id, strrpos($gateway->id, '_') + 1);
         $paymentLocale = $settingsHelper->getPaymentLocale();
-        $storeCustomer = $settingsHelper->shouldStoreCustomer();
-
-        $gatewayId = $gateway->id;
-        $selectedIssuer = $this->getSelectedIssuer($gatewayId);
-        $returnUrl = $gateway->get_return_url($order);
-        $returnUrl = $this->getReturnUrl($order, $returnUrl);
-        $webhookUrl = $this->getWebhookUrl($order, $gatewayId);
-        $orderId = $order->get_id();
 
         $paymentRequestData = [
             'amount' => [
@@ -52,35 +42,16 @@ class PaymentRequestStrategy implements RequestStrategyInterface
                     ),
             ],
             'description' => $paymentDescription,
-            'redirectUrl' => $returnUrl,
-            'webhookUrl' => $webhookUrl,
-            'method' => $this->paymentMethod->getProperty('id'),
-            'issuer' => $selectedIssuer,
+            'method' => $methodId,
             'locale' => $paymentLocale,
             'metadata' => apply_filters(
-                $this->pluginId . '_payment_object_metadata',
+                $this->dataHelper->getPluginId() . '_payment_object_metadata',
                 [
                     'order_id' => $order->get_id(),
                 ]
             ),
         ];
 
-        $paymentRequestData = $this->addSequenceTypeForSubscriptionsFirstPayments($order->get_id(), $gateway, $paymentRequestData);
-
-        if ($storeCustomer) {
-            $paymentRequestData['customerId'] = $customerId;
-        }
-
-        $cardToken = mollieWooCommerceCardToken();
-        if ($cardToken) {
-            $paymentRequestData['cardToken'] = $cardToken;
-        }
-        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        $applePayToken = wc_clean(wp_unslash($_POST["token"] ?? ''));
-        if ($applePayToken) {
-            $encodedApplePayToken = wp_json_encode($applePayToken);
-            $paymentRequestData['applePayPaymentToken'] = $encodedApplePayToken;
-        }
         $paymentRequestData = $this->addCustomRequestFields($order, $paymentRequestData);
         $context = 'payment';
         foreach ($this->decorators as $decorator) {

@@ -469,21 +469,4 @@ class MolliePayment extends MollieObject
         }
         $this->updateOrderStatus($order, $newOrderStatus);
     }
-
-    protected function addCustomRequestFields($order, array $paymentRequestData)
-    {
-        if ($this->paymentMethod->hasProperty('paymentAPIfields')) {
-            $paymentAPIfields = $this->paymentMethod->getProperty('paymentAPIfields');
-            foreach ($paymentAPIfields as $field) {
-                if (!method_exists($this, 'create' . ucfirst($field))) {
-                    continue;
-                }
-                $value = $this->{'create' . ucfirst($field)}($order);
-                if ($value) {
-                    $paymentRequestData[$field] = $value;
-                }
-            }
-        }
-        return $paymentRequestData;
-    }
 }

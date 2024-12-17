@@ -1,7 +1,7 @@
 import {request} from "../applePayRequest";
 import {createAppleErrors} from "../applePayError";
 
-export const ApplePayButtonComponent = ({cart, extensions}) => {
+export const ApplePayButtonComponent = ({ buttonAttributes = {} }) => {
     const mollieApplePayBlockDataCart = window.mollieApplePayBlockDataCart || window.mollieBlockData.mollieApplePayBlockDataCart
     const nonce = document.getElementById("woocommerce-process-checkout-nonce").value
     let updatedContactInfo = []
@@ -11,6 +11,10 @@ export const ApplePayButtonComponent = ({cart, extensions}) => {
         shop: {countryCode, currencyCode = 'EUR', totalLabel = ''},
         ajaxUrl,
     } = mollieApplePayBlockDataCart
+    const style = {
+        height: `${buttonAttributes.height || 48}px`,
+        borderRadius: `${buttonAttributes.borderRadius || 4}px`
+    }
 
     const findSelectedShippingMethod = (shippingRates) => {
         let shippingRate = shippingRates.find((shippingMethod) => shippingMethod.selected === true)
@@ -177,6 +181,7 @@ export const ApplePayButtonComponent = ({cart, extensions}) => {
                 event.preventDefault();
                 applePaySession();
             }}
+            style={style}
         >
         </button>
     );

@@ -131,8 +131,8 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
 
         // Set order to paid and processed when eventually completed without Mollie
         add_action('woocommerce_payment_complete', [$this, 'setOrderPaidByOtherGateway'], 10, 1);
-        $appleGateway = isset($container->get('gateway.instances')['mollie_wc_gateway_applepay']) ? $container->get(
-            'gateway.instances'
+        $appleGateway = isset($container->get('__deprecated.gateway_helpers')['mollie_wc_gateway_applepay']) ? $container->get(
+            '__deprecated.gateway_helpers'
         )['mollie_wc_gateway_applepay'] : false;
         $notice = $container->get(AdminNotice::class);
         assert($notice instanceof AdminNotice);
@@ -150,8 +150,8 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             $this->mollieApplePayDirectHandling($notice, $logger, $apiHelper, $settingsHelper, $appleGateway);
         }
 
-        $paypalGateway = isset($container->get('gateway.instances')['mollie_wc_gateway_paypal']) ? $container->get(
-            'gateway.instances'
+        $paypalGateway = isset($container->get('__deprecated.gateway_helpers')['mollie_wc_gateway_paypal']) ? $container->get(
+            '__deprecated.gateway_helpers'
         )['mollie_wc_gateway_paypal'] : false;
         if ($paypalGateway) {
             $this->molliePayPalButtonHandling($paypalGateway, $notice, $logger, $pluginUrl);

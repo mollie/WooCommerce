@@ -25,7 +25,7 @@ use WC_Order;
 use WC_Payment_Gateway;
 use WP_Error;
 
-class MolliePaymentGatewayHandler extends WC_Payment_Gateway implements MolliePaymentGatewayI
+class MolliePaymentGatewayHandler implements MolliePaymentGatewayI
 {
     /**
      * @var bool
@@ -86,7 +86,6 @@ class MolliePaymentGatewayHandler extends WC_Payment_Gateway implements MolliePa
      * @var string
      */
     protected $pluginId;
-    private RefundProcessor $refundProcessor;
 
     /**
      *

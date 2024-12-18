@@ -245,7 +245,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
         $gateway = wc_get_payment_gateway_by_order($order);
         $orderId = $order->get_id();
-        $oldGatewayInstances = $container->get('gateway.instances');
+        $oldGatewayInstances = $container->get('__deprecated.gateway_helpers');
         $mollieGatewayHelper = $oldGatewayInstances[$gateway->id];
 
         if (!$gateway) {
@@ -312,7 +312,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
         }
 
 
-        $oldGatewayInstances = $container->get('gateway.instances');
+        $oldGatewayInstances = $container->get('__deprecated.gateway_helpers');
         $mollieGatewayHelper = $oldGatewayInstances[$gateway->id];
         $mollieGatewayHelper->displayInstructions($order);
     }

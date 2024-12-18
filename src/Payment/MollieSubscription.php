@@ -98,27 +98,27 @@ class MollieSubscription extends MollieObject
      * Validate in the checkout if the gateway is available for subscriptions
      *
      * @param bool $status
-     * @param MollieSubscriptionGatewayHandler $subscriptionGateway
+     * @param MollieSubscriptionGatewayHandler $deprecatedSubscriptionHelper
      * @return bool
      */
-    public function isAvailableForSubscriptions(bool $status, MollieSubscriptionGatewayHandler $subscriptionGateway, $orderTotal): bool
+    public function isAvailableForSubscriptions(bool $status, MollieSubscriptionGatewayHandler $deprecatedSubscriptionHelper, $orderTotal, $gateway): bool
     {
         $subscriptionPluginActive = class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin');
         if (!$subscriptionPluginActive) {
             return $status;
         }
-        $currency = $subscriptionGateway->getCurrencyFromOrder();
-        $billingCountry = $subscriptionGateway->getBillingCountry();
-        $paymentLocale = $subscriptionGateway->dataService()->getPaymentLocale();
+        $currency = $deprecatedSubscriptionHelper->getCurrencyFromOrder();
+        $billingCountry = $deprecatedSubscriptionHelper->getBillingCountry();
+        $paymentLocale = $deprecatedSubscriptionHelper->dataService()->getPaymentLocale();
         // Check recurring totals against recurring payment methods for future renewal payments
-        $recurringTotal = $subscriptionGateway->get_recurring_total();
+        $recurringTotal = $deprecatedSubscriptionHelper->get_recurring_total();
         // See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
         $acceptManualRenewals = 'yes' === get_option(
             \WC_Subscriptions_Admin::$option_prefix
                 . '_accept_manual_renewals',
             'no'
         );
-        $supportsSubscriptions = $subscriptionGateway->supports('subscriptions');
+        $supportsSubscriptions = $gateway->supports('subscriptions');
         if ($acceptManualRenewals === true || !$supportsSubscriptions || empty($recurringTotal)) {
             return $status;
         }
@@ -131,11 +131,11 @@ class MollieSubscription extends MollieObject
                 SequenceType::SEQUENCETYPE_RECURRING,
                 $paymentLocale
             );
-            $status = $subscriptionGateway->isAvailableMethodInCheckout($filters);
+            $status = $deprecatedSubscriptionHelper->isAvailableMethodInCheckout($filters);
         }
 
         // Check available first payment methods with today's order total, but ignore SSD gateway (not shown in checkout)
-        if ($subscriptionGateway->paymentMethod()->getProperty('id') === 'mollie_wc_gateway_directdebit') {
+        if ($deprecatedSubscriptionHelper->paymentMethod()->getProperty('id') === 'mollie_wc_gateway_directdebit') {
             return $status;
         }
         $filters = $this->buildFilters(
@@ -145,7 +145,7 @@ class MollieSubscription extends MollieObject
             SequenceType::SEQUENCETYPE_FIRST,
             $paymentLocale
         );
-        return $subscriptionGateway->isAvailableMethodInCheckout($filters);
+        return $deprecatedSubscriptionHelper->isAvailableMethodInCheckout($filters);
     }
 
     /**

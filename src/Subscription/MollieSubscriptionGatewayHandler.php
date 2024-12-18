@@ -105,42 +105,20 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
             add_filter('woocommerce_subscription_payment_meta', [ $this, 'add_subscription_payment_meta' ], 10, 2);
             add_action('woocommerce_subscription_validate_payment_meta', [ $this, 'validate_subscription_payment_meta' ], 10, 2);
         }
-        if ($this->paymentMethod->getProperty('Subscription')) {
-            $this->initSubscriptionSupport();
-        }
     }
 
-    /**
-     *
-     */
-    protected function initSubscriptionSupport()
-    {
-        $supportSubscriptions = [
-            'subscriptions',
-            'subscription_cancellation',
-            'subscription_suspension',
-            'subscription_reactivation',
-            'subscription_amount_changes',
-            'subscription_date_changes',
-            'multiple_subscriptions',
-            'subscription_payment_method_change',
-            'subscription_payment_method_change_admin',
-            'subscription_payment_method_change_customer',
-        ];
 
-        $this->supports = array_merge($this->supports, $supportSubscriptions);
-    }
 
     /**
      * @param $order_id
      * @return array
      * @throws InvalidApiKey
      */
-    public function process_subscription_payment($order_id)
+    /*public function process_subscription_payment($order_id)
     {
         $this->isSubscriptionPayment = true;
         return parent::process_payment($order_id);
-    }
+    }*/
 
     /**
      * @param $renewal_order
@@ -575,7 +553,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
      * @throws \Mollie\Api\Exceptions\ApiException
      * @throws InvalidApiKey
      */
-    public function process_payment($order_id)
+    /*public function process_payment($order_id)
     {
         $this->addWcSubscriptionsFiltersForPayment();
         $isSubscription = $this->dataService->isSubscription($order_id);
@@ -586,7 +564,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         }
 
         return parent::process_payment($order_id);
-    }
+    }*/
 
     protected function addWcSubscriptionsFiltersForPayment(): void
     {
@@ -736,18 +714,18 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
      *
      * @return bool
      */
-    public function is_available(): bool
+    public function is_available($gateway): bool
     {
-        if (!$this->checkEnabledNorDirectDebit()) {
+        if (!$this->checkEnabledNorDirectDebit($gateway)) {
             return false;
         }
         if (!$this->cartAmountAvailable()) {
             return true;
         }
-        $status =  parent::is_available();
+        $status =  parent::is_available($gateway);
         // Do extra checks if WooCommerce Subscriptions is installed
-        $orderTotal = $this->get_order_total();
-        return $this->subscriptionObject->isAvailableForSubscriptions($status, $this, $orderTotal);
+        $orderTotal = WC()->cart && WC()->cart->get_total('edit');
+        return $this->subscriptionObject->isAvailableForSubscriptions($status, $this, $orderTotal, $gateway);
     }
 
     /**

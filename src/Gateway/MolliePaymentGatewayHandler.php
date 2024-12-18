@@ -25,7 +25,7 @@ use WC_Order;
 use WC_Payment_Gateway;
 use WP_Error;
 
-class MolliePaymentGatewayHandler implements MolliePaymentGatewayI
+class MolliePaymentGatewayHandler
 {
     /**
      * @var bool
@@ -116,24 +116,9 @@ class MolliePaymentGatewayHandler implements MolliePaymentGatewayI
         $this->paymentFactory = $paymentFactory;
         $this->pluginId = $pluginId;
 
-        // No plugin id, gateway id is unique enough
-        $this->plugin_id = '';
         // Use gateway class name as gateway id
         $this->gatewayId();
-        // Set gateway title (visible in admin)
-        $this->method_title = 'Mollie - ' . $this->paymentMethod->title();
-        $this->method_description = $this->paymentMethod->getProperty(
-            'settingsDescription'
-        );
-        $this->supports = $this->paymentMethod->getProperty('supports');
 
-        // Load the settings.
-        $this->init_form_fields();
-        $this->init_settings();
-        $this->title = $this->paymentMethod->title();
-
-        $this->initDescription();
-        $this->initIcon();
 
         if (!has_action('woocommerce_thankyou_' . $this->id)) {
             add_action(
@@ -147,10 +132,7 @@ class MolliePaymentGatewayHandler implements MolliePaymentGatewayI
             'woocommerce_api_' . $this->id,
             [$this->mollieOrderService, 'onWebhookAction']
         );
-        add_action(
-            'woocommerce_update_options_payment_gateways_' . $this->id,
-            [$this, 'process_admin_options']
-        );
+
         add_action(
             'woocommerce_email_after_order_table',
             [$this, 'displayInstructions'],
@@ -172,7 +154,7 @@ class MolliePaymentGatewayHandler implements MolliePaymentGatewayI
             10,
             2
         );
-        $this->gatewayHasFields();
+
 
         $isEnabledAtWoo = $this->paymentMethod->getProperty('enabled') ?
             $this->paymentMethod->getProperty('enabled') :
@@ -205,22 +187,6 @@ class MolliePaymentGatewayHandler implements MolliePaymentGatewayI
         return $this->pluginId;
     }
 
-    public function initIcon()
-    {
-        if ($this->paymentMethod->shouldDisplayIcon()) {
-            $defaultIcon = $this->paymentMethod->getIconUrl();
-            $this->icon = apply_filters(
-                $this->id . '_icon_url',
-                $defaultIcon
-            );
-        }
-    }
-
-    public function get_icon()
-    {
-        $output = $this->icon ?: '';
-        return apply_filters('woocommerce_gateway_icon', $output, $this->id);
-    }
 
     protected function gatewayId()
     {
@@ -229,213 +195,22 @@ class MolliePaymentGatewayHandler implements MolliePaymentGatewayI
         return $this->id;
     }
 
-    /**
-     * Initialise Gateway Settings Form Fields
-     */
-    public function init_form_fields()
-    {
-        $this->form_fields = $this->paymentMethod->getAllFormFields();
-    }
-
-    /**
-     * Display fields below payment method in checkout
-     */
-    public function payment_fields()
-    {
-        // Display description above issuers
-        parent::payment_fields();
-        $this->paymentMethod->paymentFieldsStrategy($this);
-    }
-
-    /**
-     * Save settings
-     *
-     * @since 1.0
-     */
-    public function init_settings()
-    {
-        parent::init_settings();
-    }
-
-    protected function initDescription()
-    {
-        $description = $this->paymentMethod->getProcessedDescription();
-        $this->description = empty($description) ? false : $description;
-    }
-
-    /**
-     * Check if this gateway can be used
-     *
-     * @return bool
-     */
-    public function isValidForUse(): bool
-    {
-        if (is_admin()) {
-            if (!$this->dataService->isValidApiKeyProvided()) {
-                $test_mode = $this->dataService->isTestModeEnabled();
-
-                $this->errors[] = ($test_mode ? __(
-                    'Test mode enabled.',
-                    'mollie-payments-for-woocommerce'
-                ) . ' ' : '') . sprintf(
-                    /* translators: The surrounding %s's Will be replaced by a link to the global setting page */
-                    __(
-                        'No API key provided. Please %1$sset you Mollie API key%2$s first.',
-                        'mollie-payments-for-woocommerce'
-                    ),
-                    '<a href="' . $this->dataService->getGlobalSettingsUrl() . '">',
-                    '</a>'
-                );
-
-                return false;
-            }
-
-            // This should be simpler, check for specific payment method in settings, not on all pages
-            if (null === $this->getMollieMethod()) {
-                $this->errors[] = sprintf(
-                /* translators: Placeholder 1: payment method title. The surrounding %s's Will be replaced by a link to the Mollie profile */
-                    __(
-                        '%1$s not enabled in your Mollie profile. You can enable it by editing your %2$sMollie profile%3$s.',
-                        'mollie-payments-for-woocommerce'
-                    ),
-                    $this->paymentMethod->getProperty('defaultTitle'),
-                    '<a href="https://my.mollie.com/dashboard/settings/profiles?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">',
-                    '</a>'
-                );
-
-                return false;
-            }
-
-            if (!$this->isCurrencySupported()) {
-                $this->errors[] = sprintf(
-                /* translators: Placeholder 1: WooCommerce currency, placeholder 2: Supported Mollie currencies */
-                    __(
-                        'Current shop currency %1$s not supported by Mollie. Read more about %2$ssupported currencies and payment methods.%3$s ',
-                        'mollie-payments-for-woocommerce'
-                    ),
-                    get_woocommerce_currency(),
-                    '<a href="https://help.mollie.com/hc/en-us/articles/360003980013-Which-currencies-are-supported-and-what-is-the-settlement-currency-?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">',
-                    '</a>'
-                );
-
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * @return Method|null
-     */
-    public function getMollieMethod()
-    {
-        return $this->dataService->getPaymentMethod(
-            $this->paymentMethod->getProperty('id')
-        );
-    }
-
-    /**
-     * @return bool
-     */
-    protected function isCurrencySupported(): bool
-    {
-        return in_array(
-            get_woocommerce_currency(),
-            $this->getSupportedCurrencies(),
-            true
-        );
-    }
-
-    /**
-     * @return array
-     */
-    protected function getSupportedCurrencies(): array
-    {
-        $default = [
-            'AUD',
-            'BGN',
-            'BRL',
-            'CAD',
-            'CHF',
-            'CZK',
-            'DKK',
-            'EUR',
-            'GBP',
-            'HKD',
-            'HRK',
-            'HUF',
-            'ILS',
-            'ISK',
-            'JPY',
-            'MXN',
-            'MYR',
-            'NOK',
-            'NZD',
-            'PHP',
-            'PLN',
-            'RON',
-            'RUB',
-            'SEK',
-            'SGD',
-            'THB',
-            'TWD',
-            'USD',
-        ];
-
-        return apply_filters(
-            'woocommerce_' . $this->id . '_supported_currencies',
-            $default
-        );
-    }
-
-    /**
-     * Save options in admin.
-     */
-    public function process_admin_options()
-    {
-        $this->dataService->processSettings($this);
-
-        parent::process_admin_options();
-    }
-
-    public function admin_options()
-    {
-        $this->dataService->processAdminOptions($this);
-    }
-
-    /**
-     * Validates the multiselect country field.
-     * Overrides the one called by get_field_value() on WooCommerce abstract-wc-settings-api.php
-     *
-     * @param $key
-     * @param $value
-     *
-     * @return array|string
-     */
-    public function validate_multi_select_countries_field($key, $value)
-    {
-        return is_array($value) ? array_map(
-            'wc_clean',
-            array_map('stripslashes', $value)
-        ) : '';
-    }
 
     /**
      * Check if the gateway is available for use
      *
      * @return bool
      */
-    public function is_available(): bool
+    public function is_available($gateway): bool
     {
-        if (!$this->checkEnabledNorDirectDebit()) {
+        if (!$this->checkEnabledNorDirectDebit($gateway)) {
             return false;
         }
         if (!$this->cartAmountAvailable()) {
             return true;
         }
 
-        $order_total = $this->get_order_total();
+        $order_total = WC()->cart && WC()->cart->get_total('edit');
         $currency = $this->getCurrencyFromOrder();
         $billingCountry = $this->getBillingCountry();
         $paymentLocale = $this->dataService->getPaymentLocale();
@@ -560,7 +335,8 @@ class MolliePaymentGatewayHandler implements MolliePaymentGatewayI
             . " {$order_id}: Determine what the redirect URL in WooCommerce should be.";
         $this->logger->debug($debugLine);
         $hookReturnPaymentStatus = 'success';
-        $returnRedirect = $this->get_return_url($order);
+        $gateway = wc_get_payment_gateway_by_order($order);
+        $returnRedirect = $gateway->get_return_url($order);
         $failedRedirect = $order->get_checkout_payment_url(false);
 
         $this->mollieOrderService->setGateway($this);
@@ -576,7 +352,7 @@ class MolliePaymentGatewayHandler implements MolliePaymentGatewayI
                 // order being cancelled. Otherwise redirect to /checkout/order-pay/ so
                 // customers can try to pay with another payment method.
                 if ($order_status_cancelled_payments === 'cancelled') {
-                    return $this->get_return_url($order);
+                    return $returnRedirect;
                 } else {
                     $this->notice->addNotice(
                         'error',
@@ -635,7 +411,7 @@ class MolliePaymentGatewayHandler implements MolliePaymentGatewayI
         /*
          * Return to order received page
          */
-        return $this->get_return_url($order);
+        return $returnRedirect;
     }
     /**
      * @param $orderId
@@ -948,24 +724,13 @@ class MolliePaymentGatewayHandler implements MolliePaymentGatewayI
     }
 
     /**
-     * @return string|NULL
-     */
-    public function getSelectedIssuer(): ?string
-    {
-        $issuer_id = $this->pluginId . '_issuer_' . $this->id;
-        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        $postedIssuer = wc_clean(wp_unslash($_POST[$issuer_id] ?? ''));
-        return !empty($postedIssuer) ? $postedIssuer : null;
-    }
-
-    /**
      * Get the transaction URL.
      *
      * @param WC_Order $order
      *
      * @return string
      */
-    public function get_transaction_url($order): string
+    /*public function get_transaction_url($order): string
     {
         $isPaymentApi = substr($order->get_meta('_mollie_order_id', true), 0, 3) === 'tr_'  ;
         $resource = ($order->get_meta('_mollie_order_id', true) && !$isPaymentApi) ? 'orders' : 'payments';
@@ -974,22 +739,7 @@ class MolliePaymentGatewayHandler implements MolliePaymentGatewayI
             . $resource . '/%s?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner';
 
         return parent::get_transaction_url($order);
-    }
-
-    protected function gatewayHasFields(): void
-    {
-        if ($this->paymentMethod->getProperty('paymentFields')) {
-            $this->has_fields = true;
-        }
-
-
-        $dropdownDisabled = $this->paymentMethod->hasProperty('issuers_dropdown_shown')
-            && $this->paymentMethod->getProperty('issuers_dropdown_shown')
-            === 'no';
-        if ($dropdownDisabled) {
-            $this->has_fields = false;
-        }
-    }
+    }*/
 
     /**
      * Get the correct currency for this payment or order
@@ -1061,12 +811,12 @@ class MolliePaymentGatewayHandler implements MolliePaymentGatewayI
      *
      * @return bool
      */
-    protected function checkEnabledNorDirectDebit(): bool
+    protected function checkEnabledNorDirectDebit($gateway): bool
     {
-        if ($this->enabled !== 'yes') {
+        if ($gateway->enabled !== 'yes') {
             return false;
         }
-        if ($this->id === SharedDataDictionary::DIRECTDEBIT) {
+        if ($gateway->id === SharedDataDictionary::DIRECTDEBIT) {
             return false;
         }
         return true;
@@ -1079,10 +829,11 @@ class MolliePaymentGatewayHandler implements MolliePaymentGatewayI
      */
     protected function cartAmountAvailable()
     {
-        return WC()->cart && $this->get_order_total() > 0;
+        return WC()->cart && WC()->cart->get_total('edit') > 0;
     }
 
     /**
+     * TODO still used by the refund processor
      * @return Logger
      */
     public function getLogger(): Logger
@@ -1091,6 +842,7 @@ class MolliePaymentGatewayHandler implements MolliePaymentGatewayI
     }
 
     /**
+     * TODO still used by the refund processor
      * @return PaymentFactory
      */
     public function getPaymentFactory(): PaymentFactory

@@ -18,7 +18,7 @@ class GiftcardFieldsStrategy implements PaymentFieldsStrategyI
         if (empty($issuers)) {
             return '';
         }
-        $selectedIssuer = $gateway->getSelectedIssuer();
+        $selectedIssuer = $gateway->paymentMethod()->getSelectedIssuer();
 
         $html = '';
 
@@ -44,7 +44,7 @@ class GiftcardFieldsStrategy implements PaymentFieldsStrategyI
             return "";
         }
         $issuers = $this->getIssuers($gateway, $dataHelper);
-        $selectedIssuer = $gateway->getSelectedIssuer();
+        $selectedIssuer = $gateway->paymentMethod()->getSelectedIssuer();
         $markup = $this->dropdownOptions($gateway, $issuers, $selectedIssuer);
         return $markup;
     }

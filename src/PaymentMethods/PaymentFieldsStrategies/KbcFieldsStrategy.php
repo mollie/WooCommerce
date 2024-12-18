@@ -16,7 +16,7 @@ class KbcFieldsStrategy implements PaymentFieldsStrategyI
 
         $issuers = $this->getIssuers($gateway, $dataHelper);
 
-        $selectedIssuer = $gateway->getSelectedIssuer();
+        $selectedIssuer = $gateway->paymentMethod()->getSelectedIssuer();
 
         return $this->renderIssuers($gateway, $issuers, $selectedIssuer);
     }
@@ -27,7 +27,7 @@ class KbcFieldsStrategy implements PaymentFieldsStrategyI
             return "";
         }
         $issuers = $this->getIssuers($gateway, $dataHelper);
-        $selectedIssuer = $gateway->getSelectedIssuer();
+        $selectedIssuer = $gateway->paymentMethod()->getSelectedIssuer();
         $markup = $this->dropdownOptions($gateway, $issuers, $selectedIssuer);
         return $markup;
     }

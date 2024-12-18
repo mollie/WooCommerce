@@ -195,7 +195,7 @@ return static function (): array {
                 return $container->get('payment_gateways.noop_payment_request_validator');
             };
         },
-        'gateway.getPropertyByGatewayId' => static function (ContainerInterface $container): callable {
+        'gateway.getMethodPropertyByGatewayId' => static function (ContainerInterface $container): callable {
             return static function (string $gatewayId, string $property) use ($container) {
                 $paymentMethods = $container->get('gateway.paymentMethods');
                 $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
@@ -250,7 +250,7 @@ return static function (): array {
         };
         $dynamicServices["payment_gateway.$gatewayId.refund_processor"] = static function (ContainerInterface $container
         ) use ($gatewayId): RefundProcessorInterface {
-            $getProperty = $container->get('gateway.getPropertyByGatewayId');
+            $getProperty = $container->get('gateway.getMethodPropertyByGatewayId');
             $supports = $getProperty($gatewayId, 'supports');
             $supportsRefunds = $supports && in_array('refunds', $supports, true);
             if ($supportsRefunds) {
@@ -259,7 +259,7 @@ return static function (): array {
             return $container->get('payment_gateways.noop_refund_processor');
         };
         $dynamicServices["payment_gateway.$gatewayId.has_fields"] = static function (ContainerInterface $container) use ($gatewayId): bool {
-            $getProperty = $container->get('gateway.getPropertyByGatewayId');
+            $getProperty = $container->get('gateway.getMethodPropertyByGatewayId');
             if ($getProperty($gatewayId, 'paymentFields')) {
                 return true;
             }
@@ -284,6 +284,7 @@ return static function (): array {
             if (!isset($oldGatewayInstances[$gatewayId])) {
                 return new NoopPaymentFieldsRenderer();
             }
+            //TODO im passing the deprecated gateway
             $gateway = $oldGatewayInstances[$gatewayId];
             return new PaymentFieldsRenderer($paymentMethod, $gateway);
         };
@@ -320,8 +321,8 @@ return static function (): array {
         $dynamicServices["payment_gateway.$gatewayId.availability_callback"] = new Factory(
             ['__deprecated.gateway_helpers'],
             static function (array $gatewayInstances) use($gatewayId): callable {
-                return static function () use ($gatewayInstances, $gatewayId): bool {
-                    return $gatewayInstances[$gatewayId]->is_available();
+                return static function ($gateway) use ($gatewayInstances, $gatewayId): bool {
+                    return $gatewayInstances[$gatewayId]->is_available($gateway);
                 };
             }
         );

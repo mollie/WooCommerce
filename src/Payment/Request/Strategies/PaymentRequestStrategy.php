@@ -1,6 +1,6 @@
 <?php
 
-namespace Mollie\WooCommerce\Payment\Request;
+namespace Mollie\WooCommerce\Payment\Request\Strategies;
 
 use Inpsyde\PaymentGateway\PaymentGateway;
 use WC_Order;
@@ -29,7 +29,7 @@ class PaymentRequestStrategy implements RequestStrategyInterface
         $methodId = substr($gateway->id, strrpos($gateway->id, '_') + 1);
         $paymentLocale = $settingsHelper->getPaymentLocale();
 
-        $paymentRequestData = [
+        $requestData = [
             'amount' => [
                 'currency' => $this->dataHelper
                     ->getOrderCurrency($order),
@@ -41,7 +41,6 @@ class PaymentRequestStrategy implements RequestStrategyInterface
                         )
                     ),
             ],
-            'description' => $paymentDescription,
             'method' => $methodId,
             'locale' => $paymentLocale,
             'metadata' => apply_filters(
@@ -52,7 +51,6 @@ class PaymentRequestStrategy implements RequestStrategyInterface
             ),
         ];
 
-        $paymentRequestData = $this->addCustomRequestFields($order, $paymentRequestData);
         $context = 'payment';
         foreach ($this->decorators as $decorator) {
             $requestData = $decorator->decorate($requestData, $order, $context);

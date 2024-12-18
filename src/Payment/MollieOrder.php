@@ -10,10 +10,14 @@ use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Payment;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Refund;
-use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
+use Mollie\WooCommerce\Payment\Request\RequestFactory;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\SDK\Api;
+use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
+use Psr\Log\LoggerInterface as Logger;
+
 use Psr\Log\LogLevel;
 use WC_Order;
 use WP_Error;
@@ -47,13 +51,13 @@ class MollieOrder extends MollieObject
     public function __construct(
         OrderItemsRefunder $orderItemsRefunder,
         $data,
-        $pluginId,
+        string $pluginId,
         Api $apiHelper,
-        $settingsHelper,
-        $dataHelper,
-        $logger,
+        Settings $settingsHelper,
+        Data $dataHelper,
+        Logger $logger,
         OrderLines $orderLines,
-        $paymentMethod
+        RequestFactory $requestFactory
     )
     {
         $this->data = $data;
@@ -61,10 +65,10 @@ class MollieOrder extends MollieObject
         $this->pluginId = $pluginId;
         $this->apiHelper = $apiHelper;
         $this->settingsHelper = $settingsHelper;
-        $this->dataHelper = $dataHelper;
         $this->logger = $logger;
+        $this->requestFactory = $requestFactory;
+        $this->dataHelper = $dataHelper;
         $this->orderLines = $orderLines;
-        $this->paymentMethod = $paymentMethod;
     }
 
     public function getPaymentObject($paymentId, $testMode = false, $useCache = true)
@@ -913,5 +917,10 @@ class MollieOrder extends MollieObject
 
         // drop item from array
         unset($items[$item->get_id()]);
+    }
+
+    public function setOrder( $data)
+    {
+        $this->data = $data;
     }
 }

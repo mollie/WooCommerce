@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Payment\Decorator;
+namespace Mollie\WooCommerce\Payment\Request\Decorators;
 
-use Mollie\WooCommerce\Payment\Request\Decorators\RequestDecoratorInterface;
 use WC_Order;
 
 class AddressDecorator implements RequestDecoratorInterface
 {
-    public function decorate(array $requestData, WC_Order $order): array
+    public function decorate(array $requestData, WC_Order $order, $context = null): array
     {
         $isPayPalExpressOrder = $order->get_meta('_mollie_payment_method_button') === 'PayPalButton';
         $billingAddress = null;

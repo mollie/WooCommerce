@@ -2,21 +2,25 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Payment\Decorator;
+namespace Mollie\WooCommerce\Payment\Request\Decorators;
 
-use Mollie\WooCommerce\Payment\Request\Decorators\RequestDecoratorInterface;
 use WC_Order;
 
 class UrlDecorator implements RequestDecoratorInterface
 {
     private $pluginId;
+    /**
+     * @var mixed
+     */
+    private $logger;
 
-    public function __construct($pluginId)
+    public function __construct($pluginId, $logger)
     {
         $this->pluginId = $pluginId;
+        $this->logger = $logger;
     }
 
-    public function decorate(array $requestData, WC_Order $order): array
+    public function decorate(array $requestData, WC_Order $order, $context = null): array
     {
         $gateway = wc_get_payment_gateway_by_order($order);
         if ($gateway) {

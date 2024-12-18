@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Payment\Decorator;
+namespace Mollie\WooCommerce\Payment\Request\Decorators;
 
 use Mollie\WooCommerce\Payment\OrderLines;
-use Mollie\WooCommerce\Payment\Request\Decorators\RequestDecoratorInterface;
 use WC_Order;
 
 class OrderLinesDecorator implements RequestDecoratorInterface
@@ -19,7 +18,7 @@ class OrderLinesDecorator implements RequestDecoratorInterface
         $this->voucherDefaultCategory = $voucherDefaultCategory;
     }
 
-    public function decorate(array $requestData, WC_Order $order): array
+    public function decorate(array $requestData, WC_Order $order, $context = null): array
     {
         $orderLines = $this->orderLines->order_lines($order, $this->voucherDefaultCategory);
         $requestData['lines'] = $orderLines['lines'];

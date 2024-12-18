@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Payment\Decorator;
+namespace Mollie\WooCommerce\Payment\Request\Decorators;
 
-use Mollie\WooCommerce\Payment\Request\Decorators\RequestDecoratorInterface;
 use Mollie\WooCommerce\Settings\Settings;
 use WC_Order;
 
@@ -17,7 +16,7 @@ class StoreCustomerDecorator implements RequestDecoratorInterface
     }
 
 
-    public function decorate(array $requestData, WC_Order $order, $context): array
+    public function decorate(array $requestData, WC_Order $order, $context = null): array
     {
         $storeCustomer = $this->settingsHelper->shouldStoreCustomer();
         $customerId = $order->get_meta('_mollie_customer_id');

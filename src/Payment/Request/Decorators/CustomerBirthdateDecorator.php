@@ -14,7 +14,7 @@ class CustomerBirthdateDecorator implements RequestDecoratorInterface
         $this->paymentMethods = $paymentMethods;
     }
 
-    public function decorate(array $requestData, WC_Order $order): array
+    public function decorate(array $requestData, WC_Order $order, $context = null): array
     {
         $gateway = wc_get_payment_gateway_by_order($order);
         if (!$gateway || !isset($gateway->id)) {

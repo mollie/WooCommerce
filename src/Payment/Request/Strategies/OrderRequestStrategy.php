@@ -1,6 +1,6 @@
 <?php
 
-namespace Mollie\WooCommerce\Payment\Request;
+namespace Mollie\WooCommerce\Payment\Request\Strategies;
 
 use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\WooCommerce\Settings\Settings;

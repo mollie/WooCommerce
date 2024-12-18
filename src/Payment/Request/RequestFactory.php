@@ -2,8 +2,8 @@
 
 namespace Mollie\WooCommerce\Payment\Request;
 
+use Mollie\WooCommerce\Payment\Request\Strategies\RequestStrategyInterface;
 use Psr\Container\ContainerInterface;
-use Mollie\WooCommerce\Payment\Request\RequestStrategyInterface;
 use WC_Order;
 
 class RequestFactory {
@@ -23,7 +23,8 @@ class RequestFactory {
      */
     public function createRequest(string $type, WC_Order $order, string $customerId): array {
         // Use the container to fetch the appropriate strategy.
-        $strategy = $this->container->get("request.strategy.{$type}");
+        $serviceName = "request.strategy.{$type}";
+        $strategy = $this->container->get($serviceName);
 
         if (!$strategy instanceof RequestStrategyInterface) {
             throw new \InvalidArgumentException("Invalid strategy for type: {$type}");

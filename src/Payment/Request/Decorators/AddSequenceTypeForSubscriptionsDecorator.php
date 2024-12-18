@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Payment\Decorator;
+namespace Mollie\WooCommerce\Payment\Request\Decorators;
 
-use Mollie\WooCommerce\Payment\Request\Decorators\RequestDecoratorInterface;
 use Mollie\WooCommerce\Shared\Data;
 use WC_Order;
 
@@ -19,7 +18,7 @@ class AddSequenceTypeForSubscriptionsDecorator implements RequestDecoratorInterf
         $this->pluginId = $pluginId;
     }
 
-    public function decorate(array $requestData, WC_Order $order, $context): array
+    public function decorate(array $requestData, WC_Order $order, $context = null): array
     {
         $gateway = wc_get_payment_gateway_by_order($order);
         if ($gateway) {

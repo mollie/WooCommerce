@@ -459,8 +459,7 @@ class PaymentService implements PaymentProcessorInterface
     ) {
 
         $paymentObject = $this->paymentFactory->getPaymentObject(
-            self::PAYMENT_METHOD_TYPE_PAYMENT,
-            $paymentMethod
+            self::PAYMENT_METHOD_TYPE_PAYMENT
         );
         $paymentRequestData = $paymentObject->getPaymentRequestData(
             $order,

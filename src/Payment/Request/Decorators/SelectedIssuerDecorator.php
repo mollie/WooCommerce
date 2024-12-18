@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Payment\Decorator;
+namespace Mollie\WooCommerce\Payment\Request\Decorators;
 
-use Mollie\WooCommerce\Payment\Request\Decorators\RequestDecoratorInterface;
 use WC_Order;
 
 class SelectedIssuerDecorator implements RequestDecoratorInterface
@@ -16,14 +15,24 @@ class SelectedIssuerDecorator implements RequestDecoratorInterface
         $this->pluginId = $pluginId;
     }
 
-    public function decorate(array $requestData, WC_Order $order): array
+    public function decorate(array $requestData, WC_Order $order, $context = null): array
     {
         $gateway = wc_get_payment_gateway_by_order($order);
-        if ($gateway) {
-            $gatewayId = $gateway->id;
-            $selectedIssuer = $this->getSelectedIssuer($gatewayId);
-            $requestData['payment']['issuer'] = $selectedIssuer;
+        if(!$gateway) {
+            return $requestData;
         }
+
+        $gatewayId = $gateway->id;
+        $selectedIssuer = $this->getSelectedIssuer($gatewayId);
+        if(empty($selectedIssuer)) {
+            return $requestData;
+        }
+        if($context === 'order') {
+            $requestData['payment']['issuer'] = $selectedIssuer;
+        } elseif ($context === 'payment') {
+            $requestData['issuer'] = $selectedIssuer;
+        }
+
         return $requestData;
     }
 

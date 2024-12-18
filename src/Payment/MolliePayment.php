@@ -6,17 +6,18 @@ namespace Mollie\WooCommerce\Payment;
 
 use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\Api\Exceptions\ApiException;
-use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Payment;
 use Mollie\Api\Resources\Refund;
-use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
-use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
+use Mollie\WooCommerce\Payment\Request\RequestFactory;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\SDK\Api;
+use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
+use Psr\Log\LoggerInterface as Logger;
+
 use Psr\Log\LogLevel;
 use WC_Order;
-use WC_Payment_Gateway;
 use WC_Subscriptions_Manager;
 use WP_Error;
 
@@ -24,20 +25,25 @@ class MolliePayment extends MollieObject
 {
     public const ACTION_AFTER_REFUND_PAYMENT_CREATED = 'mollie-payments-for-woocommerce' . '_refund_payment_created';
     protected $pluginId;
-    /**
-     * @var mixed
-     */
-    private $paymentMethod;
 
-    public function __construct($data, $pluginId, Api $apiHelper, $settingsHelper, $dataHelper, $logger, $paymentMethod)
+
+    public function __construct(
+        $data,
+        string $pluginId,
+        Api $apiHelper,
+        Settings $settingsHelper,
+        Data $dataHelper,
+        Logger $logger,
+        RequestFactory $requestFactory
+    )
     {
         $this->data = $data;
         $this->pluginId = $pluginId;
         $this->apiHelper = $apiHelper;
         $this->settingsHelper = $settingsHelper;
-        $this->dataHelper = $dataHelper;
         $this->logger = $logger;
-        $this->paymentMethod = $paymentMethod;
+        $this->requestFactory = $requestFactory;
+        $this->dataHelper = $dataHelper;
     }
 
     public function getPaymentObject($paymentId, $testMode = false, $useCache = true)
@@ -468,5 +474,10 @@ class MolliePayment extends MollieObject
             return;
         }
         $this->updateOrderStatus($order, $newOrderStatus);
+    }
+
+    public function setPayment( $data)
+    {
+        $this->data = $data;
     }
 }

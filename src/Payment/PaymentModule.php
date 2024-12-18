@@ -258,7 +258,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
             return;
         }
 
-        if (!($gateway instanceof PaymentGateway)) {
+        if (!(mollieWooCommerceIsMollieGateway($gateway->id))) {
             $this->httpResponse->setHttpResponseCode(400);
             $gatewayClass = get_class($gateway);
             $this->logger->debug(__METHOD__ . ": Invalid gateway {$gatewayClass} for this plugin. Order {$orderId}.");
@@ -307,7 +307,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
         $gateway = wc_get_payment_gateway_by_order($order);
 
-        if (!$gateway || !($gateway instanceof PaymentGateway)) {
+        if (!$gateway || !(mollieWooCommerceIsMollieGateway($gateway->id))) {
             return;
         }
 

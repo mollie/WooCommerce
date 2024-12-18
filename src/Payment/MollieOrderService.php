@@ -97,7 +97,7 @@ class MollieOrderService
             return;
         }
         $gateway = wc_get_payment_gateway_by_order($order);
-        if (!$gateway instanceof PaymentGateway) {
+        if (!mollieWooCommerceIsMollieGateway($gateway->id)) {
             return;
         }
         $this->setGateway($gateway);

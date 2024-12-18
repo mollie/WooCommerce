@@ -709,7 +709,7 @@ class MollieObject
             function_exists('wcs_order_contains_renewal')
             && wcs_order_contains_renewal($orderId)
         ) {
-            if ($gateway instanceof PaymentGateway) {
+            if (mollieWooCommerceIsMollieGateway($gateway->id)) {
                 $this->updateOrderStatus(
                     $order,
                     $newOrderStatus,
@@ -741,7 +741,7 @@ class MollieObject
             ) {
                 $emails['WC_Email_Failed_Order']->trigger($orderId);
             }
-        } elseif ($gateway instanceof PaymentGateway) {
+        } elseif (mollieWooCommerceIsMollieGateway($gateway->id)) {
             $this->updateOrderStatus(
                 $order,
                 $newOrderStatus,

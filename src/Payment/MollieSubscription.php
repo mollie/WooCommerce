@@ -39,7 +39,7 @@ class MollieSubscription extends MollieObject
         $paymentLocale = $this->settingsHelper->getPaymentLocale();
         $gateway = wc_get_payment_gateway_by_order($order);
 
-        if (! $gateway || ! ( $gateway instanceof PaymentGateway )) {
+        if (! $gateway || ! ( mollieWooCommerceIsMollieGateway($gateway->id) )) {
             return  [ 'result' => 'failure' ];
         }
         $gatewayId = $gateway->id;

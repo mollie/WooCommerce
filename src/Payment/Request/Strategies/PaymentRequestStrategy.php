@@ -22,7 +22,7 @@ class PaymentRequestStrategy implements RequestStrategyInterface
 
         $gateway = wc_get_payment_gateway_by_order($order);
 
-        if (!$gateway || !($gateway instanceof PaymentGateway)) {
+        if (!$gateway || !(mollieWooCommerceIsMollieGateway($gateway->id))) {
             return ['result' => 'failure'];
         }
         $settingsHelper = $this->settingsHelper;

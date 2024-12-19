@@ -18,7 +18,7 @@ use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 
-class OldGatewayBuilder
+class DeprecatedGatewayBuilder
 {
     public function instantiatePaymentMethodGateways(ContainerInterface $container): array
     {

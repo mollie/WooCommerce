@@ -24,7 +24,7 @@ class PaymentService implements PaymentProcessorInterface
     public const PAYMENT_METHOD_TYPE_PAYMENT = 'payment';
 
     /**
-     * @var MolliePaymentGatewayI
+     * @var
      */
     protected $deprecatedGatewayHelper;
     /**
@@ -90,6 +90,8 @@ class PaymentService implements PaymentProcessorInterface
     public function processPayment($order, $paymentGateway): array
     {
         $orderId = $order->get_id();
+        $this->handleSubscriptions($paymentGateway, $orderId);
+
         $redirectUrl = $paymentGateway->get_return_url($order);
         $paymentMethod = $this->deprecatedGatewayHelper->paymentMethod();
         $this->logger->debug(
@@ -931,6 +933,22 @@ class PaymentService implements PaymentProcessorInterface
                     'mollie-payments-for-woocommerce'
                 )
             );
+        }
+    }
+
+    /**
+     * @param \Inpsyde\PaymentGateway\PaymentGateway $paymentGateway
+     * @param int|null $orderId
+     * @return void
+     */
+    public function handleSubscriptions(\Inpsyde\PaymentGateway\PaymentGateway $paymentGateway, ?int $orderId): void
+    {
+        if ($paymentGateway->supports('subscriptions')) {
+            $this->deprecatedGatewayHelper->addWcSubscriptionsFiltersForPayment();
+            $isSubscription = $this->dataHelper->isSubscription($orderId);
+            if ($isSubscription) {
+                $this->deprecatedGatewayHelper->isSubscriptionPayment = true;
+            }
         }
     }
 }

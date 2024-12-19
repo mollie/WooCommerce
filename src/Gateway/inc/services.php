@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Dhii\Services\Factory;
 use Inpsyde\PaymentGateway\PaymentRequestValidatorInterface;
 use Inpsyde\PaymentGateway\RefundProcessorInterface;
-use Mollie\WooCommerce\Gateway\OldGatewayBuilder;
+use Mollie\WooCommerce\Gateway\DeprecatedGatewayBuilder;
 use Mollie\WooCommerce\Gateway\OrderMandatoryGatewayDisabler;
 use Mollie\WooCommerce\Gateway\Refund\RefundProcessor;
 use Mollie\WooCommerce\Gateway\Surcharge;
@@ -37,7 +37,7 @@ return static function (): array {
             return SharedDataDictionary::GATEWAY_CLASSNAMES;
         },
         '__deprecated.gateway_helpers' => static function (ContainerInterface $container): array {
-            $oldGatewayBuilder = new OldGatewayBuilder();
+            $oldGatewayBuilder = new DeprecatedGatewayBuilder();
             return $oldGatewayBuilder->instantiatePaymentMethodGateways($container);
         },
         'gateway.paymentMethods' => static function (ContainerInterface $container): array {
@@ -210,11 +210,6 @@ return static function (): array {
                 return $paymentMethods[$methodId];
             };
         },
-        'payment_gateway.getOldGatewayInstances' => static function (ContainerInterface $container): callable {
-            return static function () use ($container): array {
-                return $container->get('__deprecated.gateway_helpers');
-            };
-        },
         'gateway.subscriptionHooks' => static function (): array {
             return [
                 'subscriptions',
@@ -243,9 +238,9 @@ return static function (): array {
         };
         $dynamicServices["payment_gateway.$gatewayId.payment_processor"] = static function (ContainerInterface $container) use ($gatewayId): PaymentService {
             $oldGatewayInstances = $container->get('__deprecated.gateway_helpers');
-            $gateway = $oldGatewayInstances[$gatewayId];
+            $deprecatedGatewayHelper = $oldGatewayInstances[$gatewayId];
             $paymentService = $container->get(PaymentService::class);
-            $paymentService->setGateway($gateway);
+            $paymentService->setGateway($deprecatedGatewayHelper);
             return $paymentService;
         };
         $dynamicServices["payment_gateway.$gatewayId.refund_processor"] = static function (ContainerInterface $container

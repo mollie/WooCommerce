@@ -80,7 +80,7 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
             $pluginId
         );
         if ($directDebit->enabled === 'yes') {
-            $this->initSubscriptionSupport();
+
             $this->recurringMollieMethod = $directDebit;
         }
         return $this;
@@ -218,8 +218,7 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
 
             try {
                 $payment_object = $this->paymentFactory->getPaymentObject(
-                    $payment,
-                    $this->paymentMethod()
+                    $payment
                 );
             } catch (ApiException $exception) {
                 $this->logger->debug($exception->getMessage());

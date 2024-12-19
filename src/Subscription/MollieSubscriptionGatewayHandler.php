@@ -92,6 +92,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         );
 
         if (class_exists('WC_Subscriptions_Order')) {
+            //TODO add to the dynamic services and point to the helper method
             add_action('woocommerce_scheduled_subscription_payment_' . $this->id, [ $this, 'scheduled_subscription_payment' ], 10, 2);
 
             // A resubscribe order to record a customer resubscribing to an expired or cancelled subscription.
@@ -106,19 +107,6 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
             add_action('woocommerce_subscription_validate_payment_meta', [ $this, 'validate_subscription_payment_meta' ], 10, 2);
         }
     }
-
-
-
-    /**
-     * @param $order_id
-     * @return array
-     * @throws InvalidApiKey
-     */
-    /*public function process_subscription_payment($order_id)
-    {
-        $this->isSubscriptionPayment = true;
-        return parent::process_payment($order_id);
-    }*/
 
     /**
      * @param $renewal_order
@@ -324,7 +312,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
 
             // Unset & set active Mollie payment
             // Get correct Mollie Payment Object
-            $payment_object = $this->paymentFactory->getPaymentObject($payment, $this->paymentMethod());
+            $payment_object = $this->paymentFactory->getPaymentObject($payment);
             $payment_object->unsetActiveMolliePayment($renewal_order_id);
             $payment_object->setActiveMolliePayment($renewal_order_id);
 
@@ -546,26 +534,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         $subscription->save();
     }
 
-    /**
-     * @param int $order_id
-     *
-     * @return array
-     * @throws \Mollie\Api\Exceptions\ApiException
-     * @throws InvalidApiKey
-     */
-    /*public function process_payment($order_id)
-    {
-        $this->addWcSubscriptionsFiltersForPayment();
-        $isSubscription = $this->dataService->isSubscription($order_id);
-        if ($isSubscription) {
-            $this->paymentService->setGateway($this);
-            $result = $this->process_subscription_payment($order_id);
-            return $result;
-        }
-
-        return parent::process_payment($order_id);
-    }*/
-
+    //TODO this is still used in the paymentService trought the deprecatedGateway
     protected function addWcSubscriptionsFiltersForPayment(): void
     {
         add_filter(
@@ -710,6 +679,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
     }
 
     /**
+     * TODO this is still used in the service callback
      * Check if the gateway is available in checkout
      *
      * @return bool

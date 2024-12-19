@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Subscription;
 
 use Exception;
+use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\Api\Exceptions\ApiException;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieSubscription;
 use Mollie\WooCommerce\Payment\OrderInstructionsService;
@@ -26,7 +27,7 @@ use Psr\Log\LogLevel;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use WC_Order;
 
-class MollieSubscriptionGateway extends MolliePaymentGateway
+class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
 {
     protected const PAYMENT_TEST_MODE = 'test';
     protected const METHODS_NEEDING_UPDATE = ['mollie_wc_gateway_bancontact',
@@ -86,10 +87,12 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             $apiHelper,
             $settingsHelper,
             $dataService,
-            $logger
+            $logger,
+            $paymentMethod,
         );
 
         if (class_exists('WC_Subscriptions_Order')) {
+            //TODO add to the dynamic services and point to the helper method
             add_action('woocommerce_scheduled_subscription_payment_' . $this->id, [ $this, 'scheduled_subscription_payment' ], 10, 2);
 
             // A resubscribe order to record a customer resubscribing to an expired or cancelled subscription.
@@ -103,41 +106,6 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             add_filter('woocommerce_subscription_payment_meta', [ $this, 'add_subscription_payment_meta' ], 10, 2);
             add_action('woocommerce_subscription_validate_payment_meta', [ $this, 'validate_subscription_payment_meta' ], 10, 2);
         }
-        if ($this->paymentMethod->getProperty('Subscription')) {
-            $this->initSubscriptionSupport();
-        }
-    }
-
-    /**
-     *
-     */
-    protected function initSubscriptionSupport()
-    {
-        $supportSubscriptions = [
-            'subscriptions',
-            'subscription_cancellation',
-            'subscription_suspension',
-            'subscription_reactivation',
-            'subscription_amount_changes',
-            'subscription_date_changes',
-            'multiple_subscriptions',
-            'subscription_payment_method_change',
-            'subscription_payment_method_change_admin',
-            'subscription_payment_method_change_customer',
-        ];
-
-        $this->supports = array_merge($this->supports, $supportSubscriptions);
-    }
-
-    /**
-     * @param $order_id
-     * @return array
-     * @throws InvalidApiKey
-     */
-    public function process_subscription_payment($order_id)
-    {
-        $this->isSubscriptionPayment = true;
-        return parent::process_payment($order_id);
     }
 
     /**
@@ -506,6 +474,15 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
      */
     public function add_subscription_payment_meta($payment_meta, $subscription)
     {
+        if($this->id !== $subscription->get_payment_method()) {
+            return $payment_meta;
+        }
+        $parent = $subscription->get_parent();
+        $subscription->update_meta_data('_mollie_customer_id', $parent->get_meta('_mollie_customer_id'));
+        $subscription->update_meta_data('_mollie_order_id', $parent->get_meta('_mollie_order_id'));
+        $subscription->update_meta_data('_mollie_payment_id', $parent->get_meta('_mollie_payment_id'));
+        $subscription->update_meta_data('_mollie_payment_mode', $parent->get_meta('_mollie_payment_mode'));
+        $subscription->save();
         $mollie_payment_id = $subscription->get_meta('_mollie_payment_id', true);
         $mollie_payment_mode = $subscription->get_meta('_mollie_payment_mode', true);
         $mollie_customer_id = $subscription->get_meta('_mollie_customer_id', true);
@@ -557,26 +534,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
         $subscription->save();
     }
 
-    /**
-     * @param int $order_id
-     *
-     * @return array
-     * @throws \Mollie\Api\Exceptions\ApiException
-     * @throws InvalidApiKey
-     */
-    public function process_payment($order_id)
-    {
-        $this->addWcSubscriptionsFiltersForPayment();
-        $isSubscription = $this->dataService->isSubscription($order_id);
-        if ($isSubscription) {
-            $this->paymentService->setGateway($this);
-            $result = $this->process_subscription_payment($order_id);
-            return $result;
-        }
-
-        return parent::process_payment($order_id);
-    }
-
+    //TODO this is still used in the paymentService trought the deprecatedGateway
     protected function addWcSubscriptionsFiltersForPayment(): void
     {
         add_filter(
@@ -619,7 +577,7 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             $subscription_id = $subscription->get_id();
 
             // Get full payment object from Mollie API
-            $payment_object_resource = $this->paymentFactory->getPaymentObject($mollie_payment_id);
+            $payment_object_resource = $this->paymentFactory->getPaymentObject($mollie_payment_id, $this->paymentMethod());
 
             //
             // If there is no known customer ID, try to get it from the API
@@ -648,13 +606,13 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
             // Get the WooCommerce payment gateway for this subscription
             $gateway = wc_get_payment_gateway_by_order($subscription);
 
-            if (! $gateway || ! ( $gateway instanceof MolliePaymentGateway )) {
+            if (! $gateway || ! ( $gateway instanceof PaymentGateway )) {
                 $this->logger->debug(__METHOD__ . ' - Subscription ' . $subscription_id . ' renewal payment: stopped processing, not a Mollie payment gateway, could not restore customer ID.');
 
                 return $mollie_customer_id;
             }
-
-            $mollie_method = $gateway->paymentMethod->getProperty('id');
+            $gatewayId = $gateway->id;
+            $mollie_method = substr($gatewayId, strrpos($gatewayId, '_') + 1);
 
             // Check that first payment method is related to SEPA Direct Debit and update
             $methods_needing_update =  [
@@ -721,22 +679,23 @@ class MollieSubscriptionGateway extends MolliePaymentGateway
     }
 
     /**
+     * TODO this is still used in the service callback
      * Check if the gateway is available in checkout
      *
      * @return bool
      */
-    public function is_available(): bool
+    public function is_available($gateway): bool
     {
-        if (!$this->checkEnabledNorDirectDebit()) {
+        if (!$this->checkEnabledNorDirectDebit($gateway)) {
             return false;
         }
         if (!$this->cartAmountAvailable()) {
             return true;
         }
-        $status =  parent::is_available();
+        $status =  parent::is_available($gateway);
         // Do extra checks if WooCommerce Subscriptions is installed
-        $orderTotal = $this->get_order_total();
-        return $this->subscriptionObject->isAvailableForSubscriptions($status, $this, $orderTotal);
+        $orderTotal = WC()->cart && WC()->cart->get_total('edit');
+        return $this->subscriptionObject->isAvailableForSubscriptions($status, $this, $orderTotal, $gateway);
     }
 
     /**

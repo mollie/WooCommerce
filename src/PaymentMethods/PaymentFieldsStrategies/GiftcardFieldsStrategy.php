@@ -8,17 +8,17 @@ class GiftcardFieldsStrategy implements PaymentFieldsStrategyI
 {
     use IssuersDropdownBehavior;
 
-    public function execute($gateway, $dataHelper)
+    public function execute($gateway, $dataHelper): string
     {
         if (!$this->dropDownEnabled($gateway)) {
-            return;
+            return '';
         }
 
         $issuers = $this->getIssuers($gateway, $dataHelper);
         if (empty($issuers)) {
-            return;
+            return '';
         }
-        $selectedIssuer = $gateway->getSelectedIssuer();
+        $selectedIssuer = $gateway->paymentMethod()->getSelectedIssuer();
 
         $html = '';
 
@@ -32,12 +32,10 @@ class GiftcardFieldsStrategy implements PaymentFieldsStrategyI
                 $html .= '<img src="' . $issuerImageSvg . '" style="vertical-align:middle" />' . $issuerName;
             }
             //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-            echo wpautop(wptexturize($html));
-
-            return;
+            return wpautop(wptexturize($html));
         }
 
-        $this->renderIssuers($gateway, $issuers, $selectedIssuer);
+        return $this->renderIssuers($gateway, $issuers, $selectedIssuer);
     }
 
     public function getFieldMarkup($gateway, $dataHelper)
@@ -46,7 +44,7 @@ class GiftcardFieldsStrategy implements PaymentFieldsStrategyI
             return "";
         }
         $issuers = $this->getIssuers($gateway, $dataHelper);
-        $selectedIssuer = $gateway->getSelectedIssuer();
+        $selectedIssuer = $gateway->paymentMethod()->getSelectedIssuer();
         $markup = $this->dropdownOptions($gateway, $issuers, $selectedIssuer);
         return $markup;
     }

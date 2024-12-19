@@ -12,36 +12,16 @@ use Mollie\WooCommerce\Shared\Data;
 
 class PaymentFactory
 {
-    /**
-     * @var Data
-     */
-    protected $dataHelper;
-    /**
-     * @var Api
-     */
-    protected $apiHelper;
-    protected $settingsHelper;
-    /**
-     * @var string
-     */
-    protected $pluginId;
-    protected $logger;
-    /**
-     * @var OrderLines
-     */
-    protected $orderLines;
+    private $mollieOrderFactory;
+    private $molliePaymentFactory;
 
     /**
      * PaymentFactory constructor.
      */
-    public function __construct(Data $dataHelper, Api $apiHelper, Settings $settingsHelper, string $pluginId, $logger, OrderLines $orderLines)
+    public function __construct(callable $mollieOrderFactory, callable $molliePaymentFactory)
     {
-        $this->dataHelper = $dataHelper;
-        $this->apiHelper = $apiHelper;
-        $this->settingsHelper = $settingsHelper;
-        $this->pluginId = $pluginId;
-        $this->logger = $logger;
-        $this->orderLines = $orderLines;
+        $this->mollieOrderFactory = $mollieOrderFactory;
+        $this->molliePaymentFactory = $molliePaymentFactory;
     }
 
     /**
@@ -57,24 +37,9 @@ class PaymentFactory
             || (is_string($data) && strpos($data, 'ord_') !== false)
             || (is_object($data) && $data->resource === 'order')
         ) {
-            $refundLineItemsBuilder = new RefundLineItemsBuilder($this->dataHelper);
-            $apiKey = $this->settingsHelper->getApiKey();
-            $orderItemsRefunded = new OrderItemsRefunder(
-                $refundLineItemsBuilder,
-                $this->dataHelper,
-                $this->apiHelper->getApiClient($apiKey)->orders
-            );
-
-            return new MollieOrder(
-                $orderItemsRefunded,
-                $data,
-                $this->pluginId,
-                $this->apiHelper,
-                $this->settingsHelper,
-                $this->dataHelper,
-                $this->logger,
-                $this->orderLines
-            );
+            $mollieOrder = ($this->mollieOrderFactory)();
+            $mollieOrder->setOrder($data);
+            return $mollieOrder;
         }
 
         if (
@@ -82,14 +47,9 @@ class PaymentFactory
             || (!is_object($data) && strpos($data, 'tr_') !== false)
             || (is_object($data) && $data->resource === 'payment')
         ) {
-            return new MolliePayment(
-                $data,
-                $this->pluginId,
-                $this->apiHelper,
-                $this->settingsHelper,
-                $this->dataHelper,
-                $this->logger
-            );
+            $molliePayment = ($this->molliePaymentFactory)();
+            $molliePayment->setPayment($data);
+            return $molliePayment;
         }
 
         return false;

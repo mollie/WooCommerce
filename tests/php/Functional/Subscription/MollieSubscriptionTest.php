@@ -10,7 +10,7 @@ use Mollie\Api\Resources\MandateCollection;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\SDK\HttpResponse;
-use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
+use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
 use Mollie\WooCommerceTests\TestCase;
 
@@ -106,7 +106,7 @@ class MollieSubscriptionTest extends TestCase
         $pluginId = $this->helperMocks->pluginId();
         $apiHelper = $this->helperMocks->apiHelper($apiClientMock);
         return $this->buildTesteeMock(
-            MollieSubscriptionGateway::class,
+            MollieSubscriptionGatewayHandler::class,
             [
                 $paymentMethod,
                 $paymentService,

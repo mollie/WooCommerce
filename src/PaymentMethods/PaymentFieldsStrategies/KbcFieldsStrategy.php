@@ -8,17 +8,17 @@ class KbcFieldsStrategy implements PaymentFieldsStrategyI
 {
     use IssuersDropdownBehavior;
 
-    public function execute($gateway, $dataHelper)
+    public function execute($gateway, $dataHelper): string
     {
         if (!$this->dropDownEnabled($gateway)) {
-            return;
+            return '';
         }
 
         $issuers = $this->getIssuers($gateway, $dataHelper);
 
-        $selectedIssuer = $gateway->getSelectedIssuer();
+        $selectedIssuer = $gateway->paymentMethod()->getSelectedIssuer();
 
-        $this->renderIssuers($gateway, $issuers, $selectedIssuer);
+        return $this->renderIssuers($gateway, $issuers, $selectedIssuer);
     }
 
     public function getFieldMarkup($gateway, $dataHelper)
@@ -27,7 +27,7 @@ class KbcFieldsStrategy implements PaymentFieldsStrategyI
             return "";
         }
         $issuers = $this->getIssuers($gateway, $dataHelper);
-        $selectedIssuer = $gateway->getSelectedIssuer();
+        $selectedIssuer = $gateway->paymentMethod()->getSelectedIssuer();
         $markup = $this->dropdownOptions($gateway, $issuers, $selectedIssuer);
         return $markup;
     }

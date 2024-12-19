@@ -474,21 +474,6 @@ class MolliePaymentGatewayHandler
     }
 
     /**
-     * Process a refund if supported
-     *
-     * @param int    $order_id
-     * @param float  $amount
-     * @param string $reason
-     *
-     * @return bool|wp_error True or false based on success, or a WP_Error object
-     * @since WooCommerce 2.2
-     */
-    public function process_refund($order_id, $amount = null, $reason = '')
-    {
-        return $this->refundProcessor->process_refund($order_id, $amount, $reason);
-    }
-
-    /**
      * Output for the order received page.
      */
     public function thankyou_page($order_id)

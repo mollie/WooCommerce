@@ -52,7 +52,7 @@ class OrderMandatoryGatewayDisabler
         return array_filter(
             $gateways,
             static function ($gateway) use ($paymentMethods) {
-                if (!($gateway instanceof PaymentGateway)) {
+                if (! mollieWooCommerceIsMollieGateway($gateway)) {
                     return true;
                 }
                 $gatewayId = $gateway->id;

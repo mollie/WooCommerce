@@ -50,7 +50,7 @@ class MaybeDisableGateway
         }
         $mealVoucherGatewayIndex = false;
         foreach ($gateways as $key => $gateway) {
-            if (!($gateway instanceof PaymentGateway)) {
+            if (! mollieWooCommerceIsMollieGateway($gateway)) {
                 continue;
             }
             if ($gateway->id === 'mollie_wc_gateway_voucher') {

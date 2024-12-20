@@ -5,7 +5,7 @@ namespace Mollie\WooCommerceTests\Functional;
 
 
 use Mollie\Api\MollieApiClient;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Payment\MollieOrder;
 use Mollie\WooCommerce\Payment\MollieOrderService;
@@ -257,7 +257,7 @@ class HelperMocks extends TestCase
         $pluginId = $this->pluginId();
 
         return $this->buildTesteeMock(
-            MolliePaymentGateway::class,
+            MolliePaymentGatewayHandler::class,
             [
                 $paymentMethod,
                 $paymentService,

@@ -21,21 +21,14 @@ class ActivationModule implements ExecutableModule
     private $pluginVersion;
 
     /**
-     * ActivationModule constructor.
-     */
-    public function __construct($baseFile, $pluginVersion)
-    {
-        $this->baseFile = $baseFile;
-        $this->pluginVersion = $pluginVersion;
-    }
-
-    /**
      * @param ContainerInterface $container
      *
      * @return bool
      */
     public function run(ContainerInterface $container): bool
     {
+        $this->pluginVersion = $container->get('shared.plugin_version');
+        $this->baseFile = M4W_FILE;
         add_action(
             'init',
             [$this, 'pluginInit']
@@ -148,12 +141,6 @@ class ActivationModule implements ExecutableModule
      */
     public function pluginInit()
     {
-        load_plugin_textdomain(
-            'mollie-payments-for-woocommerce',
-            false,
-            dirname(plugin_basename($this->baseFile)) . '/languages/'
-        );
-
         $this->markUpdatedOrNew();
         $this->initDb();
     }

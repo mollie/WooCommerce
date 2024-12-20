@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Payment\PaymentFieldsService;
 use Mollie\WooCommerce\Settings\Settings;
@@ -180,12 +180,12 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     /**
      * Sets the gateway's payment fields strategy based on payment method
      * @param $gateway
-     * @return void
+     * @return string
      */
     public function paymentFieldsStrategy($gateway)
     {
         $this->paymentFieldsService->setStrategy($this);
-        $this->paymentFieldsService->executeStrategy($gateway);
+        return $this->paymentFieldsService->executeStrategy($gateway);
     }
 
     /**
@@ -339,5 +339,16 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         }
 
         return $savedTitle === $this->config['defaultTitle'];
+    }
+
+    /**
+     * @return string|NULL
+     */
+    public function getSelectedIssuer(): ?string
+    {
+        $issuer_id = $this->settingsHelper->getPluginId() . '_issuer_' . $this->id;
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $postedIssuer = wc_clean(wp_unslash($_POST[$issuer_id] ?? ''));
+        return !empty($postedIssuer) ? $postedIssuer : null;
     }
 }

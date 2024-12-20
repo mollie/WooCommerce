@@ -11,7 +11,7 @@ use Mollie\WooCommerce\Buttons\ApplePayButton\ResponsesToApple;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Payment\RefundLineItemsBuilder;
 use Mollie\WooCommerce\Shared\Data;
-use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
+use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
 use Mollie\WooCommerceTests\Stubs\postDTOTestsStubs;
 use Mollie\WooCommerceTests\Stubs\WooCommerceMocks;

@@ -4,29 +4,28 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
-use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\DefaultInstructionStrategy;
 
 class OrderInstructionsService
 {
     protected $strategy;
-    public function setStrategy($gateway)
+    public function setStrategy($deprecatedGatewayHelper)
     {
-        if (!$gateway->paymentMethod()->getProperty('instructions')) {
+        if (!$deprecatedGatewayHelper->paymentMethod()->getProperty('instructions')) {
             $this->strategy = new DefaultInstructionStrategy();
         } else {
-            $className = 'Mollie\\WooCommerce\\PaymentMethods\\InstructionStrategies\\' . ucfirst($gateway->paymentMethod()->getProperty('id')) . 'InstructionStrategy';
+            $className = 'Mollie\\WooCommerce\\PaymentMethods\\InstructionStrategies\\' . ucfirst($deprecatedGatewayHelper->paymentMethod()->getProperty('id')) . 'InstructionStrategy';
             $this->strategy = class_exists($className) ? new $className() : new DefaultInstructionStrategy();
         }
     }
 
     public function executeStrategy(
-        MolliePaymentGatewayI $gateway,
+        $deprecatedGatewayHelper,
         $payment,
         $order = null,
         $admin_instructions = false
     ) {
 
-        return $this->strategy->execute($gateway, $payment, $order, $admin_instructions);
+        return $this->strategy->execute($deprecatedGatewayHelper, $payment, $order, $admin_instructions);
     }
 }

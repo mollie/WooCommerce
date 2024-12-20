@@ -35,7 +35,7 @@ trait IssuersDropdownBehavior
             $issuers,
             $selectedIssuer
         );
-        echo wp_kses($html, [
+        return wp_kses($html, [
             'select' => [
                 'name' => [],
                 'id' => [],

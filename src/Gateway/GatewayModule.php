@@ -74,6 +74,23 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             [$this, 'maybeDisableBankTransferGateway'],
             20
         );
+        // Add subscription filters after payment gateways are loaded
+        add_filter(
+            'woocommerce_payment_gateways',
+            static function ($gateways) use ($container) {
+                $deprecatedGatewayHelpers = $container->get('__deprecated.gateway_helpers');
+
+                foreach ($gateways as $gateway) {
+                   $isMolliegateway = strpos($gateway, 'mollie_wc_gateway_') !== false;
+                   $isSubscriptiongateway = $gateway->supports('subscriptions');
+                     if ($isMolliegateway && $isSubscriptiongateway) {
+                         $deprecatedGatewayHelpers[$gateway->id]->addSubscriptionFilters($gateway);
+                     }
+               }
+                return $gateways;
+            },
+            30
+        );
         // Disable SEPA as payment option in WooCommerce checkout
         add_filter(
             'woocommerce_available_payment_gateways',

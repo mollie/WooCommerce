@@ -90,16 +90,17 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
             $logger,
             $paymentMethod,
         );
+    }
 
+    public function addSubscriptionFiters($gateway) {
         if (class_exists('WC_Subscriptions_Order')) {
-            //TODO add to the dynamic services and point to the helper method
-            add_action('woocommerce_scheduled_subscription_payment_' . $this->id, [ $this, 'scheduled_subscription_payment' ], 10, 2);
+            add_action('woocommerce_scheduled_subscription_payment_' . $gteway->id, [ $this, 'scheduled_subscription_payment' ], 10, 2);
 
             // A resubscribe order to record a customer resubscribing to an expired or cancelled subscription.
             add_action('wcs_resubscribe_order_created', [ $this, 'delete_resubscribe_meta' ], 10);
 
             // After creating a renewal order to record a scheduled subscription payment with the same post meta, order items etc.
-             add_action('wcs_renewal_order_created', [ $this, 'delete_renewal_meta' ], 10);
+            add_action('wcs_renewal_order_created', [ $this, 'delete_renewal_meta' ], 10);
 
             add_action('woocommerce_subscription_failing_payment_method_updated_mollie', [ $this, 'update_failing_payment_method' ], 10, 2);
 

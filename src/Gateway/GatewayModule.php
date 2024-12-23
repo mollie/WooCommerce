@@ -269,6 +269,11 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 11,
                 2
             );
+            add_action(
+                'woocommerce_checkout_posted_data',
+                [$this, 'switchFields'],
+                11
+            );
         }
         $isIn3Enabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_in3_settings', 'enabled');
         if ($isIn3Enabled) {
@@ -657,7 +662,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
     public function BillieFieldsMandatory($fields, $errors)
     {
         $gatewayName = "mollie_wc_gateway_billie";
-        $field = 'billing_company';
+        $field = 'billing_company_billie';
         $companyLabel = __('Company', 'mollie-payments-for-woocommerce');
         return $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $field, $companyLabel, $errors);
     }

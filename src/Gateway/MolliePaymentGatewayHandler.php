@@ -5,16 +5,13 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Gateway;
 
 use InvalidArgumentException;
-use Mollie\Api\Exceptions\ApiException;
-use Mollie\Api\Resources\Method;
 use Mollie\Api\Resources\Payment;
-use Mollie\Api\Types\SequenceType;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrderService;
-use Mollie\WooCommerce\Payment\OrderInstructionsService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\PaymentService;
+use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Shared\Data;
@@ -22,8 +19,6 @@ use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Log\LoggerInterface as Logger;
 use UnexpectedValueException;
 use WC_Order;
-use WC_Payment_Gateway;
-use WP_Error;
 
 class MolliePaymentGatewayHandler
 {
@@ -67,9 +62,9 @@ class MolliePaymentGatewayHandler
      */
     protected $httpResponse;
     /**
-     * @var OrderInstructionsService
+     * @var OrderInstructionsManager
      */
-    protected $orderInstructionsService;
+    protected $orderInstructionsManager;
     /**
      * @var Data
      */
@@ -93,7 +88,7 @@ class MolliePaymentGatewayHandler
     public function __construct(
         PaymentMethodI $paymentMethod,
         PaymentService $paymentService,
-        OrderInstructionsService $orderInstructionsService,
+        OrderInstructionsManager $orderInstructionsService,
         MollieOrderService $mollieOrderService,
         Data $dataService,
         Logger $logger,
@@ -108,7 +103,7 @@ class MolliePaymentGatewayHandler
         $this->logger = $logger;
         $this->notice = $notice;
         $this->paymentService = $paymentService;
-        $this->orderInstructionsService = $orderInstructionsService;
+        $this->orderInstructionsManager = $orderInstructionsService;
         $this->mollieOrderService = $mollieOrderService;
         $this->httpResponse = $httpResponse;
         $this->dataService = $dataService;
@@ -126,13 +121,6 @@ class MolliePaymentGatewayHandler
                 [$this, 'thankyou_page']
             );
         }
-        $this->mollieOrderService->setGateway($this);
-
-        add_action(
-            'woocommerce_api_' . $this->id,
-            [$this->mollieOrderService, 'onWebhookAction']
-        );
-
         add_action(
             'woocommerce_email_after_order_table',
             [$this, 'displayInstructions'],
@@ -145,6 +133,14 @@ class MolliePaymentGatewayHandler
             10,
             3
         );
+        $this->mollieOrderService->setGateway($this);
+
+        add_action(
+            'woocommerce_api_' . $this->id,
+            [$this->mollieOrderService, 'onWebhookAction']
+        );
+
+
 
         // Adjust title and text on Order Received page in some cases, see issue #166
         add_filter('the_title', [$this, 'onOrderReceivedTitle'], 10, 2);
@@ -535,8 +531,8 @@ class MolliePaymentGatewayHandler
             ) {
                 return;
             }
-            $this->orderInstructionsService->setStrategy($this);
-            $instructions = $this->orderInstructionsService->executeStrategy(
+            $this->orderInstructionsManager->setStrategy($this);
+            $instructions = $this->orderInstructionsManager->executeStrategy(
                 $this,
                 $payment,
                 $order,

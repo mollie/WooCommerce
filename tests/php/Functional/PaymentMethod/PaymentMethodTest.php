@@ -5,7 +5,7 @@ namespace php\Functional\PaymentMethod;
 
 
 use Mollie\WooCommerce\Gateway\Surcharge;
-use Mollie\WooCommerce\Payment\PaymentFieldsService;
+use Mollie\WooCommerce\Payment\PaymentFieldsManager;
 use Mollie\WooCommerce\PaymentMethods\Creditcard;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
@@ -155,7 +155,7 @@ class PaymentMethodTest extends TestCase
     {
         $iconFactory = new IconFactory($this->pluginUrl, $this->pluginPath);
         $settingsHelper = $this->helperMocks->settingsHelper();
-        $paymentFieldsService = new PaymentFieldsService($this->helperMocks->dataHelper());
+        $paymentFieldsService = new PaymentFieldsManager($this->helperMocks->dataHelper());
         $surchargeService = new Surcharge();
 
         $paymentMethod = $this->buildTesteeMock(

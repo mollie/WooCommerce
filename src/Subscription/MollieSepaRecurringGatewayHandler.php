@@ -12,17 +12,15 @@ use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrderService;
-use Mollie\WooCommerce\Payment\OrderInstructionsService;
-use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\PaymentService;
+use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Psr\Log\LoggerInterface as Logger;
-use Psr\Log\LogLevel;
 
 class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
 {
@@ -38,7 +36,7 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
         PaymentMethodI $directDebitPaymentMethod,
         PaymentMethodI $paymentMethod,
         PaymentService $paymentService,
-        OrderInstructionsService $orderInstructionsService,
+        OrderInstructionsManager $orderInstructionsService,
         MollieOrderService $mollieOrderService,
         Data $dataService,
         Logger $logger,

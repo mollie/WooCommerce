@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Payment;
+namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\DefaultFieldsStrategy;
 use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\PaymentFieldsStrategyI;
 use Mollie\WooCommerce\Shared\Data;
-use Psr\Log\LoggerInterface as Logger;
 
-class PaymentFieldsService
+class PaymentFieldsManager
 {
     /**
      * @var PaymentFieldsStrategyI
@@ -22,7 +21,7 @@ class PaymentFieldsService
     protected $dataHelper;
 
     /**
-     * PaymentService constructor.
+     * PaymentFieldsManager constructor.
      */
     public function __construct($dataHelper)
     {

@@ -2,11 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Payment;
+namespace Mollie\WooCommerce\PaymentMethods\InstructionStrategies;
 
-use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\DefaultInstructionStrategy;
-
-class OrderInstructionsService
+class OrderInstructionsManager
 {
     protected $strategy;
     public function setStrategy($deprecatedGatewayHelper)

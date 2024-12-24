@@ -22,7 +22,7 @@ use Mollie\WooCommerce\Buttons\PayPalButton\PayPalButtonHandler;
 use Mollie\WooCommerce\Gateway\Voucher\MaybeDisableGateway;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Notice\NoticeInterface;
-use Mollie\WooCommerce\Payment\PaymentFieldsService;
+use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\PaymentFieldsManager;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
@@ -421,8 +421,8 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         assert($settingsHelper instanceof Settings);
         $surchargeService = $container->get(Surcharge::class);
         assert($surchargeService instanceof Surcharge);
-        $paymentFieldsService = $container->get(PaymentFieldsService::class);
-        assert($paymentFieldsService instanceof PaymentFieldsService);
+        $paymentFieldsService = $container->get(PaymentFieldsManager::class);
+        assert($paymentFieldsService instanceof PaymentFieldsManager);
         foreach ($listAllAvailablePaymentMethods as $paymentMethodAvailable) {
             $paymentMethodId = $paymentMethodAvailable['id'];
             $paymentMethods[$paymentMethodId] = $this->buildPaymentMethod(
@@ -453,7 +453,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
      * @param string $id
      * @param IconFactory $iconFactory
      * @param Settings $settingsHelper
-     * @param PaymentFieldsService $paymentFieldsService
+     * @param PaymentFieldsManager $paymentFieldsService
      * @param Surcharge $surchargeService
      * @param array $paymentMethods
      * @return PaymentMethodI | array
@@ -462,7 +462,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         string $id,
         IconFactory $iconFactory,
         Settings $settingsHelper,
-        PaymentFieldsService $paymentFieldsService,
+        PaymentFieldsManager $paymentFieldsService,
         Surcharge $surchargeService,
         array $apiMethod
     ) {

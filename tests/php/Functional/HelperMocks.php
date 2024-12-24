@@ -9,7 +9,7 @@ use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Payment\MollieOrder;
 use Mollie\WooCommerce\Payment\MollieOrderService;
-use Mollie\WooCommerce\Payment\OrderInstructionsService;
+use Mollie\WooCommerce\Payment\OrderInstructionsManager;
 use Mollie\WooCommerce\Payment\OrderItemsRefunder;
 use Mollie\WooCommerce\Payment\OrderLines;
 use Mollie\WooCommerce\Payment\MollieObject;
@@ -86,7 +86,7 @@ class HelperMocks extends TestCase
     public function orderInstructionsService()
     {
         return $this->createConfiguredMock(
-            OrderInstructionsService::class,
+            OrderInstructionsManager::class,
             [
 
             ]

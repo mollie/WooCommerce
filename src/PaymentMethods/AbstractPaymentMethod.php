@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
-use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Gateway\Surcharge;
-use Mollie\WooCommerce\Payment\PaymentFieldsService;
+use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\PaymentFieldsManager;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 
@@ -33,7 +32,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
      */
     protected $settingsHelper;
     /**
-     * @var PaymentFieldsService
+     * @var PaymentFieldsManager
      */
     protected $paymentFieldsService;
     /**
@@ -48,7 +47,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     public function __construct(
         IconFactory $iconFactory,
         Settings $settingsHelper,
-        PaymentFieldsService $paymentFieldsService,
+        PaymentFieldsManager $paymentFieldsService,
         Surcharge $surcharge,
         array $apiPaymentMethod
     ) {
@@ -189,9 +188,9 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     }
 
     /**
-     * @return PaymentFieldsService
+     * @return PaymentFieldsManager
      */
-    public function paymentFieldsService(): PaymentFieldsService
+    public function paymentFieldsService(): PaymentFieldsManager
     {
         return $this->paymentFieldsService;
     }

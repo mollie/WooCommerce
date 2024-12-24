@@ -13,10 +13,10 @@ use Mollie\WooCommerce\Gateway\Refund\RefundProcessor;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Payment\MollieOrderService;
-use Mollie\WooCommerce\Payment\OrderInstructionsService;
+use Mollie\WooCommerce\Payment\OrderInstructionsManager;
 use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
-use Mollie\WooCommerce\Payment\PaymentFieldsService;
+use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\PaymentFieldsManager;
 use Mollie\WooCommerce\Payment\PaymentService;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\PaymentMethods\Icon\GatewayIconsRenderer;
@@ -144,13 +144,13 @@ return static function (): array {
             $voucherDefaultCategory = $container->get('voucher.defaultCategory');
             return new PaymentService($notice, $logger, $paymentFactory, $data, $api, $settings, $pluginId, $paymentCheckoutRedirectService, $voucherDefaultCategory);
         },
-        OrderInstructionsService::class => static function (): OrderInstructionsService {
-            return new OrderInstructionsService();
+        OrderInstructionsManager::class => static function (): OrderInstructionsManager {
+            return new OrderInstructionsManager();
         },
-        PaymentFieldsService::class => static function (ContainerInterface $container): PaymentFieldsService {
+        PaymentFieldsManager::class => static function (ContainerInterface $container): PaymentFieldsManager {
             $data = $container->get('settings.data_helper');
             assert($data instanceof Data);
-            return new PaymentFieldsService($data);
+            return new PaymentFieldsManager($data);
         },
         PaymentCheckoutRedirectService::class => static function (
             ContainerInterface $container

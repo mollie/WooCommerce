@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
-use Mollie\WooCommerce\Payment\PaymentFieldsService;
+use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\PaymentFieldsManager;
 
 interface PaymentMethodI
 {
@@ -13,6 +13,6 @@ interface PaymentMethodI
     public function title(): string;
     public function hasPaymentFields(): bool;
     public function getProcessedDescriptionForBlock(): string;
-    public function paymentFieldsService(): PaymentFieldsService;
+    public function paymentFieldsService(): PaymentFieldsManager;
     public function hasSurcharge(): bool;
 }

@@ -5,10 +5,10 @@ namespace Mollie\WooCommerce\Gateway;
 use Mollie\WooCommerce\Notice\FrontendNotice;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrderService;
-use Mollie\WooCommerce\Payment\OrderInstructionsService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\PaymentService;
 use Mollie\WooCommerce\PaymentMethods\Constants;
+use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Settings\Settings;
@@ -39,7 +39,7 @@ class DeprecatedGatewayBuilder
         $paymentMethods = $container->get('gateway.paymentMethods');
         $data = $container->get('settings.data_helper');
         assert($data instanceof Data);
-        $orderInstructionsService = new OrderInstructionsService();
+        $orderInstructionsManager = new OrderInstructionsManager();
         $mollieObject = $container->get(MollieObject::class);
         assert($mollieObject instanceof MollieObject);
         $paymentFactory = $container->get(PaymentFactory::class);
@@ -63,7 +63,7 @@ class DeprecatedGatewayBuilder
                     $directDebit,
                     $paymentMethod,
                     $paymentService,
-                    $orderInstructionsService,
+                    $orderInstructionsManager,
                     $mollieOrderService,
                     $data,
                     $logger,
@@ -79,7 +79,7 @@ class DeprecatedGatewayBuilder
                 $gateways[$key] = new MollieSubscriptionGatewayHandler(
                     $paymentMethod,
                     $paymentService,
-                    $orderInstructionsService,
+                    $orderInstructionsManager,
                     $mollieOrderService,
                     $data,
                     $logger,
@@ -95,7 +95,7 @@ class DeprecatedGatewayBuilder
                 $gateways[$key] = new MolliePaymentGatewayHandler(
                     $paymentMethod,
                     $paymentService,
-                    $orderInstructionsService,
+                    $orderInstructionsManager,
                     $mollieOrderService,
                     $data,
                     $logger,

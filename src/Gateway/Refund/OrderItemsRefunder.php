@@ -2,13 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Payment;
+namespace Mollie\WooCommerce\Gateway\Refund;
 
 use Mollie\Api\Endpoints\OrderEndpoint;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Refund;
-use Mollie\WooCommerce\Plugin;
 use Mollie\WooCommerce\Shared\Data;
 use UnexpectedValueException;
 use WC_Order;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Payment;
+namespace Mollie\WooCommerce\Gateway\Refund;
 
 use Mollie\WooCommerce\Shared\Data;
 use stdClass;

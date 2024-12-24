@@ -92,7 +92,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         );
     }
 
-    public function addSubscriptionFiters($gateway) {
+    public function addSubscriptionFilters($gateway) {
         if (class_exists('WC_Subscriptions_Order')) {
             add_action('woocommerce_scheduled_subscription_payment_' . $gateway->id,
                 static function ($renewal_total, WC_Order $renewal_order) use ($gateway) {

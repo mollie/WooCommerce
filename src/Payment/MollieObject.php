@@ -21,10 +21,6 @@ use stdClass;
 
 class MollieObject
 {
-    public const MAXIMAL_LENGHT_ADDRESS = 100;
-    public const MAXIMAL_LENGHT_POSTALCODE = 20;
-    public const MAXIMAL_LENGHT_CITY = 200;
-    public const MAXIMAL_LENGHT_REGION = 200;
     protected $data;
     /**
      * @var string[]

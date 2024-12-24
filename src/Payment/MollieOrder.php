@@ -10,6 +10,8 @@ use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Payment;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Refund;
+use Mollie\WooCommerce\Gateway\Refund\OrderItemsRefunder;
+use Mollie\WooCommerce\Gateway\Refund\PartialRefundException;
 use Mollie\WooCommerce\Payment\Request\RequestFactory;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\SDK\Api;

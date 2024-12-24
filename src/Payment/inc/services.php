@@ -3,11 +3,10 @@
 declare(strict_types=1);
 
 
-
+use Mollie\WooCommerce\Gateway\Refund\OrderItemsRefunder;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrder;
 use Mollie\WooCommerce\Payment\MolliePayment;
-use Mollie\WooCommerce\Payment\OrderItemsRefunder;
 use Mollie\WooCommerce\Payment\OrderLines;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\Request\Decorators\AddCustomRequestFieldsDecorator;
@@ -53,6 +52,7 @@ return static function (): array {
             $pluginId = $container->get('shared.plugin_id');
             return new OrderLines($data, $pluginId);
         },
+
         PaymentFactory::class => static function (ContainerInterface $container): PaymentFactory {
             return new PaymentFactory(
                 function () use ($container) {

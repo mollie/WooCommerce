@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment\Request\Decorators;
 
+use stdClass;
 use WC_Order;
 
 class AddressDecorator implements RequestDecoratorInterface
 {
+    public const MAXIMAL_LENGHT_ADDRESS = 100;
+    public const MAXIMAL_LENGHT_POSTALCODE = 20;
+    public const MAXIMAL_LENGHT_CITY = 200;
+    public const MAXIMAL_LENGHT_REGION = 200;
     public function decorate(array $requestData, WC_Order $order, $context = null): array
     {
         $isPayPalExpressOrder = $order->get_meta('_mollie_payment_method_button') === 'PayPalButton';

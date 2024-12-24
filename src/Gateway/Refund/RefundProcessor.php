@@ -5,7 +5,6 @@ namespace Mollie\WooCommerce\Gateway\Refund;
 use Exception;
 use Inpsyde\PaymentGateway\RefundProcessorInterface;
 use Mollie\Api\Exceptions\ApiException;
-use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
 use WC_Order;
 
 class RefundProcessor implements RefundProcessorInterface

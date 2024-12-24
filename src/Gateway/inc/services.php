@@ -7,6 +7,8 @@ use Inpsyde\PaymentGateway\PaymentRequestValidatorInterface;
 use Inpsyde\PaymentGateway\RefundProcessorInterface;
 use Mollie\WooCommerce\Gateway\DeprecatedGatewayBuilder;
 use Mollie\WooCommerce\Gateway\OrderMandatoryGatewayDisabler;
+use Mollie\WooCommerce\Gateway\Refund\OrderItemsRefunder;
+use Mollie\WooCommerce\Gateway\Refund\RefundLineItemsBuilder;
 use Mollie\WooCommerce\Gateway\Refund\RefundProcessor;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\AdminNotice;
@@ -109,6 +111,19 @@ return static function (): array {
             $pluginUrl = $container->get('shared.plugin_url');
             $pluginPath = $container->get('shared.plugin_path');
             return new IconFactory($pluginUrl, $pluginPath);
+        },
+        RefundLineItemsBuilder::class => static function (ContainerInterface $container): RefundLineItemsBuilder {
+            $data = $container->get('settings.data_helper');
+            return new RefundLineItemsBuilder($data);
+        },
+        OrderItemsRefunder::class => static function (ContainerInterface $container): OrderItemsRefunder {
+            $data = $container->get('settings.data_helper');
+            $refundLineItemsBuilder = $container->get(RefundLineItemsBuilder::class);
+            $apiHelper = $container->get('SDK.api_helper');
+            $apiKey = $container->get('settings.settings_helper')->getApiKey();
+            $orderEndpoint = $apiHelper->getApiClient($apiKey)->orders;
+
+            return new OrderItemsRefunder($refundLineItemsBuilder, $data, $orderEndpoint);
         },
         PaymentService::class => static function (ContainerInterface $container): PaymentService {
             $logger = $container->get(Logger::class);

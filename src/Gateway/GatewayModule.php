@@ -79,11 +79,16 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             'woocommerce_payment_gateways',
             static function ($gateways) use ($container) {
                 $deprecatedGatewayHelpers = $container->get('__deprecated.gateway_helpers');
-
                 foreach ($gateways as $gateway) {
-                   $isMolliegateway = strpos($gateway, 'mollie_wc_gateway_') !== false;
+
+                   $isMolliegateway = is_string($gateway) && strpos($gateway, 'mollie_wc_gateway_') !== false
+                   || is_object($gateway) && strpos($gateway->id, 'mollie_wc_gateway_') !== false;
+                   if (!$isMolliegateway) {
+                       continue;
+                   }
+
                    $isSubscriptiongateway = $gateway->supports('subscriptions');
-                     if ($isMolliegateway && $isSubscriptiongateway) {
+                     if ($isSubscriptiongateway) {
                          $deprecatedGatewayHelpers[$gateway->id]->addSubscriptionFilters($gateway);
                      }
                }

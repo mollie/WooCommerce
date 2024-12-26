@@ -66,14 +66,9 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         });
          add_filter('woocommerce_payment_gateways', static function ($gateways) {
             $maybeEnablegatewayHelper = new MaybeDisableGateway();
-
+            $gateways = $maybeEnablegatewayHelper->maybeDisableBankTransferGateway($gateways);
             return $maybeEnablegatewayHelper->maybeDisableMealVoucherGateway($gateways);
          });
-        add_filter(
-            'woocommerce_payment_gateways',
-            [$this, 'maybeDisableBankTransferGateway'],
-            20
-        );
         // Add subscription filters after payment gateways are loaded
         add_filter(
             'woocommerce_payment_gateways',
@@ -261,49 +256,6 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
                 wp_kses($meta, $allowedTags)
             );
         }, $screen, 'side', 'high');
-    }
-
-    /**
-     * Disable Bank Transfer Gateway
-     *
-     * @param ?array $gateways
-     * @return array
-     */
-    public function maybeDisableBankTransferGateway(?array $gateways): array
-    {
-        if (!is_array($gateways)) {
-            return [];
-        }
-        $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_SPECIAL_CHARS);
-
-        $bankTransferSettings = get_option('mollie_wc_gateway_banktransfer_settings', false);
-        //If the setting is active is forced Payment API so we need to filter the gateway when order is in pay-page
-        // as it might have been created with Orders API
-        $isActiveExpiryDate = $bankTransferSettings
-            && isset($bankTransferSettings['activate_expiry_days_setting'])
-            && $bankTransferSettings['activate_expiry_days_setting'] === "yes"
-            && isset($bankTransferSettings['order_dueDate'])
-            && $bankTransferSettings['order_dueDate'] > 0;
-
-        /*
-         * There is only one case where we want to filter the gateway and it's when the
-         * pay-page render the available payments methods AND the setting is enabled
-         *
-         * For any other case we want to be sure bank transfer gateway is included.
-         */
-        if (
-            $isWcApiRequest ||
-            !$isActiveExpiryDate ||
-            is_checkout() && ! is_wc_endpoint_url('order-pay') ||
-            !wp_doing_ajax() && ! is_wc_endpoint_url('order-pay') ||
-            is_admin()
-        ) {
-            return $gateways;
-        }
-        $bankTransferGatewayClassName = 'mollie_wc_gateway_banktransfer';
-        unset($gateways[$bankTransferGatewayClassName]);
-
-        return  $gateways;
     }
 
     public function gatewaySurchargeHandling(Surcharge $surcharge)

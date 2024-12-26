@@ -5,6 +5,12 @@ declare(strict_types=1);
 use Dhii\Services\Factory;
 use Inpsyde\PaymentGateway\PaymentRequestValidatorInterface;
 use Inpsyde\PaymentGateway\RefundProcessorInterface;
+use Mollie\WooCommerce\Buttons\ApplePayButton\AppleAjaxRequests;
+use Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDirectHandler;
+use Mollie\WooCommerce\Buttons\ApplePayButton\ResponsesToApple;
+use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPal;
+use Mollie\WooCommerce\Buttons\PayPalButton\PayPalAjaxRequests;
+use Mollie\WooCommerce\Buttons\PayPalButton\PayPalButtonHandler;
 use Mollie\WooCommerce\Gateway\DeprecatedGatewayBuilder;
 use Mollie\WooCommerce\Gateway\OrderMandatoryGatewayDisabler;
 use Mollie\WooCommerce\Gateway\Refund\OrderItemsRefunder;
@@ -180,6 +186,40 @@ return static function (): array {
             $isSettingsOrderApi = $settings->isOrderApiSetting();
             $paymentMethods = $container->get('gateway.paymentMethods');
             return new OrderMandatoryGatewayDisabler($isSettingsOrderApi, $paymentMethods);
+        },
+        ApplePayDirectHandler::class => static function (ContainerInterface $container) {
+            $appleGateway = isset($container->get('__deprecated.gateway_helpers')['mollie_wc_gateway_applepay']) ? $container->get(
+                '__deprecated.gateway_helpers'
+            )['mollie_wc_gateway_applepay'] : false;
+            if (!$appleGateway) {
+                return false;
+            }
+            $notice = $container->get(AdminNotice::class);
+            assert($notice instanceof AdminNotice);
+            $logger = $container->get(Logger::class);
+            assert($logger instanceof Logger);
+
+            $apiHelper = $container->get('SDK.api_helper');
+            assert($apiHelper instanceof Api);
+            $settingsHelper = $container->get('settings.settings_helper');
+            assert($settingsHelper instanceof Settings);
+
+            $responseTemplates = new ResponsesToApple($logger, $appleGateway);
+            $ajaxRequests = new AppleAjaxRequests($responseTemplates, $notice, $logger, $apiHelper, $settingsHelper);
+            return new ApplePayDirectHandler($notice, $ajaxRequests);
+        },
+        PayPalButtonHandler::class => static function (ContainerInterface $container) {
+            $notice = $container->get(AdminNotice::class);
+            assert($notice instanceof AdminNotice);
+            $logger = $container->get(Logger::class);
+            assert($logger instanceof Logger);
+            $paypalGateway = isset($container->get('__deprecated.gateway_helpers')['mollie_wc_gateway_paypal']) ? $container->get(
+                '__deprecated.gateway_helpers'
+            )['mollie_wc_gateway_paypal'] : false;
+            $pluginUrl = $container->get('shared.plugin_url');
+            $ajaxRequests = new PayPalAjaxRequests($paypalGateway, $notice, $logger);
+            $data = new DataToPayPal($pluginUrl);
+            return new PayPalButtonHandler($ajaxRequests, $data);
         },
         'payment_gateway.getRefundProcessor' => static function (ContainerInterface $container): callable {
             return static function (string $gatewayId) use ($container): RefundProcessor {

@@ -148,31 +148,13 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
 
         // Set order to paid and processed when eventually completed without Mollie
         add_action('woocommerce_payment_complete', [$this, 'setOrderPaidByOtherGateway'], 10, 1);
-        $appleGateway = isset($container->get('__deprecated.gateway_helpers')['mollie_wc_gateway_applepay']) ? $container->get(
-            '__deprecated.gateway_helpers'
-        )['mollie_wc_gateway_applepay'] : false;
-        $notice = $container->get(AdminNotice::class);
-        assert($notice instanceof AdminNotice);
-        $logger = $container->get(Logger::class);
-        assert($logger instanceof Logger);
-        $pluginUrl = $container->get('shared.plugin_url');
-        $apiHelper = $container->get('SDK.api_helper');
-        assert($apiHelper instanceof Api);
-        $settingsHelper = $container->get('settings.settings_helper');
-        assert($settingsHelper instanceof Settings);
+
+
         $surchargeService = $container->get(Surcharge::class);
         assert($surchargeService instanceof Surcharge);
         $this->gatewaySurchargeHandling($surchargeService);
-        if ($appleGateway) {
-            $this->mollieApplePayDirectHandling($notice, $logger, $apiHelper, $settingsHelper, $appleGateway);
-        }
 
-        $paypalGateway = isset($container->get('__deprecated.gateway_helpers')['mollie_wc_gateway_paypal']) ? $container->get(
-            '__deprecated.gateway_helpers'
-        )['mollie_wc_gateway_paypal'] : false;
-        if ($paypalGateway) {
-            $this->molliePayPalButtonHandling($paypalGateway, $notice, $logger, $pluginUrl);
-        }
+        $this->paymentButtonsBootstrap($container);
 
         $maybeDisableVoucher = new MaybeDisableGateway();
         $dataService = $container->get('settings.data_helper');
@@ -321,41 +303,31 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
     }
 
     /**
-     * Bootstrap the ApplePay button logic if feature enabled
+     * @param ContainerInterface $container
+     * @return void
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
      */
-    public function mollieApplePayDirectHandling(NoticeInterface $notice, Logger $logger, Api $apiHelper, Settings $settingsHelper, MollieSubscriptionGatewayHandler $appleGateway)
+    public function paymentButtonsBootstrap(ContainerInterface $container): void
     {
-        $buttonEnabledCart = mollieWooCommerceIsApplePayDirectEnabled('cart');
-        $buttonEnabledProduct = mollieWooCommerceIsApplePayDirectEnabled('product');
-
-        if ($buttonEnabledCart || $buttonEnabledProduct) {
-            $notices = new AdminNotice();
-            $responseTemplates = new ResponsesToApple($logger, $appleGateway);
-            $ajaxRequests = new AppleAjaxRequests($responseTemplates, $notice, $logger, $apiHelper, $settingsHelper);
-            $applePayHandler = new ApplePayDirectHandler($notices, $ajaxRequests);
-            $applePayHandler->bootstrap($buttonEnabledProduct, $buttonEnabledCart);
+        $applePayDirectHandler = $container->get(ApplePayDirectHandler::class);
+        if ($applePayDirectHandler instanceof ApplePayDirectHandler) {
+            $buttonEnabledCart = mollieWooCommerceIsApplePayDirectEnabled('cart');
+            $buttonEnabledProduct = mollieWooCommerceIsApplePayDirectEnabled('product');
+            if ($buttonEnabledCart || $buttonEnabledProduct) {
+                $applePayDirectHandler->bootstrap($buttonEnabledProduct, $buttonEnabledCart);
+            }
         }
-    }
 
-    /**
-     * Bootstrap the Mollie_WC_Gateway_PayPal button logic if feature enabled
-     */
-    public function molliePayPalButtonHandling(
-        $gateway,
-        NoticeInterface $notice,
-        Logger $logger,
-        string $pluginUrl
-    ) {
+        $paypalButtonHandler = $container->get(PayPalButtonHandler::class);
+        if ($paypalButtonHandler instanceof PayPalButtonHandler) {
+            $enabledInProduct = (mollieWooCommerceIsPayPalButtonEnabled('product'));
+            $enabledInCart = (mollieWooCommerceIsPayPalButtonEnabled('cart'));
+            $shouldBuildIt = $enabledInProduct || $enabledInCart;
 
-        $enabledInProduct = (mollieWooCommerceIsPayPalButtonEnabled('product'));
-        $enabledInCart = (mollieWooCommerceIsPayPalButtonEnabled('cart'));
-        $shouldBuildIt = $enabledInProduct || $enabledInCart;
-
-        if ($shouldBuildIt) {
-            $ajaxRequests = new PayPalAjaxRequests($gateway, $notice, $logger);
-            $data = new DataToPayPal($pluginUrl);
-            $payPalHandler = new PayPalButtonHandler($ajaxRequests, $data);
-            $payPalHandler->bootstrap($enabledInProduct, $enabledInCart);
+            if ($shouldBuildIt) {
+                $paypalButtonHandler->bootstrap($enabledInProduct, $enabledInCart);
+            }
         }
     }
 

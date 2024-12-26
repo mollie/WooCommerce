@@ -6,7 +6,7 @@ use Mollie\WooCommerce\Notice\FrontendNotice;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
-use Mollie\WooCommerce\Payment\PaymentService;
+use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\SDK\Api;
@@ -26,8 +26,8 @@ class DeprecatedGatewayBuilder
         assert($logger instanceof Logger);
         $notice = $container->get(FrontendNotice::class);
         assert($notice instanceof FrontendNotice);
-        $paymentService = $container->get(PaymentService::class);
-        assert($paymentService instanceof PaymentService);
+        $paymentProcessor = $container->get(PaymentProcessor::class);
+        assert($paymentProcessor instanceof PaymentProcessor);
         $mollieOrderService = $container->get(MollieOrderService::class);
         assert($mollieOrderService instanceof MollieOrderService);
         $HttpResponseService = $container->get('SDK.HttpResponse');
@@ -62,7 +62,7 @@ class DeprecatedGatewayBuilder
                 $gateways[$key] = new MollieSepaRecurringGatewayHandler(
                     $directDebit,
                     $paymentMethod,
-                    $paymentService,
+                    $paymentProcessor,
                     $orderInstructionsManager,
                     $mollieOrderService,
                     $data,
@@ -78,7 +78,7 @@ class DeprecatedGatewayBuilder
             } elseif ($paymentMethod->getProperty('Subscription')) {
                 $gateways[$key] = new MollieSubscriptionGatewayHandler(
                     $paymentMethod,
-                    $paymentService,
+                    $paymentProcessor,
                     $orderInstructionsManager,
                     $mollieOrderService,
                     $data,
@@ -94,7 +94,7 @@ class DeprecatedGatewayBuilder
             } else {
                 $gateways[$key] = new MolliePaymentGatewayHandler(
                     $paymentMethod,
-                    $paymentService,
+                    $paymentProcessor,
                     $orderInstructionsManager,
                     $mollieOrderService,
                     $data,

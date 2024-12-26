@@ -13,7 +13,7 @@ use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
-use Mollie\WooCommerce\Payment\PaymentService;
+use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
@@ -35,7 +35,7 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
     public function __construct(
         PaymentMethodI $directDebitPaymentMethod,
         PaymentMethodI $paymentMethod,
-        PaymentService $paymentService,
+        PaymentProcessor $paymentProcessor,
         OrderInstructionsManager $orderInstructionsService,
         MollieOrderService $mollieOrderService,
         Data $dataService,
@@ -51,7 +51,7 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
 
         parent::__construct(
             $paymentMethod,
-            $paymentService,
+            $paymentProcessor,
             $orderInstructionsService,
             $mollieOrderService,
             $dataService,
@@ -66,7 +66,7 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
         );
         $directDebit = new MolliePaymentGatewayHandler(
             $directDebitPaymentMethod,
-            $paymentService,
+            $paymentProcessor,
             $orderInstructionsService,
             $mollieOrderService,
             $dataService,

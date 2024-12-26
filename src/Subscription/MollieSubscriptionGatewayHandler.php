@@ -10,7 +10,7 @@ use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieSubscription;
 use Mollie\WooCommerce\Payment\PaymentFactory;
-use Mollie\WooCommerce\Payment\PaymentService;
+use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
@@ -50,8 +50,8 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
      */
     public function __construct(
         PaymentMethodI $paymentMethod,
-        PaymentService $paymentService,
-        OrderInstructionsManager $orderInstructionsService,
+        PaymentProcessor $paymentProcessor,
+        OrderInstructionsManager $orderInstructionsProcessor,
         MollieOrderService $mollieOrderService,
         Data $dataService,
         Logger $logger,
@@ -66,8 +66,8 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
 
         parent::__construct(
             $paymentMethod,
-            $paymentService,
-            $orderInstructionsService,
+            $paymentProcessor,
+            $orderInstructionsProcessor,
             $mollieOrderService,
             $dataService,
             $logger,
@@ -195,7 +195,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         do_action($this->pluginId . '_before_renewal_payment_created', $renewal_order);
 
         $this->logger->debug($gateway->id . ': Try to create renewal payment for renewal order ' . $renewal_order_id);
-        $this->paymentService->setGateway($this);
+        $this->paymentProcessor->setGateway($this);
         $initial_order_status = $this->paymentMethod->getInitialOrderStatus();
 
         // Overwrite plugin-wide
@@ -543,7 +543,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         $subscription->save();
     }
 
-    //TODO this is still used in the paymentService trought the deprecatedGateway
+    //TODO this is still used in the paymentProcessor through the deprecatedGateway
     protected function addWcSubscriptionsFiltersForPayment(): void
     {
         add_filter(
@@ -718,7 +718,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         }
         $orderIdMeta = $subscriptionParentOrder->get_meta('_mollie_order_id');
 
-        $parentOrderMeta = $orderIdMeta ?: PaymentService::PAYMENT_METHOD_TYPE_PAYMENT;
+        $parentOrderMeta = $orderIdMeta ?: PaymentProcessor::PAYMENT_METHOD_TYPE_PAYMENT;
 
         return strpos($parentOrderMeta, 'ord_') !== false;
     }

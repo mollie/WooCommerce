@@ -10,7 +10,7 @@ use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
-use Mollie\WooCommerce\Payment\PaymentService;
+use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\HttpResponse;
@@ -50,9 +50,9 @@ class MolliePaymentGatewayHandler
      */
     protected $notice;
     /**
-     * @var PaymentService
+     * @var PaymentProcessor
      */
-    protected $paymentService;
+    protected $paymentProcessor;
     /**
      * @var MollieOrderService
      */
@@ -87,8 +87,8 @@ class MolliePaymentGatewayHandler
      */
     public function __construct(
         PaymentMethodI $paymentMethod,
-        PaymentService $paymentService,
-        OrderInstructionsManager $orderInstructionsService,
+        PaymentProcessor $paymentProcessor,
+        OrderInstructionsManager $orderInstructionsProcessor,
         MollieOrderService $mollieOrderService,
         Data $dataService,
         Logger $logger,
@@ -102,8 +102,8 @@ class MolliePaymentGatewayHandler
         $this->paymentMethod = $paymentMethod;
         $this->logger = $logger;
         $this->notice = $notice;
-        $this->paymentService = $paymentService;
-        $this->orderInstructionsManager = $orderInstructionsService;
+        $this->paymentProcessor = $paymentProcessor;
+        $this->orderInstructionsManager = $orderInstructionsProcessor;
         $this->mollieOrderService = $mollieOrderService;
         $this->httpResponse = $httpResponse;
         $this->dataService = $dataService;
@@ -170,7 +170,7 @@ class MolliePaymentGatewayHandler
 
     public function paymentService()
     {
-        return $this->paymentService;
+        return $this->paymentProcessor;
     }
 
     public function dataService()
@@ -296,8 +296,8 @@ class MolliePaymentGatewayHandler
         }
         $paymentMethod = $this->paymentMethod;
         $redirectUrl = $this->get_return_url($order);
-        $this->paymentService->setGateway($this);
-        return $this->paymentService->processPayment($orderId, $order, $paymentMethod, $redirectUrl);
+        $this->paymentProcessor->setGateway($this);
+        return $this->paymentProcessor->processPayment($orderId, $order, $paymentMethod, $redirectUrl);
     }
 
     /**

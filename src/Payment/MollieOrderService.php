@@ -41,7 +41,7 @@ class MollieOrderService
     private ContainerInterface $container;
 
     /**
-     * PaymentService constructor.
+     * MollieOrderService constructor.
      */
     public function __construct(
         HttpResponse $httpResponse,

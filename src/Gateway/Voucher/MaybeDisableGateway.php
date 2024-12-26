@@ -6,7 +6,7 @@ namespace Mollie\WooCommerce\Gateway\Voucher;
 
 use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
-use Mollie\WooCommerce\Payment\PaymentService;
+use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 
 class MaybeDisableGateway
@@ -102,7 +102,7 @@ class MaybeDisableGateway
         }
 
         $productsWithCategory = $this->numberProductsWithCategory();
-        $paymentAPISetting = get_option('mollie-payments-for-woocommerce_api_switch') === PaymentService::PAYMENT_METHOD_TYPE_PAYMENT;
+        $paymentAPISetting = get_option('mollie-payments-for-woocommerce_api_switch') === PaymentProcessor::PAYMENT_METHOD_TYPE_PAYMENT;
 
         if ($mealVoucherGatewayIndex !== false && ($productsWithCategory === 0 || $paymentAPISetting)) {
             unset($gateways[$mealVoucherGatewayIndex]);

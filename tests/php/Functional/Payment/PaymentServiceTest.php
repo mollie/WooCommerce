@@ -7,7 +7,7 @@ use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\MollieApiClient;
 use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
-use Mollie\WooCommerce\Payment\PaymentService;
+use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
@@ -74,7 +74,7 @@ class PaymentServiceTest extends TestCase
         );
         $apiClientMock->orders = $orderEndpoints;
         $voucherDefaultCategory = Voucher::NO_CATEGORY;
-        $testee = new PaymentService(
+        $testee = new PaymentProcessor(
             $this->helperMocks->noticeMock(),
             $this->helperMocks->loggerMock(),
             $this->helperMocks->paymentFactory($apiClientMock),
@@ -158,7 +158,7 @@ class PaymentServiceTest extends TestCase
         $apiClientMock->orders = $orderEndpointsMock;
         $voucherDefaultCategory = Voucher::NO_CATEGORY;
 
-        $testee = new PaymentService(
+        $testee = new PaymentProcessor(
             $this->helperMocks->noticeMock(),
             $this->helperMocks->loggerMock(),
             $this->helperMocks->paymentFactory($apiClientMock),
@@ -176,7 +176,7 @@ class PaymentServiceTest extends TestCase
         $wcOrder = $this->wcOrder($wcOrderId, $wcOrderKey);
         $cusomerId = 1;
         $apiKey = 'test_test';
-        $method = new \ReflectionMethod(PaymentService::class, 'processAsMollieOrder');
+        $method = new \ReflectionMethod(PaymentProcessor::class, 'processAsMollieOrder');
         $method->setAccessible(true);
 
         $this->expectException(ApiException::class);

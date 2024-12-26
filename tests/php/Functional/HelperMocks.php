@@ -14,7 +14,7 @@ use Mollie\WooCommerce\Payment\OrderItemsRefunder;
 use Mollie\WooCommerce\Payment\OrderLines;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\PaymentFactory;
-use Mollie\WooCommerce\Payment\PaymentService;
+use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\PaymentMethods\Ideal;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\SDK\HttpResponse;
@@ -77,7 +77,7 @@ class HelperMocks extends TestCase
     public function paymentService()
     {
         return $this->createConfiguredMock(
-            PaymentService::class,
+            PaymentProcessor::class,
             [
 
             ]

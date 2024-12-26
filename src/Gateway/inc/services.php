@@ -23,7 +23,7 @@ use Mollie\WooCommerce\Payment\OrderInstructionsManager;
 use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\PaymentFieldsManager;
-use Mollie\WooCommerce\Payment\PaymentService;
+use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\PaymentMethods\Icon\GatewayIconsRenderer;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
@@ -131,7 +131,7 @@ return static function (): array {
 
             return new OrderItemsRefunder($refundLineItemsBuilder, $data, $orderEndpoint);
         },
-        PaymentService::class => static function (ContainerInterface $container): PaymentService {
+        PaymentProcessor::class => static function (ContainerInterface $container): PaymentProcessor {
             $logger = $container->get(Logger::class);
             assert($logger instanceof Logger);
             $notice = $container->get(AdminNotice::class);
@@ -148,7 +148,7 @@ return static function (): array {
             $paymentCheckoutRedirectService = $container->get(PaymentCheckoutRedirectService::class);
             assert($paymentCheckoutRedirectService instanceof PaymentCheckoutRedirectService);
             $voucherDefaultCategory = $container->get('voucher.defaultCategory');
-            return new PaymentService($notice, $logger, $paymentFactory, $data, $api, $settings, $pluginId, $paymentCheckoutRedirectService, $voucherDefaultCategory);
+            return new PaymentProcessor($notice, $logger, $paymentFactory, $data, $api, $settings, $pluginId, $paymentCheckoutRedirectService, $voucherDefaultCategory);
         },
         OrderInstructionsManager::class => static function (): OrderInstructionsManager {
             return new OrderInstructionsManager();
@@ -291,12 +291,12 @@ return static function (): array {
         $dynamicServices["payment_gateway.$gatewayId.payment_request_validator"] = static function (ContainerInterface $container): PaymentRequestValidatorInterface {
             return $container->get('payment_gateways.noop_payment_request_validator');
         };
-        $dynamicServices["payment_gateway.$gatewayId.payment_processor"] = static function (ContainerInterface $container) use ($gatewayId): PaymentService {
+        $dynamicServices["payment_gateway.$gatewayId.payment_processor"] = static function (ContainerInterface $container) use ($gatewayId): PaymentProcessor {
             $oldGatewayInstances = $container->get('__deprecated.gateway_helpers');
             $deprecatedGatewayHelper = $oldGatewayInstances[$gatewayId];
-            $paymentService = $container->get(PaymentService::class);
-            $paymentService->setGateway($deprecatedGatewayHelper);
-            return $paymentService;
+            $paymentProcessor = $container->get(PaymentProcessor::class);
+            $paymentProcessor->setGateway($deprecatedGatewayHelper);
+            return $paymentProcessor;
         };
         $dynamicServices["payment_gateway.$gatewayId.refund_processor"] = static function (ContainerInterface $container
         ) use ($gatewayId): RefundProcessorInterface {

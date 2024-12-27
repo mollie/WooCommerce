@@ -49,13 +49,13 @@ class In3FieldsStrategy implements PaymentFieldsStrategyI
         $phoneValue = $phoneValue ?: '';
         $html = '<p class="form-row form-row-wide" id="billing_phone_field">';
         $html .= '<label for="' . esc_attr(self::FIELD_PHONE) . '" class="">' . esc_html__(
-                        'Phone',
-                        'mollie-payments-for-woocommerce'
-                ) . '</label>';
+            'Phone',
+            'mollie-payments-for-woocommerce'
+        ) . '</label>';
         $html .= '<span class="woocommerce-input-wrapper">';
         $html .= '<input type="tel" class="input-text " name="' . esc_attr(self::FIELD_PHONE) . '" id="' . esc_attr(
-                        self::FIELD_PHONE
-                ) . '" placeholder="+316xxxxxxxx" value="' . esc_attr($phoneValue) . '" autocomplete="phone">';
+            self::FIELD_PHONE
+        ) . '" placeholder="+316xxxxxxxx" value="' . esc_attr($phoneValue) . '" autocomplete="phone">';
         $html .= '</span></p>';
         return $html;
     }

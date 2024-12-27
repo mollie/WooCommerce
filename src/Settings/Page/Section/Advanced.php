@@ -111,7 +111,7 @@ class Advanced extends AbstractSection
                 'type' => 'select',
                 'options' => [
                     PaymentProcessor::PAYMENT_METHOD_TYPE_ORDER => ucfirst(
-                            PaymentProcessor::PAYMENT_METHOD_TYPE_ORDER
+                        PaymentProcessor::PAYMENT_METHOD_TYPE_ORDER
                     ) . ' (' . __('default', 'mollie-payments-for-woocommerce')
                         . ')',
                     PaymentProcessor::PAYMENT_METHOD_TYPE_PAYMENT => ucfirst(

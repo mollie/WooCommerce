@@ -19,7 +19,6 @@ use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Log\LoggerInterface as Logger;
-
 use Psr\Log\LogLevel;
 use WC_Order;
 use WP_Error;
@@ -60,8 +59,8 @@ class MollieOrder extends MollieObject
         Logger $logger,
         OrderLines $orderLines,
         RequestFactory $requestFactory
-    )
-    {
+    ) {
+
         $this->data = $data;
         $this->orderItemsRefunder = $orderItemsRefunder;
         $this->pluginId = $pluginId;
@@ -98,7 +97,6 @@ class MollieOrder extends MollieObject
     {
         return $this->requestFactory->createRequest('order', $order, $customerId);
     }
-
 
     public function setActiveMolliePayment($orderId)
     {
@@ -157,7 +155,15 @@ class MollieOrder extends MollieObject
         $ibanDetails = [];
 
         if (isset($payment->_embedded->payments[0]->id)) {
-            $actualPayment = new MolliePayment($payment->_embedded->payments[0]->id, $this->pluginId, $this->apiHelper, $this->settingsHelper, $this->dataHelper, $this->logger);
+            $actualPayment = new MolliePayment(
+                $payment->_embedded->payments[0]->id,
+                $this->pluginId,
+                $this->apiHelper,
+                $this->settingsHelper,
+                $this->dataHelper,
+                $this->logger,
+                $this->requestFactory
+            );
             $actualPayment = $actualPayment->getPaymentObject($actualPayment->data);
             /**
              * @var Payment $actualPayment
@@ -921,7 +927,7 @@ class MollieOrder extends MollieObject
         unset($items[$item->get_id()]);
     }
 
-    public function setOrder( $data)
+    public function setOrder($data)
     {
         $this->data = $data;
     }

@@ -83,7 +83,6 @@ class PaymentProcessor implements PaymentProcessorInterface
     public function setGateway($gateway)
     {
         $this->deprecatedGatewayHelper = $gateway;
-
     }
 
     public function processPayment($order, $paymentGateway): array
@@ -335,7 +334,6 @@ class PaymentProcessor implements PaymentProcessorInterface
             $order,
             $customer_id,
             $this->voucherDefaultCategory,
-
         );
 
         $data = array_filter($paymentRequestData);
@@ -529,6 +527,7 @@ class PaymentProcessor implements PaymentProcessorInterface
         $customer_id,
         $apiKey
     ) {
+
         $paymentMethod = $this->deprecatedGatewayHelper->paymentMethod();
         //
         // PROCESS REGULAR PAYMENT AS MOLLIE ORDER
@@ -546,8 +545,7 @@ class PaymentProcessor implements PaymentProcessorInterface
                 $paymentObject = $this->processAsMolliePayment(
                     $order,
                     $customer_id,
-                    $apiKey,
-                    $paymentMethod
+                    $apiKey
                 );
                 return $paymentObject;
             }
@@ -576,9 +574,7 @@ class PaymentProcessor implements PaymentProcessorInterface
             $paymentObject = $this->processAsMolliePayment(
                 $order,
                 $customer_id,
-                $apiKey,
-                $paymentMethod
-            );
+                $apiKey);
         }
 
         return $paymentObject;
@@ -591,7 +587,7 @@ class PaymentProcessor implements PaymentProcessorInterface
     protected function saveMollieInfo($order, $payment)
     {
         // Get correct Mollie Payment Object
-        $payment_object = $this->paymentFactory->getPaymentObject($payment, $this->deprecatedGatewayHelper->paymentMethod());
+        $payment_object = $this->paymentFactory->getPaymentObject($payment);
 
         // Set active Mollie payment
         $payment_object->setActiveMolliePayment($order->get_id());
@@ -690,9 +686,7 @@ class PaymentProcessor implements PaymentProcessorInterface
     protected function processValidMandate($order, ?string $customerId, $apiKey): bool
     {
         $paymentObject = $this->paymentFactory->getPaymentObject(
-            self::PAYMENT_METHOD_TYPE_PAYMENT,
-            $this->deprecatedGatewayHelper->paymentMethod()
-        );
+            self::PAYMENT_METHOD_TYPE_PAYMENT);
         $paymentRequestData = $paymentObject->getPaymentRequestData($order, $customerId);
         $data = array_filter($paymentRequestData);
         $data = apply_filters('woocommerce_' . $this->deprecatedGatewayHelper->id . '_args', $data, $order);

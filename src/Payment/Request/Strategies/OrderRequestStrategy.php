@@ -13,11 +13,14 @@ class OrderRequestStrategy implements RequestStrategyInterface
     private Settings $settingsHelper;
     private array $decorators;
 
-    public function __construct($dataHelper, $settingsHelper, array $decorators) {
+    public function __construct($dataHelper, $settingsHelper, array $decorators)
+    {
+
         $this->dataHelper = $dataHelper;
         $this->settingsHelper = $settingsHelper;
         $this->decorators = $decorators;
     }
+
     public function createRequest(WC_Order $order, string $customerId): array
     {
         $settingsHelper = $this->settingsHelper;

@@ -10,7 +10,7 @@ use WC_Order;
 class AddSequenceTypeForSubscriptionsDecorator implements RequestDecoratorInterface
 {
     private Data $dataHelper;
-    private String $pluginId;
+    private string $pluginId;
 
     public function __construct($dataHelper, $pluginId)
     {
@@ -42,7 +42,7 @@ class AddSequenceTypeForSubscriptionsDecorator implements RequestDecoratorInterf
 
     private function addSequenceTypeFirst($requestData, $context)
     {
-        if($context === 'order') {
+        if ($context === 'order') {
             $requestData['payment']['sequenceType'] = 'first';
         } elseif ($context === 'payment') {
             $requestData['sequenceType'] = 'first';

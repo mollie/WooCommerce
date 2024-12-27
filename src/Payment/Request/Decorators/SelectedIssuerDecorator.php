@@ -18,16 +18,16 @@ class SelectedIssuerDecorator implements RequestDecoratorInterface
     public function decorate(array $requestData, WC_Order $order, $context = null): array
     {
         $gateway = wc_get_payment_gateway_by_order($order);
-        if(!$gateway) {
+        if (!$gateway) {
             return $requestData;
         }
 
         $gatewayId = $gateway->id;
         $selectedIssuer = $this->getSelectedIssuer($gatewayId);
-        if(empty($selectedIssuer)) {
+        if (empty($selectedIssuer)) {
             return $requestData;
         }
-        if($context === 'order') {
+        if ($context === 'order') {
             $requestData['payment']['issuer'] = $selectedIssuer;
         } elseif ($context === 'payment') {
             $requestData['issuer'] = $selectedIssuer;

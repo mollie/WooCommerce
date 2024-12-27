@@ -126,7 +126,6 @@ class ResponsesToApple
         return array_merge($reordered_methods, array_values($methods));
     }
 
-
     /**
      * Returns a success response to be handled by the script
      */

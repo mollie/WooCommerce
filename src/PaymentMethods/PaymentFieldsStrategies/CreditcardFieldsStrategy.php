@@ -19,12 +19,12 @@ class CreditcardFieldsStrategy implements PaymentFieldsStrategyI
         $output = '<div class="mollie-components"></div>';
         $output .= '<p class="mollie-components-description">';
         $output .= sprintf(
-                esc_html__(
-                        '%1$s Secure payments provided by %2$s',
-                        'mollie-payments-for-woocommerce'
-                ),
-                wp_kses($this->lockIcon($dataHelper), $allowedHtml),
-                wp_kses($this->mollieLogo($dataHelper), $allowedHtml)
+            esc_html__(
+                '%1$s Secure payments provided by %2$s',
+                'mollie-payments-for-woocommerce'
+            ),
+            wp_kses($this->lockIcon($dataHelper), $allowedHtml),
+            wp_kses($this->mollieLogo($dataHelper), $allowedHtml)
         );
         $output .= '</p>';
 

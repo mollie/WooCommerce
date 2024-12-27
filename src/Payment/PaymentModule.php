@@ -50,7 +50,6 @@ class PaymentModule implements ServiceModule, ExecutableModule
         static $services;
 
         if ($services === null) {
-
             $services = require_once __DIR__ . '/inc/services.php';
         }
 
@@ -307,7 +306,6 @@ class PaymentModule implements ServiceModule, ExecutableModule
         if (!$gateway || !(mollieWooCommerceIsMollieGateway($gateway->id))) {
             return;
         }
-
 
         $oldGatewayInstances = $container->get('__deprecated.gateway_helpers');
         $mollieGatewayHelper = $oldGatewayInstances[$gateway->id];

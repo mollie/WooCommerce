@@ -13,7 +13,7 @@ class CardTokenDecorator implements RequestDecoratorInterface
         $cardToken = mollieWooCommerceCardToken();
         if ($cardToken && isset($requestData['payment']) && $context === 'order') {
             $requestData['payment']['cardToken'] = $cardToken;
-        }elseif ($cardToken && isset($requestData['payment']) && $context === 'payment') {
+        } elseif ($cardToken && isset($requestData['payment']) && $context === 'payment') {
             $requestData['cardToken'] = $cardToken;
         }
         return $requestData;

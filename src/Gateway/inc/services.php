@@ -213,9 +213,8 @@ return static function (): array {
             assert($notice instanceof AdminNotice);
             $logger = $container->get(Logger::class);
             assert($logger instanceof Logger);
-            $paypalGateway = isset($container->get('__deprecated.gateway_helpers')['mollie_wc_gateway_paypal']) ? $container->get(
-                '__deprecated.gateway_helpers'
-            )['mollie_wc_gateway_paypal'] : false;
+            $paymentGateways = $container->get('payment_gateways');
+            $paypalGateway = $paymentGateways['mollie_wc_gateway_paypal'];
             $pluginUrl = $container->get('shared.plugin_url');
             $ajaxRequests = new PayPalAjaxRequests($paypalGateway, $notice, $logger);
             $data = new DataToPayPal($pluginUrl);
@@ -283,7 +282,6 @@ return static function (): array {
     ];
     $paymentMethods = SharedDataDictionary::GATEWAY_CLASSNAMES;
 
-
     $dynamicServices = [];
     foreach ($paymentMethods as $paymentMethod) {
         $gatewayId = strtolower($paymentMethod);
@@ -298,8 +296,7 @@ return static function (): array {
             $paymentProcessor->setGateway($deprecatedGatewayHelper);
             return $paymentProcessor;
         };
-        $dynamicServices["payment_gateway.$gatewayId.refund_processor"] = static function (ContainerInterface $container
-        ) use ($gatewayId): RefundProcessorInterface {
+        $dynamicServices["payment_gateway.$gatewayId.refund_processor"] = static function (ContainerInterface $container) use ($gatewayId): RefundProcessorInterface {
             $getProperty = $container->get('gateway.getMethodPropertyByGatewayId');
             $supports = $getProperty($gatewayId, 'supports');
             $supportsRefunds = $supports && in_array('refunds', $supports, true);
@@ -370,7 +367,7 @@ return static function (): array {
         };
         $dynamicServices["payment_gateway.$gatewayId.availability_callback"] = new Factory(
             ['__deprecated.gateway_helpers'],
-            static function (array $gatewayInstances) use($gatewayId): callable {
+            static function (array $gatewayInstances) use ($gatewayId): callable {
                 return static function ($gateway) use ($gatewayInstances, $gatewayId): bool {
                     return $gatewayInstances[$gatewayId]->is_available($gateway);
                 };
@@ -397,7 +394,6 @@ return static function (): array {
                 $supports = array_merge($supports, $subscriptionHooks);
             }
             return $supports;
-
         };
         $dynamicServices["payment_gateway.$gatewayId.settings_field_renderer.multi_select_countries"] = static function (ContainerInterface $container) use ($gatewayId) {
             $paymentMethods = $container->get('gateway.paymentMethods');

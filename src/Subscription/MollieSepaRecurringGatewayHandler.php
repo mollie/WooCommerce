@@ -7,6 +7,7 @@ namespace Mollie\WooCommerce\Subscription;
 use DateInterval;
 use DateTime;
 use Mollie\Api\Exceptions\ApiException;
+use Mollie\Api\Resources\Payment;
 use Mollie\Api\Types\SequenceType;
 use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Notice\NoticeInterface;
@@ -64,22 +65,9 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
             $pluginId,
             $apiHelper
         );
-        $directDebit = new MolliePaymentGatewayHandler(
-            $directDebitPaymentMethod,
-            $paymentProcessor,
-            $orderInstructionsService,
-            $mollieOrderService,
-            $dataService,
-            $logger,
-            $notice,
-            $httpResponse,
-            $mollieObject,
-            $paymentFactory,
-            $pluginId
-        );
-        if ($directDebit->enabled === 'yes') {
-
-            $this->recurringMollieMethod = $directDebit;
+        $directDebitSettings = get_option('mollie_wc_gateway_directdebit_settings');
+        if ($directDebitSettings['enabled'] === 'yes') {
+            $this->recurringMollieMethod = $directDebitPaymentMethod;
         }
         return $this;
     }
@@ -91,7 +79,7 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
     {
         $result = null;
         if ($this->recurringMollieMethod) {
-            $result = $this->recurringMollieMethod->paymentMethod()->getProperty('id');
+            $result = $this->recurringMollieMethod->getProperty('id');
         }
 
         return $result;
@@ -104,7 +92,7 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
     {
         $result = null;
         if ($this->recurringMollieMethod) {
-            $result = $this->recurringMollieMethod->paymentMethod()->getProperty('title');
+            $result = $this->recurringMollieMethod->getProperty('title');
         }
 
         return $result;
@@ -166,7 +154,7 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
     }
 
     /**
-     * @param null $payment
+     * @param Payment $payment
      * @return string
      */
     protected function getPaymentMethodTitle($payment)

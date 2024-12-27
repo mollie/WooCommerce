@@ -89,12 +89,18 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         );
     }
 
-    public function addSubscriptionFilters($gateway) {
+    public function addSubscriptionFilters($gateway)
+    {
+
         if (class_exists('WC_Subscriptions_Order')) {
-            add_action('woocommerce_scheduled_subscription_payment_' . $gateway->id,
-                static function ($renewal_total, WC_Order $renewal_order) use ($gateway) {
+            add_action(
+                'woocommerce_scheduled_subscription_payment_' . $gateway->id,
+                function ($renewal_total, WC_Order $renewal_order) use ($gateway) {
                     $this->scheduled_subscription_payment($renewal_total, $renewal_order, $gateway);
-                }, 10, 3);
+                },
+                10,
+                3
+            );
 
             // A resubscribe order to record a customer resubscribing to an expired or cancelled subscription.
             add_action('wcs_resubscribe_order_created', [ $this, 'delete_resubscribe_meta' ], 10);
@@ -104,14 +110,22 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
 
             add_action('woocommerce_subscription_failing_payment_method_updated_mollie', [ $this, 'update_failing_payment_method' ], 10, 2);
 
-            add_filter('woocommerce_subscription_payment_meta',
-                static function ($payment_meta, $subscription) use ($gateway) {
+            add_filter(
+                'woocommerce_subscription_payment_meta',
+                function ($payment_meta, $subscription) use ($gateway) {
                     return $this->add_subscription_payment_meta($payment_meta, $subscription, $gateway);
-                }, 10, 3);
-            add_action('woocommerce_subscription_validate_payment_meta',
-                static function ($payment_method_id, $payment_meta) use ($gateway) {
+                },
+                10,
+                3
+            );
+            add_action(
+                'woocommerce_subscription_validate_payment_meta',
+                function ($payment_method_id, $payment_meta) use ($gateway) {
                     $this->validate_subscription_payment_meta($payment_method_id, $payment_meta, $gateway);
-                }, 10, 2);
+                },
+                10,
+                2
+            );
         }
     }
 
@@ -483,7 +497,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
      */
     public function add_subscription_payment_meta($payment_meta, $subscription, $gateway)
     {
-        if($gateway->id !== $subscription->get_payment_method()) {
+        if ($gateway->id !== $subscription->get_payment_method()) {
             return $payment_meta;
         }
         $parent = $subscription->get_parent();
@@ -586,7 +600,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
             $subscription_id = $subscription->get_id();
 
             // Get full payment object from Mollie API
-            $payment_object_resource = $this->paymentFactory->getPaymentObject($mollie_payment_id, $this->paymentMethod());
+            $payment_object_resource = $this->paymentFactory->getPaymentObject($mollie_payment_id);
 
             //
             // If there is no known customer ID, try to get it from the API

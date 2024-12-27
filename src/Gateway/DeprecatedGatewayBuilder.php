@@ -109,5 +109,4 @@ class DeprecatedGatewayBuilder
         }
         return $gateways;
     }
-
 }

@@ -115,8 +115,7 @@ class MollieOrderService
         // Load the payment from Mollie, do not use cache
         try {
             $payment_object = $this->paymentFactory->getPaymentObject(
-                $payment_object_id,
-                null
+                $payment_object_id
             );
         } catch (ApiException $exception) {
             $this->httpResponse->setHttpResponseCode(400);

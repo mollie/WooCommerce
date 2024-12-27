@@ -30,9 +30,9 @@ class MolliePaymentGatewayHandler
     /**
      * Recurring total, zero does not define a recurring total
      *
-     * @var int
+     * @var array
      */
-    protected $recurring_totals = 0;
+    protected $recurring_totals = [];
     /**
      * @var PaymentMethodI
      */
@@ -82,6 +82,9 @@ class MolliePaymentGatewayHandler
      */
     protected $pluginId;
 
+    protected string $enabled;
+    protected string $id;
+
     /**
      *
      */
@@ -114,7 +117,6 @@ class MolliePaymentGatewayHandler
         // Use gateway class name as gateway id
         $this->gatewayId();
 
-
         if (!has_action('woocommerce_thankyou_' . $this->id)) {
             add_action(
                 'woocommerce_thankyou_' . $this->id,
@@ -140,8 +142,6 @@ class MolliePaymentGatewayHandler
             [$this->mollieOrderService, 'onWebhookAction']
         );
 
-
-
         // Adjust title and text on Order Received page in some cases, see issue #166
         add_filter('the_title', [$this, 'onOrderReceivedTitle'], 10, 2);
         add_filter(
@@ -151,13 +151,12 @@ class MolliePaymentGatewayHandler
             2
         );
 
-
         $isEnabledAtWoo = $this->paymentMethod->getProperty('enabled') ?
             $this->paymentMethod->getProperty('enabled') :
             'yes';
         $this->enabled = $isEnabledAtWoo;
 
-        if ($this->enabled && $this->paymentMethod->getProperty('filtersOnBuild')) {
+        if ($this->enabled === 'yes' && $this->paymentMethod->getProperty('filtersOnBuild')) {
             $this->paymentMethod->filtersOnBuild();
         }
         //$this->refundProcessor = new RefundProcessor($this);
@@ -183,14 +182,12 @@ class MolliePaymentGatewayHandler
         return $this->pluginId;
     }
 
-
     protected function gatewayId()
     {
         $paymentMethodId = $this->paymentMethod->getProperty('id');
         $this->id = 'mollie_wc_gateway_' . $paymentMethodId;
         return $this->id;
     }
-
 
     /**
      * Check if the gateway is available for use
@@ -281,23 +278,6 @@ class MolliePaymentGatewayHandler
         }
 
         return $this->recurring_totals;
-    }
-
-    /**
-     * @param int $orderId
-     *
-     * @return array
-     */
-    public function process_payment($orderId)
-    {
-        $order = wc_get_order($orderId);
-        if (!$order) {
-            return $this->noOrderPaymentFailure($orderId);
-        }
-        $paymentMethod = $this->paymentMethod;
-        $redirectUrl = $this->get_return_url($order);
-        $this->paymentProcessor->setGateway($this);
-        return $this->paymentProcessor->processPayment($orderId, $order, $paymentMethod, $redirectUrl);
     }
 
     /**
@@ -409,30 +389,7 @@ class MolliePaymentGatewayHandler
          */
         return $returnRedirect;
     }
-    /**
-     * @param $orderId
-     * @return string[]
-     */
-    protected function noOrderPaymentFailure($orderId): array
-    {
-        $this->logger->debug(
-            $this->id . ': Could not process payment, order ' . $orderId . ' not found.'
-        );
 
-        $this->notice->addNotice(
-            'error',
-            sprintf(
-            /* translators: Placeholder 1: order id. */
-                __(
-                    'Could not load order %s',
-                    'mollie-payments-for-woocommerce'
-                ),
-                $orderId
-            )
-        );
-
-        return ['result' => 'failure'];
-    }
     /**
      * Retrieve the payment object
      *

@@ -75,18 +75,17 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             static function ($gateways) use ($container) {
                 $deprecatedGatewayHelpers = $container->get('__deprecated.gateway_helpers');
                 foreach ($gateways as $gateway) {
+                    $isMolliegateway = is_string($gateway) && strpos($gateway, 'mollie_wc_gateway_') !== false
+                    || is_object($gateway) && strpos($gateway->id, 'mollie_wc_gateway_') !== false;
+                    if (!$isMolliegateway) {
+                        continue;
+                    }
 
-                   $isMolliegateway = is_string($gateway) && strpos($gateway, 'mollie_wc_gateway_') !== false
-                   || is_object($gateway) && strpos($gateway->id, 'mollie_wc_gateway_') !== false;
-                   if (!$isMolliegateway) {
-                       continue;
-                   }
-
-                   $isSubscriptiongateway = $gateway->supports('subscriptions');
-                     if ($isSubscriptiongateway) {
-                         $deprecatedGatewayHelpers[$gateway->id]->addSubscriptionFilters($gateway);
-                     }
-               }
+                    $isSubscriptiongateway = $gateway->supports('subscriptions');
+                    if ($isSubscriptiongateway) {
+                        $deprecatedGatewayHelpers[$gateway->id]->addSubscriptionFilters($gateway);
+                    }
+                }
                 return $gateways;
             },
             30
@@ -149,7 +148,6 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         // Set order to paid and processed when eventually completed without Mollie
         add_action('woocommerce_payment_complete', [$this, 'setOrderPaidByOtherGateway'], 10, 1);
 
-
         $surchargeService = $container->get(Surcharge::class);
         assert($surchargeService instanceof Surcharge);
         $this->gatewaySurchargeHandling($surchargeService);
@@ -194,7 +192,6 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         static $services;
 
         if ($services === null) {
-
             $services = require_once __DIR__ . '/inc/services.php';
         }
 

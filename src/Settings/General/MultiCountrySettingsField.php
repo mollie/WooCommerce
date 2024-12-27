@@ -7,7 +7,6 @@ use Inpsyde\PaymentGateway\SettingsFieldRendererInterface;
 
 class MultiCountrySettingsField implements SettingsFieldRendererInterface
 {
-
     /**
      * @var mixed
      */
@@ -22,6 +21,7 @@ class MultiCountrySettingsField implements SettingsFieldRendererInterface
     {
         return $this->multiSelectCountry($this->paymentMethod);
     }
+
     public function multiSelectCountry($paymentMethod)
     {
         $selections = (array)$paymentMethod->getProperty('allowed_countries', []);

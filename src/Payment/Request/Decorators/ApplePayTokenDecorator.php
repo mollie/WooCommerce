@@ -16,7 +16,7 @@ class ApplePayTokenDecorator implements RequestDecoratorInterface
             return $requestData;
         }
         $encodedApplePayToken = wp_json_encode($applePayToken);
-        if($context === 'order') {
+        if ($context === 'order') {
             $requestData['payment']['applePayToken'] = $encodedApplePayToken;
         } elseif ($context === 'payment') {
             $requestData['applePayToken'] = $encodedApplePayToken;

@@ -62,8 +62,8 @@ class MollieObject
         Settings $settingsHelper,
         string $pluginId,
         RequestFactory $requestFactory
-    )
-    {
+    ) {
+
         $this->data = $data;
         $this->logger = $logger;
         $this->paymentFactory = $paymentFactory;
@@ -414,8 +414,7 @@ class MollieObject
 
             try {
                 $mollie_order = $this->paymentFactory->getPaymentObject(
-                    $mollie_order,
-                    $this->paymentMethod
+                    $mollie_order
                 );
             } catch (ApiException $exception) {
                 $this->logger->debug($exception->getMessage());

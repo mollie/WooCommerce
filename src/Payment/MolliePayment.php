@@ -15,7 +15,6 @@ use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Log\LoggerInterface as Logger;
-
 use Psr\Log\LogLevel;
 use WC_Order;
 use WC_Subscriptions_Manager;
@@ -26,7 +25,6 @@ class MolliePayment extends MollieObject
     public const ACTION_AFTER_REFUND_PAYMENT_CREATED = 'mollie-payments-for-woocommerce' . '_refund_payment_created';
     protected $pluginId;
 
-
     public function __construct(
         $data,
         string $pluginId,
@@ -35,8 +33,8 @@ class MolliePayment extends MollieObject
         Data $dataHelper,
         Logger $logger,
         RequestFactory $requestFactory
-    )
-    {
+    ) {
+
         $this->data = $data;
         $this->pluginId = $pluginId;
         $this->apiHelper = $apiHelper;
@@ -74,7 +72,6 @@ class MolliePayment extends MollieObject
     public function getPaymentRequestData($order, $customerId, $voucherDefaultCategory = Voucher::NO_CATEGORY)
     {
         return $this->requestFactory->createRequest('payment', $order, $customerId);
-
     }
 
     /**
@@ -476,7 +473,7 @@ class MolliePayment extends MollieObject
         $this->updateOrderStatus($order, $newOrderStatus);
     }
 
-    public function setPayment( $data)
+    public function setPayment($data)
     {
         $this->data = $data;
     }

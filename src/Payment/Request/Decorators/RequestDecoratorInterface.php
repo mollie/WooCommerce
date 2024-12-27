@@ -6,5 +6,5 @@ use WC_Order;
 
 interface RequestDecoratorInterface
 {
-    public function decorate(array $requestData, WC_Order $order, String $context = null): array;
+    public function decorate(array $requestData, WC_Order $order, string $context = null): array;
 }

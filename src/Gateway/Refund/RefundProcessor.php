@@ -11,7 +11,7 @@ class RefundProcessor implements RefundProcessorInterface
 {
     private $deprecatedGatewayHelper;
 
-    public function __construct( $deprecatedGatewayHelper)
+    public function __construct($deprecatedGatewayHelper)
     {
         $this->deprecatedGatewayHelper = $deprecatedGatewayHelper;
     }
@@ -44,10 +44,10 @@ class RefundProcessor implements RefundProcessorInterface
 
         // Mollie Payment object not found
         if (!$payment_object_id) {
-            $error_message = __("Can\'t process refund. Could not find Mollie Payment object id for order $order_id.", 'mollie-payments-for-woocommerce');
+            $error_message = __("Can\'t process refund. Could not find Mollie Payment object id for order %s.", 'mollie-payments-for-woocommerce');
 
             $this->deprecatedGatewayHelper->getLogger()->debug(
-                __METHOD__ . ' - ' . $error_message
+                __METHOD__ . ' - ' . sprintf($error_message, $order_id)
             );
 
             throw new Exception($error_message);
@@ -66,9 +66,9 @@ class RefundProcessor implements RefundProcessorInterface
         }
 
         if (!$payment_object || !is_object($payment_object)) {
-            $error_message = __("Can\'t process refund. Could not find Mollie Payment object data for order $order_id.", 'mollie-payments-for-woocommerce');
+            $error_message = __("Can\'t process refund. Could not find Mollie Payment object data for order %s.", 'mollie-payments-for-woocommerce');
             $this->deprecatedGatewayHelper->getLogger()->debug(
-                __METHOD__ . ' - ' . $error_message
+                __METHOD__ . ' - ' . sprintf($error_message, $order_id)
             );
 
             throw new Exception($error_message);

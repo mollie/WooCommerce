@@ -6,10 +6,13 @@ use Mollie\WooCommerce\Payment\Request\Strategies\RequestStrategyInterface;
 use Psr\Container\ContainerInterface;
 use WC_Order;
 
-class RequestFactory {
+class RequestFactory
+{
     private $container;
 
-    public function __construct(ContainerInterface $container) {
+    public function __construct(ContainerInterface $container)
+    {
+
         $this->container = $container;
     }
 
@@ -21,7 +24,8 @@ class RequestFactory {
      * @param string $customerId Customer ID for the request.
      * @return array The generated request data.
      */
-    public function createRequest(string $type, WC_Order $order, string $customerId): array {
+    public function createRequest(string $type, WC_Order $order, string $customerId): array
+    {
         // Use the container to fetch the appropriate strategy.
         $serviceName = "request.strategy.{$type}";
         $strategy = $this->container->get($serviceName);

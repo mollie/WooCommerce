@@ -113,7 +113,7 @@ class PaymentProcessor implements PaymentProcessorInterface
         $molliePaymentType = $this->paymentTypeBasedOnGateway($paymentMethod);
         $molliePaymentType = $this->paymentTypeBasedOnProducts($order, $molliePaymentType);
         try {
-            $paymentObject = $this->paymentFactory->getPaymentObject($molliePaymentType, $paymentMethod);
+            $paymentObject = $this->paymentFactory->getPaymentObject($molliePaymentType);
         } catch (ApiException $exception) {
             return $this->paymentObjectFailure($exception);
         }
@@ -126,7 +126,6 @@ class PaymentProcessor implements PaymentProcessorInterface
                 $customerId,
                 $apiKey
             );
-
             $this->saveMollieInfo($order, $paymentObject);
             $this->saveSubscriptionMandateData($orderId, $apiKey, $customerId, $paymentObject, $order);
             do_action($this->pluginId . '_payment_created', $paymentObject, $order);
@@ -328,8 +327,7 @@ class PaymentProcessor implements PaymentProcessorInterface
         MollieOrder $paymentObject,
         $order,
         $customer_id,
-        $apiKey,
-        $paymentMethod
+        $apiKey
     ) {
 
         $molliePaymentType = self::PAYMENT_METHOD_TYPE_ORDER;
@@ -455,8 +453,7 @@ class PaymentProcessor implements PaymentProcessorInterface
     protected function processAsMolliePayment(
         \WC_Order $order,
         $customer_id,
-        $apiKey,
-        $paymentMethod
+        $apiKey
     ) {
 
         $paymentObject = $this->paymentFactory->getPaymentObject(
@@ -563,8 +560,7 @@ class PaymentProcessor implements PaymentProcessorInterface
                 $paymentObject,
                 $order,
                 $customer_id,
-                $apiKey,
-                $paymentMethod
+                $apiKey
             );
         }
 
@@ -599,7 +595,6 @@ class PaymentProcessor implements PaymentProcessorInterface
 
         // Set active Mollie payment
         $payment_object->setActiveMolliePayment($order->get_id());
-
         // Get Mollie Customer ID
         $mollie_customer_id = $payment_object->getMollieCustomerIdFromPaymentObject($payment_object->data()->id);
 

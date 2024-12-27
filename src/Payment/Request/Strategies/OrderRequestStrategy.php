@@ -51,7 +51,6 @@ class OrderRequestStrategy implements RequestStrategyInterface
             'orderNumber' => $order->get_order_number(),
         ];
 
-
         $context = 'order';
         foreach ($this->decorators as $decorator) {
             $requestData = $decorator->decorate($requestData, $order, $context);

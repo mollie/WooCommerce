@@ -19,7 +19,7 @@ use Mollie\WooCommerce\Gateway\Refund\RefundProcessor;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Payment\MollieOrderService;
-use Mollie\WooCommerce\Payment\OrderInstructionsManager;
+use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\PaymentFieldsManager;

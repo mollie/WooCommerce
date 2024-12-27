@@ -5,7 +5,7 @@ namespace php\Functional\PaymentMethod;
 
 
 use Mollie\WooCommerce\Gateway\Surcharge;
-use Mollie\WooCommerce\Payment\PaymentFieldsManager;
+use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\PaymentFieldsManager;
 use Mollie\WooCommerce\PaymentMethods\Creditcard;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
 use Mollie\WooCommerceTests\Functional\HelperMocks;

@@ -19,7 +19,7 @@ jobs:
         with:
           php-version: ${{ matrix.php-versions }}
           coverage: none
-          tools: composer:v1
+          tools: composer:v2
 
       - name: Validate composer.json and composer.lock
         run: composer validate
@@ -28,7 +28,7 @@ jobs:
         run: composer update --prefer-dist --no-progress
 
       - name: dump autoload
-        run: composer dump-autoload
+        run: composer dump-autoload --optimize --strict-psr
 
       - name: check syntax
         run: find src -name '*.php' | xargs -n 1 -P4 php -l

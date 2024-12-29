@@ -1,7 +1,7 @@
 <?php
 
 
-namespace php\Functional\Shared;
+namespace Mollie\WooCommerceTests\Functional\Shared;
 
 
 use Mollie\WooCommerce\Gateway\MolliePaymentGateway;

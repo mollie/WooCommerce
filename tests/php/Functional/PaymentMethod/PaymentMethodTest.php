@@ -1,7 +1,7 @@
 <?php
 
 
-namespace php\Functional\PaymentMethod;
+namespace Mollie\WooCommerceTests\Functional\PaymentMethod;
 
 
 use Mollie\WooCommerce\Gateway\Surcharge;

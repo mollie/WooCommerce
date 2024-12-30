@@ -531,7 +531,6 @@ class MolliePaymentGatewayHandler
     public function onOrderReceivedTitle($title, $id = null)
     {
         if (is_order_received_page() && get_the_ID() === $id) {
-
             $order = false;
             $orderReceived = get_query_var('order-received');
             $order_id = apply_filters(

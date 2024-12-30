@@ -214,7 +214,7 @@ return static function (): array {
             $logger = $container->get(Logger::class);
             assert($logger instanceof Logger);
             $paymentGateways = $container->get('payment_gateways');
-            $paypalGateway = isset($paymentGateways['mollie_wc_gateway_paypal'])? $paymentGateways['mollie_wc_gateway_paypal'] : false;
+            $paypalGateway = isset($paymentGateways['mollie_wc_gateway_paypal']) ? $paymentGateways['mollie_wc_gateway_paypal'] : false;
             if (!$paypalGateway) {
                 return false;
             }

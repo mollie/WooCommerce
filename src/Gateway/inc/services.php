@@ -214,7 +214,10 @@ return static function (): array {
             $logger = $container->get(Logger::class);
             assert($logger instanceof Logger);
             $paymentGateways = $container->get('payment_gateways');
-            $paypalGateway = $paymentGateways['mollie_wc_gateway_paypal'];
+            $paypalGateway = isset($paymentGateways['mollie_wc_gateway_paypal'])? $paymentGateways['mollie_wc_gateway_paypal'] : false;
+            if (!$paypalGateway) {
+                return false;
+            }
             $pluginUrl = $container->get('shared.plugin_url');
             $ajaxRequests = new PayPalAjaxRequests($paypalGateway, $notice, $logger);
             $data = new DataToPayPal($pluginUrl);

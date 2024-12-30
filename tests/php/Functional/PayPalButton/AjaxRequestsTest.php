@@ -75,7 +75,7 @@ class AjaxRequestsTest extends TestCase
             ]
         );
         $logger = $this->helperMocks->loggerMock();
-        $paypalGateway = $this->mollieGateway('paypal', false, true);
+        $paypalGateway = $this->helperMocks->genericPaymentGatewayMock();
         expect('wp_verify_nonce')
             ->andReturn(true);
         $dataObject = new PayPalDataObjectHttp($logger);

@@ -19,7 +19,7 @@ class PaymentRequestStrategy implements RequestStrategyInterface
         $this->decorators = $decorators;
     }
 
-    public function createRequest(WC_Order $order, string $customerId): array
+    public function createRequest(WC_Order $order, $customerId): array
     {
 
         $gateway = wc_get_payment_gateway_by_order($order);

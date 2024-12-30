@@ -574,7 +574,8 @@ class PaymentProcessor implements PaymentProcessorInterface
             $paymentObject = $this->processAsMolliePayment(
                 $order,
                 $customer_id,
-                $apiKey);
+                $apiKey
+            );
         }
 
         return $paymentObject;
@@ -686,7 +687,8 @@ class PaymentProcessor implements PaymentProcessorInterface
     protected function processValidMandate($order, ?string $customerId, $apiKey): bool
     {
         $paymentObject = $this->paymentFactory->getPaymentObject(
-            self::PAYMENT_METHOD_TYPE_PAYMENT);
+            self::PAYMENT_METHOD_TYPE_PAYMENT
+        );
         $paymentRequestData = $paymentObject->getPaymentRequestData($order, $customerId);
         $data = array_filter($paymentRequestData);
         $data = apply_filters('woocommerce_' . $this->deprecatedGatewayHelper->id . '_args', $data, $order);

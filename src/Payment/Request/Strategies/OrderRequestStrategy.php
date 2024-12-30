@@ -21,7 +21,7 @@ class OrderRequestStrategy implements RequestStrategyInterface
         $this->decorators = $decorators;
     }
 
-    public function createRequest(WC_Order $order, string $customerId): array
+    public function createRequest(WC_Order $order, $customerId): array
     {
         $settingsHelper = $this->settingsHelper;
 

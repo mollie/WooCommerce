@@ -82,8 +82,8 @@ class MolliePaymentGatewayHandler
      */
     protected $pluginId;
 
-    protected string $enabled;
-    protected string $id;
+    public string $enabled;
+    public string $id;
 
     /**
      *
@@ -531,12 +531,12 @@ class MolliePaymentGatewayHandler
     public function onOrderReceivedTitle($title, $id = null)
     {
         if (is_order_received_page() && get_the_ID() === $id) {
-            global $wp;
 
             $order = false;
+            $orderReceived = get_query_var('order-received');
             $order_id = apply_filters(
                 'woocommerce_thankyou_order_id',
-                absint($wp->query_vars['order-received'])
+                absint($orderReceived)
             );
             $order_key = apply_filters(
                 'woocommerce_thankyou_order_key',

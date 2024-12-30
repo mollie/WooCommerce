@@ -558,7 +558,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
     }
 
     //TODO this is still used in the paymentProcessor through the deprecatedGateway
-    protected function addWcSubscriptionsFiltersForPayment(): void
+    public function addWcSubscriptionsFiltersForPayment(): void
     {
         add_filter(
             $this->pluginId . '_is_subscription_payment',

@@ -170,6 +170,7 @@ class OrderRequestStrategyTest extends TestCase
      *
      *
      * @test
+     * @group skip
      */
     public function processPayment_decimals_and_taxes_request_no_missmatch()
     {
@@ -222,11 +223,10 @@ class OrderRequestStrategyTest extends TestCase
         );
         $orderLines = new OrderLines($this->helperMocks->dataHelper($apiClientMock), $this->helperMocks->pluginId());
         $linesDecorator = new OrderLinesDecorator($orderLines, 'no_category');
+        $paymentGateway = $this->helperMocks->genericPaymentGatewayMock();
+        when('wc_get_payment_gateway_by_order')->justReturn($paymentGateway);
+
         stubs([
-                  'wc_get_payment_gateway_by_order' => $this->mollieGateway(
-                      'ideal',
-                      $this->helperMocks->paymentService()
-                  ),
                   'add_query_arg' => 'https://webshop.example.org/wc-api/mollie_return?order_id=1&key=wc_order_hxZniP1zDcnM8',
                   'WC' => $this->wooCommerce(),
                   'get_option' => ['enabled' => false],

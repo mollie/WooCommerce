@@ -54,7 +54,7 @@ return static function (): array {
 
         PaymentFactory::class => static function (ContainerInterface $container): PaymentFactory {
             return new PaymentFactory(
-                function () use ($container) {
+                static function () use ($container) {
                     return new MollieOrder(
                         $container->get(OrderItemsRefunder::class),
                         'order',
@@ -67,7 +67,7 @@ return static function (): array {
                         $container->get(RequestFactory::class)
                     );
                 },
-                function () use ($container) {
+                static function () use ($container) {
                     return new MolliePayment(
                         'payment',
                         $container->get('shared.plugin_id'),

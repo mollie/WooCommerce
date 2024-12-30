@@ -21,10 +21,10 @@ class RequestFactory
      *
      * @param string $type 'order' or 'payment'.
      * @param WC_Order $order The WooCommerce order object.
-     * @param string $customerId Customer ID for the request.
+     * @param string|null $customerId Customer ID for the request.
      * @return array The generated request data.
      */
-    public function createRequest(string $type, WC_Order $order, string $customerId): array
+    public function createRequest(string $type, WC_Order $order, $customerId): array
     {
         // Use the container to fetch the appropriate strategy.
         $serviceName = "request.strategy.{$type}";

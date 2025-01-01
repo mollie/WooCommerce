@@ -69,7 +69,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             $gateways = $maybeEnablegatewayHelper->maybeDisableBankTransferGateway($gateways);
             return $maybeEnablegatewayHelper->maybeDisableMealVoucherGateway($gateways);
          });
-        // Add subscription filters after payment gateways are loaded
+
         add_filter(
             'woocommerce_payment_gateways',
             static function ($gateways) use ($container) {
@@ -80,16 +80,28 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
                     if (!$isMolliegateway) {
                         continue;
                     }
-
+                    // Add subscription filters after payment gateways are loaded
                     $isSubscriptiongateway = $gateway->supports('subscriptions');
                     if ($isSubscriptiongateway) {
                         $deprecatedGatewayHelpers[$gateway->id]->addSubscriptionFilters($gateway);
                     }
+
+                    // Add payment instructions
+                    $displayInstructionsService = $container->get('gateway.hooks.displayInstructions');
+                    $displayInstructionsService($gateway);
+                    // Add thankyou page actions for gateway
+                    $thankyouPageService = $container->get('gateway.hooks.thankyouPage');
+                    if (!has_action('woocommerce_thankyou_' . $gateway->id)) {
+                        $thankyouPageService($gateway);
+                    }
+
                 }
                 return $gateways;
             },
             30
         );
+
+
         // Disable SEPA as payment option in WooCommerce checkout
         add_filter(
             'woocommerce_available_payment_gateways',
@@ -183,6 +195,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             }
             return $fields;
         }, 10, 3);
+
 
         return true;
     }

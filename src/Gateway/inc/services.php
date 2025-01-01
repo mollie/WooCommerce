@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Dhii\Services\Factory;
+use Inpsyde\PaymentGateway\PaymentGateway;
 use Inpsyde\PaymentGateway\PaymentRequestValidatorInterface;
 use Inpsyde\PaymentGateway\RefundProcessorInterface;
 use Mollie\WooCommerce\Buttons\ApplePayButton\AppleAjaxRequests;
@@ -267,7 +268,7 @@ return static function (): array {
                 return $paymentMethods[$methodId];
             };
         },
-        'gateway.subscriptionHooks' => static function (): array {
+        'gateway.subscriptionsSupports' => static function (): array {
             return [
                 'subscriptions',
                 'subscription_cancellation',
@@ -280,6 +281,76 @@ return static function (): array {
                 'subscription_payment_method_change_admin',
                 'subscription_payment_method_change_customer',
             ];
+        },
+        'gateway.hooks.thankyouPage' => static function (ContainerInterface $container) {
+            return static function (PaymentGateway $paymentGateway) use ($container) {
+                $instructionsManager = $container->get(OrderInstructionsManager::class);
+                $oldGatewayInstances = $container->get('__deprecated.gateway_helpers');
+                $gatewayId = $paymentGateway->id;
+                $deprecatedGatewayHelper = $oldGatewayInstances[$gatewayId];
+                add_action(
+                    'woocommerce_thankyou_' . $paymentGateway->id,
+                    function ($order_id) use ($instructionsManager, $paymentGateway, $deprecatedGatewayHelper) {
+                        $order = wc_get_order($order_id);
+
+                        // Order not found
+                        if (!$order) {
+                            return;
+                        }
+
+                        // Empty cart
+                        if (WC()->cart) {
+                            WC()->cart->empty_cart();
+                        }
+
+                        // Same as email instructions, just run that
+                        $instructionsManager->displayInstructions(
+                            $paymentGateway,
+                            $deprecatedGatewayHelper,
+                            $order,
+                            false,
+                            false
+                        );
+                    }
+                );
+            };
+        },
+        'gateway.hooks.displayInstructions' => static function (ContainerInterface $container) {
+            return static function (PaymentGateway $paymentGateway) use ($container) {
+                $instructionsManager = $container->get(OrderInstructionsManager::class);
+                $oldGatewayInstances = $container->get('__deprecated.gateway_helpers');
+                $gatewayId = $paymentGateway->id;
+                $deprecatedGatewayHelper = $oldGatewayInstances[$gatewayId];
+                add_action(
+                    'woocommerce_email_after_order_table',
+                    function ($order, $sent_to_admin, $plain_text) use ($instructionsManager, $paymentGateway, $deprecatedGatewayHelper) {
+                        $instructionsManager->displayInstructions(
+                            $paymentGateway,
+                            $deprecatedGatewayHelper,
+                            $order,
+                            $sent_to_admin,
+                            $plain_text
+                        );
+                    },
+                    10,
+                    3
+                );
+
+                add_action(
+                    'woocommerce_email_order_meta',
+                    function ($order, $sent_to_admin, $plain_text) use ($instructionsManager, $paymentGateway, $deprecatedGatewayHelper) {
+                        $instructionsManager->displayInstructions(
+                            $paymentGateway,
+                            $deprecatedGatewayHelper,
+                            $order,
+                            $sent_to_admin,
+                            $plain_text
+                        );
+                    },
+                    10,
+                    3
+                );
+            };
         },
 
     ];
@@ -392,7 +463,7 @@ return static function (): array {
             $supports = $paymentMethod->getProperty('supports');
             $isSepa = $paymentMethod->getProperty('SEPA') === true;
             $isSubscription = $paymentMethod->getProperty('Subscription') === true;
-            $subscriptionHooks = $container->get('gateway.subscriptionHooks');
+            $subscriptionHooks = $container->get('gateway.subscriptionsSupports');
             if ($isSepa || $isSubscription) {
                 $supports = array_merge($supports, $subscriptionHooks);
             }

@@ -36,7 +36,7 @@ class MolliePaymentGatewayHandler
     /**
      * @var PaymentMethodI
      */
-    protected $paymentMethod;
+    public $paymentMethod;
     /**
      * @var string
      */
@@ -117,24 +117,6 @@ class MolliePaymentGatewayHandler
         // Use gateway class name as gateway id
         $this->gatewayId();
 
-        if (!has_action('woocommerce_thankyou_' . $this->id)) {
-            add_action(
-                'woocommerce_thankyou_' . $this->id,
-                [$this, 'thankyou_page']
-            );
-        }
-        add_action(
-            'woocommerce_email_after_order_table',
-            [$this, 'displayInstructions'],
-            10,
-            3
-        );
-        add_action(
-            'woocommerce_email_order_meta',
-            [$this, 'displayInstructions'],
-            10,
-            3
-        );
         $this->mollieOrderService->setGateway($this);
 
         add_action(
@@ -424,102 +406,6 @@ class MolliePaymentGatewayHandler
         }
 
         return $activePaymentObject;
-    }
-
-    /**
-     * Output for the order received page.
-     */
-    public function thankyou_page($order_id)
-    {
-        $order = wc_get_order($order_id);
-
-        // Order not found
-        if (!$order) {
-            return;
-        }
-
-        // Empty cart
-        if (WC()->cart) {
-            WC()->cart->empty_cart();
-        }
-
-        // Same as email instructions, just run that
-        $this->displayInstructions(
-            $order,
-            $admin_instructions = false,
-            $plain_text = false
-        );
-    }
-
-    /**
-     * Add content to the WC emails.
-     *
-     * @param WC_Order $order
-     * @param bool     $admin_instructions (default: false)
-     * @param bool     $plain_text         (default: false)
-     *
-     * @return void
-     */
-    public function displayInstructions(
-        WC_Order $order,
-        $admin_instructions = false,
-        $plain_text = false
-    ) {
-
-        if (
-            ($admin_instructions && !$this::$alreadyDisplayedAdminInstructions)
-            || (!$admin_instructions && !$this::$alreadyDisplayedCustomerInstructions)
-        ) {
-            $order_payment_method = $order->get_payment_method();
-
-            // Invalid gateway
-            if ($this->id !== $order_payment_method) {
-                return;
-            }
-
-            $payment = $this->paymentObject()->getActiveMolliePayment(
-                $order->get_id()
-            );
-
-            // Mollie payment not found or invalid gateway
-            if (
-                !$payment
-                || $payment->method !== $this->paymentMethod->getProperty('id')
-            ) {
-                return;
-            }
-            $this->orderInstructionsManager->setStrategy($this);
-            $instructions = $this->orderInstructionsManager->executeStrategy(
-                $this,
-                $payment,
-                $order,
-                $admin_instructions
-            );
-
-            if (!empty($instructions)) {
-                $instructions = wptexturize($instructions);
-                //save instructions in order meta
-                $order->update_meta_data(
-                    '_mollie_payment_instructions',
-                    $instructions
-                );
-                $order->save();
-
-                if ($plain_text) {
-                    echo esc_html($instructions) . PHP_EOL;
-                } else {
-                    echo '<section class="woocommerce-order-details woocommerce-info mollie-instructions" >';
-                    echo wp_kses(wpautop($instructions), ['p' => [], 'strong' => [], 'br' => []]) . PHP_EOL;
-                    echo '</section>';
-                }
-            }
-        }
-        if ($admin_instructions && !$this::$alreadyDisplayedAdminInstructions) {
-            $this::$alreadyDisplayedAdminInstructions = true;
-        }
-        if (!$admin_instructions && !$this::$alreadyDisplayedCustomerInstructions) {
-            $this::$alreadyDisplayedCustomerInstructions = true;
-        }
     }
 
     /**

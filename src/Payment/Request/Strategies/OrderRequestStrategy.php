@@ -52,7 +52,9 @@ class OrderRequestStrategy implements RequestStrategyInterface
                 ]
             ),
             'orderNumber' => $order->get_order_number(),
-            'payment' => []
+            'payment' => [
+                'customerId' => $customerId,
+            ]
         ];
 
         $context = 'order';

@@ -51,6 +51,7 @@ class PaymentRequestStrategy implements RequestStrategyInterface
                     'order_id' => $order->get_id(),
                 ]
             ),
+            'customerId' => $customerId,
         ];
 
         $context = 'payment';

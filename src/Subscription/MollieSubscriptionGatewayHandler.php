@@ -13,6 +13,7 @@ use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieOrderService;
+use Mollie\WooCommerce\Payment\Request\Decorators\UrlDecorator;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
@@ -37,7 +38,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         'mollie_wc_gateway_sofort', ];
     protected const DIRECTDEBIT = Constants::DIRECTDEBIT;
 
-    protected $isSubscriptionPayment = false;
+    public $isSubscriptionPayment = false;
     protected $apiHelper;
     protected $settingsHelper;
     /**
@@ -86,6 +87,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
             $dataService,
             $logger,
             $paymentMethod,
+            new UrlDecorator($pluginId, $logger)
         );
     }
 

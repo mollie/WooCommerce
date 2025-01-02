@@ -18,7 +18,7 @@ class MollieSubscription extends MollieObject
      * Molliesubscription constructor.
      *
      */
-    public function __construct($pluginId, Api $apiHelper, $settingsHelper, $dataHelper, $logger, $paymentMethod)
+    public function __construct($pluginId, Api $apiHelper, $settingsHelper, $dataHelper, $logger, $paymentMethod, $middleware)
     {
         $this->pluginId = $pluginId;
         $this->apiHelper = $apiHelper;
@@ -26,6 +26,7 @@ class MollieSubscription extends MollieObject
         $this->dataHelper = $dataHelper;
         $this->logger = $logger;
         $this->paymentMethod = $paymentMethod;
+        $this->middleware = $middleware;
     }
     /**
      * @param $order
@@ -46,11 +47,8 @@ class MollieSubscription extends MollieObject
         $option = get_option($optionName);
         $paymentDescription = $this->getRecurringPaymentDescription($order, $option, $initialPaymentUsedOrderAPI);
         $selectedIssuer = $this->paymentMethod->getSelectedIssuer();
-        $returnUrl = $gateway->get_return_url($order);
-        $returnUrl = $this->getReturnUrl($order, $returnUrl);
-        $webhookUrl = $this->getWebhookUrl($order, $gatewayId);
 
-        return array_filter([
+        $requestData =  array_filter([
                                 'amount' =>  [
                                     'currency' => $this->dataHelper->getOrderCurrency($order),
                                     'value' => $this->dataHelper->formatCurrencyValue(
@@ -59,8 +57,6 @@ class MollieSubscription extends MollieObject
                                     ),
                                 ],
                                 'description' => $paymentDescription,
-                                'redirectUrl' => $returnUrl,
-                                'webhookUrl' => $webhookUrl,
                                 'method' => $methodId,
                                 'issuer' => $selectedIssuer,
                                 'locale' => $paymentLocale,
@@ -70,6 +66,11 @@ class MollieSubscription extends MollieObject
                                 'sequenceType' => 'recurring',
                                 'customerId' => $customerId,
                             ]);
+        $context = 'payment';
+        foreach ($this->middleware as $field) {
+            $requestData = $field->decorate($requestData, $order, $context);
+        }
+        return $requestData;
     }
 
     protected function getRecurringPaymentDescription($order, $option, $initialPaymentUsedOrderAPI)

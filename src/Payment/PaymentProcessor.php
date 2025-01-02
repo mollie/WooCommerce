@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
+use Inpsyde\PaymentGateway\PaymentGateway;
 use Inpsyde\PaymentGateway\PaymentProcessorInterface;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Payment;
@@ -53,6 +54,8 @@ class PaymentProcessor implements PaymentProcessorInterface
      * @var string
      */
     protected $voucherDefaultCategory;
+    private PaymentGateway $gateway;
+    private array $deprecatedGatewayInstances;
 
     /**
      * PaymentProcessor constructor.
@@ -66,7 +69,8 @@ class PaymentProcessor implements PaymentProcessorInterface
         Settings $settingsHelper,
         string $pluginId,
         PaymentCheckoutRedirectService $paymentCheckoutRedirectService,
-        string $voucherDefaultCategory
+        string $voucherDefaultCategory,
+        array $deprecatedGatewayInstances
     ) {
 
         $this->notice = $notice;
@@ -78,17 +82,23 @@ class PaymentProcessor implements PaymentProcessorInterface
         $this->pluginId = $pluginId;
         $this->paymentCheckoutRedirectService = $paymentCheckoutRedirectService;
         $this->voucherDefaultCategory = $voucherDefaultCategory;
+        $this->deprecatedGatewayInstances = $deprecatedGatewayInstances;
     }
 
-    public function setGateway($gateway)
+    public function setGatewayHelper(string $paymentGatewayId)
     {
-        $this->deprecatedGatewayHelper = $gateway;
+        $this->deprecatedGatewayHelper = $this->deprecatedGatewayInstances[$paymentGatewayId];
+    }
+    public function setGateway(PaymentGateway $gateway)
+    {
+        $this->gateway = $gateway;
     }
 
     public function processPayment($order, $paymentGateway): array
     {
         $orderId = $order->get_id();
-        $this->handleSubscriptions($paymentGateway, $orderId);
+        $this->setGateway($paymentGateway);
+        $this->setGatewayHelper($paymentGateway->id);
 
         $redirectUrl = $paymentGateway->get_return_url($order);
         $paymentMethod = $this->deprecatedGatewayHelper->paymentMethod();
@@ -339,7 +349,7 @@ class PaymentProcessor implements PaymentProcessorInterface
         $data = array_filter($paymentRequestData);
 
         $data = apply_filters(
-            'woocommerce_' . $this->deprecatedGatewayHelper->id . '_args',
+            'woocommerce_' . $this->gateway->id . '_args',
             $data,
             $order
         );
@@ -465,12 +475,12 @@ class PaymentProcessor implements PaymentProcessorInterface
         $data = array_filter($paymentRequestData);
 
         $data = apply_filters(
-            'woocommerce_' . $this->deprecatedGatewayHelper->id . '_args',
+            'woocommerce_' . $this->gateway->id . '_args',
             $data,
             $order
         );
         $data = apply_filters(
-            'woocommerce_' . $this->deprecatedGatewayHelper->id . 'payment_args',
+            'woocommerce_' . $this->gateway->id . 'payment_args',
             $data,
             $order
         );
@@ -527,8 +537,6 @@ class PaymentProcessor implements PaymentProcessorInterface
         $customer_id,
         $apiKey
     ) {
-
-        $paymentMethod = $this->deprecatedGatewayHelper->paymentMethod();
         //
         // PROCESS REGULAR PAYMENT AS MOLLIE ORDER
         //
@@ -536,9 +544,9 @@ class PaymentProcessor implements PaymentProcessorInterface
             // if the capture is set to manual, and this is a credit card payment, we need to create a payment instead of an order
             $captureType = get_option('mollie-payments-for-woocommerce_place_payment_onhold');
 
-            if ($captureType === 'later_capture' && $this->deprecatedGatewayHelper->id === 'mollie_wc_gateway_creditcard') {
+            if ($captureType === 'later_capture' && $this->gateway->id === 'mollie_wc_gateway_creditcard') {
                 $this->logger->debug(
-                    "{$this->deprecatedGatewayHelper->id}: Create payment for order {$orderId} capture set to manual",
+                    "{$this->gateway->id}: Create payment for order {$orderId} capture set to manual",
                     [true]
                 );
 
@@ -550,7 +558,7 @@ class PaymentProcessor implements PaymentProcessorInterface
                 return $paymentObject;
             }
             $this->logger->debug(
-                "{$this->deprecatedGatewayHelper->id}: Create Mollie payment object for order {$orderId}",
+                "{$this->gateway->id}: Create Mollie payment object for order {$orderId}",
                 [true]
             );
 
@@ -642,7 +650,7 @@ class PaymentProcessor implements PaymentProcessorInterface
     protected function noValidMandateForSubsSwitchFailure($orderId): void
     {
         $this->logger->debug(
-            $this->deprecatedGatewayHelper->id . ': Subscription switch failed, no valid mandate for order #' . $orderId
+            $this->gateway->id . ': Subscription switch failed, no valid mandate for order #' . $orderId
         );
         $this->notice->addNotice(
             'error',
@@ -669,11 +677,11 @@ class PaymentProcessor implements PaymentProcessorInterface
             )
         );
 
-        $this->logger->debug($this->deprecatedGatewayHelper->id . ': Subscription switch completed, valid mandate for order #' . $order->get_id());
+        $this->logger->debug($this->gateway->id . ': Subscription switch completed, valid mandate for order #' . $order->get_id());
 
         return [
             'result' => 'success',
-            'redirect' => $this->deprecatedGatewayHelper->get_return_url($order),
+            'redirect' => $this->gateway->get_return_url($order),
         ];
     }
 
@@ -691,7 +699,7 @@ class PaymentProcessor implements PaymentProcessorInterface
         );
         $paymentRequestData = $paymentObject->getPaymentRequestData($order, $customerId);
         $data = array_filter($paymentRequestData);
-        $data = apply_filters('woocommerce_' . $this->deprecatedGatewayHelper->id . '_args', $data, $order);
+        $data = apply_filters('woocommerce_' . $this->gateway->id . '_args', $data, $order);
 
         $mandates = $this->apiHelper->getApiClient($apiKey)->customers->get($customerId)->mandates();
         $validMandate = false;
@@ -711,7 +719,7 @@ class PaymentProcessor implements PaymentProcessorInterface
         // PROCESS SUBSCRIPTION SWITCH - If this is a subscription switch and customer has a valid mandate, process the order internally
         //
         try {
-            $this->logger->debug($this->deprecatedGatewayHelper->id . ': Subscription switch started, fetching mandate(s) for order #' . $orderId);
+            $this->logger->debug($this->gateway->id . ': Subscription switch started, fetching mandate(s) for order #' . $orderId);
             $validMandate = $this->processValidMandate($order, $customerId, $apiKey);
             if ($validMandate) {
                 return $this->subsSwitchCompleted($order);
@@ -923,22 +931,6 @@ class PaymentProcessor implements PaymentProcessorInterface
                     'mollie-payments-for-woocommerce'
                 )
             );
-        }
-    }
-
-    /**
-     * @param \Inpsyde\PaymentGateway\PaymentGateway $paymentGateway
-     * @param int|null $orderId
-     * @return void
-     */
-    public function handleSubscriptions(\Inpsyde\PaymentGateway\PaymentGateway $paymentGateway, ?int $orderId): void
-    {
-        if ($paymentGateway->supports('subscriptions')) {
-            $this->deprecatedGatewayHelper->addWcSubscriptionsFiltersForPayment();
-            $isSubscription = $this->dataHelper->isSubscription($orderId);
-            if ($isSubscription) {
-                $this->deprecatedGatewayHelper->isSubscriptionPayment = true;
-            }
         }
     }
 }

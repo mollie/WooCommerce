@@ -149,7 +149,8 @@ return static function (): array {
             $paymentCheckoutRedirectService = $container->get(PaymentCheckoutRedirectService::class);
             assert($paymentCheckoutRedirectService instanceof PaymentCheckoutRedirectService);
             $voucherDefaultCategory = $container->get('voucher.defaultCategory');
-            return new PaymentProcessor($notice, $logger, $paymentFactory, $data, $api, $settings, $pluginId, $paymentCheckoutRedirectService, $voucherDefaultCategory);
+            $deprecatedGatewayInstances = $container->get('__deprecated.gateway_helpers');
+            return new PaymentProcessor($notice, $logger, $paymentFactory, $data, $api, $settings, $pluginId, $paymentCheckoutRedirectService, $voucherDefaultCategory, $deprecatedGatewayInstances);
         },
         OrderInstructionsManager::class => static function (): OrderInstructionsManager {
             return new OrderInstructionsManager();
@@ -352,6 +353,38 @@ return static function (): array {
                 );
             };
         },
+        'gateway.hooks.isSubscriptionPayment' => static function (ContainerInterface $container) {
+            return static function (PaymentGateway $paymentGateway) use ($container) {
+                $pluginId = $container->get('shared.plugin_id');
+                $dataHelper = $container->get('settings.data_helper');
+                if ($paymentGateway->supports('subscriptions')) {
+                    add_filter(
+                        $pluginId . '_is_subscription_payment',
+                        function ($isSubscription, $orderId) use ($pluginId, $dataHelper) {
+                            if ($dataHelper->isWcSubscription($orderId)) {
+                                add_filter(
+                                    $pluginId . '_is_automatic_payment_disabled',
+                                    static function ($filteredOption) {
+                                        if (
+                                            'yes' == get_option(
+                                                \WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments'
+                                            )
+                                        ) {
+                                            return true;
+                                        }
+                                        return $filteredOption;
+                                    }
+                                );
+                                return true;
+                            }
+                            return $isSubscription;
+                        },
+                        10,
+                        2
+                    );
+                }
+            };
+        },
 
     ];
     $paymentMethods = SharedDataDictionary::GATEWAY_CLASSNAMES;
@@ -364,11 +397,7 @@ return static function (): array {
             return $container->get('payment_gateways.noop_payment_request_validator');
         };
         $dynamicServices["payment_gateway.$gatewayId.payment_processor"] = static function (ContainerInterface $container) use ($gatewayId): PaymentProcessor {
-            $oldGatewayInstances = $container->get('__deprecated.gateway_helpers');
-            $deprecatedGatewayHelper = $oldGatewayInstances[$gatewayId];
-            $paymentProcessor = $container->get(PaymentProcessor::class);
-            $paymentProcessor->setGateway($deprecatedGatewayHelper);
-            return $paymentProcessor;
+            return $container->get(PaymentProcessor::class);
         };
         $dynamicServices["payment_gateway.$gatewayId.refund_processor"] = static function (ContainerInterface $container) use ($gatewayId): RefundProcessorInterface {
             $getProperty = $container->get('gateway.getMethodPropertyByGatewayId');

@@ -26,8 +26,6 @@ class DeprecatedGatewayBuilder
         assert($logger instanceof Logger);
         $notice = $container->get(FrontendNotice::class);
         assert($notice instanceof FrontendNotice);
-        $paymentProcessor = $container->get(PaymentProcessor::class);
-        assert($paymentProcessor instanceof PaymentProcessor);
         $mollieOrderService = $container->get(MollieOrderService::class);
         assert($mollieOrderService instanceof MollieOrderService);
         $HttpResponseService = $container->get('SDK.HttpResponse');
@@ -62,7 +60,6 @@ class DeprecatedGatewayBuilder
                 $gateways[$key] = new MollieSepaRecurringGatewayHandler(
                     $directDebit,
                     $paymentMethod,
-                    $paymentProcessor,
                     $orderInstructionsManager,
                     $mollieOrderService,
                     $data,
@@ -78,7 +75,6 @@ class DeprecatedGatewayBuilder
             } elseif ($paymentMethod->getProperty('Subscription')) {
                 $gateways[$key] = new MollieSubscriptionGatewayHandler(
                     $paymentMethod,
-                    $paymentProcessor,
                     $orderInstructionsManager,
                     $mollieOrderService,
                     $data,
@@ -94,7 +90,6 @@ class DeprecatedGatewayBuilder
             } else {
                 $gateways[$key] = new MolliePaymentGatewayHandler(
                     $paymentMethod,
-                    $paymentProcessor,
                     $orderInstructionsManager,
                     $mollieOrderService,
                     $data,

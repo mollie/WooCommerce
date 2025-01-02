@@ -94,7 +94,9 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
                     if (!has_action('woocommerce_thankyou_' . $gateway->id)) {
                         $thankyouPageService($gateway);
                     }
-
+                    // Add subscription payment hooks
+                    $isSubscriptionPaymentService = $container->get('gateway.hooks.isSubscriptionPayment');
+                    $isSubscriptionPaymentService($gateway);
                 }
                 return $gateways;
             },

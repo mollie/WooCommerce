@@ -38,7 +38,6 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         'mollie_wc_gateway_sofort', ];
     protected const DIRECTDEBIT = Constants::DIRECTDEBIT;
 
-    public $isSubscriptionPayment = false;
     protected $apiHelper;
     protected $settingsHelper;
     /**
@@ -51,7 +50,6 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
      */
     public function __construct(
         PaymentMethodI $paymentMethod,
-        PaymentProcessor $paymentProcessor,
         OrderInstructionsManager $orderInstructionsProcessor,
         MollieOrderService $mollieOrderService,
         Data $dataService,
@@ -67,7 +65,6 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
 
         parent::__construct(
             $paymentMethod,
-            $paymentProcessor,
             $orderInstructionsProcessor,
             $mollieOrderService,
             $dataService,
@@ -211,7 +208,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         do_action($this->pluginId . '_before_renewal_payment_created', $renewal_order);
 
         $this->logger->debug($gateway->id . ': Try to create renewal payment for renewal order ' . $renewal_order_id);
-        $this->paymentProcessor->setGateway($this);
+        //$this->paymentProcessor->setGatewayHelper($gateway->id);
         $initial_order_status = $this->paymentMethod->getInitialOrderStatus();
 
         // Overwrite plugin-wide
@@ -557,35 +554,6 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         $subscription->update_meta_data('_mollie_customer_id', $renewal_order->mollie_customer_id);
         $subscription->update_meta_data('_mollie_payment_id', $renewal_order->mollie_payment_id);
         $subscription->save();
-    }
-
-    //TODO this is still used in the paymentProcessor through the deprecatedGateway
-    public function addWcSubscriptionsFiltersForPayment(): void
-    {
-        add_filter(
-            $this->pluginId . '_is_subscription_payment',
-            function ($isSubscription, $orderId) {
-                if ($this->dataService->isWcSubscription($orderId)) {
-                    add_filter(
-                        $this->pluginId . '_is_automatic_payment_disabled',
-                        static function ($filteredOption) {
-                            if (
-                                'yes' == get_option(
-                                    \WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments'
-                                )
-                            ) {
-                                return true;
-                            }
-                            return $filteredOption;
-                        }
-                    );
-                    return true;
-                }
-                return $isSubscription;
-            },
-            10,
-            2
-        );
     }
 
     /**

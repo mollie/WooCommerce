@@ -36,7 +36,6 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
     public function __construct(
         PaymentMethodI $directDebitPaymentMethod,
         PaymentMethodI $paymentMethod,
-        PaymentProcessor $paymentProcessor,
         OrderInstructionsManager $orderInstructionsService,
         MollieOrderService $mollieOrderService,
         Data $dataService,
@@ -52,7 +51,6 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
 
         parent::__construct(
             $paymentMethod,
-            $paymentProcessor,
             $orderInstructionsService,
             $mollieOrderService,
             $dataService,

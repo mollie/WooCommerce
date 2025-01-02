@@ -76,6 +76,7 @@ class PaymentServiceTest extends TestCase
         );
         $apiClientMock->orders = $orderEndpoints;
         $voucherDefaultCategory = Voucher::NO_CATEGORY;
+        $deprecatedGatewayHelper = $this->mollieGateway($paymentMethodId, $testee);
         $testee = new PaymentProcessor(
             $this->helperMocks->noticeMock(),
             $this->helperMocks->loggerMock(),
@@ -85,15 +86,16 @@ class PaymentServiceTest extends TestCase
             $this->helperMocks->settingsHelper(),
             $this->helperMocks->pluginId(),
             $this->paymentCheckoutService($apiClientMock),
-            $voucherDefaultCategory
+            $voucherDefaultCategory,
+            ['mollie_wc_gateway_ideal' => $deprecatedGatewayHelper]
         );
         $gateway = $this->helperMocks->genericPaymentGatewayMock();
         $gateway->method('supports')->willReturnMap([
                                                         ['subscriptions', false]
                                                     ]);
         $gateway->method('get_return_url')->willReturn($processPaymentRedirect);
-        $deprecatedGatewayHelper = $this->mollieGateway($paymentMethodId, $testee);
-        $testee->setGateway($deprecatedGatewayHelper);
+
+        $testee->setGatewayHelper($gateway->id);
 
         stubs(
             [
@@ -155,7 +157,8 @@ class PaymentServiceTest extends TestCase
         $apiClientMock = $this->createMock(MollieApiClient::class);
         $apiClientMock->orders = $orderEndpointsMock;
         $voucherDefaultCategory = Voucher::NO_CATEGORY;
-
+        $gateway = $this->helperMocks->genericPaymentGatewayMock();
+        $deprecatedGatewayHelper = $this->mollieGateway($paymentMethodId, $testee);
         $testee = new PaymentProcessor(
             $this->helperMocks->noticeMock(),
             $this->helperMocks->loggerMock(),
@@ -165,10 +168,11 @@ class PaymentServiceTest extends TestCase
             $this->helperMocks->settingsHelper(),
             $this->helperMocks->pluginId(),
             $this->paymentCheckoutService($apiClientMock),
-            $voucherDefaultCategory
+            $voucherDefaultCategory,
+            ['mollie_wc_gateway_ideal' => $deprecatedGatewayHelper]
         );
-        $gateway = $this->mollieGateway($paymentMethodId, $testee);
-        $testee->setGateway($gateway);
+
+        $testee->setGatewayHelper($gateway->id);
         $wcOrderId = 1;
         $wcOrderKey = 'wc_order_hxZniP1zDcnM8';
         $wcOrder = $this->wcOrder($wcOrderId, $wcOrderKey);

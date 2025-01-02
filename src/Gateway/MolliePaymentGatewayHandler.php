@@ -90,7 +90,6 @@ class MolliePaymentGatewayHandler
      */
     public function __construct(
         PaymentMethodI $paymentMethod,
-        PaymentProcessor $paymentProcessor,
         OrderInstructionsManager $orderInstructionsProcessor,
         MollieOrderService $mollieOrderService,
         Data $dataService,
@@ -105,7 +104,6 @@ class MolliePaymentGatewayHandler
         $this->paymentMethod = $paymentMethod;
         $this->logger = $logger;
         $this->notice = $notice;
-        $this->paymentProcessor = $paymentProcessor;
         $this->orderInstructionsManager = $orderInstructionsProcessor;
         $this->mollieOrderService = $mollieOrderService;
         $this->httpResponse = $httpResponse;
@@ -141,17 +139,11 @@ class MolliePaymentGatewayHandler
         if ($this->enabled === 'yes' && $this->paymentMethod->getProperty('filtersOnBuild')) {
             $this->paymentMethod->filtersOnBuild();
         }
-        //$this->refundProcessor = new RefundProcessor($this);
     }
 
     public function paymentMethod(): PaymentMethodI
     {
         return $this->paymentMethod;
-    }
-
-    public function paymentService()
-    {
-        return $this->paymentProcessor;
     }
 
     public function dataService()

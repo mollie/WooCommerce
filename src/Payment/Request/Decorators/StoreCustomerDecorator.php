@@ -20,7 +20,7 @@ class StoreCustomerDecorator implements RequestDecoratorInterface
         $storeCustomer = $this->settingsHelper->shouldStoreCustomer();
         if (!$storeCustomer) {
             if ($context === 'order') {
-               unset($requestData['payment']['customerId']);
+                unset($requestData['payment']['customerId']);
             } elseif ($context === 'payment') {
                 unset($requestData['customerId']);
             }

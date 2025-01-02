@@ -9,10 +9,10 @@ use WC_Order;
 
 class AddressDecorator implements RequestDecoratorInterface
 {
-    public const MAXIMAL_LENGHT_ADDRESS = 100;
-    public const MAXIMAL_LENGHT_POSTALCODE = 20;
-    public const MAXIMAL_LENGHT_CITY = 200;
-    public const MAXIMAL_LENGHT_REGION = 200;
+    public const MAXIMAL_LENGTH_ADDRESS = 100;
+    public const MAXIMAL_LENGTH_POSTALCODE = 20;
+    public const MAXIMAL_LENGTH_CITY = 200;
+    public const MAXIMAL_LENGTH_REGION = 200;
     public function decorate(array $requestData, WC_Order $order, $context = null): array
     {
         $isPayPalExpressOrder = $order->get_meta('_mollie_payment_method_button') === 'PayPalButton';
@@ -56,7 +56,7 @@ class AddressDecorator implements RequestDecoratorInterface
             ? null
             : $this->maximalFieldLengths(
                 $order->get_billing_address_1(),
-                self::MAXIMAL_LENGHT_ADDRESS
+                self::MAXIMAL_LENGTH_ADDRESS
             );
         $billingAddress->streetAdditional = (ctype_space(
             $order->get_billing_address_2()
@@ -64,7 +64,7 @@ class AddressDecorator implements RequestDecoratorInterface
             ? null
             : $this->maximalFieldLengths(
                 $order->get_billing_address_2(),
-                self::MAXIMAL_LENGHT_ADDRESS
+                self::MAXIMAL_LENGTH_ADDRESS
             );
         $billingAddress->postalCode = (ctype_space(
             $order->get_billing_postcode()
@@ -72,25 +72,25 @@ class AddressDecorator implements RequestDecoratorInterface
             ? null
             : $this->maximalFieldLengths(
                 $order->get_billing_postcode(),
-                self::MAXIMAL_LENGHT_POSTALCODE
+                self::MAXIMAL_LENGTH_POSTALCODE
             );
         $billingAddress->city = (ctype_space($order->get_billing_city()))
             ? null
             : $this->maximalFieldLengths(
                 $order->get_billing_city(),
-                self::MAXIMAL_LENGHT_CITY
+                self::MAXIMAL_LENGTH_CITY
             );
         $billingAddress->region = (ctype_space($order->get_billing_state()))
             ? null
             : $this->maximalFieldLengths(
                 $order->get_billing_state(),
-                self::MAXIMAL_LENGHT_REGION
+                self::MAXIMAL_LENGTH_REGION
             );
         $billingAddress->country = (ctype_space($order->get_billing_country()))
             ? null
             : $this->maximalFieldLengths(
                 $order->get_billing_country(),
-                self::MAXIMAL_LENGHT_REGION
+                self::MAXIMAL_LENGTH_REGION
             );
         $billingAddress->organizationName = $this->billingCompanyField($order);
         $phone = $this->getPhoneNumber($order);
@@ -122,7 +122,7 @@ class AddressDecorator implements RequestDecoratorInterface
             ? null
             : $this->maximalFieldLengths(
                 $order->get_shipping_address_1(),
-                self::MAXIMAL_LENGHT_ADDRESS
+                self::MAXIMAL_LENGTH_ADDRESS
             );
         $shippingAddress->streetAdditional = (ctype_space(
             $order->get_shipping_address_2()
@@ -130,7 +130,7 @@ class AddressDecorator implements RequestDecoratorInterface
             ? null
             : $this->maximalFieldLengths(
                 $order->get_shipping_address_2(),
-                self::MAXIMAL_LENGHT_ADDRESS
+                self::MAXIMAL_LENGTH_ADDRESS
             );
         $shippingAddress->postalCode = (ctype_space(
             $order->get_shipping_postcode()
@@ -138,19 +138,19 @@ class AddressDecorator implements RequestDecoratorInterface
             ? null
             : $this->maximalFieldLengths(
                 $order->get_shipping_postcode(),
-                self::MAXIMAL_LENGHT_POSTALCODE
+                self::MAXIMAL_LENGTH_POSTALCODE
             );
         $shippingAddress->city = (ctype_space($order->get_shipping_city()))
             ? null
             : $this->maximalFieldLengths(
                 $order->get_shipping_city(),
-                self::MAXIMAL_LENGHT_CITY
+                self::MAXIMAL_LENGTH_CITY
             );
         $shippingAddress->region = (ctype_space($order->get_shipping_state()))
             ? null
             : $this->maximalFieldLengths(
                 $order->get_shipping_state(),
-                self::MAXIMAL_LENGHT_REGION
+                self::MAXIMAL_LENGTH_REGION
             );
         $shippingAddress->country = (ctype_space(
             $order->get_shipping_country()
@@ -158,7 +158,7 @@ class AddressDecorator implements RequestDecoratorInterface
             ? null
             : $this->maximalFieldLengths(
                 $order->get_shipping_country(),
-                self::MAXIMAL_LENGHT_REGION
+                self::MAXIMAL_LENGTH_REGION
             );
         return $shippingAddress;
     }
@@ -202,7 +202,7 @@ class AddressDecorator implements RequestDecoratorInterface
         }
         return $this->maximalFieldLengths(
             $order->get_billing_company(),
-            self::MAXIMAL_LENGHT_ADDRESS
+            self::MAXIMAL_LENGTH_ADDRESS
         );
     }
 
@@ -221,7 +221,7 @@ class AddressDecorator implements RequestDecoratorInterface
             }
             return $this->maximalFieldLengths(
                 $fieldPosted,
-                self::MAXIMAL_LENGHT_ADDRESS
+                self::MAXIMAL_LENGTH_ADDRESS
             );
         }
         return null;

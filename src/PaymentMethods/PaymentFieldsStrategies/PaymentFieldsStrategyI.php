@@ -6,5 +6,5 @@ namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
 interface PaymentFieldsStrategyI
 {
-    public function execute($gateway, $dataHelper): string;
+    public function execute($deprecatedHelperDeprecatedHelperGateway, $gatewayDescription, $dataHelper): string;
 }

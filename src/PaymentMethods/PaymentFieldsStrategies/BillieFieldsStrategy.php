@@ -8,7 +8,7 @@ class BillieFieldsStrategy implements PaymentFieldsStrategyI
 {
     const FIELD_COMPANY = "billing_company";
 
-    public function execute($gateway, $dataHelper): string
+    public function execute($deprecatedHelperGateway, $gatewayDescription, $dataHelper): string
     {
         $showCompanyField = false;
 

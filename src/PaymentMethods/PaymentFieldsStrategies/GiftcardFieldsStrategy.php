@@ -8,17 +8,17 @@ class GiftcardFieldsStrategy implements PaymentFieldsStrategyI
 {
     use IssuersDropdownBehavior;
 
-    public function execute($gateway, $dataHelper): string
+    public function execute($deprecatedHelperGateway, $gatewayDescription, $dataHelper): string
     {
-        if (!$this->dropDownEnabled($gateway)) {
-            return '';
+        if (!$this->dropDownEnabled($deprecatedHelperGateway)) {
+            return $gatewayDescription;
         }
 
-        $issuers = $this->getIssuers($gateway, $dataHelper);
+        $issuers = $this->getIssuers($deprecatedHelperGateway, $dataHelper);
         if (empty($issuers)) {
-            return '';
+            return $gatewayDescription;
         }
-        $selectedIssuer = $gateway->paymentMethod()->getSelectedIssuer();
+        $selectedIssuer = $deprecatedHelperGateway->paymentMethod()->getSelectedIssuer();
 
         $html = '';
 
@@ -35,7 +35,7 @@ class GiftcardFieldsStrategy implements PaymentFieldsStrategyI
             return wpautop(wptexturize($html));
         }
 
-        return $this->renderIssuers($gateway, $issuers, $selectedIssuer);
+        return $this->renderIssuers($deprecatedHelperGateway, $issuers, $selectedIssuer);
     }
 
     public function getFieldMarkup($gateway, $dataHelper)

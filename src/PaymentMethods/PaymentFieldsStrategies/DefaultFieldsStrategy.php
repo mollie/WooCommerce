@@ -6,9 +6,9 @@ namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
 class DefaultFieldsStrategy implements PaymentFieldsStrategyI
 {
-    public function execute($gateway, $dataHelper): string
+    public function execute($deprecatedHelperGateway, $gatewayDescription, $dataHelper): string
     {
-        return '';
+        return $gatewayDescription;
     }
 
     public function getFieldMarkup($gateway, $dataHelper)

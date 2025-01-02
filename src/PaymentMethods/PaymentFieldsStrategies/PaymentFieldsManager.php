@@ -38,9 +38,9 @@ class PaymentFieldsManager
         }
     }
 
-    public function executeStrategy($gateway)
+    public function executeStrategy($deprecatedHelperGateway, $gatewayDescription)
     {
-        return $this->strategy->execute($gateway, $this->dataHelper);
+        return $this->strategy->execute($deprecatedHelperGateway, $gatewayDescription, $this->dataHelper);
     }
 
     public function getStrategyMarkup($gateway)

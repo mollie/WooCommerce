@@ -405,9 +405,9 @@ return static function (): array {
             if (!isset($oldGatewayInstances[$gatewayId])) {
                 return new NoopPaymentFieldsRenderer();
             }
-            //TODO im passing the deprecated gateway
-            $gateway = $oldGatewayInstances[$gatewayId];
-            return new PaymentFieldsRenderer($paymentMethod, $gateway);
+            $deprecatedGatewayHelper = $oldGatewayInstances[$gatewayId];
+            $gatewayDescription = $container->get('payment_gateway.' . $gatewayId . '.description');
+            return new PaymentFieldsRenderer($paymentMethod, $deprecatedGatewayHelper, $gatewayDescription);
         };
 
         $dynamicServices["payment_gateway.$gatewayId.title"] = static function (ContainerInterface $container) use ($gatewayId) {

@@ -178,13 +178,13 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
 
     /**
      * Sets the gateway's payment fields strategy based on payment method
-     * @param $gateway
+     * @param $deprecatedHelperGateway
      * @return string
      */
-    public function paymentFieldsStrategy($gateway)
+    public function paymentFieldsStrategy($deprecatedHelperGateway, $gatewayDescription)
     {
         $this->paymentFieldsService->setStrategy($this);
-        return $this->paymentFieldsService->executeStrategy($gateway);
+        return $this->paymentFieldsService->executeStrategy($deprecatedHelperGateway, $gatewayDescription);
     }
 
     /**

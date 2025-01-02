@@ -11,7 +11,7 @@ class In3FieldsStrategy implements PaymentFieldsStrategyI
     const FIELD_BIRTHDATE = "billing_birthdate_in3";
     const FIELD_PHONE = "billing_phone_in3";
 
-    public function execute($gateway, $dataHelper): string
+    public function execute($deprecatedHelperGateway, $gatewayDescription, $dataHelper): string
     {
         $showBirthdateField = false;
         $showPhoneField = false;

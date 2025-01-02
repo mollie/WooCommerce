@@ -8,7 +8,7 @@ class BancomatpayFieldsStrategy implements PaymentFieldsStrategyI
 {
     const FIELD_PHONE = "billing_phone_bancomatpay";
 
-    public function execute($gateway, $dataHelper)
+    public function execute($deprecatedHelperGateway, $gatewayDescription, $dataHelper)
     {
         $showPhoneField = false;
         $isPhoneRequired = get_option('mollie_wc_is_phone_required_flag');

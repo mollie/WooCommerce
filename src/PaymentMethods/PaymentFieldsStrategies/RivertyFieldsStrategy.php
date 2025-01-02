@@ -11,7 +11,7 @@ class RivertyFieldsStrategy implements PaymentFieldsStrategyI
     const FIELD_BIRTHDATE = "billing_birthdate_riverty";
     const FIELD_PHONE = "billing_phone_riverty";
 
-    public function execute($gateway, $dataHelper): string
+    public function execute($deprecatedHelperGateway, $gatewayDescription, $dataHelper): string
     {
         $showBirthdateField = false;
         $showPhoneField = false;

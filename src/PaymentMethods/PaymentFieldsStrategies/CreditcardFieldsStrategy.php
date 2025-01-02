@@ -8,12 +8,12 @@ use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 
 class CreditcardFieldsStrategy implements PaymentFieldsStrategyI
 {
-    public function execute($gateway, $dataHelper): string
+    public function execute($deprecatedHelperGateway, $gatewayDescription, $dataHelper): string
     {
-        if (!$this->isMollieComponentsEnabled($gateway->paymentMethod())) {
+        if (!$this->isMollieComponentsEnabled($deprecatedHelperGateway->paymentMethod())) {
             return '';
         }
-        $gateway->has_fields = true;
+        $deprecatedHelperGateway->has_fields = true;
         $allowedHtml = $this->svgAllowedHtml();
 
         $output = '<div class="mollie-components"></div>';

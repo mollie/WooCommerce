@@ -185,7 +185,7 @@ class MolliePaymentGatewayHandler
             return true;
         }
 
-        $order_total = WC()->cart && WC()->cart->get_total('edit');
+        $order_total = WC()->cart ? WC()->cart->get_total('edit') : 0;
         $currency = $this->getCurrencyFromOrder();
         $billingCountry = $this->getBillingCountry();
         $paymentLocale = $this->dataService->getPaymentLocale();

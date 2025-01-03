@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\PaymentMethods;
 
 use Mollie\WooCommerce\Gateway\Surcharge;
-use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\PaymentFieldsManager;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 
@@ -31,10 +30,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
      * @var Settings
      */
     protected $settingsHelper;
-    /**
-     * @var PaymentFieldsManager
-     */
-    protected $paymentFieldsService;
+
     /**
      * @var Surcharge
      */
@@ -47,7 +43,6 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     public function __construct(
         IconFactory $iconFactory,
         Settings $settingsHelper,
-        PaymentFieldsManager $paymentFieldsService,
         Surcharge $surcharge,
         array $apiPaymentMethod
     ) {
@@ -55,7 +50,6 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         $this->id = $this->getIdFromConfig();
         $this->iconFactory = $iconFactory;
         $this->settingsHelper = $settingsHelper;
-        $this->paymentFieldsService = $paymentFieldsService;
         $this->surcharge = $surcharge;
         $this->config = $this->getConfig();
         $this->settings = $this->getSettings();
@@ -174,25 +168,6 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     public function getAllFormFields()
     {
         return $this->getFormFields($this->getSharedFormFields());
-    }
-
-    /**
-     * Sets the gateway's payment fields strategy based on payment method
-     * @param $deprecatedHelperGateway
-     * @return string
-     */
-    public function paymentFieldsStrategy($deprecatedHelperGateway, $gatewayDescription)
-    {
-        $this->paymentFieldsService->setStrategy($this);
-        return $this->paymentFieldsService->executeStrategy($deprecatedHelperGateway, $gatewayDescription);
-    }
-
-    /**
-     * @return PaymentFieldsManager
-     */
-    public function paymentFieldsService(): PaymentFieldsManager
-    {
-        return $this->paymentFieldsService;
     }
 
     /**

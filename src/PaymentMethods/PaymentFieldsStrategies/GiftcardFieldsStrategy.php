@@ -4,21 +4,23 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
-class GiftcardFieldsStrategy implements PaymentFieldsStrategyI
+use Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
+
+class GiftcardFieldsStrategy extends AbstractPaymentFieldsRenderer implements PaymentFieldsRendererInterface
 {
     use IssuersDropdownBehavior;
 
-    public function execute($deprecatedHelperGateway, $gatewayDescription, $dataHelper): string
+    public function renderFields(): string
     {
-        if (!$this->dropDownEnabled($deprecatedHelperGateway)) {
-            return $gatewayDescription;
+        if (!$this->dropDownEnabled($this->deprecatedHelperGateway)) {
+            return $this->gatewayDescription;
         }
 
-        $issuers = $this->getIssuers($deprecatedHelperGateway, $dataHelper);
+        $issuers = $this->getIssuers($this->deprecatedHelperGateway, $this->dataHelper);
         if (empty($issuers)) {
-            return $gatewayDescription;
+            return $this->gatewayDescription;
         }
-        $selectedIssuer = $deprecatedHelperGateway->paymentMethod()->getSelectedIssuer();
+        $selectedIssuer = $this->deprecatedHelperGateway->paymentMethod()->getSelectedIssuer();
 
         $html = '';
 
@@ -35,7 +37,7 @@ class GiftcardFieldsStrategy implements PaymentFieldsStrategyI
             return wpautop(wptexturize($html));
         }
 
-        return $this->renderIssuers($deprecatedHelperGateway, $issuers, $selectedIssuer);
+        return $this->renderIssuers($this->deprecatedHelperGateway, $issuers, $selectedIssuer);
     }
 
     public function getFieldMarkup($gateway, $dataHelper)

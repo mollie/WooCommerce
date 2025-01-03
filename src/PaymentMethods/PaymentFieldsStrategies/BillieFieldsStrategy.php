@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
-class BillieFieldsStrategy implements PaymentFieldsStrategyI
+use Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
+
+class BillieFieldsStrategy extends AbstractPaymentFieldsRenderer implements PaymentFieldsRendererInterface
 {
     const FIELD_COMPANY = "billing_company";
 
-    public function execute($deprecatedHelperGateway, $gatewayDescription, $dataHelper): string
-    {
+    public function renderFields(): string    {
         $showCompanyField = false;
 
         if (is_checkout_pay_page()) {

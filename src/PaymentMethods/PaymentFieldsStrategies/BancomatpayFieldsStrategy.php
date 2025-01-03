@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
-class BancomatpayFieldsStrategy implements PaymentFieldsStrategyI
+use Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
+
+class BancomatpayFieldsStrategy extends AbstractPaymentFieldsRenderer implements PaymentFieldsRendererInterface
 {
     const FIELD_PHONE = "billing_phone_bancomatpay";
 
-    public function execute($deprecatedHelperGateway, $gatewayDescription, $dataHelper)
+    public function renderFields(): string
     {
         $showPhoneField = false;
         $isPhoneRequired = get_option('mollie_wc_is_phone_required_flag');

@@ -5,6 +5,7 @@ namespace Mollie\WooCommerce\Assets;
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
+use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\DefaultFieldsStrategy;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\Shared\Data;
 
@@ -126,9 +127,13 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
             $content = $method->getProcessedDescriptionForBlock();
             $issuers = false;
             if ($method->getProperty('paymentFields') === true) {
-                $paymentFieldsService = $method->paymentFieldsService();
-                $paymentFieldsService->setStrategy($method);
-                $issuers = $method->paymentFieldsService()->getStrategyMarkup($deprecatedGateway);
+                $className = 'Mollie\\WooCommerce\\PaymentMethods\\PaymentFieldsStrategies\\' . ucfirst($method->getProperty('id')) . 'FieldsStrategy';
+                $paymentFieldsStrategy = class_exists($className) ? new $className(
+                    $deprecatedGateway,
+                    $gateway->get_description(),
+                    $dataService
+                ) : new DefaultFieldsStrategy($deprecatedGateway, $gateway->get_description(), $dataService);
+                $issuers = $paymentFieldsStrategy->getFieldMarkup($deprecatedGateway, $dataService);
             }
             if ($gatewayId === 'creditcard') {
                 $content .= $issuers;

@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
+use Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 
-class CreditcardFieldsStrategy implements PaymentFieldsStrategyI
+class CreditcardFieldsStrategy extends AbstractPaymentFieldsRenderer implements PaymentFieldsRendererInterface
 {
-    public function execute($deprecatedHelperGateway, $gatewayDescription, $dataHelper): string
+    public function renderFields(): string
     {
-        if (!$this->isMollieComponentsEnabled($deprecatedHelperGateway->paymentMethod())) {
+        if (!$this->isMollieComponentsEnabled($this->deprecatedHelperGateway->paymentMethod())) {
             return '';
         }
-        $deprecatedHelperGateway->has_fields = true;
+        $this->deprecatedHelperGateway->has_fields = true;
         $allowedHtml = $this->svgAllowedHtml();
 
         $output = '<div class="mollie-components"></div>';
@@ -23,8 +24,8 @@ class CreditcardFieldsStrategy implements PaymentFieldsStrategyI
                 '%1$s Secure payments provided by %2$s',
                 'mollie-payments-for-woocommerce'
             ),
-            wp_kses($this->lockIcon($dataHelper), $allowedHtml),
-            wp_kses($this->mollieLogo($dataHelper), $allowedHtml)
+            wp_kses($this->lockIcon($this->dataHelper), $allowedHtml),
+            wp_kses($this->mollieLogo($this->dataHelper), $allowedHtml)
         );
         $output .= '</p>';
 

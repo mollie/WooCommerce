@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
-class In3FieldsStrategy implements PaymentFieldsStrategyI
+use Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
+
+class In3FieldsStrategy extends AbstractPaymentFieldsRenderer implements PaymentFieldsRendererInterface
 {
     use PaymentFieldsStrategiesTrait;
 
     const FIELD_BIRTHDATE = "billing_birthdate_in3";
     const FIELD_PHONE = "billing_phone_in3";
 
-    public function execute($deprecatedHelperGateway, $gatewayDescription, $dataHelper): string
+    public function renderFields(): string
     {
         $showBirthdateField = false;
         $showPhoneField = false;

@@ -23,13 +23,12 @@ use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
-use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\PaymentFieldsManager;
+use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\DefaultFieldsStrategy;
 use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\PaymentMethods\Icon\GatewayIconsRenderer;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
 use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\NoopPaymentFieldsRenderer;
-use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\PaymentFieldsRenderer;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\SDK\HttpResponse;
@@ -154,11 +153,6 @@ return static function (): array {
         },
         OrderInstructionsManager::class => static function (): OrderInstructionsManager {
             return new OrderInstructionsManager();
-        },
-        PaymentFieldsManager::class => static function (ContainerInterface $container): PaymentFieldsManager {
-            $data = $container->get('settings.data_helper');
-            assert($data instanceof Data);
-            return new PaymentFieldsManager($data);
         },
         PaymentCheckoutRedirectService::class => static function (
             ContainerInterface $container
@@ -428,15 +422,20 @@ return static function (): array {
             $paymentMethods = $container->get('gateway.paymentMethods');
             $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
             $paymentMethod = $paymentMethods[$methodId];
-
             $oldGatewayInstances = $container->get('__deprecated.gateway_helpers');
             //not all payment methods have a gateway
             if (!isset($oldGatewayInstances[$gatewayId])) {
                 return new NoopPaymentFieldsRenderer();
             }
-            $deprecatedGatewayHelper = $oldGatewayInstances[$gatewayId];
             $gatewayDescription = $container->get('payment_gateway.' . $gatewayId . '.description');
-            return new PaymentFieldsRenderer($paymentMethod, $deprecatedGatewayHelper, $gatewayDescription);
+            $dataHelper = $container->get('settings.data_helper');
+            $deprecatedGatewayHelper = $oldGatewayInstances[$gatewayId];
+            if (!$paymentMethod->getProperty('paymentFields')) {
+                return new DefaultFieldsStrategy($deprecatedGatewayHelper, $gatewayDescription, $dataHelper);
+            } else {
+                $className = 'Mollie\\WooCommerce\\PaymentMethods\\PaymentFieldsStrategies\\' . ucfirst($paymentMethod->getProperty('id')) . 'FieldsStrategy';
+                return class_exists($className) ? new $className($deprecatedGatewayHelper, $gatewayDescription, $dataHelper) : new DefaultFieldsStrategy($deprecatedGatewayHelper, $gatewayDescription, $dataHelper);
+            }
         };
 
         $dynamicServices["payment_gateway.$gatewayId.title"] = static function (ContainerInterface $container) use ($gatewayId) {

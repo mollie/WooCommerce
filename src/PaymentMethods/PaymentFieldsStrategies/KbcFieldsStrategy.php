@@ -4,21 +4,23 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
-class KbcFieldsStrategy implements PaymentFieldsStrategyI
+use Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
+
+class KbcFieldsStrategy extends AbstractPaymentFieldsRenderer implements PaymentFieldsRendererInterface
 {
     use IssuersDropdownBehavior;
 
-    public function execute($deprecatedHelperGateway, $gatewayDescription, $dataHelper): string
+    public function renderFields(): string
     {
-        if (!$this->dropDownEnabled($deprecatedHelperGateway)) {
+        if (!$this->dropDownEnabled($this->deprecatedHelperGateway)) {
             return '';
         }
 
-        $issuers = $this->getIssuers($deprecatedHelperGateway, $dataHelper);
+        $issuers = $this->getIssuers($this->deprecatedHelperGateway, $this->dataHelper);
 
-        $selectedIssuer = $deprecatedHelperGateway->paymentMethod()->getSelectedIssuer();
+        $selectedIssuer = $this->deprecatedHelperGateway->paymentMethod()->getSelectedIssuer();
 
-        return $this->renderIssuers($deprecatedHelperGateway, $issuers, $selectedIssuer);
+        return $this->renderIssuers($this->deprecatedHelperGateway, $issuers, $selectedIssuer);
     }
 
     public function getFieldMarkup($gateway, $dataHelper)

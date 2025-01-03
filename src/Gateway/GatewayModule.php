@@ -13,26 +13,16 @@ use Inpsyde\Modularity\Module\ExtendingModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\BlockService\CheckoutBlockService;
-use Mollie\WooCommerce\Buttons\ApplePayButton\AppleAjaxRequests;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDirectHandler;
-use Mollie\WooCommerce\Buttons\ApplePayButton\ResponsesToApple;
-use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPal;
-use Mollie\WooCommerce\Buttons\PayPalButton\PayPalAjaxRequests;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalButtonHandler;
 use Mollie\WooCommerce\Gateway\Voucher\MaybeDisableGateway;
-use Mollie\WooCommerce\Notice\AdminNotice;
-use Mollie\WooCommerce\Notice\NoticeInterface;
-use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\PaymentFieldsManager;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
-use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
-use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use Psr\Container\ContainerInterface;
-use Psr\Log\LoggerInterface as Logger;
 
 class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
 {
@@ -357,15 +347,12 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         assert($settingsHelper instanceof Settings);
         $surchargeService = $container->get(Surcharge::class);
         assert($surchargeService instanceof Surcharge);
-        $paymentFieldsService = $container->get(PaymentFieldsManager::class);
-        assert($paymentFieldsService instanceof PaymentFieldsManager);
         foreach ($listAllAvailablePaymentMethods as $paymentMethodAvailable) {
             $paymentMethodId = $paymentMethodAvailable['id'];
             $paymentMethods[$paymentMethodId] = $this->buildPaymentMethod(
                 $paymentMethodId,
                 $iconFactory,
                 $settingsHelper,
-                $paymentFieldsService,
                 $surchargeService,
                 $paymentMethodAvailable
             );
@@ -378,7 +365,6 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
                 $paymentMethodId,
                 $iconFactory,
                 $settingsHelper,
-                $paymentFieldsService,
                 $surchargeService,
                 []
             );
@@ -389,7 +375,6 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
      * @param string $id
      * @param IconFactory $iconFactory
      * @param Settings $settingsHelper
-     * @param PaymentFieldsManager $paymentFieldsService
      * @param Surcharge $surchargeService
      * @param array $paymentMethods
      * @return PaymentMethodI | array
@@ -398,7 +383,6 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         string $id,
         IconFactory $iconFactory,
         Settings $settingsHelper,
-        PaymentFieldsManager $paymentFieldsService,
         Surcharge $surchargeService,
         array $apiMethod
     ) {
@@ -408,7 +392,6 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         $paymentMethod = new $paymentMethodClassName(
             $iconFactory,
             $settingsHelper,
-            $paymentFieldsService,
             $surchargeService,
             $apiMethod
         );

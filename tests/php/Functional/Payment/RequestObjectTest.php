@@ -59,7 +59,7 @@ class RequestObjectTest extends TestCase
      *
      * @test
      */
-    public function processPayment_decimals_and_taxes_request_no_missmatch()
+    public function processPayment_decimals_and_taxes_request_no_mismatch()
     {
         $testDataSet = $this->generateTestDataSet();
 
@@ -140,7 +140,7 @@ class RequestObjectTest extends TestCase
         */
 
         $arrayResult = $testee->getPaymentRequestData($order, $customerId);
-        $expectedResult = $this->noMissmatchError($arrayResult);
+        $expectedResult = $this->noMismatchError($arrayResult);
         $this->assertTrue($expectedResult);
     }
 
@@ -243,7 +243,7 @@ class RequestObjectTest extends TestCase
         return $item;
     }
 
-    private function noMissmatchError(array $arrayResult)
+    private function noMismatchError(array $arrayResult)
     {
         //array result total equals the sum of the lines
         $total = ($arrayResult['amount']['value']) * 1000;

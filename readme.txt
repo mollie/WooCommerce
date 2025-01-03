@@ -275,7 +275,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 * Feature Flag - Initiative - Alma for WooCommerce Integration - under flag add_filter('inpsyde.feature-flags.mollie-woocommerce.alma_enabled', false);
 * Feature - Add WooCommerce as required plugin in header
-* Fix - Display error for Apple Pay Validation Error in Woocommerce
+* Fix - Display error for Apple Pay Validation Error in WooCommerce
 * Fix - TypeError when WooCommerce Analytics is disabled
 * Fix - In3 - payment successful with date in the future
 * Fix - Ensure Smooth Order Processing Despite Rounding Differences
@@ -1033,7 +1033,7 @@ Starting with version 4.0, this plugin will require PHP 5.6. If you are using an
 
 * Fix - A new customerID was created for every new order where a payment method that supported recurring payments was selected
 * Fix - When plugin 2.8.0 was used with WooCommerce 2.6 or older, a fatal error would be shown on the return page (because of use of new WooCommerce 3.0 method)
-* Fix - Some cancelled payments for cancelled orders where redirected to "Retry payment" instead of "Order received" page, see Github issue #166
+* Fix - Some cancelled payments for cancelled orders where redirected to "Retry payment" instead of "Order received" page, see GitHub issue #166
 
 = 2.8.0 - 09/01/2018 =
 

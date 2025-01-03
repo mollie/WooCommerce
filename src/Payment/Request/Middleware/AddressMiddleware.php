@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Payment\Request\Decorators;
+namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use stdClass;
 use WC_Order;
 
-class AddressDecorator implements RequestDecoratorInterface
+class AddressMiddleware implements RequestMiddlewareInterface
 {
     public const MAXIMAL_LENGTH_ADDRESS = 100;
     public const MAXIMAL_LENGTH_POSTALCODE = 20;
     public const MAXIMAL_LENGTH_CITY = 200;
     public const MAXIMAL_LENGTH_REGION = 200;
-    public function decorate(array $requestData, WC_Order $order, $context = null): array
+    public function __invoke(array $requestData, WC_Order $order, $context = null, callable $next): array
     {
         $isPayPalExpressOrder = $order->get_meta('_mollie_payment_method_button') === 'PayPalButton';
         $billingAddress = null;
@@ -31,8 +31,7 @@ class AddressDecorator implements RequestDecoratorInterface
         ) {
             $requestData['shippingAddress'] = $shippingAddress;
         }
-
-        return $requestData;
+        return $next($requestData, $order, $context);
     }
 
     private function createBillingAddress(WC_Order $order)

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Payment\Request\Decorators;
+namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use Mollie\WooCommerce\Settings\Settings;
 use WC_Order;
 
-class StoreCustomerDecorator implements RequestDecoratorInterface
+class StoreCustomerMiddleware implements RequestMiddlewareInterface
 {
     private Settings $settingsHelper;
     public function __construct(Settings $settingsHelper)
@@ -15,7 +15,7 @@ class StoreCustomerDecorator implements RequestDecoratorInterface
         $this->settingsHelper = $settingsHelper;
     }
 
-    public function decorate(array $requestData, WC_Order $order, $context = null): array
+    public function __invoke(array $requestData, WC_Order $order, $context = null, $next): array
     {
         $storeCustomer = $this->settingsHelper->shouldStoreCustomer();
         if (!$storeCustomer) {
@@ -25,8 +25,6 @@ class StoreCustomerDecorator implements RequestDecoratorInterface
                 unset($requestData['customerId']);
             }
         }
-
-
-        return $requestData;
+        return $next($requestData, $order, $context);
     }
 }

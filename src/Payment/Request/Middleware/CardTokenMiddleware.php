@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Payment\Request\Decorators;
+namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use WC_Order;
 
-class CardTokenDecorator implements RequestDecoratorInterface
+class CardTokenMiddleware implements RequestMiddlewareInterface
 {
-    public function decorate(array $requestData, WC_Order $order, $context = null): array
+    public function __invoke(array $requestData, WC_Order $order, $context = null, $next): array
     {
         $cardToken = mollieWooCommerceCardToken();
         if ($cardToken && isset($requestData['payment']) && $context === 'order') {
@@ -16,6 +16,6 @@ class CardTokenDecorator implements RequestDecoratorInterface
         } elseif ($cardToken && isset($requestData['payment']) && $context === 'payment') {
             $requestData['cardToken'] = $cardToken;
         }
-        return $requestData;
+        return $next($requestData, $order, $context);
     }
 }

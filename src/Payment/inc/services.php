@@ -8,17 +8,18 @@ use Mollie\WooCommerce\Payment\MollieOrder;
 use Mollie\WooCommerce\Payment\MolliePayment;
 use Mollie\WooCommerce\Payment\OrderLines;
 use Mollie\WooCommerce\Payment\PaymentFactory;
-use Mollie\WooCommerce\Payment\Request\Decorators\AddCustomRequestFieldsDecorator;
-use Mollie\WooCommerce\Payment\Request\Decorators\AddressDecorator;
-use Mollie\WooCommerce\Payment\Request\Decorators\AddSequenceTypeForSubscriptionsDecorator;
-use Mollie\WooCommerce\Payment\Request\Decorators\ApplePayTokenDecorator;
-use Mollie\WooCommerce\Payment\Request\Decorators\CardTokenDecorator;
-use Mollie\WooCommerce\Payment\Request\Decorators\CustomerBirthdateDecorator;
-use Mollie\WooCommerce\Payment\Request\Decorators\OrderLinesDecorator;
-use Mollie\WooCommerce\Payment\Request\Decorators\PaymentDescriptionDecorator;
-use Mollie\WooCommerce\Payment\Request\Decorators\SelectedIssuerDecorator;
-use Mollie\WooCommerce\Payment\Request\Decorators\StoreCustomerDecorator;
-use Mollie\WooCommerce\Payment\Request\Decorators\UrlDecorator;
+use Mollie\WooCommerce\Payment\Request\Middleware\AddCustomRequestFieldsMiddleware;
+use Mollie\WooCommerce\Payment\Request\Middleware\AddressMiddleware;
+use Mollie\WooCommerce\Payment\Request\Middleware\AddSequenceTypeForSubscriptionsMiddleware;
+use Mollie\WooCommerce\Payment\Request\Middleware\ApplePayTokenMiddleware;
+use Mollie\WooCommerce\Payment\Request\Middleware\CardTokenMiddleware;
+use Mollie\WooCommerce\Payment\Request\Middleware\CustomerBirthdateMiddleware;
+use Mollie\WooCommerce\Payment\Request\Middleware\MiddlewareHandler;
+use Mollie\WooCommerce\Payment\Request\Middleware\OrderLinesMiddleware;
+use Mollie\WooCommerce\Payment\Request\Middleware\PaymentDescriptionMiddleware;
+use Mollie\WooCommerce\Payment\Request\Middleware\SelectedIssuerMiddleware;
+use Mollie\WooCommerce\Payment\Request\Middleware\StoreCustomerMiddleware;
+use Mollie\WooCommerce\Payment\Request\Middleware\UrlMiddleware;
 use Mollie\WooCommerce\Payment\Request\Strategies\OrderRequestStrategy;
 use Mollie\WooCommerce\Payment\Request\Strategies\PaymentRequestStrategy;
 use Mollie\WooCommerce\Payment\Request\RequestFactory;
@@ -83,93 +84,98 @@ return static function (): array {
         RequestFactory::class => static function (ContainerInterface $container): RequestFactory {
             return new RequestFactory($container);
         },
-        CustomerBirthdateDecorator::class => static function (ContainerInterface $container): CustomerBirthdateDecorator {
-            return new CustomerBirthdateDecorator($container->get('gateway.paymentMethods'));
+        CustomerBirthdateMiddleware::class => static function (ContainerInterface $container): CustomerBirthdateMiddleware {
+            return new CustomerBirthdateMiddleware($container->get('gateway.paymentMethods'));
         },
-        ApplePayTokenDecorator::class => static function (): ApplePayTokenDecorator {
-            return new ApplePayTokenDecorator();
+        ApplePayTokenMiddleware::class => static function (): ApplePayTokenMiddleware {
+            return new ApplePayTokenMiddleware();
         },
-        CardTokenDecorator::class => static function (): CardTokenDecorator {
-            return new CardTokenDecorator();
+        CardTokenMiddleware::class => static function (): CardTokenMiddleware {
+            return new CardTokenMiddleware();
         },
-        StoreCustomerDecorator::class => static function (ContainerInterface $container): StoreCustomerDecorator {
-            return new StoreCustomerDecorator($container->get('settings.settings_helper'));
+        StoreCustomerMiddleware::class => static function (ContainerInterface $container): StoreCustomerMiddleware {
+            return new StoreCustomerMiddleware($container->get('settings.settings_helper'));
         },
-        AddSequenceTypeForSubscriptionsDecorator::class => static function (ContainerInterface $container): AddSequenceTypeForSubscriptionsDecorator {
+        AddSequenceTypeForSubscriptionsMiddleware::class => static function (ContainerInterface $container): AddSequenceTypeForSubscriptionsMiddleware {
             $dataHelper = $container->get('settings.data_helper');
             $pluginId = $container->get('shared.plugin_id');
-            return new AddSequenceTypeForSubscriptionsDecorator($dataHelper, $pluginId);
+            return new AddSequenceTypeForSubscriptionsMiddleware($dataHelper, $pluginId);
         },
-        OrderLinesDecorator::class => static function (ContainerInterface $container): OrderLinesDecorator {
+        OrderLinesMiddleware::class => static function (ContainerInterface $container): OrderLinesMiddleware {
             $orderLines = $container->get(OrderLines::class);
             $voucherDefaultCategory = $container->get('voucher.defaultCategory');
-            return new OrderLinesDecorator($orderLines, $voucherDefaultCategory);
+            return new OrderLinesMiddleware($orderLines, $voucherDefaultCategory);
         },
-        AddressDecorator::class => static function (): AddressDecorator {
-            return new AddressDecorator();
+        AddressMiddleware::class => static function (): AddressMiddleware {
+            return new AddressMiddleware();
         },
-        UrlDecorator::class => static function (ContainerInterface $container): UrlDecorator {
-            return new UrlDecorator(
+        UrlMiddleware::class => static function (ContainerInterface $container): UrlMiddleware {
+            return new UrlMiddleware(
                 $container->get('shared.plugin_id'),
                 $container->get(Logger::class),
             );
         },
-        SelectedIssuerDecorator::class => static function (ContainerInterface $container): SelectedIssuerDecorator {
+        SelectedIssuerMiddleware::class => static function (ContainerInterface $container): SelectedIssuerMiddleware {
             $pluginId = $container->get('shared.plugin_id');
-            return new SelectedIssuerDecorator($pluginId);
+            return new SelectedIssuerMiddleware($pluginId);
         },
-        PaymentDescriptionDecorator::class => static function (ContainerInterface $container): PaymentDescriptionDecorator {
+        PaymentDescriptionMiddleware::class => static function (ContainerInterface $container): PaymentDescriptionMiddleware {
             $dataHelper = $container->get('settings.data_helper');
-            return new PaymentDescriptionDecorator($dataHelper);
+            return new PaymentDescriptionMiddleware($dataHelper);
         },
-        AddCustomRequestFieldsDecorator::class => static function (ContainerInterface $container): AddCustomRequestFieldsDecorator {
+        AddCustomRequestFieldsMiddleware::class => static function (ContainerInterface $container): AddCustomRequestFieldsMiddleware {
             $paymentMethods = $container->get('gateway.paymentMethods');
-            return new AddCustomRequestFieldsDecorator($paymentMethods, $container);
+            return new AddCustomRequestFieldsMiddleware($paymentMethods, $container);
         },
         'request.strategy.order' => static function (ContainerInterface $container): RequestStrategyInterface {
             $dataHelper = $container->get('settings.data_helper');
             $settingsHelper = $container->get('settings.settings_helper');
+            $middlewares = [
+                $container->get(CustomerBirthdateMiddleware::class),
+                $container->get(ApplePayTokenMiddleware::class),
+                $container->get(CardTokenMiddleware::class),
+                $container->get(StoreCustomerMiddleware::class),
+                $container->get(AddSequenceTypeForSubscriptionsMiddleware::class),
+                $container->get(OrderLinesMiddleware::class),
+                $container->get(AddressMiddleware::class),
+                $container->get(UrlMiddleware::class),
+                $container->get(SelectedIssuerMiddleware::class),
+            ];
+            $middlewareHandler = new MiddlewareHandler($middlewares);
+
             return new OrderRequestStrategy(
                 $dataHelper,
                 $settingsHelper,
-                [
-                    $container->get(CustomerBirthdateDecorator::class),
-                    $container->get(ApplePayTokenDecorator::class),
-                    $container->get(CardTokenDecorator::class),
-                    $container->get(StoreCustomerDecorator::class),
-                    $container->get(AddSequenceTypeForSubscriptionsDecorator::class),
-                    $container->get(OrderLinesDecorator::class),
-                    $container->get(AddressDecorator::class),
-                    $container->get(UrlDecorator::class),
-                    $container->get(SelectedIssuerDecorator::class),
-                ]
+                $middlewareHandler
             );
         },
         'request.strategy.payment' => static function (ContainerInterface $container): RequestStrategyInterface {
             $dataHelper = $container->get('settings.data_helper');
             $settingsHelper = $container->get('settings.settings_helper');
-            $issuer = $container->get(SelectedIssuerDecorator::class);
-            $url = $container->get(UrlDecorator::class);
-            $sequenceType = $container->get(AddSequenceTypeForSubscriptionsDecorator::class);
-            $cardToken = $container->get(CardTokenDecorator::class);
-            $applePayToken = $container->get(ApplePayTokenDecorator::class);
-            $storeCustomer = $container->get(StoreCustomerDecorator::class);
-            $paymentDescription = $container->get(PaymentDescriptionDecorator::class);
-            $addCustomRequestFields = $container->get(AddCustomRequestFieldsDecorator::class);
+            $issuer = $container->get(SelectedIssuerMiddleware::class);
+            $url = $container->get(UrlMiddleware::class);
+            $sequenceType = $container->get(AddSequenceTypeForSubscriptionsMiddleware::class);
+            $cardToken = $container->get(CardTokenMiddleware::class);
+            $applePayToken = $container->get(ApplePayTokenMiddleware::class);
+            $storeCustomer = $container->get(StoreCustomerMiddleware::class);
+            $paymentDescription = $container->get(PaymentDescriptionMiddleware::class);
+            $addCustomRequestFields = $container->get(AddCustomRequestFieldsMiddleware::class);
+            $middlewares = [
+                $issuer,
+                $url,
+                $sequenceType,
+                $cardToken,
+                $applePayToken,
+                $storeCustomer,
+                $paymentDescription,
+                $addCustomRequestFields,
+            ];
+            $middlewareHandler = new MiddlewareHandler($middlewares);
 
             return new PaymentRequestStrategy(
                 $dataHelper,
                 $settingsHelper,
-                [
-                    $issuer,
-                    $url,
-                    $sequenceType,
-                    $cardToken,
-                    $applePayToken,
-                    $storeCustomer,
-                    $paymentDescription,
-                    $addCustomRequestFields,
-                ]
+                $middlewareHandler
             );
         },
     ];

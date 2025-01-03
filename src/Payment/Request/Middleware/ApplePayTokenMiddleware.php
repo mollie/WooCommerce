@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Payment\Request\Decorators;
+namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use WC_Order;
 
-class ApplePayTokenDecorator implements RequestDecoratorInterface
+class ApplePayTokenMiddleware implements RequestMiddlewareInterface
 {
-    public function decorate(array $requestData, WC_Order $order, $context = null): array
+    public function __invoke(array $requestData, WC_Order $order, $context = null, $next): array
     {
         // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         $applePayToken = wc_clean(wp_unslash($_POST["token"] ?? ''));
         if (!$applePayToken) {
-            return $requestData;
+            return $next($requestData, $order, $context);
         }
         $encodedApplePayToken = wp_json_encode($applePayToken);
         if ($context === 'order') {
@@ -21,6 +21,6 @@ class ApplePayTokenDecorator implements RequestDecoratorInterface
         } elseif ($context === 'payment') {
             $requestData['applePayToken'] = $encodedApplePayToken;
         }
-        return $requestData;
+        return $next($requestData, $order, $context);
     }
 }

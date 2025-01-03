@@ -23,7 +23,7 @@ class Alma extends AbstractPaymentMethod implements PaymentMethodI
             'confirmationDelayed' => false,
             'SEPA' => false,
             'paymentAPIfields' => [
-                'AddressDecorator',
+                'AddressMiddleware',
             ],
             'docs' => 'https://www.mollie.com/gb/payments/alma',
         ];

@@ -6,7 +6,7 @@ namespace Mollie\WooCommerceTests\Functional\Payment;
 use Mockery;
 use Mollie\Api\MollieApiClient;
 use Mollie\WooCommerce\Payment\OrderLines;
-use Mollie\WooCommerce\Payment\Request\Decorators\OrderLinesDecorator;
+use Mollie\WooCommerce\Payment\Request\Decorators\OrderLinesMiddleware;
 use Mollie\WooCommerce\Payment\Request\Strategies\OrderRequestStrategy;
 use Mollie\WooCommerce\Payment\Request\Strategies\RequestStrategyInterface;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
@@ -222,7 +222,7 @@ class OrderRequestStrategyTest extends TestCase
             []
         );
         $orderLines = new OrderLines($this->helperMocks->dataHelper($apiClientMock), $this->helperMocks->pluginId());
-        $linesDecorator = new OrderLinesDecorator($orderLines, 'no_category');
+        $linesDecorator = new OrderLinesMiddleware($orderLines, 'no_category');
         $paymentGateway = $this->helperMocks->genericPaymentGatewayMock();
         when('wc_get_payment_gateway_by_order')->justReturn($paymentGateway);
 

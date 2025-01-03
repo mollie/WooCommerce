@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Payment\Request\Decorators;
+namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use WC_Order;
 
-class PaymentDescriptionDecorator implements RequestDecoratorInterface
+class PaymentDescriptionMiddleware implements RequestMiddlewareInterface
 {
     private $dataHelper;
 
@@ -15,14 +15,14 @@ class PaymentDescriptionDecorator implements RequestDecoratorInterface
         $this->dataHelper = $dataHelper;
     }
 
-    public function decorate(array $requestData, WC_Order $order, string $context = null): array
+    public function __invoke(array $requestData, WC_Order $order, string $context = null, $next): array
     {
         $optionName = $this->dataHelper->getPluginId() . '_' . 'api_payment_description';
         $option = get_option($optionName);
         $paymentDescription = $this->getPaymentDescription($order, $option);
 
         $requestData['description'] = $paymentDescription;
-        return $requestData;
+        return $next($requestData, $order, $context);
     }
 
     private function getPaymentDescription(WC_Order $order, $option): string

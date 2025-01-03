@@ -3,6 +3,7 @@
 namespace Mollie\WooCommerce\Payment;
 
 use Mollie\Api\Types\SequenceType;
+use Mollie\WooCommerce\Payment\Request\Middleware\MiddlewareHandler;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
 
@@ -13,12 +14,13 @@ class MollieSubscription extends MollieObject
      * @var mixed
      */
     private $paymentMethod;
+    protected MiddlewareHandler $middleware;
 
     /**
      * Molliesubscription constructor.
      *
      */
-    public function __construct($pluginId, Api $apiHelper, $settingsHelper, $dataHelper, $logger, $paymentMethod, $middleware)
+    public function __construct($pluginId, Api $apiHelper, $settingsHelper, $dataHelper, $logger, $paymentMethod, $middlewareHandler)
     {
         $this->pluginId = $pluginId;
         $this->apiHelper = $apiHelper;
@@ -26,7 +28,7 @@ class MollieSubscription extends MollieObject
         $this->dataHelper = $dataHelper;
         $this->logger = $logger;
         $this->paymentMethod = $paymentMethod;
-        $this->middleware = $middleware;
+        $this->middleware = $middlewareHandler;
     }
     /**
      * @param $order
@@ -67,10 +69,7 @@ class MollieSubscription extends MollieObject
                                 'customerId' => $customerId,
                             ]);
         $context = 'payment';
-        foreach ($this->middleware as $field) {
-            $requestData = $field->decorate($requestData, $order, $context);
-        }
-        return $requestData;
+        return $this->middleware->handle($requestData, $order, $context);
     }
 
     protected function getRecurringPaymentDescription($order, $option, $initialPaymentUsedOrderAPI)

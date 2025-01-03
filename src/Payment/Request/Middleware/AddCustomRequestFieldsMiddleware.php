@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Payment\Request\Decorators;
+namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use Psr\Container\ContainerInterface;
 use WC_Order;
 
-class AddCustomRequestFieldsDecorator implements RequestDecoratorInterface
+class AddCustomRequestFieldsMiddleware implements RequestMiddlewareInterface
 {
     private array $paymentMethods;
     private ContainerInterface $container;
@@ -18,7 +18,7 @@ class AddCustomRequestFieldsDecorator implements RequestDecoratorInterface
         $this->container = $container;
     }
 
-    public function decorate(array $requestData, WC_Order $order, $context = null): array
+    public function __invoke(array $requestData, WC_Order $order, $context = null, $next): array
     {
         $gateway = wc_get_payment_gateway_by_order($order);
         $methodId = substr($gateway->id, strrpos($gateway->id, '_') + 1);
@@ -26,15 +26,15 @@ class AddCustomRequestFieldsDecorator implements RequestDecoratorInterface
         if (property_exists($paymentMethod, 'paymentAPIfields')) {
             $paymentAPIfields = $paymentMethod->paymentAPIfields;
             foreach ($paymentAPIfields as $field) {
-                $decoratorClass = 'Mollie\\WooCommerce\\Payment\\Decorator\\' . $field;
-                if (class_exists($decoratorClass)) {
-                    $decorator = $this->container->get($decoratorClass);
-                    if ($decorator instanceof RequestDecoratorInterface) {
-                        $requestData = $decorator->decorate($requestData, $order);
+                $middlewareClass = 'Mollie\\WooCommerce\\Payment\\Request\\Middleware' . $field;
+                if (class_exists($middlewareClass)) {
+                    $middleware = $this->container->get($middlewareClass);
+                    if ($middleware instanceof RequestMiddlewareInterface) {
+                        $requestData = $middleware->__invoke($requestData, $order);
                     }
                 }
             }
         }
-        return $requestData;
+        return $next($requestData, $order, $context);
     }
 }

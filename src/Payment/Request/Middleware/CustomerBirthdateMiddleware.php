@@ -1,11 +1,10 @@
 <?php
 
-namespace Mollie\WooCommerce\Payment\Request\Decorators;
+namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
-use Mollie\WooCommerce\Payment\Request\Decorators\RequestDecoratorInterface;
 use WC_Order;
 
-class CustomerBirthdateDecorator implements RequestDecoratorInterface
+class CustomerBirthdateMiddleware implements RequestMiddlewareInterface
 {
     private array $paymentMethods;
 
@@ -14,7 +13,7 @@ class CustomerBirthdateDecorator implements RequestDecoratorInterface
         $this->paymentMethods = $paymentMethods;
     }
 
-    public function decorate(array $requestData, WC_Order $order, $context = null): array
+    public function __invoke(array $requestData, WC_Order $order, $context = null, $next): array
     {
         $gateway = wc_get_payment_gateway_by_order($order);
         if (!$gateway || !isset($gateway->id)) {
@@ -40,6 +39,6 @@ class CustomerBirthdateDecorator implements RequestDecoratorInterface
             $format = "Y-m-d";
             $requestData['consumerDateOfBirth'] = gmdate($format, (int) strtotime($fieldPosted));
         }
-        return $requestData;
+        return $next($requestData, $order, $context);
     }
 }

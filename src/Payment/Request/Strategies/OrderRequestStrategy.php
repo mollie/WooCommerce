@@ -3,6 +3,7 @@
 namespace Mollie\WooCommerce\Payment\Request\Strategies;
 
 use Inpsyde\PaymentGateway\PaymentGateway;
+use Mollie\WooCommerce\Payment\Request\Middleware\MiddlewareHandler;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use WC_Order;
@@ -11,14 +12,14 @@ class OrderRequestStrategy implements RequestStrategyInterface
 {
     private Data $dataHelper;
     private Settings $settingsHelper;
-    private array $decorators;
+    private MiddlewareHandler $middlewareHandler;
 
-    public function __construct($dataHelper, $settingsHelper, array $decorators)
+    public function __construct($dataHelper, $settingsHelper, MiddlewareHandler $middlewareHandler)
     {
 
         $this->dataHelper = $dataHelper;
         $this->settingsHelper = $settingsHelper;
-        $this->decorators = $decorators;
+        $this->middlewareHandler = $middlewareHandler;
     }
 
     public function createRequest(WC_Order $order, $customerId): array
@@ -58,10 +59,6 @@ class OrderRequestStrategy implements RequestStrategyInterface
         ];
 
         $context = 'order';
-        foreach ($this->decorators as $decorator) {
-            $requestData = $decorator->decorate($requestData, $order, $context);
-        }
-
-        return $requestData;
+        return $this->middlewareHandler->handle($requestData, $order, $context);
     }
 }

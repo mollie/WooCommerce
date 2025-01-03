@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Payment\Request\Decorators;
+namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use WC_Order;
 
-class SelectedIssuerDecorator implements RequestDecoratorInterface
+class SelectedIssuerMiddleware implements RequestMiddlewareInterface
 {
     private $pluginId;
 
@@ -15,17 +15,19 @@ class SelectedIssuerDecorator implements RequestDecoratorInterface
         $this->pluginId = $pluginId;
     }
 
-    public function decorate(array $requestData, WC_Order $order, $context = null): array
+    public function __invoke(array $requestData, WC_Order $order, $context = null, $next): array
     {
+
         $gateway = wc_get_payment_gateway_by_order($order);
         if (!$gateway) {
-            return $requestData;
+
+            return $next($requestData, $order, $context);
         }
 
         $gatewayId = $gateway->id;
         $selectedIssuer = $this->getSelectedIssuer($gatewayId);
         if (empty($selectedIssuer)) {
-            return $requestData;
+            return $next($requestData, $order, $context);
         }
         if ($context === 'order') {
             $requestData['payment']['issuer'] = $selectedIssuer;
@@ -33,7 +35,7 @@ class SelectedIssuerDecorator implements RequestDecoratorInterface
             $requestData['issuer'] = $selectedIssuer;
         }
 
-        return $requestData;
+        return $next($requestData, $order, $context);
     }
 
     private function getSelectedIssuer(string $gatewayId): string

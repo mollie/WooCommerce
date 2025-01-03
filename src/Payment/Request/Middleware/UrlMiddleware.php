@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Payment\Request\Decorators;
+namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use WC_Order;
 
-class UrlDecorator implements RequestDecoratorInterface
+class UrlMiddleware implements RequestMiddlewareInterface
 {
     private $pluginId;
     /**
@@ -20,7 +20,7 @@ class UrlDecorator implements RequestDecoratorInterface
         $this->logger = $logger;
     }
 
-    public function decorate(array $requestData, WC_Order $order, $context = null): array
+    public function __invoke(array $requestData, WC_Order $order, $context = null, $next): array
     {
         $gateway = wc_get_payment_gateway_by_order($order);
         if ($gateway) {
@@ -31,7 +31,7 @@ class UrlDecorator implements RequestDecoratorInterface
             $requestData['redirectUrl'] = $returnUrl;
             $requestData['webhookUrl'] = $webhookUrl;
         }
-        return $requestData;
+        return $next($requestData, $order, $context);
     }
 
     /**

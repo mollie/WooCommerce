@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Payment\Request\Decorators;
+namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use Mollie\WooCommerce\Shared\Data;
 use WC_Order;
 
-class AddSequenceTypeForSubscriptionsDecorator implements RequestDecoratorInterface
+class AddSequenceTypeForSubscriptionsMiddleware implements RequestMiddlewareInterface
 {
     private Data $dataHelper;
     private string $pluginId;
@@ -18,13 +18,13 @@ class AddSequenceTypeForSubscriptionsDecorator implements RequestDecoratorInterf
         $this->pluginId = $pluginId;
     }
 
-    public function decorate(array $requestData, WC_Order $order, $context = null): array
+    public function __invoke(array $requestData, WC_Order $order, $context = null, callable $next): array
     {
         $gateway = wc_get_payment_gateway_by_order($order);
         if ($gateway) {
             $requestData = $this->addSequenceTypeForSubscriptionsFirstPayments($order->get_id(), $gateway, $requestData, $context);
         }
-        return $requestData;
+        return $next($requestData, $order, $context);
     }
 
     private function addSequenceTypeForSubscriptionsFirstPayments($orderId, $gateway, $requestData, $context): array

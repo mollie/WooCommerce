@@ -4,6 +4,7 @@ namespace Mollie\WooCommerce\Payment;
 
 use Mollie\Api\Types\SequenceType;
 use Mollie\WooCommerce\Payment\Request\Middleware\MiddlewareHandler;
+use Mollie\WooCommerce\Payment\Request\Middleware\PaymentDescriptionMiddleware;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
 
@@ -89,7 +90,13 @@ class MollieSubscription extends MollieObject
             );
             return $description;
         }
-        return $this->getPaymentDescription($order, $option);
+        $middleware = new PaymentDescriptionMiddleware($this->dataHelper);
+        $requestData = [];
+        $context = 'payment';
+        $result = $middleware->__invoke($requestData, $order, $context, function($requestData) {
+            return $requestData;
+        });
+        return $result['description'];
     }
 
     /**

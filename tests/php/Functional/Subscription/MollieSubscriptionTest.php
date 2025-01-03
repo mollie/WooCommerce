@@ -10,7 +10,7 @@ use Mollie\Api\Resources\MandateCollection;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\SDK\HttpResponse;
-use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
+use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
 use Mollie\WooCommerceTests\TestCase;
 
@@ -43,7 +43,7 @@ class MollieSubscriptionTest extends TestCase
         $gatewayName = 'mollie_wc_gateway_ideal';
         $renewalOrder = $this->wcOrder();
         $subscription = $this->wcOrder(2, $gatewayName, $renewalOrder, 'active' );
-
+        $gateway = $this->helperMocks->genericPaymentGatewayMock();
         $testee = $this->buildTestee();
 
         expect('wcs_get_subscriptions_for_renewal_order')->andReturn(
@@ -52,7 +52,7 @@ class MollieSubscriptionTest extends TestCase
         $testee->expects($this->once())->method(
             'restore_mollie_customer_id_and_mandate'
         )->willReturn(false);
-        expect('wc_get_payment_gateway_by_order')->andReturn($gatewayName);
+        expect('wc_get_payment_gateway_by_order')->andReturn($gateway);
         $renewalOrder->expects($this->once())->method(
             'set_payment_method'
         )->with($gatewayName);
@@ -61,7 +61,7 @@ class MollieSubscriptionTest extends TestCase
         expect('wcs_get_subscription')->andReturn($subscription);
 
         $expectedResult = ['result' => 'success'];
-        $result = $testee->scheduled_subscription_payment(1.02, $renewalOrder);
+        $result = $testee->scheduled_subscription_payment(1.02, $renewalOrder, $gateway);
         $this->assertEquals($expectedResult, $result);
     }
 
@@ -106,7 +106,7 @@ class MollieSubscriptionTest extends TestCase
         $pluginId = $this->helperMocks->pluginId();
         $apiHelper = $this->helperMocks->apiHelper($apiClientMock);
         return $this->buildTesteeMock(
-            MollieSubscriptionGateway::class,
+            MollieSubscriptionGatewayHandler::class,
             [
                 $paymentMethod,
                 $paymentService,

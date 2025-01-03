@@ -146,7 +146,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
             $this->maybeTestModeNotice();
         });
 
-        $gateways = $container->get('gateway.instances');
+        $gateways = $container->get('__deprecated.gateway_helpers');
         $isSDDGatewayEnabled = $container->get('gateway.isSDDGatewayEnabled');
         $this->initMollieSettingsPage($isSDDGatewayEnabled, $gateways, $pluginPath, $pluginUrl, $paymentMethods);
         add_action(

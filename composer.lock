@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "afd1fef3a31e6c8742cf9df94a0ca170",
+    "content-hash": "4e52aea3a7eaecc473990bcc5f42517a",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -83,6 +83,53 @@
             "time": "2024-11-27T15:35:25+00:00"
         },
         {
+            "name": "dhii/services",
+            "version": "v0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Dhii/services.git",
+                "reference": "09cad8199a59d2003ad19126213075aefecaf17b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Dhii/services/zipball/09cad8199a59d2003ad19126213075aefecaf17b",
+                "reference": "09cad8199a59d2003ad19126213075aefecaf17b",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.1 | ^8.0",
+                "psr/container": "^1.0"
+            },
+            "require-dev": {
+                "codeclimate/php-test-reporter": "<=0.3.2",
+                "phpunit/phpunit": "^7.0 | ^8.0 | ^9.0",
+                "slevomat/coding-standard": "^6.0",
+                "vimeo/psalm": "^4.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Dhii\\Services\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Dhii Team",
+                    "email": "development@dhii.co"
+                }
+            ],
+            "description": "A collection of useful DI service implementations.",
+            "support": {
+                "issues": "https://github.com/Dhii/services/issues",
+                "source": "https://github.com/Dhii/services/tree/v0.1.0"
+            },
+            "time": "2022-01-06T14:57:20+00:00"
+        },
+        {
             "name": "inpsyde/modularity",
             "version": "1.11.0",
             "source": {
@@ -152,6 +199,16 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/mollie/mollie-api-php/zipball/b6e9848e4893d1d306fba54da3ac6f4a31a40368",
                 "reference": "b6e9848e4893d1d306fba54da3ac6f4a31a40368",
+            "version": "v2.75.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mollie/mollie-api-php.git",
+                "reference": "ac2052855c631b90092768cf6657f6d5b2f5dd9f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mollie/mollie-api-php/zipball/ac2052855c631b90092768cf6657f6d5b2f5dd9f",
+                "reference": "ac2052855c631b90092768cf6657f6d5b2f5dd9f",
                 "shasum": ""
             },
             "require": {
@@ -228,9 +285,10 @@
             ],
             "support": {
                 "issues": "https://github.com/mollie/mollie-api-php/issues",
-                "source": "https://github.com/mollie/mollie-api-php/tree/v2.76.0"
+
+                "source": "https://github.com/mollie/mollie-api-php/tree/v2.75.0"
             },
-            "time": "2024-12-18T12:26:03+00:00"
+            "time": "2024-11-21T10:33:16+00:00"
         },
         {
             "name": "psr/container",
@@ -2303,16 +2361,16 @@
         },
         {
             "name": "phpdocumentor/reflection-docblock",
-            "version": "5.6.1",
+            "version": "5.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpDocumentor/ReflectionDocBlock.git",
-                "reference": "e5e784149a09bd69d9a5e3b01c5cbd2e2bd653d8"
+                "reference": "f3558a4c23426d12bffeaab463f8a8d8b681193c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpDocumentor/ReflectionDocBlock/zipball/e5e784149a09bd69d9a5e3b01c5cbd2e2bd653d8",
-                "reference": "e5e784149a09bd69d9a5e3b01c5cbd2e2bd653d8",
+                "url": "https://api.github.com/repos/phpDocumentor/ReflectionDocBlock/zipball/f3558a4c23426d12bffeaab463f8a8d8b681193c",
+                "reference": "f3558a4c23426d12bffeaab463f8a8d8b681193c",
                 "shasum": ""
             },
             "require": {
@@ -2361,9 +2419,9 @@
             "description": "With this component, a library can provide support for annotations via DocBlocks or otherwise retrieve information that is embedded in a DocBlock.",
             "support": {
                 "issues": "https://github.com/phpDocumentor/ReflectionDocBlock/issues",
-                "source": "https://github.com/phpDocumentor/ReflectionDocBlock/tree/5.6.1"
+                "source": "https://github.com/phpDocumentor/ReflectionDocBlock/tree/5.6.0"
             },
-            "time": "2024-12-07T09:39:29+00:00"
+            "time": "2024-11-12T11:25:25+00:00"
         },
         {
             "name": "phpdocumentor/type-resolver",
@@ -4899,6 +4957,6 @@
         "ext-intl": "*",
         "ext-json": "*"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }

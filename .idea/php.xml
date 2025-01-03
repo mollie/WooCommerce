@@ -132,6 +132,10 @@
       <path value="$PROJECT_DIR$/.ddev/wordpress/wp-content/plugins/query-monitor/vendor/composer" />
       <path value="$PROJECT_DIR$/.ddev/wordpress/wp-content/plugins/environment-configurator/vendor/psr/container" />
       <path value="$PROJECT_DIR$/.ddev/wordpress/wp-content/plugins/environment-configurator/vendor/inpsyde/modularity" />
+      <path value="$PROJECT_DIR$/vendor/psr/container" />
+      <path value="$PROJECT_DIR$/vendor/inpsyde/modularity" />
+      <path value="$PROJECT_DIR$/vendor/sniccowp/php-scoper-wordpress-excludes" />
+      <path value="$PROJECT_DIR$/vendor/dhii/services" />
     </include_path>
   </component>
   <component name="PhpInterpreters">
@@ -241,7 +245,7 @@
       </server>
     </servers>
   </component>
-  <component name="PhpProjectSharedConfiguration" php_language_level="7.2">
+  <component name="PhpProjectSharedConfiguration" php_language_level="7.4">
     <option name="suggestChangeDefaultLanguageLevel" value="false" />
   </component>
   <component name="PhpStanOptionsConfiguration">

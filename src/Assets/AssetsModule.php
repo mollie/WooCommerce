@@ -533,7 +533,7 @@ class AssetsModule implements ExecutableModule
         $pluginPath = $container->get('shared.plugin_path');
         /** @var Settings */
         $settingsHelper = $container->get('settings.settings_helper');
-        $gatewayInstances = $container->get('gateway.instances');
+        $gatewayInstances = $container->get('__deprecated.gateway_helpers');
 
         /** Add support to Mollie blocks for Woocommerce checkout blocks functionality */
         //https://github.com/woocommerce/woocommerce-blocks/blob/trunk/docs/third-party-developers/extensibility/checkout-payment-methods/payment-method-integration.md#putting-it-all-together
@@ -588,7 +588,7 @@ class AssetsModule implements ExecutableModule
 
                 if ($hasBlocksEnabled) {
                     /** @var array */
-                    $gatewayInstances = $container->get('gateway.instances');
+                    $gatewayInstances = $container->get('__deprecated.gateway_helpers');
                     self::registerBlockScripts($pluginUrl, $pluginPath);
                     add_action('wp_enqueue_scripts', function () use ($dataService, $gatewayInstances) {
                         $this->enqueueBlockCheckoutScripts($dataService, $gatewayInstances);

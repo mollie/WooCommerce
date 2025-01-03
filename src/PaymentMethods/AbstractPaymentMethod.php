@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
 use Mollie\WooCommerce\Gateway\Surcharge;
-use Mollie\WooCommerce\Payment\PaymentFieldsService;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 
@@ -32,10 +30,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
      * @var Settings
      */
     protected $settingsHelper;
-    /**
-     * @var PaymentFieldsService
-     */
-    protected $paymentFieldsService;
+
     /**
      * @var Surcharge
      */
@@ -48,7 +43,6 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     public function __construct(
         IconFactory $iconFactory,
         Settings $settingsHelper,
-        PaymentFieldsService $paymentFieldsService,
         Surcharge $surcharge,
         array $apiPaymentMethod
     ) {
@@ -56,7 +50,6 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         $this->id = $this->getIdFromConfig();
         $this->iconFactory = $iconFactory;
         $this->settingsHelper = $settingsHelper;
-        $this->paymentFieldsService = $paymentFieldsService;
         $this->surcharge = $surcharge;
         $this->config = $this->getConfig();
         $this->settings = $this->getSettings();
@@ -175,25 +168,6 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
     public function getAllFormFields()
     {
         return $this->getFormFields($this->getSharedFormFields());
-    }
-
-    /**
-     * Sets the gateway's payment fields strategy based on payment method
-     * @param $gateway
-     * @return void
-     */
-    public function paymentFieldsStrategy($gateway)
-    {
-        $this->paymentFieldsService->setStrategy($this);
-        $this->paymentFieldsService->executeStrategy($gateway);
-    }
-
-    /**
-     * @return PaymentFieldsService
-     */
-    public function paymentFieldsService(): PaymentFieldsService
-    {
-        return $this->paymentFieldsService;
     }
 
     /**
@@ -339,5 +313,16 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         }
 
         return $savedTitle === $this->config['defaultTitle'];
+    }
+
+    /**
+     * @return string|NULL
+     */
+    public function getSelectedIssuer(): ?string
+    {
+        $issuer_id = $this->settingsHelper->getPluginId() . '_issuer_' . $this->id;
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $postedIssuer = wc_clean(wp_unslash($_POST[$issuer_id] ?? ''));
+        return !empty($postedIssuer) ? $postedIssuer : null;
     }
 }

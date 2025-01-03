@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
+use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\Api\Exceptions\ApiException;
-use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Payment;
 use Mollie\Api\Resources\Refund;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
-use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
+use Mollie\WooCommerce\Payment\Request\RequestFactory;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\SDK\Api;
+use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
+use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
 use WC_Order;
-use WC_Payment_Gateway;
 use WC_Subscriptions_Manager;
 use WP_Error;
 
@@ -24,14 +25,23 @@ class MolliePayment extends MollieObject
     public const ACTION_AFTER_REFUND_PAYMENT_CREATED = 'mollie-payments-for-woocommerce' . '_refund_payment_created';
     protected $pluginId;
 
-    public function __construct($data, $pluginId, Api $apiHelper, $settingsHelper, $dataHelper, $logger)
-    {
+    public function __construct(
+        $data,
+        string $pluginId,
+        Api $apiHelper,
+        Settings $settingsHelper,
+        Data $dataHelper,
+        Logger $logger,
+        RequestFactory $requestFactory
+    ) {
+
         $this->data = $data;
         $this->pluginId = $pluginId;
         $this->apiHelper = $apiHelper;
         $this->settingsHelper = $settingsHelper;
-        $this->dataHelper = $dataHelper;
         $this->logger = $logger;
+        $this->requestFactory = $requestFactory;
+        $this->dataHelper = $dataHelper;
     }
 
     public function getPaymentObject($paymentId, $testMode = false, $useCache = true)
@@ -61,76 +71,7 @@ class MolliePayment extends MollieObject
      */
     public function getPaymentRequestData($order, $customerId, $voucherDefaultCategory = Voucher::NO_CATEGORY)
     {
-        $settingsHelper = $this->settingsHelper;
-        $optionName = $this->pluginId . '_' . 'api_payment_description';
-        $option = get_option($optionName);
-        $paymentDescription = $this->getPaymentDescription($order, $option);
-        $paymentLocale = $settingsHelper->getPaymentLocale();
-        $storeCustomer = $settingsHelper->shouldStoreCustomer();
-
-        $gateway = wc_get_payment_gateway_by_order($order);
-
-        if (!$gateway || !($gateway instanceof MolliePaymentGateway)) {
-            return ['result' => 'failure'];
-        }
-
-        $gatewayId = $gateway->id;
-        $selectedIssuer = $gateway->getSelectedIssuer();
-        $returnUrl = $gateway->get_return_url($order);
-        $returnUrl = $this->getReturnUrl($order, $returnUrl);
-        $webhookUrl = $this->getWebhookUrl($order, $gatewayId);
-        $orderId = $order->get_id();
-
-        $paymentRequestData = [
-            'amount' => [
-                'currency' => $this->dataHelper
-                    ->getOrderCurrency($order),
-                'value' => $this->dataHelper
-                    ->formatCurrencyValue(
-                        $order->get_total(),
-                        $this->dataHelper->getOrderCurrency(
-                            $order
-                        )
-                    ),
-            ],
-            'description' => $paymentDescription,
-            'redirectUrl' => $returnUrl,
-            'webhookUrl' => $webhookUrl,
-            'method' => $gateway->paymentMethod()->getProperty('id'),
-            'issuer' => $selectedIssuer,
-            'locale' => $paymentLocale,
-            'metadata' => apply_filters(
-                $this->pluginId . '_payment_object_metadata',
-                [
-                    'order_id' => $order->get_id(),
-                ]
-            ),
-        ];
-
-        $paymentRequestData = $this->addSequenceTypeForSubscriptionsFirstPayments($order->get_id(), $gateway, $paymentRequestData);
-
-        if ($storeCustomer) {
-            $paymentRequestData['customerId'] = $customerId;
-        }
-
-        $cardToken = mollieWooCommerceCardToken();
-        if ($cardToken) {
-            $paymentRequestData['cardToken'] = $cardToken;
-        }
-        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        $applePayToken = wc_clean(wp_unslash($_POST["token"] ?? ''));
-        if ($applePayToken) {
-            $encodedApplePayToken = wp_json_encode($applePayToken);
-            $paymentRequestData['applePayPaymentToken'] = $encodedApplePayToken;
-        }
-        $paymentRequestData = $this->addCustomRequestFields($order, $paymentRequestData, $gateway);
-        return $paymentRequestData;
-    }
-
-    public function addSequenceTypeFirst($paymentRequestData)
-    {
-        $paymentRequestData['sequenceType'] = 'first';
-        return $paymentRequestData;
+        return $this->requestFactory->createRequest('payment', $order, $customerId);
     }
 
     /**
@@ -515,7 +456,7 @@ class MolliePayment extends MollieObject
 
     /**
      * @param WC_Order $order
-     * @param MolliePaymentGatewayI $gateway
+     * @param PaymentGateway $gateway
      * @param                    $newOrderStatus
      * @param                    $orderId
      */
@@ -525,27 +466,15 @@ class MolliePayment extends MollieObject
         $newOrderStatus
     ) {
 
-        if ($this->isOrderPaymentStartedByOtherGateway($order) || ! is_a($gateway, MolliePaymentGateway::class)) {
+        if ($this->isOrderPaymentStartedByOtherGateway($order) || ! is_a($gateway, PaymentGateway::class)) {
             $this->informNotUpdatingStatus($gateway->id, $order);
             return;
         }
-        $gateway->paymentService()->updateOrderStatus($order, $newOrderStatus);
+        $this->updateOrderStatus($order, $newOrderStatus);
     }
 
-    protected function addCustomRequestFields($order, array $paymentRequestData, MolliePaymentGateway $gateway)
+    public function setPayment($data)
     {
-        if ($gateway->paymentMethod()->hasProperty('paymentAPIfields')) {
-            $paymentAPIfields = $gateway->paymentMethod()->getProperty('paymentAPIfields');
-            foreach ($paymentAPIfields as $field) {
-                if (!method_exists($this, 'create' . ucfirst($field))) {
-                    continue;
-                }
-                $value = $this->{'create' . ucfirst($field)}($order);
-                if ($value) {
-                    $paymentRequestData[$field] = $value;
-                }
-            }
-        }
-        return $paymentRequestData;
+        $this->data = $data;
     }
 }

@@ -9,7 +9,7 @@ use DateTime;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\AdminNotice;
-use Mollie\WooCommerce\Payment\PaymentService;
+use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\Settings\General\MollieGeneralSettings;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use WC_Payment_Gateway;
@@ -230,7 +230,7 @@ class Settings
     public function isOrderApiSetting()
     {
         $orderApiSetting = get_option($this->getSettingId('api_switch'));
-        return !$orderApiSetting || is_string($orderApiSetting) && trim($orderApiSetting) === PaymentService::PAYMENT_METHOD_TYPE_ORDER;
+        return !$orderApiSetting || is_string($orderApiSetting) && trim($orderApiSetting) === PaymentProcessor::PAYMENT_METHOD_TYPE_ORDER;
     }
     /**
      * @param bool $overrideTestMode

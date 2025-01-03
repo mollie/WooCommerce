@@ -119,47 +119,46 @@ function handleException(Throwable $throwable)
  */
 function initialize()
 {
-    try {
-        require_once __DIR__ . '/inc/functions.php';
+    static $package;
+    if (!$package) {
+        try {
+            require_once __DIR__ . '/inc/functions.php';
 
-        if (!mollie_wc_plugin_autoload()) {
-            return;
-        }
-
-        $checker = new ConstraintsChecker();
-        $meetRequirements = $checker->handleActivation();
-        if (!$meetRequirements) {
-            $nextScheduledTime = wp_next_scheduled('pending_payment_confirmation_check');
-            if ($nextScheduledTime) {
-                wp_unschedule_event($nextScheduledTime, 'pending_payment_confirmation_check');
+            if (!mollie_wc_plugin_autoload()) {
+                return;
             }
-            return;
+
+            $checker = new ConstraintsChecker();
+            $meetRequirements = $checker->handleActivation();
+            if (!$meetRequirements) {
+                $nextScheduledTime = wp_next_scheduled('pending_payment_confirmation_check');
+                if ($nextScheduledTime) {
+                    wp_unschedule_event($nextScheduledTime, 'pending_payment_confirmation_check');
+                }
+                return;
+            }
+
+            // Initialize plugin.
+            $properties = PluginProperties::new(__FILE__);
+            $package = Package::new($properties);
+            $modules = (require __DIR__ . '/inc/modules.php')();
+            $modules = apply_filters('mollie_wc_plugin_modules', $modules);
+            foreach ($modules as $module) {
+                $package->addModule($module);
+            }
+            $package->boot();
+        } catch (Throwable $throwable) {
+            handleException($throwable);
         }
-        // Initialize plugin.
-        $properties = PluginProperties::new(__FILE__);
-        $bootstrap = Package::new($properties);
-        $modules = [
-            new ActivationModule(__FILE__, $properties->get('version')),
-            new NoticeModule(),
-            new SharedModule(),
-            new SDKModule(),
-            new SettingsModule(),
-            new LogModule('mollie-payments-for-woocommerce-'),
-            new AssetsModule(),
-            new GatewayModule(),
-            new VoucherModule(),
-            new PaymentModule(),
-            new MerchantCaptureModule(),
-            new UninstallModule(),
-        ];
-        $modules = apply_filters('mollie_wc_plugin_modules', $modules);
-        foreach ($modules as $module) {
-            $bootstrap->addModule($module);
-        }
-        $bootstrap->boot();
-    } catch (Throwable $throwable) {
-        handleException($throwable);
     }
+
+    /** @var Package $package */
+    return $package;
 }
 
-add_action('plugins_loaded', __NAMESPACE__ . '\\initialize');
+add_action(
+/**
+ * @throws Throwable
+ */ 'after_setup_theme', static function () {
+    initialize();
+});

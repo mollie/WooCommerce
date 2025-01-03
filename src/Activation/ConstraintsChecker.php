@@ -114,7 +114,7 @@ class ConstraintsChecker
         }
         $message .= sprintf(
         /* translators: Placeholder 1: opening tags Placeholder 2: closing tags */
-            __('%1$sCorrect the above errors to use Mollie Payments for Woocommerce%2$s', 'mollie-payments-for-woocommerce'),
+            __('%1$sCorrect the above errors to use Mollie Payments for WooCommerce%2$s', 'mollie-payments-for-woocommerce'),
             '<p>',
             '</p>'
         );

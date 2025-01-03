@@ -172,7 +172,7 @@ class OrderRequestStrategyTest extends TestCase
      * @test
      * @group skip
      */
-    public function processPayment_decimals_and_taxes_request_no_missmatch()
+    public function processPayment_decimals_and_taxes_request_no_mismatch()
     {
         $testDataSet = $this->generateTestDataSet();
 
@@ -253,7 +253,7 @@ class OrderRequestStrategyTest extends TestCase
         $this->assertArrayHasKey('metadata', $createRequestResult, 'createRequest should include metadata');
         $this->assertArrayHasKey('orderNumber', $createRequestResult, 'createRequest should include orderNumber');
 
-        $expectedResult = $this->noMissmatchError($createRequestResult);
+        $expectedResult = $this->noMismatchError($createRequestResult);
         $this->assertTrue($expectedResult);
     }
 
@@ -365,7 +365,7 @@ class OrderRequestStrategyTest extends TestCase
         return $item;
     }
 
-    private function noMissmatchError(array $arrayResult)
+    private function noMismatchError(array $arrayResult)
     {
         //array result total equals the sum of the lines
         $total = ($arrayResult['amount']['value']) * 1000;

@@ -535,7 +535,7 @@ class AssetsModule implements ExecutableModule
         $settingsHelper = $container->get('settings.settings_helper');
         $gatewayInstances = $container->get('__deprecated.gateway_helpers');
 
-        /** Add support to Mollie blocks for Woocommerce checkout blocks functionality */
+        /** Add support to Mollie blocks for WooCommerce checkout blocks functionality */
         //https://github.com/woocommerce/woocommerce-blocks/blob/trunk/docs/third-party-developers/extensibility/checkout-payment-methods/payment-method-integration.md#putting-it-all-together
         add_action(
             'woocommerce_blocks_loaded',

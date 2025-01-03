@@ -7,13 +7,30 @@ namespace Mollie\WooCommerce\Payment\Request\Middleware;
 use stdClass;
 use WC_Order;
 
+/**
+ * Class AddressMiddleware
+ *
+ * This middleware adds address information to the payment request data.
+ *
+ * @package Mollie\WooCommerce\Payment\Request\Middleware
+ */
 class AddressMiddleware implements RequestMiddlewareInterface
 {
     public const MAXIMAL_LENGTH_ADDRESS = 100;
     public const MAXIMAL_LENGTH_POSTALCODE = 20;
     public const MAXIMAL_LENGTH_CITY = 200;
     public const MAXIMAL_LENGTH_REGION = 200;
-    public function __invoke(array $requestData, WC_Order $order, $context = null, callable $next): array
+
+    /**
+     * Invoke the middleware.
+     *
+     * @param array<string, mixed> $requestData The request data to be modified.
+     * @param WC_Order $order The WooCommerce order object.
+     * @param mixed $context Additional context for the middleware.
+     * @param callable $next The next middleware to be called.
+     * @return array<string, mixed> The modified request data.
+     */
+    public function __invoke(array $requestData, WC_Order $order, $context, callable $next): array
     {
         $isPayPalExpressOrder = $order->get_meta('_mollie_payment_method_button') === 'PayPalButton';
         $billingAddress = null;
@@ -34,7 +51,13 @@ class AddressMiddleware implements RequestMiddlewareInterface
         return $next($requestData, $order, $context);
     }
 
-    private function createBillingAddress(WC_Order $order)
+    /**
+     * Create the billing address object.
+     *
+     * @param WC_Order $order The WooCommerce order object.
+     * @return stdClass The billing address object.
+     */
+    private function createBillingAddress(WC_Order $order): stdClass
     {
         // Setup billing and shipping objects
         $billingAddress = new stdClass();
@@ -99,7 +122,13 @@ class AddressMiddleware implements RequestMiddlewareInterface
         return $billingAddress;
     }
 
-    private function createShippingAddress(WC_Order $order)
+    /**
+     * Create the shipping address object.
+     *
+     * @param WC_Order $order The WooCommerce order object.
+     * @return stdClass The shipping address object.
+     */
+    private function createShippingAddress(WC_Order $order): stdClass
     {
         $shippingAddress = new stdClass();
         // Get user details
@@ -112,7 +141,6 @@ class AddressMiddleware implements RequestMiddlewareInterface
         $shippingAddress->email = (ctype_space($order->get_billing_email()))
             ? null
             : $order->get_billing_email(); // WooCommerce doesn't have a shipping email
-
 
         // Create shippingAddress object
         $shippingAddress->streetAndNumber = (ctype_space(
@@ -162,18 +190,29 @@ class AddressMiddleware implements RequestMiddlewareInterface
         return $shippingAddress;
     }
 
-    protected function getPhoneNumber($order)
+    /**
+     * Get the phone number from the order.
+     *
+     * @param WC_Order $order The WooCommerce order object.
+     * @return string|null The phone number.
+     */
+    protected function getPhoneNumber($order): ?string
     {
-
         $phone = !empty($order->get_billing_phone()) ? $order->get_billing_phone() : $order->get_shipping_phone();
         if (empty($phone)) {
             //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $phone =  wc_clean(wp_unslash($_POST['billing_phone'] ?? ''));
+            $phone = wc_clean(wp_unslash($_POST['billing_phone'] ?? ''));
         }
         return $phone;
     }
 
-    protected function getFormatedPhoneNumber(string $phone)
+    /**
+     * Format the phone number.
+     *
+     * @param string $phone The phone number.
+     * @return string|null The formatted phone number.
+     */
+    protected function getFormatedPhoneNumber(string $phone): ?string
     {
         //remove whitespaces and all non numerical characters except +
         $phone = preg_replace('/[^0-9+]+/', '', $phone);
@@ -191,8 +230,10 @@ class AddressMiddleware implements RequestMiddlewareInterface
     }
 
     /**
-     * @param $order
-     * @return string|null
+     * Get the billing company field.
+     *
+     * @param WC_Order $order The WooCommerce order object.
+     * @return string|null The billing company field.
      */
     public function billingCompanyField($order): ?string
     {
@@ -205,7 +246,13 @@ class AddressMiddleware implements RequestMiddlewareInterface
         );
     }
 
-    private function checkBillieCompanyField($order)
+    /**
+     * Check the Billie company field.
+     *
+     * @param WC_Order $order The WooCommerce order object.
+     * @return string|null The Billie company field.
+     */
+    private function checkBillieCompanyField($order): ?string
     {
         $gateway = wc_get_payment_gateway_by_order($order);
         if (!$gateway || !$gateway->id) {
@@ -227,14 +274,13 @@ class AddressMiddleware implements RequestMiddlewareInterface
     }
 
     /**
-     * Method that shortens the field to a certain length
+     * Method that shortens the field to a certain length.
      *
-     * @param string $field
-     * @param int    $maximalLength
-     *
-     * @return null|string
+     * @param string $field The field to be shortened.
+     * @param int $maximalLength The maximal length of the field.
+     * @return string|null The shortened field.
      */
-    protected function maximalFieldLengths($field, $maximalLength)
+    protected function maximalFieldLengths($field, $maximalLength): ?string
     {
         if (!is_string($field)) {
             return null;

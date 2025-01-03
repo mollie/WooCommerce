@@ -6,21 +6,47 @@ namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use WC_Order;
 
+/**
+ * Class UrlMiddleware
+ *
+ * Middleware to handle URL modifications for payment requests.
+ *
+ * @package Mollie\WooCommerce\Payment\Request\Middleware
+ */
 class UrlMiddleware implements RequestMiddlewareInterface
 {
-    private $pluginId;
     /**
-     * @var mixed
+     * @var string The plugin ID.
+     */
+    private $pluginId;
+
+    /**
+     * @var mixed The logger instance.
      */
     private $logger;
 
+    /**
+     * UrlMiddleware constructor.
+     *
+     * @param string $pluginId The plugin ID.
+     * @param mixed $logger The logger instance.
+     */
     public function __construct($pluginId, $logger)
     {
         $this->pluginId = $pluginId;
         $this->logger = $logger;
     }
 
-    public function __invoke(array $requestData, WC_Order $order, $context = null, $next): array
+    /**
+     * Invoke the middleware.
+     *
+     * @param array<string, mixed> $requestData The request data to be modified.
+     * @param WC_Order $order The WooCommerce order object.
+     * @param string $context Additional context for the middleware.
+     * @param callable $next The next middleware to be called.
+     * @return array<string, mixed> The modified request data.
+     */
+    public function __invoke(array $requestData, WC_Order $order, $context, $next): array
     {
         $gateway = wc_get_payment_gateway_by_order($order);
         if ($gateway) {
@@ -35,15 +61,15 @@ class UrlMiddleware implements RequestMiddlewareInterface
     }
 
     /**
-     * Get the url to return to on Mollie return
-     * saves the return redirect and failed redirect, so we save the page language in case there is one set
-     * For example 'http://mollie-wc.docker.myhost/wc-api/mollie_return/?order_id=89&key=wc_order_eFZyH8jki6fge'
+     * Get the URL to return to on Mollie return.
+     * Saves the return redirect and failed redirect, so we save the page language in case there is one set.
+     * For example 'http://mollie-wc.docker.myhost/wc-api/mollie_return/?order_id=89&key=wc_order_eFZyH8jki6fge'.
      *
-     * @param WC_Order $order The order processed
-     *
-     * @return string The url with order id and key as params
+     * @param WC_Order $order The order processed.
+     * @param string $returnUrl The base return URL.
+     * @return string The URL with order ID and key as params.
      */
-    private function getReturnUrl($order, $returnUrl)
+    private function getReturnUrl(WC_Order $order, string $returnUrl): string
     {
         $returnUrl = untrailingslashit($returnUrl);
         $returnUrl = $this->asciiDomainName($returnUrl);
@@ -64,14 +90,14 @@ class UrlMiddleware implements RequestMiddlewareInterface
     }
 
     /**
-     * Get the webhook url
-     * For example 'http://mollie-wc.docker.myhost/wc-api/mollie_return/mollie_wc_gateway_bancontact/?order_id=89&key=wc_order_eFZyH8jki6fge'
+     * Get the webhook URL.
+     * For example 'http://mollie-wc.docker.myhost/wc-api/mollie_return/mollie_wc_gateway_bancontact/?order_id=89&key=wc_order_eFZyH8jki6fge'.
      *
-     * @param WC_Order $order The order processed
-     *
-     * @return string The url with gateway and order id and key as params
+     * @param WC_Order $order The order processed.
+     * @param string $gatewayId The payment gateway ID.
+     * @return string The URL with gateway and order ID and key as params.
      */
-    public function getWebhookUrl($order, $gatewayId)
+    public function getWebhookUrl(WC_Order $order, string $gatewayId): string
     {
         $webhookUrl = WC()->api_request_url($gatewayId);
         $webhookUrl = untrailingslashit($webhookUrl);
@@ -91,11 +117,12 @@ class UrlMiddleware implements RequestMiddlewareInterface
     }
 
     /**
-     * @param $url
+     * Convert the domain name in a URL to ASCII.
      *
-     * @return string
+     * @param string $url The URL to convert.
+     * @return string The URL with the domain name in ASCII.
      */
-    protected function asciiDomainName($url): string
+    protected function asciiDomainName(string $url): string
     {
         $parsed = wp_parse_url($url);
         $scheme = isset($parsed['scheme']) ? $parsed['scheme'] : '';
@@ -113,15 +140,17 @@ class UrlMiddleware implements RequestMiddlewareInterface
 
         return $url;
     }
+
     /**
-     * @param $order_id
-     * @param $order_key
-     * @param $webhook_url
-     * @param string $filterFlag
+     * Append order arguments to a URL.
      *
-     * @return string
+     * @param int $order_id The order ID.
+     * @param string $order_key The order key.
+     * @param string $webhook_url The base webhook URL.
+     * @param string $filterFlag An optional filter flag.
+     * @return string The URL with appended order arguments.
      */
-    protected function appendOrderArgumentsToUrl($order_id, $order_key, $webhook_url, $filterFlag = '')
+    protected function appendOrderArgumentsToUrl(int $order_id, string $order_key, string $webhook_url, string $filterFlag = ''): string
     {
         $webhook_url = add_query_arg(
             [
@@ -133,17 +162,18 @@ class UrlMiddleware implements RequestMiddlewareInterface
         );
         return $webhook_url;
     }
+
     /**
-     * @param $domain
-     * @return false|mixed|string
+     * Encode a domain name to ASCII.
+     *
+     * @param string $domain The domain name to encode.
+     * @return string The encoded domain name.
      */
-    protected function idnEncodeDomain($domain)
+    protected function idnEncodeDomain(string $domain): string
     {
         if (
             defined('IDNA_NONTRANSITIONAL_TO_ASCII')
-            && defined(
-                'INTL_IDNA_VARIANT_UTS46'
-            )
+            && defined('INTL_IDNA_VARIANT_UTS46')
         ) {
             $domain = idn_to_ascii(
                 $domain,

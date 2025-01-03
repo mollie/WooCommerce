@@ -6,9 +6,21 @@ namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use WC_Order;
 
+/**
+ * Middleware to handle Apple Pay token in the request.
+ */
 class ApplePayTokenMiddleware implements RequestMiddlewareInterface
 {
-    public function __invoke(array $requestData, WC_Order $order, $context = null, $next): array
+    /**
+     * Invoke the middleware.
+     *
+     * @param array $requestData The request data.
+     * @param WC_Order $order The WooCommerce order object.
+     * @param string $context The context of the request.
+     * @param callable $next The next middleware to call.
+     * @return array The modified request data.
+     */
+    public function __invoke(array $requestData, WC_Order $order, $context, $next): array
     {
         // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         $applePayToken = wc_clean(wp_unslash($_POST["token"] ?? ''));

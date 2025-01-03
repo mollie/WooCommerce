@@ -6,16 +6,40 @@ namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use WC_Order;
 
+/**
+ * Class PaymentDescriptionMiddleware
+ *
+ * Middleware to handle payment description in the request.
+ *
+ * @package Mollie\WooCommerce\Payment\Request\Middleware
+ */
 class PaymentDescriptionMiddleware implements RequestMiddlewareInterface
 {
+    /**
+     * @var mixed The data helper instance.
+     */
     private $dataHelper;
 
+    /**
+     * PaymentDescriptionMiddleware constructor.
+     *
+     * @param mixed $dataHelper The data helper instance.
+     */
     public function __construct($dataHelper)
     {
         $this->dataHelper = $dataHelper;
     }
 
-    public function __invoke(array $requestData, WC_Order $order, string $context = null, $next): array
+    /**
+     * Invoke the middleware.
+     *
+     * @param array $requestData The request data.
+     * @param WC_Order $order The WooCommerce order object.
+     * @param string $context The context of the request.
+     * @param callable $next The next middleware to call.
+     * @return array The modified request data.
+     */
+    public function __invoke(array $requestData, WC_Order $order, string $context, $next): array
     {
         $optionName = $this->dataHelper->getPluginId() . '_' . 'api_payment_description';
         $option = get_option($optionName);
@@ -25,75 +49,74 @@ class PaymentDescriptionMiddleware implements RequestMiddlewareInterface
         return $next($requestData, $order, $context);
     }
 
+    /**
+     * Get the payment description.
+     *
+     * @param WC_Order $order The WooCommerce order object.
+     * @param mixed $option The option value.
+     * @return string The payment description.
+     */
     private function getPaymentDescription(WC_Order $order, $option): string
     {
         $description = !$option ? '' : trim($option);
         $description = !$description ? '{orderNumber}' : $description;
 
         switch ($description) {
-            // Support for old deprecated options.
-            // TODO: remove when deprecated
             case '{orderNumber}':
-                $description =
-                    /* translators: do not translate between {} */
-                    _x(
-                        'Order {orderNumber}',
-                        'Payment description for {orderNumber}',
-                        'mollie-payments-for-woocommerce'
-                    );
+                $description = _x(
+                    'Order {orderNumber}',
+                    'Payment description for {orderNumber}',
+                    'mollie-payments-for-woocommerce'
+                );
                 $description = $this->replaceTagsDescription($order, $description);
                 break;
             case '{storeName}':
-                $description =
-                    /* translators: do not translate between {} */
-                    _x(
-                        'StoreName {storeName}',
-                        'Payment description for {storeName}',
-                        'mollie-payments-for-woocommerce'
-                    );
+                $description = _x(
+                    'StoreName {storeName}',
+                    'Payment description for {storeName}',
+                    'mollie-payments-for-woocommerce'
+                );
                 $description = $this->replaceTagsDescription($order, $description);
                 break;
             case '{customer.firstname}':
-                $description =
-                    /* translators: do not translate between {} */
-                    _x(
-                        'Customer Firstname {customer.firstname}',
-                        'Payment description for {customer.firstname}',
-                        'mollie-payments-for-woocommerce'
-                    );
+                $description = _x(
+                    'Customer Firstname {customer.firstname}',
+                    'Payment description for {customer.firstname}',
+                    'mollie-payments-for-woocommerce'
+                );
                 $description = $this->replaceTagsDescription($order, $description);
                 break;
             case '{customer.lastname}':
-                $description =
-                    /* translators: do not translate between {} */
-                    _x(
-                        'Customer Lastname {customer.lastname}',
-                        'Payment description for {customer.lastname}',
-                        'mollie-payments-for-woocommerce'
-                    );
+                $description = _x(
+                    'Customer Lastname {customer.lastname}',
+                    'Payment description for {customer.lastname}',
+                    'mollie-payments-for-woocommerce'
+                );
                 $description = $this->replaceTagsDescription($order, $description);
                 break;
             case '{customer.company}':
-                $description =
-                    /* translators: do not translate between {} */
-                    _x(
-                        'Customer Company {customer.company}',
-                        'Payment description for {customer.company}',
-                        'mollie-payments-for-woocommerce'
-                    );
+                $description = _x(
+                    'Customer Company {customer.company}',
+                    'Payment description for {customer.company}',
+                    'mollie-payments-for-woocommerce'
+                );
                 $description = $this->replaceTagsDescription($order, $description);
                 break;
-            // Support for custom string with interpolation.
             default:
-                // Replace available description tags.
                 $description = $this->replaceTagsDescription($order, $description);
                 break;
         }
 
-        // Fall back on default if description turns out empty.
         return !$description ? __('Order', 'woocommerce') . ' ' . $order->get_order_number() : $description;
     }
 
+    /**
+     * Replace tags in the description with actual values.
+     *
+     * @param WC_Order $order The WooCommerce order object.
+     * @param string $description The description with tags.
+     * @return string The description with tags replaced.
+     */
     private function replaceTagsDescription(WC_Order $order, string $description): string
     {
         $replacement_tags = [

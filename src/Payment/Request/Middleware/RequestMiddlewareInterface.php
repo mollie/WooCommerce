@@ -6,5 +6,14 @@ use WC_Order;
 
 interface RequestMiddlewareInterface
 {
-    public function __invoke(array $requestData, WC_Order $order, string $context = null, callable $next): array;
+    /**
+     * Invoke the middleware.
+     *
+     * @param array<string, mixed> $requestData The request data to be modified.
+     * @param WC_Order $order The WooCommerce order object.
+     * @param string $context Additional context for the middleware.
+     * @param callable $next The next middleware to be called.
+     * @return array<string, mixed> The modified request data.
+     */
+    public function __invoke(array $requestData, WC_Order $order, string $context, callable $next): array;
 }

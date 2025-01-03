@@ -7,18 +7,43 @@ namespace Mollie\WooCommerce\Payment\Request\Middleware;
 use Mollie\WooCommerce\Shared\Data;
 use WC_Order;
 
+/**
+ * Middleware to add sequence type for subscription payments.
+ */
 class AddSequenceTypeForSubscriptionsMiddleware implements RequestMiddlewareInterface
 {
+    /**
+     * @var Data Helper class for data operations.
+     */
     private Data $dataHelper;
+
+    /**
+     * @var string Plugin ID.
+     */
     private string $pluginId;
 
+    /**
+     * Constructor.
+     *
+     * @param Data $dataHelper Helper class for data operations.
+     * @param string $pluginId Plugin ID.
+     */
     public function __construct($dataHelper, $pluginId)
     {
         $this->dataHelper = $dataHelper;
         $this->pluginId = $pluginId;
     }
 
-    public function __invoke(array $requestData, WC_Order $order, $context = null, callable $next): array
+    /**
+     * Invoke the middleware.
+     *
+     * @param array $requestData The request data.
+     * @param WC_Order $order The WooCommerce order object.
+     * @param string $context The context of the request.
+     * @param callable $next The next middleware to call.
+     * @return array The modified request data.
+     */
+    public function __invoke(array $requestData, WC_Order $order, $context, callable $next): array
     {
         $gateway = wc_get_payment_gateway_by_order($order);
         if ($gateway) {
@@ -27,6 +52,15 @@ class AddSequenceTypeForSubscriptionsMiddleware implements RequestMiddlewareInte
         return $next($requestData, $order, $context);
     }
 
+    /**
+     * Add sequence type for the first payments of subscriptions.
+     *
+     * @param int $orderId The order ID.
+     * @param WC_Payment_Gateway $gateway The payment gateway.
+     * @param array $requestData The request data.
+     * @param string $context The context of the request.
+     * @return array The modified request data.
+     */
     private function addSequenceTypeForSubscriptionsFirstPayments($orderId, $gateway, $requestData, $context): array
     {
         if ($this->dataHelper->isSubscription($orderId) || $this->dataHelper->isWcSubscription($orderId)) {
@@ -40,6 +74,13 @@ class AddSequenceTypeForSubscriptionsMiddleware implements RequestMiddlewareInte
         return $requestData;
     }
 
+    /**
+     * Add the sequence type 'first' to the request data.
+     *
+     * @param array $requestData The request data.
+     * @param string $context The context of the request.
+     * @return array The modified request data.
+     */
     private function addSequenceTypeFirst($requestData, $context)
     {
         if ($context === 'order') {

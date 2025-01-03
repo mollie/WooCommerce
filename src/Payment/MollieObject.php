@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
-use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Payment;
-use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Payment\Request\RequestFactory;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\SDK\Api;
@@ -17,7 +15,6 @@ use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use WC_Order;
 use WC_Payment_Gateway;
 use Psr\Log\LoggerInterface as Logger;
-use stdClass;
 
 class MollieObject
 {

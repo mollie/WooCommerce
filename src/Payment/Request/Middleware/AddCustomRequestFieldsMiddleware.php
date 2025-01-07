@@ -52,7 +52,7 @@ class AddCustomRequestFieldsMiddleware implements RequestMiddlewareInterface
                 if (class_exists($middlewareClass)) {
                     $middleware = $this->container->get($middlewareClass);
                     if ($middleware instanceof RequestMiddlewareInterface) {
-                        $requestData = $middleware->__invoke($requestData, $order);
+                        $requestData = $middleware->__invoke($requestData, $order, $context, $next);
                     }
                 }
             }

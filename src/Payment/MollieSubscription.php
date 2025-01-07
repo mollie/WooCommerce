@@ -93,7 +93,7 @@ class MollieSubscription extends MollieObject
         $middleware = new PaymentDescriptionMiddleware($this->dataHelper);
         $requestData = [];
         $context = 'payment';
-        $result = $middleware->__invoke($requestData, $order, $context, function($requestData) {
+        $result = $middleware->__invoke($requestData, $order, $context, static function ($requestData) {
             return $requestData;
         });
         return $result['description'];

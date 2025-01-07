@@ -48,6 +48,7 @@ class OrderInstructionsManager
         $admin_instructions = false,
         $plain_text = false
     ) {
+
         if (
             ($admin_instructions && !self::$alreadyDisplayedAdminInstructions)
             || (!$admin_instructions && !self::$alreadyDisplayedCustomerInstructions)
@@ -55,18 +56,18 @@ class OrderInstructionsManager
             $order_payment_method = $order->get_payment_method();
 
             // Invalid gateway
-            if ($deprecatedGatewayHelper->id !== $order_payment_method) {
+            if ($paymentGateway->id !== $order_payment_method) {
                 return;
             }
 
             $payment = $deprecatedGatewayHelper->paymentObject()->getActiveMolliePayment(
                 $order->get_id()
             );
-
+            $methodId = str_replace('mollie_wc_gateway_', '', $paymentGateway->id);
             // Mollie payment not found or invalid gateway
             if (
                 !$payment
-                || $payment->method !== $deprecatedGatewayHelper->paymentMethod->getProperty('id')
+                || $payment->method !== $methodId
             ) {
                 return;
             }

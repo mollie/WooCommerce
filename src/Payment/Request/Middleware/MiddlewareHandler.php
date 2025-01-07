@@ -54,12 +54,12 @@ class MiddlewareHandler
     {
         return array_reduce(
             array_reverse($middlewares),
-            function ($next, $middleware) {
-                return function ($requestData, $order, $context) use ($middleware, $next) {
+            static function ($next, $middleware) {
+                return static function ($requestData, $order, $context) use ($middleware, $next) {
                     return $middleware($requestData, $order, $context, $next);
                 };
             },
-            function ($requestData) {
+            static function ($requestData) {
                 return $requestData;
             }
         );

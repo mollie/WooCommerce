@@ -36,7 +36,7 @@ class MolliePaymentGatewayHandler
     /**
      * @var PaymentMethodI
      */
-    public $paymentMethod;
+    protected PaymentMethodI $paymentMethod;
     /**
      * @var string
      */

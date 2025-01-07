@@ -93,7 +93,6 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             30
         );
 
-
         // Disable SEPA as payment option in WooCommerce checkout
         add_filter(
             'woocommerce_available_payment_gateways',
@@ -187,7 +186,6 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             }
             return $fields;
         }, 10, 3);
-
 
         return true;
     }

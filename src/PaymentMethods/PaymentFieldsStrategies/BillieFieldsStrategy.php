@@ -10,7 +10,9 @@ class BillieFieldsStrategy extends AbstractPaymentFieldsRenderer implements Paym
 {
     const FIELD_COMPANY = "billing_company";
 
-    public function renderFields(): string    {
+    public function renderFields(): string
+    {
+
         $showCompanyField = false;
 
         if (is_checkout_pay_page()) {

@@ -285,7 +285,7 @@ return static function (): array {
                 $deprecatedGatewayHelper = $oldGatewayInstances[$gatewayId];
                 add_action(
                     'woocommerce_thankyou_' . $paymentGateway->id,
-                    function ($order_id) use ($instructionsManager, $paymentGateway, $deprecatedGatewayHelper) {
+                    static function ($order_id) use ($instructionsManager, $paymentGateway, $deprecatedGatewayHelper) {
                         $order = wc_get_order($order_id);
 
                         // Order not found
@@ -318,7 +318,7 @@ return static function (): array {
                 $deprecatedGatewayHelper = $oldGatewayInstances[$gatewayId];
                 add_action(
                     'woocommerce_email_after_order_table',
-                    function ($order, $sent_to_admin, $plain_text) use ($instructionsManager, $paymentGateway, $deprecatedGatewayHelper) {
+                    static function ($order, $sent_to_admin, $plain_text) use ($instructionsManager, $paymentGateway, $deprecatedGatewayHelper) {
                         $instructionsManager->displayInstructions(
                             $paymentGateway,
                             $deprecatedGatewayHelper,
@@ -333,7 +333,7 @@ return static function (): array {
 
                 add_action(
                     'woocommerce_email_order_meta',
-                    function ($order, $sent_to_admin, $plain_text) use ($instructionsManager, $paymentGateway, $deprecatedGatewayHelper) {
+                    static function ($order, $sent_to_admin, $plain_text) use ($instructionsManager, $paymentGateway, $deprecatedGatewayHelper) {
                         $instructionsManager->displayInstructions(
                             $paymentGateway,
                             $deprecatedGatewayHelper,
@@ -354,7 +354,7 @@ return static function (): array {
                 if ($paymentGateway->supports('subscriptions')) {
                     add_filter(
                         $pluginId . '_is_subscription_payment',
-                        function ($isSubscription, $orderId) use ($pluginId, $dataHelper) {
+                        static function ($isSubscription, $orderId) use ($pluginId, $dataHelper) {
                             if ($dataHelper->isWcSubscription($orderId)) {
                                 add_filter(
                                     $pluginId . '_is_automatic_payment_disabled',

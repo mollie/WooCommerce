@@ -14,7 +14,6 @@ class CreditcardFieldsStrategy extends AbstractPaymentFieldsRenderer implements 
         if (!$this->isMollieComponentsEnabled($this->deprecatedHelperGateway->paymentMethod())) {
             return '';
         }
-        $this->deprecatedHelperGateway->has_fields = true;
         $allowedHtml = $this->svgAllowedHtml();
 
         $output = '<div class="mollie-components"></div>';

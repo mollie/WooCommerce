@@ -49,10 +49,7 @@ class MolliePaymentGatewayHandler
      * @var NoticeInterface
      */
     protected $notice;
-    /**
-     * @var PaymentProcessor
-     */
-    protected $paymentProcessor;
+
     /**
      * @var MollieOrderService
      */

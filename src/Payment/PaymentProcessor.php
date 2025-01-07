@@ -87,7 +87,7 @@ class PaymentProcessor implements PaymentProcessorInterface
 
     public function setGatewayHelper(string $paymentGatewayId)
     {
-        $this->deprecatedGatewayHelper = $this->deprecatedGatewayInstances[$paymentGatewayId];
+        $this->deprecatedGatewayHelper = $this->deprecatedGatewayInstances[$paymentGatewayId]??false;
     }
     public function setGateway(PaymentGateway $gateway)
     {
@@ -99,6 +99,9 @@ class PaymentProcessor implements PaymentProcessorInterface
         $orderId = $order->get_id();
         $this->setGateway($paymentGateway);
         $this->setGatewayHelper($paymentGateway->id);
+        if($this->deprecatedGatewayHelper === false){
+            return ['result' => 'failure'];
+        }
 
         $redirectUrl = $paymentGateway->get_return_url($order);
         $paymentMethod = $this->deprecatedGatewayHelper->paymentMethod();

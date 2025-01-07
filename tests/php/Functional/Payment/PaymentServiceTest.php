@@ -76,7 +76,7 @@ class PaymentServiceTest extends TestCase
         );
         $apiClientMock->orders = $orderEndpoints;
         $voucherDefaultCategory = Voucher::NO_CATEGORY;
-        $deprecatedGatewayHelper = $this->mollieGateway($paymentMethodId, $testee);
+        $deprecatedGatewayHelper = $this->mollieGateway($paymentMethodId);
         $testee = new PaymentProcessor(
             $this->helperMocks->noticeMock(),
             $this->helperMocks->loggerMock(),
@@ -90,6 +90,7 @@ class PaymentServiceTest extends TestCase
             ['mollie_wc_gateway_ideal' => $deprecatedGatewayHelper]
         );
         $gateway = $this->helperMocks->genericPaymentGatewayMock();
+        $gateway->id = 'mollie_wc_gateway_ideal';
         $gateway->method('supports')->willReturnMap([
                                                         ['subscriptions', false]
                                                     ]);
@@ -158,7 +159,8 @@ class PaymentServiceTest extends TestCase
         $apiClientMock->orders = $orderEndpointsMock;
         $voucherDefaultCategory = Voucher::NO_CATEGORY;
         $gateway = $this->helperMocks->genericPaymentGatewayMock();
-        $deprecatedGatewayHelper = $this->mollieGateway($paymentMethodId, $testee);
+        $gateway->id = 'mollie_wc_gateway_ideal';
+        $deprecatedGatewayHelper = $this->mollieGateway($paymentMethodId);
         $testee = new PaymentProcessor(
             $this->helperMocks->noticeMock(),
             $this->helperMocks->loggerMock(),
@@ -171,8 +173,8 @@ class PaymentServiceTest extends TestCase
             $voucherDefaultCategory,
             ['mollie_wc_gateway_ideal' => $deprecatedGatewayHelper]
         );
-
-        $testee->setGatewayHelper($gateway->id);
+        $testee->setGateway($gateway);
+        $testee->setGatewayHelper('mollie_wc_gateway_ideal');
         $wcOrderId = 1;
         $wcOrderKey = 'wc_order_hxZniP1zDcnM8';
         $wcOrder = $this->wcOrder($wcOrderId, $wcOrderKey);
@@ -200,8 +202,8 @@ class PaymentServiceTest extends TestCase
 
         when('__')->returnArg(1);
     }
-    protected function mollieGateway($paymentMethodName, $testee, $isSepa = false, $isSubscription = false){
-        return $this->helperMocks->mollieGatewayBuilder($paymentMethodName, $isSepa, $isSubscription, [], $testee);
+    protected function mollieGateway($paymentMethodName, $isSepa = false, $isSubscription = false){
+        return $this->helperMocks->mollieGatewayBuilder($paymentMethodName, $isSepa, $isSubscription, []);
     }
 
     public function paymentFactory(){

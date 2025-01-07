@@ -258,9 +258,8 @@ class HelperMocks extends TestCase
         return $paymentMethod;
     }
 
-    public function mollieGatewayBuilder($paymentMethodName, $isSepa, $isSubscription, $settings, $paymentService = null) {
+    public function mollieGatewayBuilder($paymentMethodName, $isSepa, $isSubscription, $settings) {
         $paymentMethod = $this->paymentMethodBuilder($paymentMethodName, $isSepa, $isSubscription, $settings);
-        $paymentService = $paymentService ?? $this->paymentService();
         $orderInstructionsService = $this->orderInstructionsService();
         $mollieOrderService = $this->mollieOrderService();
         $data = $this->dataHelper();
@@ -278,7 +277,6 @@ class HelperMocks extends TestCase
             MolliePaymentGatewayHandler::class,
             [
                 $paymentMethod,
-                $paymentService,
                 $orderInstructionsService,
                 $mollieOrderService,
                 $data,

@@ -67,7 +67,6 @@ class MollieSubscriptionTest extends TestCase
 
     private function buildTestee(){
         $paymentMethod = $this->helperMocks->paymentMethodBuilder('Ideal');
-        $paymentService = $this->helperMocks->paymentService();
         $orderInstructionsService = $this->helperMocks->orderInstructionsService();
         $mollieOrderService = $this->helperMocks->mollieOrderService();
         $data = $this->helperMocks->dataHelper();
@@ -109,7 +108,6 @@ class MollieSubscriptionTest extends TestCase
             MollieSubscriptionGatewayHandler::class,
             [
                 $paymentMethod,
-                $paymentService,
                 $orderInstructionsService,
                 $mollieOrderService,
                 $data,

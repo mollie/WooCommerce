@@ -6,7 +6,8 @@ namespace Mollie\WooCommerceTests\Functional\Payment;
 use Mockery;
 use Mollie\Api\MollieApiClient;
 use Mollie\WooCommerce\Payment\OrderLines;
-use Mollie\WooCommerce\Payment\Request\Decorators\OrderLinesMiddleware;
+use Mollie\WooCommerce\Payment\Request\Middleware\MiddlewareHandler;
+use Mollie\WooCommerce\Payment\Request\Middleware\OrderLinesMiddleware;
 use Mollie\WooCommerce\Payment\Request\Strategies\OrderRequestStrategy;
 use Mollie\WooCommerce\Payment\Request\Strategies\RequestStrategyInterface;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
@@ -57,11 +58,11 @@ class OrderRequestStrategyTest extends TestCase
 
         $dataHelper = $this->helperMocks->dataHelper();
         $settingsHelper = $this->helperMocks->settingsHelper();
-        $decorators = [];
 
+        $middlewareHandler = new MiddlewareHandler([]);
         $strategyClass = OrderRequestStrategy::class;
         /** @var RequestStrategyInterface $strategy */
-        $strategy = new $strategyClass($dataHelper, $settingsHelper, $decorators);
+        $strategy = new $strategyClass($dataHelper, $settingsHelper, $middlewareHandler);
 
         $order = Mockery::mock(WC_Order::class);
 
@@ -81,9 +82,9 @@ class OrderRequestStrategyTest extends TestCase
 
         $dataHelper = $this->helperMocks->dataHelper();
         $settingsHelper = $this->helperMocks->settingsHelper();
-
+        $middlewareHandler = new MiddlewareHandler([]);
         $strategyClass = OrderRequestStrategy::class;
-        $strategy = new $strategyClass($dataHelper, $settingsHelper, []);
+        $strategy = new $strategyClass($dataHelper, $settingsHelper, $middlewareHandler);
         $order = Mockery::mock(WC_Order::class);
 
         $result = $strategy->createRequest($order, 'some-customer-id');
@@ -102,19 +103,20 @@ class OrderRequestStrategyTest extends TestCase
 
         $dataHelper = $this->helperMocks->dataHelper();
         $settingsHelper = $this->helperMocks->settingsHelper();
+        $order = Mockery::mock(WC_Order::class);
+        $middleware = Mockery::mock(OrderLinesMiddleware::class);
+        $middleware->shouldReceive('__invoke')->andReturnUsing(function ($data) {
+            $data['decorated'] = true;
+            return $data;
+        });
 
-        $decorator = Mockery::mock('alias:SomeDecoratorInterface');
-        $decorator->shouldReceive('decorate')
-            ->once()
-            ->andReturnUsing(function ($requestData, $order, $context) {
-                $requestData['decorated'] = true;
-                return $requestData;
-            });
+        $middlewareHandler = new MiddlewareHandler([$middleware]);
+
 
         $strategyClass = OrderRequestStrategy::class;
-        $strategy = new $strategyClass($dataHelper, $settingsHelper, [ $decorator ]);
+        $strategy = new $strategyClass($dataHelper, $settingsHelper, $middlewareHandler);
 
-        $order = Mockery::mock(WC_Order::class);
+
         $order->shouldReceive('get_id')->andReturn(1234);
         $order->shouldReceive('get_total')->andReturn(99.99);
         $order->shouldReceive('get_order_number')->andReturn('1001');

@@ -2,7 +2,7 @@
 
 cd languages || exit
 
-POT_FILE="en_GB.pot"
+POT_FILE="mollie-payments-for-woocommerce.pot"
 CSV_DIR="untranslated_csv"
 
 LANG_EXT=("-de_DE" "-de_DE_formal" "-es_ES" "-fr_FR" "-it_IT" "-nl_NL" "-nl_NL_formal" "-nl_BE" "-nl_BE_formal")

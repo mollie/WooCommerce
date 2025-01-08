@@ -9,7 +9,7 @@ ddev debug compose-config | \
   sed 's/Running  Command=.*//g' | \
   # Remove localhost bindings
   sed -r 's#\s- 127\.0\.0\.1\:\:(80|443)/tcp##g' | \
-  # convert newlines to formfeed (so we can do multiline replacment
+  # convert newlines to formfeed (so we can do multiline replacement
   tr '\n' '\f' | \
   # convert empty port: into empty array port: []
   sed -r 's/ports:\f\s+\f\s+\f/ports: \[\]\f/g' | \

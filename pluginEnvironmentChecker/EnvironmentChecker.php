@@ -63,6 +63,6 @@ class EnvironmentChecker implements ConstraintInterface {
 	protected function esc_html__($string, $params = [])
 	{
         $interpolated = vsprintf($string, $params);
-		return $interpolated && esc_html__($interpolated, 'mollie-payments-for-woocommerce');
+		return $interpolated && esc_html($interpolated);
 	}
 }

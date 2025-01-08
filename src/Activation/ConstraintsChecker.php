@@ -68,7 +68,10 @@ class ConstraintsChecker
             foreach ($mainException as $error) {
                 $errors[] = $error->getMessage();
             }
-            $this->showNotice($errors);
+            add_action('after_setup_theme', function () use ($errors) {
+                $this->showNotice($errors);
+            });
+
             $disabler = new PluginDisabler(
                 'mollie-payments-for-woocommerce',
                 'mollie_wc_plugin_init'

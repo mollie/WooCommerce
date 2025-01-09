@@ -4,8 +4,18 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
+/**
+ * Class Billie
+ *
+ * Handles the Billie payment method for WooCommerce.
+ */
 class Billie extends AbstractPaymentMethod implements PaymentMethodI
 {
+    /**
+     * Get the configuration for the Billie payment method.
+     *
+     * @return array
+     */
     protected function getConfig(): array
     {
         return [
@@ -35,6 +45,10 @@ class Billie extends AbstractPaymentMethod implements PaymentMethodI
         ];
     }
 
+    /**
+     * Add filters and actions for the Billie payment method.
+     * This will be added during constructor
+     */
     public function filtersOnBuild()
     {
         add_filter(
@@ -50,7 +64,13 @@ class Billie extends AbstractPaymentMethod implements PaymentMethodI
         );
     }
 
-    public function getFormFields($generalFormFields): array
+    /**
+     * Modify the general form fields for the Billie payment method.
+     *
+     * @param array $generalFormFields
+     * @return array
+     */
+    public function getFormFields(array $generalFormFields): array
     {
         unset($generalFormFields[1]);
         unset($generalFormFields['allowed_countries']);
@@ -58,7 +78,13 @@ class Billie extends AbstractPaymentMethod implements PaymentMethodI
         return $generalFormFields;
     }
 
-    public function BillieFieldsMandatory($fields, $errors)
+    /**
+     * Validate mandatory fields for the Billie payment method.
+     *
+     * @param array $fields
+     * @param array $errors
+     */
+    public function BillieFieldsMandatory(array $fields, array $errors)
     {
         $gatewayName = "mollie_wc_gateway_billie";
         $field = 'billing_company_billie';
@@ -66,12 +92,18 @@ class Billie extends AbstractPaymentMethod implements PaymentMethodI
         return $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $field, $companyLabel, $errors);
     }
 
-    public function switchFields($data)
+    /**
+     * Switch fields for the Billie payment method.
+     *
+     * @param array $data
+     * @return array
+     */
+    public function switchFields(array $data): array
     {
         if (isset($data['payment_method']) && $data['payment_method'] === 'mollie_wc_gateway_billie') {
             $fieldPosted = filter_input(INPUT_POST, 'billing_company_billie', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
-            if ($fieldPosted) {
-                $data['billing_company'] = !empty($fieldPosted) ? $fieldPosted : $data['billing_company'];
+            if (!empty($fieldPosted) && is_string($fieldPosted)) {
+                $data['billing_company'] = $fieldPosted;
             }
         }
         return $data;
@@ -79,31 +111,38 @@ class Billie extends AbstractPaymentMethod implements PaymentMethodI
 
     /**
      * Some payment methods require mandatory fields, this function will add them to the checkout fields array
-     * @param $fields
+     * @param array $fields
      * @param string $gatewayName
      * @param string $field
-     * @param $errors
+     * @param array $errors
      * @return mixed
      */
-    public function addPaymentMethodMandatoryFields($fields, string $gatewayName, string $field, string $fieldLabel, $errors)
+    public function addPaymentMethodMandatoryFields(array $fields, string $gatewayName, string $field, string $fieldLabel, array $errors)
     {
         if ($fields['payment_method'] !== $gatewayName) {
             return $fields;
         }
-        if (!isset($fields[$field])) {
-            $fieldPosted = filter_input(INPUT_POST, $field, FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
-            if ($fieldPosted) {
-                $fields[$field] = $fieldPosted;
-            } else {
-                $errors->add(
-                    'validation',
-                    sprintf(
-                    /* translators: Placeholder 1: field name. */
-                        __('%s is a required field.', 'woocommerce'),
-                        "<strong>$fieldLabel</strong>"
-                    )
-                );
+        $fieldPosted = filter_input(INPUT_POST, $field, FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+
+        if (!empty($fieldPosted) && is_string($fieldPosted)) {
+            if (isset($fields['billing_company']) && $fields['billing_company'] === $fieldPosted) {
+                return $fields;
             }
+            if (isset($fields['shipping_company']) && $fields['shipping_company'] === $fieldPosted) {
+                return $fields;
+            }
+            $fields['billing_company'] = $fieldPosted;
+        }
+
+        if (empty($fields['billing_company']) && empty($fields['shipping_company'])) {
+            $errors->add(
+                'validation',
+                sprintf(
+                /* translators: Placeholder 1: field name. */
+                    __('%s is a required field.', 'woocommerce'),
+                    "<strong>$fieldLabel</strong>"
+                )
+            );
         }
 
         return $fields;

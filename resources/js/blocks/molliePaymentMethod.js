@@ -4,7 +4,7 @@ let activePaymentMethodLocal
 let cachedAvailableGateways
 let creditCardSelected = new Event("mollie_creditcard_component_selected", {bubbles: true});
 const MollieComponent = (props) => {
-    let {onSubmit, activePaymentMethod, billing, item, useEffect, ajaxUrl, jQuery, emitResponse, eventRegistration, requiredFields, shippingData, isCompanyFieldVisible, isPhoneFieldVisible} = props
+    let {onSubmit, activePaymentMethod, billing, item, useEffect, ajaxUrl, jQuery, emitResponse, eventRegistration, requiredFields, shippingData, isPhoneFieldVisible} = props
     const {  responseTypes } = emitResponse;
     const {onPaymentSetup, onCheckoutValidation} = eventRegistration;
     const [ selectedIssuer, selectIssuer ] = wp.element.useState('');
@@ -114,7 +114,7 @@ const MollieComponent = (props) => {
                         payment_method_title: item.title,
                         [issuerKey]: selectedIssuer,
                         billing_phone: inputPhone,
-                        billing_company: inputCompany,
+                        billing_company_billie: inputCompany,
                         billing_birthdate: inputBirthdate,
                         cardToken: tokenVal,
                     }
@@ -133,7 +133,7 @@ const MollieComponent = (props) => {
 
     useEffect(() => {
         let companyLabel = jQuery('div.wc-block-components-text-input.wc-block-components-address-form__company > label')
-        if (companyLabel.length === 0) {
+        if (companyLabel.length === 0 || item.hideCompanyField === true) {
             return
         }
 
@@ -219,14 +219,20 @@ const MollieComponent = (props) => {
     }
 
     if (item.name === "mollie_wc_gateway_billie") {
-        if (isCompanyFieldVisible) {
-           return;
+        const billingCompanyField = document.querySelector('#billing-company');
+        const shippingCompanyField = document.querySelector('#shipping-company');
+        const isBillingCompanyRequired = billingCompanyField?.hasAttribute('required');
+        const isShippingCompanyRequired = shippingCompanyField?.hasAttribute('required');
+
+        if ((billingCompanyField && isBillingCompanyRequired) || (shippingCompanyField && isShippingCompanyRequired) || item.hideCompanyField === true) {
+            return;
         }
+
         const companyField = item.companyPlaceholder ? item.companyPlaceholder : "Company name";
         return (
             <>
                 <div><p>{item.content}</p></div>
-                {fieldMarkup("billing-company","text", companyField, updateCompany, inputCompany)}
+                {fieldMarkup("billing_company_billie","text", companyField, updateCompany, inputCompany)}
             </>
         );
     }
@@ -271,7 +277,7 @@ const MollieComponent = (props) => {
     return <div><p>{item.content}</p></div>
 }
 
-const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isCompanyFieldVisible, isPhoneFieldVisible) =>{
+const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isPhoneFieldVisible) =>{
     let billingCountry = filters.billingCountry
     let cartTotal = filters.cartTotal
     cachedAvailableGateways = availableGateways
@@ -282,7 +288,7 @@ const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, available
     return {
         name: item.name,
         label: <div dangerouslySetInnerHTML={{__html: item.label}}/>,
-        content: <MollieComponent item={item} useEffect={useEffect} ajaxUrl={ajaxUrl} jQuery={jQuery} requiredFields={requiredFields} isCompanyFieldVisible={isCompanyFieldVisible} isPhoneFieldVisible={isPhoneFieldVisible}/>,
+        content: <MollieComponent item={item} useEffect={useEffect} ajaxUrl={ajaxUrl} jQuery={jQuery} requiredFields={requiredFields} isPhoneFieldVisible={isPhoneFieldVisible}/>,
         edit: <div>{item.edit}</div>,
         paymentMethodId: item.paymentMethodId,
         canMakePayment: ({cartTotals, billingData}) => {

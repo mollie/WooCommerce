@@ -734,6 +734,9 @@ class GatewayModule implements ServiceModule, ExecutableModule
         if ($fields['payment_method'] !== $gatewayName) {
             return $fields;
         }
+        if (!empty($fields['billing_company'])) {
+            return $fields;
+        }
         if (!isset($fields[$field])) {
             $fieldPosted = filter_input(INPUT_POST, $field, FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
             if ($fieldPosted) {

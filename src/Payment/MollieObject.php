@@ -1109,7 +1109,7 @@ class MollieObject
         $isBillieMethodId = $gateway->id === 'mollie_wc_gateway_billie';
         if ($isBillieMethodId) {
             //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $fieldPosted = wc_clean(wp_unslash($_POST["billing_company"] ?? ''));
+            $fieldPosted = wc_clean(wp_unslash($_POST["billing_company_billie"] ?? $_POST["billing_company"] ?? ''));
             if ($fieldPosted === '' || !is_string($fieldPosted)) {
                 return null;
             }

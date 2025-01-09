@@ -17,7 +17,7 @@ class BillieFieldsStrategy implements PaymentFieldsStrategyI
             $showCompanyField = empty($order->get_billing_company());
         }
 
-        if (is_checkout() && !is_checkout_pay_page()) {
+        if (is_checkout() && !is_checkout_pay_page() && !isset(WC()->checkout()->get_checkout_fields()['billing']['billing_company'])) {
             $showCompanyField = true;
         }
 

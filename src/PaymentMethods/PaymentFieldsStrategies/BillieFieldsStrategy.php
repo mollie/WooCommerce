@@ -6,7 +6,7 @@ namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
 class BillieFieldsStrategy implements PaymentFieldsStrategyI
 {
-    const FIELD_COMPANY = "billing_company_billie";
+    public const FIELD_COMPANY = 'billing_company_billie';
 
     public function execute($gateway, $dataHelper)
     {

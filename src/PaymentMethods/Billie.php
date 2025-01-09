@@ -82,9 +82,9 @@ class Billie extends AbstractPaymentMethod implements PaymentMethodI
      * Validate mandatory fields for the Billie payment method.
      *
      * @param array $fields
-     * @param array $errors
+     * @param $errors
      */
-    public function BillieFieldsMandatory(array $fields, array $errors)
+    public function BillieFieldsMandatory(array $fields, $errors)
     {
         $gatewayName = "mollie_wc_gateway_billie";
         $field = 'billing_company_billie';
@@ -114,10 +114,10 @@ class Billie extends AbstractPaymentMethod implements PaymentMethodI
      * @param array $fields
      * @param string $gatewayName
      * @param string $field
-     * @param array $errors
+     * @param $errors
      * @return mixed
      */
-    public function addPaymentMethodMandatoryFields(array $fields, string $gatewayName, string $field, string $fieldLabel, array $errors)
+    public function addPaymentMethodMandatoryFields(array $fields, string $gatewayName, string $field, string $fieldLabel, $errors)
     {
         if ($fields['payment_method'] !== $gatewayName) {
             return $fields;

@@ -28,7 +28,6 @@ class PluginConstraint extends AbstractVersionConstraint
 	 */
 	public function check()
 	{
-		$pluginSlug = "{$this->requiredPluginName}/{$this->requiredPluginName}.php";
 		$pathToPluginFile = $this->absolutePathToPlugin();
 		if (!$pathToPluginFile) {
             // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped

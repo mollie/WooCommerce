@@ -18,10 +18,10 @@ use stdClass;
 
 class MollieObject
 {
-    public const MAXIMAL_LENGHT_ADDRESS = 100;
-    public const MAXIMAL_LENGHT_POSTALCODE = 20;
-    public const MAXIMAL_LENGHT_CITY = 200;
-    public const MAXIMAL_LENGHT_REGION = 200;
+    public const MAXIMAL_LENGTH_ADDRESS = 100;
+    public const MAXIMAL_LENGTH_POSTALCODE = 20;
+    public const MAXIMAL_LENGTH_CITY = 200;
+    public const MAXIMAL_LENGTH_REGION = 200;
     protected $data;
     /**
      * @var string[]
@@ -1013,7 +1013,7 @@ class MollieObject
             ? null
             : $this->maximalFieldLengths(
                 $order->get_billing_address_1(),
-                self::MAXIMAL_LENGHT_ADDRESS
+                self::MAXIMAL_LENGTH_ADDRESS
             );
         $billingAddress->streetAdditional = (ctype_space(
             $order->get_billing_address_2()
@@ -1021,7 +1021,7 @@ class MollieObject
             ? null
             : $this->maximalFieldLengths(
                 $order->get_billing_address_2(),
-                self::MAXIMAL_LENGHT_ADDRESS
+                self::MAXIMAL_LENGTH_ADDRESS
             );
         $billingAddress->postalCode = (ctype_space(
             $order->get_billing_postcode()
@@ -1029,31 +1029,31 @@ class MollieObject
             ? null
             : $this->maximalFieldLengths(
                 $order->get_billing_postcode(),
-                self::MAXIMAL_LENGHT_POSTALCODE
+                self::MAXIMAL_LENGTH_POSTALCODE
             );
         $billingAddress->city = (ctype_space($order->get_billing_city()))
             ? null
             : $this->maximalFieldLengths(
                 $order->get_billing_city(),
-                self::MAXIMAL_LENGHT_CITY
+                self::MAXIMAL_LENGTH_CITY
             );
         $billingAddress->region = (ctype_space($order->get_billing_state()))
             ? null
             : $this->maximalFieldLengths(
                 $order->get_billing_state(),
-                self::MAXIMAL_LENGHT_REGION
+                self::MAXIMAL_LENGTH_REGION
             );
         $billingAddress->country = (ctype_space($order->get_billing_country()))
             ? null
             : $this->maximalFieldLengths(
                 $order->get_billing_country(),
-                self::MAXIMAL_LENGHT_REGION
+                self::MAXIMAL_LENGTH_REGION
             );
         $billingAddress->organizationName = $this->billingCompanyField($order);
         $phone = $this->getPhoneNumber($order);
         $billingAddress->phone = (ctype_space($phone))
             ? null
-            : $this->getFormatedPhoneNumber($phone);
+            : $this->getFormattedPhoneNumber($phone);
         return $billingAddress;
     }
 
@@ -1068,7 +1068,7 @@ class MollieObject
         return $phone;
     }
 
-    protected function getFormatedPhoneNumber(string $phone)
+    protected function getFormattedPhoneNumber(string $phone)
     {
         //remove whitespaces and all non numerical characters except +
         $phone = preg_replace('/[^0-9+]+/', '', $phone);
@@ -1096,7 +1096,7 @@ class MollieObject
         }
         return $this->maximalFieldLengths(
             $order->get_billing_company(),
-            self::MAXIMAL_LENGHT_ADDRESS
+            self::MAXIMAL_LENGTH_ADDRESS
         );
     }
 
@@ -1109,14 +1109,10 @@ class MollieObject
         $isBillieMethodId = $gateway->id === 'mollie_wc_gateway_billie';
         if ($isBillieMethodId) {
             //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $fieldPosted = wc_clean(wp_unslash($_POST["billing_company"] ?? ''));
-            if ($fieldPosted === '' || !is_string($fieldPosted)) {
-                return null;
-            }
-            return $this->maximalFieldLengths(
-                $fieldPosted,
-                self::MAXIMAL_LENGHT_ADDRESS
-            );
+            $fieldPosted = wc_clean(wp_unslash($_POST["billing_company_billie"] ?? ''));
+            $company = $fieldPosted ?: $order->get_billing_company(
+            ) ?: $order->get_shipping_company();
+            return $company ? $this->maximalFieldLengths($company, self::MAXIMAL_LENGTH_ADDRESS) : null;
         }
         return null;
     }
@@ -1147,7 +1143,7 @@ class MollieObject
             ? null
             : $this->maximalFieldLengths(
                 $order->get_shipping_address_1(),
-                self::MAXIMAL_LENGHT_ADDRESS
+                self::MAXIMAL_LENGTH_ADDRESS
             );
         $shippingAddress->streetAdditional = (ctype_space(
             $order->get_shipping_address_2()
@@ -1155,7 +1151,7 @@ class MollieObject
             ? null
             : $this->maximalFieldLengths(
                 $order->get_shipping_address_2(),
-                self::MAXIMAL_LENGHT_ADDRESS
+                self::MAXIMAL_LENGTH_ADDRESS
             );
         $shippingAddress->postalCode = (ctype_space(
             $order->get_shipping_postcode()
@@ -1163,19 +1159,19 @@ class MollieObject
             ? null
             : $this->maximalFieldLengths(
                 $order->get_shipping_postcode(),
-                self::MAXIMAL_LENGHT_POSTALCODE
+                self::MAXIMAL_LENGTH_POSTALCODE
             );
         $shippingAddress->city = (ctype_space($order->get_shipping_city()))
             ? null
             : $this->maximalFieldLengths(
                 $order->get_shipping_city(),
-                self::MAXIMAL_LENGHT_CITY
+                self::MAXIMAL_LENGTH_CITY
             );
         $shippingAddress->region = (ctype_space($order->get_shipping_state()))
             ? null
             : $this->maximalFieldLengths(
                 $order->get_shipping_state(),
-                self::MAXIMAL_LENGHT_REGION
+                self::MAXIMAL_LENGTH_REGION
             );
         $shippingAddress->country = (ctype_space(
             $order->get_shipping_country()
@@ -1183,7 +1179,7 @@ class MollieObject
             ? null
             : $this->maximalFieldLengths(
                 $order->get_shipping_country(),
-                self::MAXIMAL_LENGHT_REGION
+                self::MAXIMAL_LENGTH_REGION
             );
         return $shippingAddress;
     }

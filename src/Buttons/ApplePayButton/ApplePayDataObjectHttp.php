@@ -224,7 +224,7 @@ class ApplePayDataObjectHttp
     /**
      * Checks if the array contains all required fields and if those
      * are not empty.
-     * If not it adds an unkown error to the object's error list, as this errors
+     * If not it adds an unknown error to the object's error list, as this errors
      * are not supported by ApplePay
      *
      *
@@ -298,7 +298,7 @@ class ApplePayDataObjectHttp
     /**
      * Checks if the address array contains all required fields and if those
      * are not empty.
-     * If not it adds a contacField error to the object's error list
+     * If not it adds a contactField error to the object's error list
      *
      * @param array  $post      The address to check
      * @param array  $required  The required fields for the given address

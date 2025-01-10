@@ -64,7 +64,7 @@ class Notices extends AbstractSection
         }
         return $this->notice(
             __(
-                'You have activated Billie. To accept payments, please make sure all default WooCommerce checkout fields are enabled and required. The billing company field is required as well. Make sure to enable the billing company field in the WooCommerce settings if you are using Woocommerce blocks.',
+                'You have activated Billie. To accept payments, please make sure all default WooCommerce checkout fields are enabled and required. The billing company field is required as well. Make sure to enable the billing company field in the WooCommerce settings if you are using WooCommerce blocks.',
                 'mollie-payments-for-woocommerce'
             )
         );
@@ -99,7 +99,7 @@ class Notices extends AbstractSection
 
         return $this->notice(
             __(
-                'You have the WooCommerce default Direct Bank Transfer (BACS) payment gateway enabled in WooCommerce. Mollie strongly advices only using Bank Transfer via Mollie and disabling the default WooCommerce BACS payment gateway to prevent possible conflicts.',
+                'You have the WooCommerce default Direct Bank Transfer (BACS) payment gateway enabled in WooCommerce. Mollie strongly advises only using Bank Transfer via Mollie and disabling the default WooCommerce BACS payment gateway to prevent possible conflicts.',
                 'mollie-payments-for-woocommerce'
             )
         );

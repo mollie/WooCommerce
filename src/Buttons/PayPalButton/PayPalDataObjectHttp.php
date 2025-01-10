@@ -87,7 +87,7 @@ class PayPalDataObjectHttp
     /**
      * Checks if the array contains all required fields and if those
      * are not empty.
-     * If not it adds an unkown error to the object's error list, as this errors
+     * If not it adds an unknown error to the object's error list, as this errors
      * are not supported by ApplePay
      *
      *

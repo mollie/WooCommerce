@@ -55,7 +55,7 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'color' => [
                 'type' => 'select',
-                'id' => 'mollie_paypal_buttton_color',
+                'id' => 'mollie_paypal_button_color',
                 'title' => _x('Button text language and color', 'Mollie PayPal Button Settings', 'mollie-payments-for-woocommerce'),
                 'description' => _x(
                     'Select the text and the colour of the button.',

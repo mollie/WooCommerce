@@ -3,40 +3,27 @@ import ApplePayButtonComponent from './blocks/ApplePayButtonComponent'
 import ApplePayButtonEditorComponent from './blocks/ApplePayButtonEditorComponent'
 
 (
-    function ({mollieBlockData, wc, _, jQuery}) {
+    function ({ mollieBlockData, wc, _, jQuery}) {
         if (_.isEmpty(mollieBlockData)) {
             return;
         }
-        const {registerPaymentMethod} = wc.wcBlocksRegistry;
-        const {checkoutData, defaultFields} = wc.wcSettings.allSettings;
-        let billing_address, shipping_address;
-        if (checkoutData) {
-            ({billing_address, shipping_address} = checkoutData);
-        } else {
-            billing_address = {};
-            shipping_address = {};
-        }
-        const {ajaxUrl, filters, gatewayData, availableGateways} = mollieBlockData.gatewayData;
-        const {useEffect} = wp.element;
-        const isAppleSession = typeof window.ApplePaySession === "function"
-        const isBlockEditor = !!wp?.blockEditor;
+
+            const { registerPaymentMethod } = wc.wcBlocksRegistry;
+            const { defaultFields } = wc.wcSettings.allSettings;
+            const { ajaxUrl, filters, gatewayData, availableGateways } = mollieBlockData.gatewayData;
+            const {useEffect} = wp.element;
+            const isAppleSession = typeof window.ApplePaySession === "function"
         localStorage.removeItem('cachedAvailableGateways');
 
-        function getCompanyField() {
-            let shippingCompany = shipping_address.company ?? false;
-            let billingCompany = billing_address.company ?? false;
-            return shippingCompany ? shippingCompany : billingCompany;
-        }
-
-        function getPhoneField() {
-            const phoneFieldDataset = document.querySelector('[data-show-phone-field]');
-            if (!phoneFieldDataset) {
-                return true;
+        function getPhoneField()
+            {
+                const phoneFieldDataset = document.querySelector('[data-show-phone-field]');
+                if (!phoneFieldDataset) {
+                    return true;
+                }
+                return phoneFieldDataset.dataset.showPhoneField !== "false"
             }
-            return phoneFieldDataset.dataset.showPhoneField !== "false"
-        }
 
-            const isCompanyFieldVisible = getCompanyField();
             const companyNameString = defaultFields.company.label
             const isPhoneFieldVisible = getPhoneField();
             const phoneString = defaultFields.phone.label
@@ -45,7 +32,7 @@ import ApplePayButtonEditorComponent from './blocks/ApplePayButtonEditorComponen
                 'phoneString': phoneString,
             }
             gatewayData.forEach(item => {
-                let register = () => registerPaymentMethod(molliePaymentMethod(useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isCompanyFieldVisible, isPhoneFieldVisible));
+                let register = () => registerPaymentMethod(molliePaymentMethod(useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isPhoneFieldVisible));
                 if (item.name === 'mollie_wc_gateway_applepay') {
                     const {isExpressEnabled} = item;
                     if ((isAppleSession && window.ApplePaySession.canMakePayments())) {
@@ -74,6 +61,5 @@ import ApplePayButtonEditorComponent from './blocks/ApplePayButtonEditorComponen
                 }
                 register();
             });
-
     }
 )(window, wc)

@@ -75,7 +75,7 @@ let onSubmitLocal
 let activePaymentMethodLocal
 let creditCardSelected = new Event("mollie_creditcard_component_selected", {bubbles: true});
 const MollieComponent = (props) => {
-    let {onSubmit, activePaymentMethod, billing, item, useEffect, ajaxUrl, jQuery, emitResponse, eventRegistration, requiredFields, shippingData, isCompanyFieldVisible, isPhoneFieldVisible} = props
+    let {onSubmit, activePaymentMethod, billing, item, useEffect, ajaxUrl, jQuery, emitResponse, eventRegistration, requiredFields, shippingData, isPhoneFieldVisible} = props
     const {  responseTypes } = emitResponse;
     const {onPaymentSetup, onCheckoutValidation} = eventRegistration;
     if (!item || !item.name) {
@@ -188,7 +188,7 @@ const MollieComponent = (props) => {
                         payment_method_title: item.title,
                         [issuerKey]: selectedIssuer,
                         billing_phone: inputPhone,
-                        billing_company: inputCompany,
+                        billing_company_billie: inputCompany,
                         billing_birthdate: inputBirthdate,
                         cardToken: tokenVal,
                     }
@@ -207,7 +207,7 @@ const MollieComponent = (props) => {
 
     useEffect(() => {
         let companyLabel = jQuery('div.wc-block-components-text-input.wc-block-components-address-form__company > label')
-        if (companyLabel.length === 0) {
+        if (companyLabel.length === 0 || item.hideCompanyField === true) {
             return
         }
 
@@ -293,14 +293,20 @@ const MollieComponent = (props) => {
     }
 
     if (item.name === "mollie_wc_gateway_billie") {
-        if (isCompanyFieldVisible) {
-           return;
+        const billingCompanyField = document.querySelector('#billing-company');
+        const shippingCompanyField = document.querySelector('#shipping-company');
+        const isBillingCompanyRequired = billingCompanyField?.hasAttribute('required');
+        const isShippingCompanyRequired = shippingCompanyField?.hasAttribute('required');
+
+        if ((billingCompanyField && isBillingCompanyRequired) || (shippingCompanyField && isShippingCompanyRequired) || item.hideCompanyField === true) {
+            return;
         }
+
         const companyField = item.companyPlaceholder ? item.companyPlaceholder : "Company name";
         return (
             <>
                 <div><p>{item.content}</p></div>
-                {fieldMarkup("billing-company","text", companyField, updateCompany, inputCompany)}
+                {fieldMarkup("billing_company_billie","text", companyField, updateCompany, inputCompany)}
             </>
         );
     }
@@ -398,7 +404,6 @@ const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, available
             ajaxUrl={ajaxUrl}
             jQuery={jQuery}
             requiredFields={requiredFields}
-            isCompanyFieldVisible={isCompanyFieldVisible}
             isPhoneFieldVisible={isPhoneFieldVisible}/>,
         edit: <div>{item.edit}</div>,
         paymentMethodId: item.paymentMethodId,

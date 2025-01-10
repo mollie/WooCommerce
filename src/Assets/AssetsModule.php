@@ -534,7 +534,7 @@ class AssetsModule implements ExecutableModule
         /** @var Settings */
         $settingsHelper = $container->get('settings.settings_helper');
         $gatewayInstances = $container->get('gateway.instances');
-        add_action('woocommerce_blocks_loaded', function() {
+        add_action('woocommerce_blocks_loaded', function () {
             woocommerce_store_api_register_update_callback(
                 [
                     'namespace' => 'mollie-payments-for-woocommerce',
@@ -543,7 +543,7 @@ class AssetsModule implements ExecutableModule
                     },
                 ]
             );
-        } );
+        });
 
         /** Add support to Mollie blocks for WooCommerce checkout blocks functionality */
         //https://github.com/woocommerce/woocommerce-blocks/blob/trunk/docs/third-party-developers/extensibility/checkout-payment-methods/payment-method-integration.md#putting-it-all-together

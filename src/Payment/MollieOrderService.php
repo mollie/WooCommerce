@@ -133,6 +133,13 @@ class MollieOrderService
             return;
         }
 
+        //don't do webhooks when order is in processing or completed state
+        $orderStatus = $order->get_status();
+        if (in_array($orderStatus, ['processing', 'completed'], true) && $payment->status !== 'completed') {
+            $this->logger->info($this->gateway->id . ": Order {$order->get_id()} is in {$orderStatus} state, not processing webhook for payment object {$payment->id} (" . $payment->mode . ") with staus {$payment->status}.");
+            return;
+        }
+
         // Log a message that webhook was called, doesn't mean the payment is actually processed
         $this->logger->debug($this->gateway->id . ": Mollie payment object {$payment->id} (" . $payment->mode . ") webhook call for order {$order->get_id()}.", [true]);
         // Get payment method title

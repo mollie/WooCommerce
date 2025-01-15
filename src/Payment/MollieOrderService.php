@@ -133,13 +133,6 @@ class MollieOrderService
             return;
         }
 
-        //don't do webhooks when order is in processing or completed state
-        $orderStatus = $order->get_status();
-        if (in_array($orderStatus, ['processing', 'completed'], true) && $payment->status !== 'completed') {
-            $this->logger->info($this->gateway->id . ": Order {$order->get_id()} is in {$orderStatus} state, not processing webhook for payment object {$payment->id} (" . $payment->mode . ") with staus {$payment->status}.");
-            return;
-        }
-
         // Log a message that webhook was called, doesn't mean the payment is actually processed
         $this->logger->debug($this->gateway->id . ": Mollie payment object {$payment->id} (" . $payment->mode . ") webhook call for order {$order->get_id()}.", [true]);
         // Get payment method title
@@ -171,6 +164,13 @@ class MollieOrderService
         if ($payment->method === 'paypal' && isset($payment->billingAddress) && $this->isOrderButtonPayment($order)) {
             $this->logger->debug($this->gateway->id . ": updating address from express button", [true]);
             $this->setBillingAddressAfterPayment($payment, $order);
+        }
+
+        //don't do webhooks when order is in processing or completed state
+        $orderStatus = $order->get_status();
+        if (in_array($orderStatus, ['processing', 'completed'], true) && $payment->status !== 'completed') {
+            $this->logger->debug($this->gateway->id . ": Order {$order->get_id()} is in {$orderStatus} state, not processing webhook for payment object {$payment->id} (" . $payment->mode . ") with staus {$payment->status}.");
+            return;
         }
 
         if (method_exists($payment_object, $method_name)) {

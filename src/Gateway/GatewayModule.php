@@ -289,30 +289,29 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $surchargeService = $container->get(Surcharge::class);
         assert($surchargeService instanceof Surcharge);
         $this->gatewaySurchargeHandling($surchargeService);
-        add_action('after_setup_theme', function () use ($container) {
-            $notice = $container->get(AdminNotice::class);
-            assert($notice instanceof AdminNotice);
-            $logger = $container->get(Logger::class);
-            assert($logger instanceof Logger);
-            $pluginUrl = $container->get('shared.plugin_url');
-            $apiHelper = $container->get('SDK.api_helper');
-            assert($apiHelper instanceof Api);
-            $settingsHelper = $container->get('settings.settings_helper');
-            assert($settingsHelper instanceof Settings);
-            $appleGateway = isset($container->get('gateway.instances')['mollie_wc_gateway_applepay']) ? $container->get(
-                'gateway.instances'
-            )['mollie_wc_gateway_applepay'] : false;
-            if ($appleGateway) {
-                $this->mollieApplePayDirectHandling($notice, $logger, $apiHelper, $settingsHelper, $appleGateway);
-            }
+        $notice = $container->get(AdminNotice::class);
+        assert($notice instanceof AdminNotice);
+        $logger = $container->get(Logger::class);
+        assert($logger instanceof Logger);
+        $pluginUrl = $container->get('shared.plugin_url');
+        $apiHelper = $container->get('SDK.api_helper');
+        assert($apiHelper instanceof Api);
+        $settingsHelper = $container->get('settings.settings_helper');
+        assert($settingsHelper instanceof Settings);
+        $appleGateway = isset($container->get('gateway.instances')['mollie_wc_gateway_applepay']) ? $container->get(
+            'gateway.instances'
+        )['mollie_wc_gateway_applepay'] : false;
+        if ($appleGateway) {
+            $this->mollieApplePayDirectHandling($notice, $logger, $apiHelper, $settingsHelper, $appleGateway);
+        }
 
-            $paypalGateway = isset($container->get('gateway.instances')['mollie_wc_gateway_paypal']) ? $container->get(
-                'gateway.instances'
-            )['mollie_wc_gateway_paypal'] : false;
-            if ($paypalGateway) {
-                $this->molliePayPalButtonHandling($paypalGateway, $notice, $logger, $pluginUrl);
-            }
-        });
+        $paypalGateway = isset($container->get('gateway.instances')['mollie_wc_gateway_paypal']) ? $container->get(
+            'gateway.instances'
+        )['mollie_wc_gateway_paypal'] : false;
+        if ($paypalGateway) {
+            $this->molliePayPalButtonHandling($paypalGateway, $notice, $logger, $pluginUrl);
+        }
+
 
 
         $maybeDisableVoucher = new MaybeDisableGateway();

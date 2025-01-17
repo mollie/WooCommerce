@@ -10,7 +10,7 @@ class Bancontact extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'bancontact',
-            'defaultTitle' => __('Bancontact', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => 'Bancontact',
             'settingsDescription' => '',
             'defaultDescription' => '',
             'paymentFields' => false,
@@ -24,6 +24,16 @@ class Bancontact extends AbstractPaymentMethod implements PaymentMethodI
             'SEPA' => true,
             'docs' => 'https://www.mollie.com/gb/payments/bancontact',
         ];
+    }
+
+    // Replace translatable strings after the 'after_setup_theme' hook
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('Bancontact', 'mollie-payments-for-woocommerce');
+        $this->translationsInitialized = true;
     }
 
     public function getFormFields($generalFormFields): array

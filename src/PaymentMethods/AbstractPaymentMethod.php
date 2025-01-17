@@ -44,6 +44,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
      * @var array
      */
     private $apiPaymentMethod;
+    protected bool $translationsInitialized = false;
 
     public function __construct(
         IconFactory $iconFactory,
@@ -61,6 +62,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         $this->config = $this->getConfig();
         $this->settings = $this->getSettings();
         $this->apiPaymentMethod = $apiPaymentMethod;
+        add_action('after_setup_theme', [$this, 'initializeTranslations']);
     }
 
     public function title(): string

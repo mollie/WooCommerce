@@ -10,7 +10,7 @@ class Swish extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'swish',
-            'defaultTitle' => __('Swish', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => 'Swish',
             'settingsDescription' => '',
             'defaultDescription' => '',
             'paymentFields' => false,
@@ -23,6 +23,15 @@ class Swish extends AbstractPaymentMethod implements PaymentMethodI
             'confirmationDelayed' => false,
             'SEPA' => false,
         ];
+    }
+
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('Swish', 'mollie-payments-for-woocommerce');
+        $this->translationsInitialized = true;
     }
 
     public function getFormFields($generalFormFields): array

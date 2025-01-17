@@ -19,8 +19,12 @@ class GatewaySurchargeHandler
     public function __construct(Surcharge $surcharge)
     {
         $this->surcharge = $surcharge;
-        $this->gatewayFeeLabel = $this->surchargeFeeOption();
+        add_action('after_setup_theme', [$this, 'initializeGatewayFeeLabel']);
         add_action('init', [$this, 'surchargeActions']);
+    }
+    public function initializeGatewayFeeLabel()
+    {
+        $this->gatewayFeeLabel = $this->surchargeFeeOption();
     }
 
     public function surchargeActions()

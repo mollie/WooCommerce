@@ -98,34 +98,22 @@ class GatewaySurchargeHandler
             return;
         }
         $this->orderRemoveFee($order);
-         $gatewaySettings = $this->gatewaySettings($gatewayName);
-        $orderAmount = (float) $order->get_total();
-        if ($this->surcharge->aboveMaxLimit($orderAmount, $gatewaySettings)) {
-            return;
-        }
-        if (!isset($gatewaySettings['payment_surcharge']) || $gatewaySettings['payment_surcharge'] === Surcharge::NO_FEE) {
-            $data = [
-                'amount' => false,
-                'currency' => get_woocommerce_currency_symbol(),
-                'newTotal' => $order->get_total(),
-            ];
-            wp_send_json_success($data);
-        }
-
+        $gatewaySettings = $this->gatewaySettings($gatewayName);
         $amount = $this->surcharge->calculateFeeAmountOrder($order, $gatewaySettings);
 
         if ($amount > 0) {
             $this->orderAddFee($order, $amount, $this->gatewayFeeLabel);
-            $order->calculate_totals();
-            $newTotal = $order->get_total();
-            $data = [
-                'amount' => $amount,
-                'name' => $this->gatewayFeeLabel,
-                'currency' => get_woocommerce_currency_symbol(),
-                'newTotal' => $newTotal,
-            ];
-            wp_send_json_success($data);
         }
+        $order->calculate_totals();
+
+        ob_start();
+        wc_get_template("checkout/form-pay.php", ["order" => $order]);
+        $template = ob_get_clean();
+
+        $data = [
+                'template' => $template,
+        ];
+        wp_send_json_success($data);
     }
 
     public function updateSurchargeCheckoutBlock()

@@ -30,26 +30,21 @@
                         },
                         success: (response) => {
                             let result = response.data
-
-                            if(result){
-                                const productTotal = "</th><td class='product-total'><span class='woocommerce-Price-amount amount'><bdi><span class='woocommerce-Price-currencySymbol'>"+ result.currency +"</span>"+ result.newTotal +"</bdi></span></td>"
-
-                                if(!result.amount){
-                                    if($('#order_review table:first-child tfoot tr').text().indexOf(gatewayLabel) !== -1){
-                                        $('#order_review table:first-child tfoot tr:contains("' +  gatewayLabel + '")').remove()
-                                        $('#order_review table:first-child tfoot tr:last td').replaceWith(productTotal)
-                                    }
-                                }else{
-                                    const tableRow = "<tr><th scope='row' colspan='2'>"+ result.name + "</th><td class='product-total'><span class='woocommerce-Price-amount amount'><bdi><span class='woocommerce-Price-currencySymbol'>"+ result.currency +"</span>"+ (result.amount).toFixed(2) +"</bdi></span></td></tr>"
-                                    if($('#order_review table:first-child tfoot tr').text().indexOf(gatewayLabel) !== -1){
-                                        $('#order_review table:first-child tfoot tr:contains("' +  gatewayLabel + '")').replaceWith(tableRow)
-                                        $('#order_review table:first-child tfoot tr:last td').replaceWith(productTotal)
-                                    }else{
-                                        $('#order_review table:first-child tfoot tr:first').after(tableRow)
-                                        $('#order_review table:first-child tfoot tr:last td').replaceWith(productTotal)
-                                    }
-                                }
+                            if(!result?.template){
+                                console.warn("Missing template in the response.");
+                                return;
                             }
+
+                            const {template} = result;
+                            const DOMTemplate = jQuery.parseHTML(template);
+                            const newShopTable = jQuery(DOMTemplate).find(".shop_table");
+
+                            if(!newShopTable.length){
+                                console.warn("Template changed, can't update the totals.");
+                                return;
+                            }
+
+                            jQuery(".shop_table").html(jQuery(newShopTable).html());
                         },
                         error: (jqXHR, textStatus, errorThrown) => {
                             console.warn(textStatus, errorThrown)

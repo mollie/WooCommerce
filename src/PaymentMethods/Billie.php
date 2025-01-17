@@ -20,11 +20,8 @@ class Billie extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'billie',
-            'defaultTitle' => __('Billie', 'mollie-payments-for-woocommerce'),
-            'settingsDescription' => __(
-                'To accept payments via Billie, all default WooCommerce checkout fields should be enabled and required.',
-                'mollie-payments-for-woocommerce'
-            ),
+            'defaultTitle' => 'Billie',
+            'settingsDescription' => 'To accept payments via Billie, all default WooCommerce checkout fields should be enabled and required.',
             'defaultDescription' => '',
             'paymentFields' => true,
             'instructions' => false,
@@ -36,13 +33,33 @@ class Billie extends AbstractPaymentMethod implements PaymentMethodI
             'confirmationDelayed' => false,
             'SEPA' => false,
             'orderMandatory' => true,
-            'errorMessage' => __(
-                'Company field is empty. The company field is required.',
-                'mollie-payments-for-woocommerce'
-            ),
-            'companyPlaceholder' => __('Please enter your company name here.', 'mollie-payments-for-woocommerce'),
+            'errorMessage' => 'Company field is empty. The company field is required.',
+            'companyPlaceholder' => 'Please enter your company name here.',
             'docs' => 'https://www.mollie.com/gb/payments/billie',
         ];
+    }
+
+    // Replace translatable strings after the 'after_setup_theme' hook
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('Billie', 'mollie-payments-for-woocommerce');
+        $this->config['settingsDescription'] = __(
+            'To accept payments via Billie, all default WooCommerce checkout fields should be enabled and required.',
+            'mollie-payments-for-woocommerce'
+        );
+        $this->config['errorMessage'] = __(
+            'Company field is empty. The company field is required.',
+            'mollie-payments-for-woocommerce'
+        );
+        $this->config['companyPlaceholder'] = __(
+            'Please enter your company name here.',
+            'mollie-payments-for-woocommerce'
+        );
+
+        $this->translationsInitialized = true;
     }
 
     /**

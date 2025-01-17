@@ -312,8 +312,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
             $this->molliePayPalButtonHandling($paypalGateway, $notice, $logger, $pluginUrl);
         }
 
-
-
         $maybeDisableVoucher = new MaybeDisableGateway();
         $dataService = $container->get('settings.data_helper');
         assert($dataService instanceof Data);

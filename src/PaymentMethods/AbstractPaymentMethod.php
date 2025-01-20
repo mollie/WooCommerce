@@ -65,8 +65,8 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         $this->config = $this->getConfig();
         $this->settings = $this->getSettings();
         $this->apiPaymentMethod = $apiPaymentMethod;
-        add_action('after_setup_theme', [$this, 'initializeTranslations']);
-        add_action('after_setup_theme', [$this, 'updateSettingsWithDefaults']);
+        add_action('init', [$this, 'initializeTranslations']);
+        add_action('init', [$this, 'updateSettingsWithDefaults']);
     }
 
     public function title(): string

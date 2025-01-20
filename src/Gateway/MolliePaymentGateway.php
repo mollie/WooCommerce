@@ -128,7 +128,7 @@ class MolliePaymentGateway extends WC_Payment_Gateway implements MolliePaymentGa
         $this->supports = $this->paymentMethod->getProperty('supports');
 
         // Load the settings when translations are ready
-        add_action('after_setup_theme', [$this, 'init_form_fields']);
+        add_action('init', [$this, 'init_form_fields']);
 
         $this->init_settings();
         $this->title = $this->paymentMethod->title();

@@ -40,6 +40,7 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_Riverty',
         'Mollie_WC_Gateway_Satispay',
         'Mollie_WC_Gateway_Swish',
+        'Mollie_WC_Gateway_Multibanco',
     ];
 
     public const MOLLIE_OPTIONS_NAMES = [

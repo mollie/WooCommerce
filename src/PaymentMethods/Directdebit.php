@@ -10,7 +10,7 @@ class Directdebit extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'directdebit',
-            'defaultTitle' => 'SEPA Direct Debit', 'mollie-payments-for-woocommerce',
+            'defaultTitle' => 'SEPA Direct Debit',
             'settingsDescription' => "SEPA Direct Debit is used for recurring payments with WooCommerce Subscriptions, and will not be shown in the WooCommerce checkout for regular payments! You also need to enable iDEAL and/or other 'first' payment methods if you want to use SEPA Direct Debit.",
             'defaultDescription' => '',
             'paymentFields' => false,

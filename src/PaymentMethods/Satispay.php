@@ -10,7 +10,7 @@ class Satispay extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'satispay',
-            'defaultTitle' => __('Satispay', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => 'Satispay',
             'settingsDescription' => '',
             'defaultDescription' => '',
             'paymentFields' => false,
@@ -21,6 +21,15 @@ class Satispay extends AbstractPaymentMethod implements PaymentMethodI
             'SEPA' => false,
             'docs' => 'https://www.mollie.com/gb/payments/satispay',
         ];
+    }
+
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('Satispay', 'mollie-payments-for-woocommerce');
+        $this->translationsInitialized = true;
     }
 
     public function getFormFields($generalFormFields): array

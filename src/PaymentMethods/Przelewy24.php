@@ -10,11 +10,8 @@ class Przelewy24 extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'przelewy24',
-            'defaultTitle' => __('Przelewy24', 'mollie-payments-for-woocommerce'),
-            'settingsDescription' => __(
-                'To accept payments via Przelewy24, a customer email is required for every payment.',
-                'mollie-payments-for-woocommerce'
-            ),
+            'defaultTitle' => 'Przelewy24',
+            'settingsDescription' => 'To accept payments via Przelewy24, a customer email is required for every payment.',
             'defaultDescription' => '',
             'paymentFields' => false,
             'instructions' => true,
@@ -27,6 +24,19 @@ class Przelewy24 extends AbstractPaymentMethod implements PaymentMethodI
             'SEPA' => false,
             'docs' => 'https://www.mollie.com/gb/payments/przelewy24',
         ];
+    }
+
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('Przelewy24', 'mollie-payments-for-woocommerce');
+        $this->config['settingsDescription'] = __(
+            'To accept payments via Przelewy24, a customer email is required for every payment.',
+            'mollie-payments-for-woocommerce'
+        );
+        $this->translationsInitialized = true;
     }
 
     public function getFormFields($generalFormFields): array

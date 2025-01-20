@@ -12,7 +12,7 @@ class Ideal extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'ideal',
-            'defaultTitle' => __('iDEAL', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => 'iDEAL',
             'settingsDescription' => '',
             'defaultDescription' => '',
             'paymentFields' => false,
@@ -28,6 +28,15 @@ class Ideal extends AbstractPaymentMethod implements PaymentMethodI
         ];
     }
 
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('iDEAL', 'mollie-payments-for-woocommerce');
+        $this->translationsInitialized = true;
+    }
+
     public function getFormFields($generalFormFields): array
     {
         $notice = [
@@ -36,12 +45,12 @@ class Ideal extends AbstractPaymentMethod implements PaymentMethodI
                     sprintf(
                     /* translators: Placeholder 1: paragraph opening tag Placeholder 2: link url Placeholder 3: link closing tag 4: link url Placeholder  5: closing tags */
                         __(
-                            '%1$s Note: In June 2024, Mollie upgraded its iDEAL implementation to iDEAL 2.0. 
-                            As a result, the bank selector dropdown is no longer displayed on the checkout page when using the Mollie plugin. 
-                            Buyers will now select their bank directly on the iDEAL website. 
-                            The only action required from you is to update your iDEAL gateway description to remove any prompts for buyers to select a bank during checkout. 
-                            No further manual action is needed. For more details about the iDEAL 2.0 migration, please visit the 
-                            %2$s Mollie Help Center %3$s or read this 
+                            '%1$s Note: In June 2024, Mollie upgraded its iDEAL implementation to iDEAL 2.0.
+                            As a result, the bank selector dropdown is no longer displayed on the checkout page when using the Mollie plugin.
+                            Buyers will now select their bank directly on the iDEAL website.
+                            The only action required from you is to update your iDEAL gateway description to remove any prompts for buyers to select a bank during checkout.
+                            No further manual action is needed. For more details about the iDEAL 2.0 migration, please visit the
+                            %2$s Mollie Help Center %3$s or read this
                             %4$s this blog post. %5$s',
                             'mollie-payments-for-woocommerce'
                         ),

@@ -285,9 +285,10 @@ class GatewayModule implements ServiceModule, ExecutableModule
 
         // Set order to paid and processed when eventually completed without Mollie
         add_action('woocommerce_payment_complete', [$this, 'setOrderPaidByOtherGateway'], 10, 1);
-        $appleGateway = isset($container->get('gateway.instances')['mollie_wc_gateway_applepay']) ? $container->get(
-            'gateway.instances'
-        )['mollie_wc_gateway_applepay'] : false;
+
+        $surchargeService = $container->get(Surcharge::class);
+        assert($surchargeService instanceof Surcharge);
+        $this->gatewaySurchargeHandling($surchargeService);
         $notice = $container->get(AdminNotice::class);
         assert($notice instanceof AdminNotice);
         $logger = $container->get(Logger::class);
@@ -297,9 +298,9 @@ class GatewayModule implements ServiceModule, ExecutableModule
         assert($apiHelper instanceof Api);
         $settingsHelper = $container->get('settings.settings_helper');
         assert($settingsHelper instanceof Settings);
-        $surchargeService = $container->get(Surcharge::class);
-        assert($surchargeService instanceof Surcharge);
-        $this->gatewaySurchargeHandling($surchargeService);
+        $appleGateway = isset($container->get('gateway.instances')['mollie_wc_gateway_applepay']) ? $container->get(
+            'gateway.instances'
+        )['mollie_wc_gateway_applepay'] : false;
         if ($appleGateway) {
             $this->mollieApplePayDirectHandling($notice, $logger, $apiHelper, $settingsHelper, $appleGateway);
         }

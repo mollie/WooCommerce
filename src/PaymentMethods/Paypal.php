@@ -10,7 +10,7 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'paypal',
-            'defaultTitle' => __('PayPal', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => 'PayPal',
             'settingsDescription' => '',
             'defaultDescription' => '',
             'paymentFields' => false,
@@ -24,6 +24,15 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
             'SEPA' => false,
             'docs' => 'https://www.mollie.com/gb/payments/paypal',
         ];
+    }
+
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('PayPal', 'mollie-payments-for-woocommerce');
+        $this->translationsInitialized = true;
     }
 
     public function getFormFields($generalFormFields): array

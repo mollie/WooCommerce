@@ -59,7 +59,7 @@ class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'giftcard',
-            'defaultTitle' => 'Gift cards', 'mollie-payments-for-woocommerce',
+            'defaultTitle' => 'Gift cards',
             'settingsDescription' => '',
             'defaultDescription' => 'Select your gift card',
             'paymentFields' => true,

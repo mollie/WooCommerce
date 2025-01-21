@@ -37,15 +37,11 @@ class SharedModule implements ServiceModule
                 return plugin_basename(self::PLUGIN_ID . '/' . self::PLUGIN_ID . '.php');
             },
             'shared.plugin_url' => static function (ContainerInterface $container): string {
-                $pluginProperties = $container->get(Package::PROPERTIES);
-
-                return $pluginProperties->baseUrl();
+                return $container->get('properties')->baseUrl();
             },
             'shared.plugin_path' => static function (ContainerInterface $container): string {
 
-                $pluginProperties = $container->get(Package::PROPERTIES);
-
-                return $pluginProperties->basePath();
+                return $container->get('properties')->basePath();
             },
             'shared.status_helper' => static function (ContainerInterface $container): Status {
                 $pluginTitle = $container->get('shared.plugin_title');

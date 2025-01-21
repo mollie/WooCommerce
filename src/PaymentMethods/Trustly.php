@@ -10,7 +10,7 @@ class Trustly extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'trustly',
-            'defaultTitle' => __('Trustly', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => 'Trustly',
             'settingsDescription' => '',
             'defaultDescription' => '',
             'paymentFields' => false,
@@ -24,6 +24,15 @@ class Trustly extends AbstractPaymentMethod implements PaymentMethodI
             'SEPA' => true,
             'docs' => 'https://www.mollie.com/gb/payments/trustly',
         ];
+    }
+
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('Trustly', 'mollie-payments-for-woocommerce');
+        $this->translationsInitialized = true;
     }
 
     public function getFormFields($generalFormFields): array

@@ -31,7 +31,7 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'voucher',
-            'defaultTitle' => __('Voucher', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => 'Voucher',
             'settingsDescription' => '',
             'defaultDescription' => '',
             'paymentFields' => false,
@@ -45,6 +45,15 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
             'orderMandatory' => true,
             'docs' => 'https://www.mollie.com/gb/payments/meal-eco-gift-vouchers',
         ];
+    }
+
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('Voucher', 'mollie-payments-for-woocommerce');
+        $this->translationsInitialized = true;
     }
 
     public function getFormFields($generalFormFields): array

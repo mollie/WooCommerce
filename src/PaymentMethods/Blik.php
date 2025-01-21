@@ -10,7 +10,7 @@ class Blik extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'blik',
-            'defaultTitle' => __('BLIK', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => 'BLIK',
             'settingsDescription' => '',
             'defaultDescription' => '',
             'paymentFields' => false,
@@ -24,6 +24,16 @@ class Blik extends AbstractPaymentMethod implements PaymentMethodI
             'SEPA' => false,
             'docs' => 'https://www.mollie.com/gb/payments/blik',
         ];
+    }
+
+    // Replace translatable strings after the 'after_setup_theme' hook
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('BLIK', 'mollie-payments-for-woocommerce');
+        $this->translationsInitialized = true;
     }
 
     public function getFormFields($generalFormFields): array

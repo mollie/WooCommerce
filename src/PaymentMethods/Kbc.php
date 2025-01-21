@@ -11,9 +11,9 @@ class Kbc extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
         'id' => 'kbc',
-        'defaultTitle' => __('KBC/CBC Payment Button', 'mollie-payments-for-woocommerce'),
+        'defaultTitle' => 'KBC/CBC Payment Button',
         'settingsDescription' => '',
-        'defaultDescription' => __('Select your bank', 'mollie-payments-for-woocommerce'),
+        'defaultDescription' => 'Select your bank',
         'paymentFields' => true,
         'instructions' => false,
         'supports' => [
@@ -25,6 +25,16 @@ class Kbc extends AbstractPaymentMethod implements PaymentMethodI
         'SEPA' => true,
             'docs' => 'https://www.mollie.com/gb/payments/kbc-cbc',
         ];
+    }
+
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('KBC/CBC Payment Button', 'mollie-payments-for-woocommerce');
+        $this->config['defaultDescription'] = __('Select your bank', 'mollie-payments-for-woocommerce');
+        $this->translationsInitialized = true;
     }
 
     public function getFormFields($generalFormFields): array

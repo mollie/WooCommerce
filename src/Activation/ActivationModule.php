@@ -103,8 +103,8 @@ class ActivationModule implements ExecutableModule
         //if test/live keys are in db return
         $liveKeySet = get_option('mollie-payments-for-woocommerce_live_api_key');
         $testKeySet = get_option('mollie-payments-for-woocommerce_test_api_key');
-        $apiKeysSetted = $liveKeySet || $testKeySet;
-        if ($apiKeysSetted) {
+        $apiKeysSet = $liveKeySet || $testKeySet;
+        if ($apiKeysSet) {
             return;
         }
 
@@ -148,12 +148,6 @@ class ActivationModule implements ExecutableModule
      */
     public function pluginInit()
     {
-        load_plugin_textdomain(
-            'mollie-payments-for-woocommerce',
-            false,
-            dirname(plugin_basename($this->baseFile)) . '/languages/'
-        );
-
         $this->markUpdatedOrNew();
         $this->initDb();
     }

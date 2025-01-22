@@ -10,7 +10,7 @@ class Sofort extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'sofort',
-            'defaultTitle' => __('SOFORT Banking', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => 'SOFORT Banking',
             'settingsDescription' => '',
             'defaultDescription' => '',
             'paymentFields' => false,
@@ -24,6 +24,15 @@ class Sofort extends AbstractPaymentMethod implements PaymentMethodI
             'SEPA' => true,
             'docs' => 'https://help.mollie.com/hc/en-us/articles/20904206772626-SOFORT-Deprecation-30-September-2024',
         ];
+    }
+
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('SOFORT Banking', 'mollie-payments-for-woocommerce');
+        $this->translationsInitialized = true;
     }
 
     public function getFormFields($generalFormFields): array

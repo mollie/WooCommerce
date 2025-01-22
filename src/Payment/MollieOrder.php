@@ -687,7 +687,7 @@ class MollieOrder extends MollieObject
 
             // Loop through items in the Mollie payment object (Order)
             foreach ($paymentObject->lines as $line) {
-                // If there is no metadata wth the order item ID, this order can't process individual order lines
+                // If there is no metadata with the order item ID, this order can't process individual order lines
                 if (empty($line->metadata->order_item_id)) {
                     $noteMessage = 'Refunds for this specific order can not be processed per order line. Trying to process this as an amount refund instead.';
                     $this->logger->debug(__METHOD__ . " - " . $noteMessage);

@@ -61,7 +61,7 @@ class DataToPayPalButtonScriptsTest extends TestCase
         /*
          * Sut
          */
-        $pluginUrl = 'http://plugingUrl.com';
+        $pluginUrl = 'http://pluginUrl.com';
         $dataToScript = new DataToPayPal($pluginUrl);
 
         /*
@@ -98,7 +98,7 @@ class DataToPayPalButtonScriptsTest extends TestCase
         /*
          * Sut
          */
-        $pluginUrl = 'http://plugingUrl.com';
+        $pluginUrl = 'http://pluginUrl.com';
         $dataToScript = new DataToPayPal($pluginUrl);
 
         /*

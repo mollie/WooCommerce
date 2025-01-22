@@ -10,7 +10,7 @@ class Belfius extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'belfius',
-            'defaultTitle' => __('Belfius Direct Net', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => 'Belfius Direct Net',
             'settingsDescription' => '',
             'defaultDescription' => '',
             'paymentFields' => false,
@@ -26,6 +26,15 @@ class Belfius extends AbstractPaymentMethod implements PaymentMethodI
         ];
     }
 
+    // Replace translatable strings after the 'after_setup_theme' hook
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('Belfius Direct Net', 'mollie-payments-for-woocommerce');
+        $this->translationsInitialized = true;
+    }
     public function getFormFields($generalFormFields): array
     {
         return $generalFormFields;

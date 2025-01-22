@@ -261,15 +261,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 }
             }
         );
-        $isBillieEnabled = $container->get('gateway.isBillieEnabled');
-        if ($isBillieEnabled) {
-            add_filter(
-                'woocommerce_after_checkout_validation',
-                [$this, 'BillieFieldsMandatory'],
-                11,
-                2
-            );
-        }
         $isIn3Enabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_in3_settings', 'enabled');
         if ($isIn3Enabled) {
             add_filter(
@@ -294,9 +285,10 @@ class GatewayModule implements ServiceModule, ExecutableModule
 
         // Set order to paid and processed when eventually completed without Mollie
         add_action('woocommerce_payment_complete', [$this, 'setOrderPaidByOtherGateway'], 10, 1);
-        $appleGateway = isset($container->get('gateway.instances')['mollie_wc_gateway_applepay']) ? $container->get(
-            'gateway.instances'
-        )['mollie_wc_gateway_applepay'] : false;
+
+        $surchargeService = $container->get(Surcharge::class);
+        assert($surchargeService instanceof Surcharge);
+        $this->gatewaySurchargeHandling($surchargeService);
         $notice = $container->get(AdminNotice::class);
         assert($notice instanceof AdminNotice);
         $logger = $container->get(Logger::class);
@@ -306,9 +298,9 @@ class GatewayModule implements ServiceModule, ExecutableModule
         assert($apiHelper instanceof Api);
         $settingsHelper = $container->get('settings.settings_helper');
         assert($settingsHelper instanceof Settings);
-        $surchargeService = $container->get(Surcharge::class);
-        assert($surchargeService instanceof Surcharge);
-        $this->gatewaySurchargeHandling($surchargeService);
+        $appleGateway = isset($container->get('gateway.instances')['mollie_wc_gateway_applepay']) ? $container->get(
+            'gateway.instances'
+        )['mollie_wc_gateway_applepay'] : false;
         if ($appleGateway) {
             $this->mollieApplePayDirectHandling($notice, $logger, $apiHelper, $settingsHelper, $appleGateway);
         }
@@ -654,14 +646,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
         return $paymentMethods;
     }
 
-    public function BillieFieldsMandatory($fields, $errors)
-    {
-        $gatewayName = "mollie_wc_gateway_billie";
-        $field = 'billing_company';
-        $companyLabel = __('Company', 'mollie-payments-for-woocommerce');
-        return $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $field, $companyLabel, $errors);
-    }
-
     public function in3FieldsMandatory($fields, $errors)
     {
         $gatewayName = "mollie_wc_gateway_in3";
@@ -720,39 +704,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
 
         return $paymentMethod;
     }
-
-    /**
-     * Some payment methods require mandatory fields, this function will add them to the checkout fields array
-     * @param $fields
-     * @param string $gatewayName
-     * @param string $field
-     * @param $errors
-     * @return mixed
-     */
-    public function addPaymentMethodMandatoryFields($fields, string $gatewayName, string $field, string $fieldLabel, $errors)
-    {
-        if ($fields['payment_method'] !== $gatewayName) {
-            return $fields;
-        }
-        if (!isset($fields[$field])) {
-            $fieldPosted = filter_input(INPUT_POST, $field, FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
-            if ($fieldPosted) {
-                $fields[$field] = $fieldPosted;
-            } else {
-                $errors->add(
-                    'validation',
-                    sprintf(
-                    /* translators: Placeholder 1: field name. */
-                        __('%s is a required field.', 'woocommerce'),
-                        "<strong>$fieldLabel</strong>"
-                    )
-                );
-            }
-        }
-
-        return $fields;
-    }
-
     public function addPaymentMethodMandatoryFieldsPhoneVerification(
         $fields,
         string $gatewayName,
@@ -787,12 +738,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
             $fieldPosted = filter_input(INPUT_POST, 'billing_phone_in3', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
             if ($fieldPosted) {
                 $data['billing_phone'] = !empty($fieldPosted) ? $fieldPosted : $data['billing_phone'];
-            }
-        }
-        if (isset($data['payment_method']) && $data['payment_method'] === 'mollie_wc_gateway_billie') {
-            $fieldPosted = filter_input(INPUT_POST, 'billing_company_billie', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
-            if ($fieldPosted) {
-                $data['billing_company'] = !empty($fieldPosted) ? $fieldPosted : $data['billing_company'];
             }
         }
         return $data;

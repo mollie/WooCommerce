@@ -127,6 +127,12 @@ class MollieOrderService
             return;
         }
 
+        if ($payment->method === 'klarna' && strpos($paymentId, 'tr_') === 0) {
+            $this->httpResponse->setHttpResponseCode(200);
+            $this->logger->debug($this->gateway->id . ": not respond on transaction webhooks for this payment method. Payment ID {$payment->id}, order ID $order_id");
+            return;
+        }
+
         if ($order_id != $payment->metadata->order_id) {
             $this->httpResponse->setHttpResponseCode(400);
             $this->logger->debug(__METHOD__ . ": Order ID does not match order_id in payment metadata. Payment ID {$payment->id}, order ID $order_id");
@@ -164,13 +170,6 @@ class MollieOrderService
         if ($payment->method === 'paypal' && isset($payment->billingAddress) && $this->isOrderButtonPayment($order)) {
             $this->logger->debug($this->gateway->id . ": updating address from express button", [true]);
             $this->setBillingAddressAfterPayment($payment, $order);
-        }
-
-        //don't do webhooks when order is in processing or completed state
-        $orderStatus = $order->get_status();
-        if (in_array($orderStatus, ['processing', 'completed'], true) && $payment->status !== 'completed') {
-            $this->logger->debug($this->gateway->id . ": Order {$order->get_id()} is in {$orderStatus} state, not processing webhook for payment object {$payment->id} (" . $payment->mode . ") with staus {$payment->status}.");
-            return;
         }
 
         if (method_exists($payment_object, $method_name)) {

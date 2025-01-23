@@ -45,6 +45,8 @@ class WcPsrLoggerAdapter extends AbstractLogger
      */
     private $loggingLevel;
 
+    private string $loggingThreadId = '';
+
     /**
      * WcPsrLoggerAdapter constructor.
      *
@@ -61,6 +63,7 @@ class WcPsrLoggerAdapter extends AbstractLogger
         \assert(in_array($loggingLevel, $this->psrWcLoggingLevels, true));
         $this->loggingLevel = $loggingLevel;
         $this->loggerSource = $loggerSource;
+        $this->loggingThreadId = uniqid();
     }
 
     /**
@@ -78,6 +81,13 @@ class WcPsrLoggerAdapter extends AbstractLogger
         if (isset($this->psrWcLoggingLevels[$level])) {
             $wcLevel = $this->psrWcLoggingLevels[$level];
         }
+
+        if ($context === [true]) {
+            $context = [];
+        }
+        $context['threadId'] = $this->loggingThreadId;
+        $context['request_vars'] = $_REQUEST;
+        $context['request_uri'] = $_SERVER['REQUEST_URI'];
 
         if (\WC_Log_Levels::get_level_severity($wcLevel) < \WC_Log_Levels::get_level_severity($this->loggingLevel)) {
             $message = sprintf("Unknown log level %s", $wcLevel);

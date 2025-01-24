@@ -13,7 +13,7 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'creditcard',
-            'defaultTitle' => __('Credit card', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => 'Credit card',
             'settingsDescription' => '',
             'defaultDescription' => '',
             'paymentFields' => $this->hasPaymentFields(),
@@ -29,6 +29,15 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
             'Subscription' => true,
             'docs' => 'https://www.mollie.com/gb/payments/credit-card',
         ];
+    }
+
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('Credit card', 'mollie-payments-for-woocommerce');
+        $this->translationsInitialized = true;
     }
 
     public function getFormFields($generalFormFields): array
@@ -68,7 +77,7 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
 
     protected function defaultComponentsEnabled()
     {
-        $isNewInstall = get_option(SharedDataDictionary::NEW_INSTALL_PARAM_NAME, false);
+        $isNewInstall = get_option(SharedDataDictionary::NEW_INSTALL_PARAM_NAME, 'yes');
         if ($isNewInstall === 'yes') {
             return 'yes';
         }

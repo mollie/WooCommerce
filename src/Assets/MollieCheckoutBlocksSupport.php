@@ -96,7 +96,7 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
             && isset($filters['locale'])
             && isset($filters['billingCountry'])
         ) {
-            $filterKey = "{$filters['amount']['currency']}-{$filters['locale']}-{$filters['billingCountry']}";
+            $filterKey = "{$filters['amount']['currency']}-{$filters['billingCountry']}";
             foreach ($availableGateways as $key => $gateway) {
                 $gatewayId = $gateway->id;
                 $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
@@ -149,6 +149,7 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
                 'AT' => '+43xxxxxxxxx',
             ];
             $country = WC()->customer ? WC()->customer->get_billing_country() : '';
+            $hideCompanyFieldFilter = apply_filters('mollie_wc_hide_company_field', false);
             $phonePlaceholder = in_array($country, array_keys($countryCodes)) ? $countryCodes[$country] : $countryCodes['NL'];
             $gatewayData[] = [
                 'name' => $gatewayKey,
@@ -174,6 +175,7 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
                 'phonePlaceholder' => $phonePlaceholder,
                 'birthdatePlaceholder' => $method->getProperty('birthdatePlaceholder'),
                 'isExpressEnabled' => $gatewayId === 'applepay' && $method->getProperty('mollie_apple_pay_button_enabled_express_checkout') === 'yes',
+                'hideCompanyField' => $hideCompanyFieldFilter,
             ];
         }
         $dataToScript['gatewayData'] = $gatewayData;

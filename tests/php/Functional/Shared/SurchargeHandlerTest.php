@@ -59,6 +59,7 @@ class SurchargeHandlerTest extends TestCase
             [new Surcharge()],
             ['canProcessOrder', 'canProcessGateway', 'orderRemoveFee', 'orderAddFee']
         )->getMock();
+        $testee->initializeGatewayFeeLabel();
         expect('mollieWooCommerceIsCheckoutContext')->andReturn(true);
         expect('wc_tax_enabled')->andReturn(false);
         expect('WC')->andReturn($this->wooCommerce());
@@ -106,6 +107,7 @@ class SurchargeHandlerTest extends TestCase
             [new Surcharge()],
             ['canProcessOrder', 'canProcessGateway', 'orderRemoveFee', 'orderAddFee']
         )->getMock();
+        $testee->initializeGatewayFeeLabel();
 
         $testee->expects($this->once())
             ->method('canProcessOrder')

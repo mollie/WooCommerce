@@ -10,8 +10,8 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'applepay',
-            'defaultTitle' => __('Apple Pay', 'mollie-payments-for-woocommerce'),
-            'settingsDescription' => __('To accept payments via Apple Pay', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => 'Apple Pay',
+            'settingsDescription' => 'To accept payments via Apple Pay',
             'defaultDescription' => '',
             'paymentFields' => false,
             'instructions' => true,
@@ -28,6 +28,19 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
         ];
     }
 
+    // Replace translatable strings after the 'after_setup_theme' hook
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('Apple Pay', 'mollie-payments-for-woocommerce');
+        $this->config['settingsDescription'] = __(
+            'To accept payments via Apple Pay',
+            'mollie-payments-for-woocommerce'
+        );
+        $this->translationsInitialized = true;
+    }
     public function getFormFields($generalFormFields): array
     {
 

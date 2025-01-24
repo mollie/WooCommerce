@@ -117,15 +117,6 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
                 }
             }
         );
-        $isBillieEnabled = $container->get('gateway.isBillieEnabled');
-        if ($isBillieEnabled) {
-            add_filter(
-                'woocommerce_after_checkout_validation',
-                [$this, 'BillieFieldsMandatory'],
-                11,
-                2
-            );
-        }
         $isIn3Enabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_in3_settings', 'enabled');
         if ($isIn3Enabled) {
             add_filter(
@@ -397,14 +388,6 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         return $paymentMethod;
     }
 
-    public function BillieFieldsMandatory($fields, $errors)
-    {
-        $gatewayName = "mollie_wc_gateway_billie";
-        $field = 'billing_company';
-        $companyLabel = __('Company', 'mollie-payments-for-woocommerce');
-        return $this->addPaymentMethodMandatoryFields($fields, $gatewayName, $field, $companyLabel, $errors);
-    }
-
     public function in3FieldsMandatory($fields, $errors)
     {
         $gatewayName = "mollie_wc_gateway_in3";
@@ -499,12 +482,6 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             $fieldPosted = filter_input(INPUT_POST, 'billing_phone_in3', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
             if ($fieldPosted) {
                 $data['billing_phone'] = !empty($fieldPosted) ? $fieldPosted : $data['billing_phone'];
-            }
-        }
-        if (isset($data['payment_method']) && $data['payment_method'] === 'mollie_wc_gateway_billie') {
-            $fieldPosted = filter_input(INPUT_POST, 'billing_company_billie', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
-            if ($fieldPosted) {
-                $data['billing_company'] = !empty($fieldPosted) ? $fieldPosted : $data['billing_company'];
             }
         }
         return $data;

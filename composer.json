@@ -20,7 +20,7 @@
     "ext-intl": "*",
     "ext-json": "*",
     "mollie/mollie-api-php": "^v2.40",
-    "inpsyde/modularity": "^1.7.4",
+    "inpsyde/modularity": "^1.11.0",
     "psr/container": "1.1.0",
     "psr/log":"^1.1.4",
     "sniccowp/php-scoper-wordpress-excludes": "^6.6",

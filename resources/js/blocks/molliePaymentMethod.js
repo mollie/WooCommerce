@@ -1,12 +1,86 @@
+let cachedAvailableGateways = {};
+
+function loadCachedAvailableGateways() {
+    const storedData = localStorage.getItem('cachedAvailableGateways');
+    if (storedData) {
+        try {
+            cachedAvailableGateways = JSON.parse(storedData);
+        } catch (e) {
+            console.warn('Error parsing cachedAvailableGateways from localStorage:', e);
+            cachedAvailableGateways = {};
+        }
+    }
+}
+
+function saveCachedAvailableGateways() {
+    localStorage.setItem('cachedAvailableGateways', JSON.stringify(cachedAvailableGateways));
+}
+
+loadCachedAvailableGateways();
+function setAvailableGateways(country, currencyCode, data) {
+    cachedAvailableGateways = {
+        ...cachedAvailableGateways,
+        ...data
+    };
+    saveCachedAvailableGateways();
+}
+function useMollieAvailableGateways(billing, currencyCode, cartTotal, filters, ajaxUrl, jQuery, item) {
+    const country = billing.country;
+    const code = currencyCode;
+    const value = cartTotal;
+
+
+    wp.element.useEffect(() => {
+        if (!country || !item) return;
+        const currencyCode = code;
+        const cartTotal = value;
+        const currentFilterKey = currencyCode + "-" + country;
+        if (cachedAvailableGateways.hasOwnProperty(currentFilterKey)) {
+            return;
+        }
+        jQuery.ajax({
+            url: ajaxUrl,
+            method: 'POST',
+            data: {
+                action: 'mollie_checkout_blocks_canmakepayment',
+                currentGateway: item,
+                currency: currencyCode,
+                billingCountry: country,
+                cartTotal,
+                paymentLocale: filters.paymentLocale
+            },
+            success: (response) => {
+                setAvailableGateways(country, currencyCode, response.data);
+                const cartTotals = wp.data.select('wc/store/cart').getCartTotals();
+                // Dispatch them again to trigger a re-render:
+                wp.data.dispatch('wc/store/cart').setCartData({...cartTotals});
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+                console.warn('Failed to fetch available gateways:', textStatus, errorThrown);
+            },
+        });
+    }, [billing, currencyCode, filters.paymentLocale, ajaxUrl, jQuery, item]);
+
+    return cachedAvailableGateways;
+}
+
+// Component that runs the hook but does not render anything.
+function MollieGatewayUpdater({ billing, currencyCode, cartTotal, filters, ajaxUrl, jQuery, item }) {
+
+    useMollieAvailableGateways(billing, currencyCode, cartTotal, filters, ajaxUrl, jQuery, item);
+    return null;
+}
 
 let onSubmitLocal
 let activePaymentMethodLocal
-let cachedAvailableGateways
 let creditCardSelected = new Event("mollie_creditcard_component_selected", {bubbles: true});
 const MollieComponent = (props) => {
-    let {onSubmit, activePaymentMethod, billing, item, useEffect, ajaxUrl, jQuery, emitResponse, eventRegistration, requiredFields, shippingData, isCompanyFieldVisible, isPhoneFieldVisible} = props
+    let {onSubmit, activePaymentMethod, billing, item, useEffect, ajaxUrl, jQuery, emitResponse, eventRegistration, requiredFields, shippingData, isPhoneFieldVisible} = props
     const {  responseTypes } = emitResponse;
     const {onPaymentSetup, onCheckoutValidation} = eventRegistration;
+    if (!item || !item.name) {
+        return <div>Loading payment methods...</div>;
+    }
     const [ selectedIssuer, selectIssuer ] = wp.element.useState('');
     const [ inputPhone, selectPhone ] = wp.element.useState('');
     const [ inputBirthdate, selectBirthdate ] = wp.element.useState('');
@@ -114,7 +188,7 @@ const MollieComponent = (props) => {
                         payment_method_title: item.title,
                         [issuerKey]: selectedIssuer,
                         billing_phone: inputPhone,
-                        billing_company: inputCompany,
+                        billing_company_billie: inputCompany,
                         billing_birthdate: inputBirthdate,
                         cardToken: tokenVal,
                     }
@@ -133,7 +207,7 @@ const MollieComponent = (props) => {
 
     useEffect(() => {
         let companyLabel = jQuery('div.wc-block-components-text-input.wc-block-components-address-form__company > label')
-        if (companyLabel.length === 0) {
+        if (companyLabel.length === 0 || item.hideCompanyField === true) {
             return
         }
 
@@ -219,14 +293,20 @@ const MollieComponent = (props) => {
     }
 
     if (item.name === "mollie_wc_gateway_billie") {
-        if (isCompanyFieldVisible) {
-           return;
+        const billingCompanyField = document.querySelector('#billing-company');
+        const shippingCompanyField = document.querySelector('#shipping-company');
+        const isBillingCompanyRequired = billingCompanyField?.hasAttribute('required');
+        const isShippingCompanyRequired = shippingCompanyField?.hasAttribute('required');
+
+        if ((billingCompanyField && isBillingCompanyRequired) || (shippingCompanyField && isShippingCompanyRequired) || item.hideCompanyField === true) {
+            return;
         }
+
         const companyField = item.companyPlaceholder ? item.companyPlaceholder : "Company name";
         return (
             <>
                 <div><p>{item.content}</p></div>
-                {fieldMarkup("billing-company","text", companyField, updateCompany, inputCompany)}
+                {fieldMarkup("billing_company_billie","text", companyField, updateCompany, inputCompany)}
             </>
         );
     }
@@ -271,18 +351,60 @@ const MollieComponent = (props) => {
     return <div><p>{item.content}</p></div>
 }
 
+const Label = ({ item, filters, ajaxUrl, jQuery }) => {
+    const cartData = wp.data.useSelect((select) =>
+            select('wc/store/cart').getCartData(),
+        []
+    );
+    const cartTotals = wp.data.useSelect( (select) => select('wc/store/cart').getCartTotals(), [ ] );
+    const cartTotal = cartTotals?.total_price || 0;
+    return (
+        <>
+            <div dangerouslySetInnerHTML={{ __html: item.label }}/>
+            <MollieGatewayUpdater
+                billing={cartData.billingAddress}
+                currencyCode={wcSettings.currency.code}
+                filters={filters}
+                ajaxUrl={ajaxUrl}
+                jQuery={jQuery}
+                item={item}
+                cartTotal={cartTotal}
+            />
+        </>
+    );
+};
+
 const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isCompanyFieldVisible, isPhoneFieldVisible) =>{
-    let billingCountry = filters.billingCountry
-    let cartTotal = filters.cartTotal
-    cachedAvailableGateways = availableGateways
-    let changedBillingCountry = filters.billingCountry
+
     document.addEventListener('mollie_components_ready_to_submit', function () {
         onSubmitLocal()
     })
+    function creditcardSelectedEvent() {
+        if (item.name === "mollie_wc_gateway_creditcard") {
+            document.documentElement.dispatchEvent(creditCardSelected);
+        }
+    }
+
+    // On first load, if availableGateways is not empty, store it
+    if (_.isEmpty(cachedAvailableGateways) && !_.isEmpty(availableGateways)) {
+        cachedAvailableGateways = availableGateways;
+        saveCachedAvailableGateways();
+    }
     return {
         name: item.name,
-        label: <div dangerouslySetInnerHTML={{__html: item.label}}/>,
-        content: <MollieComponent item={item} useEffect={useEffect} ajaxUrl={ajaxUrl} jQuery={jQuery} requiredFields={requiredFields} isCompanyFieldVisible={isCompanyFieldVisible} isPhoneFieldVisible={isPhoneFieldVisible}/>,
+        label:<Label
+            item={item}
+            ajaxUrl={ajaxUrl}
+            jQuery={jQuery}
+            filters={filters}
+        />,
+        content: <MollieComponent
+            item={item}
+            useEffect={useEffect}
+            ajaxUrl={ajaxUrl}
+            jQuery={jQuery}
+            requiredFields={requiredFields}
+            isPhoneFieldVisible={isPhoneFieldVisible}/>,
         edit: <div>{item.edit}</div>,
         paymentMethodId: item.paymentMethodId,
         canMakePayment: ({cartTotals, billingData}) => {
@@ -292,56 +414,17 @@ const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, available
             if (cartTotals <= 0) {
                 return true
             }
+            loadCachedAvailableGateways();
+            const currencyCode = cartTotals?.currency_code;
+            const country = billingData?.country;
+            const currentFilterKey = currencyCode + "-" + country;
 
-            cartTotal = cartTotals?.total_price
-            if(billingData?.country && billingData.country !== ''){
-                billingCountry = billingData?.country
-            }
-            let currencyCode = cartTotals?.currency_code
-            let currentFilterKey = currencyCode + "-" + filters.paymentLocale + "-" + billingCountry
-
-            function creditcardSelectedEvent() {
-                if (item.name === "mollie_wc_gateway_creditcard") {
-                    document.documentElement.dispatchEvent(creditCardSelected);
-                }
-            }
-
-            if (billingCountry !== changedBillingCountry) {
-                changedBillingCountry = billingCountry
-                if (!cachedAvailableGateways.hasOwnProperty(currentFilterKey)) {
-                    jQuery.ajax({
-                        url: ajaxUrl,
-                        method: 'POST',
-                        data: {
-                            action: 'mollie_checkout_blocks_canmakepayment',
-                            currentGateway: item,
-                            currency: currencyCode,
-                            billingCountry: billingCountry,
-                            cartTotal: cartTotal,
-                            paymentLocale: filters.paymentLocale
-                        },
-                        complete: (jqXHR, textStatus) => {
-                        },
-                        success: (response, textStatus, jqXHR) => {
-                            cachedAvailableGateways = {...cachedAvailableGateways, ...response.data}
-                            if (!cachedAvailableGateways.hasOwnProperty(currentFilterKey)) {
-                                return false
-                            }
-                            return cachedAvailableGateways[currentFilterKey].hasOwnProperty(item.name)
-                        },
-                        error: (jqXHR, textStatus, errorThrown) => {
-                            console.warn(textStatus, errorThrown)
-                        },
-                    })
-                }
-            }
-
-            if (!cachedAvailableGateways.hasOwnProperty(currentFilterKey)) {
-                return false
-            }
             creditcardSelectedEvent();
+            if (!cachedAvailableGateways.hasOwnProperty(currentFilterKey)) {
+                return false;
+            }
 
-            return cachedAvailableGateways[currentFilterKey].hasOwnProperty(item.name)
+            return cachedAvailableGateways[currentFilterKey].hasOwnProperty(item.name);
         },
         ariaLabel: item.ariaLabel,
         supports: {

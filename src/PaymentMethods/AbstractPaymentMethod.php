@@ -39,6 +39,10 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
      * @var array
      */
     private $apiPaymentMethod;
+    /**
+     * @var bool
+     */
+    protected bool $translationsInitialized = false;
 
     public function __construct(
         IconFactory $iconFactory,
@@ -54,6 +58,8 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
         $this->config = $this->getConfig();
         $this->settings = $this->getSettings();
         $this->apiPaymentMethod = $apiPaymentMethod;
+        add_action('init', [$this, 'initializeTranslations']);
+        add_action('init', [$this, 'updateSettingsWithDefaults']);
     }
 
     public function title(): string
@@ -197,6 +203,20 @@ abstract class AbstractPaymentMethod implements PaymentMethodI
      * @return array
      */
     public function getSettings(): array
+    {
+        $optionName = 'mollie_wc_gateway_' . $this->id . '_settings';
+        $settings = get_option($optionName, false);
+        if (!$settings) {
+            $settings = [];
+        }
+        return $settings;
+    }
+
+    /**
+     * Update the payment method's settings with defaults if not exist
+     * @return array
+     */
+    public function updateSettingsWithDefaults(): array
     {
         $optionName = 'mollie_wc_gateway_' . $this->id . '_settings';
         $settings = get_option($optionName, false);

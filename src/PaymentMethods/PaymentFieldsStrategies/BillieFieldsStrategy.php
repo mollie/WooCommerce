@@ -8,7 +8,7 @@ use Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
 
 class BillieFieldsStrategy extends AbstractPaymentFieldsRenderer implements PaymentFieldsRendererInterface
 {
-    const FIELD_COMPANY = "billing_company";
+    public const FIELD_COMPANY = 'billing_company_billie';
 
     public function renderFields(): string
     {
@@ -20,7 +20,10 @@ class BillieFieldsStrategy extends AbstractPaymentFieldsRenderer implements Paym
             $showCompanyField = empty($order->get_billing_company());
         }
 
-        if (is_checkout() && !is_checkout_pay_page()) {
+        $companyFieldIsRequiredByWoo = $this->isCompanyFieldIsRequiredByWoo();
+        $hideCompanyFieldFilter = apply_filters('mollie_wc_hide_company_field', false);
+
+        if (is_checkout() && !is_checkout_pay_page() && !$companyFieldIsRequiredByWoo && !$hideCompanyFieldFilter) {
             $showCompanyField = true;
         }
 
@@ -60,5 +63,17 @@ class BillieFieldsStrategy extends AbstractPaymentFieldsRenderer implements Paym
     public function getFieldMarkup($gateway, $dataHelper)
     {
         return "";
+    }
+
+    /**
+     *
+     * @return bool
+     */
+    public function isCompanyFieldIsRequiredByWoo(): bool
+    {
+        $checkoutFields = WC()->checkout()->get_checkout_fields();
+        $billingCompanyFieldIsRequiredByWoo = isset($checkoutFields['billing']['billing_company']['required']) && ($checkoutFields['billing']['billing_company']['required'] === true);
+        $shippingCompanyFieldIsRequiredByWoo = isset($checkoutFields['shipping']['shipping_company']['required']) && ($checkoutFields['shipping']['shipping_company']['required'] === true);
+        return $billingCompanyFieldIsRequiredByWoo || $shippingCompanyFieldIsRequiredByWoo;
     }
 }

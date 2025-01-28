@@ -130,6 +130,12 @@ class GatewayModule implements ServiceModule, ExecutableModule
                         return $method['id'] !== Constants::SWISH;
                     });
                 }
+                $swishFlag = (bool) apply_filters('inpsyde.feature-flags.mollie-woocommerce.multibanco_enabled', false);
+                if (!$swishFlag) {
+                    $availablePaymentMethods = array_filter($availablePaymentMethods, static function ($method) {
+                        return $method['id'] !== 'multibanco';
+                    });
+                }
                 return $availablePaymentMethods;
             },
             'gateway.isSDDGatewayEnabled' => static function (ContainerInterface $container): bool {

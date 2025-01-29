@@ -150,12 +150,19 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
             if (!apply_filters('mollie_wc_gateway_enable_merchant_capture_module', true)) {
                 return;
             }
+            if (!$container->get('merchant.manual_capture.enabled')) {
+                return;
+            }
 
             add_action(
                 $pluginId . '_after_webhook_action',
                 static function ($payment, WC_Order $order) use ($container) {
 
                     if (!$payment instanceof Payment) {
+                        return;
+                    }
+
+                    if (!in_array($order->get_payment_method(), $container->get('merchant.manual_capture.supported_methods'), true)) {
                         return;
                     }
 

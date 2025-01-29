@@ -127,7 +127,7 @@ class MollieOrderService
             return;
         }
 
-        if (in_array($payment->method, ['klarnapaynow'], true) && strpos($paymentId, 'tr_') === 0) {
+        if (in_array($payment->method, ['klarna', 'klarnapaylater', 'klarnasliceit', 'klarnapaynow'], true) && strpos($paymentId, 'tr_') === 0) {
             $this->httpResponse->setHttpResponseCode(200);
             $this->logger->debug($this->gateway->id . ": not respond on transaction webhooks for this payment method. Payment ID {$payment->id}, order ID $order_id");
             return;

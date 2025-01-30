@@ -27,7 +27,7 @@ class AssetsModule implements ExecutableModule
         return true;
     }
 
-    public function enqueueBlockCheckoutScripts(Data $dataService, array $gatewayInstances): void
+    public function enqueueBlockCheckoutScripts(Data $dataService, array $gatewayInstances, ContainerInterface $container): void
     {
         if (!has_block('woocommerce/checkout')) {
             return;
@@ -36,7 +36,7 @@ class AssetsModule implements ExecutableModule
         wp_enqueue_style('mollie-gateway-icons');
         wp_enqueue_style('mollie-block-custom-field');
 
-        MollieCheckoutBlocksSupport::localizeWCBlocksData($dataService, $gatewayInstances);
+        MollieCheckoutBlocksSupport::localizeWCBlocksData($dataService, $gatewayInstances, $container);
     }
 
     public function registerButtonsBlockScripts(string $pluginUrl, string $pluginPath): void
@@ -603,8 +603,8 @@ class AssetsModule implements ExecutableModule
                     /** @var array */
                     $gatewayInstances = $container->get('__deprecated.gateway_helpers');
                     self::registerBlockScripts($pluginUrl, $pluginPath);
-                    add_action('wp_enqueue_scripts', function () use ($dataService, $gatewayInstances) {
-                        $this->enqueueBlockCheckoutScripts($dataService, $gatewayInstances);
+                    add_action('wp_enqueue_scripts', function () use ($dataService, $gatewayInstances, $container) {
+                        $this->enqueueBlockCheckoutScripts($dataService, $gatewayInstances, $container);
                     });
                     $this->registerButtonsBlockScripts($pluginUrl, $pluginPath);
                 }

@@ -411,8 +411,8 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
 
     public function registerBlocks(ContainerInterface $container): bool
     {
-        //override in method
-        return true;
+        //we handle it outside for the moment
+        return false;
     }
 
     public function orderButtonText(ContainerInterface $container): string

@@ -179,19 +179,22 @@ const MollieComponent = (props) => {
 
     useEffect(() => {
         const onProcessingPayment = () => {
+            let data = {
+                payment_method: activePaymentMethod,
+                payment_method_title: item.title,
+                [issuerKey]: selectedIssuer,
+                billing_phone: inputPhone,
+                billing_company_billie: inputCompany,
+                billing_birthdate: inputBirthdate,
+            };
             const tokenVal = jQuery('.mollie-components > input').val()
+            if (tokenVal) {
+                data.cardToken = tokenVal;
+            }
             return {
                 type: responseTypes.SUCCESS,
                 meta: {
-                    paymentMethodData: {
-                        payment_method: activePaymentMethod,
-                        payment_method_title: item.title,
-                        [issuerKey]: selectedIssuer,
-                        billing_phone: inputPhone,
-                        billing_company_billie: inputCompany,
-                        billing_birthdate: inputBirthdate,
-                        cardToken: tokenVal,
-                    }
+                    paymentMethodData: data
                 },
             };
         }
@@ -432,6 +435,5 @@ const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, available
         },
     };
 }
-
 export default molliePaymentMethod
 

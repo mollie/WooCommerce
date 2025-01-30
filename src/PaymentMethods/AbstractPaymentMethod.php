@@ -406,7 +406,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
 
     public function optionKey(ContainerInterface $container): string
     {
-        return $this->getIdFromConfig() . '_settings';
+        return $this->id() . '_settings';
     }
 
     public function registerBlocks(ContainerInterface $container): bool

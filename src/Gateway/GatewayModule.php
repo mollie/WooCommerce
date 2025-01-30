@@ -130,12 +130,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
                         return $method['id'] !== Constants::SWISH;
                     });
                 }
-                $swishFlag = (bool) apply_filters('inpsyde.feature-flags.mollie-woocommerce.mbway_enabled', false);
-                if (!$swishFlag) {
-                    $availablePaymentMethods = array_filter($availablePaymentMethods, static function ($method) {
-                        return $method['id'] !== 'mbway';
-                    });
-                }
                 return $availablePaymentMethods;
             },
             'gateway.isSDDGatewayEnabled' => static function (ContainerInterface $container): bool {

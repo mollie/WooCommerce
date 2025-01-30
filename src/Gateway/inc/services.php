@@ -211,10 +211,10 @@ return static function (): array {
             $logger = $container->get(Logger::class);
             assert($logger instanceof Logger);
             $paymentGateways = $container->get('payment_gateways');
-            $paypalGateway = isset($paymentGateways['mollie_wc_gateway_paypal']) ? $paymentGateways['mollie_wc_gateway_paypal'] : false;
-            if (!$paypalGateway) {
+            if (!in_array('mollie_wc_gateway_paypal', $paymentGateways)) {
                 return false;
             }
+            $paypalGateway = new Inpsyde\PaymentGateway\PaymentGateway('mollie_wc_gateway_paypal', $container);
             $pluginUrl = $container->get('shared.plugin_url');
             $ajaxRequests = new PayPalAjaxRequests($paypalGateway, $notice, $logger);
             $data = new DataToPayPal($pluginUrl);

@@ -28,6 +28,17 @@ trait IssuersDropdownBehavior
         );
     }
 
+    /**
+     * @return string|NULL
+     */
+    public function getSelectedIssuer($gateway): ?string
+    {
+        $issuer_id = 'mollie-payments-for-woocommerce' . '_issuer_' . $gateway->paymentMethod()->getIdFromConfig();
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $postedIssuer = wc_clean(wp_unslash($_POST[$issuer_id] ?? ''));
+        return !empty($postedIssuer) ? $postedIssuer : null;
+    }
+
     public function renderIssuers($gateway, $issuers, $selectedIssuer)
     {
         $html = $this->issuersDropdownMarkup(

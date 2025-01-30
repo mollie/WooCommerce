@@ -30,5 +30,8 @@
         "lint:md": "wp-scripts lint-md-docs docs/**/*.md",
         "lint:js": "wp-scripts lint-js resources/js/**/*",
         "lint:style": "wp-scripts lint-style resources/scss/**/*.scss"
+    },
+    "dependencies": {
+        "react": "^18.3.1"
     }
 }

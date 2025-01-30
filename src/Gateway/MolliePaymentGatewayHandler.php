@@ -292,7 +292,9 @@ class MolliePaymentGatewayHandler
                 ->getCancelledMolliePaymentId($order_id);
 
             if ($hasCancelledMolliePayment) {
-                $order_status_cancelled_payments = $this->paymentMethod->getOrderStatusCancelledPayments();
+                $defaultCanceledPaymentSetting = 'pending';
+                $orderStatusCanceledPaymentsSetting = get_option('mollie-payments-for-woocommerce_order_status_cancelled_payments') ?: $defaultCanceledPaymentSetting;
+                $order_status_cancelled_payments = trim($orderStatusCanceledPaymentsSetting);
 
                 // If user set all cancelled payments to also cancel the order,
                 // redirect to /checkout/order-received/ with a message about the

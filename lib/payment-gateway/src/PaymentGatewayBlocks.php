@@ -11,7 +11,9 @@ declare(strict_types=1);
 namespace Inpsyde\PaymentGateway;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use WC_Payment_Gateways;
 
 class PaymentGatewayBlocks extends AbstractPaymentMethodType
@@ -20,16 +22,20 @@ class PaymentGatewayBlocks extends AbstractPaymentMethodType
 
     /**
      * phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
+     *
      * @var string
      */
     protected $name;
 
     private ?PaymentGateway $gateway = null;
 
+    private ServiceKeyGenerator $serviceKeyGenerator;
+
     public function __construct(ContainerInterface $container, string $gatewayId)
     {
         $this->container = $container;
         $this->name = $gatewayId;
+        $this->serviceKeyGenerator = new ServiceKeyGenerator($gatewayId);
     }
 
     public function initialize()
@@ -46,6 +52,8 @@ class PaymentGatewayBlocks extends AbstractPaymentMethodType
      * Returns an array of scripts/handles to be registered for this payment method.
      *
      * @return array
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
     public function get_payment_method_script_handles()
     {
@@ -73,7 +81,11 @@ class PaymentGatewayBlocks extends AbstractPaymentMethodType
         /**
          * @psalm-suppress MixedArgument
          */
-        wp_localize_script($scriptId, 'inpsydeGateways', $this->container->get('payment_gateways'));
+        wp_localize_script(
+            $scriptId,
+            'inpsydeGateways',
+            $this->container->get('payment_gateways.methods_supporting_blocks')
+        );
 
         return [$scriptId];
     }
@@ -81,12 +93,18 @@ class PaymentGatewayBlocks extends AbstractPaymentMethodType
     public function get_payment_method_data()
     {
         $gateway = $this->gateway();
+        $iconProvider = $this->container->get($this->serviceKeyGenerator->createKey('method_icon_provider'));
+        assert($iconProvider instanceof IconProviderInterface);
 
         return [
             'title' => $gateway->get_title(),
             'description' => $gateway->get_description(),
             'supports' => array_filter($gateway->supports, [$gateway, 'supports']),
             'placeOrderButtonLabel' => $gateway->order_button_text,
+            'icons' => array_map(
+                static fn (Icon $i) => ['id' => $i->id(), 'alt' => $i->alt(), 'src' => $i->src()],
+                $iconProvider->provideIcons()
+            ),
         ];
     }
 

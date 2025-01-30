@@ -19,7 +19,7 @@
     ],
     "require": {
         "php": "^7.4 | ^8.0",
-        "inpsyde/modularity": "^1.5"
+        "inpsyde/modularity": "@stable"
     },
     "require-dev": {
         "brain/monkey": "^2.0",

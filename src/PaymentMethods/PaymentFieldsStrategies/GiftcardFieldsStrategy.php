@@ -20,7 +20,7 @@ class GiftcardFieldsStrategy extends AbstractPaymentFieldsRenderer implements Pa
         if (empty($issuers)) {
             return $this->gatewayDescription;
         }
-        $selectedIssuer = $this->deprecatedHelperGateway->paymentMethod()->getSelectedIssuer();
+        $selectedIssuer = $this->getSelectedIssuer($this->deprecatedHelperGateway);
 
         $html = '';
 
@@ -46,7 +46,7 @@ class GiftcardFieldsStrategy extends AbstractPaymentFieldsRenderer implements Pa
             return "";
         }
         $issuers = $this->getIssuers($gateway, $dataHelper);
-        $selectedIssuer = $gateway->paymentMethod()->getSelectedIssuer();
+        $selectedIssuer = $this->getSelectedIssuer($gateway);
         $markup = $this->dropdownOptions($gateway, $issuers, $selectedIssuer);
         return $markup;
     }

@@ -1,3 +1,63 @@
+## [2.2.2](https://github.com/inpsyde/payment-gateway/compare/2.2.1...2.2.2) (2025-01-22)
+
+
+### Bug Fixes
+
+* Avoid excessive re-rendering by leveraging useEffect ([0500255](https://github.com/inpsyde/payment-gateway/commit/050025532c80da0c4bab13fb6d71913cc68f27fc))
+
+## [2.2.1](https://github.com/inpsyde/payment-gateway/compare/2.2.0...2.2.1) (2024-12-20)
+
+
+### Bug Fixes
+
+* Use different base for fallback keys ([b0857e0](https://github.com/inpsyde/payment-gateway/commit/b0857e096147219d49255706b76f3efc39014be7))
+
+# [2.2.0](https://github.com/inpsyde/payment-gateway/compare/2.1.1...2.2.0) (2024-12-19)
+
+
+### Features
+
+* Introduce IconProviderInterface and icon rendering ([#39](https://github.com/inpsyde/payment-gateway/issues/39)) ([a3f8085](https://github.com/inpsyde/payment-gateway/commit/a3f8085935a3be15d17567db8db8aa6de2e4db81))
+
+## [2.1.1](https://github.com/inpsyde/payment-gateway/compare/2.1.0...2.1.1) (2024-12-13)
+
+
+### Bug Fixes
+
+* Pass props when creating components instead of filter ([#38](https://github.com/inpsyde/payment-gateway/issues/38)) ([2aa1ab1](https://github.com/inpsyde/payment-gateway/commit/2aa1ab1f685d18a9ff86c57b456a7f6a410115d0))
+
+# [2.1.0](https://github.com/inpsyde/payment-gateway/compare/2.0.0...2.1.0) (2024-12-11)
+
+
+### Features
+
+* Pass WooCommerce props to filter. Fix block registration ([9584b97](https://github.com/inpsyde/payment-gateway/commit/9584b97445455593bfaca092ff84469eeac2d6d8))
+
+# [2.0.0](https://github.com/inpsyde/payment-gateway/compare/1.6.0...2.0.0) (2024-12-10)
+
+
+### Features
+
+* Introduce high-level API ([#36](https://github.com/inpsyde/payment-gateway/issues/36)) ([a84a200](https://github.com/inpsyde/payment-gateway/commit/a84a20094fdd2670c04c8f1a4005fa1a3452c698))
+
+
+### BREAKING CHANGES
+
+* Default/Fallback behaviour is moved into `DefaultPaymentMethodDefinitionTrait`, so existing integrations may see differences in behaviour when upgrading.
+
+* Refactor README to clarify design considerations and architecture for WooCommerce payment gateways.
+
+* Improve README with emojis for better visual appeal.
+
+Adds a unit test
+Moves some of the defaults/fallbacks from PaymentGateway into DefaultPaymentMethodDefinitionTrait
+
+* Refactor and clean up code in PaymentMethodDefinition, NoopGatewayIconsRenderer, and PaymentGateway classes.
+
+* Introduce high-level API for settings customization
+
+* Update README.md
+
 # [1.6.0](https://github.com/inpsyde/payment-gateway/compare/1.5.2...1.6.0) (2024-11-19)
 
 

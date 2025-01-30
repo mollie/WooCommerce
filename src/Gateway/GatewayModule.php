@@ -12,6 +12,7 @@ use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ExtendingModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
+use Inpsyde\PaymentGateway\PaymentMethodServiceProviderTrait;
 use Mollie\WooCommerce\BlockService\CheckoutBlockService;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDirectHandler;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalButtonHandler;
@@ -22,11 +23,13 @@ use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
 use Mollie\WooCommerce\PaymentMethods\Constants;
+use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Container\ContainerInterface;
 
 class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
 {
     use ModuleClassNameIdTrait;
+    use PaymentMethodServiceProviderTrait;
 
     public const APPLE_PAY_METHOD_ALLOWED_KEY = 'mollie_apple_pay_method_allowed';
     public const POST_DATA_KEY = 'post_data';
@@ -178,6 +181,15 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             return $fields;
         }, 10, 3);
 
+        add_action('init', static function () use ($container) {
+            $paymentMethods = $container->get('gateway.paymentMethods');
+            foreach ($paymentMethods as $paymentMethod) {
+                assert($paymentMethod instanceof PaymentMethodI);
+                $paymentMethod->initializeTranslations();
+                $paymentMethod->updateSettingsWithDefaults($container);
+            }
+        });
+
         return true;
     }
 
@@ -323,39 +335,28 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
     }
 
     /**
-     * @param $container
+     * This instantiates all payment methods that we have implemented
+     * disregards if they are available at Mollie or not
+     *
      * @return array
      */
-    protected function instantiatePaymentMethods($container): array
+    protected function instantiatePaymentMethods(): array
     {
         $paymentMethods = [];
-        $listAllAvailablePaymentMethods = $container->get('gateway.getPaymentMethodsAfterFeatureFlag');
-        $iconFactory = $container->get(IconFactory::class);
-        assert($iconFactory instanceof IconFactory);
-        $settingsHelper = $container->get('settings.settings_helper');
-        assert($settingsHelper instanceof Settings);
-        $surchargeService = $container->get(Surcharge::class);
-        assert($surchargeService instanceof Surcharge);
-        foreach ($listAllAvailablePaymentMethods as $paymentMethodAvailable) {
-            $paymentMethodId = $paymentMethodAvailable['id'];
-            $paymentMethods[$paymentMethodId] = $this->buildPaymentMethod(
-                $paymentMethodId,
-                $iconFactory,
-                $settingsHelper,
-                $surchargeService,
-                $paymentMethodAvailable
+        $allGatewayClassNames = SharedDataDictionary::GATEWAY_CLASSNAMES;
+        foreach ($allGatewayClassNames as $gatewayClassName) {
+            $parts = explode('_', $gatewayClassName);
+            $methodId = strtolower(end($parts));
+            $paymentMethods[$methodId] = $this->buildPaymentMethod(
+                $methodId
             );
         }
 
         //I need DirectDebit to create SEPA gateway
         if (!in_array(Constants::DIRECTDEBIT, array_keys($paymentMethods), true)) {
-            $paymentMethodId = Constants::DIRECTDEBIT;
-            $paymentMethods[$paymentMethodId] = $this->buildPaymentMethod(
-                $paymentMethodId,
-                $iconFactory,
-                $settingsHelper,
-                $surchargeService,
-                []
+            $methodId = Constants::DIRECTDEBIT;
+            $paymentMethods[$methodId] = $this->buildPaymentMethod(
+                $methodId
             );
         }
         return $paymentMethods;
@@ -369,23 +370,12 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
      * @return PaymentMethodI | array
      */
     public function buildPaymentMethod(
-        string $id,
-        IconFactory $iconFactory,
-        Settings $settingsHelper,
-        Surcharge $surchargeService,
-        array $apiMethod
+        string $id
     ) {
-
         $transformedId = ucfirst($id);
         $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . $transformedId;
-        $paymentMethod = new $paymentMethodClassName(
-            $iconFactory,
-            $settingsHelper,
-            $surchargeService,
-            $apiMethod
-        );
 
-        return $paymentMethod;
+        return new $paymentMethodClassName();
     }
 
     public function in3FieldsMandatory($fields, $errors)

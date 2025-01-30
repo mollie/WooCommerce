@@ -534,6 +534,7 @@ class AssetsModule implements ExecutableModule
         /** @var Settings */
         $settingsHelper = $container->get('settings.settings_helper');
         $gatewayInstances = $container->get('__deprecated.gateway_helpers');
+
         add_action('woocommerce_blocks_loaded', function () {
             woocommerce_store_api_register_update_callback(
                 [
@@ -549,7 +550,7 @@ class AssetsModule implements ExecutableModule
         //https://github.com/woocommerce/woocommerce-blocks/blob/trunk/docs/third-party-developers/extensibility/checkout-payment-methods/payment-method-integration.md#putting-it-all-together
         add_action(
             'woocommerce_blocks_loaded',
-            function () use ($dataService, $gatewayInstances, $pluginUrl, $pluginPath, $hasBlocksEnabled) {
+            function () use ($dataService, $gatewayInstances, $pluginUrl, $pluginPath, $hasBlocksEnabled, $container) {
                 if (
                     $hasBlocksEnabled && is_admin() && class_exists(
                         'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType'
@@ -561,7 +562,8 @@ class AssetsModule implements ExecutableModule
                             $dataService,
                             $gatewayInstances,
                             $pluginUrl,
-                            $pluginPath
+                            $pluginPath,
+                            $container
                         ) {
                             $paymentMethodRegistry->register(
                                 new MollieCheckoutBlocksSupport(
@@ -570,7 +572,8 @@ class AssetsModule implements ExecutableModule
                                     $this->getPluginUrl($pluginUrl, '/public/js/mollieBlockIndex.min.js'),
                                     (string)filemtime(
                                         $this->getPluginPath($pluginPath, '/public/js/mollieBlockIndex.min.js')
-                                    )
+                                    ),
+                                    $container
                                 )
                             );
                         }

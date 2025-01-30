@@ -49,7 +49,12 @@ return static function (): array {
             return $oldGatewayBuilder->instantiatePaymentMethodGateways($container);
         },
         'gateway.paymentMethods' => static function (ContainerInterface $container): array {
-            return (new self())->instantiatePaymentMethods($container);
+            $onlyAvailableMethods = $container->get('gateway.getPaymentMethodsAfterFeatureFlag');
+            $allPaymentMethods = (new self())->instantiatePaymentMethods();
+            //we want only the methods after the feature flags
+            return array_filter($allPaymentMethods, static function ($method, $key) use ($onlyAvailableMethods) {
+                return array_key_exists($key, $onlyAvailableMethods);
+            },                  ARRAY_FILTER_USE_BOTH);
         },
         'gateway.paymentMethodsEnabledAtMollie' => static function (ContainerInterface $container): array {
             $dataHelper = $container->get('settings.data_helper');
@@ -75,7 +80,7 @@ return static function (): array {
             $implementedMethods = $container->get('gateway.classnames');
             foreach ($methods as $method) {
                 if (in_array('Mollie_WC_Gateway_' . ucfirst($method['id']), $implementedMethods, true)) {
-                    $availableMethods[] = $method;
+                    $availableMethods[$method['id']] = $method;
                 }
             }
             return $availableMethods;
@@ -381,130 +386,7 @@ return static function (): array {
         },
 
     ];
-    $paymentMethods = SharedDataDictionary::GATEWAY_CLASSNAMES;
 
-    $dynamicServices = [];
-    foreach ($paymentMethods as $paymentMethod) {
-        $gatewayId = strtolower($paymentMethod);
-
-        $dynamicServices["payment_gateway.$gatewayId.payment_request_validator"] = static function (ContainerInterface $container): PaymentRequestValidatorInterface {
-            return $container->get('payment_gateways.noop_payment_request_validator');
-        };
-        $dynamicServices["payment_gateway.$gatewayId.payment_processor"] = static function (ContainerInterface $container) use ($gatewayId): PaymentProcessor {
-            return $container->get(PaymentProcessor::class);
-        };
-        $dynamicServices["payment_gateway.$gatewayId.refund_processor"] = static function (ContainerInterface $container) use ($gatewayId): RefundProcessorInterface {
-            $getProperty = $container->get('gateway.getMethodPropertyByGatewayId');
-            $supports = $getProperty($gatewayId, 'supports');
-            $supportsRefunds = $supports && in_array('refunds', $supports, true);
-            if ($supportsRefunds) {
-                return $container->get('payment_gateway.getRefundProcessor')($gatewayId);
-            }
-            return $container->get('payment_gateways.noop_refund_processor');
-        };
-        $dynamicServices["payment_gateway.$gatewayId.has_fields"] = static function (ContainerInterface $container) use ($gatewayId): bool {
-            $getProperty = $container->get('gateway.getMethodPropertyByGatewayId');
-            if ($getProperty($gatewayId, 'paymentFields')) {
-                return true;
-            }
-
-            /* Override show issuers dropdown? */
-            $dropdownDisabled = $getProperty($gatewayId, 'issuers_dropdown_shown') === 'no';
-            if ($dropdownDisabled) {
-                return false;
-            }
-            return false;
-        };
-        $dynamicServices["payment_gateway.$gatewayId.gateway_icons_renderer"] = static function (ContainerInterface $container) use ($gatewayId) {
-            return new GatewayIconsRenderer($gatewayId, $container);
-        };
-        $dynamicServices["payment_gateway.$gatewayId.payment_fields_renderer"] = static function (ContainerInterface $container) use ($gatewayId) {
-            $paymentMethods = $container->get('gateway.paymentMethods');
-            $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
-            $paymentMethod = $paymentMethods[$methodId];
-            $oldGatewayInstances = $container->get('__deprecated.gateway_helpers');
-            //not all payment methods have a gateway
-            if (!isset($oldGatewayInstances[$gatewayId])) {
-                return new NoopPaymentFieldsRenderer();
-            }
-            $gatewayDescription = $container->get('payment_gateway.' . $gatewayId . '.description');
-            $dataHelper = $container->get('settings.data_helper');
-            $deprecatedGatewayHelper = $oldGatewayInstances[$gatewayId];
-            if (!$paymentMethod->getProperty('paymentFields')) {
-                return new DefaultFieldsStrategy($deprecatedGatewayHelper, $gatewayDescription, $dataHelper);
-            } else {
-                $className = 'Mollie\\WooCommerce\\PaymentMethods\\PaymentFieldsStrategies\\' . ucfirst($paymentMethod->getProperty('id')) . 'FieldsStrategy';
-                return class_exists($className) ? new $className($deprecatedGatewayHelper, $gatewayDescription, $dataHelper) : new DefaultFieldsStrategy($deprecatedGatewayHelper, $gatewayDescription, $dataHelper);
-            }
-        };
-
-        $dynamicServices["payment_gateway.$gatewayId.title"] = static function (ContainerInterface $container) use ($gatewayId) {
-            $paymentMethods = $container->get('gateway.paymentMethods');
-            $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
-            $paymentMethod = $paymentMethods[$methodId];
-
-            return $paymentMethod->title();
-        };
-        $dynamicServices["payment_gateway.$gatewayId.method_title"] = static function (ContainerInterface $container) use ($gatewayId) {
-            $paymentMethods = $container->get('gateway.paymentMethods');
-            $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
-            $paymentMethod = $paymentMethods[$methodId];
-
-            return 'Mollie - ' . $paymentMethod->title();
-        };
-        $dynamicServices["payment_gateway.$gatewayId.method_description"] = static function (ContainerInterface $container) use ($gatewayId) {
-            $paymentMethods = $container->get('gateway.paymentMethods');
-            $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
-            $paymentMethod = $paymentMethods[$methodId];
-
-            return $paymentMethod->getProperty('settingsDescription');
-        };
-        $dynamicServices["payment_gateway.$gatewayId.description"] = static function (ContainerInterface $container) use ($gatewayId) {
-            $paymentMethods = $container->get('gateway.paymentMethods');
-            $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
-            $paymentMethod = $paymentMethods[$methodId];
-
-            $description = $paymentMethod->getProcessedDescription();
-            return empty($description) ? false : $description;
-        };
-        $dynamicServices["payment_gateway.$gatewayId.availability_callback"] = new Factory(
-            ['__deprecated.gateway_helpers'],
-            static function (array $gatewayInstances) use ($gatewayId): callable {
-                return static function ($gateway) use ($gatewayInstances, $gatewayId): bool {
-                    return $gatewayInstances[$gatewayId]->is_available($gateway);
-                };
-            }
-        );
-        $dynamicServices["payment_gateway.$gatewayId.form_fields"] = static function (ContainerInterface $container) use ($gatewayId) {
-            $paymentMethods = $container->get('gateway.paymentMethods');
-            $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
-            $paymentMethod = $paymentMethods[$methodId];
-            return $paymentMethod->getAllFormFields();
-        };
-        $dynamicServices["payment_gateway.$gatewayId.option_key"] = static function (ContainerInterface $container) use ($gatewayId) {
-            return $gatewayId . '_settings';
-        };
-        $dynamicServices["payment_gateway.$gatewayId.supports"] = static function (ContainerInterface $container) use ($gatewayId) {
-            $paymentMethods = $container->get('gateway.paymentMethods');
-            $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
-            $paymentMethod = $paymentMethods[$methodId];
-            $supports = $paymentMethod->getProperty('supports');
-            $isSepa = $paymentMethod->getProperty('SEPA') === true;
-            $isSubscription = $paymentMethod->getProperty('Subscription') === true;
-            $subscriptionHooks = $container->get('gateway.subscriptionsSupports');
-            if ($isSepa || $isSubscription) {
-                $supports = array_merge($supports, $subscriptionHooks);
-            }
-            return $supports;
-        };
-        $dynamicServices["payment_gateway.$gatewayId.settings_field_renderer.multi_select_countries"] = static function (ContainerInterface $container) use ($gatewayId) {
-            $paymentMethods = $container->get('gateway.paymentMethods');
-            $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
-            $paymentMethod = $paymentMethods[$methodId];
-
-            return new MultiCountrySettingsField($paymentMethod);
-        };
-    }
-
-    return array_merge($services, $dynamicServices);
+    $paymentMethods = (new self())->instantiatePaymentMethods();
+    return array_merge($services, (new self())->providePaymentMethodServices(...array_values($paymentMethods)));
 };

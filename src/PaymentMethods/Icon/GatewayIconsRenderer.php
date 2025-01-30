@@ -3,30 +3,32 @@
 namespace Mollie\WooCommerce\PaymentMethods\Icon;
 
 use Inpsyde\PaymentGateway\GatewayIconsRendererInterface;
-use Psr\Container\ContainerInterface;
+use Inpsyde\PaymentGateway\IconProviderInterface;
+use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 
 class GatewayIconsRenderer implements GatewayIconsRendererInterface
 {
-    private string $gatewayId;
-    private ContainerInterface $container;
-    public function __construct(string $gatewayId, ContainerInterface $container)
+
+
+    private PaymentMethodI $paymentMethod;
+    private IconProviderInterface $iconProvider;
+
+    public function __construct(PaymentMethodI $paymentMethod, IconProviderInterface $paymentMethodIconProvider)
     {
-        $this->gatewayId = $gatewayId;
-        $this->container = $container;
+        $this->paymentMethod = $paymentMethod;
+        $this->iconProvider = $paymentMethodIconProvider;
     }
     /**
      * @inheritDoc
      */
     public function renderIcons(): string
     {
-        $paymentMethods = $this->container->get('gateway.paymentMethods');
-        $methodId = substr($this->gatewayId, strrpos($this->gatewayId, '_') + 1);
-        $paymentMethod = $paymentMethods[$methodId];
-        if ($paymentMethod->shouldDisplayIcon()) {
-            $defaultIcon = $paymentMethod->getIconUrl();
+        if ($this->paymentMethod->shouldDisplayIcon()) {
+            //we just have one
+            $icon = $this->iconProvider->provideIcons()[0];
             return apply_filters(
-                $this->gatewayId . '_icon_url',
-                $defaultIcon
+                $this->paymentMethod->id() . '_icon_url',
+                $icon->src()
             );
         }
         return '';

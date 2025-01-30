@@ -18,7 +18,7 @@ class KbcFieldsStrategy extends AbstractPaymentFieldsRenderer implements Payment
 
         $issuers = $this->getIssuers($this->deprecatedHelperGateway, $this->dataHelper);
 
-        $selectedIssuer = $this->deprecatedHelperGateway->paymentMethod()->getSelectedIssuer();
+        $selectedIssuer = $this->getSelectedIssuer($this->deprecatedHelperGateway);
 
         return $this->renderIssuers($this->deprecatedHelperGateway, $issuers, $selectedIssuer);
     }
@@ -29,7 +29,7 @@ class KbcFieldsStrategy extends AbstractPaymentFieldsRenderer implements Payment
             return "";
         }
         $issuers = $this->getIssuers($gateway, $dataHelper);
-        $selectedIssuer = $gateway->paymentMethod()->getSelectedIssuer();
+        $selectedIssuer = $this->getSelectedIssuer($gateway);
         $markup = $this->dropdownOptions($gateway, $issuers, $selectedIssuer);
         return $markup;
     }

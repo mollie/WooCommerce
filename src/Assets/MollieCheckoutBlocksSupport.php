@@ -3,11 +3,10 @@
 namespace Mollie\WooCommerce\Assets;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
-use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
-use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
 use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\DefaultFieldsStrategy;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\Shared\Data;
+use Psr\Container\ContainerInterface;
 
 final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
 {
@@ -23,18 +22,21 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
     protected $registerScriptUrl;
     /** @var string $registerScriptVersion */
     protected $registerScriptVersion;
+    private ContainerInterface $container;
 
     public function __construct(
         Data $dataService,
         array $gatewayInstances,
         string $registerScriptUrl,
-        string $registerScriptVersion
+        string $registerScriptVersion,
+        ContainerInterface $container
     ) {
 
         $this->dataService = $dataService;
         $this->gatewayInstances = $gatewayInstances;
         $this->registerScriptUrl = $registerScriptUrl;
         $this->registerScriptVersion = $registerScriptVersion;
+        $this->container = $container;
     }
 
     public function initialize()
@@ -58,25 +60,25 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
             true
         );
 
-        self::localizeWCBlocksData($this->dataService, $this->gatewayInstances);
+        self::localizeWCBlocksData($this->dataService, $this->gatewayInstances, $this->container);
 
         return [self::$scriptHandle];
     }
 
-    public static function localizeWCBlocksData($dataService, $gatewayInstances)
+    public static function localizeWCBlocksData($dataService, $gatewayInstances, $container)
     {
         wp_enqueue_style('mollie-applepaydirect');
         wp_localize_script(
             self::$scriptHandle,
             'mollieBlockData',
             [
-                'gatewayData' => self::gatewayDataForWCBlocks($dataService, $gatewayInstances),
+                'gatewayData' => self::gatewayDataForWCBlocks($dataService, $gatewayInstances, $container),
                 'mollieApplePayBlockDataCart' => $dataService->mollieApplePayBlockDataCart(),
             ]
         );
     }
 
-    public static function gatewayDataForWCBlocks(Data $dataService, array $deprecatedGatewayHelpers): array
+    public static function gatewayDataForWCBlocks(Data $dataService, array $deprecatedGatewayHelpers, ContainerInterface $container): array
     {
         $filters = $dataService->wooCommerceFiltersForCheckout();
         $availableGateways = WC()->payment_gateways()->get_available_payment_gateways();
@@ -139,7 +141,7 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
                 $content .= $issuers;
                 $issuers = false;
             }
-            $title = $method->title();
+            $title = $method->title($container);
             $labelMarkup = "<span style='margin-right: 1em'>{$title}</span>{$gateway->get_icon()}";
             $hasSurcharge = $method->hasSurcharge();
             $countryCodes = [

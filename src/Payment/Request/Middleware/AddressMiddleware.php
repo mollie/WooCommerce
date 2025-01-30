@@ -261,14 +261,9 @@ class AddressMiddleware implements RequestMiddlewareInterface
         $isBillieMethodId = $gateway->id === 'mollie_wc_gateway_billie';
         if ($isBillieMethodId) {
             //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $fieldPosted = wc_clean(wp_unslash($_POST["billing_company"] ?? ''));
-            if ($fieldPosted === '' || !is_string($fieldPosted)) {
-                return null;
-            }
-            return $this->maximalFieldLengths(
-                $fieldPosted,
-                self::MAXIMAL_LENGTH_ADDRESS
-            );
+            $fieldPosted = wc_clean(wp_unslash($_POST["billing_company_billie"] ?? ''));
+            $company = $fieldPosted ?: $order->get_billing_company() ?: $order->get_shipping_company();
+            return $company ? $this->maximalFieldLengths($company, self::MAXIMAL_LENGTH_ADDRESS) : null;
         }
         return null;
     }

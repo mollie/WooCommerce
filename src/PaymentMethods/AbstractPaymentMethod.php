@@ -22,6 +22,8 @@ use Mollie\WooCommerce\Settings\General\MultiCountrySettingsField;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Container\ContainerInterface;
 use Mollie\WooCommerce\PaymentMethods\Icon\GatewayIconsRenderer;
+use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\NoopPaymentFieldsRenderer;
+use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\DefaultFieldsStrategy;
 
 abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDefinition
 {
@@ -109,26 +111,6 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
     {
         return $this->getProperty('paymentFields');
     }
-
-    /**
-     * Payment method custom icon url
-     * @return string
-     */
-    //public function getIconUrl(): string
-    //{
-      /*  if ($uploadedImageUrl = $this->getUploadedImage()) {
-            return $this->iconFactory->getExternalIconHtml($uploadedImageUrl);
-        }
-
-        $useAPIImage = apply_filters('mollie_wc_gateway_use_api_icon', $this->isUseApiTitleChecked(), $this->id);
-
-        if (isset($this->apiPaymentMethod["image"]) && property_exists($this->apiPaymentMethod["image"], "svg") && !$this->isCreditCardSelectorEnabled() && $useAPIImage) {
-            return $this->iconFactory->getExternalIconHtml($this->apiPaymentMethod["image"]->svg);
-        }
-        return $this->iconFactory->getIconUrl(
-            $this->getIdFromConfig()
-        );*/
-    //}
 
     /**
      * Check if payment method should show any icon
@@ -283,8 +265,6 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
         return $savedTitle === $this->config['defaultTitle'];
     }
 
-
-
     public function id(): string
     {
         return 'mollie_wc_gateway_'.$this->getIdFromConfig();
@@ -382,12 +362,12 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
     {
         $oldGatewayInstances = $container->get('__deprecated.gateway_helpers');
         //not all payment methods have a gateway
-        if (!isset($oldGatewayInstances[$this->getIdFromConfig()])) {
+        if (!isset($oldGatewayInstances[$this->id()])) {
             return new NoopPaymentFieldsRenderer();
         }
-        $gatewayDescription = $container->get('payment_gateway.' . $this->getIdFromConfig() . '.description');
+        $gatewayDescription = $container->get('payment_gateway.' . $this->id() . '.description');
         $dataHelper = $container->get('settings.data_helper');
-        $deprecatedGatewayHelper = $oldGatewayInstances[$this->getIdFromConfig()];
+        $deprecatedGatewayHelper = $oldGatewayInstances[$this->id()];
         if (!$this->getProperty('paymentFields')) {
             return new DefaultFieldsStrategy($deprecatedGatewayHelper, $gatewayDescription, $dataHelper);
         } else {

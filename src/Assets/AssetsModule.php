@@ -308,7 +308,7 @@ class AssetsModule implements ExecutableModule
     /**
      * Enqueue Frontend only scripts
      *
-     * @param $container Container
+     * @param ContainerInterface $container
      * @return void
      */
     public function enqueueFrontendScripts($container)

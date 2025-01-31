@@ -41,6 +41,7 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
         );
         $this->translationsInitialized = true;
     }
+
     public function getFormFields($generalFormFields): array
     {
 

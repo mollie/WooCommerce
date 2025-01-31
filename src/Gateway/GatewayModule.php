@@ -372,6 +372,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
     public function buildPaymentMethod(
         string $id
     ) {
+
         $transformedId = ucfirst($id);
         $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . $transformedId;
 

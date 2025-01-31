@@ -8,8 +8,6 @@ use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 
 class GatewayIconsRenderer implements GatewayIconsRendererInterface
 {
-
-
     private PaymentMethodI $paymentMethod;
     private IconProviderInterface $iconProvider;
 

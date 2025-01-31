@@ -50,7 +50,7 @@ return static function (): array {
             //we want only the methods after the feature flags
             return array_filter($allPaymentMethods, static function ($method, $key) use ($onlyAvailableMethods) {
                 return array_key_exists($key, $onlyAvailableMethods);
-            },                  ARRAY_FILTER_USE_BOTH);
+            }, ARRAY_FILTER_USE_BOTH);
         },
         'gateway.paymentMethodsEnabledAtMollie' => static function (ContainerInterface $container): array {
             $dataHelper = $container->get('settings.data_helper');

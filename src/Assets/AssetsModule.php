@@ -535,11 +535,11 @@ class AssetsModule implements ExecutableModule
         $settingsHelper = $container->get('settings.settings_helper');
         $gatewayInstances = $container->get('__deprecated.gateway_helpers');
 
-        add_action('woocommerce_blocks_loaded', function () {
+        add_action('woocommerce_blocks_loaded', static function () {
             woocommerce_store_api_register_update_callback(
                 [
                     'namespace' => 'mollie-payments-for-woocommerce',
-                    'callback' => function () {
+                    'callback' => static function () {
                         // Do nothing
                     },
                 ]

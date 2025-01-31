@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
-
 use Inpsyde\PaymentGateway\Icon;
 use Inpsyde\PaymentGateway\IconProviderInterface;
 use Inpsyde\PaymentGateway\Method\CustomSettingsFields;
@@ -28,6 +27,7 @@ use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\DefaultFieldsStrat
 abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDefinition
 {
     use DefaultPaymentMethodDefinitionTrait;
+
     /**
      * @var string[]
      */
@@ -44,7 +44,8 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
      */
     protected bool $translationsInitialized = false;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->config = $this->getConfig();
         $this->settings = $this->getSettings();
         $this->surcharge = new Surcharge();
@@ -267,7 +268,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
 
     public function id(): string
     {
-        return 'mollie_wc_gateway_'.$this->getIdFromConfig();
+        return 'mollie_wc_gateway_' . $this->getIdFromConfig();
     }
 
     public function paymentProcessor(ContainerInterface $container): PaymentProcessorInterface
@@ -344,7 +345,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
             $url = $iconFactory->getExternalIconHtml($this->apiPaymentMethod["image"]->svg);
         }
 
-        $alt = $this->getIdFromConfig(). ' icon';
+        $alt = $this->getIdFromConfig() . ' icon';
         $icon = new Icon(
             $this->getIdFromConfig(),
             $url,
@@ -425,7 +426,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
         return new CustomSettingsFields([
                                             'multi_select_countries' => function () {
                                                 return new MultiCountrySettingsField($this);
-                                            }
+                                            },
                                         ], []);
     }
 }

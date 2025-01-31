@@ -25,10 +25,12 @@ function setAvailableGateways(country, currencyCode, data) {
     saveCachedAvailableGateways();
 }
 function useMollieAvailableGateways(billing, currencyCode, cartTotal, filters, ajaxUrl, jQuery, item) {
-    const country = billing.country;
+    let country = billing.country;
     const code = currencyCode;
     const value = cartTotal;
-
+    if (!country) {
+        country = wcSettings?.baseLocation.country;
+    }
 
     wp.element.useEffect(() => {
         if (!country || !item) return;
@@ -416,7 +418,10 @@ const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, available
             }
             loadCachedAvailableGateways();
             const currencyCode = cartTotals?.currency_code;
-            const country = billingData?.country;
+            let country = billingData?.country;
+            if (!country) {
+                country = wcSettings?.baseLocation.country;
+            }
             const currentFilterKey = currencyCode + "-" + country;
 
             creditcardSelectedEvent();

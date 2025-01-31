@@ -41,13 +41,13 @@ class PaymentMethods extends AbstractSection
             'mollie-payments-for-woocommerce'
         );
         $descriptionActivePaymentMethods = __(
-            'These payment methods are active in your Mollie profile. 
+            'These payment methods are active in your Mollie profile.
         You can enable these payment methods in their settings to make them available for your customers.',
             'mollie-payments-for-woocommerce'
         );
         $titleInactivePaymentMethods = __('Inactive Payment Methods', 'mollie-payments-for-woocommerce');
         $descriptionInactivePaymentMethods = __(
-            'These payment methods are available in your Mollie profile but are 
+            'These payment methods are available in your Mollie profile but are
         not currently active. Activate them to offer more payment options to your customers.',
             'mollie-payments-for-woocommerce'
         );
@@ -60,6 +60,13 @@ class PaymentMethods extends AbstractSection
             $paymentMethodId = $paymentMethod->getProperty('id');
             $gatewayKey = 'mollie_wc_gateway_' . $paymentMethodId;
             $enabledInMollie = array_key_exists($gatewayKey, $this->mollieGateways);
+
+            //don't display old klarna GWs
+            if (isset($this->paymentMethods['klarna']) && in_array($paymentMethodId, ['klarnasliceit', 'klarnapaylater', 'klarnapaynow'], true)) {
+                if (!$enabledInMollie) {
+                    continue;
+                }
+            }
 
             $paymentGatewayButton = $this->paymentGatewayButton($paymentMethod, $enabledInMollie);
             if ($enabledInMollie) {
@@ -88,7 +95,7 @@ class PaymentMethods extends AbstractSection
             <h3><?= esc_html($title); ?></h3>
             <p><?= esc_html($description); ?></p>
             <div class="mollie-settings-pm__list">
-                <?= $html; // WPCS: XSS ok. ?>
+                <?= $html; // phpcs:ignore XSS ok. ?>
             </div>
         </div>
         <?php
@@ -232,10 +239,10 @@ class PaymentMethods extends AbstractSection
         ob_start();
         ?>
         <div class="mollie-settings-pm__single">
-            <?= $paymentMethod->getIconUrl();  // WPCS: XSS ok.?>
+            <?= $paymentMethod->getIconUrl();  // phpcs:ignore XSS ok.?>
             <?= esc_html($paymentMethod->title());?>
-            <?= $messageOrLink;  // WPCS: XSS ok.?>
-            <?= $button;  // WPCS: XSS ok.?>
+            <?= $messageOrLink;  // phpcs:ignore XSS ok.?>
+            <?= $button;  // phpcs:ignore XSS ok.?>
         </div>
         <?php
         return ob_get_clean();

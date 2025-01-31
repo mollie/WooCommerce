@@ -10,7 +10,7 @@ class Klarnasliceit extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'klarnasliceit',
-            'defaultTitle' => 'Klarna Slice it', 'mollie-payments-for-woocommerce',
+            'defaultTitle' => 'Klarna Slice it',
             'settingsDescription' => 'To accept payments via Klarna, all default WooCommerce checkout fields should be enabled and required.',
             'defaultDescription' => '',
             'paymentFields' => false,

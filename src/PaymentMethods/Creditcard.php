@@ -77,7 +77,7 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
 
     protected function defaultComponentsEnabled()
     {
-        $isNewInstall = get_option(SharedDataDictionary::NEW_INSTALL_PARAM_NAME, false);
+        $isNewInstall = get_option(SharedDataDictionary::NEW_INSTALL_PARAM_NAME, 'yes');
         if ($isNewInstall === 'yes') {
             return 'yes';
         }

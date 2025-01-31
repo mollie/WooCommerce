@@ -127,6 +127,12 @@ class MollieOrderService
             return;
         }
 
+        if (in_array($payment->method, ['klarna', 'klarnapaylater', 'klarnasliceit', 'klarnapaynow'], true) && strpos($paymentId, 'tr_') === 0) {
+            $this->httpResponse->setHttpResponseCode(200);
+            $this->logger->debug($this->gateway->id . ": not respond on transaction webhooks for this payment method. Payment ID {$payment->id}, order ID $order_id");
+            return;
+        }
+
         if ($order_id != $payment->metadata->order_id) {
             $this->httpResponse->setHttpResponseCode(400);
             $this->logger->debug(__METHOD__ . ": Order ID does not match order_id in payment metadata. Payment ID {$payment->id}, order ID $order_id");

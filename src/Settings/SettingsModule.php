@@ -148,7 +148,14 @@ class SettingsModule implements ServiceModule, ExecutableModule
 
         $gateways = $container->get('__deprecated.gateway_helpers');
         $isSDDGatewayEnabled = $container->get('gateway.isSDDGatewayEnabled');
-        $this->initMollieSettingsPage($isSDDGatewayEnabled, $gateways, $pluginPath, $pluginUrl, $paymentMethods);
+        $this->initMollieSettingsPage(
+            $isSDDGatewayEnabled,
+            $gateways,
+            $pluginPath,
+            $pluginUrl,
+            $paymentMethods,
+            $container
+        );
         add_action(
             'woocommerce_admin_settings_sanitize_option',
             [$this->settingsHelper, 'updateMerchantIdOnApiKeyChanges'],
@@ -250,9 +257,10 @@ class SettingsModule implements ServiceModule, ExecutableModule
      * @param $pluginPath
      * @param $pluginUrl
      * @param $paymentMethods
+     * @param $container
      * @return void
      */
-    protected function initMollieSettingsPage($isSDDGatewayEnabled, $gateways, $pluginPath, $pluginUrl, $paymentMethods): void
+    protected function initMollieSettingsPage($isSDDGatewayEnabled, $gateways, $pluginPath, $pluginUrl, $paymentMethods, $container): void
     {
         if (!$isSDDGatewayEnabled) {
             //remove directdebit gateway from gateways list
@@ -260,7 +268,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
         }
         add_filter(
             'woocommerce_get_settings_pages',
-            function ($settings) use ($pluginPath, $pluginUrl, $gateways, $paymentMethods) {
+            function ($settings) use ($pluginPath, $pluginUrl, $gateways, $paymentMethods, $container) {
                 $settings[] = new MollieSettingsPage(
                     $this->settingsHelper,
                     $pluginPath,
@@ -268,7 +276,8 @@ class SettingsModule implements ServiceModule, ExecutableModule
                     $gateways,
                     $paymentMethods,
                     $this->isTestModeEnabled,
-                    $this->dataHelper
+                    $this->dataHelper,
+                    $container
                 );
 
                 return $settings;

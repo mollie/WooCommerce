@@ -41,13 +41,13 @@ class PaymentMethods extends AbstractSection
             'mollie-payments-for-woocommerce'
         );
         $descriptionActivePaymentMethods = __(
-            'These payment methods are active in your Mollie profile. 
+            'These payment methods are active in your Mollie profile.
         You can enable these payment methods in their settings to make them available for your customers.',
             'mollie-payments-for-woocommerce'
         );
         $titleInactivePaymentMethods = __('Inactive Payment Methods', 'mollie-payments-for-woocommerce');
         $descriptionInactivePaymentMethods = __(
-            'These payment methods are available in your Mollie profile but are 
+            'These payment methods are available in your Mollie profile but are
         not currently active. Activate them to offer more payment options to your customers.',
             'mollie-payments-for-woocommerce'
         );
@@ -228,12 +228,14 @@ class PaymentMethods extends AbstractSection
                     esc_html(__('Activate Payment Method', 'mollie-payments-for-woocommerce'))
                     . '</a>';
         }
+        $iconProvider = $paymentMethod->paymentMethodIconProvider($this->container);
+        $icon = $iconProvider->provideIcons()[0];
 
         ob_start();
         ?>
         <div class="mollie-settings-pm__single">
-            <?= $paymentMethod->getIconUrl();  // WPCS: XSS ok.?>
-            <?= esc_html($paymentMethod->title());?>
+            <?= $icon->src();  // WPCS: XSS ok.?>
+            <?= esc_html($paymentMethod->title($this->container));?>
             <?= $messageOrLink;  // WPCS: XSS ok.?>
             <?= $button;  // WPCS: XSS ok.?>
         </div>

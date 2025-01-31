@@ -105,7 +105,7 @@ class RefundLineItemsBuilder
         $currency
     ) {
 
-        $toRefundItemQuantity = abs($toRefundItem->get_quantity());
+        $toRefundItemQuantity = abs((int) $toRefundItem->get_quantity());
         $toRefundItemAmount = number_format(
             abs($toRefundItem->get_total() + $toRefundItem->get_total_tax()),
             2

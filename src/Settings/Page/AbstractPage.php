@@ -77,7 +77,7 @@ abstract class AbstractPage
                 $this->testModeEnabled,
                 $this->mollieGateways,
                 $this->paymentMethods,
-                $this->dataHelper, 
+                $this->dataHelper,
                 $this->container
             );
             foreach ($section->config() as $field) {

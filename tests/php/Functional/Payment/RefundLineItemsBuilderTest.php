@@ -2,9 +2,9 @@
 
 namespace Mollie\WooCommerceTests\Functional\Payment;
 
-use Mollie\WooCommerce\Payment\OrderLineStatus;
-use Mollie\WooCommerce\Payment\PartialRefundException;
-use Mollie\WooCommerce\Payment\RefundLineItemsBuilder;
+use Mollie\WooCommerce\Gateway\Refund\OrderLineStatus;
+use Mollie\WooCommerce\Gateway\Refund\PartialRefundException;
+use Mollie\WooCommerce\Gateway\Refund\RefundLineItemsBuilder;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerceTests\Stubs\WC_Order_Item;
 use Mollie\WooCommerceTests\TestCase;

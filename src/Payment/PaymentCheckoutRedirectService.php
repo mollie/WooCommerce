@@ -21,7 +21,7 @@ class PaymentCheckoutRedirectService
     protected $dataHelper;
 
     /**
-     * PaymentService constructor.
+     * PaymentCheckoutRedirectService constructor.
      */
     public function __construct($dataHelper)
     {

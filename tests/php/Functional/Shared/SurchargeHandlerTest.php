@@ -1,10 +1,10 @@
 <?php
 
 
-namespace php\Functional\Shared;
+namespace Mollie\WooCommerceTests\Functional\Shared;
 
 
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
@@ -198,7 +198,7 @@ class SurchargeHandlerTest extends TestCase
     }
     protected function mollieGateway(){
         $gateway = $this->createConfiguredMock(
-            MolliePaymentGateway::class,
+            MolliePaymentGatewayHandler::class,
             [
                 'getSelectedIssuer' => 'ideal_INGBNL2A',
                 'get_return_url' => 'https://webshop.example.org/wc-api/',

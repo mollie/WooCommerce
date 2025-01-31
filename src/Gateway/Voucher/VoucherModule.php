@@ -58,7 +58,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
      */
     public function run(ContainerInterface $container): bool
     {
-        $gatewayInstances = $container->get('gateway.instances');
+        $gatewayInstances = $container->get('__deprecated.gateway_helpers');
         $voucherGateway = $gatewayInstances['mollie_wc_gateway_voucher'] ?? false;
         $voucher = $voucherGateway && $voucherGateway->enabled === 'yes';
 

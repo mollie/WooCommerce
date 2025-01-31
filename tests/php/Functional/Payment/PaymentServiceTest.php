@@ -5,9 +5,11 @@ namespace Mollie\WooCommerceTests\Functional\Payment;
 use Mollie\Api\Endpoints\OrderEndpoint;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\MollieApiClient;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
+use Mollie\WooCommerce\Payment\MollieOrder;
 use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
-use Mollie\WooCommerce\Payment\PaymentService;
+use Mollie\WooCommerce\Payment\PaymentFactory;
+use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
@@ -74,19 +76,27 @@ class PaymentServiceTest extends TestCase
         );
         $apiClientMock->orders = $orderEndpoints;
         $voucherDefaultCategory = Voucher::NO_CATEGORY;
-        $testee = new PaymentService(
+        $deprecatedGatewayHelper = $this->mollieGateway($paymentMethodId);
+        $testee = new PaymentProcessor(
             $this->helperMocks->noticeMock(),
             $this->helperMocks->loggerMock(),
-            $this->helperMocks->paymentFactory($apiClientMock),
+            $this->paymentFactory(),
             $this->helperMocks->dataHelper($apiClientMock),
             $this->helperMocks->apiHelper($apiClientMock),
             $this->helperMocks->settingsHelper(),
             $this->helperMocks->pluginId(),
             $this->paymentCheckoutService($apiClientMock),
-            $voucherDefaultCategory
+            $voucherDefaultCategory,
+            ['mollie_wc_gateway_ideal' => $deprecatedGatewayHelper]
         );
-        $gateway = $this->mollieGateway($paymentMethodId, $testee);
-        $testee->setGateway($gateway);
+        $gateway = $this->helperMocks->genericPaymentGatewayMock();
+        $gateway->id = 'mollie_wc_gateway_ideal';
+        $gateway->method('supports')->willReturnMap([
+                                                        ['subscriptions', false]
+                                                    ]);
+        $gateway->method('get_return_url')->willReturn($processPaymentRedirect);
+
+        $testee->setGatewayHelper($gateway->id);
 
         stubs(
             [
@@ -102,24 +112,15 @@ class PaymentServiceTest extends TestCase
             ]
         );
 
-        $expectedRequestToMollie = $this->expectedRequestData($wcOrder);
-        $orderEndpoints->method('create')->with($expectedRequestToMollie);
-
         /*
          *  Expectations
          */
-        expect('is_plugin_active')
-            ->andReturn(false);
+        //we are not testing the request data, as that is tested in a separate test
+
         expect('get_option')
             ->with('mollie-payments-for-woocommerce_api_switch')
             ->andReturn(false);
-        expect('get_transient')->andReturn(['ideal'=>['id'=>'ideal', 'status'=>'activated']]);
-        $wcOrder->expects($this->any())
-            ->method('get_billing_company')
-            ->willReturn('');
-        $wcOrder->expects($this->any())
-            ->method('get_billing_phone')
-            ->willReturn('+34345678900');
+
         /*
         * Execute Test
         */
@@ -127,7 +128,7 @@ class PaymentServiceTest extends TestCase
             'result'   => 'success',
             'redirect' => $processPaymentRedirect,
         );
-        $arrayResult = $testee->processPayment(1, $wcOrder, $paymentMethod, $processPaymentRedirect);
+        $arrayResult = $testee->processPayment($wcOrder, $gateway);
         self::assertEquals($expectedResult, $arrayResult);
     }
 
@@ -157,26 +158,29 @@ class PaymentServiceTest extends TestCase
         $apiClientMock = $this->createMock(MollieApiClient::class);
         $apiClientMock->orders = $orderEndpointsMock;
         $voucherDefaultCategory = Voucher::NO_CATEGORY;
-
-        $testee = new PaymentService(
+        $gateway = $this->helperMocks->genericPaymentGatewayMock();
+        $gateway->id = 'mollie_wc_gateway_ideal';
+        $deprecatedGatewayHelper = $this->mollieGateway($paymentMethodId);
+        $testee = new PaymentProcessor(
             $this->helperMocks->noticeMock(),
             $this->helperMocks->loggerMock(),
-            $this->helperMocks->paymentFactory($apiClientMock),
+            $this->helperMocks->paymentFactory(),
             $this->helperMocks->dataHelper($apiClientMock),
             $this->helperMocks->apiHelper($apiClientMock),
             $this->helperMocks->settingsHelper(),
             $this->helperMocks->pluginId(),
             $this->paymentCheckoutService($apiClientMock),
-            $voucherDefaultCategory
+            $voucherDefaultCategory,
+            ['mollie_wc_gateway_ideal' => $deprecatedGatewayHelper]
         );
-        $gateway = $this->mollieGateway($paymentMethodId, $testee);
         $testee->setGateway($gateway);
+        $testee->setGatewayHelper('mollie_wc_gateway_ideal');
         $wcOrderId = 1;
         $wcOrderKey = 'wc_order_hxZniP1zDcnM8';
         $wcOrder = $this->wcOrder($wcOrderId, $wcOrderKey);
         $cusomerId = 1;
         $apiKey = 'test_test';
-        $method = new \ReflectionMethod(PaymentService::class, 'processAsMollieOrder');
+        $method = new \ReflectionMethod(PaymentProcessor::class, 'processAsMollieOrder');
         $method->setAccessible(true);
 
         $this->expectException(ApiException::class);
@@ -198,11 +202,34 @@ class PaymentServiceTest extends TestCase
 
         when('__')->returnArg(1);
     }
-    protected function mollieGateway($paymentMethodName, $testee, $isSepa = false, $isSubscription = false){
-        return $this->helperMocks->mollieGatewayBuilder($paymentMethodName, $isSepa, $isSubscription, [], $testee);
+    protected function mollieGateway($paymentMethodName, $isSepa = false, $isSubscription = false){
+        return $this->helperMocks->mollieGatewayBuilder($paymentMethodName, $isSepa, $isSubscription, []);
     }
 
+    public function paymentFactory(){
+        return new PaymentFactory(
+            function(){
+                return $this->mollieOrderMock();
+            },
+            function(){
+                return $this->molliePaymentMock();
+            }
+        );
+    }
 
+    public function mollieOrderMock()
+    {
+        $dataMock = $this->createMock(stdClass::class);
+        $dataMock->id = 'mocked_id';
+        $mollieOrder =  $this->createConfiguredMock(MollieOrder::class,
+        [
+            'getPaymentRequestData' => [],
+            'data' => $dataMock
+        ]
+        );
+
+        return $mollieOrder;
+    }
     /**
      *
      * @throws PHPUnit_Framework_Exception

@@ -235,12 +235,14 @@ class PaymentMethods extends AbstractSection
                     esc_html(__('Activate Payment Method', 'mollie-payments-for-woocommerce'))
                     . '</a>';
         }
+        $iconProvider = $paymentMethod->paymentMethodIconProvider($this->container);
+        $icon = $iconProvider->provideIcons()[0];
 
         ob_start();
         ?>
         <div class="mollie-settings-pm__single">
-            <?= $paymentMethod->getIconUrl();  // phpcs:ignore XSS ok.?>
-            <?= esc_html($paymentMethod->title());?>
+            <?= $icon->src();  // phpcs:ignore XSS ok.?>
+            <?= esc_html($paymentMethod->title($this->container));?>
             <?= $messageOrLink;  // phpcs:ignore XSS ok.?>
             <?= $button;  // phpcs:ignore XSS ok.?>
         </div>

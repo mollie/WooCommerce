@@ -14,15 +14,18 @@ trait PaymentFieldsStrategiesTrait
     protected function dateOfBirth($birthValue)
     {
         $birthValue = $birthValue ?: '';
-        ?>
-        <p class="form-row form-row-wide" id="billing_birthdate_field">
-            <label for="<?php echo esc_attr(self::FIELD_BIRTHDATE); ?>" class=""><?php echo esc_html__('Birthdate', 'mollie-payments-for-woocommerce'); ?>
-            </label>
-            <span class="woocommerce-input-wrapper">
-                <input type="date" class="input-text " name="<?php echo esc_attr(self::FIELD_BIRTHDATE); ?>"
-                       id="<?php echo esc_attr(self::FIELD_BIRTHDATE); ?>" value="<?php echo esc_attr($birthValue); ?>"
-                       autocomplete="birthdate"></span>
-        </p>
-        <?php
+        $html = '<p class="form-row form-row-wide" id="billing_birthdate_field">';
+        $html .= '<label for="' . esc_attr(self::FIELD_BIRTHDATE) . '" class="">' . esc_html__(
+            'Birthdate',
+            'mollie-payments-for-woocommerce'
+        ) . '</label>';
+        $html .= '<span class="woocommerce-input-wrapper">';
+        $html .= '<input type="date" class="input-text " name="' . esc_attr(
+            self::FIELD_BIRTHDATE
+        ) . '" id="' . esc_attr(self::FIELD_BIRTHDATE) . '" value="' . esc_attr(
+            $birthValue
+        ) . '" autocomplete="birthdate">';
+        $html .= '</span></p>';
+        return $html;
     }
 }

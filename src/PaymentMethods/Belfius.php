@@ -35,6 +35,7 @@ class Belfius extends AbstractPaymentMethod implements PaymentMethodI
         $this->config['defaultTitle'] = __('Belfius Direct Net', 'mollie-payments-for-woocommerce');
         $this->translationsInitialized = true;
     }
+
     public function getFormFields($generalFormFields): array
     {
         return $generalFormFields;

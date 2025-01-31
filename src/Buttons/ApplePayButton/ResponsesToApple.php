@@ -14,17 +14,17 @@ class ResponsesToApple
      */
     protected $logger;
     /**
-     * @var MolliePaymentGatewayI
+     * @var
      */
-    protected $gateway;
+    protected $deprecatedAppleHelper;
 
     /**
      * ResponsesToApple constructor.
      */
-    public function __construct(Logger $logger, MolliePaymentGatewayI $appleGateway)
+    public function __construct(Logger $logger, $deprecatedAppleHelper)
     {
         $this->logger = $logger;
-        $this->gateway = $appleGateway;
+        $this->deprecatedAppleHelper = $deprecatedAppleHelper;
     }
 
     /**
@@ -125,7 +125,6 @@ class ResponsesToApple
 
         return array_merge($reordered_methods, array_values($methods));
     }
-
 
     /**
      * Returns a success response to be handled by the script
@@ -238,7 +237,7 @@ class ResponsesToApple
     protected function redirectUrlOnSuccessfulPayment($orderId)
     {
         $order = wc_get_order($orderId);
-        $redirect_url = $this->gateway->getReturnRedirectUrlForOrder($order);
+        $redirect_url = $this->deprecatedAppleHelper->getReturnRedirectUrlForOrder($order);
         // Add utm_nooverride query string
         $redirect_url = add_query_arg(['utm_nooverride' => 1], $redirect_url);
 
@@ -246,7 +245,7 @@ class ResponsesToApple
             __METHOD__
             . sprintf(
                 ': Redirect url on return order %s, order %s: %s',
-                $this->gateway->paymentMethod()->getProperty('id'),
+                $this->deprecatedAppleHelper->paymentMethod()->getProperty('id'),
                 $orderId,
                 $redirect_url
             )

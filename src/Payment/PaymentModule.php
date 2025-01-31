@@ -11,16 +11,14 @@ use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Refund;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
-use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
+use Mollie\WooCommerce\Gateway\Refund\OrderItemsRefunder;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Settings\Settings;
-use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
-use Psr\Log\LogLevel;
 use RuntimeException;
 use WC_Order;
 
@@ -49,40 +47,13 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
     public function services(): array
     {
-        return [
-            OrderLines::class => static function (ContainerInterface $container): OrderLines {
-                $data = $container->get('settings.data_helper');
-                $pluginId = $container->get('shared.plugin_id');
-                return new OrderLines($data, $pluginId);
-            },
-           PaymentFactory::class => static function (ContainerInterface $container): PaymentFactory {
-               $settingsHelper = $container->get('settings.settings_helper');
-               assert($settingsHelper instanceof Settings);
-               $apiHelper = $container->get('SDK.api_helper');
-               assert($apiHelper instanceof Api);
-               $data = $container->get('settings.data_helper');
-               assert($data instanceof Data);
-               $pluginId = $container->get('shared.plugin_id');
-               $logger = $container->get(Logger::class);
-               assert($logger instanceof Logger);
-               $orderLines = $container->get(OrderLines::class);
-               return new PaymentFactory($data, $apiHelper, $settingsHelper, $pluginId, $logger, $orderLines);
-           },
-           MollieObject::class => static function (ContainerInterface $container): MollieObject {
-               $logger = $container->get(Logger::class);
-               assert($logger instanceof Logger);
-               $data = $container->get('settings.data_helper');
-               assert($data instanceof Data);
-               $apiHelper = $container->get('SDK.api_helper');
-               assert($apiHelper instanceof Api);
-               $pluginId = $container->get('shared.plugin_id');
-               $paymentFactory = $container->get(PaymentFactory::class);
-               assert($paymentFactory instanceof PaymentFactory);
-               $settingsHelper = $container->get('settings.settings_helper');
-               assert($settingsHelper instanceof Settings);
-               return new MollieObject($data, $logger, $paymentFactory, $apiHelper, $settingsHelper, $pluginId);
-           },
-        ];
+        static $services;
+
+        if ($services === null) {
+            $services = require_once __DIR__ . '/inc/services.php';
+        }
+
+        return $services();
     }
 
     public function run(ContainerInterface $container): bool
@@ -99,11 +70,17 @@ class PaymentModule implements ServiceModule, ExecutableModule
         $this->gatewayClassnames = $container->get('gateway.classnames');
 
         // Listen to return URL call
-        add_action('woocommerce_api_mollie_return', [ $this, 'onMollieReturn' ]);
-        add_action('template_redirect', [ $this, 'mollieReturnRedirect' ]);
+        add_action('woocommerce_api_mollie_return', function () use ($container) {
+            $this->onMollieReturn($container);
+        }, 10, 1);
+        add_action('template_redirect', function () use ($container) {
+            $this->mollieReturnRedirect($container);
+        });
 
         // Show Mollie instructions on order details page
-        add_action('woocommerce_order_details_after_order_table', [ $this, 'onOrderDetails' ], 10, 1);
+        add_action('woocommerce_order_details_after_order_table', function (WC_Order $order) use ($container) {
+            $this->onOrderDetails($order, $container);
+        }, 10, 1);
 
         // Cancel order at Mollie (for Orders API/Klarna)
         add_action('woocommerce_order_status_cancelled', [ $this, 'cancelOrderAtMollie' ]);
@@ -252,7 +229,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
      * Old Payment return url callback
      *
      */
-    public function onMollieReturn()
+    public function onMollieReturn($container)
     {
         try {
             $order = self::orderByRequest();
@@ -264,6 +241,8 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
         $gateway = wc_get_payment_gateway_by_order($order);
         $orderId = $order->get_id();
+        $oldGatewayInstances = $container->get('__deprecated.gateway_helpers');
+        $mollieGatewayHelper = $oldGatewayInstances[$gateway->id];
 
         if (!$gateway) {
             $gatewayName = $order->get_payment_method();
@@ -275,13 +254,14 @@ class PaymentModule implements ServiceModule, ExecutableModule
             return;
         }
 
-        if (!($gateway instanceof MolliePaymentGateway)) {
+        if (!(mollieWooCommerceIsMollieGateway($gateway->id))) {
             $this->httpResponse->setHttpResponseCode(400);
-            $this->logger->debug(__METHOD__ . ": Invalid gateway {get_class($gateway)} for this plugin. Order {$orderId}.");
+            $gatewayClass = get_class($gateway);
+            $this->logger->debug(__METHOD__ . ": Invalid gateway {$gatewayClass} for this plugin. Order {$orderId}.");
             return;
         }
 
-        $redirect_url = $gateway->getReturnRedirectUrlForOrder($order);
+        $redirect_url = $mollieGatewayHelper->getReturnRedirectUrlForOrder($order);
 
         // Add utm_nooverride query string
         $redirect_url = add_query_arg(['utm_nooverride' => 1], $redirect_url);
@@ -296,12 +276,12 @@ class PaymentModule implements ServiceModule, ExecutableModule
      * New Payment return url callback
      *
      */
-    public function mollieReturnRedirect()
+    public function mollieReturnRedirect($container)
     {
         if (isset($_GET['filter_flag'])) {
             $filterFlag = sanitize_text_field(wp_unslash($_GET['filter_flag']));
             if ($filterFlag === 'onMollieReturn') {
-                self::onMollieReturn();
+                self::onMollieReturn($container);
             }
         }
     }
@@ -309,27 +289,27 @@ class PaymentModule implements ServiceModule, ExecutableModule
     /**
      * @param WC_Order $order
      */
-    public function onOrderDetails(WC_Order $order)
+    public function onOrderDetails(WC_Order $order, ContainerInterface $container)
     {
         if (is_order_received_page()) {
             /**
              * Do not show instruction again below details on order received page
              * Instructions already displayed on top of order received page by $gateway->thankyou_page()
              *
-             * @see MolliePaymentGateway::thankyou_page
+             * @see MolliePaymentGatewayHandler::thankyou_page
              */
             return;
         }
 
         $gateway = wc_get_payment_gateway_by_order($order);
 
-        if (!$gateway || !($gateway instanceof MolliePaymentGateway)) {
+        if (!$gateway || !(mollieWooCommerceIsMollieGateway($gateway->id))) {
             return;
         }
 
-        /** @var MolliePaymentGatewayI $gateway */
-
-        $gateway->displayInstructions($order);
+        $oldGatewayInstances = $container->get('__deprecated.gateway_helpers');
+        $mollieGatewayHelper = $oldGatewayInstances[$gateway->id];
+        $mollieGatewayHelper->displayInstructions($order);
     }
     /**
      * Ship all order lines and capture an order at Mollie.

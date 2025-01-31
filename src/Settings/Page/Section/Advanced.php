@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Settings\Page\Section;
 
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
-use Mollie\WooCommerce\Payment\PaymentService;
+use Mollie\WooCommerce\Payment\PaymentProcessor;
 
 class Advanced extends AbstractSection
 {
@@ -110,15 +110,15 @@ class Advanced extends AbstractSection
                 ),
                 'type' => 'select',
                 'options' => [
-                    PaymentService::PAYMENT_METHOD_TYPE_ORDER => ucfirst(
-                        PaymentService::PAYMENT_METHOD_TYPE_ORDER
+                    PaymentProcessor::PAYMENT_METHOD_TYPE_ORDER => ucfirst(
+                        PaymentProcessor::PAYMENT_METHOD_TYPE_ORDER
                     ) . ' (' . __('default', 'mollie-payments-for-woocommerce')
                         . ')',
-                    PaymentService::PAYMENT_METHOD_TYPE_PAYMENT => ucfirst(
-                        PaymentService::PAYMENT_METHOD_TYPE_PAYMENT
+                    PaymentProcessor::PAYMENT_METHOD_TYPE_PAYMENT => ucfirst(
+                        PaymentProcessor::PAYMENT_METHOD_TYPE_PAYMENT
                     ),
                 ],
-                'default' => PaymentService::PAYMENT_METHOD_TYPE_ORDER,
+                'default' => PaymentProcessor::PAYMENT_METHOD_TYPE_ORDER,
                 'desc' => sprintf(
                 /* translators: Placeholder 1: opening link tag, placeholder 2: closing link tag */
                     __(

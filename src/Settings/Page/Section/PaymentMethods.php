@@ -61,6 +61,13 @@ class PaymentMethods extends AbstractSection
             $gatewayKey = 'mollie_wc_gateway_' . $paymentMethodId;
             $enabledInMollie = array_key_exists($gatewayKey, $this->mollieGateways);
 
+            //don't display old klarna GWs
+            if (isset($this->paymentMethods['klarna']) && in_array($paymentMethodId, ['klarnasliceit', 'klarnapaylater', 'klarnapaynow'], true)) {
+                if (!$enabledInMollie) {
+                    continue;
+                }
+            }
+
             $paymentGatewayButton = $this->paymentGatewayButton($paymentMethod, $enabledInMollie);
             if ($enabledInMollie) {
                 $activatedGateways .= $paymentGatewayButton;
@@ -88,7 +95,7 @@ class PaymentMethods extends AbstractSection
             <h3><?= esc_html($title); ?></h3>
             <p><?= esc_html($description); ?></p>
             <div class="mollie-settings-pm__list">
-                <?= $html; // WPCS: XSS ok. ?>
+                <?= $html; // phpcs:ignore XSS ok. ?>
             </div>
         </div>
         <?php
@@ -234,10 +241,10 @@ class PaymentMethods extends AbstractSection
         ob_start();
         ?>
         <div class="mollie-settings-pm__single">
-            <?= $icon->src();  // WPCS: XSS ok.?>
+            <?= $icon->src();  // phpcs:ignore XSS ok.?>
             <?= esc_html($paymentMethod->title($this->container));?>
-            <?= $messageOrLink;  // WPCS: XSS ok.?>
-            <?= $button;  // WPCS: XSS ok.?>
+            <?= $messageOrLink;  // phpcs:ignore XSS ok.?>
+            <?= $button;  // phpcs:ignore XSS ok.?>
         </div>
         <?php
         return ob_get_clean();

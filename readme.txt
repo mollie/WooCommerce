@@ -226,14 +226,26 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= 7.10.0-beta1 - 31-01-2025 =
+
+* Added - PaybyBank payment method
+* Added - MB Way payment method
+* Added - Multibanco payment method
+* Feature - Load block Checkout payment methods despite no active country selection
+* Deprecated - Do not show deprecated Klarna methods if disabled in Mollie profile
+* Fixed - Currency Symbol Positioning in bock checkout
+* Fixed - Wrong order status in some cases
+* Fixed - Fatal error on Refunds in some situations (author @Fidelity88)
+
+
 = 7.9.1 - 21-01-2025 =
 
-* Feature: Style Apple Pay express button via Checkout block
-* Fixed: Notice `_load_textdomain_just_in_time` due to early translation loading
-* Fixed: Company Name input field not saved in Order when Billie was enabled
-* Fixed: Mollie Payment methods may not load on Checkout block
-* Fixed: Mollie Payment methods may disappear from Checkout block when changing billing country
-* Fixed: Mollie Components are not enabled by default on new installations
+* Feature - Style Apple Pay express button via Checkout block
+* Fixed - Notice `_load_textdomain_just_in_time` due to early translation loading
+* Fixed - Company Name input field not saved in Order when Billie was enabled
+* Fixed - Mollie Payment methods may not load on Checkout block
+* Fixed - Mollie Payment methods may disappear from Checkout block when changing billing country
+* Fixed - Mollie Components are not enabled by default on new installations
 
 = 7.9.0 - 18-11-2024 =
 

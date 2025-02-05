@@ -226,11 +226,12 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 7.10.0-beta1 - 31-01-2025 =
+= 7.10.0-beta2 - 05-02-2025 =
 
 * Added - PaybyBank payment method
 * Added - MB Way payment method
 * Added - Multibanco payment method
+* Added - Swish payment method
 * Feature - Load block Checkout payment methods despite no active country selection
 * Deprecated - Do not show deprecated Klarna methods if disabled in Mollie profile
 * Fixed - Currency Symbol Positioning in bock checkout

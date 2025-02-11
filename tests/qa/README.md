@@ -90,30 +90,37 @@ npm run setup:tests
 
 Project from the monorepo requires a working WordPress website with WooCommmerce, `.env` file and configured Playwright.
 
-1. [SSE setup](https://inpsyde.atlassian.net/wiki/spaces/AT/pages/3175907370/Self+Service+WordPress+Environment) - will be deprecated in Q1 of 2025.
+1. [SSE setup](https://inpsyde.atlassian.net/wiki/spaces/AT/pages/3175907370/Self+Service+WordPress+Environment) - will be deprecated in Q1 of 2025:
 
-2. Tested user with Administrator role should be created
-  
-2. In the Dashboard navigate to __Settings -> Permalinks__ and select `Post name` in __Permalink structure__ for correct format of REST path.
+	```bash
+	ssh -l youruser php81.emp.pluginpsyde.com
+	```
 
-3. Install __Storefront__ theme.
-   
-4. Install __WooCommerce__ plugin.
+	After connection run:
 
-5. In __WooCommerce -> Settings -> Advanced -> REST API__ create _Consumer Key_ and _Secret_ with Read/Write permissions and store them in `.env`.
+	```bash
+	rm -rf /var/www/html/* 2>/dev/null ; wp core download --version=6.7.1 ; wp config create ; wp db drop --yes ; wp db create ; wp core install ; exit
+	```
 
-6. To avoid conflicts make sure any other payment plugins are deleted.
+2. Configure `.env` file following [these steps](https://github.com/inpsyde/playwright-utils?tab=readme-ov-file#env-variables). See also `.env.example`.
 
-7. Configure `.env` file following [these steps](https://github.com/inpsyde/playwright-utils?tab=readme-ov-file#env-variables). See also `.env.example`.
+3. Configure `playwright.config.ts` of the project following [these steps](https://github.com/inpsyde/playwright-utils?tab=readme-ov-file#playwright-configuration).
 
-8. Configure `playwright.config.ts` of the project following [these steps](https://github.com/inpsyde/playwright-utils?tab=readme-ov-file#playwright-configuration).
-
-9. Reporting. Add `testrail-reporter` in the reporter section of `playwright.config.ts`:
+4. Reporting. Add `testrail-reporter` in the reporter section of `playwright.config.ts`:
 
 	```ts
 	reporter: [
 		// other reporters ...
-		[ '@inpsyde/playwright-utils/build/integration/testrail/testrail-reporter.js' ],
+		[
+			'@inpsyde/playwright-utils/build/integration/testrail/testrail-reporter.js',
+			{
+				apiUrl: process.env.TESTRAIL_URL,
+				apiUsername: process.env.TESTRAIL_USERNAME,
+				apiPassword: process.env.TESTRAIL_PASSWORD,
+				plan_id: process.env.TESTRAIL_PLAN_ID,
+				run_id: process.env.TESTRAIL_RUN_ID,
+			},
+		],
 	],
 	```
 
@@ -127,6 +134,8 @@ Project from the monorepo requires a working WordPress website with WooCommmerce
 	TESTRAIL_PLAN_ID=
 	TESTRAIL_RUN_ID=
 	```
+
+5. Further configuration of the env is done automatically via scripts in `./tests/.setup/woocommerce.setup.ts`. Consider commenting extra scripts when env is already configured.
 
 ## Run tests
 
@@ -189,7 +198,7 @@ npx playwright test --project=all
 
 4. Add/update test plan with run IDs in `.env` file of the project (`TESTRAIL_PLAN_ID, TESTRAIL_RUN_ID`).
 
-5. Download tested plugin `.zip` package (usually attached to release ticket) and add it to `/project/<project-name>/resources/files`. You may need to remove version number from the file name.
+5. Download tested plugin `.zip` package (usually attached to release ticket) and add it to `/resources/files`. You may need to remove version number from the file name. Expected filename: `mollie-payments-for-woocommerce.zip`.
 
 6. Optional: delete previous version of tested plugin from the website if you don't execute __plugin foundation__ tests.
 

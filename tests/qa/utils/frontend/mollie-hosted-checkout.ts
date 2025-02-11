@@ -70,7 +70,7 @@ export class MollieHostedCheckout extends WpPage {
 	};
 
 	payWithCard = async ( card: WooCommerce.CreditCard ) => {
-		await this.page.waitForURL( this.mollieUrlRegex );
+		await this.page.waitForURL( this.creditCardUrlRegex );
 		await this.cardNumberInput().fill( card.card_number );
 		await this.cardHolderInput().fill( card.card_holder );
 		await this.cardExpiryDateInput().fill( card.expiration_date );

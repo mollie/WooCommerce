@@ -27,7 +27,7 @@ test( 'C420154 | Validate correct gateways shown with Order API on Classic check
 	let guest: WooCommerce.CreateCustomer;
 	let countryCode: string;
 
-	await utils.fillVisitorsCart( [ products.mollieSimple100 ] );
+	await utils.fillVisitorsCart( [ products.mollieSimleVoucherMeal100 ] );
 	await classicCheckout.visit();
 
 	for ( const key in gateways ) {

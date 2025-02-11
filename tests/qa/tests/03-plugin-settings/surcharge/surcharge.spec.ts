@@ -14,7 +14,7 @@ import {
 	surchargeFixedAndPercentageUnderLimit,
 	surchargeFixedAndPercentageOverLimit,
 } from './.test-data';
-import { gateways, products, guests, flatRate } from '../../../resources';
+import { gateways, products, guests, flatRate, shopSettings } from '../../../resources';
 
 const allTests = [
 	surchargeNoFee,
@@ -33,28 +33,39 @@ test.beforeAll( async ( { utils }, testInfo ) => {
 	if ( testInfo.project.name !== 'all' ) {
 		return;
 	}
-	await utils.configureStore( { classicPages: true } );
+	await utils.configureStore( {
+		classicPages: true,
+		settings: {
+			general: shopSettings.germany.general,
+		},
+	} );
 	await utils.installActivateMollie();
 	await utils.cleanReconnectMollie();
 } );
 
 for ( const surcharge of allTests ) {
-	test.describe( surcharge.describe, () => {
+	test.describe( surcharge.describeTitle, () => {
 		for ( const tested of surcharge.tests ) {
 			const gateway = gateways[ tested.gateway ];
 			const country = gateway.country;
+			const product = tested.product || products.mollieSimple100;
+			const expectedFeeText = tested.expectedFeeText || surcharge.expectedFeeText;
 
-			test( `${ tested.testId } | ${ surcharge.title } "${ gateway.name }"`, async ( {
+			test( `${ tested.testId } | ${ surcharge.testTitle } ${ gateway.name }`, async ( {
+				wooCommerceApi,
 				mollieApi,
 				utils,
 				classicCheckout,
 			} ) => {
+				await wooCommerceApi.updateGeneralSettings( shopSettings[ country ].general );
+
 				await mollieApi.updateMollieGateway(
 					gateway.slug,
 					surcharge.settings
 				);
 
-				await utils.fillVisitorsCart( [ products.mollieSimple100 ] );
+				await utils.fillVisitorsCart( [ product ] );
+
 				await classicCheckout.visit();
 				await classicCheckout.fillCheckoutForm( guests[ country ] );
 				await classicCheckout.selectShippingMethod(
@@ -65,9 +76,9 @@ for ( const surcharge of allTests ) {
 				const feeNotice = classicCheckout.paymentOptionFee(
 					gateway.name
 				);
-				if ( surcharge.expectedFeeText ) {
+				if ( expectedFeeText ) {
 					await expect( feeNotice ).toContainText(
-						surcharge.expectedFeeText
+						expectedFeeText
 					);
 				} else {
 					await expect( feeNotice ).not.toBeVisible();

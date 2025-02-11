@@ -1,4 +1,8 @@
 /**
+ * External dependencies
+ */
+import { updateDotenv } from '@inpsyde/playwright-utils/build';
+/**
  * Internal dependencies
  */
 import { test as setup } from '../../utils';
@@ -11,21 +15,14 @@ import {
 	customers,
 	disableNoncePlugin,
 	subscriptionsPlugin,
+	disableWcSetupWizard,
 } from '../../resources';
 
-// setup( 'Setup WooCommerce plugin, API, go Live', async ( { requestUtils } ) => {} );
+setup( 'Setup Permalinks', async ( { requestUtils } ) => {
+	await requestUtils.setPermalinks( '/%postname%/' );
+} );
 
-setup( 'Setup theme',
-	async ( { requestUtils } ) => {
-		const slug = 'storefront';
-		if( ! await requestUtils.isThemeInstalled( slug ) ) {
-			await requestUtils.installTheme( slug );
-		}
-		await requestUtils.activateTheme( slug );
-	}
-);
-
-setup( 'Setup Disable Nonce Plugin',
+setup( 'Setup Disable Nonce plugin (inactive)',
 	async ( { requestUtils, plugins } ) => {
 		if (
 			! ( await requestUtils.isPluginInstalled(
@@ -40,7 +37,29 @@ setup( 'Setup Disable Nonce Plugin',
 	}
 );
 
-setup( 'Setup WooCommerce Subscriptions Plugin (deactivated)',
+setup( 'Setup Disable WooCommerce Setup Wizard Plugin (active)',
+	async ( { requestUtils, plugins } ) => {
+		if (
+			! ( await requestUtils.isPluginInstalled(
+				disableWcSetupWizard.slug
+			) )
+		) {
+			await plugins.installPluginFromFile(
+				disableWcSetupWizard.zipFilePath
+			);
+		}
+		await requestUtils.activatePlugin( disableWcSetupWizard.slug );
+	}
+);
+
+setup( 'Setup WooCommerce plugin (active)', async ( { requestUtils } ) => {
+	if ( ! ( await requestUtils.isPluginInstalled( 'woocommerce' ) ) ) {
+		await requestUtils.installPlugin( 'woocommerce' );
+	}
+	await requestUtils.activatePlugin( 'woocommerce' );
+} );
+
+setup( 'Setup WC Subscriptions plugin (inactive)',
 	async ( { requestUtils, plugins } ) => {
 		if (
 			! ( await requestUtils.isPluginInstalled(
@@ -55,58 +74,99 @@ setup( 'Setup WooCommerce Subscriptions Plugin (deactivated)',
 	}
 );
 
-setup( 'Setup Disable WooCommerce Setup Plugin',
-	async ( { requestUtils, plugins } ) => {
-		const helperPluginSlug = 'disable-wc-setup-wizard';
-		if ( ! ( await requestUtils.isPluginInstalled( helperPluginSlug ) ) ) {
-			await plugins.installPluginFromFile(
-				`./resources/files/${ helperPluginSlug }.zip`
-			);
-		}
-		await requestUtils.activatePlugin( helperPluginSlug );
+setup( 'Setup theme', async ( { requestUtils } ) => {
+	const slug = 'storefront';
+	if ( ! ( await requestUtils.isThemeInstalled( slug ) ) ) {
+		await requestUtils.installTheme( slug );
 	}
-);
+	await requestUtils.activateTheme( slug );
+} );
 
-setup( 'Setup Block and Classic pages',
+setup( 'Setup WooCommerce Live site visibility',
 	async ( { wooCommerceUtils } ) => {
-		await wooCommerceUtils.publishBlockCartPage();
-		await wooCommerceUtils.publishBlockCheckoutPage();
-		await wooCommerceUtils.publishClassicCartPage();
-		await wooCommerceUtils.publishClassicCheckoutPage();
+		await wooCommerceUtils.setSiteVisibility();
 	}
 );
 
-setup( 'Setup WooCommerce general settings', async ( { wooCommerceApi } ) => {
-	const country = 'germany';
-	await wooCommerceApi.updateGeneralSettings(
-		shopSettings[ country ].general
+setup( 'Setup WooCommerce API keys', async ( { wooCommerceUtils } ) => {
+	if ( ! ( await wooCommerceUtils.apiKeysExist() ) ) {
+		const apiKeys = await wooCommerceUtils.createApiKeys();
+		if( ! process.env.CI ) {
+			await updateDotenv( './.env', apiKeys );
+		}
+		for ( const [ key, value ] of Object.entries( apiKeys ) ) {
+			process.env[ key ] = value;
+		}
+	}
+} );
+
+setup( 'Setup Block and Classic pages', async ( { wooCommerceUtils } ) => {
+	await wooCommerceUtils.publishBlockCartPage();
+	await wooCommerceUtils.publishBlockCheckoutPage();
+	await wooCommerceUtils.publishClassicCartPage();
+	await wooCommerceUtils.publishClassicCheckoutPage();
+} );
+
+setup( 'Setup WooCommerce email settings', async ( { wooCommerceApi } ) => {
+	const disabled = { enabled: 'no' };
+	await wooCommerceApi.updateEmailSubSettings( 'email_new_order', disabled );
+	await wooCommerceApi.updateEmailSubSettings(
+		'email_cancelled_order',
+		disabled
+	);
+	await wooCommerceApi.updateEmailSubSettings(
+		'email_failed_order',
+		disabled
+	);
+	await wooCommerceApi.updateEmailSubSettings(
+		'email_customer_on_hold_order',
+		disabled
+	);
+	await wooCommerceApi.updateEmailSubSettings(
+		'email_customer_processing_order',
+		disabled
+	);
+	await wooCommerceApi.updateEmailSubSettings(
+		'email_customer_completed_order',
+		disabled
+	);
+	await wooCommerceApi.updateEmailSubSettings(
+		'email_customer_refunded_order',
+		disabled
+	);
+	await wooCommerceApi.updateEmailSubSettings(
+		'email_customer_note',
+		disabled
+	);
+	await wooCommerceApi.updateEmailSubSettings(
+		'email_customer_reset_password',
+		disabled
+	);
+	await wooCommerceApi.updateEmailSubSettings(
+		'email_customer_new_account',
+		disabled
 	);
 } );
 
-setup( 'Setup WooCommerce shipping',
-	async ( { wooCommerceUtils } ) => {
-		await wooCommerceUtils.configureShippingZone( shippingZones.worldwide );
-	}
-);
+setup( 'Setup WooCommerce general settings', async ( { wooCommerceApi } ) => {
+	await wooCommerceApi.updateGeneralSettings( shopSettings.germany.general );
+} );
 
-setup( 'Setup WooCommerce taxes (included)',
-	async ( { wooCommerceUtils } ) => {
-		await wooCommerceUtils.setTaxes( taxSettings.including );
-	}
-);
+setup( 'Setup WooCommerce shipping', async ( { wooCommerceUtils } ) => {
+	await wooCommerceUtils.configureShippingZone( shippingZones.worldwide );
+} );
 
-setup( 'Setup Registered Customer',
-	async ( { wooCommerceUtils } ) => {
-		const country = 'germany';
-		await wooCommerceUtils.createCustomer( customers[ country ] );
-	}
-);
+setup( 'Setup WooCommerce taxes (included)', async ( { wooCommerceUtils } ) => {
+	await wooCommerceUtils.setTaxes( taxSettings.including );
+} );
 
-setup( 'Setup Delete Previous Orders',
-	async ( { wooCommerceApi } ) => {
-		await wooCommerceApi.deleteAllOrders();
-	}
-);
+setup( 'Setup Registered Customer', async ( { wooCommerceUtils } ) => {
+	await wooCommerceUtils.createCustomer( customers.germany );
+} );
+
+setup( 'Setup Delete Previous Orders', async ( { wooCommerceApi } ) => {
+	await wooCommerceApi.deleteAllOrders();
+} );
 
 setup( 'Setup coupons', async ( { wooCommerceUtils } ) => {
 	// create test coupons

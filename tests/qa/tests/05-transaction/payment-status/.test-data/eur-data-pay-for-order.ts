@@ -11,6 +11,55 @@ export const payForOrderEur: MollieTestData.PaymentStatus[] = [
 	// 	orderStatus: 'processing',
 	// },
 	{
+		testId: 'NotInTestRail',
+		gatewaySlug: 'mbway',
+		paymentStatus: 'paid',
+		orderStatus: 'processing',
+	},
+	{
+		testId: 'NotInTestRail',
+		gatewaySlug: 'mbway',
+		paymentStatus: 'failed',
+		orderStatus: 'pending',
+	},
+	{
+		testId: 'NotInTestRail',
+		gatewaySlug: 'mbway',
+		paymentStatus: 'canceled',
+		orderStatus: 'pending',
+	},
+	{
+		testId: 'NotInTestRail',
+		gatewaySlug: 'mbway',
+		paymentStatus: 'expired',
+		orderStatus: 'pending',
+	},
+	{
+		testId: 'NotInTestRail',
+		gatewaySlug: 'multibanco',
+		paymentStatus: 'paid',
+		orderStatus: 'processing',
+	},
+	{
+		testId: 'NotInTestRail',
+		gatewaySlug: 'multibanco',
+		paymentStatus: 'failed',
+		orderStatus: 'pending',
+	},
+	{
+		testId: 'NotInTestRail',
+		gatewaySlug: 'multibanco',
+		paymentStatus: 'canceled',
+		orderStatus: 'pending',
+	},
+	{
+		testId: 'NotInTestRail',
+		gatewaySlug: 'multibanco',
+		paymentStatus: 'expired',
+		orderStatus: 'pending',
+	},
+	
+	{
 		testId: 'C420334',
 		gatewaySlug: 'in3',
 		paymentStatus: 'paid',
@@ -532,81 +581,4 @@ export const payForOrderEur: MollieTestData.PaymentStatus[] = [
 		paymentStatus: 'expired',
 		orderStatus: 'pending',
 	},
-
-	/**
-	 * Deprecated gateways
-	 */
-
-	// {
-	// 	testId: 'C420364',
-	// 	gatewaySlug: 'klarnapaylater',
-	// 	paymentStatus: 'authorized',
-	// 	orderStatus: 'processing',
-	// },
-	// {
-	// 	testId: 'C420365',
-	// 	gatewaySlug: 'klarnapaylater',
-	// 	paymentStatus: 'failed',
-	// 	orderStatus: 'pending',
-	// },
-	// {
-	// 	testId: 'C420366',
-	// 	gatewaySlug: 'klarnapaylater',
-	// 	paymentStatus: 'canceled',
-	// 	orderStatus: 'pending',
-	// },
-	// {
-	// 	testId: 'C420367',
-	// 	gatewaySlug: 'klarnapaylater',
-	// 	paymentStatus: 'expired',
-	// 	orderStatus: 'pending',
-	// },
-	// {
-	// 	testId: 'C420394',
-	// 	gatewaySlug: 'klarnapaynow',
-	// 	paymentStatus: 'authorized',
-	// 	orderStatus: 'processing',
-	// },
-	// {
-	// 	testId: 'C420395',
-	// 	gatewaySlug: 'klarnapaynow',
-	// 	paymentStatus: 'failed',
-	// 	orderStatus: 'pending',
-	// },
-	// {
-	// 	testId: 'C420396',
-	// 	gatewaySlug: 'klarnapaynow',
-	// 	paymentStatus: 'canceled',
-	// 	orderStatus: 'pending',
-	// },
-	// {
-	// 	testId: 'C420397',
-	// 	gatewaySlug: 'klarnapaynow',
-	// 	paymentStatus: 'expired',
-	// 	orderStatus: 'pending',
-	// },
-	// {
-	// 	testId: 'C420338',
-	// 	gatewaySlug: 'klarnasliceit',
-	// 	paymentStatus: 'authorized',
-	// 	orderStatus: 'processing',
-	// },
-	// {
-	// 	testId: 'C420339',
-	// 	gatewaySlug: 'klarnasliceit',
-	// 	paymentStatus: 'failed',
-	// 	orderStatus: 'pending',
-	// },
-	// {
-	// 	testId: 'C420340',
-	// 	gatewaySlug: 'klarnasliceit',
-	// 	paymentStatus: 'canceled',
-	// 	orderStatus: 'pending',
-	// },
-	// {
-	// 	testId: 'C420341',
-	// 	gatewaySlug: 'klarnasliceit',
-	// 	paymentStatus: 'expired',
-	// 	orderStatus: 'pending',
-	// },
 ];

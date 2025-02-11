@@ -1,18 +1,11 @@
 /**
  * Internal dependencies
  */
-import { MollieSettings } from '../../../../resources';
+import { MollieTestData, products } from '../../../../resources';
 
-export const surchargeFixedAndPercentageOverLimit: {
-	describe: string;
-	title: string;
-	expectedAmount: number;
-	expectedFeeText: string;
-	settings: MollieSettings.Gateway;
-	tests: { testId: string; gateway: string }[];
-} = {
-	describe: 'Surcharge fee - Fixed and percentage over limit',
-	title: 'Validate fixed and percentage fee surcharge for total over limit for',
+export const surchargeFixedAndPercentageOverLimit: MollieTestData.SurchargeTestsGroup = {
+	describeTitle: 'Surcharge fee > Fixed and percentage over limit',
+	testTitle: 'Validate fixed and percentage fee surcharge for total over limit for',
 	expectedAmount: 111.0,
 	expectedFeeText: '+ € 10 + 10% fee might apply (excl. VAT)',
 	settings: {
@@ -26,7 +19,7 @@ export const surchargeFixedAndPercentageOverLimit: {
 		// { testId: 'C420318', gateway: 'applepay' },
 		{ testId: 'C89355', gateway: 'creditcard' },
 		{ testId: 'C130905', gateway: 'giftcard' },
-		{ testId: 'C129822', gateway: 'voucher' },
+		{ testId: 'C129822', gateway: 'voucher', product: products.mollieSimleVoucherMeal100 },
 		{ testId: 'C129511', gateway: 'bancontact' },
 		{ testId: 'C138020', gateway: 'belfius' },
 		{ testId: 'C354673', gateway: 'billie' },
@@ -39,8 +32,9 @@ export const surchargeFixedAndPercentageOverLimit: {
 		{ testId: 'C129812', gateway: 'przelewy24' },
 		{ testId: 'C136538', gateway: 'banktransfer' },
 		{ testId: 'C106917', gateway: 'in3' },
-		// { testId: 'C130885', gateway: 'klarnapaylater' },
-		// { testId: 'C136528', gateway: 'klarnapaynow' },
-		// { testId: 'C106918', gateway: 'klarnasliceit' },
+		{ testId: 'NotInTestRail', gateway: 'paybybank' },
+		{ testId: 'NotInTestRail', gateway: 'mbway' },
+		{ testId: 'NotInTestRail', gateway: 'multibanco' },
+		{ testId: 'NotInTestRail', gateway: 'swish', expectedFeeText: '+ kr 10 + 10% fee might apply (excl. VAT)' },
 	],
 };

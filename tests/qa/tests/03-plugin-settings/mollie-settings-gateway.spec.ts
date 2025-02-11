@@ -14,14 +14,14 @@ test.beforeAll( async ( { utils } ) => {
 const key = 'eps';
 const gateway = gateways[ key ];
 
-test.describe( `Payment method settings "${ gateway.name }"`, () => {
+test.describe( `Payment method settings ${ gateway.name }`, () => {
 	test.beforeEach( async ( { mollieSettingsGateway } ) => {
 		await mollieSettingsGateway.visit();
 		await mollieSettingsGateway.setup( gateway.settings );
 	} );
 
 	test(
-		`C3325 | Validate that the ecommerce admin can change the "${ gateway.name }" payment name`,
+		`C3325 | Validate that the ecommerce admin can change the ${ gateway.name } payment name`,
 		annotateGateway( gateway.slug ),
 		async ( { utils, mollieSettingsGateway, classicCheckout } ) => {
 			await mollieSettingsGateway.setup( {
@@ -33,19 +33,17 @@ test.describe( `Payment method settings "${ gateway.name }"`, () => {
 			await classicCheckout.visit();
 			await classicCheckout.fillCheckoutForm( guests[ gateway.country ] );
 			await expect(
-				await classicCheckout.paymentOption(
-					`${ gateway.name } edited`
-				)
+				classicCheckout.paymentOption( `${ gateway.name } edited` )
 			).toBeVisible();
 		}
 	);
 
 	test(
-		`C3326 | Validate that the ecommerce admin can change the "${ gateway.name }" payment logo`,
+		`C3326 | Validate that the ecommerce admin can change the ${ gateway.name } payment logo`,
 		annotateGateway( gateway.slug ),
 		async ( { utils, mollieSettingsGateway, classicCheckout } ) => {
 			await mollieSettingsGateway.setup( {
-				enable_custom_logo: "yes",
+				enable_custom_logo: 'yes',
 				custom_logo_path: './resources/files/mollie-test-logo.png',
 			} );
 			await mollieSettingsGateway.saveChanges();
@@ -63,7 +61,7 @@ test.describe( `Payment method settings "${ gateway.name }"`, () => {
 	);
 
 	test(
-		`C3327 | Validate that the ecommerce admin can change the "${ gateway.name }" payment description`,
+		`C3327 | Validate that the ecommerce admin can change the ${ gateway.name } payment description`,
 		annotateGateway( gateway.slug ),
 		async ( { utils, mollieSettingsGateway, classicCheckout } ) => {
 			await mollieSettingsGateway.setup( {
@@ -84,7 +82,7 @@ test.describe( `Payment method settings "${ gateway.name }"`, () => {
 	);
 
 	test(
-		`C420329 | Validate selling only to specific countries for "${ gateway.name }"`,
+		`C420329 | Validate selling only to specific countries for ${ gateway.name }`,
 		annotateGateway( gateway.slug ),
 		async ( { utils, mollieSettingsGateway, classicCheckout } ) => {
 			await mollieSettingsGateway.setup( {

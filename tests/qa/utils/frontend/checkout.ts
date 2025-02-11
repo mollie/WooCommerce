@@ -1,7 +1,8 @@
 /**
  * External dependencies
  */
-import { Checkout as CheckoutBase, expect } from '@inpsyde/playwright-utils/build';
+import { Locator } from '@playwright/test';
+import { Checkout as CheckoutBase } from '@inpsyde/playwright-utils/build';
 
 export class Checkout extends CheckoutBase {
 	// Locators
@@ -29,11 +30,11 @@ export class Checkout extends CheckoutBase {
 		this.page.locator(
 			'select[name="mollie-payments-for-woocommerce_issuer_mollie_wc_gateway_kbc"]'
 		);
-	billieBillingCompanyInput = () =>
-		this.paymentOptionsContainer().locator( '#billing-company' );
-	in3PhoneInput = () =>
+	billieBillingCompanyInput = (): Locator =>
+		this.paymentOptionsContainer().locator( '#billing_company_billie' );
+	in3PhoneInput = (): Locator =>
 		this.paymentOptionsContainer().locator( '#billing-phone' );
-	in3BirthDateInput = () =>
+	in3BirthDateInput = (): Locator =>
 		this.paymentOptionsContainer().locator( '#billing-birthdate' );
 
 	// Actions

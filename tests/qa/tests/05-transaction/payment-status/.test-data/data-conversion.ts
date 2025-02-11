@@ -21,7 +21,10 @@ export const createShopOrder = (
 				...gateway,
 				settings: {
 					...gateway.settings,
-					mollie_components_enabled: testData.mollieComponentsEnabled, // for card tests with mollie components
+					...(
+						testData.mollieComponentsEnabled &&
+						{ mollie_components_enabled: testData.mollieComponentsEnabled }
+					), // for card tests with mollie components
 				},
 			},
 			billingCompany: testData.billingCompany, // for billie tests

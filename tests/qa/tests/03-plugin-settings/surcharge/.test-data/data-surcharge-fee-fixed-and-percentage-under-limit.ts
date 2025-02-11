@@ -1,18 +1,11 @@
 /**
  * Internal dependencies
  */
-import { MollieSettings } from '../../../../resources';
+import { MollieTestData, products } from '../../../../resources';
 
-export const surchargeFixedAndPercentageUnderLimit: {
-	describe: string;
-	title: string;
-	expectedAmount: number;
-	expectedFeeText: string;
-	settings: MollieSettings.Gateway;
-	tests: { testId: string; gateway: string }[];
-} = {
-	describe: 'Surcharge fee - Fixed and percentage under limit',
-	title: 'Validate fixed and percentage fee surcharge for total under limit for',
+export const surchargeFixedAndPercentageUnderLimit: MollieTestData.SurchargeTestsGroup = {
+	describeTitle: 'Surcharge fee > Fixed and percentage under limit',
+	testTitle: 'Validate fixed and percentage fee surcharge for total under limit for',
 	expectedAmount: 134.21,
 	expectedFeeText: '+ € 10 + 10% fee might apply (excl. VAT)',
 	settings: {
@@ -24,9 +17,9 @@ export const surchargeFixedAndPercentageUnderLimit: {
 	},
 	tests: [
 		// { testId: 'C420315', gateway: 'applepay' },
-		// { testId: 'C000', gateway: 'creditcard' },
+		// { testId: 'NotInTestRail', gateway: 'creditcard' },
 		{ testId: 'C130902', gateway: 'giftcard' },
-		{ testId: 'C129819', gateway: 'voucher' },
+		{ testId: 'C129819', gateway: 'voucher', product: products.mollieSimleVoucherMeal100 },
 		{ testId: 'C129508', gateway: 'bancontact' },
 		{ testId: 'C138017', gateway: 'belfius' },
 		{ testId: 'C354670', gateway: 'billie' },
@@ -39,8 +32,9 @@ export const surchargeFixedAndPercentageUnderLimit: {
 		{ testId: 'C129809', gateway: 'przelewy24' },
 		{ testId: 'C136535', gateway: 'banktransfer' },
 		{ testId: 'C106914', gateway: 'in3' },
-		// { testId: 'C130882', gateway: 'klarnapaylater' },
-		// { testId: 'C136525', gateway: 'klarnapaynow' },
-		// { testId: 'C1278122', gateway: 'klarnasliceit' },
+		{ testId: 'NotInTestRail', gateway: 'paybybank' },
+		{ testId: 'NotInTestRail', gateway: 'mbway' },
+		{ testId: 'NotInTestRail', gateway: 'multibanco' },
+		{ testId: 'NotInTestRail', gateway: 'swish', expectedFeeText: '+ kr 10 + 10% fee might apply (excl. VAT)' },
 	],
 };

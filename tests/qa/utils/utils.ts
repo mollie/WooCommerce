@@ -20,6 +20,7 @@ import {
 	MollieSettings,
 	molliePlugin,
 	mollieConfigGeneral,
+	subscriptionsPlugin,
 } from '../resources';
 
 export class Utils {
@@ -141,6 +142,10 @@ export class Utils {
 
 		if ( data.customer ) {
 			await this.restoreCustomer( data.customer );
+		}
+
+		if ( data.enableSubscriptionsPlugin === true ) {
+			await this.requestUtils.activatePlugin( subscriptionsPlugin.slug );
 		}
 	};
 }

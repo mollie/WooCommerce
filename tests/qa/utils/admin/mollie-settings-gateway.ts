@@ -193,7 +193,9 @@ export class MollieSettingsGateway extends WooCommerceAdminPage {
 		}
 
 		if ( data.display_logo !== undefined ) {
-			await this.displayLogoCheckbox().setChecked( data.display_logo === 'yes' );
+			await this.displayLogoCheckbox().setChecked(
+				data.display_logo === 'yes'
+			);
 		}
 
 		if ( data.enable_custom_logo !== undefined ) {
@@ -212,7 +214,10 @@ export class MollieSettingsGateway extends WooCommerceAdminPage {
 			await this.descriptionTextarea().fill( data.description );
 		}
 
-		if ( data[ 'allowed_countries[]' ] && data[ 'allowed_countries[]' ].length > 0 ) {
+		if (
+			data[ 'allowed_countries[]' ] &&
+			data[ 'allowed_countries[]' ].length > 0
+		) {
 			await this.selectNoneButton().click();
 			if ( data[ 'allowed_countries[]' ].length ) {
 				for ( const country of data[ 'allowed_countries[]' ] ) {
@@ -292,7 +297,9 @@ export class MollieSettingsGateway extends WooCommerceAdminPage {
 			);
 		}
 
-		if ( data.mollie_apple_pay_button_enabled_express_checkout !== undefined ) {
+		if (
+			data.mollie_apple_pay_button_enabled_express_checkout !== undefined
+		) {
 			await this.enableApplePayExpressButtonOnCheckoutCheckbox().setChecked(
 				data.mollie_apple_pay_button_enabled_express_checkout === 'yes'
 			);

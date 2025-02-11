@@ -1,27 +1,28 @@
 /**
  * External dependencies
  */
+import { Locator } from '@playwright/test';
 import { ClassicCheckout as ClassicCheckoutBase } from '@inpsyde/playwright-utils/build';
 
 export class ClassicCheckout extends ClassicCheckoutBase {
 	// Locators
-	cardNumberInput = () =>
+	cardNumberInput = (): Locator =>
 		this.page
 			.frameLocator( '[title="cardNumber input"]' )
 			.locator( '#cardNumber' );
-	cardHolderInput = () =>
+	cardHolderInput = (): Locator =>
 		this.page
 			.frameLocator( '[title="cardHolder input"]' )
 			.locator( '#cardHolder' );
-	cardExpiryDateInput = () =>
+	cardExpiryDateInput = (): Locator =>
 		this.page
 			.frameLocator( '[title="expiryDate input"]' )
 			.locator( '#expiryDate' );
-	cardVerificationCodeInput = () =>
+	cardVerificationCodeInput = (): Locator =>
 		this.page
 			.frameLocator( '[title="verificationCode input"]' )
 			.locator( '#verificationCode' );
-	giftCardSelect = () =>
+	giftCardSelect = (): Locator =>
 		this.page.locator(
 			'select[name="mollie-payments-for-woocommerce_issuer_mollie_wc_gateway_giftcard"]'
 		);
@@ -29,19 +30,21 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 		this.page.locator(
 			'select[name="mollie-payments-for-woocommerce_issuer_mollie_wc_gateway_kbc"]'
 		);
-	billieBillingCompanyInput = () =>
-		this.paymentOptionsContainer().locator( '#billing_company' );
-	in3PhoneInput = () =>
+	billieBillingCompanyInput = (): Locator =>
+		this.paymentOptionsContainer().locator( '#billing_company_billie' );
+	in3PhoneInput = (): Locator =>
 		this.paymentOptionsContainer().locator( '#billing_phone_in3' );
-	in3BirthDateInput = () =>
+	in3BirthDateInput = (): Locator =>
 		this.paymentOptionsContainer().locator( '#billing_birthdate_in3' );
-	paymentOptionFee = ( name: string ) =>
+	paymentOptionListitems = (): Locator =>
+		this.paymentOptionsContainer().locator( 'li' );
+	paymentOptionFee = ( name: string ): Locator =>
 		this.paymentOptionsContainer()
 			.locator( 'li', {
 				has: this.page.locator( `label:text-is("${ name }")` ),
 			} )
 			.locator( 'p.mollie-gateway-fee' );
-	paymentOptionLogo = ( name: string ) =>
+	paymentOptionLogo = ( name: string ): Locator =>
 		this.paymentOptionsContainer()
 			.locator( 'li', {
 				has: this.page.locator( `label:text-is("${ name }")` ),

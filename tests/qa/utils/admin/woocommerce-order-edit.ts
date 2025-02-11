@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { expect } from '@playwright/test';
+import { Locator, expect } from '@playwright/test';
 import {
 	WooCommerceOrderEdit as wooCommerceOrderEditBase,
 	formatMoney,
@@ -11,40 +11,53 @@ const { WLOP_NAME } = process.env;
 
 export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 	// Locators
-	transactionIdText = ( transactionId ) =>
+	transactionIdText = ( transactionId ): Locator =>
 		this.orderNumberContainer().getByText( `(${ transactionId })` );
-	billingDataTransactionIdInput = () =>
+	billingDataTransactionIdInput = (): Locator =>
 		this.billingDataContainer().getByLabel( 'Transaction ID' );
 
-	refundViaWorldlineButton = () =>
+	refundViaMollieButton = () =>
 		this.page.locator( '.do-api-refund', { hasText: WLOP_NAME } );
 
 	productsTable = () => this.page.locator( '#order_line_items' );
-	productRow = ( name ) => this.productsTable().getByRole( 'row', { name } );
-	productRefundQtyInput = ( name ) =>
+	productRow = ( name ): Locator => this.productsTable().getByRole( 'row', { name } );
+	productRefundQtyInput = ( name ): Locator =>
 		this.productRow( name ).locator( '.refund_order_item_qty' );
-	productRefundTotalInput = ( name ) =>
+	productRefundTotalInput = ( name ): Locator =>
 		this.productRow( name ).locator( '.refund_line_total' );
-	productRefundTaxInput = ( name ) =>
+	productRefundTaxInput = ( name ): Locator =>
 		this.productRow( name ).locator( '.refund_line_tax' );
 
-	firstRefundTotalInput = () =>
+	firstRefundTotalInput = (): Locator =>
 		this.productsTable().locator( '.refund_line_total' ).first();
 
 	shippingTable = () => this.page.locator( '#order_shipping_line_items' );
-	shippingRow = ( name ) => this.shippingTable().getByRole( 'row', { name } );
-	shippingRefundTotalInput = ( name ) =>
+	shippingRow = ( name ): Locator => this.shippingTable().getByRole( 'row', { name } );
+	shippingRefundTotalInput = ( name ): Locator =>
 		this.shippingRow( name ).locator( '.refund_line_total' );
-	shippingRefundTaxInput = ( name ) =>
+	shippingRefundTaxInput = ( name ): Locator =>
 		this.shippingRow( name ).locator( '.refund_line_tax' );
 
-	totalWorldlineRefunded = () =>
+	totalWorldlineRefunded = (): Locator =>
 		this.totalsTableRow( `${ WLOP_NAME } Refunded:` );
-	totalWorldlineNetTotal = () =>
+	totalWorldlineNetTotal = (): Locator =>
 		this.totalsTableRow( `${ WLOP_NAME } Net Total:` );
+
+	
+	orderStatusLabels = {
+		pending: 'Pending payment',
+		processing: 'Processing',
+		'on-hold': 'On hold',
+		completed: 'Completed',
+		cancelled: 'Cancelled',
+		refunded: 'Refunded',
+		failed: 'Failed',
+		draft: 'Draft',
+	};
 
 	// Actions
 	/**
+	 * TODO: needs update
 	 * Performs Worldline refund
 	 *
 	 * @param amount
@@ -61,11 +74,12 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 		await this.firstRefundTotalInput().fill( amount );
 		await this.page.on( 'dialog', ( dialog ) => dialog.accept() );
 		// await this.page.on('dialog', dialog => dialog.accept());
-		await this.refundViaWorldlineButton().click();
+		await this.refundViaMollieButton().click();
 	};
 
 	/**
-	 * Performs Worldline refund for specific product
+	 * TODO: needs update
+	 * Performs Mollie refund for specific product
 	 *
 	 * @param productName
 	 * @param qty
@@ -77,7 +91,7 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 		);
 		await this.page.on( 'dialog', ( dialog ) => dialog.accept() );
 		// await this.page.on('dialog', dialog => dialog.accept());
-		await this.refundViaWorldlineButton().click();
+		await this.refundViaMollieButton().click();
 	};
 
 	// Assertions
@@ -87,27 +101,45 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 	 *
 	 * @param orderId
 	 * @param orderData
-	 * @param millieData
+	 * @param mollieData
 	 */
 	assertOrderDetails = async (
 		orderId: number,
 		orderData: WooCommerce.ShopOrder,
-		millieData?
+		mollieData?
 	) => {
+		await this.visit( orderId );
+		const orderStatusLabel = this.orderStatusLabels[ orderData.orderStatus ];
+		const orderStatusLocator = this.statusCombobox().filter( { hasText: orderStatusLabel } );
+		await this.retryLocatorVisibility( orderStatusLocator );
+
+		// if( orderData.orderStatus === 'processing' ) {
+		// 	const orderNoteRegex = new RegExp(`Order status changed from .*? to ${ orderStatusLabel }\\.`);
+		// 	const orderNoteLocator = this.orderNoteContent().filter( { hasText: orderNoteRegex } );
+		// 	await this.retryLocatorVisibility( orderNoteLocator );
+		// 	await expect( orderNoteLocator ).toBeVisible();
+		// }
+
 		await super.assertOrderDetails( orderId, orderData );
 
-		if ( ! millieData ) {
+		if ( ! mollieData ) {
 			return;
 		}
 
 		// Transaction ID
 		if (
-			millieData.transaction_id !== undefined &&
-			millieData.orderTotal > 0
+			mollieData.transaction_id !== undefined &&
+			mollieData.orderTotal > 0
 		) {
 		}
 	};
 
+	/**
+	 * TODO: needs update
+	 * 
+	 * @param amount 
+	 * @param currency 
+	 */
 	assertRefundRequested = async ( amount: string, currency? ) => {
 		const orderNote = this.orderNoteWithText(
 			`${ WLOP_NAME }: Your refund request for ${ await formatMoney(
@@ -120,18 +152,19 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 	};
 
 	/**
+	 * TODO: needs update
 	 * Asserts refund has been finished:
 	 * - Order note received
 	 * - Processed refund ID is present
 	 * - Order status is expected
 	 *
-	 * @param wlopRefundId
+	 * @param mollieRefundId
 	 * @param orderStatus
 	 * @param amount
 	 * @param currency
 	 */
 	assertRefundFinished = async (
-		wlopRefundId: string,
+		mollieRefundId: string,
 		orderStatus: WooCommerce.OrderStatus,
 		amount: string,
 		currency?
@@ -143,7 +176,7 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 			) } was refunded.`
 		);
 		const refundProcessedText = this.page.getByText(
-			`Refund processed. ${ WLOP_NAME } transaction ID: ${ wlopRefundId }`
+			`Refund processed. ${ WLOP_NAME } transaction ID: ${ mollieRefundId }`
 		);
 		await this.retryLocatorVisibility( orderNote );
 		await expect( orderNote ).toBeVisible();

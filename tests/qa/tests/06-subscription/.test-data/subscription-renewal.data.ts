@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { cards, MollieTestData } from '../../../../resources';
+import { cards, MollieTestData } from '../../../resources';
 
 export const classicCheckoutEur: MollieTestData.PaymentStatus[] = [
 	// {
@@ -10,55 +10,6 @@ export const classicCheckoutEur: MollieTestData.PaymentStatus[] = [
 	// 	paymentStatus: 'paid',
 	// 	orderStatus: 'processing',
 	// },
-	{
-		testId: 'NotInTestRail',
-		gatewaySlug: 'mbway',
-		paymentStatus: 'paid',
-		orderStatus: 'processing',
-	},
-	{
-		testId: 'NotInTestRail',
-		gatewaySlug: 'mbway',
-		paymentStatus: 'failed',
-		orderStatus: 'pending',
-	},
-	{
-		testId: 'NotInTestRail',
-		gatewaySlug: 'mbway',
-		paymentStatus: 'canceled',
-		orderStatus: 'pending',
-	},
-	{
-		testId: 'NotInTestRail',
-		gatewaySlug: 'mbway',
-		paymentStatus: 'expired',
-		orderStatus: 'pending',
-	},
-	{
-		testId: 'NotInTestRail',
-		gatewaySlug: 'multibanco',
-		paymentStatus: 'paid',
-		orderStatus: 'processing',
-	},
-	{
-		testId: 'NotInTestRail',
-		gatewaySlug: 'multibanco',
-		paymentStatus: 'failed',
-		orderStatus: 'pending',
-	},
-	{
-		testId: 'NotInTestRail',
-		gatewaySlug: 'multibanco',
-		paymentStatus: 'canceled',
-		orderStatus: 'pending',
-	},
-	{
-		testId: 'NotInTestRail',
-		gatewaySlug: 'multibanco',
-		paymentStatus: 'expired',
-		orderStatus: 'pending',
-	},
-	
 	{
 		testId: 'C3731',
 		gatewaySlug: 'in3',

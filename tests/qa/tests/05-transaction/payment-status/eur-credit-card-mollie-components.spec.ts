@@ -31,7 +31,7 @@ test.beforeAll( async ( { utils, mollieApi } ) => {
 // Classic checkout page
 test.describe( () => {
 	test.beforeAll( async ( { utils } ) => {
-			await utils.configureStore( { classicPages: true } );
+		await utils.configureStore( { classicPages: true } );
 	} );
 
 	for ( const testData of creditCardMollieComponentsClassicCheckout ) {
@@ -43,7 +43,7 @@ test.describe( () => {
 // Block checkout page
 test.describe( () => {
 	test.beforeAll( async ( { utils } ) => {
-			await utils.configureStore( { classicPages: false } );
+		await utils.configureStore( { classicPages: false } );
 	} );
 
 	for ( const testData of creditCardMollieComponentsCheckout ) {

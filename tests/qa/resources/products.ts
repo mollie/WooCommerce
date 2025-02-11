@@ -13,36 +13,28 @@ const mollieSimple100: WooCommerce.CreateProduct = {
 	],
 	virtual: false,
 	downloadable: false,
-	meta_data: [
-		{ key: '_mollie_voucher_category', value: 'no_category'}
-	]
+	meta_data: [ { key: '_mollie_voucher_category', value: 'no_category' } ],
 };
 
 const mollieSimleVoucherMeal100: WooCommerce.CreateProduct = {
 	...mollieSimple100,
 	name: 'Mollie Simple Voucher Meal Test Product 100',
 	slug: 'mollie-product-simple-voucher-meal-100',
-	meta_data: [
-		{ key: '_mollie_voucher_category', value: 'meal'}
-	]
+	meta_data: [ { key: '_mollie_voucher_category', value: 'meal' } ],
 };
 
 const mollieSimleVoucherEco100: WooCommerce.CreateProduct = {
 	...mollieSimple100,
 	name: 'Mollie Simple Voucher Eco Test Product 100',
 	slug: 'mollie-product-simple-voucher-eco-100',
-	meta_data: [
-		{ key: '_mollie_voucher_category', value: 'eco'}
-	]
+	meta_data: [ { key: '_mollie_voucher_category', value: 'eco' } ],
 };
 
 const mollieSimleVoucherGift100: WooCommerce.CreateProduct = {
 	...mollieSimple100,
 	name: 'Mollie Simple Voucher Gift Test Product 100',
 	slug: 'mollie-product-simple-voucher-gift-100',
-	meta_data: [
-		{ key: '_mollie_voucher_category', value: 'gift'}
-	]
+	meta_data: [ { key: '_mollie_voucher_category', value: 'gift' } ],
 };
 
 const mollieVirtual100: WooCommerce.CreateProduct = {
@@ -101,6 +93,27 @@ const mollieVariable100: WooCommerce.CreateProduct = {
 	],
 };
 
+const mollieSubscription100 = {
+	name: 'Mollie Subscription Test Product 100',
+	slug: 'mollie-product-subscription-100',
+	type: 'subscription',
+	regular_price: '100.00',
+	description:
+		'Subscribe to our magazine for expert advice, tips, and insights on growing the best clothes year-round.',
+	short_description: 'Monthly magazine on apple growing and orchard tips.',
+	meta_data: [
+		{ key: '_subscription_price', value: '100.00' },
+		{ key: '_subscription_period', value: 'month' },
+		{ key: '_subscription_period_interval', value: '1' },
+		{ key: '_subscription_length', value: '0' },
+	],
+	images: [
+		{
+			src: 'https://woocommercecore.mystagingwebsite.com/wp-content/uploads/2017/12/album-1.jpg',
+		},
+	],
+};
+
 export const products: {
 	[ key: string ]: WooCommerce.CreateProduct;
 } = {
@@ -110,4 +123,5 @@ export const products: {
 	mollieSimleVoucherGift100,
 	mollieVirtual100,
 	mollieVariable100,
+	mollieSubscription100,
 };

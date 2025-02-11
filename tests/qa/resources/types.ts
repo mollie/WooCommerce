@@ -135,7 +135,7 @@ export namespace MollieSettings {
 		| 'gift';
 
 	export type Gateway = {
-		enabled?:  boolean;
+		enabled?: boolean;
 		use_api_title?: 'yes' | 'no';
 		title?: string;
 		display_logo?: 'yes' | 'no';
@@ -230,6 +230,22 @@ export type MolliePayment = {
 };
 
 export namespace MollieTestData {
+	export type SurchargeTest = {
+		testId: string;
+		gateway: string;
+		product?: WooCommerce.CreateProduct;
+		expectedFeeText?: string;
+	}
+
+	export type SurchargeTestsGroup = {
+		describeTitle: string;
+		testTitle: string;
+		expectedAmount: number;
+		expectedFeeText: string;
+		settings: MollieSettings.Gateway;
+		tests: MollieTestData.SurchargeTest[];
+	};
+
 	export type PaymentStatus = {
 		testId: string;
 		gatewaySlug: string;

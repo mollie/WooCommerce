@@ -48,16 +48,3 @@ test( 'C3333 | Validate that the ecommerce admin have access to Documentation/Su
 	await page.goto( pluginDocumentationHref );
 	await expect( page ).toHaveURL( /molliehelp\.zendesk\.com\/auth/ );
 } );
-
-test.fixme(
-	'C3330 | Validate that the ecommerce admin can activate debug mode',
-	async ( { mollieSettingsApiKeys } ) => {
-		await mollieSettingsApiKeys.visit();
-		await mollieSettingsApiKeys.molliePaymentModeSelect().uncheck();
-		await expect(
-			mollieSettingsApiKeys.testApiKeyInput()
-		).not.toBeVisible();
-		await mollieSettingsApiKeys.molliePaymentModeSelect().check();
-		await expect( mollieSettingsApiKeys.testApiKeyInput() ).toBeVisible();
-	}
-);

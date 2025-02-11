@@ -52,4 +52,54 @@ export const checkoutNonEur: MollieTestData.PaymentStatus[] = [
 		paymentStatus: 'expired',
 		orderStatus: 'pending',
 	},
+	// recently added payment methods
+	{
+		testId: 'NotInTestRail',
+		gatewaySlug: 'paybybank',
+		paymentStatus: 'paid',
+		orderStatus: 'processing',
+	},
+	{
+		testId: 'NotInTestRail',
+		gatewaySlug: 'paybybank',
+		paymentStatus: 'failed',
+		orderStatus: 'pending',
+	},
+	{
+		testId: 'NotInTestRail',
+		gatewaySlug: 'paybybank',
+		paymentStatus: 'canceled',
+		orderStatus: 'pending',
+	},
+	{
+		testId: 'NotInTestRail',
+		gatewaySlug: 'paybybank',
+		paymentStatus: 'expired',
+		orderStatus: 'pending',
+	},
+	// Swish
+	{
+		testId: 'NotInTestRail',
+		gatewaySlug: 'swish',
+		paymentStatus: 'paid',
+		orderStatus: 'processing',
+	},
+	{
+		testId: 'NotInTestRail',
+		gatewaySlug: 'swish',
+		paymentStatus: 'failed',
+		orderStatus: 'pending',
+	},
+	{
+		testId: 'NotInTestRail',
+		gatewaySlug: 'swish',
+		paymentStatus: 'canceled',
+		orderStatus: 'pending',
+	},
+	{
+		testId: 'NotInTestRail',
+		gatewaySlug: 'swish',
+		paymentStatus: 'expired',
+		orderStatus: 'pending',
+	},
 ];

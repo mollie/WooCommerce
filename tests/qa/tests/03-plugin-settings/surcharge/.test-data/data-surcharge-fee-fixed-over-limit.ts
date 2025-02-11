@@ -1,18 +1,11 @@
 /**
  * Internal dependencies
  */
-import { MollieSettings } from '../../../../resources';
+import { MollieTestData, products } from '../../../../resources';
 
-export const surchargeFixedOverLimit: {
-	describe: string;
-	title: string;
-	expectedAmount: number;
-	expectedFeeText: string;
-	settings: MollieSettings.Gateway;
-	tests: { testId: string; gateway: string }[];
-} = {
-	describe: 'Surcharge fee - Fixed over limit',
-	title: 'Validate fixed fee surcharge fo total over limit for',
+export const surchargeFixedOverLimit: MollieTestData.SurchargeTestsGroup = {
+	describeTitle: 'Surcharge fee > Fixed over limit',
+	testTitle: 'Validate fixed fee surcharge for total over limit for',
 	expectedAmount: 111.0,
 	expectedFeeText: '+ € 10 fee might apply (excl. VAT)',
 	settings: {
@@ -26,7 +19,7 @@ export const surchargeFixedOverLimit: {
 		// { testId: 'C354671', gateway: 'applepay' },
 		{ testId: 'C89353', gateway: 'creditcard' },
 		{ testId: 'C130903', gateway: 'giftcard' },
-		{ testId: 'C129820', gateway: 'voucher' },
+		{ testId: 'C129820', gateway: 'voucher', product: products.mollieSimleVoucherMeal100 },
 		{ testId: 'C129509', gateway: 'bancontact' },
 		{ testId: 'C138018', gateway: 'belfius' },
 		{ testId: 'C354671', gateway: 'billie' },
@@ -39,8 +32,9 @@ export const surchargeFixedOverLimit: {
 		{ testId: 'C129810', gateway: 'przelewy24' },
 		{ testId: 'C136536', gateway: 'banktransfer' },
 		{ testId: 'C106915', gateway: 'in3' },
-		// { testId: 'C130883', gateway: 'klarnapaylater' },
-		// { testId: 'C136526', gateway: 'klarnapaynow' },
-		// { testId: 'C128597', gateway: 'klarnasliceit' },
+		{ testId: 'NotInTestRail', gateway: 'paybybank' },
+		{ testId: 'NotInTestRail', gateway: 'mbway' },
+		{ testId: 'NotInTestRail', gateway: 'multibanco' },
+		{ testId: 'NotInTestRail', gateway: 'swish', expectedFeeText: '+ kr 10 fee might apply (excl. VAT)' },
 	],
 };

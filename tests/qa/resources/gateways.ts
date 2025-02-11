@@ -245,6 +245,32 @@ const klarna: MollieGateway = {
 	},
 };
 
+const mbway: MollieGateway = {
+	country: 'portugal', // 
+	minAmount: '0.01',
+	maxAmount: '5000.00',
+	slug: 'mbway',
+	name: 'MB Way',
+	currency: 'EUR',
+	settings: {
+		...defaultGatewaySettings,
+		title: 'MB Way',
+	},
+};
+
+const multibanco: MollieGateway = {
+	country: 'portugal', // 
+	minAmount: '0.01',
+	maxAmount: '5000.00',
+	slug: 'multibanco',
+	name: 'Multibanco',
+	currency: 'EUR',
+	settings: {
+		...defaultGatewaySettings,
+		title: 'Multibanco',
+	},
+};
+
 const mybank: MollieGateway = {
 	country: 'italy',
 	minAmount: '1.00',
@@ -257,14 +283,14 @@ const mybank: MollieGateway = {
 };
 
 const paybybank: MollieGateway = {
-	country: 'uk',
-	minAmount: '1.00',
+	country: 'germany', // AT, BE, CY, EE, FI, FR, DE, GR, IE, IT, LV, LT, LU, MT, NL, PT, SK, SI, ES, UK
+	minAmount: '0.01',
 	slug: 'paybybank',
-	name: 'Pay by Bank',
-	currency: 'GBP',
+	name: 'Pay By Bank',
+	currency: 'EUR', // EUR, GBP
 	settings: {
 		...defaultGatewaySettings,
-		title: 'Pay by Bank',
+		title: 'Pay By Bank',
 	},
 };
 
@@ -351,6 +377,19 @@ const satispay: MollieGateway = {
 	},
 };
 
+const swish: MollieGateway = {
+	country: 'sweden',
+	currency: 'SEK',
+	minAmount: '0.01',
+	maxAmount: '115000.00',
+	slug: 'swish',
+	name: 'Swish',
+	settings: {
+		...defaultGatewaySettings,
+		title: 'Swish',
+	},
+};
+
 const trustly: MollieGateway = {
 	country: 'germany', // Europe
 	minAmount: '1.00',
@@ -387,55 +426,6 @@ const voucher: MollieGateway = {
 	},
 };
 
-// Deprecated gateways
-const giropay: MollieGateway = {
-	country: 'germany',
-	minAmount: '1.00',
-	slug: 'giropay',
-	name: 'Giropay',
-	settings: {
-		...defaultGatewaySettings,
-		title: 'Giropay',
-		initial_order_status: 'on-hold',
-	},
-};
-
-const klarnapaylater: MollieGateway = {
-	country: 'germany', // Austria, Germany, Netherlands
-	minAmount: '50.00',
-	maxAmount: '2000.00',
-	slug: 'klarnapaylater',
-	name: 'Pay later.',
-	settings: {
-		...defaultGatewaySettings,
-		title: 'Pay later.',
-	},
-};
-
-const klarnapaynow: MollieGateway = {
-	country: 'germany', // Austria, Germany, Netherlands
-	minAmount: '50.00',
-	maxAmount: '2000.00',
-	slug: 'klarnapaynow',
-	name: 'Pay now.',
-	settings: {
-		...defaultGatewaySettings,
-		title: 'Pay now.',
-	},
-};
-
-const klarnasliceit: MollieGateway = {
-	country: 'germany', // Austria, Germany, Netherlands
-	minAmount: '50.00',
-	maxAmount: '2000.00',
-	slug: 'klarnasliceit',
-	name: 'Slice it.',
-	settings: {
-		...defaultGatewaySettings,
-		title: 'Slice it.',
-	},
-};
-
 export const gateways: {
 	[ key: string ]: MollieGateway;
 } = {
@@ -456,8 +446,10 @@ export const gateways: {
 	in3, // >100.00
 	kbc,
 	klarna,
+	mbway,
+	multibanco,
 	mybank,
-	// paybybank, // currency: GBP
+	paybybank, // currency: GBP
 	payconiq,
 	paypal,
 	paysafecard,
@@ -465,13 +457,8 @@ export const gateways: {
 	przelewy24,
 	riverty, // >50.00
 	satispay,
+	swish, // Sweden, currency: SEK
 	trustly,
 	twint, // currency: CHF
 	voucher,
-
-	// Deprecated gateways
-	// giropay,
-	// klarnapaylater, // >50.00
-	// klarnapaynow, // >50.00
-	// klarnasliceit, // >50.00
 };

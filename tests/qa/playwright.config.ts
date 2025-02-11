@@ -29,9 +29,16 @@ export default defineConfig( {
 		  ]
 		: [
 				[ 'list' ],
-				// [ 'html', { outputFolder: 'playwright-report' } ],
+				[ 'html', { outputFolder: 'playwright-report' } ],
 				[
 					'@inpsyde/playwright-utils/build/integration/testrail/testrail-reporter.js',
+					{
+						apiUrl: process.env.TESTRAIL_URL,
+						apiUsername: process.env.TESTRAIL_USERNAME,
+						apiPassword: process.env.TESTRAIL_PASSWORD,
+						plan_id: process.env.TESTRAIL_PLAN_ID,
+						run_id: process.env.TESTRAIL_RUN_ID,
+					},
 				],
 		  ],
 	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -101,7 +108,27 @@ export default defineConfig( {
 			testIgnore: [
 				'eur-checkout-classic.spec.ts',
 				'eur-checkout.spec.ts',
+				'eur-credit-card-mollie-components.spec.ts',
 				'eur-pay-for-order.spec.ts',
+				'non-eur-checkout-classic.spec.ts',
+				'non-eur-checkout.spec.ts',
+				'non-eur-pay-for-order.spec.ts',
+				'subscription-renewal.spec.ts',
+			],
+		},
+		{
+			name: 'sequential-transactions',
+			dependencies: [ 'setup-woocommerce' ],
+			fullyParallel: false,
+			testMatch: [
+				'eur-checkout-classic.spec.ts',
+				'eur-checkout.spec.ts',
+				'eur-credit-card-mollie-components.spec.ts',
+				'eur-pay-for-order.spec.ts',
+				'non-eur-checkout-classic.spec.ts',
+				'non-eur-checkout.spec.ts',
+				'non-eur-pay-for-order.spec.ts',
+				'subscription-renewal.spec.ts',
 			],
 		},
 		{
@@ -123,7 +150,11 @@ export default defineConfig( {
 		{
 			name: 'transaction-eur-block',
 			dependencies: [ 'setup-mollie', 'setup-pages-block' ],
-			testMatch: [ 'eur-checkout.spec.ts', 'eur-pay-for-order.spec.ts' ],
+			testMatch: [
+				'eur-checkout.spec.ts',
+				'eur-credit-card-mollie-components.spec.ts',
+				'eur-pay-for-order.spec.ts',
+			],
 			fullyParallel: true,
 		},
 	],

@@ -1,7 +1,11 @@
 /**
  * Internal dependencies
  */
-import { MollieSettings, MollieTestData, products } from '../../../../resources';
+import {
+	MollieSettings,
+	MollieTestData,
+	products,
+} from '../../../../resources';
 
 export const surchargeNoFee: MollieTestData.SurchargeTestsGroup = {
 	describeTitle: 'Surcharge fee > No fee',
@@ -19,7 +23,11 @@ export const surchargeNoFee: MollieTestData.SurchargeTestsGroup = {
 		// { testId: 'C420309', gateway: 'applepay' },
 		// { testId: 'NotInTestRail', gateway: 'creditcard' },
 		{ testId: 'C130896', gateway: 'giftcard' },
-		{ testId: 'C129813', gateway: 'voucher', product: products.mollieSimleVoucherMeal100 },
+		{
+			testId: 'C129813',
+			gateway: 'voucher',
+			product: products.mollieSimleVoucherMeal100,
+		},
 		{ testId: 'C129502', gateway: 'bancontact' },
 		{ testId: 'C138011', gateway: 'belfius' },
 		{ testId: 'C354664', gateway: 'billie' },

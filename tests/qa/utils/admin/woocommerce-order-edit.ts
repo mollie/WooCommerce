@@ -20,7 +20,8 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 		this.page.locator( '.do-api-refund', { hasText: WLOP_NAME } );
 
 	productsTable = () => this.page.locator( '#order_line_items' );
-	productRow = ( name ): Locator => this.productsTable().getByRole( 'row', { name } );
+	productRow = ( name ): Locator =>
+		this.productsTable().getByRole( 'row', { name } );
 	productRefundQtyInput = ( name ): Locator =>
 		this.productRow( name ).locator( '.refund_order_item_qty' );
 	productRefundTotalInput = ( name ): Locator =>
@@ -32,7 +33,8 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 		this.productsTable().locator( '.refund_line_total' ).first();
 
 	shippingTable = () => this.page.locator( '#order_shipping_line_items' );
-	shippingRow = ( name ): Locator => this.shippingTable().getByRole( 'row', { name } );
+	shippingRow = ( name ): Locator =>
+		this.shippingTable().getByRole( 'row', { name } );
 	shippingRefundTotalInput = ( name ): Locator =>
 		this.shippingRow( name ).locator( '.refund_line_total' );
 	shippingRefundTaxInput = ( name ): Locator =>
@@ -43,7 +45,6 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 	totalWorldlineNetTotal = (): Locator =>
 		this.totalsTableRow( `${ WLOP_NAME } Net Total:` );
 
-	
 	orderStatusLabels = {
 		pending: 'Pending payment',
 		processing: 'Processing',
@@ -109,8 +110,11 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 		mollieData?
 	) => {
 		await this.visit( orderId );
-		const orderStatusLabel = this.orderStatusLabels[ orderData.orderStatus ];
-		const orderStatusLocator = this.statusCombobox().filter( { hasText: orderStatusLabel } );
+		const orderStatusLabel =
+			this.orderStatusLabels[ orderData.orderStatus ];
+		const orderStatusLocator = this.statusCombobox().filter( {
+			hasText: orderStatusLabel,
+		} );
 		await this.retryLocatorVisibility( orderStatusLocator );
 
 		// if( orderData.orderStatus === 'processing' ) {
@@ -136,9 +140,9 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 
 	/**
 	 * TODO: needs update
-	 * 
-	 * @param amount 
-	 * @param currency 
+	 *
+	 * @param amount
+	 * @param currency
 	 */
 	assertRefundRequested = async ( amount: string, currency? ) => {
 		const orderNote = this.orderNoteWithText(

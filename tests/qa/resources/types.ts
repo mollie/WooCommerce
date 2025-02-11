@@ -235,7 +235,7 @@ export namespace MollieTestData {
 		gateway: string;
 		product?: WooCommerce.CreateProduct;
 		expectedFeeText?: string;
-	}
+	};
 
 	export type SurchargeTestsGroup = {
 		describeTitle: string;

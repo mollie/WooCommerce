@@ -246,7 +246,7 @@ const klarna: MollieGateway = {
 };
 
 const mbway: MollieGateway = {
-	country: 'portugal', // 
+	country: 'portugal',
 	minAmount: '0.01',
 	maxAmount: '5000.00',
 	slug: 'mbway',
@@ -259,7 +259,7 @@ const mbway: MollieGateway = {
 };
 
 const multibanco: MollieGateway = {
-	country: 'portugal', // 
+	country: 'portugal',
 	minAmount: '0.01',
 	maxAmount: '5000.00',
 	slug: 'multibanco',

@@ -19,7 +19,11 @@ export const surchargePercentage: MollieTestData.SurchargeTestsGroup = {
 		// { testId: 'C420311', gateway: 'applepay' },
 		{ testId: 'C89351', gateway: 'creditcard' },
 		{ testId: 'C130898', gateway: 'giftcard' },
-		{ testId: 'C129815', gateway: 'voucher', product: products.mollieSimleVoucherMeal100 },
+		{
+			testId: 'C129815',
+			gateway: 'voucher',
+			product: products.mollieSimleVoucherMeal100,
+		},
 		{ testId: 'C129504', gateway: 'bancontact' },
 		{ testId: 'C138013', gateway: 'belfius' },
 		{ testId: 'C354666', gateway: 'billie' },

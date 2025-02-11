@@ -58,7 +58,6 @@ export const classicCheckoutEur: MollieTestData.PaymentStatus[] = [
 		paymentStatus: 'expired',
 		orderStatus: 'pending',
 	},
-	
 	{
 		testId: 'C3731',
 		gatewaySlug: 'in3',

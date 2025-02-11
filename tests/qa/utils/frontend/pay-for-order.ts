@@ -29,7 +29,8 @@ export class PayForOrder extends PayForOrderBase {
 		this.page.locator(
 			'select[name="mollie-payments-for-woocommerce_issuer_mollie_wc_gateway_kbc"]'
 		);
-	billieBillingCompanyInput = () => this.page.locator( '#billing_company_billie' );
+	billieBillingCompanyInput = () =>
+		this.page.locator( '#billing_company_billie' );
 	in3PhoneInput = () => this.page.locator( '#billing_phone_in3' );
 	in3BirthDateInput = () => this.page.locator( '#billing_birthdate_in3' );
 

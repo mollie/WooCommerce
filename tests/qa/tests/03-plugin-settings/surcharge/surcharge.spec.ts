@@ -14,7 +14,13 @@ import {
 	surchargeFixedAndPercentageUnderLimit,
 	surchargeFixedAndPercentageOverLimit,
 } from './.test-data';
-import { gateways, products, guests, flatRate, shopSettings } from '../../../resources';
+import {
+	gateways,
+	products,
+	guests,
+	flatRate,
+	shopSettings,
+} from '../../../resources';
 
 const allTests = [
 	surchargeNoFee,
@@ -49,7 +55,8 @@ for ( const surcharge of allTests ) {
 			const gateway = gateways[ tested.gateway ];
 			const country = gateway.country;
 			const product = tested.product || products.mollieSimple100;
-			const expectedFeeText = tested.expectedFeeText || surcharge.expectedFeeText;
+			const expectedFeeText =
+				tested.expectedFeeText || surcharge.expectedFeeText;
 
 			test( `${ tested.testId } | ${ surcharge.testTitle } ${ gateway.name }`, async ( {
 				wooCommerceApi,
@@ -57,7 +64,9 @@ for ( const surcharge of allTests ) {
 				utils,
 				classicCheckout,
 			} ) => {
-				await wooCommerceApi.updateGeneralSettings( shopSettings[ country ].general );
+				await wooCommerceApi.updateGeneralSettings(
+					shopSettings[ country ].general
+				);
 
 				await mollieApi.updateMollieGateway(
 					gateway.slug,
@@ -77,9 +86,7 @@ for ( const surcharge of allTests ) {
 					gateway.name
 				);
 				if ( expectedFeeText ) {
-					await expect( feeNotice ).toContainText(
-						expectedFeeText
-					);
+					await expect( feeNotice ).toContainText( expectedFeeText );
 				} else {
 					await expect( feeNotice ).not.toBeVisible();
 				}

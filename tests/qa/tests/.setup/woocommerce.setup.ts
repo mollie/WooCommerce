@@ -22,7 +22,8 @@ setup( 'Setup Permalinks', async ( { requestUtils } ) => {
 	await requestUtils.setPermalinks( '/%postname%/' );
 } );
 
-setup( 'Setup Disable Nonce plugin (inactive)',
+setup(
+	'Setup Disable Nonce plugin (inactive)',
 	async ( { requestUtils, plugins } ) => {
 		if (
 			! ( await requestUtils.isPluginInstalled(
@@ -37,7 +38,8 @@ setup( 'Setup Disable Nonce plugin (inactive)',
 	}
 );
 
-setup( 'Setup Disable WooCommerce Setup Wizard Plugin (active)',
+setup(
+	'Setup Disable WooCommerce Setup Wizard Plugin (active)',
 	async ( { requestUtils, plugins } ) => {
 		if (
 			! ( await requestUtils.isPluginInstalled(
@@ -59,7 +61,8 @@ setup( 'Setup WooCommerce plugin (active)', async ( { requestUtils } ) => {
 	await requestUtils.activatePlugin( 'woocommerce' );
 } );
 
-setup( 'Setup WC Subscriptions plugin (inactive)',
+setup(
+	'Setup WC Subscriptions plugin (inactive)',
 	async ( { requestUtils, plugins } ) => {
 		if (
 			! ( await requestUtils.isPluginInstalled(
@@ -82,7 +85,8 @@ setup( 'Setup theme', async ( { requestUtils } ) => {
 	await requestUtils.activateTheme( slug );
 } );
 
-setup( 'Setup WooCommerce Live site visibility',
+setup(
+	'Setup WooCommerce Live site visibility',
 	async ( { wooCommerceUtils } ) => {
 		await wooCommerceUtils.setSiteVisibility();
 	}
@@ -91,7 +95,7 @@ setup( 'Setup WooCommerce Live site visibility',
 setup( 'Setup WooCommerce API keys', async ( { wooCommerceUtils } ) => {
 	if ( ! ( await wooCommerceUtils.apiKeysExist() ) ) {
 		const apiKeys = await wooCommerceUtils.createApiKeys();
-		if( ! process.env.CI ) {
+		if ( ! process.env.CI ) {
 			await updateDotenv( './.env', apiKeys );
 		}
 		for ( const [ key, value ] of Object.entries( apiKeys ) ) {

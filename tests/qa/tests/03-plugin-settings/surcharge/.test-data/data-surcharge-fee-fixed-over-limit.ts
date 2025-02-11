@@ -19,7 +19,11 @@ export const surchargeFixedOverLimit: MollieTestData.SurchargeTestsGroup = {
 		// { testId: 'C354671', gateway: 'applepay' },
 		{ testId: 'C89353', gateway: 'creditcard' },
 		{ testId: 'C130903', gateway: 'giftcard' },
-		{ testId: 'C129820', gateway: 'voucher', product: products.mollieSimleVoucherMeal100 },
+		{
+			testId: 'C129820',
+			gateway: 'voucher',
+			product: products.mollieSimleVoucherMeal100,
+		},
 		{ testId: 'C129509', gateway: 'bancontact' },
 		{ testId: 'C138018', gateway: 'belfius' },
 		{ testId: 'C354671', gateway: 'billie' },
@@ -35,6 +39,10 @@ export const surchargeFixedOverLimit: MollieTestData.SurchargeTestsGroup = {
 		{ testId: 'NotInTestRail', gateway: 'paybybank' },
 		{ testId: 'NotInTestRail', gateway: 'mbway' },
 		{ testId: 'NotInTestRail', gateway: 'multibanco' },
-		{ testId: 'NotInTestRail', gateway: 'swish', expectedFeeText: '+ kr 10 fee might apply (excl. VAT)' },
+		{
+			testId: 'NotInTestRail',
+			gateway: 'swish',
+			expectedFeeText: '+ kr 10 fee might apply (excl. VAT)',
+		},
 	],
 };

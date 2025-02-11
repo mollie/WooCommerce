@@ -27,7 +27,7 @@
   "devDependencies": {
     "@percy/cli": "^1.28.0",
     "@percy/playwright": "^1.0.4",
-    "@playwright/test": "^1.38.1",
+    "@playwright/test": "^1.50",
     "@types/node": "^20.8.4",
     "@wordpress/scripts": "^25.0.0"
   },
@@ -43,6 +43,7 @@
     "parallel-transaction-eur-block": "npx playwright test --project=transaction-eur-block --workers=3",
     "transaction-non-eur": "npx playwright test --project=transaction-non-eur workers=1",
     "parallel-transactions": "npm run parallel-transaction-eur-block & npm run parallel-transaction-eur-classic",
+    "sequential-transactions": "npx playwright test --project=sequential-transactions --workers=1",
     "all-with-parallel": "npm run sequential & npm run parallel-transactions"
   },
   "eslintConfig": {

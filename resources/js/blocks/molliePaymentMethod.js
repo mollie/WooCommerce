@@ -1,5 +1,10 @@
 let cachedAvailableGateways = {};
 
+function formatPriceLikeWc(price) {
+    // todo add thousandSeparator
+    return wcSettings.currency.priceFormat.replace('%1$s', wcSettings.currency.symbol).replace('%2$s',price.toFixed(wcSettings.currency.precision).replace('.', wcSettings.currency.decimalSeparator));
+}
+
 function loadCachedAvailableGateways() {
     const storedData = localStorage.getItem('cachedAvailableGateways');
     if (storedData) {
@@ -25,10 +30,12 @@ function setAvailableGateways(country, currencyCode, data) {
     saveCachedAvailableGateways();
 }
 function useMollieAvailableGateways(billing, currencyCode, cartTotal, filters, ajaxUrl, jQuery, item) {
-    const country = billing.country;
+    let country = billing.country;
     const code = currencyCode;
     const value = cartTotal;
-
+    if (!country) {
+        country = wcSettings?.baseLocation.country;
+    }
 
     wp.element.useEffect(() => {
         if (!country || !item) return;
@@ -93,24 +100,21 @@ const MollieComponent = (props) => {
         const billingPhone = document.getElementById('billing-phone');
         return billingPhone || shippingPhone;
     }
-    function updateTotalLabel(newTotal, currency) {
-        let feeText = newTotal + " " + currency
-        let totalSpan = "<span class='wc-block-formatted-money-amount wc-block-components-formatted-money-amount wc-block-components-totals-item__value'>" + feeText + "</span>"
+    function updateTotalLabel(newTotal) {
+        let totalSpan = "<span class='wc-block-formatted-money-amount wc-block-components-formatted-money-amount wc-block-components-totals-item__value'>" + formatPriceLikeWc(newTotal) + "</span>"
         let total = jQuery('.wc-block-components-totals-footer-item .wc-block-formatted-money-amount:first')
         total.replaceWith(totalSpan)
     }
-    function updateTaxesLabel(newTotal, currency) {
-        let feeText = newTotal + " " + currency
-
-        let totalSpan = "<span class='wc-block-formatted-money-amount wc-block-components-formatted-money-amount wc-block-components-totals-item__value'>" + feeText + "</span>"
+    function updateTaxesLabel(newTotal) {
+        let totalSpan = "<span class='wc-block-formatted-money-amount wc-block-components-formatted-money-amount wc-block-components-totals-item__value'>" + formatPriceLikeWc(newTotal) + "</span>"
         let total = jQuery('div.wp-block-woocommerce-checkout-order-summary-taxes-block.wc-block-components-totals-wrapper > div > span.wc-block-formatted-money-amount.wc-block-components-formatted-money-amount.wc-block-components-totals-item__value:first')
         total.replaceWith(totalSpan)
     }
 
     function hideFee(fee, response) {
         fee?.hide()
-        updateTotalLabel(response.data.newTotal.toFixed(2).replace('.', ','), response.data.currency);
-        updateTaxesLabel(response.data.totalTax.toFixed(2).replace('.', ','), response.data.currency);
+        updateTotalLabel(response.data.newTotal);
+        updateTaxesLabel(response.data.totalTax);
     }
 
     function feeMarkup(response) {
@@ -119,7 +123,7 @@ const MollieComponent = (props) => {
             + response.data.name
             + "</span>" +
             "<span class='wc-block-formatted-money-amount wc-block-components-formatted-money-amount wc-block-components-totals-item__value'>"
-            + response.data.amount.toFixed(2).replace('.', ',') + " " + response.data.currency
+            + formatPriceLikeWc(response.data.amount)
             + "</span>" +
             "<div class='wc-block-components-totals-item__description'>" +
             "</div>" +
@@ -128,15 +132,15 @@ const MollieComponent = (props) => {
 
     function replaceFee(fee, newFee, response) {
         fee.replaceWith(newFee)
-        updateTotalLabel(response.data.newTotal.toFixed(2).replace('.', ','), response.data.currency);
-        updateTaxesLabel(response.data.totalTax.toFixed(2).replace('.', ','), response.data.currency);
+        updateTotalLabel(response.data.newTotal);
+        updateTaxesLabel(response.data.totalTax);
     }
 
     function insertNewFee(newFee, response) {
         const subtotal = jQuery('.wc-block-components-totals-item:first')
         subtotal.after(newFee)
-        updateTotalLabel(response.data.newTotal.toFixed(2).replace('.', ','), response.data.currency);
-        updateTaxesLabel(response.data.totalTax.toFixed(2).replace('.', ','), response.data.currency);
+        updateTotalLabel(response.data.newTotal);
+        updateTaxesLabel(response.data.totalTax);
     }
 
     function handleFees(response) {
@@ -416,7 +420,10 @@ const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, available
             }
             loadCachedAvailableGateways();
             const currencyCode = cartTotals?.currency_code;
-            const country = billingData?.country;
+            let country = billingData?.country;
+            if (!country) {
+                country = wcSettings?.baseLocation.country;
+            }
             const currentFilterKey = currencyCode + "-" + country;
 
             creditcardSelectedEvent();

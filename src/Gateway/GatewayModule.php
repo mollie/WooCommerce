@@ -124,7 +124,7 @@ class GatewayModule implements ServiceModule, ExecutableModule
                         return $method['id'] !== Constants::ALMA;
                     });
                 }
-                $swishFlag = (bool) apply_filters('inpsyde.feature-flags.mollie-woocommerce.swish_enabled', false);
+                $swishFlag = (bool) apply_filters('inpsyde.feature-flags.mollie-woocommerce.swish_enabled', true);
                 if (!$swishFlag) {
                     $availablePaymentMethods = array_filter($availablePaymentMethods, static function ($method) {
                         return $method['id'] !== Constants::SWISH;

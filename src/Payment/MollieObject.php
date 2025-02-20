@@ -798,9 +798,11 @@ class MollieObject
             $onMollieReturn
         );
         $returnUrl = untrailingslashit($returnUrl);
+        $returnUrl = apply_filters($this->pluginId . '_return_url', $returnUrl, $order);
+        
         $this->logger->debug(" Order {$orderId} returnUrl: {$returnUrl}", [true]);
 
-        return apply_filters($this->pluginId . '_return_url', $returnUrl, $order);
+        return $returnUrl;
     }
     /**
      * Get the webhook url
@@ -823,10 +825,11 @@ class MollieObject
             $webhookUrl
         );
         $webhookUrl = untrailingslashit($webhookUrl);
+        $webhookUrl = apply_filters($this->pluginId . '_webhook_url', $webhookUrl, $order);
 
         $this->logger->debug(" Order {$orderId} webhookUrl: {$webhookUrl}", [true]);
 
-        return apply_filters($this->pluginId . '_webhook_url', $webhookUrl, $order);
+        return $webhookUrl;
     }
     /**
      * @param $url

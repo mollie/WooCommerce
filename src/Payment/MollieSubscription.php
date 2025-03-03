@@ -5,8 +5,10 @@ namespace Mollie\WooCommerce\Payment;
 use Mollie\Api\Types\SequenceType;
 use Mollie\WooCommerce\Payment\Request\Middleware\MiddlewareHandler;
 use Mollie\WooCommerce\Payment\Request\Middleware\PaymentDescriptionMiddleware;
+use Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
+use Psr\Log\LoggerInterface as Logger;
 
 class MollieSubscription extends MollieObject
 {
@@ -14,14 +16,14 @@ class MollieSubscription extends MollieObject
     /**
      * @var mixed
      */
-    private $paymentMethod;
+    private AbstractPaymentMethod $paymentMethod;
     protected MiddlewareHandler $middleware;
 
     /**
      * Molliesubscription constructor.
      *
      */
-    public function __construct($pluginId, Api $apiHelper, $settingsHelper, $dataHelper, $logger, $paymentMethod, $middlewareHandler)
+    public function __construct($pluginId, Api $apiHelper, $settingsHelper, $dataHelper, Logger $logger, AbstractPaymentMethod $paymentMethod, $middlewareHandler)
     {
         $this->pluginId = $pluginId;
         $this->apiHelper = $apiHelper;
@@ -49,7 +51,6 @@ class MollieSubscription extends MollieObject
         $optionName = $this->pluginId . '_api_payment_description';
         $option = get_option($optionName);
         $paymentDescription = $this->getRecurringPaymentDescription($order, $option, $initialPaymentUsedOrderAPI);
-        $selectedIssuer = $this->paymentMethod->getSelectedIssuer();
 
         $requestData =  array_filter([
                                 'amount' =>  [
@@ -61,7 +62,6 @@ class MollieSubscription extends MollieObject
                                 ],
                                 'description' => $paymentDescription,
                                 'method' => $methodId,
-                                'issuer' => $selectedIssuer,
                                 'locale' => $paymentLocale,
                                 'metadata' =>  [
                                     'order_id' => $order->get_id(),

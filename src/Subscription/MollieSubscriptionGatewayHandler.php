@@ -14,6 +14,7 @@ use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\Request\Middleware\MiddlewareHandler;
+use Mollie\WooCommerce\Payment\Request\Middleware\SelectedIssuerMiddleware;
 use Mollie\WooCommerce\Payment\Request\Middleware\UrlMiddleware;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
@@ -80,6 +81,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         $this->apiHelper = $apiHelper;
         $middlewares = [
             new UrlMiddleware($pluginId, $logger),
+            new SelectedIssuerMiddleware($pluginId),
         ];
         $middlewareHandler = new MiddlewareHandler($middlewares);
         $this->subscriptionObject = new MollieSubscription(

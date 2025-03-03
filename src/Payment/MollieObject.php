@@ -32,14 +32,14 @@ class MollieObject
     /**
      * @var Logger
      */
-    protected $logger;
+    protected Logger $logger;
     /**
      * @var PaymentFactory
      */
-    protected $paymentFactory;
+    protected PaymentFactory $paymentFactory;
     protected $dataService;
     protected $apiHelper;
-    protected $settingsHelper;
+    protected Settings $settingsHelper;
     protected $dataHelper;
     /**
      * @var string

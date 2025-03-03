@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-use Dhii\Services\Factory;
 use Inpsyde\PaymentGateway\PaymentGateway;
-use Inpsyde\PaymentGateway\PaymentRequestValidatorInterface;
 use Inpsyde\PaymentGateway\RefundProcessorInterface;
 use Mollie\WooCommerce\Buttons\ApplePayButton\AppleAjaxRequests;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDirectHandler;
@@ -221,7 +219,7 @@ return static function (): array {
             return new PayPalButtonHandler($ajaxRequests, $data);
         },
         'payment_gateway.getRefundProcessor' => static function (ContainerInterface $container): callable {
-            return static function (string $gatewayId) use ($container): RefundProcessor {
+            return static function (string $gatewayId) use ($container): RefundProcessorInterface {
                 $oldGatewayInstances = $container->get('__deprecated.gateway_helpers');
 
                 if (!isset($oldGatewayInstances[$gatewayId])) {

@@ -13,6 +13,7 @@ use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Gateway\Refund\OrderItemsRefunder;
+use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Settings\Settings;
@@ -307,9 +308,16 @@ class PaymentModule implements ServiceModule, ExecutableModule
             return;
         }
 
+        assert($gateway instanceof \WC_Payment_Gateway);
+
+        $instructionsManager = $container->get(OrderInstructionsManager::class);
         $oldGatewayInstances = $container->get('__deprecated.gateway_helpers');
         $mollieGatewayHelper = $oldGatewayInstances[$gateway->id];
-        $mollieGatewayHelper->displayInstructions($order);
+        $instructionsManager->displayInstructions(
+            $gateway,
+            $mollieGatewayHelper,
+            $order
+        );
     }
     /**
      * Ship all order lines and capture an order at Mollie.

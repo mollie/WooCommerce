@@ -194,6 +194,8 @@ const MollieComponent = (props) => {
             const tokenVal = jQuery('.mollie-components > input').val()
             if (tokenVal) {
                 data.cardToken = tokenVal;
+            } else {
+                data.cardToken = '';
             }
             return {
                 type: responseTypes.SUCCESS,

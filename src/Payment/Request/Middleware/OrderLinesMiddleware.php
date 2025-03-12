@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use Mollie\WooCommerce\Payment\OrderLines;
+use Mollie\WooCommerce\Payment\PaymentLines;
 use WC_Order;
 
 /**
@@ -22,6 +23,11 @@ class OrderLinesMiddleware implements RequestMiddlewareInterface
     private OrderLines $orderLines;
 
     /**
+     * @var PaymentLines The payment lines handler.
+     */
+    private PaymentLines $paymentLines;
+
+    /**
      * @var string The default category for vouchers.
      */
     private string $voucherDefaultCategory;
@@ -32,9 +38,10 @@ class OrderLinesMiddleware implements RequestMiddlewareInterface
      * @param OrderLines $orderLines The order lines handler.
      * @param string $voucherDefaultCategory The default category for vouchers.
      */
-    public function __construct(OrderLines $orderLines, string $voucherDefaultCategory)
+    public function __construct(OrderLines $orderLines, PaymentLines $paymentLines, string $voucherDefaultCategory)
     {
         $this->orderLines = $orderLines;
+        $this->paymentLines = $paymentLines;
         $this->voucherDefaultCategory = $voucherDefaultCategory;
     }
 
@@ -49,7 +56,11 @@ class OrderLinesMiddleware implements RequestMiddlewareInterface
      */
     public function __invoke(array $requestData, WC_Order $order, $context, $next): array
     {
-        $orderLines = $this->orderLines->order_lines($order, $this->voucherDefaultCategory);
+        if ($context === 'payment') {
+            $orderLines = $this->paymentLines->order_lines($order, $this->voucherDefaultCategory);
+        } else {
+            $orderLines = $this->orderLines->order_lines($order, $this->voucherDefaultCategory);
+        }
         $requestData['lines'] = $orderLines['lines'];
         return $next($requestData, $order, $context);
     }

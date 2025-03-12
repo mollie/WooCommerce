@@ -32,7 +32,7 @@ class Billie extends AbstractPaymentMethod implements PaymentMethodI
             'filtersOnBuild' => true,
             'confirmationDelayed' => false,
             'SEPA' => false,
-            'orderMandatory' => true,
+            //'orderMandatory' => true,
             'errorMessage' => 'Company field is empty. The company field is required.',
             'companyPlaceholder' => 'Please enter your company name here.',
             'docs' => 'https://www.mollie.com/gb/payments/billie',

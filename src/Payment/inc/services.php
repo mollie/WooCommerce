@@ -8,6 +8,7 @@ use Mollie\WooCommerce\Payment\MollieOrder;
 use Mollie\WooCommerce\Payment\MolliePayment;
 use Mollie\WooCommerce\Payment\OrderLines;
 use Mollie\WooCommerce\Payment\PaymentFactory;
+use Mollie\WooCommerce\Payment\PaymentLines;
 use Mollie\WooCommerce\Payment\Request\Middleware\AddCustomRequestFieldsMiddleware;
 use Mollie\WooCommerce\Payment\Request\Middleware\AddressMiddleware;
 use Mollie\WooCommerce\Payment\Request\Middleware\AddSequenceTypeForSubscriptionsMiddleware;
@@ -52,7 +53,11 @@ return static function (): array {
             $pluginId = $container->get('shared.plugin_id');
             return new OrderLines($data, $pluginId);
         },
-
+        PaymentLines::class => static function (ContainerInterface $container): PaymentLines {
+            $data = $container->get('settings.data_helper');
+            $pluginId = $container->get('shared.plugin_id');
+            return new PaymentLines($data, $pluginId);
+        },
         PaymentFactory::class => static function (ContainerInterface $container): PaymentFactory {
             return new PaymentFactory(
                 static function () use ($container) {
@@ -64,7 +69,6 @@ return static function (): array {
                         $container->get('settings.settings_helper'),
                         $container->get('settings.data_helper'),
                         $container->get(Logger::class),
-                        $container->get(OrderLines::class),
                         $container->get(RequestFactory::class)
                     );
                 },
@@ -103,8 +107,9 @@ return static function (): array {
         },
         OrderLinesMiddleware::class => static function (ContainerInterface $container): OrderLinesMiddleware {
             $orderLines = $container->get(OrderLines::class);
+            $paymentLines = $container->get(PaymentLines::class);
             $voucherDefaultCategory = $container->get('voucher.defaultCategory');
-            return new OrderLinesMiddleware($orderLines, $voucherDefaultCategory);
+            return new OrderLinesMiddleware($orderLines, $paymentLines, $voucherDefaultCategory);
         },
         AddressMiddleware::class => static function (): AddressMiddleware {
             return new AddressMiddleware();
@@ -154,6 +159,8 @@ return static function (): array {
             $settingsHelper = $container->get('settings.settings_helper');
             $issuer = $container->get(SelectedIssuerMiddleware::class);
             $url = $container->get(UrlMiddleware::class);
+            $lines = $container->get(OrderLinesMiddleware::class);
+            $address = $container->get(AddressMiddleware::class);
             $sequenceType = $container->get(AddSequenceTypeForSubscriptionsMiddleware::class);
             $cardToken = $container->get(CardTokenMiddleware::class);
             $applePayToken = $container->get(ApplePayTokenMiddleware::class);
@@ -163,6 +170,8 @@ return static function (): array {
             $middlewares = [
                 $issuer,
                 $url,
+                $address,
+                $lines,
                 $sequenceType,
                 $cardToken,
                 $applePayToken,

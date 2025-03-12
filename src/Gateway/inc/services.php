@@ -222,11 +222,11 @@ return static function (): array {
             return static function (string $gatewayId) use ($container): RefundProcessorInterface {
                 $oldGatewayInstances = $container->get('__deprecated.gateway_helpers');
 
-                if (!isset($oldGatewayInstances[$gatewayId])) {
+                if (!isset($oldGatewayInstances['mollie_wc_gateway_' . $gatewayId])) {
                     return $container->get('payment_gateways.noop_refund_processor');
                 }
 
-                $gateway = $oldGatewayInstances[$gatewayId];
+                $gateway = $oldGatewayInstances['mollie_wc_gateway_' . $gatewayId];
                 return new RefundProcessor($gateway);
             };
         },

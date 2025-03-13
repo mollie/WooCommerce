@@ -123,7 +123,7 @@ class MollieOrderService
             return;
         }
 
-        $payment = $payment_object->getPaymentObject($payment_object->data(), $test_mode, $use_cache = false);
+        $payment = $payment_object->getPaymentObject($payment_object->data(), $test_mode, false);
 
         // Payment not found
         if (!$payment) {

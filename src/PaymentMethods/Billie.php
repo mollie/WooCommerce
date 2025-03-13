@@ -79,6 +79,12 @@ class Billie extends AbstractPaymentMethod implements PaymentMethodI
             [$this, 'switchFields'],
             11
         );
+        add_filter('woocommerce_mollie_wc_gateway_billie_args', function (array $paymentData): array {
+            if (!isset($paymentData['orderNumber']) && !isset($paymentData['captureMode'])) {
+                $paymentData['captureMode'] = 'manual';
+            }
+            return $paymentData;
+        });
     }
 
     /**

@@ -149,7 +149,7 @@ class MolliePayment extends MollieObject
 
     /**
      * @param \WC_Order                     $order
-     * @param \Mollie\Api\Resources\Payment $payment
+     * @param Payment $payment
      * @param string                       $paymentMethodTitle
      */
     public function onWebhookPaid(WC_Order $order, $payment, $paymentMethodTitle)
@@ -201,6 +201,50 @@ class MolliePayment extends MollieObject
             $this->logger->debug(
                 __METHOD__ . ' payment at Mollie not paid, so no processing for order ' . $orderId
             );
+        }
+    }
+
+    /**
+     * @param \WC_Order                   $order
+     * @param Payment $payment
+     * @param string                     $paymentMethodTitle
+     */
+    public function onWebhookAuthorized(WC_Order $order, Payment $payment, $paymentMethodTitle)
+    {
+        // Get order ID in the correct way depending on WooCommerce version
+        $orderId = $order->get_id();
+
+        if ($payment->isAuthorized()) {
+            // Add messages to log
+            $this->logger->debug(__METHOD__ . ' called for order ' . $orderId);
+
+            // WooCommerce 2.2.0 has the option to store the Payment transaction id.
+            $order->payment_complete($payment->id);
+
+            // Add messages to log
+            $this->logger->debug(__METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for order ' . $orderId);
+
+            $order->add_order_note(sprintf(
+               /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+               __('Order authorized using %1$s payment (%2$s). Set order to completed in WooCommerce when you have shipped the products, to capture the payment. Do this within 28 days, or the order will expire. To handle individual order lines, process the order via the Mollie Dashboard.', 'mollie-payments-for-woocommerce'),
+               $paymentMethodTitle,
+               $payment->id . ( $payment->mode === 'test' ? ( ' - ' . __('test mode', 'mollie-payments-for-woocommerce') ) : '' )
+            ));
+
+            // Mark the order as processed and paid via Mollie
+            $this->setOrderPaidAndProcessed($order);
+
+            // Remove (old) cancelled payments from this order
+            $this->unsetCancelledMolliePaymentId($orderId);
+
+            // Add messages to log
+            $this->logger->debug(__METHOD__ . ' processing order status update via Mollie plugin fully completed for order ' . $orderId);
+
+            // Subscription processing
+            $this->deleteSubscriptionFromPending($order);
+        } else {
+            // Add messages to log
+            $this->logger->debug(__METHOD__ . ' order at Mollie not authorized, so no processing for order ' . $orderId);
         }
     }
 

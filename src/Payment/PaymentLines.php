@@ -141,6 +141,7 @@ class PaymentLines
 
                 $mollie_order_item =  [
                     'sku' => $this->get_item_reference($product),
+                    'type' => $product->is_virtual() ? 'digital' : 'physical',
                     'description' => $this->get_item_name($cart_item),
                     'quantity' => $this->get_item_quantity($cart_item),
                     'vatRate' => round($this->get_item_vatRate($cart_item, $product), 2),
@@ -162,7 +163,15 @@ class PaymentLines
                             'currency' => $this->currency,
                             'value' => $this->dataHelper->formatCurrencyValue($this->get_item_discount_amount($cart_item), $this->currency),
                         ],
+                    'productUrl' => $product->get_permalink(),
                 ];
+
+                if ($product->get_image_id()) {
+                    $productImage = wp_get_attachment_image_src($product->get_image_id(), 'full');
+                    if (isset($productImage[0])) {
+                        $mollie_order_item['imageUrl'] = $productImage[0];
+                    }
+                }
 
                 if ($isMealVoucherEnabled && $this->get_item_category($product, $voucherDefaultCategory) != "no_category") {
                     $mollie_order_item['category'] = $this->get_item_category(

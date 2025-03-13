@@ -63,6 +63,12 @@ class Riverty extends AbstractPaymentMethod implements PaymentMethodI
         add_action('woocommerce_rest_checkout_process_payment_with_context', [$this, 'addPhoneWhenRest'], 11);
         add_action('woocommerce_rest_checkout_process_payment_with_context', [$this, 'addBirthdateWhenRest'], 11);
         add_action('woocommerce_before_pay_action', [$this, 'fieldsMandatoryPayForOrder'], 11);
+        add_filter('woocommerce_mollie_wc_gateway_riverty_args', function (array $paymentData): array {
+            if (!isset($paymentData['orderNumber']) && !isset($paymentData['captureMode'])) {
+                $paymentData['captureMode'] = 'manual';
+            }
+            return $paymentData;
+        });
     }
 
     /**

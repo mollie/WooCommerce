@@ -47,10 +47,11 @@ class DeprecatedGatewayBuilder
         if (empty($paymentMethods)) {
             return $gateways;
         }
+        $enabledAtMollie = $container->get('gateway.paymentMethodsEnabledAtMollie');
         //we are using only the methods that are available and after feature flag
         foreach ($paymentMethods as $paymentMethod) {
             $paymentMethodId = $paymentMethod->getIdFromConfig();
-            if (! in_array($paymentMethodId, $container->get('gateway.paymentMethodsEnabledAtMollie'))) {
+            if (! in_array($paymentMethodId, $enabledAtMollie, true)) {
                 continue;
             }
             $isSepa = $paymentMethod->getProperty('SEPA');

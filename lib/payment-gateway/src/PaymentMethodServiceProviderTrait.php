@@ -55,6 +55,7 @@ trait PaymentMethodServiceProviderTrait
                 'optionKey' => 'option_key',
                 'orderButtonText' => 'order_button_text',
                 'registerBlocks' => 'register_blocks',
+                'icon' => 'icon',
             ];
 
             foreach ($interfaceMethods as $method => $serviceKey) {

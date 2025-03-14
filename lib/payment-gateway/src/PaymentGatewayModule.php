@@ -177,6 +177,11 @@ class PaymentGatewayModule implements ServiceModule, ExecutableModule
      */
     private function getPluginFileUrlFromAbsolutePath(string $absoluteFilePath): string
     {
+        /**
+         * We will be doing string comparisons, so we have to ensure we work with
+         * sanitized data
+         */
+        $absoluteFilePath = wp_normalize_path($absoluteFilePath);
         $activePlugins = wp_get_active_and_valid_plugins();
         $networkPlugins = function_exists('wp_get_active_network_plugins')
             ?
@@ -188,6 +193,10 @@ class PaymentGatewayModule implements ServiceModule, ExecutableModule
         // Iterate through active plugins to find the matching one
         foreach ($plugins as $plugin) {
             $pluginPath = \WP_PLUGIN_DIR . '/' . dirname(plugin_basename($plugin));
+            /**
+             * Again, ensure the path is sanitized before doing the comparison
+             */
+            $pluginPath = wp_normalize_path($pluginPath);
             if (0 === strpos($absoluteFilePath, $pluginPath)) {
                 $relativePath = (string) substr($absoluteFilePath, strlen($pluginPath) + 1);
                 $baseUrl = plugins_url('', $plugin);

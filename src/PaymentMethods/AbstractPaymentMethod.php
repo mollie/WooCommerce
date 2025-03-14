@@ -424,9 +424,14 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
     public function customSettings(): CustomSettingsFieldsDefinition
     {
         return new CustomSettingsFields([
-                                            'multi_select_countries' => function () {
-                                                return new MultiCountrySettingsField($this);
-                                            },
-                                        ], []);
+            'multi_select_countries' => function () {
+                return new MultiCountrySettingsField($this);
+            },
+        ], []);
+    }
+
+    public function icon(ContainerInterface $container): string
+    {
+        return '';
     }
 }

@@ -71,4 +71,6 @@ interface PaymentMethodDefinition
     public function orderButtonText(ContainerInterface $container): string;
 
     public function customSettings(): CustomSettingsFieldsDefinition;
+
+    public function icon(ContainerInterface $container): string;
 }

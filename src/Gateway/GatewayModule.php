@@ -347,11 +347,6 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         foreach ($allGatewayClassNames as $gatewayClassName) {
             $parts = explode('_', $gatewayClassName);
             $methodId = strtolower(end($parts));
-            //Some Woo functions directly accessing $gateway->form_fields that is why they must be initiated early.
-            add_action('mollie_wc_gateway_' . $methodId . '_after_init_settings', static function (PaymentGateway $gateway) {
-                $gateway->get_form_fields();
-            });
-
             $paymentMethods[$methodId] = $this->buildPaymentMethod(
                 $methodId
             );
@@ -360,10 +355,6 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         //I need DirectDebit to create SEPA gateway
         if (!in_array(Constants::DIRECTDEBIT, array_keys($paymentMethods), true)) {
             $methodId = Constants::DIRECTDEBIT;
-            //Some Woo functions directly accessing $gateway->form_fields that is why they must be initiated early.
-            add_action('mollie_wc_gateway_' . $methodId . '_after_init_settings', static function (PaymentGateway $gateway) {
-                $gateway->get_form_fields();
-            });
             $paymentMethods[$methodId] = $this->buildPaymentMethod(
                 $methodId
             );

@@ -125,7 +125,7 @@ class MolliePaymentGatewayHandler
             },
             20
         );
-        add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, function(array $settings) {
+        add_filter('woocommerce_settings_api_sanitized_fields_' . $this->id, function (array $settings) {
             $gatewaySettings = get_option(sprintf('%s_settings', $this->id), []);
             if (isset($gatewaySettings['iconFileUrl']) && !isset($settings['iconFileUrl'])) {
                 $settings['iconFileUrl'] = $gatewaySettings['iconFileUrl'];

@@ -7,6 +7,7 @@ namespace Mollie\WooCommerce\Settings;
 use DateInterval;
 use DateTime;
 use Mollie\Api\Exceptions\ApiException;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Payment\PaymentProcessor;
@@ -65,7 +66,7 @@ class Settings
         return $generalSettings->gatewayFormFields($defaultTitle, $defaultDescription, $paymentConfirmation);
     }
 
-    public function processSettings(WC_Payment_Gateway $gateway)
+    public function processSettings(string $gatewayId)
     {
         $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = wp_verify_nonce($nonce, 'woocommerce-settings');
@@ -73,31 +74,31 @@ class Settings
             return;
         }
         if (isset($_POST['save'])) {
-            $this->processAdminOptionCustomLogo($gateway);
-            $this->processAdminOptionSurcharge($gateway);
+            $this->processAdminOptionCustomLogo($gatewayId);
+            $this->processAdminOptionSurcharge($gatewayId);
             //only credit cards have a selector
-            if ($gateway->id === 'mollie_wc_gateway_creditcard') {
+            if ($gatewayId === 'mollie_wc_gateway_creditcard') {
                 $this->processAdminOptionCreditcardSelector();
             }
         }
     }
 
-    public function processAdminOptionCustomLogo(WC_Payment_Gateway $gateway)
+    public function processAdminOptionCustomLogo(string $gatewayId)
     {
         $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = $nonce && wp_verify_nonce($nonce, 'woocommerce-settings');
         if (!$isNonceValid) {
             return;
         }
-        $enabledLogoOptionName = $gateway->id . '_enable_custom_logo';
-        $gatewaySettings = get_option(sprintf('%s_settings', $gateway->id), []);
+        $enabledLogoOptionName = 'woocommerce_' . $gatewayId . '_enable_custom_logo';
+        $gatewaySettings = get_option(sprintf('%s_settings', $gatewayId), []);
         if (!isset($_POST[$enabledLogoOptionName])) {
             $gatewaySettings["iconFileUrl"] = null;
             $gatewaySettings["iconFilePath"] = null;
-            update_option(sprintf('%s_settings', $gateway->id), $gatewaySettings);
+            update_option(sprintf('%s_settings', $gatewayId), $gatewaySettings);
             return;
         }
-        $fileOptionName = $gateway->id . '_upload_logo';
+        $fileOptionName = 'woocommerce_' . $gatewayId . '_upload_logo';
         if (
                 !empty($_FILES[$fileOptionName]['size'])
                 && !empty($_FILES[$fileOptionName]['name'])
@@ -111,18 +112,18 @@ class Settings
             if (!$this->validateUploadedFile($name, $tempName, (int) $size)) {
                 return;
             }
-            $this->processUploadedFile($name, $tempName, $gateway);
+            $this->processUploadedFile($name, $tempName, $gatewayId);
         }
     }
 
-    public function processAdminOptionSurcharge(WC_Payment_Gateway $gateway)
+    public function processAdminOptionSurcharge(string $gatewayId)
     {
         $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = wp_verify_nonce($nonce, 'woocommerce-settings');
         if (!$isNonceValid) {
             return;
         }
-        $paymentSurcharge = $gateway->id . '_payment_surcharge';
+        $paymentSurcharge = $gatewayId . '_payment_surcharge';
 
         if (
             isset($_POST[$paymentSurcharge])
@@ -135,7 +136,7 @@ class Settings
                 '_surcharge_limit',
             ];
             foreach ($surchargeFields as $field) {
-                $optionName = $gateway->id . $field;
+                $optionName = $gatewayId . $field;
                 $validatedValue = isset($_POST[$optionName])
                     && $_POST[$optionName] > 0
                     && $_POST[$optionName] < 999;
@@ -700,7 +701,7 @@ class Settings
         return true;
     }
 
-    protected function processUploadedFile(string $name, string $tempName, WC_Payment_Gateway $gateway)
+    protected function processUploadedFile(string $name, string $tempName, string $gatewayId)
     {
         $fileName = preg_replace(
             '#\s+#',
@@ -714,7 +715,7 @@ class Settings
 
         $upload_overrides = ['test_form' => false];
         // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        $file = isset($_FILES[$gateway->id . '_upload_logo']) ? wp_unslash($_FILES[$gateway->id . '_upload_logo']) : [];
+        $file = isset($_FILES['woocommerce_' . $gatewayId . '_upload_logo']) ? wp_unslash($_FILES['woocommerce_' . $gatewayId . '_upload_logo']) : [];
         if (!empty($file)) {
             $file = [
                     'name' => $file['name'],
@@ -726,9 +727,10 @@ class Settings
 
             $movefile = wp_handle_upload($file, $upload_overrides);
             if ($movefile) {
+                $gatewaySettings = get_option(sprintf('%s_settings', $gatewayId), []);
                 $gatewaySettings["iconFileUrl"] = $movefile['url'];
                 $gatewaySettings["iconFilePath"] = $movefile['file'];
-                update_option(sprintf('%s_settings', $gateway->id), $gatewaySettings);
+                update_option(sprintf('%s_settings', $gatewayId), $gatewaySettings);
             }
         }
     }

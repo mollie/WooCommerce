@@ -118,7 +118,23 @@ class MolliePaymentGatewayHandler
             'woocommerce_api_' . $this->id,
             [$this->mollieOrderService, 'onWebhookAction']
         );
-
+        add_action(
+            'woocommerce_update_options_payment_gateways_' . $this->id,
+            function () {
+                $this->dataService()->processSettings($this->id);
+            },
+            20
+        );
+        add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, function(array $settings) {
+            $gatewaySettings = get_option(sprintf('%s_settings', $this->id), []);
+            if (isset($gatewaySettings['iconFileUrl']) && !isset($settings['iconFileUrl'])) {
+                $settings['iconFileUrl'] = $gatewaySettings['iconFileUrl'];
+            }
+            if (isset($gatewaySettings['iconFilePath']) && !isset($settings['iconFilePath'])) {
+                $settings['iconFilePath'] = $gatewaySettings['iconFilePath'];
+            }
+            return $settings;
+        });
         // Adjust title and text on Order Received page in some cases, see issue #166
         add_filter('the_title', [$this, 'onOrderReceivedTitle'], 10, 2);
         add_filter(

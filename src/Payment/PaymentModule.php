@@ -385,7 +385,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
             }
 
             if ($mollie_transaction->isPaid() || $mollie_transaction->isAuthorized()) {
-                if(substr($mollie_transaction_id, 0, 3) === 'tr_') {
+                if (substr($mollie_transaction_id, 0, 3) === 'tr_') {
                     if ($mollie_transaction->isAuthorized()) {
                         ($this->container->get(CapturePayment::class))($order_id);
                     } else {

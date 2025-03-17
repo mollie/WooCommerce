@@ -13,6 +13,7 @@ use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Gateway\Refund\OrderItemsRefunder;
+use Mollie\WooCommerce\MerchantCapture\Capture\Action\CapturePayment;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\SDK\HttpResponse;
@@ -45,6 +46,10 @@ class PaymentModule implements ServiceModule, ExecutableModule
      * @var mixed
      */
     protected $gatewayClassnames;
+    /**
+     * @var ContainerInterface
+     */
+    protected $container;
 
     public function services(): array
     {
@@ -69,6 +74,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
         assert($this->settingsHelper instanceof Settings);
         $this->pluginId = $container->get('shared.plugin_id');
         $this->gatewayClassnames = $container->get('gateway.classnames');
+        $this->container = $container;
 
         // Listen to return URL call
         add_action('woocommerce_api_mollie_return', function () use ($container) {
@@ -340,50 +346,66 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
         $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - Try to process completed order for a potential capture at Mollie.');
 
-        // Does WooCommerce order contain a Mollie Order?
-        $mollie_order_id = ( $mollie_order_id = $order->get_meta('_mollie_order_id', true) ) ? $mollie_order_id : false;
-        // Is it a payment? you cannot ship a payment
-        if ($mollie_order_id === false || substr($mollie_order_id, 0, 3) === 'tr_') {
-            $message = _x('Processing a payment, no capture needed', 'Order note info', 'mollie-payments-for-woocommerce');
+        $mollie_transaction_id = ( $mollie_transaction_id = $order->get_meta('_mollie_order_id', true) ) ? $mollie_transaction_id : false;
+        if (!$mollie_transaction_id) {
+            $mollie_transaction_id = ( $mollie_transaction_id = $order->get_meta('_mollie_payment_id', true) ) ? $mollie_transaction_id : false;
+        }
+        if (empty($mollie_transaction_id)) {
+            $message = _x('Order contains Mollie payment method, but not a valid Mollie Transaction ID. Processing shipment & capture failed.', 'Order note info', 'mollie-payments-for-woocommerce');
             $order->add_order_note($message);
-            $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - Processing a payment, no capture needed.');
-
-            return;
+            $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' Order contains Mollie payment method, but not a valid Mollie Transaction ID. Processing shipment & capture failed.');
         }
 
         $apiKey = $this->settingsHelper->getApiKey();
         try {
-            // Get the order from the Mollie API
-            $mollie_order = $this->apiHelper->getApiClient($apiKey)->orders->get($mollie_order_id);
+            // Get the order or payment from the Mollie API
+            if (substr($mollie_transaction_id, 0, 3) === 'tr_') {
+                $mollie_transaction = $this->apiHelper->getApiClient($apiKey)->payments->get($mollie_transaction_id);
+                $mollie_transaction_type = 'Payment';
+            } else {
+                $mollie_transaction = $this->apiHelper->getApiClient($apiKey)->orders->get($mollie_transaction_id);
+                $mollie_transaction_type = 'Order';
+            }
 
             // Check that order is Paid or Authorized and can be captured
-            if ($mollie_order->isCanceled()) {
-                $message = _x('Order already canceled at Mollie, can not be shipped/captured.', 'Order note info', 'mollie-payments-for-woocommerce');
+            if ($mollie_transaction->isCanceled()) {
+                $message = _x('Transaction already canceled at Mollie, can not be shipped/captured.', 'Order note info', 'mollie-payments-for-woocommerce');
                 $order->add_order_note($message);
-                $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - Order already canceled at Mollie, can not be shipped/captured.');
+                $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - ' . $mollie_transaction_type . ' already canceled at Mollie, can not be shipped/captured.');
 
                 return;
             }
 
-            if ($mollie_order->isCompleted()) {
-                $message = _x('Order already completed at Mollie, can not be shipped/captured.', 'Order note info', 'mollie-payments-for-woocommerce');
+            if (method_exists($mollie_transaction, 'isCompleted') && $mollie_transaction->isCompleted()) {
+                $message = _x('Transaction already completed at Mollie, can not be shipped/captured.', 'Order note info', 'mollie-payments-for-woocommerce');
                 $order->add_order_note($message);
-                $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - Order already completed at Mollie, can not be shipped/captured.');
+                $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - ' . $mollie_transaction_type . ' already completed at Mollie, can not be shipped/captured.');
 
                 return;
             }
 
-            if ($mollie_order->isPaid() || $mollie_order->isAuthorized()) {
-                $this->apiHelper->getApiClient($apiKey)->orders->get($mollie_order_id)->shipAll();
+            if ($mollie_transaction->isPaid() || $mollie_transaction->isAuthorized()) {
+                if(substr($mollie_transaction_id, 0, 3) === 'tr_') {
+                    if ($mollie_transaction->isAuthorized()) {
+                        ($this->container->get(CapturePayment::class))($order_id);
+                    } else {
+                        $message = _x('Payment status is already paid at Mollie, can not be captured.', 'Order note info', 'mollie-payments-for-woocommerce');
+                        $order->add_order_note($message);
+                        $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - Payment already completed at Mollie, can not be captured.');
+                    }
+
+                    return;
+                }
+                $this->apiHelper->getApiClient($apiKey)->orders->get($mollie_transaction_id)->shipAll();
                 $message = _x('Order successfully updated to shipped at Mollie, capture of funds underway.', 'Order note info', 'mollie-payments-for-woocommerce');
                 $order->add_order_note($message);
                 $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - Order successfully updated to shipped at Mollie, capture of funds underway.');
 
                 return;
             }
-            $message = _x('Order not paid or authorized at Mollie yet, can not be shipped.', 'Order note info', 'mollie-payments-for-woocommerce');
+            $message = _x('Transaction not paid or authorized at Mollie yet, can not be shipped.', 'Order note info', 'mollie-payments-for-woocommerce');
             $order->add_order_note($message);
-            $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - Order not paid or authorized at Mollie yet, can not be shipped.');
+            $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - ' . $mollie_transaction_type . ' not paid or authorized at Mollie yet, can not be shipped.');
         } catch (ApiException $e) {
             $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - Processing shipment & capture failed, error: ' . $e->getMessage());
         }

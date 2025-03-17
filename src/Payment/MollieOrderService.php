@@ -189,10 +189,10 @@ class MollieOrderService
     }
 
     /**
-     * @param $order
+     * @param \WC_Order $order
      * @param $payment
      */
-    public function handlePaidOrderWebhook($order, $payment)
+    public function handlePaidOrderWebhook(\WC_Order $order, $payment)
     {
         // Duplicate webhook call
         $this->httpResponse->setHttpResponseCode(204);
@@ -201,7 +201,7 @@ class MollieOrderService
         $order_id = $order->get_id();
 
         $this->logger->debug(
-            __METHOD__ . ' - ' . $this->id
+            __METHOD__ . ' - ' . $order_id
             . ": Order $order_id does not need a payment by Mollie (payment {$payment->id}).",
             [true]
         );
@@ -228,6 +228,12 @@ class MollieOrderService
         // Check whether the order is processed and paid via Mollie
         if (! $this->isOrderPaidAndProcessed($order)) {
             $this->logger->debug(__METHOD__ . ' ' . $gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, order not previously processed by Mollie gateway.', [true]);
+
+            return true;
+        }
+
+        if ('1' === $order->get_meta('_mollie_authorized')) {
+            $this->logger->debug(__METHOD__ . ' ' . $gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, order is authorized.');
 
             return true;
         }

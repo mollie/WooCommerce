@@ -10,7 +10,7 @@ use WC_Order;
 use WC_Order_Item;
 use WC_Tax;
 
-class OrderLines
+class PaymentLines
 {
     /**
      * Formatted order lines.
@@ -82,7 +82,7 @@ class OrderLines
         if (abs($orderTotalDiff) > 0) {
             $mismatch =  [
                 'type' => 'surcharge',
-                'name' => __('Rounding difference', 'mollie-payments-for-woocommerce'),
+                'description' => __('Rounding difference', 'mollie-payments-for-woocommerce'),
                 'quantity' => 1,
                 'vatRate' => 0,
                 'unitPrice' =>  [
@@ -96,9 +96,6 @@ class OrderLines
                 'vatAmount' =>  [
                     'currency' => $this->currency,
                     'value' => $this->dataHelper->formatCurrencyValue(0, $this->currency),
-                ],
-                'metadata' =>  [
-                    'order_item_id' => 'rounding_diff',
                 ],
             ];
 
@@ -145,7 +142,7 @@ class OrderLines
                 $mollie_order_item =  [
                     'sku' => $this->get_item_reference($product),
                     'type' => $product->is_virtual() ? 'digital' : 'physical',
-                    'name' => $this->get_item_name($cart_item),
+                    'description' => $this->get_item_name($cart_item),
                     'quantity' => $this->get_item_quantity($cart_item),
                     'vatRate' => round($this->get_item_vatRate($cart_item, $product), 2),
                     'unitPrice' =>  [
@@ -165,10 +162,6 @@ class OrderLines
                          [
                             'currency' => $this->currency,
                             'value' => $this->dataHelper->formatCurrencyValue($this->get_item_discount_amount($cart_item), $this->currency),
-                        ],
-                    'metadata' =>
-                        [
-                            'order_item_id' => $cart_item->get_id(),
                         ],
                     'productUrl' => $product->get_permalink(),
                 ];
@@ -203,7 +196,7 @@ class OrderLines
         if ($this->order->get_shipping_methods() && WC()->session->get('chosen_shipping_methods')) {
             $shipping =  [
                 'type' => 'shipping_fee',
-                'name' => $this->get_shipping_name(),
+                'description' => $this->get_shipping_name(),
                 'quantity' => 1,
                 'vatRate' => $this->get_shipping_vat_rate(),
                 'unitPrice' =>  [
@@ -217,9 +210,6 @@ class OrderLines
                 'vatAmount' =>  [
                     'currency' => $this->currency,
                     'value' => $this->dataHelper->formatCurrencyValue($this->get_shipping_tax_amount(), $this->currency),
-                ],
-                'metadata' =>  [
-                    'order_item_id' => $this->get_shipping_id(),
                 ],
             ];
 
@@ -260,7 +250,7 @@ class OrderLines
 
                 $fee =  [
                     'type' => 'surcharge',
-                    'name' => $cart_fee['name'],
+                    'description' => $cart_fee['name'],
                     'quantity' => 1,
                     'vatRate' => $this->dataHelper->formatCurrencyValue($cart_fee_vat_rate, $this->currency),
                     'unitPrice' =>  [
@@ -274,9 +264,6 @@ class OrderLines
                     'vatAmount' =>  [
                         'currency' => $this->currency,
                         'value' => $this->dataHelper->formatCurrencyValue($cart_fee_tax_amount, $this->currency),
-                    ],
-                    'metadata' =>  [
-                        'order_item_id' => $cart_fee->get_id(),
                     ],
                 ];
 
@@ -296,7 +283,7 @@ class OrderLines
             foreach ($this->order->get_items('gift_card') as $cart_gift_card) {
                 $gift_card = [
                     'type' => 'gift_card',
-                    'name' => $cart_gift_card->get_name(),
+                    'description' => $cart_gift_card->get_name(),
                     'unitPrice' => [
                         'currency' => $this->currency,
                         'value' =>  $this->dataHelper->formatCurrencyValue(-$cart_gift_card->get_amount(), $this->currency),

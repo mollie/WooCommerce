@@ -33,10 +33,6 @@ class MollieOrder extends MollieObject
     protected static $order;
     protected static $payment;
     protected static $shop_country;
-    /**
-     * @var OrderLines
-     */
-    protected $orderLines;
 
     /**
      * @var OrderItemsRefunder
@@ -57,7 +53,6 @@ class MollieOrder extends MollieObject
         Settings $settingsHelper,
         Data $dataHelper,
         Logger $logger,
-        OrderLines $orderLines,
         RequestFactory $requestFactory
     ) {
 
@@ -69,7 +64,6 @@ class MollieOrder extends MollieObject
         $this->logger = $logger;
         $this->requestFactory = $requestFactory;
         $this->dataHelper = $dataHelper;
-        $this->orderLines = $orderLines;
     }
 
     public function getPaymentObject($paymentId, $testMode = false, $useCache = true)

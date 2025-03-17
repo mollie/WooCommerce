@@ -407,10 +407,10 @@ class PaymentProcessor implements PaymentProcessorInterface
             // Don't try to create a Mollie Payment for Klarna payment methods
             $order_payment_method = $order->get_payment_method();
             $orderMandatoryPaymentMethods = [
-                'mollie_wc_gateway_klarnapaylater',
-                'mollie_wc_gateway_klarnasliceit',
-                'mollie_wc_gateway_klarnapaynow',
-                'mollie_wc_gateway_klarna',
+                //'mollie_wc_gateway_klarnapaylater',
+                //'mollie_wc_gateway_klarnasliceit',
+                //'mollie_wc_gateway_klarnapaynow',
+                //'mollie_wc_gateway_klarna',
                 'mollie_wc_gateway_billie',
                 'mollie_wc_gateway_in3',
                 'mollie_wc_gateway_riverty',

@@ -281,7 +281,7 @@ class MolliePaymentGatewayHandler
 
         $this->logger->debug(
             __METHOD__ . ' - ' . $this->id
-            . ": Order $order_id does not need a payment by Mollie (payment {$payment->id}).",
+            . ": Order does not need a payment by Mollie (payment {$payment->id}).",
             [true]
         );
     }

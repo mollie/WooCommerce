@@ -129,6 +129,9 @@ class MollieGeneralSettings
                 'css' => 'min-width: 350px;',
                 'default' => [],
                 'type' => 'multi_select_countries',
+                'sanitize_callback' => function ($value) {
+                    return is_array( $value ) ? array_map( 'wc_clean', array_map( 'stripslashes', $value ) ) : '';
+                }
             ],
             'surcharge' => [
                 'id' => $defaultTitle . '_' . 'surcharge',

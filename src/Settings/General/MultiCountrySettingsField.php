@@ -26,7 +26,7 @@ class MultiCountrySettingsField implements SettingsFieldRendererInterface
     {
         $selections = (array)$paymentMethod->getProperty('allowed_countries', []);
         $gatewayId = $paymentMethod->getProperty('id');
-        $id = 'mollie_wc_gateway_' . $gatewayId . '_allowed_countries';
+        $id = 'woocommerce_mollie_wc_gateway_' . $gatewayId . '_allowed_countries';
         $title = __('Sell to specific countries', 'mollie-payments-for-woocommerce');
         $countries = WC()->countries->countries;
         asort($countries);

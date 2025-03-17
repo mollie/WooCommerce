@@ -25,7 +25,8 @@ class Riverty extends AbstractPaymentMethod implements PaymentMethodI
             'filtersOnBuild' => true,
             'confirmationDelayed' => false,
             'SEPA' => false,
-            //'orderMandatory' => true,
+            'orderMandatory' => ! apply_filters('inpsyde.feature-flags.mollie-woocommerce.riverty_payments_api', true),
+            'paymentCaptureMode' => 'manual',
             'phonePlaceholder' => 'Please enter your phone here. +316xxxxxxxx', 'mollie-payments-for-woocommerce',
             'birthdatePlaceholder' => 'Please enter your birthdate here.', 'mollie-payments-for-woocommerce',
             'docs' => 'https://www.mollie.com/gb/payments/riverty',
@@ -63,12 +64,6 @@ class Riverty extends AbstractPaymentMethod implements PaymentMethodI
         add_action('woocommerce_rest_checkout_process_payment_with_context', [$this, 'addPhoneWhenRest'], 11);
         add_action('woocommerce_rest_checkout_process_payment_with_context', [$this, 'addBirthdateWhenRest'], 11);
         add_action('woocommerce_before_pay_action', [$this, 'fieldsMandatoryPayForOrder'], 11);
-        add_filter('woocommerce_mollie_wc_gateway_riverty_args', function (array $paymentData): array {
-            if (!isset($paymentData['orderNumber']) && !isset($paymentData['captureMode'])) {
-                $paymentData['captureMode'] = 'manual';
-            }
-            return $paymentData;
-        });
     }
 
     /**

@@ -32,7 +32,8 @@ class Billie extends AbstractPaymentMethod implements PaymentMethodI
             'filtersOnBuild' => true,
             'confirmationDelayed' => false,
             'SEPA' => false,
-            //'orderMandatory' => true,
+            'orderMandatory' => ! apply_filters('inpsyde.feature-flags.mollie-woocommerce.billie_payments_api', true),
+            'paymentCaptureMode' => 'manual',
             'errorMessage' => 'Company field is empty. The company field is required.',
             'companyPlaceholder' => 'Please enter your company name here.',
             'docs' => 'https://www.mollie.com/gb/payments/billie',
@@ -79,12 +80,6 @@ class Billie extends AbstractPaymentMethod implements PaymentMethodI
             [$this, 'switchFields'],
             11
         );
-        add_filter('woocommerce_mollie_wc_gateway_billie_args', function (array $paymentData): array {
-            if (!isset($paymentData['orderNumber']) && !isset($paymentData['captureMode'])) {
-                $paymentData['captureMode'] = 'manual';
-            }
-            return $paymentData;
-        });
     }
 
     /**

@@ -13,6 +13,7 @@ use Mollie\WooCommerce\Payment\Request\Middleware\AddCustomRequestFieldsMiddlewa
 use Mollie\WooCommerce\Payment\Request\Middleware\AddressMiddleware;
 use Mollie\WooCommerce\Payment\Request\Middleware\AddSequenceTypeForSubscriptionsMiddleware;
 use Mollie\WooCommerce\Payment\Request\Middleware\ApplePayTokenMiddleware;
+use Mollie\WooCommerce\Payment\Request\Middleware\CaptureModeMiddleware;
 use Mollie\WooCommerce\Payment\Request\Middleware\CardTokenMiddleware;
 use Mollie\WooCommerce\Payment\Request\Middleware\CustomerBirthdateMiddleware;
 use Mollie\WooCommerce\Payment\Request\Middleware\MiddlewareHandler;
@@ -91,6 +92,9 @@ return static function (): array {
         CustomerBirthdateMiddleware::class => static function (ContainerInterface $container): CustomerBirthdateMiddleware {
             return new CustomerBirthdateMiddleware($container->get('gateway.paymentMethods'));
         },
+        CaptureModeMiddleware::class => static function (ContainerInterface $container): CaptureModeMiddleware {
+            return new CaptureModeMiddleware($container->get('gateway.paymentMethods'));
+        },
         ApplePayTokenMiddleware::class => static function (): ApplePayTokenMiddleware {
             return new ApplePayTokenMiddleware();
         },
@@ -168,6 +172,7 @@ return static function (): array {
             $paymentDescription = $container->get(PaymentDescriptionMiddleware::class);
             $addCustomRequestFields = $container->get(AddCustomRequestFieldsMiddleware::class);
             $middlewares = [
+                $container->get(CaptureModeMiddleware::class),
                 $issuer,
                 $url,
                 $address,

@@ -19,22 +19,12 @@ class Klarna extends AbstractPaymentMethod implements PaymentMethodI
                 'products',
                 'refunds',
             ],
-            'filtersOnBuild' => true,
             'confirmationDelayed' => false,
             'SEPA' => false,
-            //'orderMandatory' => true,
+            'orderMandatory' => ! apply_filters('inpsyde.feature-flags.mollie-woocommerce.klarna_payments_api', true),
+            'paymentCaptureMode' => 'manual',
             'docs' => 'https://www.mollie.com/gb/payments/klarna',
         ];
-    }
-
-    public function filtersOnBuild()
-    {
-        add_filter('woocommerce_mollie_wc_gateway_klarna_args', function (array $paymentData): array {
-            if (!isset($paymentData['orderNumber']) && !isset($paymentData['captureMode'])) {
-                $paymentData['captureMode'] = 'manual';
-            }
-            return $paymentData;
-        });
     }
 
     public function initializeTranslations(): void

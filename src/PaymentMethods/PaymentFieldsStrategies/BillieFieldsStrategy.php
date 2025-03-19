@@ -28,9 +28,9 @@ class BillieFieldsStrategy extends AbstractPaymentFieldsRenderer implements Paym
         }
 
         if ($showCompanyField) {
-            return $this->company();
+            return $this->gatewayDescription . $this->company();
         }
-        return "";
+        return $this->gatewayDescription;
     }
 
     protected function getOrderIdOnPayForOrderPage()
@@ -62,7 +62,7 @@ class BillieFieldsStrategy extends AbstractPaymentFieldsRenderer implements Paym
 
     public function getFieldMarkup($gateway, $dataHelper)
     {
-        return "";
+        return '';
     }
 
     /**

@@ -20,7 +20,7 @@ class RivertyFieldsStrategy extends AbstractPaymentFieldsRenderer implements Pay
         $isPhoneRequired = get_option('mollie_wc_is_phone_required_flag');
         $phoneValue = false;
         $birthValue = false;
-        $html = '';
+        $html = $this->gatewayDescription;
         if (is_checkout_pay_page()) {
             $showBirthdateField = true;
             $showPhoneField = true;

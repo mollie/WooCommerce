@@ -34,10 +34,10 @@ class GiftcardFieldsStrategy extends AbstractPaymentFieldsRenderer implements Pa
                 $html .= '<img src="' . $issuerImageSvg . '" style="vertical-align:middle" />' . $issuerName;
             }
             //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-            return wpautop(wptexturize($html));
+            return $this->gatewayDescription . wpautop(wptexturize($html));
         }
 
-        return $this->renderIssuers($this->deprecatedHelperGateway, $issuers, $selectedIssuer);
+        return $this->gatewayDescription . $this->renderIssuers($this->deprecatedHelperGateway, $issuers, $selectedIssuer);
     }
 
     public function getFieldMarkup($gateway, $dataHelper)

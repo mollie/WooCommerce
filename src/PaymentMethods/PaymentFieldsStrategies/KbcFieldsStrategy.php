@@ -13,20 +13,20 @@ class KbcFieldsStrategy extends AbstractPaymentFieldsRenderer implements Payment
     public function renderFields(): string
     {
         if (!$this->dropDownEnabled($this->deprecatedHelperGateway)) {
-            return '';
+            return $this->gatewayDescription;
         }
 
         $issuers = $this->getIssuers($this->deprecatedHelperGateway, $this->dataHelper);
 
         $selectedIssuer = $this->getSelectedIssuer($this->deprecatedHelperGateway);
 
-        return $this->renderIssuers($this->deprecatedHelperGateway, $issuers, $selectedIssuer);
+        return $this->gatewayDescription . $this->renderIssuers($this->deprecatedHelperGateway, $issuers, $selectedIssuer);
     }
 
     public function getFieldMarkup($gateway, $dataHelper)
     {
         if (!$this->dropDownEnabled($gateway)) {
-            return "";
+            return '';
         }
         $issuers = $this->getIssuers($gateway, $dataHelper);
         $selectedIssuer = $this->getSelectedIssuer($gateway);

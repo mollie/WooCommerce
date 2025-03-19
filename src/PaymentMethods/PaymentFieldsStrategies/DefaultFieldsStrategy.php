@@ -15,6 +15,6 @@ class DefaultFieldsStrategy extends AbstractPaymentFieldsRenderer implements Pay
 
     public function getFieldMarkup($gateway, $dataHelper)
     {
-        return "";
+        return '';
     }
 }

@@ -12,11 +12,12 @@ class CreditcardFieldsStrategy extends AbstractPaymentFieldsRenderer implements 
     public function renderFields(): string
     {
         if (!$this->isMollieComponentsEnabled($this->deprecatedHelperGateway->paymentMethod())) {
-            return '';
+            return $this->gatewayDescription;
         }
         $allowedHtml = $this->svgAllowedHtml();
 
-        $output = '<div class="mollie-components"></div>';
+        $output = $this->gatewayDescription;
+        $output .= '<div class="mollie-components"></div>';
         $output .= '<p class="mollie-components-description">';
         $output .= sprintf(
             esc_html__(

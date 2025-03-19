@@ -27,9 +27,9 @@ class BancomatpayFieldsStrategy extends AbstractPaymentFieldsRenderer implements
         }
 
         if ($showPhoneField) {
-            return $this->phoneNumber($phoneValue);
+            return $this->gatewayDescription . $this->phoneNumber($phoneValue);
         }
-        return "";
+        return $this->gatewayDescription;
     }
 
     protected function getOrderIdOnPayForOrderPage()

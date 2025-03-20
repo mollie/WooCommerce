@@ -115,10 +115,14 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
                 'billingCountry' => isset($filters['billingCountry']) ? $filters['billingCountry'] : false,
             ],
         ];
+        $paymentGateways = WC()->payment_gateways()->payment_gateways();
         $gatewayData = [];
         $isSepaEnabled = isset($deprecatedGatewayHelpers['mollie_wc_gateway_directdebit']) && $deprecatedGatewayHelpers['mollie_wc_gateway_directdebit']->enabled === 'yes';
         /** @var PaymentGateway $gateway */
-        foreach ($availableGateways as $gatewayKey => $gateway) {
+        foreach ($paymentGateways as $gatewayKey => $gateway) {
+            if (substr($gateway->id, 0, 18) !== 'mollie_wc_gateway_') {
+                continue;
+            }
             $deprecatedGateway = $deprecatedGatewayHelpers[$gatewayKey];
             $method = $deprecatedGateway->paymentMethod();
             $gatewayId = is_string($method->getProperty('id')) ? $method->getProperty('id') : "";

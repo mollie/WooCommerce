@@ -5,29 +5,11 @@ function formatPriceLikeWc(price) {
     return wcSettings.currency.priceFormat.replace('%1$s', wcSettings.currency.symbol).replace('%2$s',price.toFixed(wcSettings.currency.precision).replace('.', wcSettings.currency.decimalSeparator));
 }
 
-function loadCachedAvailableGateways() {
-    const storedData = localStorage.getItem('cachedAvailableGateways');
-    if (storedData) {
-        try {
-            cachedAvailableGateways = JSON.parse(storedData);
-        } catch (e) {
-            console.warn('Error parsing cachedAvailableGateways from localStorage:', e);
-            cachedAvailableGateways = {};
-        }
-    }
-}
-
-function saveCachedAvailableGateways() {
-    localStorage.setItem('cachedAvailableGateways', JSON.stringify(cachedAvailableGateways));
-}
-
-loadCachedAvailableGateways();
 function setAvailableGateways(country, currencyCode, data) {
     cachedAvailableGateways = {
         ...cachedAvailableGateways,
         ...data
     };
-    saveCachedAvailableGateways();
 }
 function useMollieAvailableGateways(billing, currencyCode, cartTotal, filters, ajaxUrl) {
     let country = billing.country;
@@ -382,9 +364,11 @@ const Label = ({ item, filters, ajaxUrl }) => {
 
 const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isCompanyFieldVisible, isPhoneFieldVisible) =>{
 
-    document.addEventListener('mollie_components_ready_to_submit', function () {
-        onSubmitLocal()
-    })
+    if (item.name === "mollie_wc_gateway_creditcard") {
+        document.addEventListener('mollie_components_ready_to_submit', function () {
+            onSubmitLocal()
+        })
+    }
     function creditcardSelectedEvent() {
         if (item.name === "mollie_wc_gateway_creditcard") {
             document.documentElement.dispatchEvent(creditCardSelected);
@@ -414,7 +398,6 @@ const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, available
             if (cartTotals <= 0) {
                 return true
             }
-
             const currencyCode = cartTotals?.currency_code;
             let country = billingData?.country;
             if (!country) {
@@ -424,16 +407,22 @@ const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, available
 
             creditcardSelectedEvent();
 
+            if (!cachedAvailableGateways.hasOwnProperty(currentFilterKey)) {
+                cachedAvailableGateways = {
+                    ...cachedAvailableGateways,
+                    ...availableGateways
+                };
+            }
+
             if (availableGateways.hasOwnProperty(currentFilterKey) && availableGateways[currentFilterKey].hasOwnProperty(item.name)) {
                 return true;
             }
 
-            loadCachedAvailableGateways();
-            if (!cachedAvailableGateways.hasOwnProperty(currentFilterKey)) {
-                return false;
+            if (cachedAvailableGateways.hasOwnProperty(currentFilterKey) && cachedAvailableGateways[currentFilterKey].hasOwnProperty(item.name)) {
+                return true;
             }
 
-            return cachedAvailableGateways[currentFilterKey].hasOwnProperty(item.name);
+            return false;
         },
         ariaLabel: item.ariaLabel,
         supports: {

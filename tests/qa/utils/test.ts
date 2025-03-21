@@ -53,8 +53,8 @@ const test = base.extend< {
 	transaction: Transaction;
 } >( {
 	// Dashboard pages operated by Admin
-	mollieApi: async ( { request }, use ) => {
-		await use( new MollieApi( { request } ) );
+	mollieApi: async ( { request, requestUtils }, use ) => {
+		await use( new MollieApi( { request, requestUtils } ) );
 	},
 	mollieSettingsApiKeys: async ( { page }, use ) => {
 		await use( new MollieSettingsApiKeys( { page } ) );
@@ -126,6 +126,7 @@ const test = base.extend< {
 	// Complex fixtures
 	utils: async (
 		{
+			mollieApi,
 			plugins,
 			wooCommerceUtils,
 			requestUtils,
@@ -138,6 +139,7 @@ const test = base.extend< {
 	) => {
 		await use(
 			new Utils( {
+				mollieApi,
 				plugins,
 				wooCommerceUtils,
 				requestUtils,

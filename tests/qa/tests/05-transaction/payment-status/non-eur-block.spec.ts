@@ -2,8 +2,15 @@
  * Internal dependencies
  */
 import { test } from '../../../utils';
-import { testPaymentStatusOnPayForOrder } from './.test-scenarios';
-import { createShopOrder, payForOrderEur } from './.test-data';
+import {
+	testPaymentStatusOnCheckout,
+	testPaymentStatusOnPayForOrder,
+} from './_test-scenarios';
+import {
+	createShopOrder,
+	checkoutNonEur,
+	payForOrderNonEur,
+} from './_test-data';
 import { shopSettings } from '../../../resources';
 
 test.beforeAll( async ( { utils }, testInfo ) => {
@@ -20,7 +27,12 @@ test.beforeAll( async ( { utils }, testInfo ) => {
 	await utils.cleanReconnectMollie();
 } );
 
-for ( const testData of payForOrderEur ) {
+for ( const testData of checkoutNonEur ) {
+	const order = createShopOrder( testData );
+	testPaymentStatusOnCheckout( testData.testId, order );
+}
+
+for ( const testData of payForOrderNonEur ) {
 	const order = createShopOrder( testData );
 	testPaymentStatusOnPayForOrder( testData.testId, order );
 }

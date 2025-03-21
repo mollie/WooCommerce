@@ -2,25 +2,26 @@
  * Internal dependencies
  */
 import { test } from '../../../utils';
-import { testPaymentStatusOnPayForOrder } from './.test-scenarios';
-import { createShopOrder, payForOrderNonEur } from './.test-data';
+import { testPaymentStatusOnClassicCheckout } from './_test-scenarios';
+import { createShopOrder, classicCheckoutEur } from './_test-data';
 import { shopSettings } from '../../../resources';
 
 test.beforeAll( async ( { utils }, testInfo ) => {
 	if ( testInfo.project.name !== 'all' ) {
 		return;
 	}
+
 	await utils.configureStore( {
 		settings: {
 			general: shopSettings.germany.general,
 		},
-		classicPages: false,
+		classicPages: true,
 	} );
 	await utils.installActivateMollie();
 	await utils.cleanReconnectMollie();
 } );
 
-for ( const testData of payForOrderNonEur ) {
+for ( const testData of classicCheckoutEur ) {
 	const order = createShopOrder( testData );
-	testPaymentStatusOnPayForOrder( testData.testId, order );
+	testPaymentStatusOnClassicCheckout( testData.testId, order );
 }

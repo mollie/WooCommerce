@@ -135,6 +135,7 @@ export namespace MollieSettings {
 		| 'gift';
 
 	export type Gateway = {
+		id?: string;
 		enabled?: boolean;
 		use_api_title?: 'yes' | 'no';
 		title?: string;
@@ -171,7 +172,7 @@ export namespace MollieSettings {
 
 		mealvoucher_category_default?: VoucherProductCategory; // voucher
 
-		mollie_creditcard_icons_enabler?: 'yes' | 'no'; // creditcard
+		mollie_creditcard_icons_enabled?: 'yes' | 'no'; // creditcard
 		mollie_creditcard_icons_amex?: 'yes' | 'no'; // creditcard
 		mollie_creditcard_icons_cartasi?: 'yes' | 'no'; // creditcard
 		mollie_creditcard_icons_cartebancaire?: 'yes' | 'no'; // creditcard

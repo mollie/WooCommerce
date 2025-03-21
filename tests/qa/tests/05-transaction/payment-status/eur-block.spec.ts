@@ -2,8 +2,11 @@
  * Internal dependencies
  */
 import { test } from '../../../utils';
-import { testPaymentStatusOnCheckout } from './.test-scenarios';
-import { createShopOrder, checkoutEur } from './.test-data';
+import {
+	testPaymentStatusOnCheckout,
+	testPaymentStatusOnPayForOrder,
+} from './_test-scenarios';
+import { createShopOrder, checkoutEur, payForOrderEur } from './_test-data';
 import { shopSettings } from '../../../resources';
 
 test.beforeAll( async ( { utils }, testInfo ) => {
@@ -24,4 +27,9 @@ test.beforeAll( async ( { utils }, testInfo ) => {
 for ( const testData of checkoutEur ) {
 	const order = createShopOrder( testData );
 	testPaymentStatusOnCheckout( testData.testId, order );
+}
+
+for ( const testData of payForOrderEur ) {
+	const order = createShopOrder( testData );
+	testPaymentStatusOnPayForOrder( testData.testId, order );
 }

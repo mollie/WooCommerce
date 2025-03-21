@@ -19,7 +19,7 @@ export const surchargeFixedAndPercentageUnderLimit: MollieTestData.SurchargeTest
 		},
 		tests: [
 			// { testId: 'C420315', gateway: 'applepay' },
-			// { testId: 'NotInTestRail', gateway: 'creditcard' },
+			{ testId: 'NotInTestRail', gateway: 'creditcard' },
 			{ testId: 'C130902', gateway: 'giftcard' },
 			{
 				testId: 'C129819',

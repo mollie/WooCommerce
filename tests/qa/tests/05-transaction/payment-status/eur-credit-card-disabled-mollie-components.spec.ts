@@ -6,13 +6,13 @@ import {
 	testPaymentStatusOnClassicCheckout,
 	testPaymentStatusOnCheckout,
 	testPaymentStatusOnPayForOrder,
-} from './.test-scenarios';
+} from './_test-scenarios';
 import {
 	createShopOrder,
-	creditCardMollieComponentsClassicCheckout,
-	creditCardMollieComponentsCheckout,
-	creditCardMollieComponentsPayForOrder,
-} from './.test-data';
+	creditCardDisabledMollieComponentsClassicCheckout,
+	creditCardDisabledMollieComponentsCheckout,
+	creditCardDisabledMollieComponentsPayForOrder,
+} from './_test-data';
 import { shopSettings } from '../../../resources';
 
 test.beforeAll( async ( { utils, mollieApi } ) => {
@@ -24,7 +24,7 @@ test.beforeAll( async ( { utils, mollieApi } ) => {
 	await utils.installActivateMollie();
 	await utils.cleanReconnectMollie();
 	await mollieApi.updateMollieGateway( 'creditcard', {
-		mollie_components_enabled: 'yes',
+		mollie_components_enabled: 'no',
 	} );
 } );
 
@@ -34,7 +34,7 @@ test.describe( () => {
 		await utils.configureStore( { classicPages: true } );
 	} );
 
-	for ( const testData of creditCardMollieComponentsClassicCheckout ) {
+	for ( const testData of creditCardDisabledMollieComponentsClassicCheckout ) {
 		const order = createShopOrder( testData );
 		testPaymentStatusOnClassicCheckout( testData.testId, order );
 	}
@@ -46,12 +46,12 @@ test.describe( () => {
 		await utils.configureStore( { classicPages: false } );
 	} );
 
-	for ( const testData of creditCardMollieComponentsCheckout ) {
+	for ( const testData of creditCardDisabledMollieComponentsCheckout ) {
 		const order = createShopOrder( testData );
 		testPaymentStatusOnCheckout( testData.testId, order );
 	}
 
-	for ( const testData of creditCardMollieComponentsPayForOrder ) {
+	for ( const testData of creditCardDisabledMollieComponentsPayForOrder ) {
 		const order = createShopOrder( testData );
 		testPaymentStatusOnPayForOrder( testData.testId, order );
 	}
@@ -59,6 +59,6 @@ test.describe( () => {
 
 test.afterAll( async ( { mollieApi } ) => {
 	await mollieApi.updateMollieGateway( 'creditcard', {
-		mollie_components_enabled: 'no',
+		mollie_components_enabled: 'yes',
 	} );
 } );

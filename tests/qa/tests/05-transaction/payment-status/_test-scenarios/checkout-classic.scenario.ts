@@ -8,24 +8,29 @@ import { countTotals } from '@inpsyde/playwright-utils/build';
 import { test } from '../../../../utils';
 
 export const testPaymentStatusOnClassicCheckout = ( testId: string, order ) => {
-	const gatewaySettings = order.payment.gateway.settings;
-	let gatewayName = order.payment.gateway.name;
-	if ( gatewaySettings.mollie_components_enabled === 'yes' ) {
-		gatewayName += ' - Mollie components';
+	const { payment, orderStatus } = order;
+	const { gateway } = payment;
+	if (
+		gateway.slug === 'creditcard' &&
+		gateway.settings.mollie_components_enabled !== 'no'
+	) {
+		gateway.name += ' - Disabled Mollie components';
 	}
 
-	test( `${ testId } | Classic checkout - ${ gatewayName } - Payment status ${ order.payment.status } creates order with status ${ order.orderStatus }`, async ( {
+	test( `${ testId } | Classic checkout - ${ gateway.name } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
 		wooCommerceApi,
 		transaction,
 		wooCommerceOrderEdit,
 	} ) => {
-		const currency = order.payment.gateway.currency;
+		const currency = gateway.currency;
 		if ( currency !== undefined && currency !== 'EUR' ) {
 			await wooCommerceApi.updateGeneralSettings( {
 				woocommerce_currency: currency,
 			} );
 		}
-		order.payment.amount = ( await countTotals( order ) ).order;
+
+		const orderTotals = await countTotals( order );
+		payment.amount = orderTotals.order;
 		const orderId = await transaction.onClassicCheckout( order );
 		await wooCommerceOrderEdit.assertOrderDetails(
 			Number( orderId ),

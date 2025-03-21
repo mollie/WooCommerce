@@ -30,6 +30,7 @@ const alma: MollieGateway = {
 	name: 'Pay in 3 or 4 installments free of charge',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_alma',
 		title: 'Pay in 3 or 4 installments free of charge',
 	},
 };
@@ -41,6 +42,7 @@ const applepay: MollieGateway = {
 	name: 'Apple Pay',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_applepay',
 		title: 'Apple Pay',
 		mollie_apple_pay_button_enabled_cart: 'no',
 		mollie_apple_pay_button_enabled_product: 'no',
@@ -56,6 +58,7 @@ const bacs: MollieGateway = {
 	currency: 'GBP',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_bacs',
 		title: 'BACS Direct Debit',
 	},
 };
@@ -67,6 +70,7 @@ const bancomatpay: MollieGateway = {
 	name: 'Bancomat Pay',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_bancomatpay',
 		title: 'Bancomat Pay',
 	},
 };
@@ -79,6 +83,7 @@ const bancontact: MollieGateway = {
 	name: 'Bancontact',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_bancontact',
 		title: 'Bancontact',
 		initial_order_status: 'on-hold',
 	},
@@ -91,6 +96,7 @@ const banktransfer: MollieGateway = {
 	name: 'Bank transfer',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_banktransfer',
 		title: 'Bank transfer',
 		initial_order_status: 'on-hold',
 		order_dueDate: '12',
@@ -105,6 +111,7 @@ const belfius: MollieGateway = {
 	name: 'Belfius Pay Button',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_belfius',
 		title: 'Belfius Pay Button',
 		initial_order_status: 'on-hold',
 	},
@@ -118,6 +125,7 @@ const billie: MollieGateway = {
 	name: 'Pay by Invoice for Businesses - Billie',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_billie',
 		title: 'Pay by Invoice for Businesses - Billie',
 	},
 };
@@ -131,6 +139,7 @@ const blik: MollieGateway = {
 	currency: 'PLN',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_blik',
 		title: 'Blik',
 	},
 };
@@ -142,9 +151,10 @@ const creditcard: MollieGateway = {
 	name: 'Card',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_creditcard',
 		title: 'Card',
-		mollie_components_enabled: 'no',
-		mollie_creditcard_icons_enabler: 'no',
+		mollie_components_enabled: 'yes',
+		mollie_creditcard_icons_enabled: 'no',
 		mollie_creditcard_icons_amex: 'no',
 		mollie_creditcard_icons_cartasi: 'no',
 		mollie_creditcard_icons_cartebancaire: 'no',
@@ -162,6 +172,7 @@ const directdebit: MollieGateway = {
 	name: 'SEPA Direct Debit',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_directdebit',
 		title: 'SEPA Direct Debit',
 		initial_order_status: 'on-hold',
 	},
@@ -174,6 +185,7 @@ const eps: MollieGateway = {
 	name: 'eps',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_eps',
 		title: 'eps',
 		initial_order_status: 'on-hold',
 	},
@@ -186,6 +198,7 @@ const giftcard: MollieGateway = {
 	name: 'Gift cards',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_giftcard',
 		title: 'Gift cards',
 		description: 'Select your gift card',
 		issuers_dropdown_shown: 'no',
@@ -201,6 +214,7 @@ const ideal: MollieGateway = {
 	name: 'iDEAL',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_ideal',
 		title: 'iDEAL',
 		initial_order_status: 'on-hold',
 	},
@@ -214,6 +228,7 @@ const in3: MollieGateway = {
 	name: 'iDEAL Pay in 3 instalments, 0% interest',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_in3',
 		title: 'iDEAL Pay in 3 instalments, 0% interest',
 		description: 'iDEAL Pay in 3 instalments, 0% interest',
 	},
@@ -226,6 +241,7 @@ const kbc: MollieGateway = {
 	name: 'KBC/CBC Payment Button',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_kbc',
 		title: 'KBC/CBC Payment Button',
 		description: 'Select your bank',
 		issuers_dropdown_shown: 'yes',
@@ -241,6 +257,7 @@ const klarna: MollieGateway = {
 	name: 'Pay with Klarna',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_klarna',
 		title: 'Pay with Klarna',
 	},
 };
@@ -254,6 +271,7 @@ const mbway: MollieGateway = {
 	currency: 'EUR',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_mbway',
 		title: 'MB Way',
 	},
 };
@@ -267,6 +285,7 @@ const multibanco: MollieGateway = {
 	currency: 'EUR',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_multibanco',
 		title: 'Multibanco',
 	},
 };
@@ -278,6 +297,7 @@ const mybank: MollieGateway = {
 	name: 'MyBank',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_mybank',
 		title: 'MyBank',
 	},
 };
@@ -290,6 +310,7 @@ const paybybank: MollieGateway = {
 	currency: 'EUR', // EUR, GBP
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_paybybank',
 		title: 'Pay By Bank',
 	},
 };
@@ -301,6 +322,7 @@ const payconiq: MollieGateway = {
 	name: 'Payconiq',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_payconiq',
 		title: 'Payconiq',
 	},
 };
@@ -312,6 +334,7 @@ const paypal: MollieGateway = {
 	name: 'PayPal',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_paypal',
 		title: 'PayPal',
 		mollie_paypal_button_enabled_cart: 'no',
 		mollie_paypal_button_enabled_product: 'no',
@@ -328,6 +351,7 @@ const paysafecard: MollieGateway = {
 	name: 'paysafecard',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_paysafecard',
 		title: 'paysafecard',
 	},
 };
@@ -339,6 +363,7 @@ const pointofsale: MollieGateway = {
 	name: 'Point of sale',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_',
 		title: 'Point of sale',
 	},
 };
@@ -350,6 +375,7 @@ const przelewy24: MollieGateway = {
 	name: 'Przelewy24',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_przelewy24',
 		title: 'Przelewy24',
 	},
 };
@@ -362,6 +388,7 @@ const riverty: MollieGateway = {
 	name: 'Buy now, pay later with Riverty',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_riverty',
 		title: 'Buy now, pay later with Riverty',
 	},
 };
@@ -373,6 +400,7 @@ const satispay: MollieGateway = {
 	name: 'Satispay',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_satispay',
 		title: 'Satispay',
 	},
 };
@@ -386,6 +414,7 @@ const swish: MollieGateway = {
 	name: 'Swish',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_swish',
 		title: 'Swish',
 	},
 };
@@ -397,6 +426,7 @@ const trustly: MollieGateway = {
 	name: 'Trustly',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_trustly',
 		title: 'Trustly',
 		initial_order_status: 'on-hold',
 	},
@@ -410,6 +440,7 @@ const twint: MollieGateway = {
 	currency: 'CHF',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_twint',
 		title: 'TWINT',
 	},
 };
@@ -421,6 +452,7 @@ const voucher: MollieGateway = {
 	name: 'Vouchers',
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_voucher',
 		title: 'Vouchers',
 		mealvoucher_category_default: 'no_category',
 	},

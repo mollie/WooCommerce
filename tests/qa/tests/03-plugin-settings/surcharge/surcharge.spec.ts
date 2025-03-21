@@ -13,7 +13,7 @@ import {
 	surchargeFixedAndPercentage,
 	surchargeFixedAndPercentageUnderLimit,
 	surchargeFixedAndPercentageOverLimit,
-} from './.test-data';
+} from './_test-data';
 import {
 	gateways,
 	products,

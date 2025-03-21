@@ -3,14 +3,14 @@
  */
 import { cards, MollieTestData } from '../../../../resources';
 
-export const creditCardMollieComponentsClassicCheckout: MollieTestData.PaymentStatus[] =
+export const creditCardDisabledMollieComponentsClassicCheckout: MollieTestData.PaymentStatus[] =
 	[
 		{
 			testId: 'C3376',
 			gatewaySlug: 'creditcard',
 			paymentStatus: 'paid',
 			card: cards.visa,
-			mollieComponentsEnabled: 'yes',
+			mollieComponentsEnabled: 'no',
 			orderStatus: 'processing',
 		},
 		{
@@ -18,7 +18,7 @@ export const creditCardMollieComponentsClassicCheckout: MollieTestData.PaymentSt
 			gatewaySlug: 'creditcard',
 			paymentStatus: 'open',
 			card: cards.visa,
-			mollieComponentsEnabled: 'yes',
+			mollieComponentsEnabled: 'no',
 			orderStatus: 'pending',
 		},
 		{
@@ -26,7 +26,7 @@ export const creditCardMollieComponentsClassicCheckout: MollieTestData.PaymentSt
 			gatewaySlug: 'creditcard',
 			paymentStatus: 'failed',
 			card: cards.visa,
-			mollieComponentsEnabled: 'yes',
+			mollieComponentsEnabled: 'no',
 			orderStatus: 'pending',
 		},
 		{
@@ -34,19 +34,19 @@ export const creditCardMollieComponentsClassicCheckout: MollieTestData.PaymentSt
 			gatewaySlug: 'creditcard',
 			paymentStatus: 'expired',
 			card: cards.visa,
-			mollieComponentsEnabled: 'yes',
+			mollieComponentsEnabled: 'no',
 			orderStatus: 'pending',
 		},
 	];
 
-export const creditCardMollieComponentsCheckout: MollieTestData.PaymentStatus[] =
+export const creditCardDisabledMollieComponentsCheckout: MollieTestData.PaymentStatus[] =
 	[
 		{
 			testId: 'C420273',
 			gatewaySlug: 'creditcard',
 			paymentStatus: 'paid',
 			card: cards.visa,
-			mollieComponentsEnabled: 'yes',
+			mollieComponentsEnabled: 'no',
 			orderStatus: 'processing',
 		},
 		{
@@ -54,7 +54,7 @@ export const creditCardMollieComponentsCheckout: MollieTestData.PaymentStatus[] 
 			gatewaySlug: 'creditcard',
 			paymentStatus: 'open',
 			card: cards.visa,
-			mollieComponentsEnabled: 'yes',
+			mollieComponentsEnabled: 'no',
 			orderStatus: 'pending',
 		},
 		{
@@ -62,7 +62,7 @@ export const creditCardMollieComponentsCheckout: MollieTestData.PaymentStatus[] 
 			gatewaySlug: 'creditcard',
 			paymentStatus: 'failed',
 			card: cards.visa,
-			mollieComponentsEnabled: 'yes',
+			mollieComponentsEnabled: 'no',
 			orderStatus: 'pending',
 		},
 		{
@@ -70,19 +70,19 @@ export const creditCardMollieComponentsCheckout: MollieTestData.PaymentStatus[] 
 			gatewaySlug: 'creditcard',
 			paymentStatus: 'expired',
 			card: cards.visa,
-			mollieComponentsEnabled: 'yes',
+			mollieComponentsEnabled: 'no',
 			orderStatus: 'pending',
 		},
 	];
 
-export const creditCardMollieComponentsPayForOrder: MollieTestData.PaymentStatus[] =
+export const creditCardDisabledMollieComponentsPayForOrder: MollieTestData.PaymentStatus[] =
 	[
 		{
 			testId: 'C420388',
 			gatewaySlug: 'creditcard',
 			paymentStatus: 'paid',
 			card: cards.visa,
-			mollieComponentsEnabled: 'yes',
+			mollieComponentsEnabled: 'no',
 			orderStatus: 'processing',
 		},
 		{
@@ -90,7 +90,7 @@ export const creditCardMollieComponentsPayForOrder: MollieTestData.PaymentStatus
 			gatewaySlug: 'creditcard',
 			paymentStatus: 'open',
 			card: cards.visa,
-			mollieComponentsEnabled: 'yes',
+			mollieComponentsEnabled: 'no',
 			orderStatus: 'pending',
 		},
 		{
@@ -98,7 +98,7 @@ export const creditCardMollieComponentsPayForOrder: MollieTestData.PaymentStatus
 			gatewaySlug: 'creditcard',
 			paymentStatus: 'failed',
 			card: cards.visa,
-			mollieComponentsEnabled: 'yes',
+			mollieComponentsEnabled: 'no',
 			orderStatus: 'pending',
 		},
 		{
@@ -106,7 +106,7 @@ export const creditCardMollieComponentsPayForOrder: MollieTestData.PaymentStatus
 			gatewaySlug: 'creditcard',
 			paymentStatus: 'expired',
 			card: cards.visa,
-			mollieComponentsEnabled: 'yes',
+			mollieComponentsEnabled: 'no',
 			orderStatus: 'pending',
 		},
 	];

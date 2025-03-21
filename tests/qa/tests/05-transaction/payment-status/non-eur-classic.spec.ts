@@ -2,8 +2,8 @@
  * Internal dependencies
  */
 import { test } from '../../../utils';
-import { testPaymentStatusOnClassicCheckout } from './.test-scenarios';
-import { createShopOrder, classicCheckoutNonEur } from './.test-data';
+import { testPaymentStatusOnClassicCheckout } from './_test-scenarios';
+import { createShopOrder, classicCheckoutNonEur } from './_test-data';
 import { shopSettings } from '../../../resources';
 
 test.beforeAll( async ( { utils }, testInfo ) => {

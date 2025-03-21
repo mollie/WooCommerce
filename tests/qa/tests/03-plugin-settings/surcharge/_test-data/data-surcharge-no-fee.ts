@@ -21,7 +21,7 @@ export const surchargeNoFee: MollieTestData.SurchargeTestsGroup = {
 	},
 	tests: [
 		// { testId: 'C420309', gateway: 'applepay' },
-		// { testId: 'NotInTestRail', gateway: 'creditcard' },
+		{ testId: 'NotInTestRail', gateway: 'creditcard' },
 		{ testId: 'C130896', gateway: 'giftcard' },
 		{
 			testId: 'C129813',

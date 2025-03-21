@@ -44,35 +44,40 @@ export class Transaction {
 		this.utils = utils;
 	}
 
-	onCheckout = async ( data: WooCommerce.ShopOrder ) => {
-		await this.utils.fillVisitorsCart( data.products );
-		await this.checkout.makeOrder( data );
-		return this.processMolliePaymentByStatus( data );
+	onCheckout = async ( order: WooCommerce.ShopOrder ) => {
+		await this.utils.fillVisitorsCart( order.products );
+		await this.checkout.makeOrder( order );
+		return this.processMolliePaymentByStatus( order );
 	};
 
-	onClassicCheckout = async ( data: WooCommerce.ShopOrder ) => {
-		await this.utils.fillVisitorsCart( data.products );
-		await this.classicCheckout.makeOrder( data );
-		return this.processMolliePaymentByStatus( data );
+	onClassicCheckout = async ( order: WooCommerce.ShopOrder ) => {
+		await this.utils.fillVisitorsCart( order.products );
+		await this.classicCheckout.makeOrder( order );
+		return this.processMolliePaymentByStatus( order );
 	};
 
-	onPayForOrder = async ( data: WooCommerce.ShopOrder ) => {
-		const order = await this.wooCommerceUtils.createApiOrder( data );
-		await this.payForOrder.makeOrder( order.id, order.order_key, data );
-		return this.processMolliePaymentByStatus( data );
+	onPayForOrder = async ( order: WooCommerce.ShopOrder ) => {
+		const apiOrder = await this.wooCommerceUtils.createApiOrder( order );
+		await this.payForOrder.makeOrder(
+			apiOrder.id,
+			apiOrder.order_key,
+			order
+		);
+		return this.processMolliePaymentByStatus( order );
 	};
 
-	processMolliePaymentByStatus = async ( data: WooCommerce.ShopOrder ) => {
+	processMolliePaymentByStatus = async ( order: WooCommerce.ShopOrder ) => {
 		let orderNumber;
+		const { payment } = order;
 		const mollieOrderNumber = await this.mollieHostedCheckout.pay(
-			data.payment
+			payment
 		);
 
-		switch ( data.payment.status ) {
+		switch ( payment.status ) {
 			case 'paid':
 			case 'pending':
 			case 'authorized':
-				await this.orderReceived.assertOrderDetails( data );
+				await this.orderReceived.assertOrderDetails( order );
 				orderNumber = await this.orderReceived.getOrderNumber();
 				await expect( mollieOrderNumber ).toEqual( orderNumber );
 				break;

@@ -228,9 +228,11 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 = 8.0.0-beta1 - 25-03-2025 =
 
-* Feature Flag - Klarna, Riverty and Billie can used with Payments API
+* Feature Flag - Klarna, Riverty and Billie can be used with Payments API
 * Feature - Added support for Mollie's new Payments API features
 * Fixed - Notice for missing value of cardToken
+* Fixed - ltrim error on Apple Pay notice with php 8.2 (author @kylwes)
+* Fixed - Logged URL should be same as used in future logic (author @tombroucke)
 
 = 7.10.0 - 18-02-2025 =
 

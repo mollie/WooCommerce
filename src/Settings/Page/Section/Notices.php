@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Settings\Page\Section;
 
+use Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use WC_Gateway_BACS;
 
@@ -36,6 +37,9 @@ class Notices extends AbstractSection
 
     protected function warnDirectDebitStatus(): string
     {
+        if (! $this->paymentMethods["directdebit"] instanceof AbstractPaymentMethod) {
+            return '';
+        }
         $hasCustomSepaSettings = $this->paymentMethods["directdebit"]->getProperty('enabled') !== false;
         $isSepaEnabled = !$hasCustomSepaSettings || $this->paymentMethods["directdebit"]->getProperty(
             'enabled'

@@ -75,7 +75,7 @@ class CheckoutBlockService
             $availableGateways = $this->maybeRemoveVoucher($availableGateways);
             $filterKey = "{$filters['amount']['currency']}-{$filters['billingCountry']}";
             foreach ($availableGateways as $key => $gateway) {
-                $availablePaymentMethods[$filterKey][$key] = $gateway->paymentMethod()->getProperty('id');
+                $availablePaymentMethods[$filterKey][$key] = str_replace('mollie_wc_gateway_', '', $gateway->id);
             }
         }
         wp_send_json_success($availablePaymentMethods);

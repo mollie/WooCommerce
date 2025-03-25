@@ -3,10 +3,10 @@
 namespace Mollie\WooCommerce\Assets;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
-use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
+use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\DefaultFieldsStrategy;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\Shared\Data;
+use Psr\Container\ContainerInterface;
 
 final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
 {
@@ -22,18 +22,21 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
     protected $registerScriptUrl;
     /** @var string $registerScriptVersion */
     protected $registerScriptVersion;
+    private ContainerInterface $container;
 
     public function __construct(
         Data $dataService,
         array $gatewayInstances,
         string $registerScriptUrl,
-        string $registerScriptVersion
+        string $registerScriptVersion,
+        ContainerInterface $container
     ) {
 
         $this->dataService = $dataService;
         $this->gatewayInstances = $gatewayInstances;
         $this->registerScriptUrl = $registerScriptUrl;
         $this->registerScriptVersion = $registerScriptVersion;
+        $this->container = $container;
     }
 
     public function initialize()
@@ -57,31 +60,32 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
             true
         );
 
-        self::localizeWCBlocksData($this->dataService, $this->gatewayInstances);
+        self::localizeWCBlocksData($this->dataService, $this->gatewayInstances, $this->container);
 
         return [self::$scriptHandle];
     }
 
-    public static function localizeWCBlocksData($dataService, $gatewayInstances)
+    public static function localizeWCBlocksData($dataService, $gatewayInstances, $container)
     {
         wp_enqueue_style('mollie-applepaydirect');
         wp_localize_script(
             self::$scriptHandle,
             'mollieBlockData',
             [
-                'gatewayData' => self::gatewayDataForWCBlocks($dataService, $gatewayInstances),
+                'gatewayData' => self::gatewayDataForWCBlocks($dataService, $gatewayInstances, $container),
                 'mollieApplePayBlockDataCart' => $dataService->mollieApplePayBlockDataCart(),
             ]
         );
     }
 
-    public static function gatewayDataForWCBlocks(Data $dataService, array $gatewayInstances): array
+    public static function gatewayDataForWCBlocks(Data $dataService, array $deprecatedGatewayHelpers, ContainerInterface $container): array
     {
         $filters = $dataService->wooCommerceFiltersForCheckout();
         $availableGateways = WC()->payment_gateways()->get_available_payment_gateways();
         $availablePaymentMethods = [];
+
         /**
-         * @var MolliePaymentGatewayI $gateway
+         * @var $gateway
          * psalm-suppress  UnusedForeachValue
          */
         foreach ($availableGateways as $key => $gateway) {
@@ -96,7 +100,9 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
         ) {
             $filterKey = "{$filters['amount']['currency']}-{$filters['billingCountry']}";
             foreach ($availableGateways as $key => $gateway) {
-                $availablePaymentMethods[$filterKey][$key] = $gateway->paymentMethod()->getProperty('id');
+                $gatewayId = $gateway->id;
+                $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
+                $availablePaymentMethods[$filterKey][$key] = $methodId;
             }
         }
 
@@ -109,11 +115,16 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
                 'billingCountry' => isset($filters['billingCountry']) ? $filters['billingCountry'] : false,
             ],
         ];
+        $paymentGateways = WC()->payment_gateways()->payment_gateways();
         $gatewayData = [];
-        $isSepaEnabled = isset($gatewayInstances['mollie_wc_gateway_directdebit']) && $gatewayInstances['mollie_wc_gateway_directdebit']->enabled === 'yes';
-        /** @var MolliePaymentGateway $gateway */
-        foreach ($gatewayInstances as $gatewayKey => $gateway) {
-            $method = $gateway->paymentMethod();
+        $isSepaEnabled = isset($deprecatedGatewayHelpers['mollie_wc_gateway_directdebit']) && $deprecatedGatewayHelpers['mollie_wc_gateway_directdebit']->enabled === 'yes';
+        /** @var PaymentGateway $gateway */
+        foreach ($paymentGateways as $gatewayKey => $gateway) {
+            if (substr($gateway->id, 0, 18) !== 'mollie_wc_gateway_') {
+                continue;
+            }
+            $deprecatedGateway = $deprecatedGatewayHelpers[$gatewayKey];
+            $method = $deprecatedGateway->paymentMethod();
             $gatewayId = is_string($method->getProperty('id')) ? $method->getProperty('id') : "";
 
             if ($gateway->enabled !== 'yes' || ($gatewayId === 'directdebit' && !is_admin())) {
@@ -122,16 +133,20 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
             $content = $method->getProcessedDescriptionForBlock();
             $issuers = false;
             if ($method->getProperty('paymentFields') === true) {
-                $paymentFieldsService = $method->paymentFieldsService();
-                $paymentFieldsService->setStrategy($method);
-                $issuers = $method->paymentFieldsService()->getStrategyMarkup($gateway);
+                $className = 'Mollie\\WooCommerce\\PaymentMethods\\PaymentFieldsStrategies\\' . ucfirst($method->getProperty('id')) . 'FieldsStrategy';
+                $paymentFieldsStrategy = class_exists($className) ? new $className(
+                    $deprecatedGateway,
+                    $gateway->get_description(),
+                    $dataService
+                ) : new DefaultFieldsStrategy($deprecatedGateway, $gateway->get_description(), $dataService);
+                $issuers = $paymentFieldsStrategy->getFieldMarkup($deprecatedGateway, $dataService);
             }
             if ($gatewayId === 'creditcard') {
                 $content .= $issuers;
                 $issuers = false;
             }
-            $title = $method->title();
-            $labelMarkup = "<span style='margin-right: 1em'>{$title}</span>{$gateway->icon}";
+            $title = $method->title($container);
+            $labelMarkup = "<span style='margin-right: 1em'>{$title}</span>{$gateway->get_icon()}";
             $hasSurcharge = $method->hasSurcharge();
             $countryCodes = [
                 'BE' => '+32xxxxxxxxx',

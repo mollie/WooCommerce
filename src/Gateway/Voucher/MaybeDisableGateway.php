@@ -4,12 +4,56 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Gateway\Voucher;
 
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
-use Mollie\WooCommerce\Payment\PaymentService;
+use Inpsyde\PaymentGateway\PaymentGateway;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
+use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 
 class MaybeDisableGateway
 {
+    /**
+     * Disable Bank Transfer Gateway
+     *
+     * @param ?array $gateways
+     * @return array
+     */
+    public function maybeDisableBankTransferGateway(?array $gateways): array
+    {
+        if (!is_array($gateways)) {
+            return [];
+        }
+        $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_SPECIAL_CHARS);
+
+        $bankTransferSettings = get_option('mollie_wc_gateway_banktransfer_settings', false);
+        //If the setting is active is forced Payment API so we need to filter the gateway when order is in pay-page
+        // as it might have been created with Orders API
+        $isActiveExpiryDate = $bankTransferSettings
+            && isset($bankTransferSettings['activate_expiry_days_setting'])
+            && $bankTransferSettings['activate_expiry_days_setting'] === "yes"
+            && isset($bankTransferSettings['order_dueDate'])
+            && $bankTransferSettings['order_dueDate'] > 0;
+
+        /*
+         * There is only one case where we want to filter the gateway and it's when the
+         * pay-page render the available payments methods AND the setting is enabled
+         *
+         * For any other case we want to be sure bank transfer gateway is included.
+         */
+        if (
+            $isWcApiRequest ||
+            !$isActiveExpiryDate ||
+            is_checkout() && ! is_wc_endpoint_url('order-pay') ||
+            !wp_doing_ajax() && ! is_wc_endpoint_url('order-pay') ||
+            is_admin()
+        ) {
+            return $gateways;
+        }
+        $bankTransferGatewayClassName = 'mollie_wc_gateway_banktransfer';
+        unset($gateways[$bankTransferGatewayClassName]);
+
+        return  $gateways;
+    }
+
     /**
      * Disable Voucher Gateway if no categories associated with any product
      * in the cart
@@ -30,10 +74,12 @@ class MaybeDisableGateway
             'wc-api',
             FILTER_SANITIZE_SPECIAL_CHARS
         );
+        $isCheckoutPage = is_checkout();
+        $isOrderPayPage = is_wc_endpoint_url('order-pay');
         // To exclude we are in Checkout or Order Pay page. These are the other options where gateways are required.
         $notInCheckoutOrPayPage = $isWcApiRequest
             || !doing_action('woocommerce_payment_gateways')
-            || (!wp_doing_ajax() && !is_wc_endpoint_url('order-pay'));
+            || (!wp_doing_ajax() && !$isOrderPayPage && !$isCheckoutPage);
         $notHasBlocks = !has_block('woocommerce/checkout');
         /*
          * There are 3 cases where we want to filter the gateway and it's when the checkout
@@ -47,7 +93,7 @@ class MaybeDisableGateway
         }
         $mealVoucherGatewayIndex = false;
         foreach ($gateways as $key => $gateway) {
-            if (!($gateway instanceof MolliePaymentGateway)) {
+            if (! mollieWooCommerceIsMollieGateway($gateway)) {
                 continue;
             }
             if ($gateway->id === 'mollie_wc_gateway_voucher') {
@@ -56,7 +102,7 @@ class MaybeDisableGateway
         }
 
         $productsWithCategory = $this->numberProductsWithCategory();
-        $paymentAPISetting = get_option('mollie-payments-for-woocommerce_api_switch') === PaymentService::PAYMENT_METHOD_TYPE_PAYMENT;
+        $paymentAPISetting = get_option('mollie-payments-for-woocommerce_api_switch') === PaymentProcessor::PAYMENT_METHOD_TYPE_PAYMENT;
 
         if ($mealVoucherGatewayIndex !== false && ($productsWithCategory === 0 || $paymentAPISetting)) {
             unset($gateways[$mealVoucherGatewayIndex]);

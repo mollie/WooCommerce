@@ -5,31 +5,13 @@ function formatPriceLikeWc(price) {
     return wcSettings.currency.priceFormat.replace('%1$s', wcSettings.currency.symbol).replace('%2$s',price.toFixed(wcSettings.currency.precision).replace('.', wcSettings.currency.decimalSeparator));
 }
 
-function loadCachedAvailableGateways() {
-    const storedData = localStorage.getItem('cachedAvailableGateways');
-    if (storedData) {
-        try {
-            cachedAvailableGateways = JSON.parse(storedData);
-        } catch (e) {
-            console.warn('Error parsing cachedAvailableGateways from localStorage:', e);
-            cachedAvailableGateways = {};
-        }
-    }
-}
-
-function saveCachedAvailableGateways() {
-    localStorage.setItem('cachedAvailableGateways', JSON.stringify(cachedAvailableGateways));
-}
-
-loadCachedAvailableGateways();
 function setAvailableGateways(country, currencyCode, data) {
     cachedAvailableGateways = {
         ...cachedAvailableGateways,
         ...data
     };
-    saveCachedAvailableGateways();
 }
-function useMollieAvailableGateways(billing, currencyCode, cartTotal, filters, ajaxUrl, jQuery, item) {
+function useMollieAvailableGateways(billing, currencyCode, cartTotal, filters, ajaxUrl) {
     let country = billing.country;
     const code = currencyCode;
     const value = cartTotal;
@@ -38,43 +20,43 @@ function useMollieAvailableGateways(billing, currencyCode, cartTotal, filters, a
     }
 
     wp.element.useEffect(() => {
-        if (!country || !item) return;
+        if (!country) return;
         const currencyCode = code;
         const cartTotal = value;
         const currentFilterKey = currencyCode + "-" + country;
         if (cachedAvailableGateways.hasOwnProperty(currentFilterKey)) {
             return;
         }
-        jQuery.ajax({
-            url: ajaxUrl,
-            method: 'POST',
-            data: {
-                action: 'mollie_checkout_blocks_canmakepayment',
-                currentGateway: item,
-                currency: currencyCode,
-                billingCountry: country,
-                cartTotal,
-                paymentLocale: filters.paymentLocale
-            },
-            success: (response) => {
-                setAvailableGateways(country, currencyCode, response.data);
-                const cartTotals = wp.data.select('wc/store/cart').getCartTotals();
-                // Dispatch them again to trigger a re-render:
-                wp.data.dispatch('wc/store/cart').setCartData({...cartTotals});
-            },
-            error: (jqXHR, textStatus, errorThrown) => {
-                console.warn('Failed to fetch available gateways:', textStatus, errorThrown);
-            },
+        fetch(
+            ajaxUrl,
+            {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: new URLSearchParams({
+                    action: 'mollie_checkout_blocks_canmakepayment',
+                    currency: currencyCode,
+                    billingCountry: country,
+                    cartTotal,
+                    paymentLocale: filters.paymentLocale
+                }),
+            }
+        ).then(response => response.json()).then(data => {
+            setAvailableGateways(country, currencyCode, data.data);
+            const cartTotals = wp.data.select('wc/store/cart').getCartTotals();
+            // Dispatch them again to trigger a re-render:
+            wp.data.dispatch('wc/store/cart').setCartData({...cartTotals});
         });
-    }, [billing, currencyCode, filters.paymentLocale, ajaxUrl, jQuery, item]);
+    }, [billing, currencyCode, filters.paymentLocale]);
 
     return cachedAvailableGateways;
 }
 
 // Component that runs the hook but does not render anything.
-function MollieGatewayUpdater({ billing, currencyCode, cartTotal, filters, ajaxUrl, jQuery, item }) {
+function MollieGatewayUpdater({ billing, currencyCode, cartTotal, filters, ajaxUrl}) {
 
-    useMollieAvailableGateways(billing, currencyCode, cartTotal, filters, ajaxUrl, jQuery, item);
+    useMollieAvailableGateways(billing, currencyCode, cartTotal, filters, ajaxUrl);
     return null;
 }
 
@@ -183,19 +165,23 @@ const MollieComponent = (props) => {
 
     useEffect(() => {
         const onProcessingPayment = () => {
+            let data = {
+                payment_method: activePaymentMethod,
+                payment_method_title: item.title,
+                [issuerKey]: selectedIssuer,
+                billing_phone: inputPhone,
+                billing_company_billie: inputCompany,
+                billing_birthdate: inputBirthdate,
+                cardToken: '',
+            };
             const tokenVal = jQuery('.mollie-components > input').val()
+            if (tokenVal) {
+                data.cardToken = tokenVal;
+            }
             return {
                 type: responseTypes.SUCCESS,
                 meta: {
-                    paymentMethodData: {
-                        payment_method: activePaymentMethod,
-                        payment_method_title: item.title,
-                        [issuerKey]: selectedIssuer,
-                        billing_phone: inputPhone,
-                        billing_company_billie: inputCompany,
-                        billing_birthdate: inputBirthdate,
-                        cardToken: tokenVal,
-                    }
+                    paymentMethodData: data
                 },
             };
         }
@@ -355,7 +341,7 @@ const MollieComponent = (props) => {
     return <div><p>{item.content}</p></div>
 }
 
-const Label = ({ item, filters, ajaxUrl, jQuery }) => {
+const Label = ({ item, filters, ajaxUrl }) => {
     const cartData = wp.data.useSelect((select) =>
             select('wc/store/cart').getCartData(),
         []
@@ -370,8 +356,6 @@ const Label = ({ item, filters, ajaxUrl, jQuery }) => {
                 currencyCode={wcSettings.currency.code}
                 filters={filters}
                 ajaxUrl={ajaxUrl}
-                jQuery={jQuery}
-                item={item}
                 cartTotal={cartTotal}
             />
         </>
@@ -380,26 +364,22 @@ const Label = ({ item, filters, ajaxUrl, jQuery }) => {
 
 const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isCompanyFieldVisible, isPhoneFieldVisible) =>{
 
-    document.addEventListener('mollie_components_ready_to_submit', function () {
-        onSubmitLocal()
-    })
+    if (item.name === "mollie_wc_gateway_creditcard") {
+        document.addEventListener('mollie_components_ready_to_submit', function () {
+            onSubmitLocal()
+        })
+    }
     function creditcardSelectedEvent() {
         if (item.name === "mollie_wc_gateway_creditcard") {
             document.documentElement.dispatchEvent(creditCardSelected);
         }
     }
 
-    // On first load, if availableGateways is not empty, store it
-    if (_.isEmpty(cachedAvailableGateways) && !_.isEmpty(availableGateways)) {
-        cachedAvailableGateways = availableGateways;
-        saveCachedAvailableGateways();
-    }
     return {
         name: item.name,
         label:<Label
             item={item}
             ajaxUrl={ajaxUrl}
-            jQuery={jQuery}
             filters={filters}
         />,
         content: <MollieComponent
@@ -418,7 +398,6 @@ const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, available
             if (cartTotals <= 0) {
                 return true
             }
-            loadCachedAvailableGateways();
             const currencyCode = cartTotals?.currency_code;
             let country = billingData?.country;
             if (!country) {
@@ -427,11 +406,23 @@ const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, available
             const currentFilterKey = currencyCode + "-" + country;
 
             creditcardSelectedEvent();
+
             if (!cachedAvailableGateways.hasOwnProperty(currentFilterKey)) {
-                return false;
+                cachedAvailableGateways = {
+                    ...cachedAvailableGateways,
+                    ...availableGateways
+                };
             }
 
-            return cachedAvailableGateways[currentFilterKey].hasOwnProperty(item.name);
+            if (availableGateways.hasOwnProperty(currentFilterKey) && availableGateways[currentFilterKey].hasOwnProperty(item.name)) {
+                return true;
+            }
+
+            if (cachedAvailableGateways.hasOwnProperty(currentFilterKey) && cachedAvailableGateways[currentFilterKey].hasOwnProperty(item.name)) {
+                return true;
+            }
+
+            return false;
         },
         ariaLabel: item.ariaLabel,
         supports: {
@@ -439,6 +430,5 @@ const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, available
         },
     };
 }
-
 export default molliePaymentMethod
 

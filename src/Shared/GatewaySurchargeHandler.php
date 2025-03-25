@@ -22,6 +22,7 @@ class GatewaySurchargeHandler
         add_action('after_setup_theme', [$this, 'initializeGatewayFeeLabel']);
         add_action('init', [$this, 'surchargeActions']);
     }
+
     public function initializeGatewayFeeLabel()
     {
         $this->gatewayFeeLabel = $this->surchargeFeeOption();

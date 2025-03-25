@@ -165,7 +165,10 @@ function mollieWooCommerceIsVoucherEnabled()
 */
 function mollieWooCommerceIsMollieGateway($gateway)
 {
-    if (strpos($gateway, 'mollie_wc_gateway_') !== false) {
+    if (
+        (is_string($gateway) && strpos($gateway, 'mollie_wc_gateway_') !== false)
+        || (is_object($gateway) && strpos($gateway->id, 'mollie_wc_gateway_') !== false)
+    ) {
         return true;
     }
     return false;

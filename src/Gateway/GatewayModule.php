@@ -8,46 +8,29 @@ namespace Mollie\WooCommerce\Gateway;
 
 use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
 use Automattic\WooCommerce\StoreApi\Exceptions\RouteException;
-use DateTime;
 use Inpsyde\Modularity\Module\ExecutableModule;
+use Inpsyde\Modularity\Module\ExtendingModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
+use Inpsyde\PaymentGateway\PaymentGateway;
+use Inpsyde\PaymentGateway\PaymentMethodServiceProviderTrait;
 use Mollie\WooCommerce\BlockService\CheckoutBlockService;
-use Mollie\WooCommerce\Buttons\ApplePayButton\AppleAjaxRequests;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDirectHandler;
-use Mollie\WooCommerce\Buttons\ApplePayButton\ResponsesToApple;
-use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPal;
-use Mollie\WooCommerce\Buttons\PayPalButton\PayPalAjaxRequests;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalButtonHandler;
 use Mollie\WooCommerce\Gateway\Voucher\MaybeDisableGateway;
-use Mollie\WooCommerce\Notice\AdminNotice;
-use Mollie\WooCommerce\Notice\FrontendNotice;
-use Mollie\WooCommerce\Notice\NoticeInterface;
-use Mollie\WooCommerce\Payment\MollieObject;
-use Mollie\WooCommerce\Payment\MollieOrderService;
-use Mollie\WooCommerce\Payment\OrderInstructionsService;
-use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
-use Mollie\WooCommerce\Payment\PaymentFactory;
-use Mollie\WooCommerce\Payment\PaymentFieldsService;
-use Mollie\WooCommerce\Payment\PaymentService;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
-use Mollie\WooCommerce\SDK\Api;
-use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
-use Mollie\WooCommerce\Shared\SharedDataDictionary;
-use Mollie\WooCommerce\Subscription\MollieSepaRecurringGateway;
-use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
 use Mollie\WooCommerce\PaymentMethods\Constants;
+use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Container\ContainerInterface;
-use Psr\Log\LoggerInterface as Logger;
-use WP_Post;
 
-class GatewayModule implements ServiceModule, ExecutableModule
+class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
 {
     use ModuleClassNameIdTrait;
+    use PaymentMethodServiceProviderTrait;
 
     public const APPLE_PAY_METHOD_ALLOWED_KEY = 'mollie_apple_pay_method_allowed';
     public const POST_DATA_KEY = 'post_data';
@@ -63,153 +46,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
     const FIELD_IN3_BIRTHDATE = 'billing_birthdate';
     const GATEWAY_NAME_IN3 = "mollie_wc_gateway_in3";
 
-    public function services(): array
-    {
-        return [
-            'gateway.classnames' => static function (): array {
-                return SharedDataDictionary::GATEWAY_CLASSNAMES;
-            },
-            'gateway.instances' => function (ContainerInterface $container): array {
-                return $this->instantiatePaymentMethodGateways($container);
-            },
-            'gateway.paymentMethods' => static function (ContainerInterface $container): array {
-                return (new self())->instantiatePaymentMethods($container);
-            },
-            'gateway.paymentMethodsEnabledAtMollie' => static function (ContainerInterface $container): array {
-                $dataHelper = $container->get('settings.data_helper');
-                assert($dataHelper instanceof Data);
-                $settings = $container->get('settings.settings_helper');
-                assert($settings instanceof Settings);
-                $apiKey = $settings->getApiKey();
-                $methods = $apiKey ? $dataHelper->getAllPaymentMethods($apiKey) : [];
-                $enabledMethods = [];
-                foreach ($methods as $method) {
-                    $enabledMethods[] = $method['id'];
-                }
-                return $enabledMethods;
-            },
-            'gateway.listAllMethodsAvailable' => static function (ContainerInterface $container): array {
-                $dataHelper = $container->get('settings.data_helper');
-                assert($dataHelper instanceof Data);
-                $settings = $container->get('settings.settings_helper');
-                assert($settings instanceof Settings);
-                $apiKey = $settings->getApiKey();
-                $methods = $apiKey ? $dataHelper->getAllAvailablePaymentMethods() : [];
-                $availableMethods = [];
-                $implementedMethods = $container->get('gateway.classnames');
-                foreach ($methods as $method) {
-                    if (in_array('Mollie_WC_Gateway_' . ucfirst($method['id']), $implementedMethods, true)) {
-                        $availableMethods[] = $method;
-                    }
-                }
-                return $availableMethods;
-            },
-            'gateway.getPaymentMethodsAfterFeatureFlag' => static function (ContainerInterface $container): array {
-                $availablePaymentMethods = $container->get('gateway.listAllMethodsAvailable');
-                $klarnaOneFlag = (bool) apply_filters('inpsyde.feature-flags.mollie-woocommerce.klarna_one_enabled', true);
-                if (!$klarnaOneFlag) {
-                    $availablePaymentMethods = array_filter($availablePaymentMethods, static function ($method) {
-                        return $method['id'] !== Constants::KLARNA;
-                    });
-                }
-                $bancomatpayFlag = (bool) apply_filters('inpsyde.feature-flags.mollie-woocommerce.bancomatpay_enabled', true);
-                if (!$bancomatpayFlag) {
-                    $availablePaymentMethods = array_filter($availablePaymentMethods, static function ($method) {
-                        return $method['id'] !== Constants::BANCOMATPAY;
-                    });
-                }
-                $almaFlag = (bool) apply_filters('inpsyde.feature-flags.mollie-woocommerce.alma_enabled', true);
-                if (!$almaFlag) {
-                    $availablePaymentMethods = array_filter($availablePaymentMethods, static function ($method) {
-                        return $method['id'] !== Constants::ALMA;
-                    });
-                }
-                $swishFlag = (bool) apply_filters('inpsyde.feature-flags.mollie-woocommerce.swish_enabled', true);
-                if (!$swishFlag) {
-                    $availablePaymentMethods = array_filter($availablePaymentMethods, static function ($method) {
-                        return $method['id'] !== Constants::SWISH;
-                    });
-                }
-                return $availablePaymentMethods;
-            },
-            'gateway.isSDDGatewayEnabled' => static function (ContainerInterface $container): bool {
-                $enabledMethods = $container->get('gateway.paymentMethodsEnabledAtMollie');
-                return in_array(Constants::DIRECTDEBIT, $enabledMethods, true);
-            },
-            IconFactory::class => static function (ContainerInterface $container): IconFactory {
-                $pluginUrl = $container->get('shared.plugin_url');
-                $pluginPath = $container->get('shared.plugin_path');
-                return new IconFactory($pluginUrl, $pluginPath);
-            },
-            PaymentService::class => static function (ContainerInterface $container): PaymentService {
-                $logger = $container->get(Logger::class);
-                assert($logger instanceof Logger);
-                $notice = $container->get(AdminNotice::class);
-                assert($notice instanceof AdminNotice);
-                $paymentFactory = $container->get(PaymentFactory::class);
-                assert($paymentFactory instanceof PaymentFactory);
-                $data = $container->get('settings.data_helper');
-                assert($data instanceof Data);
-                $api = $container->get('SDK.api_helper');
-                assert($api instanceof Api);
-                $settings = $container->get('settings.settings_helper');
-                assert($settings instanceof Settings);
-                $pluginId = $container->get('shared.plugin_id');
-                $paymentCheckoutRedirectService = $container->get(PaymentCheckoutRedirectService::class);
-                assert($paymentCheckoutRedirectService instanceof PaymentCheckoutRedirectService);
-                $voucherDefaultCategory = $container->get('voucher.defaultCategory');
-                return new PaymentService($notice, $logger, $paymentFactory, $data, $api, $settings, $pluginId, $paymentCheckoutRedirectService, $voucherDefaultCategory);
-            },
-            OrderInstructionsService::class => static function (): OrderInstructionsService {
-                return new OrderInstructionsService();
-            },
-            PaymentFieldsService::class => static function (ContainerInterface $container): PaymentFieldsService {
-                $data = $container->get('settings.data_helper');
-                assert($data instanceof Data);
-                return new PaymentFieldsService($data);
-            },
-            PaymentCheckoutRedirectService::class => static function (
-                ContainerInterface $container
-            ): PaymentCheckoutRedirectService {
-                $data = $container->get('settings.data_helper');
-                assert($data instanceof Data);
-                return new PaymentCheckoutRedirectService($data);
-            },
-            Surcharge::class => static function (ContainerInterface $container): Surcharge {
-                return new Surcharge();
-            },
-            MollieOrderService::class => static function (ContainerInterface $container): MollieOrderService {
-                $HttpResponseService = $container->get('SDK.HttpResponse');
-                assert($HttpResponseService instanceof HttpResponse);
-                $logger = $container->get(Logger::class);
-                assert($logger instanceof Logger);
-                $paymentFactory = $container->get(PaymentFactory::class);
-                assert($paymentFactory instanceof PaymentFactory);
-                $data = $container->get('settings.data_helper');
-                assert($data instanceof Data);
-                $pluginId = $container->get('shared.plugin_id');
-                return new MollieOrderService($HttpResponseService, $logger, $paymentFactory, $data, $pluginId);
-            },
-            OrderMandatoryGatewayDisabler::class => static function (ContainerInterface $container): OrderMandatoryGatewayDisabler {
-                $settings = $container->get('settings.settings_helper');
-                assert($settings instanceof Settings);
-                $isSettingsOrderApi = $settings->isOrderApiSetting();
-                return new OrderMandatoryGatewayDisabler($isSettingsOrderApi);
-            },
-            'gateway.isBillieEnabled' => static function (ContainerInterface $container): bool {
-                $settings = $container->get('settings.settings_helper');
-                assert($settings instanceof Settings);
-                $isSettingsOrderApi = $settings->isOrderApiSetting();
-                $billie = isset($container->get('gateway.paymentMethods')['billie']) ? $container->get('gateway.paymentMethods')['billie'] : null;
-                $isBillieEnabled = false;
-                if ($billie instanceof PaymentMethodI) {
-                    $isBillieEnabled = $billie->getProperty('enabled') === 'yes';
-                }
-                return $isSettingsOrderApi && $isBillieEnabled;
-            },
-        ];
-    }
-
     public function run(ContainerInterface $container): bool
     {
         $this->pluginId = $container->get('shared.plugin_id');
@@ -217,26 +53,50 @@ class GatewayModule implements ServiceModule, ExecutableModule
         add_filter($this->pluginId . '_retrieve_payment_gateways', function () {
             return $this->gatewayClassnames;
         });
-
-        add_filter('woocommerce_payment_gateways', static function ($gateways) use ($container) {
-            $mollieGateways = $container->get('gateway.instances');
-            return array_merge($gateways, $mollieGateways);
-        });
         add_filter('woocommerce_payment_gateways', static function ($gateways) use ($container) {
             $orderMandatoryGatewayDisabler = $container->get(OrderMandatoryGatewayDisabler::class);
             assert($orderMandatoryGatewayDisabler instanceof OrderMandatoryGatewayDisabler);
             return $orderMandatoryGatewayDisabler->processGateways($gateways);
         });
-         add_filter('woocommerce_payment_gateways', static function ($gateways) {
+        add_filter('woocommerce_payment_gateways', static function ($gateways) {
             $maybeEnablegatewayHelper = new MaybeDisableGateway();
-
+            $gateways = $maybeEnablegatewayHelper->maybeDisableBankTransferGateway($gateways);
             return $maybeEnablegatewayHelper->maybeDisableMealVoucherGateway($gateways);
-         });
+        });
+
         add_filter(
             'woocommerce_payment_gateways',
-            [$this, 'maybeDisableBankTransferGateway'],
-            20
+            static function ($gateways) use ($container) {
+                $deprecatedGatewayHelpers = $container->get('__deprecated.gateway_helpers');
+                foreach ($gateways as $gateway) {
+                    $isMolliegateway = is_string($gateway) && strpos($gateway, 'mollie_wc_gateway_') !== false
+                    || is_object($gateway) && strpos($gateway->id, 'mollie_wc_gateway_') !== false;
+                    if (!$isMolliegateway) {
+                        continue;
+                    }
+                    // Add subscription filters after payment gateways are loaded
+                    $isSubscriptiongateway = $gateway->supports('subscriptions');
+                    if ($isSubscriptiongateway) {
+                        $deprecatedGatewayHelpers[$gateway->id]->addSubscriptionFilters($gateway);
+                    }
+
+                    // Add payment instructions
+                    $displayInstructionsService = $container->get('gateway.hooks.displayInstructions');
+                    $displayInstructionsService($gateway);
+                    // Add thankyou page actions for gateway
+                    $thankyouPageService = $container->get('gateway.hooks.thankyouPage');
+                    if (!has_action('woocommerce_thankyou_' . $gateway->id)) {
+                        $thankyouPageService($gateway);
+                    }
+                    // Add subscription payment hooks
+                    $isSubscriptionPaymentService = $container->get('gateway.hooks.isSubscriptionPayment');
+                    $isSubscriptionPaymentService($gateway);
+                }
+                return $gateways;
+            },
+            30
         );
+
         // Disable SEPA as payment option in WooCommerce checkout
         add_filter(
             'woocommerce_available_payment_gateways',
@@ -289,28 +149,8 @@ class GatewayModule implements ServiceModule, ExecutableModule
         $surchargeService = $container->get(Surcharge::class);
         assert($surchargeService instanceof Surcharge);
         $this->gatewaySurchargeHandling($surchargeService);
-        $notice = $container->get(AdminNotice::class);
-        assert($notice instanceof AdminNotice);
-        $logger = $container->get(Logger::class);
-        assert($logger instanceof Logger);
-        $pluginUrl = $container->get('shared.plugin_url');
-        $apiHelper = $container->get('SDK.api_helper');
-        assert($apiHelper instanceof Api);
-        $settingsHelper = $container->get('settings.settings_helper');
-        assert($settingsHelper instanceof Settings);
-        $appleGateway = isset($container->get('gateway.instances')['mollie_wc_gateway_applepay']) ? $container->get(
-            'gateway.instances'
-        )['mollie_wc_gateway_applepay'] : false;
-        if ($appleGateway) {
-            $this->mollieApplePayDirectHandling($notice, $logger, $apiHelper, $settingsHelper, $appleGateway);
-        }
 
-        $paypalGateway = isset($container->get('gateway.instances')['mollie_wc_gateway_paypal']) ? $container->get(
-            'gateway.instances'
-        )['mollie_wc_gateway_paypal'] : false;
-        if ($paypalGateway) {
-            $this->molliePayPalButtonHandling($paypalGateway, $notice, $logger, $pluginUrl);
-        }
+        $this->paymentButtonsBootstrap($container);
 
         $maybeDisableVoucher = new MaybeDisableGateway();
         $dataService = $container->get('settings.data_helper');
@@ -341,7 +181,41 @@ class GatewayModule implements ServiceModule, ExecutableModule
             }
             return $fields;
         }, 10, 3);
+
+        add_action('init', static function () use ($container) {
+            $paymentMethods = $container->get('gateway.paymentMethods');
+            foreach ($paymentMethods as $paymentMethod) {
+                assert($paymentMethod instanceof PaymentMethodI);
+                $paymentMethod->initializeTranslations();
+                $paymentMethod->updateSettingsWithDefaults($container);
+            }
+        });
         return true;
+    }
+
+    public function services(): array
+    {
+        static $services;
+
+        if ($services === null) {
+            $services = require_once __DIR__ . '/inc/services.php';
+        }
+
+        return $services();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function extensions(): array
+    {
+        static $extensions;
+
+        if ($extensions === null) {
+            $extensions = require_once __DIR__ . '/inc/extensions.php';
+        }
+
+        return $extensions();
     }
 
     /**
@@ -367,49 +241,6 @@ class GatewayModule implements ServiceModule, ExecutableModule
                 wp_kses($meta, $allowedTags)
             );
         }, $screen, 'side', 'high');
-    }
-
-    /**
-     * Disable Bank Transfer Gateway
-     *
-     * @param ?array $gateways
-     * @return array
-     */
-    public function maybeDisableBankTransferGateway(?array $gateways): array
-    {
-        if (!is_array($gateways)) {
-            return [];
-        }
-        $isWcApiRequest = (bool)filter_input(INPUT_GET, 'wc-api', FILTER_SANITIZE_SPECIAL_CHARS);
-
-        $bankTransferSettings = get_option('mollie_wc_gateway_banktransfer_settings', false);
-        //If the setting is active is forced Payment API so we need to filter the gateway when order is in pay-page
-        // as it might have been created with Orders API
-        $isActiveExpiryDate = $bankTransferSettings
-            && isset($bankTransferSettings['activate_expiry_days_setting'])
-            && $bankTransferSettings['activate_expiry_days_setting'] === "yes"
-            && isset($bankTransferSettings['order_dueDate'])
-            && $bankTransferSettings['order_dueDate'] > 0;
-
-        /*
-         * There is only one case where we want to filter the gateway and it's when the
-         * pay-page render the available payments methods AND the setting is enabled
-         *
-         * For any other case we want to be sure bank transfer gateway is included.
-         */
-        if (
-            $isWcApiRequest ||
-            !$isActiveExpiryDate ||
-            is_checkout() && ! is_wc_endpoint_url('order-pay') ||
-            !wp_doing_ajax() && ! is_wc_endpoint_url('order-pay') ||
-            is_admin()
-        ) {
-            return $gateways;
-        }
-        $bankTransferGatewayClassName = 'mollie_wc_gateway_banktransfer';
-        unset($gateways[$bankTransferGatewayClassName]);
-
-        return  $gateways;
     }
 
     public function gatewaySurchargeHandling(Surcharge $surcharge)
@@ -475,175 +306,77 @@ class GatewayModule implements ServiceModule, ExecutableModule
     }
 
     /**
-     * Bootstrap the ApplePay button logic if feature enabled
+     * @param ContainerInterface $container
+     * @return void
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
      */
-    public function mollieApplePayDirectHandling(NoticeInterface $notice, Logger $logger, Api $apiHelper, Settings $settingsHelper, MollieSubscriptionGateway $appleGateway)
+    public function paymentButtonsBootstrap(ContainerInterface $container): void
     {
-        $buttonEnabledCart = mollieWooCommerceIsApplePayDirectEnabled('cart');
-        $buttonEnabledProduct = mollieWooCommerceIsApplePayDirectEnabled('product');
+        $applePayDirectHandler = $container->get(ApplePayDirectHandler::class);
+        if ($applePayDirectHandler instanceof ApplePayDirectHandler) {
+            $buttonEnabledCart = mollieWooCommerceIsApplePayDirectEnabled('cart');
+            $buttonEnabledProduct = mollieWooCommerceIsApplePayDirectEnabled('product');
+            if ($buttonEnabledCart || $buttonEnabledProduct) {
+                $applePayDirectHandler->bootstrap($buttonEnabledProduct, $buttonEnabledCart);
+            }
+        }
 
-        if ($buttonEnabledCart || $buttonEnabledProduct) {
-            $notices = new AdminNotice();
-            $responseTemplates = new ResponsesToApple($logger, $appleGateway);
-            $ajaxRequests = new AppleAjaxRequests($responseTemplates, $notice, $logger, $apiHelper, $settingsHelper);
-            $applePayHandler = new ApplePayDirectHandler($notices, $ajaxRequests);
-            $applePayHandler->bootstrap($buttonEnabledProduct, $buttonEnabledCart);
+        $paypalButtonHandler = $container->get(PayPalButtonHandler::class);
+        if ($paypalButtonHandler instanceof PayPalButtonHandler) {
+            $enabledInProduct = (mollieWooCommerceIsPayPalButtonEnabled('product'));
+            $enabledInCart = (mollieWooCommerceIsPayPalButtonEnabled('cart'));
+            $shouldBuildIt = $enabledInProduct || $enabledInCart;
+
+            if ($shouldBuildIt) {
+                $paypalButtonHandler->bootstrap($enabledInProduct, $enabledInCart);
+            }
         }
     }
 
     /**
-     * Bootstrap the Mollie_WC_Gateway_PayPal button logic if feature enabled
-     */
-    public function molliePayPalButtonHandling(
-        $gateway,
-        NoticeInterface $notice,
-        Logger $logger,
-        string $pluginUrl
-    ) {
-
-        $enabledInProduct = (mollieWooCommerceIsPayPalButtonEnabled('product'));
-        $enabledInCart = (mollieWooCommerceIsPayPalButtonEnabled('cart'));
-        $shouldBuildIt = $enabledInProduct || $enabledInCart;
-
-        if ($shouldBuildIt) {
-            $ajaxRequests = new PayPalAjaxRequests($gateway, $notice, $logger);
-            $data = new DataToPayPal($pluginUrl);
-            $payPalHandler = new PayPalButtonHandler($ajaxRequests, $data);
-            $payPalHandler->bootstrap($enabledInProduct, $enabledInCart);
-        }
-    }
-
-    public function instantiatePaymentMethodGateways(ContainerInterface $container): array
-    {
-        $logger = $container->get(Logger::class);
-        assert($logger instanceof Logger);
-        $notice = $container->get(FrontendNotice::class);
-        assert($notice instanceof FrontendNotice);
-        $paymentService = $container->get(PaymentService::class);
-        assert($paymentService instanceof PaymentService);
-        $mollieOrderService = $container->get(MollieOrderService::class);
-        assert($mollieOrderService instanceof MollieOrderService);
-        $HttpResponseService = $container->get('SDK.HttpResponse');
-        assert($HttpResponseService instanceof HttpResponse);
-        $settingsHelper = $container->get('settings.settings_helper');
-        assert($settingsHelper instanceof Settings);
-        $apiHelper = $container->get('SDK.api_helper');
-        assert($apiHelper instanceof Api);
-        $paymentMethods = $container->get('gateway.paymentMethods');
-        $data = $container->get('settings.data_helper');
-        assert($data instanceof Data);
-        $orderInstructionsService = new OrderInstructionsService();
-        $mollieObject = $container->get(MollieObject::class);
-        assert($mollieObject instanceof MollieObject);
-        $paymentFactory = $container->get(PaymentFactory::class);
-        assert($paymentFactory instanceof PaymentFactory);
-        $pluginId = $container->get('shared.plugin_id');
-        $gateways = [];
-        if (empty($paymentMethods)) {
-            return $gateways;
-        }
-
-        foreach ($paymentMethods as $paymentMethod) {
-            $paymentMethodId = $paymentMethod->getIdFromConfig();
-            if (! in_array($paymentMethodId, $container->get('gateway.paymentMethodsEnabledAtMollie'))) {
-                continue;
-            }
-            $isSepa = $paymentMethod->getProperty('SEPA');
-            $key = 'mollie_wc_gateway_' . $paymentMethodId;
-            if ($isSepa) {
-                $directDebit = $paymentMethods[Constants::DIRECTDEBIT];
-                $gateways[$key] = new MollieSepaRecurringGateway(
-                    $directDebit,
-                    $paymentMethod,
-                    $paymentService,
-                    $orderInstructionsService,
-                    $mollieOrderService,
-                    $data,
-                    $logger,
-                    $notice,
-                    $HttpResponseService,
-                    $settingsHelper,
-                    $mollieObject,
-                    $paymentFactory,
-                    $pluginId,
-                    $apiHelper
-                );
-            } elseif ($paymentMethod->getProperty('Subscription')) {
-                $gateways[$key] = new MollieSubscriptionGateway(
-                    $paymentMethod,
-                    $paymentService,
-                    $orderInstructionsService,
-                    $mollieOrderService,
-                    $data,
-                    $logger,
-                    $notice,
-                    $HttpResponseService,
-                    $settingsHelper,
-                    $mollieObject,
-                    $paymentFactory,
-                    $pluginId,
-                    $apiHelper
-                );
-            } else {
-                $gateways[$key] = new MolliePaymentGateway(
-                    $paymentMethod,
-                    $paymentService,
-                    $orderInstructionsService,
-                    $mollieOrderService,
-                    $data,
-                    $logger,
-                    $notice,
-                    $HttpResponseService,
-                    $mollieObject,
-                    $paymentFactory,
-                    $pluginId
-                );
-            }
-        }
-        return $gateways;
-    }
-
-    /**
-     * @param $container
+     * This instantiates all payment methods that we have implemented
+     * disregards if they are available at Mollie or not
+     *
      * @return array
      */
-    protected function instantiatePaymentMethods($container): array
+    protected function instantiatePaymentMethods(): array
     {
         $paymentMethods = [];
-        $listAllAvailablePaymentMethods = $container->get('gateway.getPaymentMethodsAfterFeatureFlag');
-        $iconFactory = $container->get(IconFactory::class);
-        assert($iconFactory instanceof IconFactory);
-        $settingsHelper = $container->get('settings.settings_helper');
-        assert($settingsHelper instanceof Settings);
-        $surchargeService = $container->get(Surcharge::class);
-        assert($surchargeService instanceof Surcharge);
-        $paymentFieldsService = $container->get(PaymentFieldsService::class);
-        assert($paymentFieldsService instanceof PaymentFieldsService);
-        foreach ($listAllAvailablePaymentMethods as $paymentMethodAvailable) {
-            $paymentMethodId = $paymentMethodAvailable['id'];
-            $paymentMethods[$paymentMethodId] = $this->buildPaymentMethod(
-                $paymentMethodId,
-                $iconFactory,
-                $settingsHelper,
-                $paymentFieldsService,
-                $surchargeService,
-                $paymentMethodAvailable
+        $allGatewayClassNames = SharedDataDictionary::GATEWAY_CLASSNAMES;
+        foreach ($allGatewayClassNames as $gatewayClassName) {
+            $parts = explode('_', $gatewayClassName);
+            $methodId = strtolower(end($parts));
+            $paymentMethods[$methodId] = $this->buildPaymentMethod(
+                $methodId
             );
         }
 
         //I need DirectDebit to create SEPA gateway
         if (!in_array(Constants::DIRECTDEBIT, array_keys($paymentMethods), true)) {
-            $paymentMethodId = Constants::DIRECTDEBIT;
-            $paymentMethods[$paymentMethodId] = $this->buildPaymentMethod(
-                $paymentMethodId,
-                $iconFactory,
-                $settingsHelper,
-                $paymentFieldsService,
-                $surchargeService,
-                []
+            $methodId = Constants::DIRECTDEBIT;
+            $paymentMethods[$methodId] = $this->buildPaymentMethod(
+                $methodId
             );
         }
         return $paymentMethods;
+    }
+    /**
+     * @param string $id
+     * @param IconFactory $iconFactory
+     * @param Settings $settingsHelper
+     * @param Surcharge $surchargeService
+     * @param array $paymentMethods
+     * @return PaymentMethodI | array
+     */
+    public function buildPaymentMethod(
+        string $id
+    ) {
+
+        $transformedId = ucfirst($id);
+        $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . $transformedId;
+
+        return new $paymentMethodClassName();
     }
 
     public function in3FieldsMandatory($fields, $errors)
@@ -675,35 +408,37 @@ class GatewayModule implements ServiceModule, ExecutableModule
     }
 
     /**
-     * @param string $id
-     * @param IconFactory $iconFactory
-     * @param Settings $settingsHelper
-     * @param PaymentFieldsService $paymentFieldsService
-     * @param Surcharge $surchargeService
-     * @param array $paymentMethods
-     * @return PaymentMethodI | array
+     * Some payment methods require mandatory fields, this function will add them to the checkout fields array
+     * @param $fields
+     * @param string $gatewayName
+     * @param string $field
+     * @param $errors
+     * @return mixed
      */
-    public function buildPaymentMethod(
-        string $id,
-        IconFactory $iconFactory,
-        Settings $settingsHelper,
-        PaymentFieldsService $paymentFieldsService,
-        Surcharge $surchargeService,
-        array $apiMethod
-    ) {
+    public function addPaymentMethodMandatoryFields($fields, string $gatewayName, string $field, string $fieldLabel, $errors)
+    {
+        if ($fields['payment_method'] !== $gatewayName) {
+            return $fields;
+        }
+        if (!isset($fields[$field])) {
+            $fieldPosted = filter_input(INPUT_POST, $field, FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+            if ($fieldPosted) {
+                $fields[$field] = $fieldPosted;
+            } else {
+                $errors->add(
+                    'validation',
+                    sprintf(
+                    /* translators: Placeholder 1: field name. */
+                        __('%s is a required field.', 'woocommerce'),
+                        "<strong>$fieldLabel</strong>"
+                    )
+                );
+            }
+        }
 
-        $transformedId = ucfirst($id);
-        $paymentMethodClassName = 'Mollie\\WooCommerce\\PaymentMethods\\' . $transformedId;
-        $paymentMethod = new $paymentMethodClassName(
-            $iconFactory,
-            $settingsHelper,
-            $paymentFieldsService,
-            $surchargeService,
-            $apiMethod
-        );
-
-        return $paymentMethod;
+        return $fields;
     }
+
     public function addPaymentMethodMandatoryFieldsPhoneVerification(
         $fields,
         string $gatewayName,

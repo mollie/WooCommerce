@@ -56,7 +56,6 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
         $this->translationsInitialized = true;
     }
 
-
     public function getFormFields($generalFormFields): array
     {
         unset($generalFormFields['activate_expiry_days_setting']);

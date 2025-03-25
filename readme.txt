@@ -226,6 +226,12 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= 8.0.0-beta1 - 25-03-2025 =
+
+* Feature Flag - Klarna, Riverty and Billie can used with Payments API
+* Feature - Added support for Mollie's new Payments API features
+* Fixed - Notice for missing value of cardToken
+
 = 7.10.0 - 18-02-2025 =
 
 * Added - PaybyBank payment method
@@ -237,7 +243,6 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 * Fixed - Currency Symbol Positioning in bock checkout
 * Fixed - Wrong order status in some cases
 * Fixed - Fatal error on Refunds in some situations (author @Fidelity88)
-
 
 = 7.9.1 - 21-01-2025 =
 

@@ -66,7 +66,7 @@ class MollieSubscription extends MollieObject
                                 'metadata' =>  [
                                     'order_id' => $order->get_id(),
                                 ],
-                                'sequenceType' => 'recurring',
+                                'sequenceType' => SequenceType::SEQUENCETYPE_RECURRING,
                                 'customerId' => $customerId,
                             ]);
         $context = 'payment';

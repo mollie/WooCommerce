@@ -554,24 +554,6 @@ class MolliePaymentGatewayHandler
     }
 
     /**
-     * Get the transaction URL.
-     *
-     * @param WC_Order $order
-     *
-     * @return string
-     */
-    /*public function get_transaction_url($order): string
-    {
-        $isPaymentApi = substr($order->get_meta('_mollie_order_id', true), 0, 3) === 'tr_'  ;
-        $resource = ($order->get_meta('_mollie_order_id', true) && !$isPaymentApi) ? 'orders' : 'payments';
-
-        $this->view_transaction_url = 'https://my.mollie.com/dashboard/'
-            . $resource . '/%s?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner';
-
-        return parent::get_transaction_url($order);
-    }*/
-
-    /**
      * Get the correct currency for this payment or order
      * On order-pay page, order is already created and has an order currency
      * On checkout, order is not created, use get_woocommerce_currency

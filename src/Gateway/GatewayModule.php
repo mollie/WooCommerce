@@ -12,7 +12,6 @@ use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ExtendingModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
-use Inpsyde\PaymentGateway\PaymentGateway;
 use Inpsyde\PaymentGateway\PaymentMethodServiceProviderTrait;
 use Mollie\WooCommerce\BlockService\CheckoutBlockService;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDirectHandler;
@@ -190,6 +189,15 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
                 $paymentMethod->updateSettingsWithDefaults($container);
             }
         });
+        add_filter('woocommerce_get_transaction_url', static function ($return_url, $order, \WC_Payment_Gateway $wcGateway) {
+            if ($return_url || strpos($wcGateway->id, 'mollie_wc_gateway_') === false) {
+                return $return_url;
+            }
+            $transactionId = $order->get_transaction_id();
+            $isPaymentApi = substr($transactionId, 0, 3) === 'tr_'  ;
+            $resource = ($transactionId && !$isPaymentApi) ? 'orders' : 'payments';
+            return 'https://my.mollie.com/dashboard/' . $resource . '/' . trim($transactionId) . '?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner';
+        }, 10, 3);
         return true;
     }
 

@@ -226,7 +226,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 8.0.0-beta1 - 25-03-2025 =
+= 8.0.0-beta2 - 25-03-2025 =
 
 * Feature Flag - Klarna, Riverty and Billie can be used with Payments API
 * Feature - Added support for Mollie's new Payments API features

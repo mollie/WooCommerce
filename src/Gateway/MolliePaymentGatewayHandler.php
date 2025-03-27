@@ -81,6 +81,7 @@ class MolliePaymentGatewayHandler
 
     public string $enabled;
     public string $id;
+    public bool $has_fields;
 
     /**
      *

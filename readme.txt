@@ -8,7 +8,7 @@ Requires PHP: 7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Accept all major payment methods in WooCommerce today. Credit cards, iDEAL and more! Fast, safe and intuitive.
+Accept all major payment methods in WooCommerce today. Credit cards, iDEAL, and more! Fast, safe, and intuitive.
 
 == Description ==
 
@@ -196,9 +196,9 @@ Where possible, also include the Mollie log file. You can find the Mollie log fi
 
 = Minimum Requirements =
 
-* PHP version 7.2 or greater
+* PHP version 7.4 or greater
 * PHP extensions enabled: cURL, JSON
-* WordPress 3.8 or greater
+* WordPress 5.0 or greater
 * WooCommerce 3.9 or greater
 * Mollie account
 
@@ -226,7 +226,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 8.0.0-beta2 - 25-03-2025 =
+= 8.0.0 - 27-03-2025 =
 
 * Feature Flag - Klarna, Riverty and Billie can be used with Payments API
 * Feature - Added support for Mollie's new Payments API features
@@ -1022,7 +1022,7 @@ Starting with version 4.0, this plugin will require PHP 5.6. If you are using an
 * Fix - Order confirmation/Thank you page ([issue #206](https://github.com/mollie/WooCommerce/issues/206)):
     * Show pending payment message for open and pending payments, not just open
     * Show payment instructions and pending payment message in WooCommerce notice style, so shop-customers notice it better
-    * Make sure pending payment message is also shown for creditcard, PayPal and Sofort payments
+    * Make sure pending payment message is also shown for creditcard, PayPal, and Sofort payments
 * Fix - Redirect to checkout payment URL (retry payment) more often, also for failed payments
 
 = 3.0.2 - 07/05/2018 =
@@ -1197,7 +1197,7 @@ WooCommerce -> Settings -> Payments -> Mollie - Bank Transfer.
 
 = 2.0.1 - 02/10/2015 =
 * Add support for SEPA Direct Debit.
-* Add message for Belfius, Bancontact and paysafecard when the payment is paid successfully.
+* Add message for Belfius, Bancontact, and paysafecard when the payment is paid successfully.
 
 = 2.0.0 - 17/08/2015 =
 * Complete rewrite of our WooCommerce plugin to better follow WordPress and WooCommerce standards and add better support for other plugins.

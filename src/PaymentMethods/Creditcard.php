@@ -25,7 +25,6 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => false,
             'Subscription' => true,
             'docs' => 'https://www.mollie.com/gb/payments/credit-card',
         ];

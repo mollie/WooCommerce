@@ -37,14 +37,14 @@ class Notices extends AbstractSection
 
     protected function warnDirectDebitStatus(): string
     {
-        if (! $this->paymentMethods["directdebit"] instanceof AbstractPaymentMethod) {
+        if (!isset($this->paymentMethods[Constants::DIRECTDEBIT]) || ! $this->paymentMethods[Constants::DIRECTDEBIT] instanceof AbstractPaymentMethod) {
             return '';
         }
-        $hasCustomSepaSettings = $this->paymentMethods["directdebit"]->getProperty('enabled') !== false;
-        $isSepaEnabled = !$hasCustomSepaSettings || $this->paymentMethods["directdebit"]->getProperty(
+        $hasCustomSepaSettings = $this->paymentMethods[Constants::DIRECTDEBIT]->getProperty('enabled') !== false;
+        $isSepaEnabled = !$hasCustomSepaSettings || $this->paymentMethods[Constants::DIRECTDEBIT]->getProperty(
             'enabled'
         ) === 'yes';
-        $sepaGatewayAllowed = !empty($this->mollieGateways["mollie_wc_gateway_directdebit"]);
+        $sepaGatewayAllowed = !empty($this->mollieGateways['mollie_wc_gateway_' . Constants::DIRECTDEBIT]);
 
         if (!($sepaGatewayAllowed && !$isSepaEnabled)) {
             return '';

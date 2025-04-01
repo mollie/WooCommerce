@@ -43,7 +43,7 @@ return static function (): array {
             assert($apiHelper instanceof Api);
             $pluginId = $container->get('shared.plugin_id');
             $paymentFactory = $container->get(PaymentFactory::class);
-            //assert($paymentFactory instanceof PaymentFactory);
+            assert($paymentFactory instanceof PaymentFactory);
             $settingsHelper = $container->get('settings.settings_helper');
             assert($settingsHelper instanceof Settings);
             $requestFactory = $container->get(RequestFactory::class);

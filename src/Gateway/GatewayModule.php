@@ -73,9 +73,10 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
                     if (!$isMolliegateway) {
                         continue;
                     }
+                    assert($gateway instanceof \Inpsyde\PaymentGateway\PaymentGateway);
                     // Add subscription filters after payment gateways are loaded
                     $isSubscriptiongateway = $gateway->supports('subscriptions');
-                    if ($isSubscriptiongateway) {
+                    if ($isSubscriptiongateway && method_exists($deprecatedGatewayHelpers[$gateway->id], 'addSubscriptionFilters')) {
                         $deprecatedGatewayHelpers[$gateway->id]->addSubscriptionFilters($gateway);
                     }
 

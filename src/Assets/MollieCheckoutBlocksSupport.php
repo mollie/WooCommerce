@@ -117,7 +117,6 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
         ];
         $paymentGateways = WC()->payment_gateways()->payment_gateways();
         $gatewayData = [];
-        $isSepaEnabled = isset($deprecatedGatewayHelpers['mollie_wc_gateway_directdebit']) && $deprecatedGatewayHelpers['mollie_wc_gateway_directdebit']->enabled === 'yes';
         /** @var PaymentGateway $gateway */
         foreach ($paymentGateways as $gatewayKey => $gateway) {
             if (substr($gateway->id, 0, 18) !== 'mollie_wc_gateway_') {
@@ -174,7 +173,7 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
                     $method->getProperty('allowed_countries')
                 ) ? $method->getProperty('allowed_countries') : [],
                 'ariaLabel' => $method->getProperty('defaultDescription'),
-                'supports' => self::gatewaySupportsFeatures($method, $isSepaEnabled),
+                'supports' => $gateway->supports,
                 'errorMessage' => $method->getProperty('errorMessage'),
                 'companyPlaceholder' => $method->getProperty('companyPlaceholder'),
                 'phoneLabel' => $method->getProperty('phoneLabel'),
@@ -188,16 +187,5 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
         $dataToScript['availableGateways'] = $availablePaymentMethods;
 
         return $dataToScript;
-    }
-
-    public static function gatewaySupportsFeatures(PaymentMethodI $paymentMethod, bool $isSepaEnabled): array
-    {
-        $supports = (array)$paymentMethod->getProperty('supports');
-        $isSepaPaymentMethod = (bool)$paymentMethod->getProperty('SEPA');
-        if ($isSepaEnabled && $isSepaPaymentMethod) {
-            $supports[] = 'subscriptions';
-        }
-
-        return $supports;
     }
 }

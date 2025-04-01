@@ -41,7 +41,6 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => false,
             'orderMandatory' => true,
             'docs' => 'https://www.mollie.com/gb/payments/meal-eco-gift-vouchers',
         ];

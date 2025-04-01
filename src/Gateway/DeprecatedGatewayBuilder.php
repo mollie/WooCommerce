@@ -56,7 +56,7 @@ class DeprecatedGatewayBuilder
             }
             $isSepa = $paymentMethod->getProperty('SEPA');
             $key = 'mollie_wc_gateway_' . $paymentMethodId;
-            if ($isSepa) {
+            if ($isSepa && isset($paymentMethods[Constants::DIRECTDEBIT])) {
                 $directDebit = $paymentMethods[Constants::DIRECTDEBIT];
                 $gateways[$key] = new MollieSepaRecurringGatewayHandler(
                     $directDebit,

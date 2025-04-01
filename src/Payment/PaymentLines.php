@@ -8,6 +8,7 @@ use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\Shared\Data;
 use WC_Order;
 use WC_Order_Item;
+use WC_Order_Item_Fee;
 use WC_Tax;
 
 class PaymentLines
@@ -226,6 +227,7 @@ class PaymentLines
     {
         if (! empty($this->order->get_items('fee'))) {
             foreach ($this->order->get_items('fee') as $cart_fee) {
+                assert($cart_fee instanceof WC_Order_Item_Fee);
                 if ($cart_fee['tax_status'] === 'taxable') {
                     // Calculate tax rate.
                     $tmp_rates = WC_Tax::get_rates($cart_fee['tax_class']);
@@ -249,7 +251,7 @@ class PaymentLines
                 }
 
                 $fee =  [
-                    'type' => 'surcharge',
+                    'type' => isset($cart_fee['data']['amount']) && $cart_fee['data']['amount'] < 0 ? 'surcharge' : 'discount',
                     'description' => $cart_fee['name'],
                     'quantity' => 1,
                     'vatRate' => $this->dataHelper->formatCurrencyValue($cart_fee_vat_rate, $this->currency),

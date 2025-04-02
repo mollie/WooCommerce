@@ -21,7 +21,6 @@ class Blik extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => false,
             'docs' => 'https://www.mollie.com/gb/payments/blik',
         ];
     }

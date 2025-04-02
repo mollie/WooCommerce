@@ -24,7 +24,6 @@ class Riverty extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => true,
             'confirmationDelayed' => false,
-            'SEPA' => false,
             'orderMandatory' => ! apply_filters('inpsyde.feature-flags.mollie-woocommerce.riverty_payments_api', true),
             'paymentCaptureMode' => 'manual',
             'phonePlaceholder' => 'Please enter your phone here. +316xxxxxxxx', 'mollie-payments-for-woocommerce',

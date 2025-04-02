@@ -21,7 +21,6 @@ class Multibanco extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => true,
-            'SEPA' => false,
             'docs' => '',
         ];
     }

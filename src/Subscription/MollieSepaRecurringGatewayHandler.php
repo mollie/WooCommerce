@@ -64,7 +64,7 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
             $apiHelper
         );
         $directDebitSettings = get_option('mollie_wc_gateway_directdebit_settings');
-        if ($directDebitSettings['enabled'] === 'yes') {
+        if (isset($directDebitSettings['enabled']) && $directDebitSettings['enabled'] === 'yes') {
             $this->recurringMollieMethod = $directDebitPaymentMethod;
         }
         return $this;

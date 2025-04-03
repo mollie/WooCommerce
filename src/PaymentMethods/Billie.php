@@ -31,7 +31,7 @@ class Billie extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => true,
             'confirmationDelayed' => false,
-            'orderMandatory' => ! apply_filters('inpsyde.feature-flags.mollie-woocommerce.billie_payments_api', true),
+            'orderMandatory' => ! apply_filters('inpsyde.feature-flags.mollie-woocommerce.billie_payments_api', false),
             'paymentCaptureMode' => 'manual',
             'errorMessage' => 'Company field is empty. The company field is required.',
             'companyPlaceholder' => 'Please enter your company name here.',

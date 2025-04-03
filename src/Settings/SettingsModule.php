@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Settings;
 
 use Mollie\WooCommerce\Notice\AdminNotice;
+use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\Status;
@@ -114,7 +115,6 @@ class SettingsModule implements ServiceModule, ExecutableModule
         $pluginPath = $container->get('shared.plugin_path');
         $pluginUrl = $container->get('shared.plugin_url');
 
-        $paymentMethods = $container->get('gateway.paymentMethods');
         // Add settings link to plugins page
         add_filter('plugin_action_links_' . $this->plugin_basename, [$this, 'addPluginActionLinks']);
         //init settings with advanced and components defaults if not exists
@@ -146,16 +146,20 @@ class SettingsModule implements ServiceModule, ExecutableModule
             $this->maybeTestModeNotice();
         });
 
-        $gateways = $container->get('__deprecated.gateway_helpers');
-        $isSDDGatewayEnabled = $container->get('gateway.isSDDGatewayEnabled');
-        $this->initMollieSettingsPage(
-            $isSDDGatewayEnabled,
-            $gateways,
-            $pluginPath,
-            $pluginUrl,
-            $paymentMethods,
-            $container
-        );
+        if (is_admin()) {
+            $gateways = $container->get('__deprecated.gateway_helpers');
+            $isSDDGatewayEnabled = $container->get('gateway.isSDDGatewayEnabled');
+            $paymentMethods = $container->get('gateway.paymentMethods');
+            $this->initMollieSettingsPage(
+                $isSDDGatewayEnabled,
+                $gateways,
+                $pluginPath,
+                $pluginUrl,
+                $paymentMethods,
+                $container
+            );
+        }
+
         add_action(
             'woocommerce_admin_settings_sanitize_option',
             [$this->settingsHelper, 'updateMerchantIdOnApiKeyChanges'],
@@ -264,7 +268,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
     {
         if (!$isSDDGatewayEnabled) {
             //remove directdebit gateway from gateways list
-            unset($gateways['mollie_wc_gateway_directdebit']);
+            unset($gateways['mollie_wc_gateway_' . Constants::DIRECTDEBIT]);
         }
         add_filter(
             'woocommerce_get_settings_pages',

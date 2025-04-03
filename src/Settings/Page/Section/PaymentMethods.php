@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Settings\Page\Section;
 
 use Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod;
+use Mollie\WooCommerce\PaymentMethods\Constants;
 
 class PaymentMethods extends AbstractSection
 {
@@ -62,8 +63,8 @@ class PaymentMethods extends AbstractSection
             $enabledInMollie = array_key_exists($gatewayKey, $this->mollieGateways);
 
             //don't display old klarna GWs
-            if (isset($this->paymentMethods['klarna']) && in_array($paymentMethodId, ['klarnasliceit', 'klarnapaylater', 'klarnapaynow'], true)) {
-                if (!$enabledInMollie) {
+            if (isset($this->paymentMethods[Constants::KLARNA]) && in_array($paymentMethodId, [Constants::KLARNASLICEIT, Constants::KLARNAPAYLATER, Constants::KLARNAPAYNOW], true)) {
+                if (!$enabledInMollie || $this->mollieGateways[$gatewayKey]['status'] !== 'activated') {
                     continue;
                 }
             }

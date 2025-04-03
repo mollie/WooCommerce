@@ -266,8 +266,9 @@ const MollieComponent = (props) => {
     const updatePhone = (e) => selectPhone(e.target.value);
     const updateBirthdate = (e) => selectBirthdate( e.target.value );
 
+    let itemContentP = item.content;
     if (item.content !== '') {
-        item.content = <p>{item.content}</p>;
+        itemContentP = <p>{item.content}</p>;
     }
 
     function fieldMarkup(id, fieldType, label, action, value, placeholder = null) {
@@ -279,7 +280,7 @@ const MollieComponent = (props) => {
     }
 
     if (item.issuers && item.name !== "mollie_wc_gateway_creditcard"){
-        return <div>{item.content}<select name={issuerKey} dangerouslySetInnerHTML={ {__html: item.issuers} } value={selectedIssuer} onChange={updateIssuer}></select></div>
+        return <div>{itemContentP}<select name={issuerKey} dangerouslySetInnerHTML={ {__html: item.issuers} } value={selectedIssuer} onChange={updateIssuer}></select></div>
     }
 
     if(item.name === "mollie_wc_gateway_creditcard"){
@@ -299,7 +300,7 @@ const MollieComponent = (props) => {
         const companyField = item.companyPlaceholder ? item.companyPlaceholder : "Company name";
         return (
             <>
-                <div>{item.content}</div>
+                <div>{itemContentP}</div>
                 {fieldMarkup("billing_company_billie","text", companyField, updateCompany, inputCompany)}
             </>
         );
@@ -322,7 +323,7 @@ const MollieComponent = (props) => {
         const phoneLabel = item.phoneLabel || "Phone";
         return (
             <>
-                <div>{item.content}</div>
+                <div>{itemContentP}</div>
                 {fieldMarkup("billing-birthdate", "date", birthdateField, updateBirthdate, inputBirthdate)}
                 {!isPhoneFieldVisible && fieldMarkup("billing-phone-in3", "tel", phoneLabel, updatePhone, inputPhone, phoneField)}
             </>
@@ -335,14 +336,14 @@ const MollieComponent = (props) => {
         const phoneLabel = item.phoneLabel || "Phone";
         return (
             <>
-                <div>{item.content}</div>
+                <div>{itemContentP}</div>
                 {fieldMarkup("billing-birthdate", "date", birthdateField, updateBirthdate, inputBirthdate)}
                 {!isPhoneFieldVisible && fieldMarkup("billing-phone-riverty", "tel", phoneLabel, updatePhone, inputPhone, phoneField)}
             </>
         );
     }
 
-    return <div>{item.content}</div>
+    return <div>{itemContentP}</div>
 }
 
 const Label = ({ item, filters, ajaxUrl }) => {

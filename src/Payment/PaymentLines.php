@@ -169,7 +169,7 @@ class PaymentLines
 
                 if ($product->get_image_id()) {
                     $productImage = wp_get_attachment_image_src($product->get_image_id(), 'full');
-                    if (isset($productImage[0])) {
+                    if (isset($productImage[0]) && wc_is_valid_url($productImage[0])) {
                         $mollie_order_item['imageUrl'] = $productImage[0];
                     }
                 }

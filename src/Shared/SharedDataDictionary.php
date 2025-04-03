@@ -19,7 +19,6 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_Billie',
         'Mollie_WC_Gateway_Paypal',
         'Mollie_WC_Gateway_Banktransfer',
-        'Mollie_WC_Gateway_Sofort',
         'Mollie_WC_Gateway_Giftcard',
         'Mollie_WC_Gateway_Mybank',
         'Mollie_WC_Gateway_Bancontact',

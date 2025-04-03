@@ -37,7 +37,8 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         'mollie_wc_gateway_giropay', //stays for old subscriptions
         'mollie_wc_gateway_ideal',
         'mollie_wc_gateway_kbc',
-        'mollie_wc_gateway_sofort', ];
+        'mollie_wc_gateway_sofort', //stays for old subscriptions
+        ];
     protected const DIRECTDEBIT = Constants::DIRECTDEBIT;
 
     protected $apiHelper;
@@ -614,10 +615,10 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
                 'bancontact',
                 'belfius',
                 'eps',
-                'giropay',
+                'giropay', //stays for old subscriptions
                 'ideal',
                 'kbc',
-                'sofort',
+                'sofort', //stays for old subscriptions
             ];
 
             if (in_array($mollie_method, $methods_needing_update) != false) {

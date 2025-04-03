@@ -267,7 +267,7 @@ const MollieComponent = (props) => {
     const updateBirthdate = (e) => selectBirthdate( e.target.value );
 
     if (item.content !== '') {
-        item.conten =  `<p>{item.content}</p>`;
+        item.content = <p>{item.content}</p>;
     }
 
     function fieldMarkup(id, fieldType, label, action, value, placeholder = null) {

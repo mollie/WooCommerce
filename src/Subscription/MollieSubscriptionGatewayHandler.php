@@ -34,7 +34,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         'mollie_wc_gateway_belfius',
         'mollie_wc_gateway_directdebit',
         'mollie_wc_gateway_eps',
-        'mollie_wc_gateway_giropay',
+        'mollie_wc_gateway_giropay', //stays for old subscriptions
         'mollie_wc_gateway_ideal',
         'mollie_wc_gateway_kbc',
         'mollie_wc_gateway_sofort', ];
@@ -160,7 +160,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
             }
 
             // Check that payment method is SEPA Direct Debit or similar
-            $methods_needing_update =  self::METHODS_NEEDING_UPDATE;
+            $methods_needing_update = self::METHODS_NEEDING_UPDATE;
 
             if (in_array($current_method, $methods_needing_update, true) === false) {
                 return;
@@ -412,15 +412,10 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         // for subscriptions where the first order used methods like iDEAL as first payment and
         // later renewal orders switch to SEPA Direct Debit.
 
-        $methods_needing_update =  [
-            'mollie_wc_gateway_bancontact',
-            'mollie_wc_gateway_belfius',
-            'mollie_wc_gateway_eps',
-            'mollie_wc_gateway_giropay',
-            'mollie_wc_gateway_ideal',
-            'mollie_wc_gateway_kbc',
-            'mollie_wc_gateway_sofort',
-        ];
+        $methods_needing_update = self::METHODS_NEEDING_UPDATE;
+        if (($key = array_search('mollie_wc_gateway_' . Constants::DIRECTDEBIT, $methods_needing_update, true)) !== false) {
+            unset($methods_needing_update[$key]);
+        }
 
         $current_method = $renewal_order->get_meta('_payment_method', true);
         if (in_array($current_method, $methods_needing_update, true) && $payment->method === self::DIRECTDEBIT) {

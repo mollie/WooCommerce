@@ -107,11 +107,6 @@ return static function (): array {
             }
             return $availablePaymentMethods;
         },
-        'gateway.isSDDGatewayEnabled' => static function (ContainerInterface $container): bool {
-            $enabledMethods = $container->get('gateway.paymentMethodsEnabledAtMollie');
-            return in_array(Constants::DIRECTDEBIT, $enabledMethods, true);
-        },
-
         IconFactory::class => static function (ContainerInterface $container): IconFactory {
             $pluginUrl = $container->get('shared.plugin_url');
             $pluginPath = $container->get('shared.plugin_path');

@@ -19,8 +19,6 @@ class MollieSettingsPage extends WC_Settings_Page
     protected Settings $settings;
     protected string $pluginPath;
     protected string $pluginUrl;
-    protected array $mollieGateways;
-    protected array $paymentMethods;
     protected bool $isTestModeEnabled;
     protected Data $dataHelper;
     protected ContainerInterface $container;
@@ -29,8 +27,6 @@ class MollieSettingsPage extends WC_Settings_Page
         Settings $settings,
         string $pluginPath,
         string $pluginUrl,
-        array $mollieGateways,
-        array $paymentMethods,
         bool $isTestModeEnabled,
         Data $dataHelper,
         ContainerInterface $container
@@ -41,10 +37,8 @@ class MollieSettingsPage extends WC_Settings_Page
         $this->settings = $settings;
         $this->pluginPath = $pluginPath;
         $this->pluginUrl = $pluginUrl;
-        $this->mollieGateways = $mollieGateways;
         $this->isTestModeEnabled = $isTestModeEnabled;
         $this->dataHelper = $dataHelper;
-        $this->paymentMethods = $paymentMethods;
         $this->container = $container;
         $this->registerContentFieldType();
         $this->outputSections();
@@ -130,8 +124,6 @@ class MollieSettingsPage extends WC_Settings_Page
                 $defaultSection,
                 $connectionStatus,
                 $this->isTestModeEnabled,
-                $this->mollieGateways,
-                $this->paymentMethods,
                 $this->dataHelper,
                 $this->container
             );

@@ -255,10 +255,11 @@ class Advanced extends AbstractSection
                 'nonce_mollie_cleanDb'
             )
         ) {
+            $paymentMethods = $this->container->get('gateway.paymentMethods');
             $cleaner = $this->settings->cleanDb();
             $cleaner->cleanAll();
             //set default settings
-            foreach ($this->paymentMethods as $paymentMethod) {
+            foreach ($paymentMethods as $paymentMethod) {
                 $paymentMethod->getSettings();
             }
         }

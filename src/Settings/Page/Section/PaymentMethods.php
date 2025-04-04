@@ -35,8 +35,6 @@ class PaymentMethods extends AbstractSection
 
     public function renderGateways(): string
     {
-        $this->refreshIfRequested();
-
         $titleActivePaymentMethods = __(
             'Currently Active Payment Methods',
             'mollie-payments-for-woocommerce'
@@ -57,14 +55,18 @@ class PaymentMethods extends AbstractSection
         $deactivatedGateways = '';
 
         /** @var AbstractPaymentMethod $paymentMethod */
-        foreach ($this->paymentMethods as $paymentMethod) {
+        $paymentMethods = $this->container->get('gateway.paymentMethods');
+        $enabledMethods =  $this->container->get('gateway.paymentMethodsEnabledAtMollie');
+        if (!in_array(Constants::DIRECTDEBIT, $enabledMethods, true)) {
+            unset($paymentMethods[Constants::DIRECTDEBIT]);
+        }
+        foreach ($paymentMethods as $paymentMethod) {
             $paymentMethodId = $paymentMethod->getProperty('id');
-            $gatewayKey = 'mollie_wc_gateway_' . $paymentMethodId;
-            $enabledInMollie = array_key_exists($gatewayKey, $this->mollieGateways);
+            $enabledInMollie = in_array($paymentMethodId, $enabledMethods, true);
 
             //don't display old klarna GWs
-            if (isset($this->paymentMethods[Constants::KLARNA]) && in_array($paymentMethodId, [Constants::KLARNASLICEIT, Constants::KLARNAPAYLATER, Constants::KLARNAPAYNOW], true)) {
-                if (!$enabledInMollie || $this->mollieGateways[$gatewayKey]['status'] !== 'activated') {
+            if (isset($paymentMethods[Constants::KLARNA]) && in_array($paymentMethodId, [Constants::KLARNASLICEIT, Constants::KLARNAPAYLATER, Constants::KLARNAPAYNOW], true)) {
+                if (!$enabledInMollie || $paymentMethod->getProperty('enabled') !== 'yes') {
                     continue;
                 }
             }
@@ -177,28 +179,6 @@ class PaymentMethods extends AbstractSection
 
         <?php
         return ob_get_clean();
-    }
-
-    protected function refreshIfRequested()
-    {
-        if (
-                isset($_GET['refresh-methods']) &&
-                isset($_GET['nonce_mollie_refresh_methods']) &&
-                wp_verify_nonce(
-                    filter_input(INPUT_GET, 'nonce_mollie_refresh_methods', FILTER_SANITIZE_SPECIAL_CHARS),
-                    'nonce_mollie_refresh_methods'
-                )
-        ) {
-            $testMode = $this->testModeEnabled;
-            $apiKey = $this->settings->getApiKey();
-            /* Reload active Mollie methods */
-            $methods = $this->dataHelper->getAllPaymentMethods($apiKey, $testMode, false);
-            foreach ($methods as $key => $method) {
-                $methods['mollie_wc_gateway_' . $method['id']] = $method;
-                unset($methods[$key]);
-            }
-            $this->mollieGateways = $methods;
-        }
     }
 
     protected function paymentGatewayButton(AbstractPaymentMethod $paymentMethod, $enabledInMollie): string

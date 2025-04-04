@@ -16,8 +16,6 @@ abstract class AbstractSection
     protected bool $connectionStatus;
     protected bool $testModeEnabled;
     protected array $pages;
-    protected array $mollieGateways;
-    protected array $paymentMethods;
     protected Data $dataHelper;
     protected ContainerInterface $container;
 
@@ -28,8 +26,6 @@ abstract class AbstractSection
         string $currentSection,
         bool $connectionStatus,
         bool $testModeEnabled,
-        array $mollieGateways,
-        array $paymentMethods,
         Data $dataHelper,
         ContainerInterface $container
     ) {
@@ -40,8 +36,6 @@ abstract class AbstractSection
         $this->connectionStatus = $connectionStatus;
         $this->testModeEnabled = $testModeEnabled;
         $this->pages = $pages;
-        $this->mollieGateways = $mollieGateways;
-        $this->paymentMethods = $paymentMethods;
         $this->dataHelper = $dataHelper;
         $this->container = $container;
     }

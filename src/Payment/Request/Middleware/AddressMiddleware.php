@@ -38,7 +38,21 @@ class AddressMiddleware implements RequestMiddlewareInterface
             $billingAddress = $this->createBillingAddress($order);
             $shippingAddress = $this->createShippingAddress($order);
         }
-        $requestData['billingAddress'] = $billingAddress;
+        // Only add billingAddress if all required fields are set or on order API
+        if (
+            $context === 'order' || (
+            !empty($billingAddress->streetAndNumber)
+            && !empty($billingAddress->postalCode)
+            && !empty($billingAddress->city)
+            && !empty($billingAddress->country))
+        ) {
+            $requestData['billingAddress'] = $billingAddress;
+        }
+        //set billingAddress email when no billing address is set for payment API
+        if (empty($requestData['billingAddress']) && $context === 'payment' && !empty($billingAddress->email)) {
+            $requestData['billingAddress'] = new stdClass();
+            $requestData['billingAddress']->email = $billingAddress->email;
+        }
         // Only add shippingAddress if all required fields are set
         if (
             !empty($shippingAddress->streetAndNumber)

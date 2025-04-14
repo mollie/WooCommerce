@@ -10,6 +10,15 @@ use WC_Gateway_BACS;
 
 class Notices extends AbstractSection
 {
+    /**
+     * @var mixed
+     */
+    private $mollieGateways;
+    /**
+     * @var mixed
+     */
+    private $paymentMethods;
+
     public function config(): array
     {
         return [
@@ -23,6 +32,8 @@ class Notices extends AbstractSection
 
     protected function content(): string
     {
+        $this->mollieGateways = $this->container->get('__deprecated.gateway_helpers');
+        $this->paymentMethods = $this->container->get('gateway.paymentMethods');
         ob_start();
         ?>
         <div class="mollie-section mollie-section--notices">

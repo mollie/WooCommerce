@@ -147,16 +147,32 @@ class SettingsModule implements ServiceModule, ExecutableModule
         });
 
         if (is_admin()) {
-            $gateways = $container->get('__deprecated.gateway_helpers');
-            $isSDDGatewayEnabled = $container->get('gateway.isSDDGatewayEnabled');
-            $paymentMethods = $container->get('gateway.paymentMethods');
-            $this->initMollieSettingsPage(
-                $isSDDGatewayEnabled,
-                $gateways,
-                $pluginPath,
-                $pluginUrl,
-                $paymentMethods,
-                $container
+            if (
+                isset($_GET['refresh-methods']) &&
+                isset($_GET['nonce_mollie_refresh_methods']) &&
+                wp_verify_nonce(
+                    filter_input(INPUT_GET, 'nonce_mollie_refresh_methods', FILTER_SANITIZE_SPECIAL_CHARS),
+                    'nonce_mollie_refresh_methods'
+                )
+            ) {
+                $apiKey = $this->settingsHelper->getApiKey();
+                $this->dataHelper->getAllPaymentMethods($apiKey, $this->isTestModeEnabled, false);
+            }
+
+            add_filter(
+                'woocommerce_get_settings_pages',
+                function ($settings) use ($pluginPath, $pluginUrl, $container) {
+                    $settings[] = new MollieSettingsPage(
+                        $this->settingsHelper,
+                        $pluginPath,
+                        $pluginUrl,
+                        $this->isTestModeEnabled,
+                        $this->dataHelper,
+                        $container
+                    );
+
+                    return $settings;
+                }
             );
         }
 
@@ -168,13 +184,23 @@ class SettingsModule implements ServiceModule, ExecutableModule
         );
         add_action(
             'update_option_mollie-payments-for-woocommerce_live_api_key',
-            [$this->settingsHelper, 'updateMerchantIdAfterApiKeyChanges'],
+            function ($oldValue, $value, $optionName) {
+                $this->settingsHelper->updateMerchantIdAfterApiKeyChanges($oldValue, $value, $optionName);
+                if ($oldValue !== $value) {
+                    $this->dataHelper->getAllPaymentMethods($value, false, false);
+                }
+            },
             10,
             3
         );
         add_action(
             'update_option_mollie-payments-for-woocommerce_test_api_key',
-            [$this->settingsHelper, 'updateMerchantIdAfterApiKeyChanges'],
+            function ($oldValue, $value, $optionName) {
+                $this->settingsHelper->updateMerchantIdAfterApiKeyChanges($oldValue, $value, $optionName);
+                if ($oldValue !== $value) {
+                    $this->dataHelper->getAllPaymentMethods($value, true, false);
+                }
+            },
             10,
             3
         );
@@ -253,39 +279,5 @@ class SettingsModule implements ServiceModule, ExecutableModule
             }
             update_option($defaultOption['id'], $defaultOption['default']);
         }
-    }
-
-    /**
-     * @param $isSDDGatewayEnabled
-     * @param $gateways
-     * @param $pluginPath
-     * @param $pluginUrl
-     * @param $paymentMethods
-     * @param $container
-     * @return void
-     */
-    protected function initMollieSettingsPage($isSDDGatewayEnabled, $gateways, $pluginPath, $pluginUrl, $paymentMethods, $container): void
-    {
-        if (!$isSDDGatewayEnabled) {
-            //remove directdebit gateway from gateways list
-            unset($gateways['mollie_wc_gateway_' . Constants::DIRECTDEBIT]);
-        }
-        add_filter(
-            'woocommerce_get_settings_pages',
-            function ($settings) use ($pluginPath, $pluginUrl, $gateways, $paymentMethods, $container) {
-                $settings[] = new MollieSettingsPage(
-                    $this->settingsHelper,
-                    $pluginPath,
-                    $pluginUrl,
-                    $gateways,
-                    $paymentMethods,
-                    $this->isTestModeEnabled,
-                    $this->dataHelper,
-                    $container
-                );
-
-                return $settings;
-            }
-        );
     }
 }

@@ -10,6 +10,7 @@ use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\Gateway\AbstractGateway;
 use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
+use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
@@ -129,6 +130,17 @@ class MollieOrderService
         if (!$payment) {
             $this->httpResponse->setHttpResponseCode(404);
             $this->logger->debug(__METHOD__ . ": payment object $payment_object_id not found.", [true]);
+            return;
+        }
+
+        //prevent double payment webhooks for klarna on orders api
+        if (
+            $this->container->get('settings.settings_helper')->isOrderApiSetting()
+            && in_array($payment->method, [Constants::KLARNA, Constants::KLARNAPAYLATER, Constants::KLARNASLICEIT, Constants::KLARNAPAYNOW], true)
+            && strpos($paymentId, 'tr_') === 0
+        ) {
+            $this->httpResponse->setHttpResponseCode(200);
+            $this->logger->debug($this->gateway->id . ": not respond on transaction webhooks for this payment method when order API is active. Payment ID {$payment->id}, order ID $order_id");
             return;
         }
 

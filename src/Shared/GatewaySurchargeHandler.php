@@ -30,9 +30,7 @@ class GatewaySurchargeHandler
 
     public function surchargeActions()
     {
-        add_action('woocommerce_cart_calculate_fees', function ($cart) {
-            $this->add_engraving_fees($cart);
-        }, 10, 1);
+        add_action('woocommerce_cart_calculate_fees', [$this, 'add_engraving_fees']);
         add_action('wp_enqueue_scripts', function () {
             $this->enqueueSurchargeScript();
         });
@@ -41,12 +39,6 @@ class GatewaySurchargeHandler
         });
         add_action('wp_ajax_nopriv_update_surcharge_order_pay', function () {
             $this->updateSurchargeOrderPay();
-        });
-        add_action('wp_ajax_mollie_checkout_blocks_surchage', function () {
-            $this->updateSurchargeCheckoutBlock();
-        });
-        add_action('wp_ajax_nopriv_mollie_checkout_blocks_surchage', function () {
-            $this->updateSurchargeCheckoutBlock();
         });
         add_action('woocommerce_order_item_meta_end', [$this, 'setHiddenOrderId'], 10, 4);
     }
@@ -103,7 +95,7 @@ class GatewaySurchargeHandler
             return;
         }
         $this->orderRemoveFee($order);
-         $gatewaySettings = $this->gatewaySettings($gatewayName);
+        $gatewaySettings = $this->gatewaySettings($gatewayName);
         $orderAmount = (float) $order->get_total();
         if ($this->surcharge->aboveMaxLimit($orderAmount, $gatewaySettings)) {
             return;
@@ -133,78 +125,13 @@ class GatewaySurchargeHandler
         }
     }
 
-    public function updateSurchargeCheckoutBlock()
+    public function add_engraving_fees()
     {
-        $gateway = $this->canProcessGateway();
-        WC()->cart;
-        $gatewaySettings = $this->gatewaySettings($gateway);
-        $this->cartRemoveFee();
-        WC()->cart->calculate_totals();
-        $newTotal = (float) WC()->cart->get_totals()['total'];
-        $totalTax = WC()->cart->get_totals()['total_tax'];
-        $noSurchargeData = [
-
-                'amount' => false,
-                'name' => '',
-                'currency' => get_woocommerce_currency_symbol(),
-                'newTotal' => $newTotal,
-                'totalTax' => $totalTax,
-        ];
-        if (!$gatewaySettings) {
-            wp_send_json_success($noSurchargeData);
+        if ( is_admin() && ! defined( 'DOING_AJAX' ) ) {
             return;
         }
 
-        if (
-                !isset($gatewaySettings['payment_surcharge'])
-                || $gatewaySettings['payment_surcharge'] === Surcharge::NO_FEE
-        ) {
-            wp_send_json_success($noSurchargeData);
-            return;
-        }
-
-        $isRecurringCart = ! empty(WC()->cart->recurring_cart_key);
-        if ($isRecurringCart) {
-            wp_send_json_success($noSurchargeData);
-            return;
-        }
-        $cartAmount = (float) WC()->cart->get_total('edit');
-        if ($this->surcharge->aboveMaxLimit($cartAmount, $gatewaySettings)) {
-            wp_send_json_success($noSurchargeData);
-            return;
-        }
-        $feeAmount = $this->surcharge->calculateFeeAmount(WC()->cart, $gatewaySettings);
-
-        $label = $this->gatewayFeeLabel;
-        add_action('woocommerce_cart_calculate_fees', static function () use ($label, $feeAmount) {
-            global $woocommerce;
-            $woocommerce->cart->add_fee($label, $feeAmount, true, 'standard');
-        });
-        WC()->cart->calculate_totals();
-        $feeAmountTaxed = (float) WC()->cart->get_totals()['fee_total'];
-        $taxDisplayMode = get_option('woocommerce_tax_display_shop');
-        if ($taxDisplayMode === 'incl') {
-            $feeAmountTaxed = $feeAmountTaxed + (float) WC()->cart->get_totals()['fee_tax'];
-        }
-        $newTotal = (float) WC()->cart->get_totals()['total'];
-        $totalTax = WC()->cart->get_totals()['total_tax'];
-        $data = [
-                'amount' => $feeAmountTaxed,
-                'name' => $this->gatewayFeeLabel,
-                'currency' => get_woocommerce_currency_symbol(),
-                'newTotal' => $newTotal,
-                'totalTax' => $totalTax,
-                'cart' => WC()->cart->get_totals(),
-        ];
-
-        wp_send_json_success($data);
-    }
-
-    public function add_engraving_fees($cart)
-    {
-        if (is_admin() || !mollieWooCommerceIsCheckoutContext()) {
-            return;
-        }
+        $cart = WC()->cart;
         $gateway = $this->chosenGateway();
         if (!$gateway) {
             return;
@@ -236,7 +163,7 @@ class GatewaySurchargeHandler
 
     protected function chosenGateway()
     {
-        $gateway = WC()->session->chosen_payment_method;
+        $gateway = WC()->session->get( 'chosen_payment_method' );
         if (empty($gateway)) {
             $gateway = (empty($_REQUEST['payment_method'])
                     ? '' : sanitize_text_field(

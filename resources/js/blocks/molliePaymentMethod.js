@@ -1,10 +1,5 @@
 let cachedAvailableGateways = {};
 
-function formatPriceLikeWc(price) {
-    // todo add thousandSeparator
-    return wcSettings.currency.priceFormat.replace('%1$s', wcSettings.currency.symbol).replace('%2$s',price.toFixed(wcSettings.currency.precision).replace('.', wcSettings.currency.decimalSeparator));
-}
-
 function setAvailableGateways(country, currencyCode, data) {
     cachedAvailableGateways = {
         ...cachedAvailableGateways,
@@ -82,86 +77,6 @@ const MollieComponent = (props) => {
         const billingPhone = document.getElementById('billing-phone');
         return billingPhone || shippingPhone;
     }
-    function updateTotalLabel(newTotal) {
-        let totalSpan = "<span class='wc-block-formatted-money-amount wc-block-components-formatted-money-amount wc-block-components-totals-item__value'>" + formatPriceLikeWc(newTotal) + "</span>"
-        let total = jQuery('.wc-block-components-totals-footer-item .wc-block-formatted-money-amount:first')
-        total.replaceWith(totalSpan)
-    }
-    function updateTaxesLabel(newTotal) {
-        let totalSpan = "<span class='wc-block-formatted-money-amount wc-block-components-formatted-money-amount wc-block-components-totals-item__value'>" + formatPriceLikeWc(newTotal) + "</span>"
-        let total = jQuery('div.wp-block-woocommerce-checkout-order-summary-taxes-block.wc-block-components-totals-wrapper > div > span.wc-block-formatted-money-amount.wc-block-components-formatted-money-amount.wc-block-components-totals-item__value:first')
-        total.replaceWith(totalSpan)
-    }
-
-    function hideFee(fee, response) {
-        fee?.hide()
-        updateTotalLabel(response.data.newTotal);
-        updateTaxesLabel(response.data.totalTax);
-    }
-
-    function feeMarkup(response) {
-        return "<div class='wc-block-components-totals-item wc-block-components-totals-fees'>" +
-            "<span class='wc-block-components-totals-item__label'>"
-            + response.data.name
-            + "</span>" +
-            "<span class='wc-block-formatted-money-amount wc-block-components-formatted-money-amount wc-block-components-totals-item__value'>"
-            + formatPriceLikeWc(response.data.amount)
-            + "</span>" +
-            "<div class='wc-block-components-totals-item__description'>" +
-            "</div>" +
-            "</div>";
-    }
-
-    function replaceFee(fee, newFee, response) {
-        fee.replaceWith(newFee)
-        updateTotalLabel(response.data.newTotal);
-        updateTaxesLabel(response.data.totalTax);
-    }
-
-    function insertNewFee(newFee, response) {
-        const subtotal = jQuery('.wc-block-components-totals-item:first')
-        subtotal.after(newFee)
-        updateTotalLabel(response.data.newTotal);
-        updateTaxesLabel(response.data.totalTax);
-    }
-
-    function handleFees(response) {
-        const fee = jQuery('.wc-block-components-totals-fees')
-        if (!response.data.amount) {
-            hideFee(fee, response);
-            return
-        }
-
-        let newFee = feeMarkup(response);
-        if (fee.length) {
-            replaceFee(fee, newFee, response);
-            return
-        }
-        insertNewFee(newFee, response);
-    }
-
-    useEffect(() => {
-        if(activePaymentMethodLocal !== activePaymentMethod && activePaymentMethod === 'mollie_wc_gateway_creditcard'){
-            document.documentElement.dispatchEvent(creditCardSelected);
-        }
-        activePaymentMethodLocal = activePaymentMethod
-        jQuery.ajax({
-            url: ajaxUrl,
-            method: 'POST',
-            data: {
-                action: 'mollie_checkout_blocks_surchage',
-                method: activePaymentMethod
-            },
-            complete: (jqXHR, textStatus) => {
-            },
-            success: (response, textStatus, jqXHR) => {
-                handleFees(response)
-            },
-            error: (jqXHR, textStatus, errorThrown) => {
-                console.warn(textStatus, errorThrown)
-            },
-        })
-    }, [activePaymentMethod, billing.cartTotal])
 
     useEffect(() => {
         const onProcessingPayment = () => {

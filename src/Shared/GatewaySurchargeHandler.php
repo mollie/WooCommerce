@@ -163,7 +163,7 @@ class GatewaySurchargeHandler
 
     protected function chosenGateway()
     {
-        $gateway = WC()->session->get( 'chosen_payment_method');
+        $gateway = WC()->session->get('chosen_payment_method');
         if (empty($gateway)) {
             $gateway = (empty($_REQUEST['payment_method'])
                     ? '' : sanitize_text_field(

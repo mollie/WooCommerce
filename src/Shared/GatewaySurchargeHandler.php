@@ -127,7 +127,7 @@ class GatewaySurchargeHandler
 
     public function add_engraving_fees()
     {
-        if ( is_admin() && ! defined( 'DOING_AJAX' ) ) {
+        if (is_admin() && ! defined('DOING_AJAX')) {
             return;
         }
 
@@ -163,7 +163,7 @@ class GatewaySurchargeHandler
 
     protected function chosenGateway()
     {
-        $gateway = WC()->session->get( 'chosen_payment_method' );
+        $gateway = WC()->session->get( 'chosen_payment_method');
         if (empty($gateway)) {
             $gateway = (empty($_REQUEST['payment_method'])
                     ? '' : sanitize_text_field(

@@ -28,8 +28,10 @@ const alma: MollieGateway = {
 	maxAmount: '2000.00',
 	slug: 'alma',
 	name: 'Pay in 3 or 4 installments free of charge',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_alma',
 		title: 'Pay in 3 or 4 installments free of charge',
 	},
 };
@@ -39,8 +41,10 @@ const applepay: MollieGateway = {
 	minAmount: '0.01',
 	slug: 'applepay',
 	name: 'Apple Pay',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_applepay',
 		title: 'Apple Pay',
 		mollie_apple_pay_button_enabled_cart: 'no',
 		mollie_apple_pay_button_enabled_product: 'no',
@@ -54,8 +58,10 @@ const bacs: MollieGateway = {
 	slug: 'bacs',
 	name: 'BACS Direct Debit',
 	currency: 'GBP',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_bacs',
 		title: 'BACS Direct Debit',
 	},
 };
@@ -65,8 +71,10 @@ const bancomatpay: MollieGateway = {
 	minAmount: '0.01',
 	slug: 'bancomatpay',
 	name: 'Bancomat Pay',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_bancomatpay',
 		title: 'Bancomat Pay',
 	},
 };
@@ -77,8 +85,10 @@ const bancontact: MollieGateway = {
 	maxAmount: '50000.00',
 	slug: 'bancontact',
 	name: 'Bancontact',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_bancontact',
 		title: 'Bancontact',
 		initial_order_status: 'on-hold',
 	},
@@ -89,8 +99,10 @@ const banktransfer: MollieGateway = {
 	minAmount: '1.00',
 	slug: 'banktransfer',
 	name: 'Bank transfer',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_banktransfer',
 		title: 'Bank transfer',
 		initial_order_status: 'on-hold',
 		order_dueDate: '12',
@@ -103,8 +115,10 @@ const belfius: MollieGateway = {
 	minAmount: '0.01',
 	slug: 'belfius',
 	name: 'Belfius Pay Button',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_belfius',
 		title: 'Belfius Pay Button',
 		initial_order_status: 'on-hold',
 	},
@@ -116,8 +130,10 @@ const billie: MollieGateway = {
 	maxAmount: '50000.00',
 	slug: 'billie',
 	name: 'Pay by Invoice for Businesses - Billie',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_billie',
 		title: 'Pay by Invoice for Businesses - Billie',
 	},
 };
@@ -129,8 +145,10 @@ const blik: MollieGateway = {
 	slug: 'blik',
 	name: 'Blik',
 	currency: 'PLN',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_blik',
 		title: 'Blik',
 	},
 };
@@ -140,11 +158,13 @@ const creditcard: MollieGateway = {
 	minAmount: '0.01',
 	slug: 'creditcard',
 	name: 'Card',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_creditcard',
 		title: 'Card',
-		mollie_components_enabled: 'no',
-		mollie_creditcard_icons_enabler: 'no',
+		mollie_components_enabled: 'yes',
+		mollie_creditcard_icons_enabled: 'no',
 		mollie_creditcard_icons_amex: 'no',
 		mollie_creditcard_icons_cartasi: 'no',
 		mollie_creditcard_icons_cartebancaire: 'no',
@@ -160,8 +180,10 @@ const directdebit: MollieGateway = {
 	minAmount: '1.00',
 	slug: 'directdebit',
 	name: 'SEPA Direct Debit',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_directdebit',
 		title: 'SEPA Direct Debit',
 		initial_order_status: 'on-hold',
 	},
@@ -172,8 +194,10 @@ const eps: MollieGateway = {
 	minAmount: '0.01',
 	slug: 'eps',
 	name: 'eps',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_eps',
 		title: 'eps',
 		initial_order_status: 'on-hold',
 	},
@@ -184,8 +208,10 @@ const giftcard: MollieGateway = {
 	minAmount: '0.01',
 	slug: 'giftcard',
 	name: 'Gift cards',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_giftcard',
 		title: 'Gift cards',
 		description: 'Select your gift card',
 		issuers_dropdown_shown: 'no',
@@ -199,8 +225,10 @@ const ideal: MollieGateway = {
 	maxAmount: '50000.00',
 	slug: 'ideal',
 	name: 'iDEAL',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_ideal',
 		title: 'iDEAL',
 		initial_order_status: 'on-hold',
 	},
@@ -212,8 +240,10 @@ const in3: MollieGateway = {
 	maxAmount: '5000.00',
 	slug: 'in3',
 	name: 'iDEAL Pay in 3 instalments, 0% interest',
+	availableForApiMethods: [ 'order' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_in3',
 		title: 'iDEAL Pay in 3 instalments, 0% interest',
 		description: 'iDEAL Pay in 3 instalments, 0% interest',
 	},
@@ -224,8 +254,10 @@ const kbc: MollieGateway = {
 	minAmount: '1.00',
 	slug: 'kbc',
 	name: 'KBC/CBC Payment Button',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_kbc',
 		title: 'KBC/CBC Payment Button',
 		description: 'Select your bank',
 		issuers_dropdown_shown: 'yes',
@@ -239,8 +271,10 @@ const klarna: MollieGateway = {
 	minAmount: '1.00',
 	slug: 'klarna',
 	name: 'Pay with Klarna',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_klarna',
 		title: 'Pay with Klarna',
 	},
 };
@@ -252,8 +286,10 @@ const mbway: MollieGateway = {
 	slug: 'mbway',
 	name: 'MB Way',
 	currency: 'EUR',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_mbway',
 		title: 'MB Way',
 	},
 };
@@ -265,8 +301,10 @@ const multibanco: MollieGateway = {
 	slug: 'multibanco',
 	name: 'Multibanco',
 	currency: 'EUR',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_multibanco',
 		title: 'Multibanco',
 	},
 };
@@ -276,8 +314,10 @@ const mybank: MollieGateway = {
 	minAmount: '1.00',
 	slug: 'mybank',
 	name: 'MyBank',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_mybank',
 		title: 'MyBank',
 	},
 };
@@ -288,8 +328,10 @@ const paybybank: MollieGateway = {
 	slug: 'paybybank',
 	name: 'Pay By Bank',
 	currency: 'EUR', // EUR, GBP
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_paybybank',
 		title: 'Pay By Bank',
 	},
 };
@@ -299,8 +341,10 @@ const payconiq: MollieGateway = {
 	minAmount: '0.01',
 	slug: 'payconiq',
 	name: 'Payconiq',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_payconiq',
 		title: 'Payconiq',
 	},
 };
@@ -310,8 +354,10 @@ const paypal: MollieGateway = {
 	minAmount: '0.01',
 	slug: 'paypal',
 	name: 'PayPal',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_paypal',
 		title: 'PayPal',
 		mollie_paypal_button_enabled_cart: 'no',
 		mollie_paypal_button_enabled_product: 'no',
@@ -326,8 +372,10 @@ const paysafecard: MollieGateway = {
 	maxAmount: '1000.00',
 	slug: 'paysafecard',
 	name: 'paysafecard',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_paysafecard',
 		title: 'paysafecard',
 	},
 };
@@ -337,8 +385,10 @@ const pointofsale: MollieGateway = {
 	minAmount: '1.00',
 	slug: 'pointofsale',
 	name: 'Point of sale',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_',
 		title: 'Point of sale',
 	},
 };
@@ -348,8 +398,10 @@ const przelewy24: MollieGateway = {
 	minAmount: '1.00',
 	slug: 'przelewy24',
 	name: 'Przelewy24',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_przelewy24',
 		title: 'Przelewy24',
 	},
 };
@@ -360,8 +412,10 @@ const riverty: MollieGateway = {
 	maxAmount: '2000.00',
 	slug: 'riverty',
 	name: 'Buy now, pay later with Riverty',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_riverty',
 		title: 'Buy now, pay later with Riverty',
 	},
 };
@@ -371,8 +425,10 @@ const satispay: MollieGateway = {
 	minAmount: '1.00',
 	slug: 'satispay',
 	name: 'Satispay',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_satispay',
 		title: 'Satispay',
 	},
 };
@@ -384,8 +440,10 @@ const swish: MollieGateway = {
 	maxAmount: '115000.00',
 	slug: 'swish',
 	name: 'Swish',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_swish',
 		title: 'Swish',
 	},
 };
@@ -395,8 +453,10 @@ const trustly: MollieGateway = {
 	minAmount: '1.00',
 	slug: 'trustly',
 	name: 'Trustly',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_trustly',
 		title: 'Trustly',
 		initial_order_status: 'on-hold',
 	},
@@ -408,8 +468,10 @@ const twint: MollieGateway = {
 	slug: 'twint',
 	name: 'TWINT',
 	currency: 'CHF',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_twint',
 		title: 'TWINT',
 	},
 };
@@ -419,8 +481,10 @@ const voucher: MollieGateway = {
 	minAmount: '1.00',
 	slug: 'voucher',
 	name: 'Vouchers',
+	availableForApiMethods: [ 'order' ],
 	settings: {
 		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_voucher',
 		title: 'Vouchers',
 		mealvoucher_category_default: 'no_category',
 	},

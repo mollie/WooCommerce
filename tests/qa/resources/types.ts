@@ -135,6 +135,7 @@ export namespace MollieSettings {
 		| 'gift';
 
 	export type Gateway = {
+		id?: string;
 		enabled?: boolean;
 		use_api_title?: 'yes' | 'no';
 		title?: string;
@@ -171,7 +172,7 @@ export namespace MollieSettings {
 
 		mealvoucher_category_default?: VoucherProductCategory; // voucher
 
-		mollie_creditcard_icons_enabler?: 'yes' | 'no'; // creditcard
+		mollie_creditcard_icons_enabled?: 'yes' | 'no'; // creditcard
 		mollie_creditcard_icons_amex?: 'yes' | 'no'; // creditcard
 		mollie_creditcard_icons_cartasi?: 'yes' | 'no'; // creditcard
 		mollie_creditcard_icons_cartebancaire?: 'yes' | 'no'; // creditcard
@@ -189,6 +190,7 @@ export type MollieGateway = {
 	currency?: string;
 	minAmount?: string;
 	maxAmount?: string;
+	availableForApiMethods?: MollieSettings.ApiMethod[];
 	settings?: MollieSettings.Gateway;
 };
 
@@ -250,7 +252,7 @@ export namespace MollieTestData {
 		testId: string;
 		gatewaySlug: string;
 		paymentStatus: MolliePaymentStatus;
-		orderStatus: WooCommerce.OrderStatus;
+		orderStatus?: WooCommerce.OrderStatus;
 		card?: WooCommerce.CreditCard;
 		mollieComponentsEnabled?: 'yes' | 'no';
 		bankIssuer?: string;

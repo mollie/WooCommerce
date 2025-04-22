@@ -35,10 +35,19 @@ test.describe.serial( () => {
 
 	test( 'C419984 | Payments tab - payment methods UI', async ( {
 		wooCommerceSettings,
+		mollieApiMethod,
 	} ) => {
 		await wooCommerceSettings.visit( 'payments' );
 		for ( const key in gateways ) {
 			const gateway = gateways[ key ];
+
+			// exclude tests for payment methods if not available for tested API
+			if (
+				! gateway.availableForApiMethods.includes( mollieApiMethod )
+			) {
+				continue;
+			}
+
 			const mollieGatewayname = `Mollie - ${ gateway.name }`;
 			await expect
 				.soft( wooCommerceSettings.gatewayLink( mollieGatewayname ) )

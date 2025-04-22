@@ -20,6 +20,7 @@ test( 'C420154 | Validate correct gateways shown with Order API on Classic check
 	utils,
 	classicCheckout,
 	wooCommerceApi,
+	mollieApiMethod,
 } ) => {
 	test.setTimeout( 600000 );
 	const excludedPaymentMethods = [ 'applepay', 'directdebit' ];
@@ -32,6 +33,12 @@ test( 'C420154 | Validate correct gateways shown with Order API on Classic check
 
 	for ( const key in gateways ) {
 		gateway = gateways[ key ];
+
+		// exclude tests for payment methods if not available for tested API
+		if ( ! gateway.availableForApiMethods.includes( mollieApiMethod ) ) {
+			continue;
+		}
+
 		guest = guests[ gateway.country ];
 		countryCode = guest.billing.country;
 

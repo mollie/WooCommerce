@@ -1,5 +1,5 @@
 /**
- * External dependencies
+ *External dependencies
  */
 import { WooCommerceAdminPage } from '@inpsyde/playwright-utils/build';
 /**
@@ -21,29 +21,31 @@ export class MollieSettingsGateway extends WooCommerceAdminPage {
 	// Locators
 	enableGatewayCheckbox = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_enabled`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_enabled`
 		);
 	useApiDynamicTitleAndGatewayLogoCheckbox = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_use_api_title`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_use_api_title`
 		);
 	titleInput = () =>
-		this.page.locator( `#mollie_wc_gateway_${ this.gateway.slug }_title` );
+		this.page.locator(
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_title`
+		);
 	displayLogoCheckbox = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_display_logo`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_display_logo`
 		);
 	enableCustomLogoCheckbox = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_enable_custom_logo`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_enable_custom_logo`
 		);
 	uploadCustomLogoButton = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_upload_logo`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_upload_logo`
 		);
 	descriptionTextarea = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_description`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_description`
 		);
 
 	sellToSpecificCountriesCombobox = () =>
@@ -53,121 +55,123 @@ export class MollieSettingsGateway extends WooCommerceAdminPage {
 
 	paymentSurchargeSelect = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_payment_surcharge`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_payment_surcharge`
 		);
 	paymentSurchargeFixedAmountInput = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_fixed_fee`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_fixed_fee`
 		);
 	surchargeOnlyUnderLimitInput = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_maximum_limit`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_maximum_limit`
 		);
 	paymentSurchargePercentageAmountInput = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_percentage`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_percentage`
 		);
 	paymentSurchargeLimitInput = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_surcharge_limit`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_surcharge_limit`
 		);
 
 	activateExpiryTimeSettingCheckbox = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_activate_expiry_days_setting`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_activate_expiry_days_setting`
 		);
 	expiryTimeInput = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_order_dueDate`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_order_dueDate`
 		);
 	showIssuersDropdownCheckbox = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_issuers_dropdown_shown`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_issuers_dropdown_shown`
 		);
 	initialOrderStatusSelect = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_initial_order_status`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_initial_order_status`
 		);
 	skipMolliePaymentScreenCheckbox = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_skip_mollie_payment_screen`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_skip_mollie_payment_screen`
 		);
 	enableMollieComponentsCheckbox = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_mollie_components_enabled`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_mollie_components_enabled`
 		);
 
 	enableApplePayButtonOnCartCheckbox = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_mollie_apple_pay_button_enabled_cart`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_mollie_apple_pay_button_enabled_cart`
 		);
 	enableApplePayButtonOnProductCheckbox = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_mollie_apple_pay_button_enabled_product`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_mollie_apple_pay_button_enabled_product`
 		);
 	enableApplePayExpressButtonOnCheckoutCheckbox = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_mollie_apple_pay_button_enabled_express_checkout`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_mollie_apple_pay_button_enabled_express_checkout`
 		);
 
 	paypalDisplayOnCartCheckbox = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_mollie_paypal_button_enabled_cart`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_mollie_paypal_button_enabled_cart`
 		);
 	paypalDisplayOnProductCheckbox = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_mollie_paypal_button_enabled_product`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_mollie_paypal_button_enabled_product`
 		);
 	paypalButtonTextLanguageAndColorSelect = () =>
-		this.page.locator( `#mollie_wc_gateway_${ this.gateway.slug }_color` );
+		this.page.locator(
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_color`
+		);
 	paypalMinimumAmountToDisplayButtonInput = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_mollie_paypal_button_minimum_amount`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_mollie_paypal_button_minimum_amount`
 		);
 
 	giftcardsShowDropdownCheckbox = () => this.showIssuersDropdownCheckbox();
 	kbcShowBanksDropdownCheckbox = () => this.showIssuersDropdownCheckbox();
 	kbcIssuersEmptyOptionInput = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_issuers_empty_option`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_issuers_empty_option`
 		);
 
 	voucherDefaultProductsCategorySelect = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_mealvoucher_category_default`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_mealvoucher_category_default`
 		);
 
 	enableIconsSelectorCheckbox = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_mollie_creditcard_icons_enabler`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_mollie_creditcard_icons_enabler`
 		);
 	showAmericanExpressIconCheckbox = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_mollie_creditcard_icons_amex`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_mollie_creditcard_icons_amex`
 		);
 	showCartaSiIconCheckbox = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_mollie_creditcard_icons_cartasi`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_mollie_creditcard_icons_cartasi`
 		);
 	showCarteBancaireIconCheckbox = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_mollie_creditcard_icons_cartebancaire`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_mollie_creditcard_icons_cartebancaire`
 		);
 	showMaestroIconCheckbox = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_mollie_creditcard_icons_maestro`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_mollie_creditcard_icons_maestro`
 		);
 	showMastercardIconCheckbox = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_mollie_creditcard_icons_mastercard`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_mollie_creditcard_icons_mastercard`
 		);
 	showVisaIconCheckbox = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_mollie_creditcard_icons_visa`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_mollie_creditcard_icons_visa`
 		);
 	showVpayIconCheckbox = () =>
 		this.page.locator(
-			`#mollie_wc_gateway_${ this.gateway.slug }_mollie_creditcard_icons_vpay`
+			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_mollie_creditcard_icons_vpay`
 		);
 
 	// Actions
@@ -353,9 +357,9 @@ export class MollieSettingsGateway extends WooCommerceAdminPage {
 			);
 		}
 
-		if ( data.mollie_creditcard_icons_enabler !== undefined ) {
+		if ( data.mollie_creditcard_icons_enabled !== undefined ) {
 			await this.enableIconsSelectorCheckbox().setChecked(
-				data.mollie_creditcard_icons_enabler === 'yes'
+				data.mollie_creditcard_icons_enabled === 'yes'
 			);
 		}
 

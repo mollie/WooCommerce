@@ -1,7 +1,10 @@
 /**
- * External dependencies
+ *External dependencies
  */
-import { PayForOrder as PayForOrderBase } from '@inpsyde/playwright-utils/build';
+import {
+	expect,
+	PayForOrder as PayForOrderBase,
+} from '@inpsyde/playwright-utils/build';
 
 export class PayForOrder extends PayForOrderBase {
 	// Locators
@@ -43,34 +46,35 @@ export class PayForOrder extends PayForOrderBase {
 	 *
 	 * @param orderId
 	 * @param orderKey
-	 * @param data
+	 * @param order
 	 */
 	makeOrder = async (
 		orderId: number,
 		orderKey: string,
-		data: WooCommerce.ShopOrder
+		order: WooCommerce.ShopOrder
 	) => {
+		const { payment, customer } = order;
+		const { gateway, card } = payment;
 		await this.visit( orderId, orderKey );
-		await this.paymentOption( data.payment.gateway.name ).click();
+		await expect( this.paymentOption( gateway.name ) ).toBeVisible();
+		await this.paymentOption( gateway.name ).click();
 
 		if (
-			data.payment.gateway.slug === 'kbc' &&
-			data.payment.gateway.settings.issuers_dropdown_shown === 'yes'
+			gateway.slug === 'kbc' &&
+			gateway.settings.issuers_dropdown_shown === 'yes'
 		) {
-			await this.kbcIssuerSelect().selectOption(
-				data.payment.bankIssuer
-			);
+			await this.kbcIssuerSelect().selectOption( payment.bankIssuer );
 		}
 
-		if ( data.payment.gateway.slug === 'in3' ) {
+		if ( gateway.slug === 'in3' ) {
 			const phoneInput = this.in3PhoneInput();
 			if ( await phoneInput.isVisible() ) {
-				await phoneInput.fill( data.customer.billing.phone );
+				await phoneInput.fill( customer.billing.phone );
 			}
 			const birthDateInput = this.in3BirthDateInput();
 			if ( await birthDateInput.isVisible() ) {
 				await birthDateInput.click();
-				for ( const char of data.customer.birth_date ) {
+				for ( const char of customer.birth_date ) {
 					await this.page.keyboard.type( char );
 					await this.page.waitForTimeout( 100 );
 				}
@@ -78,33 +82,29 @@ export class PayForOrder extends PayForOrderBase {
 		}
 
 		if (
-			data.payment.gateway.slug === 'billie' &&
+			gateway.slug === 'billie' &&
 			( await this.billieBillingCompanyInput().isVisible() )
 		) {
 			await this.billieBillingCompanyInput().fill(
-				data.payment.billingCompany
+				payment.billingCompany
 			);
 		}
 
 		if (
-			data.payment.gateway.slug === 'giftcard' &&
-			data.payment.gateway.settings.issuers_dropdown_shown === 'yes'
+			gateway.slug === 'giftcard' &&
+			gateway.settings.issuers_dropdown_shown === 'yes'
 		) {
 			await this.giftCardSelect().selectOption( 'fashioncheque' );
 		}
 
 		if (
-			data.payment.gateway.slug === 'creditcard' &&
-			data.payment.gateway.settings.mollie_components_enabled === 'yes'
+			gateway.slug === 'creditcard' &&
+			gateway.settings.mollie_components_enabled !== 'no'
 		) {
-			await this.cardNumberInput().fill( data.payment.card.card_number );
-			await this.cardHolderInput().fill( data.payment.card.card_holder );
-			await this.cardExpiryDateInput().fill(
-				data.payment.card.expiration_date
-			);
-			await this.cardVerificationCodeInput().fill(
-				data.payment.card.card_cvv
-			);
+			await this.cardNumberInput().fill( card.card_number );
+			await this.cardHolderInput().fill( card.card_holder );
+			await this.cardExpiryDateInput().fill( card.expiration_date );
+			await this.cardVerificationCodeInput().fill( card.card_cvv );
 		}
 
 		await this.payForOrderButton().click();

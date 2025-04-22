@@ -1,10 +1,15 @@
 /**
- * External dependencies
+ *External dependencies
  */
 import { defineConfig, devices } from '@playwright/test';
+/**
+ * Internal dependencies
+ */
+import { MollieSettings } from './resources';
+import { TestBaseExtend } from './utils';
 require( 'dotenv' ).config();
 
-export default defineConfig( {
+export default defineConfig< TestBaseExtend >( {
 	testDir: 'tests',
 	expect: {
 		timeout: 10 * 1000,
@@ -69,6 +74,9 @@ export default defineConfig( {
 		...devices[ 'Desktop Chrome' ],
 
 		viewport: { width: 1280, height: 850 },
+
+		mollieApiMethod: process.env
+			.MOLLIE_API_METHOD as MollieSettings.ApiMethod,
 	},
 
 	/* Configure projects for major browsers */

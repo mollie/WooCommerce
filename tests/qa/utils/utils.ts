@@ -1,5 +1,5 @@
 /**
- * External dependencies
+ *External dependencies
  */
 import {
 	WooCommerceApi,
@@ -15,6 +15,7 @@ import {
 	MollieSettingsApiKeys,
 	MollieSettingsAdvanced,
 	getCustomerStorageStateName,
+	MollieApi,
 } from '.';
 import {
 	MollieSettings,
@@ -24,6 +25,8 @@ import {
 } from '../resources';
 
 export class Utils {
+	mollieApi: MollieApi;
+	mollieApiMethod: MollieSettings.ApiMethod;
 	plugins: Plugins;
 	wooCommerceUtils: WooCommerceUtils;
 	requestUtils: RequestUtils;
@@ -33,6 +36,8 @@ export class Utils {
 	mollieSettingsAdvanced: MollieSettingsAdvanced;
 
 	constructor( {
+		mollieApi,
+		mollieApiMethod,
 		plugins,
 		wooCommerceUtils,
 		requestUtils,
@@ -41,6 +46,8 @@ export class Utils {
 		mollieSettingsApiKeys,
 		mollieSettingsAdvanced,
 	} ) {
+		this.mollieApi = mollieApi;
+		this.mollieApiMethod = mollieApiMethod;
 		this.plugins = plugins;
 		this.wooCommerceUtils = wooCommerceUtils;
 		this.requestUtils = requestUtils;
@@ -63,23 +70,11 @@ export class Utils {
 		await this.requestUtils.activatePlugin( molliePlugin.slug );
 	};
 
-	cleanMollieDb = async () => {
-		await this.mollieSettingsAdvanced.visit();
-		await this.mollieSettingsAdvanced.cleanDb();
-	};
-
-	connectMollieApi = async (
-		data: MollieSettings.ApiKeys = mollieConfigGeneral.default
-	) => {
-		await this.mollieSettingsApiKeys.visit();
-		await this.mollieSettingsApiKeys.setup( data );
-		await this.mollieSettingsApiKeys.saveChanges();
-	};
-
 	cleanReconnectMollie = async () => {
-		await this.connectMollieApi();
-		await this.cleanMollieDb();
-		await this.connectMollieApi();
+		await this.mollieApi.setMollieApiKeys( mollieConfigGeneral.default );
+		await this.mollieApi.cleanMollieDb();
+		await this.mollieApi.setMollieApiKeys( mollieConfigGeneral.default );
+		await this.mollieApi.setApiMethod( this.mollieApiMethod );
 	};
 
 	/**

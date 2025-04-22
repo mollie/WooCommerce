@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/inpsyde/playwright-tests#readme",
   "dependencies": {
-    "@inpsyde/playwright-utils": "^2.0.0-beta.2",
+    "@inpsyde/playwright-utils": "^2.4.0",
     "dotenv": "^16.3.1",
     "dotenv-cli": "^7.3.0",
     "playwright": "^1.40.1",
@@ -35,8 +35,9 @@
     "setup:tests": "npm install && npx playwright install",
     "setup:utils": "npm run setup:tests && cd ./playwright-utils && yarn devLocal",
     "lint:md": "wp-scripts lint-md-docs ./**/*.md README.md",
-    "lint:js": "wp-scripts lint-js ./**/*.{ts,tsx,mjs} projects/**/.*/*.{ts,tsx,mjs}",
-    "lint:js:fix": "wp-scripts lint-js --fix ./**/*.{ts,tsx,mjs} ./**/**/*.{ts,tsx,mjs} ./**/.*/*.{ts,tsx,mjs} ./**/**/.*/*.{ts,tsx,mjs}",
+    "lint:md:fix": "wp-scripts lint-md-docs --fix ./**/*.md README.md",
+    "lint:js": "wp-scripts lint-js  --resolve-plugins-relative-to ./ **/*.{ts,tsx,mjs}",
+    "lint:js:fix": "wp-scripts lint-js --resolve-plugins-relative-to ./ --fix **/*.{ts,tsx,mjs}",
     "all": "npx playwright test --project=all --workers=1",
     "sequential": "npx playwright test --project=sequential --workers=1",
     "parallel-transaction-eur-classic": "npx playwright test --project=transaction-eur-classic --workers=5",
@@ -55,8 +56,5 @@
       "@wordpress/no-unsafe-wp-apis": "off",
       "no-console": "off"
     }
-  },
-  "workspaces": [
-    "playwright-utils"
-  ]
+  }
 }

@@ -1,8 +1,11 @@
 /**
- * External dependencies
+ *External dependencies
  */
 import { Locator } from '@playwright/test';
-import { Checkout as CheckoutBase } from '@inpsyde/playwright-utils/build';
+import {
+	expect,
+	Checkout as CheckoutBase,
+} from '@inpsyde/playwright-utils/build';
 
 export class Checkout extends CheckoutBase {
 	// Locators
@@ -46,33 +49,36 @@ export class Checkout extends CheckoutBase {
 	 * - selects gateway
 	 * - clicks Place Order button
 	 *
-	 * @param data
+	 * @param order
 	 */
-	makeOrder = async ( data: WooCommerce.ShopOrder ) => {
+	makeOrder = async ( order: WooCommerce.ShopOrder ) => {
+		const { payment, customer, coupons } = order;
+		const { gateway, card } = payment;
 		await this.visit();
-		await this.applyCoupons( data.coupons );
-		await this.fillCheckoutForm( data.customer );
-		await this.selectShippingMethod( data.shipping.settings.title );
-		await this.paymentOption( data.payment.gateway.name ).click();
+		await this.applyCoupons( coupons );
+		await this.fillCheckoutForm( customer );
+		await this.selectShippingMethod( order.shipping.settings.title );
+		await expect( this.paymentOption( gateway.name ) ).toBeVisible();
+		await this.paymentOption( gateway.name ).click();
 
 		if (
-			data.payment.gateway.slug === 'kbc' &&
-			data.payment.gateway.settings.issuers_dropdown_shown === 'yes'
+			gateway.slug === 'kbc' &&
+			gateway.settings.issuers_dropdown_shown === 'yes'
 		) {
 			await this.kbcIssuerSelect().selectOption(
-				data.payment.bankIssuer
+				order.payment.bankIssuer
 			);
 		}
 
-		if ( data.payment.gateway.slug === 'in3' ) {
+		if ( gateway.slug === 'in3' ) {
 			const phoneInput = this.in3PhoneInput();
 			if ( await phoneInput.isVisible() ) {
-				await phoneInput.fill( data.customer.billing.phone );
+				await phoneInput.fill( customer.billing.phone );
 			}
 			const birthDateInput = this.in3BirthDateInput();
 			if ( await birthDateInput.isVisible() ) {
 				await birthDateInput.click();
-				for ( const char of data.customer.birth_date ) {
+				for ( const char of customer.birth_date ) {
 					await this.page.keyboard.type( char );
 					await this.page.waitForTimeout( 100 );
 				}
@@ -80,39 +86,35 @@ export class Checkout extends CheckoutBase {
 		}
 
 		if (
-			data.payment.gateway.slug === 'billie' &&
+			gateway.slug === 'billie' &&
 			( await this.billieBillingCompanyInput().isVisible() )
 		) {
 			await this.billieBillingCompanyInput().fill(
-				data.payment.billingCompany
+				order.payment.billingCompany
 			);
 		}
 
 		if (
-			data.payment.gateway.slug === 'giftcard' &&
-			data.payment.gateway.settings.issuers_dropdown_shown === 'yes' &&
+			gateway.slug === 'giftcard' &&
+			gateway.settings.issuers_dropdown_shown === 'yes' &&
 			( await this.giftCardSelect().isVisible() )
 		) {
 			await this.giftCardSelect().selectOption( 'fashioncheque' );
 		}
 
 		if (
-			data.payment.gateway.slug === 'creditcard' &&
-			data.payment.gateway.settings.mollie_components_enabled === 'yes'
+			gateway.slug === 'creditcard' &&
+			gateway.settings.mollie_components_enabled !== 'no'
 		) {
 			// card input fields are loaded in iframes with delay
 			// unfortunately without timeout and clicking below the fields
 			// expiry date and cvv are not being filled
 			await this.page.waitForTimeout( 1000 );
 			await this.page.getByText( 'Secure payments provided by' ).click();
-			await this.cardNumberInput().fill( data.payment.card.card_number );
-			await this.cardHolderInput().fill( data.payment.card.card_holder );
-			await this.cardExpiryDateInput().fill(
-				data.payment.card.expiration_date
-			);
-			await this.cardVerificationCodeInput().fill(
-				data.payment.card.card_cvv
-			);
+			await this.cardNumberInput().fill( card.card_number );
+			await this.cardHolderInput().fill( card.card_holder );
+			await this.cardExpiryDateInput().fill( card.expiration_date );
+			await this.cardVerificationCodeInput().fill( card.card_cvv );
 		}
 
 		await this.placeOrder();

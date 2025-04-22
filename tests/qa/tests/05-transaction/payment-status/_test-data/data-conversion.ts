@@ -2,12 +2,33 @@
  * Internal dependencies
  */
 import {
+	MolliePaymentStatus,
+	MollieSettings,
 	MollieTestData,
 	gateways,
 	guests,
 	orders,
 	products,
 } from '../../../../resources';
+
+const getExpectedOrderStatus = (
+	paymentStatus: MolliePaymentStatus
+): WooCommerce.OrderStatus => {
+	const apiMethod = process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod;
+	const statusConversion: Record<
+		MolliePaymentStatus,
+		WooCommerce.OrderStatus
+	> = {
+		paid: 'processing',
+		authorized: 'processing',
+		canceled: 'pending',
+		expired: apiMethod === 'order' ? 'pending' : 'cancelled',
+		failed: apiMethod === 'order' ? 'pending' : 'failed',
+		open: 'pending',
+		pending: 'pending',
+	};
+	return statusConversion[ paymentStatus ];
+};
 
 export const createShopOrder = (
 	testData: MollieTestData.PaymentStatus
@@ -24,7 +45,7 @@ export const createShopOrder = (
 					...( testData.mollieComponentsEnabled && {
 						mollie_components_enabled:
 							testData.mollieComponentsEnabled,
-					} ), // for card tests with mollie components
+					} ), // for card tests with mollie components = 'no'
 				},
 			},
 			billingCompany: testData.billingCompany, // for billie tests
@@ -32,7 +53,7 @@ export const createShopOrder = (
 			bankIssuer: testData.bankIssuer, // for kbc tests
 			status: testData.paymentStatus,
 		},
-		orderStatus: testData.orderStatus,
+		orderStatus: getExpectedOrderStatus( testData.paymentStatus ),
 		customer: guests[ gateway.country ],
 		currency: gateway.currency,
 	};

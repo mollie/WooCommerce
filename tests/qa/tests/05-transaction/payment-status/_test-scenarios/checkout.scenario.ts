@@ -1,5 +1,5 @@
 /**
- * External dependencies
+ *External dependencies
  */
 import { countTotals } from '@inpsyde/playwright-utils/build';
 /**
@@ -7,23 +7,28 @@ import { countTotals } from '@inpsyde/playwright-utils/build';
  */
 import { test } from '../../../../utils';
 import { gateways as allGateways } from '../../../../resources';
+import { processMolliePaymentStatus } from './process-mollie-payment-status.scenario';
 
 export const testPaymentStatusOnCheckout = ( testId: string, order ) => {
 	const { payment, orderStatus } = order;
 	const { gateway } = payment;
+	let testedGateway = gateway.name;
 	if (
 		gateway.slug === 'creditcard' &&
-		gateway.settings.mollie_components_enabled !== 'no'
+		gateway.settings.mollie_components_enabled === 'yes'
 	) {
-		gateway.name += ' - Disabled Mollie components';
+		testedGateway += ' - Disabled Mollie components';
 	}
 
-	test( `${ testId } | Checkout - ${ gateway.name } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
+	test( `${ testId } | Checkout - ${ testedGateway } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
 		wooCommerceApi,
-		transaction,
+		utils,
+		checkout,
+		mollieHostedCheckout,
+		orderReceived,
+		payForOrder,
 		wooCommerceOrderEdit,
 	} ) => {
-		// TODO: remove when productivity issue is fixed:
 		for ( const key in allGateways ) {
 			const isEnabled = allGateways[ key ].slug === gateway.slug;
 			await wooCommerceApi.updatePaymentGateway(
@@ -41,7 +46,19 @@ export const testPaymentStatusOnCheckout = ( testId: string, order ) => {
 
 		const orderTotals = await countTotals( order );
 		payment.amount = orderTotals.order;
-		const orderId = await transaction.onCheckout( order );
+
+		await utils.fillVisitorsCart( order.products );
+
+		await checkout.makeOrder( order );
+
+		const orderId = await mollieHostedCheckout.pay( payment );
+
+		await processMolliePaymentStatus(
+			{ mollieHostedCheckout, orderReceived, payForOrder },
+			Number( orderId ),
+			order
+		);
+
 		await wooCommerceOrderEdit.assertOrderDetails(
 			Number( orderId ),
 			order

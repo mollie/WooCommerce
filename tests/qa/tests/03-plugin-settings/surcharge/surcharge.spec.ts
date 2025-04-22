@@ -20,7 +20,10 @@ import {
 	guests,
 	flatRate,
 	shopSettings,
+	MollieSettings,
 } from '../../../resources';
+
+const apiMethod = process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod;
 
 const allTests = [
 	surchargeNoFee,
@@ -53,6 +56,12 @@ for ( const surcharge of allTests ) {
 	test.describe( surcharge.describeTitle, () => {
 		for ( const tested of surcharge.tests ) {
 			const gateway = gateways[ tested.gateway ];
+
+			// exclude tests for payment methods if not available for tested API
+			if ( ! gateway.availableForApiMethods.includes( apiMethod ) ) {
+				continue;
+			}
+
 			const country = gateway.country;
 			const product = tested.product || products.mollieSimple100;
 			const expectedFeeText =
@@ -80,6 +89,9 @@ for ( const surcharge of allTests ) {
 				await classicCheckout.selectShippingMethod(
 					flatRate.settings.title
 				);
+				await expect(
+					classicCheckout.paymentOption( gateway.name )
+				).toBeVisible();
 				await classicCheckout.paymentOption( gateway.name ).click();
 				await classicCheckout.page.waitForTimeout( 2000 ); // timeout for progress spinner (can't catch the element)
 				const feeNotice = classicCheckout.paymentOptionFee(

@@ -1,5 +1,5 @@
 /**
- * External dependencies
+ *External dependencies
  */
 import fs from 'fs';
 import { APIRequestContext, Page } from '@playwright/test';
@@ -27,15 +27,17 @@ import {
 	PayForOrder,
 	MollieHostedCheckout,
 } from './frontend';
-import { MollieApi, Transaction, Utils } from '.';
+import { MollieApi, Utils } from '.';
+import { MollieSettings } from '../resources';
 
-const test = base.extend< {
+type TestBaseExtend = {
 	// Dashboard fixtures
 	mollieApi: MollieApi;
 	mollieSettingsApiKeys: MollieSettingsApiKeys;
 	mollieSettingsPaymentMethods: MollieSettingsPaymentMethods;
 	mollieSettingsAdvanced: MollieSettingsAdvanced;
 	mollieSettingsGateway: MollieSettingsGateway;
+	mollieApiMethod?: MollieSettings.ApiMethod;
 
 	// Frontend fixtures
 	visitorPage: Page;
@@ -50,8 +52,9 @@ const test = base.extend< {
 
 	// Complex fixtures
 	utils: Utils;
-	transaction: Transaction;
-} >( {
+};
+
+const test = base.extend< TestBaseExtend >( {
 	// Dashboard pages operated by Admin
 	mollieApi: async ( { request, requestUtils }, use ) => {
 		await use( new MollieApi( { request, requestUtils } ) );
@@ -71,6 +74,7 @@ const test = base.extend< {
 		)?.description;
 		await use( new MollieSettingsGateway( { page, gatewaySlug } ) );
 	},
+	mollieApiMethod: [ null, { option: true } ],
 	wooCommerceOrderEdit: async ( { page }, use ) => {
 		await use( new WooCommerceOrderEdit( { page } ) );
 	},
@@ -127,6 +131,7 @@ const test = base.extend< {
 	utils: async (
 		{
 			mollieApi,
+			mollieApiMethod,
 			plugins,
 			wooCommerceUtils,
 			requestUtils,
@@ -140,6 +145,7 @@ const test = base.extend< {
 		await use(
 			new Utils( {
 				mollieApi,
+				mollieApiMethod,
 				plugins,
 				wooCommerceUtils,
 				requestUtils,
@@ -150,30 +156,6 @@ const test = base.extend< {
 			} )
 		);
 	},
-	transaction: async (
-		{
-			wooCommerceUtils,
-			orderReceived,
-			checkout,
-			classicCheckout,
-			payForOrder,
-			mollieHostedCheckout,
-			utils,
-		},
-		use
-	) => {
-		await use(
-			new Transaction( {
-				wooCommerceUtils,
-				orderReceived,
-				checkout,
-				classicCheckout,
-				payForOrder,
-				mollieHostedCheckout,
-				utils,
-			} )
-		);
-	},
 } );
 
-export { test, expect };
+export { test, expect, TestBaseExtend };

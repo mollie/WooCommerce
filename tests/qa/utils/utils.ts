@@ -1,5 +1,5 @@
 /**
- * External dependencies
+ *External dependencies
  */
 import {
 	WooCommerceApi,
@@ -26,6 +26,7 @@ import {
 
 export class Utils {
 	mollieApi: MollieApi;
+	mollieApiMethod: MollieSettings.ApiMethod;
 	plugins: Plugins;
 	wooCommerceUtils: WooCommerceUtils;
 	requestUtils: RequestUtils;
@@ -36,6 +37,7 @@ export class Utils {
 
 	constructor( {
 		mollieApi,
+		mollieApiMethod,
 		plugins,
 		wooCommerceUtils,
 		requestUtils,
@@ -45,6 +47,7 @@ export class Utils {
 		mollieSettingsAdvanced,
 	} ) {
 		this.mollieApi = mollieApi;
+		this.mollieApiMethod = mollieApiMethod;
 		this.plugins = plugins;
 		this.wooCommerceUtils = wooCommerceUtils;
 		this.requestUtils = requestUtils;
@@ -71,7 +74,7 @@ export class Utils {
 		await this.mollieApi.setMollieApiKeys( mollieConfigGeneral.default );
 		await this.mollieApi.cleanMollieDb();
 		await this.mollieApi.setMollieApiKeys( mollieConfigGeneral.default );
-		await this.mollieApi.setApiMethod();
+		await this.mollieApi.setApiMethod( this.mollieApiMethod );
 	};
 
 	/**

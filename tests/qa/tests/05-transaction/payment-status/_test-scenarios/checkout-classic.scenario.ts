@@ -1,25 +1,31 @@
 /**
- * External dependencies
+ *External dependencies
  */
 import { countTotals } from '@inpsyde/playwright-utils/build';
 /**
  * Internal dependencies
  */
 import { test } from '../../../../utils';
+import { processMolliePaymentStatus } from './process-mollie-payment-status.scenario';
 
 export const testPaymentStatusOnClassicCheckout = ( testId: string, order ) => {
 	const { payment, orderStatus } = order;
 	const { gateway } = payment;
+	let testedGateway = gateway.name;
 	if (
 		gateway.slug === 'creditcard' &&
-		gateway.settings.mollie_components_enabled !== 'no'
+		gateway.settings.mollie_components_enabled === 'yes'
 	) {
-		gateway.name += ' - Disabled Mollie components';
+		testedGateway += ' - Disabled Mollie components';
 	}
 
-	test( `${ testId } | Classic checkout - ${ gateway.name } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
+	test( `${ testId } | Classic checkout - ${ testedGateway } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
 		wooCommerceApi,
-		transaction,
+		utils,
+		classicCheckout,
+		mollieHostedCheckout,
+		orderReceived,
+		payForOrder,
 		wooCommerceOrderEdit,
 	} ) => {
 		const currency = gateway.currency;
@@ -31,7 +37,19 @@ export const testPaymentStatusOnClassicCheckout = ( testId: string, order ) => {
 
 		const orderTotals = await countTotals( order );
 		payment.amount = orderTotals.order;
-		const orderId = await transaction.onClassicCheckout( order );
+
+		await utils.fillVisitorsCart( order.products );
+
+		await classicCheckout.makeOrder( order );
+
+		const orderId = await mollieHostedCheckout.pay( payment );
+
+		await processMolliePaymentStatus(
+			{ mollieHostedCheckout, orderReceived, payForOrder },
+			Number( orderId ),
+			order
+		);
+
 		await wooCommerceOrderEdit.assertOrderDetails(
 			Number( orderId ),
 			order

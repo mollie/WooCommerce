@@ -190,6 +190,7 @@ export type MollieGateway = {
 	currency?: string;
 	minAmount?: string;
 	maxAmount?: string;
+	availableForApiMethods?: MollieSettings.ApiMethod[];
 	settings?: MollieSettings.Gateway;
 };
 
@@ -251,7 +252,7 @@ export namespace MollieTestData {
 		testId: string;
 		gatewaySlug: string;
 		paymentStatus: MolliePaymentStatus;
-		orderStatus: WooCommerce.OrderStatus;
+		orderStatus?: WooCommerce.OrderStatus;
 		card?: WooCommerce.CreditCard;
 		mollieComponentsEnabled?: 'yes' | 'no';
 		bankIssuer?: string;

@@ -19,7 +19,6 @@ export const creditCardDisabledMollieComponentsClassicCheckout: MollieTestData.P
 			paymentStatus: 'open',
 			card: cards.visa,
 			mollieComponentsEnabled: 'no',
-			orderStatus: 'pending',
 		},
 		{
 			testId: 'C3378',
@@ -27,7 +26,6 @@ export const creditCardDisabledMollieComponentsClassicCheckout: MollieTestData.P
 			paymentStatus: 'failed',
 			card: cards.visa,
 			mollieComponentsEnabled: 'no',
-			orderStatus: 'pending',
 		},
 		{
 			testId: 'C3379',
@@ -35,7 +33,6 @@ export const creditCardDisabledMollieComponentsClassicCheckout: MollieTestData.P
 			paymentStatus: 'expired',
 			card: cards.visa,
 			mollieComponentsEnabled: 'no',
-			orderStatus: 'pending',
 		},
 	];
 
@@ -55,7 +52,6 @@ export const creditCardDisabledMollieComponentsCheckout: MollieTestData.PaymentS
 			paymentStatus: 'open',
 			card: cards.visa,
 			mollieComponentsEnabled: 'no',
-			orderStatus: 'pending',
 		},
 		{
 			testId: 'C420275',
@@ -63,7 +59,6 @@ export const creditCardDisabledMollieComponentsCheckout: MollieTestData.PaymentS
 			paymentStatus: 'failed',
 			card: cards.visa,
 			mollieComponentsEnabled: 'no',
-			orderStatus: 'pending',
 		},
 		{
 			testId: 'C420276',
@@ -71,7 +66,6 @@ export const creditCardDisabledMollieComponentsCheckout: MollieTestData.PaymentS
 			paymentStatus: 'expired',
 			card: cards.visa,
 			mollieComponentsEnabled: 'no',
-			orderStatus: 'pending',
 		},
 	];
 
@@ -91,7 +85,6 @@ export const creditCardDisabledMollieComponentsPayForOrder: MollieTestData.Payme
 			paymentStatus: 'open',
 			card: cards.visa,
 			mollieComponentsEnabled: 'no',
-			orderStatus: 'pending',
 		},
 		{
 			testId: 'C420390',
@@ -99,7 +92,6 @@ export const creditCardDisabledMollieComponentsPayForOrder: MollieTestData.Payme
 			paymentStatus: 'failed',
 			card: cards.visa,
 			mollieComponentsEnabled: 'no',
-			orderStatus: 'pending',
 		},
 		{
 			testId: 'C420391',
@@ -107,6 +99,5 @@ export const creditCardDisabledMollieComponentsPayForOrder: MollieTestData.Payme
 			paymentStatus: 'expired',
 			card: cards.visa,
 			mollieComponentsEnabled: 'no',
-			orderStatus: 'pending',
 		},
 	];

@@ -35,7 +35,11 @@ export const surchargeFixedAndPercentageUnderLimit: MollieTestData.SurchargeTest
 			{ testId: 'C420325', gateway: 'mybank' },
 			{ testId: 'C130892', gateway: 'paypal' },
 			{ testId: 'C420137', gateway: 'paysafecard' },
-			{ testId: 'C129809', gateway: 'przelewy24' },
+			{
+				testId: 'C129809',
+				gateway: 'przelewy24',
+				expectedFeeText: '+ zł 10 + 10% fee might apply (excl. VAT)',
+			},
 			{ testId: 'C136535', gateway: 'banktransfer' },
 			{ testId: 'C106914', gateway: 'in3' },
 			{ testId: 'NotInTestRail', gateway: 'paybybank' },

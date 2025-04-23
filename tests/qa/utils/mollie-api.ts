@@ -1,5 +1,5 @@
 /**
- *External dependencies
+ * External dependencies
  */
 import { RequestUtils, WooCommerceApi } from '@inpsyde/playwright-utils/build';
 /**

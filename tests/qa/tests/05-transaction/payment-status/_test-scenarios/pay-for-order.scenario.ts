@@ -1,5 +1,5 @@
 /**
- *External dependencies
+ * External dependencies
  */
 import { countTotals } from '@inpsyde/playwright-utils/build';
 /**

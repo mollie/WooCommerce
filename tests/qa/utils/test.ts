@@ -1,5 +1,5 @@
 /**
- *External dependencies
+ * External dependencies
  */
 import fs from 'fs';
 import { APIRequestContext, Page } from '@playwright/test';

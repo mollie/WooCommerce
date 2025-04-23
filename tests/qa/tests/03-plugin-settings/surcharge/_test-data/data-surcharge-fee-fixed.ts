@@ -33,7 +33,11 @@ export const surchargeFixed: MollieTestData.SurchargeTestsGroup = {
 		{ testId: 'C420320', gateway: 'mybank' },
 		{ testId: 'C130887', gateway: 'paypal' },
 		{ testId: 'C420132', gateway: 'paysafecard' },
-		{ testId: 'C129804', gateway: 'przelewy24' },
+		{
+			testId: 'C129804',
+			gateway: 'przelewy24',
+			expectedFeeText: '+ zł 10 fee might apply (excl. VAT)',
+		},
 		{ testId: 'C136530', gateway: 'banktransfer' },
 		{ testId: 'C106909', gateway: 'in3' },
 		{ testId: 'NotInTestRail', gateway: 'paybybank' },

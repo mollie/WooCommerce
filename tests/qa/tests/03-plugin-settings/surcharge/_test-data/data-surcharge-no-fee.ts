@@ -1,11 +1,7 @@
 /**
  * Internal dependencies
  */
-import {
-	MollieSettings,
-	MollieTestData,
-	products,
-} from '../../../../resources';
+import { MollieTestData, products } from '../../../../resources';
 
 export const surchargeNoFee: MollieTestData.SurchargeTestsGroup = {
 	describeTitle: 'Surcharge fee > No fee',

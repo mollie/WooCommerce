@@ -1,5 +1,5 @@
 /**
- *External dependencies
+ * External dependencies
  */
 import { WooCommerceAdminPage } from '@inpsyde/playwright-utils/build';
 /**

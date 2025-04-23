@@ -1,5 +1,5 @@
 /**
- *External dependencies
+ * External dependencies
  */
 import { defineConfig, devices } from '@playwright/test';
 /**

@@ -251,7 +251,7 @@ class PaymentLines
                 }
 
                 $fee =  [
-                    'type' => isset($cart_fee['data']['amount']) && $cart_fee['data']['amount'] < 0 ? 'surcharge' : 'discount',
+                    'type' => $cart_fee_total > 0 ? 'surcharge' : 'discount',
                     'description' => $cart_fee['name'],
                     'quantity' => 1,
                     'vatRate' => $this->dataHelper->formatCurrencyValue($cart_fee_vat_rate, $this->currency),

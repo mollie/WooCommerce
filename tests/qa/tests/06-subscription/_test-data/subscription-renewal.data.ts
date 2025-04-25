@@ -389,7 +389,7 @@ export const classicCheckoutEur: MollieTestData.PaymentStatus[] = [
 	{
 		testId: 'C3622413',
 		gatewaySlug: 'riverty',
-		paymentStatus: 'paid',
+		paymentStatus: 'authorized',
 	},
 	{
 		testId: 'C3622414',

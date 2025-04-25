@@ -39,6 +39,9 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 		this.paymentOptionsContainer().locator( '#billing_phone_in3' );
 	in3BirthDateInput = (): Locator =>
 		this.paymentOptionsContainer().locator( '#billing_birthdate_in3' );
+	rivertyBirthDateInput = (): Locator =>
+		this.page.locator( '#billing_birthdate_riverty' );
+	rivertyPhoneInput = () => this.page.locator( '#billing_phone_riverty' );
 	paymentOptionListitems = (): Locator =>
 		this.paymentOptionsContainer().locator( 'li' );
 	paymentOptionFee = ( name: string ): Locator =>
@@ -74,6 +77,7 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 		await this.selectShippingMethod( order.shipping.settings.title );
 		await expect( this.paymentOption( gateway.name ) ).toBeVisible();
 		await this.paymentOption( gateway.name ).click();
+
 		if (
 			gateway.slug === 'kbc' &&
 			gateway.settings.issuers_dropdown_shown === 'yes'
@@ -106,6 +110,7 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 				order.payment.billingCompany
 			);
 		}
+
 		if (
 			gateway.slug === 'giftcard' &&
 			gateway.settings.issuers_dropdown_shown === 'yes' &&
@@ -113,6 +118,7 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 		) {
 			await this.giftCardSelect().selectOption( 'fashioncheque' );
 		}
+
 		if (
 			gateway.slug === 'creditcard' &&
 			gateway.settings.mollie_components_enabled !== 'no'
@@ -122,6 +128,22 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 			await this.cardExpiryDateInput().fill( card.expiration_date );
 			await this.cardVerificationCodeInput().fill( card.card_cvv );
 		}
+
+		if ( gateway.slug === 'riverty' ) {
+			const phoneInput = this.rivertyPhoneInput();
+			if ( await phoneInput.isVisible() ) {
+				await phoneInput.fill( customer.billing.phone );
+			}
+			const birthDateInput = this.rivertyBirthDateInput();
+			if ( await birthDateInput.isVisible() ) {
+				await birthDateInput.click();
+				for ( const char of customer.birth_date ) {
+					await this.page.keyboard.type( char );
+					await this.page.waitForTimeout( 100 );
+				}
+			}
+		}
+
 		await this.placeOrder();
 	};
 

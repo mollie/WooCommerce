@@ -39,6 +39,11 @@ export class Checkout extends CheckoutBase {
 		this.paymentOptionsContainer().locator( '#billing-phone' );
 	in3BirthDateInput = (): Locator =>
 		this.paymentOptionsContainer().locator( '#billing-birthdate' );
+	rivertyBirthDateInput = (): Locator =>
+		this.page.locator( '#billing-birthdate' );
+	rivertyPhoneInput = (): Locator =>
+		this.page.locator( '#billing-phone-riverty' );
+	
 
 	// Actions
 
@@ -115,6 +120,21 @@ export class Checkout extends CheckoutBase {
 			await this.cardHolderInput().fill( card.card_holder );
 			await this.cardExpiryDateInput().fill( card.expiration_date );
 			await this.cardVerificationCodeInput().fill( card.card_cvv );
+		}
+
+		if ( gateway.slug === 'riverty' ) {
+			const phoneInput = this.rivertyPhoneInput();
+			if ( await phoneInput.isVisible() ) {
+				await phoneInput.fill( customer.billing.phone );
+			}
+			const birthDateInput = this.rivertyBirthDateInput();
+			if ( await birthDateInput.isVisible() ) {
+				await birthDateInput.click();
+				for ( const char of customer.birth_date ) {
+					await this.page.keyboard.type( char );
+					await this.page.waitForTimeout( 100 );
+				}
+			}
 		}
 
 		await this.placeOrder();

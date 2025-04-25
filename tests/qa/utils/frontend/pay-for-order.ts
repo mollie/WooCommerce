@@ -36,6 +36,9 @@ export class PayForOrder extends PayForOrderBase {
 		this.page.locator( '#billing_company_billie' );
 	in3PhoneInput = () => this.page.locator( '#billing_phone_in3' );
 	in3BirthDateInput = () => this.page.locator( '#billing_birthdate_in3' );
+	rivertyBirthDateInput = () =>
+		this.page.locator( '#billing_birthdate_riverty' );
+	rivertyPhoneInput = () => this.page.locator( '#billing_phone_riverty' );
 
 	// Actions
 
@@ -105,6 +108,21 @@ export class PayForOrder extends PayForOrderBase {
 			await this.cardHolderInput().fill( card.card_holder );
 			await this.cardExpiryDateInput().fill( card.expiration_date );
 			await this.cardVerificationCodeInput().fill( card.card_cvv );
+		}
+
+		if ( gateway.slug === 'riverty' ) {
+			const phoneInput = this.rivertyPhoneInput();
+			if ( await phoneInput.isVisible() ) {
+				await phoneInput.fill( customer.billing.phone );
+			}
+			const birthDateInput = this.rivertyBirthDateInput();
+			if ( await birthDateInput.isVisible() ) {
+				await birthDateInput.click();
+				for ( const char of customer.birth_date ) {
+					await this.page.keyboard.type( char );
+					await this.page.waitForTimeout( 100 );
+				}
+			}
 		}
 
 		await this.payForOrderButton().click();

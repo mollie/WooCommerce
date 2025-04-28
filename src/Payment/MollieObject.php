@@ -621,7 +621,8 @@ class MollieObject
     ) {
 
         if ($this->dataHelper->isSubscriptionPluginActive()) {
-            $payment = isset($payment->_embedded->payments[0]) ? $payment->_embedded->payments[0] : false;
+            //get Payment from orders API
+            $payment = isset($payment->_embedded->payments[0]) ? $payment->_embedded->payments[0] : $payment;
             if (
                 $payment && $payment->sequenceType === 'first'
                 && (property_exists($payment, 'mandateId') && $payment->mandateId !== null)

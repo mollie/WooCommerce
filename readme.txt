@@ -236,7 +236,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 * Fixed - Klarna, Riverty and Billie incorrectly displayed when Paments API is active
 * Fixed - refreshing gateway list in the Mollie settings
 * Fixed - on block checkout an empty Gateway description was displayed
-* Fixed - Phone Number Validation uses billing/shipping country when no phone country prefix now
+* Fixed - Phone Number Validation uses now billing/shipping country when no phone country prefix 
 * Removed - deprecated SOFORT and Giropay payment methods
 
 = 8.0.0 - 27-03-2025 =

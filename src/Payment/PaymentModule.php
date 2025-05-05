@@ -334,7 +334,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
         $order = wc_get_order($order_id);
 
         // Does WooCommerce order contain a Mollie payment?
-        if (strstr($order->get_payment_method(), 'mollie_wc_gateway_') === false) {
+        if (!$order || strstr($order->get_payment_method(), 'mollie_wc_gateway_') === false) {
             return;
         }
 
@@ -346,14 +346,18 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
         $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - Try to process completed order for a potential capture at Mollie.');
 
-        $mollie_transaction_id = ( $mollie_transaction_id = $order->get_meta('_mollie_order_id', true) ) ? $mollie_transaction_id : false;
+        $mollie_transaction_id = $order->get_meta('_mollie_order_id', true);
         if (!$mollie_transaction_id) {
-            $mollie_transaction_id = ( $mollie_transaction_id = $order->get_meta('_mollie_payment_id', true) ) ? $mollie_transaction_id : false;
+            $mollie_transaction_id = $order->get_meta('_mollie_payment_id', true);
         }
-        if (empty($mollie_transaction_id)) {
+        if (!$mollie_transaction_id) {
+            $mollie_transaction_id = $order->get_transaction_id();
+        }
+        if (!$mollie_transaction_id) {
             $message = _x('Order contains Mollie payment method, but not a valid Mollie Transaction ID. Processing shipment & capture failed.', 'Order note info', 'mollie-payments-for-woocommerce');
             $order->add_order_note($message);
             $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' Order contains Mollie payment method, but not a valid Mollie Transaction ID. Processing shipment & capture failed.');
+            return;
         }
 
         $apiKey = $this->settingsHelper->getApiKey();
@@ -409,8 +413,6 @@ class PaymentModule implements ServiceModule, ExecutableModule
         } catch (ApiException $e) {
             $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - Processing shipment & capture failed, error: ' . $e->getMessage());
         }
-
-        return;
     }
 
     /**

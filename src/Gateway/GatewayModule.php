@@ -304,7 +304,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
     {
         $order = wc_get_order($order_id);
 
-        $mollie_payment_id = $order->get_meta('_mollie_payment_id', $single = true);
+        $mollie_payment_id = $order->get_meta('_mollie_payment_id', true);
         $order_payment_method = $order->get_payment_method();
 
         if ($mollie_payment_id !== '' && (strpos($order_payment_method, 'mollie') === false)) {

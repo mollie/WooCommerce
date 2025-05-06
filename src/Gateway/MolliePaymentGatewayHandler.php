@@ -480,7 +480,6 @@ class MolliePaymentGatewayHandler
             if ($payment->isOpen()) {
                 // Add a message to log and order explaining a payment with status "open", only if it hasn't been added already
                 if ($order->get_meta('_mollie_open_status_note') !== '1') {
-
                     // Add message to log
                     $this->logger->debug(
                         $this->id

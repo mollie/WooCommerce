@@ -193,20 +193,6 @@ function mollieWooCommerceFormatCurrencyValue($value, $currency)
     return number_format($value, 2, '.', '');
 }
 
-function transformPhoneToNLFormat($phone)
-{
-    $startsWith06 = preg_match('/^06/', $phone);
-    if ($startsWith06) {
-        $prefix = '+316';
-        $phone = substr($phone, 2);
-        if (!$phone) {
-            return null;
-        }
-        $phone = $prefix . $phone;
-    }
-    return $phone;
-}
-
 function isMollieBirthValid($billing_birthdate)
 {
     $today = new DateTime();

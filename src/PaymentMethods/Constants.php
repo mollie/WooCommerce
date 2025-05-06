@@ -13,4 +13,6 @@ class Constants
     public const BANCOMATPAY = 'bancomatpay';
     public const ALMA = 'alma';
     public const SWISH = 'swish';
+    public const RIVERTY = 'riverty';
+    public const IN3 = 'in3';
 }

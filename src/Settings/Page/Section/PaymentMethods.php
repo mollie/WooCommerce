@@ -207,7 +207,7 @@ class PaymentMethods extends AbstractSection
             )) . '</span>';
         } else {
             if ($documentationLink) {
-                $messageOrLink = "<a class='mollie-settings-pm__info' href='" . $documentationLink . "'>" . esc_html(__(
+                $messageOrLink = "<a class='mollie-settings-pm__info' href='" . $documentationLink . "' target='_blank'>" . esc_html(__(
                     'More information',
                     'mollie-payments-for-woocommerce'
                 )) . '</a>';

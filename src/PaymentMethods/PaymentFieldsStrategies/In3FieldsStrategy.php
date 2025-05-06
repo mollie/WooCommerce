@@ -26,7 +26,7 @@ class In3FieldsStrategy extends AbstractPaymentFieldsRenderer implements Payment
             $showPhoneField = true;
             $order = $this->getOrderIdOnPayForOrderPage();
             $phoneValue = $order->get_billing_phone();
-            $birthValue = $order->get_meta(self::FIELD_BIRTHDATE);
+            $birthValue = $order->get_meta('billing_birthdate', true);
         }
 
         if (is_checkout() && !is_checkout_pay_page() && !$isPhoneRequired) {

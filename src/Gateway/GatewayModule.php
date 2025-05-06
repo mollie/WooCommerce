@@ -410,7 +410,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             if ($paymentMethod !== $method) {
                 continue;
             }
-          
+
             $phoneValue = filter_input(INPUT_POST, 'billing_phone_' . $method, FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
             $phoneValid = $phoneValue && $this->isPhoneValid($phoneValue) ? $phoneValue : null;
 

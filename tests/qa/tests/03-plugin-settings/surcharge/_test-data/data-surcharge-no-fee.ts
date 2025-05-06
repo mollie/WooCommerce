@@ -17,7 +17,7 @@ export const surchargeNoFee: MollieTestData.SurchargeTestsGroup = {
 	},
 	tests: [
 		// { testId: 'C420309', gateway: 'applepay' },
-		{ testId: 'NotInTestRail', gateway: 'creditcard' },
+		{ testId: 'C89350', gateway: 'creditcard' },
 		{ testId: 'C130896', gateway: 'giftcard' },
 		{
 			testId: 'C129813',
@@ -36,9 +36,9 @@ export const surchargeNoFee: MollieTestData.SurchargeTestsGroup = {
 		{ testId: 'C129803', gateway: 'przelewy24' },
 		{ testId: 'C136529', gateway: 'banktransfer' },
 		{ testId: 'C106908', gateway: 'in3' },
-		{ testId: 'NotInTestRail', gateway: 'paybybank' },
-		{ testId: 'NotInTestRail', gateway: 'mbway' },
-		{ testId: 'NotInTestRail', gateway: 'multibanco' },
-		{ testId: 'NotInTestRail', gateway: 'swish' },
+		{ testId: 'C4237542', gateway: 'paybybank' },
+		{ testId: 'C4237522', gateway: 'mbway' },
+		{ testId: 'C4237513', gateway: 'multibanco' },
+		{ testId: 'C4237552', gateway: 'swish' },
 	],
 };

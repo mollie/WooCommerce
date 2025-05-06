@@ -19,7 +19,7 @@ export const surchargeFixedAndPercentageUnderLimit: MollieTestData.SurchargeTest
 		},
 		tests: [
 			// { testId: 'C420315', gateway: 'applepay' },
-			{ testId: 'NotInTestRail', gateway: 'creditcard' },
+			{ testId: 'C100199', gateway: 'creditcard' },
 			{ testId: 'C130902', gateway: 'giftcard' },
 			{
 				testId: 'C129819',
@@ -42,11 +42,11 @@ export const surchargeFixedAndPercentageUnderLimit: MollieTestData.SurchargeTest
 			},
 			{ testId: 'C136535', gateway: 'banktransfer' },
 			{ testId: 'C106914', gateway: 'in3' },
-			{ testId: 'NotInTestRail', gateway: 'paybybank' },
-			{ testId: 'NotInTestRail', gateway: 'mbway' },
-			{ testId: 'NotInTestRail', gateway: 'multibanco' },
+			{ testId: 'C4237534', gateway: 'paybybank' },
+			{ testId: 'C4237530', gateway: 'mbway' },
+			{ testId: 'C4237520', gateway: 'multibanco' },
 			{
-				testId: 'NotInTestRail',
+				testId: 'C4237544',
 				gateway: 'swish',
 				expectedFeeText: '+ kr 10 + 10% fee might apply (excl. VAT)',
 			},

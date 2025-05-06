@@ -46,43 +46,43 @@ export const checkoutNonEur: MollieTestData.PaymentStatus[] = [
 	},
 	// recently added payment methods
 	{
-		testId: 'NotInTestRail',
+		testId: 'C4237599',
 		gatewaySlug: 'paybybank',
 		paymentStatus: 'paid',
 	},
 	{
-		testId: 'NotInTestRail',
+		testId: 'C4237500',
 		gatewaySlug: 'paybybank',
 		paymentStatus: 'failed',
 	},
 	{
-		testId: 'NotInTestRail',
+		testId: 'C4237501',
 		gatewaySlug: 'paybybank',
 		paymentStatus: 'canceled',
 	},
 	{
-		testId: 'NotInTestRail',
+		testId: 'C4237502',
 		gatewaySlug: 'paybybank',
 		paymentStatus: 'expired',
 	},
 	// Swish
 	{
-		testId: 'NotInTestRail',
+		testId: 'C4237603',
 		gatewaySlug: 'swish',
 		paymentStatus: 'paid',
 	},
 	{
-		testId: 'NotInTestRail',
+		testId: 'C4237604',
 		gatewaySlug: 'swish',
 		paymentStatus: 'failed',
 	},
 	{
-		testId: 'NotInTestRail',
+		testId: 'C4237605',
 		gatewaySlug: 'swish',
 		paymentStatus: 'canceled',
 	},
 	{
-		testId: 'NotInTestRail',
+		testId: 'C4237606',
 		gatewaySlug: 'swish',
 		paymentStatus: 'expired',
 	},

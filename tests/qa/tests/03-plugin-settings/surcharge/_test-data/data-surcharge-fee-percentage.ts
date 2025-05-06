@@ -36,9 +36,9 @@ export const surchargePercentage: MollieTestData.SurchargeTestsGroup = {
 		{ testId: 'C129805', gateway: 'przelewy24' },
 		{ testId: 'C136531', gateway: 'banktransfer' },
 		{ testId: 'C106910', gateway: 'in3' },
-		{ testId: 'NotInTestRail', gateway: 'paybybank' },
-		{ testId: 'NotInTestRail', gateway: 'mbway' },
-		{ testId: 'NotInTestRail', gateway: 'multibanco' },
-		{ testId: 'NotInTestRail', gateway: 'swish' },
+		{ testId: 'C4237538', gateway: 'paybybank' },
+		{ testId: 'C4237526', gateway: 'mbway' },
+		{ testId: 'C4237517', gateway: 'multibanco' },
+		{ testId: 'C4237548', gateway: 'swish' },
 	],
 };

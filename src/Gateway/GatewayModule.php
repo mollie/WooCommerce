@@ -304,7 +304,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
     {
         $order = wc_get_order($order_id);
 
-        $mollie_payment_id = $order->get_meta('_mollie_payment_id', $single = true);
+        $mollie_payment_id = $order->get_meta('_mollie_payment_id', true);
         $order_payment_method = $order->get_payment_method();
 
         if ($mollie_payment_id !== '' && (strpos($order_payment_method, 'mollie') === false)) {
@@ -410,7 +410,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             if ($paymentMethod !== $method) {
                 continue;
             }
-
+          
             $phoneValue = filter_input(INPUT_POST, 'billing_phone_' . $method, FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
             $phoneValid = $phoneValue && $this->isPhoneValid($phoneValue) ? $phoneValue : null;
 

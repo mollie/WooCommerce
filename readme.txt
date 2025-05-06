@@ -226,17 +226,18 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 8.0.1-beta3 - 30-04-2025 =
+= 8.0.1-beta4 - 06-05-2025 =
 * Fixed - check that Klarna webhooks will not be received for transactions if orders API is active
 * Fixed - most problems with gateway surcharges and 3rd party fees
 * Fixed - problems with Paments API when checkout address fields are removed
 * Fixed - some PHP Errors
 * Fixed - negative fees not working with payments API
 * Fixed - imageUrl will be validated before adding it
-* Fixed - Klarna, Riverty and Billie incorrectly displayed when Paments API is active
 * Fixed - refreshing gateway list in the Mollie settings
 * Fixed - on block checkout an empty Gateway description was displayed
+* Fixed - transaktions on block checkout not work for Riverty
 * Fixed - Phone Number Validation uses now billing/shipping country when no phone country prefix 
+* Fixed - More information on inactive paymed methos will no open in new tab @masteradhoc
 * Removed - deprecated SOFORT and Giropay payment methods
 
 = 8.0.0 - 27-03-2025 =

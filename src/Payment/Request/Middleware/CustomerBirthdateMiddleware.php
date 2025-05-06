@@ -46,17 +46,22 @@ class CustomerBirthdateMiddleware implements RequestMiddlewareInterface
         $paymentMethod = $this->paymentMethods[$paymentMethodId];
         $additionalFields = $paymentMethod->getProperty('additionalFields');
         $methodId = $additionalFields && in_array('birthdate', $additionalFields, true);
+        $optionName = 'billing_birthdate_' . $paymentMethod->getProperty('id');
+        $format = "Y-m-d";
+        $birthdateMeta = $order->get_meta('billing_birthdate', true);
+        if ($birthdateMeta) {
+            $requestData['consumerDateOfBirth'] = gmdate($format, (int) strtotime($birthdateMeta));
+            return $next($requestData, $order, $context);
+        }
         if ($methodId) {
-            $optionName = 'billing_birthdate_' . $paymentMethod->getProperty('id');
             // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             $fieldPosted = wc_clean(wp_unslash($_POST[$optionName] ?? ''));
             if ($fieldPosted === '' || !is_string($fieldPosted)) {
                 return $requestData;
             }
 
-            $order->update_meta_data($optionName, $fieldPosted);
+            $order->update_meta_data('billing_birthdate', $fieldPosted);
             $order->save();
-            $format = "Y-m-d";
             $requestData['consumerDateOfBirth'] = gmdate($format, (int) strtotime($fieldPosted));
         }
         return $next($requestData, $order, $context);

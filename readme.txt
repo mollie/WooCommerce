@@ -235,9 +235,9 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 * Fixed - imageUrl will be validated before adding it
 * Fixed - refreshing gateway list in the Mollie settings
 * Fixed - on block checkout an empty Gateway description was displayed
-* Fixed - transaktions on block checkout not work for Riverty
+* Fixed - ransactions on block checkout don’t work for Riverty
 * Fixed - Phone Number Validation uses now billing/shipping country when no phone country prefix 
-* Fixed - More information on inactive paymed methos will no open in new tab @masteradhoc
+* Fixed - More information on inactive payment methods will not open in the new tab @masteradhoc
 * Removed - deprecated SOFORT and Giropay payment methods
 
 = 8.0.0 - 27-03-2025 =

@@ -7,12 +7,12 @@
  * Author: Mollie
  * Author URI: https://www.mollie.com
  * Requires at least: 5.0
- * Tested up to: 6.7
+ * Tested up to: 6.8
  * Text Domain: mollie-payments-for-woocommerce
  * Domain Path: /languages
  * License: GPLv2 or later
  * WC requires at least: 3.9
- * WC tested up to: 9.7
+ * WC tested up to: 9.8
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
  */

@@ -226,7 +226,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 8.0.1-beta4 - 06-05-2025 =
+= 8.0.1 - 07-05-2025 =
 * Fixed - check that Klarna webhooks will not be received for transactions if orders API is active
 * Fixed - most problems with gateway surcharges and 3rd party fees
 * Fixed - problems with Paments API when checkout address fields are removed

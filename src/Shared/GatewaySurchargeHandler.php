@@ -210,23 +210,6 @@ class GatewaySurchargeHandler
             }
         }
     }
-    /**
-     *
-     *@throws \Exception
-     */
-    protected function cartRemoveFee()
-    {
-        $label = $this->gatewayFeeLabel;
-        add_action('woocommerce_before_calculate_totals', static function () use ($label) {
-            $fees = WC()->cart->get_fees();
-            foreach ($fees as $key => $fee) {
-                if ($fees[$key]->name === $label) {
-                    unset($fees[$key]);
-                }
-            }
-            WC()->cart->fees_api()->set_fees($fees);
-        });
-    }
 
     protected function orderAddFee($order, $amount, $surchargeName)
     {

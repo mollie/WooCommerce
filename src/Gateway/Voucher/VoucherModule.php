@@ -191,7 +191,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
                     <option value="<?php echo esc_attr(Voucher::GIFT); ?>" <?php selected($savedCategory, Voucher::GIFT); ?>>
                         <?php esc_html_e('Gift', 'mollie-payments-for-woocommerce'); ?>
                     </option>
-                    <option value="<?php echo esc_html(Voucher::SPORT_CULTURE); ?>" <?php selected($savedCategory, Voucher::SPORT_CULTURE); ?>>
+                    <option value="<?php echo esc_attr(Voucher::SPORT_CULTURE); ?>" <?php selected($savedCategory, Voucher::SPORT_CULTURE); ?>>
                         <?php esc_html_e('Sport & Culture', 'mollie-payments-for-woocommerce'); ?>
                     </option>
                 </select>

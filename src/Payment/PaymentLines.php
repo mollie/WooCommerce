@@ -123,9 +123,9 @@ class PaymentLines
     private function process_items($voucherDefaultCategory)
     {
         $voucherSettings = get_option('mollie_wc_gateway_voucher_settings') ?: get_option('mollie_wc_gateway_mealvoucher_settings');
-        $isMealVoucherEnabled = $voucherSettings ? ($voucherSettings['enabled'] == 'yes') : false;
+        $isVoucherEnabled = $voucherSettings ? ($voucherSettings['enabled'] == 'yes') : false;
         if (!$voucherSettings) {
-            $isMealVoucherEnabled = $this->dataHelper->getPaymentMethod('voucher') ? true : false;
+            $isVoucherEnabled = $this->dataHelper->getPaymentMethod('voucher') ? true : false;
         }
 
         foreach ($this->order->get_items() as $cart_item) {
@@ -142,7 +142,7 @@ class PaymentLines
 
                 $mollie_order_item =  [
                     'sku' => $this->get_item_reference($product),
-                    'type' => $product->is_virtual() ? 'digital' : 'physical',
+                    'type' => ($product instanceof \WC_Product && $product->is_virtual()) ? 'digital' : 'physical',
                     'description' => $this->get_item_name($cart_item),
                     'quantity' => $this->get_item_quantity($cart_item),
                     'vatRate' => round($this->get_item_vatRate($cart_item, $product), 2),
@@ -164,21 +164,21 @@ class PaymentLines
                             'currency' => $this->currency,
                             'value' => $this->dataHelper->formatCurrencyValue($this->get_item_discount_amount($cart_item), $this->currency),
                         ],
-                    'productUrl' => $product->get_permalink(),
+                    'productUrl' => ($product instanceof \WC_Product) ? $product->get_permalink() : null,
                 ];
 
-                if ($product->get_image_id()) {
+                if ($product instanceof \WC_Product && $product->get_image_id()) {
                     $productImage = wp_get_attachment_image_src($product->get_image_id(), 'full');
                     if (isset($productImage[0]) && wc_is_valid_url($productImage[0])) {
                         $mollie_order_item['imageUrl'] = $productImage[0];
                     }
                 }
 
-                if ($isMealVoucherEnabled && $this->get_item_category($product, $voucherDefaultCategory) != "no_category") {
-                    $mollie_order_item['category'] = $this->get_item_category(
-                        $product,
-                        $voucherDefaultCategory
-                    );
+                if ($isVoucherEnabled) {
+                    $categories = $this->get_item_categories($product, $voucherDefaultCategory);
+                    if (!in_array(Voucher::NO_CATEGORY, $categories, true)) {
+                        $mollie_order_item['categories'] = $categories;
+                    }
                 }
                 $this->order_lines[] = $mollie_order_item;
 
@@ -347,7 +347,7 @@ class PaymentLines
      * @access private
      *
      * @param  WC_Order_Item  $cart_item Cart item.
-     * @param  object $product   Product object.
+     * @param  null|false|\WC_Product $product   Product object.
      *
      * @return integer $item_vatRate Item tax percentage formatted for Mollie Orders API.
      */
@@ -416,7 +416,7 @@ class PaymentLines
      *
      * @access private
      *
-     * @param object $product Product object.
+     * @param null|false|\WC_Product $product Product object.
      *
      * @return false|string $item_reference Cart item reference.
      */
@@ -477,44 +477,54 @@ class PaymentLines
      * @since  5.6
      * @access private
      *
-     * @param  object $product Product object.
+     * @param  null|false|\WC_Product $product Product object.
      * @param  string $voucherDefaultCategory Voucher default category.
      *
-     * @return string $category Product voucher category.
+     * @return array $categories Product voucher categories.
      */
-    private function get_item_category($product, $voucherDefaultCategory)
+    private function get_item_categories($product, $voucherDefaultCategory)
     {
-        $category = $voucherDefaultCategory;
+        $categories = [
+            $voucherDefaultCategory,
+        ];
 
-        if (!$product) {
-            return $category;
+        if (! $product instanceof \WC_Product) {
+            return $categories;
         }
 
         //if product has taxonomy associated, retrieve voucher cat from there.
-        $catTerms = get_the_terms($product->get_id(), 'product_cat');
-        if (is_array($catTerms)) {
-            $term = end($catTerms);
-            $term_id = $term->term_id;
-            $metaVoucher = get_term_meta($term_id, '_mollie_voucher_category', true);
-            $category = $metaVoucher ?: $category;
+        $catTermIds = $product->get_category_ids();
+        if ($catTermIds) {
+            $term_id = end($catTermIds);
+            $metaVouchers = [];
+            if ($term_id) {
+                $metaVouchers = get_term_meta($term_id, '_mollie_voucher_category', false);
+            }
+            $categories = $metaVouchers ?: $categories;
         }
 
         //local product voucher category
-        $localCategory = get_post_meta(
-            $product->get_id(),
+        $localCategories = $product->get_meta(
             Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
             false
         );
-        $category = $localCategory[0] ?? $category;
+        foreach ($localCategories as $key => $localCategory) {
+            assert($localCategory instanceof \WC_Meta_Data);
+            $localCategories[$key] = $localCategory->value;
+        }
+        $categories = $localCategories ?: $categories;
 
         //if product is a single variation could have a voucher meta associated
-        $simpleVariationCategory = get_post_meta(
-            $product->get_id(),
+        $simpleVariationCategories = $product->get_meta(
             'voucher',
             false
         );
+        foreach ($simpleVariationCategories as $key => $simpleVariationCategory) {
+            assert($simpleVariationCategory instanceof \WC_Meta_Data);
+            $localCategories[$key] = $simpleVariationCategory->value;
+        }
 
-        return $simpleVariationCategory ? $simpleVariationCategory[0] : $category;
+        return $simpleVariationCategories ?: $categories;
     }
 
     /**

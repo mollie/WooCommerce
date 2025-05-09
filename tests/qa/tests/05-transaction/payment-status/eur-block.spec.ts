@@ -26,26 +26,30 @@ test.beforeAll( async ( { utils }, testInfo ) => {
 	await utils.cleanReconnectMollie();
 } );
 
-for ( const testData of checkoutEur ) {
-	const order = createShopOrder( testData );
+test.describe( () => {
+	for ( const testData of checkoutEur ) {
+		const order = createShopOrder( testData );
 
-	// exclude tests for payment methods if not available for tested API
-	const availableForApiMethods = order.payment.gateway.availableForApiMethods;
-	if ( ! availableForApiMethods.includes( apiMethod ) ) {
-		continue;
+		// exclude tests for payment methods if not available for tested API
+		const availableForApiMethods = order.payment.gateway.availableForApiMethods;
+		if ( ! availableForApiMethods.includes( apiMethod ) ) {
+			continue;
+		}
+
+		testPaymentStatusOnCheckout( testData.testId, order );
 	}
+} );
 
-	testPaymentStatusOnCheckout( testData.testId, order );
-}
+test.describe( () => {
+	for ( const testData of payForOrderEur ) {
+		const order = createShopOrder( testData );
 
-for ( const testData of payForOrderEur ) {
-	const order = createShopOrder( testData );
+		// exclude tests for payment methods if not available for tested API
+		const availableForApiMethods = order.payment.gateway.availableForApiMethods;
+		if ( ! availableForApiMethods.includes( apiMethod ) ) {
+			continue;
+		}
 
-	// exclude tests for payment methods if not available for tested API
-	const availableForApiMethods = order.payment.gateway.availableForApiMethods;
-	if ( ! availableForApiMethods.includes( apiMethod ) ) {
-		continue;
+		testPaymentStatusOnPayForOrder( testData.testId, order );
 	}
-
-	testPaymentStatusOnPayForOrder( testData.testId, order );
-}
+} );

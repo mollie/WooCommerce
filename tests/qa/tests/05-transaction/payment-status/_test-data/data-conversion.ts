@@ -53,7 +53,7 @@ export const createShopOrder = (
 			bankIssuer: testData.bankIssuer, // for kbc tests
 			status: testData.paymentStatus,
 		},
-		orderStatus: getExpectedOrderStatus( testData.paymentStatus ),
+		orderStatus: testData.orderStatus || getExpectedOrderStatus( testData.paymentStatus ),
 		customer: guests[ gateway.country ],
 		currency: gateway.currency,
 	};

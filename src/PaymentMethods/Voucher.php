@@ -18,6 +18,12 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
      * @var string
      */
     public const GIFT = 'gift';
+
+    /**
+     * @var string
+     */
+    public const SPORT_CULTURE = 'sport_culture';
+
     /**
      * @var string
      */

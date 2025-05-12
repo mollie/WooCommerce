@@ -2,7 +2,16 @@
 
 Mollie Playwright tests. Depends on [`@inpsyde/playwright-utils`](https://github.com/inpsyde/playwright-utils) package.
 
-__\* - Currently the `@inpsyde/playwright-utils` needs to be installed locally (see section _Installation for local development_ below) and switched to branch `work/misha`.__
+## Table of Content
+
+- [Repo structure](#repo-structure)
+- [Local repo installation](#local-repo-installation)
+- [Installation of `node_modules`](#installation-of-node_modules)
+- [Installation of `playwright-utils` for local development](#installation-of-playwright-utils-for-local-development)
+- [Project configuration](#project-configuration)
+- [Run tests](#run-tests)
+- [Autotest Execution workflow](#autotest-execution-workflow)
+- [Coding standards](#coding-standards)
 
 ## Repo structure
 
@@ -44,9 +53,27 @@ __\* - Currently the `@inpsyde/playwright-utils` needs to be installed locally (
 
 - `.env`, `playwright.config.ts`, `package.json` - see below.
 
-## Installation of `@inpsyde/playwright-utils`
+## Local repo installation
 
-### Installation as a node package
+1. In VSCode open the open the terminal and clone Millie repository to your local PC:
+
+	```bash
+	git clone https://github.com/mollie/WooCommerce.git
+	```
+
+2. (Temporary, till autotests are not yet merged into main branch) Switch to `qa/e2e-tests` branch:
+
+	```bash
+	git checkout qa/e2e-tests
+	```
+
+3.  Change directory to `/tests/qa/`:
+
+	```bash
+	git clone https://github.com/mollie/WooCommerce.git
+	```
+
+## Installation of `node_modules`
 
 1. Remove `"workspaces": [ "playwright-utils" ]` from `package.json`.
 
@@ -56,7 +83,9 @@ __\* - Currently the `@inpsyde/playwright-utils` needs to be installed locally (
 npm run setup:tests
 ```
 
-### Installation for local development
+## Installation of `playwright-utils` for local development
+
+> Note: skip this section if you're not going to update code in `playwright-utils`.
 
 1. Add `"workspaces": [ "playwright-utils" ]` to `package.json`.
 
@@ -90,7 +119,7 @@ npm run setup:tests
 
 Project from the monorepo requires a working WordPress website with WooCommmerce, `.env` file and configured Playwright.
 
-1. [SSE setup](https://inpsyde.atlassian.net/wiki/spaces/AT/pages/3175907370/Self+Service+WordPress+Environment) - will be deprecated in Q1 of 2025:
+1. [SSE setup](https://inpsyde.atlassian.net/wiki/spaces/AT/pages/3175907370/Self+Service+WordPress+Environment) - will be deprecated after Q1 of 2025:
 
 	```bash
 	ssh -l youruser php81.emp.pluginpsyde.com
@@ -106,36 +135,9 @@ Project from the monorepo requires a working WordPress website with WooCommmerce
 
 3. Configure `playwright.config.ts` of the project following [these steps](https://github.com/inpsyde/playwright-utils?tab=readme-ov-file#playwright-configuration).
 
-4. Reporting. Add `testrail-reporter` in the reporter section of `playwright.config.ts`:
+4. Configure reporting to the TestRail following [these steps](https://github.com/inpsyde/playwright-utils/blob/main/docs/test-report-api/report-to-testrail.md).
 
-	```ts
-	reporter: [
-		// other reporters ...
-		[
-			'@inpsyde/playwright-utils/build/integration/testrail/testrail-reporter.js',
-			{
-				apiUrl: process.env.TESTRAIL_URL,
-				apiUsername: process.env.TESTRAIL_USERNAME,
-				apiPassword: process.env.TESTRAIL_PASSWORD,
-				plan_id: process.env.TESTRAIL_PLAN_ID,
-				run_id: process.env.TESTRAIL_RUN_ID,
-			},
-		],
-	],
-	```
-
-	Configure connection to TestRail API in `.env` (see `.env.example`):
-
-	```bash
-	# Testrail
-	TESTRAIL_URL=https://website.testrail.io
-	TESTRAIL_USERNAME=user@company.com
-	TESTRAIL_PASSWORD=*************
-	TESTRAIL_PLAN_ID=
-	TESTRAIL_RUN_ID=
-	```
-
-5. Further configuration of the env is done automatically via scripts in `./tests/.setup/woocommerce.setup.ts`. Consider commenting extra scripts when env is already configured.
+5. Further configuration of the environment is done automatically via scripts in `./tests/.setup/woocommerce.setup.ts`. Consider commenting extra scripts when env is already configured.
 
 ## Run tests
 

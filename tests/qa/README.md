@@ -70,7 +70,7 @@ Mollie Playwright tests. Depends on [`@inpsyde/playwright-utils`](https://github
 3.  Change directory to `/tests/qa/`:
 
 	```bash
-	git clone https://github.com/mollie/WooCommerce.git
+	cd tests/qa
 	```
 
 ## Installation of `node_modules`

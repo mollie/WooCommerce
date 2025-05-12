@@ -67,7 +67,7 @@ Mollie Playwright tests. Depends on [`@inpsyde/playwright-utils`](https://github
 	git checkout qa/e2e-tests
 	```
 
-3.  Change directory to `/tests/qa/`:
+3.  Change directory to `./tests/qa/`:
 
 	```bash
 	cd tests/qa
@@ -77,7 +77,7 @@ Mollie Playwright tests. Depends on [`@inpsyde/playwright-utils`](https://github
 
 1. Remove `"workspaces": [ "playwright-utils" ]` from `package.json`.
 
-2. In the test project (`./tests/qa`) run following command:
+2. In the test project (`./tests/qa/`) run following command:
 
 ```bash
 npm run setup:tests
@@ -91,7 +91,7 @@ npm run setup:tests
 
 2. Delete `@inpsyde/playwright-utils` from `/node_modules`.
 
-3. In the test project (`./tests/qa`) run following command:
+3. In the test project (`./tests/qa/`) run following command:
 
 	```bash
 	git clone https://github.com/inpsyde/playwright-utils.git
@@ -141,7 +141,7 @@ Project from the monorepo requires a working WordPress website with WooCommmerce
 
 ## Run tests
 
-To execute all tests sequentially, in the terminal navigate to the `./tests/qa` directory and run following command:
+To execute all tests sequentially, in the terminal navigate to the `./tests/qa/` directory and run following command:
 
 ```bash
 npx playwright test --project=all

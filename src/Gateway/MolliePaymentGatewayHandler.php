@@ -299,8 +299,9 @@ class MolliePaymentGatewayHandler
         $this->logger->debug($debugLine);
         $hookReturnPaymentStatus = 'success';
         $gateway = wc_get_payment_gateway_by_order($order);
-        $returnRedirect = $gateway->get_return_url($order);
-        $failedRedirect = $order->get_checkout_payment_url(false);
+        if (!$gateway) {
+            return $order->get_checkout_payment_url(false);
+        }
 
         $this->mollieOrderService->setGateway($this);
         if ($this->mollieOrderService->orderNeedsPayment($order)) {
@@ -317,7 +318,7 @@ class MolliePaymentGatewayHandler
                 // order being cancelled. Otherwise redirect to /checkout/order-pay/ so
                 // customers can try to pay with another payment method.
                 if ($order_status_cancelled_payments === 'cancelled') {
-                    return $returnRedirect;
+                    return $gateway->get_return_url($order);
                 } else {
                     $this->notice->addNotice(
                         'error',
@@ -327,7 +328,7 @@ class MolliePaymentGatewayHandler
                         )
                     );
                     // Return to order payment page
-                    return $failedRedirect;
+                    return $order->get_checkout_payment_url(false);
                 }
             }
 
@@ -347,7 +348,7 @@ class MolliePaymentGatewayHandler
                         )
                     );
                     // Return to order payment page
-                    return $failedRedirect;
+                    return $order->get_checkout_payment_url(false);
                 }
                 if ($payment->method === "giftcard") {
                     $this->paymentMethod->debugGiftcardDetails($payment, $order);
@@ -375,8 +376,10 @@ class MolliePaymentGatewayHandler
 
         /*
          * Return to order received page
+         * URL must be got at late as possible,
+         * to avoid problems with other plugins that uses the action before
          */
-        return $returnRedirect;
+        return $gateway->get_return_url($order);
     }
 
     /**

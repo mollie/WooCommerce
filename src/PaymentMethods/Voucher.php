@@ -47,7 +47,6 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'orderMandatory' => ! apply_filters('inpsyde.feature-flags.mollie-woocommerce.voucher_payments_api', true),
             'docs' => 'https://www.mollie.com/gb/payments/meal-eco-gift-vouchers',
         ];
     }

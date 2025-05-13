@@ -494,37 +494,37 @@ class PaymentLines
 
         //if product has taxonomy associated, retrieve voucher cat from there.
         $catTermIds = $product->get_category_ids();
+        if (!$catTermIds && $product->is_type('variation')) {
+            $parentProduct = wc_get_product($product->get_parent_id());
+            if ($parentProduct) {
+                $catTermIds = $parentProduct->get_category_ids();
+            }
+        }
         if ($catTermIds) {
             $term_id = end($catTermIds);
             $metaVouchers = [];
             if ($term_id) {
                 $metaVouchers = get_term_meta($term_id, '_mollie_voucher_category', false);
             }
+            foreach ($metaVouchers as $key => $metaVoucher) {
+                if (!$metaVoucher) {
+                    unset($metaVouchers[$key]);
+                }
+            }
             $categories = $metaVouchers ?: $categories;
         }
 
-        //local product voucher category
+        //local product or product variation voucher category
         $localCategories = $product->get_meta(
-            Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+            $product->is_type('variation') ? 'voucher' : Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
             false
         );
         foreach ($localCategories as $key => $localCategory) {
             assert($localCategory instanceof \WC_Meta_Data);
             $localCategories[$key] = $localCategory->value;
         }
-        $categories = $localCategories ?: $categories;
 
-        //if product is a single variation could have a voucher meta associated
-        $simpleVariationCategories = $product->get_meta(
-            'voucher',
-            false
-        );
-        foreach ($simpleVariationCategories as $key => $simpleVariationCategory) {
-            assert($simpleVariationCategory instanceof \WC_Meta_Data);
-            $localCategories[$key] = $simpleVariationCategory->value;
-        }
-
-        return $simpleVariationCategories ?: $categories;
+        return $localCategories ?: $categories;
     }
 
     /**

@@ -503,29 +503,29 @@ class OrderLines
 
         //if product has taxonomy associated, retrieve voucher cat from there.
         $catTermIds = $product->get_category_ids();
+        if (!$catTermIds && $product->is_type('variation')) {
+            $parentProduct = wc_get_product($product->get_parent_id());
+            if ($parentProduct) {
+                $catTermIds = $parentProduct->get_category_ids();
+            }
+        }
         if ($catTermIds) {
             $term_id = end($catTermIds);
             $metaVoucher = '';
             if ($term_id) {
                 $metaVoucher = get_term_meta($term_id, '_mollie_voucher_category', true);
             }
-            $category = $metaVoucher ?: $category;
+            if ($metaVoucher) {
+                $category = $metaVoucher;
+            }
         }
 
-        //local product voucher category
+        //local product or product variation voucher category
         $localCategory = $product->get_meta(
-            Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+            $product->is_type('variation') ? 'voucher' : Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
             true
         );
-        $category = $localCategory ?: $category;
-
-        //if product is a single variation could have a voucher meta associated
-        $simpleVariationCategory = $product->get_meta(
-            'voucher',
-            true
-        );
-
-        return $simpleVariationCategory ?: $category;
+        return $localCategory ?: $category;
     }
 
     /**

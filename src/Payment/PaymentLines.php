@@ -485,7 +485,7 @@ class PaymentLines
     private function get_item_categories($product, $voucherDefaultCategory)
     {
         $categories = [];
-        if ( $voucherDefaultCategory !== Voucher::NO_CATEGORY ) {
+        if ($voucherDefaultCategory !== Voucher::NO_CATEGORY) {
             $categories = [
                 $voucherDefaultCategory,
             ];

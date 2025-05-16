@@ -94,7 +94,7 @@ class CheckoutBlockService
             if ($key !== 'mollie_wc_gateway_voucher') {
                 continue;
             }
-             if (!$this->voucherDisabler->haveCartProductsCategories()) {
+            if (!$this->voucherDisabler->haveCartProductsCategories()) {
                 unset($availableGateways[$key]);
             }
         }

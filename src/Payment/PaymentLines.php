@@ -523,8 +523,10 @@ class PaymentLines
             assert($localCategory instanceof \WC_Meta_Data);
             $localCategories[$key] = $localCategory->value;
         }
+        $categories = $localCategories ?: $categories;
 
-        return $localCategories ?: $categories;
+        sort($categories); //sort because of removing indexes
+        return $categories;
     }
 
     /**

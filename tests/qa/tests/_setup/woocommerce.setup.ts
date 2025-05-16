@@ -209,15 +209,15 @@ setup( 'Setup products', async ( { wooCommerceUtils } ) => {
 setup(
 	'Setup Feature Flags plugin for Klarna, Billie, Riverty',
 	async ( { requestUtils, plugins, mollieApiMethod } ) => {
-	const { slug, zipFilePath } = featureFlagsPlugin;
-		if( mollieApiMethod === 'payment' ) {
+		const { slug, zipFilePath } = featureFlagsPlugin;
+		if ( mollieApiMethod === 'payment' ) {
 			if ( ! ( await requestUtils.isPluginInstalled( slug ) ) ) {
 				await plugins.installPluginFromFile( zipFilePath );
 			}
 			await requestUtils.activatePlugin( slug );
 		}
 
-		if( mollieApiMethod === 'order' ) {
+		if ( mollieApiMethod === 'order' ) {
 			if ( await requestUtils.isPluginInstalled( slug ) ) {
 				await requestUtils.deactivatePlugin( slug );
 			}

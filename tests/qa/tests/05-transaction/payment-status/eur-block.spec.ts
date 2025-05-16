@@ -9,7 +9,8 @@ import {
 import { createShopOrder, checkoutEur, payForOrderEur } from './_test-data';
 import { MollieSettings, shopSettings } from '../../../resources';
 
-const apiMethod = process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod;
+const testedApiMethod =
+	( process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod ) || 'payment';
 
 test.beforeAll( async ( { utils }, testInfo ) => {
 	if ( testInfo.project.name !== 'all' ) {
@@ -31,8 +32,9 @@ test.describe( () => {
 		const order = createShopOrder( testData );
 
 		// exclude tests for payment methods if not available for tested API
-		const availableForApiMethods = order.payment.gateway.availableForApiMethods;
-		if ( ! availableForApiMethods.includes( apiMethod ) ) {
+		const availableForApiMethods =
+			order.payment.gateway.availableForApiMethods;
+		if ( ! availableForApiMethods.includes( testedApiMethod ) ) {
 			continue;
 		}
 
@@ -45,8 +47,9 @@ test.describe( () => {
 		const order = createShopOrder( testData );
 
 		// exclude tests for payment methods if not available for tested API
-		const availableForApiMethods = order.payment.gateway.availableForApiMethods;
-		if ( ! availableForApiMethods.includes( apiMethod ) ) {
+		const availableForApiMethods =
+			order.payment.gateway.availableForApiMethods;
+		if ( ! availableForApiMethods.includes( testedApiMethod ) ) {
 			continue;
 		}
 

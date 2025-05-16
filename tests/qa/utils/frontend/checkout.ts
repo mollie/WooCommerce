@@ -43,7 +43,6 @@ export class Checkout extends CheckoutBase {
 		this.page.locator( '#billing-birthdate' );
 	rivertyPhoneInput = (): Locator =>
 		this.page.locator( '#billing-phone-riverty' );
-	
 
 	// Actions
 

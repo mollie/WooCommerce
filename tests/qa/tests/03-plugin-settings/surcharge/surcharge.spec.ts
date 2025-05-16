@@ -23,7 +23,8 @@ import {
 	MollieSettings,
 } from '../../../resources';
 
-const apiMethod = process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod;
+const testedApiMethod =
+	( process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod ) || 'payment';
 
 const allTests = [
 	surchargeNoFee,
@@ -58,7 +59,9 @@ for ( const surcharge of allTests ) {
 			const gateway = gateways[ tested.gateway ];
 
 			// exclude tests for payment methods if not available for tested API
-			if ( ! gateway.availableForApiMethods.includes( apiMethod ) ) {
+			if (
+				! gateway.availableForApiMethods.includes( testedApiMethod )
+			) {
 				continue;
 			}
 

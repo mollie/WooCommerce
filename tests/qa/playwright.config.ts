@@ -75,8 +75,9 @@ export default defineConfig< TestBaseExtend >( {
 
 		viewport: { width: 1280, height: 850 },
 
-		mollieApiMethod: process.env
-			.MOLLIE_API_METHOD as MollieSettings.ApiMethod,
+		mollieApiMethod:
+			( process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod ) ||
+			'payment',
 	},
 
 	/* Configure projects for major browsers */

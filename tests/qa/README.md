@@ -37,9 +37,9 @@ Mollie Playwright tests. Depends on [`@inpsyde/playwright-utils`](https://github
 
 	- `09-compatibility` - tests for compatibility with other themes, plugins, etc.
 
-	\* - folders are numerated on purpose, to force correct sequence of tests - from basic to advanced. Although each test should be independent and work separately, it is better to start testing from `plugin-foundation` and move to more complex tests.
+	> Note 1: - folders are numerated on purpose, to force correct sequence of tests - from basic to advanced. Although each test should be independent and work separately, it is better to start testing from `plugin-foundation` and move to more complex tests.
 
-	\*\* - folders and numeration can be different, based on project requirements.
+	> Note 2: - folders and numeration can be different, based on project requirements.
 
 - `utils` - project related utility files, built on top of `@inpsyde/playwright-utils`.
 
@@ -91,7 +91,7 @@ npm run setup:tests
 
 2. Delete `@inpsyde/playwright-utils` from `/node_modules`.
 
-3. In the test project (`./tests/qa/`) run following command:
+3. In the test project directory (`./tests/qa/`) run following command:
 
 	```bash
 	git clone https://github.com/inpsyde/playwright-utils.git
@@ -125,13 +125,13 @@ Project from the monorepo requires a working WordPress website with WooCommmerce
 	ssh -l youruser php81.emp.pluginpsyde.com
 	```
 
-	After connection run:
+	See also [one-line command to reset SSE](https://inpsyde.atlassian.net/wiki/spaces/AT/pages/3175907370/Self+Service+WordPress+Environment#Change-WordPress-version---reset-environment).
 
-	```bash
-	rm -rf /var/www/html/* 2>/dev/null ; wp core download --version=6.7.1 ; wp config create ; wp db drop --yes ; wp db create ; wp core install ; exit
-	```
+2. In the test project directory (`./tests/qa/`) create and configure `.env` file:
 
-2. Configure `.env` file following [these steps](https://github.com/inpsyde/playwright-utils?tab=readme-ov-file#env-variables). See also `.env.example`.
+	2.1 Set general variables following [these steps](https://github.com/inpsyde/playwright-utils?tab=readme-ov-file#env-variables).
+	
+	2.2 Set Mollie API keys and tested API method (variable values: `payment` (is applied by default) or `order`). See also `.env.example`.
 
 3. Configure `playwright.config.ts` of the project following [these steps](https://github.com/inpsyde/playwright-utils?tab=readme-ov-file#playwright-configuration).
 
@@ -165,7 +165,7 @@ npx playwright test --project=all
 	npm run parallel-transaction-eur-block
 	```
 
-	\* - there's a number of tests which can be executed in parallel to speed up test execution (see `projects` section in `playwright.config.ts`).
+	> Note: there's a number of tests which can be executed in parallel to speed up test execution (see `projects` section in `playwright.config.ts`).
 
 - Run several tests by test ID
 
@@ -190,35 +190,43 @@ npx playwright test --project=all
 
 ## Autotest Execution workflow
 
-1. Create test plan with run in TestRail, named after the tested plugin version, for example "Test Plan for Release 1.2.3".
+1. Create test plan with run(s) in TestRail, named after the tested plugin version, for example "Test Plan for Release 1.2.3".
 
-	\* - for autotest run there's no need to manually add tests cases to the run - the executed test will be added automatically before automated execution.
+	> Note 1: For autotest run there's no need to manually add tests cases to the run - the executed test will be added automatically before automated execution.
 
-2. Link release ticket (via `tests: JIR-234`).
+	> Note 2: There can be > 1 test runs (for example, when testing API methods: one for Order, another for Payment).
 
-3. Set Test Execution ticket status `In progress`.
+2. Add link to TEstRail Plan or Milestone to release ticket in Jira.
 
-4. Add/update test plan with run IDs in `.env` file of the project (`TESTRAIL_PLAN_ID, TESTRAIL_RUN_ID`).
+3. In the `.env` file:
 
-5. Download tested plugin `.zip` package (usually attached to release ticket) and add it to `/resources/files`. You may need to remove version number from the file name. Expected filename: `mollie-payments-for-woocommerce.zip`.
+	3.1 Add/update test plan with run IDs in `.env` file of the project (`TESTRAIL_PLAN_ID`, `TESTRAIL_RUN_ID`).
 
-6. Optional: delete previous version of tested plugin from the website if you don't execute __plugin foundation__ tests.
+	3.2 In case of testing 2 API methods set the respective `TESTRAIL_RUN_ID` and `MOLLIE_API_METHOD` (`payment` (is applied by default) or `order`).
 
-7. Start autotest execution from command line for the defined scope of tests (e.g. all, Critical, etc.). You should see `Test plan ID: 001, Test run ID: 002` in the terminal.
+4. Download tested plugin `.zip` package (usually attached to release ticket) and add it to `/resources/files`. You may need to remove version number from the file name. Expected filename: `mollie-payments-for-woocommerce.zip`.
 
-8. When finished test results should be exported to the specified test run ticket in Testrail.
+5. Optional: delete previous version of tested plugin from the website if you don't execute __plugin foundation__ tests.
 
-9. Analyze failed tests (if any). Restart execution for failed tests, possibly in debug mode (see section _Additional options to run tests from command line_):
+6. Start autotest execution from command line for the defined scope of tests (e.g. all, Critical, etc.). You should see `Test plan ID: 001, Test run ID: 002` in the terminal.
+
+7. When finished test results should be exported to the specified test run ticket in Testrail.
+
+8. Analyze failed tests (if any). Restart execution for failed tests, possibly in debug mode (see section _Additional options to run tests from command line_):
 
 	```bash
 	npx playwright test --grep --% "C123^|C124^|C125" --debug
 	```
 
-	\* - command for restarting failed/skipped tests is posted to the terminal after the execution.
+	> Note: command for restarting failed/skipped tests is posted to the terminal after the execution.
 
-10. Report bugs (if any) and attach them to the test-runs of failed tests.
+9. Report bugs (if any) and attach them to the test-runs of failed tests.
 
-11. If needed fix failing tests in a new branch, create a PR and assign it for review.
+10. If needed, fix failing tests in a new branch, create a PR and assign it for review.
+
+11. If needed, update the `TESTRAIL_RUN_ID` and `MOLLIE_API_METHOD` and repeat the execution for another API method.
+
+	> Note: depending on selected API method number of tests may vary (not all payment methods are eligible for 'Payment'). To find specific cases in specs perform a global code search for `testedApiMethod` and `mollieApiMethod` fixture.
 
 ## Coding standards
 

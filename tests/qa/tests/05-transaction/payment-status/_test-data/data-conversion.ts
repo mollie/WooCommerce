@@ -14,7 +14,9 @@ import {
 const getExpectedOrderStatus = (
 	paymentStatus: MolliePaymentStatus
 ): WooCommerce.OrderStatus => {
-	const apiMethod = process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod;
+	const testedApiMethod =
+		( process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod ) ||
+		'payment';
 	const statusConversion: Record<
 		MolliePaymentStatus,
 		WooCommerce.OrderStatus
@@ -22,8 +24,8 @@ const getExpectedOrderStatus = (
 		paid: 'processing',
 		authorized: 'processing',
 		canceled: 'pending',
-		expired: apiMethod === 'order' ? 'pending' : 'cancelled',
-		failed: apiMethod === 'order' ? 'pending' : 'failed',
+		expired: testedApiMethod === 'order' ? 'pending' : 'cancelled',
+		failed: testedApiMethod === 'order' ? 'pending' : 'failed',
 		open: 'pending',
 		pending: 'pending',
 	};
@@ -53,7 +55,9 @@ export const createShopOrder = (
 			bankIssuer: testData.bankIssuer, // for kbc tests
 			status: testData.paymentStatus,
 		},
-		orderStatus: testData.orderStatus || getExpectedOrderStatus( testData.paymentStatus ),
+		orderStatus:
+			testData.orderStatus ||
+			getExpectedOrderStatus( testData.paymentStatus ),
 		customer: guests[ gateway.country ],
 		currency: gateway.currency,
 	};

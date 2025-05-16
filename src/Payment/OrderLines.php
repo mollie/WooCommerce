@@ -182,7 +182,7 @@ class OrderLines
 
                 if ($isVoucherEnabled) {
                     $category = $this->get_item_category($product, $voucherDefaultCategory);
-                    if ($category !== Voucher::NO_CATEGORY) {
+                    if ($category) {
                         $mollie_order_item['category'] = $category;
                     }
                 }
@@ -495,7 +495,10 @@ class OrderLines
      */
     private function get_item_category($product, $voucherDefaultCategory)
     {
-        $category = $voucherDefaultCategory;
+        $category = '';
+        if ($voucherDefaultCategory !== Voucher::NO_CATEGORY) {
+            $category = $voucherDefaultCategory;
+        }
 
         if (! $product instanceof \WC_Product) {
             return $category;

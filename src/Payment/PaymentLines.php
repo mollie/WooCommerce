@@ -176,7 +176,7 @@ class PaymentLines
 
                 if ($isVoucherEnabled) {
                     $categories = $this->get_item_categories($product, $voucherDefaultCategory);
-                    if (!in_array(Voucher::NO_CATEGORY, $categories, true)) {
+                    if ($categories) {
                         $mollie_order_item['categories'] = $categories;
                     }
                 }
@@ -484,9 +484,12 @@ class PaymentLines
      */
     private function get_item_categories($product, $voucherDefaultCategory)
     {
-        $categories = [
-            $voucherDefaultCategory,
-        ];
+        $categories = [];
+        if ( $voucherDefaultCategory !== Voucher::NO_CATEGORY ) {
+            $categories = [
+                $voucherDefaultCategory,
+            ];
+        }
 
         if (! $product instanceof \WC_Product) {
             return $categories;
@@ -507,7 +510,7 @@ class PaymentLines
                 $metaVouchers = get_term_meta($term_id, '_mollie_voucher_category', false);
             }
             foreach ($metaVouchers as $key => $metaVoucher) {
-                if (!$metaVoucher) {
+                if (!$metaVoucher || $metaVoucher === Voucher::NO_CATEGORY) {
                     unset($metaVouchers[$key]);
                 }
             }
@@ -521,7 +524,11 @@ class PaymentLines
         );
         foreach ($localCategories as $key => $localCategory) {
             assert($localCategory instanceof \WC_Meta_Data);
-            $localCategories[$key] = $localCategory->value;
+            if (!$localCategory->value || $localCategory->value === Voucher::NO_CATEGORY) {
+                unset($localCategories[$key]);
+            } else {
+                $localCategories[$key] = $localCategory->value;
+            }
         }
         $categories = $localCategories ?: $categories;
 

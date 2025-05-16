@@ -515,7 +515,7 @@ class OrderLines
             if ($term_id) {
                 $metaVoucher = get_term_meta($term_id, '_mollie_voucher_category', true);
             }
-            if ($metaVoucher) {
+            if ($metaVoucher && $metaVoucher !== Voucher::NO_CATEGORY) {
                 $category = $metaVoucher;
             }
         }
@@ -525,7 +525,10 @@ class OrderLines
             $product->is_type('variation') ? 'voucher' : Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
             true
         );
-        return $localCategory ?: $category;
+        if ($localCategory && $localCategory !== Voucher::NO_CATEGORY) {
+            return $localCategory;
+        }
+        return $category;
     }
 
     /**

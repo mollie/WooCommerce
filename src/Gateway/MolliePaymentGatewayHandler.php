@@ -563,13 +563,14 @@ class MolliePaymentGatewayHandler
     public function getCurrencyFromOrder()
     {
         global $wp;
-        if (!empty($wp->query_vars['order-pay'])) {
+
+        $currency = get_woocommerce_currency();
+        if (is_checkout_pay_page()) {
             $order_id = $wp->query_vars['order-pay'];
             $order = wc_get_order($order_id);
-
-            $currency = $this->dataService->getOrderCurrency($order);
-        } else {
-            $currency = get_woocommerce_currency();
+            if ($order) {
+                $currency = $this->dataService->getOrderCurrency($order);
+            }
         }
         return $currency;
     }

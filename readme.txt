@@ -2,7 +2,7 @@
 Contributors: daanvm, danielhuesken, davdebcom, dinamiko, syde, l.vangunst, ndijkstra, wido, carmen222
 Tags: mollie, woocommerce, payments, ecommerce, credit card
 Requires at least: 5.0
-Tested up to: 6.7
+Tested up to: 6.8
 Stable tag: 8.0.0
 Requires PHP: 7.4
 License: GPLv2 or later
@@ -226,7 +226,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 8.0.1-beta4 - 06-05-2025 =
+= 8.0.1 - 07-05-2025 =
 * Fixed - check that Klarna webhooks will not be received for transactions if orders API is active
 * Fixed - most problems with gateway surcharges and 3rd party fees
 * Fixed - problems with Paments API when checkout address fields are removed
@@ -235,9 +235,9 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 * Fixed - imageUrl will be validated before adding it
 * Fixed - refreshing gateway list in the Mollie settings
 * Fixed - on block checkout an empty Gateway description was displayed
-* Fixed - transaktions on block checkout not work for Riverty
+* Fixed - ransactions on block checkout don’t work for Riverty
 * Fixed - Phone Number Validation uses now billing/shipping country when no phone country prefix 
-* Fixed - More information on inactive paymed methos will no open in new tab @masteradhoc
+* Fixed - More information on inactive payment methods will not open in the new tab @masteradhoc
 * Removed - deprecated SOFORT and Giropay payment methods
 
 = 8.0.0 - 27-03-2025 =

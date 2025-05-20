@@ -480,9 +480,6 @@ class MolliePaymentGatewayHandler
             if ($payment->isOpen()) {
                 // Add a message to log and order explaining a payment with status "open", only if it hasn't been added already
                 if ($order->get_meta('_mollie_open_status_note') !== '1') {
-                    // Get payment method title
-                    $payment_method_title = $this->method_title;
-
                     // Add message to log
                     $this->logger->debug(
                         $this->id
@@ -499,7 +496,7 @@ class MolliePaymentGatewayHandler
                                 '%1$s payment still pending (%2$s) but customer already returned to the store. Status should be updated automatically in the future, if it doesn\'t this might indicate a communication issue between the site and Mollie.',
                                 'mollie-payments-for-woocommerce'
                             ),
-                            $payment_method_title,
+                            $this->paymentMethod->getProperty('title'),
                             $payment->id . ($payment->mode === 'test' ? (' - '
                                 . __(
                                     'test mode',

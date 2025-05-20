@@ -22,7 +22,6 @@ class In3 extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'orderMandatory' => true,
             'errorMessage' => 'Required field is empty or invalid. Phone (+316xxxxxxxx) and birthdate fields are required.',
             'phonePlaceholder' => 'Please enter your phone here. +316xxxxxxxx',
             'birthdatePlaceholder' => 'Please enter your birthdate here.',

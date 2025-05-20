@@ -329,16 +329,12 @@ class PaymentProcessor implements PaymentProcessorInterface
             $this->handleMollieOutage($e);
             //if exception is 422 do not try to create a payment
             $this->handleMollieFraudRejection($e);
-            // Don't try to create a Mollie Payment for Klarna payment methods
+            // Don't try to create a Mollie Payment for old Klarna payment methods
             $order_payment_method = $order->get_payment_method();
             $orderMandatoryPaymentMethods = [
-                //'mollie_wc_gateway_klarnapaylater',
-                //'mollie_wc_gateway_klarnasliceit',
-                //'mollie_wc_gateway_klarnapaynow',
-                //'mollie_wc_gateway_klarna',
-                'mollie_wc_gateway_billie',
-                'mollie_wc_gateway_in3',
-                'mollie_wc_gateway_riverty',
+                'mollie_wc_gateway_' . Constants::KLARNAPAYLATER,
+                'mollie_wc_gateway_' . Constants::KLARNASLICEIT,
+                'mollie_wc_gateway_' . Constants::KLARNAPAYNOW,
             ];
 
             if (in_array($order_payment_method, $orderMandatoryPaymentMethods, true)) {

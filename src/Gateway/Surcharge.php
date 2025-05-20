@@ -238,7 +238,7 @@ class Surcharge
             return $fee;
         }
         $maxLimit = (float)$gatewaySettings['surcharge_limit'];
-        if ($fee > $maxLimit) {
+        if ($maxLimit && $fee > $maxLimit) {
             return $maxLimit;
         }
         return $fee;

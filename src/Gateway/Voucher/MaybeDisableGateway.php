@@ -101,26 +101,11 @@ class MaybeDisableGateway
             }
         }
 
-        $productsWithCategory = $this->numberProductsWithCategory();
-        $paymentAPISetting = get_option('mollie-payments-for-woocommerce_api_switch') === PaymentProcessor::PAYMENT_METHOD_TYPE_PAYMENT;
-
-        if ($mealVoucherGatewayIndex !== false && ($productsWithCategory === 0 || $paymentAPISetting)) {
+        if (!$this->haveCartProductsCategories()) {
             unset($gateways[$mealVoucherGatewayIndex]);
         }
 
         return $gateways;
-    }
-
-    /**
-     * If there are no products with category
-     * then we should not see the voucher gateway
-     *
-     * @return bool
-     */
-    public function shouldRemoveVoucher(): bool
-    {
-        $productsWithCategory = $this->numberProductsWithCategory();
-        return $productsWithCategory === 0;
     }
 
     /**
@@ -129,9 +114,9 @@ class MaybeDisableGateway
      * and 2 if all products
      * in the cart have a category associated.
      *
-     * @return int
+     * @return bool
      */
-    public function numberProductsWithCategory(): int
+    public function haveCartProductsCategories(): bool
     {
         $cart = WC()->cart;
         $products = $cart->get_cart_contents();
@@ -144,42 +129,50 @@ class MaybeDisableGateway
             );
         }
         //Check if mealvoucherSettings is an array as to prevent notice from being thrown for PHP 7.4 and up.
-        if (is_array($mealvoucherSettings) && isset($mealvoucherSettings['mealvoucher_category_default'])) {
-            $defaultCategory = $mealvoucherSettings['mealvoucher_category_default'];
-        } else {
-            $defaultCategory = false;
+        if (is_array($mealvoucherSettings) && !empty($mealvoucherSettings['mealvoucher_category_default']) && $mealvoucherSettings['mealvoucher_category_default'] !== Voucher::NO_CATEGORY) {
+            return true;
         }
-        $productsWithCategory = 0;
-        $variationCategory = false;
+
         foreach ($products as $product) {
-            $postmeta = get_post_meta($product['product_id']);
-            $localCategory = is_array($postmeta) && array_key_exists(
-                Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
-                $postmeta
-            ) ? $postmeta[Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION][0] : false;
-            if (isset($product['variation_id'])) {
-                $postmeta = get_post_meta($product['variation_id']);
-                $postmeta = is_array($postmeta) ? $postmeta : [];
-                $variationCategory = array_key_exists(
-                    'voucher',
-                    $postmeta
-                ) ? $postmeta['voucher'][0] : false;
+            if (!$product['data'] instanceof \WC_Product) {
+                continue;
+            }
+            $wcProduct = $product['data'];
+            $metaKey = $wcProduct->is_type('variation') ? 'voucher' : Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION;
+            $localCategories = $wcProduct->get_meta($metaKey, false);
+            foreach ($localCategories as $key => $localCategory) {
+                assert($localCategory instanceof \WC_Meta_Data);
+                $localCategories[$key] = $localCategory->value;
+            }
+            if (!in_array(Voucher::NO_CATEGORY, $localCategories, true)) {
+                return true;
             }
 
-            if (
-                $this->productHasVoucherCategory(
-                    $defaultCategory,
-                    $localCategory,
-                    $variationCategory
-                )
-            ) {
-                $productsWithCategory++;
+            $catTermIds = $wcProduct->get_category_ids();
+            if (!$catTermIds && $wcProduct->is_type('variation')) {
+                $parentProduct = wc_get_product($wcProduct->get_parent_id());
+                if ($parentProduct) {
+                    $catTermIds = $parentProduct->get_category_ids();
+                }
+            }
+            if ($catTermIds) {
+                $term_id = end($catTermIds);
+                $metaVouchers = [];
+                if ($term_id) {
+                    $metaVouchers = get_term_meta($term_id, '_mollie_voucher_category', false);
+                }
+                foreach ($metaVouchers as $key => $metaVoucher) {
+                    if (!$metaVoucher || $metaVoucher === Voucher::NO_CATEGORY) {
+                        unset($metaVouchers[$key]);
+                    }
+                }
+                if (!empty($metaVouchers)) {
+                    return true;
+                }
             }
         }
-        if ($productsWithCategory === 0) {
-            return 0;
-        }
-        return 2;
+
+        return false;
     }
 
     /**

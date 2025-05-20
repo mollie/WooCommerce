@@ -111,9 +111,10 @@ class VoucherModule implements ExecutableModule, ServiceModule
                 <select name="_mollie_voucher_category" class="select">
                    <option value=""><?php esc_html_e('--Please choose an option--', 'mollie-payments-for-woocommerce'); ?></option>
                    <option value="no_category"> <?php esc_html_e('No Category', 'mollie-payments-for-woocommerce'); ?></option>
-                   <option value="meal"><?php esc_html_e('Meal', 'mollie-payments-for-woocommerce'); ?></option>
-                   <option value="eco"><?php esc_html_e('Eco', 'mollie-payments-for-woocommerce'); ?></option>
-                   <option value="gift"><?php esc_html_e('Gift', 'mollie-payments-for-woocommerce'); ?></option>
+                   <option value="<?php echo esc_attr(Voucher::MEAL); ?>"><?php esc_html_e('Meal', 'mollie-payments-for-woocommerce'); ?></option>
+                   <option value="<?php echo esc_attr(Voucher::ECO); ?>"><?php esc_html_e('Eco', 'mollie-payments-for-woocommerce'); ?></option>
+                   <option value="<?php echo esc_attr(Voucher::GIFT); ?>"><?php esc_html_e('Gift', 'mollie-payments-for-woocommerce'); ?></option>
+                   <option value="<?php echo esc_attr(Voucher::SPORT_CULTURE); ?>"><?php esc_html_e('Sport & Culture', 'mollie-payments-for-woocommerce'); ?></option>
                 </select>
          </span>
             </label>
@@ -150,9 +151,10 @@ class VoucherModule implements ExecutableModule, ServiceModule
             <select name="_mollie_voucher_category" id="_mollie_voucher_category" class="select">
                 <option value=""><?php esc_html_e('--Please choose an option--', 'mollie-payments-for-woocommerce'); ?></option>
                 <option value="no_category"> <?php esc_html_e('No Category', 'mollie-payments-for-woocommerce'); ?></option>
-                <option value="meal"><?php esc_html_e('Meal', 'mollie-payments-for-woocommerce'); ?></option>
-                <option value="eco"><?php esc_html_e('Eco', 'mollie-payments-for-woocommerce'); ?></option>
-                <option value="gift"><?php esc_html_e('Gift', 'mollie-payments-for-woocommerce'); ?></option>
+                <option value="<?php echo esc_attr(Voucher::MEAL); ?>"><?php esc_html_e('Meal', 'mollie-payments-for-woocommerce'); ?></option>
+                <option value="<?php echo esc_attr(Voucher::ECO); ?>"><?php esc_html_e('Eco', 'mollie-payments-for-woocommerce'); ?></option>
+                <option value="<?php echo esc_attr(Voucher::GIFT); ?>"><?php esc_html_e('Gift', 'mollie-payments-for-woocommerce'); ?></option>
+                <option value="<?php echo esc_attr(Voucher::SPORT_CULTURE); ?>"><?php esc_html_e('Sport & Culture', 'mollie-payments-for-woocommerce'); ?></option>
             </select>
             <p class="description"><?php esc_html_e('Select a voucher category to apply to all products with this category', 'mollie-payments-for-woocommerce'); ?></p>
         </div>
@@ -180,14 +182,17 @@ class VoucherModule implements ExecutableModule, ServiceModule
                     <option value="no_category" <?php selected($savedCategory, 'no_category'); ?>>
                         <?php esc_html_e('No Category', 'mollie-payments-for-woocommerce'); ?>
                     </option>
-                    <option value="meal" <?php selected($savedCategory, 'meal'); ?>>
+                    <option value="<?php echo esc_attr(Voucher::MEAL); ?>" <?php selected($savedCategory, Voucher::MEAL); ?>>
                         <?php esc_html_e('Meal', 'mollie-payments-for-woocommerce'); ?>
                     </option>
-                    <option value="eco" <?php selected($savedCategory, 'eco'); ?>>
+                    <option value="<?php echo esc_attr(Voucher::ECO); ?>" <?php selected($savedCategory, Voucher::ECO); ?>>
                         <?php esc_html_e('Eco', 'mollie-payments-for-woocommerce'); ?>
                     </option>
-                    <option value="gift" <?php selected($savedCategory, 'gift'); ?>>
+                    <option value="<?php echo esc_attr(Voucher::GIFT); ?>" <?php selected($savedCategory, Voucher::GIFT); ?>>
                         <?php esc_html_e('Gift', 'mollie-payments-for-woocommerce'); ?>
+                    </option>
+                    <option value="<?php echo esc_attr(Voucher::SPORT_CULTURE); ?>" <?php selected($savedCategory, Voucher::SPORT_CULTURE); ?>>
+                        <?php esc_html_e('Sport & Culture', 'mollie-payments-for-woocommerce'); ?>
                     </option>
                 </select>
                 <p class="description">
@@ -244,6 +249,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
                                         Voucher::MEAL => __('Meal', 'mollie-payments-for-woocommerce'),
                                         Voucher::ECO => __('Eco', 'mollie-payments-for-woocommerce'),
                                         Voucher::GIFT => __('Gift', 'mollie-payments-for-woocommerce'),
+                                        Voucher::SPORT_CULTURE => __('Sport & Culture', 'mollie-payments-for-woocommerce'),
 
                                 ],
                                 'default' => $defaultCategory,
@@ -299,6 +305,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
                     Voucher::MEAL => __('Meal', 'mollie-payments-for-woocommerce'),
                     Voucher::ECO => __('Eco', 'mollie-payments-for-woocommerce'),
                     Voucher::GIFT => __('Gift', 'mollie-payments-for-woocommerce'),
+                    Voucher::SPORT_CULTURE => __('Sport & Culture', 'mollie-payments-for-woocommerce'),
                 ],
             ]
         );

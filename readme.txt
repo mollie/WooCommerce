@@ -3,7 +3,7 @@ Contributors: daanvm, danielhuesken, davdebcom, dinamiko, syde, l.vangunst, ndij
 Tags: mollie, woocommerce, payments, ecommerce, credit card
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 8.0.0
+Stable tag: 8.0.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -225,6 +225,17 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 
 == Changelog ==
+
+= 8.0.2-beta1 - 07-05-2025 =
+* Added - Voucher payment method for Payments API
+* Added - In3 payment method for Payments API
+* Added - Voucher category Sports & Culture
+* Fixed - Undefined property method_title
+* Fixed - Surcharge with percentage without max limit configured not working
+* Fixed - Potential fatal error with getCurrencyFromOrder
+* Fixed - Compatibility with FunnelKit Upsells
+* Removed - the not anymore necessary block checkout surcharge calculation
+* Removed - Code that checks if payment method is only for Orders API
 
 = 8.0.1 - 07-05-2025 =
 * Fixed - check that Klarna webhooks will not be received for transactions if orders API is active

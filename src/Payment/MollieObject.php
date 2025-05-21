@@ -627,26 +627,14 @@ class MollieObject
                 $payment && $payment->sequenceType === 'first'
                 && (property_exists($payment, 'mandateId') && $payment->mandateId !== null)
             ) {
-                $order->update_meta_data(
-                    '_mollie_mandate_id',
-                    $payment->mandateId
-                );
+                $order->update_meta_data('_mollie_mandate_id', $payment->mandateId);
                 $order->save();
-                $subscriptions = wcs_get_subscriptions_for_renewal_order($order->get_id());
-                $subscription = array_pop($subscriptions);
-                if (!$subscription) {
-                    return;
-                }
-                $subscription->update_meta_data('_mollie_payment_id', $payment->id);
-                $subscription->set_payment_method('mollie_wc_gateway_' . $payment->method);
-                $subscription->save();
-                $subscriptionParentOrder = $subscription->get_parent();
-                if ($subscriptionParentOrder) {
-                    $subscriptionParentOrder->update_meta_data(
-                        '_mollie_mandate_id',
-                        $payment->mandateId
-                    );
-                    $subscriptionParentOrder->save();
+                $subscriptions = wcs_get_subscriptions_for_order($order);
+                foreach ($subscriptions as $subscription) {
+                    $subscription->update_meta_data('_mollie_payment_id', $payment->id);
+                    $subscription->update_meta_data('_mollie_mandate_id', $payment->mandateId);
+                    $subscription->set_payment_method('mollie_wc_gateway_' . $payment->method);
+                    $subscription->save();
                 }
             }
         }

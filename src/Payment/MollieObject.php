@@ -624,8 +624,9 @@ class MollieObject
             //get Payment from orders API
             $payment = isset($payment->_embedded->payments[0]) ? $payment->_embedded->payments[0] : $payment;
             if (
-                $payment && $payment->sequenceType === 'first'
-                && (property_exists($payment, 'mandateId') && $payment->mandateId !== null)
+                $payment
+                && (isset($payment->sequenceType) && $payment->sequenceType === 'first')
+                && !empty($payment->mandateId)
             ) {
                 $order->update_meta_data('_mollie_mandate_id', $payment->mandateId);
                 $order->save();

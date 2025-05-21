@@ -227,10 +227,18 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         $customer_id = $this->getOrderMollieCustomerId($renewal_order);
 
         $subscriptions = wcs_get_subscriptions_for_renewal_order($renewal_order);
-        $subscription = array_pop($subscriptions); // Just need one valid subscription
+        $subscription = array_pop($subscriptions);
+        $subscription_mollie_payment_id = $subscription->get_meta('_mollie_payment_id');
+        $mandateId = $subscription->get_meta('_mollie_mandate_id');
         $subscriptionParentOrder = $subscription->get_parent();
-        $subscription_mollie_payment_id = !empty($subscriptionParentOrder) ? $subscriptionParentOrder->get_meta('_mollie_payment_id') : null;
-        $mandateId = !empty($subscriptionParentOrder) ? $subscriptionParentOrder->get_meta('_mollie_mandate_id') : null;
+        if (!empty($subscriptionParentOrder)) {
+            if (empty($subscription_mollie_payment_id)) {
+                $subscription_mollie_payment_id = $subscriptionParentOrder->get_meta('_mollie_payment_id');
+            }
+            if (empty($mandateId)) {
+                $mandateId = $subscriptionParentOrder->get_meta('_mollie_mandate_id');
+            }
+        }
 
         if (! empty($subscription_mollie_payment_id) && ! empty($subscription)) {
             $customer_id = $this->restore_mollie_customer_id_and_mandate($customer_id, $subscription_mollie_payment_id, $subscription);

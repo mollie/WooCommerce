@@ -49,10 +49,30 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         add_filter($this->pluginId . '_retrieve_payment_gateways', function () {
             return $this->gatewayClassnames;
         });
+        //filter out old klarna on payments api
         add_filter('woocommerce_payment_gateways', static function ($gateways) use ($container) {
-            $orderMandatoryGatewayDisabler = $container->get(OrderMandatoryGatewayDisabler::class);
-            assert($orderMandatoryGatewayDisabler instanceof OrderMandatoryGatewayDisabler);
-            return $orderMandatoryGatewayDisabler->processGateways($gateways);
+            if ($container->get('settings.settings_helper')->isOrderApiSetting()) {
+                return $gateways;
+            }
+            if (
+                (is_wc_endpoint_url('wc-api')
+                    || (!wp_doing_ajax() && !is_wc_endpoint_url('order-pay'))
+                    || is_admin())
+                && !has_block('woocommerce/checkout')
+            ) {
+                return $gateways;
+            }
+            $orderMandatoryPaymentMethods = [
+                'mollie_wc_gateway_' . Constants::KLARNAPAYLATER,
+                'mollie_wc_gateway_' . Constants::KLARNAPAYNOW,
+                'mollie_wc_gateway_' . Constants::KLARNASLICEIT,
+            ];
+            foreach ($gateways as $key => $gateway) {
+                if (mollieWooCommerceIsMollieGateway($gateway) && in_array($gateway->id, $orderMandatoryPaymentMethods, true)) {
+                    unset($gateways[$key]);
+                }
+            }
+            return $gateways;
         });
         add_filter('woocommerce_payment_gateways', static function ($gateways) {
             $maybeEnablegatewayHelper = new MaybeDisableGateway();

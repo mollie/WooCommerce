@@ -299,8 +299,9 @@ class MolliePaymentGatewayHandler
         $this->logger->debug($debugLine);
         $hookReturnPaymentStatus = 'success';
         $gateway = wc_get_payment_gateway_by_order($order);
-        $returnRedirect = $gateway->get_return_url($order);
-        $failedRedirect = $order->get_checkout_payment_url(false);
+        if (!$gateway) {
+            return $order->get_checkout_payment_url(false);
+        }
 
         $this->mollieOrderService->setGateway($this);
         if ($this->mollieOrderService->orderNeedsPayment($order)) {
@@ -317,7 +318,7 @@ class MolliePaymentGatewayHandler
                 // order being cancelled. Otherwise redirect to /checkout/order-pay/ so
                 // customers can try to pay with another payment method.
                 if ($order_status_cancelled_payments === 'cancelled') {
-                    return $returnRedirect;
+                    return $gateway->get_return_url($order);
                 } else {
                     $this->notice->addNotice(
                         'error',
@@ -327,7 +328,7 @@ class MolliePaymentGatewayHandler
                         )
                     );
                     // Return to order payment page
-                    return $failedRedirect;
+                    return $order->get_checkout_payment_url(false);
                 }
             }
 
@@ -347,7 +348,7 @@ class MolliePaymentGatewayHandler
                         )
                     );
                     // Return to order payment page
-                    return $failedRedirect;
+                    return $order->get_checkout_payment_url(false);
                 }
                 if ($payment->method === "giftcard") {
                     $this->paymentMethod->debugGiftcardDetails($payment, $order);
@@ -375,8 +376,10 @@ class MolliePaymentGatewayHandler
 
         /*
          * Return to order received page
+         * URL must be got at late as possible,
+         * to avoid problems with other plugins that uses the action before
          */
-        return $returnRedirect;
+        return $gateway->get_return_url($order);
     }
 
     /**
@@ -480,9 +483,6 @@ class MolliePaymentGatewayHandler
             if ($payment->isOpen()) {
                 // Add a message to log and order explaining a payment with status "open", only if it hasn't been added already
                 if ($order->get_meta('_mollie_open_status_note') !== '1') {
-                    // Get payment method title
-                    $payment_method_title = $this->method_title;
-
                     // Add message to log
                     $this->logger->debug(
                         $this->id
@@ -499,7 +499,7 @@ class MolliePaymentGatewayHandler
                                 '%1$s payment still pending (%2$s) but customer already returned to the store. Status should be updated automatically in the future, if it doesn\'t this might indicate a communication issue between the site and Mollie.',
                                 'mollie-payments-for-woocommerce'
                             ),
-                            $payment_method_title,
+                            $this->paymentMethod->getProperty('title'),
                             $payment->id . ($payment->mode === 'test' ? (' - '
                                 . __(
                                     'test mode',
@@ -563,13 +563,14 @@ class MolliePaymentGatewayHandler
     public function getCurrencyFromOrder()
     {
         global $wp;
-        if (!empty($wp->query_vars['order-pay'])) {
+
+        $currency = get_woocommerce_currency();
+        if (is_checkout_pay_page()) {
             $order_id = $wp->query_vars['order-pay'];
             $order = wc_get_order($order_id);
-
-            $currency = $this->dataService->getOrderCurrency($order);
-        } else {
-            $currency = get_woocommerce_currency();
+            if ($order) {
+                $currency = $this->dataService->getOrderCurrency($order);
+            }
         }
         return $currency;
     }

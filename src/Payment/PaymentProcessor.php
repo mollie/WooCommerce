@@ -113,11 +113,6 @@ class PaymentProcessor implements PaymentProcessorInterface
         $initialOrderStatus = $this->processInitialOrderStatus($paymentMethod);
         $customerId = $this->getUserMollieCustomerId($order);
         $apiKey = $this->settingsHelper->getApiKey();
-        $hasBlocksEnabled = $this->dataHelper->isBlockPluginActive();
-        $isClassicCheckout = isset($_REQUEST["wc-ajax"]) && $_REQUEST["wc-ajax"] === "checkout";
-        if ($hasBlocksEnabled && !$isClassicCheckout) {
-            $order = $this->correctSurchargeFee($order, $paymentMethod);
-        }
 
         if ($this->needsSubscriptionSwitch($order, $orderId)) {
             return $this->processSubscriptionSwitch($order, $orderId, $customerId, $apiKey);
@@ -158,76 +153,6 @@ class PaymentProcessor implements PaymentProcessorInterface
             $this->reportPaymentCreationFailure($orderId, $error, $paymentMethodId);
         }
         return ['result' => 'failure'];
-    }
-
-    /**
-     * @param WC_Order $order
-     * @param PaymentMethodI $paymentMethod
-     */
-    protected function correctSurchargeFee($order, $paymentMethod)
-    {
-        $fees = $order->get_fees();
-        $surcharge = $paymentMethod->surcharge();
-        $gatewaySettings = $paymentMethod->getMergedProperties();
-        $totalAmount = (float) $order->get_total();
-        $aboveMaxLimit = $surcharge->aboveMaxLimit($totalAmount, $gatewaySettings);
-        $amount = $aboveMaxLimit ? 0.0 : $surcharge->calculateFeeAmountOrder($order, $gatewaySettings);
-        $gatewayHasSurcharge = $amount !== 0.0;
-        $gatewayFeeLabel = get_option(
-            'mollie-payments-for-woocommerce_gatewayFeeLabel',
-            $surcharge->defaultFeeLabel()
-        );
-
-        $correctedFee = false;
-        foreach ($fees as $fee) {
-            $feeName = $fee->get_name();
-            $feeId = $fee->get_id();
-            $hasMollieFee = strpos($feeName, $gatewayFeeLabel) !== false;
-            if ($hasMollieFee) {
-                if ($amount == (float)$fee->get_amount('edit')) {
-                    $correctedFee = true;
-                    continue;
-                }
-                if (!$gatewayHasSurcharge) {
-                    $this->removeOrderFee($order, $feeId);
-                    $correctedFee = true;
-                    continue;
-                }
-                $this->removeOrderFee($order, $feeId);
-                $this->orderAddFee($order, $amount, $gatewayFeeLabel);
-                $correctedFee = true;
-            }
-        }
-        if (!$correctedFee) {
-            if ($gatewayHasSurcharge) {
-                $this->orderAddFee($order, $amount, $gatewayFeeLabel);
-            }
-        }
-        return $order;
-    }
-
-    /**
-     * @param WC_Order $order
-     * @param int $feeId
-     * @throws \Exception
-     */
-    protected function removeOrderFee(\WC_Order $order, int $feeId): \WC_Order
-    {
-        $order->remove_item($feeId);
-        wc_delete_order_item($feeId);
-        $order->calculate_totals();
-        return $order;
-    }
-
-    protected function orderAddFee($order, $amount, $surchargeName)
-    {
-        $item_fee = new \WC_Order_Item_Fee();
-        $item_fee->set_name($surchargeName);
-        $item_fee->set_amount($amount);
-        $item_fee->set_total($amount);
-        $item_fee->set_tax_status('taxable');
-        $order->add_item($item_fee);
-        $order->calculate_totals();
     }
 
     /**
@@ -404,16 +329,12 @@ class PaymentProcessor implements PaymentProcessorInterface
             $this->handleMollieOutage($e);
             //if exception is 422 do not try to create a payment
             $this->handleMollieFraudRejection($e);
-            // Don't try to create a Mollie Payment for Klarna payment methods
+            // Don't try to create a Mollie Payment for old Klarna payment methods
             $order_payment_method = $order->get_payment_method();
             $orderMandatoryPaymentMethods = [
-                //'mollie_wc_gateway_klarnapaylater',
-                //'mollie_wc_gateway_klarnasliceit',
-                //'mollie_wc_gateway_klarnapaynow',
-                //'mollie_wc_gateway_klarna',
-                'mollie_wc_gateway_billie',
-                'mollie_wc_gateway_in3',
-                'mollie_wc_gateway_riverty',
+                'mollie_wc_gateway_' . Constants::KLARNAPAYLATER,
+                'mollie_wc_gateway_' . Constants::KLARNASLICEIT,
+                'mollie_wc_gateway_' . Constants::KLARNAPAYNOW,
             ];
 
             if (in_array($order_payment_method, $orderMandatoryPaymentMethods, true)) {

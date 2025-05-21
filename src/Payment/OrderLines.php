@@ -125,9 +125,9 @@ class OrderLines
     private function process_items($voucherDefaultCategory)
     {
         $voucherSettings = get_option('mollie_wc_gateway_voucher_settings') ?: get_option('mollie_wc_gateway_mealvoucher_settings');
-        $isMealVoucherEnabled = $voucherSettings ? ($voucherSettings['enabled'] == 'yes') : false;
+        $isVoucherEnabled = $voucherSettings ? ($voucherSettings['enabled'] == 'yes') : false;
         if (!$voucherSettings) {
-            $isMealVoucherEnabled = $this->dataHelper->getPaymentMethod('voucher') ? true : false;
+            $isVoucherEnabled = $this->dataHelper->getPaymentMethod('voucher') ? true : false;
         }
 
         foreach ($this->order->get_items() as $cart_item) {
@@ -144,7 +144,7 @@ class OrderLines
 
                 $mollie_order_item =  [
                     'sku' => $this->get_item_reference($product),
-                    'type' => $product->is_virtual() ? 'digital' : 'physical',
+                    'type' => ($product instanceof \WC_Product && $product->is_virtual()) ? 'digital' : 'physical',
                     'name' => $this->get_item_name($cart_item),
                     'quantity' => $this->get_item_quantity($cart_item),
                     'vatRate' => round($this->get_item_vatRate($cart_item, $product), 2),
@@ -170,21 +170,21 @@ class OrderLines
                         [
                             'order_item_id' => $cart_item->get_id(),
                         ],
-                    'productUrl' => $product->get_permalink(),
+                    'productUrl' => ($product instanceof \WC_Product) ? $product->get_permalink() : null,
                 ];
 
-                if ($product->get_image_id()) {
+                if ($product instanceof \WC_Product && $product->get_image_id()) {
                     $productImage = wp_get_attachment_image_src($product->get_image_id(), 'full');
                     if (isset($productImage[0]) && wc_is_valid_url($productImage[0])) {
                         $mollie_order_item['imageUrl'] = $productImage[0];
                     }
                 }
 
-                if ($isMealVoucherEnabled && $this->get_item_category($product, $voucherDefaultCategory) != "no_category") {
-                    $mollie_order_item['category'] = $this->get_item_category(
-                        $product,
-                        $voucherDefaultCategory
-                    );
+                if ($isVoucherEnabled) {
+                    $category = $this->get_item_category($product, $voucherDefaultCategory);
+                    if ($category) {
+                        $mollie_order_item['category'] = $category;
+                    }
                 }
                 $this->order_lines[] = $mollie_order_item;
 
@@ -358,7 +358,7 @@ class OrderLines
      * @access private
      *
      * @param  WC_Order_Item  $cart_item Cart item.
-     * @param  object $product   Product object.
+     * @param  null|false|\WC_Product $product   Product object.
      *
      * @return integer $item_vatRate Item tax percentage formatted for Mollie Orders API.
      */
@@ -427,7 +427,7 @@ class OrderLines
      *
      * @access private
      *
-     * @param object $product Product object.
+     * @param null|false|\WC_Product $product Product object.
      *
      * @return false|string $item_reference Cart item reference.
      */
@@ -488,44 +488,50 @@ class OrderLines
      * @since  5.6
      * @access private
      *
-     * @param  object $product Product object.
+     * @param  null|false|\WC_Product $product Product object.
      * @param  string $voucherDefaultCategory Voucher default category.
      *
      * @return string $category Product voucher category.
      */
     private function get_item_category($product, $voucherDefaultCategory)
     {
-        $category = $voucherDefaultCategory;
+        $category = '';
+        if ($voucherDefaultCategory !== Voucher::NO_CATEGORY) {
+            $category = $voucherDefaultCategory;
+        }
 
-        if (!$product) {
+        if (! $product instanceof \WC_Product) {
             return $category;
         }
 
         //if product has taxonomy associated, retrieve voucher cat from there.
-        $catTerms = get_the_terms($product->get_id(), 'product_cat');
-        if (is_array($catTerms)) {
-            $term = end($catTerms);
-            $term_id = $term->term_id;
-            $metaVoucher = get_term_meta($term_id, '_mollie_voucher_category', true);
-            $category = $metaVoucher ?: $category;
+        $catTermIds = $product->get_category_ids();
+        if (!$catTermIds && $product->is_type('variation')) {
+            $parentProduct = wc_get_product($product->get_parent_id());
+            if ($parentProduct) {
+                $catTermIds = $parentProduct->get_category_ids();
+            }
+        }
+        if ($catTermIds) {
+            $term_id = end($catTermIds);
+            $metaVoucher = '';
+            if ($term_id) {
+                $metaVoucher = get_term_meta($term_id, '_mollie_voucher_category', true);
+            }
+            if ($metaVoucher && $metaVoucher !== Voucher::NO_CATEGORY) {
+                $category = $metaVoucher;
+            }
         }
 
-        //local product voucher category
-        $localCategory = get_post_meta(
-            $product->get_id(),
-            Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
-            false
+        //local product or product variation voucher category
+        $localCategory = $product->get_meta(
+            $product->is_type('variation') ? 'voucher' : Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
+            true
         );
-        $category = $localCategory[0] ?? $category;
-
-        //if product is a single variation could have a voucher meta associated
-        $simpleVariationCategory = get_post_meta(
-            $product->get_id(),
-            'voucher',
-            false
-        );
-
-        return $simpleVariationCategory ? $simpleVariationCategory[0] : $category;
+        if ($localCategory && $localCategory !== Voucher::NO_CATEGORY) {
+            return $localCategory;
+        }
+        return $category;
     }
 
     /**

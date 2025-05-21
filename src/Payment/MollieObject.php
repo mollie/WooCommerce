@@ -630,11 +630,22 @@ class MollieObject
                 $order->update_meta_data('_mollie_mandate_id', $payment->mandateId);
                 $order->save();
                 $subscriptions = wcs_get_subscriptions_for_order($order);
+                if (!$subscriptions) {
+                    $subscriptions = wcs_get_subscriptions_for_renewal_order($order);
+                }
                 foreach ($subscriptions as $subscription) {
                     $subscription->update_meta_data('_mollie_payment_id', $payment->id);
                     $subscription->update_meta_data('_mollie_mandate_id', $payment->mandateId);
                     $subscription->set_payment_method('mollie_wc_gateway_' . $payment->method);
                     $subscription->save();
+                    $subscriptionParentOrder = $subscription->get_parent();
+                    if ($subscriptionParentOrder) {
+                        $subscriptionParentOrder->update_meta_data(
+                            '_mollie_mandate_id',
+                            $payment->mandateId
+                        );
+                        $subscriptionParentOrder->save();
+                    }
                 }
             }
         }

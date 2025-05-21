@@ -234,9 +234,17 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         if (!empty($subscriptionParentOrder)) {
             if (empty($subscription_mollie_payment_id)) {
                 $subscription_mollie_payment_id = $subscriptionParentOrder->get_meta('_mollie_payment_id');
+                if ($subscription_mollie_payment_id) {
+                    $subscription->add_meta_data('_mollie_payment_id', $subscription_mollie_payment_id);
+                    $subscription->save();
+                }
             }
             if (empty($mandateId)) {
                 $mandateId = $subscriptionParentOrder->get_meta('_mollie_mandate_id');
+                if ($mandateId) {
+                    $subscription->add_meta_data('_mollie_mandate_id', $mandateId);
+                    $subscription->save();
+                }
             }
         }
 
@@ -314,14 +322,14 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
                         (property_exists($payment, 'mandateId')
                             && $payment->mandateId !== null)
                         && $payment->mandateId !== $mandateId
-                        && !empty($subscriptionParentOrder)
                     ) {
                         $this->logger->debug("{$gateway->id}: updating to mandate {$payment->mandateId}");
-                        $subscriptionParentOrder->update_meta_data(
-                            '_mollie_mandate_id',
-                            $payment->mandateId
-                        );
-                        $subscriptionParentOrder->save();
+                        $subscription->update_meta_data('_mollie_mandate_id', $payment->mandateId);
+                        $subscription->save();
+                        if ($subscriptionParentOrder) {
+                            $subscriptionParentOrder->update_meta_data('_mollie_mandate_id', $payment->mandateId);
+                            $subscriptionParentOrder->save();
+                        }
                         $mandateId = $payment->mandateId;
                     }
                 } else {

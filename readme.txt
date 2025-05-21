@@ -234,8 +234,8 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 * Fixed - Surcharge with percentage without max limit configured not working
 * Fixed - Potential fatal error with getCurrencyFromOrder
 * Fixed - Compatibility with FunnelKit Upsells
-* Removed - the not anymore necessary block checkout surcharge calculation
-* Removed - Code that checks if payment method is only for Orders API
+* Removed - unnecessary block checkout surcharge calculation
+* Removed - Obsolete code that checked if a payment method was exclusive to the Orders API
 
 = 8.0.1 - 07-05-2025 =
 * Fixed - check that Klarna webhooks will not be received for transactions if orders API is active

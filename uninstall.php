@@ -24,11 +24,10 @@ if ( !defined('WP_UNINSTALL_PLUGIN' ) ) {
     try {
         $properties = PluginProperties::new(__FILE__);
         $bootstrap = Package::new($properties);
-        $bootstrap->boot(
-            new UninstallModule()
-        );
+        $bootstrap->addModule(new UninstallModule());
+        $bootstrap->boot();
         $shouldClean = get_option('mollie-payments-for-woocommerce_removeOptionsAndTransients') === 'yes';
-        if($shouldClean){
+        if ($shouldClean) {
             $cleaner = $bootstrap->container()->get(CleanDb::class);
             $cleaner->cleanAll();
         }
@@ -52,5 +51,3 @@ if ( !defined('WP_UNINSTALL_PLUGIN' ) ) {
         );
     }
 })();
-
-

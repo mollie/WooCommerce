@@ -8,7 +8,7 @@ export const surchargeFixedAndPercentageOverLimit: MollieTestData.SurchargeTests
 		describeTitle: 'Surcharge fee > Fixed and percentage over limit',
 		testTitle:
 			'Validate fixed and percentage fee surcharge for total over limit for',
-		expectedAmount: 111.0,
+		expectedAmount: 111.0 + 6.0,
 		expectedFeeText: '+ € 10 + 10% fee might apply (excl. VAT)',
 		settings: {
 			payment_surcharge: 'fixed_fee_percentage',

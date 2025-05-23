@@ -7,7 +7,7 @@ export const surchargePercentageOverLimit: MollieTestData.SurchargeTestsGroup =
 	{
 		describeTitle: 'Surcharge fee > Percentage over limit',
 		testTitle: 'Validate percentage fee surcharge for total over limit for',
-		expectedAmount: 111.0,
+		expectedAmount: 111.0 + 6.0,
 		expectedFeeText: '+ 10% fee might apply (excl. VAT)',
 		settings: {
 			payment_surcharge: 'percentage',

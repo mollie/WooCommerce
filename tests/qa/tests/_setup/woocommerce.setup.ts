@@ -17,6 +17,7 @@ import {
 	subscriptionsPlugin,
 	disableWcSetupWizard,
 	featureFlagsPlugin,
+	thirdPartyFeesPlugin,
 } from '../../resources';
 
 setup( 'Setup Permalinks', async ( { requestUtils } ) => {
@@ -222,5 +223,16 @@ setup(
 				await requestUtils.deactivatePlugin( slug );
 			}
 		}
+	}
+);
+
+setup(
+	'Setup Third Party Fees plugin (active)',
+	async ( { requestUtils, plugins } ) => {
+		const { slug, zipFilePath } = thirdPartyFeesPlugin;
+		if ( ! ( await requestUtils.isPluginInstalled( slug ) ) ) {
+			await plugins.installPluginFromFile( zipFilePath );
+		}
+		await requestUtils.activatePlugin( slug );
 	}
 );

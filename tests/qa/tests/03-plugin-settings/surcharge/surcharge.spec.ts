@@ -106,7 +106,8 @@ for ( const surcharge of allTests ) {
 					await expect( feeNotice ).not.toBeVisible();
 				}
 				const totalAmount = await classicCheckout.captureTotalAmount();
-				await expect( totalAmount ).toEqual( surcharge.expectedAmount );
+				const expectedAmount = Number( surcharge.expectedAmount.toFixed( 2 ) ); // trick to fix the following: 111.0 + 6.0 = 116.999999999998
+				await expect( totalAmount ).toEqual( expectedAmount );
 			} );
 		}
 	} );

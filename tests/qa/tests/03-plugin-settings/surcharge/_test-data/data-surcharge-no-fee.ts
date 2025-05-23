@@ -6,7 +6,7 @@ import { MollieTestData, products } from '../../../../resources';
 export const surchargeNoFee: MollieTestData.SurchargeTestsGroup = {
 	describeTitle: 'Surcharge fee > No fee',
 	testTitle: 'Validate no fee surcharge for',
-	expectedAmount: 111.0,
+	expectedAmount: 111.0 + 6.0,
 	expectedFeeText: '',
 	settings: {
 		payment_surcharge: 'no_fee',

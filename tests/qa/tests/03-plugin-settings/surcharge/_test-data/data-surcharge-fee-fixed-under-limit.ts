@@ -6,7 +6,7 @@ import { MollieTestData, products } from '../../../../resources';
 export const surchargeFixedUnderLimit: MollieTestData.SurchargeTestsGroup = {
 	describeTitle: 'Surcharge fee > Fixed under Limit',
 	testTitle: 'Validate fixed fee surcharge for total under limit for',
-	expectedAmount: 122.0,
+	expectedAmount: 122.0 + 6.0,
 	expectedFeeText: '+ € 10 fee might apply (excl. VAT)',
 	settings: {
 		payment_surcharge: 'fixed_fee',

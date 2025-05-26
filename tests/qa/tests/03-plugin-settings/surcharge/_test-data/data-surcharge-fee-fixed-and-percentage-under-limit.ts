@@ -26,7 +26,7 @@ export const surchargeFixedAndPercentageUnderLimit: MollieTestData.SurchargeTest
 				gateway: 'voucher',
 				product: products.mollieSimleVoucherMeal100,
 			},
-			{ testId: 'C129508', gateway: 'bancontact' },
+			{ testId: 'C129799', gateway: 'bancontact' },
 			{ testId: 'C138017', gateway: 'belfius' },
 			{ testId: 'C354670', gateway: 'billie' },
 			{ testId: 'C133664', gateway: 'eps' },

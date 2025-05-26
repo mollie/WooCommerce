@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/inpsyde/playwright-tests#readme",
   "dependencies": {
-    "@inpsyde/playwright-utils": "^2.4.0",
+    "@inpsyde/playwright-utils": "^2.6.1",
     "dotenv": "^16.3.1",
     "dotenv-cli": "^7.3.0",
     "playwright": "^1.40.1",
@@ -56,5 +56,8 @@
       "@wordpress/no-unsafe-wp-apis": "off",
       "no-console": "off"
     }
-  }
+  },
+  "workspaces": [
+    "playwright-utils"
+  ]
 }

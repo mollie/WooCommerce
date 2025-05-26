@@ -205,22 +205,3 @@ setup( 'Setup products', async ( { wooCommerceUtils } ) => {
 	// store created products as CART_ITEMS env var
 	process.env.PRODUCTS = JSON.stringify( cartItems );
 } );
-
-setup(
-	'Setup Feature Flags plugin for Klarna, Billie, Riverty',
-	async ( { requestUtils, plugins, mollieApiMethod } ) => {
-		const { slug, zipFilePath } = featureFlagsPlugin;
-		if ( mollieApiMethod === 'payment' ) {
-			if ( ! ( await requestUtils.isPluginInstalled( slug ) ) ) {
-				await plugins.installPluginFromFile( zipFilePath );
-			}
-			await requestUtils.activatePlugin( slug );
-		}
-
-		if ( mollieApiMethod === 'order' ) {
-			if ( await requestUtils.isPluginInstalled( slug ) ) {
-				await requestUtils.deactivatePlugin( slug );
-			}
-		}
-	}
-);

@@ -24,7 +24,7 @@ export const surchargeFixedOverLimit: MollieTestData.SurchargeTestsGroup = {
 			gateway: 'voucher',
 			product: products.mollieSimleVoucherMeal100,
 		},
-		{ testId: 'C129509', gateway: 'bancontact' },
+		{ testId: 'C129800', gateway: 'bancontact' },
 		{ testId: 'C138018', gateway: 'belfius' },
 		{ testId: 'C354671', gateway: 'billie' },
 		{ testId: 'C133665', gateway: 'eps' },

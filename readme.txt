@@ -226,7 +226,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 8.0.2-beta1 - 07-05-2025 =
+= 8.0.2 - 02-06-2025 =
 * Added - Voucher payment method for Payments API
 * Added - In3 payment method for Payments API
 * Added - Voucher category Sports & Culture

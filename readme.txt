@@ -234,6 +234,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 * Fixed - Surcharge with percentage without max limit configured not working
 * Fixed - Potential fatal error with getCurrencyFromOrder
 * Fixed - Compatibility with FunnelKit Upsells
+* Fixed - Deprectaion message on plugin uninstall
 * Removed - unnecessary block checkout surcharge calculation
 * Removed - Obsolete code that checked if a payment method was exclusive to the Orders API
 

@@ -19,15 +19,14 @@ hooks:
 use_dns_when_possible: true
 composer_version: "2"
 web_environment:
-#- BASEURL=https://fd8d-88-17-29-100.ngrok-free.app
-- WP_VERSION=6.7.1
+- WP_VERSION=6.8.1
 - WP_LOCALE=en_US
 - WP_TITLE=Mollie WordPress Test
 - PLUGIN_NAME=mollie-payments-for-woocommerce
 - ADMIN_USER=admin
 - ADMIN_PASS=admin
 - ADMIN_EMAIL=admin@example.com
-- WC_VERSION=9.5.1
+- WC_VERSION=9.8.5
 nodejs_version: "22"
 
 # Key features of ddev's config.yaml:

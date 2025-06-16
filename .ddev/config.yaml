@@ -26,7 +26,7 @@ web_environment:
 - ADMIN_USER=admin
 - ADMIN_PASS=admin
 - ADMIN_EMAIL=admin@example.com
-- WC_VERSION=9.8.5
+- WC_VERSION=dev
 nodejs_version: "22"
 
 # Key features of ddev's config.yaml:

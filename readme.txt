@@ -14,7 +14,7 @@ Accept all major payment methods in WooCommerce today. Credit cards, iDEAL and m
 
 https://www.youtube.com/watch?v=33sQNKelKW4
 
-> **Special limited time offer:** Pay ZERO processing fees for your first month.* [Sign-up to Mollie today](https://my.mollie.com/campaigns/signup/molliewoocommerce2024?utm_campaign=GLO_Q4_2024_Woo-Campaign&utm_medium=company_profile&utm_source=partner&utm_content=pagebannerwordpress&utm_partner=woocommerce&campaign_name=GLO_Q4_2024_Woo-Campaign)
+> **Special limited time offer:** Pay ZERO processing fees for your first month.* [Sign-up to Mollie today](https://my.mollie.com/dashboard/signup?utm_campaign=GLO_AO_Woo-Channels-Signup&utm_medium=marketplacelisting&utm_source=partner&utm_content=Wordpress&sf_campaign_id=701QD00000a4oHjYAI&campaign_name=GLO_AO_Woo-Channels-Signup)
 
 \***To qualify for this offer, you must sign up through the specific link above. Offer subject to terms and conditions**
 
@@ -46,14 +46,15 @@ European and local payment methods:
 * Gift cards (Netherlands)
 * iDEAL (Netherlands)
 * KBC/CBC payment button (Belgium)
-* Klarna One (UK)
-* Klarna Pay now (Netherlands, Belgium, Germany, Austria, Finland)
+* Klarna
+* MB Way (Portugal)
+* Multibanco (Portugal)
+* PaybyBank
 * Payconiq (Belgium, Luxembourg)
 * Przelewy24 (Poland)
 * Satispay (EU)
-* SEPA – Credit Transfer (EU)
 * SEPA – Direct Debit (EU)
-* SOFORT Banking (EU)
+* Swish (Sweden)
 * TWINT (Switzerland)
 * Vouchers (Netherlands, Belgium)
 
@@ -65,15 +66,14 @@ International payment methods:
 
 Pay after delivery payment methods:
 
+* Alma (France, Belgium)
 * Billie – Pay by Invoice for Businesses
 * iDEAL in3 – Pay in 3 installments, 0% interest
-* Klarna Pay later (Netherlands, Belgium, Germany, Austria, Finland)
-* Klarna Slice it (Germany, Austria, Finland)
 * Riverty (Netherlands, Belgium, Germany, Austria)
 
 = Get started with Mollie =
 
-1. [Create a Mollie account](https://my.mollie.com/campaigns/signup/molliewoocommerce2024?utm_campaign=GLO_Q4_2024_Woo-Campaign&utm_medium=company_profile&utm_source=partner&utm_content=pagebannerwordpress&utm_partner=woocommerce&campaign_name=GLO_Q4_2024_Woo-Campaign)
+1. [Create a Mollie account](https://my.mollie.com/dashboard/signup?utm_campaign=GLO_AO_Woo-Channels-Signup&utm_medium=marketplacelisting&utm_source=partner&utm_content=Wordpress&sf_campaign_id=701QD00000a4oHjYAI&campaign_name=GLO_AO_Woo-Channels-Signup)
 2. Install **Mollie Payments for WooCommerce** on your WordPress website
 3. Activate Mollie in your WooCommerce webshop and enter your Mollie API key
 4. In your Mollie Dashboard, go to Settings > Website profiles and select the payment methods you want to offer
@@ -104,21 +104,17 @@ Become part of Mollie's growing community and gain access to our comprehensive s
 
 > **Your success is our mission. With Mollie, simplify your payments and focus on growing your business.**
 
-[Sign up today](https://my.mollie.com/campaigns/signup/molliewoocommerce2024?utm_campaign=GLO_Q4_2024_Woo-Campaign&utm_medium=company_profile&utm_source=partner&utm_content=pagebannerwordpress&utm_partner=woocommerce&campaign_name=GLO_Q4_2024_Woo-Campaign) and start enhancing your WooCommerce store with Mollie's advanced payment solutions.
+[Sign up today](https://my.mollie.com/dashboard/signup?utm_campaign=GLO_AO_Woo-Channels-Signup&utm_medium=marketplacelisting&utm_source=partner&utm_content=Wordpress&sf_campaign_id=701QD00000a4oHjYAI&campaign_name=GLO_AO_Woo-Channels-Signup) and start enhancing your WooCommerce store with Mollie's advanced payment solutions.
 
 Feel free to contact info@mollie.com if you have any questions or comments about this plugin.
 
 = More about Mollie =
 
-Since 2004, Mollie has been on a mission to help businesses drive growth through simplified payments and financial services.
+Mollie offers a single platform for businesses to get paid and manage their money. One that makes payments, reconciliation, reporting, fraud prevention, and financing simple for all – from startups to enterprises.
 
-Initially observing banks offering businesses outdated technology and complex processes, Mollie decided to innovate. Striving to improve conditions by acting fairly and being a true partner to customers on their journey to success has always been a priority.
+Founded in 2004, Mollie’s mission is to make payments and money management effortless for every business in the UK and Europe. Their 800-strong team works from offices across the continent, including Amsterdam, Ghent, Lisbon, London, Maastricht, Milan, Munich, and Paris. 
 
-Over the years, Mollie has expanded significantly, yet the core mission remains unchanged: to address and solve customer problems to facilitate their growth.
-
-Mollie champions the belief that simplicity leads to the best solutions and designs products to serve everyone: from solopreneurs and startups to global enterprises. This approach ensures every customer has access to the necessary tools for success.
-
-Today, Mollie powers growth for over 130,000 businesses with effortless online payments, money management tools, and flexible funding, continuously enhancing payment and financial services for a broad spectrum of clients including global brands, SMEs, marketplaces, SaaS platforms, and more.
+Today, more than 250,000 businesses use Mollie to drive revenue, reduce costs, and manage funds.
 
 == Frequently Asked Questions ==
 

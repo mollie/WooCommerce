@@ -162,6 +162,12 @@ class MolliePayment extends MollieObject
             if ($payment->method === 'paypal') {
                 $this->addPaypalTransactionIdToOrder($order);
             }
+            if (!empty($payment->amountChargedBack)) {
+                $this->logger->debug(
+                    __METHOD__ . ' payment at Mollie has a charged back, so no processing for order ' . $orderId
+                );
+                return;
+            }
 
             // WooCommerce 2.2.0 has the option to store the Payment transaction id.
             $order->payment_complete($payment->id);

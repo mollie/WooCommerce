@@ -140,12 +140,17 @@ class PaymentLines
 
                 $this->currency = $this->dataHelper->getOrderCurrency($this->order);
 
+                $vatRate = 0;
+                if ($cart_item['line_tax'] > 0 && $cart_item['line_total'] > 0) {
+                    $vatRate = round($cart_item['line_tax'] / $cart_item['line_total'], 4) * 100;
+                }
+
                 $mollie_order_item =  [
                     'sku' => $this->get_item_reference($product),
                     'type' => ($product instanceof \WC_Product && $product->is_virtual()) ? 'digital' : 'physical',
                     'description' => $this->get_item_name($cart_item),
                     'quantity' => $this->get_item_quantity($cart_item),
-                    'vatRate' => round($this->get_item_vatRate($cart_item, $product), 2),
+                    'vatRate' => $vatRate,
                     'unitPrice' =>  [
                         'currency' => $this->currency,
                         'value' => $this->dataHelper->formatCurrencyValue($this->get_item_price($cart_item), $this->currency),
@@ -338,41 +343,6 @@ class PaymentLines
     private function get_item_tax_amount($cart_item)
     {
         return $cart_item['line_tax'];
-    }
-
-    /**
-     * Calculate item tax percentage.
-     *
-     * @since  1.0
-     * @access private
-     *
-     * @param  WC_Order_Item  $cart_item Cart item.
-     * @param  null|false|\WC_Product $product   Product object.
-     *
-     * @return integer $item_vatRate Item tax percentage formatted for Mollie Orders API.
-     */
-    private function get_item_vatRate($cart_item, $product)
-    {
-        if ($product && $product->is_taxable() && $cart_item['line_subtotal_tax'] > 0) {
-            // Calculate tax rate.
-            $_tax = new WC_Tax();
-            $tmp_rates = $_tax->get_rates($product->get_tax_class());
-            $item_vatRate = 0;
-            foreach ($tmp_rates as $rate) {
-                if (isset($rate['rate'])) {
-                    if ($rate['compound'] === "yes") {
-                        $compoundRate = round($item_vatRate * ($rate['rate'] / 100)) + $rate['rate'];
-                        $item_vatRate += $compoundRate;
-                        continue;
-                    }
-                    $item_vatRate += $rate['rate'];
-                }
-            }
-        } else {
-            $item_vatRate = 0;
-        }
-
-        return $item_vatRate;
     }
 
     /**

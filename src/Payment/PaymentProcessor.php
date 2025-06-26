@@ -197,7 +197,7 @@ class PaymentProcessor implements PaymentProcessorInterface
         $optionName = $this->pluginId . '_' . 'api_switch';
         $apiSwitchOption = get_option($optionName);
         $paymentType = $apiSwitchOption ?: self::PAYMENT_METHOD_TYPE_ORDER;
-        $isBankTransferGateway = $paymentMethod->getProperty('id') === Constants::BANKTRANSFER;
+        $isBankTransferGateway = $paymentMethod->getProperty('id') === Constants::BANKTRANSFER || $paymentMethod->getProperty('id') === Constants::PAYBYBANK;
         if ($isBankTransferGateway && $paymentMethod->isExpiredDateSettingActivated()) {
             $paymentType = self::PAYMENT_METHOD_TYPE_PAYMENT;
         }
@@ -727,7 +727,7 @@ class PaymentProcessor implements PaymentProcessorInterface
 // Update initial order status for payment methods where the payment status will be delivered after a couple of days.
         // See: https://www.mollie.com/nl/docs/status#expiry-times-per-payment-method
         // Status is only updated if the new status is not the same as the default order status (pending)
-        if (($paymentObject->method === Constants::BANKTRANSFER) || ($paymentObject->method === Constants::DIRECTDEBIT)) {
+        if (($paymentObject->method === Constants::BANKTRANSFER) || ($paymentObject->method === Constants::DIRECTDEBIT) || ($paymentObject->method === Constants::PAYBYBANK)) {
             // Don't change the status of the order if it's Partially Paid
             // This adds support for WooCommerce Deposits (by Webtomizer)
             // See https://github.com/mollie/WooCommerce/issues/138

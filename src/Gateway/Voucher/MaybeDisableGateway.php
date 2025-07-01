@@ -39,36 +39,31 @@ class MaybeDisableGateway
      */
     public function haveCartProductsCategories(): bool
     {
+        $voucherSettings = Voucher::voucherDefaultCategories();
+        if ($voucherSettings) {
+            return true;
+        }
+
         $cart = WC()->cart;
         if (!$cart) {
             return false;
         }
         $products = $cart->get_cart_contents();
-        $mealvoucherSettings = get_option(
-            'mollie_wc_gateway_voucher_settings'
-        );
-        if (!$mealvoucherSettings) {
-            $mealvoucherSettings = get_option(
-                'mollie_wc_gateway_mealvoucher_settings'
-            );
-        }
-        //Check if mealvoucherSettings is an array as to prevent notice from being thrown for PHP 7.4 and up.
-        if (is_array($mealvoucherSettings) && !empty($mealvoucherSettings['mealvoucher_category_default']) && $mealvoucherSettings['mealvoucher_category_default'] !== Voucher::NO_CATEGORY) {
-            return true;
-        }
-
         foreach ($products as $product) {
             if (!$product['data'] instanceof \WC_Product) {
                 continue;
             }
             $wcProduct = $product['data'];
             $metaKey = $wcProduct->is_type('variation') ? 'voucher' : Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION;
-            $localCategories = $wcProduct->get_meta($metaKey, false);
-            foreach ($localCategories as $key => $localCategory) {
-                assert($localCategory instanceof \WC_Meta_Data);
-                $localCategories[$key] = $localCategory->value;
+            $localCategories = $wcProduct->get_meta($metaKey);
+            //support old setting
+            if ($localCategories && !is_array($localCategories)) {
+                if ($localCategories === Voucher::NO_CATEGORY) {
+                    $localCategories = [];
+                }
+                $localCategories = [$localCategories];
             }
-            if ($localCategories && !in_array(Voucher::NO_CATEGORY, $localCategories, true)) {
+            if ($localCategories) {
                 return true;
             }
 
@@ -80,18 +75,11 @@ class MaybeDisableGateway
                 }
             }
             if ($catTermIds) {
-                $term_id = end($catTermIds);
-                $metaVouchers = [];
-                if ($term_id) {
-                    $metaVouchers = get_term_meta($term_id, '_mollie_voucher_category', false);
-                }
-                foreach ($metaVouchers as $key => $metaVoucher) {
-                    if (!$metaVoucher || $metaVoucher === Voucher::NO_CATEGORY) {
-                        unset($metaVouchers[$key]);
+                foreach ($catTermIds as $catTermId) {
+                    $metaVoucher = get_term_meta($catTermId, '_mollie_voucher_category', true);
+                    if ($metaVoucher && $metaVoucher !== Voucher::NO_CATEGORY) {
+                        return true;
                     }
-                }
-                if (!empty($metaVouchers)) {
-                    return true;
                 }
             }
         }

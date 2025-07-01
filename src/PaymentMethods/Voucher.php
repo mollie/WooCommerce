@@ -64,19 +64,18 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
     {
         $paymentMethodFormFieds = [
             'mealvoucher_category_default' => [
-                'title' => __('Select the default products category', 'mollie-payments-for-woocommerce'),
-                'type' => 'select',
+                'title' => __('Select the default products categories', 'mollie-payments-for-woocommerce'),
+                'type' => 'multiselect',
                 'options' => [
-                    self::NO_CATEGORY => __('No category', 'mollie-payments-for-woocommerce'),
                     self::MEAL => __('Meal', 'mollie-payments-for-woocommerce'),
                     self::ECO => __('Eco', 'mollie-payments-for-woocommerce'),
                     self::GIFT => __('Gift', 'mollie-payments-for-woocommerce'),
                     self::SPORT_CULTURE => __('Sport & Culture', 'mollie-payments-for-woocommerce'),
                 ],
-                'default' => self::NO_CATEGORY,
+                'default' => '',
+                'class' => 'wc-enhanced-select',
                 /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
-                'description' => __('In order to process it, all products in the order must have a category. This selector will assign the default category for the shop products', 'mollie-payments-for-woocommerce'),
-                'desc_tip' => true,
+                'description' => __('In order to process it, all products in the order must have a category. This selector will assign the default categories for the shop products. If orders API is active only the first category will be used!', 'mollie-payments-for-woocommerce'),
             ],
         ];
         return array_merge($generalFormFields, $paymentMethodFormFieds);
@@ -99,5 +98,39 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
         }
 
         return $mealvoucherSettings ? $mealvoucherSettings['mealvoucher_category_default'] : Voucher::NO_CATEGORY;
+    }
+
+    /**
+     * Retrieve the default categories saved in the db option
+     *
+     * @return array
+     */
+    public static function voucherDefaultCategories(): array
+    {
+
+        $voucherSettings = get_option(
+            'mollie_wc_gateway_voucher_settings'
+        );
+        //get very old setting
+        if (! $voucherSettings) {
+            $voucherSettings = get_option(
+                'mollie_wc_gateway_mealvoucher_settings'
+            );
+        }
+
+        //convert an old single value option
+        if (isset($voucherSettings['mealvoucher_category_default']) && !is_array($voucherSettings['mealvoucher_category_default'])) {
+            if ($voucherSettings['mealvoucher_category_default'] !== self::NO_CATEGORY) {
+                $voucherSettings['mealvoucher_category_default'] = [ $voucherSettings['mealvoucher_category_default'] ];
+            } else {
+                $voucherSettings['mealvoucher_category_default'] = [];
+            }
+        }
+
+        if (!isset($voucherSettings['mealvoucher_category_default']) || !is_array($voucherSettings['mealvoucher_category_default'])) {
+            return [];
+        }
+
+        return $voucherSettings['mealvoucher_category_default'];
     }
 }

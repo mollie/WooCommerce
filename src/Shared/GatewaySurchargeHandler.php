@@ -187,7 +187,7 @@ class GatewaySurchargeHandler
             return false;
         }
 
-        return wp_verify_nonce($nonce, 'mollie_surcharge_' . $orderId);
+        return (bool) wp_verify_nonce($nonce, 'mollie_surcharge_' . $orderId);
     }
 
     protected function chosenGateway()
@@ -257,18 +257,13 @@ class GatewaySurchargeHandler
     protected function canProcessOrder()
     {
         $postedOrderId = wc_get_post_data_by_key('orderId', '');
-        $postedOrderKey = wc_get_post_data_by_key('orderKey', '');
 
-        if (!$postedOrderId || !$postedOrderKey) {
+        if (!$postedOrderId) {
             return false;
         }
 
         $order = wc_get_order($postedOrderId);
         if (!$order) {
-            return false;
-        }
-
-        if ($order->get_order_key() !== $postedOrderKey) {
             return false;
         }
 

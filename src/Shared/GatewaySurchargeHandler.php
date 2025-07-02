@@ -180,8 +180,8 @@ class GatewaySurchargeHandler
      */
     protected function verifyNonce(): bool
     {
-        $orderId = isset($_POST['orderId']) ? wc_clean(wp_unslash($_POST['orderId'])) : '';
-        $nonce = isset($_POST['nonce']) ? wc_clean(wp_unslash($_POST['nonce'])) : '';
+        $orderId = wc_get_post_data_by_key('orderId', '');
+        $nonce = wc_get_post_data_by_key('nonce', '');
 
         if (!$orderId || !$nonce) {
             return false;
@@ -256,8 +256,8 @@ class GatewaySurchargeHandler
      */
     protected function canProcessOrder()
     {
-        $postedOrderId = isset($_POST['orderId']) ? wc_clean(wp_unslash($_POST['orderId'])) : '';
-        $postedOrderKey = isset($_POST['orderKey']) ? wc_clean(wp_unslash($_POST['orderKey'])) : '';
+        $postedOrderId = wc_get_post_data_by_key('orderId', '');
+        $postedOrderKey = wc_get_post_data_by_key('orderKey', '');
 
         if (!$postedOrderId || !$postedOrderKey) {
             return false;

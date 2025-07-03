@@ -197,7 +197,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
     /**
      * Save voucher category on product category meta term.
      *
-     * @var int $term_id
+     * @param int $term_id
      */
     public function voucherTaxonomyCustomMetaSave($term_id)
     {

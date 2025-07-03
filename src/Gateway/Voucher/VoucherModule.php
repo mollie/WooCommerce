@@ -202,6 +202,9 @@ class VoucherModule implements ExecutableModule, ServiceModule
     public function voucherTaxonomyCustomMetaSave($term_id)
     {
         $metaOption = filter_input(INPUT_POST, '_mollie_voucher_category', FILTER_SANITIZE_SPECIAL_CHARS);
+        if (!$metaOption) {
+            $metaOption = '';
+        }
         $metaOption = wc_clean(wp_unslash($metaOption));
         if (in_array($metaOption, [Voucher::MEAL, Voucher::ECO, Voucher::GIFT, Voucher::SPORT_CULTURE], true)) {
             update_term_meta($term_id, '_mollie_voucher_category', $metaOption);
@@ -279,7 +282,9 @@ class VoucherModule implements ExecutableModule, ServiceModule
      */
     public function saveProductVoucherOptionFields($post_id)
     {
-        $option = wc_clean(wp_unslash($_POST[Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION]));
+        //phpcs:ignore WordPress.Security.NonceVerification.Missing
+        $option = isset($_POST[Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION]) ?? [];
+        $option = wc_clean(wp_unslash($option));
         //filter out not allowed
         if (!is_array($option)) {
             $option = [$option];
@@ -354,7 +359,8 @@ class VoucherModule implements ExecutableModule, ServiceModule
     public function saveVoucherFieldVariations($variation_id, $i)
     {
         //phpcs:ignore WordPress.Security.NonceVerification.Missing
-        $voucherCategories = wc_clean(wp_unslash($_POST['voucher'][$variation_id]));
+        $voucherCategories = isset($_POST['voucher'][$variation_id]) ?? [];
+        $voucherCategories = wc_clean(wp_unslash($voucherCategories));
         //filter out not allowed
         if (!is_array($voucherCategories)) {
             $voucherCategories = [$voucherCategories];

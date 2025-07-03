@@ -53,34 +53,9 @@ class MaybeDisableGateway
             if (!$product['data'] instanceof \WC_Product) {
                 continue;
             }
-            $wcProduct = $product['data'];
-            $metaKey = $wcProduct->is_type('variation') ? 'voucher' : Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION;
-            $localCategories = $wcProduct->get_meta($metaKey);
-            //support old setting
-            if ($localCategories && !is_array($localCategories)) {
-                if ($localCategories === Voucher::NO_CATEGORY) {
-                    $localCategories = [];
-                }
-                $localCategories = [$localCategories];
-            }
-            if ($localCategories) {
+            $categories = Voucher::getCategoriesForProduct($product['data']);
+            if ($categories) {
                 return true;
-            }
-
-            $catTermIds = $wcProduct->get_category_ids();
-            if (!$catTermIds && $wcProduct->is_type('variation')) {
-                $parentProduct = wc_get_product($wcProduct->get_parent_id());
-                if ($parentProduct) {
-                    $catTermIds = $parentProduct->get_category_ids();
-                }
-            }
-            if ($catTermIds) {
-                foreach ($catTermIds as $catTermId) {
-                    $metaVoucher = get_term_meta($catTermId, '_mollie_voucher_category', true);
-                    if ($metaVoucher && $metaVoucher !== Voucher::NO_CATEGORY) {
-                        return true;
-                    }
-                }
             }
         }
 

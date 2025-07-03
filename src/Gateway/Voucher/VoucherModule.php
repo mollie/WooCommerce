@@ -120,7 +120,12 @@ class VoucherModule implements ExecutableModule, ServiceModule
 
         if (isset($_REQUEST[$optionName])) {
             $option = filter_var(wp_unslash($_REQUEST[$optionName]), FILTER_SANITIZE_SPECIAL_CHARS);
-            update_post_meta($post_id, $optionName, wc_clean($option));
+            $option = (array) wc_clean(wp_unslash($option));
+            $product = wc_get_product($post_id);
+            if ($product) {
+                $product->update_meta_data($optionName, $option);
+                $product->save();
+            }
         }
     }
 
@@ -191,13 +196,18 @@ class VoucherModule implements ExecutableModule, ServiceModule
 
     /**
      * Save voucher category on product category meta term.
+     *
+     * @var int $term_id
      */
     public function voucherTaxonomyCustomMetaSave($term_id)
     {
-
-        $metaOption = filter_input(INPUT_POST, '_mollie_voucher_category', FILTER_REQUIRE_ARRAY);
-
-        update_term_meta($term_id, '_mollie_voucher_category', $metaOption);
+        $metaOption = filter_input(INPUT_POST, '_mollie_voucher_category', FILTER_SANITIZE_SPECIAL_CHARS);
+        $metaOption = wc_clean(wp_unslash($metaOption));
+        if (in_array($metaOption, [Voucher::MEAL, Voucher::ECO, Voucher::GIFT, Voucher::SPORT_CULTURE], true)) {
+            update_term_meta($term_id, '_mollie_voucher_category', $metaOption);
+        } else {
+            delete_term_meta($term_id, '_mollie_voucher_category');
+        }
     }
 
     /**
@@ -236,7 +246,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
                             'Products voucher category',
                             'mollie-payments-for-woocommerce'
                         ),
-                        'class' => 'wc-enhanced-select long',
+                        'class' => 'wc-enhanced-select short',
                         'options' => [
                                 Voucher::MEAL => __('Meal', 'mollie-payments-for-woocommerce'),
                                 Voucher::ECO => __('Eco', 'mollie-payments-for-woocommerce'),
@@ -269,7 +279,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
      */
     public function saveProductVoucherOptionFields($post_id)
     {
-        $option = $_POST[Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION] ?? [];
+        $option = wc_clean(wp_unslash($_POST[Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION]));
         //filter out not allowed
         if (!is_array($option)) {
             $option = [$option];
@@ -282,7 +292,11 @@ class VoucherModule implements ExecutableModule, ServiceModule
 
         $product = wc_get_product($post_id);
         if ($product) {
-            $product->update_meta_data(Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION, $option);
+            if (!$option) {
+                $product->delete_meta_data(Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION);
+            } else {
+                $product->update_meta_data(Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION, $option);
+            }
             $product->save();
         }
     }
@@ -301,7 +315,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
         if (!$product) {
             return;
         }
-        $values = $product->get_meta(Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION);
+        $values = $product->get_meta('voucher');
         if ($values && !is_array($values)) {
             if ($values === Voucher::NO_CATEGORY) {
                 $values = [];
@@ -316,7 +330,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
                 'id' => 'voucher[' . $variation->ID . ']',
                 'name' => 'voucher[' . $variation->ID . '][]',
                 'label' => __('Mollie Voucher category', 'mollie-payments-for-woocommerce'),
-                'class' => 'wc-enhanced-select',
+                'class' => 'wc-enhanced-select short',
                 'options' => [
                     Voucher::MEAL => __('Meal', 'mollie-payments-for-woocommerce'),
                     Voucher::ECO => __('Eco', 'mollie-payments-for-woocommerce'),
@@ -340,7 +354,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
     public function saveVoucherFieldVariations($variation_id, $i)
     {
         //phpcs:ignore WordPress.Security.NonceVerification.Missing
-        $voucherCategories = $_POST['voucher'][$variation_id];
+        $voucherCategories = wc_clean(wp_unslash($_POST['voucher'][$variation_id]));
         //filter out not allowed
         if (!is_array($voucherCategories)) {
             $voucherCategories = [$voucherCategories];
@@ -353,7 +367,11 @@ class VoucherModule implements ExecutableModule, ServiceModule
 
         $product = wc_get_product($variation_id);
         if ($product) {
-            $product->update_meta_data(Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION, $voucherCategories);
+            if (!$voucherCategories) {
+                $product->delete_meta_data('voucher');
+            } else {
+                $product->update_meta_data('voucher', $voucherCategories);
+            }
             $product->save();
         }
     }

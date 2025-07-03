@@ -173,9 +173,10 @@ class PaymentLines
                     }
                 }
 
-                if ($isVoucherEnabled) {
-                    $categories = $this->get_item_categories($product);
+                if ($isVoucherEnabled && $product instanceof \WC_Product) {
+                    $categories = Voucher::getCategoriesForProduct($product);
                     if ($categories) {
+                        sort($categories);
                         $mollie_order_item['categories'] = $categories;
                     }
                 }
@@ -468,70 +469,7 @@ class PaymentLines
         return $cart_item['line_total'] + $cart_item['line_tax'];
     }
 
-    /**
-     * Get cart item Category.
-     *
-     * Returns selected or default product category.
-     *
-     * @since  5.6
-     * @access private
-     *
-     * @param  null|false|\WC_Product $product Product object.
-     *
-     * @return array $categories Product voucher categories.
-     */
-    private function get_item_categories($product)
-    {
-        $categories = Voucher::voucherDefaultCategories();
-
-        if (! $product instanceof \WC_Product) {
-            return $categories;
-        }
-
-        //local product or product variation voucher category
-        $localCategories = $product->get_meta(
-            $product->is_type('variation') ? 'voucher' : Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION
-        );
-        //support old setting in a string
-        if ($localCategories && !is_array($localCategories)) {
-            if ($localCategories === Voucher::NO_CATEGORY) {
-                $localCategories = [];
-            }
-            $localCategories = [$localCategories];
-        }
-        if ($localCategories) {
-            sort($localCategories);
-            return $localCategories;
-        }
-
-        //if the product has taxonomy associated, retrieve a voucher cat from there.
-        $catTermIds = $product->get_category_ids();
-        if (!$catTermIds && $product->is_type('variation')) {
-            $parentProduct = wc_get_product($product->get_parent_id());
-            if ($parentProduct) {
-                $catTermIds = $parentProduct->get_category_ids();
-            }
-        }
-        if ($catTermIds) {
-            $mataVouchers = [];
-            foreach ($catTermIds as $catTermId) {
-                $metaVoucher = get_term_meta($catTermId, '_mollie_voucher_category', true);
-                if ($metaVoucher && $metaVoucher !== Voucher::NO_CATEGORY) {
-                    $mataVouchers[] = $metaVoucher;
-                }
-            }
-            if ($mataVouchers) {
-                $mataVouchers = array_unique($mataVouchers);
-                sort($mataVouchers);
-                return $mataVouchers;
-            }
-        }
-
-        sort($categories); //sort because of removing indexes
-        return $categories;
-    }
-
-    /**
+     /**
      * Get shipping method name.
      *
      * @since  1.0

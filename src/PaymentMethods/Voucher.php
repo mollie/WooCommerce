@@ -82,22 +82,63 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
     }
 
     /**
-     * Retrieve the default category saved in db option
+     * Retrieves the voucher categories associated with the given product.
+     * The method checks various sources for category data in a specific order:
+     * Default voucher categories, product-specific meta data, and category term meta data.
      *
-     * @return string
+     * @param \WC_Product $product The WooCommerce product for which to retrieve voucher categories.
+     *
+     * @return array An array of category identifiers (or names) associated with the product.
+     *               Returns an empty array if no categories are found.
      */
-    public function voucherDefaultCategory(): string
+    public static function getCategoriesForProduct(\WC_Product $product): array
     {
-        $mealvoucherSettings = get_option(
-            'mollie_wc_gateway_voucher_settings'
-        );
-        if (!$mealvoucherSettings) {
-            $mealvoucherSettings = get_option(
-                'mollie_wc_gateway_mealvoucher_settings'
-            );
+        $categories = self::voucherDefaultCategories();
+        if ($categories) {
+            return $categories;
         }
 
-        return $mealvoucherSettings ? $mealvoucherSettings['mealvoucher_category_default'] : Voucher::NO_CATEGORY;
+        $localCategories = $product->get_meta(
+            $product->is_type('variation') ? 'voucher' : Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION
+        );
+        //support old setting in a string
+        if ($localCategories && !is_array($localCategories)) {
+            if ($localCategories === Voucher::NO_CATEGORY) {
+                $localCategories = [];
+            }
+            $localCategories = [$localCategories];
+        }
+        if ($localCategories) {
+            return $localCategories;
+        }
+
+        $catTermIds = $product->get_category_ids();
+        if (!$catTermIds && $product->is_type('variation')) {
+            $parentProduct = wc_get_product($product->get_parent_id());
+            if ($parentProduct) {
+                $catTermIds = $parentProduct->get_category_ids();
+            }
+        }
+        if (!$catTermIds && $product->is_type('variation')) {
+            $parentProduct = wc_get_product($product->get_parent_id());
+            if ($parentProduct) {
+                $catTermIds = $parentProduct->get_category_ids();
+            }
+        }
+        if ($catTermIds) {
+            $categoryCategories = [];
+            foreach ($catTermIds as $catTermId) {
+                $metaCategory = get_term_meta($catTermId, '_mollie_voucher_category', true);
+                if ($metaCategory && $metaCategory !== Voucher::NO_CATEGORY) {
+                    $categoryCategories[] = $metaCategory;
+                }
+            }
+            if ($categoryCategories) {
+                return array_unique($categoryCategories);
+            }
+        }
+
+        return [];
     }
 
     /**
@@ -120,7 +161,7 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
 
         //convert an old single value option
         if (isset($voucherSettings['mealvoucher_category_default']) && !is_array($voucherSettings['mealvoucher_category_default'])) {
-            if ($voucherSettings['mealvoucher_category_default'] !== self::NO_CATEGORY) {
+            if ($voucherSettings['mealvoucher_category_default'] && $voucherSettings['mealvoucher_category_default'] !== self::NO_CATEGORY) {
                 $voucherSettings['mealvoucher_category_default'] = [ $voucherSettings['mealvoucher_category_default'] ];
             } else {
                 $voucherSettings['mealvoucher_category_default'] = [];

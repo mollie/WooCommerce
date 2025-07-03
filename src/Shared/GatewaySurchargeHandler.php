@@ -180,7 +180,7 @@ class GatewaySurchargeHandler
      */
     protected function verifyNonce(): bool
     {
-        $orderId = wc_get_post_data_by_key('orderId', '');
+        $orderId = (int) wc_get_post_data_by_key('orderId', '');
         $nonce = wc_get_post_data_by_key('nonce', '');
 
         if (!$orderId || !$nonce) {
@@ -256,7 +256,7 @@ class GatewaySurchargeHandler
      */
     protected function canProcessOrder()
     {
-        $postedOrderId = wc_get_post_data_by_key('orderId', '');
+        $postedOrderId = (int) wc_get_post_data_by_key('orderId', '');
 
         if (!$postedOrderId) {
             return false;

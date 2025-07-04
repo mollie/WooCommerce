@@ -164,7 +164,7 @@ class MolliePayment extends MollieObject
             }
             if (!empty($payment->amountChargedBack)) {
                 $this->logger->debug(
-                    __METHOD__ . ' payment at Mollie has a charged back, so no processing for order ' . $orderId
+                    __METHOD__ . ' payment at Mollie has a chargeback, so no processing for order ' . $orderId
                 );
                 return;
             }

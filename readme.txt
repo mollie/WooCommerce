@@ -218,6 +218,12 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= 8.0.3-beta1 - 04-07-2025 =
+* Fixed - Direct Bank Transfer (BACS) payment methods was hidden in some instances
+* Fixed - Incorrect Order Status Update After Chargeback Due to Conflicting Webhooks
+* Fixed - Mollie Payments Failing Due to Negative ´unitPrice´ from WooCommerce Line Item Rounding
+* Fixed - Missing surcharge verification on Pay for Order page
+
 = 8.0.2 - 02-06-2025 =
 * Added - Voucher payment method for Payments API
 * Added - In3 payment method for Payments API

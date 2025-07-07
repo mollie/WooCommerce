@@ -82,6 +82,8 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
     }
 
     /**
+     * todo: refactor to a service
+     *
      * Retrieves the voucher categories associated with the given product.
      * The method checks various sources for category data in a specific order:
      * Default voucher categories, product-specific meta data, and category term meta data.

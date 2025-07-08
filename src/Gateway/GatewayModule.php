@@ -74,9 +74,8 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             }
             return $gateways;
         });
-        add_filter('woocommerce_payment_gateways', static function ($gateways) {
+        add_filter('woocommerce_available_payment_gateways', static function ($gateways) {
             $maybeEnablegatewayHelper = new MaybeDisableGateway();
-            $gateways = $maybeEnablegatewayHelper->maybeDisableBankTransferGateway($gateways);
             return $maybeEnablegatewayHelper->maybeDisableMealVoucherGateway($gateways);
         });
 

@@ -196,7 +196,7 @@ npx playwright test --project=all
 
 	> Note 2: There can be > 1 test runs (for example, when testing API methods: one for Order, another for Payment).
 
-2. Add link to TEstRail Plan or Milestone to release ticket in Jira.
+2. Add link to TestRail Plan or Milestone to release ticket in Jira.
 
 3. In the `.env` file:
 

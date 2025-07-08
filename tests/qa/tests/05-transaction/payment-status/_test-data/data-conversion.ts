@@ -3,7 +3,6 @@
  */
 import {
 	MolliePaymentStatus,
-	MollieSettings,
 	MollieTestData,
 	gateways,
 	guests,
@@ -14,9 +13,6 @@ import {
 const getExpectedOrderStatus = (
 	paymentStatus: MolliePaymentStatus
 ): WooCommerce.OrderStatus => {
-	const testedApiMethod =
-		( process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod ) ||
-		'payment';
 	const statusConversion: Record<
 		MolliePaymentStatus,
 		WooCommerce.OrderStatus
@@ -24,8 +20,8 @@ const getExpectedOrderStatus = (
 		paid: 'processing',
 		authorized: 'processing',
 		canceled: 'pending',
-		expired: testedApiMethod === 'order' ? 'pending' : 'cancelled',
-		failed: testedApiMethod === 'order' ? 'pending' : 'failed',
+		expired: 'cancelled',
+		failed: 'failed',
 		open: 'pending',
 		pending: 'pending',
 	};

@@ -3,25 +3,26 @@
  * Plugin Name: Mollie Payments for WooCommerce
  * Plugin URI: https://www.mollie.com
  * Description: Accept payments in WooCommerce with the official Mollie plugin
- * Version: 7.5.3-beta
+ * Version: 8.0.3
  * Author: Mollie
  * Author URI: https://www.mollie.com
  * Requires at least: 5.0
- * Tested up to: 6.5
+ * Tested up to: 6.8
  * Text Domain: mollie-payments-for-woocommerce
  * Domain Path: /languages
  * License: GPLv2 or later
  * WC requires at least: 3.9
- * WC tested up to: 8.7
- * Requires PHP: 7.2
+ * WC tested up to: 9.9
+ * Requires PHP: 7.4
+ * Requires Plugins: woocommerce
  */
 declare(strict_types=1);
 
 namespace Mollie\WooCommerce;
 
 use Mollie\WooCommerce\MerchantCapture\MerchantCaptureModule;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Package;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Properties\PluginProperties;
+use Inpsyde\Modularity\Package;
+use Inpsyde\Modularity\Properties\PluginProperties;
 use Mollie\WooCommerce\Activation\ActivationModule;
 use Mollie\WooCommerce\Activation\ConstraintsChecker;
 use Mollie\WooCommerce\Assets\AssetsModule;
@@ -44,20 +45,6 @@ define('M4W_PLUGIN_DIR', dirname(M4W_FILE));
 // Plugin folder URL.
 if (!defined('M4W_PLUGIN_URL')) {
     define('M4W_PLUGIN_URL', plugin_dir_url(M4W_FILE));
-}
-
-/**
- * Called when plugin is activated
- */
-function mollie_wc_plugin_activation_hook()
-{
-    require_once __DIR__ . '/inc/functions.php';
-
-    if (!mollie_wc_plugin_autoload()) {
-        return;
-    }
-
-    mollieDeleteWPTranslationFiles();
 }
 
 
@@ -132,46 +119,46 @@ function handleException(Throwable $throwable)
  */
 function initialize()
 {
-    try {
-        require_once __DIR__ . '/inc/functions.php';
+    static $package;
+    if (!$package) {
+        try {
+            require_once __DIR__ . '/inc/functions.php';
 
-        if (!mollie_wc_plugin_autoload()) {
-            return;
-        }
-
-        $checker = new ConstraintsChecker();
-        $meetRequirements = $checker->handleActivation();
-        if (!$meetRequirements) {
-            $nextScheduledTime = wp_next_scheduled('pending_payment_confirmation_check');
-            if ($nextScheduledTime) {
-                wp_unschedule_event($nextScheduledTime, 'pending_payment_confirmation_check');
+            if (!mollie_wc_plugin_autoload()) {
+                return;
             }
-            return;
+
+            $checker = new ConstraintsChecker();
+            $meetRequirements = $checker->handleActivation();
+            if (!$meetRequirements) {
+                $nextScheduledTime = wp_next_scheduled('pending_payment_confirmation_check');
+                if ($nextScheduledTime) {
+                    wp_unschedule_event($nextScheduledTime, 'pending_payment_confirmation_check');
+                }
+                return;
+            }
+
+            // Initialize plugin.
+            $properties = PluginProperties::new(__FILE__);
+            $package = Package::new($properties);
+            $modules = (require __DIR__ . '/inc/modules.php')();
+            $modules = apply_filters('mollie_wc_plugin_modules', $modules);
+            foreach ($modules as $module) {
+                $package->addModule($module);
+            }
+            $package->boot();
+        } catch (Throwable $throwable) {
+            handleException($throwable);
         }
-        // Initialize plugin.
-        $properties = PluginProperties::new(__FILE__);
-        $bootstrap = Package::new($properties);
-        $modules = [
-            new ActivationModule(__FILE__, $properties->get('version')),
-            new NoticeModule(),
-            new SharedModule(),
-            new SDKModule(),
-            new SettingsModule(),
-            new LogModule('mollie-payments-for-woocommerce-'),
-            new AssetsModule(),
-            new GatewayModule(),
-            new VoucherModule(),
-            new PaymentModule(),
-            new MerchantCaptureModule(),
-            new UninstallModule(),
-        ];
-        $modules = apply_filters('mollie_wc_plugin_modules', $modules);
-        $bootstrap->boot(...$modules);
-    } catch (Throwable $throwable) {
-        handleException($throwable);
     }
+
+    /** @var Package $package */
+    return $package;
 }
 
-add_action('plugins_loaded', __NAMESPACE__ . '\\initialize');
-
-register_activation_hook(M4W_FILE, __NAMESPACE__ . '\mollie_wc_plugin_activation_hook');
+add_action(
+/**
+ * @throws Throwable
+ */ 'plugins_loaded', static function () {
+    initialize();
+});

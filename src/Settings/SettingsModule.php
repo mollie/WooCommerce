@@ -6,16 +6,16 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Settings;
 
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\Notice\AdminNotice;
+use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\SDK\Api;
-use Mollie\WooCommerce\Settings\Page\MollieSettingsPage;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\Status;
 use Mollie\WooCommerce\Uninstall\CleanDb;
-use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
+use Inpsyde\Modularity\Module\ExecutableModule;
+use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Inpsyde\Modularity\Module\ServiceModule;
+use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 
 class SettingsModule implements ServiceModule, ExecutableModule
@@ -79,7 +79,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
                 return $settingsHelper->isTestModeEnabled();
             },
             'settings.IsDebugEnabled' => static function (): bool {
-                $debugEnabled = get_option('mollie-payments-for-woocommerce_debug', true);
+                $debugEnabled = get_option('mollie-payments-for-woocommerce_debug', 'yes');
                 return $debugEnabled === 'yes';
             },
             'settings.advanced_default_options' => static function (ContainerInterface $container) {
@@ -113,8 +113,8 @@ class SettingsModule implements ServiceModule, ExecutableModule
         $this->dataHelper = $container->get('settings.data_helper');
         assert($this->dataHelper instanceof Data);
         $pluginPath = $container->get('shared.plugin_path');
+        $pluginUrl = $container->get('shared.plugin_url');
 
-        $paymentMethods = $container->get('gateway.paymentMethods');
         // Add settings link to plugins page
         add_filter('plugin_action_links_' . $this->plugin_basename, [$this, 'addPluginActionLinks']);
         //init settings with advanced and components defaults if not exists
@@ -146,9 +146,36 @@ class SettingsModule implements ServiceModule, ExecutableModule
             $this->maybeTestModeNotice();
         });
 
-        $gateways = $container->get('gateway.instances');
-        $isSDDGatewayEnabled = $container->get('gateway.isSDDGatewayEnabled');
-        $this->initMollieSettingsPage($isSDDGatewayEnabled, $gateways, $pluginPath, $paymentMethods);
+        if (is_admin()) {
+            if (
+                isset($_GET['refresh-methods']) &&
+                isset($_GET['nonce_mollie_refresh_methods']) &&
+                wp_verify_nonce(
+                    filter_input(INPUT_GET, 'nonce_mollie_refresh_methods', FILTER_SANITIZE_SPECIAL_CHARS),
+                    'nonce_mollie_refresh_methods'
+                )
+            ) {
+                $apiKey = $this->settingsHelper->getApiKey();
+                $this->dataHelper->getAllPaymentMethods($apiKey, $this->isTestModeEnabled, false);
+            }
+
+            add_filter(
+                'woocommerce_get_settings_pages',
+                function ($settings) use ($pluginPath, $pluginUrl, $container) {
+                    $settings[] = new MollieSettingsPage(
+                        $this->settingsHelper,
+                        $pluginPath,
+                        $pluginUrl,
+                        $this->isTestModeEnabled,
+                        $this->dataHelper,
+                        $container
+                    );
+
+                    return $settings;
+                }
+            );
+        }
+
         add_action(
             'woocommerce_admin_settings_sanitize_option',
             [$this->settingsHelper, 'updateMerchantIdOnApiKeyChanges'],
@@ -157,13 +184,23 @@ class SettingsModule implements ServiceModule, ExecutableModule
         );
         add_action(
             'update_option_mollie-payments-for-woocommerce_live_api_key',
-            [$this->settingsHelper, 'updateMerchantIdAfterApiKeyChanges'],
+            function ($oldValue, $value, $optionName) {
+                $this->settingsHelper->updateMerchantIdAfterApiKeyChanges($oldValue, $value, $optionName);
+                if ($oldValue !== $value) {
+                    $this->dataHelper->getAllPaymentMethods($value, false, false);
+                }
+            },
             10,
             3
         );
         add_action(
             'update_option_mollie-payments-for-woocommerce_test_api_key',
-            [$this->settingsHelper, 'updateMerchantIdAfterApiKeyChanges'],
+            function ($oldValue, $value, $optionName) {
+                $this->settingsHelper->updateMerchantIdAfterApiKeyChanges($oldValue, $value, $optionName);
+                if ($oldValue !== $value) {
+                    $this->dataHelper->getAllPaymentMethods($value, true, false);
+                }
+            },
             10,
             3
         );
@@ -194,7 +231,8 @@ class SettingsModule implements ServiceModule, ExecutableModule
     public function maybeTestModeNotice(): bool
     {
         $testModeEnabled = get_option('mollie-payments-for-woocommerce_test_mode_enabled', true);
-        $shouldShowNotice = $testModeEnabled === 'yes';
+        $testKeyEntered = get_option('mollie-payments-for-woocommerce_test_api_key', true);
+        $shouldShowNotice = $testModeEnabled === 'yes' && !empty($testKeyEntered);
         if (!$shouldShowNotice) {
             return false;
         }
@@ -241,35 +279,5 @@ class SettingsModule implements ServiceModule, ExecutableModule
             }
             update_option($defaultOption['id'], $defaultOption['default']);
         }
-    }
-
-    /**
-     * @param $isSDDGatewayEnabled
-     * @param $gateways
-     * @param $pluginPath
-     * @param $paymentMethods
-     * @return void
-     */
-    protected function initMollieSettingsPage($isSDDGatewayEnabled, $gateways, $pluginPath, $paymentMethods): void
-    {
-        if (!$isSDDGatewayEnabled) {
-            //remove directdebit gateway from gateways list
-            unset($gateways['mollie_wc_gateway_directdebit']);
-        }
-        add_filter(
-            'woocommerce_get_settings_pages',
-            function ($settings) use ($pluginPath, $gateways, $paymentMethods) {
-                $settings[] = new MollieSettingsPage(
-                    $this->settingsHelper,
-                    $pluginPath,
-                    $gateways,
-                    $paymentMethods,
-                    $this->isTestModeEnabled,
-                    $this->dataHelper
-                );
-
-                return $settings;
-            }
-        );
     }
 }

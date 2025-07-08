@@ -13,6 +13,11 @@ class CapturePayment extends AbstractPaymentCaptureAction
     public function __invoke()
     {
         try {
+            $payment = $this->order->get_payment_method();
+            if (strpos($payment, 'mollie') === false) {
+                return;
+            }
+
             $paymentId = $this->order->get_meta('_mollie_payment_id');
 
             if (!$paymentId) {
@@ -35,7 +40,7 @@ class CapturePayment extends AbstractPaymentCaptureAction
             ];
             $this->logger->debug(
                 'SEND AN ORDER CAPTURE, orderId: ' . $this->order->get_id(
-                ) . ' transactionId: ' . $paymentId . 'Capture data: ' . json_encode($captureData)
+                ) . ' transactionId: ' . $paymentId . 'Capture data: ' . wp_json_encode($captureData)
             );
             $paymentCapturesApi->createForId($paymentId, $captureData);
             $this->order->update_meta_data(
@@ -44,6 +49,7 @@ class CapturePayment extends AbstractPaymentCaptureAction
             );
             $this->order->add_order_note(
                 sprintf(
+                /* translators: Placeholder 1: Order price */
                     __(
                         'The payment capture of %s has been sent successfully, and we are currently awaiting confirmation.',
                         'mollie-payments-for-woocommerce'

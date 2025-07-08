@@ -10,7 +10,7 @@ class Eps extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'eps',
-            'defaultTitle' => __('EPS', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => 'EPS',
             'settingsDescription' => '',
             'defaultDescription' => '',
             'paymentFields' => false,
@@ -22,7 +22,18 @@ class Eps extends AbstractPaymentMethod implements PaymentMethodI
             'filtersOnBuild' => false,
             'confirmationDelayed' => true,
             'SEPA' => true,
+            'docs' => 'https://www.mollie.com/gb/payments/eps',
         ];
+    }
+
+    // Replace translatable strings after the 'after_setup_theme' hook
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('EPS', 'mollie-payments-for-woocommerce');
+        $this->translationsInitialized = true;
     }
 
     public function getFormFields($generalFormFields): array

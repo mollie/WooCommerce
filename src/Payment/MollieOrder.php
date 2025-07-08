@@ -4,18 +4,22 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
-use DateTime;
 use Exception;
+use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Payment;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Refund;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Gateway\Refund\OrderItemsRefunder;
+use Mollie\WooCommerce\Gateway\Refund\PartialRefundException;
+use Mollie\WooCommerce\Payment\Request\RequestFactory;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\SDK\Api;
+use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
+use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
-use stdClass;
 use WC_Order;
 use WP_Error;
 
@@ -23,20 +27,12 @@ class MollieOrder extends MollieObject
 {
     public const ACTION_AFTER_REFUND_AMOUNT_CREATED = 'mollie-payments-for-woocommerce' . '_refund_amount_created';
     public const ACTION_AFTER_REFUND_ORDER_CREATED = 'mollie-payments-for-woocommerce' . '_refund_order_created';
-    public const MAXIMAL_LENGHT_ADDRESS = 100;
-    public const MAXIMAL_LENGHT_POSTALCODE = 20;
-    public const MAXIMAL_LENGHT_CITY = 200;
-    public const MAXIMAL_LENGHT_REGION = 200;
 
     protected static $paymentId;
     protected static $customerId;
     protected static $order;
     protected static $payment;
     protected static $shop_country;
-    /**
-     * @var OrderLines
-     */
-    protected $orderLines;
 
     /**
      * @var OrderItemsRefunder
@@ -49,16 +45,25 @@ class MollieOrder extends MollieObject
      * @param OrderItemsRefunder $orderItemsRefunder
      * @param $data
      */
-    public function __construct(OrderItemsRefunder $orderItemsRefunder, $data, $pluginId, Api $apiHelper, $settingsHelper, $dataHelper, $logger, OrderLines $orderLines)
-    {
+    public function __construct(
+        OrderItemsRefunder $orderItemsRefunder,
+        $data,
+        string $pluginId,
+        Api $apiHelper,
+        Settings $settingsHelper,
+        Data $dataHelper,
+        Logger $logger,
+        RequestFactory $requestFactory
+    ) {
+
         $this->data = $data;
         $this->orderItemsRefunder = $orderItemsRefunder;
         $this->pluginId = $pluginId;
         $this->apiHelper = $apiHelper;
         $this->settingsHelper = $settingsHelper;
-        $this->dataHelper = $dataHelper;
         $this->logger = $logger;
-        $this->orderLines = $orderLines;
+        $this->requestFactory = $requestFactory;
+        $this->dataHelper = $dataHelper;
     }
 
     public function getPaymentObject($paymentId, $testMode = false, $useCache = true)
@@ -84,92 +89,7 @@ class MollieOrder extends MollieObject
      */
     public function getPaymentRequestData($order, $customerId, $voucherDefaultCategory = Voucher::NO_CATEGORY)
     {
-        $settingsHelper = $this->settingsHelper;
-        $paymentLocale = $settingsHelper->getPaymentLocale();
-        $storeCustomer = $settingsHelper->shouldStoreCustomer();
-
-        $gateway = wc_get_payment_gateway_by_order($order);
-
-        if (! $gateway || ! ( $gateway instanceof MolliePaymentGateway )) {
-            return  [ 'result' => 'failure' ];
-        }
-
-        $gatewayId = $gateway->id;
-        $selectedIssuer = $gateway->getSelectedIssuer();
-        $returnUrl = $gateway->get_return_url($order);
-        $returnUrl = $this->getReturnUrl($order, $returnUrl);
-        $webhookUrl = $this->getWebhookUrl($order, $gatewayId);
-        $isPayPalExpressOrder = $order->get_meta('_mollie_payment_method_button') === 'PayPalButton';
-        $billingAddress = null;
-        if (!$isPayPalExpressOrder) {
-            $billingAddress = $this->createBillingAddress($order);
-            $shippingAddress = $this->createShippingAddress($order);
-        }
-
-        // Generate order lines for Mollie Orders
-        $orderLinesHelper = $this->orderLines;
-        $orderLines = $orderLinesHelper->order_lines($order, $voucherDefaultCategory);
-
-        // Build the Mollie order data
-        $paymentRequestData = [
-            'amount' => [
-                'currency' => $this->dataHelper->getOrderCurrency($order),
-                'value' => $this->dataHelper->formatCurrencyValue(
-                    $order->get_total(),
-                    $this->dataHelper->getOrderCurrency($order)
-                ),
-            ],
-            'redirectUrl' => $returnUrl,
-            'webhookUrl' => $webhookUrl,
-            'method' => $gateway->paymentMethod()->getProperty('id'),
-            'payment' => [
-                'issuer' => $selectedIssuer,
-            ],
-            'locale' => $paymentLocale,
-            'billingAddress' => $billingAddress,
-            'metadata' => apply_filters(
-                $this->pluginId . '_payment_object_metadata',
-                [
-                    'order_id' => $order->get_id(),
-                    'order_number' => $order->get_order_number(),
-                ]
-            ),
-            'lines' => $orderLines['lines'],
-            'orderNumber' => $order->get_order_number(),
-        ];
-
-        $paymentRequestData = $this->addSequenceTypeForSubscriptionsFirstPayments($order->get_id(), $gateway, $paymentRequestData);
-
-        // Only add shippingAddress if all required fields are set
-        if (
-            !empty($shippingAddress->streetAndNumber)
-            && !empty($shippingAddress->postalCode)
-            && !empty($shippingAddress->city)
-            && !empty($shippingAddress->country)
-        ) {
-            $paymentRequestData['shippingAddress'] = $shippingAddress;
-        }
-
-        // Only store customer at Mollie if setting is enabled
-        if ($storeCustomer) {
-            $paymentRequestData['payment']['customerId'] = $customerId;
-        }
-
-        $cardToken = mollieWooCommerceCardToken();
-        if ($cardToken && isset($paymentRequestData['payment'])) {
-            $paymentRequestData['payment']['cardToken'] = $cardToken;
-        }
-        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        $applePayToken = wc_clean(wp_unslash($_POST["token"] ?? ''));
-        if ($applePayToken && isset($paymentRequestData['payment'])) {
-            $encodedApplePayToken = json_encode($applePayToken);
-            $paymentRequestData['payment']['applePayPaymentToken'] = $encodedApplePayToken;
-        }
-        $customerBirthdate = $this->getCustomerBirthdate($order);
-        if ($customerBirthdate) {
-            $paymentRequestData['consumerDateOfBirth'] = $customerBirthdate;
-        }
-        return $paymentRequestData;
+        return $this->requestFactory->createRequest('order', $order, $customerId);
     }
 
     public function setActiveMolliePayment($orderId)
@@ -229,7 +149,15 @@ class MollieOrder extends MollieObject
         $ibanDetails = [];
 
         if (isset($payment->_embedded->payments[0]->id)) {
-            $actualPayment = new MolliePayment($payment->_embedded->payments[0]->id, $this->pluginId, $this->apiHelper, $this->settingsHelper, $this->dataHelper, $this->logger);
+            $actualPayment = new MolliePayment(
+                $payment->_embedded->payments[0]->id,
+                $this->pluginId,
+                $this->apiHelper,
+                $this->settingsHelper,
+                $this->dataHelper,
+                $this->logger,
+                $this->requestFactory
+            );
             $actualPayment = $actualPayment->getPaymentObject($actualPayment->data);
             /**
              * @var Payment $actualPayment
@@ -239,12 +167,6 @@ class MollieOrder extends MollieObject
         }
 
         return $ibanDetails;
-    }
-
-    public function addSequenceTypeFirst($paymentRequestData)
-    {
-        $paymentRequestData['payment']['sequenceType'] = 'first';
-        return $paymentRequestData;
     }
 
     /**
@@ -261,6 +183,12 @@ class MollieOrder extends MollieObject
 
             if ($payment->method === 'paypal') {
                 $this->addPaypalTransactionIdToOrder($order);
+            }
+            if (!empty($payment->amountChargedBack)) {
+                $this->logger->debug(
+                    __METHOD__ . ' payment at Mollie has a chargeback, so no processing for order ' . $orderId
+                );
+                return;
             }
 
             $order->payment_complete($payment->id);
@@ -693,7 +621,7 @@ class MollieOrder extends MollieObject
 
             // Loop through items in the Mollie payment object (Order)
             foreach ($paymentObject->lines as $line) {
-                // If there is no metadata wth the order item ID, this order can't process individual order lines
+                // If there is no metadata with the order item ID, this order can't process individual order lines
                 if (empty($line->metadata->order_item_id)) {
                     $noteMessage = 'Refunds for this specific order can not be processed per order line. Trying to process this as an amount refund instead.';
                     $this->logger->debug(__METHOD__ . " - " . $noteMessage);
@@ -718,7 +646,7 @@ class MollieOrder extends MollieObject
                         );
 
                         $this->logger->debug(__METHOD__ . " - Order $orderId: " . $noteMessage);
-                        throw new Exception($noteMessage);
+                        throw new Exception(esc_html(sprintf("%s", $noteMessage)));
                     }
 
                     $this->processOrderItemsRefund(
@@ -761,8 +689,8 @@ class MollieOrder extends MollieObject
         $apiKey = $this->settingsHelper->getApiKey();
 
         if ($paymentObject->isCreated() || $paymentObject->isAuthorized() || $paymentObject->isShipping()) {
-            /* translators: Placeholder 1: payment status.*/
             $noteMessage = sprintf(
+            /* translators: Placeholder 1: payment status.*/
                 _x(
                     'Can not refund order amount that has status %1$s at Mollie.',
                     'Order note error',
@@ -772,7 +700,7 @@ class MollieOrder extends MollieObject
             );
             $order->add_order_note($noteMessage);
             $this->logger->debug(__METHOD__ . ' - ' . $noteMessage);
-            throw new Exception($noteMessage);
+            throw new Exception(esc_html(sprintf("%s", $noteMessage)));
         }
 
         if ($paymentObject->isPaid() || $paymentObject->isShipping() || $paymentObject->isCompleted()) {
@@ -783,8 +711,8 @@ class MollieOrder extends MollieObject
                 ],
                 'description' => $reason,
             ]);
-            /* translators: Placeholder 1: Currency. Placeholder 2: Refund amount. Placeholder 3: Reason. Placeholder 4: Refund id.*/
             $noteMessage = sprintf(
+            /* translators: Placeholder 1: Currency. Placeholder 2: Refund amount. Placeholder 3: Reason. Placeholder 4: Refund id.*/
                 __('Amount refund of %1$s%2$s refunded in WooCommerce and at Mollie.%3$s Refund ID: %4$s.', 'mollie-payments-for-woocommerce'),
                 $this->dataHelper->getOrderCurrency($order),
                 $amount,
@@ -832,27 +760,6 @@ class MollieOrder extends MollieObject
     }
 
     /**
-     * Method that shortens the field to a certain length
-     *
-     * @param string $field
-     * @param int    $maximalLength
-     *
-     * @return null|string
-     */
-    protected function maximalFieldLengths($field, $maximalLength)
-    {
-        if (!is_string($field)) {
-            return null;
-        }
-        if (is_int($maximalLength) && strlen($field) > $maximalLength) {
-            $field = substr($field, 0, $maximalLength);
-            $field = !$field ? null : $field;
-        }
-
-        return $field;
-    }
-
-    /**
      * @param WC_Order                    $order
      * @param                             $newOrderStatus
      * @param                             $orderId
@@ -867,8 +774,8 @@ class MollieOrder extends MollieObject
     ) {
 
         $gateway = wc_get_payment_gateway_by_order($order);
-        if (!$this->isOrderPaymentStartedByOtherGateway($order) && is_a($gateway, MolliePaymentGateway::class)) {
-            $gateway->paymentService()->updateOrderStatus($order, $newOrderStatus);
+        if (!$this->isOrderPaymentStartedByOtherGateway($order) && is_a($gateway, PaymentGateway::class)) {
+            $this->updateOrderStatus($order, $newOrderStatus);
         } else {
             $this->informNotUpdatingStatus($gateway->id, $order);
         }
@@ -887,153 +794,6 @@ class MollieOrder extends MollieObject
                 )) : '')
             )
         );
-    }
-
-    /**
-     * @param $order
-     * @return stdClass
-     */
-    protected function createBillingAddress($order)
-    {
-        // Setup billing and shipping objects
-        $billingAddress = new stdClass();
-
-        // Get user details
-        $billingAddress->givenName = (ctype_space(
-            $order->get_billing_first_name()
-        )) ? null : $order->get_billing_first_name();
-        $billingAddress->familyName = (ctype_space(
-            $order->get_billing_last_name()
-        )) ? null : $order->get_billing_last_name();
-        $billingAddress->email = (ctype_space($order->get_billing_email()))
-            ? null : $order->get_billing_email();
-        // Create billingAddress object
-        $billingAddress->streetAndNumber = (ctype_space(
-            $order->get_billing_address_1()
-        ))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_billing_address_1(),
-                self::MAXIMAL_LENGHT_ADDRESS
-            );
-        $billingAddress->streetAdditional = (ctype_space(
-            $order->get_billing_address_2()
-        ))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_billing_address_2(),
-                self::MAXIMAL_LENGHT_ADDRESS
-            );
-        $billingAddress->postalCode = (ctype_space(
-            $order->get_billing_postcode()
-        ))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_billing_postcode(),
-                self::MAXIMAL_LENGHT_POSTALCODE
-            );
-        $billingAddress->city = (ctype_space($order->get_billing_city()))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_billing_city(),
-                self::MAXIMAL_LENGHT_CITY
-            );
-        $billingAddress->region = (ctype_space($order->get_billing_state()))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_billing_state(),
-                self::MAXIMAL_LENGHT_REGION
-            );
-        $billingAddress->country = (ctype_space($order->get_billing_country()))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_billing_country(),
-                self::MAXIMAL_LENGHT_REGION
-            );
-        $billingAddress->organizationName = $this->billingCompanyField($order);
-        $phone = $this->getPhoneNumber($order);
-        $billingAddress->phone = (ctype_space($phone))
-            ? null
-            : $this->getFormatedPhoneNumber($phone);
-        return $billingAddress;
-    }
-
-    protected function getPhoneNumber($order)
-    {
-
-        $phone = !empty($order->get_billing_phone()) ? $order->get_billing_phone() : $order->get_shipping_phone();
-        if (empty($phone)) {
-            //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $phone =  wc_clean(wp_unslash($_POST['billing_phone'] ?? ''));
-        }
-        return $phone;
-    }
-
-    /**
-     * @param $order
-     * @return stdClass
-     */
-    protected function createShippingAddress($order)
-    {
-        $shippingAddress = new stdClass();
-        // Get user details
-        $shippingAddress->givenName = (ctype_space(
-            $order->get_shipping_first_name()
-        )) ? null : $order->get_shipping_first_name();
-        $shippingAddress->familyName = (ctype_space(
-            $order->get_shipping_last_name()
-        )) ? null : $order->get_shipping_last_name();
-        $shippingAddress->email = (ctype_space($order->get_billing_email()))
-            ? null
-            : $order->get_billing_email(); // WooCommerce doesn't have a shipping email
-
-
-        // Create shippingAddress object
-        $shippingAddress->streetAndNumber = (ctype_space(
-            $order->get_shipping_address_1()
-        ))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_shipping_address_1(),
-                self::MAXIMAL_LENGHT_ADDRESS
-            );
-        $shippingAddress->streetAdditional = (ctype_space(
-            $order->get_shipping_address_2()
-        ))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_shipping_address_2(),
-                self::MAXIMAL_LENGHT_ADDRESS
-            );
-        $shippingAddress->postalCode = (ctype_space(
-            $order->get_shipping_postcode()
-        ))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_shipping_postcode(),
-                self::MAXIMAL_LENGHT_POSTALCODE
-            );
-        $shippingAddress->city = (ctype_space($order->get_shipping_city()))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_shipping_city(),
-                self::MAXIMAL_LENGHT_CITY
-            );
-        $shippingAddress->region = (ctype_space($order->get_shipping_state()))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_shipping_state(),
-                self::MAXIMAL_LENGHT_REGION
-            );
-        $shippingAddress->country = (ctype_space(
-            $order->get_shipping_country()
-        ))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_shipping_country(),
-                self::MAXIMAL_LENGHT_REGION
-            );
-        return $shippingAddress;
     }
 
     /**
@@ -1108,8 +868,8 @@ class MollieOrder extends MollieObject
             );
 
             if ($refund === null) {
-                /* translators: Placeholder 1: Number of items. Placeholder 2: Name of item. Placeholder 3: Currency. Placeholder 4: Amount.*/
                 $noteMessage = sprintf(
+                /* translators: Placeholder 1: Number of items. Placeholder 2: Name of item. Placeholder 3: Currency. Placeholder 4: Amount.*/
                     __(
                         '%1$sx %2$s cancelled for %3$s%4$s in WooCommerce and at Mollie.',
                         'mollie-payments-for-woocommerce'
@@ -1132,8 +892,8 @@ class MollieOrder extends MollieObject
                     $order
                 ) . wc_format_decimal($itemRefundAmount) . (!empty($reason) ? ', reason: ' . $reason : '')
             );
-            /* translators: Placeholder 1: Number of items. Placeholder 2: Name of item. Placeholder 3: Currency. Placeholder 4: Amount. Placeholder 5: Reason. Placeholder 6: Refund Id. */
             $noteMessage = sprintf(
+            /* translators: Placeholder 1: Number of items. Placeholder 2: Name of item. Placeholder 3: Currency. Placeholder 4: Amount. Placeholder 5: Reason. Placeholder 6: Refund Id. */
                 __(
                     '%1$sx %2$s refunded for %3$s%4$s in WooCommerce and at Mollie.%5$s Refund ID: %6$s.',
                     'mollie-payments-for-woocommerce'
@@ -1167,70 +927,8 @@ class MollieOrder extends MollieObject
         unset($items[$item->get_id()]);
     }
 
-    /**
-     * @param $order
-     * @return string|null
-     */
-    public function billingCompanyField($order): ?string
+    public function setOrder($data)
     {
-        if (!trim($order->get_billing_company())) {
-            return $this->checkBillieCompanyField($order);
-        }
-        return $this->maximalFieldLengths(
-            $order->get_billing_company(),
-            self::MAXIMAL_LENGHT_ADDRESS
-        );
-    }
-
-    private function checkBillieCompanyField($order)
-    {
-        $gateway = wc_get_payment_gateway_by_order($order);
-        if (!$gateway || !$gateway->id) {
-            return null;
-        }
-        $isBillieMethodId = $gateway->id === 'mollie_wc_gateway_billie';
-        if ($isBillieMethodId) {
-            //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $fieldPosted = wc_clean(wp_unslash($_POST["billing_company"] ?? ''));
-            if ($fieldPosted === '' || !is_string($fieldPosted)) {
-                return null;
-            }
-            return $this->maximalFieldLengths(
-                $fieldPosted,
-                self::MAXIMAL_LENGHT_ADDRESS
-            );
-        }
-        return null;
-    }
-
-    protected function getCustomerBirthdate($order)
-    {
-        $gateway = wc_get_payment_gateway_by_order($order);
-        if (!$gateway || !isset($gateway->id)) {
-            return null;
-        }
-        $methodId = $gateway->id === 'mollie_wc_gateway_in3';
-        if ($methodId) {
-            //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $fieldPosted = wc_clean(wp_unslash($_POST["billing_birthdate"] ?? ''));
-            if ($fieldPosted === '' || !is_string($fieldPosted)) {
-                return null;
-            }
-            $format = "Y-m-d";
-            return date($format, (int) strtotime($fieldPosted));
-        }
-        return null;
-    }
-
-    protected function getFormatedPhoneNumber(string $phone)
-    {
-        //remove whitespaces and all non numerical characters except +
-        $phone = preg_replace('/[^0-9+]+/', '', $phone);
-
-        //check that $phone is in E164 format
-        if ($phone !== null && preg_match('/^\+[1-9]\d{1,14}$/', $phone)) {
-            return $phone;
-        }
-        return null;
+        $this->data = $data;
     }
 }

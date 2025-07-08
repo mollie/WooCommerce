@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Buttons\PayPalButton;
 
+use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
@@ -31,7 +32,7 @@ class PayPalAjaxRequests
      *
      * @param  $gateway
      */
-    public function __construct($gateway, NoticeInterface $notice, Logger $logger)
+    public function __construct(PaymentGateway $gateway, NoticeInterface $notice, Logger $logger)
     {
         $this->gateway = $gateway;
         $this->notice = $notice;
@@ -108,8 +109,8 @@ class PayPalAjaxRequests
         ) {
             wp_send_json_success($result);
         } else {
-            /* translators: Placeholder 1: Payment method title */
             $message = sprintf(
+            /* translators: Placeholder 1: Payment method title */
                 __(
                     'Could not create %s payment.',
                     'mollie-payments-for-woocommerce'
@@ -152,8 +153,8 @@ class PayPalAjaxRequests
         ) {
             wp_send_json_success($result);
         } else {
-            /* translators: Placeholder 1: Payment method title */
             $message = sprintf(
+            /* translators: Placeholder 1: Payment method title */
                 __(
                     'Could not create %s payment.',
                     'mollie-payments-for-woocommerce'

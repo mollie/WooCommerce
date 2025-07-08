@@ -10,7 +10,7 @@ class Twint extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'twint',
-            'defaultTitle' => __('Twint', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => 'Twint',
             'settingsDescription' => '',
             'defaultDescription' => '',
             'paymentFields' => false,
@@ -21,8 +21,17 @@ class Twint extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => false,
+            'docs' => 'https://www.mollie.com/gb/payments/twint',
         ];
+    }
+
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('Twint', 'mollie-payments-for-woocommerce');
+        $this->translationsInitialized = true;
     }
 
     public function getFormFields($generalFormFields): array

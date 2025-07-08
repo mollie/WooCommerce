@@ -14,10 +14,10 @@ use Mollie\WooCommerce\MerchantCapture\UI\StatusRenderer;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ServiceModule;
-use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
+use Inpsyde\Modularity\Module\ExecutableModule;
+use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Inpsyde\Modularity\Module\ServiceModule;
+use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use WC_Order;
 
@@ -155,6 +155,10 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                 $pluginId . '_after_webhook_action',
                 static function ($payment, WC_Order $order) use ($container) {
 
+                    if (!$container->get('merchant.manual_capture.enabled') || !in_array($order->get_payment_method(), $container->get('merchant.manual_capture.supported_methods'), true)) {
+                        return;
+                    }
+
                     if (!$payment instanceof Payment) {
                         return;
                     }
@@ -203,6 +207,9 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                 if (!is_a($order, WC_Order::class)) {
                     return;
                 }
+                if (!$container->get('merchant.manual_capture.enabled') || !in_array($order->get_payment_method(), $container->get('merchant.manual_capture.supported_methods'), true)) {
+                    return;
+                }
                 $merchantCanCapture = ($container->get('merchant.manual_capture.is_authorized'))($order);
                 if ($merchantCanCapture) {
                     ($container->get(VoidPayment::class))($order->get_id());
@@ -211,6 +218,9 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
             add_action('woocommerce_order_actions_start', static function (int $orderId) use ($container) {
                 $order = wc_get_order($orderId);
                 if (!is_a($order, WC_Order::class)) {
+                    return;
+                }
+                if (!$container->get('merchant.manual_capture.enabled') || !in_array($order->get_payment_method(), $container->get('merchant.manual_capture.supported_methods'), true)) {
                     return;
                 }
                 $paymentStatus = $order->get_meta(MerchantCaptureModule::ORDER_PAYMENT_STATUS_META_KEY, true);
@@ -250,7 +260,7 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                 10,
                 2
             );
-            new OrderListPaymentColumn();
+            new OrderListPaymentColumn($container);
             new ManualCapture($container);
             new StateChangeCapture($container);
         });

@@ -18,6 +18,12 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
      * @var string
      */
     public const GIFT = 'gift';
+
+    /**
+     * @var string
+     */
+    public const SPORT_CULTURE = 'sport_culture';
+
     /**
      * @var string
      */
@@ -31,7 +37,7 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'voucher',
-            'defaultTitle' => __('Voucher', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => 'Voucher',
             'settingsDescription' => '',
             'defaultDescription' => '',
             'paymentFields' => false,
@@ -41,9 +47,17 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => false,
-            'orderMandatory' => true,
+            'docs' => 'https://www.mollie.com/gb/payments/meal-eco-gift-vouchers',
         ];
+    }
+
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('Voucher', 'mollie-payments-for-woocommerce');
+        $this->translationsInitialized = true;
     }
 
     public function getFormFields($generalFormFields): array
@@ -57,6 +71,7 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
                     self::MEAL => __('Meal', 'mollie-payments-for-woocommerce'),
                     self::ECO => __('Eco', 'mollie-payments-for-woocommerce'),
                     self::GIFT => __('Gift', 'mollie-payments-for-woocommerce'),
+                    self::SPORT_CULTURE => __('Sport & Culture', 'mollie-payments-for-woocommerce'),
                 ],
                 'default' => self::NO_CATEGORY,
                 /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */

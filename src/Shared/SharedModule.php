@@ -6,12 +6,12 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Shared;
 
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ServiceModule;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Package;
+use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Inpsyde\Modularity\Module\ServiceModule;
+use Inpsyde\Modularity\Package;
 use Mollie\Api\CompatibilityChecker;
 use Mollie\WooCommerce\SDK\Api;
-use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 
 class SharedModule implements ServiceModule
@@ -37,15 +37,11 @@ class SharedModule implements ServiceModule
                 return plugin_basename(self::PLUGIN_ID . '/' . self::PLUGIN_ID . '.php');
             },
             'shared.plugin_url' => static function (ContainerInterface $container): string {
-                $pluginProperties = $container->get(Package::PROPERTIES);
-
-                return $pluginProperties->baseUrl();
+                return $container->get('properties')->baseUrl();
             },
             'shared.plugin_path' => static function (ContainerInterface $container): string {
 
-                $pluginProperties = $container->get(Package::PROPERTIES);
-
-                return $pluginProperties->basePath();
+                return $container->get('properties')->basePath();
             },
             'shared.status_helper' => static function (ContainerInterface $container): Status {
                 $pluginTitle = $container->get('shared.plugin_title');

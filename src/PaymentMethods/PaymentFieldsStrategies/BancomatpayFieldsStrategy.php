@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
-class BancomatpayFieldsStrategy implements PaymentFieldsStrategyI
+use Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
+
+class BancomatpayFieldsStrategy extends AbstractPaymentFieldsRenderer implements PaymentFieldsRendererInterface
 {
     const FIELD_PHONE = "billing_phone_bancomatpay";
 
-    public function execute($gateway, $dataHelper)
+    public function renderFields(): string
     {
         $showPhoneField = false;
         $isPhoneRequired = get_option('mollie_wc_is_phone_required_flag');
@@ -25,8 +27,9 @@ class BancomatpayFieldsStrategy implements PaymentFieldsStrategyI
         }
 
         if ($showPhoneField) {
-            $this->phoneNumber($phoneValue);
+            return $this->gatewayDescription . $this->phoneNumber($phoneValue);
         }
+        return $this->gatewayDescription;
     }
 
     protected function getOrderIdOnPayForOrderPage()
@@ -39,18 +42,22 @@ class BancomatpayFieldsStrategy implements PaymentFieldsStrategyI
     protected function phoneNumber($phoneValue)
     {
         $phoneValue = $phoneValue ?: '';
-        ?>
-        <p class="form-row form-row-wide" id="billing_phone_field">
-            <label for="<?= esc_attr(self::FIELD_PHONE); ?>" class=""><?= esc_html__('Phone', 'mollie-payments-for-woocommerce'); ?>
-                <abbr class="required" title="required">*</abbr>
-            </label>
-            <span class="woocommerce-input-wrapper">
-        <input type="tel" class="input-text " name="<?= esc_attr(self::FIELD_PHONE); ?>" id="<?= esc_attr(self::FIELD_PHONE); ?>"
-               placeholder="+00000000000"
-               value="<?= esc_attr($phoneValue); ?>" autocomplete="phone">
-        </span>
-        </p>
-        <?php
+        return '
+            <p class="form-row form-row-wide" id="billing_phone_field">
+                <label for="' . esc_attr(self::FIELD_PHONE) . '" class="">' . esc_html__(
+            'Phone',
+            'mollie-payments-for-woocommerce'
+        ) . '
+                    <abbr class="required" title="required">*</abbr>
+                </label>
+                <span class="woocommerce-input-wrapper">
+                    <input type="tel" class="input-text" name="' . esc_attr(self::FIELD_PHONE) . '" id="' . esc_attr(
+            self::FIELD_PHONE
+        ) . '"
+                           placeholder="+39xxxxxxxxx"
+                           value="' . esc_attr($phoneValue) . '" autocomplete="phone">
+                </span>
+            </p>';
     }
 
     public function getFieldMarkup($gateway, $dataHelper)

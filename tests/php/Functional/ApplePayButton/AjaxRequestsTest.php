@@ -8,10 +8,8 @@ use Mollie\Api\MollieApiClient;
 use Mollie\WooCommerce\Buttons\ApplePayButton\AppleAjaxRequests;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDataObjectHttp;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ResponsesToApple;
-use Mollie\WooCommerce\Gateway\Surcharge;
-use Mollie\WooCommerce\Payment\RefundLineItemsBuilder;
+use Mollie\WooCommerce\Gateway\Refund\RefundLineItemsBuilder;
 use Mollie\WooCommerce\Shared\Data;
-use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
 use Mollie\WooCommerceTests\Stubs\postDTOTestsStubs;
 use Mollie\WooCommerceTests\Stubs\WooCommerceMocks;
@@ -67,7 +65,7 @@ class AjaxRequestsTest extends TestCase
         stubs(
             [
                 'get_site_url' => 'http://www.testdomain.com',
-
+                'wp_parse_url' =>null
             ]
         );
         list($logger, $responsesTemplate) = $this->responsesToApple();

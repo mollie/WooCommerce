@@ -10,9 +10,9 @@
   ],
   "authors": [
     {
-      "name": "Inpsyde GmbH",
-      "homepage": "https://inpsyde.com/",
-      "email": "hallo@inpsyde.com",
+      "name": "Syde GmbH",
+      "homepage": "https://syde.com/",
+      "email": "hello@syde.com",
       "role": "Company"
     },
     {
@@ -46,14 +46,14 @@
     "gulp-zip": "^4.2.0",
     "minimist": "^1.2.3",
     "pump": "^3.0.0",
-    "sass": "^1.52.1",
-    "sass-loader": "^7.0.1",
+    "sass": "^1.83.1",
+    "sass-loader": "^13.3.3",
     "webpack-cli": "^5.1.4",
     "wp-pot": "^1.10.2",
-    "webpack": "^5.89.0"
+    "webpack": "^5.97.1"
   },
   "scripts": {
-    "watch": "webpack --watch",
+    "watch": "BASE_PATH=. node_modules/.bin/encore dev --watch",
     "build": "BASE_PATH=. node_modules/.bin/encore dev",
     "setup": "gulp setup",
     "e2e-activation": "npx playwright test --project=activation",

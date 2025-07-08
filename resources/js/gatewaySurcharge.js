@@ -26,7 +26,8 @@
                         data: {
                             action: 'update_surcharge_order_pay',
                             method: $('input:radio[name="payment_method"]:checked').val(),
-                            orderId: orderId
+                            orderId: orderId,
+                            nonce: $('input[name="mollie-surcharge-nonce"]').val()
                         },
                         success: (response) => {
                             let result = response.data

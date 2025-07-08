@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="MessDetector">
+    <phpmd_settings>
+      <phpmd_by_interpreter asDefaultInterpreter="true" interpreter_id="29a5ef5c-f9cb-48bf-aa11-97d89c5f9549" timeout="30000" />
+    </phpmd_settings>
+  </component>
   <component name="MessDetectorOptionsConfiguration">
     <option name="transferred" value="true" />
   </component>
@@ -23,6 +28,7 @@
     <phpcs_settings>
       <PhpCSConfiguration beautifier_path="$PROJECT_DIR$/vendor/bin/phpcbf" standards="Inpsyde;MySource;NeutronStandard;PEAR;PHPCompatibility;PSR1;PSR12;PSR2;Squiz;VariableAnalysis;WordPress;WordPress-Core;WordPress-Docs;WordPress-Extra;WordPress-VIP-Go;WordPressVIPMinimum;Zend" tool_path="$PROJECT_DIR$/vendor/bin/phpcs" />
       <phpcs_by_interpreter interpreter_id="52b49461-5bc3-4708-8d5d-ae6e32b31b9c" beautifier_path="/var/www/html/vendor/bin/phpcbf" standards="Inpsyde;MySource;NeutronStandard;PEAR;PHPCompatibility;PSR1;PSR12;PSR2;Squiz;VariableAnalysis;WordPress;WordPress-Core;WordPress-Docs;WordPress-Extra;WordPress-VIP-Go;WordPressVIPMinimum;Zend" tool_path="/var/www/html/vendor/bin/phpcs" timeout="30000" />
+      <phpcs_by_interpreter asDefaultInterpreter="true" interpreter_id="29a5ef5c-f9cb-48bf-aa11-97d89c5f9549" beautifier_path="$PROJECT_DIR$/vendor/bin/phpcbf" standards="Inpsyde;MySource;NeutronStandard;PEAR;PHPCompatibility;PSR1;PSR12;PSR2;Squiz;VariableAnalysis;WordPress;WordPress-Core;WordPress-Docs;WordPress-Extra;WordPress-VIP-Go;WordPressVIPMinimum;Zend" tool_path="/home/dh/Projekte/mollie/vendor/bin/phpcs" timeout="30000" />
     </phpcs_settings>
   </component>
   <component name="PhpIncludePathManager">
@@ -95,8 +101,6 @@
       <path value="$PROJECT_DIR$/vendor/amphp/byte-stream" />
       <path value="$PROJECT_DIR$/vendor/amphp/amp" />
       <path value="$PROJECT_DIR$/vendor/brain/monkey" />
-      <path value="$PROJECT_DIR$/vendor/psr/container" />
-      <path value="$PROJECT_DIR$/vendor/inpsyde/modularity" />
       <path value="$PROJECT_DIR$/vendor/automattic/jetpack-autoloader" />
       <path value="$PROJECT_DIR$/vendor/league/container" />
       <path value="$PROJECT_DIR$/vendor/woocommerce/woocommerce-blocks" />
@@ -130,12 +134,20 @@
       <path value="$PROJECT_DIR$/vendor/league/flysystem" />
       <path value="$PROJECT_DIR$/vendor/league/mime-type-detection" />
       <path value="$PROJECT_DIR$/vendor/coenjacobs/mozart" />
+      <path value="$PROJECT_DIR$/.ddev/wordpress/wp-content/plugins/environment-configurator/vendor/composer" />
+      <path value="$PROJECT_DIR$/.ddev/wordpress/wp-content/plugins/query-monitor/vendor/composer" />
+      <path value="$PROJECT_DIR$/.ddev/wordpress/wp-content/plugins/environment-configurator/vendor/psr/container" />
+      <path value="$PROJECT_DIR$/.ddev/wordpress/wp-content/plugins/environment-configurator/vendor/inpsyde/modularity" />
+      <path value="$PROJECT_DIR$/vendor/psr/container" />
+      <path value="$PROJECT_DIR$/vendor/inpsyde/modularity" />
+      <path value="$PROJECT_DIR$/vendor/sniccowp/php-scoper-wordpress-excludes" />
+      <path value="$PROJECT_DIR$/vendor/dhii/services" />
     </include_path>
   </component>
   <component name="PhpInterpreters">
     <interpreters>
-      <interpreter id="52b49461-5bc3-4708-8d5d-ae6e32b31b9c" name="DDEV" home="docker-compose://DATA" debugger_id="php.debugger.XDebug">
-        <remote_data INTERPRETER_PATH="php7.4" HELPERS_PATH="/opt/.phpstorm_helpers" INITIALIZED="false" VALID="true" RUN_AS_ROOT_VIA_SUDO="false" DOCKER_ACCOUNT_NAME="Docker" DOCKER_COMPOSE_SERVICE_NAME="web" DOCKER_REMOTE_PROJECT_PATH="/opt/project">
+      <interpreter id="52b49461-5bc3-4708-8d5d-ae6e32b31b9c" name="DDEV" home="docker-compose://DATA" auto="false" debugger_id="php.debugger.XDebug">
+        <remote_data INTERPRETER_PATH="php7.4" HELPERS_PATH="/opt/.phpstorm_helpers" VALID="true" RUN_AS_ROOT_VIA_SUDO="false" DOCKER_ACCOUNT_NAME="Docker" DOCKER_COMPOSE_SERVICE_NAME="web" DOCKER_REMOTE_PROJECT_PATH="/opt/project">
           <type_data command="EXEC" />
           <dockerComposeConfigurationPaths>
             <item value="$PROJECT_DIR$/.ddev/.ddev-docker-compose-full.yaml" />
@@ -239,8 +251,13 @@
       </server>
     </servers>
   </component>
-  <component name="PhpProjectSharedConfiguration" php_language_level="7.2">
+  <component name="PhpProjectSharedConfiguration" php_language_level="7.4">
     <option name="suggestChangeDefaultLanguageLevel" value="false" />
+  </component>
+  <component name="PhpStan">
+    <PhpStan_settings>
+      <phpstan_by_interpreter asDefaultInterpreter="true" interpreter_id="29a5ef5c-f9cb-48bf-aa11-97d89c5f9549" timeout="60000" />
+    </PhpStan_settings>
   </component>
   <component name="PhpStanOptionsConfiguration">
     <option name="transferred" value="true" />
@@ -253,6 +270,7 @@
   <component name="Psalm">
     <Psalm_settings>
       <PsalmConfiguration tool_path="$PROJECT_DIR$/vendor/bin/psalm" />
+      <psalm_fixer_by_interpreter asDefaultInterpreter="true" interpreter_id="29a5ef5c-f9cb-48bf-aa11-97d89c5f9549" tool_path="$PROJECT_DIR$/vendor/bin/psalm" timeout="60000" />
     </Psalm_settings>
   </component>
   <component name="PsalmOptionsConfiguration">

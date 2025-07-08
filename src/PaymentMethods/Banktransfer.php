@@ -29,7 +29,7 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'banktransfer',
-            'defaultTitle' => __('Bank Transfer', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => 'Bank Transfer',
             'settingsDescription' => '',
             'defaultDescription' => '',
             'paymentFields' => false,
@@ -40,9 +40,19 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => true,
             'confirmationDelayed' => true,
-            'SEPA' => false,
             'customRedirect' => true,
+            'docs' => 'https://www.mollie.com/gb/payments/bank-transfer',
         ];
+    }
+
+    // Replace translatable strings after the 'after_setup_theme' hook
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('Bank Transfer', 'mollie-payments-for-woocommerce');
+        $this->translationsInitialized = true;
     }
 
     public function getFormFields($generalFormFields): array
@@ -96,7 +106,7 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
         $expiry_days = (int)$this->getProperty(self::EXPIRY_DAYS_OPTION) ?: self::EXPIRY_DEFAULT_DAYS;
 
         if ($expiry_days >= self::EXPIRY_MIN_DAYS && $expiry_days <= self::EXPIRY_MAX_DAYS) {
-            $expiry_date = date("Y-m-d", strtotime(sprintf('+%s days', $expiry_days)));
+            $expiry_date = gmdate("Y-m-d", strtotime(sprintf('+%s days', $expiry_days)));
 
             // Add dueDate at the correct location
             if ($this->isExpiredDateSettingActivated()) {

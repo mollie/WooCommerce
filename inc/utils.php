@@ -143,19 +143,6 @@ function mollieWooCommerceIsDropdownEnabled($gatewaySettingsName)
     return $optionValue == 'yes';
 }
 
-/**
- * Check if the Voucher gateway is enabled.
- *
- * @return bool
- */
-function mollieWooCommerceIsVoucherEnabled()
-{
-    $voucherSettings = get_option('mollie_wc_gateway_voucher_settings');
-    if (!$voucherSettings) {
-        $voucherSettings = get_option('mollie_wc_gateway_mealvoucher_settings');
-    }
-    return $voucherSettings ? ($voucherSettings['enabled'] == 'yes') : false;
-}
 
 /**
  * Check if is a Mollie gateway
@@ -165,7 +152,10 @@ function mollieWooCommerceIsVoucherEnabled()
 */
 function mollieWooCommerceIsMollieGateway($gateway)
 {
-    if (strpos($gateway, 'mollie_wc_gateway_') !== false) {
+    if (
+        (is_string($gateway) && strpos($gateway, 'mollie_wc_gateway_') !== false)
+        || (is_object($gateway) && strpos($gateway->id, 'mollie_wc_gateway_') !== false)
+    ) {
         return true;
     }
     return false;
@@ -190,35 +180,12 @@ function mollieWooCommerceFormatCurrencyValue($value, $currency)
     return number_format($value, 2, '.', '');
 }
 
-function mollieDeleteWPTranslationFiles()
+function isMollieBirthValid($billing_birthdate)
 {
-    WP_Filesystem();
-    global $wp_filesystem;
-    if (!$wp_filesystem) {
-        return;
+    $today = new DateTime();
+    $birthdate = DateTime::createFromFormat('Y-m-d', $billing_birthdate);
+    if ($birthdate >= $today) {
+        return false;
     }
-    $remote_destination = $wp_filesystem->find_folder(WP_LANG_DIR);
-    if (!$wp_filesystem->exists($remote_destination)) {
-        return;
-    }
-    $languageExtensions = [
-        'de_DE',
-        'de_DE_formal',
-        'es_ES',
-        'fr_FR',
-        'it_IT',
-        'nl_BE',
-        'nl_NL',
-        'nl_NL_formal',
-    ];
-    $translationExtensions = ['.mo', '.po'];
-    $destination = WP_LANG_DIR
-        . '/plugins/mollie-payments-for-woocommerce-';
-    foreach ($languageExtensions as $languageExtension) {
-        foreach ($translationExtensions as $translationExtension) {
-            $file = $destination . $languageExtension
-                . $translationExtension;
-            $wp_filesystem->delete($file, false);
-        }
-    }
+    return true;
 }

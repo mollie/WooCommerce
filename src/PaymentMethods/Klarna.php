@@ -10,11 +10,8 @@ class Klarna extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'klarna',
-            'defaultTitle' => __('Pay with Klarna', 'mollie-payments-for-woocommerce'),
-            'settingsDescription' => __(
-                'To accept payments via Klarna, all default WooCommerce checkout fields should be enabled and required.',
-                'mollie-payments-for-woocommerce'
-            ),
+            'defaultTitle' => 'Pay with Klarna',
+            'settingsDescription' => 'To accept payments via Klarna, all default WooCommerce checkout fields should be enabled and required.',
             'defaultDescription' => '',
             'paymentFields' => false,
             'instructions' => false,
@@ -22,11 +19,23 @@ class Klarna extends AbstractPaymentMethod implements PaymentMethodI
                 'products',
                 'refunds',
             ],
-            'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => false,
-            'orderMandatory' => true,
+            'paymentCaptureMode' => 'manual',
+            'docs' => 'https://www.mollie.com/gb/payments/klarna',
         ];
+    }
+
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('Pay with Klarna', 'mollie-payments-for-woocommerce');
+        $this->config['settingsDescription'] = __(
+            'To accept payments via Klarna, all default WooCommerce checkout fields should be enabled and required.',
+            'mollie-payments-for-woocommerce'
+        );
+        $this->translationsInitialized = true;
     }
 
     public function getFormFields($generalFormFields): array

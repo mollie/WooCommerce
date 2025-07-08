@@ -10,7 +10,7 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'paypal',
-            'defaultTitle' => __('PayPal', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => 'PayPal',
             'settingsDescription' => '',
             'defaultDescription' => '',
             'paymentFields' => false,
@@ -22,9 +22,18 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => false,
             'Subscription' => true,
+            'docs' => 'https://www.mollie.com/gb/payments/paypal',
         ];
+    }
+
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('PayPal', 'mollie-payments-for-woocommerce');
+        $this->translationsInitialized = true;
     }
 
     public function getFormFields($generalFormFields): array
@@ -56,7 +65,7 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'color' => [
                 'type' => 'select',
-                'id' => 'mollie_paypal_buttton_color',
+                'id' => 'mollie_paypal_button_color',
                 'title' => _x('Button text language and color', 'Mollie PayPal Button Settings', 'mollie-payments-for-woocommerce'),
                 'description' => _x(
                     'Select the text and the colour of the button.',

@@ -42,13 +42,15 @@ class EnvironmentChecker implements ConstraintInterface {
 
 		$errCount = count($this->errors);
 		if ($errCount) {
-			throw new ConstraintFailedException(
+            // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+            throw new ConstraintFailedException(
 				$this,
 				'General Checker',
 				$this->errors,
-				$this->__('Validation failed with %1$d errors', [$errCount])
+				$this->esc_html__('Validation failed with %1$d errors', [$errCount])
 			);
-		}
+            // phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+        }
 	}
 
 	/**
@@ -58,8 +60,9 @@ class EnvironmentChecker implements ConstraintInterface {
 	 * @param array $params The param values to interpolate into the string.
 	 * @return string The translated string with params interpolated.
 	 */
-	protected function __($string, $params = [])
+	protected function esc_html__($string, $params = [])
 	{
-		return vsprintf($string, $params);
+        $interpolated = vsprintf($string, $params);
+		return $interpolated && esc_html($interpolated);
 	}
 }

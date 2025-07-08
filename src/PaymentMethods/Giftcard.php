@@ -27,6 +27,7 @@ class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
         $orderNoteLine = "";
         foreach ($details->giftcards as $giftcard) {
             $orderNoteLine .= sprintf(
+            /* translators: Placeholder 1: giftcard issuer, Placeholder 2: amount value, Placeholder 3: currency */
                 esc_html_x(
                     'Mollie - Giftcard details: %1$s %2$s %3$s.',
                     'Placeholder 1: giftcard issuer, Placeholder 2: amount value, Placeholder 3: currency',
@@ -39,6 +40,7 @@ class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
         }
         if ($details->remainderMethod) {
             $orderNoteLine .= sprintf(
+            /* translators: Placeholder 1: Method Placeholder 2: Value Placeholder 3: currency */
                 esc_html_x(
                     ' Remainder: %1$s %2$s %3$s.',
                     'Placeholder 1: remainder method, Placeholder 2: amount value, Placeholder 3: currency',
@@ -57,9 +59,9 @@ class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'giftcard',
-            'defaultTitle' => __('Gift cards', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => 'Gift cards',
             'settingsDescription' => '',
-            'defaultDescription' => __('Select your gift card', 'mollie-payments-for-woocommerce'),
+            'defaultDescription' => 'Select your gift card',
             'paymentFields' => true,
             'instructions' => false,
             'supports' => [
@@ -67,8 +69,18 @@ class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => false,
+            'docs' => 'https://www.mollie.com/gb/payments/gift-cards',
         ];
+    }
+
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('Gift cards', 'mollie-payments-for-woocommerce');
+        $this->config['defaultDescription'] = __('Select your gift card', 'mollie-payments-for-woocommerce');
+        $this->translationsInitialized = true;
     }
 
     public function getFormFields($generalFormFields): array

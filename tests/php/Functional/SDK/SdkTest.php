@@ -9,16 +9,17 @@ use Mollie\Api\Resources\Customer;
 use Mollie\Api\Resources\Mandate;
 use Mollie\Api\Resources\MandateCollection;
 use Mollie\Api\Resources\Payment;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\SDK\WordPressHttpAdapter;
-use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
+use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
 use Mollie\WooCommerceTests\Stubs\WooCommerceMocks;
 use Mollie\WooCommerceTests\TestCase;
 
 use function Brain\Monkey\Functions\expect;
+use function Brain\Monkey\Functions\stubs;
 
 
 /**
@@ -47,6 +48,11 @@ class SdkTest extends TestCase
      */
     public function sdkThrows()
     {
+        stubs(
+            [
+                'esc_html' => null
+            ]
+        );
         $testee = new WordPressHttpAdapter();
         expect('wp_remote_request')->once()->andReturn(new \WP_Error());
         expect('is_wp_error')->once()->andReturn(true);

@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
-class BillieFieldsStrategy implements PaymentFieldsStrategyI
-{
-    const FIELD_COMPANY = "billing_company";
+use Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
 
-    public function execute($gateway, $dataHelper)
+class BillieFieldsStrategy extends AbstractPaymentFieldsRenderer implements PaymentFieldsRendererInterface
+{
+    public const FIELD_COMPANY = 'billing_company_billie';
+
+    public function renderFields(): string
     {
+
         $showCompanyField = false;
 
         if (is_checkout_pay_page()) {
@@ -17,13 +20,17 @@ class BillieFieldsStrategy implements PaymentFieldsStrategyI
             $showCompanyField = empty($order->get_billing_company());
         }
 
-        if (is_checkout() && !is_checkout_pay_page()) {
+        $companyFieldIsRequiredByWoo = $this->isCompanyFieldIsRequiredByWoo();
+        $hideCompanyFieldFilter = apply_filters('mollie_wc_hide_company_field', false);
+
+        if (is_checkout() && !is_checkout_pay_page() && !$companyFieldIsRequiredByWoo && !$hideCompanyFieldFilter) {
             $showCompanyField = true;
         }
 
         if ($showCompanyField) {
-            $this->company();
+            return $this->gatewayDescription . $this->company();
         }
+        return $this->gatewayDescription;
     }
 
     protected function getOrderIdOnPayForOrderPage()
@@ -35,22 +42,38 @@ class BillieFieldsStrategy implements PaymentFieldsStrategyI
 
     protected function company()
     {
-        ?>
-        <p class="form-row form-row-wide" id="billing_company_field">
-            <label for="<?= esc_attr(self::FIELD_COMPANY); ?>" class=""><?= esc_html__('Company', 'mollie-payments-for-woocommerce'); ?>
-                <abbr class="required" title="required">*</abbr>
-            </label>
-            <span class="woocommerce-input-wrapper">
-        <input type="tel" class="input-text " name="<?= esc_attr(self::FIELD_COMPANY); ?>" id="<?= esc_attr(self::FIELD_COMPANY); ?>"
-               placeholder="Company name"
-               value="" autocomplete="organization">
+        return '
+    <p class="form-row form-row-wide" id="billing_company_field">
+        <label for="' . esc_attr(self::FIELD_COMPANY) . '" class="">' . esc_html__(
+            'Company',
+            'mollie-payments-for-woocommerce'
+        ) . '
+            <abbr class="required" title="required">*</abbr>
+        </label>
+        <span class="woocommerce-input-wrapper">
+            <input type="tel" class="input-text" name="' . esc_attr(self::FIELD_COMPANY) . '" id="' . esc_attr(
+            self::FIELD_COMPANY
+        ) . '"
+                   placeholder="Company name"
+                   value="" autocomplete="organization">
         </span>
-        </p>
-        <?php
+    </p>';
     }
 
     public function getFieldMarkup($gateway, $dataHelper)
     {
-        return "";
+        return '';
+    }
+
+    /**
+     *
+     * @return bool
+     */
+    public function isCompanyFieldIsRequiredByWoo(): bool
+    {
+        $checkoutFields = WC()->checkout()->get_checkout_fields();
+        $billingCompanyFieldIsRequiredByWoo = isset($checkoutFields['billing']['billing_company']['required']) && ($checkoutFields['billing']['billing_company']['required'] === true);
+        $shippingCompanyFieldIsRequiredByWoo = isset($checkoutFields['shipping']['shipping_company']['required']) && ($checkoutFields['shipping']['shipping_company']['required'] === true);
+        return $billingCompanyFieldIsRequiredByWoo || $shippingCompanyFieldIsRequiredByWoo;
     }
 }

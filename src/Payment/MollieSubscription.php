@@ -3,25 +3,35 @@
 namespace Mollie\WooCommerce\Payment;
 
 use Mollie\Api\Types\SequenceType;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Payment\Request\Middleware\MiddlewareHandler;
+use Mollie\WooCommerce\Payment\Request\Middleware\PaymentDescriptionMiddleware;
+use Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod;
 use Mollie\WooCommerce\SDK\Api;
-use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
+use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
+use Psr\Log\LoggerInterface as Logger;
 
 class MollieSubscription extends MollieObject
 {
     protected $pluginId;
+    /**
+     * @var mixed
+     */
+    private AbstractPaymentMethod $paymentMethod;
+    protected MiddlewareHandler $middleware;
 
     /**
      * Molliesubscription constructor.
      *
      */
-    public function __construct($pluginId, Api $apiHelper, $settingsHelper, $dataHelper, $logger)
+    public function __construct($pluginId, Api $apiHelper, $settingsHelper, $dataHelper, Logger $logger, AbstractPaymentMethod $paymentMethod, $middlewareHandler)
     {
         $this->pluginId = $pluginId;
         $this->apiHelper = $apiHelper;
         $this->settingsHelper = $settingsHelper;
         $this->dataHelper = $dataHelper;
         $this->logger = $logger;
+        $this->paymentMethod = $paymentMethod;
+        $this->middleware = $middlewareHandler;
     }
     /**
      * @param $order
@@ -33,19 +43,16 @@ class MollieSubscription extends MollieObject
         $paymentLocale = $this->settingsHelper->getPaymentLocale();
         $gateway = wc_get_payment_gateway_by_order($order);
 
-        if (! $gateway || ! ( $gateway instanceof MolliePaymentGateway )) {
+        if (! $gateway || ! ( mollieWooCommerceIsMollieGateway($gateway->id) )) {
             return  [ 'result' => 'failure' ];
         }
         $gatewayId = $gateway->id;
+        $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
         $optionName = $this->pluginId . '_api_payment_description';
         $option = get_option($optionName);
         $paymentDescription = $this->getRecurringPaymentDescription($order, $option, $initialPaymentUsedOrderAPI);
-        $selectedIssuer = $gateway->getSelectedIssuer();
-        $returnUrl = $gateway->get_return_url($order);
-        $returnUrl = $this->getReturnUrl($order, $returnUrl);
-        $webhookUrl = $this->getWebhookUrl($order, $gatewayId);
 
-        return array_filter([
+        $requestData =  array_filter([
                                 'amount' =>  [
                                     'currency' => $this->dataHelper->getOrderCurrency($order),
                                     'value' => $this->dataHelper->formatCurrencyValue(
@@ -54,17 +61,16 @@ class MollieSubscription extends MollieObject
                                     ),
                                 ],
                                 'description' => $paymentDescription,
-                                'redirectUrl' => $returnUrl,
-                                'webhookUrl' => $webhookUrl,
-                                'method' => $gateway->paymentMethod()->getProperty('id'),
-                                'issuer' => $selectedIssuer,
+                                'method' => $methodId,
                                 'locale' => $paymentLocale,
                                 'metadata' =>  [
                                     'order_id' => $order->get_id(),
                                 ],
-                                'sequenceType' => 'recurring',
+                                'sequenceType' => SequenceType::SEQUENCETYPE_RECURRING,
                                 'customerId' => $customerId,
                             ]);
+        $context = 'payment';
+        return $this->middleware->handle($requestData, $order, $context);
     }
 
     protected function getRecurringPaymentDescription($order, $option, $initialPaymentUsedOrderAPI)
@@ -84,34 +90,40 @@ class MollieSubscription extends MollieObject
             );
             return $description;
         }
-        return $this->getPaymentDescription($order, $option);
+        $middleware = new PaymentDescriptionMiddleware($this->dataHelper);
+        $requestData = [];
+        $context = 'payment';
+        $result = $middleware->__invoke($requestData, $order, $context, static function ($requestData) {
+            return $requestData;
+        });
+        return $result['description'];
     }
 
     /**
      * Validate in the checkout if the gateway is available for subscriptions
      *
      * @param bool $status
-     * @param MollieSubscriptionGateway $subscriptionGateway
+     * @param MollieSubscriptionGatewayHandler $deprecatedSubscriptionHelper
      * @return bool
      */
-    public function isAvailableForSubscriptions(bool $status, MollieSubscriptionGateway $subscriptionGateway, $orderTotal): bool
+    public function isAvailableForSubscriptions(bool $status, MollieSubscriptionGatewayHandler $deprecatedSubscriptionHelper, $orderTotal, $gateway): bool
     {
         $subscriptionPluginActive = class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin');
         if (!$subscriptionPluginActive) {
             return $status;
         }
-        $currency = $subscriptionGateway->getCurrencyFromOrder();
-        $billingCountry = $subscriptionGateway->getBillingCountry();
-        $paymentLocale = $subscriptionGateway->dataService()->getPaymentLocale();
+        $currency = $deprecatedSubscriptionHelper->getCurrencyFromOrder();
+        $billingCountry = $deprecatedSubscriptionHelper->getBillingCountry();
+        $paymentLocale = $deprecatedSubscriptionHelper->dataService()->getPaymentLocale();
         // Check recurring totals against recurring payment methods for future renewal payments
-        $recurringTotal = $subscriptionGateway->get_recurring_total();
+        $recurringTotal = $deprecatedSubscriptionHelper->get_recurring_total();
         // See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
         $acceptManualRenewals = 'yes' === get_option(
             \WC_Subscriptions_Admin::$option_prefix
                 . '_accept_manual_renewals',
             'no'
         );
-        $supportsSubscriptions = $subscriptionGateway->supports('subscriptions');
+        $supportsSubscriptions = $gateway->supports('subscriptions');
         if ($acceptManualRenewals === true || !$supportsSubscriptions || empty($recurringTotal)) {
             return $status;
         }
@@ -124,11 +136,11 @@ class MollieSubscription extends MollieObject
                 SequenceType::SEQUENCETYPE_RECURRING,
                 $paymentLocale
             );
-            $status = $subscriptionGateway->isAvailableMethodInCheckout($filters);
+            $status = $deprecatedSubscriptionHelper->isAvailableMethodInCheckout($filters);
         }
 
         // Check available first payment methods with today's order total, but ignore SSD gateway (not shown in checkout)
-        if ($subscriptionGateway->paymentMethod()->getProperty('id') === 'mollie_wc_gateway_directdebit') {
+        if ($deprecatedSubscriptionHelper->paymentMethod()->getProperty('id') === 'mollie_wc_gateway_directdebit') {
             return $status;
         }
         $filters = $this->buildFilters(
@@ -138,7 +150,7 @@ class MollieSubscription extends MollieObject
             SequenceType::SEQUENCETYPE_FIRST,
             $paymentLocale
         );
-        return $subscriptionGateway->isAvailableMethodInCheckout($filters);
+        return $deprecatedSubscriptionHelper->isAvailableMethodInCheckout($filters);
     }
 
     /**

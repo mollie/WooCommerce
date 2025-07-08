@@ -87,11 +87,11 @@ class PaymentMethodsIconUrl
         return $this->generateIconHtml($svgUrl);
     }
 
-    public function generateIconHtml($svgUrl)
+    public function generateIconHtml(string $svgUrl): string
     {
 
         return '<img src="' . esc_url($svgUrl)
-            . '" class="mollie-gateway-icon" />';
+            . '" class="mollie-gateway-icon" alt=""/>';
     }
 
     public function getCreditcardIcon()
@@ -106,12 +106,12 @@ class PaymentMethodsIconUrl
         if ($this->canShowCustomLogo($gatewaySettings)) {
             $url =  $gatewaySettings["iconFileUrl"];
             return '<img src="' . esc_url($url)
-                . '" class="mollie-gateway-icon" />';
+                . '" class="mollie-gateway-icon" alt=""/>';
         }
         $svgUrl = $this->pluginUrl . sprintf('public/images/%ss.svg', PaymentMethod::CREDITCARD);
         return
             '<img src="' . esc_url($svgUrl)
-            . '" class="mollie-gateway-icon" />';
+            . '" class="mollie-gateway-icon" alt=""/>';
     }
 
     protected function canShowCustomLogo($gatewaySettings): bool
@@ -127,7 +127,7 @@ class PaymentMethodsIconUrl
         }
         if (
             !isset($gatewaySettings['iconFileUrl'])
-            && !is_string(
+            || !is_string(
                 $gatewaySettings['iconFileUrl']
             )
         ) {
@@ -189,6 +189,7 @@ class PaymentMethodsIconUrl
                 $cardsWidth
             );
             foreach ($enabledCreditCards as $creditCard) {
+                // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading local file is OK.
                 $svgString = file_get_contents(
                     $assetsImagesPath . $creditCard
                 );

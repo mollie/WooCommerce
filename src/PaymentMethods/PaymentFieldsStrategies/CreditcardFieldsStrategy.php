@@ -4,34 +4,32 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
+use Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 
-class CreditcardFieldsStrategy implements PaymentFieldsStrategyI
+class CreditcardFieldsStrategy extends AbstractPaymentFieldsRenderer implements PaymentFieldsRendererInterface
 {
-    public function execute($gateway, $dataHelper)
+    public function renderFields(): string
     {
-        if (!$this->isMollieComponentsEnabled($gateway->paymentMethod())) {
-            return;
+        if (!$this->isMollieComponentsEnabled($this->deprecatedHelperGateway->paymentMethod())) {
+            return $this->gatewayDescription;
         }
-        $gateway->has_fields = true;
-        $allowedHtml = $this->svgAllowedHtml()
+        $allowedHtml = $this->svgAllowedHtml();
 
-        ?>
-        <div class="mollie-components"></div>
-        <p class="mollie-components-description">
-            <?php
-            printf(
-            /* translators: Placeholder 1: Lock icon. Placeholder 2: Mollie logo. */
-                esc_html(__(
-                    '%1$s Secure payments provided by %2$s',
-                    'mollie-payments-for-woocommerce'
-                )),
-                wp_kses($this->lockIcon($dataHelper), $allowedHtml),
-                wp_kses($this->mollieLogo($dataHelper), $allowedHtml)
-            );
-            ?>
-        </p>
-        <?php
+        $output = $this->gatewayDescription;
+        $output .= '<div class="mollie-components"></div>';
+        $output .= '<p class="mollie-components-description">';
+        $output .= sprintf(
+            esc_html__(
+                '%1$s Secure payments provided by %2$s',
+                'mollie-payments-for-woocommerce'
+            ),
+            wp_kses($this->lockIcon($this->dataHelper), $allowedHtml),
+            wp_kses($this->mollieLogo($this->dataHelper), $allowedHtml)
+        );
+        $output .= '</p>';
+
+        return $output;
     }
 
     public function getFieldMarkup($gateway, $dataHelper)
@@ -39,7 +37,6 @@ class CreditcardFieldsStrategy implements PaymentFieldsStrategyI
         if (!$this->isMollieComponentsEnabled($gateway->paymentMethod())) {
             return false;
         }
-        $gateway->has_fields = true;
         $descriptionTranslated = __('Secure payments provided by', 'mollie-payments-for-woocommerce');
         $componentsDescription = "{$this->lockIcon($dataHelper)} {$descriptionTranslated} {$this->mollieLogo($dataHelper)}";
         return "<div class='payment_method_mollie_wc_gateway_creditcard'><div class='mollie-components'></div><p class='mollie-components-description'>{$componentsDescription}</p></div>";
@@ -47,11 +44,13 @@ class CreditcardFieldsStrategy implements PaymentFieldsStrategyI
 
     protected function isMollieComponentsEnabled(PaymentMethodI $paymentMethod): bool
     {
-        return $paymentMethod->hasPaymentFields();
+        $hasComponentsEnabled = $paymentMethod->getProperty('mollie_components_enabled');
+        return $hasComponentsEnabled === 'yes';
     }
 
     protected function lockIcon($dataHelper)
     {
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading local file is OK.
         return file_get_contents(
             $dataHelper->pluginPath() . '/' . 'public/images/lock-icon.svg'
         );
@@ -59,6 +58,7 @@ class CreditcardFieldsStrategy implements PaymentFieldsStrategyI
 
     protected function mollieLogo($dataHelper)
     {
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading local file is OK.
         return file_get_contents(
             $dataHelper->pluginPath() . '/' . 'public/images/mollie-logo.svg'
         );

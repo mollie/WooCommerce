@@ -3,8 +3,10 @@
 .git*
 tests/
 resources/
+!vendor/mollie/mollie-api-php/Resources
 vendor/**/test*
-languages/*.po
+vendor/mollie/mollie-api-php/examples/
+languages/
 bin/
 *.lock
 composer.json

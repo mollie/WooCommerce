@@ -7,13 +7,13 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Subscription;
 
 use DateTime;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
-use Mollie\WooCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Inpsyde\Modularity\Module\ExecutableModule;
+use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
-use Mollie\WooCommerce\Vendor\Psr\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
 
@@ -42,18 +42,8 @@ class SubscriptionModule implements ExecutableModule
         assert($this->dataHelper instanceof Data);
         $this->settingsHelper = $container->get('settings.settings_helper');
         assert($this->settingsHelper instanceof Settings);
-        $this->maybeFixSubscriptions();
         $this->schedulePendingPaymentOrdersExpirationCheck();
         return true;
-    }
-
-    /**
-     * See MOL-322, MOL-405
-     */
-    public function maybeFixSubscriptions()
-    {
-        $fixer = new MaybeFixSubscription();
-        $fixer->maybeFix();
     }
 
     /**

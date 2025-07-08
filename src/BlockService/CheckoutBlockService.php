@@ -73,9 +73,9 @@ class CheckoutBlockService
             $availableGateways = WC()->payment_gateways()->get_available_payment_gateways();
             $availableGateways = $this->removeNonMollieGateway($availableGateways);
             $availableGateways = $this->maybeRemoveVoucher($availableGateways);
-            $filterKey = "{$filters['amount']['currency']}-{$filters['locale']}-{$filters['billingCountry']}";
+            $filterKey = "{$filters['amount']['currency']}-{$filters['billingCountry']}";
             foreach ($availableGateways as $key => $gateway) {
-                $availablePaymentMethods[$filterKey][$key] = $gateway->paymentMethod()->getProperty('id');
+                $availablePaymentMethods[$filterKey][$key] = str_replace('mollie_wc_gateway_', '', $gateway->id);
             }
         }
         wp_send_json_success($availablePaymentMethods);
@@ -94,8 +94,7 @@ class CheckoutBlockService
             if ($key !== 'mollie_wc_gateway_voucher') {
                 continue;
             }
-            $shouldRemoveVoucher = $this->voucherDisabler->shouldRemoveVoucher();
-            if ($shouldRemoveVoucher) {
+            if (!$this->voucherDisabler->haveCartProductsCategories()) {
                 unset($availableGateways[$key]);
             }
         }

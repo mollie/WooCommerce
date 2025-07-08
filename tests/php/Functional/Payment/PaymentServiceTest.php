@@ -5,14 +5,17 @@ namespace Mollie\WooCommerceTests\Functional\Payment;
 use Mollie\Api\Endpoints\OrderEndpoint;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\MollieApiClient;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
+use Mollie\WooCommerce\Payment\MollieOrder;
 use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
-use Mollie\WooCommerce\Payment\PaymentService;
+use Mollie\WooCommerce\Payment\PaymentFactory;
+use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
 use Mollie\WooCommerceTests\Stubs\WC_Order_Item_Product;
 use Mollie\WooCommerceTests\Stubs\WC_Settings_API;
+use Mollie\WooCommerceTests\Stubs\WC_Product;
 use Mollie\WooCommerceTests\TestCase;
 
 
@@ -73,19 +76,27 @@ class PaymentServiceTest extends TestCase
         );
         $apiClientMock->orders = $orderEndpoints;
         $voucherDefaultCategory = Voucher::NO_CATEGORY;
-        $testee = new PaymentService(
+        $deprecatedGatewayHelper = $this->mollieGateway($paymentMethodId);
+        $testee = new PaymentProcessor(
             $this->helperMocks->noticeMock(),
             $this->helperMocks->loggerMock(),
-            $this->helperMocks->paymentFactory($apiClientMock),
+            $this->paymentFactory(),
             $this->helperMocks->dataHelper($apiClientMock),
             $this->helperMocks->apiHelper($apiClientMock),
             $this->helperMocks->settingsHelper(),
             $this->helperMocks->pluginId(),
             $this->paymentCheckoutService($apiClientMock),
-            $voucherDefaultCategory
+            $voucherDefaultCategory,
+            ['mollie_wc_gateway_ideal' => $deprecatedGatewayHelper]
         );
-        $gateway = $this->mollieGateway($paymentMethodId, $testee);
-        $testee->setGateway($gateway);
+        $gateway = $this->helperMocks->genericPaymentGatewayMock();
+        $gateway->id = 'mollie_wc_gateway_ideal';
+        $gateway->method('supports')->willReturnMap([
+                                                        ['subscriptions', false]
+                                                    ]);
+        $gateway->method('get_return_url')->willReturn($processPaymentRedirect);
+
+        $testee->setGatewayHelper($gateway->id);
 
         stubs(
             [
@@ -96,29 +107,20 @@ class PaymentServiceTest extends TestCase
                 'add_query_arg' => 'https://webshop.example.org/wc-api/mollie_return?order_id=1&key=wc_order_hxZniP1zDcnM8',
                 'WC' => $this->wooCommerce(),
                 'wc_clean' => null,
+                'wp_parse_url' => null,
+                'wp_strip_all_tags' => null
             ]
         );
-        $gateway->expects($this->once())
-            ->method('getSelectedIssuer')
-            ->willReturn('ideal_INGBNL2A');
-        $expectedRequestToMollie = $this->expectedRequestData($wcOrder);
-        $orderEndpoints->method('create')->with($expectedRequestToMollie);
 
         /*
          *  Expectations
          */
-        expect('is_plugin_active')
-            ->andReturn(false);
+        //we are not testing the request data, as that is tested in a separate test
+
         expect('get_option')
             ->with('mollie-payments-for-woocommerce_api_switch')
             ->andReturn(false);
-        expect('get_transient')->andReturn(['ideal'=>['id'=>'ideal', 'status'=>'activated']]);
-        $wcOrder->expects($this->any())
-            ->method('get_billing_company')
-            ->willReturn('');
-        $wcOrder->expects($this->any())
-            ->method('get_billing_phone')
-            ->willReturn('+1234567890');
+
         /*
         * Execute Test
         */
@@ -126,7 +128,7 @@ class PaymentServiceTest extends TestCase
             'result'   => 'success',
             'redirect' => $processPaymentRedirect,
         );
-        $arrayResult = $testee->processPayment(1, $wcOrder, $paymentMethod, $processPaymentRedirect);
+        $arrayResult = $testee->processPayment($wcOrder, $gateway);
         self::assertEquals($expectedResult, $arrayResult);
     }
 
@@ -138,6 +140,7 @@ class PaymentServiceTest extends TestCase
     {
         stubs([
             'array_filter' => [],
+            'esc_html__' =>null
               ]);
         $mockedException = new TestApiException();
         $mockedException->setTestCode(422);
@@ -155,26 +158,29 @@ class PaymentServiceTest extends TestCase
         $apiClientMock = $this->createMock(MollieApiClient::class);
         $apiClientMock->orders = $orderEndpointsMock;
         $voucherDefaultCategory = Voucher::NO_CATEGORY;
-
-        $testee = new PaymentService(
+        $gateway = $this->helperMocks->genericPaymentGatewayMock();
+        $gateway->id = 'mollie_wc_gateway_ideal';
+        $deprecatedGatewayHelper = $this->mollieGateway($paymentMethodId);
+        $testee = new PaymentProcessor(
             $this->helperMocks->noticeMock(),
             $this->helperMocks->loggerMock(),
-            $this->helperMocks->paymentFactory($apiClientMock),
+            $this->helperMocks->paymentFactory(),
             $this->helperMocks->dataHelper($apiClientMock),
             $this->helperMocks->apiHelper($apiClientMock),
             $this->helperMocks->settingsHelper(),
             $this->helperMocks->pluginId(),
             $this->paymentCheckoutService($apiClientMock),
-            $voucherDefaultCategory
+            $voucherDefaultCategory,
+            ['mollie_wc_gateway_ideal' => $deprecatedGatewayHelper]
         );
-        $gateway = $this->mollieGateway($paymentMethodId, $testee);
         $testee->setGateway($gateway);
+        $testee->setGatewayHelper('mollie_wc_gateway_ideal');
         $wcOrderId = 1;
         $wcOrderKey = 'wc_order_hxZniP1zDcnM8';
         $wcOrder = $this->wcOrder($wcOrderId, $wcOrderKey);
         $cusomerId = 1;
         $apiKey = 'test_test';
-        $method = new \ReflectionMethod(PaymentService::class, 'processAsMollieOrder');
+        $method = new \ReflectionMethod(PaymentProcessor::class, 'processAsMollieOrder');
         $method->setAccessible(true);
 
         $this->expectException(ApiException::class);
@@ -196,11 +202,34 @@ class PaymentServiceTest extends TestCase
 
         when('__')->returnArg(1);
     }
-    protected function mollieGateway($paymentMethodName, $testee, $isSepa = false, $isSubscription = false){
-        return $this->helperMocks->mollieGatewayBuilder($paymentMethodName, $isSepa, $isSubscription, [], $testee);
+    protected function mollieGateway($paymentMethodName, $isSepa = false, $isSubscription = false){
+        return $this->helperMocks->mollieGatewayBuilder($paymentMethodName, $isSepa, $isSubscription, []);
     }
 
+    public function paymentFactory(){
+        return new PaymentFactory(
+            function(){
+                return $this->mollieOrderMock();
+            },
+            function(){
+                return $this->molliePaymentMock();
+            }
+        );
+    }
 
+    public function mollieOrderMock()
+    {
+        $dataMock = $this->createMock(stdClass::class);
+        $dataMock->id = 'mocked_id';
+        $mollieOrder =  $this->createConfiguredMock(MollieOrder::class,
+        [
+            'getPaymentRequestData' => [],
+            'data' => $dataMock
+        ]
+        );
+
+        return $mollieOrder;
+    }
     /**
      *
      * @throws PHPUnit_Framework_Exception
@@ -212,7 +241,7 @@ class PaymentServiceTest extends TestCase
             [
                 'get_id' => $id,
                 'get_order_key' => $orderKey,
-                'get_total' => '20',
+                'get_total' => 40.00,
                 'get_items' => [$this->wcOrderItem()],
                 'get_billing_first_name' => 'billingggivenName',
                 'get_billing_last_name' => 'billingfamilyName',
@@ -225,7 +254,7 @@ class PaymentServiceTest extends TestCase
                 'get_billing_city' => 'billingcity',
                 'get_billing_state' => 'billingregion',
                 'get_billing_country' => 'billingcountry',
-                'get_billing_phone' => '+1234567890',
+                'get_billing_phone' => '+34345678900',
                 'get_shipping_address_1' => 'shippingstreetAndNumber',
                 'get_shipping_address_2' => 'shippingstreetAdditional',
                 'get_shipping_postcode' => 'shippingpostalCode',
@@ -265,7 +294,7 @@ class PaymentServiceTest extends TestCase
     {
 
         $item = $this->createConfiguredMock(
-            'WC_Product',
+            WC_Product::class,
             [
                 'get_price' => '1',
                 'get_id'=>'1',
@@ -307,7 +336,7 @@ class PaymentServiceTest extends TestCase
         return [
             'amount' => [
                 'currency' => 'EUR',
-                'value' => '20.00'
+                'value' => '40.00'
             ],
             'redirectUrl' =>
                 'https://webshop.example.org/wc-api/mollie_return?order_id=1&key=wc_order_hxZniP1zDcnM8',
@@ -317,7 +346,7 @@ class PaymentServiceTest extends TestCase
                 'ideal',
             'payment' =>
                 [
-                    'issuer' => 'ideal_INGBNL2A'
+                    'issuer' => null
                 ],
             'locale' => 'en_US',
             'billingAddress' => $this->billingAddress($order),

@@ -10,7 +10,7 @@ class Bancomatpay extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'bancomatpay',
-            'defaultTitle' => __('Bancomat Pay', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => 'Bancomat Pay',
             'settingsDescription' => '',
             'defaultDescription' => '',
             'paymentFields' => false,
@@ -21,7 +21,18 @@ class Bancomatpay extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
+            'docs' => 'https://www.mollie.com/gb/payments/bancomat-pay',
         ];
+    }
+
+    // Replace translatable strings after the 'after_setup_theme' hook
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('Bancomat Pay', 'mollie-payments-for-woocommerce');
+        $this->translationsInitialized = true;
     }
 
     public function getFormFields($generalFormFields): array

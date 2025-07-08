@@ -19,4 +19,9 @@
             <directory suffix="Test.php">tests/php/Functional</directory>
         </testsuite>
     </testsuites>
+    <groups>
+        <exclude>
+            <group>skip</group>
+        </exclude>
+    </groups>
 </phpunit>

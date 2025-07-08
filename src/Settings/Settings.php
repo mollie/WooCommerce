@@ -7,9 +7,10 @@ namespace Mollie\WooCommerce\Settings;
 use DateInterval;
 use DateTime;
 use Mollie\Api\Exceptions\ApiException;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\AdminNotice;
-use Mollie\WooCommerce\Payment\PaymentService;
+use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\Settings\General\MollieGeneralSettings;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use WC_Payment_Gateway;
@@ -65,7 +66,7 @@ class Settings
         return $generalSettings->gatewayFormFields($defaultTitle, $defaultDescription, $paymentConfirmation);
     }
 
-    public function processSettings(WC_Payment_Gateway $gateway)
+    public function processSettings(string $gatewayId)
     {
         $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = wp_verify_nonce($nonce, 'woocommerce-settings');
@@ -73,31 +74,31 @@ class Settings
             return;
         }
         if (isset($_POST['save'])) {
-            $this->processAdminOptionCustomLogo($gateway);
-            $this->processAdminOptionSurcharge($gateway);
+            $this->processAdminOptionCustomLogo($gatewayId);
+            $this->processAdminOptionSurcharge($gatewayId);
             //only credit cards have a selector
-            if ($gateway->id === 'mollie_wc_gateway_creditcard') {
+            if ($gatewayId === 'mollie_wc_gateway_creditcard') {
                 $this->processAdminOptionCreditcardSelector();
             }
         }
     }
 
-    public function processAdminOptionCustomLogo(WC_Payment_Gateway $gateway)
+    public function processAdminOptionCustomLogo(string $gatewayId)
     {
         $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = $nonce && wp_verify_nonce($nonce, 'woocommerce-settings');
         if (!$isNonceValid) {
             return;
         }
-        $enabledLogoOptionName = $gateway->id . '_enable_custom_logo';
-        $gatewaySettings = get_option(sprintf('%s_settings', $gateway->id), []);
+        $enabledLogoOptionName = 'woocommerce_' . $gatewayId . '_enable_custom_logo';
+        $gatewaySettings = get_option(sprintf('%s_settings', $gatewayId), []);
         if (!isset($_POST[$enabledLogoOptionName])) {
             $gatewaySettings["iconFileUrl"] = null;
             $gatewaySettings["iconFilePath"] = null;
-            update_option(sprintf('%s_settings', $gateway->id), $gatewaySettings);
+            update_option(sprintf('%s_settings', $gatewayId), $gatewaySettings);
             return;
         }
-        $fileOptionName = $gateway->id . '_upload_logo';
+        $fileOptionName = 'woocommerce_' . $gatewayId . '_upload_logo';
         if (
                 !empty($_FILES[$fileOptionName]['size'])
                 && !empty($_FILES[$fileOptionName]['name'])
@@ -111,18 +112,18 @@ class Settings
             if (!$this->validateUploadedFile($name, $tempName, (int) $size)) {
                 return;
             }
-            $this->processUploadedFile($name, $tempName, $gateway);
+            $this->processUploadedFile($name, $tempName, $gatewayId);
         }
     }
 
-    public function processAdminOptionSurcharge(WC_Payment_Gateway $gateway)
+    public function processAdminOptionSurcharge(string $gatewayId)
     {
         $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = wp_verify_nonce($nonce, 'woocommerce-settings');
         if (!$isNonceValid) {
             return;
         }
-        $paymentSurcharge = $gateway->id . '_payment_surcharge';
+        $paymentSurcharge = $gatewayId . '_payment_surcharge';
 
         if (
             isset($_POST[$paymentSurcharge])
@@ -135,7 +136,7 @@ class Settings
                 '_surcharge_limit',
             ];
             foreach ($surchargeFields as $field) {
-                $optionName = $gateway->id . $field;
+                $optionName = $gatewayId . $field;
                 $validatedValue = isset($_POST[$optionName])
                     && $_POST[$optionName] > 0
                     && $_POST[$optionName] < 999;
@@ -144,74 +145,6 @@ class Settings
                 }
             }
         }
-    }
-
-    public function adminOptions(WC_Payment_Gateway $gateway)
-    {
-
-        if (!$gateway->enabled && count($gateway->errors)) {
-            echo '<div class="inline error"><p><strong>' . esc_html(__('Gateway Disabled', 'mollie-payments-for-woocommerce')) . '</strong>: '
-                . wp_kses_post(implode('<br/>', $gateway->errors))
-                . '</p></div>';
-
-            return;
-        }
-        $html = '';
-        foreach ($gateway->get_form_fields() as $k => $v) {
-            $type = $gateway->get_field_type($v);
-
-            if ($type === 'multi_select_countries') {
-                $html .= $this->multiSelectCountry($gateway);
-            } elseif (method_exists($gateway, 'generate_' . $type . '_html')) {
-                $html .= $gateway->{'generate_' . $type . '_html'}($k, $v);
-            } else {
-                $html .= $gateway->generate_text_html($k, $v);
-            }
-        }
-
-        echo '<h2>' . esc_html($gateway->get_method_title());
-        wc_back_link(__('Return to payments', 'mollie-payments-for-woocommerce'), admin_url('admin.php?page=wc-settings&tab=checkout'));
-        echo '</h2>';
-        echo wp_kses_post(wpautop($gateway->get_method_description()));
-        echo '<table class="form-table">'
-                .
-                $html//phpcs:ignore
-                .
-                '</table>';
-    }
-
-    public function multiSelectCountry($gateway)
-    {
-        $selections = (array)$gateway->get_option('allowed_countries', []);
-        $gatewayId = $gateway->paymentMethod()->getProperty('id');
-        $id = 'mollie_wc_gateway_' . $gatewayId . '_allowed_countries';
-        $title = __('Sell to specific countries', 'mollie-payments-for-woocommerce');
-        $countries = WC()->countries->countries;
-        asort($countries);
-        ob_start();
-        ?>
-        <tr valign="top">
-            <th scope="row" class="titledesc">
-                <label for="<?php echo esc_attr($id); ?>"><?php echo esc_html($title); ?> </label>
-            </th>
-            <td class="forminp">
-                <select multiple="multiple" name="<?php echo esc_attr($id); ?>[]" style="width:350px"
-                        data-placeholder="<?php esc_attr_e('Choose countries&hellip;', 'mollie-payments-for-woocommerce'); ?>"
-                        aria-label="<?php esc_attr_e('Country', 'mollie-payments-for-woocommerce'); ?>" class="wc-enhanced-select">
-                    <?php
-                    if (!empty($countries)) {
-                        foreach ($countries as $key => $val) {
-                            echo '<option value="' . esc_attr($key) . '"' . esc_attr(wc_selected($key, $selections)) . '>' . esc_html($val) . '</option>';
-                        }
-                    }
-                    ?>
-                </select><br/><a class="select_all button" href="#"><?php esc_html_e('Select all', 'mollie-payments-for-woocommerce'); ?></a>
-                <a class="select_none button" href="#"><?php esc_html_e('Select none', 'mollie-payments-for-woocommerce'); ?></a>
-            </td>
-        </tr>
-        <?php
-
-        return ob_get_clean();
     }
 
     /**
@@ -230,7 +163,7 @@ class Settings
     public function isOrderApiSetting()
     {
         $orderApiSetting = get_option($this->getSettingId('api_switch'));
-        return !$orderApiSetting || is_string($orderApiSetting) && trim($orderApiSetting) === PaymentService::PAYMENT_METHOD_TYPE_ORDER;
+        return !$orderApiSetting || is_string($orderApiSetting) && trim($orderApiSetting) === PaymentProcessor::PAYMENT_METHOD_TYPE_ORDER;
     }
     /**
      * @param bool $overrideTestMode
@@ -332,7 +265,7 @@ class Settings
     /**
      * @return string
      */
-    public function getLogsUrl()
+    public function getLogsUrl(): string
     {
         return admin_url('admin.php?page=wc-status&tab=logs');
     }
@@ -382,6 +315,24 @@ class Settings
     {
         $option = ['id' => $optionName];
         $this->updateMerchantIdOnApiKeyChanges($value, $option);
+    }
+
+    public function getConnectionStatus(): bool
+    {
+
+        $status = $this->statusHelper;
+        if (!$status->isCompatible()) {
+            return false;
+        }
+
+        try {
+            $apiKey = $this->getApiKey();
+            $apiClient = $this->apiHelper->getApiClient($apiKey);
+            $status->getMollieApiStatus($apiClient);
+            return true;
+        } catch (\Mollie\Api\Exceptions\ApiException $e) {
+            return false;
+        }
     }
 
     /**
@@ -447,6 +398,10 @@ class Settings
         return $date->getTimestamp();
     }
 
+    public function getPluginId()
+    {
+        return $this->pluginId;
+    }
     /**
      * @param string $setting
      *
@@ -650,6 +605,7 @@ class Settings
         $notice = new AdminNotice();
         if ($extensionNotAllowed || $fileIsNotAnImage) {
             $message = sprintf(
+            /* translators: Placeholder 1: opening tag Placeholder 2: closing tag */
                 esc_html__(
                     '%1$sMollie Payments for WooCommerce%2$s Unable to upload the file. Only jpg, jpeg, png and gif files are allowed.',
                     'mollie-payments-for-woocommerce'
@@ -663,6 +619,7 @@ class Settings
 
         if ($invalidFileSize) {
             $message = sprintf(
+            /* translators: Placeholder 1: opening tag Placeholder 2: closing tag */
                 esc_html__(
                     '%1$sMollie Payments for WooCommerce%2$s Unable to upload the file. Size must be under 500kb.',
                     'mollie-payments-for-woocommerce'
@@ -676,26 +633,37 @@ class Settings
         return true;
     }
 
-    protected function processUploadedFile(string $name, string $tempName, WC_Payment_Gateway $gateway)
+    protected function processUploadedFile(string $name, string $tempName, string $gatewayId)
     {
-        $mollieUploadDirectory = trailingslashit(wp_upload_dir()['basedir'])
-                . 'mollie-uploads/' . $gateway->id;
-        wp_mkdir_p($mollieUploadDirectory);
-        $targetLocation = $mollieUploadDirectory . '/';
-
         $fileName = preg_replace(
             '#\s+#',
             '_',
             $name
         );
 
-        move_uploaded_file($tempName, $targetLocation . $fileName);
-        $gatewaySettings["iconFileUrl"] = trailingslashit(
-            wp_upload_dir()['baseurl']
-        ) . 'mollie-uploads/' . $gateway->id . '/' . $fileName;
-        $gatewaySettings["iconFilePath"] = trailingslashit(
-            wp_upload_dir()['basedir']
-        ) . 'mollie-uploads/' . $gateway->id . '/' . $fileName;
-        update_option(sprintf('%s_settings', $gateway->id), $gatewaySettings);
+        if (!function_exists('wp_handle_upload')) {
+            require_once(ABSPATH . 'wp-admin/includes/file.php');
+        }
+
+        $upload_overrides = ['test_form' => false];
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $file = isset($_FILES['woocommerce_' . $gatewayId . '_upload_logo']) ? wp_unslash($_FILES['woocommerce_' . $gatewayId . '_upload_logo']) : [];
+        if (!empty($file)) {
+            $file = [
+                    'name' => $file['name'],
+                    'type' => $file['type'],
+                    'tmp_name' => $file['tmp_name'],
+                    'error' => $file['error'],
+                    'size' => $file['size'],
+            ];
+
+            $movefile = wp_handle_upload($file, $upload_overrides);
+            if ($movefile) {
+                $gatewaySettings = get_option(sprintf('%s_settings', $gatewayId), []);
+                $gatewaySettings["iconFileUrl"] = $movefile['url'];
+                $gatewaySettings["iconFilePath"] = $movefile['file'];
+                update_option(sprintf('%s_settings', $gatewayId), $gatewaySettings);
+            }
+        }
     }
 }

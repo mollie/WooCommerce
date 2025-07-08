@@ -66,7 +66,7 @@ class Surcharge
      */
     public function buildDescriptionWithSurchargeForBlock(PaymentMethodI $paymentMethod)
     {
-        $defaultDescription = $paymentMethod->getProperty('description') ?: '';
+        $defaultDescription = $paymentMethod->getProperty('description') ?: ($paymentMethod->getProperty('defaultDescription') ?: '');
         $surchargeType = $paymentMethod->getProperty('payment_surcharge');
 
         if (
@@ -76,9 +76,10 @@ class Surcharge
             return $defaultDescription;
         }
         $feeText = $this->feeTextByType($surchargeType, $paymentMethod);
-        $feeText = is_string($feeText) ? html_entity_decode($feeText) : false;
+        $feeText = is_string($feeText) ? $defaultDescription . ' ' . html_entity_decode($feeText) : false;
+        $defaultFeeText = $defaultDescription . ' ' . __('A surchage fee might apply');
 
-        return $feeText ?: __('A surchage fee might apply');
+        return $feeText ?: $defaultFeeText;
     }
 
     /**
@@ -171,7 +172,7 @@ class Surcharge
         if (empty($gatewaySettings[Surcharge::PERCENTAGE])) {
             return 0.0;
         }
-        $percentageFee = $gatewaySettings[Surcharge::PERCENTAGE];
+        $percentageFee = (float) $gatewaySettings[Surcharge::PERCENTAGE];
         $subtotal = $cart->get_subtotal() + $cart->get_shipping_total() - $cart->get_discount_total();
         $taxes = $cart->get_subtotal_tax() + $cart->get_shipping_tax() - $cart->get_discount_tax();
         $total = $subtotal + $taxes;
@@ -190,7 +191,7 @@ class Surcharge
         if (empty($gatewaySettings[Surcharge::PERCENTAGE])) {
             return 0.0;
         }
-        $percentageFee = $gatewaySettings[Surcharge::PERCENTAGE];
+        $percentageFee = (float) $gatewaySettings[Surcharge::PERCENTAGE];
         $total = $order->get_total();
         $fee = $total * ($percentageFee / 100);
 
@@ -237,7 +238,7 @@ class Surcharge
             return $fee;
         }
         $maxLimit = (float)$gatewaySettings['surcharge_limit'];
-        if ($fee > $maxLimit) {
+        if ($maxLimit && $fee > $maxLimit) {
             return $maxLimit;
         }
         return $fee;
@@ -297,8 +298,8 @@ class Surcharge
         $amountFix = $paymentMethod->getProperty(self::FIXED_FEE);
         $currency = get_woocommerce_currency_symbol();
         $amountPercent = $paymentMethod->getProperty(self::PERCENTAGE);
-        /* translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency. Placeholder 3: Percentage amount. */
         return sprintf(
+        /* translators: Placeholder 1: Fee amount tag. Placeholder 2: Currency. Placeholder 3: Percentage amount. */
             __(' + %1$s %2$s + %3$s%% fee might apply', 'mollie-payments-for-woocommerce'),
             $currency,
             $amountFix,
@@ -336,7 +337,7 @@ class Surcharge
     protected function maybeAddTaxString(string $feeText): string
     {
         if (wc_tax_enabled()) {
-            $feeText .= __(' (incl. VAT)', 'mollie-payments-for-woocommerce');
+            $feeText .= __(' (excl. VAT)', 'mollie-payments-for-woocommerce');
         }
         return $feeText;
     }

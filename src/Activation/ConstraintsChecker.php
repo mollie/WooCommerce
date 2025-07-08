@@ -35,7 +35,7 @@ class ConstraintsChecker
     {
         $wpConstraint = new WordPressConstraint('5.0');
         $wcConstraint = new PluginConstraint('3.9', 'woocommerce', 'WooCommerce');
-        $phpConstraint = new PhpConstraint('7.2');
+        $phpConstraint = new PhpConstraint('7.4');
         $jsonConstraint = new ExtensionConstraint('json');
         $collectionFactory = new ConstraintsCollectionFactory();
         $constraintsCollection = $collectionFactory->create(
@@ -68,7 +68,10 @@ class ConstraintsChecker
             foreach ($mainException as $error) {
                 $errors[] = $error->getMessage();
             }
-            $this->showNotice($errors);
+            add_action('after_setup_theme', function () use ($errors) {
+                $this->showNotice($errors);
+            });
+
             $disabler = new PluginDisabler(
                 'mollie-payments-for-woocommerce',
                 'mollie_wc_plugin_init'
@@ -103,11 +106,21 @@ class ConstraintsChecker
 
     protected function showNotice(array $errors)
     {
-        $message = sprintf(__('%1$sMollie Payments for WooCommerce is inactive:%2$s', 'mollie-payments-for-woocommerce'), '<p><strong>', '</strong></p>');
+        $message = sprintf(
+        /* translators: Placeholder 1: opening tags Placeholder 2: closing tags */
+            __('%1$sMollie Payments for WooCommerce is inactive:%2$s', 'mollie-payments-for-woocommerce'),
+            '<p><strong>',
+            '</strong></p>'
+        );
         foreach ($errors as $error) {
             $message .= sprintf('<p>%s</p>', $error);
         }
-        $message .= sprintf(__('%1$sCorrect the above errors to use Mollie Payments for Woocommerce%2$s', 'mollie-payments-for-woocommerce'), '<p>', '</p>');
+        $message .= sprintf(
+        /* translators: Placeholder 1: opening tags Placeholder 2: closing tags */
+            __('%1$sCorrect the above errors to use Mollie Payments for WooCommerce%2$s', 'mollie-payments-for-woocommerce'),
+            '<p>',
+            '</p>'
+        );
         $errorLevel = 'notice-error';
         $this->notice->addNotice($errorLevel, $message);
     }

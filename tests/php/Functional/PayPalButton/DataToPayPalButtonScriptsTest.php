@@ -3,18 +3,13 @@
 namespace Mollie\WooCommerceTests\Functional\PayPalButton;
 
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
-use Mollie\Api\Endpoints\OrderEndpoint;
-use Mollie\Api\Endpoints\WalletEndpoint;
-use Mollie\Api\MollieApiClient;
 use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPal;
 use Mollie\WooCommerceTests\Stubs\postDTOTestsStubs;
+use Mollie\WooCommerceTests\Stubs\WC_Product;
 use Mollie\WooCommerceTests\TestCase;
 use Mollie_WC_ApplePayButton_DataToAppleButtonScripts;
-use Mollie_WC_Helper_Api;
 use Mollie_WC_ApplePayButton_DataObjectHttp;
 use Mollie_WC_Helper_ApplePayDirectHandler;
-use Mollie_WC_Helper_Data;
-use Mollie_WC_Payment_RefundLineItemsBuilder;
 use Mollie_WC_PayPalButton_DataToPayPalScripts;
 use PHPUnit_Framework_Exception;
 use PHPUnit_Framework_MockObject_MockObject;
@@ -66,7 +61,7 @@ class DataToPayPalButtonScriptsTest extends TestCase
         /*
          * Sut
          */
-        $pluginUrl = 'http://plugingUrl.com';
+        $pluginUrl = 'http://pluginUrl.com';
         $dataToScript = new DataToPayPal($pluginUrl);
 
         /*
@@ -103,7 +98,7 @@ class DataToPayPalButtonScriptsTest extends TestCase
         /*
          * Sut
          */
-        $pluginUrl = 'http://plugingUrl.com';
+        $pluginUrl = 'http://pluginUrl.com';
         $dataToScript = new DataToPayPal($pluginUrl);
 
         /*
@@ -120,7 +115,7 @@ class DataToPayPalButtonScriptsTest extends TestCase
     private function wcProduct()
     {
         return $this->createConfiguredMock(
-            'WC_Product',
+            WC_Product::class,
             [
                 'get_price' => '1',
                 'get_type' => 'simple',

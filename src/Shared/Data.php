@@ -7,6 +7,7 @@ namespace Mollie\WooCommerce\Shared;
 use Exception;
 use InvalidArgumentException;
 use Mollie\Api\Resources\Method;
+use Mollie\WooCommerce\Buttons\ApplePayButton\DataToAppleButtonScripts;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Psr\Log\LoggerInterface as Logger;
@@ -112,9 +113,9 @@ class Data
     /**
      * @param bool $overrideTestMode
      *
-     * @return null|string
+     * @return false|string
      */
-    public function getApiKey($overrideTestMode = 2): ?string
+    public function getApiKey($overrideTestMode = 2)
     {
         return $this->settingsHelper->getApiKey($overrideTestMode);
     }
@@ -123,11 +124,6 @@ class Data
     {
 
         $this->settingsHelper->processSettings($gateway);
-    }
-
-    public function processAdminOptions($gateway)
-    {
-        $this->settingsHelper->adminOptions($gateway);
     }
 
     public function getPaymentLocale()
@@ -270,21 +266,33 @@ class Data
         $amountValue = $this->getAmountValue($orderTotal, $currency);
         if ($amountValue <= 0) {
             throw new InvalidArgumentException(
-                sprintf('Amount %s is not valid.', $amountValue)
+                sprintf(
+                /* translators: Placeholder 1: amount value */
+                    esc_html__('Amount %s is not valid.', 'mollie-payments-for-woocommerce'),
+                    esc_html($amountValue)
+                )
             );
         }
 
         // Check if currency is in ISO 4217 alpha-3 format (ex: EUR)
         if (!preg_match('/^[a-zA-Z]{3}$/', $currency)) {
             throw new InvalidArgumentException(
-                sprintf('Currency %s is not valid.', $currency)
+                sprintf(
+                /* translators: Placeholder 1: currency */
+                    esc_html__('Currency %s is not valid.', 'mollie-payments-for-woocommerce'),
+                    esc_html($currency)
+                )
             );
         }
 
         // Check if billing country is in ISO 3166-1 alpha-2 format (ex: NL)
         if (!preg_match('/^[a-zA-Z]{2}$/', $billingCountry)) {
             throw new InvalidArgumentException(
-                sprintf('Billing Country %s is not valid.', $billingCountry)
+                sprintf(
+                /* translators: Placeholder 1: billing country */
+                    esc_html__('Billing Country %s is not valid.', 'mollie-payments-for-woocommerce'),
+                    esc_html($billingCountry)
+                )
             );
         }
 
@@ -315,7 +323,7 @@ class Data
         $testMode = $this->isTestModeEnabled();
         $methods = $this->getAllAvailablePaymentMethods($useCache);
         // We cannot access allActive for all methods so we filter them out here
-        $filtered_methods = array_filter($methods, function ($method) use ($testMode) {
+        $filtered_methods = array_filter($methods, static function ($method) use ($testMode) {
             if ($testMode === "live") {
                 return $method['status'] === "activated";
             } else {
@@ -464,13 +472,20 @@ class Data
     public function getMethodWithIssuersById($methodId, $apiKey)
     {
         $method = $this->getCachedMethodById($methodId);
-        if ($method) {
+        if ($method === false) {
+            $method = [];
+        }
+        if (!empty($method['issuers'])) {
             return $method;
         }
         if (!$apiKey) {
             return false;
         }
-        return $this->api_helper->getApiClient($apiKey)->methods->get(sprintf('%s', $methodId), [ "include" => "issuers" ]);
+        $methodWithIssuers = $this->api_helper->getApiClient($apiKey)->methods->get(sprintf('%s', $methodId), [ "include" => "issuers" ]);
+        if (!empty($methodWithIssuers->issuers)) {
+            $method['issuers'] = $methodWithIssuers->issuers;
+        }
+        return $method;
     }
 
     /**
@@ -695,7 +710,6 @@ class Data
         $locale = $this->getPaymentLocale();
         $filters_key = [];
         $filters_key['locale'] = $locale;
-        $filters_key['include'] = 'issuers';
         $transient_id = $this->getTransientId(md5(http_build_query($filters_key)));
         try {
             if ($useCache) {
@@ -767,5 +781,11 @@ class Data
             }
         }
         return $result;
+    }
+
+    public function mollieApplePayBlockDataCart()
+    {
+        $dataToScripts = new DataToAppleButtonScripts();
+        return $dataToScripts->applePayScriptData(true);
     }
 }

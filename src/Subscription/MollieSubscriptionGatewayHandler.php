@@ -356,7 +356,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
             $this->logger->debug($gateway->id . ': Renewal payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $renewal_order_id . ' payment json response: ' . wp_json_encode($payment));
 
             if (isset($payment->_links->changePaymentState->href) && $payment->mode === 'test') {
-                $renewal_order->add_order_note('MOLLIE TEST MODE: URL to change payment state for renewal payment: <a href="' . $payment->_links->changePaymentState->href . '" target="_parent">' . $payment->_links->changePaymentState->href . '</a>');
+                $renewal_order->add_order_note('MOLLIE TEST MODE: URL to change payment state for renewal payment: <a href="' . $payment->_links->changePaymentState->href . '" target="_blank">' . $payment->_links->changePaymentState->href . '</a>');
             }
 
             // Unset & set active Mollie payment

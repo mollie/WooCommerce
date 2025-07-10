@@ -15,6 +15,7 @@ use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use WC_Order;
 use WC_Payment_Gateway;
 use Psr\Log\LoggerInterface as Logger;
+use WCS_Retry_Manager;
 
 class MollieObject
 {
@@ -719,7 +720,7 @@ class MollieObject
                             'mollie-payments-for-woocommerce'
                         )) : '')
                     ),
-                    $restoreStock = false
+                    false
                 );
             }
             $this->logger->debug(

@@ -211,7 +211,7 @@ class OrderLines
                 }
                 $shipping = [
                     'type' => 'shipping_fee',
-                    'description' => $shipping_method->get_name() ?: __('Shipping', 'mollie-payments-for-woocommerce'),
+                    'name' => $shipping_method->get_name() ?: __('Shipping', 'mollie-payments-for-woocommerce'),
                     'quantity' => 1,
                     'vatRate' => $vatRate,
                     'unitPrice' =>  [

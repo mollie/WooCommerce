@@ -219,6 +219,7 @@ class MollieObject
         static::$order = wc_get_order($order_id);
 
         static::$order->update_meta_data('_mollie_order_id', $this->data->id);
+        static::$order->set_transaction_id($this->data->id);
         static::$order->update_meta_data('_mollie_payment_id', static::$paymentId);
         static::$order->update_meta_data('_mollie_payment_mode', $this->data->mode);
 

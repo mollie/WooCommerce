@@ -115,7 +115,7 @@ class Advanced extends AbstractSection
                     ),
                     PaymentProcessor::PAYMENT_METHOD_TYPE_PAYMENT => ucfirst(
                         PaymentProcessor::PAYMENT_METHOD_TYPE_PAYMENT
-                    ). ' (' . __('default', 'mollie-payments-for-woocommerce')
+                    ) . ' (' . __('default', 'mollie-payments-for-woocommerce')
                         . ')',
                 ],
                 'default' => PaymentProcessor::PAYMENT_METHOD_TYPE_PAYMENT,

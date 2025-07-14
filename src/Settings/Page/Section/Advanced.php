@@ -125,7 +125,7 @@ class Advanced extends AbstractSection
                         'Payments API is the recommended option since Orders API will be deprecated. Click %1$shere%2$s to read more about the differences between the Payments and Orders API',
                         'mollie-payments-for-woocommerce'
                     ),
-                    '<a href="https://docs.mollie.com/orders/why-use-orders" target="_blank">',
+                    '<a href="https://docs.mollie.com/reference/payments-api" target="_blank">',
                     '</a>'
                 ),
             ],

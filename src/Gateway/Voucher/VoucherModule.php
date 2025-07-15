@@ -72,7 +72,6 @@ class VoucherModule implements ExecutableModule, ServiceModule
         );
         add_action('woocommerce_product_data_panels', [$this, 'mollieOptionsProductTabContent']);
         add_action('woocommerce_process_product_meta_simple', [$this, 'saveProductVoucherOptionFields']);
-        add_action('woocommerce_process_product_meta_variable', [$this, 'saveProductVoucherOptionFields']);
         add_action('woocommerce_product_after_variable_attributes', [$this, 'voucherFieldInVariations'], 10, 3);
         add_action('woocommerce_save_product_variation', [$this, 'saveVoucherFieldVariations'], 10, 2);
         add_action('woocommerce_product_bulk_edit_start', [$this, 'voucherBulkEditInput']);
@@ -108,6 +107,8 @@ class VoucherModule implements ExecutableModule, ServiceModule
 
     /**
      * Save value entered on product edit bulk action.
+     *
+     * @param \WC_Product $product
      */
     public function voucherBulkEditSave($product)
     {
@@ -220,7 +221,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
     {
         //get values manually for old settings conversion
         $product = wc_get_product();
-        if (!$product) {
+        if (!$product || $product->get_type() !== 'simple') {
             return;
         }
         $values = $product->get_meta(Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION);
@@ -278,19 +279,18 @@ class VoucherModule implements ExecutableModule, ServiceModule
     /**
      * Save the product voucher local category option.
      *
-     * @param $post_id
+     * @param int $post_id
      */
     public function saveProductVoucherOptionFields($post_id)
     {
         //phpcs:ignore WordPress.Security.NonceVerification.Missing
-        $option = isset($_POST[Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION]) ?? [];
-        $option = wc_clean(wp_unslash($option));
+        $option = filter_input(INPUT_POST, Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION, FILTER_SANITIZE_STRING, FILTER_FORCE_ARRAY);
         //filter out not allowed
         if (!is_array($option)) {
             $option = [$option];
         }
         foreach ($option as $key => $value) {
-            if (!in_array($value, [Voucher::MEAL, Voucher::ECO, Voucher::GIFT, Voucher::SPORT_CULTURE, Voucher::NO_CATEGORY], true)) {
+            if (!in_array($value, [Voucher::MEAL, Voucher::ECO, Voucher::GIFT, Voucher::SPORT_CULTURE], true)) {
                 unset($option[$key]);
             }
         }
@@ -353,20 +353,20 @@ class VoucherModule implements ExecutableModule, ServiceModule
 
     /**
      * Save the voucher option in the variation product
-     * @param $variation_id
-     * @param $i
+     * @param int $variation_id
+     * @param int $i
      */
     public function saveVoucherFieldVariations($variation_id, $i)
     {
         //phpcs:ignore WordPress.Security.NonceVerification.Missing
-        $voucherCategories = isset($_POST['voucher'][$variation_id]) ?? [];
-        $voucherCategories = wc_clean(wp_unslash($voucherCategories));
+        $voucher = filter_input(INPUT_POST, 'voucher', FILTER_SANITIZE_STRING, FILTER_FORCE_ARRAY);
+        $voucherCategories = $voucher[$variation_id] ?? [];
         //filter out not allowed
         if (!is_array($voucherCategories)) {
             $voucherCategories = [$voucherCategories];
         }
         foreach ($voucherCategories as $key => $value) {
-            if (!in_array($value, [Voucher::MEAL, Voucher::ECO, Voucher::GIFT, Voucher::SPORT_CULTURE, Voucher::NO_CATEGORY], true)) {
+            if (!in_array($value, [Voucher::MEAL, Voucher::ECO, Voucher::GIFT, Voucher::SPORT_CULTURE], true)) {
                 unset($voucherCategories[$key]);
             }
         }

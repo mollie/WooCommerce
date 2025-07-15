@@ -315,8 +315,8 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
                     $paymentMethodUsed = 'mollie_wc_gateway_' . $payment->method;
                     if ($paymentMethodUsed !== $renewalOrderMethod) {
                         $renewal_order->set_payment_method($paymentMethodUsed);
-                        $renewal_order->save();
                     }
+                    $renewal_order->save();
 
                     //update the valid mandate for this order
                     if (
@@ -573,12 +573,11 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
     }
 
     /**
-     * @param $subscription
-     * @param $renewal_order
+     * @param \WC_Subscription $subscription
+     * @param \WC_Subscription $renewal_order
      */
     public function update_failing_payment_method($subscription, $renewal_order)
     {
-        $subscription = wc_get_order($subscription->id);
         $subscription->update_meta_data('_mollie_customer_id', $renewal_order->mollie_customer_id);
         $subscription->update_meta_data('_mollie_payment_id', $renewal_order->mollie_payment_id);
         $subscription->save();
@@ -632,7 +631,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
             $gatewayId = $gateway->id;
             $mollie_method = substr($gatewayId, strrpos($gatewayId, '_') + 1);
 
-            // Check that first payment method is related to SEPA Direct Debit and update
+            // Check that the first payment method is related to SEPA Direct Debit and update
             if (in_array($gatewayId, self::METHODS_NEEDING_UPDATE, true)) {
                 $mollie_method = self::DIRECTDEBIT;
             }

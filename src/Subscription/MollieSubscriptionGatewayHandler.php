@@ -38,6 +38,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         'mollie_wc_gateway_ideal',
         'mollie_wc_gateway_kbc',
         'mollie_wc_gateway_sofort', //stays for old subscriptions
+        'mollie_wc_gateway_paybybank',
         ];
     protected const DIRECTDEBIT = Constants::DIRECTDEBIT;
 

@@ -173,7 +173,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
             return;
         }
 
-        // Check that a new payment is made for renewal order @todo statement will never return
+        // Check that a new payment is made for renewal order
         $mollie_payment_id = $renewal_order->get_meta('_mollie_payment_id', true);
         if ($mollie_payment_id === null) {
             return;

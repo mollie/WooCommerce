@@ -196,7 +196,7 @@ class PaymentProcessor implements PaymentProcessorInterface
     {
         $optionName = $this->pluginId . '_' . 'api_switch';
         $apiSwitchOption = get_option($optionName);
-        $paymentType = $apiSwitchOption ?: self::PAYMENT_METHOD_TYPE_ORDER;
+        $paymentType = $apiSwitchOption ?: self::PAYMENT_METHOD_TYPE_PAYMENT;
         $isBankTransferGateway = $paymentMethod->getProperty('id') === Constants::BANKTRANSFER;
         if ($isBankTransferGateway && $paymentMethod->isExpiredDateSettingActivated()) {
             $paymentType = self::PAYMENT_METHOD_TYPE_PAYMENT;

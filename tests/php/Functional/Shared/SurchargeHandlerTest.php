@@ -64,10 +64,12 @@ class SurchargeHandlerTest extends TestCase
         $testee = $this->buildTesteeMock(
             GatewaySurchargeHandler::class,
             [new Surcharge()],
-            ['canProcessOrder', 'canProcessGateway', 'orderRemoveFee', 'orderAddFee']
+            ['verifyNonce', 'canProcessOrder', 'canProcessGateway', 'orderRemoveFee', 'orderAddFee']
         )->getMock();
         $testee->initializeGatewayFeeLabel();
-
+        $testee->expects($this->once())
+            ->method('verifyNonce')
+            ->willReturn(true);
         $testee->expects($this->once())
             ->method('canProcessOrder')
             ->willReturn($this->wcOrder(1,'key1'));

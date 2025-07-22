@@ -337,6 +337,15 @@ class MolliePayment extends MollieObject
         // Get current gateway
         $gateway = wc_get_payment_gateway_by_order($order);
 
+        //check if there is a reason for faild payment and print it to order note
+        if (isset($payment->details->failureReason)) {
+            $message = $payment->details->failureReason;
+            if (isset($payment->details->failureMessage)) {
+                $message = '(' . $payment->details->failureReason . ') "' . $payment->details->failureMessage . '"';
+            }
+            $order->add_order_note(sprintf(__('%1$s payment failed with: %2$s', 'mollie-payments-for-woocommerce'), $paymentMethodTitle, esc_attr($message)));
+        }
+
         // New order status
         $newOrderStatus = SharedDataDictionary::STATUS_FAILED;
 
@@ -357,7 +366,11 @@ class MolliePayment extends MollieObject
             $payment
         );
 
-        $this->logger->debug(__METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', regular payment failed.');
+        if (isset($payment->details->failureReason)) {
+            $this->logger->debug(__METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', regular payment failed because of ' . esc_attr($payment->details->failureReason) . '.');
+        } else {
+            $this->logger->debug(__METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', regular payment failed.');
+        }
     }
 
     /**

@@ -412,6 +412,18 @@ class MollieOrder extends MollieObject
         // Add messages to log
         $this->logger->debug(__METHOD__ . ' called for order ' . $orderId);
 
+        // Get current gateway
+        $gateway = wc_get_payment_gateway_by_order($order);
+
+        //check if there is a reason for faild payment and print it to order note
+        if (isset($payment->details->failureReason)) {
+            $message = $payment->details->failureReason;
+            if (isset($payment->details->failureMessage)) {
+                $message = '(' . $payment->details->failureReason . ') "' . $payment->details->failureMessage . '"';
+            }
+            $order->add_order_note(sprintf(__('%1$s payment failed with: %2$s', 'mollie-payments-for-woocommerce'), $paymentMethodTitle, esc_attr($message)));
+        }
+
         // New order status
         $newOrderStatus = SharedDataDictionary::STATUS_FAILED;
 
@@ -419,9 +431,7 @@ class MollieOrder extends MollieObject
         $newOrderStatus = apply_filters($this->pluginId . '_order_status_failed', $newOrderStatus);
 
         // Overwrite gateway-wide
-        $newOrderStatus = apply_filters($this->pluginId . '_order_status_failed_' . $payment->method, $newOrderStatus);
-
-        $gateway = wc_get_payment_gateway_by_order($order);
+        $newOrderStatus = apply_filters($this->pluginId . '_order_status_failed_' . $gateway->id, $newOrderStatus);
 
         // If WooCommerce Subscriptions is installed, process this failure as a subscription, otherwise as a regular order
         // Update order status for order with failed payment, don't restore stock
@@ -434,7 +444,11 @@ class MollieOrder extends MollieObject
             $payment
         );
 
-        $this->logger->debug(__METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', regular order payment failed.');
+        if (isset($payment->details->failureReason)) {
+            $this->logger->debug(__METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', regular payment failed because of ' . esc_attr($payment->details->failureReason) . '.');
+        } else {
+            $this->logger->debug(__METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', regular payment failed.');
+        }
     }
 
     /**

@@ -719,7 +719,7 @@ class MollieObject
             $orderNote = sprintf(
             /* translators: Placeholder 1: payment method title, placeholder 2: payment ID, placeholder 3: failure reason, placeholder 4: failure message */
                 __(
-                    '%1$s payment failed via Mollie (%2$s). Because of: (%3$s) %4$s',
+                    '%1$s payment failed via Mollie (%2$s). Because of: (%3$s) %4$s.',
                     'mollie-payments-for-woocommerce'
                 ),
                 $paymentMethodTitle,

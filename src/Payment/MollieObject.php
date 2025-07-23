@@ -733,6 +733,7 @@ class MollieObject
             function_exists('wcs_order_contains_renewal')
             && wcs_order_contains_renewal($orderId)
         ) {
+            add_filter('wcs_is_scheduled_payment_attempt', '__return_true');
             $this->updateOrderStatus(
                 $order,
                 $newOrderStatus,

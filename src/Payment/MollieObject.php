@@ -683,11 +683,11 @@ class MollieObject
     }
     /**
      * @param                               $orderId
-     * @param WC_Payment_Gateway            $gateway
-     * @param WC_Order                      $order
-     * @param                               $newOrderStatus
-     * @param                               $paymentMethodTitle
-     * @param Payment|Order $payment
+     * @param \WC_Payment_Gateway           $gateway
+     * @param \WC_Order                     $order
+     * @param string                        $newOrderStatus
+     * @param string                        $paymentMethodTitle
+     * @param Payment|Order                 $payment
      */
     protected function failedSubscriptionProcess(
         $orderId,
@@ -698,6 +698,37 @@ class MollieObject
         $payment
     ) {
 
+        $paymentID = $payment->id . ($payment->mode === 'test' ? (' - ' . __(
+            'test mode',
+            'mollie-payments-for-woocommerce'
+        )) : '');
+
+        $orderNote = sprintf(
+        /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+            __(
+                '%1$s payment failed via Mollie (%2$s)',
+                'mollie-payments-for-woocommerce'
+            ),
+            $paymentMethodTitle,
+            $paymentID,
+        );
+
+        //check if there is a reason for failed payment and print it to order note
+        $failureReason = $payment->details->failureReason ?? '';
+        if ($failureReason) {
+            $orderNote = sprintf(
+            /* translators: Placeholder 1: payment method title, placeholder 2: payment ID, placeholder 3: failure reason, placeholder 4: failure message */
+                __(
+                    '%1$s payment failed via Mollie (%2$s). Because of: (%3$s) %4$s',
+                    'mollie-payments-for-woocommerce'
+                ),
+                $paymentMethodTitle,
+                $paymentID,
+                $failureReason,
+                $payment->details->failureMessage ?? ''
+            );
+        }
+
         if (
             function_exists('wcs_order_contains_renewal')
             && wcs_order_contains_renewal($orderId)
@@ -706,19 +737,8 @@ class MollieObject
                 $this->updateOrderStatus(
                     $order,
                     $newOrderStatus,
-                    sprintf(
-                    /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-                        __(
-                            '%1$s renewal payment failed via Mollie (%2$s). You will need to manually review the payment and adjust product stocks if you use them.',
-                            'mollie-payments-for-woocommerce'
-                        ),
-                        $paymentMethodTitle,
-                        $payment->id . ($payment->mode === 'test' ? (' - ' . __(
-                            'test mode',
-                            'mollie-payments-for-woocommerce'
-                        )) : '')
-                    ),
-                    $restoreStock = false
+                    sprintf(__('Renewal: %s', 'mollie-payments-for-woocommerce'), $orderNote),
+                    false
                 );
             }
             $this->logger->debug(
@@ -738,18 +758,7 @@ class MollieObject
             $this->updateOrderStatus(
                 $order,
                 $newOrderStatus,
-                sprintf(
-                /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-                    __(
-                        '%1$s payment failed via Mollie (%2$s).',
-                        'mollie-payments-for-woocommerce'
-                    ),
-                    $paymentMethodTitle,
-                    $payment->id . ($payment->mode === 'test' ? (' - ' . __(
-                        'test mode',
-                        'mollie-payments-for-woocommerce'
-                    )) : '')
-                )
+                $orderNote
             );
         }
     }

@@ -733,14 +733,12 @@ class MollieObject
             function_exists('wcs_order_contains_renewal')
             && wcs_order_contains_renewal($orderId)
         ) {
-            if (mollieWooCommerceIsMollieGateway($gateway->id)) {
-                $this->updateOrderStatus(
-                    $order,
-                    $newOrderStatus,
-                    sprintf(__('Renewal: %s', 'mollie-payments-for-woocommerce'), $orderNote),
-                    false
-                );
-            }
+            $this->updateOrderStatus(
+                $order,
+                $newOrderStatus,
+                sprintf(__('Renewal: %s', 'mollie-payments-for-woocommerce'), $orderNote),
+                false
+            );
             $this->logger->debug(
                 __METHOD__ . ' called for order ' . $orderId . ' and payment '
                 . $payment->id . ', renewal order payment failed, order set to '

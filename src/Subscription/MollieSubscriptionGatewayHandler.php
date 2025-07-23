@@ -23,6 +23,7 @@ use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\SDK\InvalidApiKey;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
+use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Log\LoggerInterface as Logger;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use WC_Order;
@@ -369,7 +370,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
             /* translators: Placeholder 1: Payment method title */
             $message = sprintf(__('Could not create %s renewal payment.', 'mollie-payments-for-woocommerce'), $gateway->title);
             $message .= ' ' . $e->getMessage();
-            $renewal_order->update_status('failed', $message);
+            $renewal_order->update_status(SharedDataDictionary::STATUS_FAILED, $message);
         }
 
         return ['result' => 'failure'];

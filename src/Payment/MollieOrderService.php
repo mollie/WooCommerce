@@ -271,6 +271,10 @@ class MollieOrderService
 
         do_action($this->pluginId . '_after_webhook_action', $payment, $order);
 
+        if ($payment->status === 'canceled') {
+            $this->updateOrderStatus($order, SharedDataDictionary::STATUS_CANCELLED, __('Mollie Payment was canceled.', 'mollie-payments-for-woocommerce'));
+        }
+
         $this->processRefunds($order, $payment);
         $this->processChargebacks($order, $payment);
 

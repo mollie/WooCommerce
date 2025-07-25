@@ -6,7 +6,7 @@ namespace Mollie\WooCommerce\PaymentMethods\PaymentRedirectStrategies;
 
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 
-class BanktransferRedirectStrategy implements PaymentRedirectStrategyI
+class PaybybankRedirectStrategy implements PaymentRedirectStrategyI
 {
     /**
      * Redirect location after successfully completing process_payment

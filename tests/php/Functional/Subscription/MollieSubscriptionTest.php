@@ -82,7 +82,7 @@ class MollieSubscriptionTest extends TestCase
         $customer = $this->createConfiguredMock(
             Customer::class,
             [
-                'mandates'=> [$mandate]
+                'getMandate'=> $mandate
             ]
         );
         $apiClientMock->customers = $this->createConfiguredMock(
@@ -162,7 +162,8 @@ class MollieSubscriptionTest extends TestCase
                 'get_currency' => 'EUR',
                 'get_meta' => $meta,
                 'get_parent' => $parentOrder,
-                'update_status'=>$status
+                'update_status'=> $status,
+                'set_transaction_id'=> true,
             ]
         );
 

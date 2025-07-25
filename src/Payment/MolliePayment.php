@@ -196,6 +196,7 @@ class MolliePayment extends MollieObject
             );
 
             // Subscription processing
+            $this->addMandateIdMetaToFirstPaymentSubscriptionOrder($order, $payment);
             if (class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin')) {
                 if ($this->dataHelper->isWcSubscription($orderId)) {
                     $this->deleteSubscriptionOrderFromPendingPaymentQueue($order);

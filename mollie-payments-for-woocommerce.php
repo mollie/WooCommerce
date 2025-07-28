@@ -101,11 +101,11 @@ function handleException(Throwable $throwable)
 function initialize(): ?ContainerInterface
 {
     static $container = null;
-
+    $root_dir = M4W_PLUGIN_DIR;
     if ($container === null) {
         try {
             $bootstrap = require __DIR__ . '/bootstrap.php';
-            $container = $bootstrap(M4W_FILE);
+            $container = $bootstrap($root_dir);
         } catch (Throwable $throwable) {
             handleException($throwable);
             return null;

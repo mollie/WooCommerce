@@ -12,16 +12,18 @@ use Throwable;
 /**
  * Bootstrap function to initialize the plugin.
  *
- * @param string $plugin_file The main plugin file path
+ * @param string $root_dir The main plugin file path
  * @param array $additional_modules Additional modules to load
  * @return callable A function that returns the container
  */
 return function (
-    string $plugin_file,
+    string $root_dir,
     array $additional_modules = []
 ): ContainerInterface {
     try {
-        require_once __DIR__ . '/inc/functions.php';
+        if(!function_exists('mollieWooCommerceIsCheckoutContext')){
+            require_once __DIR__ . '/inc/functions.php';
+        }
 
         if (!function_exists('Mollie\WooCommerce\mollie_wc_plugin_autoload') || !mollie_wc_plugin_autoload()) {
             throw new \RuntimeException('Autoloader could not be initialized.');
@@ -38,9 +40,9 @@ return function (
         }
 
         // Initialize plugin.
-        $properties = PluginProperties::new($plugin_file);
+        $properties = PluginProperties::new(M4W_FILE);
         $package = Package::new($properties);
-        $modules = (require __DIR__ . '/inc/modules.php')($plugin_file);
+        $modules = (require $root_dir . '/inc/modules.php')();
         $modules = array_merge($modules, $additional_modules);
         $modules = apply_filters('mollie_wc_plugin_modules', $modules);
 

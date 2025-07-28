@@ -69,7 +69,7 @@ class MolliePayment extends MollieObject
      *
      * @return array
      */
-    public function getPaymentRequestData($order, $customerId, $voucherDefaultCategory = Voucher::NO_CATEGORY)
+    public function getPaymentRequestData($order, $customerId)
     {
         return $this->requestFactory->createRequest('payment', $order, $customerId);
     }

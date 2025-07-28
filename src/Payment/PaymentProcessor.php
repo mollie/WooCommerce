@@ -50,10 +50,6 @@ class PaymentProcessor implements PaymentProcessorInterface
      * @var PaymentCheckoutRedirectService
      */
     protected $paymentCheckoutRedirectService;
-    /**
-     * @var string
-     */
-    protected $voucherDefaultCategory;
     private PaymentGateway $gateway;
     private array $deprecatedGatewayInstances;
 
@@ -69,7 +65,6 @@ class PaymentProcessor implements PaymentProcessorInterface
         Settings $settingsHelper,
         string $pluginId,
         PaymentCheckoutRedirectService $paymentCheckoutRedirectService,
-        string $voucherDefaultCategory,
         array $deprecatedGatewayInstances
     ) {
 
@@ -81,7 +76,6 @@ class PaymentProcessor implements PaymentProcessorInterface
         $this->settingsHelper = $settingsHelper;
         $this->pluginId = $pluginId;
         $this->paymentCheckoutRedirectService = $paymentCheckoutRedirectService;
-        $this->voucherDefaultCategory = $voucherDefaultCategory;
         $this->deprecatedGatewayInstances = $deprecatedGatewayInstances;
     }
 
@@ -272,7 +266,6 @@ class PaymentProcessor implements PaymentProcessorInterface
         $paymentRequestData = $paymentObject->getPaymentRequestData(
             $order,
             $customer_id,
-            $this->voucherDefaultCategory,
         );
 
         $data = array_filter($paymentRequestData);

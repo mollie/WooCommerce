@@ -152,7 +152,7 @@ class MollieObject
      * @param $customerId
      *
      */
-    protected function getPaymentRequestData($order, $customerId, $voucherDefaultCategory = Voucher::NO_CATEGORY)
+    protected function getPaymentRequestData($order, $customerId)
     {
     }
 

@@ -8,14 +8,12 @@ use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\Payment\Request\RequestFactory;
-use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use WC_Order;
 use WC_Payment_Gateway;
 use Psr\Log\LoggerInterface as Logger;
-use WCS_Retry_Manager;
 
 class MollieObject
 {
@@ -684,12 +682,12 @@ class MollieObject
         );
     }
     /**
-     * @param                               $orderId
-     * @param WC_Payment_Gateway            $gateway
-     * @param WC_Order                      $order
-     * @param                               $newOrderStatus
-     * @param                               $paymentMethodTitle
-     * @param Payment|Order $payment
+     * @param int                           $orderId
+     * @param \WC_Payment_Gateway           $gateway
+     * @param \WC_Order                     $order
+     * @param string                        $newOrderStatus
+     * @param string                        $paymentMethodTitle
+     * @param Payment|Order                 $payment
      */
     protected function failedSubscriptionProcess(
         $orderId,
@@ -700,29 +698,48 @@ class MollieObject
         $payment
     ) {
 
+        $paymentID = $payment->id . ($payment->mode === 'test' ? (' - ' . __(
+            'test mode',
+            'mollie-payments-for-woocommerce'
+        )) : '');
+
+        $orderNote = sprintf(
+        /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+            __(
+                '%1$s payment failed via Mollie (%2$s)',
+                'mollie-payments-for-woocommerce'
+            ),
+            $paymentMethodTitle,
+            $paymentID,
+        );
+
+        //check if there is a reason for failed payment and print it to order note
+        $failureReason = $payment->details->failureReason ?? '';
+        if ($failureReason) {
+            $orderNote = sprintf(
+            /* translators: Placeholder 1: payment method title, placeholder 2: payment ID, placeholder 3: failure reason, placeholder 4: failure message */
+                __(
+                    '%1$s payment failed via Mollie (%2$s). Because of: (%3$s) %4$s.',
+                    'mollie-payments-for-woocommerce'
+                ),
+                $paymentMethodTitle,
+                $paymentID,
+                $failureReason,
+                $payment->details->failureMessage ?? ''
+            );
+        }
+
         if (
             function_exists('wcs_order_contains_renewal')
             && wcs_order_contains_renewal($orderId)
         ) {
-            if (mollieWooCommerceIsMollieGateway($gateway->id)) {
-                $this->updateOrderStatus(
-                    $order,
-                    $newOrderStatus,
-                    sprintf(
-                    /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-                        __(
-                            '%1$s renewal payment failed via Mollie (%2$s). You will need to manually review the payment and adjust product stocks if you use them.',
-                            'mollie-payments-for-woocommerce'
-                        ),
-                        $paymentMethodTitle,
-                        $payment->id . ($payment->mode === 'test' ? (' - ' . __(
-                            'test mode',
-                            'mollie-payments-for-woocommerce'
-                        )) : '')
-                    ),
-                    false
-                );
-            }
+            add_filter('wcs_is_scheduled_payment_attempt', '__return_true');
+            $this->updateOrderStatus(
+                $order,
+                $newOrderStatus,
+                sprintf(__('Renewal: %s', 'mollie-payments-for-woocommerce'), $orderNote),
+                false
+            );
             $this->logger->debug(
                 __METHOD__ . ' called for order ' . $orderId . ' and payment '
                 . $payment->id . ', renewal order payment failed, order set to '
@@ -740,18 +757,7 @@ class MollieObject
             $this->updateOrderStatus(
                 $order,
                 $newOrderStatus,
-                sprintf(
-                /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-                    __(
-                        '%1$s payment failed via Mollie (%2$s).',
-                        'mollie-payments-for-woocommerce'
-                    ),
-                    $paymentMethodTitle,
-                    $payment->id . ($payment->mode === 'test' ? (' - ' . __(
-                        'test mode',
-                        'mollie-payments-for-woocommerce'
-                    )) : '')
-                )
+                $orderNote
             );
         }
     }

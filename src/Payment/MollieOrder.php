@@ -412,6 +412,9 @@ class MollieOrder extends MollieObject
         // Add messages to log
         $this->logger->debug(__METHOD__ . ' called for order ' . $orderId);
 
+        // Get current gateway
+        $gateway = wc_get_payment_gateway_by_order($order);
+
         // New order status
         $newOrderStatus = SharedDataDictionary::STATUS_FAILED;
 
@@ -419,9 +422,7 @@ class MollieOrder extends MollieObject
         $newOrderStatus = apply_filters($this->pluginId . '_order_status_failed', $newOrderStatus);
 
         // Overwrite gateway-wide
-        $newOrderStatus = apply_filters($this->pluginId . '_order_status_failed_' . $payment->method, $newOrderStatus);
-
-        $gateway = wc_get_payment_gateway_by_order($order);
+        $newOrderStatus = apply_filters($this->pluginId . '_order_status_failed_' . $gateway->id, $newOrderStatus);
 
         // If WooCommerce Subscriptions is installed, process this failure as a subscription, otherwise as a regular order
         // Update order status for order with failed payment, don't restore stock
@@ -434,7 +435,11 @@ class MollieOrder extends MollieObject
             $payment
         );
 
-        $this->logger->debug(__METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', regular order payment failed.');
+        if (isset($payment->details->failureReason)) {
+            $this->logger->debug(__METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', regular payment failed because of ' . esc_attr($payment->details->failureReason) . '.');
+        } else {
+            $this->logger->debug(__METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', regular payment failed.');
+        }
     }
 
     /**

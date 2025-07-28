@@ -7,6 +7,7 @@ use Mollie\WooCommerceTests\Integration\IntegrationMockedTestCase;
 use Mollie\WooCommerceTests\Integration\API\Traits\APIMockTrait;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Payment\MollieOrderService;
+use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 
@@ -39,6 +40,30 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
         $_GET['key'] = $orderKey;
         $_POST['id'] = $paymentId; // This won't be used by filter_input, but keep for consistency
         $_SERVER['REQUEST_METHOD'] = 'POST';
+    }
+
+    /**
+     * Helper method to create mocked webhook service
+     *
+     * @param ContainerInterface $container
+     * @param string $paymentId
+     * @return \Mockery\MockInterface|MollieOrderService
+     */
+    protected function createMockedWebhookService(ContainerInterface $container, string $paymentId)
+    {
+        $webhookService = Mockery::mock(MollieOrderService::class, [
+            $container->get('SDK.HttpResponse'),
+            $container->get(Logger::class),
+            $container->get(PaymentFactory::class),
+            $container->get('settings.data_helper'),
+            $container->get('shared.plugin_id'),
+            $container
+        ])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $webhookService->shouldReceive('getPaymentIdFromRequest')
+            ->andReturn($paymentId);
+
+        return $webhookService;
     }
 
     /**
@@ -79,17 +104,7 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
         $container = $this->bootstrapModule($mockedServices);
         $this->setupWebhookRequest($orderId, $orderKey, $paymentData['id']);
 
-        $this->webhookService = Mockery::mock(MollieOrderService::class, [
-            $container->get('SDK.HttpResponse'),
-            $container->get(Logger::class),
-            $container->get(PaymentFactory::class),
-            $container->get('settings.data_helper'),
-            $container->get('shared.plugin_id'),
-            $container
-        ])->makePartial()->shouldAllowMockingProtectedMethods();
-
-        $this->webhookService->shouldReceive('getPaymentIdFromRequest')
-            ->andReturn($paymentData['id']);
+        $this->webhookService = $this->createMockedWebhookService($container, $paymentData['id']);
         $this->webhookService->onWebhookAction();
 
         $order = wc_get_order($orderId);
@@ -137,29 +152,8 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
         $this->setupWebhookRequest($orderId, $orderKey, 'tr_concurrent_payment_id');
 
         // Get two instances of the webhook service to simulate concurrent requests
-        $webhookService1 = Mockery::mock(MollieOrderService::class, [
-            $container->get('SDK.HttpResponse'),
-            $container->get(Logger::class),
-            $container->get(PaymentFactory::class),
-            $container->get('settings.data_helper'),
-            $container->get('shared.plugin_id'),
-            $container
-        ])->makePartial()->shouldAllowMockingProtectedMethods();
-
-        $webhookService1->shouldReceive('getPaymentIdFromRequest')
-            ->andReturn('tr_concurrent_payment_id');
-
-        $webhookService2 = Mockery::mock(MollieOrderService::class, [
-            $container->get('SDK.HttpResponse'),
-            $container->get(Logger::class),
-            $container->get(PaymentFactory::class),
-            $container->get('settings.data_helper'),
-            $container->get('shared.plugin_id'),
-            $container
-        ])->makePartial()->shouldAllowMockingProtectedMethods();
-
-        $webhookService2->shouldReceive('getPaymentIdFromRequest')
-            ->andReturn('tr_concurrent_payment_id');
+        $webhookService1 = $this->createMockedWebhookService($container, 'tr_concurrent_payment_id');
+        $webhookService2 = $this->createMockedWebhookService($container, 'tr_concurrent_payment_id');
 
         // First webhook call should process successfully
         $webhookService1->onWebhookAction();
@@ -178,7 +172,7 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
         // Verify no duplicate processing occurred by checking order notes
         $notes = wc_get_order_notes(['order_id' => $orderId]);
         $paymentNotes = array_filter($notes, function ($note) {
-            return strpos($note->content, 'completed using  payment (tr_concurrent_payment_id') != false;
+            return strpos($note->content, 'Order completed') !== false;
         });
 
         // Should only have one payment started note

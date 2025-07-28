@@ -168,6 +168,10 @@ class WC_Order
     {
     }
 
+    public function set_transaction_id()
+    {
+    }
+
     public function update_status()
     {
 

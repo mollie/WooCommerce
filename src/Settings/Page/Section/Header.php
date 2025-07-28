@@ -68,7 +68,7 @@ class Header extends AbstractSection
                     </strong>
                 </p>
                 <div class="mollie-settings-header__buttons">
-                    <a href="https://help.mollie.com/hc/en-us/sections/12858723658130-Mollie-for-WooCommerce"
+                    <a href="https://docs.mollie.com/docs/woo-get-started"
                        target="_blank" class="button-secondary">
                         <?= esc_html(__('Mollie Plugin Documentation', 'mollie-payments-for-woocommerce')); ?>
                     </a>

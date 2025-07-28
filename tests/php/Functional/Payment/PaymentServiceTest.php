@@ -106,7 +106,8 @@ class PaymentServiceTest extends TestCase
                 'WC' => $this->wooCommerce(),
                 'wc_clean' => null,
                 'wp_parse_url' => null,
-                'wp_strip_all_tags' => null
+                'wp_strip_all_tags' => null,
+                'get_option' => PaymentProcessor::PAYMENT_METHOD_TYPE_ORDER
             ]
         );
 

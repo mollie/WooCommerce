@@ -175,6 +175,12 @@ class OrderLines
                     'productUrl' => ($product instanceof \WC_Product) ? $product->get_permalink() : null,
                 ];
 
+                if ($this->get_item_total_amount($cart_item) < 0) {
+                    $mollie_order_item['type'] = 'discount';
+                    unset($mollie_order_item['discountAmount']);
+                    $mollie_order_item['vatAmount']['value'] = $this->dataHelper->formatCurrencyValue(0, $this->currency);
+                }
+
                 if ($product instanceof \WC_Product && $product->get_image_id()) {
                     $productImage = wp_get_attachment_image_src($product->get_image_id(), 'full');
                     if (isset($productImage[0]) && wc_is_valid_url($productImage[0])) {
@@ -211,7 +217,7 @@ class OrderLines
                 }
                 $shipping = [
                     'type' => 'shipping_fee',
-                    'description' => $shipping_method->get_name() ?: __('Shipping', 'mollie-payments-for-woocommerce'),
+                    'name' => $shipping_method->get_name() ?: __('Shipping', 'mollie-payments-for-woocommerce'),
                     'quantity' => 1,
                     'vatRate' => $vatRate,
                     'unitPrice' =>  [

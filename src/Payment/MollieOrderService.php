@@ -907,7 +907,7 @@ class MollieOrderService
     {
         $payment_method_title = '';
 
-        if ($payment->method === $this->gateway->id) {
+        if ('mollie_wc_gateway_' . $payment->method === $this->gateway->id) {
             $payment_method_title = $this->gateway->method_title;
         }
         return $payment_method_title;

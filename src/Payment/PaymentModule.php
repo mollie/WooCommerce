@@ -162,7 +162,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
                 continue;
             }
             $heldDurationInSeconds = $heldDuration * 60;
-            if ($gateway === 'Mollie_WC_Gateway_Banktransfer') {
+            if ($gateway === 'Mollie_WC_Gateway_Banktransfer' || $gateway === 'Mollie_WC_Gateway_Paybybank') {
                 $durationInHours = absint($heldDuration) * 24;
                 $durationInMinutes = $durationInHours * 60;
                 $heldDurationInSeconds = $durationInMinutes * 60;

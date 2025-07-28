@@ -281,24 +281,6 @@ class MollieOrderService
     }
 
     /**
-     * Check if a payment has already been processed for this order
-     *
-     * @param WC_Order $order
-     * @param string $paymentId
-     * @return bool
-     */
-    private function isPaymentAlreadyProcessed(\WC_Order $order, string $paymentId): bool
-    {
-        // Check if this specific payment ID has been processed
-        $processedPayments = $order->get_meta('_mollie_processed_payments', true);
-        if (!is_array($processedPayments)) {
-            $processedPayments = [];
-        }
-
-        return in_array($paymentId, $processedPayments, true);
-    }
-
-    /**
      * @param \WC_Order $order
      * @param $payment
      */

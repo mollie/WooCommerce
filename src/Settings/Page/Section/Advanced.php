@@ -112,20 +112,20 @@ class Advanced extends AbstractSection
                 'options' => [
                     PaymentProcessor::PAYMENT_METHOD_TYPE_ORDER => ucfirst(
                         PaymentProcessor::PAYMENT_METHOD_TYPE_ORDER
-                    ) . ' (' . __('default', 'mollie-payments-for-woocommerce')
-                        . ')',
+                    ),
                     PaymentProcessor::PAYMENT_METHOD_TYPE_PAYMENT => ucfirst(
                         PaymentProcessor::PAYMENT_METHOD_TYPE_PAYMENT
-                    ),
+                    ) . ' (' . __('default', 'mollie-payments-for-woocommerce')
+                        . ')',
                 ],
-                'default' => PaymentProcessor::PAYMENT_METHOD_TYPE_ORDER,
+                'default' => PaymentProcessor::PAYMENT_METHOD_TYPE_PAYMENT,
                 'desc' => sprintf(
                 /* translators: Placeholder 1: opening link tag, placeholder 2: closing link tag */
                     __(
-                        'Click %1$shere%2$s to read more about the differences between the Payments and Orders API',
+                        'Payments API is the recommended option since Orders API will be deprecated. Click %1$shere%2$s to read more about the differences between the Payments and Orders API',
                         'mollie-payments-for-woocommerce'
                     ),
-                    '<a href="https://docs.mollie.com/orders/why-use-orders" target="_blank">',
+                    '<a href="https://docs.mollie.com/reference/payments-api" target="_blank">',
                     '</a>'
                 ),
             ],

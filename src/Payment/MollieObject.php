@@ -8,7 +8,6 @@ use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\Payment\Request\RequestFactory;
-use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
@@ -151,7 +150,7 @@ class MollieObject
      * @param $customerId
      *
      */
-    protected function getPaymentRequestData($order, $customerId, $voucherDefaultCategory = Voucher::NO_CATEGORY)
+    protected function getPaymentRequestData($order, $customerId)
     {
     }
 
@@ -622,31 +621,32 @@ class MollieObject
     ) {
 
         if ($this->dataHelper->isSubscriptionPluginActive()) {
-            $payment = isset($payment->_embedded->payments[0]) ? $payment->_embedded->payments[0] : false;
+            //get Payment from orders API
+            $payment = isset($payment->_embedded->payments[0]) ? $payment->_embedded->payments[0] : $payment;
             if (
-                $payment && $payment->sequenceType === 'first'
-                && (property_exists($payment, 'mandateId') && $payment->mandateId !== null)
+                $payment
+                && (isset($payment->sequenceType) && $payment->sequenceType === 'first')
+                && !empty($payment->mandateId)
             ) {
-                $order->update_meta_data(
-                    '_mollie_mandate_id',
-                    $payment->mandateId
-                );
+                $order->update_meta_data('_mollie_mandate_id', $payment->mandateId);
                 $order->save();
-                $subscriptions = wcs_get_subscriptions_for_renewal_order($order->get_id());
-                $subscription = array_pop($subscriptions);
-                if (!$subscription) {
-                    return;
+                $subscriptions = wcs_get_subscriptions_for_order($order);
+                if (!$subscriptions) {
+                    $subscriptions = wcs_get_subscriptions_for_renewal_order($order);
                 }
-                $subscription->update_meta_data('_mollie_payment_id', $payment->id);
-                $subscription->set_payment_method('mollie_wc_gateway_' . $payment->method);
-                $subscription->save();
-                $subscriptionParentOrder = $subscription->get_parent();
-                if ($subscriptionParentOrder) {
-                    $subscriptionParentOrder->update_meta_data(
-                        '_mollie_mandate_id',
-                        $payment->mandateId
-                    );
-                    $subscriptionParentOrder->save();
+                foreach ($subscriptions as $subscription) {
+                    $subscription->update_meta_data('_mollie_payment_id', $payment->id);
+                    $subscription->update_meta_data('_mollie_mandate_id', $payment->mandateId);
+                    $subscription->set_payment_method('mollie_wc_gateway_' . $payment->method);
+                    $subscription->save();
+                    $subscriptionParentOrder = $subscription->get_parent();
+                    if ($subscriptionParentOrder) {
+                        $subscriptionParentOrder->update_meta_data(
+                            '_mollie_mandate_id',
+                            $payment->mandateId
+                        );
+                        $subscriptionParentOrder->save();
+                    }
                 }
             }
         }
@@ -682,7 +682,7 @@ class MollieObject
         );
     }
     /**
-     * @param                               $orderId
+     * @param int                           $orderId
      * @param \WC_Payment_Gateway           $gateway
      * @param \WC_Order                     $order
      * @param string                        $newOrderStatus

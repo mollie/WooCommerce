@@ -15,4 +15,6 @@ class Constants
     public const SWISH = 'swish';
     public const RIVERTY = 'riverty';
     public const IN3 = 'in3';
+    public const PAYBYBANK = 'paybybank';
+    public const VIPPSMOBILEPAY = 'vippsmobilepay';
 }

@@ -125,15 +125,6 @@ class MollieOrderService
         }
 
         try {
-            // Check if this payment ID has already been processed (idempotency check)
-            if ($this->isPaymentAlreadyProcessed($order, $payment_object_id)) {
-                $this->httpResponse->setHttpResponseCode(200);
-                $this->logger->debug(
-                    __METHOD__ . ": Payment $payment_object_id already processed for order $order_id. Skipping duplicate webhook."
-                );
-                return;
-            }
-
             $test_mode = $data_helper->getActiveMolliePaymentMode($order_id) === 'test';
             // Load the payment from Mollie, do not use cache
             try {
@@ -156,6 +147,7 @@ class MollieOrderService
             }
 
             // Prevent double payment webhooks for klarna on orders api
+            // TODO improve testing to check if we can remove this check
             if (
                 $this->container->get('settings.settings_helper')->isOrderApiSetting()
                 && in_array(
@@ -335,16 +327,6 @@ class MollieOrderService
         $order_id = $order->get_id();
         $gateway = wc_get_payment_gateway_by_order($order);
         $paymentMethod = $this->container->get('payment_gateway.getPaymentMethod')($gateway->id);
-
-        // Check if another payment is currently being processed for this order
-        $processingPayments = $order->get_meta('_mollie_processing_payments', true);
-        if (is_array($processingPayments) && !empty($processingPayments)) {
-            $this->logger->debug(
-                __METHOD__ . ' ' . $gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: no, another payment is currently being processed.',
-                [true]
-            );
-            return false;
-        }
 
         // Check whether the order is processed and paid via another gateway
         if ($this->isOrderPaidByOtherGateway($order)) {

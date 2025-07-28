@@ -75,7 +75,6 @@ class PaymentServiceTest extends TestCase
             []
         );
         $apiClientMock->orders = $orderEndpoints;
-        $voucherDefaultCategory = Voucher::NO_CATEGORY;
         $deprecatedGatewayHelper = $this->mollieGateway($paymentMethodId);
         $testee = new PaymentProcessor(
             $this->helperMocks->noticeMock(),
@@ -86,7 +85,6 @@ class PaymentServiceTest extends TestCase
             $this->helperMocks->settingsHelper(),
             $this->helperMocks->pluginId(),
             $this->paymentCheckoutService($apiClientMock),
-            $voucherDefaultCategory,
             ['mollie_wc_gateway_ideal' => $deprecatedGatewayHelper]
         );
         $gateway = $this->helperMocks->genericPaymentGatewayMock();
@@ -108,7 +106,8 @@ class PaymentServiceTest extends TestCase
                 'WC' => $this->wooCommerce(),
                 'wc_clean' => null,
                 'wp_parse_url' => null,
-                'wp_strip_all_tags' => null
+                'wp_strip_all_tags' => null,
+                'get_option' => PaymentProcessor::PAYMENT_METHOD_TYPE_ORDER
             ]
         );
 
@@ -157,7 +156,6 @@ class PaymentServiceTest extends TestCase
 
         $apiClientMock = $this->createMock(MollieApiClient::class);
         $apiClientMock->orders = $orderEndpointsMock;
-        $voucherDefaultCategory = Voucher::NO_CATEGORY;
         $gateway = $this->helperMocks->genericPaymentGatewayMock();
         $gateway->id = 'mollie_wc_gateway_ideal';
         $deprecatedGatewayHelper = $this->mollieGateway($paymentMethodId);
@@ -170,7 +168,6 @@ class PaymentServiceTest extends TestCase
             $this->helperMocks->settingsHelper(),
             $this->helperMocks->pluginId(),
             $this->paymentCheckoutService($apiClientMock),
-            $voucherDefaultCategory,
             ['mollie_wc_gateway_ideal' => $deprecatedGatewayHelper]
         );
         $testee->setGateway($gateway);

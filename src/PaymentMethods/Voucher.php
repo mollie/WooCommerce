@@ -143,6 +143,15 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
         return [];
     }
 
+    /**
+     * Filters a list of categories to include only the predefined valid categories.
+     * This ensures the resulting array contains only categories recognized by the system.
+     *
+     * @param array $categories The array of categories to be cleaned.
+     *
+     * @return array An array containing only valid category identifiers.
+     *               Returns an empty array if no valid categories are found.
+     */
     public static function cleanCategories(array $categories): array
     {
         return array_filter($categories, static function ($category) {

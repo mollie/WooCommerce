@@ -160,7 +160,7 @@ class MollieOrderService
                     ],
                     true
                 )
-                && strpos($paymentId, 'tr_') === 0
+                && strpos($payment_object_id, 'tr_') === 0
             ) {
                 $this->httpResponse->setHttpResponseCode(200);
                 $this->logger->debug(
@@ -278,6 +278,87 @@ class MollieOrderService
     private function releaseOrderLock(string $lockKey)
     {
         delete_transient($lockKey);
+    }
+
+    /**
+     * Checks the Mollie payment status for a given WooCommerce order.
+     *
+     * This method determines if the order requires payment and verifies the payment status by interacting with
+     * the Mollie payment objects and gateways. It ensures that payment metadata matches the order and processes
+     * additional actions based on the payment status, method, and gateway setup.
+     *
+     * @param \WC_Order $order The WooCommerce order object to check the payment status for.
+     * @return bool Returns true if the payment is valid or if the order does not need payment.
+     *              Returns false if there is a payment issue or the payment cannot be verified.
+     */
+    public function checkPaymentForUnpaidOrder(\WC_Order $order): bool
+    {
+        if (!$order->has_status(['pending'])) {
+            return true;
+        }
+
+        $gateway = wc_get_payment_gateway_by_order($order);
+        if (!$gateway || !mollieWooCommerceIsMollieGateway($gateway->id)) {
+            return false;
+        }
+        $this->setGateway($gateway);
+
+        $test_mode = $this->data->getActiveMolliePaymentMode($order->get_id()) === 'test';
+        $payment_object_id = $order->get_transaction_id();
+        if (!$payment_object_id) {
+            $payment_object_id = $order->get_meta('_mollie_payment_id');
+        }
+        try {
+            $payment_object = $this->paymentFactory->getPaymentObject(
+                $payment_object_id
+            );
+            if (!$payment_object) {
+                return false;
+            }
+        } catch (ApiException $exception) {
+            $this->logger->debug($exception->getMessage());
+            return false;
+        }
+
+        $payment = $payment_object->getPaymentObject($payment_object->data(), $test_mode, false);
+        if (!$payment) {
+            $this->logger->debug(__METHOD__ . ": payment object $payment_object_id not found.", [true]);
+            return false;
+        }
+
+        $this->logger->debug($this->gateway->id . ": Mollie payment object {$payment->id} (" . $payment->mode . ") action call for order {$order->get_id()}.");
+
+        if ($payment->method === 'paypal' && isset($payment->billingAddress) && $this->isOrderButtonPayment($order)) {
+            $this->logger->debug($this->gateway->id . ": updating address from express button");
+            $this->setBillingAddressAfterPayment($payment, $order);
+        }
+
+        $method_name = 'onWebhook' . ucfirst($payment->status);
+        $payment_method_title = $this->getPaymentMethodTitle($payment);
+        if (method_exists($payment_object, $method_name)) {
+            do_action($this->pluginId . '_before_webhook_payment_action', $payment, $order);
+            $payment_object->{$method_name}($order, $payment, $payment_method_title);
+        } else {
+            $order->add_order_note(sprintf(
+            /* translators: Placeholder 1: payment method title, placeholder 2: payment status, placeholder 3: payment ID */
+                __('%1$s payment %2$s (%3$s), not processed.', 'mollie-payments-for-woocommerce'),
+                $this->gateway->method_title,
+                $payment->status,
+                $payment->id . ($payment->mode === 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
+            ));
+            return false;
+        }
+
+        do_action($this->pluginId . '_after_webhook_action', $payment, $order);
+
+        if ($payment->status === 'canceled') {
+            $this->updateOrderStatus($order, SharedDataDictionary::STATUS_CANCELLED, __('Mollie Payment was canceled.', 'mollie-payments-for-woocommerce'));
+        }
+
+        $this->processRefunds($order, $payment);
+        $this->processChargebacks($order, $payment);
+
+        return true;
     }
 
     /**

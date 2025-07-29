@@ -52,15 +52,14 @@ class OrderLines
      * Gets formatted order lines from WooCommerce order.
      *
      * @param WC_Order $order WooCommerce Order
-     * @param string $voucherDefaultCategory Voucher gaetway default category
      *
      * @return array
      */
-    public function order_lines($order, $voucherDefaultCategory)
+    public function order_lines($order)
     {
         $this->order = $order;
         $this->currency = $this->dataHelper->getOrderCurrency($this->order);
-        $this->process_items($voucherDefaultCategory);
+        $this->process_items();
         $this->process_shipping();
         $this->process_fees();
         $this->process_gift_cards();
@@ -124,7 +123,7 @@ class OrderLines
      *
      * @access private
      */
-    private function process_items($voucherDefaultCategory)
+    private function process_items()
     {
         $voucherSettings = get_option('mollie_wc_gateway_voucher_settings') ?: get_option('mollie_wc_gateway_mealvoucher_settings');
         $isVoucherEnabled = $voucherSettings ? ($voucherSettings['enabled'] == 'yes') : false;
@@ -188,10 +187,10 @@ class OrderLines
                     }
                 }
 
-                if ($isVoucherEnabled) {
-                    $category = $this->get_item_category($product, $voucherDefaultCategory);
-                    if ($category) {
-                        $mollie_order_item['category'] = $category;
+                if ($isVoucherEnabled && $product instanceof \WC_Product) {
+                    $categories = Voucher::getCategoriesForProduct($product);
+                    if ($categories) {
+                        $mollie_order_item['category'] = array_shift($categories);
                     }
                 }
                 $this->order_lines[] = $mollie_order_item;
@@ -231,6 +230,9 @@ class OrderLines
                     'vatAmount' =>  [
                         'currency' => $this->currency,
                         'value' => $this->dataHelper->formatCurrencyValue($shipping_method->get_total_tax(), $this->currency),
+                    ],
+                    'metadata' => [
+                        'order_item_id' => $shipping_method->get_id(),
                     ],
                 ];
 
@@ -494,59 +496,5 @@ class OrderLines
     private function get_item_total_amount($cart_item)
     {
         return $cart_item['line_total'] + $cart_item['line_tax'];
-    }
-
-    /**
-     * Get cart item Category.
-     *
-     * Returns selected or default product category.
-     *
-     * @since  5.6
-     * @access private
-     *
-     * @param  null|false|\WC_Product $product Product object.
-     * @param  string $voucherDefaultCategory Voucher default category.
-     *
-     * @return string $category Product voucher category.
-     */
-    private function get_item_category($product, $voucherDefaultCategory)
-    {
-        $category = '';
-        if ($voucherDefaultCategory !== Voucher::NO_CATEGORY) {
-            $category = $voucherDefaultCategory;
-        }
-
-        if (! $product instanceof \WC_Product) {
-            return $category;
-        }
-
-        //if product has taxonomy associated, retrieve voucher cat from there.
-        $catTermIds = $product->get_category_ids();
-        if (!$catTermIds && $product->is_type('variation')) {
-            $parentProduct = wc_get_product($product->get_parent_id());
-            if ($parentProduct) {
-                $catTermIds = $parentProduct->get_category_ids();
-            }
-        }
-        if ($catTermIds) {
-            $term_id = end($catTermIds);
-            $metaVoucher = '';
-            if ($term_id) {
-                $metaVoucher = get_term_meta($term_id, '_mollie_voucher_category', true);
-            }
-            if ($metaVoucher && $metaVoucher !== Voucher::NO_CATEGORY) {
-                $category = $metaVoucher;
-            }
-        }
-
-        //local product or product variation voucher category
-        $localCategory = $product->get_meta(
-            $product->is_type('variation') ? 'voucher' : Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
-            true
-        );
-        if ($localCategory && $localCategory !== Voucher::NO_CATEGORY) {
-            return $localCategory;
-        }
-        return $category;
     }
 }

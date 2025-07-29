@@ -17,6 +17,7 @@ use Mollie\WooCommerce\BlockService\CheckoutBlockService;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDirectHandler;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalButtonHandler;
 use Mollie\WooCommerce\Gateway\Voucher\MaybeDisableGateway;
+use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\Settings\Settings;
@@ -218,6 +219,35 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             $resource = ($transactionId && !$isPaymentApi) ? 'orders' : 'payments';
             return 'https://my.mollie.com/dashboard/' . $resource . '/' . trim($transactionId) . '?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner';
         }, 10, 3);
+
+        add_filter(
+            'woocommerce_cancel_unpaid_order',
+            static function (bool $paid, \WC_Order $order) use ($container): bool {
+                if (! apply_filters('mollie_payments_for_woocommerce_check_payment_for_unpaid_order_on_cancel_unpaid_order', true)) {
+                    return $paid;
+                }
+                $mollieOrderService = $container->get(MollieOrderService::class);
+                return ! $mollieOrderService->checkPaymentForUnpaidOrder($order);
+            },
+            5,
+            2
+        );
+
+        add_action(
+            'woocommerce_thankyou',
+            static function ($orderId) use ($container) {
+                if (! apply_filters('mollie_payments_for_woocommerce_check_payment_for_unpaid_order_on_woocommerce_thankyou_page', false)) {
+                    return;
+                }
+                $order = wc_get_order($orderId);
+                if ($order) {
+                    $mollieOrderService = $container->get(MollieOrderService::class);
+                    $mollieOrderService->checkPaymentForUnpaidOrder($order);
+                }
+            },
+            PHP_INT_MAX
+        );
+
         return true;
     }
 

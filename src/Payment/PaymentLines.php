@@ -53,15 +53,14 @@ class PaymentLines
      * Gets formatted order lines from WooCommerce order.
      *
      * @param WC_Order $order WooCommerce Order
-     * @param string $voucherDefaultCategory Voucher gaetway default category
      *
      * @return array
      */
-    public function order_lines($order, $voucherDefaultCategory)
+    public function order_lines($order)
     {
         $this->order = $order;
         $this->currency = $this->dataHelper->getOrderCurrency($this->order);
-        $this->process_items($voucherDefaultCategory);
+        $this->process_items();
         $this->process_shipping();
         $this->process_fees();
         $this->process_gift_cards();
@@ -121,7 +120,7 @@ class PaymentLines
      *
      * @access private
      */
-    private function process_items($voucherDefaultCategory)
+    private function process_items()
     {
         $voucherSettings = get_option('mollie_wc_gateway_voucher_settings') ?: get_option('mollie_wc_gateway_mealvoucher_settings');
         $isVoucherEnabled = $voucherSettings ? ($voucherSettings['enabled'] == 'yes') : false;
@@ -181,9 +180,10 @@ class PaymentLines
                     }
                 }
 
-                if ($isVoucherEnabled) {
-                    $categories = $this->get_item_categories($product, $voucherDefaultCategory);
+                if ($isVoucherEnabled && $product instanceof \WC_Product) {
+                    $categories = Voucher::getCategoriesForProduct($product);
                     if ($categories) {
+                        sort($categories);
                         $mollie_order_item['categories'] = $categories;
                     }
                 }
@@ -485,72 +485,5 @@ class PaymentLines
     private function get_item_total_amount($cart_item)
     {
         return $cart_item['line_total'] + $cart_item['line_tax'];
-    }
-
-    /**
-     * Get cart item Category.
-     *
-     * Returns selected or default product category.
-     *
-     * @since  5.6
-     * @access private
-     *
-     * @param  null|false|\WC_Product $product Product object.
-     * @param  string $voucherDefaultCategory Voucher default category.
-     *
-     * @return array $categories Product voucher categories.
-     */
-    private function get_item_categories($product, $voucherDefaultCategory)
-    {
-        $categories = [];
-        if ($voucherDefaultCategory !== Voucher::NO_CATEGORY) {
-            $categories = [
-                $voucherDefaultCategory,
-            ];
-        }
-
-        if (! $product instanceof \WC_Product) {
-            return $categories;
-        }
-
-        //if product has taxonomy associated, retrieve voucher cat from there.
-        $catTermIds = $product->get_category_ids();
-        if (!$catTermIds && $product->is_type('variation')) {
-            $parentProduct = wc_get_product($product->get_parent_id());
-            if ($parentProduct) {
-                $catTermIds = $parentProduct->get_category_ids();
-            }
-        }
-        if ($catTermIds) {
-            $term_id = end($catTermIds);
-            $metaVouchers = [];
-            if ($term_id) {
-                $metaVouchers = get_term_meta($term_id, '_mollie_voucher_category', false);
-            }
-            foreach ($metaVouchers as $key => $metaVoucher) {
-                if (!$metaVoucher || $metaVoucher === Voucher::NO_CATEGORY) {
-                    unset($metaVouchers[$key]);
-                }
-            }
-            $categories = $metaVouchers ?: $categories;
-        }
-
-        //local product or product variation voucher category
-        $localCategories = $product->get_meta(
-            $product->is_type('variation') ? 'voucher' : Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
-            false
-        );
-        foreach ($localCategories as $key => $localCategory) {
-            assert($localCategory instanceof \WC_Meta_Data);
-            if (!$localCategory->value || $localCategory->value === Voucher::NO_CATEGORY) {
-                unset($localCategories[$key]);
-            } else {
-                $localCategories[$key] = $localCategory->value;
-            }
-        }
-        $categories = $localCategories ?: $categories;
-
-        sort($categories); //sort because of removing indexes
-        return $categories;
     }
 }

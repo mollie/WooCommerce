@@ -41,6 +41,7 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_Multibanco',
         'Mollie_WC_Gateway_Paybybank',
         'Mollie_WC_Gateway_Mbway',
+        'Mollie_WC_Gateway_Vippsmobilepay',
     ];
 
     public const MOLLIE_OPTIONS_NAMES = [

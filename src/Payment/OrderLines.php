@@ -231,6 +231,9 @@ class OrderLines
                         'currency' => $this->currency,
                         'value' => $this->dataHelper->formatCurrencyValue($shipping_method->get_total_tax(), $this->currency),
                     ],
+                    'metadata' => [
+                        'order_item_id' => $shipping_method->get_id(),
+                    ],
                 ];
 
                 $this->order_lines[] = $shipping;

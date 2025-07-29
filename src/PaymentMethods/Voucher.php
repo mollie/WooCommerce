@@ -97,7 +97,7 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
     {
         $categories = self::voucherDefaultCategories();
         if ($categories) {
-            return $categories;
+            return self::cleanCategories($categories);
         }
 
         $localCategories = $product->get_meta(
@@ -111,7 +111,7 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
             $localCategories = [$localCategories];
         }
         if ($localCategories) {
-            return $localCategories;
+            return self::cleanCategories($localCategories);
         }
 
         $catTermIds = $product->get_category_ids();
@@ -136,13 +136,19 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
                 }
             }
             if ($categoryCategories) {
-                return array_unique($categoryCategories);
+                return self::cleanCategories(array_unique($categoryCategories));
             }
         }
 
         return [];
     }
 
+    public static function cleanCategories(array $categories): array
+    {
+        return array_filter($categories, static function ($category) {
+            return in_array($category, [self::MEAL, self::ECO, self::GIFT, self::SPORT_CULTURE], true);
+        });
+    }
     /**
      * Retrieve the default categories saved in the db option
      *

@@ -218,6 +218,19 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= 8.0.5-beta1 - 29-07-2025 =
+* Fixed - Save Mandates from Payments API
+* Fixed - Change type to discount when the line item amount is negative
+* Fixed - Order API refunds: Type error, missing metadata and fallback to refund by amount 
+* Fixed - Subscriptions Retry System not working on failed payments for renewals
+* Fixed - Getting Subscription mandates when payment API is active
+* Changed - Payments API is now the default method
+* Changed - Align Pay by Bank with Bank Transfer features
+* Changed - Multiple Voucher categories allowed on Payments API
+* Improved - Several small things in subscriptions
+* Improved - Check payment on Mollie before setting order to failed from WooCommerce
+* Improved - Blocking of recurring webhooks for the same order
+
 = 8.0.4 - 09-07-2025 =
 * Fixed - Incorrect shipping name field on Orders API
 

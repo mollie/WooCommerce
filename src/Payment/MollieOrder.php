@@ -20,6 +20,7 @@ use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
+use UnexpectedValueException;
 use WC_Order;
 use WP_Error;
 
@@ -581,6 +582,15 @@ class MollieOrder extends MollieObject
                     $reason
                 );
             } catch (PartialRefundException $exception) {
+                $this->logger->debug(__METHOD__ . ' - ' . $exception->getMessage());
+                return $this->refund_amount(
+                    $order,
+                    $amount,
+                    $paymentObject,
+                    $reason
+                );
+            } catch (UnexpectedValueException $exception) {
+                $order->add_order_note($exception->getMessage());
                 $this->logger->debug(__METHOD__ . ' - ' . $exception->getMessage());
                 return $this->refund_amount(
                     $order,

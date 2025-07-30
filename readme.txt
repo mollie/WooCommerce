@@ -218,7 +218,8 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 8.0.5-beta1 - 29-07-2025 =
+= 8.0.5-beta2 - 30-07-2025 =
+* Added - PayPal Subscriptions support through Vaulting
 * Fixed - Save Mandates from Payments API
 * Fixed - Change type to discount when the line item amount is negative
 * Fixed - Order API refunds: Type error, missing metadata and fallback to refund by amount 

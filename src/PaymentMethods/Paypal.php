@@ -18,9 +18,11 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
             'supports' => [
                 'products',
                 'refunds',
+                'subscriptions',
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
+            'Subscription' => true,
             'docs' => 'https://www.mollie.com/gb/payments/paypal',
         ];
     }

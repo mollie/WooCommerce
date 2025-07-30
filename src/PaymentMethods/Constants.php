@@ -17,4 +17,5 @@ class Constants
     public const IN3 = 'in3';
     public const PAYBYBANK = 'paybybank';
     public const VIPPSMOBILEPAY = 'vippsmobilepay';
+    public const VOUCHER = 'voucher';
 }

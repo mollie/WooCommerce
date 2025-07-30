@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
+use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\Shared\Data;
 use WC_Order;
@@ -125,12 +126,6 @@ class OrderLines
      */
     private function process_items()
     {
-        $voucherSettings = get_option('mollie_wc_gateway_voucher_settings') ?: get_option('mollie_wc_gateway_mealvoucher_settings');
-        $isVoucherEnabled = $voucherSettings ? ($voucherSettings['enabled'] == 'yes') : false;
-        if (!$voucherSettings) {
-            $isVoucherEnabled = $this->dataHelper->getPaymentMethod('voucher') ? true : false;
-        }
-
         foreach ($this->order->get_items() as $cart_item) {
             if ($cart_item['quantity']) {
                 do_action($this->pluginId . '_orderlines_process_items_before_getting_product_id', $cart_item);
@@ -187,7 +182,8 @@ class OrderLines
                     }
                 }
 
-                if ($isVoucherEnabled && $product instanceof \WC_Product) {
+                $paymentMethod = $this->order->get_payment_method();
+                if ($paymentMethod === 'mollie_wc_gateway_' . Constants::VOUCHER && $product instanceof \WC_Product) {
                     $categories = Voucher::getCategoriesForProduct($product);
                     if ($categories) {
                         $mollie_order_item['category'] = array_shift($categories);

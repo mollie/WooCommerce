@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Integration\API\Mocks;
 
+use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\Api\MollieApiClient;
 use Mockery;
@@ -93,7 +94,7 @@ class MockedApi extends Api
      */
     protected function createMockPaymentObject(array $paymentData)
     {
-        $paymentObject = Mockery::mock('Payment');
+        $paymentObject = Mockery::mock(Payment::class);
 
         foreach ($paymentData as $key => $value) {
             $paymentObject->$key = $value;

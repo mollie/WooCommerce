@@ -49,7 +49,7 @@ class In3FieldsStrategy extends AbstractPaymentFieldsRenderer implements Payment
     protected function phoneNumber($phoneValue)
     {
         $phoneValue = $phoneValue ?: '';
-        $html = '<p class="form-row form-row-wide" id="billing_phone_field">';
+        $html = '<p class="form-row form-row-wide" id="billing_phone_field" data-testid="billing-phone-in3">';
         $html .= '<label for="' . esc_attr(self::FIELD_PHONE) . '" class="">' . esc_html__(
             'Phone',
             'mollie-payments-for-woocommerce'

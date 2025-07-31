@@ -59,7 +59,7 @@ class RivertyFieldsStrategy extends AbstractPaymentFieldsRenderer implements Pay
         ];
         $placeholder = in_array($country, array_keys($countryCodes)) ? $countryCodes[$country] : $countryCodes['NL'];
 
-        $html = '<p class="form-row form-row-wide" id="billing_phone_field">';
+        $html = '<p class="form-row form-row-wide" id="billing_phone_field" data-testid="billing-phone-riverty">';
         $html .= '<label for="' . esc_attr(self::FIELD_PHONE) . '" class="">' . esc_html__('Phone', 'mollie-payments-for-woocommerce') . '</label>';
         $html .= '<span class="woocommerce-input-wrapper">';
         $html .= '<input type="tel" class="input-text " name="' . esc_attr(self::FIELD_PHONE) . '" id="' . esc_attr(self::FIELD_PHONE) . '" placeholder="' . esc_attr($placeholder) . '" value="' . esc_attr($phoneValue) . '" autocomplete="phone">';

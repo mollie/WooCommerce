@@ -43,7 +43,7 @@ class BancomatpayFieldsStrategy extends AbstractPaymentFieldsRenderer implements
     {
         $phoneValue = $phoneValue ?: '';
         return '
-            <p class="form-row form-row-wide" id="billing_phone_field">
+            <p class="form-row form-row-wide" id="billing_phone_field" data-testid="billing-phone-bancomatpay">
                 <label for="' . esc_attr(self::FIELD_PHONE) . '" class="">' . esc_html__(
             'Phone',
             'mollie-payments-for-woocommerce'

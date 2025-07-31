@@ -43,7 +43,7 @@ class BillieFieldsStrategy extends AbstractPaymentFieldsRenderer implements Paym
     protected function company()
     {
         return '
-    <p class="form-row form-row-wide" id="billing_company_field">
+    <p class="form-row form-row-wide" id="billing_company_field" data-testid="billing-company-billie">
         <label for="' . esc_attr(self::FIELD_COMPANY) . '" class="">' . esc_html__(
             'Company',
             'mollie-payments-for-woocommerce'

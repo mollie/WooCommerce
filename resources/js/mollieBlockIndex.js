@@ -15,11 +15,11 @@ import ApplePayButtonEditorComponent from './blocks/ApplePayButtonEditorComponen
         const isAppleSession = typeof window.ApplePaySession === "function"
 
         function getPhoneField() {
-            const phoneFieldDataset = document.querySelector('[data-show-phone-field]');
-            if (!phoneFieldDataset) {
+            const wooRequiresPhoneField = document.querySelector('[data-require-phone-field]');
+            if (!wooRequiresPhoneField) {
                 return true;
             }
-            return phoneFieldDataset.dataset.showPhoneField !== "false"
+            return wooRequiresPhoneField.dataset.requirePhoneField !== "false"
         }
 
         const companyNameString = defaultFields.company.label

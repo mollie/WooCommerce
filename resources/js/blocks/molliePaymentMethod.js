@@ -59,7 +59,7 @@ let onSubmitLocal
 let activePaymentMethodLocal
 let creditCardSelected = new Event("mollie_creditcard_component_selected", {bubbles: true});
 const MollieComponent = (props) => {
-    let {onSubmit, activePaymentMethod, billing, item, useEffect, ajaxUrl, jQuery, emitResponse, eventRegistration, requiredFields, shippingData, isPhoneFieldVisible} = props
+    let {onSubmit, activePaymentMethod, billing, item, useEffect, ajaxUrl, jQuery, emitResponse, eventRegistration, requiredFields, shippingData, showPhoneField} = props
     const {  responseTypes } = emitResponse;
     const {onPaymentSetup, onCheckoutValidation} = eventRegistration;
     if (!item || !item.name) {
@@ -240,7 +240,7 @@ const MollieComponent = (props) => {
             <>
                 <div>{itemContentP}</div>
                 {fieldMarkup("billing-birthdate", "date", birthdateField, updateBirthdate, inputBirthdate)}
-                {!isPhoneFieldVisible && fieldMarkup("billing-phone-in3", "tel", phoneLabel, updatePhone, inputPhone, phoneField)}
+                {showPhoneField && fieldMarkup("billing-phone-in3", "tel", phoneLabel, updatePhone, inputPhone, phoneField)}
             </>
         );
     }
@@ -253,7 +253,7 @@ const MollieComponent = (props) => {
             <>
                 <div>{itemContentP}</div>
                 {fieldMarkup("billing-birthdate", "date", birthdateField, updateBirthdate, inputBirthdate)}
-                {!isPhoneFieldVisible && fieldMarkup("billing-phone-riverty", "tel", phoneLabel, updatePhone, inputPhone, phoneField)}
+                {showPhoneField && fieldMarkup("billing-phone-riverty", "tel", phoneLabel, updatePhone, inputPhone, phoneField)}
             </>
         );
     }
@@ -282,7 +282,7 @@ const Label = ({ item, filters, ajaxUrl }) => {
     );
 };
 
-const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isPhoneFieldVisible) =>{
+const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, showPhoneField) =>{
 
     if (item.name === "mollie_wc_gateway_creditcard") {
         document.addEventListener('mollie_components_ready_to_submit', function () {
@@ -308,7 +308,7 @@ const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, available
             ajaxUrl={ajaxUrl}
             jQuery={jQuery}
             requiredFields={requiredFields}
-            isPhoneFieldVisible={isPhoneFieldVisible}/>,
+            showPhoneField={showPhoneField}/>,
         edit: <div>{item.edit}</div>,
         paymentMethodId: item.paymentMethodId,
         canMakePayment: ({cartTotals, billingData}) => {

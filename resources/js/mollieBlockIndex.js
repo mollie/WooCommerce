@@ -14,23 +14,23 @@ import ApplePayButtonEditorComponent from './blocks/ApplePayButtonEditorComponen
         const {useEffect} = wp.element;
         const isAppleSession = typeof window.ApplePaySession === "function"
 
-        function getPhoneField() {
+        function mustShowPhoneField() {
             const wooRequiresPhoneField = document.querySelector('[data-require-phone-field]');
             if (!wooRequiresPhoneField) {
                 return true;
             }
-            return wooRequiresPhoneField.dataset.requirePhoneField !== "false"
+            return !wooRequiresPhoneField.dataset.requirePhoneField === true;
         }
 
         const companyNameString = defaultFields.company.label
-        const isPhoneFieldVisible = getPhoneField();
+        const showPhoneField = mustShowPhoneField();
         const phoneString = defaultFields.phone.label
         let requiredFields = {
             'companyNameString': companyNameString,
             'phoneString': phoneString,
         }
         gatewayData.forEach(item => {
-            let register = () => registerPaymentMethod(molliePaymentMethod(useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isPhoneFieldVisible));
+            let register = () => registerPaymentMethod(molliePaymentMethod(useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, showPhoneField));
             if (item.name === 'mollie_wc_gateway_applepay') {
                 const {isExpressEnabled} = item;
                 if ((isAppleSession && window.ApplePaySession.canMakePayments())) {

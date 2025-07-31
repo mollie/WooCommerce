@@ -282,7 +282,7 @@ const Label = ({ item, filters, ajaxUrl }) => {
     );
 };
 
-const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isCompanyFieldVisible, isPhoneFieldVisible) =>{
+const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isPhoneFieldVisible) =>{
 
     if (item.name === "mollie_wc_gateway_creditcard") {
         document.addEventListener('mollie_components_ready_to_submit', function () {

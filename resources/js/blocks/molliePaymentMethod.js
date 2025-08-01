@@ -188,7 +188,7 @@ const MollieComponent = (props) => {
 
     function fieldMarkup(id, fieldType, label, action, value, placeholder = null) {
         const className = "wc-block-components-text-input wc-block-components-address-form__" + id;
-        return <div className="custom-input">
+        return <div className="custom-input wc-block-components-text-input wc-block-components-address-form__phone is-active">
             <label htmlFor={id} dangerouslySetInnerHTML={{__html: label}}></label>
             <input type={fieldType} name={id} id={id} value={value} onChange={action} placeholder={placeholder} data-testid={id}></input>
         </div>

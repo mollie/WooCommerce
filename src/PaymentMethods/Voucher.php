@@ -55,7 +55,7 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
     }
 
     public function filtersOnBuild() {
-        add_action('mollie-payments-for-woocommerce_after_webhook_action', [$this, 'addPaymentDetailsOrderNote'],10,2);
+        add_action('mollie-payments-for-woocommerce_after_webhook_action', [$this, 'addPaymentDetailsOrderNote'], 10, 2);
     }
 
     /**
@@ -64,7 +64,7 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
      *
      * The note includes details of voucher issuers, amounts applied, and the remainder amount (if applicable).
      *
-     * @param MollieOrder|MolliePayment $payment The payment object containing details such as method, status, and vouchers.
+     * @param object $payment The payment object containing details such as method, status, and vouchers.
      * @param \WC_Order $order The WooCommerce order object to which the note will be added.
      *
      * @return void
@@ -72,7 +72,7 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
     public function addPaymentDetailsOrderNote($payment, \WC_Order $order): void
     {
         $details = $payment->_embedded->payments[0]->details ?? $payment->details ?? null;
-        if ($payment->method !== Constants::VOUCHER || $payment->status !== 'paid' || ! is_object($details) ) {
+        if ($payment->method !== Constants::VOUCHER || $payment->status !== 'paid' || ! is_object($details)) {
             return;
         }
         $applied = '';

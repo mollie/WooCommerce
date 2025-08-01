@@ -54,7 +54,9 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
         ];
     }
 
-    public function filtersOnBuild() {
+    public function filtersOnBuild()
+    {
+
         add_action('mollie-payments-for-woocommerce_after_webhook_action', [$this, 'addPaymentDetailsOrderNote'], 10, 2);
     }
 

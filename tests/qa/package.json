@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/inpsyde/playwright-tests#readme",
   "dependencies": {
-    "@inpsyde/playwright-utils": "^2.6.1",
+    "@inpsyde/playwright-utils": "^2.7.0",
     "dotenv": "^16.3.1",
     "dotenv-cli": "^7.3.0",
     "playwright": "^1.40.1",
@@ -38,14 +38,7 @@
     "lint:md:fix": "wp-scripts lint-md-docs --fix ./**/*.md README.md",
     "lint:js": "wp-scripts lint-js  --resolve-plugins-relative-to ./ **/*.{ts,tsx,mjs}",
     "lint:js:fix": "wp-scripts lint-js --resolve-plugins-relative-to ./ --fix **/*.{ts,tsx,mjs}",
-    "all": "npx playwright test --project=all --workers=1",
-    "sequential": "npx playwright test --project=sequential --workers=1",
-    "parallel-transaction-eur-classic": "npx playwright test --project=transaction-eur-classic --workers=5",
-    "parallel-transaction-eur-block": "npx playwright test --project=transaction-eur-block --workers=3",
-    "transaction-non-eur": "npx playwright test --project=transaction-non-eur workers=1",
-    "parallel-transactions": "npm run parallel-transaction-eur-block & npm run parallel-transaction-eur-classic",
-    "sequential-transactions": "npx playwright test --project=sequential-transactions --workers=1",
-    "all-with-parallel": "npm run sequential & npm run parallel-transactions"
+    "all": "npx playwright test --project=all --workers=1"
   },
   "eslintConfig": {
     "extends": [

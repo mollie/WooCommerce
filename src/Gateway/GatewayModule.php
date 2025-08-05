@@ -454,7 +454,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         $methods = [
             Constants::RIVERTY,
             Constants::IN3,
-            Constants::BIZUM
+            Constants::BIZUM,
         ];
         foreach ($methods as $method) {
             if ($paymentMethod !== $method) {
@@ -535,7 +535,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         $methods = [
             Constants::RIVERTY,
             Constants::IN3,
-            Constants::BIZUM
+            Constants::BIZUM,
         ];
         foreach ($methods as $method) {
             if (isset($data['payment_method']) && $data['payment_method'] === 'mollie_wc_gateway_' . $method) {

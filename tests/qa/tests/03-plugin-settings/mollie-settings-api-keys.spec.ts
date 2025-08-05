@@ -43,8 +43,8 @@ test( 'C3333 | Validate that the ecommerce admin have access to Documentation/Su
 	const pluginDocumentationHref =
 		await molliePluginDocumentationButton.getAttribute( 'href' );
 	await expect( pluginDocumentationHref ).toEqual(
-		'https://help.mollie.com/hc/en-us/sections/12858723658130-Mollie-for-WooCommerce'
+		'https://docs.mollie.com/docs/woo-get-started'
 	);
 	await page.goto( pluginDocumentationHref );
-	await expect( page ).toHaveURL( /molliehelp\.zendesk\.com\/auth/ );
+	await expect( page ).toHaveURL( 'https://docs.mollie.com/docs/woo-get-started' );
 } );

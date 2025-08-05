@@ -454,6 +454,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         $methods = [
             Constants::RIVERTY,
             Constants::IN3,
+            Constants::BIZUM
         ];
         foreach ($methods as $method) {
             if ($paymentMethod !== $method) {
@@ -534,6 +535,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         $methods = [
             Constants::RIVERTY,
             Constants::IN3,
+            Constants::BIZUM
         ];
         foreach ($methods as $method) {
             if (isset($data['payment_method']) && $data['payment_method'] === 'mollie_wc_gateway_' . $method) {
@@ -560,7 +562,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
     public function addPhoneWhenRest($arrayContext)
     {
         $context = $arrayContext;
-        $phoneMandatoryGateways = ['mollie_wc_gateway_in3', 'mollie_wc_gateway_riverty'];
+        $phoneMandatoryGateways = ['mollie_wc_gateway_in3', 'mollie_wc_gateway_riverty', 'mollie_wc_gateway_bizum'];
         $paymentMethod = $context->payment_data['payment_method'] ?? null;
         if ($paymentMethod && in_array($paymentMethod, $phoneMandatoryGateways)) {
             $billingPhone = $context->order->get_billing_phone();

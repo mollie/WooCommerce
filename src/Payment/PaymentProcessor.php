@@ -320,8 +320,8 @@ class PaymentProcessor implements PaymentProcessorInterface
             }
         } catch (ApiException $e) {
             $this->handleMollieOutage($e);
-            //if exception is 422 do not try to create a payment
             $this->handleMollieFraudRejection($e);
+            $this->handleUnprocessablePhone($e);
             // Don't try to create a Mollie Payment for old Klarna payment methods
             $order_payment_method = $order->get_payment_method();
             $orderMandatoryPaymentMethods = [
@@ -429,6 +429,7 @@ class PaymentProcessor implements PaymentProcessorInterface
             )->payments->create($data);
         } catch (ApiException $e) {
             $this->handleMollieOutage($e);
+            $this->handleUnprocessablePhone($e);
             $message = $e->getMessage();
             $this->logger->debug($message);
             throw $e;
@@ -846,6 +847,28 @@ class PaymentProcessor implements PaymentProcessorInterface
             throw new ApiException(
                 esc_html__(
                     'Payment failed due to:  The payment was declined due to suspected fraud.',
+                    'mollie-payments-for-woocommerce'
+                )
+            );
+        }
+    }
+
+    /**
+     * Check if the exception is a unprocessable phone number, if so bail, log and inform user
+     *
+     * @throws ApiException
+     */
+    private function handleUnprocessablePhone(\Exception $e)
+    {
+        $isUnprocessablePhoneException = $this->apiHelper->isUnprocessablePhoneException($e);
+        if ($isUnprocessablePhoneException) {
+            $this->logger->debug(
+                "Creating payment object: The phone number provided is invalid, stopping process."
+            );
+
+            throw new ApiException(
+                esc_html__(
+                    'Payment failed due to: Invalid phone number.',
                     'mollie-payments-for-woocommerce'
                 )
             );

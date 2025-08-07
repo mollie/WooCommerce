@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerceTests\Integration\spec\Payment;
+namespace Mollie\WooCommerceTests\Integration\spec\Payment\Request\Middleware;
 
 use Mollie\WooCommerce\Payment\Request\Middleware\AddressMiddleware;
 use Mollie\WooCommerceTests\Integration\IntegrationMockedTestCase;

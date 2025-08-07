@@ -107,7 +107,7 @@ class Api
     public function isUnprocessablePhoneException(ApiException $e): bool
     {
         $isUnprocessablePhoneCode = $e->getCode() === 422;
-        $isUnprocessablePhoneMessage = strpos($e->getMessage(), 'phone number is invalid')!== false;
+        $isUnprocessablePhoneMessage = strpos($e->getMessage(), 'phone number is invalid') !== false;
 
         if ($isUnprocessablePhoneCode && $isUnprocessablePhoneMessage) {
             return true;

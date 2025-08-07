@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Tests\Integration\spec\Gateway;
+namespace Mollie\WooCommerceTests\Integration\spec\Gateway;
 
 use Mollie\WooCommerce\Gateway\GatewayModule;
 use Mollie\WooCommerceTests\Integration\IntegrationMockedTestCase;

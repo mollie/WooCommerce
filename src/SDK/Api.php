@@ -87,10 +87,7 @@ class Api
         //see https://status.mollie.com/
         $outageCode = [400, 500];
 
-        if (in_array($e->getCode(), $outageCode, true)) {
-            return true;
-        }
-        return false;
+        return in_array($e->getCode(), $outageCode, true);
     }
 
     public function isMollieFraudException(ApiException $e): bool
@@ -98,10 +95,7 @@ class Api
         $isFraudCode = $e->getCode() === 422;
         $isFraudMessage = strpos($e->getMessage(), 'The payment was declined due to suspected fraud') !== false;
 
-        if ($isFraudCode && $isFraudMessage) {
-            return true;
-        }
-        return false;
+        return $isFraudCode && $isFraudMessage;
     }
 
     public function isUnprocessablePhoneException(ApiException $e): bool
@@ -109,9 +103,23 @@ class Api
         $isUnprocessablePhoneCode = $e->getCode() === 422;
         $isUnprocessablePhoneMessage = strpos($e->getMessage(), 'phone number is invalid') !== false;
 
-        if ($isUnprocessablePhoneCode && $isUnprocessablePhoneMessage) {
-            return true;
+        return $isUnprocessablePhoneCode && $isUnprocessablePhoneMessage;
+    }
+
+    public function isMollieException(ApiException $e): ?string
+    {
+        if ($this->isMollieOutageException($e)) {
+            return 'outage';
         }
-        return false;
+
+        if ($this->isMollieFraudException($e)) {
+            return 'fraud_rejection';
+        }
+
+        if ($this->isUnprocessablePhoneException($e)) {
+            return 'unprocessable_phone_number';
+        }
+
+        return null;
     }
 }

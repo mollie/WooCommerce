@@ -808,10 +808,11 @@ class PaymentProcessor implements PaymentProcessorInterface
     /**
      * Is an outage, bail, log and inform user
      *
+     * @param ApiException $e
      * @return void
      * @throws ApiException
      */
-    public function handleMollieOutage(): void
+    public function handleMollieOutage(ApiException $e): void
     {
         $this->logger->debug(
             "Creating payment object: type Order failed due to a Mollie outage, stopping process. Check Mollie status at https://status.mollie.com/. {$e->getMessage()}"
@@ -877,7 +878,7 @@ class PaymentProcessor implements PaymentProcessorInterface
                 $this->handleMollieFraudRejection();
                 //this will throw an exception and stop the process
             case 'outage':
-                $this->handleMollieOutage();
+                $this->handleMollieOutage($e);
                 //this will throw an exception and stop the process
             default:
                 // do nothing

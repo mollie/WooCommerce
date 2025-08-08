@@ -872,10 +872,13 @@ class PaymentProcessor implements PaymentProcessorInterface
         switch ($this->apiHelper->isMollieException($e)) {
             case 'unprocessable_phone_number':
                 $this->handleUnprocessablePhone();
+                //this will throw an exception and stop the process
             case 'fraud_rejection':
                 $this->handleMollieFraudRejection();
+                //this will throw an exception and stop the process
             case 'outage':
                 $this->handleMollieOutage();
+                //this will throw an exception and stop the process
             default:
                 // do nothing
         }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
+use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\Shared\Data;
 use WC_Order;
@@ -52,15 +53,14 @@ class OrderLines
      * Gets formatted order lines from WooCommerce order.
      *
      * @param WC_Order $order WooCommerce Order
-     * @param string $voucherDefaultCategory Voucher gaetway default category
      *
      * @return array
      */
-    public function order_lines($order, $voucherDefaultCategory)
+    public function order_lines($order)
     {
         $this->order = $order;
         $this->currency = $this->dataHelper->getOrderCurrency($this->order);
-        $this->process_items($voucherDefaultCategory);
+        $this->process_items();
         $this->process_shipping();
         $this->process_fees();
         $this->process_gift_cards();
@@ -78,32 +78,34 @@ class OrderLines
         $linesTotal = array_sum(array_map(static function ($line) {
             return $line['totalAmount']['value'];
         }, $this->order_lines));
-        $orderTotalDiff = $orderTotalRounded - $linesTotal;
-        if (abs($orderTotalDiff) > 0) {
-            $mismatch =  [
-                'type' => 'surcharge',
-                'name' => __('Rounding difference', 'mollie-payments-for-woocommerce'),
-                'quantity' => 1,
-                'vatRate' => 0,
-                'unitPrice' =>  [
-                    'currency' => $this->currency,
-                    'value' => $this->dataHelper->formatCurrencyValue($orderTotalDiff, $this->currency),
-                ],
-                'totalAmount' =>  [
-                    'currency' => $this->currency,
-                    'value' => $this->dataHelper->formatCurrencyValue($orderTotalDiff, $this->currency),
-                ],
-                'vatAmount' =>  [
-                    'currency' => $this->currency,
-                    'value' => $this->dataHelper->formatCurrencyValue(0, $this->currency),
-                ],
-                'metadata' =>  [
-                    'order_item_id' => 'rounding_diff',
-                ],
-            ];
-
-            $this->order_lines[] = $mismatch;
+        $linesTotalRounded = round($linesTotal, 2);
+        $orderTotalDiff = $orderTotalRounded - $linesTotalRounded;
+        if (empty($orderTotalDiff)) {
+            return;
         }
+        $mismatch =  [
+            'type' => $orderTotalDiff > 0 ? 'surcharge' : 'discount',
+            'name' => __('Rounding difference', 'mollie-payments-for-woocommerce'),
+            'quantity' => 1,
+            'vatRate' => 0,
+            'unitPrice' =>  [
+                'currency' => $this->currency,
+                'value' => $this->dataHelper->formatCurrencyValue($orderTotalDiff, $this->currency),
+            ],
+            'totalAmount' =>  [
+                'currency' => $this->currency,
+                'value' => $this->dataHelper->formatCurrencyValue($orderTotalDiff, $this->currency),
+            ],
+            'vatAmount' =>  [
+                'currency' => $this->currency,
+                'value' => $this->dataHelper->formatCurrencyValue(0, $this->currency),
+            ],
+            'metadata' =>  [
+                'order_item_id' => 'rounding_diff',
+            ],
+        ];
+
+        $this->order_lines[] = $mismatch;
     }
 
     /**
@@ -122,14 +124,8 @@ class OrderLines
      *
      * @access private
      */
-    private function process_items($voucherDefaultCategory)
+    private function process_items()
     {
-        $voucherSettings = get_option('mollie_wc_gateway_voucher_settings') ?: get_option('mollie_wc_gateway_mealvoucher_settings');
-        $isMealVoucherEnabled = $voucherSettings ? ($voucherSettings['enabled'] == 'yes') : false;
-        if (!$voucherSettings) {
-            $isMealVoucherEnabled = $this->dataHelper->getPaymentMethod('voucher') ? true : false;
-        }
-
         foreach ($this->order->get_items() as $cart_item) {
             if ($cart_item['quantity']) {
                 do_action($this->pluginId . '_orderlines_process_items_before_getting_product_id', $cart_item);
@@ -144,6 +140,7 @@ class OrderLines
 
                 $mollie_order_item =  [
                     'sku' => $this->get_item_reference($product),
+                    'type' => ($product instanceof \WC_Product && $product->is_virtual()) ? 'digital' : 'physical',
                     'name' => $this->get_item_name($cart_item),
                     'quantity' => $this->get_item_quantity($cart_item),
                     'vatRate' => round($this->get_item_vatRate($cart_item, $product), 2),
@@ -169,13 +166,28 @@ class OrderLines
                         [
                             'order_item_id' => $cart_item->get_id(),
                         ],
+                    'productUrl' => ($product instanceof \WC_Product) ? $product->get_permalink() : null,
                 ];
 
-                if ($isMealVoucherEnabled && $this->get_item_category($product, $voucherDefaultCategory) != "no_category") {
-                    $mollie_order_item['category'] = $this->get_item_category(
-                        $product,
-                        $voucherDefaultCategory
-                    );
+                if ($this->get_item_total_amount($cart_item) < 0) {
+                    $mollie_order_item['type'] = 'discount';
+                    unset($mollie_order_item['discountAmount']);
+                    $mollie_order_item['vatAmount']['value'] = $this->dataHelper->formatCurrencyValue(0, $this->currency);
+                }
+
+                if ($product instanceof \WC_Product && $product->get_image_id()) {
+                    $productImage = wp_get_attachment_image_src($product->get_image_id(), 'full');
+                    if (isset($productImage[0]) && wc_is_valid_url($productImage[0])) {
+                        $mollie_order_item['imageUrl'] = $productImage[0];
+                    }
+                }
+
+                $paymentMethod = $this->order->get_payment_method();
+                if ($paymentMethod === 'mollie_wc_gateway_' . Constants::VOUCHER && $product instanceof \WC_Product) {
+                    $categories = Voucher::getCategoriesForProduct($product);
+                    if ($categories) {
+                        $mollie_order_item['category'] = array_shift($categories);
+                    }
                 }
                 $this->order_lines[] = $mollie_order_item;
 
@@ -191,30 +203,37 @@ class OrderLines
      */
     private function process_shipping()
     {
-        if ($this->order->get_shipping_methods() && WC()->session->get('chosen_shipping_methods')) {
-            $shipping =  [
-                'type' => 'shipping_fee',
-                'name' => $this->get_shipping_name(),
-                'quantity' => 1,
-                'vatRate' => $this->get_shipping_vat_rate(),
-                'unitPrice' =>  [
-                    'currency' => $this->currency,
-                    'value' => $this->dataHelper->formatCurrencyValue($this->get_shipping_amount(), $this->currency),
-                ],
-                'totalAmount' =>  [
-                    'currency' => $this->currency,
-                    'value' => $this->dataHelper->formatCurrencyValue($this->get_shipping_amount(), $this->currency),
-                ],
-                'vatAmount' =>  [
-                    'currency' => $this->currency,
-                    'value' => $this->dataHelper->formatCurrencyValue($this->get_shipping_tax_amount(), $this->currency),
-                ],
-                'metadata' =>  [
-                    'order_item_id' => $this->get_shipping_id(),
-                ],
-            ];
+        $shipping_methods = $this->order->get_shipping_methods();
+        if ($shipping_methods) {
+            foreach ($shipping_methods as $shipping_method) {
+                $vatRate = 0;
+                if ($shipping_method->get_total_tax() > 0 && $shipping_method->get_total() > 0) {
+                    $vatRate = round($shipping_method->get_total_tax() / $shipping_method->get_total(), 4) * 100;
+                }
+                $shipping = [
+                    'type' => 'shipping_fee',
+                    'name' => $shipping_method->get_name() ?: __('Shipping', 'mollie-payments-for-woocommerce'),
+                    'quantity' => 1,
+                    'vatRate' => $vatRate,
+                    'unitPrice' =>  [
+                        'currency' => $this->currency,
+                        'value' => $this->dataHelper->formatCurrencyValue($shipping_method->get_total() + $shipping_method->get_total_tax(), $this->currency),
+                    ],
+                    'totalAmount' =>  [
+                        'currency' => $this->currency,
+                        'value' => $this->dataHelper->formatCurrencyValue($shipping_method->get_total() + $shipping_method->get_total_tax(), $this->currency),
+                    ],
+                    'vatAmount' =>  [
+                        'currency' => $this->currency,
+                        'value' => $this->dataHelper->formatCurrencyValue($shipping_method->get_total_tax(), $this->currency),
+                    ],
+                    'metadata' => [
+                        'order_item_id' => $shipping_method->get_id(),
+                    ],
+                ];
 
-            $this->order_lines[] = $shipping;
+                $this->order_lines[] = $shipping;
+            }
         }
     }
 
@@ -249,8 +268,12 @@ class OrderLines
                     $cart_fee_total = $cart_fee['total'];
                 }
 
+                if (empty(round($cart_fee_total, 2))) {
+                    continue;
+                }
+
                 $fee =  [
-                    'type' => 'surcharge',
+                    'type' => $cart_fee_total > 0 ? 'surcharge' : 'discount',
                     'name' => $cart_fee['name'],
                     'quantity' => 1,
                     'vatRate' => $this->dataHelper->formatCurrencyValue($cart_fee_vat_rate, $this->currency),
@@ -349,7 +372,7 @@ class OrderLines
      * @access private
      *
      * @param  WC_Order_Item  $cart_item Cart item.
-     * @param  object $product   Product object.
+     * @param  null|false|\WC_Product $product   Product object.
      *
      * @return integer $item_vatRate Item tax percentage formatted for Mollie Orders API.
      */
@@ -418,7 +441,7 @@ class OrderLines
      *
      * @access private
      *
-     * @param object $product Product object.
+     * @param null|false|\WC_Product $product Product object.
      *
      * @return false|string $item_reference Cart item reference.
      */
@@ -469,149 +492,5 @@ class OrderLines
     private function get_item_total_amount($cart_item)
     {
         return $cart_item['line_total'] + $cart_item['line_tax'];
-    }
-
-    /**
-     * Get cart item Category.
-     *
-     * Returns selected or default product category.
-     *
-     * @since  5.6
-     * @access private
-     *
-     * @param  object $product Product object.
-     * @param  string $voucherDefaultCategory Voucher default category.
-     *
-     * @return string $category Product voucher category.
-     */
-    private function get_item_category($product, $voucherDefaultCategory)
-    {
-        $category = $voucherDefaultCategory;
-
-        if (!$product) {
-            return $category;
-        }
-
-        //if product has taxonomy associated, retrieve voucher cat from there.
-        $catTerms = get_the_terms($product->get_id(), 'product_cat');
-        if (is_array($catTerms)) {
-            $term = end($catTerms);
-            $term_id = $term->term_id;
-            $metaVoucher = get_term_meta($term_id, '_mollie_voucher_category', true);
-            $category = $metaVoucher ?: $category;
-        }
-
-        //local product voucher category
-        $localCategory = get_post_meta(
-            $product->get_id(),
-            Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION,
-            false
-        );
-        $category = $localCategory[0] ?? $category;
-
-        //if product is a single variation could have a voucher meta associated
-        $simpleVariationCategory = get_post_meta(
-            $product->get_id(),
-            'voucher',
-            false
-        );
-
-        return $simpleVariationCategory ? $simpleVariationCategory[0] : $category;
-    }
-
-    /**
-     * Get shipping method name.
-     *
-     * @since  1.0
-     * @access private
-     *
-     * @return string $shipping_name Name for selected shipping method.
-     */
-    private function get_shipping_name()
-    {
-        foreach ($this->order->get_items('shipping') as $i => $package) {
-            $chosen_method = isset(WC()->session->chosen_shipping_methods[ $i ]) ? WC()->session->chosen_shipping_methods[ $i ] : '';
-            if ('' !== $chosen_method) {
-                $package_rates = $package['rates'];
-                foreach ($package_rates as $rate_key => $rate_value) {
-                    if ($rate_key === $chosen_method) {
-                        $shipping_name = $rate_value->label;
-                    }
-                }
-            }
-        }
-
-        if (! isset($shipping_name)) {
-            $shipping_name = __('Shipping', 'mollie-payments-for-woocommerce');
-        }
-
-        return (string) $shipping_name;
-    }
-
-    /**
-     * Get shipping method name.
-     *
-     * @since  1.0
-     * @access private
-     *
-     * @return string $shipping_name Name for selected shipping method.
-     */
-    private function get_shipping_id()
-    {
-        $shipping_id = '';
-
-        foreach ($this->order->get_items('shipping') as $package) {
-            $shipping_id = $package->get_id();
-        }
-
-        return (string) $shipping_id;
-    }
-
-    /**
-     * Get shipping method amount.
-     *
-     * @since 1.0
-     *
-     * @access private
-     *
-     * @return string $shipping_amount Amount for selected shipping method.
-     */
-    private function get_shipping_amount(): string
-    {
-        return number_format(( WC()->cart->shipping_total + WC()->cart->shipping_tax_total ), 2, '.', '');
-    }
-
-    /**
-     * Get shipping method tax rate.
-     *
-     * @since 1.0
-     *
-     * @access private
-     *
-     * @return float|int $shipping_vat_rate Tax rate for selected shipping method.
-     *
-     * @psalm-return 0|float
-     */
-    private function get_shipping_vat_rate()
-    {
-        $shipping_vat_rate = 0;
-        if (WC()->cart->shipping_tax_total > 0) {
-            $shipping_vat_rate = round(WC()->cart->shipping_tax_total / WC()->cart->shipping_total, 4) * 100;
-        }
-
-        return $shipping_vat_rate;
-    }
-
-    /**
-     * Get shipping method tax amount.
-     *
-     * @since  1.0
-     * @access private
-     *
-     * @return integer $shipping_tax_amount Tax amount for selected shipping method.
-     */
-    private function get_shipping_tax_amount()
-    {
-        return WC()->cart->shipping_tax_total;
     }
 }

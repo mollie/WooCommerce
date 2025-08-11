@@ -4,11 +4,21 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Settings\Page\Section;
 
+use Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use WC_Gateway_BACS;
 
 class Notices extends AbstractSection
 {
+    /**
+     * @var mixed
+     */
+    private $mollieGateways;
+    /**
+     * @var mixed
+     */
+    private $paymentMethods;
+
     public function config(): array
     {
         return [
@@ -22,6 +32,8 @@ class Notices extends AbstractSection
 
     protected function content(): string
     {
+        $this->mollieGateways = $this->container->get('__deprecated.gateway_helpers');
+        $this->paymentMethods = $this->container->get('gateway.paymentMethods');
         ob_start();
         ?>
         <div class="mollie-section mollie-section--notices">
@@ -36,11 +48,14 @@ class Notices extends AbstractSection
 
     protected function warnDirectDebitStatus(): string
     {
-        $hasCustomSepaSettings = $this->paymentMethods["directdebit"]->getProperty('enabled') !== false;
-        $isSepaEnabled = !$hasCustomSepaSettings || $this->paymentMethods["directdebit"]->getProperty(
+        if (!isset($this->paymentMethods[Constants::DIRECTDEBIT]) || ! $this->paymentMethods[Constants::DIRECTDEBIT] instanceof AbstractPaymentMethod) {
+            return '';
+        }
+        $hasCustomSepaSettings = $this->paymentMethods[Constants::DIRECTDEBIT]->getProperty('enabled') !== false;
+        $isSepaEnabled = !$hasCustomSepaSettings || $this->paymentMethods[Constants::DIRECTDEBIT]->getProperty(
             'enabled'
         ) === 'yes';
-        $sepaGatewayAllowed = !empty($this->mollieGateways["mollie_wc_gateway_directdebit"]);
+        $sepaGatewayAllowed = !empty($this->mollieGateways['mollie_wc_gateway_' . Constants::DIRECTDEBIT]);
 
         if (!($sepaGatewayAllowed && !$isSepaEnabled)) {
             return '';

@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
+use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\Api\Exceptions\ApiException;
-use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Payment;
 use Mollie\Api\Resources\Refund;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
-use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
+use Mollie\WooCommerce\Payment\Request\RequestFactory;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\SDK\Api;
+use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
+use Psr\Log\LoggerInterface as Logger;
 use Psr\Log\LogLevel;
 use WC_Order;
-use WC_Payment_Gateway;
 use WC_Subscriptions_Manager;
 use WP_Error;
 
@@ -24,14 +25,23 @@ class MolliePayment extends MollieObject
     public const ACTION_AFTER_REFUND_PAYMENT_CREATED = 'mollie-payments-for-woocommerce' . '_refund_payment_created';
     protected $pluginId;
 
-    public function __construct($data, $pluginId, Api $apiHelper, $settingsHelper, $dataHelper, $logger)
-    {
+    public function __construct(
+        $data,
+        string $pluginId,
+        Api $apiHelper,
+        Settings $settingsHelper,
+        Data $dataHelper,
+        Logger $logger,
+        RequestFactory $requestFactory
+    ) {
+
         $this->data = $data;
         $this->pluginId = $pluginId;
         $this->apiHelper = $apiHelper;
         $this->settingsHelper = $settingsHelper;
-        $this->dataHelper = $dataHelper;
         $this->logger = $logger;
+        $this->requestFactory = $requestFactory;
+        $this->dataHelper = $dataHelper;
     }
 
     public function getPaymentObject($paymentId, $testMode = false, $useCache = true)
@@ -59,78 +69,9 @@ class MolliePayment extends MollieObject
      *
      * @return array
      */
-    public function getPaymentRequestData($order, $customerId, $voucherDefaultCategory = Voucher::NO_CATEGORY)
+    public function getPaymentRequestData($order, $customerId)
     {
-        $settingsHelper = $this->settingsHelper;
-        $optionName = $this->pluginId . '_' . 'api_payment_description';
-        $option = get_option($optionName);
-        $paymentDescription = $this->getPaymentDescription($order, $option);
-        $paymentLocale = $settingsHelper->getPaymentLocale();
-        $storeCustomer = $settingsHelper->shouldStoreCustomer();
-
-        $gateway = wc_get_payment_gateway_by_order($order);
-
-        if (!$gateway || !($gateway instanceof MolliePaymentGateway)) {
-            return ['result' => 'failure'];
-        }
-
-        $gatewayId = $gateway->id;
-        $selectedIssuer = $gateway->getSelectedIssuer();
-        $returnUrl = $gateway->get_return_url($order);
-        $returnUrl = $this->getReturnUrl($order, $returnUrl);
-        $webhookUrl = $this->getWebhookUrl($order, $gatewayId);
-        $orderId = $order->get_id();
-
-        $paymentRequestData = [
-            'amount' => [
-                'currency' => $this->dataHelper
-                    ->getOrderCurrency($order),
-                'value' => $this->dataHelper
-                    ->formatCurrencyValue(
-                        $order->get_total(),
-                        $this->dataHelper->getOrderCurrency(
-                            $order
-                        )
-                    ),
-            ],
-            'description' => $paymentDescription,
-            'redirectUrl' => $returnUrl,
-            'webhookUrl' => $webhookUrl,
-            'method' => $gateway->paymentMethod()->getProperty('id'),
-            'issuer' => $selectedIssuer,
-            'locale' => $paymentLocale,
-            'metadata' => apply_filters(
-                $this->pluginId . '_payment_object_metadata',
-                [
-                    'order_id' => $order->get_id(),
-                ]
-            ),
-        ];
-
-        $paymentRequestData = $this->addSequenceTypeForSubscriptionsFirstPayments($order->get_id(), $gateway, $paymentRequestData);
-
-        if ($storeCustomer) {
-            $paymentRequestData['customerId'] = $customerId;
-        }
-
-        $cardToken = mollieWooCommerceCardToken();
-        if ($cardToken) {
-            $paymentRequestData['cardToken'] = $cardToken;
-        }
-        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        $applePayToken = wc_clean(wp_unslash($_POST["token"] ?? ''));
-        if ($applePayToken) {
-            $encodedApplePayToken = wp_json_encode($applePayToken);
-            $paymentRequestData['applePayPaymentToken'] = $encodedApplePayToken;
-        }
-        $paymentRequestData = $this->addCustomRequestFields($order, $paymentRequestData, $gateway);
-        return $paymentRequestData;
-    }
-
-    public function addSequenceTypeFirst($paymentRequestData)
-    {
-        $paymentRequestData['sequenceType'] = 'first';
-        return $paymentRequestData;
+        return $this->requestFactory->createRequest('payment', $order, $customerId);
     }
 
     /**
@@ -208,7 +149,7 @@ class MolliePayment extends MollieObject
 
     /**
      * @param \WC_Order                     $order
-     * @param \Mollie\Api\Resources\Payment $payment
+     * @param Payment $payment
      * @param string                       $paymentMethodTitle
      */
     public function onWebhookPaid(WC_Order $order, $payment, $paymentMethodTitle)
@@ -220,6 +161,12 @@ class MolliePayment extends MollieObject
 
             if ($payment->method === 'paypal') {
                 $this->addPaypalTransactionIdToOrder($order);
+            }
+            if (!empty($payment->amountChargedBack)) {
+                $this->logger->debug(
+                    __METHOD__ . ' payment at Mollie has a chargeback, so no processing for order ' . $orderId
+                );
+                return;
             }
 
             // WooCommerce 2.2.0 has the option to store the Payment transaction id.
@@ -249,6 +196,7 @@ class MolliePayment extends MollieObject
             );
 
             // Subscription processing
+            $this->addMandateIdMetaToFirstPaymentSubscriptionOrder($order, $payment);
             if (class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin')) {
                 if ($this->dataHelper->isWcSubscription($orderId)) {
                     $this->deleteSubscriptionOrderFromPendingPaymentQueue($order);
@@ -260,6 +208,53 @@ class MolliePayment extends MollieObject
             $this->logger->debug(
                 __METHOD__ . ' payment at Mollie not paid, so no processing for order ' . $orderId
             );
+        }
+    }
+
+    /**
+     * @param \WC_Order                   $order
+     * @param Payment $payment
+     * @param string                     $paymentMethodTitle
+     */
+    public function onWebhookAuthorized(WC_Order $order, Payment $payment, $paymentMethodTitle)
+    {
+        // Get order ID in the correct way depending on WooCommerce version
+        $orderId = $order->get_id();
+
+        if ($payment->isAuthorized()) {
+            // Add messages to log
+            $this->logger->debug(__METHOD__ . ' called for order ' . $orderId);
+
+            // WooCommerce 2.2.0 has the option to store the Payment transaction id.
+            $order->payment_complete($payment->id);
+
+            // Add messages to log
+            $this->logger->debug(__METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for order ' . $orderId);
+
+            $order->add_order_note(sprintf(
+                /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+                __('Order authorized using %1$s payment (%2$s). Set order to completed in WooCommerce when you have shipped the products, to capture the payment. Do this within 28 days, or the order will expire. To handle individual order lines, process the order via the Mollie Dashboard.', 'mollie-payments-for-woocommerce'),
+                $paymentMethodTitle,
+                $payment->id . ( $payment->mode === 'test' ? ( ' - ' . __('test mode', 'mollie-payments-for-woocommerce') ) : '' )
+            ));
+
+            //check for webhook that order is Authorized on Paid webhook
+            $order->update_meta_data('_mollie_authorized', '1');
+
+            // Mark the order as processed and paid via Mollie
+            $this->setOrderPaidAndProcessed($order);
+
+            // Remove (old) cancelled payments from this order
+            $this->unsetCancelledMolliePaymentId($orderId);
+
+            // Add messages to log
+            $this->logger->debug(__METHOD__ . ' processing order status update via Mollie plugin fully completed for order ' . $orderId);
+
+            // Subscription processing
+            $this->deleteSubscriptionFromPending($order);
+        } else {
+            // Add messages to log
+            $this->logger->debug(__METHOD__ . ' order at Mollie not authorized, so no processing for order ' . $orderId);
         }
     }
 
@@ -363,7 +358,11 @@ class MolliePayment extends MollieObject
             $payment
         );
 
-        $this->logger->debug(__METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', regular payment failed.');
+        if (isset($payment->details->failureReason)) {
+            $this->logger->debug(__METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', regular payment failed because of ' . esc_attr($payment->details->failureReason) . '.');
+        } else {
+            $this->logger->debug(__METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', regular payment failed.');
+        }
     }
 
     /**
@@ -515,7 +514,7 @@ class MolliePayment extends MollieObject
 
     /**
      * @param WC_Order $order
-     * @param MolliePaymentGatewayI $gateway
+     * @param PaymentGateway $gateway
      * @param                    $newOrderStatus
      * @param                    $orderId
      */
@@ -525,27 +524,15 @@ class MolliePayment extends MollieObject
         $newOrderStatus
     ) {
 
-        if ($this->isOrderPaymentStartedByOtherGateway($order) || ! is_a($gateway, MolliePaymentGateway::class)) {
+        if ($this->isOrderPaymentStartedByOtherGateway($order) || ! is_a($gateway, PaymentGateway::class)) {
             $this->informNotUpdatingStatus($gateway->id, $order);
             return;
         }
-        $gateway->paymentService()->updateOrderStatus($order, $newOrderStatus);
+        $this->updateOrderStatus($order, $newOrderStatus);
     }
 
-    protected function addCustomRequestFields($order, array $paymentRequestData, MolliePaymentGateway $gateway)
+    public function setPayment($data)
     {
-        if ($gateway->paymentMethod()->hasProperty('paymentAPIfields')) {
-            $paymentAPIfields = $gateway->paymentMethod()->getProperty('paymentAPIfields');
-            foreach ($paymentAPIfields as $field) {
-                if (!method_exists($this, 'create' . ucfirst($field))) {
-                    continue;
-                }
-                $value = $this->{'create' . ucfirst($field)}($order);
-                if ($value) {
-                    $paymentRequestData[$field] = $value;
-                }
-            }
-        }
-        return $paymentRequestData;
+        $this->data = $data;
     }
 }

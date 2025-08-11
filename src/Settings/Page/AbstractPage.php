@@ -7,6 +7,7 @@ namespace Mollie\WooCommerce\Settings\Page;
 use Mollie\WooCommerce\Settings\Page\Section\AbstractSection;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
+use Psr\Container\ContainerInterface;
 
 abstract class AbstractPage
 {
@@ -16,9 +17,8 @@ abstract class AbstractPage
     protected bool $connectionStatus;
     protected bool $testModeEnabled;
     protected array $pages;
-    protected array $mollieGateways;
-    protected array $paymentMethods;
     protected Data $dataHelper;
+    protected ContainerInterface $container;
 
     public function __construct(
         Settings $settings,
@@ -27,9 +27,8 @@ abstract class AbstractPage
         string $currentSection,
         bool $connectionStatus,
         bool $testModeEnabled,
-        array $mollieGateways,
-        array $paymentMethods,
-        Data $dataHelper
+        Data $dataHelper,
+        ContainerInterface $container
     ) {
 
         $this->settings = $settings;
@@ -38,9 +37,8 @@ abstract class AbstractPage
         $this->connectionStatus = $connectionStatus;
         $this->testModeEnabled = $testModeEnabled;
         $this->pages = $pages;
-        $this->mollieGateways = $mollieGateways;
-        $this->paymentMethods = $paymentMethods;
         $this->dataHelper = $dataHelper;
+        $this->container = $container;
     }
 
     abstract public static function isTab(): bool;
@@ -71,9 +69,8 @@ abstract class AbstractPage
                 $this->currentSection,
                 $this->connectionStatus,
                 $this->testModeEnabled,
-                $this->mollieGateways,
-                $this->paymentMethods,
-                $this->dataHelper
+                $this->dataHelper,
+                $this->container
             );
             foreach ($section->config() as $field) {
                 $settings[] = $field;

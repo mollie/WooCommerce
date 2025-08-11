@@ -3,16 +3,16 @@
  * Plugin Name: Mollie Payments for WooCommerce
  * Plugin URI: https://www.mollie.com
  * Description: Accept payments in WooCommerce with the official Mollie plugin
- * Version: 7.10.0
+ * Version: 8.0.5
  * Author: Mollie
  * Author URI: https://www.mollie.com
  * Requires at least: 5.0
- * Tested up to: 6.7
+ * Tested up to: 6.8
  * Text Domain: mollie-payments-for-woocommerce
  * Domain Path: /languages
  * License: GPLv2 or later
  * WC requires at least: 3.9
- * WC tested up to: 9.5
+ * WC tested up to: 10.0
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
  */
@@ -20,21 +20,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce;
 
-use Mollie\WooCommerce\MerchantCapture\MerchantCaptureModule;
-use Inpsyde\Modularity\Package;
-use Inpsyde\Modularity\Properties\PluginProperties;
-use Mollie\WooCommerce\Activation\ActivationModule;
-use Mollie\WooCommerce\Activation\ConstraintsChecker;
-use Mollie\WooCommerce\Assets\AssetsModule;
-use Mollie\WooCommerce\Shared\SharedModule;
-use Mollie\WooCommerce\Gateway\GatewayModule;
-use Mollie\WooCommerce\Gateway\Voucher\VoucherModule;
-use Mollie\WooCommerce\Log\LogModule;
-use Mollie\WooCommerce\Notice\NoticeModule;
-use Mollie\WooCommerce\Payment\PaymentModule;
-use Mollie\WooCommerce\SDK\SDKModule;
-use Mollie\WooCommerce\Settings\SettingsModule;
-use Mollie\WooCommerce\Uninstall\UninstallModule;
+use Psr\Container\ContainerInterface;
 use Throwable;
 
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
@@ -48,21 +34,16 @@ if (!defined('M4W_PLUGIN_URL')) {
 }
 
 
-function mollie_wc_plugin_autoload()
+function mollie_wc_plugin_autoload(): bool
 {
     $autoloader = __DIR__ . '/vendor/autoload.php';
     $mollieSdkAutoload = __DIR__ . '/vendor/mollie/mollie-api-php/vendor/autoload.php';
-    if (file_exists($autoloader)) {
-        /**
-         * @noinspection PhpIncludeInspection
-         *
-         */
+    if (file_exists($autoloader) && ! class_exists('Mollie\WooCommerce\Activation\ActivationModule')) {
         require $autoloader;
     }
 
     if (file_exists($mollieSdkAutoload)) {
         /**
-         * @noinspection PhpIncludeInspection
          * @psalm-suppress MissingFile
          */
         require $mollieSdkAutoload;
@@ -115,51 +96,28 @@ function handleException(Throwable $throwable)
 /**
  * Initialize all the plugin things.
  *
- * @throws Throwable
+ * @return ContainerInterface|null
  */
-function initialize()
+function initialize(): ?ContainerInterface
 {
-    try {
-        require_once __DIR__ . '/inc/functions.php';
-
-        if (!mollie_wc_plugin_autoload()) {
-            return;
+    static $container = null;
+    $root_dir = M4W_PLUGIN_DIR;
+    if ($container === null) {
+        try {
+            $bootstrap = require __DIR__ . '/bootstrap.php';
+            $container = $bootstrap($root_dir);
+        } catch (Throwable $throwable) {
+            handleException($throwable);
+            return null;
         }
-
-        $checker = new ConstraintsChecker();
-        $meetRequirements = $checker->handleActivation();
-        if (!$meetRequirements) {
-            $nextScheduledTime = wp_next_scheduled('pending_payment_confirmation_check');
-            if ($nextScheduledTime) {
-                wp_unschedule_event($nextScheduledTime, 'pending_payment_confirmation_check');
-            }
-            return;
-        }
-        // Initialize plugin.
-        $properties = PluginProperties::new(__FILE__);
-        $bootstrap = Package::new($properties);
-        $modules = [
-            new ActivationModule(__FILE__, $properties->get('version')),
-            new NoticeModule(),
-            new SharedModule(),
-            new SDKModule(),
-            new SettingsModule(),
-            new LogModule('mollie-payments-for-woocommerce-'),
-            new AssetsModule(),
-            new GatewayModule(),
-            new VoucherModule(),
-            new PaymentModule(),
-            new MerchantCaptureModule(),
-            new UninstallModule(),
-        ];
-        $modules = apply_filters('mollie_wc_plugin_modules', $modules);
-        foreach ($modules as $module) {
-            $bootstrap->addModule($module);
-        }
-        $bootstrap->boot();
-    } catch (Throwable $throwable) {
-        handleException($throwable);
     }
+
+    return $container;
 }
 
-add_action('plugins_loaded', __NAMESPACE__ . '\\initialize');
+add_action(
+/**
+ * @throws Throwable
+ */ 'plugins_loaded', static function () {
+    initialize();
+});

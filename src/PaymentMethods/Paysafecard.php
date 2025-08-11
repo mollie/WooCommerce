@@ -18,7 +18,6 @@ class Paysafecard extends AbstractPaymentMethod implements PaymentMethodI
             'supports' => ['products'],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => false,
             'docs' => 'https://www.mollie.com/gb/payments/paysafecard',
         ];
     }

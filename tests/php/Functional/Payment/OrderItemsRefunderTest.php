@@ -8,8 +8,8 @@ use Mollie\Api\Endpoints\OrderEndpoint;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Refund;
-use Mollie\WooCommerce\Payment\OrderItemsRefunder;
-use Mollie\WooCommerce\Payment\RefundLineItemsBuilder;
+use Mollie\WooCommerce\Gateway\Refund\OrderItemsRefunder;
+use Mollie\WooCommerce\Gateway\Refund\RefundLineItemsBuilder;
 use Mollie\WooCommerce\Shared\Data;
 
 

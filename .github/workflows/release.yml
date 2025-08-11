@@ -12,5 +12,5 @@ jobs:
       PLUGIN_VERSION: ${{ inputs.PACKAGE_VERSION }}
       PHP_VERSION: 7.4
       PLUGIN_MAIN_FILE: mollie-payments-for-woocommerce.php
-      ARCHIVE_NAME: mollie-payments-for-woocommerce
+      ARCHIVE_NAME: mollie-payments-for-woocommerce-${{ inputs.PACKAGE_VERSION }}
       PLUGIN_FOLDER_NAME: mollie-payments-for-woocommerce

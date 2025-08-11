@@ -13,7 +13,6 @@ import ApplePayButtonEditorComponent from './blocks/ApplePayButtonEditorComponen
         const {ajaxUrl, filters, gatewayData, availableGateways} = mollieBlockData.gatewayData;
         const {useEffect} = wp.element;
         const isAppleSession = typeof window.ApplePaySession === "function"
-        localStorage.removeItem('cachedAvailableGateways');
 
         function getPhoneField() {
             const phoneFieldDataset = document.querySelector('[data-show-phone-field]');

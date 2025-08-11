@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Settings\Page\Section;
 
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
-use Mollie\WooCommerce\Payment\PaymentService;
+use Mollie\WooCommerce\Payment\PaymentProcessor;
 
 class Advanced extends AbstractSection
 {
@@ -110,22 +110,22 @@ class Advanced extends AbstractSection
                 ),
                 'type' => 'select',
                 'options' => [
-                    PaymentService::PAYMENT_METHOD_TYPE_ORDER => ucfirst(
-                        PaymentService::PAYMENT_METHOD_TYPE_ORDER
+                    PaymentProcessor::PAYMENT_METHOD_TYPE_ORDER => ucfirst(
+                        PaymentProcessor::PAYMENT_METHOD_TYPE_ORDER
+                    ),
+                    PaymentProcessor::PAYMENT_METHOD_TYPE_PAYMENT => ucfirst(
+                        PaymentProcessor::PAYMENT_METHOD_TYPE_PAYMENT
                     ) . ' (' . __('default', 'mollie-payments-for-woocommerce')
                         . ')',
-                    PaymentService::PAYMENT_METHOD_TYPE_PAYMENT => ucfirst(
-                        PaymentService::PAYMENT_METHOD_TYPE_PAYMENT
-                    ),
                 ],
-                'default' => PaymentService::PAYMENT_METHOD_TYPE_ORDER,
+                'default' => PaymentProcessor::PAYMENT_METHOD_TYPE_PAYMENT,
                 'desc' => sprintf(
                 /* translators: Placeholder 1: opening link tag, placeholder 2: closing link tag */
                     __(
-                        'Click %1$shere%2$s to read more about the differences between the Payments and Orders API',
+                        'Payments API is the recommended option since Orders API will be deprecated. Click %1$shere%2$s to read more about the differences between the Payments and Orders API',
                         'mollie-payments-for-woocommerce'
                     ),
-                    '<a href="https://docs.mollie.com/orders/why-use-orders" target="_blank">',
+                    '<a href="https://docs.mollie.com/reference/payments-api" target="_blank">',
                     '</a>'
                 ),
             ],
@@ -255,10 +255,11 @@ class Advanced extends AbstractSection
                 'nonce_mollie_cleanDb'
             )
         ) {
+            $paymentMethods = $this->container->get('gateway.paymentMethods');
             $cleaner = $this->settings->cleanDb();
             $cleaner->cleanAll();
             //set default settings
-            foreach ($this->paymentMethods as $paymentMethod) {
+            foreach ($paymentMethods as $paymentMethod) {
                 $paymentMethod->getSettings();
             }
         }

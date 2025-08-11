@@ -40,7 +40,6 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => true,
             'confirmationDelayed' => true,
-            'SEPA' => false,
             'customRedirect' => true,
             'docs' => 'https://www.mollie.com/gb/payments/bank-transfer',
         ];
@@ -55,7 +54,6 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
         $this->config['defaultTitle'] = __('Bank Transfer', 'mollie-payments-for-woocommerce');
         $this->translationsInitialized = true;
     }
-
 
     public function getFormFields($generalFormFields): array
     {

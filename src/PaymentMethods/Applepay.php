@@ -22,7 +22,6 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => false,
             'Subscription' => true,
             'docs' => 'https://www.mollie.com/gb/payments/apple-pay',
         ];
@@ -41,27 +40,33 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
         );
         $this->translationsInitialized = true;
     }
+
     public function getFormFields($generalFormFields): array
     {
 
         $checkout_page_id = wc_get_page_id('checkout');
         $edit_checkout_page_link = get_edit_post_link($checkout_page_id);
 
-        $notice = [
-            'notice' => [
-                'title' => sprintf(
-                    /* translators: Placeholder 1: link url */
-                    __(
-                        '<p>The appearance of the Apple Pay button can be controlled in the <a href="%1$s">Checkout page editor</a>.</p>',
-                        'mollie-payments-for-woocommerce'
+        if ($edit_checkout_page_link) {
+            $notice = [
+                'notice' => [
+                    'title' => sprintf(
+                        /* translators: Placeholder 1: link url */
+                        __(
+                            '<p>The appearance of the Apple Pay button can be controlled in the <a href="%1$s">Checkout page editor</a>.</p>',
+                            'mollie-payments-for-woocommerce'
+                        ),
+                        esc_url($edit_checkout_page_link)
                     ),
-                    esc_url($edit_checkout_page_link)
-                ),
-                'type' => 'title',
-                'class' => 'notice notice-warning',
-                'css' => 'padding:20px;',
-            ],
-        ];
+                    'type' => 'title',
+                    'class' => 'notice notice-warning',
+                    'css' => 'padding:20px;',
+                ],
+            ];
+        } else {
+            $notice = [];
+        }
+
         $paymentMethodFormFieds = [
             'mollie_apple_pay_button_enabled_cart' => [
                 'title' => __('Enable Apple Pay Button on Cart page', 'mollie-payments-for-woocommerce'),

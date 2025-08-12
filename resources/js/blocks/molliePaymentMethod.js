@@ -11,7 +11,7 @@ function useMollieAvailableGateways(billing, currencyCode, cartTotal, filters, a
     const code = currencyCode;
     const value = cartTotal;
     if (!country) {
-        country = wcSettings?.baseLocation.country;
+        country = wcSettings?.baseLocation?.country;
     }
 
     wp.element.useEffect(() => {

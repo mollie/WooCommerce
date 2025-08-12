@@ -521,7 +521,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         }
         $fieldPosted = filter_input(INPUT_POST, $field, FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
 
-        if ($fieldPosted && !$this->isPhoneValid($fieldPosted)) {
+        if ($fieldPosted && $this->isPhoneValid($fieldPosted)) {
             $fields['billing_phone'] = $fieldPosted;
             return $fields;
         }

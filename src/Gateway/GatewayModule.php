@@ -522,7 +522,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         // phpcs:ignore WordPress.Security.NonceVerification.Missing
         $fieldPosted = !empty($_POST[$field]) ? sanitize_text_field(wp_unslash($_POST[$field])) : false;
 
-        if ($fieldPosted && !$this->isPhoneValid($fieldPosted)) {
+        if ($fieldPosted && $this->isPhoneValid($fieldPosted)) {
             $fields['billing_phone'] = $fieldPosted;
             return $fields;
         }

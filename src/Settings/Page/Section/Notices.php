@@ -92,15 +92,13 @@ class Notices extends AbstractSection
         }
         return $this->notice(
             sprintf(
-                /* translators: Placeholder 1: Opening link tag. Placeholder 2: Closing link tag. Placeholder 3: Opening link tag. Placeholder 4: Closing link tag. */
+            /* translators: Placeholder 1: Opening link tag. Placeholder 2: Closing link tag. */
                 __(
-                    'You have activated Klarna. To accept payments, please make sure all default WooCommerce checkout fields are enabled and required. For more information, go to %1$sKlarna Pay Later documentation%2$s or  %3$sKlarna Slice it documentation%4$s',
+                    'You have activated Klarna. To accept payments, please make sure all default WooCommerce checkout fields are enabled and required. For more information, visit the %1$sKlarna documentation%2$s.',
                     'mollie-payments-for-woocommerce'
                 ),
-                '<a href="https://github.com/mollie/WooCommerce/wiki/Setting-up-Klarna-Pay-later-gateway">',
+                '<a href="https://github.com/mollie/WooCommerce/wiki/Setting-up-Klarna-gateway">',
                 '</a>',
-                '<a href=" https://github.com/mollie/WooCommerce/wiki/Setting-up-Klarna-Slice-it-gateway">',
-                '</a>'
             )
         );
     }

@@ -13,6 +13,7 @@ import ApplePayButtonEditorComponent from './blocks/ApplePayButtonEditorComponen
         const {ajaxUrl, filters, gatewayData, availableGateways} = mollieBlockData.gatewayData;
         const {useEffect} = wp.element;
         const isAppleSession = typeof window.ApplePaySession === "function"
+        const isEditorContext = wc?.wcBlocksData?.isEditor();
 
         function getPhoneField() {
             const phoneFieldDataset = document.querySelector('[data-show-phone-field]');
@@ -33,28 +34,33 @@ import ApplePayButtonEditorComponent from './blocks/ApplePayButtonEditorComponen
             let register = () => registerPaymentMethod(molliePaymentMethod(useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isPhoneFieldVisible));
             if (item.name === 'mollie_wc_gateway_applepay') {
                 const {isExpressEnabled} = item;
-                if ((isAppleSession && window.ApplePaySession.canMakePayments())) {
+                if (isEditorContext || isAppleSession && window.ApplePaySession.canMakePayments()) {
                     register();
-                    if (isExpressEnabled !== true) {
-                        return;
-                    }
-                    const {registerExpressPaymentMethod} = wc.wcBlocksRegistry;
-                    registerExpressPaymentMethod({
-                        name: 'mollie_wc_gateway_applepay_express',
-                        title: 'Apple Pay Express button',
-                        description: 'Apple Pay Express button',
-                        content: <ApplePayButtonComponent/>,
-                        edit: <ApplePayButtonEditorComponent/>,
-                        ariaLabel: 'Apple Pay',
-                        canMakePayment: () => true,
-                        paymentMethodId: 'mollie_wc_gateway_applepay',
-                        gatewayId: 'mollie_wc_gateway_applepay',
-                        supports: {
-                            features: ['products'],
-                            style: ['height', 'borderRadius']
-                        },
-                    })
                 }
+                if (isExpressEnabled !== true) {
+                    return;
+                }
+                const {registerExpressPaymentMethod} = wc.wcBlocksRegistry;
+                registerExpressPaymentMethod({
+                    name: 'mollie_wc_gateway_applepay_express',
+                    title: 'Apple Pay Express button',
+                    description: 'Apple Pay Express button',
+                    content: <ApplePayButtonComponent/>,
+                    edit: <ApplePayButtonEditorComponent/>,
+                    ariaLabel: 'Apple Pay',
+                    canMakePayment: () => {
+                        if (isEditorContext) {
+                            return true;
+                        }
+                        return isAppleSession && window.ApplePaySession.canMakePayments();
+                    },
+                    paymentMethodId: 'mollie_wc_gateway_applepay',
+                    gatewayId: 'mollie_wc_gateway_applepay',
+                    supports: {
+                        features: ['products'],
+                        style: ['height', 'borderRadius']
+                    },
+                })
                 return;
             }
             register();

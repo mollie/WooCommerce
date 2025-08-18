@@ -35,9 +35,13 @@
     "fzaninotto/faker": "^1.9@dev",
     "inpsyde/php-coding-standards": "^1.0.0",
     "inpsyde/composer-assets-compiler": "^2.5",
-    "php-stubs/wordpress-stubs": "^5.0@stable",
-    "php-stubs/woocommerce-stubs": "7.9.0",
-    "vimeo/psalm": "^4.8 || ^5.13.0"
+    "php-stubs/wordpress-stubs": "^6.8",
+    "php-stubs/woocommerce-stubs": "^10.0",
+    "vimeo/psalm": "^4.8 || ^5.13.0",
+    "phpstan/phpstan": "^2.1",
+    "swissspidy/phpstan-no-private": "^1.0",
+    "phpstan/phpstan-deprecation-rules": "^2.0",
+    "php-stubs/wordpress-globals": "^0.2.0"
   },
   "autoload": {
     "psr-4": {
@@ -59,8 +63,7 @@
     "fix-coding-standards": "vendor/bin/phpcbf",
     "tests": "@php ./vendor/phpunit/phpunit/phpunit --coverage-text",
     "tests:no-cov": "@php ./vendor/phpunit/phpunit/phpunit --no-coverage",
-    "check-psalm": "vendor/bin/psalm",
-    "check-psalm:no-cache": "vendor/bin/psalm --no-cache"
+    "check-phpstan": "vendor/bin/phpstan analyze"
   },
   "repositories": [
     {
@@ -91,6 +94,9 @@
       "automattic/jetpack-autoloader": false,
       "composer/installers": true,
       "inpsyde/composer-assets-compiler": true
+    },
+    "platform": {
+      "php": "7.4.33"
     }
   }
 }

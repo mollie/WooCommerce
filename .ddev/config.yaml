@@ -1,7 +1,7 @@
 name: mollie-payments-for-woocommerce
 type: php
 docroot: .ddev/wordpress
-php_version: "7.4"
+php_version: "8.4"
 webserver_type: apache-fpm
 router_http_port: "80"
 router_https_port: "443"

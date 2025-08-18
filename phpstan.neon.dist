@@ -1,0 +1,18 @@
+includes:
+    - vendor/phpstan/phpstan-deprecation-rules/rules.neon
+    - vendor/swissspidy/phpstan-no-private/rules.neon
+parameters:
+    level: 5
+    scanFiles:
+        - stubs/woocommerce-subscriptions.php
+        - vendor/php-stubs/wordpress-globals/wordpress-globals.php
+        - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+        - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
+        - vendor/php-stubs/woocommerce-stubs/woocommerce-packages-stubs.php
+    scanDirectories:
+        - lib/
+    paths:
+        - inc/
+        - src/
+        - mollie-payments-for-woocommerce.php
+    treatPhpDocTypesAsCertain: false

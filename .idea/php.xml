@@ -145,10 +145,10 @@
       <path value="$PROJECT_DIR$/vendor/phpstan/phpstan" />
       <path value="$PROJECT_DIR$/vendor/swissspidy/phpstan-no-private" />
       <path value="$PROJECT_DIR$/vendor/phpstan/phpstan-deprecation-rules" />
-      <path value="$PROJECT_DIR$/vendor/php-stubs/wordpress-globals" />
       <path value="$PROJECT_DIR$/vendor/phpoption/phpoption" />
       <path value="$PROJECT_DIR$/vendor/graham-campbell/result-type" />
       <path value="$PROJECT_DIR$/vendor/vlucas/phpdotenv" />
+      <path value="$PROJECT_DIR$/vendor/php-stubs/wordpress-globals" />
     </include_path>
   </component>
   <component name="PhpInterpreters">

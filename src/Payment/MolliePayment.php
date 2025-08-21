@@ -69,7 +69,7 @@ class MolliePayment extends MollieObject
      *
      * @return array
      */
-    public function getPaymentRequestData($order, $customerId, $voucherDefaultCategory = Voucher::NO_CATEGORY)
+    public function getPaymentRequestData($order, $customerId)
     {
         return $this->requestFactory->createRequest('payment', $order, $customerId);
     }
@@ -162,6 +162,12 @@ class MolliePayment extends MollieObject
             if ($payment->method === 'paypal') {
                 $this->addPaypalTransactionIdToOrder($order);
             }
+            if (!empty($payment->amountChargedBack)) {
+                $this->logger->debug(
+                    __METHOD__ . ' payment at Mollie has a chargeback, so no processing for order ' . $orderId
+                );
+                return;
+            }
 
             // WooCommerce 2.2.0 has the option to store the Payment transaction id.
             $order->payment_complete($payment->id);
@@ -190,6 +196,7 @@ class MolliePayment extends MollieObject
             );
 
             // Subscription processing
+            $this->addMandateIdMetaToFirstPaymentSubscriptionOrder($order, $payment);
             if (class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin')) {
                 if ($this->dataHelper->isWcSubscription($orderId)) {
                     $this->deleteSubscriptionOrderFromPendingPaymentQueue($order);
@@ -351,7 +358,11 @@ class MolliePayment extends MollieObject
             $payment
         );
 
-        $this->logger->debug(__METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', regular payment failed.');
+        if (isset($payment->details->failureReason)) {
+            $this->logger->debug(__METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', regular payment failed because of ' . esc_attr($payment->details->failureReason) . '.');
+        } else {
+            $this->logger->debug(__METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', regular payment failed.');
+        }
     }
 
     /**

@@ -8,7 +8,6 @@ use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\Payment\Request\RequestFactory;
-use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
@@ -151,7 +150,7 @@ class MollieObject
      * @param $customerId
      *
      */
-    protected function getPaymentRequestData($order, $customerId, $voucherDefaultCategory = Voucher::NO_CATEGORY)
+    protected function getPaymentRequestData($order, $customerId)
     {
     }
 
@@ -219,6 +218,7 @@ class MollieObject
         static::$order = wc_get_order($order_id);
 
         static::$order->update_meta_data('_mollie_order_id', $this->data->id);
+        static::$order->set_transaction_id($this->data->id);
         static::$order->update_meta_data('_mollie_payment_id', static::$paymentId);
         static::$order->update_meta_data('_mollie_payment_mode', $this->data->mode);
 
@@ -621,31 +621,32 @@ class MollieObject
     ) {
 
         if ($this->dataHelper->isSubscriptionPluginActive()) {
-            $payment = isset($payment->_embedded->payments[0]) ? $payment->_embedded->payments[0] : false;
+            //get Payment from orders API
+            $payment = isset($payment->_embedded->payments[0]) ? $payment->_embedded->payments[0] : $payment;
             if (
-                $payment && $payment->sequenceType === 'first'
-                && (property_exists($payment, 'mandateId') && $payment->mandateId !== null)
+                $payment
+                && (isset($payment->sequenceType) && $payment->sequenceType === 'first')
+                && !empty($payment->mandateId)
             ) {
-                $order->update_meta_data(
-                    '_mollie_mandate_id',
-                    $payment->mandateId
-                );
+                $order->update_meta_data('_mollie_mandate_id', $payment->mandateId);
                 $order->save();
-                $subscriptions = wcs_get_subscriptions_for_renewal_order($order->get_id());
-                $subscription = array_pop($subscriptions);
-                if (!$subscription) {
-                    return;
+                $subscriptions = wcs_get_subscriptions_for_order($order);
+                if (!$subscriptions) {
+                    $subscriptions = wcs_get_subscriptions_for_renewal_order($order);
                 }
-                $subscription->update_meta_data('_mollie_payment_id', $payment->id);
-                $subscription->set_payment_method('mollie_wc_gateway_' . $payment->method);
-                $subscription->save();
-                $subscriptionParentOrder = $subscription->get_parent();
-                if ($subscriptionParentOrder) {
-                    $subscriptionParentOrder->update_meta_data(
-                        '_mollie_mandate_id',
-                        $payment->mandateId
-                    );
-                    $subscriptionParentOrder->save();
+                foreach ($subscriptions as $subscription) {
+                    $subscription->update_meta_data('_mollie_payment_id', $payment->id);
+                    $subscription->update_meta_data('_mollie_mandate_id', $payment->mandateId);
+                    $subscription->set_payment_method('mollie_wc_gateway_' . $payment->method);
+                    $subscription->save();
+                    $subscriptionParentOrder = $subscription->get_parent();
+                    if ($subscriptionParentOrder) {
+                        $subscriptionParentOrder->update_meta_data(
+                            '_mollie_mandate_id',
+                            $payment->mandateId
+                        );
+                        $subscriptionParentOrder->save();
+                    }
                 }
             }
         }
@@ -681,12 +682,12 @@ class MollieObject
         );
     }
     /**
-     * @param                               $orderId
-     * @param WC_Payment_Gateway            $gateway
-     * @param WC_Order                      $order
-     * @param                               $newOrderStatus
-     * @param                               $paymentMethodTitle
-     * @param Payment|Order $payment
+     * @param int                           $orderId
+     * @param \WC_Payment_Gateway           $gateway
+     * @param \WC_Order                     $order
+     * @param string                        $newOrderStatus
+     * @param string                        $paymentMethodTitle
+     * @param Payment|Order                 $payment
      */
     protected function failedSubscriptionProcess(
         $orderId,
@@ -697,29 +698,48 @@ class MollieObject
         $payment
     ) {
 
+        $paymentID = $payment->id . ($payment->mode === 'test' ? (' - ' . __(
+            'test mode',
+            'mollie-payments-for-woocommerce'
+        )) : '');
+
+        $orderNote = sprintf(
+        /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
+            __(
+                '%1$s payment failed via Mollie (%2$s)',
+                'mollie-payments-for-woocommerce'
+            ),
+            $paymentMethodTitle,
+            $paymentID,
+        );
+
+        //check if there is a reason for failed payment and print it to order note
+        $failureReason = $payment->details->failureReason ?? '';
+        if ($failureReason) {
+            $orderNote = sprintf(
+            /* translators: Placeholder 1: payment method title, placeholder 2: payment ID, placeholder 3: failure reason, placeholder 4: failure message */
+                __(
+                    '%1$s payment failed via Mollie (%2$s). Because of: (%3$s) %4$s.',
+                    'mollie-payments-for-woocommerce'
+                ),
+                $paymentMethodTitle,
+                $paymentID,
+                $failureReason,
+                $payment->details->failureMessage ?? ''
+            );
+        }
+
         if (
             function_exists('wcs_order_contains_renewal')
             && wcs_order_contains_renewal($orderId)
         ) {
-            if (mollieWooCommerceIsMollieGateway($gateway->id)) {
-                $this->updateOrderStatus(
-                    $order,
-                    $newOrderStatus,
-                    sprintf(
-                    /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-                        __(
-                            '%1$s renewal payment failed via Mollie (%2$s). You will need to manually review the payment and adjust product stocks if you use them.',
-                            'mollie-payments-for-woocommerce'
-                        ),
-                        $paymentMethodTitle,
-                        $payment->id . ($payment->mode === 'test' ? (' - ' . __(
-                            'test mode',
-                            'mollie-payments-for-woocommerce'
-                        )) : '')
-                    ),
-                    $restoreStock = false
-                );
-            }
+            add_filter('wcs_is_scheduled_payment_attempt', '__return_true');
+            $this->updateOrderStatus(
+                $order,
+                $newOrderStatus,
+                sprintf(__('Renewal: %s', 'mollie-payments-for-woocommerce'), $orderNote),
+                false
+            );
             $this->logger->debug(
                 __METHOD__ . ' called for order ' . $orderId . ' and payment '
                 . $payment->id . ', renewal order payment failed, order set to '
@@ -737,18 +757,7 @@ class MollieObject
             $this->updateOrderStatus(
                 $order,
                 $newOrderStatus,
-                sprintf(
-                /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-                    __(
-                        '%1$s payment failed via Mollie (%2$s).',
-                        'mollie-payments-for-woocommerce'
-                    ),
-                    $paymentMethodTitle,
-                    $payment->id . ($payment->mode === 'test' ? (' - ' . __(
-                        'test mode',
-                        'mollie-payments-for-woocommerce'
-                    )) : '')
-                )
+                $orderNote
             );
         }
     }

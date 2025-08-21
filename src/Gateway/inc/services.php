@@ -104,6 +104,12 @@ return static function (): array {
                     return $method['id'] !== Constants::SWISH;
                 });
             }
+            $vippsFlag = (bool) apply_filters('inpsyde.feature-flags.mollie-woocommerce.vippsmobilepay_enabled', true);
+            if (!$vippsFlag) {
+                $availablePaymentMethods = array_filter($availablePaymentMethods, static function ($method) {
+                    return $method['id'] !== Constants::VIPPSMOBILEPAY;
+                });
+            }
             return $availablePaymentMethods;
         },
         IconFactory::class => static function (ContainerInterface $container): IconFactory {
@@ -140,9 +146,8 @@ return static function (): array {
             $pluginId = $container->get('shared.plugin_id');
             $paymentCheckoutRedirectService = $container->get(PaymentCheckoutRedirectService::class);
             assert($paymentCheckoutRedirectService instanceof PaymentCheckoutRedirectService);
-            $voucherDefaultCategory = $container->get('voucher.defaultCategory');
             $deprecatedGatewayInstances = $container->get('__deprecated.gateway_helpers');
-            return new PaymentProcessor($notice, $logger, $paymentFactory, $data, $api, $settings, $pluginId, $paymentCheckoutRedirectService, $voucherDefaultCategory, $deprecatedGatewayInstances);
+            return new PaymentProcessor($notice, $logger, $paymentFactory, $data, $api, $settings, $pluginId, $paymentCheckoutRedirectService, $deprecatedGatewayInstances);
         },
         OrderInstructionsManager::class => static function (): OrderInstructionsManager {
             return new OrderInstructionsManager();

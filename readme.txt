@@ -3,7 +3,7 @@ Contributors: daanvm, danielhuesken, davdebcom, dinamiko, syde, l.vangunst, ndij
 Tags: mollie, woocommerce, payments, ecommerce, credit card
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 8.0.2
+Stable tag: 8.0.4
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -217,6 +217,29 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 
 == Changelog ==
+
+= 8.0.5 - 11-08-2025 =
+* Added - PayPal Subscriptions support through Vaulting
+* Fixed - Save Mandates from Payments API
+* Fixed - Change type to discount when the line item amount is negative
+* Fixed - Order API refunds: Type error, missing metadata and fallback to refund by amount 
+* Fixed - Subscriptions Retry System not working on failed payments for renewals
+* Fixed - Getting Subscription mandates when payment API is active
+* Changed - Payments API is now the default method
+* Changed - Align Pay by Bank with Bank Transfer features
+* Changed - Multiple Voucher categories allowed on Payments API
+* Improved - Several small things in subscriptions
+* Improved - Check payment on Mollie before setting order to failed from WooCommerce
+* Improved - Blocking of recurring webhooks for the same order
+
+= 8.0.4 - 09-07-2025 =
+* Fixed - Incorrect shipping name field on Orders API
+
+= 8.0.3 - 07-07-2025 =
+* Fixed - Direct Bank Transfer (BACS) payment methods was hidden in some instances
+* Fixed - Incorrect Order Status Update After Chargeback Due to Conflicting Webhooks
+* Fixed - Mollie Payments Failing Due to Negative ´unitPrice´ from WooCommerce Line Item Rounding
+* Fixed - Missing surcharge verification on Pay for Order page
 
 = 8.0.2 - 02-06-2025 =
 * Added - Voucher payment method for Payments API

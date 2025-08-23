@@ -80,15 +80,25 @@ const MollieComponent = (props) => {
 
     useEffect(() => {
         const onProcessingPayment = () => {
+            const cleanMethod = activePaymentMethod.replace('mollie_wc_gateway_', '');
+
+            const phoneFieldName = `billing_phone_${cleanMethod}`;
+            const birthdateFieldName = `billing_birthdate_${cleanMethod}`;
+
             let data = {
                 payment_method: activePaymentMethod,
                 payment_method_title: item.title,
                 [issuerKey]: selectedIssuer,
-                billing_phone: inputPhone,
                 billing_company_billie: inputCompany,
-                billing_birthdate: inputBirthdate,
                 cardToken: '',
             };
+            if (inputPhone) {
+                data[phoneFieldName] = inputPhone;
+            }
+
+            if (inputBirthdate) {
+                data[birthdateFieldName] = inputBirthdate;
+            }
             const tokenVal = jQuery('.mollie-components > input').val()
             if (tokenVal) {
                 data.cardToken = tokenVal;
@@ -188,8 +198,8 @@ const MollieComponent = (props) => {
 
     function fieldMarkup(id, fieldType, label, action, value, placeholder = null) {
         const className = "wc-block-components-text-input wc-block-components-address-form__" + id;
-        return <div class="custom-input">
-            <label htmlFor={id} dangerouslySetInnerHTML={{__html: label}}></label>
+        return <div className={`custom-input ${className} is-active`}>
+        <label htmlFor={id} dangerouslySetInnerHTML={{__html: label}}></label>
             <input type={fieldType} name={id} id={id} value={value} onChange={action} placeholder={placeholder}></input>
         </div>
     }

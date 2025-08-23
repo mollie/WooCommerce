@@ -1,10 +1,6 @@
 <?php
 
-use Mollie\Api\Exceptions\ApiException;
-use Mollie\Api\Resources\CurrentProfile;
 use Mollie\WooCommerce\Components\ComponentsStyles;
-use Mollie\WooCommerce\Plugin;
-use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\SettingsComponents;
 
 /**
@@ -178,14 +174,4 @@ function mollieWooCommerceFormatCurrencyValue($value, $currency)
     }
 
     return number_format($value, 2, '.', '');
-}
-
-function isMollieBirthValid($billing_birthdate)
-{
-    $today = new DateTime();
-    $birthdate = DateTime::createFromFormat('Y-m-d', $billing_birthdate);
-    if ($birthdate >= $today) {
-        return false;
-    }
-    return true;
 }

@@ -43,8 +43,6 @@ class CustomerBirthdateMiddleware implements RequestMiddlewareInterface
         $format = "Y-m-d";
         //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         $fieldPosted = wc_clean(wp_unslash($_POST[$birthdatePostedFieldName] ?? ''));
-        $order->update_meta_data('billing_birthdate', $fieldPosted);
-        $order->save();
         $requestData['consumerDateOfBirth'] = gmdate($format, (int) strtotime($fieldPosted));
         return $next($requestData, $order, $context);
     }

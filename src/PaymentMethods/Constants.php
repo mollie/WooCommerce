@@ -18,4 +18,5 @@ class Constants
     public const PAYBYBANK = 'paybybank';
     public const VIPPSMOBILEPAY = 'vippsmobilepay';
     public const VOUCHER = 'voucher';
+    public const BIZUM = 'bizum';
 }

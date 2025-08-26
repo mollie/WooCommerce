@@ -50,8 +50,10 @@ class BancomatpayFieldsStrategy extends AbstractPaymentFieldsRenderer implements
                     <abbr class="required" title="required">*</abbr>
                 </label>
                 <span class="woocommerce-input-wrapper">
-                    <input type="tel" class="input-text" name="' . esc_attr(FieldConstants::BANCOMATPAY_PHONE) . '" id="' . esc_attr(
-                FieldConstants::BANCOMATPAY_PHONE
+                    <input type="tel" class="input-text" name="' . esc_attr(
+            FieldConstants::BANCOMATPAY_PHONE
+        ) . '" id="' . esc_attr(
+            FieldConstants::BANCOMATPAY_PHONE
         ) . '"
                            placeholder="+39xxxxxxxxx"
                            value="' . esc_attr($phoneValue) . '" autocomplete="phone">

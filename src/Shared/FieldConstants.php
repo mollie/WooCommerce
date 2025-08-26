@@ -12,4 +12,5 @@ class FieldConstants
     public const BANCOMATPAY_PHONE = 'billing_phone_bancomatpay';
     public const RIVERTY_PHONE = 'billing_phone_riverty';
     public const RIVERTY_BIRTHDATE = 'billing_birthdate_riverty';
+    public const BIZUM_PHONE = 'billing_phone_bizum';
 }

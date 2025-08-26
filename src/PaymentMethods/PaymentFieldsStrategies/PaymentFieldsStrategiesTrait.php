@@ -21,7 +21,7 @@ trait PaymentFieldsStrategiesTrait
         ) . '</label>';
         $html .= '<span class="woocommerce-input-wrapper">';
         $html .= '<input type="date" class="input-text " name="' . esc_attr(
-                $birthdateField
+            $birthdateField
         ) . '" id="' . esc_attr($birthdateField) . '" value="' . esc_attr(
             $birthValue
         ) . '" autocomplete="birthdate">';

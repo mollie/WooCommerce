@@ -4,6 +4,7 @@ namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use WC_Order;
 use Mollie\WooCommerce\Shared\FieldConstants;
+
 /**
  * Middleware to handle customer birthdate in the request.
  */
@@ -40,6 +41,7 @@ class CustomerBirthdateMiddleware implements RequestMiddlewareInterface
             $next($requestData, $order, $context);
         }
         $format = "Y-m-d";
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         $fieldPosted = wc_clean(wp_unslash($_POST[$birthdatePostedFieldName] ?? ''));
         $order->update_meta_data('billing_birthdate', $fieldPosted);
         $order->save();
@@ -59,8 +61,8 @@ class CustomerBirthdateMiddleware implements RequestMiddlewareInterface
         $cleanMethod = str_replace('mollie_wc_gateway_', '', $method);
         $constantName = strtoupper($cleanMethod) . '_BIRTHDATE';
 
-        if (defined(FieldConstants::class. '::' . $constantName)) {
-            return constant(FieldConstants::class. '::' . $constantName);
+        if (defined(FieldConstants::class . '::' . $constantName)) {
+            return constant(FieldConstants::class . '::' . $constantName);
         }
 
         return '';

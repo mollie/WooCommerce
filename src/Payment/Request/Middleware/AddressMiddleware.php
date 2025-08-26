@@ -289,8 +289,8 @@ class AddressMiddleware implements RequestMiddlewareInterface
         $cleanMethod = str_replace('mollie_wc_gateway_', '', $method);
         $constantName = strtoupper($cleanMethod) . '_COMPANY';
         $companyField = false;
-        if (defined(FieldConstants::class. '::' . $constantName)) {
-            $companyField = constant(FieldConstants::class. '::' . $constantName);
+        if (defined(FieldConstants::class . '::' . $constantName)) {
+            $companyField = constant(FieldConstants::class . '::' . $constantName);
         }
         if ($companyField) {
             //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
@@ -586,8 +586,8 @@ class AddressMiddleware implements RequestMiddlewareInterface
         $cleanMethod = str_replace('mollie_wc_gateway_', '', $method);
         $constantName = strtoupper($cleanMethod) . '_PHONE';
 
-        if (defined(FieldConstants::class. '::' . $constantName)) {
-            return constant(FieldConstants::class. '::' . $constantName);
+        if (defined(FieldConstants::class . '::' . $constantName)) {
+            return constant(FieldConstants::class . '::' . $constantName);
         }
 
         return 'billing_phone';

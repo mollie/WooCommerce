@@ -53,8 +53,10 @@ class In3FieldsStrategy extends AbstractPaymentFieldsRenderer implements Payment
             'mollie-payments-for-woocommerce'
         ) . '</label>';
         $html .= '<span class="woocommerce-input-wrapper">';
-        $html .= '<input type="tel" class="input-text " name="' . esc_attr(FieldConstants::IN3_PHONE) . '" id="' . esc_attr(
-                FieldConstants::IN3_PHONE
+        $html .= '<input type="tel" class="input-text " name="' . esc_attr(
+            FieldConstants::IN3_PHONE
+        ) . '" id="' . esc_attr(
+            FieldConstants::IN3_PHONE
         ) . '" placeholder="+316xxxxxxxx" value="' . esc_attr($phoneValue) . '" autocomplete="phone">';
         $html .= '</span></p>';
         return $html;

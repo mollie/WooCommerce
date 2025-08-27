@@ -4,7 +4,6 @@ namespace Mollie\WooCommerce\Assets;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\DefaultFieldsStrategy;
-use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\Shared\Data;
 use Psr\Container\ContainerInterface;
 
@@ -80,41 +79,6 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
 
     public static function gatewayDataForWCBlocks(Data $dataService, array $deprecatedGatewayHelpers, ContainerInterface $container): array
     {
-        $filters = $dataService->wooCommerceFiltersForCheckout();
-        $availableGateways = WC()->payment_gateways()->get_available_payment_gateways();
-        $availablePaymentMethods = [];
-
-        /**
-         * @var $gateway
-         * psalm-suppress  UnusedForeachValue
-         */
-        foreach ($availableGateways as $key => $gateway) {
-            if (strpos($key, 'mollie_wc_gateway_') === false) {
-                unset($availableGateways[$key]);
-            }
-        }
-        if (
-            isset($filters['amount']['currency'])
-            && isset($filters['locale'])
-            && isset($filters['billingCountry'])
-        ) {
-            $filterKey = "{$filters['amount']['currency']}-{$filters['billingCountry']}";
-            foreach ($availableGateways as $key => $gateway) {
-                $gatewayId = $gateway->id;
-                $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
-                $availablePaymentMethods[$filterKey][$key] = $methodId;
-            }
-        }
-
-        $dataToScript = [
-            'ajaxUrl' => admin_url('admin-ajax.php'),
-            'filters' => [
-                'currency' => isset($filters['amount']['currency']) ? $filters['amount']['currency'] : false,
-                'cartTotal' => isset($filters['amount']['value']) ? $filters['amount']['value'] : false,
-                'paymentLocale' => isset($filters['locale']) ? $filters['locale'] : false,
-                'billingCountry' => isset($filters['billingCountry']) ? $filters['billingCountry'] : false,
-            ],
-        ];
         $paymentGateways = WC()->payment_gateways()->payment_gateways();
         $gatewayData = [];
         /** @var PaymentGateway $gateway */
@@ -184,7 +148,6 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
             ];
         }
         $dataToScript['gatewayData'] = $gatewayData;
-        $dataToScript['availableGateways'] = $availablePaymentMethods;
 
         return $dataToScript;
     }

@@ -1,70 +1,10 @@
-let cachedAvailableGateways = {};
-
-function setAvailableGateways(country, currencyCode, data) {
-    cachedAvailableGateways = {
-        ...cachedAvailableGateways,
-        ...data
-    };
-}
-function useMollieAvailableGateways(billing, currencyCode, cartTotal, filters, ajaxUrl) {
-    let country = billing.country;
-    const code = currencyCode;
-    const value = cartTotal;
-    if (!country) {
-        country = wcSettings?.baseLocation?.country;
-    }
-
-    wp.element.useEffect(() => {
-        if (!country) return;
-        const currencyCode = code;
-        const cartTotal = value;
-        const currentFilterKey = currencyCode + "-" + country;
-        if (cachedAvailableGateways.hasOwnProperty(currentFilterKey)) {
-            return;
-        }
-        fetch(
-            ajaxUrl,
-            {
-                method: 'POST',
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: new URLSearchParams({
-                    action: 'mollie_checkout_blocks_canmakepayment',
-                    currency: currencyCode,
-                    billingCountry: country,
-                    cartTotal,
-                    paymentLocale: filters.paymentLocale
-                }),
-            }
-        ).then(response => response.json()).then(data => {
-            setAvailableGateways(country, currencyCode, data.data);
-            const cartTotals = wp.data.select('wc/store/cart').getCartTotals();
-            // Dispatch them again to trigger a re-render:
-            wp.data.dispatch('wc/store/cart').setCartData({...cartTotals});
-        });
-    }, [billing, currencyCode, filters.paymentLocale]);
-
-    return cachedAvailableGateways;
-}
-
-// Component that runs the hook but does not render anything.
-function MollieGatewayUpdater({ billing, currencyCode, cartTotal, filters, ajaxUrl}) {
-
-    useMollieAvailableGateways(billing, currencyCode, cartTotal, filters, ajaxUrl);
-    return null;
-}
 
 let onSubmitLocal
-let activePaymentMethodLocal
 let creditCardSelected = new Event("mollie_creditcard_component_selected", {bubbles: true});
 const MollieComponent = (props) => {
-    let {onSubmit, activePaymentMethod, billing, item, useEffect, ajaxUrl, jQuery, emitResponse, eventRegistration, requiredFields, shippingData, isPhoneFieldVisible} = props
+    let {onSubmit, activePaymentMethod, billing, item, useEffect, jQuery, emitResponse, eventRegistration, requiredFields, shippingData, isPhoneFieldVisible} = props
     const {  responseTypes } = emitResponse;
     const {onPaymentSetup, onCheckoutValidation} = eventRegistration;
-    if (!item || !item.name) {
-        return <div>Loading payment methods...</div>;
-    }
     const [ selectedIssuer, selectIssuer ] = wp.element.useState('');
     const [ inputPhone, selectPhone ] = wp.element.useState('');
     const [ inputBirthdate, selectBirthdate ] = wp.element.useState('');
@@ -190,7 +130,7 @@ const MollieComponent = (props) => {
         const className = "wc-block-components-text-input wc-block-components-address-form__" + id;
         return <div class="custom-input">
             <label htmlFor={id} dangerouslySetInnerHTML={{__html: label}}></label>
-            <input type={fieldType} name={id} id={id} value={value} onChange={action} placeholder={placeholder}></input>
+            <input type={fieldType} className={className} name={id} id={id} value={value} onChange={action} placeholder={placeholder}></input>
         </div>
     }
 
@@ -261,28 +201,15 @@ const MollieComponent = (props) => {
     return <div>{itemContentP}</div>
 }
 
-const Label = ({ item, filters, ajaxUrl }) => {
-    const cartData = wp.data.useSelect((select) =>
-            select('wc/store/cart').getCartData(),
-        []
-    );
-    const cartTotals = wp.data.useSelect( (select) => select('wc/store/cart').getCartTotals(), [ ] );
-    const cartTotal = cartTotals?.total_price || 0;
+const Label = ({ item }) => {
     return (
         <>
             <div dangerouslySetInnerHTML={{ __html: item.label }}/>
-            <MollieGatewayUpdater
-                billing={cartData.billingAddress}
-                currencyCode={wcSettings.currency.code}
-                filters={filters}
-                ajaxUrl={ajaxUrl}
-                cartTotal={cartTotal}
-            />
         </>
     );
 };
 
-const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isCompanyFieldVisible, isPhoneFieldVisible) =>{
+const molliePaymentMethod = (useEffect, item, jQuery, requiredFields, isPhoneFieldVisible) =>{
 
     if (item.name === "mollie_wc_gateway_creditcard") {
         document.addEventListener('mollie_components_ready_to_submit', function () {
@@ -299,50 +226,19 @@ const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, available
         name: item.name,
         label:<Label
             item={item}
-            ajaxUrl={ajaxUrl}
-            filters={filters}
         />,
         content: <MollieComponent
             item={item}
             useEffect={useEffect}
-            ajaxUrl={ajaxUrl}
             jQuery={jQuery}
             requiredFields={requiredFields}
             isPhoneFieldVisible={isPhoneFieldVisible}/>,
         edit: <div>{item.edit}</div>,
         paymentMethodId: item.paymentMethodId,
-        canMakePayment: ({cartTotals, billingData}) => {
-            if (!_.isEmpty(item.allowedCountries) && !(item.allowedCountries.includes(billingData.country))) {
-                return false
-            }
-            if (cartTotals <= 0) {
-                return true
-            }
-            const currencyCode = cartTotals?.currency_code;
-            let country = billingData?.country;
-            if (!country) {
-                country = wcSettings?.baseLocation.country;
-            }
-            const currentFilterKey = currencyCode + "-" + country;
-
+        canMakePayment: () => {
             creditcardSelectedEvent();
-
-            if (!cachedAvailableGateways.hasOwnProperty(currentFilterKey)) {
-                cachedAvailableGateways = {
-                    ...cachedAvailableGateways,
-                    ...availableGateways
-                };
-            }
-
-            if (availableGateways.hasOwnProperty(currentFilterKey) && availableGateways[currentFilterKey].hasOwnProperty(item.name)) {
-                return true;
-            }
-
-            if (cachedAvailableGateways.hasOwnProperty(currentFilterKey) && cachedAvailableGateways[currentFilterKey].hasOwnProperty(item.name)) {
-                return true;
-            }
-
-            return false;
+            //only the methods that return is available on backend will be loaded here so we show them
+            return true
         },
         ariaLabel: item.ariaLabel,
         supports: {

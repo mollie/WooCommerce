@@ -1,6 +1,9 @@
 import molliePaymentMethod from './blocks/molliePaymentMethod'
 import ApplePayButtonComponent from './blocks/ApplePayButtonComponent'
 import ApplePayButtonEditorComponent from './blocks/ApplePayButtonEditorComponent'
+import './src/store/index.js';
+import {setUpMollieBlockCheckoutListeners} from "./src/store/storeListeners";
+import {MOLLIE_STORE_KEY} from "./src/store";
 
 (
     function ({mollieBlockData, wc, _, jQuery}) {
@@ -11,7 +14,7 @@ import ApplePayButtonEditorComponent from './blocks/ApplePayButtonEditorComponen
         const {registerPaymentMethod} = wc.wcBlocksRegistry;
         const {defaultFields} = wc.wcSettings.allSettings;
         const {gatewayData} = mollieBlockData.gatewayData;
-        const {useEffect} = wp.element;
+
         const isAppleSession = typeof window.ApplePaySession === "function"
         const isEditorContext = wc?.wcBlocksData?.isEditor();
 
@@ -32,7 +35,7 @@ import ApplePayButtonEditorComponent from './blocks/ApplePayButtonEditorComponen
         }
 
         gatewayData.forEach(item => {
-            let register = () => registerPaymentMethod(molliePaymentMethod(useEffect, item, jQuery, requiredFields, isPhoneFieldVisible));
+            let register = () => registerPaymentMethod(molliePaymentMethod(item, jQuery, requiredFields, isPhoneFieldVisible));
             if (item.name === 'mollie_wc_gateway_applepay') {
                 const {isExpressEnabled} = item;
                 if (isEditorContext || isAppleSession && window.ApplePaySession.canMakePayments()) {
@@ -66,5 +69,6 @@ import ApplePayButtonEditorComponent from './blocks/ApplePayButtonEditorComponen
             }
             register();
         });
+        setUpMollieBlockCheckoutListeners(MOLLIE_STORE_KEY);
     }
 )(window, wc)

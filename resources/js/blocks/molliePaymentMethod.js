@@ -1,5 +1,5 @@
-import {MollieComponent} from "../src/components/mollieContainer/MollieComponent";
-import {Label} from "../src/components/mollieContainer/Label";
+import {PaymentMethodContentRenderer} from "../src/components/PaymentMethodContentRenderer";
+import {Label} from "../src/components/Label";
 let creditCardSelected = new Event("mollie_creditcard_component_selected", {bubbles: true});
 
 const molliePaymentMethod = (item, jQuery, requiredFields, isPhoneFieldVisible) =>{
@@ -20,7 +20,7 @@ const molliePaymentMethod = (item, jQuery, requiredFields, isPhoneFieldVisible) 
         label:<Label
             item={item}
         />,
-        content: <MollieComponent
+        content: <PaymentMethodContentRenderer
             item={item}
             jQuery={jQuery}
             requiredFields={requiredFields}

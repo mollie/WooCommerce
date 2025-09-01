@@ -170,7 +170,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         );
         add_action('add_meta_boxes_woocommerce_page_wc-orders', [$this, 'addShopOrderMetabox'], 10);
         add_filter('woocommerce_checkout_fields', static function ($fields) use ($container) {
-            if (!isset($fields['billing']['billing_phone'])) {
+            if (!isset($fields['billing']['billing_phone']) || !$fields['billing']['billing_phone']['required']) {
                 update_option('mollie_wc_is_phone_required_flag', false);
             } else {
                 update_option('mollie_wc_is_phone_required_flag', true);

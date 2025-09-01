@@ -59,7 +59,7 @@ let onSubmitLocal
 let activePaymentMethodLocal
 let creditCardSelected = new Event("mollie_creditcard_component_selected", {bubbles: true});
 const MollieComponent = (props) => {
-    let {onSubmit, activePaymentMethod, billing, item, useEffect, ajaxUrl, jQuery, emitResponse, eventRegistration, requiredFields, shippingData, isPhoneFieldVisible} = props
+    let {onSubmit, activePaymentMethod, billing, item, useEffect, ajaxUrl, jQuery, emitResponse, eventRegistration, requiredFields, shippingData} = props
     const {  responseTypes } = emitResponse;
     const {onPaymentSetup, onCheckoutValidation} = eventRegistration;
     if (!item || !item.name) {
@@ -196,6 +196,14 @@ const MollieComponent = (props) => {
         itemContentP = <p>{item.content}</p>;
     }
 
+    function shouldShowPhoneField() {
+        //only if is required we will not show
+        const phone = getPhoneField();
+        const isPhoneRequired = phone? (phone.hasAttribute('required') || phone.getAttribute('aria-required') === 'true') : false;
+        //else is true
+        return !isPhoneRequired;
+    }
+
     function fieldMarkup(id, fieldType, label, action, value, placeholder = null) {
         const className = "wc-block-components-text-input wc-block-components-address-form__" + id;
         return <div className={`custom-input ${className} is-active`}>
@@ -246,11 +254,24 @@ const MollieComponent = (props) => {
         const birthdateField = item.birthdatePlaceholder || "Birthdate";
         const phoneField = item.phonePlaceholder || "+316xxxxxxxx";
         const phoneLabel = item.phoneLabel || "Phone";
+        const showPhoneField = shouldShowPhoneField();
         return (
             <>
                 <div>{itemContentP}</div>
                 {fieldMarkup("billing-birthdate", "date", birthdateField, updateBirthdate, inputBirthdate)}
-                {!isPhoneFieldVisible && fieldMarkup("billing-phone-in3", "tel", phoneLabel, updatePhone, inputPhone, phoneField)}
+                {showPhoneField && fieldMarkup("billing-phone-in3", "tel", phoneLabel, updatePhone, inputPhone, phoneField)}
+            </>
+        );
+    }
+
+    if (item.name === "mollie_wc_gateway_bizum") {
+        const phoneField = item.phonePlaceholder || "+34xxxxxxxxx";
+        const phoneLabel = item.phoneLabel || "Phone";
+        const showPhoneField = shouldShowPhoneField();
+        return (
+            <>
+                <div>{itemContentP}</div>
+                {showPhoneField && fieldMarkup("billing-phone-bizum", "tel", phoneLabel, updatePhone, inputPhone, phoneField)}
             </>
         );
     }
@@ -259,11 +280,12 @@ const MollieComponent = (props) => {
         const birthdateField = item.birthdatePlaceholder || "Birthdate";
         const phoneField = item.phonePlaceholder || "+316xxxxxxxx";
         const phoneLabel = item.phoneLabel || "Phone";
+        const showPhoneField = shouldShowPhoneField();
         return (
             <>
                 <div>{itemContentP}</div>
                 {fieldMarkup("billing-birthdate", "date", birthdateField, updateBirthdate, inputBirthdate)}
-                {!isPhoneFieldVisible && fieldMarkup("billing-phone-riverty", "tel", phoneLabel, updatePhone, inputPhone, phoneField)}
+                {showPhoneField && fieldMarkup("billing-phone-riverty", "tel", phoneLabel, updatePhone, inputPhone, phoneField)}
             </>
         );
     }
@@ -292,8 +314,7 @@ const Label = ({ item, filters, ajaxUrl }) => {
     );
 };
 
-const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isCompanyFieldVisible, isPhoneFieldVisible) =>{
-
+const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields) =>{
     if (item.name === "mollie_wc_gateway_creditcard") {
         document.addEventListener('mollie_components_ready_to_submit', function () {
             onSubmitLocal()
@@ -317,8 +338,7 @@ const molliePaymentMethod = (useEffect, ajaxUrl, filters, gatewayData, available
             useEffect={useEffect}
             ajaxUrl={ajaxUrl}
             jQuery={jQuery}
-            requiredFields={requiredFields}
-            isPhoneFieldVisible={isPhoneFieldVisible}/>,
+            requiredFields={requiredFields}/>,
         edit: <div>{item.edit}</div>,
         paymentMethodId: item.paymentMethodId,
         canMakePayment: ({cartTotals, billingData}) => {

@@ -14,24 +14,14 @@ import ApplePayButtonEditorComponent from './blocks/ApplePayButtonEditorComponen
         const {useEffect} = wp.element;
         const isAppleSession = typeof window.ApplePaySession === "function"
         const isEditorContext = wc?.wcBlocksData?.isEditor();
-
-        function getPhoneField() {
-            const phoneFieldDataset = document.querySelector('[data-show-phone-field]');
-            if (!phoneFieldDataset) {
-                return true;
-            }
-            return phoneFieldDataset.dataset.showPhoneField !== "false"
-        }
-
         const companyNameString = defaultFields.company.label
-        const isPhoneFieldVisible = getPhoneField();
         const phoneString = defaultFields.phone.label
         let requiredFields = {
             'companyNameString': companyNameString,
             'phoneString': phoneString,
         }
         gatewayData.forEach(item => {
-            let register = () => registerPaymentMethod(molliePaymentMethod(useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isPhoneFieldVisible));
+            let register = () => registerPaymentMethod(molliePaymentMethod(useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields));
             if (item.name === 'mollie_wc_gateway_applepay') {
                 const {isExpressEnabled} = item;
                 if (isEditorContext || isAppleSession && window.ApplePaySession.canMakePayments()) {

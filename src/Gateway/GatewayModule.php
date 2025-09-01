@@ -198,9 +198,9 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
 
         add_filter(
             'woocommerce_cancel_unpaid_order',
-            static function (bool $paid, \WC_Order $order) use ($container): bool {
-                if (! apply_filters('mollie_payments_for_woocommerce_check_payment_for_unpaid_order_on_cancel_unpaid_order', true)) {
-                    return $paid;
+            static function (bool $createdViaCheckout, \WC_Order $order) use ($container): bool {
+                if (! $createdViaCheckout || ! apply_filters('mollie_payments_for_woocommerce_check_payment_for_unpaid_order_on_cancel_unpaid_order', true)) {
+                    return $createdViaCheckout;
                 }
                 $mollieOrderService = $container->get(MollieOrderService::class);
                 return ! $mollieOrderService->checkPaymentForUnpaidOrder($order);

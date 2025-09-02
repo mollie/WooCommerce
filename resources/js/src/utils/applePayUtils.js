@@ -1,5 +1,7 @@
 
 import { APPLE_PAY_GATEWAY_NAME } from '../config/paymentConstants';
+import ApplePayButtonComponent from "../../blocks/ApplePayButtonComponent";
+import ApplePayButtonEditorComponent from "../../blocks/ApplePayButtonEditorComponent";
 
 /**
  * Apple Pay utility functions - centralized Apple Pay logic
@@ -57,11 +59,7 @@ export const ApplePayUtils = {
      * // Use content component in frontend, edit component in block editor
      */
     getApplePayComponents: () => ({
-        content: wp.element.createElement(
-            () => import('../../blocks/ApplePayButtonComponent').then(m => m.default)
-        ),
-        edit: wp.element.createElement(
-            () => import('../../blocks/ApplePayButtonEditorComponent').then(m => m.default)
-        )
+        content: <ApplePayButtonComponent />,
+        edit: <ApplePayButtonEditorComponent />,
     })
 };

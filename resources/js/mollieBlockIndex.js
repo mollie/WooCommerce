@@ -1,74 +1,26 @@
-import molliePaymentMethod from './blocks/molliePaymentMethod'
-import ApplePayButtonComponent from './blocks/ApplePayButtonComponent'
-import ApplePayButtonEditorComponent from './blocks/ApplePayButtonEditorComponent'
 import './src/store/index.js';
-import {setUpMollieBlockCheckoutListeners} from "./src/store/storeListeners";
-import {MOLLIE_STORE_KEY} from "./src/store";
+import { setUpMollieBlockCheckoutListeners } from "./src/store/storeListeners";
+import { MOLLIE_STORE_KEY } from "./src/store";
+import { registerAllPaymentMethods } from './src/registration/paymentRegistrar';
+import { buildRegistrationContext } from './src/initialization/contextBuilder';
 
-(
-    function ({mollieBlockData, wc, _, jQuery}) {
-        if (_.isEmpty(mollieBlockData)) {
-            return;
-        }
-
-        const {registerPaymentMethod} = wc.wcBlocksRegistry;
-        const {defaultFields} = wc.wcSettings.allSettings;
-        const {gatewayData} = mollieBlockData.gatewayData;
-
-        const isAppleSession = typeof window.ApplePaySession === "function"
-        const isEditorContext = wc?.wcBlocksData?.isEditor();
-
-        function getPhoneField() {
-            const phoneFieldDataset = document.querySelector('[data-show-phone-field]');
-            if (!phoneFieldDataset) {
-                return true;
-            }
-            return phoneFieldDataset.dataset.showPhoneField !== "false"
-        }
-
-        const companyNameString = defaultFields.company.label
-        const isPhoneFieldVisible = getPhoneField();
-        const phoneString = defaultFields.phone.label
-        let requiredFields = {
-            'companyNameString': companyNameString,
-            'phoneString': phoneString,
-        }
-
-        gatewayData.forEach(item => {
-            let register = () => registerPaymentMethod(molliePaymentMethod(item, jQuery, requiredFields, isPhoneFieldVisible));
-            if (item.name === 'mollie_wc_gateway_applepay') {
-                const {isExpressEnabled} = item;
-                if (isEditorContext || isAppleSession && window.ApplePaySession.canMakePayments()) {
-                    register();
-                }
-                if (isExpressEnabled !== true) {
-                    return;
-                }
-                const {registerExpressPaymentMethod} = wc.wcBlocksRegistry;
-                registerExpressPaymentMethod({
-                    name: 'mollie_wc_gateway_applepay_express',
-                    title: 'Apple Pay Express button',
-                    description: 'Apple Pay Express button',
-                    content: <ApplePayButtonComponent/>,
-                    edit: <ApplePayButtonEditorComponent/>,
-                    ariaLabel: 'Apple Pay',
-                    canMakePayment: () => {
-                        if (isEditorContext) {
-                            return true;
-                        }
-                        return isAppleSession && window.ApplePaySession.canMakePayments();
-                    },
-                    paymentMethodId: 'mollie_wc_gateway_applepay',
-                    gatewayId: 'mollie_wc_gateway_applepay',
-                    supports: {
-                        features: ['products'],
-                        style: ['height', 'borderRadius']
-                    },
-                })
-                return;
-            }
-            register();
-        });
-        setUpMollieBlockCheckoutListeners(MOLLIE_STORE_KEY);
+/**
+ * Main Mollie WooCommerce Blocks initialization
+ */
+(function ({mollieBlockData, wc, _, jQuery}) {
+    if (_.isEmpty(mollieBlockData)) {
+        console.warn('Mollie: No block data available');
+        return;
     }
-)(window, wc)
+
+    try {
+        const { gatewayData } = mollieBlockData.gatewayData;
+        const context = buildRegistrationContext(wc, jQuery);
+
+        registerAllPaymentMethods(gatewayData, context);
+        setUpMollieBlockCheckoutListeners(MOLLIE_STORE_KEY);
+
+    } catch (error) {
+        console.error('Mollie: Initialization failed:', error);
+    }
+})(window, wc);

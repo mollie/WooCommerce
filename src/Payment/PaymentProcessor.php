@@ -319,9 +319,7 @@ class PaymentProcessor implements PaymentProcessorInterface
                 $paymentOrder->updatePaymentDataWithOrderData($orderWithPayments, $orderId);
             }
         } catch (ApiException $e) {
-            $this->handleMollieOutage($e);
-            //if exception is 422 do not try to create a payment
-            $this->handleMollieFraudRejection($e);
+            $this->handleProcessingException($e);
             // Don't try to create a Mollie Payment for old Klarna payment methods
             $order_payment_method = $order->get_payment_method();
             $orderMandatoryPaymentMethods = [
@@ -428,7 +426,8 @@ class PaymentProcessor implements PaymentProcessorInterface
                 $apiKey
             )->payments->create($data);
         } catch (ApiException $e) {
-            $this->handleMollieOutage($e);
+            $this->handleProcessingException($e);
+            //other exceptions
             $message = $e->getMessage();
             $this->logger->debug($message);
             throw $e;
@@ -807,48 +806,82 @@ class PaymentProcessor implements PaymentProcessorInterface
     }
 
     /**
-     * Check if the exception is an outage, if so bail, log and inform user
+     * Is an outage, bail, log and inform user
+     *
      * @param ApiException $e
      * @return void
      * @throws ApiException
      */
     public function handleMollieOutage(ApiException $e): void
     {
-        $isMollieOutage = $this->apiHelper->isMollieOutageException($e);
-        if ($isMollieOutage) {
-            $this->logger->debug(
-                "Creating payment object: type Order failed due to a Mollie outage, stopping process. Check Mollie status at https://status.mollie.com/. {$e->getMessage()}"
-            );
+        $this->logger->debug(
+            "Creating payment object: type Order failed due to a Mollie outage, stopping process. Check Mollie status at https://status.mollie.com/. {$e->getMessage()}"
+        );
 
-            throw new ApiException(
-                esc_html__(
-                    'Payment failed due to: Mollie is out of service. Please try again later.',
-                    'mollie-payments-for-woocommerce'
-                )
-            );
-        }
+        throw new ApiException(
+            esc_html__(
+                'Payment failed due to: Mollie is out of service. Please try again later.',
+                'mollie-payments-for-woocommerce'
+            )
+        );
     }
 
     /**
-     * Check if the exception is a fraud rejection, if so bail, log and inform user
-     * @param ApiException $e
+     * Is a fraud rejection, bail, log and inform user
+     *
      * @return void
      * @throws ApiException
      */
-    public function handleMollieFraudRejection(ApiException $e): void
+    public function handleMollieFraudRejection(): void
     {
-        $isMollieFraudException = $this->apiHelper->isMollieFraudException($e);
-        if ($isMollieFraudException) {
-            $this->logger->debug(
-                "Creating payment object: The payment was declined due to suspected fraud, stopping process."
-            );
+        $this->logger->debug(
+            "Creating payment object: The payment was declined due to suspected fraud, stopping process."
+        );
 
-            throw new ApiException(
-                esc_html__(
-                    'Payment failed due to:  The payment was declined due to suspected fraud.',
-                    'mollie-payments-for-woocommerce'
-                )
-            );
+        throw new ApiException(
+            esc_html__(
+                'Payment failed due to:  The payment was declined due to suspected fraud.',
+                'mollie-payments-for-woocommerce'
+            )
+        );
+    }
+
+    /**
+     * Is a unprocessable phone number, bail, log and inform user
+     *
+     * @throws ApiException
+     */
+    private function handleUnprocessablePhone()
+    {
+        $this->logger->debug(
+            "Creating payment object: The phone number provided is invalid, stopping process."
+        );
+
+        throw new ApiException(
+            esc_html__(
+                'Payment failed due to: Invalid phone number.',
+                'mollie-payments-for-woocommerce'
+            )
+        );
+    }
+
+    /**
+     * @throws ApiException
+     */
+    private function handleProcessingException(ApiException $e)
+    {
+        switch ($this->apiHelper->isMollieException($e)) {
+            case 'unprocessable_phone_number':
+                $this->handleUnprocessablePhone();
+                //this will throw an exception and stop the process
+            case 'fraud_rejection':
+                $this->handleMollieFraudRejection();
+                //this will throw an exception and stop the process
+            case 'outage':
+                $this->handleMollieOutage($e);
+                //this will throw an exception and stop the process
+            default:
+                // do nothing
         }
     }
 }

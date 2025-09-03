@@ -245,6 +245,7 @@ const MollieComponent = (props) => {
             NL: '+316xxxxxxxx',
             DE: '+49xxxxxxxxx',
             AT: '+43xxxxxxxxx',
+            ES: '+34xxxxxxxxx',
         };
         const country = billing.billingData.country;
         item.phonePlaceholder = countryCodes[country] || countryCodes['NL'];

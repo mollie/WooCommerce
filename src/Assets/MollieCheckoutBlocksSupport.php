@@ -152,6 +152,7 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
                 'NL' => '+316xxxxxxxx',
                 'DE' => '+49xxxxxxxxx',
                 'AT' => '+43xxxxxxxxx',
+                'ES' => '+34xxxxxxxxx',
             ];
             $country = WC()->customer ? WC()->customer->get_billing_country() : '';
             $hideCompanyFieldFilter = apply_filters('mollie_wc_hide_company_field', false);

@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
 use Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
+use Mollie\WooCommerce\Shared\FieldConstants;
 
 class BillieFieldsStrategy extends AbstractPaymentFieldsRenderer implements PaymentFieldsRendererInterface
 {
-    public const FIELD_COMPANY = 'billing_company_billie';
-
     public function renderFields(): string
     {
 
@@ -44,15 +43,17 @@ class BillieFieldsStrategy extends AbstractPaymentFieldsRenderer implements Paym
     {
         return '
     <p class="form-row form-row-wide" id="billing_company_field">
-        <label for="' . esc_attr(self::FIELD_COMPANY) . '" class="">' . esc_html__(
+        <label for="' . esc_attr(FieldConstants::BILLIE_COMPANY) . '" class="">' . esc_html__(
             'Company',
             'mollie-payments-for-woocommerce'
         ) . '
             <abbr class="required" title="required">*</abbr>
         </label>
         <span class="woocommerce-input-wrapper">
-            <input type="tel" class="input-text" name="' . esc_attr(self::FIELD_COMPANY) . '" id="' . esc_attr(
-            self::FIELD_COMPANY
+            <input type="tel" class="input-text" name="' . esc_attr(
+            FieldConstants::BILLIE_COMPANY
+        ) . '" id="' . esc_attr(
+            FieldConstants::BILLIE_COMPANY
         ) . '"
                    placeholder="Company name"
                    value="" autocomplete="organization">

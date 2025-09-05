@@ -12,6 +12,7 @@ use Mollie\WooCommerce\Log\LogModule;
 use Mollie\WooCommerce\MerchantCapture\MerchantCaptureModule;
 use Mollie\WooCommerce\Notice\NoticeModule;
 use Mollie\WooCommerce\Payment\PaymentModule;
+use Mollie\WooCommerce\ReturnPage\ReturnPageModule;
 use Mollie\WooCommerce\SDK\SDKModule;
 use Mollie\WooCommerce\Settings\SettingsModule;
 use Mollie\WooCommerce\Shared\SharedModule;
@@ -34,6 +35,7 @@ return /**
             new GatewayModule(),
             new VoucherModule(),
             new PaymentModule(),
+            new ReturnPageModule(),
             new SubscriptionModule(),
             new MerchantCaptureModule(),
             new UninstallModule(),

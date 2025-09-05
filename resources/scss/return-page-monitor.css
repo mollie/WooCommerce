@@ -1,0 +1,188 @@
+/**
+ * Mollie Payment Failover Styles
+ * Visual styling for payment status indicators
+ *
+ * @since 1.0.0
+ */
+
+/* Main status container */
+.mollie-payment-status {
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+    border: 1px solid #c3d4f0;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.mollie-payment-status.mollie-status-success {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-color: #86efac;
+}
+
+.mollie-payment-status.mollie-status-warning {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border-color: #fbbf24;
+}
+
+.mollie-payment-status.mollie-status-error {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border-color: #fca5a5;
+}
+
+/* Status content wrapper */
+.mollie-status-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Status text */
+.mollie-status-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    line-height: 1.4;
+}
+
+.mollie-status-success .mollie-status-text {
+    color: #065f46;
+}
+
+.mollie-status-warning .mollie-status-text {
+    color: #92400e;
+}
+
+.mollie-status-error .mollie-status-text {
+    color: #991b1b;
+}
+
+/* Spinner animation */
+.mollie-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e5e7eb;
+    border-top: 2px solid #3b82f6;
+    border-radius: 50%;
+    animation: mollie-spin 1s linear infinite;
+    flex-shrink: 0;
+}
+
+.mollie-status-success .mollie-spinner {
+    display: none;
+}
+
+.mollie-status-warning .mollie-spinner {
+    border-top-color: #f59e0b;
+}
+
+.mollie-status-error .mollie-spinner {
+    border-top-color: #ef4444;
+}
+
+@keyframes mollie-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .mollie-payment-status {
+        padding: 14px 16px;
+        margin: 16px 0;
+    }
+
+    .mollie-status-content {
+        gap: 10px;
+    }
+
+    .mollie-status-text {
+        font-size: 13px;
+    }
+
+    .mollie-spinner {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .mollie-payment-status {
+        border-width: 2px;
+        box-shadow: none;
+    }
+
+    .mollie-status-text {
+        font-weight: 600;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .mollie-payment-status {
+        transition: none;
+    }
+
+    .mollie-spinner {
+        animation: none;
+        border: 2px solid #3b82f6;
+        border-radius: 50%;
+    }
+
+    .mollie-spinner::after {
+        content: "⟳";
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        font-size: 14px;
+        color: #3b82f6;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .mollie-payment-status {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border-color: #475569;
+    }
+
+    .mollie-status-text {
+        color: #e2e8f0;
+    }
+
+    .mollie-spinner {
+        border-color: #64748b;
+        border-top-color: #60a5fa;
+    }
+
+    .mollie-payment-status.mollie-status-success {
+        background: linear-gradient(135deg, #14532d 0%, #166534 100%);
+        border-color: #22c55e;
+    }
+
+    .mollie-status-success .mollie-status-text {
+        color: #bbf7d0;
+    }
+
+    .mollie-payment-status.mollie-status-warning {
+        background: linear-gradient(135deg, #451a03 0%, #78350f 100%);
+        border-color: #f59e0b;
+    }
+
+    .mollie-status-warning .mollie-status-text {
+        color: #fef3c7;
+    }
+
+    .mollie-payment-status.mollie-status-error {
+        background: linear-gradient(135deg, #450a0a 0%, #7f1d1d 100%);
+        border-color: #ef4444;
+    }
+
+    .mollie-status-error .mollie-status-text {
+        color: #fecaca;
+    }
+}

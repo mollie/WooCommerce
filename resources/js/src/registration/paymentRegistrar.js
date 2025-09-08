@@ -5,34 +5,6 @@ import { ApplePayUtils } from '../utils/applePayUtils';
 import { paymentStrategies } from './paymentStrategies';
 
 /**
- * @typedef {Object} PaymentItem
- * @property {string} name - The payment method name/identifier
- * @property {string} title - The display title of the payment method
- * @property {string} description - The description of the payment method
- * @property {Object} [config] - Custom configuration for the payment method
- * @property {boolean} [isExpressEnabled] - Whether express payment is enabled
- */
-
-/**
- * @typedef {Object} PaymentContext
- * @property {Object} wc - WooCommerce blocks object
- * @property {Object} wc.wcBlocksRegistry - WooCommerce blocks registry
- * @property {Function} wc.wcBlocksRegistry.registerPaymentMethod - Function to register regular payment methods
- * @property {Function} wc.wcBlocksRegistry.registerExpressPaymentMethod - Function to register express payment methods
- * @property {Object} jQuery - jQuery object
- * @property {Array<string>} requiredFields - Array of required field names
- * @property {boolean} isPhoneFieldVisible - Whether the phone field should be visible
- */
-
-/**
- * @typedef {Object} RegistrationResult
- * @property {boolean} success - Whether the registration was successful
- * @property {string} name - The name of the payment method that was registered
- * @property {string} type - The type of registration ('regular' or 'express')
- * @property {string} [error] - Error message if registration failed
- */
-
-/**
  * Payment method registration logic
  * Handles the registration of payment methods with WooCommerce Blocks
  * @namespace PaymentRegistrar

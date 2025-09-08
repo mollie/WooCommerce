@@ -28,29 +28,60 @@ const selectors = {
     getIssuerKey: (state) =>
         `mollie-payments-for-woocommerce_issuer_${state.activePaymentMethod}`,
 
+    // Component Status
+    getComponentInitializing: (state) => state.componentInitializing,
+    getComponentInitialized: (state) => state.componentInitialized,
+    getComponentError: (state) => state.componentError,
+
+    // Component Mounting Status
+    getComponentMounting: (state, gateway) => state.componentMounting[gateway] || false,
+    getComponentMounted: (state, gateway) => state.componentMounted[gateway] || false,
+    getComponentFocused: (state, componentName) => state.componentFocused[componentName] || false,
+
+    // Token Status
+    getTokenCreating: (state) => state.tokenCreating,
+    getTokenCreated: (state) => state.tokenCreated,
+    getTokenError: (state) => state.tokenError,
+
+    // Component Readiness
+    getComponentsReady: (state, gateway) => state.componentsReady[gateway] || false,
+    getGatewayComponents: (state, gateway) => state.gatewayComponents[gateway] || [],
+
+    // Computed Selectors
+    getIsComponentReady: (state) => {
+        const activePaymentMethod = state.activePaymentMethod;
+        return state.componentInitialized &&
+            state.componentMounted[activePaymentMethod] &&
+            !state.componentError &&
+            !state.componentInitializing;
+    },
+
+    getIsTokenReady: (state) => {
+        return state.tokenCreated &&
+            state.cardToken &&
+            !state.tokenError &&
+            !state.tokenCreating;
+    },
+
+    getCanCreateToken: (state) => {
+        const activePaymentMethod = state.activePaymentMethod;
+        return selectors.getIsComponentReady(state) &&
+            !state.tokenCreating &&
+            activePaymentMethod &&
+            state.componentMounted[activePaymentMethod];
+    },
+
     getPaymentMethodData: (state) => ({
         payment_method: state.activePaymentMethod,
         payment_method_title: state.paymentItemData.title,
-        [selectors.getIssuerKey(state)]: state.selectedIssuer,
+        [`mollie-payments-for-woocommerce_issuer_${state.activePaymentMethod}`]: state.selectedIssuer,
         billing_phone: state.inputPhone,
         billing_company_billie: state.inputCompany,
         billing_birthdate: state.inputBirthdate,
         cardToken: state.cardToken,
+        tokenCreated: state.tokenCreated,
+        componentsReady: selectors.getIsComponentReady(state),
     }),
-
-    // Validation computed selectors
-    getIsCompanyEmpty: (state) =>
-        (state.billingData.company === '' && state.shippingData.company === '') && state.inputCompany === '',
-
-    getIsPhoneEmpty: (state) =>
-        (state.billingData.phone === '' && state.shippingData.phone === '') && state.inputPhone === '',
-
-    getIsBirthdateValid: (state) => {
-        if (state.inputBirthdate === '') return false;
-        const today = new Date();
-        const birthdate = new Date(state.inputBirthdate);
-        return birthdate <= today;
-    },
 };
 
 export default selectors;

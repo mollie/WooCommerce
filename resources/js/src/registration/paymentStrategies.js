@@ -5,46 +5,6 @@ import { getPaymentConfig, isEditorContext } from '../utils/paymentUtils';
 import { ApplePayUtils } from '../utils/applePayUtils';
 
 /**
- * @typedef {Object} PaymentItem
- * @property {string} name - The payment method name/identifier
- * @property {string} title - The display title of the payment method
- * @property {string} description - The description of the payment method
- * @property {Object} [config] - Custom configuration for the payment method
- * @property {boolean} [isExpressEnabled] - Whether express payment is enabled
- */
-
-/**
- * @typedef {Object} PaymentContext
- * @property {Object} wc - WooCommerce blocks object
- * @property {Object} wc.wcBlocksRegistry - WooCommerce blocks registry
- * @property {Function} wc.wcBlocksRegistry.registerPaymentMethod - Function to register regular payment methods
- * @property {Function} wc.wcBlocksRegistry.registerExpressPaymentMethod - Function to register express payment methods
- * @property {Object} jQuery - jQuery object
- * @property {Array<string>} requiredFields - Array of required field names
- * @property {boolean} isPhoneFieldVisible - Whether the phone field should be visible
- */
-
-/**
- * @typedef {Object} PaymentMethodSupports
- * @property {Array<string>} features - Supported features (e.g., ['products'])
- * @property {Array<string>} style - Supported style properties (e.g., ['height', 'borderRadius'])
- */
-
-/**
- * @typedef {Object} ExpressPaymentMethodConfig
- * @property {string} name - The express payment method name
- * @property {string} title - The display title
- * @property {string} description - The payment method description
- * @property {React.Element|null} content - The content component for frontend
- * @property {React.Element|null} edit - The edit component for block editor
- * @property {string} ariaLabel - Accessibility label
- * @property {Function} canMakePayment - Function to determine if payment can be made
- * @property {string} paymentMethodId - The payment method identifier
- * @property {string} gatewayId - The gateway identifier
- * @property {PaymentMethodSupports} supports - Supported features and styles
- */
-
-/**
  * Payment method registration strategies
  * Contains different strategies for registering payment methods based on their type
  * @namespace paymentStrategies

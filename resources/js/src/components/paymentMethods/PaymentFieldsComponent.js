@@ -24,7 +24,6 @@ const PaymentFieldsComponent = ({
                                     setInputBirthdate,
                                     setInputCompany,
                                     updatePhonePlaceholderByCountry,
-                                    // Field configuration
                                     fieldConfig = {}
                                 }) => {
     const { onCheckoutValidation } = eventRegistration;

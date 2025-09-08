@@ -16,6 +16,16 @@ const withMollieStore = (WrappedComponent) => {
             inputCompany: select(MOLLIE_STORE_KEY).getInputCompany(),
             phonePlaceholder: select(MOLLIE_STORE_KEY).getPhonePlaceholder(),
             cardToken: select(MOLLIE_STORE_KEY).getCardToken(),
+
+            componentInitialized: select(MOLLIE_STORE_KEY).getComponentInitialized(),
+            componentInitializing: select(MOLLIE_STORE_KEY).getComponentInitializing(),
+            componentError: select(MOLLIE_STORE_KEY).getComponentError(),
+            tokenCreating: select(MOLLIE_STORE_KEY).getTokenCreating(),
+            tokenCreated: select(MOLLIE_STORE_KEY).getTokenCreated(),
+            tokenError: select(MOLLIE_STORE_KEY).getTokenError(),
+            isComponentReady: select(MOLLIE_STORE_KEY).getIsComponentReady(),
+            isTokenReady: select(MOLLIE_STORE_KEY).getIsTokenReady(),
+            canCreateToken: select(MOLLIE_STORE_KEY).getCanCreateToken(),
         }), []);
 
         // Store actions
@@ -26,7 +36,16 @@ const withMollieStore = (WrappedComponent) => {
             setInputBirthdate,
             setInputCompany,
             setCardToken,
-            updatePhonePlaceholderByCountry
+            updatePhonePlaceholderByCountry,
+
+            setComponentInitialized,
+            setComponentError,
+            clearComponentError,
+            setTokenCreating,
+            setTokenCreated,
+            setTokenError,
+            clearTokenError,
+            clearTokenData
         } = storeActions;
 
         return (
@@ -39,6 +58,17 @@ const withMollieStore = (WrappedComponent) => {
                 inputCompany={storeData.inputCompany}
                 phonePlaceholder={storeData.phonePlaceholder}
                 cardToken={storeData.cardToken}
+
+                componentInitialized={storeData.componentInitialized}
+                componentInitializing={storeData.componentInitializing}
+                componentError={storeData.componentError}
+                tokenCreating={storeData.tokenCreating}
+                tokenCreated={storeData.tokenCreated}
+                tokenError={storeData.tokenError}
+                isComponentReady={storeData.isComponentReady}
+                isTokenReady={storeData.isTokenReady}
+                canCreateToken={storeData.canCreateToken}
+
                 // Store actions
                 setSelectedIssuer={setSelectedIssuer}
                 setInputPhone={setInputPhone}
@@ -46,6 +76,15 @@ const withMollieStore = (WrappedComponent) => {
                 setInputCompany={setInputCompany}
                 setCardToken={setCardToken}
                 updatePhonePlaceholderByCountry={updatePhonePlaceholderByCountry}
+
+                setComponentInitialized={setComponentInitialized}
+                setComponentError={setComponentError}
+                clearComponentError={clearComponentError}
+                setTokenCreating={setTokenCreating}
+                setTokenCreated={setTokenCreated}
+                setTokenError={setTokenError}
+                clearTokenError={clearTokenError}
+                clearTokenData={clearTokenData}
             />
         );
     };

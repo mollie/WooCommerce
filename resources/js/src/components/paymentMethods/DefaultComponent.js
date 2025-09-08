@@ -18,7 +18,6 @@ const DefaultComponent = ({
         itemContent = <p>{item.content}</p>;
     }
 
-    // Show issuer selection for payment methods that have issuers (banks, etc.)
     if (item.issuers && item.issuers.length > 0) {
         return (
             <div>

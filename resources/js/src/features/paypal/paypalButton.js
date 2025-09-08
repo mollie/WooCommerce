@@ -1,4 +1,4 @@
-import {maybeShowButton} from "./maybeShowApplePayButton";
+import {maybeShowButton} from "../apple-pay/maybeShowApplePayButton";
 
 (
     function ({_, molliepaypalbutton, jQuery}) {

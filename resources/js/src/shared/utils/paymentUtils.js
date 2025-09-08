@@ -1,4 +1,4 @@
-import { DEFAULT_CONFIG } from '../config/paymentConstants';
+import { DEFAULT_CONFIG } from '../constants/paymentConstants';
 import { ApplePayUtils } from './applePayUtils';
 
 /**

@@ -1,7 +1,7 @@
 
-import { APPLE_PAY_GATEWAY_NAME } from '../config/paymentConstants';
-import ApplePayButtonComponent from "../../blocks/ApplePayButtonComponent";
-import ApplePayButtonEditorComponent from "../../blocks/ApplePayButtonEditorComponent";
+import { APPLE_PAY_GATEWAY_NAME } from '../constants/paymentConstants';
+import ApplePayButtonComponent from "../../checkout/blocks/components/expressPayments/ApplePayButtonComponent";
+import ApplePayButtonEditorComponent from "../../checkout/blocks/components/expressPayments/ApplePayButtonEditorComponent";
 
 /**
  * Apple Pay utility functions - centralized Apple Pay logic

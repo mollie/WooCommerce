@@ -1,5 +1,5 @@
-import {ApplePayButtonComponent} from "./blocks/ApplePayButtonComponent";
-import {ApplePayButtonEditorComponent} from "./blocks/ApplePayButtonEditorComponent";
+import {ApplePayButtonComponent} from "./components/expressPayments/ApplePayButtonComponent";
+import {ApplePayButtonEditorComponent} from "./components/expressPayments/ApplePayButtonEditorComponent";
 
 (
     function ({mollieApplePayBlockDataCart}) {

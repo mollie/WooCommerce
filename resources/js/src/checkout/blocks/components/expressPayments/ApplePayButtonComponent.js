@@ -1,5 +1,5 @@
-import {request} from "../applePayRequest";
-import {createAppleErrors} from "../applePayError";
+import {request} from "../../../../features/apple-pay/applePayRequest";
+import {createAppleErrors} from "../../../../features/apple-pay/applePayError";
 
 export const ApplePayButtonComponent = ({ buttonAttributes = {} }) => {
     const mollieApplePayBlockDataCart = window.mollieApplePayBlockDataCart || window.mollieBlockData.mollieApplePayBlockDataCart

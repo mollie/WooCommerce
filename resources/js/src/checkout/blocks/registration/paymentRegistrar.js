@@ -1,7 +1,7 @@
 
-import { PAYMENT_TYPES } from '../config/paymentConstants';
-import { validatePaymentItem, getPaymentConfig } from '../utils/paymentUtils';
-import { ApplePayUtils } from '../utils/applePayUtils';
+import { PAYMENT_TYPES } from '../../../shared/constants/paymentConstants';
+import { validatePaymentItem, getPaymentConfig } from '../../../shared/utils/paymentUtils';
+import { ApplePayUtils } from '../../../shared/utils/applePayUtils';
 import { paymentStrategies } from './paymentStrategies';
 
 /**

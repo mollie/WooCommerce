@@ -1,4 +1,4 @@
-import {ajaxCallToOrder} from "./paypalButtonUtils";
+import {ajaxCallToOrder} from "../../../../features/paypal/paypalButtonUtils";
 
 (
     function ({  molliepaypalButtonCart})

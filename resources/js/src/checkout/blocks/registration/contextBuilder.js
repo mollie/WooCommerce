@@ -1,4 +1,4 @@
-import { getPhoneFieldVisibility } from '../utils/paymentUtils';
+import { getPhoneFieldVisibility } from '../../../shared/utils/paymentUtils';
 
 /**
  * Build context for payment method registration

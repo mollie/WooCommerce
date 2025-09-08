@@ -1,8 +1,8 @@
-import './src/store/index.js';
-import { setUpMollieBlockCheckoutListeners } from "./src/store/storeListeners";
-import { MOLLIE_STORE_KEY } from "./src/store";
-import { registerAllPaymentMethods } from './src/registration/paymentRegistrar';
-import { buildRegistrationContext } from './src/initialization/contextBuilder';
+import './store';
+import { setUpMollieBlockCheckoutListeners } from "./store/storeListeners";
+import { MOLLIE_STORE_KEY } from "./store";
+import { registerAllPaymentMethods } from './registration/paymentRegistrar';
+import { buildRegistrationContext } from './registration/contextBuilder';
 
 /**
  * Main Mollie WooCommerce Blocks initialization

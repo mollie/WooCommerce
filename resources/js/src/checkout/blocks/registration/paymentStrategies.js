@@ -1,8 +1,8 @@
 
-import molliePaymentMethod from '../../blocks/molliePaymentMethod';
-import { PAYMENT_TYPES } from '../config/paymentConstants';
-import { getPaymentConfig, isEditorContext } from '../utils/paymentUtils';
-import { ApplePayUtils } from '../utils/applePayUtils';
+import molliePaymentMethod from '../components/molliePaymentMethod';
+import { PAYMENT_TYPES } from '../../../shared/constants/paymentConstants';
+import { getPaymentConfig, isEditorContext } from '../../../shared/utils/paymentUtils';
+import { ApplePayUtils } from '../../../shared/utils/applePayUtils';
 
 /**
  * @typedef {Object} PaymentItem

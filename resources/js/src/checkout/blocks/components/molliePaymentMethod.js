@@ -1,5 +1,5 @@
-import {PaymentMethodContentRenderer} from "../src/components/PaymentMethodContentRenderer";
-import {Label} from "../src/components/Label";
+import {PaymentMethodContentRenderer} from "./PaymentMethodContentRenderer";
+import {Label} from "./Label";
 let creditCardSelected = new Event("mollie_creditcard_component_selected", {bubbles: true});
 
 const molliePaymentMethod = (item, jQuery, requiredFields, isPhoneFieldVisible) =>{

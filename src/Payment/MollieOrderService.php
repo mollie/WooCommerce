@@ -292,11 +292,11 @@ class MollieOrderService
         } else {
             $order->add_order_note(sprintf(
                /* translators: Placeholder 1: payment method title, placeholder 2: payment status, placeholder 3: payment ID */
-                   __('%1$s payment %2$s (%3$s), not processed.', 'mollie-payments-for-woocommerce'),
-                   $this->gateway->method_title,
-                   $payment->status,
-                   $payment->id . ($payment->mode === 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
-               ));
+                __('%1$s payment %2$s (%3$s), not processed.', 'mollie-payments-for-woocommerce'),
+                $this->gateway->method_title,
+                $payment->status,
+                $payment->id . ($payment->mode === 'test' ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce')) : '')
+            ));
             return false;
         }
 

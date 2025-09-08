@@ -14,6 +14,7 @@ use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Gateway\Refund\OrderItemsRefunder;
 use Mollie\WooCommerce\MerchantCapture\Capture\Action\CapturePayment;
+use Mollie\WooCommerce\Payment\Webhooks\RestApi;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\SDK\HttpResponse;
@@ -75,6 +76,11 @@ class PaymentModule implements ServiceModule, ExecutableModule
         $this->pluginId = $container->get('shared.plugin_id');
         $this->gatewayClassnames = $container->get('gateway.classnames');
         $this->container = $container;
+
+        //add webhook rest API endpoint
+        add_action('rest_api_init', function () use ($container) {
+            $container->get(RestApi::class)->registerRoutes();
+        });
 
         // Listen to return URL call
         add_action('woocommerce_api_mollie_return', function () use ($container) {

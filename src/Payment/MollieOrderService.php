@@ -128,7 +128,7 @@ class MollieOrderService
         ) {
             $this->httpResponse->setHttpResponseCode(200);
             $this->logger->debug(
-                $this->gateway->id . ": not respond on transaction webhooks for this payment method when order API is active. Payment ID {$payment->id}, order ID $order_id"
+                $this->gateway->id . ": not respond on transaction webhooks for this payment method when order API is active. Payment ID {$payment_object_id}, order ID {$order->get_id()}"
             );
             return;
         }

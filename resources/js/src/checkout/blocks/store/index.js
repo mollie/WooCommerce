@@ -7,10 +7,10 @@ import selectors from './selectors';
 
 export const MOLLIE_STORE_KEY = 'mollie-payments';
 
-export const mollieStore = wp.data.createReduxStore(MOLLIE_STORE_KEY, {
-    reducer,
-    actions,
-    selectors,
-});
+export const mollieStore = wp.data.createReduxStore( MOLLIE_STORE_KEY, {
+	reducer,
+	actions,
+	selectors,
+} );
 
-wp.data.register(mollieStore);
+wp.data.register( mollieStore );

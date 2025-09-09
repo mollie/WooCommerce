@@ -89,13 +89,38 @@ class MollieOrderService
             $this->logger->debug(__METHOD__ . ': No payment object ID provided.', [true]);
             return;
         }
-        $payment_object_id = sanitize_text_field(wp_unslash($paymentId));
+        $transactionID = sanitize_text_field(wp_unslash($paymentId));
 
-        $order = wc_get_order($order_id);
+        $orders = wc_get_orders([
+            'transaction_id' => $transactionID,
+            'limit' => 2,
+        ]);
 
-        if (!$order instanceof WC_Order) {
-            $this->httpResponse->setHttpResponseCode(404);
-            $this->logger->debug(__METHOD__ . ":  Could not find order $order_id.");
+        if (! $orders) {
+            $this->logger->debug(__METHOD__ . ': No orders found for transaction ID: ' . $transactionID . ' fall back to search in meta data');
+            //Fallback search order in order mollie oder meta
+            $orders = wc_get_orders([
+                'limit' => 2,
+                'meta_key' => '_mollie_order_id',
+                'meta_compare' => '=',
+                'meta_value' => $transactionID,
+            ]);
+            if (! $orders) {
+                $this->logger->debug(__METHOD__ . ': No orders found in mollie meta for transaction ID: ' . $transactionID);
+                return;
+            }
+        }
+
+        if (count($orders) > 1) {
+            $this->logger->debug(__METHOD__ . ': More than one order found for transaction ID: ' . $transactionID);
+            return;
+        }
+
+        $order = $orders[0];
+
+        if ($order->get_id() != $order_id) {
+            $this->httpResponse->setHttpResponseCode(401);
+            $this->logger->debug(__METHOD__ . ":  found order {$order->get_id()} is not the same as provided order $order_id.");
             return;
         }
 
@@ -105,94 +130,15 @@ class MollieOrderService
             return;
         }
 
-        $gateway = wc_get_payment_gateway_by_order($order);
-        if (!mollieWooCommerceIsMollieGateway($gateway->id)) {
-            return;
-        }
-
-        // Prevent double payment webhooks for klarna on orders api
-        // TODO improve testing to check if we can remove this check
-        if (
-            $this->container->get('settings.settings_helper')->isOrderApiSetting()
-            && in_array(
-                str_replace('mollie_wc_gateway_', '', $gateway->id),
-                [
-                    Constants::KLARNA,
-                    Constants::KLARNAPAYLATER,
-                    Constants::KLARNASLICEIT,
-                    Constants::KLARNAPAYNOW,
-                ],
-                true
-            )
-            && strpos($payment_object_id, 'tr_') === 0
-        ) {
-            $this->httpResponse->setHttpResponseCode(200);
-            $this->logger->debug(
-                $this->gateway->id . ": not respond on transaction webhooks for this payment method when order API is active. Payment ID {$payment_object_id}, order ID {$order->get_id()}"
-            );
-            return;
-        }
-
-        // Acquire exclusive lock for this order to prevent race conditions
-        $lockKey = 'mollie_webhook_lock_' . $order_id;
-        $lockAcquired = $this->acquireOrderLock($lockKey, 30);
-
-        if (!$lockAcquired) {
-            // Another webhook is already processing this order
-            $this->httpResponse->setHttpResponseCode(409); // Conflict
-            $this->logger->debug(
-                __METHOD__ . ": Could not acquire lock for order $order_id. Another webhook is processing."
-            );
-            return;
-        }
-
-        try {
-            if (!$this->doPaymentForOrder($order)) {
-                $this->httpResponse->setHttpResponseCode(400);
-            };
-            // Status 200
-        } finally {
-            // Always release the lock
-            $this->releaseOrderLock($lockKey);
-        }
+        if (!$this->doPaymentForOrder($order)) {
+            $this->httpResponse->setHttpResponseCode(400);
+        };
+        // Status 200
     }
 
     protected function getPaymentIdFromRequest(): ?string
     {
         return filter_input(INPUT_POST, 'id', FILTER_SANITIZE_SPECIAL_CHARS);
-    }
-
-    /**
-     * Acquire an exclusive lock for processing an order
-     *
-     * @param string $lockKey The unique lock identifier
-     * @param int $timeout Maximum time to wait for lock (seconds)
-     * @return bool True if lock acquired, false otherwise
-     */
-    private function acquireOrderLock(string $lockKey, int $timeout = 30): bool
-    {
-        $lockValue = uniqid('', true);
-        $expiration = $timeout;
-
-        // set_transient returns false if the key already exists
-        $result = set_transient($lockKey, $lockValue, $expiration);
-
-        if ($result) {
-            $this->currentLockValue = $lockValue;
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Release the order processing lock
-     *
-     * @param string $lockKey The lock identifier to release
-     */
-    private function releaseOrderLock(string $lockKey)
-    {
-        delete_transient($lockKey);
     }
 
     /**
@@ -250,14 +196,6 @@ class MollieOrderService
         $payment = $payment_object->getPaymentObject($payment_object->data(), $test_mode, false);
         if (!$payment) {
             $this->logger->debug(__METHOD__ . ": payment object $payment_object_id not found.", [true]);
-            return false;
-        }
-
-        if ($order->get_id() != $payment->metadata->order_id) {
-            $this->httpResponse->setHttpResponseCode(400);
-            $this->logger->debug(
-                __METHOD__ . ": Order ID does not match order_id in payment metadata. Payment ID {$payment->id}, order ID {$order->get_id()}"
-            );
             return false;
         }
 

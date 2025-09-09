@@ -76,8 +76,18 @@ class RestApi
         ]);
 
         if (! $orders) {
-            $this->logger->debug(__METHOD__ . ': No orders found for transaction ID: ' . $transactionID);
-            return new \WP_REST_Response(null, 200);
+            $this->logger->debug(__METHOD__ . ': No orders found for transaction ID: ' . $transactionID . ' fall back to search in meta data');
+            //Fallback search order in order mollie oder meta
+            $orders = wc_get_orders([
+                'limit' => 2,
+                'meta_key' => '_mollie_order_id',
+                'meta_compare' => '=',
+                'meta_value' => $transactionID,
+            ]);
+            if (! $orders) {
+                $this->logger->debug(__METHOD__ . ': No orders found in mollie meta for transaction ID: ' . $transactionID);
+                return new \WP_REST_Response(null, 200);
+            }
         }
 
         if (count($orders) > 1) {

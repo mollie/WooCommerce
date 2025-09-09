@@ -101,7 +101,7 @@ class UrlMiddleware implements RequestMiddlewareInterface
     public function getWebhookUrl(WC_Order $order, string $gatewayId): string
     {
         $webhookUrl = get_rest_url(null, RestApi::ROUTE_NAMESPACE . '/' . RestApi::WEBHOOK_ROUTE);
-        if (apply_filters('mollie_wc_gateway_disable_rest_webhook', false)) {
+        if (! $webhookUrl ||  ! wc_is_valid_url($webhookUrl) || apply_filters('mollie_wc_gateway_disable_rest_webhook', true)) {
             $webhookUrl = WC()->api_request_url($gatewayId);
             $webhookUrl = untrailingslashit($webhookUrl);
             $webhookUrl = $this->asciiDomainName($webhookUrl);

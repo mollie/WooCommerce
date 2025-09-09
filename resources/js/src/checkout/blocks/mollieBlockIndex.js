@@ -1,4 +1,3 @@
-import './store';
 import { setUpMollieBlockCheckoutListeners } from './store/storeListeners';
 import { MOLLIE_STORE_KEY } from './store';
 import { registerAllPaymentMethods } from './registration/paymentRegistrar';

@@ -37,8 +37,8 @@ import { ApplePayUtils } from '../../../shared/utils/applePayUtils';
  * @property {string}                name            - The express payment method name
  * @property {string}                title           - The display title
  * @property {string}                description     - The payment method description
- * @property {React.Element|null}    content         - The content component for frontend
- * @property {React.Element|null}    edit            - The edit component for block editor
+ * @property {Function|null}         content         - The content component for frontend
+ * @property {Function|null}         edit            - The edit component for block editor
  * @property {string}                ariaLabel       - Accessibility label
  * @property {Function}              canMakePayment  - Function to determine if payment can be made
  * @property {string}                paymentMethodId - The payment method identifier

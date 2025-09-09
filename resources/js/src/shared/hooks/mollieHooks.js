@@ -1,4 +1,4 @@
-import { mollieComponentsManager } from '../../checkout/blocks/services/mollieComponentsManager';
+import { mollieComponentsManager } from '../../checkout/blocks/services/MollieComponentsManager';
 import { MOLLIE_STORE_KEY } from '../../checkout/blocks/store';
 
 /**
@@ -6,8 +6,8 @@ import { MOLLIE_STORE_KEY } from '../../checkout/blocks/store';
  * @param paymentMethod
  */
 export const useTokenManager = ( paymentMethod ) => {
-	const { useState, useEffect, useCallback } = wp.element;
-	const { useSelect, useDispatch } = wp.data;
+	const { useCallback } = wp.element;
+	const { useSelect } = wp.data;
 
 	const { canCreateToken, isComponentReady, tokenError, componentError } =
 		useSelect(

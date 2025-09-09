@@ -52,8 +52,6 @@ export const ApplePayUtils = {
 	/**
 	 * Gets the Apple Pay React components for content and editor contexts
 	 * @return {Object} Object containing content and edit components
-	 * @return {React.Element} returns.content - The Apple Pay button component for frontend
-	 * @return {React.Element} returns.edit - The Apple Pay button component for block editor
 	 * @example
 	 * const { content, edit } = ApplePayUtils.getApplePayComponents();
 	 * // Use content component in frontend, edit component in block editor

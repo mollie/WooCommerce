@@ -224,6 +224,61 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             PHP_INT_MAX
         );
 
+        add_filter(
+            'woocommerce_order_actions',
+            static function ($actions, \WC_Order $order) {
+                if ($order->is_paid() || ! $order->has_status('pending') || strpos($order->get_payment_method(), 'mollie_wc_gateway_') === false) {
+                    return $actions;
+                }
+                $actions['mollie_wc_check_payment_for_unpaid_order'] = __('Check payment on mollie', 'mollie-payments-for-woocommerce');
+                return $actions;
+            },
+            10,
+            2
+        );
+
+        add_action(
+            'woocommerce_order_action_mollie_wc_check_payment_for_unpaid_order',
+            static function ($orderId) use ($container) {
+                $order = wc_get_order($orderId);
+                if (! $order || $order->is_paid() || ! $order->has_status('pending') || strpos($order->get_payment_method(), 'mollie_wc_gateway_') === false) {
+                    return;
+                }
+                $mollieOrderService = $container->get(MollieOrderService::class);
+                $mollieOrderService->checkPaymentForUnpaidOrder($order);
+            }
+        );
+
+        add_filter(
+            'bulk_actions-woocommerce_page_wc-orders',
+            static function ($bulk_actions) {
+                $bulk_actions['mollie_wc_check_payment_for_unpaid_order'] = __('Check payment on mollie', 'mollie-payments-for-woocommerce');
+                return $bulk_actions;
+            }
+        );
+
+        add_filter(
+            'handle_bulk_actions-woocommerce_page_wc-orders',
+            static function ($redirect_to, $action, $post_ids) use ($container) {
+                if ($action !== 'mollie_wc_check_payment_for_unpaid_order') {
+                    return $redirect_to;
+                }
+
+                foreach ($post_ids as $post_id) {
+                    $order = wc_get_order($post_id);
+                    if (! $order || $order->is_paid() || ! $order->has_status('pending') || strpos($order->get_payment_method(), 'mollie_wc_gateway_') === false) {
+                        continue;
+                    }
+                    $mollieOrderService = $container->get(MollieOrderService::class);
+                    $mollieOrderService->checkPaymentForUnpaidOrder($order);
+                }
+
+                return $redirect_to;
+            },
+            10,
+            3
+        );
+
         return true;
     }
 

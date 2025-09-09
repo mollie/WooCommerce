@@ -255,14 +255,6 @@ class AssetsModule implements ExecutableModule
             (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollie-components.min.js')),
             true
         );
-        wp_register_script(
-            'mollie-components-blocks',
-            $this->getPluginUrl($pluginUrl, '/public/js/mollie-components-blocks.min.js'),
-            ['underscore', 'jquery', 'mollie', 'babel-polyfill'],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollie-components-blocks.min.js')),
-            true
-        );
-
         wp_register_style(
             'unabledButton',
             $this->getPluginUrl($pluginUrl, '/public/css/unabledButton.min.css'),

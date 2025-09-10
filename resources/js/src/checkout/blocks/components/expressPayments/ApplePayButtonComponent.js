@@ -1,5 +1,5 @@
-import { request } from '../../../../features/apple-pay/applePayRequest';
-import { createAppleErrors } from '../../../../features/apple-pay/applePayError';
+//import { request } from '../../../../features/apple-pay/applePayRequest';
+//import { createAppleErrors } from '../../../../features/apple-pay/applePayError';
 
 export const ApplePayButtonComponent = ( { buttonAttributes = {} } ) => {
 	const mollieApplePayBlockDataCart =
@@ -34,7 +34,7 @@ export const ApplePayButtonComponent = ( { buttonAttributes = {} } ) => {
 		return shippingRate ? appleFormattedRate : '';
 	};
 
-	const applePaySession = () => {
+	/*const applePaySession = () => {
 		const session = new ApplePaySession(
 			3,
 			request( countryCode, currencyCode, totalLabel, subtotal )
@@ -67,7 +67,7 @@ export const ApplePayButtonComponent = ( { buttonAttributes = {} } ) => {
 					const response = applePayShippingMethodUpdate.data;
 					selectedShippingMethod = event.shippingMethod;
 					if ( applePayShippingMethodUpdate.success === false ) {
-						response.errors = createAppleErrors( response.errors );
+						//response.errors = createAppleErrors( response.errors );
 					}
 					this.completeShippingMethodSelection( response );
 				},
@@ -97,7 +97,7 @@ export const ApplePayButtonComponent = ( { buttonAttributes = {} } ) => {
 					const response = applePayShippingContactUpdate.data;
 					updatedContactInfo = event.shippingContact;
 					if ( applePayShippingContactUpdate.success === false ) {
-						response.errors = createAppleErrors( response.errors );
+						//response.errors = createAppleErrors( response.errors );
 					}
 					if ( response.newShippingMethods ) {
 						selectedShippingMethod =
@@ -185,7 +185,7 @@ export const ApplePayButtonComponent = ( { buttonAttributes = {} } ) => {
 						session.completePayment( result.responseToApple );
 						window.location.href = redirectionUrl;
 					} else {
-						result.errors = createAppleErrors( result.errors );
+						//result.errors = createAppleErrors( result.errors );
 						session.completePayment( result );
 					}
 				},
@@ -196,7 +196,7 @@ export const ApplePayButtonComponent = ( { buttonAttributes = {} } ) => {
 			} );
 		};
 		session.begin();
-	};
+	};*/
 
 	return (
 		<button
@@ -204,7 +204,7 @@ export const ApplePayButtonComponent = ( { buttonAttributes = {} } ) => {
 			className="apple-pay-button apple-pay-button-black"
 			onClick={ ( event ) => {
 				event.preventDefault();
-				applePaySession();
+				//applePaySession();
 			} }
 			style={ style }
 		></button>

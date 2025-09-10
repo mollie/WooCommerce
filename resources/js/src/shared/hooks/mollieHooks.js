@@ -2,10 +2,10 @@ import { mollieComponentsManager } from '../../checkout/blocks/services/MollieCo
 import { MOLLIE_STORE_KEY } from '../../checkout/blocks/store';
 
 /**
- * Custom hook for TokenManager integration
+ * Custom hook for mollieComponentsManager integration
  * @param paymentMethod
  */
-export const useTokenManager = ( paymentMethod ) => {
+export const usemollieComponentsManager = ( paymentMethod ) => {
 	const { useCallback } = wp.element;
 	const { useSelect } = wp.data;
 

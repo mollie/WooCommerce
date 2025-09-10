@@ -3,6 +3,7 @@
 namespace Mollie\WooCommerce\Assets;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
+use Mollie\WooCommerce\Components\ComponentDataService;
 use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\DefaultFieldsStrategy;
 use Mollie\WooCommerce\Shared\Data;
 use Psr\Container\ContainerInterface;
@@ -54,7 +55,7 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
         wp_register_script(
             self::$scriptHandle,
             $this->registerScriptUrl,
-            ['wc-blocks-registry', 'underscore', 'jquery'],
+            ['wc-blocks-registry', 'underscore', 'jquery', 'mollie'],
             $this->registerScriptVersion,
             true
         );
@@ -148,6 +149,13 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
             ];
         }
         $dataToScript['gatewayData'] = $gatewayData;
+        /** @var ComponentDataService */
+        $componentDataService = $container->get('components.data_service');
+        $componentData = $componentDataService->getComponentData();
+
+        if ($componentData !== null) {
+            $dataToScript['componentData'] = $componentData;
+        }
 
         return $dataToScript;
     }

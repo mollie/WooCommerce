@@ -9,10 +9,12 @@ namespace Mollie\WooCommerce\Assets;
 use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Buttons\ApplePayButton\DataToAppleButtonScripts;
 use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPal;
 use Mollie\WooCommerce\Components\AcceptedLocaleValuesDictionary;
+use Mollie\WooCommerce\Components\ComponentDataService;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Psr\Container\ContainerInterface;
@@ -284,7 +286,7 @@ class AssetsModule implements ExecutableModule
         wp_register_script(
             'mollie_block_index',
             $this->getPluginUrl($pluginUrl, '/public/js/mollieBlockIndex.min.js'),
-            ['wc-blocks-registry', 'underscore', 'jquery'],
+            ['wc-blocks-registry', 'underscore', 'jquery', 'mollie'],
             (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollieBlockIndex.min.js')),
             true
         );
@@ -328,92 +330,26 @@ class AssetsModule implements ExecutableModule
     /**
      * Enqueue Mollie Component Assets
      */
-    public function enqueueComponentsAssets(Settings $settingsHelper): void
+    public function enqueueComponentsAssets(ComponentDataService $componentDataService): void
     {
-        if (
-            is_admin()
-            || (!mollieWooCommerceIsCheckoutContext()
-                && !has_block("woocommerce/checkout"))
-        ) {
+        if (!$componentDataService->shouldLoadComponents()) {
             return;
         }
 
-        try {
-            $merchantProfileId = $settingsHelper->mollieWooCommerceMerchantProfileId();
-        } catch (ApiException $exception) {
+        $componentData = $componentDataService->getComponentDataWithContext(
+            is_checkout(),
+            is_checkout_pay_page()
+        );
+
+        if ($componentData === null) {
             return;
-        }
-
-        $mollieComponentsStylesGateways = mollieWooCommerceComponentsStylesForAvailableGateways();
-        $gatewayNames = array_keys($mollieComponentsStylesGateways);
-
-        if (!$merchantProfileId || !$mollieComponentsStylesGateways) {
-            return;
-        }
-
-        $locale = get_locale();
-        $locale = str_replace('_formal', '', $locale);
-        $allowedLocaleValues = AcceptedLocaleValuesDictionary::ALLOWED_LOCALES_KEYS_MAP;
-        if (!in_array($locale, $allowedLocaleValues, true)) {
-            $locale = AcceptedLocaleValuesDictionary::DEFAULT_LOCALE_VALUE;
         }
 
         wp_enqueue_style('mollie-components');
         $object_name = 'mollieComponentsSettings';
-        $data = [
-            'merchantProfileId' => $merchantProfileId,
-            'options' => [
-                'locale' => $locale,
-                'testmode' => $settingsHelper->isTestModeEnabled(),
-            ],
-            'enabledGateways' => $gatewayNames,
-            'componentsSettings' => $mollieComponentsStylesGateways,
-            'componentsAttributes' => [
-                [
-                    'name' => 'cardHolder',
-                    'label' => esc_html__('Name on card', 'mollie-payments-for-woocommerce'),
-                ],
-                [
-                    'name' => 'cardNumber',
-                    'label' => esc_html__('Card number', 'mollie-payments-for-woocommerce'),
-                ],
-                [
-                    'name' => 'expiryDate',
-                    'label' => esc_html__('Expiry date', 'mollie-payments-for-woocommerce'),
-                ],
-                [
-                    'name' => 'verificationCode',
-                    'label' => esc_html__(
-                        'CVC/CVV',
-                        'mollie-payments-for-woocommerce'
-                    ),
-                ],
-            ],
-            'messages' => [
-                'defaultErrorMessage' => esc_html__(
-                    'An unknown error occurred, please check the card fields.',
-                    'mollie-payments-for-woocommerce'
-                ),
-            ],
-            'isCheckout' => is_checkout(),
-            'isCheckoutPayPage' => is_checkout_pay_page(),
-        ];
-        if (has_block("woocommerce/checkout") && !is_wc_endpoint_url('order-pay')) {
-            wp_enqueue_script('mollie-components-blocks');
-            wp_localize_script(
-                'mollie-components-blocks',
-                $object_name,
-                $data
-            );
-            return;
-        }
 
         wp_enqueue_script('mollie-components');
-        wp_localize_script(
-            'mollie-components',
-            $object_name,
-            $data
-        );
+        wp_localize_script('mollie-components', $object_name, $componentData);
     }
 
     protected function getPluginUrl(string $pluginUrl, string $path = ''): string
@@ -583,8 +519,11 @@ class AssetsModule implements ExecutableModule
                 add_action('wp_enqueue_scripts', function () use ($container) {
                     $this->enqueueFrontendScripts($container);
                 });
-                add_action('wp_enqueue_scripts', function () use ($settingsHelper) {
-                    $this->enqueueComponentsAssets($settingsHelper);
+                add_action('wp_enqueue_scripts', function () use ($container) {
+                    /** @var ComponentDataService */
+                    $componentDataService = $container->get('components.data_service');
+                    assert($componentDataService instanceof ComponentDataService);
+                    $this->enqueueComponentsAssets($componentDataService);
                 });
                 add_action('wp_enqueue_scripts', [$this, 'enqueueApplePayDirectScripts']);
                 add_action('wp_enqueue_scripts', function () use ($pluginUrl) {

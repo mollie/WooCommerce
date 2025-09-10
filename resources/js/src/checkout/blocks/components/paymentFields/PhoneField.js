@@ -4,10 +4,7 @@ export const PhoneField = ( { id, label, value, onChange, placeholder } ) => {
 
 	return (
 		<div className="custom-input">
-			<label
-				htmlFor={ id }
-				dangerouslySetInnerHTML={ { __html: label } }
-			></label>
+			<label htmlFor={ id }>{ label }</label>
 			<input
 				type="tel"
 				className={ className }

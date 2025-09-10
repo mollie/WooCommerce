@@ -6,8 +6,8 @@ import withMollieStore from '../hoc/withMollieStore';
 /**
  * Factory function to create appropriate payment component with store connection
  * Maps payment method names to their corresponding components with proper configuration
- * @param item
- * @param commonProps
+ * @param {Object} item
+ * @param {Object} commonProps
  */
 export const createPaymentComponent = ( item, commonProps ) => {
 	if ( ! item || ! item.name ) {

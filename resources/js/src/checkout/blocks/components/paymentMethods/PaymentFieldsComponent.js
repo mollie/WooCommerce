@@ -5,24 +5,24 @@ import { CompanyField } from '../paymentFields/CompanyField';
 /**
  * Generic Payment Fields Component
  * Handles field rendering and validation for different payment methods
- * @param root0
- * @param root0.item
- * @param root0.jQuery
- * @param root0.useEffect
- * @param root0.billing
- * @param root0.shippingData
- * @param root0.eventRegistration
- * @param root0.requiredFields
- * @param root0.isPhoneFieldVisible
- * @param root0.inputPhone
- * @param root0.inputBirthdate
- * @param root0.inputCompany
- * @param root0.phonePlaceholder
- * @param root0.setInputPhone
- * @param root0.setInputBirthdate
- * @param root0.setInputCompany
- * @param root0.updatePhonePlaceholderByCountry
- * @param root0.fieldConfig
+ * @param {Object}   props                                 - The component props
+ * @param {Object}   props.item                            - Payment method item configuration
+ * @param {Function} props.jQuery                          - jQuery library function
+ * @param {Function} props.useEffect                       - React useEffect hook
+ * @param {Object}   props.billing                         - Billing data object
+ * @param {Object}   props.shippingData                    - Shipping data object
+ * @param {Object}   props.eventRegistration               - Event registration object
+ * @param {Object}   props.requiredFields                  - Required field labels/strings
+ * @param {boolean}  props.isPhoneFieldVisible             - Whether phone field is visible elsewhere
+ * @param {string}   props.inputPhone                      - Current phone input value
+ * @param {string}   props.inputBirthdate                  - Current birthdate input value
+ * @param {string}   props.inputCompany                    - Current company input value
+ * @param {string}   props.phonePlaceholder                - Phone field placeholder text
+ * @param {Function} props.setInputPhone                   - Function to update phone input value
+ * @param {Function} props.setInputBirthdate               - Function to update birthdate input value
+ * @param {Function} props.setInputCompany                 - Function to update company input value
+ * @param {Function} props.updatePhonePlaceholderByCountry - Function to update phone placeholder based on country
+ * @param {Object}   [props.fieldConfig]                   - Optional field configuration object
  */
 const PaymentFieldsComponent = ( {
 	item,
@@ -33,7 +33,6 @@ const PaymentFieldsComponent = ( {
 	eventRegistration,
 	requiredFields,
 	isPhoneFieldVisible,
-	// Store props injected by withMollieStore HOC
 	inputPhone,
 	inputBirthdate,
 	inputCompany,
@@ -42,7 +41,6 @@ const PaymentFieldsComponent = ( {
 	setInputBirthdate,
 	setInputCompany,
 	updatePhonePlaceholderByCountry,
-	// Field configuration
 	fieldConfig = {},
 } ) => {
 	const { onCheckoutValidation } = eventRegistration;
@@ -72,16 +70,19 @@ const PaymentFieldsComponent = ( {
 			return;
 		}
 
-		const companyLabel = jQuery(
+		const companyLabelElement = jQuery(
 			'div.wc-block-components-text-input.wc-block-components-address-form__company > label'
 		);
-		if ( companyLabel.length === 0 || item.hideCompanyField === true ) {
+		if (
+			companyLabelElement.length === 0 ||
+			item.hideCompanyField === true
+		) {
 			return;
 		}
 
 		const labelText =
 			item.companyPlaceholder || companyNameString || 'Company name';
-		companyLabel.replaceWith(
+		companyLabelElement.replaceWith(
 			`<label htmlFor="shipping-company">${ labelText }</label>`
 		);
 	}, [
@@ -98,13 +99,13 @@ const PaymentFieldsComponent = ( {
 			return;
 		}
 
-		const phoneLabel = getPhoneField()?.labels?.[ 0 ] ?? null;
-		if ( ! phoneLabel || phoneLabel.length === 0 ) {
+		const phoneLabelElement = getPhoneField()?.labels?.[ 0 ] ?? null;
+		if ( ! phoneLabelElement || phoneLabelElement.length === 0 ) {
 			return;
 		}
 
 		const labelText = item.phonePlaceholder || phoneString || 'Phone';
-		phoneLabel.innerText = labelText;
+		phoneLabelElement.innerText = labelText;
 	}, [ showPhone, item.phonePlaceholder, phoneString ] );
 
 	// Validation effect

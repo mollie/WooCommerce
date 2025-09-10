@@ -65,7 +65,7 @@ export const setCardToken = ( token ) => ( {
 	payload: token,
 } );
 
-export const updatePhonePlaceholderByCountry = ( country ) => ( dispatch ) => {
+export const updatePhonePlaceholderByCountry = ( country ) => () => {
 	const countryCodes = {
 		BE: '+32xxxxxxxxx',
 		NL: '+316xxxxxxxx',
@@ -75,3 +75,73 @@ export const updatePhonePlaceholderByCountry = ( country ) => ( dispatch ) => {
 	const placeholder = countryCodes[ country ] || countryCodes.NL;
 	wp.data.dispatch( setPhonePlaceholder( placeholder ) );
 };
+
+export const setComponentInitializing = ( isInitializing ) => ( {
+	type: ACTIONS.SET_COMPONENT_INITIALIZING,
+	payload: isInitializing,
+} );
+
+export const setComponentInitialized = ( isInitialized ) => ( {
+	type: ACTIONS.SET_COMPONENT_INITIALIZED,
+	payload: isInitialized,
+} );
+
+export const setComponentError = ( error ) => ( {
+	type: ACTIONS.SET_COMPONENT_ERROR,
+	payload: error,
+} );
+
+export const clearComponentError = () => ( {
+	type: ACTIONS.CLEAR_COMPONENT_ERROR,
+} );
+
+// Component Mounting Actions
+export const setComponentMounting = ( gateway, isMounting ) => ( {
+	type: ACTIONS.SET_COMPONENT_MOUNTING,
+	payload: { gateway, isMounting },
+} );
+
+export const setComponentMounted = ( gateway, isMounted ) => ( {
+	type: ACTIONS.SET_COMPONENT_MOUNTED,
+	payload: { gateway, isMounted },
+} );
+
+export const setComponentFocused = ( componentName, isFocused ) => ( {
+	type: ACTIONS.SET_COMPONENT_FOCUSED,
+	payload: { componentName, isFocused },
+} );
+
+// Token Management Actions
+export const setTokenCreating = ( isCreating ) => ( {
+	type: ACTIONS.SET_TOKEN_CREATING,
+	payload: isCreating,
+} );
+
+export const setTokenCreated = ( isCreated ) => ( {
+	type: ACTIONS.SET_TOKEN_CREATED,
+	payload: isCreated,
+} );
+
+export const setTokenError = ( error ) => ( {
+	type: ACTIONS.SET_TOKEN_ERROR,
+	payload: error,
+} );
+
+export const clearTokenError = () => ( {
+	type: ACTIONS.CLEAR_TOKEN_ERROR,
+} );
+
+export const clearTokenData = () => ( {
+	type: ACTIONS.CLEAR_TOKEN_DATA,
+} );
+
+// Component State Actions
+export const setComponentsReady = ( gateway, isReady ) => ( {
+	type: ACTIONS.SET_COMPONENTS_READY,
+	payload: { gateway, isReady },
+} );
+
+export const setGatewayComponents = ( gateway, components ) => ( {
+	type: ACTIONS.SET_GATEWAY_COMPONENTS,
+	payload: { gateway, components },
+} );

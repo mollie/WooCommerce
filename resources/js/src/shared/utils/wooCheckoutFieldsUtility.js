@@ -1,3 +1,4 @@
+/* global jQuery */
 function usingGateway( gateway ) {
 	return (
 		jQuery(
@@ -84,8 +85,8 @@ export function maybeRequireField(
 	gateway
 ) {
 	if ( usingGateway( gateway ) ) {
-		const field = jQuery( '#' + inputName );
-		if ( ! originalField.isVisible && field.length === 0 ) {
+		const fieldSelector = jQuery( '#' + inputName );
+		if ( ! originalField.isVisible && fieldSelector.length === 0 ) {
 			showField( positionField, fieldMarkup );
 			requireField( inputName, fieldId );
 			return jQuery( 'form[name="checkout"] p#' + fieldId );

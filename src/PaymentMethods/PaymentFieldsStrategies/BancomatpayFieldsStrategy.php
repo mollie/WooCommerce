@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
 use Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
+use Mollie\WooCommerce\Shared\FieldConstants;
 
 class BancomatpayFieldsStrategy extends AbstractPaymentFieldsRenderer implements PaymentFieldsRendererInterface
 {
-    const FIELD_PHONE = "billing_phone_bancomatpay";
-
     public function renderFields(): string
     {
         $showPhoneField = false;
@@ -44,15 +43,17 @@ class BancomatpayFieldsStrategy extends AbstractPaymentFieldsRenderer implements
         $phoneValue = $phoneValue ?: '';
         return '
             <p class="form-row form-row-wide" id="billing_phone_field">
-                <label for="' . esc_attr(self::FIELD_PHONE) . '" class="">' . esc_html__(
+                <label for="' . esc_attr(FieldConstants::BANCOMATPAY_PHONE) . '" class="">' . esc_html__(
             'Phone',
             'mollie-payments-for-woocommerce'
         ) . '
                     <abbr class="required" title="required">*</abbr>
                 </label>
                 <span class="woocommerce-input-wrapper">
-                    <input type="tel" class="input-text" name="' . esc_attr(self::FIELD_PHONE) . '" id="' . esc_attr(
-            self::FIELD_PHONE
+                    <input type="tel" class="input-text" name="' . esc_attr(
+            FieldConstants::BANCOMATPAY_PHONE
+        ) . '" id="' . esc_attr(
+            FieldConstants::BANCOMATPAY_PHONE
         ) . '"
                            placeholder="+39xxxxxxxxx"
                            value="' . esc_attr($phoneValue) . '" autocomplete="phone">

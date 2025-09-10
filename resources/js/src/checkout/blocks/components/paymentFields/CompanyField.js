@@ -5,10 +5,7 @@ export const CompanyField = ( { label, value, onChange } ) => {
 
 	return (
 		<div className="custom-input">
-			<label
-				htmlFor="billing_company_billie"
-				dangerouslySetInnerHTML={ { __html: label } }
-			></label>
+			<label htmlFor="billing_company_billie">{ label }</label>
 			<input
 				type="text"
 				className={ className }

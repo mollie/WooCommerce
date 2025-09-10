@@ -24,8 +24,6 @@ export const isEditorContext = () => wp?.blocks?.isEditorContext();
  * @param {Object}  [item.config]           - Custom configuration for the payment method
  * @param {boolean} [item.isExpressEnabled] - Whether express payment is enabled (Apple Pay specific)
  * @return {Object} Merged configuration object with default and custom settings
- * @return {boolean} returns.express - Express payment enabled status (for Apple Pay)
- * @return {boolean} returns.requiresAppleSession - Whether Apple Pay session is required
  * @example
  * const paymentItem = {
  *     name: 'mollie_wc_gateway_applepay',

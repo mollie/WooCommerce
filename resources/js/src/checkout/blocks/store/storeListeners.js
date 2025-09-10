@@ -15,6 +15,7 @@ export const setUpMollieBlockCheckoutListeners = () => {
 				currentPaymentMethod = paymentMethod;
 			}
 		} catch ( error ) {
+			// eslint-disable-next-line no-console
 			console.log( 'Checkout store not ready yet:', error );
 		}
 	};

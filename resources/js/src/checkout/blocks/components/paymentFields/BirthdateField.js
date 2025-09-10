@@ -5,10 +5,7 @@ export const BirthdateField = ( { label, value, onChange } ) => {
 
 	return (
 		<div className="custom-input">
-			<label
-				htmlFor="billing-birthdate"
-				dangerouslySetInnerHTML={ { __html: label } }
-			></label>
+			<label htmlFor="billing-birthdate">{ label }</label>
 			<input
 				type="date"
 				className={ className }

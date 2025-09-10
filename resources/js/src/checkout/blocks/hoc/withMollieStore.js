@@ -3,7 +3,7 @@ import { MOLLIE_STORE_KEY } from '../store';
 /**
  * Higher-Order Component that connects components to the Mollie Redux store
  * Provides store state and actions as props to wrapped components
- * @param WrappedComponent
+ * @param {Function} WrappedComponent
  */
 const withMollieStore = ( WrappedComponent ) => {
 	const WithMollieStoreComponent = ( props ) => {

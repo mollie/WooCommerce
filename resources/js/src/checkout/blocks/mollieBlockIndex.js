@@ -1,11 +1,12 @@
-import './store';
+import './store/index.js';
 import { setUpMollieBlockCheckoutListeners } from './store/storeListeners';
 import { MOLLIE_STORE_KEY } from './store';
 import { registerAllPaymentMethods } from './registration/paymentRegistrar';
 import { buildRegistrationContext } from './registration/contextBuilder';
+import { mollieComponentsManager } from './services/MollieComponentsManager';
 
 /**
- * Main Mollie WooCommerce Blocks initialization
+ * Main Mollie WooCommerce Blocks initialization with mollieComponentsManager
  * @param root0
  * @param root0.mollieBlockData
  * @param root0.wc
@@ -24,6 +25,38 @@ import { buildRegistrationContext } from './registration/contextBuilder';
 
 		registerAllPaymentMethods( gatewayData, context );
 		setUpMollieBlockCheckoutListeners( MOLLIE_STORE_KEY );
+
+		// Initialize mollieComponentsManager with global settings
+		if ( window.mollieComponentsSettings ) {
+			const initmollieComponentsManager = async () => {
+				try {
+					await mollieComponentsManager.initialize( {
+						merchantProfileId:
+							window.mollieComponentsSettings.merchantProfileId,
+						options: window.mollieComponentsSettings.options || {},
+					} );
+					console.log( 'Mollie mollieComponentsManager initialized' );
+				} catch ( error ) {
+					console.error(
+						'Failed to initialize mollieComponentsManager:',
+						error
+					);
+				}
+			};
+
+			if ( document.readyState === 'loading' ) {
+				document.addEventListener(
+					'DOMContentLoaded',
+					initmollieComponentsManager
+				);
+			} else {
+				initmollieComponentsManager();
+			}
+		}
+
+		window.addEventListener( 'beforeunload', () => {
+			mollieComponentsManager.cleanup();
+		} );
 	} catch ( error ) {
 		console.error( 'Mollie: Initialization failed:', error );
 	}

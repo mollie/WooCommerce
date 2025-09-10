@@ -1,50 +1,50 @@
 import { CreditCardField } from '../paymentFields/CreditCardField';
 
-/**
- * Credit Card Payment Component
- * Handles Mollie credit card payment method with tokenization
- * @param root0
- * @param root0.item
- * @param root0.useEffect
- * @param root0.activePaymentMethod
- */
-const CreditCardComponent = ( { item, useEffect, activePaymentMethod } ) => {
-	useEffect( () => {
-		const creditCardSelected = new Event(
-			'mollie_creditcard_component_selected',
-			{ bubbles: true }
-		);
-
-		const handleComponentsReady = () => {
-			document.documentElement.dispatchEvent( creditCardSelected );
-		};
-
-		// Listen for Mollie components ready event
-		document.addEventListener(
-			'mollie_components_ready_to_submit',
-			handleComponentsReady
-		);
-
-		return () => {
-			document.removeEventListener(
-				'mollie_components_ready_to_submit',
-				handleComponentsReady
-			);
-		};
-	}, [] );
-
-	// Dispatch credit card selection event when component mounts
+const CreditCardComponent = ( {
+	item,
+	useEffect,
+	activePaymentMethod,
+	isComponentReady,
+	componentError
+} ) => {
 	useEffect( () => {
 		if ( activePaymentMethod === 'mollie_wc_gateway_creditcard' ) {
+			// Dispatch event to indicate credit card method is selected
 			const creditCardSelected = new Event(
 				'mollie_creditcard_component_selected',
-				{ bubbles: true }
+				{
+					bubbles: true,
+				}
 			);
 			document.documentElement.dispatchEvent( creditCardSelected );
 		}
 	}, [ activePaymentMethod ] );
 
-	return <CreditCardField content={ item.content } />;
+	// Display component status
+	const getComponentStatus = () => {
+		if ( componentError ) {
+			return (
+				<div className="mollie-error">Error: { componentError }</div>
+			);
+		}
+
+		if ( ! isComponentReady ) {
+			return (
+				<div className="mollie-loading">Loading payment form...</div>
+			);
+		}
+
+		return null;
+	};
+
+	return (
+		<div className="mollie-creditcard-component">
+			{ getComponentStatus() }
+
+			{ /* Legacy content fallback */ }
+			{ item.content && <CreditCardField content={ item.content } /> }
+		</div>
+	);
 };
 
 export default CreditCardComponent;

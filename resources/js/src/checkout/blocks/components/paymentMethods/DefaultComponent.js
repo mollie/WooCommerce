@@ -3,16 +3,15 @@ import { IssuerSelect } from '../paymentFields/IssuerSelect';
 /**
  * Default Payment Component
  * Handles payment methods with issuer selection (banks) or simple content display
- * @param root0
- * @param root0.item
- * @param root0.activePaymentMethod
- * @param root0.selectedIssuer
- * @param root0.setSelectedIssuer
+ * @param {Object}      props                     - The component props
+ * @param {Object}      props.item                - Payment method item configuration
+ * @param {string}      props.activePaymentMethod - Currently active payment method identifier
+ * @param {string|null} props.selectedIssuer      - Currently selected issuer ID (from store)
+ * @param {Function}    props.setSelectedIssuer   - Function to update the selected issuer in store
  */
 const DefaultComponent = ( {
 	item,
 	activePaymentMethod,
-	// Store props injected by withMollieStore HOC
 	selectedIssuer,
 	setSelectedIssuer,
 } ) => {

@@ -1,3 +1,4 @@
+/* global wc */
 import { ApplePayButtonComponent } from './components/expressPayments/ApplePayButtonComponent';
 import { ApplePayButtonEditorComponent } from './components/expressPayments/ApplePayButtonEditorComponent';
 

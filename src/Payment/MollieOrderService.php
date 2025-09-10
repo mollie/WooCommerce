@@ -101,7 +101,7 @@ class MollieOrderService
             //Fallback search order in order mollie oder meta
             $orders = wc_get_orders([
                 'limit' => 2,
-                'meta_key' => '_mollie_order_id',
+                'meta_key' => substr($transactionID, 0, 4) === 'ord_' ? '_mollie_order_id' : '_mollie_payment_id',
                 'meta_compare' => '=',
                 'meta_value' => $transactionID,
             ]);

@@ -115,7 +115,7 @@ class UrlMiddleware implements RequestMiddlewareInterface
             $webhookUrl = untrailingslashit($webhookUrl);
         }
 
-        $this->logger->debug(" Order {$orderId} webhookUrl: {$webhookUrl}", [true]);
+        $this->logger->debug(" Order {$order->get_id()} webhookUrl: {$webhookUrl}", [true]);
 
         return apply_filters($this->pluginId . '_webhook_url', $webhookUrl, $order);
     }

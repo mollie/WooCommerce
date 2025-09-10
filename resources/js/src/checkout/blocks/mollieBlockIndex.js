@@ -27,13 +27,14 @@ import { mollieComponentsManager } from './services/MollieComponentsManager';
 		setUpMollieBlockCheckoutListeners( MOLLIE_STORE_KEY );
 
 		// Initialize mollieComponentsManager with global settings
-		if ( window.mollieComponentsSettings ) {
+		if ( mollieBlockData.gatewayData.componentData ) {
 			const initmollieComponentsManager = async () => {
 				try {
+					const config = mollieBlockData.gatewayData.componentData;
 					await mollieComponentsManager.initialize( {
 						merchantProfileId:
-							window.mollieComponentsSettings.merchantProfileId,
-						options: window.mollieComponentsSettings.options || {},
+						config.merchantProfileId,
+						options: config.options || {},
 					} );
 					console.log( 'Mollie mollieComponentsManager initialized' );
 				} catch ( error ) {

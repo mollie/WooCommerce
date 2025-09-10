@@ -8,8 +8,8 @@ export const ApplePayButtonComponent = ( { buttonAttributes = {} } ) => {
 	const nonce = document.getElementById(
 		'woocommerce-process-checkout-nonce'
 	).value;
-	let updatedContactInfo = [];
-	let redirectionUrl = '';
+	const updatedContactInfo = [];
+	const redirectionUrl = '';
 	const {
 		product: { needShipping = true, subtotal },
 		shop: { countryCode, currencyCode = 'EUR', totalLabel = '' },

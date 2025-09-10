@@ -1,3 +1,4 @@
+/* global mollieBlockData */
 import { MOLLIE_STORE_KEY } from '../store';
 import { createPaymentComponent } from './PaymentComponentFactory';
 import { mollieComponentsManager } from '../services/MollieComponentsManager';
@@ -54,8 +55,9 @@ export const PaymentMethodContentRenderer = ( props ) => {
 		) {
 			const initializeComponents = async () => {
 				try {
-					const mollieConfig = mollieBlockData.gatewayData.componentData || {};
-                    if ( ! mollieConfig.merchantProfileId ) {
+					const mollieConfig =
+						mollieBlockData.gatewayData.componentData || {};
+					if ( ! mollieConfig.merchantProfileId ) {
 						console.error( 'Mollie merchant profile ID not found' );
 						return;
 					}

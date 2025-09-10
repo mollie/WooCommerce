@@ -5,8 +5,7 @@ const CreditCardComponent = ( {
 	useEffect,
 	activePaymentMethod,
 	isComponentReady,
-	componentError,
-	componentInitialized,
+	componentError
 } ) => {
 	useEffect( () => {
 		if ( activePaymentMethod === 'mollie_wc_gateway_creditcard' ) {
@@ -23,7 +22,6 @@ const CreditCardComponent = ( {
 
 	// Display component status
 	const getComponentStatus = () => {
-
 		if ( componentError ) {
 			return (
 				<div className="mollie-error">Error: { componentError }</div>
@@ -44,9 +42,7 @@ const CreditCardComponent = ( {
 			{ getComponentStatus() }
 
 			{ /* Legacy content fallback */ }
-			{ item.content && (
-				<CreditCardField content={ item.content } />
-			) }
+			{ item.content && <CreditCardField content={ item.content } /> }
 		</div>
 	);
 };

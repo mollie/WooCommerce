@@ -185,10 +185,14 @@ class PaymentModule implements ServiceModule, ExecutableModule
             if ($unpaid_orders) {
                 foreach ($unpaid_orders as $unpaid_order) {
                     $order = wc_get_order($unpaid_order);
+                    $mollieOrderService = $this->container->get(MollieOrderService::class);
+                    if ($mollieOrderService->checkPaymentForUnpaidOrder($order)) {
+                        continue;
+                    }
                     add_filter('mollie-payments-for-woocommerce_order_status_cancelled', static function ($newOrderStatus) {
                         return SharedDataDictionary::STATUS_CANCELLED;
                     });
-                    $order->update_status('cancelled', __('Unpaid order cancelled - time limit reached.', 'woocommerce'), true);
+                    $order->update_status('cancelled', __('Unpaid order cancelled - time limit reached.', 'woocommerce'));
                     $this->cancelOrderAtMollie($order->get_id());
                 }
             }

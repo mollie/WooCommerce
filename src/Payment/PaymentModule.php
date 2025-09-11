@@ -155,6 +155,9 @@ class PaymentModule implements ServiceModule, ExecutableModule
     {
         $classNames = $this->gatewayClassnames;
         foreach ($classNames as $gateway) {
+            if (empty($gateway)) {
+                continue;
+            }
             $gatewayName = strtolower($gateway) . '_settings';
             $gatewaySettings = get_option($gatewayName);
 

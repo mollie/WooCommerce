@@ -10,7 +10,7 @@ const returnTrue = () => true;
 
 // Add logging utility
 const log = ( message, ...args ) => {
-    console.log( `[Mollie Components] ${ message }`, ...args );
+	console.log( `[Mollie Components] ${ message }`, ...args );
 };
 
 // Component state preservation
@@ -21,36 +21,36 @@ const componentStates = new Map();
  * @param {Map} mollieComponentsMap - Components map
  */
 const preserveComponentStates = ( mollieComponentsMap ) => {
-    log( 'Preserving component states' );
-    mollieComponentsMap.forEach( ( component, name ) => {
-        try {
-            // Store component state if available
-            if ( component && typeof component.getValue === 'function' ) {
-                componentStates.set( name, component.getValue() );
-            }
-        } catch ( error ) {
-            log( 'Could not preserve state for component:', name, error );
-        }
-    } );
+	log( 'Preserving component states' );
+	mollieComponentsMap.forEach( ( component, name ) => {
+		try {
+			// Store component state if available
+			if ( component && typeof component.getValue === 'function' ) {
+				componentStates.set( name, component.getValue() );
+			}
+		} catch ( error ) {
+			log( 'Could not preserve state for component:', name, error );
+		}
+	} );
 };
 
 /**
  * Restore component state after mounting
  * @param {Object} component - Mollie component
- * @param {string} name - Component name
+ * @param {string} name      - Component name
  */
 const restoreComponentState = ( component, name ) => {
-    if ( componentStates.has( name ) ) {
-        try {
-            const savedState = componentStates.get( name );
-            if ( savedState && typeof component.setValue === 'function' ) {
-                component.setValue( savedState );
-                log( 'Restored state for component:', name );
-            }
-        } catch ( error ) {
-            log( 'Could not restore state for component:', name, error );
-        }
-    }
+	if ( componentStates.has( name ) ) {
+		try {
+			const savedState = componentStates.get( name );
+			if ( savedState && typeof component.setValue === 'function' ) {
+				component.setValue( savedState );
+				log( 'Restored state for component:', name );
+			}
+		} catch ( error ) {
+			log( 'Could not restore state for component:', name, error );
+		}
+	}
 };
 
 /**
@@ -59,19 +59,19 @@ const restoreComponentState = ( component, name ) => {
  * @return {boolean} True if value is considered empty
  */
 const isEmpty = ( value ) => {
-    if ( value === null || value === undefined ) {
-        return true;
-    }
-    if ( typeof value === 'object' ) {
-        if ( Array.isArray( value ) ) {
-            return value.length === 0;
-        }
-        return Object.keys( value ).length === 0;
-    }
-    if ( typeof value === 'string' ) {
-        return value.length === 0;
-    }
-    return false;
+	if ( value === null || value === undefined ) {
+		return true;
+	}
+	if ( typeof value === 'object' ) {
+		if ( Array.isArray( value ) ) {
+			return value.length === 0;
+		}
+		return Object.keys( value ).length === 0;
+	}
+	if ( typeof value === 'string' ) {
+		return value.length === 0;
+	}
+	return false;
 };
 
 /**
@@ -87,13 +87,13 @@ const isFunction = ( value ) => typeof value === 'function';
  * @return {Object|Array} Shallow copy of the object
  */
 const shallowCopy = ( obj ) => {
-    if ( Array.isArray( obj ) ) {
-        return [ ...obj ];
-    }
-    if ( obj && typeof obj === 'object' ) {
-        return { ...obj };
-    }
-    return obj;
+	if ( Array.isArray( obj ) ) {
+		return [ ...obj ];
+	}
+	if ( obj && typeof obj === 'object' ) {
+		return { ...obj };
+	}
+	return obj;
 };
 
 /* -------------------------------------------------------------------
@@ -106,12 +106,12 @@ const shallowCopy = ( obj ) => {
  * @return {Element|null} Gateway container element or null
  */
 const gatewayContainer = ( container = document ) => {
-    log( 'Getting gateway container' );
-    const gateway = container.querySelector(
-        SELECTOR_MOLLIE_GATEWAY_CONTAINER
-    );
-    log( 'Gateway container found:', !! gateway );
-    return gateway;
+	log( 'Getting gateway container' );
+	const gateway = container.querySelector(
+		SELECTOR_MOLLIE_GATEWAY_CONTAINER
+	);
+	log( 'Gateway container found:', !! gateway );
+	return gateway;
 };
 
 /**
@@ -121,12 +121,12 @@ const gatewayContainer = ( container = document ) => {
  * @return {Element|null} Gateway container element or null
  */
 const containerForGateway = ( gateway, container = document ) => {
-    log( 'Getting container for gateway:', gateway );
-    const methodContainer = container.querySelector(
-        `.payment_method_mollie_wc_gateway_${ gateway }`
-    );
-    log( 'Gateway container found:', !! methodContainer );
-    return methodContainer;
+	log( 'Getting container for gateway:', gateway );
+	const methodContainer = container.querySelector(
+		`.payment_method_mollie_wc_gateway_${ gateway }`
+	);
+	log( 'Gateway container found:', !! methodContainer );
+	return methodContainer;
 };
 
 /**
@@ -135,10 +135,10 @@ const containerForGateway = ( gateway, container = document ) => {
  * @return {Element|null} Notice container element or null
  */
 const noticeContainer = ( container = document ) => {
-    log( 'Getting notice container' );
-    const notice = container.querySelector( SELECTOR_MOLLIE_NOTICE_CONTAINER );
-    log( 'Notice container found:', !! notice );
-    return notice;
+	log( 'Getting notice container' );
+	const notice = container.querySelector( SELECTOR_MOLLIE_NOTICE_CONTAINER );
+	log( 'Notice container found:', !! notice );
+	return notice;
 };
 
 /**
@@ -147,16 +147,16 @@ const noticeContainer = ( container = document ) => {
  * @return {Element|null} Components container element or null
  */
 const componentsContainerFromWithin = ( container ) => {
-    if ( ! container ) {
-        log( 'Components container search failed: no container provided' );
-        return null;
-    }
-    log( 'Getting components container within:', container );
-    const components = container.querySelector(
-        SELECTOR_MOLLIE_COMPONENTS_CONTAINER
-    );
-    log( 'Components container found:', !! components );
-    return components;
+	if ( ! container ) {
+		log( 'Components container search failed: no container provided' );
+		return null;
+	}
+	log( 'Getting components container within:', container );
+	const components = container.querySelector(
+		SELECTOR_MOLLIE_COMPONENTS_CONTAINER
+	);
+	log( 'Components container found:', !! components );
+	return components;
 };
 
 /**
@@ -164,12 +164,12 @@ const componentsContainerFromWithin = ( container ) => {
  * @param {Element} container - Container to clear
  */
 const cleanContainer = ( container ) => {
-    if ( ! container ) {
-        log( 'Cannot clean container: container is null' );
-        return;
-    }
-    log( 'Cleaning container:', container );
-    container.innerHTML = '';
+	if ( ! container ) {
+		log( 'Cannot clean container: container is null' );
+		return;
+	}
+	log( 'Cleaning container:', container );
+	container.innerHTML = '';
 };
 
 /* -------------------------------------------------------------------
@@ -183,12 +183,12 @@ const cleanContainer = ( container ) => {
  * @return {Element} Notice element
  */
 const renderNoticeElement = ( content, type ) => {
-    log( 'Rendering notice element:', type, content );
-    const noticeDiv = document.createElement( 'div' );
-    noticeDiv.id = 'mollie-notice';
-    noticeDiv.className = `woocommerce-${ type }`;
-    noticeDiv.innerHTML = content;
-    return noticeDiv;
+	log( 'Rendering notice element:', type, content );
+	const noticeDiv = document.createElement( 'div' );
+	noticeDiv.id = 'mollie-notice';
+	noticeDiv.className = `woocommerce-${ type }`;
+	noticeDiv.innerHTML = content;
+	return noticeDiv;
 };
 
 /**
@@ -199,32 +199,32 @@ const renderNoticeElement = ( content, type ) => {
  * @param {string} noticeData.type    - Notice type
  */
 const printNotice = ( jQueryInstance, noticeData ) => {
-    log( 'Printing notice:', noticeData );
-    const container = gatewayContainer();
-    const form = container ? closestFormForElement( container ) : null;
-    const formContainer = form ? form.parentElement : null;
-    const existingMollieNotice = document.querySelector(
-        SELECTOR_MOLLIE_NOTICE_CONTAINER
-    );
-    const renderedNotice = renderNoticeElement(
-        noticeData.content,
-        noticeData.type
-    );
+	log( 'Printing notice:', noticeData );
+	const container = gatewayContainer();
+	const form = container ? closestFormForElement( container ) : null;
+	const formContainer = form ? form.parentElement : null;
+	const existingMollieNotice = document.querySelector(
+		SELECTOR_MOLLIE_NOTICE_CONTAINER
+	);
+	const renderedNotice = renderNoticeElement(
+		noticeData.content,
+		noticeData.type
+	);
 
-    if ( existingMollieNotice ) {
-        log( 'Removing existing notice' );
-        existingMollieNotice.remove();
-    }
+	if ( existingMollieNotice ) {
+		log( 'Removing existing notice' );
+		existingMollieNotice.remove();
+	}
 
-    if ( ! formContainer ) {
-        log( 'No form container found, showing alert' );
-        alert( noticeData.content );
-        return;
-    }
+	if ( ! formContainer ) {
+		log( 'No form container found, showing alert' );
+		alert( noticeData.content );
+		return;
+	}
 
-    log( 'Inserting notice before form container' );
-    formContainer.insertAdjacentElement( 'beforebegin', renderedNotice );
-    scrollToNotice( jQueryInstance );
+	log( 'Inserting notice before form container' );
+	formContainer.insertAdjacentElement( 'beforebegin', renderedNotice );
+	scrollToNotice( jQueryInstance );
 };
 
 /**
@@ -232,21 +232,21 @@ const printNotice = ( jQueryInstance, noticeData ) => {
  * @param {Object} jQueryInstance - jQuery instance (for WooCommerce compatibility)
  */
 const scrollToNotice = ( jQueryInstance ) => {
-    log( 'Scrolling to notice' );
-    const scrollToElement = noticeContainer() || gatewayContainer();
+	log( 'Scrolling to notice' );
+	const scrollToElement = noticeContainer() || gatewayContainer();
 
-    if ( scrollToElement && jQueryInstance.scroll_to_notices ) {
-        log( 'Using WooCommerce scroll_to_notices' );
-        jQueryInstance.scroll_to_notices( jQueryInstance( scrollToElement ) );
-    } else {
-        log( 'Fallback scroll behavior' );
-        if ( scrollToElement ) {
-            scrollToElement.scrollIntoView( {
-                behavior: 'smooth',
-                block: 'center',
-            } );
-        }
-    }
+	if ( scrollToElement && jQueryInstance.scroll_to_notices ) {
+		log( 'Using WooCommerce scroll_to_notices' );
+		jQueryInstance.scroll_to_notices( jQueryInstance( scrollToElement ) );
+	} else {
+		log( 'Fallback scroll behavior' );
+		if ( scrollToElement ) {
+			scrollToElement.scrollIntoView( {
+				behavior: 'smooth',
+				block: 'center',
+			} );
+		}
+	}
 };
 
 /* -------------------------------------------------------------------
@@ -258,14 +258,14 @@ const scrollToNotice = ( jQueryInstance ) => {
  * @param {Element} container - Container to add field to
  */
 const createTokenFieldWithin = ( container ) => {
-    log( 'Creating token field within container:', container );
-    const tokenInput = document.createElement( 'input' );
-    tokenInput.type = 'hidden';
-    tokenInput.name = 'cardToken';
-    tokenInput.className = 'cardToken';
-    tokenInput.value = '';
-    container.appendChild( tokenInput );
-    log( 'Token field created' );
+	log( 'Creating token field within container:', container );
+	const tokenInput = document.createElement( 'input' );
+	tokenInput.type = 'hidden';
+	tokenInput.name = 'cardToken';
+	tokenInput.className = 'cardToken';
+	tokenInput.value = '';
+	container.appendChild( tokenInput );
+	log( 'Token field created' );
 };
 
 /**
@@ -274,14 +274,14 @@ const createTokenFieldWithin = ( container ) => {
  * @return {Element|null} Token element or null
  */
 const tokenElementWithin = ( container ) => {
-    if ( ! container ) {
-        log( 'Token element search failed: no container provided' );
-        return null;
-    }
-    log( 'Getting token element within container:', container );
-    const token = container.querySelector( SELECTOR_TOKEN_ELEMENT );
-    log( 'Token element found:', !! token );
-    return token;
+	if ( ! container ) {
+		log( 'Token element search failed: no container provided' );
+		return null;
+	}
+	log( 'Getting token element within container:', container );
+	const token = container.querySelector( SELECTOR_TOKEN_ELEMENT );
+	log( 'Token element found:', !! token );
+	return token;
 };
 
 /**
@@ -291,16 +291,16 @@ const tokenElementWithin = ( container ) => {
  * @throws {Error} When token creation fails
  */
 const retrievePaymentToken = async ( mollie ) => {
-    log( 'Retrieving payment token from Mollie' );
-    const { token, error } = await mollie.createToken( SELECTOR_TOKEN_ELEMENT );
+	log( 'Retrieving payment token from Mollie' );
+	const { token, error } = await mollie.createToken( SELECTOR_TOKEN_ELEMENT );
 
-    if ( error ) {
-        log( 'Token creation failed:', error );
-        throw new Error( error.message || '' );
-    }
+	if ( error ) {
+		log( 'Token creation failed:', error );
+		throw new Error( error.message || '' );
+	}
 
-    log( 'Payment token retrieved successfully' );
-    return token;
+	log( 'Payment token retrieved successfully' );
+	return token;
 };
 
 /**
@@ -309,13 +309,13 @@ const retrievePaymentToken = async ( mollie ) => {
  * @param {Element} tokenFieldElement - Token field element
  */
 const setTokenValueToField = ( token, tokenFieldElement ) => {
-    if ( ! tokenFieldElement ) {
-        log( 'Cannot set token: token field element is null' );
-        return;
-    }
-    log( 'Setting token value to field:', token );
-    tokenFieldElement.value = token;
-    tokenFieldElement.setAttribute( 'value', token );
+	if ( ! tokenFieldElement ) {
+		log( 'Cannot set token: token field element is null' );
+		return;
+	}
+	log( 'Setting token value to field:', token );
+	tokenFieldElement.value = token;
+	tokenFieldElement.setAttribute( 'value', token );
 };
 
 /* -------------------------------------------------------------------
@@ -328,14 +328,14 @@ const setTokenValueToField = ( token, tokenFieldElement ) => {
  * @return {Element|null} Form element or null
  */
 const closestFormForElement = ( element ) => {
-    if ( ! element ) {
-        log( 'Cannot find closest form: element is null' );
-        return null;
-    }
-    log( 'Finding closest form for element:', element );
-    const form = element.closest( SELECTOR_FORM );
-    log( 'Closest form found:', !! form );
-    return form;
+	if ( ! element ) {
+		log( 'Cannot find closest form: element is null' );
+		return null;
+	}
+	log( 'Finding closest form for element:', element );
+	const form = element.closest( SELECTOR_FORM );
+	log( 'Closest form found:', !! form );
+	return form;
 };
 
 /**
@@ -343,9 +343,9 @@ const closestFormForElement = ( element ) => {
  * @param {Object} $form - Form jQuery object (for WooCommerce compatibility)
  */
 const turnMollieComponentsSubmissionOff = ( $form ) => {
-    log( 'Turning off Mollie components submission listeners' );
-    $form.off( 'checkout_place_order', returnFalse );
-    $form.off( 'submit', submitForm );
+	log( 'Turning off Mollie components submission listeners' );
+	$form.off( 'checkout_place_order', returnFalse );
+	$form.off( 'submit', submitForm );
 };
 
 /**
@@ -354,19 +354,19 @@ const turnMollieComponentsSubmissionOff = ( $form ) => {
  * @return {boolean} True if gateway is selected
  */
 const isGatewaySelected = ( gateway ) => {
-    log( 'Checking if gateway is selected:', gateway );
-    const selectedContainer = containerForGateway( gateway );
-    if ( ! selectedContainer ) {
-        log( 'Gateway not selected: container not found' );
-        return false;
-    }
+	log( 'Checking if gateway is selected:', gateway );
+	const selectedContainer = containerForGateway( gateway );
+	if ( ! selectedContainer ) {
+		log( 'Gateway not selected: container not found' );
+		return false;
+	}
 
-    const gatewayInput = selectedContainer.querySelector(
-        `#payment_method_mollie_wc_gateway_${ gateway }`
-    );
-    const isSelected = gatewayInput ? gatewayInput.checked : false;
-    log( 'Gateway selected:', isSelected );
-    return isSelected;
+	const gatewayInput = selectedContainer.querySelector(
+		`#payment_method_mollie_wc_gateway_${ gateway }`
+	);
+	const isSelected = gatewayInput ? gatewayInput.checked : false;
+	log( 'Gateway selected:', isSelected );
+	return isSelected;
 };
 
 /**
@@ -375,8 +375,8 @@ const isGatewaySelected = ( gateway ) => {
  * @return {Promise<string>} Payment token
  */
 const handleTokenCreation = async ( mollie ) => {
-    log( 'Handling token creation' );
-    return await retrievePaymentToken( mollie );
+	log( 'Handling token creation' );
+	return await retrievePaymentToken( mollie );
 };
 
 /**
@@ -388,39 +388,42 @@ const handleTokenCreation = async ( mollie ) => {
  * @param {Object} $document      - Document jQuery object (for WooCommerce compatibility)
  */
 const handleSubmissionError = (
-    jQueryInstance,
-    error,
-    messages,
-    $form,
-    $document
+	jQueryInstance,
+	error,
+	messages,
+	$form,
+	$document
 ) => {
-    log( 'Handling submission error:', error );
-    const content = error?.message || messages.defaultErrorMessage;
-    if ( content ) {
-        printNotice( jQueryInstance, { content, type: 'error' } );
-    }
+	log( 'Handling submission error:', error );
+	const content = error?.message || messages.defaultErrorMessage;
+	if ( content ) {
+		printNotice( jQueryInstance, { content, type: 'error' } );
+	}
 
-    // Use jQuery for WooCommerce compatibility
-    $form.removeClass( 'processing' ).unblock();
-    $document.trigger( 'checkout_error' );
+	// Use jQuery for WooCommerce compatibility
+	$form.removeClass( 'processing' ).unblock();
+	$document.trigger( 'checkout_error' );
 };
 
 /**
  * Complete form submission with token
- * @param {string}  token            - Payment token
- * @param {Element} gatewayContainer - Gateway container element
- * @param {Object}  $form            - Form jQuery object (for WooCommerce compatibility)
+ * @param {string}  token                   - Payment token
+ * @param {Element} gatewayContainerElement - Gateway container element
+ * @param {Object}  $form                   - Form jQuery object (for WooCommerce compatibility)
  */
-const completeFormSubmission = ( token, gatewayContainer, $form ) => {
-    log( 'Completing form submission with token:', !! token );
-    turnMollieComponentsSubmissionOff( $form );
+const completeFormSubmission = ( token, gatewayContainerElement, $form ) => {
+	log( 'Completing form submission with token:', !! token );
+	turnMollieComponentsSubmissionOff( $form );
 
-    if ( token ) {
-        setTokenValueToField( token, tokenElementWithin( gatewayContainer ) );
-    }
+	if ( token ) {
+		setTokenValueToField(
+			token,
+			tokenElementWithin( gatewayContainerElement )
+		);
+	}
 
-    // Use jQuery for form submission (WooCommerce compatibility)
-    $form.submit();
+	// Use jQuery for form submission (WooCommerce compatibility)
+	$form.submit();
 };
 
 /**
@@ -428,29 +431,35 @@ const completeFormSubmission = ( token, gatewayContainer, $form ) => {
  * @param {Event} evt - Form submission event
  */
 const submitForm = async ( evt ) => {
-    log( 'form submission handler called' );
-    const { jQuery, mollie, gateway, gatewayContainer, messages } = evt.data;
-    const form = closestFormForElement( gatewayContainer );
-    const $form = jQuery( form );
-    const $document = jQuery( document.body );
+	log( 'form submission handler called' );
+	const {
+		jQuery,
+		mollie,
+		gateway,
+		gatewayContainer: gatewayContainerElement,
+		messages,
+	} = evt.data;
+	const form = closestFormForElement( gatewayContainerElement );
+	const $form = jQuery( form );
+	const $document = jQuery( document.body );
 
-    if ( ! isGatewaySelected( gateway ) ) {
-        log( 'Gateway not selected, proceeding with normal submission' );
-        turnMollieComponentsSubmissionOff( $form );
-        $form.submit();
-        return;
-    }
+	if ( ! isGatewaySelected( gateway ) ) {
+		log( 'Gateway not selected, proceeding with normal submission' );
+		turnMollieComponentsSubmissionOff( $form );
+		$form.submit();
+		return;
+	}
 
 	log( 'Preventing default form submission for Mollie processing' );
 	evt.preventDefault();
 	evt.stopImmediatePropagation();
 
-    try {
-        const token = await handleTokenCreation( mollie );
-        completeFormSubmission( token, gatewayContainer, $form );
-    } catch ( error ) {
-        handleSubmissionError( jQuery, error, messages, $form, $document );
-    }
+	try {
+		const token = await handleTokenCreation( mollie );
+		completeFormSubmission( token, gatewayContainerElement, $form );
+	} catch ( error ) {
+		handleSubmissionError( jQuery, error, messages, $form, $document );
+	}
 };
 
 /* -------------------------------------------------------------------
@@ -459,19 +468,21 @@ const submitForm = async ( evt ) => {
 
 /**
  * Get component element by name within container
- * @param {string}  name      - Component name
- * @param {Element} container - Container to search within
+ * @param {string}  name             - Component name
+ * @param {Element} containerElement - Container to search within
  * @return {Element|null} Component element or null
  */
-const componentElementByNameFromWithin = ( name, container ) => {
-    if ( ! container ) {
-        log( 'Component element search failed: no container provided' );
-        return null;
-    }
-    log( 'Getting component element by name:', name );
-    const component = container.querySelector( `.mollie-component--${ name }` );
-    log( 'Component element found:', !! component );
-    return component;
+const componentElementByNameFromWithin = ( name, containerElement ) => {
+	if ( ! containerElement ) {
+		log( 'Component element search failed: no container provided' );
+		return null;
+	}
+	log( 'Getting component element by name:', name );
+	const component = containerElement.querySelector(
+		`.mollie-component--${ name }`
+	);
+	log( 'Component element found:', !! component );
+	return component;
 };
 
 /**
@@ -482,42 +493,42 @@ const componentElementByNameFromWithin = ( name, container ) => {
  * @return {string} HTML string
  */
 const createHtmlElement = ( tagName, attributes, content ) => {
-    const attrString = Object.entries( attributes )
-        .map( ( [ key, value ] ) => `${ key }="${ value }"` )
-        .join( ' ' );
-    return `<${ tagName } ${ attrString }>${ content }</${ tagName }>`;
+	const attrString = Object.entries( attributes )
+		.map( ( [ key, value ] ) => `${ key }="${ value }"` )
+		.join( ' ' );
+	return `<${ tagName } ${ attrString }>${ content }</${ tagName }>`;
 };
 
 /**
  * Create component label element
- * @param {Element} container                 - Container to add element to
+ * @param {Element} containerElement          - Container to add element to
  * @param {Object}  componentAttributes       - Component attributes
  * @param {string}  componentAttributes.label - Component label
  */
-const createComponentLabelElementWithin = ( container, { label } ) => {
-    log( 'Creating component label element:', label );
-    const labelHtml = createHtmlElement(
-        'b',
-        { class: 'mollie-component-label' },
-        label
-    );
-    container.insertAdjacentHTML( 'beforebegin', labelHtml );
+const createComponentLabelElementWithin = ( containerElement, { label } ) => {
+	log( 'Creating component label element:', label );
+	const labelHtml = createHtmlElement(
+		'b',
+		{ class: 'mollie-component-label' },
+		label
+	);
+	containerElement.insertAdjacentHTML( 'beforebegin', labelHtml );
 };
 
 /**
  * Create component error container
- * @param {Element} container                - Container to add element to
+ * @param {Element} containerElement         - Container to add element to
  * @param {Object}  componentAttributes      - Component attributes
  * @param {string}  componentAttributes.name - Component name
  */
-const createComponentsErrorContainerWithin = ( container, { name } ) => {
-    log( 'Creating component error container for:', name );
-    const errorHtml = createHtmlElement(
-        'div',
-        { role: 'alert', id: `${ name }-errors` },
-        ''
-    );
-    container.insertAdjacentHTML( 'afterend', errorHtml );
+const createComponentsErrorContainerWithin = ( containerElement, { name } ) => {
+	log( 'Creating component error container for:', name );
+	const errorHtml = createHtmlElement(
+		'div',
+		{ role: 'alert', id: `${ name }-errors` },
+		''
+	);
+	containerElement.insertAdjacentHTML( 'afterend', errorHtml );
 };
 
 /**
@@ -529,14 +540,14 @@ const createComponentsErrorContainerWithin = ( container, { name } ) => {
  * @return {Object} Mollie component
  */
 const componentByName = ( name, mollie, settings, mollieComponentsMap ) => {
-    log( 'Getting or creating component by name:', name );
-    if ( mollieComponentsMap.has( name ) ) {
-        log( 'Component already exists in map' );
-        return mollieComponentsMap.get( name );
-    }
+	log( 'Getting or creating component by name:', name );
+	if ( mollieComponentsMap.has( name ) ) {
+		log( 'Component already exists in map' );
+		return mollieComponentsMap.get( name );
+	}
 
-    log( 'Creating new component' );
-    return mollie.createComponent( name, settings );
+	log( 'Creating new component' );
+	return mollie.createComponent( name, settings );
 };
 
 /**
@@ -544,44 +555,50 @@ const componentByName = ( name, mollie, settings, mollieComponentsMap ) => {
  * @param {Map} mollieComponentsMap - Components map
  */
 const unmountComponents = ( mollieComponentsMap ) => {
-    log( 'Unmounting all components with state preservation, count:', mollieComponentsMap.size );
-    preserveComponentStates( mollieComponentsMap );
+	log(
+		'Unmounting all components with state preservation, count:',
+		mollieComponentsMap.size
+	);
+	preserveComponentStates( mollieComponentsMap );
 
-    mollieComponentsMap.forEach( ( component, name ) => {
-        log( 'Unmounting component:', name );
-        try {
-            component.unmount();
-        } catch ( error ) {
-            log( 'Error unmounting component:', name, error );
-        }
-    } );
+	mollieComponentsMap.forEach( ( component, name ) => {
+		log( 'Unmounting component:', name );
+		try {
+			component.unmount();
+		} catch ( error ) {
+			log( 'Error unmounting component:', name, error );
+		}
+	} );
 };
 
 /**
  * Check if components need remounting
- * @param {string} gateway - Gateway identifier
- * @param {Map} mollieComponentsMap - Components map
+ * @param {string} gatewayId           - Gateway identifier
+ * @param {Map}    mollieComponentsMap - Components map
  * @return {boolean} True if remounting is needed
  */
-const shouldRemountComponents = ( gateway, mollieComponentsMap ) => {
-    const gatewayContainer = containerForGateway( gateway );
-    const mollieComponentsContainer = componentsContainerFromWithin( gatewayContainer );
+const shouldRemountComponents = ( gatewayId, mollieComponentsMap ) => {
+	const gatewayContainerElement = containerForGateway( gatewayId );
+	const mollieComponentsContainer = componentsContainerFromWithin(
+		gatewayContainerElement
+	);
 
-    if ( ! mollieComponentsContainer ) {
-        return true;
-    }
+	if ( ! mollieComponentsContainer ) {
+		return true;
+	}
 
-    const existingComponents = mollieComponentsContainer.querySelectorAll( '[id]' );
-    const hasExistingComponents = existingComponents.length > 0;
-    const hasComponentsInMap = mollieComponentsMap.size > 0;
+	const existingComponents =
+		mollieComponentsContainer.querySelectorAll( '[id]' );
+	const hasExistingComponents = existingComponents.length > 0;
+	const hasComponentsInMap = mollieComponentsMap.size > 0;
 
-    log( 'Remount check for gateway:', gateway, {
-        hasExistingComponents,
-        hasComponentsInMap,
-        shouldRemount: ! hasExistingComponents || ! hasComponentsInMap
-    } );
+	log( 'Remount check for gateway:', gatewayId, {
+		hasExistingComponents,
+		hasComponentsInMap,
+		shouldRemount: ! hasExistingComponents || ! hasComponentsInMap,
+	} );
 
-    return ! hasExistingComponents || ! hasComponentsInMap;
+	return ! hasExistingComponents || ! hasComponentsInMap;
 };
 
 /**
@@ -590,13 +607,13 @@ const shouldRemountComponents = ( gateway, mollieComponentsMap ) => {
  * @param {Element} mollieComponentsContainer - Container for components
  */
 const createComponentContainer = (
-    componentName,
-    mollieComponentsContainer
+	componentName,
+	mollieComponentsContainer
 ) => {
-    log( 'Creating component container for:', componentName );
-    const containerDiv = document.createElement( 'div' );
-    containerDiv.id = componentName;
-    mollieComponentsContainer.appendChild( containerDiv );
+	log( 'Creating component container for:', componentName );
+	const containerDiv = document.createElement( 'div' );
+	containerDiv.id = componentName;
+	mollieComponentsContainer.appendChild( containerDiv );
 };
 
 /**
@@ -605,12 +622,12 @@ const createComponentContainer = (
  * @param {string} componentName - Component name
  */
 const mountComponentToDom = ( component, componentName ) => {
-    log( 'Mounting component to DOM:', componentName );
-    component.mount( `#${ componentName }` );
+	log( 'Mounting component to DOM:', componentName );
+	component.mount( `#${ componentName }` );
 
-    setTimeout( () => {
-        restoreComponentState( component, componentName );
-    }, 100 );
+	setTimeout( () => {
+		restoreComponentState( component, componentName );
+	}, 100 );
 };
 
 /**
@@ -619,15 +636,15 @@ const mountComponentToDom = ( component, componentName ) => {
  * @param {Object}  componentAttributes     - Component attributes
  */
 const setupComponentUi = ( currentComponentElement, componentAttributes ) => {
-    log( 'Setting up component UI:', componentAttributes.name );
-    createComponentLabelElementWithin(
-        currentComponentElement,
-        componentAttributes
-    );
-    createComponentsErrorContainerWithin(
-        currentComponentElement,
-        componentAttributes
-    );
+	log( 'Setting up component UI:', componentAttributes.name );
+	createComponentLabelElementWithin(
+		currentComponentElement,
+		componentAttributes
+	);
+	createComponentsErrorContainerWithin(
+		currentComponentElement,
+		componentAttributes
+	);
 };
 
 /**
@@ -636,71 +653,71 @@ const setupComponentUi = ( currentComponentElement, componentAttributes ) => {
  * @param {string} componentName - Component name
  */
 const setupComponentErrorHandling = ( component, componentName ) => {
-    log( 'Setting up error handling for component:', componentName );
-    const componentError = document.querySelector(
-        `#${ componentName }-errors`
-    );
-    component.addEventListener( 'change', ( event ) => {
-        if ( event.error && event.touched ) {
-            log( 'Component error:', componentName, event.error );
-            if ( componentError ) {
-                componentError.textContent = event.error;
-            }
-        } else {
-            log( 'Component error cleared:', componentName );
-            if ( componentError ) {
-                componentError.textContent = '';
-            }
-        }
-    } );
+	log( 'Setting up error handling for component:', componentName );
+	const componentError = document.querySelector(
+		`#${ componentName }-errors`
+	);
+	component.addEventListener( 'change', ( event ) => {
+		if ( event.error && event.touched ) {
+			log( 'Component error:', componentName, event.error );
+			if ( componentError ) {
+				componentError.textContent = event.error;
+			}
+		} else {
+			log( 'Component error cleared:', componentName );
+			if ( componentError ) {
+				componentError.textContent = '';
+			}
+		}
+	} );
 };
 
 /**
  * Mount single component
- * @param {Object}  mollie              - Mollie instance
- * @param {Object}  componentSettings   - Component settings
- * @param {Object}  componentAttributes - Component attributes
- * @param {Map}     mollieComponentsMap - Components map
- * @param {Element} baseContainer       - Base container element
+ * @param {Object}  mollie               - Mollie instance
+ * @param {Object}  componentSettings    - Component settings
+ * @param {Object}  componentAttributes  - Component attributes
+ * @param {Map}     mollieComponentsMap  - Components map
+ * @param {Element} baseContainerElement - Base container element
  */
 const mountComponent = (
-    mollie,
-    componentSettings,
-    componentAttributes,
-    mollieComponentsMap,
-    baseContainer
+	mollie,
+	componentSettings,
+	componentAttributes,
+	mollieComponentsMap,
+	baseContainerElement
 ) => {
-    log( 'Mounting component:', componentAttributes.name );
-    const { name: componentName } = componentAttributes;
-    const component = componentByName(
-        componentName,
-        mollie,
-        componentSettings,
-        mollieComponentsMap
-    );
-    const mollieComponentsContainer =
-        componentsContainerFromWithin( baseContainer );
+	log( 'Mounting component:', componentAttributes.name );
+	const { name: componentName } = componentAttributes;
+	const component = componentByName(
+		componentName,
+		mollie,
+		componentSettings,
+		mollieComponentsMap
+	);
+	const mollieComponentsContainer =
+		componentsContainerFromWithin( baseContainerElement );
 
-    createComponentContainer( componentName, mollieComponentsContainer );
-    mountComponentToDom( component, componentName );
+	createComponentContainer( componentName, mollieComponentsContainer );
+	mountComponentToDom( component, componentName );
 
-    const currentComponentElement = componentElementByNameFromWithin(
-        componentName,
-        baseContainer
-    );
+	const currentComponentElement = componentElementByNameFromWithin(
+		componentName,
+		baseContainerElement
+	);
 
-    if ( ! currentComponentElement ) {
-        console.warn(
-            `Component ${ componentName } not found in the DOM. Probably had problem during mount.`
-        );
-        return;
-    }
+	if ( ! currentComponentElement ) {
+		console.warn(
+			`Component ${ componentName } not found in the DOM. Probably had problem during mount.`
+		);
+		return;
+	}
 
-    setupComponentUi( currentComponentElement, componentAttributes );
-    setupComponentErrorHandling( component, componentName );
+	setupComponentUi( currentComponentElement, componentAttributes );
+	setupComponentErrorHandling( component, componentName );
 
-    mollieComponentsMap.set( componentName, component );
-    log( 'Component mounted successfully:', componentName );
+	mollieComponentsMap.set( componentName, component );
+	log( 'Component mounted successfully:', componentName );
 };
 
 /**
@@ -709,111 +726,114 @@ const mountComponent = (
  * @param {Object}  componentSettings    - Component settings
  * @param {Array}   componentsAttributes - Array of component attributes
  * @param {Map}     mollieComponentsMap  - Components map
- * @param {Element} baseContainer        - Base container element
+ * @param {Element} baseContainerElement - Base container element
  */
 const mountComponents = (
-    mollie,
-    componentSettings,
-    componentsAttributes,
-    mollieComponentsMap,
-    baseContainer
+	mollie,
+	componentSettings,
+	componentsAttributes,
+	mollieComponentsMap,
+	baseContainerElement
 ) => {
-    log( 'Mounting multiple components, count:', componentsAttributes.length );
-    componentsAttributes.forEach( ( componentAttributes ) =>
-        mountComponent(
-            mollie,
-            componentSettings,
-            componentAttributes,
-            mollieComponentsMap,
-            baseContainer
-        )
-    );
+	log( 'Mounting multiple components, count:', componentsAttributes.length );
+	componentsAttributes.forEach( ( componentAttributes ) =>
+		mountComponent(
+			mollie,
+			componentSettings,
+			componentAttributes,
+			mollieComponentsMap,
+			baseContainerElement
+		)
+	);
 };
-
-/* -------------------------------------------------------------------
-   Initialization
-   ---------------------------------------------------------------- */
 
 /**
  * Enhanced initialization with smart remounting
  * @param {Object} jQueryInstance                - jQuery instance (for WooCommerce compatibility)
  * @param {Object} mollie                        - Mollie instance
  * @param {Object} settings                      - Component settings
+ * @param          settings.options
+ * @param          settings.merchantProfileId
  * @param {Map}    mollieComponentsMap           - Components map
+ * @param          settings.componentsSettings
+ * @param          settings.componentsAttributes
+ * @param          settings.enabledGateways
+ * @param          settings.messages
  */
 const initializeComponents = (
-    jQueryInstance,
-    mollie,
-    {
-        options,
-        merchantProfileId,
-        componentsSettings,
-        componentsAttributes,
-        enabledGateways,
-        messages,
-    },
-    mollieComponentsMap
+	jQueryInstance,
+	mollie,
+	{
+		options,
+		merchantProfileId,
+		componentsSettings,
+		componentsAttributes,
+		enabledGateways,
+		messages,
+	},
+	mollieComponentsMap
 ) => {
-    log( 'Enhanced initialization for gateways:', enabledGateways );
+	log( 'Enhanced initialization for gateways:', enabledGateways );
 
-    enabledGateways.forEach( ( gateway ) => {
-        log( 'Processing gateway:', gateway );
-        const gatewayContainer = containerForGateway( gateway );
-        const mollieComponentsContainer =
-            componentsContainerFromWithin( gatewayContainer );
-        const form = closestFormForElement( gatewayContainer );
-        const $form = jQueryInstance( form );
+	enabledGateways.forEach( ( gatewayId ) => {
+		log( 'Processing gateway:', gatewayId );
+		const gatewayContainerElement = containerForGateway( gatewayId );
+		const mollieComponentsContainer = componentsContainerFromWithin(
+			gatewayContainerElement
+		);
+		const form = closestFormForElement( gatewayContainerElement );
+		const $form = jQueryInstance( form );
 
-        if ( ! gatewayContainer ) {
-            console.warn(
-                `Cannot initialize Mollie Components for gateway ${ gateway }.`
-            );
-            return;
-        }
+		if ( ! gatewayContainerElement ) {
+			console.warn(
+				`Cannot initialize Mollie Components for gateway ${ gatewayId }.`
+			);
+			return;
+		}
 
-        if ( ! form ) {
-            console.warn(
-                'Cannot initialize Mollie Components, no form found.'
-            );
-            return;
-        }
+		if ( ! form ) {
+			console.warn(
+				'Cannot initialize Mollie Components, no form found.'
+			);
+			return;
+		}
 
-        if ( shouldRemountComponents( gateway, mollieComponentsMap ) ) {
-            log( 'Remounting needed for gateway:', gateway );
+		if ( shouldRemountComponents( gatewayId, mollieComponentsMap ) ) {
+			log( 'Remounting needed for gateway:', gatewayId );
 
-            unmountComponents( mollieComponentsMap );
-            cleanContainer( mollieComponentsContainer );
-            createTokenFieldWithin( mollieComponentsContainer );
+			unmountComponents( mollieComponentsMap );
+			cleanContainer( mollieComponentsContainer );
+			createTokenFieldWithin( mollieComponentsContainer );
 
-            mountComponents(
-                mollie,
-                componentsSettings[ gateway ],
-                componentsAttributes,
-                mollieComponentsMap,
-                gatewayContainer
-            );
-        } else {
-            log( 'Components already mounted for gateway:', gateway );
-        }
+			mountComponents(
+				mollie,
+				componentsSettings[ gatewayId ],
+				componentsAttributes,
+				mollieComponentsMap,
+				gatewayContainerElement
+			);
+		} else {
+			log( 'Components already mounted for gateway:', gatewayId );
+		}
 
-        log( 'Setting up enhanced form listeners for gateway:', gateway );
-        turnMollieComponentsSubmissionOff( $form );
+		log( 'Setting up enhanced form listeners for gateway:', gatewayId );
+		turnMollieComponentsSubmissionOff( $form );
 
-        // Use jQuery for WooCommerce compatibility
-        $form.on( 'checkout_place_order', returnFalse );
-        $form.on(
-            'submit',
-            null,
-            {
-                jQuery: jQueryInstance,
-                mollie,
-                gateway,
-                gatewayContainer,
-                messages,
-            },
-            submitForm
-        );
-    } );
+		// Use jQuery for WooCommerce compatibility
+		$form.on( 'checkout_place_order', returnFalse );
+		$form.on(
+			'submit',
+			null,
+			{
+				jQuery: jQueryInstance,
+				mollie,
+				gateway: gatewayId,
+				gatewayContainer: gatewayContainerElement,
+				messages,
+			},
+			submitForm
+		);
+	} );
 };
 
 /**
@@ -825,99 +845,104 @@ const initializeComponents = (
  * @return {Function} Initialization handler function
  */
 const createInitializationHandler = (
-    jQueryInstance,
-    mollie,
-    mollieComponentsSettings,
-    mollieComponentsMap
+	jQueryInstance,
+	mollie,
+	mollieComponentsSettings,
+	mollieComponentsMap
 ) => {
-    return function () {
-        log( 'Enhanced initialization handler called' );
-        const copySettings = shallowCopy( mollieComponentsSettings );
+	return function () {
+		log( 'Enhanced initialization handler called' );
+		const copySettings = shallowCopy( mollieComponentsSettings );
 
-        copySettings.enabledGateways =
-            mollieComponentsSettings.enabledGateways.filter( ( gateway ) => {
-                const gatewayContainer = containerForGateway( gateway );
-                if ( ! gatewayContainer ) {
-                    log(
-                        'Gateway container not found, enabling fallback for:',
-                        gateway
-                    );
-                    const $form = jQueryInstance( 'form[name="checkout"]' );
-                    $form.on( 'checkout_place_order', returnTrue );
-                    return false;
-                }
-                return true;
-            } );
+		copySettings.enabledGateways =
+			mollieComponentsSettings.enabledGateways.filter( ( gatewayId ) => {
+				const gatewayContainerElement =
+					containerForGateway( gatewayId );
+				if ( ! gatewayContainerElement ) {
+					log(
+						'Gateway container not found, enabling fallback for:',
+						gatewayId
+					);
+					const $form = jQueryInstance( 'form[name="checkout"]' );
+					$form.on( 'checkout_place_order', returnTrue );
+					return false;
+				}
+				return true;
+			} );
 
-        if ( copySettings.enabledGateways.length === 0 ) {
-            log( 'No enabled gateways found, skipping initialization' );
-            return;
-        }
+		if ( copySettings.enabledGateways.length === 0 ) {
+			log( 'No enabled gateways found, skipping initialization' );
+			return;
+		}
 
-        log(
-            'Proceeding with enhanced initialization for gateways:',
-            copySettings.enabledGateways
-        );
-        initializeComponents(
-            jQueryInstance,
-            mollie,
-            copySettings,
-            mollieComponentsMap
-        );
-    };
+		log(
+			'Proceeding with enhanced initialization for gateways:',
+			copySettings.enabledGateways
+		);
+		initializeComponents(
+			jQueryInstance,
+			mollie,
+			copySettings,
+			mollieComponentsMap
+		);
+	};
 };
 
 // initialization with throttling
 ( ( window ) => {
-    log( 'Starting Enhanced Mollie Components initialization' );
-    const { Mollie, mollieComponentsSettings, jQuery } = window;
+	log( 'Starting Enhanced Mollie Components initialization' );
+	const { Mollie, mollieComponentsSettings, jQuery } = window;
 
-    if ( isEmpty( mollieComponentsSettings ) || ! isFunction( Mollie ) ) {
-        log( 'Missing dependencies, aborting initialization' );
-        return;
-    }
+	if ( isEmpty( mollieComponentsSettings ) || ! isFunction( Mollie ) ) {
+		log( 'Missing dependencies, aborting initialization' );
+		return;
+	}
 
-    log( 'Dependencies found, proceeding with enhanced setup' );
-    let eventName = 'updated_checkout';
-    const mollieComponentsMap = new Map();
-    const $document = jQuery( document );
-    const { merchantProfileId, options, isCheckoutPayPage } =
-        mollieComponentsSettings;
-    const mollie = new Mollie( merchantProfileId, options );
+	log( 'Dependencies found, proceeding with enhanced setup' );
+	let eventName = 'updated_checkout';
+	const mollieComponentsMap = new Map();
+	const $document = jQuery( document );
+	const { merchantProfileId, options, isCheckoutPayPage } =
+		mollieComponentsSettings;
+	const mollie = new Mollie( merchantProfileId, options );
 
-    if ( isCheckoutPayPage ) {
-        log(
-            'Checkout pay page detected, using payment_method_selected event'
-        );
-        eventName = 'payment_method_selected';
-        $document.on( eventName, () => {
-            log( 'Payment method selected event triggered' );
-            initializeComponents(
-                jQuery,
-                mollie,
-                mollieComponentsSettings,
-                mollieComponentsMap
-            );
-        } );
-        return;
-    }
+	if ( isCheckoutPayPage ) {
+		log(
+			'Checkout pay page detected, using payment_method_selected event'
+		);
+		eventName = 'payment_method_selected';
+		$document.on( eventName, () => {
+			log( 'Payment method selected event triggered' );
+			initializeComponents(
+				jQuery,
+				mollie,
+				mollieComponentsSettings,
+				mollieComponentsMap
+			);
+		} );
+		return;
+	}
 
-    log( 'Regular checkout page detected, setting up enhanced event handlers' );
-    const initHandler = createInitializationHandler(
-        jQuery,
-        mollie,
-        mollieComponentsSettings,
-        mollieComponentsMap
-    );
+	log( 'Regular checkout page detected, setting up enhanced event handlers' );
+	const initHandler = createInitializationHandler(
+		jQuery,
+		mollie,
+		mollieComponentsSettings,
+		mollieComponentsMap
+	);
 
-    // Throttle initialization to prevent excessive remounting
-    let initTimeout;
-    const throttledInitHandler = function() {
-        clearTimeout( initTimeout );
-        initTimeout = setTimeout( initHandler, 250 );
-    };
+	// Throttle initialization to prevent excessive remounting
+	let initTimeout;
+	const throttledInitHandler = function () {
+		clearTimeout( initTimeout );
+		initTimeout = setTimeout( initHandler, 250 );
+	};
 
-    $document.on( eventName, throttledInitHandler );
-    $document.on( 'update_checkout', throttledInitHandler );
-    log( 'Enhanced event handlers registered for:', eventName, 'update_checkout' );
+	$document.on( eventName, throttledInitHandler );
+	$document.on( 'update_checkout', throttledInitHandler );
+	log(
+		'Enhanced event handlers registered for:',
+		eventName,
+		'update_checkout'
+	);
 } )( window );

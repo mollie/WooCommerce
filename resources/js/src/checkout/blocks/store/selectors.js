@@ -11,7 +11,7 @@ const selectors = {
 
 	// Configuration selectors
 	getRequiredFields: ( state ) => state.requiredFields,
-	getIsPhoneFieldVisible: ( state ) => state.isPhoneFieldVisible,
+	getshouldHidePhoneField: ( state ) => state.shouldHidePhoneField,
 	getBillingData: ( state ) => state.billingData,
 	getShippingData: ( state ) => state.shippingData,
 

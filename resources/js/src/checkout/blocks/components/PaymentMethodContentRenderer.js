@@ -16,7 +16,7 @@ export const PaymentMethodContentRenderer = ( props ) => {
 		eventRegistration,
 		requiredFields,
 		shippingData,
-		isPhoneFieldVisible,
+		shouldHidePhoneField,
 	} = props;
 
 	const { responseTypes } = emitResponse;
@@ -167,7 +167,7 @@ export const PaymentMethodContentRenderer = ( props ) => {
 		shippingData,
 		eventRegistration,
 		requiredFields,
-		isPhoneFieldVisible,
+		shouldHidePhoneField,
 		activePaymentMethod,
 		containerRef,
 		mollieComponentsManager,

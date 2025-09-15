@@ -5,7 +5,7 @@ const molliePaymentMethod = (
 	item,
 	jQuery,
 	requiredFields,
-	isPhoneFieldVisible
+	shouldHidePhoneField
 ) => {
 	return {
 		name: item.name,
@@ -15,7 +15,7 @@ const molliePaymentMethod = (
 				item={ item }
 				jQuery={ jQuery }
 				requiredFields={ requiredFields }
-				isPhoneFieldVisible={ isPhoneFieldVisible }
+				shouldHidePhoneField={ shouldHidePhoneField }
 			/>
 		),
 		edit: <div>{ item.edit }</div>,

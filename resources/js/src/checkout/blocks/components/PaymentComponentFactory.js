@@ -27,7 +27,7 @@ export const createPaymentComponent = ( item, commonProps ) => {
 				<BillieFieldsWithStore
 					{ ...commonProps }
 					fieldConfig={ {
-						showCompany: true,
+						hasCustomCompanyField: true,
 						companyRequired: true,
 						companyLabel: item.companyPlaceholder || 'Company name',
 					} }
@@ -42,10 +42,8 @@ export const createPaymentComponent = ( item, commonProps ) => {
 				<In3FieldsWithStore
 					{ ...commonProps }
 					fieldConfig={ {
-						showPhone: true,
-						showBirthdate: true,
-						phoneRequired: true,
-						birthdateRequired: true,
+						hasCustomPhoneField: true,
+						hasCustomBirthdateField: true,
 						phoneLabel: item.phoneLabel || 'Phone',
 						birthdateLabel:
 							item.birthdatePlaceholder || 'Birthdate',
@@ -61,10 +59,8 @@ export const createPaymentComponent = ( item, commonProps ) => {
 				<RivertyFieldsWithStore
 					{ ...commonProps }
 					fieldConfig={ {
-						showPhone: true,
-						showBirthdate: true,
-						phoneRequired: true,
-						birthdateRequired: true,
+						hasCustomPhoneField: true,
+						hasCustomBirthdateField: true,
 						phoneLabel: item.phoneLabel || 'Phone',
 						birthdateLabel:
 							item.birthdatePlaceholder || 'Birthdate',

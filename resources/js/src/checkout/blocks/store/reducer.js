@@ -16,7 +16,7 @@ const initialState = {
 		companyNameString: '',
 		phoneString: '',
 	},
-	isPhoneFieldVisible: true,
+	shouldHidePhoneField: true,
 	billingData: {},
 	shippingData: {},
 
@@ -74,7 +74,7 @@ const reducer = ( state = initialState, action ) => {
 			};
 
 		case ACTIONS.SET_PHONE_FIELD_VISIBLE:
-			return { ...state, isPhoneFieldVisible: action.payload };
+			return { ...state, shouldHidePhoneField: action.payload };
 
 		case ACTIONS.SET_BILLING_DATA:
 			return { ...state, billingData: action.payload };

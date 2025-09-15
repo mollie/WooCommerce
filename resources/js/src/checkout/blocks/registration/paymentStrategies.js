@@ -23,7 +23,7 @@ import { ApplePayUtils } from '../../../shared/utils/applePayUtils';
  * @property {Function}      wc.wcBlocksRegistry.registerExpressPaymentMethod - Function to register express payment methods
  * @property {Object}        jQuery                                           - jQuery object
  * @property {Array<string>} requiredFields                                   - Array of required field names
- * @property {boolean}       isPhoneFieldVisible                              - Whether the phone field should be visible
+ * @property {boolean}       shouldHidePhoneField                              - Whether the phone field should be visible
  */
 
 /**
@@ -68,7 +68,7 @@ export const paymentStrategies = {
 	 *     wc: { wcBlocksRegistry: { registerPaymentMethod } },
 	 *     jQuery: $,
 	 *     requiredFields: ['email'],
-	 *     isPhoneFieldVisible: true
+	 *     shouldHidePhoneField: true
 	 * };
 	 * paymentStrategies.regular(item, context);
 	 */
@@ -79,7 +79,7 @@ export const paymentStrategies = {
 				item,
 				context.jQuery,
 				context.requiredFields,
-				context.isPhoneFieldVisible
+				context.shouldHidePhoneField
 			)
 		);
 	},
@@ -101,7 +101,7 @@ export const paymentStrategies = {
 	 *     wc: { wcBlocksRegistry: { registerExpressPaymentMethod } },
 	 *     jQuery: $,
 	 *     requiredFields: ['email'],
-	 *     isPhoneFieldVisible: true
+	 *     shouldHidePhoneField: true
 	 * };
 	 * paymentStrategies.express(applePayItem, context);
 	 */

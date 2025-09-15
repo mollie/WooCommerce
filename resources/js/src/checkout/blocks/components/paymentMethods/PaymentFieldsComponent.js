@@ -13,7 +13,7 @@ import { CompanyField } from '../paymentFields/CompanyField';
  * @param {Object}   props.shippingData                    - Shipping data object
  * @param {Object}   props.eventRegistration               - Event registration object
  * @param {Object}   props.requiredFields                  - Required field labels/strings
- * @param {boolean}  props.isPhoneFieldVisible             - Whether phone field is visible elsewhere
+ * @param {boolean}  props.shouldHidePhoneField             - Whether phone field is visible elsewhere
  * @param {string}   props.inputPhone                      - Current phone input value
  * @param {string}   props.inputBirthdate                  - Current birthdate input value
  * @param {string}   props.inputCompany                    - Current company input value
@@ -32,7 +32,7 @@ const PaymentFieldsComponent = ( {
 	shippingData,
 	eventRegistration,
 	requiredFields,
-	isPhoneFieldVisible,
+	shouldHidePhoneField,
 	inputPhone,
 	inputBirthdate,
 	inputCompany,
@@ -46,13 +46,12 @@ const PaymentFieldsComponent = ( {
 	const { onCheckoutValidation } = eventRegistration;
 	const { companyNameString, phoneString } = requiredFields;
 
+    console.log(fieldConfig);
 	const {
-		showCompany = false,
-		showPhone = false,
-		showBirthdate = false,
+		hasCustomCompanyField = false,
+		hasCustomPhoneField = false,
+		hasCustomBirthdateField = false,
 		companyRequired = false,
-		phoneRequired = false,
-		birthdateRequired = false,
 		companyLabel = 'Company name',
 		phoneLabel = 'Phone',
 		birthdateLabel = 'Birthdate',
@@ -66,7 +65,7 @@ const PaymentFieldsComponent = ( {
 
 	// Company field label update
 	useEffect( () => {
-		if ( ! showCompany ) {
+		if ( ! hasCustomCompanyField ) {
 			return;
 		}
 
@@ -86,7 +85,7 @@ const PaymentFieldsComponent = ( {
 			`<label htmlFor="shipping-company">${ labelText }</label>`
 		);
 	}, [
-		showCompany,
+		hasCustomCompanyField,
 		item.companyPlaceholder,
 		item.hideCompanyField,
 		companyNameString,
@@ -95,7 +94,7 @@ const PaymentFieldsComponent = ( {
 
 	// Phone field label update
 	useEffect( () => {
-		if ( ! showPhone ) {
+		if ( ! hasCustomPhoneField ) {
 			return;
 		}
 
@@ -106,12 +105,11 @@ const PaymentFieldsComponent = ( {
 
 		const labelText = item.phonePlaceholder || phoneString || 'Phone';
 		phoneLabelElement.innerText = labelText;
-	}, [ showPhone, item.phonePlaceholder, phoneString ] );
+	}, [ hasCustomPhoneField, item.phonePlaceholder, phoneString ] );
 
 	// Validation effect
 	useEffect( () => {
 		const unsubscribeProcessing = onCheckoutValidation( () => {
-			// Company validation
 			if ( companyRequired ) {
 				const isCompanyEmpty =
 					billing.billingData.company === '' &&
@@ -125,39 +123,6 @@ const PaymentFieldsComponent = ( {
 					};
 				}
 			}
-
-			// Phone validation
-			if ( phoneRequired ) {
-				const isPhoneEmpty =
-					billing.billingData.phone === '' &&
-					shippingData.shippingAddress.phone === '' &&
-					inputPhone === '';
-
-				if ( isPhoneEmpty ) {
-					return {
-						errorMessage:
-							item.errorMessage || 'Phone field is required',
-					};
-				}
-			}
-
-			// Birthdate validation
-			if ( birthdateRequired ) {
-				if ( inputBirthdate === '' ) {
-					return {
-						errorMessage:
-							item.errorMessage || 'Birthdate field is required',
-					};
-				}
-
-				const today = new Date();
-				const birthdate = new Date( inputBirthdate );
-				if ( birthdate > today ) {
-					return {
-						errorMessage: item.errorMessage || 'Invalid birthdate',
-					};
-				}
-			}
 		} );
 
 		return () => {
@@ -166,19 +131,15 @@ const PaymentFieldsComponent = ( {
 	}, [
 		onCheckoutValidation,
 		companyRequired,
-		phoneRequired,
-		birthdateRequired,
 		billing.billingData,
 		shippingData.shippingAddress,
-		inputPhone,
 		inputCompany,
-		inputBirthdate,
 		item.errorMessage,
 	] );
 
 	// Country-based phone placeholder update
 	useEffect( () => {
-		if ( ! showPhone ) {
+		if ( ! hasCustomPhoneField ) {
 			return;
 		}
 
@@ -189,14 +150,17 @@ const PaymentFieldsComponent = ( {
 	}, [
 		billing.billingData.country,
 		updatePhonePlaceholderByCountry,
-		showPhone,
+		hasCustomPhoneField,
 	] );
+
+    console.log( 'show phone 2', hasCustomPhoneField );
+    console.log(shouldHidePhoneField)
 
 	return (
 		<>
 			<div>{ item.content && <p>{ item.content }</p> }</div>
 
-			{ showCompany && (
+			{ hasCustomCompanyField && (
 				<CompanyField
 					label={ item.companyPlaceholder || companyLabel }
 					value={ inputCompany }
@@ -204,7 +168,7 @@ const PaymentFieldsComponent = ( {
 				/>
 			) }
 
-			{ showBirthdate && (
+			{ hasCustomBirthdateField && (
 				<BirthdateField
 					label={ item.birthdatePlaceholder || birthdateLabel }
 					value={ inputBirthdate }
@@ -212,7 +176,7 @@ const PaymentFieldsComponent = ( {
 				/>
 			) }
 
-			{ showPhone && ! isPhoneFieldVisible && (
+			{ hasCustomPhoneField && ! shouldHidePhoneField && (
 				<PhoneField
 					id={ `billing-phone-${ item.name }` }
 					label={ item.phoneLabel || phoneLabel }

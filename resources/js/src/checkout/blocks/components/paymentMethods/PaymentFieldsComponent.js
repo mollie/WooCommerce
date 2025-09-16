@@ -42,7 +42,6 @@ const PaymentFieldsComponent = ( {
 	const { onCheckoutValidation } = eventRegistration;
 	const { companyNameString, phoneString } = requiredFields;
 
-    console.log(fieldConfig);
 	const {
 		hasCustomCompanyField = false,
 		hasCustomPhoneField = false,
@@ -58,12 +57,15 @@ const PaymentFieldsComponent = ( {
 		const billingPhone = document.getElementById( 'billing-phone' );
 		return billingPhone || shippingPhone;
 	}
-    const getShouldHidePhoneField = () => {
-        const phone = getPhoneField();
-        // hide phone field if it is required
-        return phone? (phone.hasAttribute('required') || phone.getAttribute('aria-required') === 'true') : false;
-    };
-    const shouldHidePhoneField = getShouldHidePhoneField();
+	const getShouldHidePhoneField = () => {
+		const phone = getPhoneField();
+		// hide phone field if it is required
+		return phone
+			? phone.hasAttribute( 'required' ) ||
+					phone.getAttribute( 'aria-required' ) === 'true'
+			: false;
+	};
+	const shouldHidePhoneField = getShouldHidePhoneField();
 
 	// Company field label update
 	useEffect( () => {
@@ -72,12 +74,9 @@ const PaymentFieldsComponent = ( {
 		}
 
 		const companyLabelElement = document.querySelector(
-            'div.wc-block-components-text-input.wc-block-components-address-form__company > label'
-        );
-		if (
-			!companyLabelElement ||
-			item.hideCompanyField === true
-		) {
+			'div.wc-block-components-text-input.wc-block-components-address-form__company > label'
+		);
+		if ( ! companyLabelElement || item.hideCompanyField === true ) {
 			return;
 		}
 
@@ -88,7 +87,7 @@ const PaymentFieldsComponent = ( {
 		hasCustomCompanyField,
 		item.companyPlaceholder,
 		item.hideCompanyField,
-		companyNameString
+		companyNameString,
 	] );
 
 	// Phone field label update

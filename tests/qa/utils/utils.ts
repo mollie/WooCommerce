@@ -70,6 +70,12 @@ export class Utils {
 		await this.requestUtils.activatePlugin( molliePlugin.slug );
 	};
 
+	/**
+	 * Resets and reconnects Mollie:
+	 * 	- Clears Mollie DB
+	 * 	- Sets mollie API keys
+	 * 	- Sets API method (Payment or Order API)
+	 */
 	cleanReconnectMollie = async () => {
 		await this.mollieApi.setMollieApiKeys( mollieConfigGeneral.default );
 		await this.mollieApi.cleanMollieDb();

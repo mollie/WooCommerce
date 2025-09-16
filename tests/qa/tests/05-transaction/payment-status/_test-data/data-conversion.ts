@@ -10,6 +10,9 @@ import {
 	products,
 } from '../../../../resources';
 
+const testedApiMethod =
+	( process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod ) || 'payment';
+
 const getExpectedOrderStatus = (
 	paymentStatus: MolliePaymentStatus
 ): WooCommerce.OrderStatus => {
@@ -20,8 +23,8 @@ const getExpectedOrderStatus = (
 		paid: 'processing',
 		authorized: 'processing',
 		canceled: 'pending',
-		expired: 'cancelled',
-		failed: 'failed',
+		expired: testedApiMethod === 'payment' ? 'cancelled' : 'pending',
+		failed: testedApiMethod === 'payment' ? 'failed' : 'pending',
 		open: 'pending',
 		pending: 'pending',
 	};

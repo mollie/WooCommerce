@@ -57,7 +57,12 @@ export class MollieApi extends WooCommerceApi {
 		const wpnonce = await this.requestUtils.getPageNonce( url );
 		const response = await this.requestUtils.request.post( url, {
 			form: {
+				// 'mollie-payments-for-woocommerce_debug': '1','mollie-payments-for-woocommerce_order_status_cancelled_payments': 'pending',
+				// 'mollie-payments-for-woocommerce_payment_locale': 'wp_locale',
 				'mollie-payments-for-woocommerce_api_switch': apiMethod,
+				// 'mollie-payments-for-woocommerce_api_payment_description': '{orderNumber}',
+				// 'mollie-payments-for-woocommerce_gatewayFeeLabel': 'Gateway Fee',
+				// 'mollie-payments-for-woocommerce_place_payment_onhold': 'immediate_capture',
 				save: 'Save changes',
 				_wpnonce: wpnonce,
 			},

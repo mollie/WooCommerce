@@ -188,7 +188,7 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 		await this.assertOrderStatus( orderStatus );
 	};
 
-	retryLocatorVisibility = async ( locator, retries = 20 ) => {
+	retryLocatorVisibility = async ( locator, retries = 5 ) => {
 		let i = 0;
 		while ( i < retries ) {
 			await this.page.reload();

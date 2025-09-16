@@ -1,4 +1,3 @@
-import { shouldHidePhoneField } from '../../../shared/utils/paymentUtils';
 
 /**
  * Build context for payment method registration
@@ -10,11 +9,9 @@ export const buildRegistrationContext = ( wc, jQuery ) => {
 
 	return {
 		wc,
-		jQuery,
 		requiredFields: {
 			companyNameString: defaultFields.company.label,
 			phoneString: defaultFields.phone.label,
 		},
-		shouldHidePhoneField: shouldHidePhoneField(),
 	};
 };

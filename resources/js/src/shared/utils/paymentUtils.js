@@ -63,16 +63,3 @@ export const validatePaymentItem = ( item ) => {
 	}
 	return true;
 };
-
-/**
- * Determines the visibility of the phone field based on DOM data attributes
- * Checks for a data attribute that controls phone field display
- * @return {boolean} True if phone field should be hidden, false if it should be shown
- */
-export const shouldHidePhoneField = () => {
-	const shippingPhone = document.getElementById('shipping-phone');
-	const billingPhone = document.getElementById('billing-phone');
-	const phone = shippingPhone || billingPhone;
-	// hide phone field if it is required
-	return phone? (phone.hasAttribute('required') || phone.getAttribute('aria-required') === 'true') : false;
-};

@@ -3,7 +3,6 @@ import { Label } from './Label';
 
 const molliePaymentMethod = (
 	item,
-	jQuery,
 	requiredFields,
 	shouldHidePhoneField
 ) => {
@@ -13,7 +12,6 @@ const molliePaymentMethod = (
 		content: (
 			<PaymentMethodContentRenderer
 				item={ item }
-				jQuery={ jQuery }
 				requiredFields={ requiredFields }
 				shouldHidePhoneField={ shouldHidePhoneField }
 			/>

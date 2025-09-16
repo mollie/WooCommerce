@@ -11,7 +11,6 @@ export const PaymentMethodContentRenderer = ( props ) => {
 		activePaymentMethod,
 		billing,
 		item,
-		jQuery,
 		emitResponse,
 		eventRegistration,
 		requiredFields,
@@ -161,7 +160,6 @@ export const PaymentMethodContentRenderer = ( props ) => {
 
 	const commonProps = {
 		item,
-		jQuery,
 		useEffect,
 		billing,
 		shippingData,

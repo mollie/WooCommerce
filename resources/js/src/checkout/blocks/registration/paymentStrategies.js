@@ -66,7 +66,6 @@ export const paymentStrategies = {
 	 * };
 	 * const context = {
 	 *     wc: { wcBlocksRegistry: { registerPaymentMethod } },
-	 *     jQuery: $,
 	 *     requiredFields: ['email'],
 	 *     shouldHidePhoneField: true
 	 * };
@@ -77,7 +76,6 @@ export const paymentStrategies = {
 		return registerPaymentMethod(
 			molliePaymentMethod(
 				item,
-				context.jQuery,
 				context.requiredFields,
 				context.shouldHidePhoneField
 			)
@@ -99,7 +97,6 @@ export const paymentStrategies = {
 	 * };
 	 * const context = {
 	 *     wc: { wcBlocksRegistry: { registerExpressPaymentMethod } },
-	 *     jQuery: $,
 	 *     requiredFields: ['email'],
 	 *     shouldHidePhoneField: true
 	 * };

@@ -7,13 +7,11 @@ import { CompanyField } from '../paymentFields/CompanyField';
  * Handles field rendering and validation for different payment methods
  * @param {Object}   props                                 - The component props
  * @param {Object}   props.item                            - Payment method item configuration
- * @param {Function} props.jQuery                          - jQuery library function
  * @param {Function} props.useEffect                       - React useEffect hook
  * @param {Object}   props.billing                         - Billing data object
  * @param {Object}   props.shippingData                    - Shipping data object
  * @param {Object}   props.eventRegistration               - Event registration object
  * @param {Object}   props.requiredFields                  - Required field labels/strings
- * @param {boolean}  props.shouldHidePhoneField             - Whether phone field is visible elsewhere
  * @param {string}   props.inputPhone                      - Current phone input value
  * @param {string}   props.inputBirthdate                  - Current birthdate input value
  * @param {string}   props.inputCompany                    - Current company input value
@@ -26,13 +24,11 @@ import { CompanyField } from '../paymentFields/CompanyField';
  */
 const PaymentFieldsComponent = ( {
 	item,
-	jQuery,
 	useEffect,
 	billing,
 	shippingData,
 	eventRegistration,
 	requiredFields,
-	shouldHidePhoneField,
 	inputPhone,
 	inputBirthdate,
 	inputCompany,
@@ -62,6 +58,12 @@ const PaymentFieldsComponent = ( {
 		const billingPhone = document.getElementById( 'billing-phone' );
 		return billingPhone || shippingPhone;
 	}
+    const getShouldHidePhoneField = () => {
+        const phone = getPhoneField();
+        // hide phone field if it is required
+        return phone? (phone.hasAttribute('required') || phone.getAttribute('aria-required') === 'true') : false;
+    };
+    const shouldHidePhoneField = getShouldHidePhoneField();
 
 	// Company field label update
 	useEffect( () => {
@@ -69,11 +71,11 @@ const PaymentFieldsComponent = ( {
 			return;
 		}
 
-		const companyLabelElement = jQuery(
-			'div.wc-block-components-text-input.wc-block-components-address-form__company > label'
-		);
+		const companyLabelElement = document.querySelector(
+            'div.wc-block-components-text-input.wc-block-components-address-form__company > label'
+        );
 		if (
-			companyLabelElement.length === 0 ||
+			!companyLabelElement ||
 			item.hideCompanyField === true
 		) {
 			return;
@@ -81,15 +83,12 @@ const PaymentFieldsComponent = ( {
 
 		const labelText =
 			item.companyPlaceholder || companyNameString || 'Company name';
-		companyLabelElement.replaceWith(
-			`<label htmlFor="shipping-company">${ labelText }</label>`
-		);
+		companyLabelElement.innerText = labelText;
 	}, [
 		hasCustomCompanyField,
 		item.companyPlaceholder,
 		item.hideCompanyField,
-		companyNameString,
-		jQuery,
+		companyNameString
 	] );
 
 	// Phone field label update
@@ -152,9 +151,6 @@ const PaymentFieldsComponent = ( {
 		updatePhonePlaceholderByCountry,
 		hasCustomPhoneField,
 	] );
-
-    console.log( 'show phone 2', hasCustomPhoneField );
-    console.log(shouldHidePhoneField)
 
 	return (
 		<>

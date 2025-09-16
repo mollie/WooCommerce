@@ -1,7 +1,8 @@
-//import { request } from '../../../../features/apple-pay/applePayRequest';
-//import { createAppleErrors } from '../../../../features/apple-pay/applePayError';
+import { request } from '../../../../features/apple-pay/applePayRequest';
+import { createAppleErrors } from '../../../../features/apple-pay/applePayError';
 
 export const ApplePayButtonComponent = ( { buttonAttributes = {} } ) => {
+	console.log( 'App2le Pay Button Component' );
 	const mollieApplePayBlockDataCart =
 		window.mollieApplePayBlockDataCart ||
 		window.mollieBlockData.mollieApplePayBlockDataCart;
@@ -34,11 +35,12 @@ export const ApplePayButtonComponent = ( { buttonAttributes = {} } ) => {
 		return shippingRate ? appleFormattedRate : '';
 	};
 
-	/*const applePaySession = () => {
+	const applePaySession = () => {
 		const session = new ApplePaySession(
 			3,
 			request( countryCode, currencyCode, totalLabel, subtotal )
 		);
+		session.begin();
 		const store = wp.data.select( 'wc/store/cart' );
 		const shippingRates = store.getShippingRates()?.[ 0 ]?.shipping_rates;
 		let selectedShippingMethod = '';
@@ -195,8 +197,7 @@ export const ApplePayButtonComponent = ( { buttonAttributes = {} } ) => {
 				},
 			} );
 		};
-		session.begin();
-	};*/
+	};
 
 	return (
 		<button
@@ -204,7 +205,7 @@ export const ApplePayButtonComponent = ( { buttonAttributes = {} } ) => {
 			className="apple-pay-button apple-pay-button-black"
 			onClick={ ( event ) => {
 				event.preventDefault();
-				//applePaySession();
+				applePaySession();
 			} }
 			style={ style }
 		></button>

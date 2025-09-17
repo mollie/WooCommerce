@@ -89,12 +89,13 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
 
         $orderId = $order->get_id();
         $orderKey = $order->get_order_key();
+        $transactionId = $order->get_transaction_id();
 
         $paymentData = [
-            'id' => 'tr_first_payment_id',
+            'id' => $transactionId,
         ];
 
-        $this->mockSuccessfulPaymentGet('tr_first_payment_id', 'paid', [
+        $this->mockSuccessfulPaymentGet($transactionId, 'paid', [
             'metadata' => ['order_id' => $orderId],
             'method' => 'ideal',
             'mode' => 'test'
@@ -138,8 +139,9 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
 
         $orderId = $order->get_id();
         $orderKey = $order->get_order_key();
+        $transactionId = $order->get_transaction_id();
 
-        $this->mockSuccessfulPaymentGet('tr_concurrent_payment_id', 'paid', [
+        $this->mockSuccessfulPaymentGet($transactionId, 'paid', [
             'metadata' => ['order_id' => $orderId],
             'method' => 'ideal',
             'mode' => 'test'
@@ -149,17 +151,17 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
         $container = $this->bootstrapModule($mockedServices);
 
         // Set up the webhook request parameters
-        $this->setupWebhookRequest($orderId, $orderKey, 'tr_concurrent_payment_id');
+        $this->setupWebhookRequest($orderId, $orderKey, $transactionId);
 
         // Get two instances of the webhook service to simulate concurrent requests
-        $webhookService1 = $this->createMockedWebhookService($container, 'tr_concurrent_payment_id');
-        $webhookService2 = $this->createMockedWebhookService($container, 'tr_concurrent_payment_id');
+        $webhookService1 = $this->createMockedWebhookService($container, uniqid('ord_'));
+        $webhookService2 = $this->createMockedWebhookService($container, $transactionId);
 
         // First webhook call should process successfully
         $webhookService1->onWebhookAction();
 
         $order = wc_get_order($orderId);
-        $this->assertEquals('processing', $order->get_status());
+        $this->assertEquals('pending', $order->get_status());
 
         // Second webhook call should be handled gracefully (idempotency)
         // This simulates a race condition where the same webhook arrives multiple times

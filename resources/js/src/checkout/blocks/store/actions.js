@@ -65,7 +65,7 @@ export const setCardToken = ( token ) => ( {
 	payload: token,
 } );
 
-export const updatePhonePlaceholderByCountry = ( country ) => () => {
+export const updatePhonePlaceholderByCountry = ( country ) => ( { dispatch } ) => {
 	const countryCodes = {
 		BE: '+32xxxxxxxxx',
 		NL: '+316xxxxxxxx',
@@ -73,5 +73,5 @@ export const updatePhonePlaceholderByCountry = ( country ) => () => {
 		AT: '+43xxxxxxxxx',
 	};
 	const placeholder = countryCodes[ country ] || countryCodes.NL;
-	wp.data.dispatch( setPhonePlaceholder( placeholder ) );
+	dispatch( setPhonePlaceholder( placeholder ) );
 };

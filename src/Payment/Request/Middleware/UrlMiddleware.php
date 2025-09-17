@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
+use Mollie\WooCommerce\Payment\Webhooks\RestApi;
 use WC_Order;
 
 /**
@@ -99,19 +100,22 @@ class UrlMiddleware implements RequestMiddlewareInterface
      */
     public function getWebhookUrl(WC_Order $order, string $gatewayId): string
     {
-        $webhookUrl = WC()->api_request_url($gatewayId);
-        $webhookUrl = untrailingslashit($webhookUrl);
-        $webhookUrl = $this->asciiDomainName($webhookUrl);
-        $orderId = $order->get_id();
-        $orderKey = $order->get_order_key();
-        $webhookUrl = $this->appendOrderArgumentsToUrl(
-            $orderId,
-            $orderKey,
-            $webhookUrl
-        );
-        $webhookUrl = untrailingslashit($webhookUrl);
+        $webhookUrl = get_rest_url(null, RestApi::ROUTE_NAMESPACE . '/' . RestApi::WEBHOOK_ROUTE);
+        if (! $webhookUrl ||  ! wc_is_valid_url($webhookUrl) || apply_filters('mollie_wc_gateway_disable_rest_webhook', false)) {
+            $webhookUrl = WC()->api_request_url($gatewayId);
+            $webhookUrl = untrailingslashit($webhookUrl);
+            $webhookUrl = $this->asciiDomainName($webhookUrl);
+            $orderId = $order->get_id();
+            $orderKey = $order->get_order_key();
+            $webhookUrl = $this->appendOrderArgumentsToUrl(
+                $orderId,
+                $orderKey,
+                $webhookUrl
+            );
+            $webhookUrl = untrailingslashit($webhookUrl);
+        }
 
-        $this->logger->debug(" Order {$orderId} webhookUrl: {$webhookUrl}", [true]);
+        $this->logger->debug(" Order {$order->get_id()} webhookUrl: {$webhookUrl}", [true]);
 
         return apply_filters($this->pluginId . '_webhook_url', $webhookUrl, $order);
     }

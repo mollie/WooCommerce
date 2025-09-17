@@ -191,5 +191,11 @@ return static function (): array {
                 $middlewareHandler
             );
         },
+        \Mollie\WooCommerce\Payment\Webhooks\RestApi::class => static function (ContainerInterface $container): \Mollie\WooCommerce\Payment\Webhooks\RestApi {
+            return new \Mollie\WooCommerce\Payment\Webhooks\RestApi(
+                $container->get(\Mollie\WooCommerce\Payment\MollieOrderService::class),
+                $container->get(Logger::class)
+            );
+        },
     ];
 };

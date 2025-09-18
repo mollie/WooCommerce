@@ -259,7 +259,7 @@ class PaymentLines
                     $cart_fee_total = $cart_fee['total'];
                 }
 
-                if (empty(round($cart_fee_total, 2))) {
+                if (empty(round(floatval($cart_fee_total), 2))) {
                     continue;
                 }
 

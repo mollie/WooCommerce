@@ -89,14 +89,38 @@ class MollieOrderService
             $this->logger->debug(__METHOD__ . ': No payment object ID provided.', [true]);
             return;
         }
-        $payment_object_id = sanitize_text_field(wp_unslash($paymentId));
+        $transactionID = sanitize_text_field(wp_unslash($paymentId));
 
-        $data_helper = $this->data;
-        $order = wc_get_order($order_id);
+        $orders = wc_get_orders([
+            'transaction_id' => $transactionID,
+            'limit' => 2,
+        ]);
 
-        if (!$order instanceof WC_Order) {
-            $this->httpResponse->setHttpResponseCode(404);
-            $this->logger->debug(__METHOD__ . ":  Could not find order $order_id.");
+        if (! $orders) {
+            $this->logger->debug(__METHOD__ . ': No orders found for transaction ID: ' . $transactionID . ' fall back to search in meta data');
+            //Fallback search order in order mollie oder meta
+            $orders = wc_get_orders([
+                'limit' => 2,
+                'meta_key' => substr($transactionID, 0, 4) === 'ord_' ? '_mollie_order_id' : '_mollie_payment_id',
+                'meta_compare' => '=',
+                'meta_value' => $transactionID,
+            ]);
+            if (! $orders) {
+                $this->logger->debug(__METHOD__ . ': No orders found in mollie meta for transaction ID: ' . $transactionID);
+                return;
+            }
+        }
+
+        if (count($orders) > 1) {
+            $this->logger->debug(__METHOD__ . ': More than one order found for transaction ID: ' . $transactionID);
+            return;
+        }
+
+        $order = $orders[0];
+
+        if ($order->get_id() != $order_id) {
+            $this->httpResponse->setHttpResponseCode(401);
+            $this->logger->debug(__METHOD__ . ":  found order {$order->get_id()} is not the same as provided order $order_id.");
             return;
         }
 
@@ -106,178 +130,15 @@ class MollieOrderService
             return;
         }
 
-        $gateway = wc_get_payment_gateway_by_order($order);
-        if (!mollieWooCommerceIsMollieGateway($gateway->id)) {
-            return;
-        }
-        $this->setGateway($gateway);
-        // Acquire exclusive lock for this order to prevent race conditions
-        $lockKey = 'mollie_webhook_lock_' . $order_id;
-        $lockAcquired = $this->acquireOrderLock($lockKey, 30);
-
-        if (!$lockAcquired) {
-            // Another webhook is already processing this order
-            $this->httpResponse->setHttpResponseCode(409); // Conflict
-            $this->logger->debug(
-                __METHOD__ . ": Could not acquire lock for order $order_id. Another webhook is processing."
-            );
-            return;
-        }
-
-        try {
-            $test_mode = $data_helper->getActiveMolliePaymentMode($order_id) === 'test';
-            // Load the payment from Mollie, do not use cache
-            try {
-                $payment_object = $this->paymentFactory->getPaymentObject(
-                    $payment_object_id
-                );
-            } catch (ApiException $exception) {
-                $this->httpResponse->setHttpResponseCode(400);
-                $this->logger->debug($exception->getMessage());
-                return;
-            }
-
-            $payment = $payment_object->getPaymentObject($payment_object->data(), $test_mode, false);
-
-            // Payment not found
-            if (!$payment) {
-                $this->httpResponse->setHttpResponseCode(404);
-                $this->logger->debug(__METHOD__ . ": payment object $payment_object_id not found.", [true]);
-                return;
-            }
-
-            // Prevent double payment webhooks for klarna on orders api
-            // TODO improve testing to check if we can remove this check
-            if (
-                $this->container->get('settings.settings_helper')->isOrderApiSetting()
-                && in_array(
-                    $payment->method,
-                    [
-                        Constants::KLARNA,
-                        Constants::KLARNAPAYLATER,
-                        Constants::KLARNASLICEIT,
-                        Constants::KLARNAPAYNOW,
-                    ],
-                    true
-                )
-                && strpos($payment_object_id, 'tr_') === 0
-            ) {
-                $this->httpResponse->setHttpResponseCode(200);
-                $this->logger->debug(
-                    $this->gateway->id . ": not respond on transaction webhooks for this payment method when order API is active. Payment ID {$payment->id}, order ID $order_id"
-                );
-                return;
-            }
-
-            if ($order_id != $payment->metadata->order_id) {
-                $this->httpResponse->setHttpResponseCode(400);
-                $this->logger->debug(
-                    __METHOD__ . ": Order ID does not match order_id in payment metadata. Payment ID {$payment->id}, order ID $order_id"
-                );
-                return;
-            }
-
-            $this->logger->debug(
-                $this->gateway->id . ": Mollie payment object {$payment->id} (" . $payment->mode . ") webhook call for order {$order->get_id()}.",
-                [true]
-            );
-            $payment_method_title = $this->getPaymentMethodTitle($payment);
-
-            $method_name = 'onWebhook' . ucfirst($payment->status);
-
-            // Re-check if order needs payment after acquiring lock
-            if (!$this->orderNeedsPayment($order)) {
-                // TODO David: move to payment object?
-                // Add a debug message that order was already paid for
-                $this->handlePaidOrderWebhook($order, $payment);
-
-                $this->processRefunds($order, $payment);
-                $this->processChargebacks($order, $payment);
-
-                // If the order gets updated to completed at mollie, we need to update the order status
-                if (
-                    $order->get_status() === 'processing'
-                    && method_exists($payment, 'isCompleted')
-                    && $payment->isCompleted()
-                    && method_exists($payment_object, 'onWebhookCompleted')
-                ) {
-                    $payment_object->onWebhookCompleted($order, $payment, $payment_method_title);
-                }
-                return;
-            }
-
-            if (
-                $payment->method === 'paypal' && isset($payment->billingAddress) && $this->isOrderButtonPayment(
-                    $order
-                )
-            ) {
-                $this->logger->debug($this->gateway->id . ": updating address from express button", [true]);
-                $this->setBillingAddressAfterPayment($payment, $order);
-            }
-
-            if (method_exists($payment_object, $method_name)) {
-                do_action($this->pluginId . '_before_webhook_payment_action', $payment, $order);
-                $payment_object->{$method_name}($order, $payment, $payment_method_title);
-            } else {
-                $order->add_order_note(
-                    sprintf(
-                    /* translators: Placeholder 1: payment method title, placeholder 2: payment status, placeholder 3: payment ID */
-                        __('%1$s payment %2$s (%3$s), not processed.', 'mollie-payments-for-woocommerce'),
-                        $this->gateway->method_title,
-                        $payment->status,
-                        $payment->id . ($payment->mode === 'test' ? (' - ' . __(
-                            'test mode',
-                            'mollie-payments-for-woocommerce'
-                        )) : ''
-                        )
-                    )
-                );
-            }
-
-            do_action($this->pluginId . '_after_webhook_action', $payment, $order);
-            // Status 200
-        } finally {
-            // Always release the lock
-            $this->releaseOrderLock($lockKey);
-        }
+        if (!$this->doPaymentForOrder($order)) {
+            $this->httpResponse->setHttpResponseCode(400);
+        };
+        // Status 200
     }
 
     protected function getPaymentIdFromRequest(): ?string
     {
         return filter_input(INPUT_POST, 'id', FILTER_SANITIZE_SPECIAL_CHARS);
-    }
-
-    /**
-     * Acquire an exclusive lock for processing an order
-     *
-     * @param string $lockKey The unique lock identifier
-     * @param int $timeout Maximum time to wait for lock (seconds)
-     * @return bool True if lock acquired, false otherwise
-     */
-    private function acquireOrderLock(string $lockKey, int $timeout = 30): bool
-    {
-        $lockValue = uniqid('', true);
-        $expiration = $timeout;
-
-        // set_transient returns false if the key already exists
-        $result = set_transient($lockKey, $lockValue, $expiration);
-
-        if ($result) {
-            $this->currentLockValue = $lockValue;
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Release the order processing lock
-     *
-     * @param string $lockKey The lock identifier to release
-     */
-    private function releaseOrderLock(string $lockKey)
-    {
-        delete_transient($lockKey);
     }
 
     /**
@@ -297,6 +158,17 @@ class MollieOrderService
             return true;
         }
 
+        return $this->doPaymentForOrder($order);
+    }
+
+    /**
+     * Processes the payment for a given WooCommerce order.
+     *
+     * @param \WC_Order $order The order object for which the payment is being processed.
+     * @return bool Returns true if the payment was successfully processed, false otherwise.
+     */
+    public function doPaymentForOrder(\WC_Order $order): bool
+    {
         $gateway = wc_get_payment_gateway_by_order($order);
         if (!$gateway || !mollieWooCommerceIsMollieGateway($gateway->id)) {
             return false;
@@ -308,6 +180,7 @@ class MollieOrderService
         if (!$payment_object_id) {
             $payment_object_id = $order->get_meta('_mollie_payment_id');
         }
+
         try {
             $payment_object = $this->paymentFactory->getPaymentObject(
                 $payment_object_id
@@ -328,19 +201,35 @@ class MollieOrderService
 
         $this->logger->debug($this->gateway->id . ": Mollie payment object {$payment->id} (" . $payment->mode . ") action call for order {$order->get_id()}.");
 
+        $method_name = 'onWebhook' . ucfirst($payment->status);
+        $payment_method_title = $this->getPaymentMethodTitle($payment);
+
+        if (!$this->orderNeedsPayment($order)) {
+            $this->handlePaidOrderWebhook($order, $payment);
+            $this->processRefunds($order, $payment);
+            $this->processChargebacks($order, $payment);
+            if (
+                $order->get_status() === 'processing'
+                && method_exists($payment, 'isCompleted')
+                && $payment->isCompleted()
+                && method_exists($payment_object, 'onWebhookCompleted')
+            ) {
+                $payment_object->onWebhookCompleted($order, $payment, $payment_method_title);
+            }
+            return true;
+        }
+
         if ($payment->method === 'paypal' && isset($payment->billingAddress) && $this->isOrderButtonPayment($order)) {
             $this->logger->debug($this->gateway->id . ": updating address from express button");
             $this->setBillingAddressAfterPayment($payment, $order);
         }
 
-        $method_name = 'onWebhook' . ucfirst($payment->status);
-        $payment_method_title = $this->getPaymentMethodTitle($payment);
         if (method_exists($payment_object, $method_name)) {
             do_action($this->pluginId . '_before_webhook_payment_action', $payment, $order);
             $payment_object->{$method_name}($order, $payment, $payment_method_title);
         } else {
             $order->add_order_note(sprintf(
-            /* translators: Placeholder 1: payment method title, placeholder 2: payment status, placeholder 3: payment ID */
+               /* translators: Placeholder 1: payment method title, placeholder 2: payment status, placeholder 3: payment ID */
                 __('%1$s payment %2$s (%3$s), not processed.', 'mollie-payments-for-woocommerce'),
                 $this->gateway->method_title,
                 $payment->status,
@@ -350,13 +239,6 @@ class MollieOrderService
         }
 
         do_action($this->pluginId . '_after_webhook_action', $payment, $order);
-
-        if ($payment->status === 'canceled') {
-            $this->updateOrderStatus($order, SharedDataDictionary::STATUS_CANCELLED, __('Mollie Payment was canceled.', 'mollie-payments-for-woocommerce'));
-        }
-
-        $this->processRefunds($order, $payment);
-        $this->processChargebacks($order, $payment);
 
         return true;
     }

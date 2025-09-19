@@ -1,13 +1,12 @@
 /* global mollieBlockData */
+const { useEffect, useRef } = wp.element;
+const { useSelect, useDispatch } = wp.data;
 import { MOLLIE_STORE_KEY } from '../store';
 import { createPaymentComponent } from './PaymentComponentFactory';
 import { mollieComponentsManager } from '../services/MollieComponentsManager';
 
 export const PaymentMethodContentRenderer = ( props ) => {
-	const { useEffect, useRef } = wp.element;
-	const { useSelect } = wp.data;
-
-	const {
+    const {
 		activePaymentMethod,
 		billing,
 		item,
@@ -18,48 +17,36 @@ export const PaymentMethodContentRenderer = ( props ) => {
 		shouldHidePhoneField,
 	} = props;
 
-	const { responseTypes } = emitResponse;
-	const { onPaymentSetup } = eventRegistration;
-	const containerRef = useRef( null );
+    const { responseTypes } = emitResponse;
+    const { onPaymentSetup } = eventRegistration;
+    const containerRef = useRef( null );
 
-	// Redux store selectors
-	const {
-		selectedIssuer,
-		inputPhone,
-		inputBirthdate,
-		inputCompany,
-		cardToken,
-		canCreateToken,
-		isComponentReady,
-		componentError,
-	} = useSelect(
-		( select ) => ( {
-			selectedIssuer: select( MOLLIE_STORE_KEY ).getSelectedIssuer(),
-			inputPhone: select( MOLLIE_STORE_KEY ).getInputPhone(),
-			inputBirthdate: select( MOLLIE_STORE_KEY ).getInputBirthdate(),
-			inputCompany: select( MOLLIE_STORE_KEY ).getInputCompany(),
-			cardToken: select( MOLLIE_STORE_KEY ).getCardToken(),
-			canCreateToken: select( MOLLIE_STORE_KEY ).getCanCreateToken(),
-			isComponentReady: select( MOLLIE_STORE_KEY ).getIsComponentReady(),
-			componentError: select( MOLLIE_STORE_KEY ).getComponentError(),
-		} ),
-		[]
-	);
+    const dispatch = useDispatch( MOLLIE_STORE_KEY );
+    useEffect( () => {
+        if ( item ) {
+            dispatch.setPaymentItemData( item );
+        }
+    }, [ dispatch, item ] );
 
-	// Initialize mollieComponentsManager when payment method changes
-	useEffect( () => {
-		if (
-			activePaymentMethod &&
-			item.name === 'mollie_wc_gateway_creditcard'
-		) {
-			const initializeComponents = async () => {
-				try {
-					const mollieConfig =
-						mollieBlockData.gatewayData.componentData || {};
-					if ( ! mollieConfig.merchantProfileId ) {
-						console.error( 'Mollie merchant profile ID not found' );
-						return;
-					}
+    // Only UI state that affects rendering should subscribe here
+    const { isComponentReady, componentError } = useSelect(
+        ( select ) => ( {
+            isComponentReady: select( MOLLIE_STORE_KEY ).getIsComponentReady(),
+            componentError: select( MOLLIE_STORE_KEY ).getComponentError(),
+        } ),
+        []
+    );
+
+    // Initialize/unmount Mollie Components for credit card
+    useEffect( () => {
+        if ( activePaymentMethod && item.name === 'mollie_wc_gateway_creditcard' ) {
+            const initializeComponents = async () => {
+                try {
+                    const mollieConfig = mollieBlockData.gatewayData.componentData || {};
+                    if ( ! mollieConfig.merchantProfileId ) {
+                        console.error( 'Mollie merchant profile ID not found' );
+                        return;
+                    }
 
 					await mollieComponentsManager.initialize( {
 						merchantProfileId: mollieConfig.merchantProfileId,
@@ -87,76 +74,65 @@ export const PaymentMethodContentRenderer = ( props ) => {
 			initializeComponents();
 		}
 
-		return () => {
-			if (
-				mollieComponentsManager.getActiveGateway() ===
-				activePaymentMethod
-			) {
-				mollieComponentsManager.unmountComponents(
-					activePaymentMethod
-				);
-			}
-		};
-	}, [ activePaymentMethod, item.name ] );
+        return () => {
+            if ( mollieComponentsManager.getActiveGateway() === activePaymentMethod ) {
+                mollieComponentsManager.unmountComponents( activePaymentMethod );
+            }
+        };
+    }, [ activePaymentMethod, item.name ] );
 
-	useEffect( () => {
-		const onProcessingPayment = async () => {
-			// For non-Mollie gateways, return success immediately
-			if ( ! activePaymentMethod.startsWith( 'mollie_wc_gateway_' ) ) {
-				return responseTypes.SUCCESS;
-			}
+    useEffect( () => {
+        const onProcessingPayment = async () => {
+            // Non-Mollie: let WC handle it
+            if ( ! activePaymentMethod.startsWith( 'mollie_wc_gateway_' ) ) {
+                return responseTypes.SUCCESS;
+            }
 
-			try {
-				let token = cardToken;
+            try {
+                const sel = wp.data.select( MOLLIE_STORE_KEY );
+                const {
+                    cardToken,
+                    getPaymentMethodData,
+                    getActivePaymentMethod, // in case it changed
+                } = {
+                    cardToken: sel.getCardToken(),
+                    getPaymentMethodData: sel.getPaymentMethodData,
+                    getActivePaymentMethod: sel.getActivePaymentMethod,
+                };
 
-				// Create token for credit card payments if needed
-				if (
-					item.name === 'mollie_wc_gateway_creditcard' &&
-					canCreateToken &&
-					! token
-				) {
-					token = await mollieComponentsManager.createToken();
-				}
+                let token = cardToken;
 
-				const paymentData = {
-					payment_method: activePaymentMethod,
-					payment_method_title: item.title,
-					[ `mollie-payments-for-woocommerce_issuer_${ activePaymentMethod }` ]:
-						selectedIssuer,
-					billing_phone: inputPhone,
-					billing_company_billie: inputCompany,
-					billing_birthdate: inputBirthdate,
-					cardToken: token || '',
-				};
+                if (
+                    item.name === 'mollie_wc_gateway_creditcard' &&
+                    ! token
+                ) {
+                    token = await mollieComponentsManager.createToken();
+                }
 
-				return {
-					type: responseTypes.SUCCESS,
-					meta: { paymentMethodData: paymentData },
-				};
-			} catch ( error ) {
-				console.error( 'Payment processing failed:', error );
-				return {
-					type: responseTypes.ERROR,
-					message: error.message || 'Payment processing failed',
-				};
-			}
-		};
+                const base = getPaymentMethodData();
+                const paymentData = {
+                    ...base,
+                    payment_method: getActivePaymentMethod() || activePaymentMethod,
+                    payment_method_title: item.title,
+                    cardToken: token || '',
+                };
 
-		const unsubscribePaymentProcessing =
-			onPaymentSetup( onProcessingPayment );
-		return unsubscribePaymentProcessing;
-	}, [
-		activePaymentMethod,
-		item,
-		selectedIssuer,
-		inputPhone,
-		inputCompany,
-		inputBirthdate,
-		cardToken,
-		canCreateToken,
-		onPaymentSetup,
-		responseTypes,
-	] );
+                return {
+                    type: responseTypes.SUCCESS,
+                    meta: { paymentMethodData: paymentData },
+                };
+            } catch ( error ) {
+                console.error( 'Payment processing failed:', error );
+                return {
+                    type: responseTypes.ERROR,
+                    message: error.message || 'Payment processing failed',
+                };
+            }
+        };
+
+        const unsubscribe = onPaymentSetup( onProcessingPayment );
+        return unsubscribe;
+    }, [ onPaymentSetup, activePaymentMethod, item.title, item.name, responseTypes ] );
 
 	const commonProps = {
 		item,
@@ -173,9 +149,9 @@ export const PaymentMethodContentRenderer = ( props ) => {
 		componentError,
 	};
 
-	return (
-		<div ref={ containerRef } className="mollie-payment-method-container">
-			{ createPaymentComponent( item, commonProps ) }
-		</div>
-	);
+    return (
+        <div ref={ containerRef } className="mollie-payment-method-container">
+            { createPaymentComponent( item, commonProps ) }
+        </div>
+    );
 };

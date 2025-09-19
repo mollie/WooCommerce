@@ -28,7 +28,7 @@ web_environment:
 - ADMIN_EMAIL=admin@example.com
 - WC_VERSION=dev
 - WP_ENVIRONMENT_TYPE=local
-nodejs_version: "22"
+nodejs_version: "23"
 
 # Key features of ddev's config.yaml:
 

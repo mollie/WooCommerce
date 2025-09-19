@@ -186,14 +186,6 @@ class AssetsModule implements ExecutableModule
     protected function registerFrontendScripts(string $pluginUrl, string $pluginPath)
     {
         wp_register_script(
-            'babel-polyfill',
-            $this->getPluginUrl($pluginUrl, '/public/js/babel-polyfill.min.js'),
-            [],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/js/babel-polyfill.min.js')),
-            true
-        );
-
-        wp_register_script(
             'mollie_wc_gateway_applepay',
             $this->getPluginUrl($pluginUrl, '/public/js/applepay.min.js'),
             [],

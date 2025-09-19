@@ -21,7 +21,6 @@
     }
   ],
   "homepage": "https://github.com/mollie/WooCommerce",
-  "main": "gulpfile.js",
   "repository": {
     "type": "git",
     "url": "git@github.com:mollie/WooCommerce.git"

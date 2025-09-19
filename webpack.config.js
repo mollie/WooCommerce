@@ -22,7 +22,6 @@ module.exports = (env = {}, argv = {}) => {
         ...defaultConfig,
         name: 'javascript-configuration',
         entry: {
-            'babel-polyfill.min': '@babel/polyfill',
             'applepay.min': './resources/js/src/features/apple-pay/applepay.js',
             'applepayDirect.min': './resources/js/src/features/apple-pay/applepayDirect.js',
             'applepayDirectCart.min': './resources/js/src/features/apple-pay/applepayDirectCart.js',

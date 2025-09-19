@@ -1,3 +1,4 @@
+import { useSelect, useDispatch } from '@wordpress/data';
 import { MOLLIE_STORE_KEY } from '../store';
 
 /**
@@ -7,8 +8,6 @@ import { MOLLIE_STORE_KEY } from '../store';
  */
 const withMollieStore = ( WrappedComponent ) => {
 	const WithMollieStoreComponent = ( props ) => {
-		const { useSelect, useDispatch } = wp.data;
-
 		// Store selectors
 		const storeData = useSelect(
 			( select ) => ( {

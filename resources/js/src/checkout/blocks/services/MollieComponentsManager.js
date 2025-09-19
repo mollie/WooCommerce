@@ -1,3 +1,4 @@
+import { select, dispatch } from '@wordpress/data';
 import { MOLLIE_STORE_KEY } from '../store';
 
 /**
@@ -43,10 +44,9 @@ export class MollieComponentsManager {
 	async _initializeMollie( config ) {
 		try {
 			// Update store initialization state
-			wp.data
-				.dispatch( MOLLIE_STORE_KEY )
+			dispatch( MOLLIE_STORE_KEY )
 				.setComponentInitializing( true );
-			wp.data.dispatch( MOLLIE_STORE_KEY ).clearComponentError();
+			dispatch( MOLLIE_STORE_KEY ).clearComponentError();
 
 			// Initialize Mollie instance
 			this.mollie = new window.Mollie(
@@ -56,21 +56,17 @@ export class MollieComponentsManager {
 			this.isInitialized = true;
 
 			// Update store state
-			wp.data
-				.dispatch( MOLLIE_STORE_KEY )
+			dispatch( MOLLIE_STORE_KEY )
 				.setComponentInitialized( true );
-			wp.data
-				.dispatch( MOLLIE_STORE_KEY )
+			dispatch( MOLLIE_STORE_KEY )
 				.setComponentInitializing( false );
 
 			console.log( 'Mollie TokenManager initialized successfully' );
 		} catch ( error ) {
 			this.isInitialized = false;
-			wp.data
-				.dispatch( MOLLIE_STORE_KEY )
+			dispatch( MOLLIE_STORE_KEY )
 				.setComponentError( error.message );
-			wp.data
-				.dispatch( MOLLIE_STORE_KEY )
+			dispatch( MOLLIE_STORE_KEY )
 				.setComponentInitializing( false );
 			throw new Error(
 				`Failed to initialize Mollie Components: ${ error.message }`
@@ -117,8 +113,7 @@ export class MollieComponentsManager {
 
 		try {
 			await this.unmountComponents( gateway );
-			wp.data
-				.dispatch( MOLLIE_STORE_KEY )
+			dispatch( MOLLIE_STORE_KEY )
 				.setComponentMounting( gateway, true );
 			const gatewayComponents = new Map();
 			for ( const componentAttributes of componentsAttributes ) {
@@ -132,19 +127,15 @@ export class MollieComponentsManager {
 			this.components.set( gateway, gatewayComponents );
 			this.activeGateway = gateway;
 
-			wp.data
-				.dispatch( MOLLIE_STORE_KEY )
+			dispatch( MOLLIE_STORE_KEY )
 				.setComponentMounted( gateway, true );
-			wp.data
-				.dispatch( MOLLIE_STORE_KEY )
+			dispatch( MOLLIE_STORE_KEY )
 				.setComponentMounting( gateway, false );
-			wp.data.dispatch( MOLLIE_STORE_KEY ).clearComponentError();
+			dispatch( MOLLIE_STORE_KEY ).clearComponentError();
 		} catch ( error ) {
-			wp.data
-				.dispatch( MOLLIE_STORE_KEY )
+			dispatch( MOLLIE_STORE_KEY )
 				.setComponentError( error.message );
-			wp.data
-				.dispatch( MOLLIE_STORE_KEY )
+			dispatch( MOLLIE_STORE_KEY )
 				.setComponentMounting( gateway, false );
 			throw error;
 		}
@@ -205,7 +196,7 @@ export class MollieComponentsManager {
 				} else {
 					wrapperContainer.classList.remove( 'is-invalid' );
 					errorContainer.textContent = '';
-					wp.data.dispatch( MOLLIE_STORE_KEY ).clearComponentError();
+					dispatch( MOLLIE_STORE_KEY ).clearComponentError();
 				}
 			} );
 
@@ -276,8 +267,7 @@ export class MollieComponentsManager {
 			this.components.delete( gateway );
 
 			// Update store state
-			wp.data
-				.dispatch( MOLLIE_STORE_KEY )
+			dispatch( MOLLIE_STORE_KEY )
 				.setComponentMounted( gateway, false );
 
 			if ( this.activeGateway === gateway ) {
@@ -306,8 +296,8 @@ export class MollieComponentsManager {
 		}
 
 		try {
-			wp.data.dispatch( MOLLIE_STORE_KEY ).setTokenCreating( true );
-			wp.data.dispatch( MOLLIE_STORE_KEY ).clearTokenError();
+			dispatch( MOLLIE_STORE_KEY ).setTokenCreating( true );
+			dispatch( MOLLIE_STORE_KEY ).clearTokenError();
 
 			// Create token using Mollie Components
 			const { token, error } = await this.mollie.createToken();
@@ -321,15 +311,15 @@ export class MollieComponentsManager {
 			}
 
 			// Update store with token
-			wp.data.dispatch( MOLLIE_STORE_KEY ).setCardToken( token );
-			wp.data.dispatch( MOLLIE_STORE_KEY ).setTokenCreated( true );
-			wp.data.dispatch( MOLLIE_STORE_KEY ).setTokenCreating( false );
+			dispatch( MOLLIE_STORE_KEY ).setCardToken( token );
+			dispatch( MOLLIE_STORE_KEY ).setTokenCreated( true );
+			dispatch( MOLLIE_STORE_KEY ).setTokenCreating( false );
 
 			return token;
 		} catch ( error ) {
-			wp.data.dispatch( MOLLIE_STORE_KEY ).setTokenError( error.message );
-			wp.data.dispatch( MOLLIE_STORE_KEY ).setTokenCreating( false );
-			wp.data.dispatch( MOLLIE_STORE_KEY ).setTokenCreated( false );
+			dispatch( MOLLIE_STORE_KEY ).setTokenError( error.message );
+			dispatch( MOLLIE_STORE_KEY ).setTokenCreating( false );
+			dispatch( MOLLIE_STORE_KEY ).setTokenCreated( false );
 			throw error;
 		}
 	}
@@ -343,7 +333,7 @@ export class MollieComponentsManager {
 			this.isInitialized &&
 			this.activeGateway &&
 			this.components.has( this.activeGateway ) &&
-			! wp.data.select( MOLLIE_STORE_KEY ).getComponentError()
+			! select( MOLLIE_STORE_KEY ).getComponentError()
 		);
 	}
 
@@ -372,11 +362,10 @@ export class MollieComponentsManager {
 			this.activeGateway = null;
 
 			// Reset store state
-			wp.data
-				.dispatch( MOLLIE_STORE_KEY )
+			dispatch( MOLLIE_STORE_KEY )
 				.setComponentInitialized( false );
-			wp.data.dispatch( MOLLIE_STORE_KEY ).clearTokenData();
-			wp.data.dispatch( MOLLIE_STORE_KEY ).clearComponentError();
+			dispatch( MOLLIE_STORE_KEY ).clearTokenData();
+			dispatch( MOLLIE_STORE_KEY ).clearComponentError();
 		} catch ( error ) {
 			console.error( 'TokenManager cleanup failed:', error );
 		}

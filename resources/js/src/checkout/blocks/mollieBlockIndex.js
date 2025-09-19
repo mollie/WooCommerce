@@ -21,7 +21,7 @@ import { mollieComponentsManager } from './services/MollieComponentsManager';
 
 	try {
 		const { gatewayData } = mollieBlockData.gatewayData;
-		const context = buildRegistrationContext( wc, jQuery );
+		const context = buildRegistrationContext( wc );
 
 		registerAllPaymentMethods( gatewayData, context );
 		setUpMollieBlockCheckoutListeners( MOLLIE_STORE_KEY );

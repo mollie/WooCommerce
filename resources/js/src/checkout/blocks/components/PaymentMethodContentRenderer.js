@@ -1,6 +1,6 @@
 /* global mollieBlockData */
-const { useEffect, useRef } = wp.element;
-const { useSelect, useDispatch } = wp.data;
+import { useEffect, useRef } from '@wordpress/element';
+import { useSelect, useDispatch } from '@wordpress/data';
 import { MOLLIE_STORE_KEY } from '../store';
 import { createPaymentComponent } from './PaymentComponentFactory';
 import { mollieComponentsManager } from '../services/MollieComponentsManager';

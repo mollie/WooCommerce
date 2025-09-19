@@ -2,9 +2,8 @@
 /**
  * Build context for payment method registration
  * @param wc
- * @param jQuery
  */
-export const buildRegistrationContext = ( wc, jQuery ) => {
+export const buildRegistrationContext = ( wc ) => {
 	const { defaultFields } = wc.wcSettings.allSettings;
 
 	return {

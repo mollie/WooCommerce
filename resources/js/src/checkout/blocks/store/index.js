@@ -7,6 +7,7 @@ import * as actions from './actions';
 import selectors from './selectors';
 
 export const MOLLIE_STORE_KEY = 'mollie-payments';
+export const PAYMENT_STORE_KEY = 'wc/store/payment';
 
 export const mollieStore = createReduxStore( MOLLIE_STORE_KEY, {
 	reducer,

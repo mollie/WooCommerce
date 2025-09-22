@@ -1,9 +1,8 @@
-import { MOLLIE_STORE_KEY } from './index';
+import { MOLLIE_STORE_KEY, PAYMENT_STORE_KEY } from './index';
 import { select, dispatch, subscribe } from '@wordpress/data';
 
 export const setUpMollieBlockCheckoutListeners = () => {
 	let currentPaymentMethod;
-	const PAYMENT_STORE_KEY = 'wc/store/payment';
 	const checkoutStoreCallback = () => {
 		try {
 			const paymentStore = select( PAYMENT_STORE_KEY );

@@ -202,7 +202,7 @@ class AddressMiddleware implements RequestMiddlewareInterface
                 $order->get_shipping_country(),
                 self::MAXIMAL_LENGTH_REGION
             );
-        $shippingPhone = $this->isPhoneValid($order->get_shipping_phone())? $order->get_shipping_phone() : '';
+        $shippingPhone = $this->isPhoneValid($order->get_shipping_phone()) ? $order->get_shipping_phone() : '';
         $shippingAddress->phone = (ctype_space($order->get_shipping_phone()))
             ? null
             : $this->getFormatedPhoneNumber($shippingPhone, $shippingAddress->country);
@@ -220,7 +220,7 @@ class AddressMiddleware implements RequestMiddlewareInterface
         $phoneSources = [
             $order->get_billing_phone(),
             $order->get_shipping_phone(),
-            $this->getPostedPhoneNumber($order)
+            $this->getPostedPhoneNumber($order),
         ];
 
         foreach ($phoneSources as $phone) {

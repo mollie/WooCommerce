@@ -38,10 +38,24 @@ class InstructionsNotConnected extends AbstractSection
             <li>
                 <?= wp_kses(sprintf(
                     __(
-                        "Log in to your <a href='%s' target='_blank'>Mollie Dashboard</a>",
+                        "Sign up for a <a href='%s' target='_blank'>Free Mollie Account</a> when you not have one yet.",
                         'mollie-payments-for-woocommerce'
                     ),
-                    'https://my.mollie.com/dashboard/login?lang=en'
+                    apply_filters('mollie-payments-for-woocommerce_signup_url', 'https://my.mollie.com/dashboard/signup/')
+                ), [
+                    'a' => [
+                        'href' => [],
+                        'target' => [],
+                    ],
+                ]); ?>
+            </li>
+            <li>
+                <?= wp_kses(sprintf(
+                    __(
+                        "Log in to your <a href='%s' target='_blank'>Mollie Dashboard</a>.",
+                        'mollie-payments-for-woocommerce'
+                    ),
+                    'https://my.mollie.com/dashboard/login'
                 ), [
                         'a' => [
                                 'href' => [],

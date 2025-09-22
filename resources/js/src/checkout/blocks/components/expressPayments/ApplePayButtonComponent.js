@@ -1,4 +1,5 @@
 /* global jQuery, ApplePaySession */
+import { select } from '@wordpress/data';
 import { request } from '../../../../features/apple-pay/applePayRequest';
 import { createAppleErrors } from '../../../../features/apple-pay/applePayError';
 
@@ -94,7 +95,7 @@ export const ApplePayButtonComponent = ( { buttonAttributes = {} } ) => {
 		);
 		session.begin();
 
-		const store = wp.data.select( 'wc/store/cart' );
+		const store = select( 'wc/store/cart' );
 		const shippingRates = store.getShippingRates()?.[ 0 ]?.shipping_rates;
 
 		let selectedShippingMethod = '';

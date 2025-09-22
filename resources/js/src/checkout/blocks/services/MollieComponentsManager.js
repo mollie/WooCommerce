@@ -180,8 +180,7 @@ export class MollieComponentsManager {
 					wrapperContainer.classList.add( 'is-invalid' );
 					wrapperContainer.classList.remove( 'is-valid' );
 					errorContainer.textContent = event.error;
-					wp.data
-						.dispatch( MOLLIE_STORE_KEY )
+					dispatch( MOLLIE_STORE_KEY )
 						.setComponentError( event.error );
 				} else {
 					wrapperContainer.classList.remove( 'is-invalid' );
@@ -192,15 +191,13 @@ export class MollieComponentsManager {
 
 			component.addEventListener( 'focus', () => {
 				wrapperContainer.classList.add( 'has-focus' );
-				wp.data
-					.dispatch( MOLLIE_STORE_KEY )
+				dispatch( MOLLIE_STORE_KEY )
 					.setComponentFocused( name, true );
 			} );
 
 			component.addEventListener( 'blur', () => {
 				wrapperContainer.classList.remove( 'has-focus' );
-				wp.data
-					.dispatch( MOLLIE_STORE_KEY )
+				dispatch( MOLLIE_STORE_KEY )
 					.setComponentFocused( name, false );
 			} );
 

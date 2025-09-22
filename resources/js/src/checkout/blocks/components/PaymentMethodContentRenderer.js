@@ -1,6 +1,6 @@
 /* global mollieBlockData */
 import { useEffect, useRef } from '@wordpress/element';
-import { useSelect, useDispatch } from '@wordpress/data';
+import { useSelect, useDispatch, select } from '@wordpress/data';
 import { MOLLIE_STORE_KEY } from '../store';
 import { createPaymentComponent } from './PaymentComponentFactory';
 import { mollieComponentsManager } from '../services/MollieComponentsManager';
@@ -98,7 +98,7 @@ export const PaymentMethodContentRenderer = ( props ) => {
 			}
 
 			try {
-				const sel = wp.data.select( MOLLIE_STORE_KEY );
+				const sel = select( MOLLIE_STORE_KEY );
 				const {
 					cardToken,
 					getPaymentMethodData,

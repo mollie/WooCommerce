@@ -213,7 +213,7 @@ class AddressMiddleware implements RequestMiddlewareInterface
      * Get the phone number from the order or the posted field.
      *
      * @param WC_Order $order The WooCommerce order object.
-     * @return string|null The phone number.
+     * @return string The phone number.
      */
     protected function getPhoneNumber($order): string
     {

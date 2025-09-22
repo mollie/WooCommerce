@@ -1,11 +1,7 @@
 import { PaymentMethodContentRenderer } from './PaymentMethodContentRenderer';
 import { Label } from './Label';
 
-const molliePaymentMethod = (
-	item,
-	requiredFields,
-	shouldHidePhoneField
-) => {
+const molliePaymentMethod = ( item, requiredFields, shouldHidePhoneField ) => {
 	return {
 		name: item.name,
 		label: <Label item={ item } />,

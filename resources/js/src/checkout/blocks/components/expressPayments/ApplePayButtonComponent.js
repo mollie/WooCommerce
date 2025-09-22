@@ -1,3 +1,4 @@
+/* global jQuery, ApplePaySession */
 import { request } from '../../../../features/apple-pay/applePayRequest';
 import { createAppleErrors } from '../../../../features/apple-pay/applePayError';
 
@@ -47,8 +48,8 @@ export const ApplePayButtonComponent = ( { buttonAttributes = {} } ) => {
 
 		return {
 			action: 'mollie_apple_pay_create_order_cart',
-			shippingContact: shippingContact,
-			billingContact: billingContact,
+			shippingContact,
+			billingContact,
 			token,
 			shippingMethod: selectedShippingMethod,
 			'mollie-payments-for-woocommerce_issuer_applepay': 'applepay',

@@ -5,7 +5,7 @@ const CreditCardComponent = ( {
 	useEffect,
 	activePaymentMethod,
 	isComponentReady,
-	componentError
+	componentError,
 } ) => {
 	useEffect( () => {
 		if ( activePaymentMethod === 'mollie_wc_gateway_creditcard' ) {

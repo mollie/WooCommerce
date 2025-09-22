@@ -1,7 +1,6 @@
-
 /**
  * Build context for payment method registration
- * @param wc
+ * @param wc woocommerce global object
  */
 export const buildRegistrationContext = ( wc ) => {
 	const { defaultFields } = wc.wcSettings.allSettings;

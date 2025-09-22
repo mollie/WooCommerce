@@ -65,16 +65,18 @@ export const setCardToken = ( token ) => ( {
 	payload: token,
 } );
 
-export const updatePhonePlaceholderByCountry = ( country ) => ( { dispatch } ) => {
-	const countryCodes = {
-		BE: '+32xxxxxxxxx',
-		NL: '+316xxxxxxxx',
-		DE: '+49xxxxxxxxx',
-		AT: '+43xxxxxxxxx',
+export const updatePhonePlaceholderByCountry =
+	( country ) =>
+	( { dispatch } ) => {
+		const countryCodes = {
+			BE: '+32xxxxxxxxx',
+			NL: '+316xxxxxxxx',
+			DE: '+49xxxxxxxxx',
+			AT: '+43xxxxxxxxx',
+		};
+		const placeholder = countryCodes[ country ] || countryCodes.NL;
+		dispatch( setPhonePlaceholder( placeholder ) );
 	};
-	const placeholder = countryCodes[ country ] || countryCodes.NL;
-	dispatch( setPhonePlaceholder( placeholder ) );
-};
 
 export const setComponentInitializing = ( isInitializing ) => ( {
 	type: ACTIONS.SET_COMPONENT_INITIALIZING,

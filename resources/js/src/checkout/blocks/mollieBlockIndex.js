@@ -1,3 +1,4 @@
+/* global wc */
 import './store/index.js';
 import { setUpMollieBlockCheckoutListeners } from './store/storeListeners';
 import { MOLLIE_STORE_KEY } from './store';
@@ -11,9 +12,8 @@ import { mollieComponentsManager } from './services/MollieComponentsManager';
  * @param root0.mollieBlockData
  * @param root0.wc
  * @param root0._
- * @param root0.jQuery
  */
-( function ( { mollieBlockData, wc, _, jQuery } ) {
+( function ( { mollieBlockData, wc, _ } ) {
 	if ( _.isEmpty( mollieBlockData ) ) {
 		console.warn( 'Mollie: No block data available' );
 		return;
@@ -32,8 +32,7 @@ import { mollieComponentsManager } from './services/MollieComponentsManager';
 				try {
 					const config = mollieBlockData.gatewayData.componentData;
 					await mollieComponentsManager.initialize( {
-						merchantProfileId:
-						config.merchantProfileId,
+						merchantProfileId: config.merchantProfileId,
 						options: config.options || {},
 					} );
 					console.log( 'Mollie mollieComponentsManager initialized' );

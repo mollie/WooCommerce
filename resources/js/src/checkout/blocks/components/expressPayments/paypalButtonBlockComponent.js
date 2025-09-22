@@ -1,3 +1,4 @@
+/* global wc */
 import { ajaxCallToOrder } from '../../../../features/paypal/paypalButtonUtils';
 
 ( function ( { molliepaypalButtonCart } ) {

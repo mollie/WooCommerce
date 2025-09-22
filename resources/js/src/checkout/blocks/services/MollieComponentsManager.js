@@ -44,8 +44,7 @@ export class MollieComponentsManager {
 	async _initializeMollie( config ) {
 		try {
 			// Update store initialization state
-			dispatch( MOLLIE_STORE_KEY )
-				.setComponentInitializing( true );
+			dispatch( MOLLIE_STORE_KEY ).setComponentInitializing( true );
 			dispatch( MOLLIE_STORE_KEY ).clearComponentError();
 
 			// Initialize Mollie instance
@@ -56,18 +55,14 @@ export class MollieComponentsManager {
 			this.isInitialized = true;
 
 			// Update store state
-			dispatch( MOLLIE_STORE_KEY )
-				.setComponentInitialized( true );
-			dispatch( MOLLIE_STORE_KEY )
-				.setComponentInitializing( false );
+			dispatch( MOLLIE_STORE_KEY ).setComponentInitialized( true );
+			dispatch( MOLLIE_STORE_KEY ).setComponentInitializing( false );
 
 			console.log( 'Mollie TokenManager initialized successfully' );
 		} catch ( error ) {
 			this.isInitialized = false;
-			dispatch( MOLLIE_STORE_KEY )
-				.setComponentError( error.message );
-			dispatch( MOLLIE_STORE_KEY )
-				.setComponentInitializing( false );
+			dispatch( MOLLIE_STORE_KEY ).setComponentError( error.message );
+			dispatch( MOLLIE_STORE_KEY ).setComponentInitializing( false );
 			throw new Error(
 				`Failed to initialize Mollie Components: ${ error.message }`
 			);
@@ -113,8 +108,7 @@ export class MollieComponentsManager {
 
 		try {
 			await this.unmountComponents( gateway );
-			dispatch( MOLLIE_STORE_KEY )
-				.setComponentMounting( gateway, true );
+			dispatch( MOLLIE_STORE_KEY ).setComponentMounting( gateway, true );
 			const gatewayComponents = new Map();
 			for ( const componentAttributes of componentsAttributes ) {
 				const component = await this._mountSingleComponent(
@@ -127,16 +121,12 @@ export class MollieComponentsManager {
 			this.components.set( gateway, gatewayComponents );
 			this.activeGateway = gateway;
 
-			dispatch( MOLLIE_STORE_KEY )
-				.setComponentMounted( gateway, true );
-			dispatch( MOLLIE_STORE_KEY )
-				.setComponentMounting( gateway, false );
+			dispatch( MOLLIE_STORE_KEY ).setComponentMounted( gateway, true );
+			dispatch( MOLLIE_STORE_KEY ).setComponentMounting( gateway, false );
 			dispatch( MOLLIE_STORE_KEY ).clearComponentError();
 		} catch ( error ) {
-			dispatch( MOLLIE_STORE_KEY )
-				.setComponentError( error.message );
-			dispatch( MOLLIE_STORE_KEY )
-				.setComponentMounting( gateway, false );
+			dispatch( MOLLIE_STORE_KEY ).setComponentError( error.message );
+			dispatch( MOLLIE_STORE_KEY ).setComponentMounting( gateway, false );
 			throw error;
 		}
 	}
@@ -267,8 +257,7 @@ export class MollieComponentsManager {
 			this.components.delete( gateway );
 
 			// Update store state
-			dispatch( MOLLIE_STORE_KEY )
-				.setComponentMounted( gateway, false );
+			dispatch( MOLLIE_STORE_KEY ).setComponentMounted( gateway, false );
 
 			if ( this.activeGateway === gateway ) {
 				this.activeGateway = null;
@@ -362,8 +351,7 @@ export class MollieComponentsManager {
 			this.activeGateway = null;
 
 			// Reset store state
-			dispatch( MOLLIE_STORE_KEY )
-				.setComponentInitialized( false );
+			dispatch( MOLLIE_STORE_KEY ).setComponentInitialized( false );
 			dispatch( MOLLIE_STORE_KEY ).clearTokenData();
 			dispatch( MOLLIE_STORE_KEY ).clearComponentError();
 		} catch ( error ) {

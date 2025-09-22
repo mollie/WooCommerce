@@ -23,7 +23,7 @@ import { paymentStrategies } from './paymentStrategies';
  * @property {Function}      wc.wcBlocksRegistry.registerExpressPaymentMethod - Function to register express payment methods
  * @property {Object}        jQuery                                           - jQuery object
  * @property {Array<string>} requiredFields                                   - Array of required field names
- * @property {boolean}       shouldHidePhoneField                              - Whether the phone field should be visible
+ * @property {boolean}       shouldHidePhoneField                             - Whether the phone field should be visible
  */
 
 /**

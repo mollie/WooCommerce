@@ -118,7 +118,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
         // Add settings link to plugins page
         add_filter('plugin_action_links_' . $this->plugin_basename, [$this, 'addPluginActionLinks']);
         //add campaign to signup URL Todo REMOVE after 8. Dec 2025
-        add_filter( 'mollie-payments-for-woocommerce_signup_url', static function($url) {
+        add_filter('mollie-payments-for-woocommerce_signup_url', static function ($url) {
             $dateNow = new \DateTime();
             $endDateCampaign = new \DateTime('2025-12-08');
             if ($endDateCampaign < $dateNow) {

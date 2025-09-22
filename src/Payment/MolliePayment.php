@@ -82,7 +82,7 @@ class MolliePayment extends MollieObject
         self::$paymentId = $this->getMolliePaymentIdFromPaymentObject();
         self::$customerId = $this->getMollieCustomerIdFromPaymentObject();
         self::$order = wc_get_order($orderId);
-
+        self::$order->set_transaction_id($this->data->id);
         self::$order->update_meta_data('_mollie_payment_id', $this->data->id);
         self::$order->save();
 

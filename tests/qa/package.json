@@ -38,7 +38,7 @@
     "lint:md:fix": "wp-scripts lint-md-docs --fix ./**/*.md README.md",
     "lint:js": "wp-scripts lint-js  --resolve-plugins-relative-to ./ **/*.{ts,tsx,mjs}",
     "lint:js:fix": "wp-scripts lint-js --resolve-plugins-relative-to ./ --fix **/*.{ts,tsx,mjs}",
-    "all": "npx playwright test --project=all --workers=1"
+    "test:all": "npx playwright test --project=all --workers=1"
   },
   "eslintConfig": {
     "extends": [

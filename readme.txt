@@ -218,13 +218,14 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 8.0.6-beta1 - 11-09-2025 =
+= 8.0.6-beta2 - 23-09-2025 =
 * Fixed - TypeError in OrderLines.php when processing vouchers with Germanized plugin
 * Fixed - Apple Pay not eligible for Express Checkout in editor with non-Apple Pay compatible device
 * Fixed - Block Editor error `This block encountered an error and cannot show a preview`
 * Fixed - The new `woocommerce_cancel_unpaid_order` filter causes orders not created via checkout to be cancelled
 * Improvement - Improve handling and validation of phone numbers
 * Improvement - Improve handling of webhooks that uses now the REST API and depending on transaction id
+* Improvement - Add signup link for new Account on new installations
 
 = 8.0.5 - 11-08-2025 =
 * Added - PayPal Subscriptions support through Vaulting

@@ -222,7 +222,7 @@ class PaymentMethods extends AbstractSection
         ob_start();
         ?>
         <div class="mollie-settings-pm__single">
-            <?= $icon->src();  // phpcs:ignore XSS ok.?>
+            <img src="<?= esc_url($icon->src()); ?>" class="mollie-gateway-icon" alt="<?= esc_attr($paymentMethod->title($this->container)); ?>"/>
             <?= esc_html($paymentMethod->title($this->container));?>
             <?= $messageOrLink;  // phpcs:ignore XSS ok.?>
             <?= $button;  // phpcs:ignore XSS ok.?>

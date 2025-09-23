@@ -3,6 +3,7 @@
 namespace Mollie\WooCommerce\Assets;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
+use Inpsyde\PaymentGateway\Icon;
 use Mollie\WooCommerce\Components\ComponentDataService;
 use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\DefaultFieldsStrategy;
 use Mollie\WooCommerce\Shared\Data;
@@ -105,15 +106,29 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
                 ) : new DefaultFieldsStrategy($deprecatedGateway, $gateway->get_description(), $dataService);
                 $issuers = $paymentFieldsStrategy->getFieldMarkup($deprecatedGateway, $dataService);
             }
+            $title = $method->title($container);
+            $iconProvider = $method->paymentMethodIconProvider($container);
+            $icons = $iconProvider->provideIcons();
+
+            $iconsArray = array_map(function (Icon $icon) {
+                return [
+                    'id' => $icon->id(),
+                    'src' => $icon->src(),
+                    'alt' => $icon->alt(),
+                ];
+            }, $icons);
+            $labelContent = [
+                'title' => $title,
+                'iconsArray' => $iconsArray,
+            ];
             if ($gatewayId === 'creditcard') {
                 $content .= $issuers;
                 $issuers = false;
+                if(!$method->shouldDisplayIcon()){
+                    $labelContent['iconsArray'] = [];
+                }
             }
-            $title = $method->title($container);
-            $labelContent = [
-                'title' => $title,
-                'icon' => $gateway->get_icon(),
-            ];
+
             $hasSurcharge = $method->hasSurcharge();
             $countryCodes = [
                 'BE' => '+32xxxxxxxxx',

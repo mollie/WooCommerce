@@ -10,8 +10,9 @@ export const setUpMollieBlockCheckoutListeners = () => {
 
 			const paymentMethod = paymentStore.getActivePaymentMethod();
 			if ( currentPaymentMethod !== paymentMethod ) {
-				dispatch( MOLLIE_STORE_KEY )
-					.setActivePaymentMethod( paymentMethod );
+				dispatch( MOLLIE_STORE_KEY ).setActivePaymentMethod(
+					paymentMethod
+				);
 				currentPaymentMethod = paymentMethod;
 			}
 		} catch ( error ) {

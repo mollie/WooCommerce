@@ -180,8 +180,9 @@ export class MollieComponentsManager {
 					wrapperContainer.classList.add( 'is-invalid' );
 					wrapperContainer.classList.remove( 'is-valid' );
 					errorContainer.textContent = event.error;
-					dispatch( MOLLIE_STORE_KEY )
-						.setComponentError( event.error );
+					dispatch( MOLLIE_STORE_KEY ).setComponentError(
+						event.error
+					);
 				} else {
 					wrapperContainer.classList.remove( 'is-invalid' );
 					errorContainer.textContent = '';
@@ -191,14 +192,12 @@ export class MollieComponentsManager {
 
 			component.addEventListener( 'focus', () => {
 				wrapperContainer.classList.add( 'has-focus' );
-				dispatch( MOLLIE_STORE_KEY )
-					.setComponentFocused( name, true );
+				dispatch( MOLLIE_STORE_KEY ).setComponentFocused( name, true );
 			} );
 
 			component.addEventListener( 'blur', () => {
 				wrapperContainer.classList.remove( 'has-focus' );
-				dispatch( MOLLIE_STORE_KEY )
-					.setComponentFocused( name, false );
+				dispatch( MOLLIE_STORE_KEY ).setComponentFocused( name, false );
 			} );
 
 			return component;

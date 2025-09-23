@@ -63,55 +63,33 @@ class PaymentMethodsIconUrl
      *
      * @param string $paymentMethodName
      *
-     * @return mixed
+     * @return array|string[]
      */
-    public function svgUrlForPaymentMethod($paymentMethodName)
+    public function svgUrlForPaymentMethod(string $paymentMethodName)
     {
         if ($paymentMethodName === PaymentMethod::CREDITCARD && !is_admin()) {
             return $this->getCreditcardIcon();
         }
+        $svgUrl = $this->pluginUrl . sprintf('public/images/%s', $paymentMethodName) . self::SVG_FILE_EXTENSION;
 
-        $svgPath = false;
-        $svgUrl = false;
-        $gatewaySettings = get_option(sprintf('mollie_wc_gateway_%s_settings', $paymentMethodName), false);
-
-        if ($gatewaySettings) {
-            $svgPath = isset($gatewaySettings["iconFilePath"]) ? $gatewaySettings["iconFilePath"] : false;
-            $svgUrl =  isset($gatewaySettings["iconFileUrl"]) ? $gatewaySettings["iconFileUrl"] : false;
-        }
-
-        if ($svgPath && !file_exists($svgPath) || !$svgUrl) {
-            $svgUrl = $this->pluginUrl . '/' . sprintf('public/images/%s', $paymentMethodName) . self::SVG_FILE_EXTENSION;
-        }
-
-        return $this->generateIconHtml($svgUrl);
+        return [$svgUrl];
     }
 
-    public function generateIconHtml(string $svgUrl): string
-    {
-
-        return '<img src="' . esc_url($svgUrl)
-            . '" class="mollie-gateway-icon" alt=""/>';
-    }
-
-    public function getCreditcardIcon()
+    public function getCreditcardIcon(): array
     {
         if (
             $this->enabledCreditcards()
             && !is_admin()
         ) {
-            return $this->buildSvgComposed() ?: '';
+            return $this->buildSvgComposed() ?: [];
         }
         $gatewaySettings = get_option('mollie_wc_gateway_creditcard_settings', false);
         if ($this->canShowCustomLogo($gatewaySettings)) {
             $url =  $gatewaySettings["iconFileUrl"];
-            return '<img src="' . esc_url($url)
-                . '" class="mollie-gateway-icon" alt=""/>';
+            return [esc_url($url)];
         }
         $svgUrl = $this->pluginUrl . sprintf('public/images/%ss.svg', PaymentMethod::CREDITCARD);
-        return
-            '<img src="' . esc_url($svgUrl)
-            . '" class="mollie-gateway-icon" alt=""/>';
+        return [$svgUrl];
     }
 
     protected function canShowCustomLogo($gatewaySettings): bool
@@ -171,56 +149,17 @@ class PaymentMethodsIconUrl
     }
     /**
      *
-     * @return string Newly composed svg string
+     * @return array Newly composed svg string
      */
-    public function buildSvgComposed()
+    public function buildSvgComposed(): array
     {
         $enabledCreditCards = $this->enabledCreditcards();
 
-        $assetsImagesPath = $this->pluginPath . '/' . 'public/images/';
-        $cardWidth = PaymentMethodsIconUrl::CREDIT_CARD_ICON_WIDTH;
-        $cardsNumber = count($enabledCreditCards);
-        $cardsWidth = $cardWidth * $cardsNumber;
-        $cardPositionX = 0;
-        $actual = get_transient('svg_creditcards_string');
-        if (!$actual) {
-            $actual = sprintf(
-                '<svg width="%s" height="24" class="mollie-gateway-icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">',
-                $cardsWidth
-            );
-            foreach ($enabledCreditCards as $creditCard) {
-                // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading local file is OK.
-                $svgString = file_get_contents(
-                    $assetsImagesPath . $creditCard
-                );
-                if ($svgString) {
-                    $actual .= $this->positionSvgOnX(
-                        $cardPositionX,
-                        $svgString
-                    );
-                    $cardPositionX += $cardWidth;
-                }
-            }
-            $actual .= "</svg>";
-            set_transient('svg_creditcards_string', $actual, DAY_IN_SECONDS);
+        $assetsImagesPath = $this->pluginUrl . '/' . 'public/images/';
+        $inconsUrlArray = [];
+        foreach ($enabledCreditCards as $creditCard) {
+            $inconsUrlArray[] = $assetsImagesPath . $creditCard;
         }
-        return $actual;
-    }
-
-    /**
-     * Method to add the x parameter to the svg string so that the icon can
-     * be positioned related to other icons.
-     *
-     * @param int    $xPosition coordinate to position icon on x axis
-     * @param string $svgString svg string to add position to
-     *
-     * @return string|string[] Modified svg string with the x position added
-     */
-    protected function positionSvgOnX($xPosition, $svgString)
-    {
-        $positionString = sprintf(' x="%s"', $xPosition);
-        $positionAfterSvgWord = 4;
-
-        return substr_replace($svgString, $positionString, $positionAfterSvgWord, 0);
+        return $inconsUrlArray;
     }
 }

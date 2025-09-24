@@ -1,5 +1,9 @@
+import { useCallback } from '@wordpress/element';
+
 export const PhoneField = ( { id, label, value, onChange, placeholder } ) => {
-	const handleChange = ( e ) => onChange( e.target.value );
+    const handleChange = useCallback( ( e ) => {
+        onChange( e.target.value );
+    }, [ onChange ] );
 	const className = `wc-block-components-text-input wc-block-components-address-form__${ id }`;
 
 	return (

@@ -1,5 +1,9 @@
+import { useCallback } from '@wordpress/element';
+
 export const CompanyField = ( { label, value, onChange } ) => {
-	const handleChange = ( e ) => onChange( e.target.value );
+    const handleChange = useCallback( ( e ) => {
+        onChange( e.target.value );
+    }, [ onChange ] );
 	const className =
 		'wc-block-components-text-input wc-block-components-address-form__billing_company_billie';
 

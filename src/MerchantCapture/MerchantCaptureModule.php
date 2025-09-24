@@ -172,7 +172,6 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                             self::ORDER_PAYMENT_STATUS_META_KEY,
                             ManualCaptureStatus::STATUS_AUTHORIZED
                         );
-                        $order->set_transaction_id($payment->id);
                         $order->save();
                     } elseif (
                         $payment->isPaid() && (

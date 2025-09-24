@@ -145,7 +145,10 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
                 $issuers = false;
             }
             $title = $method->title($container);
-            $labelMarkup = "<span style='margin-right: 1em'>{$title}</span>{$gateway->get_icon()}";
+            $labelContent = [
+                'title' => $title,
+                'icon' => $gateway->get_icon(),
+            ];
             $hasSurcharge = $method->hasSurcharge();
             $countryCodes = [
                 'BE' => '+32xxxxxxxxx',
@@ -158,7 +161,7 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
             $phonePlaceholder = in_array($country, array_keys($countryCodes)) ? $countryCodes[$country] : $countryCodes['NL'];
             $gatewayData[] = [
                 'name' => $gatewayKey,
-                'label' => $labelMarkup,
+                'label' => $labelContent,
                 'content' => $content,
                 'issuers' => $issuers,
                 'hasSurcharge' => $hasSurcharge,

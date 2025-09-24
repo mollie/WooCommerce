@@ -6,6 +6,13 @@
     <file>./inc</file>
     <file>./src</file>
     <exclude-pattern>./tests/</exclude-pattern>
+        <exclude-pattern>*.js</exclude-pattern>
+        <exclude-pattern>*.jsx</exclude-pattern>
+        <exclude-pattern>*.ts</exclude-pattern>
+        <exclude-pattern>*.tsx</exclude-pattern>
+        <exclude-pattern>*.css</exclude-pattern>
+        <exclude-pattern>*.scss</exclude-pattern>
+        <exclude-pattern>*.json</exclude-pattern>
 
     <config name="testVersion" value="7.4"/>
     <config name="ignore_warnings_on_exit" value="1"/>

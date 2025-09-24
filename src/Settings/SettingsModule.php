@@ -118,19 +118,19 @@ class SettingsModule implements ServiceModule, ExecutableModule
         // Add settings link to plugins page
         add_filter('plugin_action_links_' . $this->plugin_basename, [$this, 'addPluginActionLinks']);
         //add campaign to signup URL Todo REMOVE after 10th Dec 2025
-        add_filter( 'gettext', function( $translated, $text, $domain ) {
+        add_filter( 'gettext', static function ($translated, $text, $domain ) {
             $dateNow = new \DateTime();
             $endDateCampaign = new \DateTime('2025-12-10');
             if ($endDateCampaign < $dateNow) {
                 return $translated;
             }
-            if ( $domain !== 'mollie-payments-for-woocommerce' ) {
+            if ($domain !== 'mollie-payments-for-woocommerce') {
                 return $translated;
             }
-            if ( $text !== "Sign up for a <a href='%s' target='_blank'>Free Mollie Account</a> if you don't have one yet." ) {
+            if ($text !== "Sign up for a <a href='%s' target='_blank'>Free Mollie Account</a> if you don't have one yet.") {
                 return $translated;
             }
-            return __( 'Don’t have a Mollie account yet? Create one now. Limited time only! Pay ZERO processing fees for your first month. <a href="%s" target="_blank">Get started with Mollie today.</a> ', 'mollie-payments-for-woocommerce'  );
+            return __('Don’t have a Mollie account yet? Create one now. Limited time only! Pay ZERO processing fees for your first month. <a href="%s" target="_blank">Get started with Mollie today.</a> ', 'mollie-payments-for-woocommerce');
         }, 10, 3);
         add_filter('mollie-payments-for-woocommerce_signup_url', static function ($url) {
             $dateNow = new \DateTime();

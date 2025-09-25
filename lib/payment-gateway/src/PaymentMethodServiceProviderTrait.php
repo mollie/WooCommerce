@@ -39,6 +39,7 @@ trait PaymentMethodServiceProviderTrait
             $id = $paymentMethod->id();
             $interfaceMethods = [
                 'title' => 'title',
+                'isEnabled' => 'is_enabled',
                 'description' => 'description',
                 'availabilityCallback' => 'availability_callback',
                 'methodTitle' => 'method_title',

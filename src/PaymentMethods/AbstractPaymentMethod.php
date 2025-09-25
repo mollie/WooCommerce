@@ -417,12 +417,6 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
         return $this->id() . '_settings';
     }
 
-    public function registerBlocks(ContainerInterface $container): bool
-    {
-        //we handle it outside for the moment
-        return false;
-    }
-
     public function orderButtonText(ContainerInterface $container): string
     {
         return '';

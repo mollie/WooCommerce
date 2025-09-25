@@ -11,6 +11,7 @@ use Inpsyde\PaymentGateway\NoopPaymentProcessor;
 use Inpsyde\PaymentGateway\NoopPaymentRequestValidator;
 use Inpsyde\PaymentGateway\NoopRefundProcessor;
 use Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
+use Inpsyde\PaymentGateway\PaymentGateway;
 use Inpsyde\PaymentGateway\PaymentProcessorInterface;
 use Inpsyde\PaymentGateway\PaymentRequestValidatorInterface;
 use Inpsyde\PaymentGateway\RefundProcessorInterface;
@@ -25,14 +26,46 @@ use Psr\Container\NotFoundExceptionInterface;
  */
 trait DefaultPaymentMethodDefinitionTrait
 {
-    private function ensureServiceKeyGenerator(): ServiceKeyGenerator
+    protected function ensureServiceKeyGenerator(): ServiceKeyGenerator
     {
         static $keyGen;
-        if (!$keyGen) {
+        if (! $keyGen) {
             $keyGen = new ServiceKeyGenerator($this->id());
         }
 
         return $keyGen;
+    }
+
+    /**
+     * Retrieves the PaymentGateway instance associated with this definition.
+     * It is identified by $this->id() and requires the Gateway
+     * to be registered to WooCommerce already.
+     *
+     * @return PaymentGateway
+     */
+    protected function fetchInstance(): PaymentGateway
+    {
+        $instance = wp_filter_object_list(
+            \WC_Payment_Gateways::instance()->payment_gateways(),
+            [
+                'id' => $this->id(),
+            ]
+        );
+        $mine = reset($instance);
+        if (! $mine instanceof PaymentGateway) {
+            throw new \RuntimeException(
+                "Payment Gateway {$this->id()} not registered before accessing"
+            );
+        }
+
+        return $mine;
+    }
+
+    public function isEnabled(ContainerInterface $container): bool
+    {
+        $instance = $this->fetchInstance();
+
+        return $instance->get_option('enabled') === 'yes';
     }
 
     public function paymentProcessor(ContainerInterface $container): PaymentProcessorInterface
@@ -67,7 +100,7 @@ trait DefaultPaymentMethodDefinitionTrait
 
     public function availabilityCallback(ContainerInterface $container): callable
     {
-        return static fn () => true;
+        return static fn() => true;
     }
 
     public function supports(ContainerInterface $container): array
@@ -92,7 +125,9 @@ trait DefaultPaymentMethodDefinitionTrait
     public function gatewayIconsRenderer(ContainerInterface $container): GatewayIconsRendererInterface
     {
         try {
-            $iconProvider = $container->get($this->ensureServiceKeyGenerator()->createKey('method_icon_provider'));
+            $iconProvider = $container->get(
+                $this->ensureServiceKeyGenerator()->createKey('method_icon_provider')
+            );
         } catch (NotFoundExceptionInterface | ContainerExceptionInterface $exception) {
             $iconProvider = $container->get(
                 $this->ensureServiceKeyGenerator()->createFallbackKey('method_icon_provider')
@@ -148,9 +183,9 @@ trait DefaultPaymentMethodDefinitionTrait
         return true;
     }
 
-    public function orderButtonText(ContainerInterface $container): ?string
+    public function orderButtonText(ContainerInterface $container): string
     {
-        return null;
+        return '';
     }
 
     public function customSettings(): CustomSettingsFieldsDefinition

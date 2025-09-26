@@ -179,6 +179,13 @@ class MollieOrder extends MollieObject
     public function onWebhookPaid(WC_Order $order, $payment, $paymentMethodTitle)
     {
         $orderId = $order->get_id();
+        if ($order->is_paid()) {
+            $this->logger->debug(
+                __METHOD__ .
+                " order {$orderId} is already paid."
+            );
+            return;
+        }
         if ($payment->isPaid()) {
             // Add messages to log
             $this->logger->debug(__METHOD__ . " called for order {$orderId}");

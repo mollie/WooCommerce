@@ -259,6 +259,10 @@ class MollieOrder extends MollieObject
         $orderId = $order->get_id();
 
         if ($order->get_meta('_mollie_authorized') === '1') {
+            $this->logger->debug(
+                __METHOD__ .
+                " order {$orderId} is already authorized."
+            );
             return;
         }
 

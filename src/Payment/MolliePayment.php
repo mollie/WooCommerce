@@ -221,6 +221,10 @@ class MolliePayment extends MollieObject
         // Get order ID in the correct way depending on WooCommerce version
         $orderId = $order->get_id();
 
+        if ($order->get_meta('_mollie_authorized') === '1') {
+            return;
+        }
+
         if ($payment->isAuthorized()) {
             // Add messages to log
             $this->logger->debug(__METHOD__ . ' called for order ' . $orderId);

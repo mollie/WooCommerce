@@ -251,6 +251,10 @@ class MollieOrder extends MollieObject
         // Get order ID in the correct way depending on WooCommerce version
         $orderId = $order->get_id();
 
+        if ($order->get_meta('_mollie_authorized') === '1') {
+            return;
+        }
+
         if ($payment->isAuthorized()) {
             // Add messages to log
             $this->logger->debug(__METHOD__ . ' called for order ' . $orderId);
@@ -267,6 +271,9 @@ class MollieOrder extends MollieObject
                 $paymentMethodTitle,
                 $payment->id . ( $payment->mode === 'test' ? ( ' - ' . __('test mode', 'mollie-payments-for-woocommerce') ) : '' )
             ));
+
+            //check for webhook that order is Authorized on Paid webhook
+            $order->update_meta_data(_mollie_authorized, '1');
 
             // Mark the order as processed and paid via Mollie
             $this->setOrderPaidAndProcessed($order);

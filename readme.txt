@@ -3,7 +3,7 @@ Contributors: daanvm, danielhuesken, davdebcom, dinamiko, syde, l.vangunst, ndij
 Tags: mollie, woocommerce, payments, ecommerce, credit card
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 8.0.4
+Stable tag: 8.0.6
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -218,7 +218,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 8.0.6 - 25-09-2025 =
+= 8.0.6 - 29-09-2025 =
 * Fixed - TypeError in OrderLines.php when processing vouchers with Germanized plugin
 * Fixed - Apple Pay not eligible for Express Checkout in editor with non-Apple Pay compatible device
 * Fixed - Block Editor error `This block encountered an error and cannot show a preview`

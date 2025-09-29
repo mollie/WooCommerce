@@ -127,7 +127,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
             if ($domain !== 'mollie-payments-for-woocommerce') {
                 return $translated;
             }
-            if ($text !== "Sign up for a <a href='%s' target='_blank'>Free Mollie Account</a> if you don't have one yet.") {
+            if ($text !== "Don’t have a Mollie account yet? <a href='%s' target='_blank'>Get started with Mollie today.</a>") {
                 return $translated;
             }
             return __('Don’t have a Mollie account yet? Create one now. Limited time only! Pay ZERO processing fees for your first month. <a href="%s" target="_blank">Get started with Mollie today.</a> ', 'mollie-payments-for-woocommerce');

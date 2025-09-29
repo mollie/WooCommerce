@@ -38,7 +38,7 @@ class InstructionsNotConnected extends AbstractSection
             <li>
                 <?= wp_kses(sprintf(
                     __(
-                        "Don’t have a Mollie account yet? <a href='%s' target='_blank'>Get started with Mollie today.</a> ",
+                        "Don’t have a Mollie account yet? <a href='%s' target='_blank'>Get started with Mollie today.</a>",
                         'mollie-payments-for-woocommerce'
                     ),
                     apply_filters('mollie-payments-for-woocommerce_signup_url', 'https://my.mollie.com/dashboard/signup/')

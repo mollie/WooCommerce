@@ -178,6 +178,9 @@ class MollieOrderService
         $test_mode = $this->data->getActiveMolliePaymentMode($order->get_id()) === 'test';
         $payment_object_id = $order->get_transaction_id();
         if (!$payment_object_id) {
+            $payment_object_id = $order->get_meta('_mollie_order_id');
+        }
+        if (!$payment_object_id) {
             $payment_object_id = $order->get_meta('_mollie_payment_id');
         }
 

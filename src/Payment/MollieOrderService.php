@@ -254,10 +254,6 @@ class MollieOrderService
      */
     public function handlePaidOrderWebhook(\WC_Order $order, $payment)
     {
-        // Duplicate webhook call
-        $this->httpResponse->setHttpResponseCode(204);
-
-        $order = wc_get_order($order);
         $order_id = $order->get_id();
 
         $this->logger->debug(

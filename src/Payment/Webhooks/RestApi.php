@@ -17,7 +17,7 @@ class RestApi
      * Constructor method for initializing the class with necessary dependencies.
      *
      * @param MollieOrderService $mollieOrderService Service to handle orders through Mollie.
-     * @param LoggerInterface $logger Logger interface for logging purposes.
+     * @param  $logger Logger interface for logging purposes.
      *
      * @return void
      */
@@ -41,9 +41,15 @@ class RestApi
             [
                 'methods' => 'POST',
                 'callback' => [$this, 'callback'],
-                'permission_callback' => '__return_true',
+                'permission_callback' => [$this, 'verifyMollieSource'],
             ],
         ]);
+    }
+
+    public function verifyMollieSource()
+    {
+        $mollieUserAgent = strpos($_SERVER['HTTP_USER_AGENT'] ?? '', 'Mollie');
+        return $mollieUserAgent !== false;
     }
 
     /**

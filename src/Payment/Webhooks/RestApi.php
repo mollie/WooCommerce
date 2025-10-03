@@ -48,7 +48,8 @@ class RestApi
 
     public function verifyMollieSource()
     {
-        $mollieUserAgent = strpos($_SERVER['HTTP_USER_AGENT'] ?? '', 'Mollie');
+        $userAgent = sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'] ?? ''));
+        $mollieUserAgent = strpos($userAgent, 'Mollie');
         return $mollieUserAgent !== false;
     }
 

@@ -202,9 +202,10 @@ class AddressMiddleware implements RequestMiddlewareInterface
                 $order->get_shipping_country(),
                 self::MAXIMAL_LENGTH_REGION
             );
+        $shippingPhone = $this->isPhoneValid($order->get_shipping_phone()) ? $order->get_shipping_phone() : '';
         $shippingAddress->phone = (ctype_space($order->get_shipping_phone()))
             ? null
-            : $this->getFormatedPhoneNumber($order->get_shipping_phone(), $shippingAddress->country);
+            : $this->getFormatedPhoneNumber($shippingPhone, $shippingAddress->country);
         return $shippingAddress;
     }
 
@@ -212,17 +213,36 @@ class AddressMiddleware implements RequestMiddlewareInterface
      * Get the phone number from the order or the posted field.
      *
      * @param WC_Order $order The WooCommerce order object.
-     * @return string|null The phone number.
+     * @return string The phone number.
      */
-    protected function getPhoneNumber($order): ?string
+    protected function getPhoneNumber($order): string
+    {
+        $phoneSources = [
+            $order->get_billing_phone(),
+            $order->get_shipping_phone(),
+            $this->getPostedPhoneNumber($order),
+        ];
+
+        foreach ($phoneSources as $phone) {
+            if (!empty($phone) && $this->isPhoneValid($phone)) {
+                return $phone;
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Get the phone number from POST data.
+     *
+     * @param WC_Order $order The WooCommerce order object.
+     * @return string The posted phone number.
+     */
+    private function getPostedPhoneNumber(WC_Order $order): string
     {
         $postedField = $this->getPhonePostedFieldName($order);
-        $phone = !empty($order->get_billing_phone()) ? $order->get_billing_phone() : $order->get_shipping_phone();
-        if (empty($phone) || !$this->isPhoneValid($phone)) {
-            //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $phone = wc_clean(wp_unslash($_POST[$postedField] ?? ''));
-        }
-        return $phone;
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        return wc_clean(wp_unslash($_POST[$postedField] ?? ''));
     }
 
     /**

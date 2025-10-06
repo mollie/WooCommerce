@@ -38,7 +38,7 @@ class CustomerBirthdateMiddleware implements RequestMiddlewareInterface
     {
         $birthdatePostedFieldName = $this->getBirthdatePostedFieldName($order);
         if (!$birthdatePostedFieldName || $birthdatePostedFieldName === '' || !is_string($birthdatePostedFieldName)) {
-            $next($requestData, $order, $context);
+            return $next($requestData, $order, $context);
         }
         $format = "Y-m-d";
         //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized

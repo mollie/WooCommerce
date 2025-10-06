@@ -90,6 +90,7 @@ class MollieOrderService
             return;
         }
         $transactionID = sanitize_text_field(wp_unslash($paymentId));
+        $this->logger->debug(__METHOD__ . ': Received WC-API webhook with transaction ID: ' . $transactionID);
 
         $orders = wc_get_orders([
             'transaction_id' => $transactionID,
@@ -178,6 +179,9 @@ class MollieOrderService
         $test_mode = $this->data->getActiveMolliePaymentMode($order->get_id()) === 'test';
         $payment_object_id = $order->get_transaction_id();
         if (!$payment_object_id) {
+            $payment_object_id = $order->get_meta('_mollie_order_id');
+        }
+        if (!$payment_object_id) {
             $payment_object_id = $order->get_meta('_mollie_payment_id');
         }
 
@@ -186,6 +190,7 @@ class MollieOrderService
                 $payment_object_id
             );
             if (!$payment_object) {
+                $this->logger->debug(__METHOD__ . ": payment object $payment_object_id not found.", [true]);
                 return false;
             }
         } catch (ApiException $exception) {
@@ -195,7 +200,7 @@ class MollieOrderService
 
         $payment = $payment_object->getPaymentObject($payment_object->data(), $test_mode, false);
         if (!$payment) {
-            $this->logger->debug(__METHOD__ . ": payment object $payment_object_id not found.", [true]);
+            $this->logger->debug(__METHOD__ . ": payment $payment_object_id not found.", [true]);
             return false;
         }
 
@@ -249,10 +254,6 @@ class MollieOrderService
      */
     public function handlePaidOrderWebhook(\WC_Order $order, $payment)
     {
-        // Duplicate webhook call
-        $this->httpResponse->setHttpResponseCode(204);
-
-        $order = wc_get_order($order);
         $order_id = $order->get_id();
 
         $this->logger->debug(

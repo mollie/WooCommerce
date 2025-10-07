@@ -59,6 +59,7 @@ class PaymentLines
      */
     public function order_lines($order)
     {
+        $this->order_lines = [];
         $this->order = $order;
         $this->currency = $this->dataHelper->getOrderCurrency($this->order);
         $this->process_items();

@@ -14,6 +14,8 @@ use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
+use Inpsyde\Modularity\Package;
+use Inpsyde\Modularity\Properties\PluginProperties;
 use Inpsyde\PaymentGateway\Fields\ContentField;
 use Inpsyde\PaymentGateway\Method\PaymentMethodDefinition;
 use Psr\Container\ContainerExceptionInterface;
@@ -39,6 +41,18 @@ class PaymentGatewayModule implements ServiceModule, ExecutableModule
     {
         return array_merge(
             [
+                /**
+                 * WooCommerce (>= 9.6) derives the payment gateway plugin slug via reflection
+                 * (see \Automattic\WooCommerce\Internal\Admin\Settings\PaymentProviders\PaymentGateway::get_plugin_slug)
+                 * but first checks if the plugin_slug property is set. By setting it explicitly here, we
+                 * prevent potential namespace conflicts when multiple plugins use this payment gateway library.
+                 */
+                'payment_gateways.plugin_slug' => static function (ContainerInterface $container): string {
+                    /** @var PluginProperties $properties */
+                    $pluginProperties = $container->get(Package::PROPERTIES);
+
+                    return $pluginProperties->baseName();
+                },
                 'payment_gateways.assets_url' => function (): string {
                     return $this->getPluginFileUrlFromAbsolutePath(dirname(__DIR__) . '/assets');
                 },
@@ -138,7 +152,7 @@ class PaymentGatewayModule implements ServiceModule, ExecutableModule
          * Registers WooCommerce Blocks integration.
          *
          */
-        add_action('woocommerce_blocks_loaded', function () use ($container): void {
+        add_action('woocommerce_init', function () use ($container): void {
             if (!class_exists(AbstractPaymentMethodType::class)) {
                 return;
             }

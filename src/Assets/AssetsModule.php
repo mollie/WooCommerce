@@ -521,7 +521,11 @@ class AssetsModule implements ExecutableModule
                 add_action('wp_enqueue_scripts', function () use ($pluginUrl) {
                     $this->enqueuePayPalButtonScripts($pluginUrl);
                 });
-
+                //we need to hook into the payment library before it's loaded
+                add_filter('inpsyde_payment_gateway_blocks_dependencies', function($dependencies) {
+                    $dependencies[] = 'mollie_block_index';
+                    return $dependencies;
+                });
                 if ($hasBlocksEnabled) {
                     /** @var array */
                     $gatewayInstances = $container->get('__deprecated.gateway_helpers');

@@ -1,7 +1,8 @@
 /* global wc */
 import './store/index.js';
+import { select } from '@wordpress/data';
 import { setUpMollieBlockCheckoutListeners } from './store/storeListeners';
-import { MOLLIE_STORE_KEY } from './store';
+import { MOLLIE_STORE_KEY, PAYMENT_STORE_KEY } from './store';
 import {registerAllContentHooks, registerGatewayRegistrationHooks} from './registration/libraryHooksRegistrar';
 import { buildRegistrationContext } from './registration/contextBuilder';
 import { mollieComponentsManager } from './services/MollieComponentsManager';
@@ -15,6 +16,11 @@ import { mollieComponentsManager } from './services/MollieComponentsManager';
 ( function ( { mollieBlockData, wc, _ } ) {
 	if ( _.isEmpty( mollieBlockData ) ) {
 		console.warn( 'Mollie: No block data available' );
+		return;
+	}
+
+	const paymentStore = select( PAYMENT_STORE_KEY );
+	if(! paymentStore ) {
 		return;
 	}
 

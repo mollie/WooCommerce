@@ -3,7 +3,11 @@ import './store/index.js';
 import { select } from '@wordpress/data';
 import { setUpMollieBlockCheckoutListeners } from './store/storeListeners';
 import { MOLLIE_STORE_KEY, PAYMENT_STORE_KEY } from './store';
-import {registerAllContentHooks, registerGatewayRegistrationHooks} from './registration/libraryHooksRegistrar';
+import {
+	registerAllContentHooks,
+	registerExpressPaymentMethodHooks,
+	registerGatewayRegistrationHooks
+} from './registration/libraryHooksRegistrar';
 import { buildRegistrationContext } from './registration/contextBuilder';
 import { mollieComponentsManager } from './services/MollieComponentsManager';
 
@@ -29,7 +33,8 @@ import { mollieComponentsManager } from './services/MollieComponentsManager';
 		const context = buildRegistrationContext( wc );
 
 		registerAllContentHooks( gatewayData, context );
-		registerGatewayRegistrationHooks(gatewayData)
+		registerGatewayRegistrationHooks(gatewayData);
+		registerExpressPaymentMethodHooks( gatewayData );
 		setUpMollieBlockCheckoutListeners( MOLLIE_STORE_KEY );
 
 		// Initialize mollieComponentsManager with global settings

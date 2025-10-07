@@ -48,16 +48,4 @@ export const ApplePayUtils = {
 	 */
 	canRegisterApplePay: () =>
 		wp.blocks?.isEditorContext() || ApplePayUtils.isAppleSessionAvailable(),
-
-	/**
-	 * Gets the Apple Pay React components for content and editor contexts
-	 * @return {Object} Object containing content and edit components
-	 * @example
-	 * const { content, edit } = ApplePayUtils.getApplePayComponents();
-	 * // Use content component in frontend, edit component in block editor
-	 */
-	getApplePayComponents: () => ( {
-		content: <ApplePayButtonComponent />,
-		edit: <ApplePayButtonEditorComponent />,
-	} ),
 };

@@ -2,16 +2,15 @@
 import './store/index.js';
 import { setUpMollieBlockCheckoutListeners } from './store/storeListeners';
 import { MOLLIE_STORE_KEY } from './store';
-import { registerAllPaymentMethods } from './registration/paymentRegistrar';
+import {registerAllContentHooks, registerGatewayRegistrationHooks} from './registration/libraryHooksRegistrar';
 import { buildRegistrationContext } from './registration/contextBuilder';
 import { mollieComponentsManager } from './services/MollieComponentsManager';
 
 /**
- * Main Mollie WooCommerce Blocks initialization with mollieComponentsManager
- * @param root0
- * @param root0.mollieBlockData
- * @param root0.wc
- * @param root0._
+ * Initialization with mollieComponentsManager
+ * Hooks for content and shouldRegister
+ * The main registration is done in the paymentGateway lib
+ *
  */
 ( function ( { mollieBlockData, wc, _ } ) {
 	if ( _.isEmpty( mollieBlockData ) ) {
@@ -23,7 +22,8 @@ import { mollieComponentsManager } from './services/MollieComponentsManager';
 		const { gatewayData } = mollieBlockData.gatewayData;
 		const context = buildRegistrationContext( wc );
 
-		registerAllPaymentMethods( gatewayData, context );
+		registerAllContentHooks( gatewayData, context );
+		registerGatewayRegistrationHooks(gatewayData)
 		setUpMollieBlockCheckoutListeners( MOLLIE_STORE_KEY );
 
 		// Initialize mollieComponentsManager with global settings

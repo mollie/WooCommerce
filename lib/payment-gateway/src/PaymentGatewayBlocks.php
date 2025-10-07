@@ -67,6 +67,11 @@ class PaymentGatewayBlocks extends AbstractPaymentMethodType
                 'dependencies' => [],
                 'version' => '0.1.0',
             ];
+        // Simple filter so clients can add more dependencies
+        $scriptAsset['dependencies'] = apply_filters(
+            'inpsyde_payment_gateway_blocks_dependencies',
+            $scriptAsset['dependencies']
+        );
         $scriptUrl = $this->container->get('payment_gateways.assets_url') . $scriptPath;
         $scriptId = 'inpsyde-blocks';
         /**
@@ -97,16 +102,17 @@ class PaymentGatewayBlocks extends AbstractPaymentMethodType
         $iconProvider = $this->container->get($this->serviceKeyGenerator->createKey('method_icon_provider'));
         assert($iconProvider instanceof IconProviderInterface);
 
-        return [
+        $data = [
             'title' => $gateway->get_title(),
             'description' => $gateway->get_description(),
             'supports' => array_filter($gateway->supports, [$gateway, 'supports']),
             'placeOrderButtonLabel' => $gateway->order_button_text,
             'icons' => array_map(
-                static fn (Icon $i) => ['id' => $i->id(), 'alt' => $i->alt(), 'src' => $i->src()],
+                static fn(Icon $i) => ['id' => $i->id(), 'alt' => $i->alt(), 'src' => $i->src()],
                 $iconProvider->provideIcons()
             ),
         ];
+        return apply_filters('inpsyde_payment_gateway_blocks_data', $data, $this->name, $gateway);
     }
 
     protected function gateway(): PaymentGateway

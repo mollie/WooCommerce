@@ -6,27 +6,16 @@ import { createPaymentComponent } from './PaymentComponentFactory';
 import { mollieComponentsManager } from '../services/MollieComponentsManager';
 
 export const PaymentMethodContentRenderer = ( props ) => {
-	const {
-		activePaymentMethod,
-		billing,
-		item,
-		emitResponse,
-		eventRegistration,
-		requiredFields,
-		shippingData,
-		shouldHidePhoneField,
-	} = props;
+    const {
+        item,
+        requiredFields,
+        shouldHidePhoneField,
+        props: {activePaymentMethod, emitResponse, eventRegistration, billing, shippingData,}
+    } = props;
 
 	const { responseTypes } = emitResponse;
 	const { onPaymentSetup } = eventRegistration;
 	const containerRef = useRef( null );
-
-	const dispatch = useDispatch( MOLLIE_STORE_KEY );
-	useEffect( () => {
-		if ( item ) {
-			dispatch.setPaymentItemData( item );
-		}
-	}, [ dispatch, item ] );
 
 	// Only UI state that affects rendering should subscribe here
 	const { isComponentReady, componentError } = useSelect(

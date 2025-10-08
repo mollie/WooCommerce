@@ -19,10 +19,10 @@ export const registerGatewayRegistrationHooks = (gatewayData) => {
     }
 }
 export const registerAllContentHooks = (gatewayData, context) => {
-	if (typeof inpsydeGateways !== 'undefined' && inpsydeGateways) {
-		inpsydeGateways.forEach((gatewayName) => {
-			const checkoutFieldsHookName = `${gatewayName}_checkout_fields`;
-			let item = gatewayData.find((item) => item.name === gatewayName);
+	if (typeof gatewayData !== 'undefined' && gatewayData.length > 0) {
+        gatewayData.forEach((gateway) => {
+			const checkoutFieldsHookName = `${gateway.name}_checkout_fields`;
+			let item = gatewayData.find((item) => item.name === gateway.name);
 			addFilter(
 				checkoutFieldsHookName,
 				'mollie/register-payment-content-renderer',

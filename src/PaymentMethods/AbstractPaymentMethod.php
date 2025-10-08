@@ -78,7 +78,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
         $svgPath = $settings["iconFilePath"] ?? false;
         $svgUrl = $settings["iconFileUrl"] ?? false;
 
-        return $settings["iconFileUrl"] && file_exists($svgPath) ? [$svgUrl] : [];
+        return $svgPath && file_exists($svgPath) ? [$svgUrl] : [];
     }
 
     public function isCreditCardSelectorEnabled()

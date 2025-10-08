@@ -36,16 +36,7 @@ export const PaymentMethodContentRenderer = ( props ) => {
 				try {
 					const mollieConfig =
 						mollieBlockData.gatewayData.componentData || {};
-					if ( ! mollieConfig.merchantProfileId ) {
-						console.error( 'Mollie merchant profile ID not found' );
-						return;
-					}
-
-					await mollieComponentsManager.initialize( {
-						merchantProfileId: mollieConfig.merchantProfileId,
-						options: mollieConfig.options || {},
-					} );
-					if (
+                    if (
 						containerRef.current &&
 						mollieConfig.componentsSettings
 					) {

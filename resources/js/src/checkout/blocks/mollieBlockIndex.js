@@ -9,7 +9,7 @@ import {
 	registerGatewayRegistrationHooks
 } from './registration/libraryHooksRegistrar';
 import { buildRegistrationContext } from './registration/contextBuilder';
-import { mollieComponentsManager } from './services/MollieComponentsManager';
+import {initializeMollieComponentsWithStoreSubscription} from "./services/MollieComponentsInitializer";
 
 /**
  * Initialization with mollieComponentsManager
@@ -24,7 +24,8 @@ import { mollieComponentsManager } from './services/MollieComponentsManager';
 	}
 
 	const paymentStore = select( PAYMENT_STORE_KEY );
-	if(! paymentStore ) {
+	if ( ! paymentStore ) {
+		console.warn( 'Mollie: Payment store not available' );
 		return;
 	}
 
@@ -33,41 +34,16 @@ import { mollieComponentsManager } from './services/MollieComponentsManager';
 		const context = buildRegistrationContext( wc );
 
 		registerAllContentHooks( gatewayData, context );
-		registerGatewayRegistrationHooks(gatewayData);
+		registerGatewayRegistrationHooks( gatewayData );
 		registerExpressPaymentMethodHooks( gatewayData );
 		setUpMollieBlockCheckoutListeners( MOLLIE_STORE_KEY );
 
-		// Initialize mollieComponentsManager with global settings
 		if ( mollieBlockData.gatewayData.componentData ) {
-			const initmollieComponentsManager = async () => {
-				try {
-					const config = mollieBlockData.gatewayData.componentData;
-					await mollieComponentsManager.initialize( {
-						merchantProfileId: config.merchantProfileId,
-						options: config.options || {},
-					} );
-					console.log( 'Mollie mollieComponentsManager initialized' );
-				} catch ( error ) {
-					console.error(
-						'Failed to initialize mollieComponentsManager:',
-						error
-					);
-				}
-			};
-
-			if ( document.readyState === 'loading' ) {
-				document.addEventListener(
-					'DOMContentLoaded',
-					initmollieComponentsManager
-				);
-			} else {
-				initmollieComponentsManager();
-			}
+			initializeMollieComponentsWithStoreSubscription(
+				mollieBlockData.gatewayData.componentData
+			);
 		}
 
-		window.addEventListener( 'beforeunload', () => {
-			mollieComponentsManager.cleanup();
-		} );
 	} catch ( error ) {
 		console.error( 'Mollie: Initialization failed:', error );
 	}

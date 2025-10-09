@@ -1,24 +1,12 @@
-// services/MollieComponentsInitializer.js
-
 import { select, subscribe } from '@wordpress/data';
-import { PAYMENT_STORE_KEY } from '../store';
+import { PAYMENT_STORE_KEY, MOLLIE_STORE_KEY } from '../store';
 import { mollieComponentsManager } from './MollieComponentsManager';
 
-/**
- * Initialize Mollie Components by subscribing to WooCommerce checkout store
- * This avoids DOM polling and uses store-based lifecycle detection
- *
- * @param {Object} config - Mollie component configuration
- */
 export function initializeMollieComponentsWithStoreSubscription( config ) {
     let isInitialized = false;
     let unsubscribeInit = null;
-    let unsubscribeCleanup = null;
-    let previousCheckoutStatus = null;
+    let unsubscribeMounting = null;
 
-    /**
-     * Check if checkout is ready by examining store state
-     */
     const isCheckoutReady = () => {
         try {
             const checkoutStore = select( 'wc/store/checkout' );
@@ -38,9 +26,6 @@ export function initializeMollieComponentsWithStoreSubscription( config ) {
         }
     };
 
-    /**
-     * Initialize Mollie Components SDK
-     */
     const initializeComponents = async () => {
         if ( isInitialized ) {
             return;
@@ -52,6 +37,7 @@ export function initializeMollieComponentsWithStoreSubscription( config ) {
                 console.error( 'Mollie merchant profile ID not found' );
                 return;
             }
+
             await mollieComponentsManager.initialize( {
                 merchantProfileId: config.merchantProfileId,
                 options: config.options || {},
@@ -60,14 +46,12 @@ export function initializeMollieComponentsWithStoreSubscription( config ) {
             isInitialized = true;
             console.log( 'Mollie: Components Manager initialized successfully' );
 
-            // Unsubscribe from init after successful initialization
             if ( unsubscribeInit ) {
                 unsubscribeInit();
                 unsubscribeInit = null;
             }
 
-            // Start cleanup subscription after initialization
-            setupCleanupSubscription();
+            setupComponentMountingSubscription();
         } catch ( error ) {
             console.error( 'Mollie: Failed to initialize Components Manager:', error );
             isInitialized = false;
@@ -75,39 +59,75 @@ export function initializeMollieComponentsWithStoreSubscription( config ) {
     };
 
     /**
-     * Setup cleanup subscription to monitor checkout state changes
+     * Subscribe to BOTH payment method AND container changes
      */
-    const setupCleanupSubscription = () => {
-        if ( unsubscribeCleanup ) {
-            return; // Already subscribed
-        }
+    const setupComponentMountingSubscription = () => {
+        let previousPaymentMethod = null;
+        let previousContainer = null;
+        let componentsAreMounted = false;
 
-        unsubscribeCleanup = subscribe(() => {
+        unsubscribeMounting = subscribe( () => {
             try {
-                const checkoutStore = select('wc/store/checkout');
-                if (!checkoutStore) return;
+                const mollieStore = select( MOLLIE_STORE_KEY );
+                const activePaymentMethod = mollieStore.getActivePaymentMethod();
+                const container = mollieStore.getComponentContainer( activePaymentMethod );
 
-                const currentStatus = checkoutStore.getCheckoutStatus();
+                const paymentMethodChanged = previousPaymentMethod !== activePaymentMethod;
+                const containerChanged = previousContainer !== container;
 
-                // Cleanup when checkout is being destroyed or reset
-                if (previousCheckoutStatus &&
-                    (currentStatus === 'idle' || currentStatus === 'before_processing') &&
-                    previousCheckoutStatus !== currentStatus) {
-                    console.log('Mollie: Checkout state changed, cleaning up components');
-                    mollieComponentsManager.cleanup();
-                    isInitialized = false;
+                const isCreditCard = activePaymentMethod === 'mollie_wc_gateway_creditcard';
+                const wasCreditCard = previousPaymentMethod === 'mollie_wc_gateway_creditcard';
+
+                // UNMOUNT: switched away from credit card
+                if ( wasCreditCard && ! isCreditCard && componentsAreMounted ) {
+                    console.log( 'Mollie: Unmounting components, switched away from credit card' );
+                    mollieComponentsManager.unmountComponents( previousPaymentMethod );
+                    componentsAreMounted = false;
                 }
 
-                previousCheckoutStatus = currentStatus;
-            } catch (error) {
-                console.warn('Mollie: Error in cleanup subscription:', error);
+                // MOUNT: switched to credit card and have container
+                const shouldMount = isCreditCard
+                    && container
+                    && (paymentMethodChanged || containerChanged)
+                    && ! componentsAreMounted;
+
+                // Update tracking
+                previousPaymentMethod = activePaymentMethod;
+                previousContainer = container;
+
+                if ( ! shouldMount ) {
+                    return;
+                }
+
+                console.log( 'Mollie: Mounting components for', activePaymentMethod, {
+                    paymentMethodChanged,
+                    containerChanged,
+                    hasContainer: !! container
+                } );
+
+                const mountComponents = async () => {
+                    try {
+                        await mollieComponentsManager.mountComponents(
+                            activePaymentMethod,
+                            config.componentsAttributes,
+                            config.componentsSettings,
+                            container
+                        );
+                        componentsAreMounted = true;
+                        console.log( 'Mollie: Components mounted successfully for', activePaymentMethod );
+                    } catch ( error ) {
+                        console.error( 'Mollie: Failed to mount components:', error );
+                        componentsAreMounted = false;
+                    }
+                };
+
+                mountComponents();
+            } catch ( error ) {
+                console.warn( 'Mollie: Error in component mounting subscription:', error );
             }
-        }, 'wc/store/checkout');
+        }, MOLLIE_STORE_KEY );
     };
 
-    /**
-     * Store subscription callback for initialization
-     */
     const checkoutStateChangeHandler = () => {
         if ( isInitialized ) {
             return;
@@ -119,22 +139,16 @@ export function initializeMollieComponentsWithStoreSubscription( config ) {
         }
     };
 
-    // Immediate check in case checkout is already ready
     if ( isCheckoutReady() ) {
         initializeComponents();
     } else {
-        // Subscribe to checkout store changes for initialization
         console.log( 'Mollie: Subscribing to checkout store for initialization' );
-        unsubscribeInit = subscribe(
-            checkoutStateChangeHandler,
-            'wc/store/checkout'
-        );
+        unsubscribeInit = subscribe( checkoutStateChangeHandler, 'wc/store/checkout' );
     }
 
-    // Return cleanup function for manual cleanup if needed
     return () => {
-        if (unsubscribeInit) unsubscribeInit();
-        if (unsubscribeCleanup) unsubscribeCleanup();
+        if ( unsubscribeInit ) unsubscribeInit();
+        if ( unsubscribeMounting ) unsubscribeMounting();
         mollieComponentsManager.cleanup();
     };
 }

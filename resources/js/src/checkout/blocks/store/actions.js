@@ -147,3 +147,12 @@ export const setGatewayComponents = ( gateway, components ) => ( {
 	type: ACTIONS.SET_GATEWAY_COMPONENTS,
 	payload: { gateway, components },
 } );
+export const setComponentContainer = ( gateway, container ) => ( {
+    type: ACTIONS.SET_COMPONENT_CONTAINER,
+    payload: { gateway, container },
+} );
+
+export const clearComponentContainer = ( gateway ) => ( {
+    type: ACTIONS.CLEAR_COMPONENT_CONTAINER,
+    payload: { gateway },
+} );

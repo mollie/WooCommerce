@@ -45,6 +45,8 @@ const initialState = {
 	// Component Readiness (per gateway)
 	componentsReady: {}, // { gateway: boolean }
 	gatewayComponents: {}, // { gateway: Array<string> }
+
+    componentContainers: {},
 };
 
 const reducer = ( state = initialState, action ) => {
@@ -167,6 +169,23 @@ const reducer = ( state = initialState, action ) => {
 					[ action.payload.gateway ]: action.payload.components,
 				},
 			};
+        case ACTIONS.SET_COMPONENT_CONTAINER:
+            return {
+                ...state,
+                componentContainers: {
+                    ...state.componentContainers,
+                    [ action.payload.gateway ]: action.payload.container,
+                },
+            };
+
+        case ACTIONS.CLEAR_COMPONENT_CONTAINER:
+            return {
+                ...state,
+                componentContainers: {
+                    ...state.componentContainers,
+                    [ action.payload.gateway ]: null,
+                },
+            };
 
 		default:
 			return state;

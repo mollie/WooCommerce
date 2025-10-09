@@ -5,10 +5,10 @@ Mollie Playwright tests. Depends on [`@inpsyde/playwright-utils`](https://github
 ## Table of Content
 
 - [Repo structure](#repo-structure)
-- [Local repo installation](#local-repo-installation)
-- [Installation of `node_modules`](#installation-of-node_modules)
-- [Installation of `playwright-utils` for local development](#installation-of-playwright-utils-for-local-development)
-- [Project configuration](#project-configuration)
+- [Local installation](#local-installation)
+- [DDEV adjustments](#ddev-adjustments)
+- [Troubleshooting](#troubleshooting)
+- [Reporting to TestRail](#reporting-to-testrail)
 - [Run tests](#run-tests)
 - [Autotest Execution workflow](#autotest-execution-workflow)
 - [Coding standards](#coding-standards)
@@ -53,12 +53,13 @@ Mollie Playwright tests. Depends on [`@inpsyde/playwright-utils`](https://github
 
 - `.env`, `playwright.config.ts`, `package.json` - see below.
 
-## Local repo installation
+## Local installation
 
-1. In VSCode open the open the terminal and clone Millie repository to your local PC:
+1. In VSCode open the terminal and clone Millie repository to your local PC:
 
 	```bash
 	git clone https://github.com/mollie/WooCommerce.git
+	cd WooCommerce
 	```
 
 2. (Temporary, till autotests are not yet merged into main branch) Switch to `qa/e2e-tests` branch:
@@ -67,77 +68,48 @@ Mollie Playwright tests. Depends on [`@inpsyde/playwright-utils`](https://github
 	git checkout qa/e2e-tests
 	```
 
-3.  Change directory to `./tests/qa/`:
+3. In the terminal change directory to `./tests/qa` 
 
 	```bash
 	cd tests/qa
 	```
-
-## Installation of `node_modules`
-
-1. Remove `"workspaces": [ "playwright-utils" ]` from `package.json`.
-
-2. In the test project (`./tests/qa/`) run following command:
-
-```bash
-npm run setup:tests
-```
-
-## Installation of `playwright-utils` for local development
-
-> Note: skip this section if you're not going to update code in `playwright-utils`.
-
-1. Add `"workspaces": [ "playwright-utils" ]` to `package.json`.
-
-2. Delete `@inpsyde/playwright-utils` from `/node_modules`.
-
-3. In the test project directory (`./tests/qa/`) run following command:
+	Run installation command:
 
 	```bash
-	git clone https://github.com/inpsyde/playwright-utils.git
+	npm run setup:tests
 	```
 
-	[`@inpsyde/playwright-utils`](https://github.com/inpsyde/playwright-utils) repository should be cloned as `playwright-utils` right inside the root directory of monorepo.
+4. Using `.env.example`, create and configure `.env` file in `./tests/qa/`:
 
-4. Restart VSCode editor. This will create `playwright-utils` instance in the source control tab of VSCode editor.
-
-5. Run following command:
-
-	```bash
-	npm run setup:utils
-	```
-
-6. `@inpsyde/playwright-utils` should reappear in node_modules. Following message (coming from `tsc-watch`) should be displayed in the terminal:
-
-	```bash
-	10:00:00 - Found 0 errors. Watching for file changes.
-	```
-
-7. If you plan to make changes in `playwright-utils` keep current terminal window opened and create another instance of terminal.
-
-## Project configuration
-
-Project from the monorepo requires a working WordPress website with WooCommmerce, `.env` file and configured Playwright.
-
-1. [SSE setup](https://inpsyde.atlassian.net/wiki/spaces/AT/pages/3175907370/Self+Service+WordPress+Environment) - will be deprecated after Q1 of 2025:
-
-	```bash
-	ssh -l youruser php81.emp.pluginpsyde.com
-	```
-
-	See also [one-line command to reset SSE](https://inpsyde.atlassian.net/wiki/spaces/AT/pages/3175907370/Self+Service+WordPress+Environment#Change-WordPress-version---reset-environment).
-
-2. In the test project directory (`./tests/qa/`) create and configure `.env` file:
-
-	2.1 Set general variables following [these steps](https://github.com/inpsyde/playwright-utils?tab=readme-ov-file#env-variables).
+	5.1 Set general variables. See also [these steps](https://github.com/inpsyde/playwright-utils?tab=readme-ov-file#env-variables).
 	
-	2.2 Set Mollie API keys and tested API method (variable values: `payment` (is applied by default) or `order`). See also `.env.example`.
+	5.2 Set Mollie API keys and tested API method (variable values: `payment` (is applied by default) or `order`). See also `.env.example`.
 
-3. Configure `playwright.config.ts` of the project following [these steps](https://github.com/inpsyde/playwright-utils?tab=readme-ov-file#playwright-configuration).
+5. Configure `playwright.config.ts` of the project following [these steps](https://github.com/inpsyde/playwright-utils?tab=readme-ov-file#playwright-configuration).
 
-4. Configure reporting to the TestRail following [these steps](https://github.com/inpsyde/playwright-utils/blob/main/docs/test-report-api/report-to-testrail.md).
+6. To avoid conflicts make sure any other payment plugins are deleted.
 
-5. Further configuration of the environment is done automatically via scripts in `./tests/.setup/woocommerce.setup.ts`. Consider commenting extra scripts when env is already configured.
+> Note: Further configuration of the environment is done automatically via scripts in `./tests/.setup/woocommerce.setup.ts`.
+
+## DDEV adjustments
+
+For DDEV usage set `IGNORE_HTTPS_ERRORS=true` and leave the `WP_BASIC_AUTH_` credentials empty in `.env`.
+
+## Troubleshooting
+
+> See also [@inpsyde/playwright-utils documentation](https://github.com/inpsyde/playwright-utils?tab=readme-ov-file#installation).
+
+- Make sure you're logged in the [Syde npm package registry](https://inpsyde.atlassian.net/wiki/spaces/AT/pages/3112894465/GitHub+Package+Registry+for+npm).
+
+- Make sure that `"workspaces": [ "playwright-utils" ]` node isn't present in `./tests/qa/package.json`.
+
+- Delete `@inpsyde/playwright-utils` from `./tests/qa/node_modules` and `package-lock.json` from `./tests/qa`.
+
+- To avoid conflicts make sure any other payment plugins are deleted.
+
+## Reporting to TestRail
+
+Configure reporting to the __TestRail__ following [these steps](https://github.com/inpsyde/playwright-utils/blob/main/docs/test-report-api/report-to-testrail.md).
 
 ## Run tests
 
@@ -153,19 +125,19 @@ npx playwright test --project=all
 
 	```json
 	"scripts": {
-		"all": "npx playwright test --project=all --workers=1",
-		"sequential": "npx playwright test --project=sequential --workers=1",
-		"parallel-transaction-eur-block": "npx playwright test --project=transaction-eur-block --workers=3"
+		"test:smoke":  "npx playwright test --grep \"@Smoke\"",
+		"test:critical": "npx playwright test --grep \"@Critical\"",
+		"test:ui": "npx playwright test --grep \"UI\"",
+		"test:functional": "npx playwright test --grep \"Functional\"",
+		"test:all": "npm run test:ui & npm run test:functional"
 	},
 	```
 
 	Run script with the following command:
 
 	```bash
-	npm run parallel-transaction-eur-block
+	npm run test:critical
 	```
-
-	> Note: there's a number of tests which can be executed in parallel to speed up test execution (see `projects` section in `playwright.config.ts`).
 
 - Run several tests by test ID
 

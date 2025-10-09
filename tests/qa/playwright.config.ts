@@ -55,6 +55,8 @@ export default defineConfig< TestBaseExtend >( {
 
 		storageState: process.env.STORAGE_STATE_PATH_ADMIN,
 
+		ignoreHTTPSErrors: process.env.IGNORE_HTTPS_ERRORS === 'true',
+
 		httpCredentials: {
 			// @ts-ignore
 			username: process.env.WP_BASIC_AUTH_USER,

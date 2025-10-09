@@ -1,17 +1,20 @@
-export const IssuerSelect = ( {
-	issuerKey,
-	issuers,
-	selectedIssuer,
-	updateIssuer,
-} ) => {
-	const handleChange = ( e ) => updateIssuer( e.target.value );
+import { useCallback } from '@wordpress/element';
 
-	return (
-		<select
-			name={ issuerKey }
-			dangerouslySetInnerHTML={ { __html: issuers } }
-			value={ selectedIssuer }
-			onChange={ handleChange }
-		/>
-	);
+export const IssuerSelect = ( {
+                                  issuerKey,
+                                  issuers,
+                                  selectedIssuer,
+                                  updateIssuer,
+                              } ) => {
+    const handleChange = useCallback( ( e ) => {
+        updateIssuer( e.target.value );
+    }, [ updateIssuer ] );
+    return (
+        <select
+            name={ issuerKey }
+            dangerouslySetInnerHTML={ { __html: issuers } }
+            value={ selectedIssuer }
+            onChange={ handleChange }
+        />
+    );
 };

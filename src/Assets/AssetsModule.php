@@ -274,7 +274,6 @@ class AssetsModule implements ExecutableModule
 
     public function registerBlockScripts(string $pluginUrl, string $pluginPath, ContainerInterface $container): void
     {
-
         wp_register_script(
             'mollie_block_index',
             $this->getPluginUrl($pluginUrl, '/public/js/mollieBlockIndex.min.js'),
@@ -285,14 +284,11 @@ class AssetsModule implements ExecutableModule
 
         /**
          * Ensure localized data via static method call
-         * TODO This MUST be registered when we KNOW we are in block checkout context. It is currently registered globally
-         * TODO MollieCheckoutBlocksSupport can likely be removed entirely
          * TODO rework the static method call
          */
         $dataService = $container->get('settings.data_helper');
         $gatewayInstances = $container->get('__deprecated.gateway_helpers');
         MollieCheckoutBlocksSupport::localizeWCBlocksData($dataService, $gatewayInstances, $container);
-
 
         wp_register_style(
             'mollie-block-custom-field',

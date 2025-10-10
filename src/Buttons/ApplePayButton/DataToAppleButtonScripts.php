@@ -28,7 +28,7 @@ class DataToAppleButtonScripts
                 $totalLabel
             );
         }
-        if (is_cart() || $isBlock) {
+        if (is_cart()) {
             return $this->dataForCartPage(
                 $shopCountryCode,
                 $currencyCode,

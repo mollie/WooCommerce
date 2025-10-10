@@ -48,6 +48,9 @@ final class MollieCheckoutBlocksSupport
     {
         $paymentGateways = WC()->payment_gateways()->payment_gateways();
         $gatewayData = [];
+        /** @var ComponentDataService */
+        $componentDataService = $container->get('components.data_service');
+        $componentData = $componentDataService->getComponentData();
         /** @var PaymentGateway $gateway */
         foreach ($paymentGateways as $gatewayKey => $gateway) {
             if (substr($gateway->id, 0, 18) !== 'mollie_wc_gateway_') {
@@ -86,6 +89,7 @@ final class MollieCheckoutBlocksSupport
                 'title' => $title,
                 'iconsArray' => $iconsArray,
             ];
+
             if ($gatewayId === 'creditcard') {
                 $content .= $issuers;
                 $issuers = false;
@@ -104,6 +108,7 @@ final class MollieCheckoutBlocksSupport
             $country = WC()->customer ? WC()->customer->get_billing_country() : '';
             $hideCompanyFieldFilter = apply_filters('mollie_wc_hide_company_field', false);
             $phonePlaceholder = in_array($country, array_keys($countryCodes)) ? $countryCodes[$country] : $countryCodes['NL'];
+            $shouldLoadComponents = $componentDataService->isComponentsEnabled($method);
             $gatewayData[] = [
                 'name' => $gatewayKey,
                 'label' => $labelContent,
@@ -129,12 +134,11 @@ final class MollieCheckoutBlocksSupport
                 'birthdatePlaceholder' => $method->getProperty('birthdatePlaceholder'),
                 'isExpressEnabled' => $gatewayId === 'applepay' && $method->getProperty('mollie_apple_pay_button_enabled_express_checkout') === 'yes',
                 'hideCompanyField' => $hideCompanyFieldFilter,
+                'shouldLoadComponents'=> $shouldLoadComponents,
             ];
         }
         $dataToScript['gatewayData'] = $gatewayData;
-        /** @var ComponentDataService */
-        $componentDataService = $container->get('components.data_service');
-        $componentData = $componentDataService->getComponentData();
+
 
         if ($componentData !== null) {
             $dataToScript['componentData'] = $componentData;

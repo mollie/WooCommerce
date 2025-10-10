@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Components;
 
 use Mollie\Api\Exceptions\ApiException;
+use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\Settings\Settings;
 
 class ComponentDataService
@@ -81,6 +82,11 @@ class ComponentDataService
     {
         return !is_admin() &&
                (mollieWooCommerceIsCheckoutContext() || has_block("woocommerce/checkout"));
+    }
+    public function isComponentsEnabled(PaymentMethodI $paymentMethod): bool
+    {
+        $hasComponentsEnabled = $paymentMethod->getProperty('mollie_components_enabled');
+        return $hasComponentsEnabled === 'yes';
     }
 
     private function getValidatedLocale(): string

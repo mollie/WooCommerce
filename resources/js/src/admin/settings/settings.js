@@ -4,10 +4,11 @@
 		if ( _.isEmpty( mollieSettingsData ) ) {
 			return;
 		}
-		const gatewayName = current_section;
+		const gatewayName = 'woocommerce_' + current_section;
 		if ( ! gatewayName ) {
 			return;
 		}
+
 		const fixedField = $( '#' + gatewayName + '_fixed_fee' ).closest(
 			'tr'
 		);

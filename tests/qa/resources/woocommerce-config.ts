@@ -6,7 +6,7 @@ import { shopSettings, customers } from '.';
 const country = 'germany';
 
 export const shopConfigDefault = {
-	classicPages: false, // false = block cart and checkout (default), true = classic cart & checkout pages
+	enableClassicPages: false, // false = block cart and checkout (default), true = classic cart & checkout pages
 	wpDebugging: false, // WP Debugging plugin is deactivated
 	subscription: false, // WC Subscription plugin is deactivated
 	settings: shopSettings[ country ], // WC general settings
@@ -15,7 +15,7 @@ export const shopConfigDefault = {
 
 export const shopConfigClassic = {
 	...shopConfigDefault,
-	classicPages: true,
+	enableClassicPages: true,
 };
 
 export const shopConfigGermany = {

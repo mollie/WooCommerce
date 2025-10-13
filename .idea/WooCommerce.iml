@@ -4,6 +4,12 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/.ddev/wordpress/wp-includes/sodium_compat/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/lib/payment-gateway/src" isTestSource="false" packagePrefix="Inpsyde\PaymentGateway\" />
+      <sourceFolder url="file://$MODULE_DIR$/pluginEnvironmentChecker" isTestSource="false" packagePrefix="Inpsyde\EnvironmentChecker\" />
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" packagePrefix="Mollie\WooCommerce\" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/php" isTestSource="true" packagePrefix="Mollie\WooCommerceTests\" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/php/Functional" isTestSource="true" packagePrefix="Mollie\WooCommerceTests\Functional\" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/php/Unit" isTestSource="true" packagePrefix="Mollie\WooCommerceTests\Unit\" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/ptrofimov/xpmock" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/php-stubs/woocommerce-stubs" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/sebastian/global-state" />
@@ -72,6 +78,7 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/sirbrillig/phpcs-variable-analysis" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/polyfill-php73" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/inpsyde/composer-assets-compiler" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/dhii/services" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -126,11 +126,6 @@ class Data
         $this->settingsHelper->processSettings($gateway);
     }
 
-    public function processAdminOptions($gateway)
-    {
-        $this->settingsHelper->adminOptions($gateway);
-    }
-
     public function getPaymentLocale()
     {
 
@@ -445,25 +440,27 @@ class Data
      */
     public function getMethodIssuers($apiKey, $testMode = false, $methodId = null)
     {
-        try {
-            $transient_id = $this->getTransientId($methodId . '_issuers_' . ($testMode ? 'test' : 'live'));
-
-            // When no cache exists $issuers will be `false`
-            $issuers = get_transient($transient_id);
-            if (is_array($issuers)) {
-                return $issuers;
-            }
-
-            $method = $this->getMethodWithIssuersById($methodId, $apiKey);
-            is_object($method) && $method = get_object_vars($method);
-            $issuers = $method ? $method['issuers'] : [];
-            set_transient($transient_id, $issuers, HOUR_IN_SECONDS);
-            return $issuers;
-        } catch (\Mollie\Api\Exceptions\ApiException $e) {
-            $this->logger->debug(__FUNCTION__ . ": Could not load " . $methodId . " issuers (" . ( $testMode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+        if (!$methodId) {
+            return [];
         }
 
-        return  [];
+        $transient_id = $this->getTransientId($methodId . '_issuers_' . ($testMode ? 'test' : 'live'));
+        $issuers = get_transient($transient_id);
+        if (is_array($issuers)) {
+            return $issuers;
+        }
+
+        try {
+            $method = $this->getMethodWithIssuersById($methodId, $apiKey);
+            is_object($method) && $method = get_object_vars($method);
+            $issuers = isset($method['issuers']) && is_array($method['issuers']) ? $method['issuers'] : [];
+        } catch (\Mollie\Api\Exceptions\ApiException $e) {
+            $this->logger->debug(__FUNCTION__ . ": Could not load " . $methodId . " issuers (" . ( $testMode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
+            $issuers = [];
+        }
+
+        set_transient($transient_id, $issuers, HOUR_IN_SECONDS);
+        return $issuers;
     }
 
     /**

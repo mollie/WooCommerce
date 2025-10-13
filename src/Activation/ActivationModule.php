@@ -21,21 +21,14 @@ class ActivationModule implements ExecutableModule
     private $pluginVersion;
 
     /**
-     * ActivationModule constructor.
-     */
-    public function __construct($baseFile, $pluginVersion)
-    {
-        $this->baseFile = $baseFile;
-        $this->pluginVersion = $pluginVersion;
-    }
-
-    /**
      * @param ContainerInterface $container
      *
      * @return bool
      */
     public function run(ContainerInterface $container): bool
     {
+        $this->pluginVersion = $container->get('shared.plugin_version');
+        $this->baseFile = M4W_FILE;
         add_action(
             'init',
             [$this, 'pluginInit']
@@ -103,8 +96,8 @@ class ActivationModule implements ExecutableModule
         //if test/live keys are in db return
         $liveKeySet = get_option('mollie-payments-for-woocommerce_live_api_key');
         $testKeySet = get_option('mollie-payments-for-woocommerce_test_api_key');
-        $apiKeysSetted = $liveKeySet || $testKeySet;
-        if ($apiKeysSetted) {
+        $apiKeysSet = $liveKeySet || $testKeySet;
+        if ($apiKeysSet) {
             return;
         }
 
@@ -148,12 +141,6 @@ class ActivationModule implements ExecutableModule
      */
     public function pluginInit()
     {
-        load_plugin_textdomain(
-            'mollie-payments-for-woocommerce',
-            false,
-            dirname(plugin_basename($this->baseFile)) . '/languages/'
-        );
-
         $this->markUpdatedOrNew();
         $this->initDb();
     }

@@ -236,12 +236,12 @@ function _archive({baseDir, buildDir, distDir, packageVersion, packageName}) {
                             '!**/readme.md',
                             '!**/readme.txt',
                             '!**/readme.txt',
-                            '!**/DEVELOPERS',
-                            '!**/developers',
-                            '!**/DEVELOPERS.md',
-                            '!**/developers.md',
-                            '!**/DEVELOPERS.txt',
-                            '!**/developers.txt',
+                            '!**/CONTRIBUTING',
+                            '!**/contributing',
+                            '!**/CONTRIBUTING.md',
+                            '!**/contributing.md',
+                            '!**/CONTRIBUTING.txt',
+                            '!**/contributing.txt',
                             '!**/composer.json',
                             '!**/composer.lock',
                             '!**/package.json',
@@ -278,7 +278,7 @@ function _archive({baseDir, buildDir, distDir, packageVersion, packageName}) {
 function _generatePotFile ({buildDir, langDir}) {
     return async function generatePotFile (done) {
         wpPot({
-            destFile: `languages/en_GB.pot`,
+            destFile: `languages/mollie-payments-for-woocommerce.pot`,
             includePOTCreationDate: false,
             src: [
                 `mollie-payments-for-woocommerce.php`,

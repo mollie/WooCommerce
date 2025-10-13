@@ -10,7 +10,7 @@ class Alma extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'alma',
-            'defaultTitle' => __('Alma', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => 'Alma',
             'settingsDescription' => '',
             'defaultDescription' => '',
             'paymentFields' => false,
@@ -21,13 +21,21 @@ class Alma extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => false,
             'paymentAPIfields' => [
-                'billingAddress',
-                'shippingAddress',
+                'AddressMiddleware',
             ],
             'docs' => 'https://www.mollie.com/gb/payments/alma',
         ];
+    }
+
+    // Replace translatable strings after the 'after_setup_theme' hook
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('Alma', 'mollie-payments-for-woocommerce');
+        $this->translationsInitialized = true;
     }
 
     public function getFormFields($generalFormFields): array

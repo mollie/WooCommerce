@@ -10,7 +10,7 @@ class Paysafecard extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'paysafecard',
-            'defaultTitle' => __('paysafecard', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => 'paysafecard',
             'settingsDescription' => '',
             'defaultDescription' => '',
             'paymentFields' => false,
@@ -18,9 +18,17 @@ class Paysafecard extends AbstractPaymentMethod implements PaymentMethodI
             'supports' => ['products'],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => false,
             'docs' => 'https://www.mollie.com/gb/payments/paysafecard',
         ];
+    }
+
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('paysafecard', 'mollie-payments-for-woocommerce');
+        $this->translationsInitialized = true;
     }
 
     public function getFormFields($generalFormFields): array

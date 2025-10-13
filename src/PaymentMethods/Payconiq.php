@@ -10,7 +10,7 @@ class Payconiq extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'id' => 'payconiq',
-            'defaultTitle' => __('payconiq', 'mollie-payments-for-woocommerce'),
+            'defaultTitle' => 'payconiq',
             'settingsDescription' => '',
             'defaultDescription' => '',
             'paymentFields' => false,
@@ -18,9 +18,17 @@ class Payconiq extends AbstractPaymentMethod implements PaymentMethodI
             'supports' => ['products', 'refunds'],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'SEPA' => false,
             'docs' => '',
         ];
+    }
+
+    public function initializeTranslations(): void
+    {
+        if ($this->translationsInitialized) {
+            return;
+        }
+        $this->config['defaultTitle'] = __('payconiq', 'mollie-payments-for-woocommerce');
+        $this->translationsInitialized = true;
     }
 
     public function getFormFields($generalFormFields): array

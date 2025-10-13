@@ -11,16 +11,17 @@ use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Refund;
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
-use Mollie\WooCommerce\Gateway\MolliePaymentGatewayI;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
+use Mollie\WooCommerce\Gateway\Refund\OrderItemsRefunder;
+use Mollie\WooCommerce\MerchantCapture\Capture\Action\CapturePayment;
+use Mollie\WooCommerce\Payment\Webhooks\RestApi;
+use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Settings\Settings;
-use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
-use Psr\Log\LogLevel;
 use RuntimeException;
 use WC_Order;
 
@@ -46,43 +47,20 @@ class PaymentModule implements ServiceModule, ExecutableModule
      * @var mixed
      */
     protected $gatewayClassnames;
+    /**
+     * @var ContainerInterface
+     */
+    protected $container;
 
     public function services(): array
     {
-        return [
-            OrderLines::class => static function (ContainerInterface $container): OrderLines {
-                $data = $container->get('settings.data_helper');
-                $pluginId = $container->get('shared.plugin_id');
-                return new OrderLines($data, $pluginId);
-            },
-           PaymentFactory::class => static function (ContainerInterface $container): PaymentFactory {
-               $settingsHelper = $container->get('settings.settings_helper');
-               assert($settingsHelper instanceof Settings);
-               $apiHelper = $container->get('SDK.api_helper');
-               assert($apiHelper instanceof Api);
-               $data = $container->get('settings.data_helper');
-               assert($data instanceof Data);
-               $pluginId = $container->get('shared.plugin_id');
-               $logger = $container->get(Logger::class);
-               assert($logger instanceof Logger);
-               $orderLines = $container->get(OrderLines::class);
-               return new PaymentFactory($data, $apiHelper, $settingsHelper, $pluginId, $logger, $orderLines);
-           },
-           MollieObject::class => static function (ContainerInterface $container): MollieObject {
-               $logger = $container->get(Logger::class);
-               assert($logger instanceof Logger);
-               $data = $container->get('settings.data_helper');
-               assert($data instanceof Data);
-               $apiHelper = $container->get('SDK.api_helper');
-               assert($apiHelper instanceof Api);
-               $pluginId = $container->get('shared.plugin_id');
-               $paymentFactory = $container->get(PaymentFactory::class);
-               assert($paymentFactory instanceof PaymentFactory);
-               $settingsHelper = $container->get('settings.settings_helper');
-               assert($settingsHelper instanceof Settings);
-               return new MollieObject($data, $logger, $paymentFactory, $apiHelper, $settingsHelper, $pluginId);
-           },
-        ];
+        static $services;
+
+        if ($services === null) {
+            $services = require_once __DIR__ . '/inc/services.php';
+        }
+
+        return $services();
     }
 
     public function run(ContainerInterface $container): bool
@@ -97,13 +75,25 @@ class PaymentModule implements ServiceModule, ExecutableModule
         assert($this->settingsHelper instanceof Settings);
         $this->pluginId = $container->get('shared.plugin_id');
         $this->gatewayClassnames = $container->get('gateway.classnames');
+        $this->container = $container;
+
+        //add webhook rest API endpoint
+        add_action('rest_api_init', function () use ($container) {
+            $container->get(RestApi::class)->registerRoutes();
+        });
 
         // Listen to return URL call
-        add_action('woocommerce_api_mollie_return', [ $this, 'onMollieReturn' ]);
-        add_action('template_redirect', [ $this, 'mollieReturnRedirect' ]);
+        add_action('woocommerce_api_mollie_return', function () use ($container) {
+            $this->onMollieReturn($container);
+        }, 10, 1);
+        add_action('template_redirect', function () use ($container) {
+            $this->mollieReturnRedirect($container);
+        });
 
         // Show Mollie instructions on order details page
-        add_action('woocommerce_order_details_after_order_table', [ $this, 'onOrderDetails' ], 10, 1);
+        add_action('woocommerce_order_details_after_order_table', function (WC_Order $order) use ($container) {
+            $this->onOrderDetails($order, $container);
+        }, 10, 1);
 
         // Cancel order at Mollie (for Orders API/Klarna)
         add_action('woocommerce_order_status_cancelled', [ $this, 'cancelOrderAtMollie' ]);
@@ -165,6 +155,9 @@ class PaymentModule implements ServiceModule, ExecutableModule
     {
         $classNames = $this->gatewayClassnames;
         foreach ($classNames as $gateway) {
+            if (empty($gateway)) {
+                continue;
+            }
             $gatewayName = strtolower($gateway) . '_settings';
             $gatewaySettings = get_option($gatewayName);
 
@@ -178,7 +171,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
                 continue;
             }
             $heldDurationInSeconds = $heldDuration * 60;
-            if ($gateway === 'Mollie_WC_Gateway_Banktransfer') {
+            if ($gateway === 'Mollie_WC_Gateway_Banktransfer' || $gateway === 'Mollie_WC_Gateway_Paybybank') {
                 $durationInHours = absint($heldDuration) * 24;
                 $durationInMinutes = $durationInHours * 60;
                 $heldDurationInSeconds = $durationInMinutes * 60;
@@ -195,10 +188,14 @@ class PaymentModule implements ServiceModule, ExecutableModule
             if ($unpaid_orders) {
                 foreach ($unpaid_orders as $unpaid_order) {
                     $order = wc_get_order($unpaid_order);
+                    $mollieOrderService = $this->container->get(MollieOrderService::class);
+                    if ($mollieOrderService->checkPaymentForUnpaidOrder($order)) {
+                        continue;
+                    }
                     add_filter('mollie-payments-for-woocommerce_order_status_cancelled', static function ($newOrderStatus) {
                         return SharedDataDictionary::STATUS_CANCELLED;
                     });
-                    $order->update_status('cancelled', __('Unpaid order cancelled - time limit reached.', 'woocommerce'), true);
+                    $order->update_status('cancelled', __('Unpaid order cancelled - time limit reached.', 'woocommerce'));
                     $this->cancelOrderAtMollie($order->get_id());
                 }
             }
@@ -252,7 +249,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
      * Old Payment return url callback
      *
      */
-    public function onMollieReturn()
+    public function onMollieReturn($container)
     {
         try {
             $order = self::orderByRequest();
@@ -264,6 +261,8 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
         $gateway = wc_get_payment_gateway_by_order($order);
         $orderId = $order->get_id();
+        $oldGatewayInstances = $container->get('__deprecated.gateway_helpers');
+        $mollieGatewayHelper = $oldGatewayInstances[$gateway->id];
 
         if (!$gateway) {
             $gatewayName = $order->get_payment_method();
@@ -275,13 +274,14 @@ class PaymentModule implements ServiceModule, ExecutableModule
             return;
         }
 
-        if (!($gateway instanceof MolliePaymentGateway)) {
+        if (!(mollieWooCommerceIsMollieGateway($gateway->id))) {
             $this->httpResponse->setHttpResponseCode(400);
-            $this->logger->debug(__METHOD__ . ": Invalid gateway {get_class($gateway)} for this plugin. Order {$orderId}.");
+            $gatewayClass = get_class($gateway);
+            $this->logger->debug(__METHOD__ . ": Invalid gateway {$gatewayClass} for this plugin. Order {$orderId}.");
             return;
         }
 
-        $redirect_url = $gateway->getReturnRedirectUrlForOrder($order);
+        $redirect_url = $mollieGatewayHelper->getReturnRedirectUrlForOrder($order);
 
         // Add utm_nooverride query string
         $redirect_url = add_query_arg(['utm_nooverride' => 1], $redirect_url);
@@ -296,12 +296,12 @@ class PaymentModule implements ServiceModule, ExecutableModule
      * New Payment return url callback
      *
      */
-    public function mollieReturnRedirect()
+    public function mollieReturnRedirect($container)
     {
         if (isset($_GET['filter_flag'])) {
             $filterFlag = sanitize_text_field(wp_unslash($_GET['filter_flag']));
             if ($filterFlag === 'onMollieReturn') {
-                self::onMollieReturn();
+                self::onMollieReturn($container);
             }
         }
     }
@@ -309,27 +309,34 @@ class PaymentModule implements ServiceModule, ExecutableModule
     /**
      * @param WC_Order $order
      */
-    public function onOrderDetails(WC_Order $order)
+    public function onOrderDetails(WC_Order $order, ContainerInterface $container)
     {
         if (is_order_received_page()) {
             /**
              * Do not show instruction again below details on order received page
              * Instructions already displayed on top of order received page by $gateway->thankyou_page()
              *
-             * @see MolliePaymentGateway::thankyou_page
+             * @see MolliePaymentGatewayHandler::thankyou_page
              */
             return;
         }
 
         $gateway = wc_get_payment_gateway_by_order($order);
 
-        if (!$gateway || !($gateway instanceof MolliePaymentGateway)) {
+        if (!$gateway || !(mollieWooCommerceIsMollieGateway($gateway->id))) {
             return;
         }
 
-        /** @var MolliePaymentGatewayI $gateway */
+        assert($gateway instanceof \WC_Payment_Gateway);
 
-        $gateway->displayInstructions($order);
+        $instructionsManager = $container->get(OrderInstructionsManager::class);
+        $oldGatewayInstances = $container->get('__deprecated.gateway_helpers');
+        $mollieGatewayHelper = $oldGatewayInstances[$gateway->id];
+        $instructionsManager->displayInstructions(
+            $gateway,
+            $mollieGatewayHelper,
+            $order
+        );
     }
     /**
      * Ship all order lines and capture an order at Mollie.
@@ -340,7 +347,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
         $order = wc_get_order($order_id);
 
         // Does WooCommerce order contain a Mollie payment?
-        if (strstr($order->get_payment_method(), 'mollie_wc_gateway_') === false) {
+        if (!$order || strstr($order->get_payment_method(), 'mollie_wc_gateway_') === false) {
             return;
         }
 
@@ -352,55 +359,73 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
         $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - Try to process completed order for a potential capture at Mollie.');
 
-        // Does WooCommerce order contain a Mollie Order?
-        $mollie_order_id = ( $mollie_order_id = $order->get_meta('_mollie_order_id', true) ) ? $mollie_order_id : false;
-        // Is it a payment? you cannot ship a payment
-        if ($mollie_order_id === false || substr($mollie_order_id, 0, 3) === 'tr_') {
-            $message = _x('Processing a payment, no capture needed', 'Order note info', 'mollie-payments-for-woocommerce');
+        $mollie_transaction_id = $order->get_meta('_mollie_order_id', true);
+        if (!$mollie_transaction_id) {
+            $mollie_transaction_id = $order->get_meta('_mollie_payment_id', true);
+        }
+        if (!$mollie_transaction_id) {
+            $mollie_transaction_id = $order->get_transaction_id();
+        }
+        if (!$mollie_transaction_id) {
+            $message = _x('Order contains Mollie payment method, but not a valid Mollie Transaction ID. Processing shipment & capture failed.', 'Order note info', 'mollie-payments-for-woocommerce');
             $order->add_order_note($message);
-            $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - Processing a payment, no capture needed.');
-
+            $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' Order contains Mollie payment method, but not a valid Mollie Transaction ID. Processing shipment & capture failed.');
             return;
         }
 
         $apiKey = $this->settingsHelper->getApiKey();
         try {
-            // Get the order from the Mollie API
-            $mollie_order = $this->apiHelper->getApiClient($apiKey)->orders->get($mollie_order_id);
+            // Get the order or payment from the Mollie API
+            if (substr($mollie_transaction_id, 0, 3) === 'tr_') {
+                $mollie_transaction = $this->apiHelper->getApiClient($apiKey)->payments->get($mollie_transaction_id);
+                $mollie_transaction_type = 'Payment';
+            } else {
+                $mollie_transaction = $this->apiHelper->getApiClient($apiKey)->orders->get($mollie_transaction_id);
+                $mollie_transaction_type = 'Order';
+            }
 
             // Check that order is Paid or Authorized and can be captured
-            if ($mollie_order->isCanceled()) {
-                $message = _x('Order already canceled at Mollie, can not be shipped/captured.', 'Order note info', 'mollie-payments-for-woocommerce');
+            if ($mollie_transaction->isCanceled()) {
+                $message = _x('Transaction already canceled at Mollie, can not be shipped/captured.', 'Order note info', 'mollie-payments-for-woocommerce');
                 $order->add_order_note($message);
-                $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - Order already canceled at Mollie, can not be shipped/captured.');
+                $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - ' . $mollie_transaction_type . ' already canceled at Mollie, can not be shipped/captured.');
 
                 return;
             }
 
-            if ($mollie_order->isCompleted()) {
-                $message = _x('Order already completed at Mollie, can not be shipped/captured.', 'Order note info', 'mollie-payments-for-woocommerce');
+            if (method_exists($mollie_transaction, 'isCompleted') && $mollie_transaction->isCompleted()) {
+                $message = _x('Transaction already completed at Mollie, can not be shipped/captured.', 'Order note info', 'mollie-payments-for-woocommerce');
                 $order->add_order_note($message);
-                $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - Order already completed at Mollie, can not be shipped/captured.');
+                $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - ' . $mollie_transaction_type . ' already completed at Mollie, can not be shipped/captured.');
 
                 return;
             }
 
-            if ($mollie_order->isPaid() || $mollie_order->isAuthorized()) {
-                $this->apiHelper->getApiClient($apiKey)->orders->get($mollie_order_id)->shipAll();
+            if ($mollie_transaction->isPaid() || $mollie_transaction->isAuthorized()) {
+                if (substr($mollie_transaction_id, 0, 3) === 'tr_') {
+                    if ($mollie_transaction->isAuthorized()) {
+                        ($this->container->get(CapturePayment::class))($order_id);
+                    } else {
+                        $message = _x('Payment status is already paid at Mollie, can not be captured.', 'Order note info', 'mollie-payments-for-woocommerce');
+                        $order->add_order_note($message);
+                        $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - Payment already completed at Mollie, can not be captured.');
+                    }
+
+                    return;
+                }
+                $this->apiHelper->getApiClient($apiKey)->orders->get($mollie_transaction_id)->shipAll();
                 $message = _x('Order successfully updated to shipped at Mollie, capture of funds underway.', 'Order note info', 'mollie-payments-for-woocommerce');
                 $order->add_order_note($message);
                 $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - Order successfully updated to shipped at Mollie, capture of funds underway.');
 
                 return;
             }
-            $message = _x('Order not paid or authorized at Mollie yet, can not be shipped.', 'Order note info', 'mollie-payments-for-woocommerce');
+            $message = _x('Transaction not paid or authorized at Mollie yet, can not be shipped.', 'Order note info', 'mollie-payments-for-woocommerce');
             $order->add_order_note($message);
-            $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - Order not paid or authorized at Mollie yet, can not be shipped.');
+            $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - ' . $mollie_transaction_type . ' not paid or authorized at Mollie yet, can not be shipped.');
         } catch (ApiException $e) {
             $this->logger->debug(__METHOD__ . ' - ' . $order_id . ' - Processing shipment & capture failed, error: ' . $e->getMessage());
         }
-
-        return;
     }
 
     /**

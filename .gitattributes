@@ -11,7 +11,7 @@ docker export-ignore
 .travis.yml export-ignore
 composer.lock export-ignore
 deploy.sh export-ignore
-DEVELOPERS.md export-ignore
+CONTRIBUTING.md export-ignore
 docker.mk export-ignore
 docker-compose.yml export-ignore
 docker-sync.yml export-ignore

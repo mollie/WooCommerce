@@ -10,6 +10,7 @@ use Mollie\WooCommerce\Settings\Page\PageApiKeys;
 use Mollie\WooCommerce\Settings\Page\PageNoApiKey;
 use Mollie\WooCommerce\Settings\Page\PagePaymentMethods;
 use Mollie\WooCommerce\Shared\Data;
+use Psr\Container\ContainerInterface;
 use WC_Admin_Settings;
 use WC_Settings_Page;
 
@@ -18,19 +19,17 @@ class MollieSettingsPage extends WC_Settings_Page
     protected Settings $settings;
     protected string $pluginPath;
     protected string $pluginUrl;
-    protected array $mollieGateways;
-    protected array $paymentMethods;
     protected bool $isTestModeEnabled;
     protected Data $dataHelper;
+    protected ContainerInterface $container;
 
     public function __construct(
         Settings $settings,
         string $pluginPath,
         string $pluginUrl,
-        array $mollieGateways,
-        array $paymentMethods,
         bool $isTestModeEnabled,
-        Data $dataHelper
+        Data $dataHelper,
+        ContainerInterface $container
     ) {
 
         $this->id = 'mollie_settings';
@@ -38,10 +37,9 @@ class MollieSettingsPage extends WC_Settings_Page
         $this->settings = $settings;
         $this->pluginPath = $pluginPath;
         $this->pluginUrl = $pluginUrl;
-        $this->mollieGateways = $mollieGateways;
         $this->isTestModeEnabled = $isTestModeEnabled;
         $this->dataHelper = $dataHelper;
-        $this->paymentMethods = $paymentMethods;
+        $this->container = $container;
         $this->registerContentFieldType();
         $this->outputSections();
         parent::__construct();
@@ -126,9 +124,8 @@ class MollieSettingsPage extends WC_Settings_Page
                 $defaultSection,
                 $connectionStatus,
                 $this->isTestModeEnabled,
-                $this->mollieGateways,
-                $this->paymentMethods,
-                $this->dataHelper
+                $this->dataHelper,
+                $this->container
             );
             if ($page::slug() === $defaultSection) {
                 $mollieSettings = $this->hideKeysIntoStars($page->settings());

@@ -19,12 +19,10 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_Billie',
         'Mollie_WC_Gateway_Paypal',
         'Mollie_WC_Gateway_Banktransfer',
-        'Mollie_WC_Gateway_Sofort',
         'Mollie_WC_Gateway_Giftcard',
         'Mollie_WC_Gateway_Mybank',
         'Mollie_WC_Gateway_Bancontact',
         'Mollie_WC_Gateway_Eps',
-        'Mollie_WC_Gateway_Giropay',
         'Mollie_WC_Gateway_Przelewy24',
         'Mollie_WC_Gateway_Kbc',
         'Mollie_WC_Gateway_Belfius',
@@ -40,6 +38,11 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_Riverty',
         'Mollie_WC_Gateway_Satispay',
         'Mollie_WC_Gateway_Swish',
+        'Mollie_WC_Gateway_Multibanco',
+        'Mollie_WC_Gateway_Paybybank',
+        'Mollie_WC_Gateway_Mbway',
+        'Mollie_WC_Gateway_Vippsmobilepay',
+        'Mollie_WC_Gateway_Bizum',
     ];
 
     public const MOLLIE_OPTIONS_NAMES = [

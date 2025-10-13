@@ -1,9 +1,9 @@
 === Mollie Payments for WooCommerce ===
-Contributors: daanvm, danielhuesken, davdebcom, dinamiko, syde, l.vangunst, ndijkstra, robin-mollie, wido, carmen222, inpsyde-maticluznar
-Tags: mollie, payments, payment gateway, woocommerce, credit card, apple pay, ideal, bancontact, klarna, sofort, giropay, woocommerce subscriptions 
-Requires at least: 3.8
-Tested up to: 6.6
-Stable tag: 7.8.0
+Contributors: daanvm, danielhuesken, davdebcom, dinamiko, syde, l.vangunst, ndijkstra, wido, carmen222
+Tags: mollie, woocommerce, payments, ecommerce, credit card
+Requires at least: 5.0
+Tested up to: 6.8
+Stable tag: 8.0.6
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -42,14 +42,15 @@ European and local payment methods:
 * Gift cards (Netherlands)
 * iDEAL (Netherlands)
 * KBC/CBC payment button (Belgium)
-* Klarna One (UK)
-* Klarna Pay now (Netherlands, Belgium, Germany, Austria, Finland)
+* Klarna
+* MB Way (Portugal)
+* Multibanco (Portugal)
+* PaybyBank
 * Payconiq (Belgium, Luxembourg)
 * Przelewy24 (Poland)
 * Satispay (EU)
-* SEPA – Credit Transfer (EU)
 * SEPA – Direct Debit (EU)
-* SOFORT Banking (EU)
+* Swish (Sweden)
 * TWINT (Switzerland)
 * Vouchers (Netherlands, Belgium)
 
@@ -61,15 +62,14 @@ International payment methods:
 
 Pay after delivery payment methods:
 
+* Alma (France, Belgium)
 * Billie – Pay by Invoice for Businesses
 * iDEAL in3 – Pay in 3 installments, 0% interest
-* Klarna Pay later (Netherlands, Belgium, Germany, Austria, Finland)
-* Klarna Slice it (Germany, Austria, Finland)
 * Riverty (Netherlands, Belgium, Germany, Austria)
 
 = Get started with Mollie =
 
-1. [Create a Mollie account](https://my.mollie.com/dashboard/signup)
+1. [Create a Mollie account](https://my.mollie.com/dashboard/signup?utm_campaign=GLO_AO_Woo-Channels-Signup&utm_medium=marketplacelisting&utm_source=partner&utm_content=Wordpress&sf_campaign_id=701QD00000a4oHjYAI&campaign_name=GLO_AO_Woo-Channels-Signup)
 2. Install **Mollie Payments for WooCommerce** on your WordPress website
 3. Activate Mollie in your WooCommerce webshop and enter your Mollie API key
 4. In your Mollie Dashboard, go to Settings > Website profiles and select the payment methods you want to offer
@@ -100,21 +100,17 @@ Become part of Mollie's growing community and gain access to our comprehensive s
 
 > **Your success is our mission. With Mollie, simplify your payments and focus on growing your business.**
 
-[Sign up today](https://my.mollie.com/dashboard/signup) and start enhancing your WooCommerce store with Mollie's advanced payment solutions.
+[Sign up today](https://my.mollie.com/dashboard/signup?utm_campaign=GLO_AO_Woo-Channels-Signup&utm_medium=marketplacelisting&utm_source=partner&utm_content=Wordpress&sf_campaign_id=701QD00000a4oHjYAI&campaign_name=GLO_AO_Woo-Channels-Signup) and start enhancing your WooCommerce store with Mollie's advanced payment solutions.
 
 Feel free to contact info@mollie.com if you have any questions or comments about this plugin.
 
 = More about Mollie =
 
-Since 2004, Mollie has been on a mission to help businesses drive growth through simplified payments and financial services.
+Mollie offers a single platform for businesses to get paid and manage their money. One that makes payments, reconciliation, reporting, fraud prevention, and financing simple for all – from startups to enterprises.
 
-Initially observing banks offering businesses outdated technology and complex processes, Mollie decided to innovate. Striving to improve conditions by acting fairly and being a true partner to customers on their journey to success has always been a priority.
+Founded in 2004, Mollie’s mission is to make payments and money management effortless for every business in the UK and Europe. Their 800-strong team works from offices across the continent, including Amsterdam, Ghent, Lisbon, London, Maastricht, Milan, Munich, and Paris. 
 
-Over the years, Mollie has expanded significantly, yet the core mission remains unchanged: to address and solve customer problems to facilitate their growth.
-
-Mollie champions the belief that simplicity leads to the best solutions and designs products to serve everyone: from solopreneurs and startups to global enterprises. This approach ensures every customer has access to the necessary tools for success.
-
-Today, Mollie powers growth for over 130,000 businesses with effortless online payments, money management tools, and flexible funding, continuously enhancing payment and financial services for a broad spectrum of clients including global brands, SMEs, marketplaces, SaaS platforms, and more.
+Today, more than 250,000 businesses use Mollie to drive revenue, reduce costs, and manage funds.
 
 == Frequently Asked Questions ==
 
@@ -192,9 +188,9 @@ Where possible, also include the Mollie log file. You can find the Mollie log fi
 
 = Minimum Requirements =
 
-* PHP version 7.2 or greater
+* PHP version 7.4 or greater
 * PHP extensions enabled: cURL, JSON
-* WordPress 3.8 or greater
+* WordPress 5.0 or greater
 * WooCommerce 3.9 or greater
 * Mollie account
 
@@ -221,6 +217,102 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 
 == Changelog ==
+
+= 8.0.6 - 29-09-2025 =
+* Fixed - TypeError in OrderLines.php when processing vouchers with Germanized plugin
+* Fixed - Apple Pay not eligible for Express Checkout in editor with non-Apple Pay compatible device
+* Fixed - Block Editor error `This block encountered an error and cannot show a preview`
+* Fixed - The new `woocommerce_cancel_unpaid_order` filter causes orders not created via checkout to be cancelled
+* Improvement - Improve handling and validation of phone numbers
+* Improvement - Improve handling of webhooks that uses now the REST API and depending on transaction id
+* Improvement - Add signup link for new Account on new installations
+
+= 8.0.5 - 11-08-2025 =
+* Added - PayPal Subscriptions support through Vaulting
+* Fixed - Save Mandates from Payments API
+* Fixed - Change type to discount when the line item amount is negative
+* Fixed - Order API refunds: Type error, missing metadata and fallback to refund by amount 
+* Fixed - Subscriptions Retry System not working on failed payments for renewals
+* Fixed - Getting Subscription mandates when payment API is active
+* Changed - Payments API is now the default method
+* Changed - Align Pay by Bank with Bank Transfer features
+* Changed - Multiple Voucher categories allowed on Payments API
+* Improved - Several small things in subscriptions
+* Improved - Check payment on Mollie before setting order to failed from WooCommerce
+* Improved - Blocking of recurring webhooks for the same order
+
+= 8.0.4 - 09-07-2025 =
+* Fixed - Incorrect shipping name field on Orders API
+
+= 8.0.3 - 07-07-2025 =
+* Fixed - Direct Bank Transfer (BACS) payment methods was hidden in some instances
+* Fixed - Incorrect Order Status Update After Chargeback Due to Conflicting Webhooks
+* Fixed - Mollie Payments Failing Due to Negative ´unitPrice´ from WooCommerce Line Item Rounding
+* Fixed - Missing surcharge verification on Pay for Order page
+
+= 8.0.2 - 02-06-2025 =
+* Added - Voucher payment method for Payments API
+* Added - In3 payment method for Payments API
+* Added - Voucher category Sports & Culture
+* Fixed - Undefined property method_title
+* Fixed - Surcharge with percentage without max limit configured not working
+* Fixed - Potential fatal error with getCurrencyFromOrder
+* Fixed - Compatibility with FunnelKit Upsells
+* Fixed - Deprectaion message on plugin uninstall
+* Removed - unnecessary block checkout surcharge calculation
+* Removed - Obsolete code that checked if a payment method was exclusive to the Orders API
+
+= 8.0.1 - 07-05-2025 =
+* Fixed - check that Klarna webhooks will not be received for transactions if orders API is active
+* Fixed - most problems with gateway surcharges and 3rd party fees
+* Fixed - problems with Paments API when checkout address fields are removed
+* Fixed - some PHP Errors
+* Fixed - negative fees not working with payments API
+* Fixed - imageUrl will be validated before adding it
+* Fixed - refreshing gateway list in the Mollie settings
+* Fixed - on block checkout an empty Gateway description was displayed
+* Fixed - ransactions on block checkout don’t work for Riverty
+* Fixed - Phone Number Validation uses now billing/shipping country when no phone country prefix 
+* Fixed - More information on inactive payment methods will not open in the new tab @masteradhoc
+* Removed - deprecated SOFORT and Giropay payment methods
+
+= 8.0.0 - 27-03-2025 =
+
+* Feature Flag - Klarna, Riverty and Billie can be used with Payments API
+* Feature - Added support for Mollie's new Payments API features
+* Fixed - Notice for missing value of cardToken
+* Fixed - ltrim error on Apple Pay notice with php 8.2 (author @kylwes)
+* Fixed - Logged URL should be same as used in future logic (author @tombroucke)
+
+= 7.10.0 - 18-02-2025 =
+
+* Added - PaybyBank payment method
+* Added - MB Way payment method
+* Added - Multibanco payment method
+* Added - Swish payment method
+* Feature - Load block Checkout payment methods despite no active country selection
+* Deprecated - Do not show deprecated Klarna methods if disabled in Mollie profile
+* Fixed - Currency Symbol Positioning in bock checkout
+* Fixed - Wrong order status in some cases
+* Fixed - Fatal error on Refunds in some situations (author @Fidelity88)
+
+= 7.9.1 - 22-01-2025 =
+
+* Feature - Style Apple Pay express button via Checkout block
+* Fixed - Notice `_load_textdomain_just_in_time` due to early translation loading
+* Fixed - Company Name input field not saved in Order when Billie was enabled
+* Fixed - Mollie Payment methods may not load on Checkout block
+* Fixed - Mollie Payment methods may disappear from Checkout block when changing billing country
+* Fixed - Mollie Components are not enabled by default on new installations
+
+= 7.9.0 - 18-11-2024 =
+
+* Feature - Revamp Mollie settings dashboard
+* Feature - Implement dedicated Block Express Cart/Checkout location for Apple Pay button
+* Feature - Trustly for first Payments
+* Fixed - Display notice in iDEAL settings about iDEAL 2.0 and removal of bank issuer dropdown
+* Fixed - Translation Update Loop in Mollie Payments for WooCommerce
+* Fixed - Bank Transfer payment details displayed in one line on order-received page
 
 = 7.8.2 - 08-09-2024 =
 
@@ -260,6 +352,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 * Fixed - Mollie hooks into unrelated orders
 * Fixed - Notices and type errors after 7.5.5 update
 * Fixed - Rounding issues with products including tax
+
 = 7.5.5 - 18-06-2024 =
 
 * Feature Flag - Enable Bancomat Pay & Alma feature flag by default (official launch 2024-07-01)

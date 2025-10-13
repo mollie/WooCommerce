@@ -8,7 +8,7 @@ use Mollie\Api\Endpoints\OrderEndpoint;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalAjaxRequests;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalDataObjectHttp;
 use Mollie\WooCommerce\Gateway\Surcharge;
-use Mollie\WooCommerce\Subscription\MollieSubscriptionGateway;
+use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
 use Mollie\WooCommerceTests\Stubs\postDTOTestsStubs;
 use Mollie\WooCommerceTests\TestCase;
@@ -75,7 +75,7 @@ class AjaxRequestsTest extends TestCase
             ]
         );
         $logger = $this->helperMocks->loggerMock();
-        $paypalGateway = $this->mollieGateway('paypal', false, true);
+        $paypalGateway = $this->helperMocks->genericPaymentGatewayMock();
         expect('wp_verify_nonce')
             ->andReturn(true);
         $dataObject = new PayPalDataObjectHttp($logger);

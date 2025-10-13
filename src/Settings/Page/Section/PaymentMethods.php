@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Settings\Page\Section;
 
 use Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod;
+use Mollie\WooCommerce\PaymentMethods\Constants;
 
 class PaymentMethods extends AbstractSection
 {
@@ -34,20 +35,18 @@ class PaymentMethods extends AbstractSection
 
     public function renderGateways(): string
     {
-        $this->refreshIfRequested();
-
         $titleActivePaymentMethods = __(
             'Currently Active Payment Methods',
             'mollie-payments-for-woocommerce'
         );
         $descriptionActivePaymentMethods = __(
-            'These payment methods are active in your Mollie profile. 
+            'These payment methods are active in your Mollie profile.
         You can enable these payment methods in their settings to make them available for your customers.',
             'mollie-payments-for-woocommerce'
         );
         $titleInactivePaymentMethods = __('Inactive Payment Methods', 'mollie-payments-for-woocommerce');
         $descriptionInactivePaymentMethods = __(
-            'These payment methods are available in your Mollie profile but are 
+            'These payment methods are available in your Mollie profile but are
         not currently active. Activate them to offer more payment options to your customers.',
             'mollie-payments-for-woocommerce'
         );
@@ -56,10 +55,21 @@ class PaymentMethods extends AbstractSection
         $deactivatedGateways = '';
 
         /** @var AbstractPaymentMethod $paymentMethod */
-        foreach ($this->paymentMethods as $paymentMethod) {
+        $paymentMethods = $this->container->get('gateway.paymentMethods');
+        $enabledMethods =  $this->container->get('gateway.paymentMethodsEnabledAtMollie');
+        if (!in_array(Constants::DIRECTDEBIT, $enabledMethods, true)) {
+            unset($paymentMethods[Constants::DIRECTDEBIT]);
+        }
+        foreach ($paymentMethods as $paymentMethod) {
             $paymentMethodId = $paymentMethod->getProperty('id');
-            $gatewayKey = 'mollie_wc_gateway_' . $paymentMethodId;
-            $enabledInMollie = array_key_exists($gatewayKey, $this->mollieGateways);
+            $enabledInMollie = in_array($paymentMethodId, $enabledMethods, true);
+
+            //don't display old klarna GWs
+            if (isset($paymentMethods[Constants::KLARNA]) && in_array($paymentMethodId, [Constants::KLARNASLICEIT, Constants::KLARNAPAYLATER, Constants::KLARNAPAYNOW], true)) {
+                if (!$enabledInMollie || $paymentMethod->getProperty('enabled') !== 'yes') {
+                    continue;
+                }
+            }
 
             $paymentGatewayButton = $this->paymentGatewayButton($paymentMethod, $enabledInMollie);
             if ($enabledInMollie) {
@@ -88,7 +98,7 @@ class PaymentMethods extends AbstractSection
             <h3><?= esc_html($title); ?></h3>
             <p><?= esc_html($description); ?></p>
             <div class="mollie-settings-pm__list">
-                <?= $html; // WPCS: XSS ok. ?>
+                <?= $html; // phpcs:ignore XSS ok. ?>
             </div>
         </div>
         <?php
@@ -171,28 +181,6 @@ class PaymentMethods extends AbstractSection
         return ob_get_clean();
     }
 
-    protected function refreshIfRequested()
-    {
-        if (
-                isset($_GET['refresh-methods']) &&
-                isset($_GET['nonce_mollie_refresh_methods']) &&
-                wp_verify_nonce(
-                    filter_input(INPUT_GET, 'nonce_mollie_refresh_methods', FILTER_SANITIZE_SPECIAL_CHARS),
-                    'nonce_mollie_refresh_methods'
-                )
-        ) {
-            $testMode = $this->testModeEnabled;
-            $apiKey = $this->settings->getApiKey();
-            /* Reload active Mollie methods */
-            $methods = $this->dataHelper->getAllPaymentMethods($apiKey, $testMode, false);
-            foreach ($methods as $key => $method) {
-                $methods['mollie_wc_gateway_' . $method['id']] = $method;
-                unset($methods[$key]);
-            }
-            $this->mollieGateways = $methods;
-        }
-    }
-
     protected function paymentGatewayButton(AbstractPaymentMethod $paymentMethod, $enabledInMollie): string
     {
         $documentationLink = $paymentMethod->getProperty('docs');
@@ -219,7 +207,7 @@ class PaymentMethods extends AbstractSection
             )) . '</span>';
         } else {
             if ($documentationLink) {
-                $messageOrLink = "<a class='mollie-settings-pm__info' href='" . $documentationLink . "'>" . esc_html(__(
+                $messageOrLink = "<a class='mollie-settings-pm__info' href='" . $documentationLink . "' target='_blank'>" . esc_html(__(
                     'More information',
                     'mollie-payments-for-woocommerce'
                 )) . '</a>';
@@ -228,14 +216,16 @@ class PaymentMethods extends AbstractSection
                     esc_html(__('Activate Payment Method', 'mollie-payments-for-woocommerce'))
                     . '</a>';
         }
+        $iconProvider = $paymentMethod->paymentMethodIconProvider($this->container);
+        $icon = $iconProvider->provideIcons()[0];
 
         ob_start();
         ?>
         <div class="mollie-settings-pm__single">
-            <?= $paymentMethod->getIconUrl();  // WPCS: XSS ok.?>
-            <?= esc_html($paymentMethod->title());?>
-            <?= $messageOrLink;  // WPCS: XSS ok.?>
-            <?= $button;  // WPCS: XSS ok.?>
+            <?= $icon->src();  // phpcs:ignore XSS ok.?>
+            <?= esc_html($paymentMethod->title($this->container));?>
+            <?= $messageOrLink;  // phpcs:ignore XSS ok.?>
+            <?= $button;  // phpcs:ignore XSS ok.?>
         </div>
         <?php
         return ob_get_clean();

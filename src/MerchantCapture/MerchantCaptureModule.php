@@ -155,6 +155,10 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                 $pluginId . '_after_webhook_action',
                 static function ($payment, WC_Order $order) use ($container) {
 
+                    if (!$container->get('merchant.manual_capture.enabled') || !in_array($order->get_payment_method(), $container->get('merchant.manual_capture.supported_methods'), true)) {
+                        return;
+                    }
+
                     if (!$payment instanceof Payment) {
                         return;
                     }
@@ -168,7 +172,6 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                             self::ORDER_PAYMENT_STATUS_META_KEY,
                             ManualCaptureStatus::STATUS_AUTHORIZED
                         );
-                        $order->set_transaction_id($payment->id);
                         $order->save();
                     } elseif (
                         $payment->isPaid() && (
@@ -203,6 +206,9 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                 if (!is_a($order, WC_Order::class)) {
                     return;
                 }
+                if (!$container->get('merchant.manual_capture.enabled') || !in_array($order->get_payment_method(), $container->get('merchant.manual_capture.supported_methods'), true)) {
+                    return;
+                }
                 $merchantCanCapture = ($container->get('merchant.manual_capture.is_authorized'))($order);
                 if ($merchantCanCapture) {
                     ($container->get(VoidPayment::class))($order->get_id());
@@ -211,6 +217,9 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
             add_action('woocommerce_order_actions_start', static function (int $orderId) use ($container) {
                 $order = wc_get_order($orderId);
                 if (!is_a($order, WC_Order::class)) {
+                    return;
+                }
+                if (!$container->get('merchant.manual_capture.enabled') || !in_array($order->get_payment_method(), $container->get('merchant.manual_capture.supported_methods'), true)) {
                     return;
                 }
                 $paymentStatus = $order->get_meta(MerchantCaptureModule::ORDER_PAYMENT_STATUS_META_KEY, true);

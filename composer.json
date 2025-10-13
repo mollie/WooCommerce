@@ -20,10 +20,11 @@
     "ext-intl": "*",
     "ext-json": "*",
     "mollie/mollie-api-php": "^v2.40",
-    "inpsyde/modularity": "^1.7.4",
+    "inpsyde/modularity": "^1.11.0",
     "psr/container": "1.1.0",
     "psr/log":"^1.1.4",
-    "sniccowp/php-scoper-wordpress-excludes": "^6.6"
+    "sniccowp/php-scoper-wordpress-excludes": "^6.6",
+    "dhii/services": "^0.1.0"
   },
   "require-dev": {
     "phpunit/phpunit": "^8",
@@ -35,19 +36,22 @@
     "inpsyde/composer-assets-compiler": "^2.5",
     "php-stubs/wordpress-stubs": "^5.0@stable",
     "php-stubs/woocommerce-stubs": "7.9.0",
-    "vimeo/psalm": "^4.8 || ^5.13.0"
+    "vimeo/psalm": "^4.8 || ^5.13.0",
+    "vlucas/phpdotenv": "^5.6"
   },
   "autoload": {
     "psr-4": {
       "Mollie\\WooCommerce\\": "src/",
-      "Inpsyde\\EnvironmentChecker\\": "pluginEnvironmentChecker"
+      "Inpsyde\\EnvironmentChecker\\": "pluginEnvironmentChecker",
+      "Inpsyde\\PaymentGateway\\": "lib/payment-gateway/src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
       "Mollie\\WooCommerceTests\\": "tests/php",
       "Mollie\\WooCommerceTests\\Unit\\": "tests/php/Unit",
-      "Mollie\\WooCommerceTests\\Functional\\": "tests/php/Functional"
+      "Mollie\\WooCommerceTests\\Functional\\": "tests/php/Functional",
+      "Mollie\\WooCommerceTests\\Integration\\": "tests/Integration"
     }
   },
   "scripts": {

@@ -4,11 +4,21 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Settings\Page\Section;
 
+use Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use WC_Gateway_BACS;
 
 class Notices extends AbstractSection
 {
+    /**
+     * @var mixed
+     */
+    private $mollieGateways;
+    /**
+     * @var mixed
+     */
+    private $paymentMethods;
+
     public function config(): array
     {
         return [
@@ -22,6 +32,8 @@ class Notices extends AbstractSection
 
     protected function content(): string
     {
+        $this->mollieGateways = $this->container->get('__deprecated.gateway_helpers');
+        $this->paymentMethods = $this->container->get('gateway.paymentMethods');
         ob_start();
         ?>
         <div class="mollie-section mollie-section--notices">
@@ -36,11 +48,14 @@ class Notices extends AbstractSection
 
     protected function warnDirectDebitStatus(): string
     {
-        $hasCustomSepaSettings = $this->paymentMethods["directdebit"]->getProperty('enabled') !== false;
-        $isSepaEnabled = !$hasCustomSepaSettings || $this->paymentMethods["directdebit"]->getProperty(
+        if (!isset($this->paymentMethods[Constants::DIRECTDEBIT]) || ! $this->paymentMethods[Constants::DIRECTDEBIT] instanceof AbstractPaymentMethod) {
+            return '';
+        }
+        $hasCustomSepaSettings = $this->paymentMethods[Constants::DIRECTDEBIT]->getProperty('enabled') !== false;
+        $isSepaEnabled = !$hasCustomSepaSettings || $this->paymentMethods[Constants::DIRECTDEBIT]->getProperty(
             'enabled'
         ) === 'yes';
-        $sepaGatewayAllowed = !empty($this->mollieGateways["mollie_wc_gateway_directdebit"]);
+        $sepaGatewayAllowed = !empty($this->mollieGateways['mollie_wc_gateway_' . Constants::DIRECTDEBIT]);
 
         if (!($sepaGatewayAllowed && !$isSepaEnabled)) {
             return '';
@@ -64,7 +79,7 @@ class Notices extends AbstractSection
         }
         return $this->notice(
             __(
-                'You have activated Billie. To accept payments, please make sure all default WooCommerce checkout fields are enabled and required. The billing company field is required as well. Make sure to enable the billing company field in the WooCommerce settings if you are using Woocommerce blocks.',
+                'You have activated Billie. To accept payments, please make sure all default WooCommerce checkout fields are enabled and required. The billing company field is required as well. Make sure to enable the billing company field in the WooCommerce settings if you are using WooCommerce blocks.',
                 'mollie-payments-for-woocommerce'
             )
         );
@@ -77,15 +92,13 @@ class Notices extends AbstractSection
         }
         return $this->notice(
             sprintf(
-                /* translators: Placeholder 1: Opening link tag. Placeholder 2: Closing link tag. Placeholder 3: Opening link tag. Placeholder 4: Closing link tag. */
+            /* translators: Placeholder 1: Opening link tag. Placeholder 2: Closing link tag. */
                 __(
-                    'You have activated Klarna. To accept payments, please make sure all default WooCommerce checkout fields are enabled and required. For more information, go to %1$sKlarna Pay Later documentation%2$s or  %3$sKlarna Slice it documentation%4$s',
+                    'You have activated Klarna. To accept payments, please make sure all default WooCommerce checkout fields are enabled and required. For more information, visit the %1$sKlarna documentation%2$s.',
                     'mollie-payments-for-woocommerce'
                 ),
-                '<a href="https://github.com/mollie/WooCommerce/wiki/Setting-up-Klarna-Pay-later-gateway">',
+                '<a href="https://github.com/mollie/WooCommerce/wiki/Setting-up-Klarna-gateway">',
                 '</a>',
-                '<a href=" https://github.com/mollie/WooCommerce/wiki/Setting-up-Klarna-Slice-it-gateway">',
-                '</a>'
             )
         );
     }
@@ -99,7 +112,7 @@ class Notices extends AbstractSection
 
         return $this->notice(
             __(
-                'You have the WooCommerce default Direct Bank Transfer (BACS) payment gateway enabled in WooCommerce. Mollie strongly advices only using Bank Transfer via Mollie and disabling the default WooCommerce BACS payment gateway to prevent possible conflicts.',
+                'You have the WooCommerce default Direct Bank Transfer (BACS) payment gateway enabled in WooCommerce. Mollie strongly advises only using Bank Transfer via Mollie and disabling the default WooCommerce BACS payment gateway to prevent possible conflicts.',
                 'mollie-payments-for-woocommerce'
             )
         );

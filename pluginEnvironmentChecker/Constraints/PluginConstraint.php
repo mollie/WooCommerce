@@ -28,21 +28,6 @@ class PluginConstraint extends AbstractVersionConstraint
 	 */
 	public function check()
 	{
-		$pluginSlug = "{$this->requiredPluginName}/{$this->requiredPluginName}.php";
-		$isPluginActive = is_plugin_active($pluginSlug);
-		if (!$isPluginActive) {
-			$this->message
-				= "The {$this->pluginDisplayName} plugin must be active. Please install & activate {$this->pluginDisplayName}";
-            // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
-			throw new ConstraintFailedException(
-				$this,
-                esc_html($this->requiredPluginName),
-				[$this->error],
-				esc_html($this->message)
-			);
-            // phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
-        }
-
 		$pathToPluginFile = $this->absolutePathToPlugin();
 		if (!$pathToPluginFile) {
             // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
@@ -57,7 +42,7 @@ class PluginConstraint extends AbstractVersionConstraint
 		if (!function_exists('get_plugin_data')) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
-		$pluginData = get_plugin_data($pathToPluginFile, false);
+		$pluginData = get_plugin_data($pathToPluginFile, false, false);
 		$currentVersion = $pluginData['Version'];
 		$this->message = "The {$this->pluginDisplayName} plugin has to be version "
 			. $this->requiredVersion

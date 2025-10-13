@@ -27,7 +27,7 @@ class AssetsModule implements ExecutableModule
         return true;
     }
 
-    public function enqueueBlockCheckoutScripts(Data $dataService, array $gatewayInstances): void
+    public function enqueueBlockCheckoutScripts(Data $dataService, array $gatewayInstances, ContainerInterface $container): void
     {
         if (!has_block('woocommerce/checkout')) {
             return;
@@ -36,7 +36,7 @@ class AssetsModule implements ExecutableModule
         wp_enqueue_style('mollie-gateway-icons');
         wp_enqueue_style('mollie-block-custom-field');
 
-        MollieCheckoutBlocksSupport::localizeWCBlocksData($dataService, $gatewayInstances);
+        MollieCheckoutBlocksSupport::localizeWCBlocksData($dataService, $gatewayInstances, $container);
     }
 
     public function registerButtonsBlockScripts(string $pluginUrl, string $pluginPath): void
@@ -308,7 +308,7 @@ class AssetsModule implements ExecutableModule
     /**
      * Enqueue Frontend only scripts
      *
-     * @param $container Container
+     * @param ContainerInterface $container
      * @return void
      */
     public function enqueueFrontendScripts($container)
@@ -406,7 +406,7 @@ class AssetsModule implements ExecutableModule
             'isCheckout' => is_checkout(),
             'isCheckoutPayPage' => is_checkout_pay_page(),
         ];
-        if (has_block("woocommerce/checkout")) {
+        if (has_block("woocommerce/checkout") && !is_wc_endpoint_url('order-pay')) {
             wp_enqueue_script('mollie-components-blocks');
             wp_localize_script(
                 'mollie-components-blocks',
@@ -533,13 +533,24 @@ class AssetsModule implements ExecutableModule
         $pluginPath = $container->get('shared.plugin_path');
         /** @var Settings */
         $settingsHelper = $container->get('settings.settings_helper');
-        $gatewayInstances = $container->get('gateway.instances');
+        $gatewayInstances = $container->get('__deprecated.gateway_helpers');
 
-        /** Add support to Mollie blocks for Woocommerce checkout blocks functionality */
+        add_action('woocommerce_blocks_loaded', static function () {
+            woocommerce_store_api_register_update_callback(
+                [
+                    'namespace' => 'mollie-payments-for-woocommerce',
+                    'callback' => static function () {
+                        // Do nothing
+                    },
+                ]
+            );
+        });
+
+        /** Add support to Mollie blocks for WooCommerce checkout blocks functionality */
         //https://github.com/woocommerce/woocommerce-blocks/blob/trunk/docs/third-party-developers/extensibility/checkout-payment-methods/payment-method-integration.md#putting-it-all-together
         add_action(
             'woocommerce_blocks_loaded',
-            function () use ($dataService, $gatewayInstances, $pluginUrl, $pluginPath, $hasBlocksEnabled) {
+            function () use ($dataService, $gatewayInstances, $pluginUrl, $pluginPath, $hasBlocksEnabled, $container) {
                 if (
                     $hasBlocksEnabled && is_admin() && class_exists(
                         'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType'
@@ -551,7 +562,8 @@ class AssetsModule implements ExecutableModule
                             $dataService,
                             $gatewayInstances,
                             $pluginUrl,
-                            $pluginPath
+                            $pluginPath,
+                            $container
                         ) {
                             $paymentMethodRegistry->register(
                                 new MollieCheckoutBlocksSupport(
@@ -560,7 +572,8 @@ class AssetsModule implements ExecutableModule
                                     $this->getPluginUrl($pluginUrl, '/public/js/mollieBlockIndex.min.js'),
                                     (string)filemtime(
                                         $this->getPluginPath($pluginPath, '/public/js/mollieBlockIndex.min.js')
-                                    )
+                                    ),
+                                    $container
                                 )
                             );
                         }
@@ -588,10 +601,10 @@ class AssetsModule implements ExecutableModule
 
                 if ($hasBlocksEnabled) {
                     /** @var array */
-                    $gatewayInstances = $container->get('gateway.instances');
+                    $gatewayInstances = $container->get('__deprecated.gateway_helpers');
                     self::registerBlockScripts($pluginUrl, $pluginPath);
-                    add_action('wp_enqueue_scripts', function () use ($dataService, $gatewayInstances) {
-                        $this->enqueueBlockCheckoutScripts($dataService, $gatewayInstances);
+                    add_action('wp_enqueue_scripts', function () use ($dataService, $gatewayInstances, $container) {
+                        $this->enqueueBlockCheckoutScripts($dataService, $gatewayInstances, $container);
                     });
                     $this->registerButtonsBlockScripts($pluginUrl, $pluginPath);
                 }

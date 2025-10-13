@@ -2,7 +2,7 @@
 
 namespace Mollie\WooCommerce\Settings\General;
 
-use Mollie\WooCommerce\Gateway\MolliePaymentGateway;
+use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 
@@ -129,6 +129,9 @@ class MollieGeneralSettings
                 'css' => 'min-width: 350px;',
                 'default' => [],
                 'type' => 'multi_select_countries',
+                'sanitize_callback' => static function ($value) {
+                    return is_array($value) ? array_map('wc_clean', array_map('stripslashes', $value)) : '';
+                },
             ],
             'surcharge' => [
                 'id' => $defaultTitle . '_' . 'surcharge',

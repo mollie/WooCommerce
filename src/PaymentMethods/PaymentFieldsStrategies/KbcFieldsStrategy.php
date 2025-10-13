@@ -4,30 +4,32 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
-class KbcFieldsStrategy implements PaymentFieldsStrategyI
+use Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
+
+class KbcFieldsStrategy extends AbstractPaymentFieldsRenderer implements PaymentFieldsRendererInterface
 {
     use IssuersDropdownBehavior;
 
-    public function execute($gateway, $dataHelper)
+    public function renderFields(): string
     {
-        if (!$this->dropDownEnabled($gateway)) {
-            return;
+        if (!$this->dropDownEnabled($this->deprecatedHelperGateway)) {
+            return $this->gatewayDescription;
         }
 
-        $issuers = $this->getIssuers($gateway, $dataHelper);
+        $issuers = $this->getIssuers($this->deprecatedHelperGateway, $this->dataHelper);
 
-        $selectedIssuer = $gateway->getSelectedIssuer();
+        $selectedIssuer = $this->getSelectedIssuer($this->deprecatedHelperGateway);
 
-        $this->renderIssuers($gateway, $issuers, $selectedIssuer);
+        return $this->gatewayDescription . $this->renderIssuers($this->deprecatedHelperGateway, $issuers, $selectedIssuer);
     }
 
     public function getFieldMarkup($gateway, $dataHelper)
     {
         if (!$this->dropDownEnabled($gateway)) {
-            return "";
+            return '';
         }
         $issuers = $this->getIssuers($gateway, $dataHelper);
-        $selectedIssuer = $gateway->getSelectedIssuer();
+        $selectedIssuer = $this->getSelectedIssuer($gateway);
         $markup = $this->dropdownOptions($gateway, $issuers, $selectedIssuer);
         return $markup;
     }

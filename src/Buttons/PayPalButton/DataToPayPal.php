@@ -57,7 +57,7 @@ class DataToPayPal
     /**
      * Build the name of the button from the settings to return the chosen one
      *
-     * @retun string the path of the chosen button image
+     * @return string the path of the chosen button image
      */
     protected function whichPayPalButton(): string
     {

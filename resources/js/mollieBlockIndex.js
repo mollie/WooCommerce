@@ -1,78 +1,59 @@
 import molliePaymentMethod from './blocks/molliePaymentMethod'
 import ApplePayButtonComponent from './blocks/ApplePayButtonComponent'
+import ApplePayButtonEditorComponent from './blocks/ApplePayButtonEditorComponent'
 
 (
-    function ({ mollieBlockData, wc, _, jQuery}) {
+    function ({mollieBlockData, wc, _, jQuery}) {
         if (_.isEmpty(mollieBlockData)) {
             return;
         }
 
-        window.onload = (event) => {
-            const { registerPaymentMethod } = wc.wcBlocksRegistry;
-            const { checkoutData, defaultFields } = wc.wcSettings.allSettings;
-            let billing_address, shipping_address;
-
-            if (checkoutData) {
-                ({ billing_address, shipping_address } = checkoutData);
-            } else {
-                billing_address = {};
-                shipping_address = {};
-            }
-            const { ajaxUrl, filters, gatewayData, availableGateways } = mollieBlockData.gatewayData;
-            const {useEffect} = wp.element;
-            const isAppleSession = typeof window.ApplePaySession === "function"
-            const isBlockEditor = !!wp?.blockEditor;
-
-            function getCompanyField() {
-                let shippingCompany = shipping_address.company ?? false;
-                let billingCompany = billing_address.company ?? false;
-                return shippingCompany ? shippingCompany : billingCompany;
-            }
-
-            function getPhoneField()
-            {
-                const phoneFieldDataset = document.querySelector('[data-show-phone-field]');
-                if (!phoneFieldDataset) {
-                    return true;
+        const {registerPaymentMethod} = wc.wcBlocksRegistry;
+        const {defaultFields} = wc.wcSettings.allSettings;
+        const {ajaxUrl, filters, gatewayData, availableGateways} = mollieBlockData.gatewayData;
+        const {useEffect} = wp.element;
+        const isAppleSession = typeof window.ApplePaySession === "function"
+        const isEditorContext = wc?.wcBlocksData?.isEditor();
+        const companyNameString = defaultFields.company.label
+        const phoneString = defaultFields.phone.label
+        let requiredFields = {
+            'companyNameString': companyNameString,
+            'phoneString': phoneString,
+        }
+        gatewayData.forEach(item => {
+            let register = () => registerPaymentMethod(molliePaymentMethod(useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields));
+            if (item.name === 'mollie_wc_gateway_applepay') {
+                const {isExpressEnabled} = item;
+                if (isEditorContext || isAppleSession && window.ApplePaySession.canMakePayments()) {
+                    register();
                 }
-                return phoneFieldDataset.dataset.showPhoneField !== "false"
-            }
-
-            const isCompanyFieldVisible = getCompanyField();
-            const companyNameString = defaultFields.company.label
-            const isPhoneFieldVisible = getPhoneField();
-            const phoneString = defaultFields.phone.label
-            let requiredFields = {
-                'companyNameString': companyNameString,
-                'phoneString': phoneString,
-            }
-            gatewayData.forEach(item => {
-                let register = () => registerPaymentMethod(molliePaymentMethod(useEffect, ajaxUrl, filters, gatewayData, availableGateways, item, jQuery, requiredFields, isCompanyFieldVisible, isPhoneFieldVisible));
-                if (item.name === 'mollie_wc_gateway_applepay'  && !isBlockEditor) {
-                     const {isExpressEnabled} = item;
-                    if ((isAppleSession && window.ApplePaySession.canMakePayments())) {
-                        register();
-                        if (isExpressEnabled !== true) {
-                            return;
-                        }
-                        const {registerExpressPaymentMethod} = wc.wcBlocksRegistry;
-                        registerExpressPaymentMethod({
-                            name: 'mollie_wc_gateway_applepay_express',
-                            content: <ApplePayButtonComponent />,
-                            edit: <ApplePayButtonComponent />,
-                            ariaLabel: 'Apple Pay',
-                            canMakePayment: () => true,
-                            paymentMethodId: 'mollie_wc_gateway_applepay',
-                            supports: {
-                                features: ['products'],
-                            },
-                        })
-                    }
+                if (isExpressEnabled !== true) {
                     return;
                 }
-                register();
-            });
-        };
-
+                const {registerExpressPaymentMethod} = wc.wcBlocksRegistry;
+                registerExpressPaymentMethod({
+                    name: 'mollie_wc_gateway_applepay_express',
+                    title: 'Apple Pay Express button',
+                    description: 'Apple Pay Express button',
+                    content: <ApplePayButtonComponent/>,
+                    edit: <ApplePayButtonEditorComponent/>,
+                    ariaLabel: 'Apple Pay',
+                    canMakePayment: () => {
+                        if (isEditorContext) {
+                            return true;
+                        }
+                        return isAppleSession && window.ApplePaySession.canMakePayments();
+                    },
+                    paymentMethodId: 'mollie_wc_gateway_applepay',
+                    gatewayId: 'mollie_wc_gateway_applepay',
+                    supports: {
+                        features: ['products'],
+                        style: ['height', 'borderRadius']
+                    },
+                })
+                return;
+            }
+            register();
+        });
     }
 )(window, wc)

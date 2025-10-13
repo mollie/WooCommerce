@@ -127,7 +127,7 @@ class PaymentMethodsIconUrl
         }
         if (
             !isset($gatewaySettings['iconFileUrl'])
-            && !is_string(
+            || !is_string(
                 $gatewaySettings['iconFileUrl']
             )
         ) {

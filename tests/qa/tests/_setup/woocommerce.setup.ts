@@ -16,7 +16,6 @@ import {
 	disableNoncePlugin,
 	subscriptionsPlugin,
 	disableWcSetupWizard,
-	featureFlagsPlugin,
 } from '../../resources';
 
 setup( 'Setup Permalinks', async ( { requestUtils } ) => {

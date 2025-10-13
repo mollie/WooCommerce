@@ -11,6 +11,7 @@ Mollie Playwright tests. Depends on [`@inpsyde/playwright-utils`](https://github
 - [Reporting to TestRail](#reporting-to-testrail)
 - [Run tests](#run-tests)
 - [Autotest Execution workflow](#autotest-execution-workflow)
+- [Automated environment setup scripts](#automated-environment-setup-scripts)
 - [Coding standards](#coding-standards)
 
 ## Repo structure
@@ -62,13 +63,7 @@ Mollie Playwright tests. Depends on [`@inpsyde/playwright-utils`](https://github
 	cd WooCommerce
 	```
 
-2. (Temporary, till autotests are not yet merged into main branch) Switch to `qa/e2e-tests` branch:
-
-	```bash
-	git checkout qa/e2e-tests
-	```
-
-3. In the terminal change directory to `./tests/qa` 
+2. In the terminal change directory to `./tests/qa` 
 
 	```bash
 	cd tests/qa
@@ -79,17 +74,17 @@ Mollie Playwright tests. Depends on [`@inpsyde/playwright-utils`](https://github
 	npm run setup:tests
 	```
 
-4. Using `.env.example`, create and configure `.env` file in `./tests/qa/`:
+3. Using `.env.example`, create and configure `.env` file in `./tests/qa/`:
 
 	5.1 Set general variables. See also [these steps](https://github.com/inpsyde/playwright-utils?tab=readme-ov-file#env-variables).
 	
 	5.2 Set Mollie API keys and tested API method (variable values: `payment` (is applied by default) or `order`). See also `.env.example`.
 
-5. Configure `playwright.config.ts` of the project following [these steps](https://github.com/inpsyde/playwright-utils?tab=readme-ov-file#playwright-configuration).
+4. Configure `playwright.config.ts` of the project following [these steps](https://github.com/inpsyde/playwright-utils?tab=readme-ov-file#playwright-configuration).
 
-6. To avoid conflicts make sure any other payment plugins are deleted.
+> Note 1: Further configuration of the environment is done automatically via scripts in `./tests/.setup/woocommerce.setup.ts`.
 
-> Note: Further configuration of the environment is done automatically via scripts in `./tests/.setup/woocommerce.setup.ts`.
+> Note 2: To avoid conflicts make sure any other payment plugin is deleted.
 
 ## DDEV adjustments
 
@@ -116,12 +111,14 @@ Configure reporting to the __TestRail__ following [these steps](https://github.c
 To execute all tests sequentially, in the terminal navigate to the `./tests/qa/` directory and run following command:
 
 ```bash
-npx playwright test --project=all
+# Run tests from playwright project "all" using 1 worker
+npm run test:all
 ```
+
 
 ### Additional options to run tests from command line
 
-- Add scripts to `package.json` of the project (eligible for Windows, not tested on other OS):
+- You may add scripts to `package.json` of the project (eligible for Windows, not tested on other OS):
 
 	```json
 	"scripts": {
@@ -199,6 +196,57 @@ npx playwright test --project=all
 11. If needed, update the `TESTRAIL_RUN_ID` and `MOLLIE_API_METHOD` and repeat the execution for another API method.
 
 	> Note: depending on selected API method number of tests may vary (not all payment methods are eligible for 'Payment'). To find specific cases in specs perform a global code search for `testedApiMethod` and `mollieApiMethod` fixture.
+
+## Automated environment setup scripts
+
+**Requires [Local installation](#local-installation) and optionally [DDEV adjustments](#ddev-adjustments).**
+
+### Setup store
+
+> Note: see [WooCommerce setup scripts](./tests/_setup/woocommerce.setup.ts).
+
+- Installs WooCommerce, Storefront theme, additional plugins (Disable Nonce, Subscriptions, etc.).
+- Configures website permalinks (`%postname%`).
+- Configures WooCommerce default settings (country, currency, taxes, shipping, API keys, emails).
+- Creates classic pages, products, coupons, registered customer.
+
+```bash
+npm run setup:store:default
+```
+
+### Setup German store and connect Mollie merchant
+
+> Note: see [Mollie setup scripts](./tests/_setup/mollie.setup.ts).
+
+```bash
+npm run setup:mollie:germany
+```
+
+### Other scripts:
+
+* Setup block pages
+
+	```bash
+	npm run setup:checkout:block
+	```
+
+* Setup classic pages
+
+	```bash
+	npm run setup:checkout:classic
+	```
+
+* Setup taxes included
+
+	```bash
+	npm run setup:tax:inc
+	```
+
+* Setup taxes excluded
+
+	```bash
+	npm run setup:tax:exc
+	```
 
 ## Coding standards
 

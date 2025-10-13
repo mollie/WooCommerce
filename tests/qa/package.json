@@ -39,6 +39,10 @@
     "lint:js": "wp-scripts lint-js  --resolve-plugins-relative-to ./ **/*.{ts,tsx,mjs}",
     "lint:js:fix": "wp-scripts lint-js --resolve-plugins-relative-to ./ --fix **/*.{ts,tsx,mjs}",
     "setup:wc:default": "npx playwright test woocommerce.setup",
+    "setup:checkout:block": "npx playwright test --grep=\"setup:checkout:block;\"",
+    "setup:checkout:classic": "npx playwright test --grep=\"setup:checkout:classic;\"",
+    "setup:tax:inc": "npx playwright test --grep=\"setup:tax:inc;\"",
+    "setup:tax:exc": "npx playwright test --grep=\"setup:tax:exc;\"",
     "setup:mollie:germany": "npx playwright test --grep \"setup:mollie:germany;\"",
     "test:all": "npx playwright test --project=all --workers=1"
   },

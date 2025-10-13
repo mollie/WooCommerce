@@ -1,56 +1,91 @@
-( function ( { _, mollieSettingsData, jQuery } ) {
-	const { current_section = false } = mollieSettingsData;
-	jQuery( function ( $ ) {
-		if ( _.isEmpty( mollieSettingsData ) ) {
-			return;
-		}
-		const gatewayName = 'woocommerce_' + current_section;
-		if ( ! gatewayName ) {
-			return;
-		}
+(function() {
+    const mollieSettingsData = window.mollieSettingsData || {};
+    const { current_section = false } = mollieSettingsData;
 
-		const fixedField = $( '#' + gatewayName + '_fixed_fee' ).closest(
-			'tr'
-		);
-		const percentField = $( '#' + gatewayName + '_percentage' ).closest(
-			'tr'
-		);
-		const limitField = $( '#' + gatewayName + '_surcharge_limit' ).closest(
-			'tr'
-		);
-		const maxField = $( '#' + gatewayName + '_maximum_limit' ).closest(
-			'tr'
-		);
+    function isEmpty(obj) {
+        return !obj || Object.keys(obj).length === 0;
+    }
 
-		$( '#' + gatewayName + '_payment_surcharge' )
-			.change( function () {
-				switch ( $( this ).val() ) {
-					case 'no_fee':
-						fixedField.hide();
-						percentField.hide();
-						limitField.hide();
-						maxField.hide();
-						break;
-					case 'fixed_fee':
-						fixedField.show();
-						maxField.show();
-						percentField.hide();
-						limitField.hide();
-						break;
-					case 'percentage':
-						fixedField.hide();
-						maxField.show();
-						percentField.show();
-						limitField.show();
-						break;
-					case 'fixed_fee_percentage':
-					default:
-						fixedField.show();
-						percentField.show();
-						limitField.show();
-						maxField.show();
-				}
-			} )
-			.change();
-	} );
-} )( window );
+    function getFieldElement(gatewayName, fieldName) {
+        const element = document.getElementById(`${gatewayName}_${fieldName}`);
+        return element ? element.closest('tr') : null;
+    }
+
+    function showElement(element) {
+        if (element) {
+            element.style.display = '';
+        }
+    }
+
+    function hideElement(element) {
+        if (element) {
+            element.style.display = 'none';
+        }
+    }
+
+    function handleSurchargeChange(fixedField, percentField, limitField, maxField) {
+        return function() {
+            const value = this.value;
+
+            switch (value) {
+                case 'no_fee':
+                    hideElement(fixedField);
+                    hideElement(percentField);
+                    hideElement(limitField);
+                    hideElement(maxField);
+                    break;
+                case 'fixed_fee':
+                    showElement(fixedField);
+                    showElement(maxField);
+                    hideElement(percentField);
+                    hideElement(limitField);
+                    break;
+                case 'percentage':
+                    hideElement(fixedField);
+                    showElement(maxField);
+                    showElement(percentField);
+                    showElement(limitField);
+                    break;
+                case 'fixed_fee_percentage':
+                default:
+                    showElement(fixedField);
+                    showElement(percentField);
+                    showElement(limitField);
+                    showElement(maxField);
+            }
+        };
+    }
+
+    function initializeSurchargeSettings() {
+        if (isEmpty(mollieSettingsData)) {
+            return;
+        }
+
+        const gatewayName = `woocommerce_${current_section}`;
+        if (!gatewayName || current_section === false) {
+            return;
+        }
+
+        const fixedField = getFieldElement(gatewayName, 'fixed_fee');
+        const percentField = getFieldElement(gatewayName, 'percentage');
+        const limitField = getFieldElement(gatewayName, 'surcharge_limit');
+        const maxField = getFieldElement(gatewayName, 'maximum_limit');
+
+        const surchargeElement = document.getElementById(`${gatewayName}_payment_surcharge`);
+        if (!surchargeElement) {
+            return;
+        }
+
+        const changeHandler = handleSurchargeChange(fixedField, percentField, limitField, maxField);
+
+        surchargeElement.addEventListener('change', changeHandler);
+
+        // Trigger initial change event
+        changeHandler.call(surchargeElement);
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeSurchargeSettings);
+    } else {
+        initializeSurchargeSettings();
+    }
+})();

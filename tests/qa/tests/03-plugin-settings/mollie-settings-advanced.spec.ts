@@ -4,7 +4,7 @@
 import { test, expect } from '../../utils';
 
 test.beforeAll( async ( { utils } ) => {
-	await utils.configureStore( { classicPages: true } );
+	await utils.configureStore( { enableClassicPages: true } );
 	await utils.installActivateMollie();
 	await utils.cleanReconnectMollie();
 } );

@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { mollieConfigGeneral, MollieSettings } from '../../resources';
+import { mollieApiKeys, MollieSettings } from '../../resources';
 import { urls } from '../urls';
 import { MollieSettingsPage } from './mollie-settings-page';
 
@@ -50,7 +50,7 @@ export class MollieSettingsApiKeys extends MollieSettingsPage {
 	};
 
 	setApiKeys = async (
-		data: MollieSettings.ApiKeys = mollieConfigGeneral.default
+		data: MollieSettings.ApiKeys = mollieApiKeys.default
 	) => {
 		await this.setup( data );
 	};

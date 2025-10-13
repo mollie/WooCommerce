@@ -3,7 +3,7 @@
  */
 import { MollieSettings } from './types';
 
-export const mollieConfigGeneral: {
+export const mollieApiKeys: {
 	[ key: string ]: MollieSettings.ApiKeys;
 } = {
 	empty: {

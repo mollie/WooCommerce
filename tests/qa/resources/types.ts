@@ -1,3 +1,14 @@
+export type StoreSettings = {
+		enableClassicPages?: boolean; // false = block cart and checkout (default), true = classic cart & checkout pages
+		settings?: WooCommerce.Settings; // WC settings
+		taxes?: {
+			options: WooCommerce.Settings; // Tax settings in WC > Settings > General tab
+			rates: WooCommerce.CreateTax[]; // Tax rates to be active in WC > Settings > Taxes > Tax rates tab
+		};
+		customer?: WooCommerce.CreateCustomer; // Add registered customer
+		enableSubscriptionsPlugin?: boolean; // WC Subscription plugin is deactivated
+	};
+
 export namespace MollieSettings {
 	export type ApiKeys = {
 		testModeEnabled?: 'yes' | 'no';

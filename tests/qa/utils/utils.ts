@@ -20,8 +20,9 @@ import {
 import {
 	MollieSettings,
 	molliePlugin,
-	mollieConfigGeneral,
+	mollieApiKeys,
 	subscriptionsPlugin,
+	StoreSettings,
 } from '../resources';
 
 export class Utils {
@@ -77,9 +78,9 @@ export class Utils {
 	 * 	- Sets API method (Payment or Order API)
 	 */
 	cleanReconnectMollie = async () => {
-		await this.mollieApi.setMollieApiKeys( mollieConfigGeneral.default );
+		await this.mollieApi.setMollieApiKeys( mollieApiKeys.default );
 		await this.mollieApi.cleanMollieDb();
-		await this.mollieApi.setMollieApiKeys( mollieConfigGeneral.default );
+		await this.mollieApi.setMollieApiKeys( mollieApiKeys.default );
 		await this.mollieApi.setApiMethod( this.mollieApiMethod );
 	};
 
@@ -120,13 +121,13 @@ export class Utils {
 	 *
 	 * @param {Object} data see /resources/woocommerce-config.ts
 	 */
-	configureStore = async ( data ) => {
-		if ( data.classicPages === true ) {
+	configureStore = async ( data: StoreSettings ) => {
+		if ( data.enableClassicPages === true ) {
 			await this.wooCommerceUtils.activateClassicCartPage();
 			await this.wooCommerceUtils.activateClassicCheckoutPage();
 		}
 
-		if ( data.classicPages === false ) {
+		if ( data.enableClassicPages === false ) {
 			await this.wooCommerceUtils.activateBlockCartPage();
 			await this.wooCommerceUtils.activateBlockCheckoutPage();
 		}

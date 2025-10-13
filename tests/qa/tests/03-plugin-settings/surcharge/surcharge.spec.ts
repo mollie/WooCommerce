@@ -44,7 +44,7 @@ test.beforeAll( async ( { utils }, testInfo ) => {
 		return;
 	}
 	await utils.configureStore( {
-		classicPages: true,
+		enableClassicPages: true,
 		settings: {
 			general: shopSettings.germany.general,
 		},

@@ -9,7 +9,7 @@ test.beforeAll( async ( { utils, wooCommerceUtils } ) => {
 		settings: {
 			general: shopSettings.germany.general,
 		},
-		classicPages: true,
+		enableClassicPages: true,
 		enableSubscriptionsPlugin: true,
 	} );
 	await wooCommerceUtils.createProduct( products.mollieSubscription100 );

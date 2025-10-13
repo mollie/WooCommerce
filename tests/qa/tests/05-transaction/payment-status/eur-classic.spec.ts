@@ -18,7 +18,7 @@ test.beforeAll( async ( { utils }, testInfo ) => {
 		settings: {
 			general: shopSettings.germany.general,
 		},
-		classicPages: true,
+		enableClassicPages: true,
 	} );
 	await utils.installActivateMollie();
 	await utils.cleanReconnectMollie();

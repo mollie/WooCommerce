@@ -7,16 +7,16 @@
 		message,
 		pluginUrlImages,
 	} = gatewaySettingsData;
-
+console.log(gatewaySettingsData)
 	if ( _.isEmpty( gatewaySettingsData ) ) {
 		return;
 	}
 	document.addEventListener( 'DOMContentLoaded', function ( event ) {
 		if ( ! isEnabledIcon ) {
-			return;
+            return;
 		}
 
-		const uploadField = document.querySelector( '#' + uploadFieldName );
+		const uploadField = document.querySelector( '#' + 'woocommerce_' + uploadFieldName );
 
 		if ( _.isEmpty( iconUrl ) ) {
 			uploadField.insertAdjacentHTML(
@@ -39,14 +39,14 @@
 	}
 
 	jQuery( function ( $ ) {
-		$( '#' + enableFieldName )
+		$( '#' + 'woocommerce_' + enableFieldName )
 			.change( function () {
 				if ( $( this ).is( ':checked' ) ) {
-					$( '#' + uploadFieldName )
+					$( '#' + 'woocommerce_' + uploadFieldName )
 						.closest( 'tr' )
 						.show();
 				} else {
-					$( '#' + uploadFieldName )
+					$( '#' + 'woocommerce_' + uploadFieldName )
 						.closest( 'tr' )
 						.hide();
 				}
@@ -54,7 +54,7 @@
 			.change();
 
 		const payPalIconSelectorElement = $(
-			'#mollie_wc_gateway_paypal_color'
+			'#woocommerce_mollie_wc_gateway_paypal_color'
 		);
 		payPalIconSelectorElement
 			.change( function () {

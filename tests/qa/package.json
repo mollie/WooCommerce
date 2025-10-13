@@ -38,6 +38,8 @@
     "lint:md:fix": "wp-scripts lint-md-docs --fix ./**/*.md README.md",
     "lint:js": "wp-scripts lint-js  --resolve-plugins-relative-to ./ **/*.{ts,tsx,mjs}",
     "lint:js:fix": "wp-scripts lint-js --resolve-plugins-relative-to ./ --fix **/*.{ts,tsx,mjs}",
+    "setup:wc:default": "npx playwright test woocommerce.setup",
+    "setup:mollie:germany": "npx playwright test --grep \"setup:mollie:germany;\"",
     "test:all": "npx playwright test --project=all --workers=1"
   },
   "eslintConfig": {

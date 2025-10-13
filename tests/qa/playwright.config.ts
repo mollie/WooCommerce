@@ -90,6 +90,11 @@ export default defineConfig< TestBaseExtend >( {
 			fullyParallel: false,
 		},
 		{
+			name: 'setup-mollie',
+			testMatch: /mollie\.setup\.ts/,
+			fullyParallel: false,
+		},
+		{
 			name: 'all',
 			dependencies: [ 'setup-woocommerce' ],
 			fullyParallel: false,

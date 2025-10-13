@@ -31,10 +31,14 @@ export function initializeMollieComponentsWithStoreSubscription( config ) {
             return;
         }
 
+        // prevent multiple concurrent initializations
+        isInitialized = true;
+
         try {
             console.log( 'Mollie: Initializing Components Manager' );
             if ( ! config.merchantProfileId ) {
                 console.error( 'Mollie merchant profile ID not found' );
+                isInitialized = false; // Reset on error
                 return;
             }
 
@@ -43,7 +47,6 @@ export function initializeMollieComponentsWithStoreSubscription( config ) {
                 options: config.options || {},
             } );
 
-            isInitialized = true;
             console.log( 'Mollie: Components Manager initialized successfully' );
 
             if ( unsubscribeInit ) {

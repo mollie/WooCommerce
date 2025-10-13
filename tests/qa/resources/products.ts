@@ -70,11 +70,18 @@ const mollieVariable100: WooCommerce.CreateProduct = {
 		{
 			attributes: [
 				{
-					id: '0',
+					name: 'Color',
 					option: 'Blue',
 				},
+			],
+			regular_price: '100.00',
+			stock_status: 'instock',
+			manage_stock: false,
+		},
+		{
+			attributes: [
 				{
-					id: '0',
+					name: 'Color',
 					option: 'Green',
 				},
 			],

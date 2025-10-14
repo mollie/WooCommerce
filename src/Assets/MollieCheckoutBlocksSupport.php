@@ -138,7 +138,18 @@ final class MollieCheckoutBlocksSupport
             ];
         }
         $dataToScript['gatewayData'] = $gatewayData;
-
+        $base_location = wc_get_base_location();
+        $shopCountryCode = $base_location['country'];
+        $totalLabel = get_bloginfo('name');
+        $appleButtonData = [
+            'shop' => [
+                'countryCode' => $shopCountryCode,
+                'totalLabel' => $totalLabel,
+            ],
+            'nonce' => wp_create_nonce('mollie_apple_pay_blocks'),
+            'ajaxUrl' => admin_url('admin-ajax.php')
+        ];
+        $dataToScript['appleButtonData'] = $appleButtonData;
 
         if ($componentData !== null) {
             $dataToScript['componentData'] = $componentData;

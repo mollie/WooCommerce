@@ -7,6 +7,7 @@ const CreditCardComponent = ( {
 	isComponentReady,
 	componentError,
 } ) => {
+    const isComponentsEnabled = item.shouldLoadComponents;
 	useEffect( () => {
 		if ( activePaymentMethod === 'mollie_wc_gateway_creditcard' ) {
 			// Dispatch event to indicate credit card method is selected
@@ -22,13 +23,13 @@ const CreditCardComponent = ( {
 
 	// Display component status
 	const getComponentStatus = () => {
-		if ( componentError ) {
+		if ( componentError && isComponentsEnabled) {
 			return (
 				<div className="mollie-error">Error: { componentError }</div>
 			);
 		}
 
-		if ( ! isComponentReady ) {
+		if ( ! isComponentReady && isComponentsEnabled) {
 			return (
 				<div className="mollie-loading">Loading payment form...</div>
 			);

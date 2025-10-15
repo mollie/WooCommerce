@@ -10,14 +10,15 @@ export const PaymentMethodContentRenderer = ( props ) => {
         item,
         requiredFields,
         shouldHidePhoneField,
-        props: {activePaymentMethod, emitResponse, eventRegistration, billing, shippingData,}
+        props: {emitResponse, eventRegistration, billing, shippingData,}
     } = props;
 
 	const { responseTypes } = emitResponse;
 	const { onPaymentSetup } = eventRegistration;
 	const containerRef = useRef( null );
+    const { setComponentContainer, clearComponentContainer } = useDispatch( MOLLIE_STORE_KEY );
 
-	// Only UI state that affects rendering should subscribe here
+    // Only UI state that affects rendering should subscribe here
 	const { isComponentReady, componentError } = useSelect(
 		( select ) => ( {
 			isComponentReady: select( MOLLIE_STORE_KEY ).getIsComponentReady(),
@@ -25,59 +26,21 @@ export const PaymentMethodContentRenderer = ( props ) => {
 		} ),
 		[]
 	);
+    const activePaymentMethod = useSelect(
+        ( select ) => select( MOLLIE_STORE_KEY ).getActivePaymentMethod(),
+        []
+    );
+    useEffect( () => {
+        if ( containerRef.current && activePaymentMethod ) {
+            setComponentContainer( activePaymentMethod, containerRef.current );
+        }
 
-	// Initialize/unmount Mollie Components for credit card
-	useEffect( () => {
-		if (
-			activePaymentMethod &&
-			item.name === 'mollie_wc_gateway_creditcard'
-		) {
-			const initializeComponents = async () => {
-				try {
-					const mollieConfig =
-						mollieBlockData.gatewayData.componentData || {};
-					if ( ! mollieConfig.merchantProfileId ) {
-						console.error( 'Mollie merchant profile ID not found' );
-						return;
-					}
-
-					await mollieComponentsManager.initialize( {
-						merchantProfileId: mollieConfig.merchantProfileId,
-						options: mollieConfig.options || {},
-					} );
-					if (
-						containerRef.current &&
-						mollieConfig.componentsSettings
-					) {
-						await mollieComponentsManager.mountComponents(
-							activePaymentMethod,
-							mollieConfig.componentsAttributes,
-							mollieConfig.componentsSettings,
-							containerRef.current
-						);
-					}
-				} catch ( error ) {
-					console.error(
-						'Failed to initialize Mollie components:',
-						error
-					);
-				}
-			};
-
-			initializeComponents();
-		}
-
-		return () => {
-			if (
-				mollieComponentsManager.getActiveGateway() ===
-				activePaymentMethod
-			) {
-				mollieComponentsManager.unmountComponents(
-					activePaymentMethod
-				);
-			}
-		};
-	}, [ activePaymentMethod, item.name ] );
+        return () => {
+            if ( activePaymentMethod ) {
+                clearComponentContainer( activePaymentMethod );
+            }
+        };
+    }, [ activePaymentMethod, setComponentContainer, clearComponentContainer ] );
 
 	useEffect( () => {
 		const onProcessingPayment = async () => {
@@ -99,8 +62,8 @@ export const PaymentMethodContentRenderer = ( props ) => {
 				};
 
 				let token = cardToken;
-
-				if ( item.name === 'mollie_wc_gateway_creditcard' && ! token ) {
+                const isComponentsEnabled = item.shouldLoadComponents;
+				if ( item.name === 'mollie_wc_gateway_creditcard' && ! token &&  isComponentsEnabled) {
 					token = await mollieComponentsManager.createToken();
 				}
 

@@ -1,15 +1,15 @@
 /* global wc */
 import './store/index.js';
-import { select } from '@wordpress/data';
+import { select, subscribe } from '@wordpress/data';
 import { setUpMollieBlockCheckoutListeners } from './store/storeListeners';
 import { MOLLIE_STORE_KEY, PAYMENT_STORE_KEY } from './store';
 import {
-	registerAllContentHooks,
-	registerExpressPaymentMethodHooks,
-	registerGatewayRegistrationHooks
+    registerAllContentHooks,
+    registerExpressPaymentMethodHooks,
+    registerGatewayRegistrationHooks
 } from './registration/libraryHooksRegistrar';
 import { buildRegistrationContext } from './registration/contextBuilder';
-import { mollieComponentsManager } from './services/MollieComponentsManager';
+import {initializeMollieComponentsWithStoreSubscription} from "./services/MollieComponentsInitializer";
 
 /**
  * Initialization with mollieComponentsManager
@@ -18,57 +18,60 @@ import { mollieComponentsManager } from './services/MollieComponentsManager';
  *
  */
 ( function ( { mollieBlockData, wc, _ } ) {
-	if ( _.isEmpty( mollieBlockData ) ) {
-		console.warn( 'Mollie: No block data available' );
-		return;
-	}
+    if ( _.isEmpty( mollieBlockData ) ) {
+        console.warn( 'Mollie: No block data available' );
+        return;
+    }
 
-	const paymentStore = select( PAYMENT_STORE_KEY );
-	if(! paymentStore ) {
-		return;
-	}
+    try {
+        const { gatewayData } = mollieBlockData.gatewayData;
+        const context = buildRegistrationContext( wc );
 
-	try {
-		const { gatewayData } = mollieBlockData.gatewayData;
-		const context = buildRegistrationContext( wc );
+        // These don't depend on stores and should run before the library registration
+        registerAllContentHooks( gatewayData, context );
+        registerGatewayRegistrationHooks( gatewayData );
+        registerExpressPaymentMethodHooks( gatewayData );
 
-		registerAllContentHooks( gatewayData, context );
-		registerGatewayRegistrationHooks(gatewayData);
-		registerExpressPaymentMethodHooks( gatewayData );
-		setUpMollieBlockCheckoutListeners( MOLLIE_STORE_KEY );
+        // Wait for payment store
+        let storeInitialized = false;
+        let unsubscribe = null;
 
-		// Initialize mollieComponentsManager with global settings
-		if ( mollieBlockData.gatewayData.componentData ) {
-			const initmollieComponentsManager = async () => {
-				try {
-					const config = mollieBlockData.gatewayData.componentData;
-					await mollieComponentsManager.initialize( {
-						merchantProfileId: config.merchantProfileId,
-						options: config.options || {},
-					} );
-					console.log( 'Mollie mollieComponentsManager initialized' );
-				} catch ( error ) {
-					console.error(
-						'Failed to initialize mollieComponentsManager:',
-						error
-					);
-				}
-			};
+        const initializeStoreDependent = () => {
+            if ( storeInitialized ) {
+                return;
+            }
 
-			if ( document.readyState === 'loading' ) {
-				document.addEventListener(
-					'DOMContentLoaded',
-					initmollieComponentsManager
-				);
-			} else {
-				initmollieComponentsManager();
-			}
-		}
+            const paymentStore = select( PAYMENT_STORE_KEY );
+            if ( ! paymentStore ) {
+                return;
+            }
 
-		window.addEventListener( 'beforeunload', () => {
-			mollieComponentsManager.cleanup();
-		} );
-	} catch ( error ) {
-		console.error( 'Mollie: Initialization failed:', error );
-	}
+            storeInitialized = true;
+
+            // Unsubscribe from the store watcher
+            if ( unsubscribe ) {
+                unsubscribe();
+                unsubscribe = null;
+            }
+
+            // Store-dependent features
+            setUpMollieBlockCheckoutListeners( MOLLIE_STORE_KEY );
+
+            if ( mollieBlockData.gatewayData.componentData ) {
+                initializeMollieComponentsWithStoreSubscription(
+                    mollieBlockData.gatewayData.componentData
+                );
+            }
+        };
+
+        initializeStoreDependent();
+
+        // If not ready, subscribe to store changes
+        if ( ! storeInitialized ) {
+            unsubscribe = subscribe( initializeStoreDependent, PAYMENT_STORE_KEY );
+        }
+
+    } catch ( error ) {
+        console.error( 'Mollie: Initialization failed:', error );
+    }
 } )( window, wc );

@@ -68,6 +68,21 @@ export const createPaymentComponent = ( item, commonProps ) => {
 				/>
 			);
 
+        case 'mollie_wc_gateway_bizum':
+            const BizumFieldsWithStore = withMollieStore(
+                PaymentFieldsComponent
+            );
+            return (
+                <BizumFieldsWithStore
+                    { ...commonProps }
+                    fieldConfig={ {
+                        hasCustomPhoneField: true,
+                        hasCustomBirthdateField: false,
+                        phoneLabel: item.phoneLabel || 'Phone',
+                    } }
+                />
+            );
+
 		default:
 			const DefaultWithStore = withMollieStore( DefaultComponent );
 			return <DefaultWithStore { ...commonProps } />;

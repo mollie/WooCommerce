@@ -91,6 +91,8 @@ const selectors = {
 		tokenCreated: state.tokenCreated,
 		componentsReady: selectors.getIsComponentReady( state ),
 	} ),
+    getComponentContainer: ( state, gateway ) =>
+        state.componentContainers[ gateway ] || null,
 };
 
 export default selectors;

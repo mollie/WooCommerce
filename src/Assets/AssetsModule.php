@@ -245,7 +245,7 @@ class AssetsModule implements ExecutableModule
         wp_register_script(
             'mollie-components',
             $this->getPluginUrl($pluginUrl, '/public/js/mollie-components.min.js'),
-            ['underscore', 'jquery', 'mollie', 'babel-polyfill'],
+            ['underscore', 'jquery', 'mollie'],
             (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollie-components.min.js')),
             true
         );
@@ -272,9 +272,8 @@ class AssetsModule implements ExecutableModule
         );
     }
 
-    public function registerBlockScripts(string $pluginUrl, string $pluginPath): void
+    public function registerBlockScripts(string $pluginUrl, string $pluginPath, ContainerInterface $container): void
     {
-
         wp_register_script(
             'mollie_block_index',
             $this->getPluginUrl($pluginUrl, '/public/js/mollieBlockIndex.min.js'),
@@ -282,6 +281,15 @@ class AssetsModule implements ExecutableModule
             (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollieBlockIndex.min.js')),
             true
         );
+
+        /**
+         * Ensure localized data via static method call
+         * TODO rework the static method call
+         */
+        $dataService = $container->get('settings.data_helper');
+        $gatewayInstances = $container->get('__deprecated.gateway_helpers');
+        MollieCheckoutBlocksSupport::localizeWCBlocksData($dataService, $gatewayInstances, $container);
+
         wp_register_style(
             'mollie-block-custom-field',
             $this->getPluginUrl($pluginUrl, '/public/css/mollie-block-custom-field.min.css'),
@@ -466,44 +474,8 @@ class AssetsModule implements ExecutableModule
             );
         });
 
-        /** Add support to Mollie blocks for WooCommerce checkout blocks functionality */
-        //https://github.com/woocommerce/woocommerce-blocks/blob/trunk/docs/third-party-developers/extensibility/checkout-payment-methods/payment-method-integration.md#putting-it-all-together
         add_action(
-            'woocommerce_blocks_loaded',
-            function () use ($dataService, $gatewayInstances, $pluginUrl, $pluginPath, $hasBlocksEnabled, $container) {
-                if (
-                    $hasBlocksEnabled && is_admin() && class_exists(
-                        'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType'
-                    )
-                ) {
-                    add_action(
-                        'woocommerce_blocks_payment_method_type_registration',
-                        function (PaymentMethodRegistry $paymentMethodRegistry) use (
-                            $dataService,
-                            $gatewayInstances,
-                            $pluginUrl,
-                            $pluginPath,
-                            $container
-                        ) {
-                            $paymentMethodRegistry->register(
-                                new MollieCheckoutBlocksSupport(
-                                    $dataService,
-                                    $gatewayInstances,
-                                    $this->getPluginUrl($pluginUrl, '/public/js/mollieBlockIndex.min.js'),
-                                    (string)filemtime(
-                                        $this->getPluginPath($pluginPath, '/public/js/mollieBlockIndex.min.js')
-                                    ),
-                                    $container
-                                )
-                            );
-                        }
-                    );
-                }
-            }
-        );
-
-        add_action(
-            'init',
+            'woocommerce_init',
             function () use ($container, $hasBlocksEnabled, $settingsHelper, $pluginUrl, $pluginPath, $dataService) {
                 self::registerFrontendScripts($pluginUrl, $pluginPath);
 
@@ -529,7 +501,7 @@ class AssetsModule implements ExecutableModule
                 if ($hasBlocksEnabled) {
                     /** @var array */
                     $gatewayInstances = $container->get('__deprecated.gateway_helpers');
-                    self::registerBlockScripts($pluginUrl, $pluginPath);
+                    self::registerBlockScripts($pluginUrl, $pluginPath, $container);
                     add_action('wp_enqueue_scripts', function () use ($dataService, $gatewayInstances, $container) {
                         $this->enqueueBlockCheckoutScripts($dataService, $gatewayInstances, $container);
                     });

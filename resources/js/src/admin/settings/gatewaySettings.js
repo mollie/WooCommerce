@@ -1,77 +1,108 @@
-( function ( { _, gatewaySettingsData, jQuery } ) {
-	const {
-		isEnabledIcon,
-		uploadFieldName,
-		enableFieldName,
-		iconUrl,
-		message,
-		pluginUrlImages,
-	} = gatewaySettingsData;
 
-	if ( _.isEmpty( gatewaySettingsData ) ) {
-		return;
-	}
-	document.addEventListener( 'DOMContentLoaded', function ( event ) {
-		if ( ! isEnabledIcon ) {
-			return;
-		}
+(function({ gatewaySettingsData }) {
+    const {
+        isEnabledIcon,
+        uploadFieldName,
+        enableFieldName,
+        iconUrl,
+        message,
+        pluginUrlImages,
+    } = gatewaySettingsData;
 
-		const uploadField = document.querySelector( '#' + uploadFieldName );
+    function isEmpty(obj) {
+        return obj == null || Object.keys(obj).length === 0;
+    }
 
-		if ( _.isEmpty( iconUrl ) ) {
-			uploadField.insertAdjacentHTML(
-				'afterend',
-				'<div class="mollie_custom_icon"><p>' + message + '</p></div>'
-			);
-		} else {
-			uploadField.insertAdjacentHTML(
-				'afterend',
-				'<div class="mollie_custom_icon"><img src="' +
-					iconUrl +
-					'" alt="custom icon image" width="100px"></div>'
-			);
-		}
-	} );
+    function iconName(val) {
+        const res = val.split('-');
+        return res[0] + '/' + res[1] + '/' + res[2] + '-' + res[3];
+    }
 
-	function iconName( val ) {
-		const res = val.split( '-' );
-		return res[ 0 ] + '/' + res[ 1 ] + '/' + res[ 2 ] + '-' + res[ 3 ];
-	}
+    function handleCustomIconDisplay() {
+        if (!isEnabledIcon) {
+            return;
+        }
 
-	jQuery( function ( $ ) {
-		$( '#' + enableFieldName )
-			.change( function () {
-				if ( $( this ).is( ':checked' ) ) {
-					$( '#' + uploadFieldName )
-						.closest( 'tr' )
-						.show();
-				} else {
-					$( '#' + uploadFieldName )
-						.closest( 'tr' )
-						.hide();
-				}
-			} )
-			.change();
+        const uploadField = document.querySelector('#woocommerce_' + uploadFieldName);
+        if (!uploadField) {
+            return;
+        }
 
-		const payPalIconSelectorElement = $(
-			'#mollie_wc_gateway_paypal_color'
-		);
-		payPalIconSelectorElement
-			.change( function () {
-				const fixedPath = pluginUrlImages + '/PayPal_Buttons/';
-				const buttonIcon =
-					iconName( payPalIconSelectorElement.val() ) + '.png';
-				const url = fixedPath + buttonIcon;
-				const iconImageElement = $( '#mol-paypal-settings-icon' );
-				if ( iconImageElement.length ) {
-					iconImageElement.remove();
-				}
-				payPalIconSelectorElement.after(
-					"<img id='mol-paypal-settings-icon' width='200px' src=" +
-						url +
-						" alt='PayPal_Icon'/>"
-				);
-			} )
-			.change();
-	} );
-} )( window );
+        const iconHtml = isEmpty(iconUrl)
+            ? '<div class="mollie_custom_icon"><p>' + message + '</p></div>'
+            : '<div class="mollie_custom_icon"><img src="' + iconUrl + '" alt="custom icon image" width="100px"></div>';
+
+        uploadField.insertAdjacentHTML('afterend', iconHtml);
+    }
+
+    function handleEnableFieldToggle() {
+        const enableField = document.querySelector('#woocommerce_' + enableFieldName);
+        const uploadField = document.querySelector('#woocommerce_' + uploadFieldName);
+
+        if (!enableField || !uploadField) {
+            return;
+        }
+
+        const uploadRow = uploadField.closest('tr');
+        if (!uploadRow) {
+            return;
+        }
+
+        function toggleUploadField() {
+            if (enableField.checked) {
+                uploadRow.style.display = '';
+            } else {
+                uploadRow.style.display = 'none';
+            }
+        }
+
+        enableField.addEventListener('change', toggleUploadField);
+        toggleUploadField();
+    }
+
+    function handlePayPalIconSelector() {
+        const payPalIconSelector = document.querySelector('#woocommerce_mollie_wc_gateway_paypal_color');
+        if (!payPalIconSelector) {
+            return;
+        }
+
+        function updatePayPalIcon() {
+            const fixedPath = pluginUrlImages + '/PayPal_Buttons/';
+            const buttonIcon = iconName(payPalIconSelector.value) + '.png';
+            const url = fixedPath + buttonIcon;
+
+            const existingIcon = document.querySelector('#mol-paypal-settings-icon');
+            if (existingIcon) {
+                existingIcon.remove();
+            }
+
+            // Create and insert new icon
+            const iconImg = document.createElement('img');
+            iconImg.id = 'mol-paypal-settings-icon';
+            iconImg.width = 200;
+            iconImg.src = url;
+            iconImg.alt = 'PayPal_Icon';
+
+            payPalIconSelector.insertAdjacentElement('afterend', iconImg);
+        }
+
+        payPalIconSelector.addEventListener('change', updatePayPalIcon);
+        updatePayPalIcon();
+    }
+
+    function initialize() {
+        if (isEmpty(gatewaySettingsData)) {
+            return;
+        }
+
+        handleCustomIconDisplay();
+        handleEnableFieldToggle();
+        handlePayPalIconSelector();
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initialize);
+    } else {
+        console.log('DOM fully loaded and parsed');
+        initialize();
+    }
+})(window);

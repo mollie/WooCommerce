@@ -9,61 +9,26 @@ use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\DefaultFieldsStrat
 use Mollie\WooCommerce\Shared\Data;
 use Psr\Container\ContainerInterface;
 
-final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
+final class MollieCheckoutBlocksSupport
 {
-    /** @var string $name */
-    protected $name = "mollie";
     /** @var string $scriptHandle */
     private static $scriptHandle = "mollie_block_index";
     /** @var Data */
     protected $dataService;
     /** @var array */
     protected $gatewayInstances;
-    /** @var string $registerScriptUrl */
-    protected $registerScriptUrl;
-    /** @var string $registerScriptVersion */
-    protected $registerScriptVersion;
-    private ContainerInterface $container;
 
     public function __construct(
         Data $dataService,
-        array $gatewayInstances,
-        string $registerScriptUrl,
-        string $registerScriptVersion,
-        ContainerInterface $container
+        array $gatewayInstances
     ) {
-
         $this->dataService = $dataService;
         $this->gatewayInstances = $gatewayInstances;
-        $this->registerScriptUrl = $registerScriptUrl;
-        $this->registerScriptVersion = $registerScriptVersion;
-        $this->container = $container;
     }
 
-    public function initialize()
+    public static function getScriptHandle(): string
     {
-        //
-    }
-
-    public static function getScriptHandle()
-    {
-
         return self::$scriptHandle;
-    }
-
-    public function get_payment_method_script_handles(): array
-    {
-        wp_register_script(
-            self::$scriptHandle,
-            $this->registerScriptUrl,
-            ['wc-blocks-registry', 'underscore', 'jquery', 'mollie'],
-            $this->registerScriptVersion,
-            true
-        );
-
-        self::localizeWCBlocksData($this->dataService, $this->gatewayInstances, $this->container);
-
-        return [self::$scriptHandle];
     }
 
     public static function localizeWCBlocksData($dataService, $gatewayInstances, $container)
@@ -83,6 +48,9 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
     {
         $paymentGateways = WC()->payment_gateways()->payment_gateways();
         $gatewayData = [];
+        /** @var ComponentDataService */
+        $componentDataService = $container->get('components.data_service');
+        $componentData = $componentDataService->getComponentData();
         /** @var PaymentGateway $gateway */
         foreach ($paymentGateways as $gatewayKey => $gateway) {
             if (substr($gateway->id, 0, 18) !== 'mollie_wc_gateway_') {
@@ -121,6 +89,7 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
                 'title' => $title,
                 'iconsArray' => $iconsArray,
             ];
+
             if ($gatewayId === 'creditcard') {
                 $content .= $issuers;
                 $issuers = false;
@@ -135,10 +104,12 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
                 'NL' => '+316xxxxxxxx',
                 'DE' => '+49xxxxxxxxx',
                 'AT' => '+43xxxxxxxxx',
+                'ES' => '+34xxxxxxxxx'
             ];
             $country = WC()->customer ? WC()->customer->get_billing_country() : '';
             $hideCompanyFieldFilter = apply_filters('mollie_wc_hide_company_field', false);
             $phonePlaceholder = in_array($country, array_keys($countryCodes)) ? $countryCodes[$country] : $countryCodes['NL'];
+            $shouldLoadComponents = $componentDataService->isComponentsEnabled($method);
             $gatewayData[] = [
                 'name' => $gatewayKey,
                 'label' => $labelContent,
@@ -164,12 +135,22 @@ final class MollieCheckoutBlocksSupport extends AbstractPaymentMethodType
                 'birthdatePlaceholder' => $method->getProperty('birthdatePlaceholder'),
                 'isExpressEnabled' => $gatewayId === 'applepay' && $method->getProperty('mollie_apple_pay_button_enabled_express_checkout') === 'yes',
                 'hideCompanyField' => $hideCompanyFieldFilter,
+                'shouldLoadComponents'=> $shouldLoadComponents,
             ];
         }
         $dataToScript['gatewayData'] = $gatewayData;
-        /** @var ComponentDataService */
-        $componentDataService = $container->get('components.data_service');
-        $componentData = $componentDataService->getComponentData();
+        $base_location = wc_get_base_location();
+        $shopCountryCode = $base_location['country'];
+        $totalLabel = get_bloginfo('name');
+        $appleButtonData = [
+            'shop' => [
+                'countryCode' => $shopCountryCode,
+                'totalLabel' => $totalLabel,
+            ],
+            'nonce' => wp_create_nonce('mollie_apple_pay_blocks'),
+            'ajaxUrl' => admin_url('admin-ajax.php')
+        ];
+        $dataToScript['appleButtonData'] = $appleButtonData;
 
         if ($componentData !== null) {
             $dataToScript['componentData'] = $componentData;

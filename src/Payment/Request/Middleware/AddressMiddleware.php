@@ -241,8 +241,20 @@ class AddressMiddleware implements RequestMiddlewareInterface
     private function getPostedPhoneNumber(WC_Order $order): string
     {
         $postedField = $this->getPhonePostedFieldName($order);
+
         //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        return wc_clean(wp_unslash($_POST[$postedField] ?? ''));
+        $phoneFromSpecificField = wc_clean(wp_unslash($_POST[$postedField] ?? ''));
+
+        if (!empty($phoneFromSpecificField)) {
+            return $phoneFromSpecificField;
+        }
+
+        if ($postedField !== 'billing_phone') {
+            //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            return wc_clean(wp_unslash($_POST['billing_phone'] ?? ''));
+        }
+
+        return '';
     }
 
     /**

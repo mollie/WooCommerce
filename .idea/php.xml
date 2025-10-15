@@ -245,7 +245,7 @@
   </component>
   <component name="PhpProjectServersManager">
     <servers>
-      <server host="mollie-payments-for-woocommerce.ddev.site" id="9a20d2a4-41f0-42a6-aa78-690b627329a8" name="b96e-178-237-225-191.eu.ngrok.io" use_path_mappings="true">
+      <server host="mollie-payments-for-woocommerce.ddev.site" id="9a20d2a4-41f0-42a6-aa78-690b627329a8" name="mollie-payments-for-woocommerce.ddev.site" use_path_mappings="true">
         <path_mappings>
           <mapping local-root="$PROJECT_DIR$" remote-root="/var/www/html/.ddev/wordpress/wp-content/plugins/mollie-payments-for-woocommerce" />
           <mapping local-root="$PROJECT_DIR$/.ddev/wordpress" remote-root="/var/www/html/.ddev/wordpress" />

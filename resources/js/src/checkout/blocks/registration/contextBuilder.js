@@ -8,8 +8,8 @@ export const buildRegistrationContext = ( wc ) => {
 	return {
 		wc,
 		requiredFields: {
-			companyNameString: defaultFields.company.label,
-			phoneString: defaultFields.phone.label,
+			companyNameString: defaultFields?.company?.label,
+			phoneString: defaultFields?.phone?.label,
 		},
 	};
 };

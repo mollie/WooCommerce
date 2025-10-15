@@ -218,6 +218,9 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= 8.1.0-beta1 - 15-10-2025 =
+* Improvement - Refactor of Mollie payment methods in block checkout
+
 = 8.0.6 - 29-09-2025 =
 * Fixed - TypeError in OrderLines.php when processing vouchers with Germanized plugin
 * Fixed - Apple Pay not eligible for Express Checkout in editor with non-Apple Pay compatible device

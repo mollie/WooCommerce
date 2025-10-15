@@ -22,7 +22,6 @@ export const ApplePayButtonComponent = ( { buttonAttributes = {} } ) => {
     if(!nonce) {
         nonce = window.mollieBlockData.gatewayData.appleButtonData.nonce;
     }
-console.log('nonce:', nonce);
 
 	let updatedContactInfo = [];
 	let redirectionUrl = '';
@@ -39,13 +38,12 @@ console.log('nonce:', nonce);
     const currencyMinorUnit = cartStore.getCartTotals().currency_minor_unit;
     const subtotal = rawSubtotal / Math.pow( 10, currencyMinorUnit );
 
-console.log('countryCode:', countryCode, 'needShipping:', needShipping,'subtotal:', subtotal, 'currencyCode:', currencyCode);
 	const getButtonStyle = ( attrs ) => ( {
 		height: `${ attrs.height || 48 }px`,
 		borderRadius: `${ attrs.borderRadius || 4 }px`,
 	} );
 	const style = getButtonStyle( buttonAttributes );
-
+    let selectedShippingMethod = [];
     let applePaySession = () => {
         const session = new ApplePaySession(3, request(countryCode, currencyCode, totalLabel, subtotal))
         session.begin()

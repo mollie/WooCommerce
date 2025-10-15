@@ -92,13 +92,7 @@ class ApplePayDataObjectHttp
      */
     public function validationData()
     {
-        $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_SPECIAL_CHARS);
-        $isNonceValid = wp_verify_nonce(
-            $nonce,
-            'woocommerce-process_checkout'
-        );
-
-        if (!$isNonceValid) {
+        if (!$this->isNonceValid()) {
             return;
         }
         $data = $this->getFilteredRequestData();
@@ -121,12 +115,7 @@ class ApplePayDataObjectHttp
      */
     public function updateContactData()
     {
-        $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_SPECIAL_CHARS);
-        $isNonceValid = wp_verify_nonce(
-            $nonce,
-            'woocommerce-process_checkout'
-        );
-        if (!$isNonceValid) {
+        if (!$this->isNonceValid()) {
             return;
         }
         $data = $this->getFilteredRequestData();
@@ -148,12 +137,7 @@ class ApplePayDataObjectHttp
      */
     public function updateMethodData()
     {
-        $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_SPECIAL_CHARS);
-        $isNonceValid = wp_verify_nonce(
-            $nonce,
-            'woocommerce-process_checkout'
-        );
-        if (!$isNonceValid) {
+        if (!$this->isNonceValid()) {
             return;
         }
 
@@ -178,12 +162,7 @@ class ApplePayDataObjectHttp
      */
     public function orderData($callerPage)
     {
-        $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_SPECIAL_CHARS);
-        $isNonceValid = wp_verify_nonce(
-            $nonce,
-            'woocommerce-process_checkout'
-        );
-        if (!$isNonceValid) {
+        if (!$this->isNonceValid()) {
             return;
         }
         $data = filter_var_array($_POST, FILTER_SANITIZE_SPECIAL_CHARS);
@@ -473,6 +452,15 @@ class ApplePayDataObjectHttp
     public function simplifiedContact()
     {
         return $this->simplifiedContact;
+    }
+    public function isNonceValid()
+    {
+        $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_SPECIAL_CHARS);
+
+        return wp_verify_nonce(
+                $nonce,
+                'woocommerce-process_checkout'
+            ) || wp_verify_nonce($nonce, 'mollie_apple_pay_blocks');
     }
 
     /**

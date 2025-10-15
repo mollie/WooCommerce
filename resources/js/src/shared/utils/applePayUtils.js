@@ -47,5 +47,5 @@ export const ApplePayUtils = {
 	 * }
 	 */
 	canRegisterApplePay: () =>
-		wp.blocks?.isEditorContext() || ApplePayUtils.isAppleSessionAvailable(),
+        wc?.wcBlocksData?.isEditor() || ApplePayUtils.isAppleSessionAvailable(),
 };

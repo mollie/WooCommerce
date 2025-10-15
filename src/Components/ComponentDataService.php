@@ -81,7 +81,7 @@ class ComponentDataService
     public function shouldLoadComponents(): bool
     {
         return !is_admin() &&
-               (mollieWooCommerceIsCheckoutContext() || has_block("woocommerce/checkout"));
+               (mollieWooCommerceIsCheckoutContext() && !has_block("woocommerce/checkout"));
     }
     public function isComponentsEnabled(PaymentMethodI $paymentMethod): bool
     {

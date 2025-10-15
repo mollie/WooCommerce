@@ -245,7 +245,7 @@ class AssetsModule implements ExecutableModule
         wp_register_script(
             'mollie-components',
             $this->getPluginUrl($pluginUrl, '/public/js/mollie-components.min.js'),
-            ['underscore', 'jquery', 'mollie', 'babel-polyfill'],
+            ['underscore', 'jquery', 'mollie'],
             (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollie-components.min.js')),
             true
         );

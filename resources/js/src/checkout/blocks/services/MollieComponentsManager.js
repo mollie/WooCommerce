@@ -58,7 +58,6 @@ export class MollieComponentsManager {
 			dispatch( MOLLIE_STORE_KEY ).setComponentInitialized( true );
 			dispatch( MOLLIE_STORE_KEY ).setComponentInitializing( false );
 
-			console.log( 'Mollie TokenManager initialized successfully' );
 		} catch ( error ) {
 			this.isInitialized = false;
 			dispatch( MOLLIE_STORE_KEY ).setComponentError( error.message );

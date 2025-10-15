@@ -4,14 +4,12 @@ import { request } from '../../../../features/apple-pay/applePayRequest';
 import { createAppleErrors } from '../../../../features/apple-pay/applePayError';
 
 export const ApplePayButtonComponent = ( { buttonAttributes = {} } ) => {
-    console.log('mollieApplePayBlockDataCart:');
     let mollieApplePayBlockDataCart =
         window.mollieApplePayBlockDataCart ||
         window.mollieBlockData.mollieApplePayBlockDataCart;
     if (mollieApplePayBlockDataCart.length === 0) {
         mollieApplePayBlockDataCart = window.mollieBlockData.gatewayData.appleButtonData;
     }
-    console.log(mollieApplePayBlockDataCart);
     let nonce = false;
 	let wooNonceElement = document.getElementById(
 		'woocommerce-process-checkout-nonce'
@@ -47,9 +45,7 @@ export const ApplePayButtonComponent = ( { buttonAttributes = {} } ) => {
     let applePaySession = () => {
         const session = new ApplePaySession(3, request(countryCode, currencyCode, totalLabel, subtotal))
         session.begin()
-        console.log('Apple Pay session started')
         session.onshippingmethodselected = function (event) {
-            console.log('Shipping method selected:', event.shippingMethod)
             jQuery.ajax({
                 url: ajaxUrl,
                 method: 'POST',
@@ -77,7 +73,6 @@ export const ApplePayButtonComponent = ( { buttonAttributes = {} } ) => {
             })
         }
         session.onshippingcontactselected = function (event) {
-            console.log('Shipping contact selected:', event.shippingContact)
             jQuery.ajax({
                 url: ajaxUrl,
                 method: 'POST',
@@ -108,7 +103,6 @@ export const ApplePayButtonComponent = ( { buttonAttributes = {} } ) => {
             })
         }
         session.onvalidatemerchant = (applePayValidateMerchantEvent) => {
-            console.log('Apple Pay merchant validation:', applePayValidateMerchantEvent)
             jQuery.ajax({
                 url: ajaxUrl,
                 method: 'POST',

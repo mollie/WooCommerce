@@ -35,7 +35,6 @@ export function initializeMollieComponentsWithStoreSubscription( config ) {
         isInitialized = true;
 
         try {
-            console.log( 'Mollie: Initializing Components Manager' );
             if ( ! config.merchantProfileId ) {
                 console.error( 'Mollie merchant profile ID not found' );
                 isInitialized = false; // Reset on error
@@ -47,7 +46,6 @@ export function initializeMollieComponentsWithStoreSubscription( config ) {
                 options: config.options || {},
             } );
 
-            console.log( 'Mollie: Components Manager initialized successfully' );
 
             if ( unsubscribeInit ) {
                 unsubscribeInit();
@@ -83,7 +81,6 @@ export function initializeMollieComponentsWithStoreSubscription( config ) {
 
                 // UNMOUNT: switched away from credit card
                 if ( wasCreditCard && ! isCreditCard && componentsAreMounted ) {
-                    console.log( 'Mollie: Unmounting components, switched away from credit card' );
                     mollieComponentsManager.unmountComponents( previousPaymentMethod );
                     componentsAreMounted = false;
                 }
@@ -102,12 +99,6 @@ export function initializeMollieComponentsWithStoreSubscription( config ) {
                     return;
                 }
 
-                console.log( 'Mollie: Mounting components for', activePaymentMethod, {
-                    paymentMethodChanged,
-                    containerChanged,
-                    hasContainer: !! container
-                } );
-
                 const mountComponents = async () => {
                     try {
                         await mollieComponentsManager.mountComponents(
@@ -117,7 +108,6 @@ export function initializeMollieComponentsWithStoreSubscription( config ) {
                             container
                         );
                         componentsAreMounted = true;
-                        console.log( 'Mollie: Components mounted successfully for', activePaymentMethod );
                     } catch ( error ) {
                         console.error( 'Mollie: Failed to mount components:', error );
                         componentsAreMounted = false;
@@ -137,7 +127,6 @@ export function initializeMollieComponentsWithStoreSubscription( config ) {
         }
 
         if ( isCheckoutReady() ) {
-            console.log( 'Mollie: Checkout ready, initializing components' );
             initializeComponents();
         }
     };
@@ -145,7 +134,6 @@ export function initializeMollieComponentsWithStoreSubscription( config ) {
     if ( isCheckoutReady() ) {
         initializeComponents();
     } else {
-        console.log( 'Mollie: Subscribing to checkout store for initialization' );
         unsubscribeInit = subscribe( checkoutStateChangeHandler, 'wc/store/checkout' );
     }
 

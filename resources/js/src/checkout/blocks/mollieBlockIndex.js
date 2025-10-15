@@ -47,7 +47,6 @@ import {initializeMollieComponentsWithStoreSubscription} from "./services/Mollie
             }
 
             storeInitialized = true;
-            console.log( 'Mollie: Payment store available, initializing store-dependent features' );
 
             // Unsubscribe from the store watcher
             if ( unsubscribe ) {
@@ -69,7 +68,6 @@ import {initializeMollieComponentsWithStoreSubscription} from "./services/Mollie
 
         // If not ready, subscribe to store changes
         if ( ! storeInitialized ) {
-            console.log( 'Mollie: Payment store not ready, waiting...' );
             unsubscribe = subscribe( initializeStoreDependent, PAYMENT_STORE_KEY );
         }
 

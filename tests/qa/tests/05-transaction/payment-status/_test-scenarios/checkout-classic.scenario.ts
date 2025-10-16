@@ -6,22 +6,17 @@ import { countTotals } from '@inpsyde/playwright-utils/build';
  * Internal dependencies
  */
 import { test } from '../../../../utils';
-import { processMolliePaymentStatus } from './process-mollie-payment-status.scenario';
+import { buildGatewayLabel, processMolliePaymentStatus, updateCurrencyIfNeeded } from './checkout-test-helpers';
 
 const isMultistepCheckout = process.env.IS_MULTISTEP_CHECKOUT === 'true';
 
 export const testPaymentStatusOnClassicCheckout = ( testId: string, order ) => {
 	const { payment, orderStatus } = order;
 	const { gateway } = payment;
-	let testedGateway = gateway.name;
-	if ( gateway.slug === 'creditcard' ) {
-		testedGateway += gateway.settings.mollie_components_enabled === 'yes'
-			? ' - Mollie components enabled'
-			: ' - Mollie components disabled';
-	}
+	const gatewayLabel = buildGatewayLabel( gateway );
 	const multistepLabel = isMultistepCheckout ? ' - Multistep' : '';
 
-	test( `${ testId } | Transaction${ multistepLabel } - Classic checkout - ${ testedGateway } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
+	test( `${ testId } | Transaction${ multistepLabel } - Classic checkout - ${ gatewayLabel } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
 		wooCommerceApi,
 		utils,
 		classicCheckout,
@@ -30,12 +25,7 @@ export const testPaymentStatusOnClassicCheckout = ( testId: string, order ) => {
 		payForOrder,
 		wooCommerceOrderEdit,
 	} ) => {
-		const currency = gateway.currency;
-		if ( currency !== undefined && currency !== 'EUR' ) {
-			await wooCommerceApi.updateGeneralSettings( {
-				woocommerce_currency: currency,
-			} );
-		}
+		await updateCurrencyIfNeeded( wooCommerceApi, gateway.currency );
 
 		const orderTotals = await countTotals( order );
 		payment.amount = orderTotals.order;

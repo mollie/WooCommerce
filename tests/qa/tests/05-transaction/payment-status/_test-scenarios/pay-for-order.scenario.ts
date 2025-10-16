@@ -12,14 +12,13 @@ export const testPaymentStatusOnPayForOrder = ( testId: string, order ) => {
 	const { payment, orderStatus } = order;
 	const { gateway } = payment;
 	let testedGateway = gateway.name;
-	if (
-		gateway.slug === 'creditcard' &&
-		gateway.settings.mollie_components_enabled === 'yes'
-	) {
-		testedGateway += ' - Disabled Mollie components';
+	if ( gateway.slug === 'creditcard' ) {
+		testedGateway += gateway.settings.mollie_components_enabled === 'yes'
+			? ' - Mollie components enabled'
+			: ' - Mollie components disabled';
 	}
 
-	test( `${ testId } | Pay for order - ${ testedGateway } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
+	test( `${ testId } | Transaction - Pay for order - ${ testedGateway } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
 		wooCommerceApi,
 		wooCommerceUtils,
 		mollieHostedCheckout,

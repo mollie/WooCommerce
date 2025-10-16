@@ -6,7 +6,7 @@ import { OrderReceived, PayForOrder, WooCommerceApi } from '@inpsyde/playwright-
  * Internal dependencies
  */
 import { expect, MollieHostedCheckout } from '../../../../utils';
-import { MollieGateway } from 'resources';
+import { MollieGateway } from '../../../../resources';
 
 export function buildGatewayLabel( gateway: MollieGateway ): string {
 	let label = gateway.name;

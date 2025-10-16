@@ -6,7 +6,7 @@ import { countTotals } from '@inpsyde/playwright-utils/build';
  * Internal dependencies
  */
 import { test } from '../../../../utils';
-import { processMolliePaymentStatus } from './process-mollie-payment-status.scenario';
+import { processMolliePaymentStatus } from './checkout-test-helpers';
 
 export const testPaymentStatusOnClassicCheckout = ( testId: string, order ) => {
 	const { payment, orderStatus } = order;

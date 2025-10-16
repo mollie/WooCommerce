@@ -7,7 +7,7 @@ import { countTotals } from '@inpsyde/playwright-utils/build';
  */
 import { test } from '../../../../utils';
 import { gateways as allGateways } from '../../../../resources';
-import { processMolliePaymentStatus } from './process-mollie-payment-status.scenario';
+import { processMolliePaymentStatus } from './checkout-test-helpers';
 
 export const testPaymentStatusOnCheckout = ( testId: string, order ) => {
 	const { payment, orderStatus } = order;

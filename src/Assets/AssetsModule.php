@@ -332,6 +332,7 @@ class AssetsModule implements ExecutableModule
      */
     public function enqueueComponentsAssets(ComponentDataService $componentDataService): void
     {
+        wp_enqueue_style('mollie-components');
         if (!$componentDataService->shouldLoadComponents()) {
             return;
         }
@@ -344,8 +345,6 @@ class AssetsModule implements ExecutableModule
         if ($componentData === null) {
             return;
         }
-
-        wp_enqueue_style('mollie-components');
         $object_name = 'mollieComponentsSettings';
 
         wp_enqueue_script('mollie-components');
@@ -484,6 +483,9 @@ class AssetsModule implements ExecutableModule
                     $this->enqueueFrontendScripts($container);
                 });
                 add_action('wp_enqueue_scripts', function () use ($container) {
+                    if(!mollieWooCommerceIsCheckoutContext()) {
+                        return;
+                    }
                     /** @var ComponentDataService */
                     $componentDataService = $container->get('components.data_service');
                     assert($componentDataService instanceof ComponentDataService);

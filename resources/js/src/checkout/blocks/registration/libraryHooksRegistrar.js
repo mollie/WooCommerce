@@ -28,7 +28,6 @@ export const registerExpressPaymentMethodHooks = (gatewayData) => {
     const applePayGateway = gatewayData.find((gateway) => {
         return gateway.name === ApplePayUtils.GATEWAY_NAME
     });
-    console.log(applePayGateway.isExpressEnabled)
 
     if (applePayGateway && applePayGateway.isExpressEnabled) {
 

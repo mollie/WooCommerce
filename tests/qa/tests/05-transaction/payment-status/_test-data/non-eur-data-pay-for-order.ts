@@ -3,7 +3,7 @@
  */
 import { MollieTestData } from '../../../../resources';
 
-export const payForOrderNonEur: MollieTestData.PaymentStatus[] = [
+export const payForOrderNonEur: MollieTestData.Transaction[] = [
 	{
 		testId: 'C3007279',
 		gatewaySlug: 'twint',

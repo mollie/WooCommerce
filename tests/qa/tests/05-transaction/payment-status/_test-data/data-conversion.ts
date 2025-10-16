@@ -16,26 +16,34 @@ const testedApiMethod =
 const getExpectedOrderStatus = (
 	paymentStatus: MolliePaymentStatus
 ): WooCommerce.OrderStatus => {
-	const statusConversion: Record<
-		MolliePaymentStatus,
-		WooCommerce.OrderStatus
-	> = {
+	const isPaymentApiMethod = testedApiMethod === 'payment';
+	
+	const statusConversion = {
 		paid: 'processing',
 		authorized: 'processing',
 		canceled: 'pending',
-		expired: testedApiMethod === 'payment' ? 'cancelled' : 'pending',
-		failed: testedApiMethod === 'payment' ? 'failed' : 'pending',
+		expired: isPaymentApiMethod ? 'cancelled' : 'pending',
+		failed: isPaymentApiMethod ? 'failed' : 'pending',
 		open: 'pending',
 		pending: 'pending',
-	};
+	} as Record< MolliePaymentStatus, WooCommerce.OrderStatus >;
+
 	return statusConversion[ paymentStatus ];
 };
 
-export const createShopOrder = (
-	testData: MollieTestData.PaymentStatus
+export const createShopOrder = ( {
+		gatewaySlug,
+		paymentStatus,
+		orderStatus,
+		card,
+		mollieComponentsEnabled,
+		bankIssuer,
+		billingCompany,
+	}: MollieTestData.Transaction
 ): WooCommerce.ShopOrder => {
-	const gateway = gateways[ testData.gatewaySlug ];
-	const order: WooCommerce.ShopOrder = {
+	const gateway = gateways[ gatewaySlug ];
+	const {country, currency } = gateway;
+	const order = {
 		...orders.default,
 		products: [ products.mollieSimple100 ],
 		payment: {
@@ -43,22 +51,22 @@ export const createShopOrder = (
 				...gateway,
 				settings: {
 					...gateway.settings,
-					...( testData.mollieComponentsEnabled && {
+					// for tests with mollie components ('yes'/'no')
+					...( mollieComponentsEnabled && {
 						mollie_components_enabled:
-							testData.mollieComponentsEnabled,
-					} ), // for card tests with mollie components = 'no'
+							mollieComponentsEnabled,
+					} ),
 				},
 			},
-			billingCompany: testData.billingCompany, // for billie tests
-			card: testData.card, // for card tests
-			bankIssuer: testData.bankIssuer, // for kbc tests
-			status: testData.paymentStatus,
+			billingCompany, // for billie tests
+			card, // for card tests
+			bankIssuer, // for kbc tests
+			status: paymentStatus,
 		},
-		orderStatus:
-			testData.orderStatus ||
-			getExpectedOrderStatus( testData.paymentStatus ),
-		customer: guests[ gateway.country ],
-		currency: gateway.currency,
+		orderStatus: orderStatus ?? getExpectedOrderStatus(paymentStatus),
+		customer: guests[ country ],
+		currency,
 	};
-	return order;
+
+	return order as WooCommerce.ShopOrder;
 };

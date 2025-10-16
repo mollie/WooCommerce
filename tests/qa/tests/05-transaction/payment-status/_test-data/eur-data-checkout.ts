@@ -3,7 +3,7 @@
  */
 import { cards, MollieTestData } from '../../../../resources';
 
-export const checkoutEur: MollieTestData.PaymentStatus[] = [
+export const checkoutEur: MollieTestData.Transaction[] = [
 	// {
 	// 	testId: '',
 	// 	gatewaySlug: 'applepay',
@@ -227,35 +227,32 @@ export const checkoutEur: MollieTestData.PaymentStatus[] = [
 		bankIssuer: 'KBC',
 	},
 	{
-		testId: 'C420268',
-		gatewaySlug: 'creditcard',
-		paymentStatus: 'paid',
-		card: cards.visa,
-	},
-	{
-		testId: 'C420269',
+		testId: 'C420274',
 		gatewaySlug: 'creditcard',
 		paymentStatus: 'open',
 		card: cards.visa,
+		mollieComponentsEnabled: 'yes',
 	},
 	{
-		testId: 'C420270',
+		testId: 'C420273',
+		gatewaySlug: 'creditcard',
+		paymentStatus: 'paid',
+		card: cards.visa,
+		mollieComponentsEnabled: 'yes',
+	},
+	{
+		testId: 'C420275',
 		gatewaySlug: 'creditcard',
 		paymentStatus: 'failed',
 		card: cards.visa,
+		mollieComponentsEnabled: 'yes',
 	},
-	// {
-	// 	testId: 'C420272',
-	// 	gatewaySlug: 'creditcard',
-	// 	paymentStatus: 'canceled',
-	// 	card: cards.visa,
-	//
-	// },
 	{
-		testId: 'C420271',
+		testId: 'C420276',
 		gatewaySlug: 'creditcard',
 		paymentStatus: 'expired',
 		card: cards.visa,
+		mollieComponentsEnabled: 'yes',
 	},
 	{
 		testId: 'C420284',

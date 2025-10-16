@@ -3,7 +3,7 @@
  */
 import { cards, MollieTestData } from '../../../../resources';
 
-export const payForOrderEur: MollieTestData.PaymentStatus[] = [
+export const payForOrderEur: MollieTestData.Transaction[] = [
 	// {
 	// 	testId: '',
 	// 	gatewaySlug: 'applepay',
@@ -227,35 +227,32 @@ export const payForOrderEur: MollieTestData.PaymentStatus[] = [
 		bankIssuer: 'KBC',
 	},
 	{
-		testId: 'C420383',
-		gatewaySlug: 'creditcard',
-		paymentStatus: 'paid',
-		card: cards.visa,
-	},
-	{
-		testId: 'C420384',
-		gatewaySlug: 'creditcard',
-		paymentStatus: 'open',
-		card: cards.visa,
-	},
-	{
-		testId: 'C420385',
-		gatewaySlug: 'creditcard',
-		paymentStatus: 'failed',
-		card: cards.visa,
-	},
-	// {
-	// 	testId: 'C420387',
-	// 	gatewaySlug: 'creditcard',
-	// 	paymentStatus: 'canceled',
-	// 	card: cards.visa,
-	//
-	// },
-	{
-		testId: 'C420386',
+		testId: 'C420391',
 		gatewaySlug: 'creditcard',
 		paymentStatus: 'expired',
 		card: cards.visa,
+		mollieComponentsEnabled: 'yes',
+	},
+	{
+		testId: 'C420390',
+		gatewaySlug: 'creditcard',
+		paymentStatus: 'paid',
+		card: cards.visa,
+		mollieComponentsEnabled: 'yes',
+	},
+	{
+		testId: 'C420388',
+		gatewaySlug: 'creditcard',
+		paymentStatus: 'failed',
+		card: cards.visa,
+		mollieComponentsEnabled: 'yes',
+	},
+	{
+		testId: 'C420389',
+		gatewaySlug: 'creditcard',
+		paymentStatus: 'open',
+		card: cards.visa,
+		mollieComponentsEnabled: 'yes',
 	},
 	{
 		testId: 'C420399',

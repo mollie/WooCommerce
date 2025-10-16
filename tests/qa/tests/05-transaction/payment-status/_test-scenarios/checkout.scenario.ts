@@ -7,20 +7,14 @@ import { countTotals } from '@inpsyde/playwright-utils/build';
  */
 import { test } from '../../../../utils';
 import { gateways as allGateways } from '../../../../resources';
-import { processMolliePaymentStatus } from './process-mollie-payment-status.scenario';
+import { buildGatewayLabel, processMolliePaymentStatus, updateCurrencyIfNeeded } from './checkout-test-helpers';
 
 export const testPaymentStatusOnCheckout = ( testId: string, order ) => {
 	const { payment, orderStatus } = order;
 	const { gateway } = payment;
-	let testedGateway = gateway.name;
-	if (
-		gateway.slug === 'creditcard' &&
-		gateway.settings.mollie_components_enabled === 'yes'
-	) {
-		testedGateway += ' - Disabled Mollie components';
-	}
+	const gatewayLabel = buildGatewayLabel( gateway );
 
-	test( `${ testId } | Checkout - ${ testedGateway } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
+	test( `${ testId } | Transaction - Checkout - ${ gatewayLabel } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
 		wooCommerceApi,
 		utils,
 		checkout,
@@ -29,20 +23,7 @@ export const testPaymentStatusOnCheckout = ( testId: string, order ) => {
 		payForOrder,
 		wooCommerceOrderEdit,
 	} ) => {
-		for ( const key in allGateways ) {
-			const isEnabled = allGateways[ key ].slug === gateway.slug;
-			await wooCommerceApi.updatePaymentGateway(
-				`mollie_wc_gateway_${ allGateways[ key ].slug }`,
-				{ enabled: isEnabled }
-			);
-		}
-
-		const currency = gateway.currency;
-		if ( currency !== undefined && currency !== 'EUR' ) {
-			await wooCommerceApi.updateGeneralSettings( {
-				woocommerce_currency: currency,
-			} );
-		}
+		await updateCurrencyIfNeeded( wooCommerceApi, gateway.currency );
 
 		const orderTotals = await countTotals( order );
 		payment.amount = orderTotals.order;

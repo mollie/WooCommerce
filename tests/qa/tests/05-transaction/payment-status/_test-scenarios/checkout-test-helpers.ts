@@ -1,11 +1,36 @@
 /**
  * External dependencies
  */
-import { OrderReceived, PayForOrder } from '@inpsyde/playwright-utils/build';
+import { OrderReceived, PayForOrder, WooCommerceApi } from '@inpsyde/playwright-utils/build';
 /**
  * Internal dependencies
  */
 import { expect, MollieHostedCheckout } from '../../../../utils';
+import { MollieGateway } from 'resources';
+
+export function buildGatewayLabel( gateway: MollieGateway ): string {
+	let label = gateway.name;
+	
+	if (gateway.slug === 'creditcard') {
+		const componentsEnabled = gateway.settings.mollie_components_enabled === 'yes';
+		label += componentsEnabled 
+			? ' - Mollie components enabled' 
+			: ' - Mollie components disabled';
+	}
+	
+	return label;
+}
+
+export async function updateCurrencyIfNeeded(
+	wooCommerceApi: WooCommerceApi,
+	currency: string | undefined
+) {
+	if ( currency && currency !== 'EUR' ) {
+		await wooCommerceApi.updateGeneralSettings( {
+			woocommerce_currency: currency,
+		} );
+	}
+}
 
 export const processMolliePaymentStatus = async (
 	{

@@ -3,7 +3,7 @@
  */
 import { cards, MollieTestData } from '../../../../resources';
 
-export const checkoutEur: MollieTestData.PaymentStatus[] = [
+export const checkoutEur: MollieTestData.Transaction[] = [
 	// {
 	// 	testId: '',
 	// 	gatewaySlug: 'applepay',

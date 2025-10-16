@@ -259,7 +259,7 @@ export namespace MollieTestData {
 		tests: MollieTestData.SurchargeTest[];
 	};
 
-	export type PaymentStatus = {
+	export type Transaction = {
 		testId: string;
 		gatewaySlug: string;
 		paymentStatus: MolliePaymentStatus;

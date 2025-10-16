@@ -3,7 +3,7 @@
  */
 import { MollieTestData } from '../../../../resources';
 
-export const classicCheckoutNonEur: MollieTestData.PaymentStatus[] = [
+export const classicCheckoutNonEur: MollieTestData.Transaction[] = [
 	{
 		testId: 'C300724',
 		gatewaySlug: 'twint',

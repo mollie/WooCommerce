@@ -3,7 +3,7 @@
  */
 import { cards, MollieTestData } from '../../../../resources';
 
-export const creditCardDisabledMollieComponentsClassicCheckout: MollieTestData.PaymentStatus[] =
+export const creditCardDisabledMollieComponentsClassicCheckout: MollieTestData.Transaction[] =
 	[
 		{
 			testId: 'C3371',
@@ -36,7 +36,7 @@ export const creditCardDisabledMollieComponentsClassicCheckout: MollieTestData.P
 		},
 	];
 
-export const creditCardDisabledMollieComponentsCheckout: MollieTestData.PaymentStatus[] =
+export const creditCardDisabledMollieComponentsCheckout: MollieTestData.Transaction[] =
 	[
 		{
 			testId: 'C420271',
@@ -69,7 +69,7 @@ export const creditCardDisabledMollieComponentsCheckout: MollieTestData.PaymentS
 		},
 	];
 
-export const creditCardDisabledMollieComponentsPayForOrder: MollieTestData.PaymentStatus[] =
+export const creditCardDisabledMollieComponentsPayForOrder: MollieTestData.Transaction[] =
 	[
 		{
 			testId: 'C420386',

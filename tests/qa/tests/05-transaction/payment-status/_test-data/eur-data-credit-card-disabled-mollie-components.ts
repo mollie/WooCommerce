@@ -6,7 +6,7 @@ import { cards, MollieTestData } from '../../../../resources';
 export const creditCardDisabledMollieComponentsClassicCheckout: MollieTestData.PaymentStatus[] =
 	[
 		{
-			testId: 'C3376',
+			testId: 'C3371',
 			gatewaySlug: 'creditcard',
 			paymentStatus: 'paid',
 			card: cards.visa,
@@ -14,21 +14,21 @@ export const creditCardDisabledMollieComponentsClassicCheckout: MollieTestData.P
 			orderStatus: 'processing',
 		},
 		{
-			testId: 'C3377',
+			testId: 'C3372',
 			gatewaySlug: 'creditcard',
 			paymentStatus: 'open',
 			card: cards.visa,
 			mollieComponentsEnabled: 'no',
 		},
 		{
-			testId: 'C3378',
+			testId: 'C3373',
 			gatewaySlug: 'creditcard',
 			paymentStatus: 'failed',
 			card: cards.visa,
 			mollieComponentsEnabled: 'no',
 		},
 		{
-			testId: 'C3379',
+			testId: 'C3374',
 			gatewaySlug: 'creditcard',
 			paymentStatus: 'expired',
 			card: cards.visa,
@@ -39,7 +39,14 @@ export const creditCardDisabledMollieComponentsClassicCheckout: MollieTestData.P
 export const creditCardDisabledMollieComponentsCheckout: MollieTestData.PaymentStatus[] =
 	[
 		{
-			testId: 'C420273',
+			testId: 'C420271',
+			gatewaySlug: 'creditcard',
+			paymentStatus: 'expired',
+			card: cards.visa,
+			mollieComponentsEnabled: 'no',
+		},
+		{
+			testId: 'C420268',
 			gatewaySlug: 'creditcard',
 			paymentStatus: 'paid',
 			card: cards.visa,
@@ -47,23 +54,16 @@ export const creditCardDisabledMollieComponentsCheckout: MollieTestData.PaymentS
 			orderStatus: 'processing',
 		},
 		{
-			testId: 'C420274',
-			gatewaySlug: 'creditcard',
-			paymentStatus: 'open',
-			card: cards.visa,
-			mollieComponentsEnabled: 'no',
-		},
-		{
-			testId: 'C420275',
+			testId: 'C420270',
 			gatewaySlug: 'creditcard',
 			paymentStatus: 'failed',
 			card: cards.visa,
 			mollieComponentsEnabled: 'no',
 		},
 		{
-			testId: 'C420276',
+			testId: 'C420269',
 			gatewaySlug: 'creditcard',
-			paymentStatus: 'expired',
+			paymentStatus: 'open',
 			card: cards.visa,
 			mollieComponentsEnabled: 'no',
 		},
@@ -72,7 +72,14 @@ export const creditCardDisabledMollieComponentsCheckout: MollieTestData.PaymentS
 export const creditCardDisabledMollieComponentsPayForOrder: MollieTestData.PaymentStatus[] =
 	[
 		{
-			testId: 'C420388',
+			testId: 'C420386',
+			gatewaySlug: 'creditcard',
+			paymentStatus: 'expired',
+			card: cards.visa,
+			mollieComponentsEnabled: 'no',
+		},
+		{
+			testId: 'C420383',
 			gatewaySlug: 'creditcard',
 			paymentStatus: 'paid',
 			card: cards.visa,
@@ -80,23 +87,16 @@ export const creditCardDisabledMollieComponentsPayForOrder: MollieTestData.Payme
 			orderStatus: 'processing',
 		},
 		{
-			testId: 'C420389',
-			gatewaySlug: 'creditcard',
-			paymentStatus: 'open',
-			card: cards.visa,
-			mollieComponentsEnabled: 'no',
-		},
-		{
-			testId: 'C420390',
+			testId: 'C420385',
 			gatewaySlug: 'creditcard',
 			paymentStatus: 'failed',
 			card: cards.visa,
 			mollieComponentsEnabled: 'no',
 		},
 		{
-			testId: 'C420391',
+			testId: 'C420384',
 			gatewaySlug: 'creditcard',
-			paymentStatus: 'expired',
+			paymentStatus: 'open',
 			card: cards.visa,
 			mollieComponentsEnabled: 'no',
 		},

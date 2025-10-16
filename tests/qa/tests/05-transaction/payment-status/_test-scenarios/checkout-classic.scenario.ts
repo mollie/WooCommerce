@@ -8,18 +8,20 @@ import { countTotals } from '@inpsyde/playwright-utils/build';
 import { test } from '../../../../utils';
 import { processMolliePaymentStatus } from './process-mollie-payment-status.scenario';
 
+const isMultistepCheckout = process.env.IS_MULTISTEP_CHECKOUT === 'true';
+
 export const testPaymentStatusOnClassicCheckout = ( testId: string, order ) => {
 	const { payment, orderStatus } = order;
 	const { gateway } = payment;
 	let testedGateway = gateway.name;
-	if (
-		gateway.slug === 'creditcard' &&
-		gateway.settings.mollie_components_enabled === 'yes'
-	) {
-		testedGateway += ' - Disabled Mollie components';
+	if ( gateway.slug === 'creditcard' ) {
+		testedGateway += gateway.settings.mollie_components_enabled === 'yes'
+			? ' - Mollie components enabled'
+			: ' - Mollie components disabled';
 	}
+	const multistepLabel = isMultistepCheckout ? ' - Multistep' : '';
 
-	test( `${ testId } | Classic checkout - ${ testedGateway } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
+	test( `${ testId } | Transaction${ multistepLabel } - Classic checkout - ${ testedGateway } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
 		wooCommerceApi,
 		utils,
 		classicCheckout,
@@ -40,7 +42,10 @@ export const testPaymentStatusOnClassicCheckout = ( testId: string, order ) => {
 
 		await utils.fillVisitorsCart( order.products );
 
-		await classicCheckout.makeOrder( order );
+		await ( isMultistepCheckout 
+			? classicCheckout.makeMultistepOrder( order ) 
+			: classicCheckout.makeOrder( order )
+		);
 
 		const orderId = await mollieHostedCheckout.pay( payment );
 

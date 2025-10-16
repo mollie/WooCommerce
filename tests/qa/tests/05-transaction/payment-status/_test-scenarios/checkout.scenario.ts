@@ -6,21 +6,22 @@ import { countTotals } from '@inpsyde/playwright-utils/build';
  * Internal dependencies
  */
 import { test } from '../../../../utils';
-import { gateways as allGateways } from '../../../../resources';
 import { processMolliePaymentStatus } from './process-mollie-payment-status.scenario';
+
+const isMultistepCheckout = process.env.IS_MULTISTEP_CHECKOUT === 'true';
 
 export const testPaymentStatusOnCheckout = ( testId: string, order ) => {
 	const { payment, orderStatus } = order;
 	const { gateway } = payment;
 	let testedGateway = gateway.name;
-	if (
-		gateway.slug === 'creditcard' &&
-		gateway.settings.mollie_components_enabled === 'yes'
-	) {
-		testedGateway += ' - Disabled Mollie components';
+	if ( gateway.slug === 'creditcard' ) {
+		testedGateway += gateway.settings.mollie_components_enabled === 'yes'
+			? ' - Mollie components enabled'
+			: ' - Mollie components disabled';
 	}
+	const multistepLabel = isMultistepCheckout ? ' - Multistep' : '';
 
-	test( `${ testId } | Checkout - ${ testedGateway } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
+	test( `${ testId } | Transaction${ multistepLabel } - Checkout - ${ testedGateway } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
 		wooCommerceApi,
 		utils,
 		checkout,
@@ -29,14 +30,6 @@ export const testPaymentStatusOnCheckout = ( testId: string, order ) => {
 		payForOrder,
 		wooCommerceOrderEdit,
 	} ) => {
-		for ( const key in allGateways ) {
-			const isEnabled = allGateways[ key ].slug === gateway.slug;
-			await wooCommerceApi.updatePaymentGateway(
-				`mollie_wc_gateway_${ allGateways[ key ].slug }`,
-				{ enabled: isEnabled }
-			);
-		}
-
 		const currency = gateway.currency;
 		if ( currency !== undefined && currency !== 'EUR' ) {
 			await wooCommerceApi.updateGeneralSettings( {
@@ -49,7 +42,10 @@ export const testPaymentStatusOnCheckout = ( testId: string, order ) => {
 
 		await utils.fillVisitorsCart( order.products );
 
-		await checkout.makeOrder( order );
+		await ( isMultistepCheckout 
+			? checkout.makeMultistepOrder( order ) 
+			: checkout.makeOrder( order )
+		);
 
 		const orderId = await mollieHostedCheckout.pay( payment );
 

@@ -44,24 +44,26 @@ export class Checkout extends CheckoutBase {
 	rivertyPhoneInput = (): Locator =>
 		this.page.locator( '#billing-phone-riverty' );
 
-	// Actions
+	continueWithShippingButton = () =>
+		this.page.getByRole( 'button', { name: 'Continue with Shipping' } );
+	continueWithPaymentButton = () =>
+		this.page.getByRole( 'button', { name: 'Continue with Payment' } );
+	continueWithConfirmationButton = () =>
+		this.page.getByRole( 'button', { name: 'Continue with Confirmation' } );
+	termsAndConditionsCheckbox = () =>
+		this.page.locator( '#checkbox-legal' );
 
+	// Actions
+	
 	/**
-	 * Makes order on Checkout:
-	 * - fills checkout form
-	 * - selects shipping method
-	 * - selects gateway
-	 * - clicks Place Order button
-	 *
-	 * @param order
+	 * Selects payment gateway and enters required data (if needed)
+	 * 
+	 * @param order 
 	 */
-	makeOrder = async ( order: WooCommerce.ShopOrder ) => {
-		const { payment, customer, coupons } = order;
+	processPaymentMethod = async ( order: WooCommerce.ShopOrder ) => {
+		const { payment, customer } = order;
 		const { gateway, card } = payment;
-		await this.visit();
-		await this.applyCoupons( coupons );
-		await this.fillCheckoutForm( customer );
-		await this.selectShippingMethod( order.shipping.settings.title );
+
 		await expect( this.paymentOption( gateway.name ) ).toBeVisible();
 		await this.paymentOption( gateway.name ).click();
 
@@ -135,6 +137,53 @@ export class Checkout extends CheckoutBase {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Makes order on Checkout:
+	 * - fills checkout form
+	 * - selects shipping method
+	 * - selects gateway
+	 * - clicks Place Order button
+	 *
+	 * @param order
+	 */
+	makeOrder = async ( order: WooCommerce.ShopOrder ) => {
+		const { customer, coupons } = order;
+		await this.visit();
+		await this.applyCoupons( coupons );
+		await this.fillCheckoutForm( customer );
+		await this.selectShippingMethod( order.shipping.settings.title );
+		await this.processPaymentMethod( order );
+		await this.placeOrder();
+	};
+
+	/**
+	 * Makes order on multistep Checkout
+	 *
+	 * @param order
+	 */
+	makeMultistepOrder = async ( order: WooCommerce.ShopOrder ) => {
+		const {  customer, coupons } = order;
+		// Clear state since is optional, causes problems (in multistep is input instead of dropdown)
+		customer.shipping.state = '';
+		customer.billing.state = '';
+		await this.visit();
+		await this.applyCoupons( coupons );
+		await this.fillCheckoutForm( customer );
+		await expect( this.continueWithShippingButton() ).toBeVisible();
+		await this.continueWithShippingButton().click();
+
+		await this.selectShippingMethod( order.shipping.settings.title );
+		await expect( this.continueWithPaymentButton() ).toBeVisible();
+		await this.continueWithPaymentButton().click();
+
+		await this.processPaymentMethod( order );
+		await expect( this.continueWithConfirmationButton() ).toBeVisible();
+		await this.continueWithConfirmationButton().click();
+
+		await expect( this.termsAndConditionsCheckbox() ).toBeVisible();
+		await this.termsAndConditionsCheckbox().check();
 
 		await this.placeOrder();
 	};

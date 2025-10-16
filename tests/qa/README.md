@@ -10,6 +10,7 @@ Mollie Playwright tests. Depends on [`@inpsyde/playwright-utils`](https://github
 - [Troubleshooting](#troubleshooting)
 - [Reporting to TestRail](#reporting-to-testrail)
 - [Run tests](#run-tests)
+- [Run Multistep Checkout tests](#run-multistep-checkout-tests)
 - [Autotest Execution workflow](#autotest-execution-workflow)
 - [Automated environment setup scripts](#automated-environment-setup-scripts)
 - [Coding standards](#coding-standards)
@@ -114,6 +115,39 @@ To execute all tests sequentially, in the terminal navigate to the `./tests/qa/`
 # Run tests from playwright project "all" using 1 worker
 npm run test:all
 ```
+
+## Run Multistep Checkout tests
+
+_Multistep Checkout_ can be enabled by installation of both Germanized and Germanized Pro plugins.
+
+Additional actions:
+
+1. Once plugins are installed - skip all steps in Germanized Pro setup.
+
+2. Navigate to the Dashboard -> WooCommerce -> Settings -> Germanized
+
+	2.1 Enable Multistep checkout toggle
+	
+	2.2 Click Manage Settings icon for Taxes
+	
+	2.3 Select WooCommerce default in Tax calculation mode
+
+	2.4 Save changes
+
+3. In `.env` set `IS_MULTISTEP_CHECKOUT='true'`
+
+4. Multistep tests can be executed only for payment status tests on classic and block checkout:
+
+	```bash
+	# Run tests for both multistep block and classic checkouts
+	npx playwright test --grep "Transaction - Multistep"
+
+	# Run tests for multistep block checkout
+	npx playwright test --grep "Transaction - Multistep - Checkout"
+
+	# Run tests for multistep classic checkout
+	npx playwright test --grep "Transaction - Multistep - Classic checkout"
+	```
 
 
 ### Additional options to run tests from command line

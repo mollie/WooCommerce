@@ -165,9 +165,12 @@ export class Checkout extends CheckoutBase {
 	 */
 	makeMultistepOrder = async ( order: WooCommerce.ShopOrder ) => {
 		const {  customer, coupons } = order;
-		// Clear state since is optional, causes problems (in multistep is input instead of dropdown)
-		customer.shipping.state = '';
-		customer.billing.state = '';
+		if( customer.shipping.country !== 'IT' ) {
+			// Clear state for countries where it is optional
+			// Causes problems: in multistep checkout can be text input instead of select
+			customer.shipping.state = '';
+			customer.billing.state = '';
+		}
 		await this.visit();
 		await this.applyCoupons( coupons );
 		await this.fillCheckoutForm( customer );

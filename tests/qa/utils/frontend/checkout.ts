@@ -43,6 +43,12 @@ export class Checkout extends CheckoutBase {
 		this.page.locator( '#billing-birthdate' );
 	rivertyPhoneInput = (): Locator =>
 		this.page.locator( '#billing-phone-riverty' );
+	paymentOptionLogo = ( name: string ): Locator =>
+		this.paymentOptionsContainer()
+			.locator( '.wc-block-components-radio-control__option', {
+				has: this.page.getByText( name, { exact: true } )
+			} )
+			.locator( 'img' );
 
 	// Actions
 

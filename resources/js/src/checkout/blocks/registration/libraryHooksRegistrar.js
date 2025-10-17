@@ -29,7 +29,8 @@ export const registerExpressPaymentMethodHooks = (gatewayData) => {
         return gateway.name === ApplePayUtils.GATEWAY_NAME
     });
 
-    if (applePayGateway) {
+    if (applePayGateway && applePayGateway.isExpressEnabled) {
+
         addFilter(
             `${applePayGateway.name}_express_payment_method_args`,
             'mollie/apple-pay-express-args',
@@ -40,8 +41,8 @@ export const registerExpressPaymentMethodHooks = (gatewayData) => {
                     name: 'mollie_wc_gateway_applepay_express',
                     title: 'Apple Pay Express button',
                     description: 'Apple Pay Express button',
-                    content: <ApplePayButtonComponent />,
-                    edit: <ApplePayButtonEditorComponent />,
+                    content: <ApplePayButtonComponent/>,
+                    edit: <ApplePayButtonEditorComponent/>,
                     ariaLabel: 'Apple Pay',
                     canMakePayment: () => {
                         if (isEditorContext()) {

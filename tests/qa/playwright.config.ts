@@ -68,7 +68,10 @@ export default defineConfig< TestBaseExtend >( {
 		trace: 'on-first-retry',
 
 		// Capture screenshot after each test failure.
-		screenshot: 'only-on-failure', //'off', //
+		screenshot: {
+			mode: 'only-on-failure',
+			fullPage: true, // Captures entire scrollable page
+		},
 
 		// Record video only when retrying a test for the first time.
 		video: 'retain-on-failure', //'on', //

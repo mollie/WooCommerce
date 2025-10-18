@@ -6,15 +6,17 @@ import { countTotals } from '@inpsyde/playwright-utils/build';
  * Internal dependencies
  */
 import { test } from '../../../../utils';
-import { gateways as allGateways } from '../../../../resources';
 import { buildGatewayLabel, processMolliePaymentStatus, updateCurrencyIfNeeded } from './checkout-test-helpers';
+
+const isMultistepCheckout = process.env.IS_MULTISTEP_CHECKOUT === 'true';
 
 export const testPaymentStatusOnCheckout = ( testId: string, order ) => {
 	const { payment, orderStatus } = order;
 	const { gateway } = payment;
 	const gatewayLabel = buildGatewayLabel( gateway );
+	const multistepLabel = isMultistepCheckout ? ' - Multistep' : '';
 
-	test( `${ testId } | Transaction - Checkout - ${ gatewayLabel } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
+	test( `${ testId } | Transaction${ multistepLabel } - Checkout - ${ gatewayLabel } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
 		wooCommerceApi,
 		utils,
 		checkout,
@@ -30,7 +32,10 @@ export const testPaymentStatusOnCheckout = ( testId: string, order ) => {
 
 		await utils.fillVisitorsCart( order.products );
 
-		await checkout.makeOrder( order );
+		await ( isMultistepCheckout 
+			? checkout.makeMultistepOrder( order ) 
+			: checkout.makeOrder( order )
+		);
 
 		const orderId = await mollieHostedCheckout.pay( payment );
 

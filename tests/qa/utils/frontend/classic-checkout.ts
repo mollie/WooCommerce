@@ -57,24 +57,21 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 			} )
 			.locator( 'img.mollie-gateway-icon' );
 
-	// Actions
+	continueWithStep2Button = () => this.page.locator( '#next-step-address' );
+	continueWithStep3Button = () => this.page.locator( '#next-step-payment' );
+	termsAndConditionsCheckbox = () => this.page.locator( '#legal' );
 
+	// Actions
+	
 	/**
-	 * Makes order on Classic Checkout:
-	 * - fills checkout form
-	 * - selects shipping method
-	 * - selects gateway
-	 * - clicks Place Order button
-	 *
-	 * @param order
+	 * Selects payment gateway and enters required data (if needed)
+	 * 
+	 * @param order 
 	 */
-	makeOrder = async ( order: WooCommerce.ShopOrder ) => {
-		const { payment, customer, coupons } = order;
+	processPaymentMethod = async ( order: WooCommerce.ShopOrder ) => {
+		const { payment, customer } = order;
 		const { gateway, card } = payment;
-		await this.visit();
-		await this.applyCoupons( coupons );
-		await this.fillCheckoutForm( customer );
-		await this.selectShippingMethod( order.shipping.settings.title );
+
 		await expect( this.paymentOption( gateway.name ) ).toBeVisible();
 		await this.paymentOption( gateway.name ).click();
 
@@ -143,6 +140,56 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Makes order on Classic checkout:
+	 * - fills checkout form
+	 * - selects shipping method
+	 * - selects gateway
+	 * - clicks Place Order button
+	 *
+	 * @param order
+	 */
+	makeOrder = async ( order: WooCommerce.ShopOrder ) => {
+		const { customer, coupons } = order;
+		await this.visit();
+		await this.applyCoupons( coupons );
+		await this.fillCheckoutForm( customer );
+		await this.selectShippingMethod( order.shipping.settings.title );
+		await this.processPaymentMethod( order );
+		await this.placeOrder();
+	};
+
+	/**
+	 * Makes order on multistep Classic checkout
+	 *
+	 * @param order
+	 */
+	makeMultistepOrder = async ( order: WooCommerce.ShopOrder ) => {
+		const {  customer, coupons } = order;
+		if( customer.shipping.country !== 'IT' ) {
+			// Clear state for countries where it is optional
+			// Causes problems: in multistep checkout can be text input instead of select
+			customer.shipping.state = '';
+			customer.billing.state = '';
+		}
+		await this.visit();
+		await this.applyCoupons( coupons );
+		await this.fillCheckoutForm( customer );
+		await this.page.waitForTimeout( 1000 );
+		await expect( this.continueWithStep2Button() ).toBeVisible();
+		await this.continueWithStep2Button().click();
+
+		await this.processPaymentMethod( order );
+		await this.page.waitForTimeout( 1000 );
+		await expect( this.continueWithStep3Button() ).toBeVisible();
+		await this.continueWithStep3Button().click();
+
+		await this.selectShippingMethod( order.shipping.settings.title );
+		await this.page.waitForTimeout( 1000 );
+		await expect( this.termsAndConditionsCheckbox() ).toBeVisible();
+		await this.termsAndConditionsCheckbox().check();
 
 		await this.placeOrder();
 	};

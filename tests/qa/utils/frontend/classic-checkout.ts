@@ -177,14 +177,17 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 		await this.visit();
 		await this.applyCoupons( coupons );
 		await this.fillCheckoutForm( customer );
+		await this.page.waitForTimeout( 1000 );
 		await expect( this.continueWithStep2Button() ).toBeVisible();
-		await this.continueWithStep2Button().click( { force: true } );
+		await this.continueWithStep2Button().click();
 
 		await this.processPaymentMethod( order );
+		await this.page.waitForTimeout( 1000 );
 		await expect( this.continueWithStep3Button() ).toBeVisible();
-		await this.continueWithStep3Button().click( { force: true } );
+		await this.continueWithStep3Button().click();
 
 		await this.selectShippingMethod( order.shipping.settings.title );
+		await this.page.waitForTimeout( 1000 );
 		await expect( this.termsAndConditionsCheckbox() ).toBeVisible();
 		await this.termsAndConditionsCheckbox().check();
 

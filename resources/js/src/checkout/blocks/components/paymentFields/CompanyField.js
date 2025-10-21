@@ -5,10 +5,10 @@ export const CompanyField = ( { label, value, onChange } ) => {
         onChange( e.target.value );
     }, [ onChange ] );
     const className =
-        'wc-block-components-text-input wc-block-components-address-form__billing_company_billie';
+        'wc-block-components-address-form__billing_company_billie';
 
     return (
-        <div className="custom-input">
+        <div className="wc-block-components-text-input wc-block-components-address-form__company">
             <label htmlFor="billing_company_billie">{ label }</label>
             <input
                 type="text"

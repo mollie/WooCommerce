@@ -218,8 +218,13 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 8.1.0-beta1 - 15-10-2025 =
+= 8.1.0 - 21-10-2025 =
 * Improvement - Refactor of Mollie payment methods in block checkout
+* Fixed - Creditcard components failing in multistep checkout
+* Fixed - Payment methods not loading in block checkout
+* Fixed - Bizum payment in pay for order page
+* Fixed - Bizum placeholder
+* Fixed - For manually captured orders status displayed as ON HOLD
 
 = 8.0.6 - 29-09-2025 =
 * Fixed - TypeError in OrderLines.php when processing vouchers with Germanized plugin

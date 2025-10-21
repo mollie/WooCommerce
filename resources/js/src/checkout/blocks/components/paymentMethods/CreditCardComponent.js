@@ -37,7 +37,7 @@ const CreditCardComponent = ( {
 
 		return null;
 	};
-	if (!isComponentsEnabled) {
+	if (isComponentsEnabled) {
 		return <div></div>;
 	}
 

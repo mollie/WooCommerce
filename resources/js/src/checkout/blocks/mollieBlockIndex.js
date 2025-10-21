@@ -61,6 +61,8 @@ import {initializeMollieComponentsWithStoreSubscription} from "./services/Mollie
                 initializeMollieComponentsWithStoreSubscription(
                     mollieBlockData.gatewayData.componentData
                 );
+                // Add custom classes to payment method icons
+                addCustomClassesToPaymentIcons();
             }
         };
 
@@ -75,3 +77,59 @@ import {initializeMollieComponentsWithStoreSubscription} from "./services/Mollie
         console.error( 'Mollie: Initialization failed:', error );
     }
 } )( window, wc );
+
+/**
+ * Adds custom classes to payment method icons
+ */
+function addCustomClassesToPaymentIcons() {
+    const addClassesToIcons = () => {
+        const iconContainers = document.querySelectorAll('[id*="mollie_wc_gateway"] .wc-block-components-payment-method-icons');
+
+        iconContainers.forEach(container => {
+            const images = container.querySelectorAll('img');
+
+            images.forEach(img => {
+                if (!img.classList.contains('mollie-gateway-icon')) {
+                    img.classList.add('mollie-gateway-icon');
+                }
+            });
+        });
+    };
+
+    addClassesToIcons();
+    // Set up a MutationObserver to handle dynamically added icons
+    const observer = new MutationObserver((mutations) => {
+        let shouldUpdate = false;
+
+        mutations.forEach(mutation => {
+            // Check if new nodes were added
+            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                mutation.addedNodes.forEach(node => {
+                    // Check if the added node contains payment method icons
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        if (node.classList?.contains('wc-block-components-payment-method-icons') ||
+                            node.querySelector?.('.wc-block-components-payment-method-icons')) {
+                            shouldUpdate = true;
+                        }
+                    }
+                });
+            }
+        });
+
+        if (shouldUpdate) {
+            // Small delay to ensure DOM is fully updated
+            setTimeout(addClassesToIcons, 10);
+        }
+    });
+
+    // Start observing the document for changes
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+
+    // Clean up observer when page unloads (optional)
+    window.addEventListener('beforeunload', () => {
+        observer.disconnect();
+    });
+}

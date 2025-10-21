@@ -5,11 +5,10 @@ export const BirthdateField = ( { label, value, onChange } ) => {
         onChange( e.target.value );
     }, [ onChange ] );
     const className =
-        'wc-block-components-text-input wc-block-components-address-form__billing-birthdate';
+        'wc-block-components-address-form__billing-birthdate';
 
     return (
-        <div className="custom-input">
-            <label htmlFor="billing-birthdate">{ label }</label>
+        <div className="wc-block-components-text-input">
             <input
                 type="date"
                 className={ className }

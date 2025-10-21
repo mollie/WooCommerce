@@ -137,84 +137,76 @@ export class MollieComponentsManager {
 	 * @param container
 	 * @private
 	 */
-	async _mountSingleComponent( componentAttributes, settings, container ) {
-		const { name, label } = componentAttributes;
-console.log( 'Mounting component:', name );
-		try {
-			// Find or create the mollie-components wrapper inside the container
-			let mollieComponentsWrapper = container.querySelector('.mollie-components');
-			if (!mollieComponentsWrapper) {
-				mollieComponentsWrapper = document.createElement('div');
-				mollieComponentsWrapper.className = 'mollie-components';
-				container.appendChild(mollieComponentsWrapper);
-			}
+    async _mountSingleComponent( componentAttributes, settings, container ) {
+        const { name, label } = componentAttributes;
 
-			// Create wrapper container (not styled) inside mollie-components
-			const wrapperContainer = document.createElement( 'div' );
-			wrapperContainer.id = name;
-			wrapperContainer.className = `mollie-component-wrapper mollie-component-wrapper--${ name }`;
-			wrapperContainer.setAttribute( 'data-component', name );
-			mollieComponentsWrapper.appendChild( wrapperContainer );
+        try {
+            let mollieComponentsWrapper = container.querySelector('.mollie-components');
+            if (!mollieComponentsWrapper) {
+                mollieComponentsWrapper = document.createElement('div');
+                mollieComponentsWrapper.className = 'mollie-components';
+                container.appendChild(mollieComponentsWrapper);
+            }
 
-			// Add component label
-			if ( label ) {
-				const labelElement = document.createElement( 'label' );
-				labelElement.className = 'mollie-component-label';
-				labelElement.setAttribute( 'for', name );
-				labelElement.innerHTML = label;
-				wrapperContainer.parentNode.insertBefore(
-					labelElement,
-					wrapperContainer
-				);
-			}
+            const wrapperContainer = document.createElement( 'div' );
+            wrapperContainer.className = `mollie-component-wrapper mollie-component-wrapper--${ name }`;
+            wrapperContainer.setAttribute( 'data-component', name );
+            mollieComponentsWrapper.appendChild( wrapperContainer );
 
-			// Create error container
-			const errorContainer = document.createElement( 'div' );
-			errorContainer.id = `${ name }-errors`;
-			errorContainer.setAttribute( 'role', 'alert' );
-			errorContainer.className = 'mollie-component-error';
-			wrapperContainer.parentNode.insertBefore(
-				errorContainer,
-				wrapperContainer.nextSibling
-			);
+            if ( label ) {
+                const labelElement = document.createElement( 'label' );
+                labelElement.className = 'mollie-component-label';
+                labelElement.setAttribute( 'for', name );
+                labelElement.innerHTML = label;
+                wrapperContainer.appendChild( labelElement ); // Changed: append to wrapper
+            }
 
-			// Create Mollie component (this will create the inner styled div)
-			const component = this.mollie.createComponent( name, settings );
-			component.mount( `#${ name }` );
+            const componentDiv = document.createElement( 'div' );
+            componentDiv.id = name;
+            wrapperContainer.appendChild( componentDiv ); // Changed: append to wrapper
 
-			// Add event listeners - apply states to wrapper
-			component.addEventListener( 'change', ( event ) => {
-				if ( event.error && event.touched ) {
-					wrapperContainer.classList.add( 'is-invalid' );
-					wrapperContainer.classList.remove( 'is-valid' );
-					errorContainer.textContent = event.error;
-					dispatch( MOLLIE_STORE_KEY ).setComponentError(
-						event.error
-					);
-				} else {
-					wrapperContainer.classList.remove( 'is-invalid' );
-					errorContainer.textContent = '';
-					dispatch( MOLLIE_STORE_KEY ).clearComponentError();
-				}
-			} );
+            const errorContainer = document.createElement( 'div' );
+            errorContainer.id = `${ name }-errors`;
+            errorContainer.setAttribute( 'role', 'alert' );
+            errorContainer.className = 'mollie-component-error';
+            wrapperContainer.appendChild( errorContainer ); // Changed: append to wrapper
 
-			component.addEventListener( 'focus', () => {
-				wrapperContainer.classList.add( 'has-focus' );
-				dispatch( MOLLIE_STORE_KEY ).setComponentFocused( name, true );
-			} );
+            const component = this.mollie.createComponent( name, settings );
+            component.mount( `#${ name }` );
 
-			component.addEventListener( 'blur', () => {
-				wrapperContainer.classList.remove( 'has-focus' );
-				dispatch( MOLLIE_STORE_KEY ).setComponentFocused( name, false );
-			} );
+            // Add event listeners - apply states to the actual component div
+            component.addEventListener( 'change', ( event ) => {
+                const mollieComponent = componentDiv.querySelector('.mollie-component');
+                if ( event.error && event.touched ) {
+                    if (mollieComponent) mollieComponent.classList.add( 'is-invalid' );
+                    errorContainer.textContent = event.error;
+                    dispatch( MOLLIE_STORE_KEY ).setComponentError( event.error );
+                } else {
+                    if (mollieComponent) mollieComponent.classList.remove( 'is-invalid' );
+                    errorContainer.textContent = '';
+                    dispatch( MOLLIE_STORE_KEY ).clearComponentError();
+                }
+            } );
 
-			return component;
-		} catch ( error ) {
-			throw new Error(
-				`Failed to mount component ${ name }: ${ error.message }`
-			);
-		}
-	}
+            component.addEventListener( 'focus', () => {
+                const mollieComponent = componentDiv.querySelector('.mollie-component');
+                if (mollieComponent) mollieComponent.classList.add( 'has-focus' );
+                dispatch( MOLLIE_STORE_KEY ).setComponentFocused( name, true );
+            } );
+
+            component.addEventListener( 'blur', () => {
+                const mollieComponent = componentDiv.querySelector('.mollie-component');
+                if (mollieComponent) mollieComponent.classList.remove( 'has-focus' );
+                dispatch( MOLLIE_STORE_KEY ).setComponentFocused( name, false );
+            } );
+
+            return component;
+        } catch ( error ) {
+            throw new Error(
+                `Failed to mount component ${ name }: ${ error.message }`
+            );
+        }
+    }
 	/**
 	 * Unmount components for a gateway
 	 * @param {string} gateway - Gateway identifier

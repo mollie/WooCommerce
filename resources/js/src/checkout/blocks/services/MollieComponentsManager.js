@@ -1,3 +1,4 @@
+
 import { select, dispatch } from '@wordpress/data';
 import { MOLLIE_STORE_KEY } from '../store';
 
@@ -138,14 +139,22 @@ export class MollieComponentsManager {
 	 */
 	async _mountSingleComponent( componentAttributes, settings, container ) {
 		const { name, label } = componentAttributes;
-
+console.log( 'Mounting component:', name );
 		try {
-			// Create wrapper container (not styled)
+			// Find or create the mollie-components wrapper inside the container
+			let mollieComponentsWrapper = container.querySelector('.mollie-components');
+			if (!mollieComponentsWrapper) {
+				mollieComponentsWrapper = document.createElement('div');
+				mollieComponentsWrapper.className = 'mollie-components';
+				container.appendChild(mollieComponentsWrapper);
+			}
+
+			// Create wrapper container (not styled) inside mollie-components
 			const wrapperContainer = document.createElement( 'div' );
 			wrapperContainer.id = name;
 			wrapperContainer.className = `mollie-component-wrapper mollie-component-wrapper--${ name }`;
 			wrapperContainer.setAttribute( 'data-component', name );
-			container.appendChild( wrapperContainer );
+			mollieComponentsWrapper.appendChild( wrapperContainer );
 
 			// Add component label
 			if ( label ) {
@@ -247,6 +256,12 @@ export class MollieComponentsManager {
 						error
 					);
 				}
+			}
+
+			// Clean up mollie-components wrapper if it's empty
+			const mollieComponentsWrapper = document.querySelector('.mollie-components');
+			if (mollieComponentsWrapper && mollieComponentsWrapper.children.length === 0) {
+				mollieComponentsWrapper.remove();
 			}
 
 			this.components.delete( gateway );

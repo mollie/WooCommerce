@@ -37,6 +37,9 @@ const CreditCardComponent = ( {
 
 		return null;
 	};
+	if (!isComponentsEnabled) {
+		return <div></div>;
+	}
 
 	return (
 		<div className="mollie-creditcard-component">

@@ -83,8 +83,7 @@ import {initializeMollieComponentsWithStoreSubscription} from "./services/Mollie
  */
 function addCustomClassesToPaymentIcons() {
     const addClassesToIcons = () => {
-        // Find all containers with payment method icons
-        const iconContainers = document.querySelectorAll('.wc-block-components-payment-method-icons');
+        const iconContainers = document.querySelectorAll('[id*="mollie_wc_gateway"] .wc-block-components-payment-method-icons');
 
         iconContainers.forEach(container => {
             const images = container.querySelectorAll('img');

@@ -51,6 +51,7 @@ final class MollieCheckoutBlocksSupport
         /** @var ComponentDataService */
         $componentDataService = $container->get('components.data_service');
         $componentData = $componentDataService->getComponentData();
+        $isOrderPayPage = is_checkout_pay_page();
         /** @var PaymentGateway $gateway */
         foreach ($paymentGateways as $gatewayKey => $gateway) {
             if (substr($gateway->id, 0, 18) !== 'mollie_wc_gateway_') {
@@ -151,7 +152,7 @@ final class MollieCheckoutBlocksSupport
             'ajaxUrl' => admin_url('admin-ajax.php')
         ];
         $dataToScript['appleButtonData'] = $appleButtonData;
-
+        $dataToScript['isOrderPayPage'] = $isOrderPayPage;
         if ($componentData !== null) {
             $dataToScript['componentData'] = $componentData;
         }

@@ -22,7 +22,11 @@ import {initializeMollieComponentsWithStoreSubscription} from "./services/Mollie
         console.warn( 'Mollie: No block data available' );
         return;
     }
-
+    //if we are in order pay page there are no blocks, so we bail
+    const isOrderPayPage = mollieBlockData.gatewayData.isOrderPayPage;
+    if ( isOrderPayPage ) {
+        return;
+    }
     try {
         const { gatewayData } = mollieBlockData.gatewayData;
         const context = buildRegistrationContext( wc );

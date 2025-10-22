@@ -66,7 +66,10 @@ export class PayForOrder extends PayForOrderBase {
 			gateway.slug === 'kbc' &&
 			gateway.settings.issuers_dropdown_shown === 'yes'
 		) {
-			await this.kbcIssuerSelect().selectOption( payment.bankIssuer );
+			await expect( this.kbcIssuerSelect() ).toBeVisible();
+			await this.kbcIssuerSelect().selectOption(
+				order.payment.bankIssuer
+			);
 		}
 
 		if ( gateway.slug === 'in3' ) {
@@ -97,6 +100,7 @@ export class PayForOrder extends PayForOrderBase {
 			gateway.slug === 'giftcard' &&
 			gateway.settings.issuers_dropdown_shown === 'yes'
 		) {
+			await expect( this.giftCardSelect() ).toBeVisible();
 			await this.giftCardSelect().selectOption( 'fashioncheque' );
 		}
 
@@ -104,6 +108,13 @@ export class PayForOrder extends PayForOrderBase {
 			gateway.slug === 'creditcard' &&
 			gateway.settings.mollie_components_enabled !== 'no'
 		) {
+			await expect.soft( this.page.getByText( 'Secure payments provided by' ) ).toBeVisible();
+
+			await expect( this.cardNumberInput() ).toBeVisible();
+			await expect( this.cardHolderInput() ).toBeVisible();
+			await expect( this.cardExpiryDateInput() ).toBeVisible();
+			await expect( this.cardVerificationCodeInput() ).toBeVisible();
+
 			await this.cardNumberInput().fill( card.card_number );
 			await this.cardHolderInput().fill( card.card_holder );
 			await this.cardExpiryDateInput().fill( card.expiration_date );

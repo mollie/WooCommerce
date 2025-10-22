@@ -79,6 +79,8 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 			gateway.slug === 'kbc' &&
 			gateway.settings.issuers_dropdown_shown === 'yes'
 		) {
+			await expect( this.kbcIssuerSelect() ).toBeVisible();
+			await this.kbcIssuerSelect().click();
 			await this.kbcIssuerSelect().selectOption(
 				order.payment.bankIssuer
 			);
@@ -110,9 +112,9 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 
 		if (
 			gateway.slug === 'giftcard' &&
-			gateway.settings.issuers_dropdown_shown === 'yes' &&
-			( await this.giftCardSelect().isVisible() )
+			gateway.settings.issuers_dropdown_shown === 'yes'
 		) {
+			await expect( this.giftCardSelect() ).toBeVisible();
 			await this.giftCardSelect().selectOption( 'fashioncheque' );
 		}
 
@@ -120,6 +122,13 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 			gateway.slug === 'creditcard' &&
 			gateway.settings.mollie_components_enabled !== 'no'
 		) {
+			await expect.soft( this.page.getByText( 'Secure payments provided by' ) ).toBeVisible();
+
+			await expect( this.cardNumberInput() ).toBeVisible();
+			await expect( this.cardHolderInput() ).toBeVisible();
+			await expect( this.cardExpiryDateInput() ).toBeVisible();
+			await expect( this.cardVerificationCodeInput() ).toBeVisible();
+
 			await this.cardNumberInput().fill( card.card_number );
 			await this.cardHolderInput().fill( card.card_holder );
 			await this.cardExpiryDateInput().fill( card.expiration_date );
@@ -158,7 +167,11 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 		await this.fillCheckoutForm( customer );
 		await this.selectShippingMethod( order.shipping.settings.title );
 		await this.processPaymentMethod( order );
-		await this.placeOrder();
+		await this.page.waitForLoadState( 'networkidle' );
+		await expect( this.placeOrderButton() ).toBeVisible();
+		await this.placeOrderButton().click( { force: true } );
+		await this.page.waitForLoadState();
+		// await this.placeOrder();
 	};
 
 	/**

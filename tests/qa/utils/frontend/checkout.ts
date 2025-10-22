@@ -77,6 +77,7 @@ export class Checkout extends CheckoutBase {
 			gateway.slug === 'kbc' &&
 			gateway.settings.issuers_dropdown_shown === 'yes'
 		) {
+			await expect( this.kbcIssuerSelect() ).toBeVisible();
 			await this.kbcIssuerSelect().selectOption(
 				order.payment.bankIssuer
 			);
@@ -108,9 +109,9 @@ export class Checkout extends CheckoutBase {
 
 		if (
 			gateway.slug === 'giftcard' &&
-			gateway.settings.issuers_dropdown_shown === 'yes' &&
-			( await this.giftCardSelect().isVisible() )
+			gateway.settings.issuers_dropdown_shown === 'yes'
 		) {
+			await expect( this.giftCardSelect() ).toBeVisible();
 			await this.giftCardSelect().selectOption( 'fashioncheque' );
 		}
 
@@ -118,11 +119,18 @@ export class Checkout extends CheckoutBase {
 			gateway.slug === 'creditcard' &&
 			gateway.settings.mollie_components_enabled !== 'no'
 		) {
-			// card input fields are loaded in iframes with delay
-			// unfortunately without timeout and clicking below the fields
-			// expiry date and cvv are not being filled
-			await this.page.waitForTimeout( 1000 );
-			await this.page.getByText( 'Secure payments provided by' ).click();
+			// the card fields seem to be only rendered when they are scrolled in otherwise they are not visible
+			await this.page.locator(
+				'#radio-control-wc-payment-method-options-mollie_wc_gateway_creditcard__content'
+			).scrollIntoViewIfNeeded();
+			
+			await expect.soft( this.page.getByText( 'Secure payments provided by' ) ).toBeVisible();
+
+			await expect( this.cardNumberInput() ).toBeVisible();
+			await expect( this.cardHolderInput() ).toBeVisible();
+			await expect( this.cardExpiryDateInput() ).toBeVisible();
+			await expect( this.cardVerificationCodeInput() ).toBeVisible();
+
 			await this.cardNumberInput().fill( card.card_number );
 			await this.cardHolderInput().fill( card.card_holder );
 			await this.cardExpiryDateInput().fill( card.expiration_date );

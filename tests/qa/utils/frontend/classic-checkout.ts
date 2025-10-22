@@ -74,7 +74,8 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 
 		await expect( this.paymentOption( gateway.name ) ).toBeVisible();
 		await this.paymentOption( gateway.name ).click();
-		await this.page.waitForLoadState( 'networkidle' );
+		// await this.page.waitForLoadState( 'networkidle' );
+		await this.page.waitForTimeout( 2500 );
 
 		if (
 			gateway.slug === 'kbc' &&

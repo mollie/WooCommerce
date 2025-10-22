@@ -9,7 +9,6 @@ export const CompanyField = ( { label, value, onChange } ) => {
 
     return (
         <div className="wc-block-components-text-input wc-block-components-address-form__company">
-            <label htmlFor="billing_company_billie">{ label }</label>
             <input
                 type="text"
                 className={ className }
@@ -17,6 +16,7 @@ export const CompanyField = ( { label, value, onChange } ) => {
                 id="billing_company_billie"
                 value={ value }
                 onChange={ handleChange }
+                placeholder={ label }
             />
         </div>
     );

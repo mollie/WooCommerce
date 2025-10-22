@@ -89,10 +89,18 @@ final class MollieCheckoutBlocksSupport
                 'title' => $title,
                 'iconsArray' => $iconsArray,
             ];
-
+            $componentsDescription = '';
             if ($gatewayId === 'creditcard') {
                 $content .= $issuers;
                 $issuers = false;
+                $lockIcon = file_get_contents(
+                    $dataService->pluginPath() . '/' . 'public/images/lock-icon.svg'
+                );
+                $mollieLogo = file_get_contents(
+                    $dataService->pluginPath() . '/' . 'public/images/mollie-logo.svg'
+                );
+                $descriptionTranslated = __('Secure payments provided by', 'mollie-payments-for-woocommerce');
+                $componentsDescription = "{$lockIcon} {$descriptionTranslated} {$mollieLogo}";
                 if(!$method->shouldDisplayIcon()){
                     $labelContent['iconsArray'] = [];
                 }
@@ -136,6 +144,7 @@ final class MollieCheckoutBlocksSupport
                 'isExpressEnabled' => $gatewayId === 'applepay' && $method->getProperty('mollie_apple_pay_button_enabled_express_checkout') === 'yes',
                 'hideCompanyField' => $hideCompanyFieldFilter,
                 'shouldLoadComponents'=> $shouldLoadComponents,
+                'componentsDescription' => $componentsDescription,
             ];
         }
         $dataToScript['gatewayData'] = $gatewayData;

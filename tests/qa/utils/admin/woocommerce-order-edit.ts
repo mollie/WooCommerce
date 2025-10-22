@@ -98,47 +98,6 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 	// Assertions
 
 	/**
-	 * Asserts data provided on the order page
-	 *
-	 * @param orderId
-	 * @param orderData
-	 * @param mollieData
-	 */
-	assertOrderDetails = async (
-		orderId: number,
-		orderData: WooCommerce.ShopOrder,
-		mollieData?
-	) => {
-		await this.visit( orderId );
-		const orderStatusLabel =
-			this.orderStatusLabels[ orderData.orderStatus ];
-		const orderStatusLocator = this.statusCombobox().filter( {
-			hasText: orderStatusLabel,
-		} );
-		await this.retryLocatorVisibility( orderStatusLocator );
-
-		// if( orderData.orderStatus === 'processing' ) {
-		// 	const orderNoteRegex = new RegExp(`Order status changed from .*? to ${ orderStatusLabel }\\.`);
-		// 	const orderNoteLocator = this.orderNoteContent().filter( { hasText: orderNoteRegex } );
-		// 	await this.retryLocatorVisibility( orderNoteLocator );
-		// 	await expect( orderNoteLocator ).toBeVisible();
-		// }
-
-		await super.assertOrderDetails( orderId, orderData );
-
-		if ( ! mollieData ) {
-			return;
-		}
-
-		// Transaction ID
-		if (
-			mollieData.transaction_id !== undefined &&
-			mollieData.orderTotal > 0
-		) {
-		}
-	};
-
-	/**
 	 * TODO: needs update
 	 *
 	 * @param amount

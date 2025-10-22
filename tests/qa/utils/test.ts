@@ -105,11 +105,7 @@ const test = base.extend< TestBaseExtend >( {
 		} );
 		const page = await context.newPage();
 		await use( page );
-		// await page.close();
-		// await context.close();
-
-
-	
+		
 		// Save video path BEFORE closing
 		const video = page.video();
 		await page.close();

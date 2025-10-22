@@ -5,7 +5,7 @@ import { MollieTestData } from '../../../../resources';
 
 export const classicCheckoutNonEur: MollieTestData.Transaction[] = [
 	{
-		testId: 'C300724',
+		testId: 'C3007247',
 		gatewaySlug: 'twint',
 		paymentStatus: 'paid',
 	},

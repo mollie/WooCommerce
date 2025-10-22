@@ -72,6 +72,7 @@ export class Checkout extends CheckoutBase {
 
 		await expect( this.paymentOption( gateway.name ) ).toBeVisible();
 		await this.paymentOption( gateway.name ).click();
+		await this.page.waitForLoadState( 'networkidle' );
 
 		if (
 			gateway.slug === 'kbc' &&
@@ -124,12 +125,11 @@ export class Checkout extends CheckoutBase {
 				'#radio-control-wc-payment-method-options-mollie_wc_gateway_creditcard__content'
 			).scrollIntoViewIfNeeded();
 			
-			await expect.soft( this.page.getByText( 'Secure payments provided by' ) ).toBeVisible();
-
 			await expect( this.cardNumberInput() ).toBeVisible();
 			await expect( this.cardHolderInput() ).toBeVisible();
 			await expect( this.cardExpiryDateInput() ).toBeVisible();
 			await expect( this.cardVerificationCodeInput() ).toBeVisible();
+			await expect.soft( this.page.getByText( 'Secure payments provided by' ) ).toBeVisible();
 
 			await this.cardNumberInput().fill( card.card_number );
 			await this.cardHolderInput().fill( card.card_holder );

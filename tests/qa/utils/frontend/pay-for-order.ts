@@ -61,6 +61,7 @@ export class PayForOrder extends PayForOrderBase {
 		await this.visit( orderId, orderKey );
 		await expect( this.paymentOption( gateway.name ) ).toBeVisible();
 		await this.paymentOption( gateway.name ).click();
+		await this.page.waitForLoadState( 'networkidle' );
 
 		if (
 			gateway.slug === 'kbc' &&

@@ -8,7 +8,6 @@ export const PhoneField = ( { id, label, value, onChange, placeholder } ) => {
 
 	return (
 		<div className="wc-block-components-text-input wc-block-components-address-form__phone">
-			<label htmlFor={ id }>{ placeholder }</label>
 			<input
 				type="tel"
 				className={ className }
@@ -16,6 +15,7 @@ export const PhoneField = ( { id, label, value, onChange, placeholder } ) => {
 				id={ id }
 				value={ value }
 				onChange={ handleChange }
+				placeholder={ placeholder }
 			/>
 		</div>
 	);

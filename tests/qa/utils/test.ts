@@ -2,7 +2,7 @@
  * External dependencies
  */
 import fs from 'fs';
-import { APIRequestContext, Page } from '@playwright/test';
+import { APIRequestContext, Page, VideoMode, ViewportSize } from '@playwright/test';
 import {
 	test as base,
 	CustomerAccount,
@@ -31,6 +31,10 @@ import { MollieApi, Utils } from '.';
 import { MollieSettings } from '../resources';
 
 type TestBaseExtend = {
+	recordVideoOptions: {
+		mode: VideoMode;
+		size?: ViewportSize;
+	}
 	// Dashboard fixtures
 	mollieApi: MollieApi;
 	mollieSettingsApiKeys: MollieSettingsApiKeys;
@@ -55,6 +59,7 @@ type TestBaseExtend = {
 };
 
 const test = base.extend< TestBaseExtend >( {
+	recordVideoOptions: [ null, { option: true } ],
 	// Dashboard pages operated by Admin
 	mollieApi: async ( { request, requestUtils }, use ) => {
 		await use( new MollieApi( { request, requestUtils } ) );
@@ -79,7 +84,7 @@ const test = base.extend< TestBaseExtend >( {
 		await use( new WooCommerceOrderEdit( { page } ) );
 	},
 
-	visitorPage: async ( { browser }, use, testInfo ) => {
+	visitorPage: async ( { browser, recordVideoOptions }, use, testInfo ) => {
 		// check if visitor is specified in test otherwise use guest
 		const storageStateName =
 			testInfo.annotations?.find( ( el ) => el.type === 'visitor' )
@@ -87,14 +92,37 @@ const test = base.extend< TestBaseExtend >( {
 		const storageStatePath = `${ process.env.STORAGE_STATE_PATH }/${ storageStateName }.json`;
 		// apply current visitor's storage state to the context
 		const context = await browser.newContext( {
+			...testInfo.project.use, // Spread project's use config
 			storageState: fs.existsSync( storageStatePath )
 				? storageStatePath
 				: undefined,
+			...( recordVideoOptions && { 
+				recordVideo: {
+					...recordVideoOptions,
+					dir: testInfo.outputDir, // Override recordVideo to use correct output dir
+				}
+			} ),
 		} );
 		const page = await context.newPage();
 		await use( page );
+		// await page.close();
+		// await context.close();
+
+
+	
+		// Save video path BEFORE closing
+		const video = page.video();
 		await page.close();
 		await context.close();
+		
+		// Attach video to report after context is closed
+		if ( video ) {
+			const videoPath = await video.path();
+			await testInfo.attach( 'video', {
+				path: videoPath,
+				contentType: 'video/webm',
+			} );
+		}
 	},
 	visitorRequest: async ( { visitorPage }, use ) => {
 		const request = visitorPage.request;

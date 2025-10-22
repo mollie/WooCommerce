@@ -64,21 +64,26 @@ export default defineConfig< TestBaseExtend >( {
 			password: process.env.WP_BASIC_AUTH_PASS,
 		},
 
-		/* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-		trace: 'on-first-retry',
+		...devices[ 'Desktop Chrome' ],
 
-		// Capture screenshot after each test failure.
+		viewport: { width: 1280, height: 850 },
+
+    	trace: 'retain-on-failure',//'on-first-retry',//'on',//
+
 		screenshot: {
 			mode: 'only-on-failure',
 			fullPage: true, // Captures entire scrollable page
 		},
 
-		// Record video only when retrying a test for the first time.
-		video: 'retain-on-failure', //'on', //
+		video: {
+			mode: 'retain-on-failure', //'on',//
+			size: { width: 1280, height: 850 },
+		},
 
-		...devices[ 'Desktop Chrome' ],
-
-		viewport: { width: 1280, height: 850 },
+		recordVideoOptions: {
+			mode: 'retain-on-failure',
+			size: { width: 1280, height: 850 },
+		},
 
 		mollieApiMethod:
 			( process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod ) ||

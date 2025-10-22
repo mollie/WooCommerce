@@ -98,3 +98,25 @@ export const registerAllContentHooks = (gatewayData, context) => {
 		});
 	}
 };
+/**
+ * Register icon filters for all payment methods
+ *
+ */
+export const registerIconHooks = (gatewayData) => {
+    if (gatewayData) {
+        gatewayData.forEach((gateway) => {
+            const hookName = `${gateway.name}_payment_method_icons`;
+
+            addFilter(
+                hookName,
+                'inpsyde-payment-gateway/icons',
+                (defaultIcons) => {
+                    let item = gatewayData.find((item) => item.name === gateway.name);
+
+                    return item.label.iconsArray;
+                },
+                10
+            );
+        });
+    }
+};

@@ -6,7 +6,8 @@ import { MOLLIE_STORE_KEY, PAYMENT_STORE_KEY } from './store';
 import {
     registerAllContentHooks,
     registerExpressPaymentMethodHooks,
-    registerGatewayRegistrationHooks
+    registerGatewayRegistrationHooks,
+    registerIconHooks
 } from './registration/libraryHooksRegistrar';
 import { buildRegistrationContext } from './registration/contextBuilder';
 import {initializeMollieComponentsWithStoreSubscription} from "./services/MollieComponentsInitializer";
@@ -35,6 +36,7 @@ import {initializeMollieComponentsWithStoreSubscription} from "./services/Mollie
         registerAllContentHooks( gatewayData, context );
         registerGatewayRegistrationHooks( gatewayData );
         registerExpressPaymentMethodHooks( gatewayData );
+        registerIconHooks( gatewayData );
 
         // Wait for payment store
         let storeInitialized = false;

@@ -2,7 +2,7 @@
 .vscode
 node_modules
 playwright-utils
-playwright-report
+playwright-report*
 playwright/.cache
 storage-states
 test-results

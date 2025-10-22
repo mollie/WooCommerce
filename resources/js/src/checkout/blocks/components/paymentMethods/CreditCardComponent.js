@@ -38,7 +38,7 @@ const CreditCardComponent = ( {
 		return null;
 	};
 	if (isComponentsEnabled) {
-		return <div></div>;
+		return <div dangerouslySetInnerHTML={{__html: item.componentsDescription}}/>;
 	}
 
 	return (

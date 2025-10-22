@@ -91,6 +91,9 @@ final class MollieCheckoutBlocksSupport
                 'iconsArray' => $iconsArray,
             ];
             $componentsDescription = '';
+            if(!$method->shouldDisplayIcon()){
+                $labelContent['iconsArray'] = [];
+            }
             if ($gatewayId === 'creditcard') {
                 $content .= $issuers;
                 $issuers = false;
@@ -102,9 +105,6 @@ final class MollieCheckoutBlocksSupport
                 );
                 $descriptionTranslated = __('Secure payments provided by', 'mollie-payments-for-woocommerce');
                 $componentsDescription = "{$lockIcon} {$descriptionTranslated} {$mollieLogo}";
-                if(!$method->shouldDisplayIcon()){
-                    $labelContent['iconsArray'] = [];
-                }
             }
 
             $hasSurcharge = $method->hasSurcharge();

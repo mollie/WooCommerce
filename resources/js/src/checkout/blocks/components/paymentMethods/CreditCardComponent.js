@@ -38,7 +38,14 @@ const CreditCardComponent = ( {
 		return null;
 	};
 	if (isComponentsEnabled) {
-		return <div dangerouslySetInnerHTML={{__html: item.componentsDescription}}/>;
+
+		return <>
+			<div>
+				<p>{item.content}</p>
+			</div>
+			<div dangerouslySetInnerHTML={{__html: item.componentsDescription}}/>
+		</>
+
 	}
 
 	return (

@@ -53,6 +53,7 @@ final class MollieCheckoutBlocksSupport
         $componentData = $componentDataService->getComponentData();
         $isOrderPayPage = is_checkout_pay_page();
         $isMultiStepsCheckout = get_option('woocommerce_gzdp_checkout_enable') === 'yes';
+
         /** @var PaymentGateway $gateway */
         foreach ($paymentGateways as $gatewayKey => $gateway) {
             if (substr($gateway->id, 0, 18) !== 'mollie_wc_gateway_') {
@@ -96,7 +97,6 @@ final class MollieCheckoutBlocksSupport
                 $labelContent['iconsArray'] = [];
             }
             if ($gatewayId === 'creditcard') {
-                $content .= $issuers;
                 $issuers = false;
                 $lockIcon = file_get_contents(
                     $dataService->pluginPath() . '/' . 'public/images/lock-icon.svg'
@@ -166,7 +166,7 @@ final class MollieCheckoutBlocksSupport
         $dataToScript['isOrderPayPage'] = $isOrderPayPage;
         if ($componentData !== null) {
             $dataToScript['componentData'] = $componentData;
-            $dataToScript['componentData']['isMultistepsCheckout'] = true;
+            $dataToScript['componentData']['isMultistepsCheckout'] = $isMultiStepsCheckout;
         }
 
         return $dataToScript;

@@ -9,6 +9,10 @@ import {
 
 export class ClassicCheckout extends ClassicCheckoutBase {
 	// Locators
+	cardComponentsContainer = () =>
+		this.page.locator(
+			'.payment_method_mollie_wc_gateway_creditcard .mollie-components'
+		);
 	cardNumberInput = (): Locator =>
 		this.page
 			.frameLocator( '[title="cardNumber input"]' )
@@ -124,6 +128,9 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 			gateway.slug === 'creditcard' &&
 			gateway.settings.mollie_components_enabled !== 'no'
 		) {
+			// the card fields seem to be only rendered when they are scrolled in otherwise they are not visible
+			await this.cardComponentsContainer().scrollIntoViewIfNeeded();
+
 			await expect( this.cardNumberInput() ).toBeVisible();
 			await expect( this.cardHolderInput() ).toBeVisible();
 			await expect( this.cardExpiryDateInput() ).toBeVisible();
@@ -190,18 +197,24 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 		}
 		await this.visit();
 		await this.applyCoupons( coupons );
+		await this.page.waitForLoadState( 'networkidle' );
 		await this.fillCheckoutForm( customer );
 		await this.page.waitForTimeout( 1000 );
+		await this.page.waitForLoadState( 'networkidle' );
 		await expect( this.continueWithStep2Button() ).toBeVisible();
 		await this.continueWithStep2Button().click();
+		await this.page.waitForLoadState();
 
 		await this.processPaymentMethod( order );
 		await this.page.waitForTimeout( 1000 );
+		await this.page.waitForLoadState( 'networkidle' );
 		await expect( this.continueWithStep3Button() ).toBeVisible();
 		await this.continueWithStep3Button().click();
+		await this.page.waitForLoadState();
 
 		await this.selectShippingMethod( order.shipping.settings.title );
 		await this.page.waitForTimeout( 1000 );
+		await this.page.waitForLoadState( 'networkidle' );
 		await expect( this.termsAndConditionsCheckbox() ).toBeVisible();
 		await this.termsAndConditionsCheckbox().check();
 

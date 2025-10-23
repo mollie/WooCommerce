@@ -9,6 +9,10 @@ import {
 
 export class Checkout extends CheckoutBase {
 	// Locators
+	cardComponentsContainer = () =>
+		this.page.locator(
+				'#radio-control-wc-payment-method-options-mollie_wc_gateway_creditcard__content'
+			);
 	cardNumberInput = () =>
 		this.page
 			.frameLocator( '[title="cardNumber input"]' )
@@ -121,9 +125,7 @@ export class Checkout extends CheckoutBase {
 			gateway.settings.mollie_components_enabled !== 'no'
 		) {
 			// the card fields seem to be only rendered when they are scrolled in otherwise they are not visible
-			await this.page.locator(
-				'#radio-control-wc-payment-method-options-mollie_wc_gateway_creditcard__content'
-			).scrollIntoViewIfNeeded();
+			await this.cardComponentsContainer().scrollIntoViewIfNeeded();
 			
 			await expect( this.cardNumberInput() ).toBeVisible();
 			await expect( this.cardHolderInput() ).toBeVisible();
@@ -187,17 +189,27 @@ export class Checkout extends CheckoutBase {
 		}
 		await this.visit();
 		await this.applyCoupons( coupons );
+		await this.page.waitForLoadState( 'networkidle' );
 		await this.fillCheckoutForm( customer );
+		await this.page.waitForTimeout( 1000 );
+		await this.page.waitForLoadState( 'networkidle' );
 		await expect( this.continueWithShippingButton() ).toBeVisible();
 		await this.continueWithShippingButton().click();
+		await this.page.waitForLoadState();
 
 		await this.selectShippingMethod( order.shipping.settings.title );
+		await this.page.waitForTimeout( 1000 );
+		await this.page.waitForLoadState( 'networkidle' );
 		await expect( this.continueWithPaymentButton() ).toBeVisible();
 		await this.continueWithPaymentButton().click();
+		await this.page.waitForLoadState();
 
 		await this.processPaymentMethod( order );
+		await this.page.waitForTimeout( 1000 );
+		await this.page.waitForLoadState( 'networkidle' );
 		await expect( this.continueWithConfirmationButton() ).toBeVisible();
 		await this.continueWithConfirmationButton().click();
+		await this.page.waitForLoadState();
 
 		await expect( this.termsAndConditionsCheckbox() ).toBeVisible();
 		await this.termsAndConditionsCheckbox().check();

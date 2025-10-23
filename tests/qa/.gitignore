@@ -5,7 +5,7 @@ playwright-utils
 playwright-report*
 playwright/.cache
 storage-states
-test-results
+test-results*
 package-lock.json
 playwright-wordpress-credentials.json
 

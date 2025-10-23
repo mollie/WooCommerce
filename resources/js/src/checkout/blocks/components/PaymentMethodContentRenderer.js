@@ -62,8 +62,10 @@ export const PaymentMethodContentRenderer = ( props ) => {
 				};
 
 				let token = cardToken;
-                const isComponentsEnabled = item.shouldLoadComponents;
-				if ( item.name === 'mollie_wc_gateway_creditcard' && ! token &&  isComponentsEnabled) {
+                const isComponentsEnabled = item.shouldLoadComponents || false;
+                const isMultistepsCheckout = item.isMultiStepsCheckout || false;
+                const canShowComponents = item.name === 'mollie_wc_gateway_creditcard'  &&  isComponentsEnabled && !isMultistepsCheckout
+				if (canShowComponents && ! token ) {
 					token = await mollieComponentsManager.createToken();
 				}
 

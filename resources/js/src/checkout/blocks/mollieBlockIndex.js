@@ -62,14 +62,14 @@ import {initializeMollieComponentsWithStoreSubscription} from "./services/Mollie
 
             // Store-dependent features
             setUpMollieBlockCheckoutListeners( MOLLIE_STORE_KEY );
-
-            if ( mollieBlockData.gatewayData.componentData ) {
+            if ( mollieBlockData.gatewayData.componentData
+                && !mollieBlockData.gatewayData.componentData.isMultistepsCheckout ) {
                 initializeMollieComponentsWithStoreSubscription(
                     mollieBlockData.gatewayData.componentData
                 );
-                // Add custom classes to payment method icons
-                addCustomClassesToPaymentIcons();
             }
+            // Add custom classes to payment method icons
+            addCustomClassesToPaymentIcons();
         };
 
         initializeStoreDependent();

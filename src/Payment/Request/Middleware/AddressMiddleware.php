@@ -133,7 +133,7 @@ class AddressMiddleware implements RequestMiddlewareInterface
         $phone = $this->getPhoneNumber($order);
         $billingAddress->phone = (ctype_space($phone))
             ? null
-            : $this->getFormatedPhoneNumber($phone, $billingAddress->country);
+            : $this->getFormattedPhoneNumber($phone, $billingAddress->country);
         return $billingAddress;
     }
 
@@ -205,7 +205,7 @@ class AddressMiddleware implements RequestMiddlewareInterface
         $shippingPhone = $this->isPhoneValid($order->get_shipping_phone()) ? $order->get_shipping_phone() : '';
         $shippingAddress->phone = (ctype_space($order->get_shipping_phone()))
             ? null
-            : $this->getFormatedPhoneNumber($shippingPhone, $shippingAddress->country);
+            : $this->getFormattedPhoneNumber($shippingPhone, $shippingAddress->country);
         return $shippingAddress;
     }
 
@@ -263,7 +263,7 @@ class AddressMiddleware implements RequestMiddlewareInterface
      * @param string $phone The phone number.
      * @return string|null The formatted phone number.
      */
-    protected function getFormatedPhoneNumber(string $phone, $countryCode): ?string
+    protected function getFormattedPhoneNumber(string $phone, $countryCode): ?string
     {
         //remove whitespaces and all non numerical characters except +
         $phone = preg_replace('/[^0-9+]+/', '', $phone);

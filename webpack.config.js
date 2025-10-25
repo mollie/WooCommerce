@@ -61,7 +61,7 @@ module.exports = (env = {}, argv = {}) => {
         entry: {
             'mollie-components.min': './resources/scss/mollie-components.scss',
             'mollie-gateway-icons.min': './resources/scss/mollie-gateway-icons.scss',
-            'unabledButton.min': './resources/scss/unabledButton.scss',
+            'disabledButton.min': './resources/scss/unabledButton.scss',
             'mollie-applepaydirect.min': './resources/scss/mollie-applepaydirect.scss',
             'mollie-block-custom-field.min': './resources/scss/mollie-block-custom-field.scss',
         },

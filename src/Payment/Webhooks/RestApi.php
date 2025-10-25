@@ -78,7 +78,7 @@ class RestApi
 
         if (! $orders) {
             $this->logger->debug(__METHOD__ . ': No orders found for transaction ID: ' . $transactionID . ' fall back to search in meta data');
-            //Fallback search order in order mollie oder meta
+            //Fallback search order in order mollie order meta
             $orders = wc_get_orders([
                 'limit' => 2,
                 'meta_key' => substr($transactionID, 0, 4) === 'ord_' ? '_mollie_order_id' : '_mollie_payment_id',

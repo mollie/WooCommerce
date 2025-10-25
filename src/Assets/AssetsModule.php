@@ -251,9 +251,9 @@ class AssetsModule implements ExecutableModule
         );
         wp_register_style(
             'disabledButton',
-            $this->getPluginUrl($pluginUrl, '/public/css/unabledButton.min.css'),
+            $this->getPluginUrl($pluginUrl, '/public/css/disabledButton.min.css'),
             [],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/css/unabledButton.min.css')),
+            (string) filemtime($this->getPluginPath($pluginPath, '/public/css/disabledButton.min.css')),
             'screen'
         );
         wp_register_script(

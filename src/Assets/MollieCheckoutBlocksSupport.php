@@ -52,6 +52,8 @@ final class MollieCheckoutBlocksSupport
         $componentDataService = $container->get('components.data_service');
         $componentData = $componentDataService->getComponentData();
         $isOrderPayPage = is_checkout_pay_page();
+        $isMultiStepsCheckout = get_option('woocommerce_gzdp_checkout_enable') === 'yes';
+
         /** @var PaymentGateway $gateway */
         foreach ($paymentGateways as $gatewayKey => $gateway) {
             if (substr($gateway->id, 0, 18) !== 'mollie_wc_gateway_') {
@@ -95,7 +97,6 @@ final class MollieCheckoutBlocksSupport
                 $labelContent['iconsArray'] = [];
             }
             if ($gatewayId === 'creditcard') {
-                $content .= $issuers;
                 $issuers = false;
                 $lockIcon = file_get_contents(
                     $dataService->pluginPath() . '/' . 'public/images/lock-icon.svg'
@@ -145,6 +146,7 @@ final class MollieCheckoutBlocksSupport
                 'isExpressEnabled' => $gatewayId === 'applepay' && $method->getProperty('mollie_apple_pay_button_enabled_express_checkout') === 'yes',
                 'hideCompanyField' => $hideCompanyFieldFilter,
                 'shouldLoadComponents'=> $shouldLoadComponents,
+                'isMultiStepsCheckout' => $isMultiStepsCheckout,
                 'componentsDescription' => $componentsDescription,
             ];
         }
@@ -164,6 +166,7 @@ final class MollieCheckoutBlocksSupport
         $dataToScript['isOrderPayPage'] = $isOrderPayPage;
         if ($componentData !== null) {
             $dataToScript['componentData'] = $componentData;
+            $dataToScript['componentData']['isMultistepsCheckout'] = $isMultiStepsCheckout;
         }
 
         return $dataToScript;

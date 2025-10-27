@@ -24,7 +24,6 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use RuntimeException;
 use WC_Order;
-use Mollie\Api\Http\Requests\CancelPaymentRequest;
 
 class PaymentModule implements ServiceModule, ExecutableModule
 {
@@ -492,9 +491,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
                 return;
             }
             if($mollie_order->isAuthorized() || $mollie_order->isOpen() || $mollie_order->isPending()){
-                $apiClient->payments->get($mollie_order_id)->cancel();
-                $apiClient->send(
-                    new CancelPaymentRequest($mollie_order_id);
+                $apiClient->payments->cancel($mollie_order_id);
                 $message = _x('Order also cancelled at Mollie.', 'Order note info', 'mollie-payments-for-woocommerce');
                 $order->add_order_note($message);
                 $this->logger->debug(

@@ -30,6 +30,7 @@ class OrderFactory
      * @param array $product_presets
      * @param array $discount_presets
      * @param bool $set_paid
+     * @param string $transaction_id
      * @return WC_Order
      * @throws \WC_Data_Exception
      */
@@ -38,7 +39,8 @@ class OrderFactory
         string $payment_method,
         array  $product_presets,
         array  $discount_presets = [],
-        bool   $set_paid = true
+        bool   $set_paid = true,
+        string $transaction_id = ''
     ): WC_Order
     {
         $products = $this->resolveProductPresets($product_presets);
@@ -58,6 +60,11 @@ class OrderFactory
         $this->applyDiscountsToOrder($order, $discounts);
 
         $order->set_payment_method($payment_method);
+        if (!$transaction_id) {
+            $order->set_transaction_id(uniqid('tr_'));
+        } else {
+            $order->set_transaction_id($transaction_id);
+        }
         $order->calculate_totals();
         $order->save();
 

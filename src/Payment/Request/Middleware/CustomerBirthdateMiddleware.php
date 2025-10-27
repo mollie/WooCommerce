@@ -3,6 +3,7 @@
 namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use WC_Order;
+use Mollie\WooCommerce\Shared\FieldConstants;
 
 /**
  * Middleware to handle customer birthdate in the request.
@@ -35,35 +36,33 @@ class CustomerBirthdateMiddleware implements RequestMiddlewareInterface
      */
     public function __invoke(array $requestData, WC_Order $order, $context, $next): array
     {
-        $gateway = wc_get_payment_gateway_by_order($order);
-        if (!$gateway || !isset($gateway->id)) {
-            return $requestData;
-        }
-        if (strpos($gateway->id, 'mollie_wc_gateway_') === false) {
-            return $requestData;
-        }
-        $paymentMethodId = substr($gateway->id, strrpos($gateway->id, '_') + 1);
-        $paymentMethod = $this->paymentMethods[$paymentMethodId];
-        $additionalFields = $paymentMethod->getProperty('additionalFields');
-        $methodId = $additionalFields && in_array('birthdate', $additionalFields, true);
-        $optionName = 'billing_birthdate_' . $paymentMethod->getProperty('id');
-        $format = "Y-m-d";
-        $birthdateMeta = $order->get_meta('billing_birthdate', true);
-        if ($birthdateMeta) {
-            $requestData['consumerDateOfBirth'] = gmdate($format, (int) strtotime($birthdateMeta));
+        $birthdatePostedFieldName = $this->getBirthdatePostedFieldName($order);
+        if (!$birthdatePostedFieldName || $birthdatePostedFieldName === '' || !is_string($birthdatePostedFieldName)) {
             return $next($requestData, $order, $context);
         }
-        if ($methodId) {
-            // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $fieldPosted = wc_clean(wp_unslash($_POST[$optionName] ?? ''));
-            if ($fieldPosted === '' || !is_string($fieldPosted)) {
-                return $requestData;
-            }
-
-            $order->update_meta_data('billing_birthdate', $fieldPosted);
-            $order->save();
-            $requestData['consumerDateOfBirth'] = gmdate($format, (int) strtotime($fieldPosted));
-        }
+        $format = "Y-m-d";
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $fieldPosted = wc_clean(wp_unslash($_POST[$birthdatePostedFieldName] ?? ''));
+        $requestData['consumerDateOfBirth'] = gmdate($format, (int) strtotime($fieldPosted));
         return $next($requestData, $order, $context);
+    }
+
+    /**
+     * Each payment method has a different birthdate field name or uses the default.
+     *
+     * @param WC_Order $order
+     * @return string The phone posted field name for the given order.
+     */
+    private function getBirthdatePostedFieldName(WC_Order $order): string
+    {
+        $method = $order->get_payment_method();
+        $cleanMethod = str_replace('mollie_wc_gateway_', '', $method);
+        $constantName = strtoupper($cleanMethod) . '_BIRTHDATE';
+
+        if (defined(FieldConstants::class . '::' . $constantName)) {
+            return constant(FieldConstants::class . '::' . $constantName);
+        }
+
+        return '';
     }
 }

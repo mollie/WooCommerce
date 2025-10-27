@@ -32,7 +32,8 @@ trait CreateTestOrders
         string $payment_method,
         array  $product_presets,
         array  $discount_presets = [],
-        bool   $set_paid = true
+        bool   $set_paid = true,
+        string $transaction_id = ''
     ): WC_Order
     {
         if (!isset($this->order_factory)) {
@@ -44,7 +45,8 @@ trait CreateTestOrders
             $payment_method,
             $product_presets,
             $discount_presets,
-            $set_paid
+            $set_paid,
+            $transaction_id
         );
     }
 }

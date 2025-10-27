@@ -4,6 +4,19 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Integration\API\Mocks;
 
+use Mollie\Api\Endpoints\ChargebackEndpoint;
+use Mollie\Api\Endpoints\CustomerEndpoint;
+use Mollie\Api\Endpoints\InvoiceEndpoint;
+use Mollie\Api\Endpoints\MandateEndpoint;
+use Mollie\Api\Endpoints\MethodEndpoint;
+use Mollie\Api\Endpoints\OrderEndpoint;
+use Mollie\Api\Endpoints\OrganizationEndpoint;
+use Mollie\Api\Endpoints\PaymentEndpoint;
+use Mollie\Api\Endpoints\PermissionEndpoint;
+use Mollie\Api\Endpoints\ProfileEndpoint;
+use Mollie\Api\Endpoints\RefundEndpoint;
+use Mollie\Api\Endpoints\SettlementsEndpoint;
+use Mollie\Api\Endpoints\SubscriptionEndpoint;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\Api\MollieApiClient;
 use Mockery;
@@ -51,19 +64,19 @@ class MockedApi extends Api
     {
         $this->mockedApiClient = Mockery::mock(MollieApiClient::class);
 
-        $this->mockedApiClient->payments = Mockery::mock('PaymentEndpoint');
-        $this->mockedApiClient->methods = Mockery::mock('MethodEndpoint');
-        $this->mockedApiClient->customers = Mockery::mock('CustomerEndpoint');
-        $this->mockedApiClient->orders = Mockery::mock('OrderEndpoint');
-        $this->mockedApiClient->refunds = Mockery::mock('RefundEndpoint');
-        $this->mockedApiClient->subscriptions = Mockery::mock('SubscriptionEndpoint');
-        $this->mockedApiClient->mandates = Mockery::mock('MandateEndpoint');
-        $this->mockedApiClient->profiles = Mockery::mock('ProfileEndpoint');
-        $this->mockedApiClient->organizations = Mockery::mock('OrganizationEndpoint');
-        $this->mockedApiClient->permissions = Mockery::mock('PermissionEndpoint');
-        $this->mockedApiClient->invoices = Mockery::mock('InvoiceEndpoint');
-        $this->mockedApiClient->settlements = Mockery::mock('SettlementsEndpoint');
-        $this->mockedApiClient->chargebacks = Mockery::mock('ChargebackEndpoint');
+        $this->mockedApiClient->payments = Mockery::mock(PaymentEndpoint::class);
+        $this->mockedApiClient->methods = Mockery::mock(MethodEndpoint::class);
+        $this->mockedApiClient->customers = Mockery::mock(CustomerEndpoint::class);
+        $this->mockedApiClient->orders = Mockery::mock(OrderEndpoint::class);
+        $this->mockedApiClient->refunds = Mockery::mock(RefundEndpoint::class);
+        $this->mockedApiClient->subscriptions = Mockery::mock(SubscriptionEndpoint::class);
+        $this->mockedApiClient->mandates = Mockery::mock(MandateEndpoint::class);
+        $this->mockedApiClient->profiles = Mockery::mock(ProfileEndpoint::class);
+        $this->mockedApiClient->organizations = Mockery::mock(OrganizationEndpoint::class);
+        $this->mockedApiClient->permissions = Mockery::mock(PermissionEndpoint::class);
+        $this->mockedApiClient->invoices = Mockery::mock(InvoiceEndpoint::class);
+        $this->mockedApiClient->settlements = Mockery::mock(SettlementsEndpoint::class);
+        $this->mockedApiClient->chargebacks = Mockery::mock(ChargebackEndpoint::class);
     }
 
     /**

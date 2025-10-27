@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
+use Mollie\WooCommerce\Payment\MollieOrder;
+use Mollie\WooCommerce\Payment\MolliePayment;
+
 class Voucher extends AbstractPaymentMethod implements PaymentMethodI
 {
     /**
@@ -45,10 +48,63 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
             'supports' => [
                 'products',
             ],
-            'filtersOnBuild' => false,
+            'filtersOnBuild' => true,
             'confirmationDelayed' => false,
             'docs' => 'https://www.mollie.com/gb/payments/meal-eco-gift-vouchers',
         ];
+    }
+
+    public function filtersOnBuild()
+    {
+
+        add_action('mollie-payments-for-woocommerce_after_webhook_action', [$this, 'addPaymentDetailsOrderNote'], 10, 2);
+    }
+
+    /**
+     * Adds a detailed order note to the WooCommerce order containing information about payment details
+     * related to vouchers and any remaining payment amounts.
+     *
+     * The note includes details of voucher issuers, amounts applied, and the remainder amount (if applicable).
+     *
+     * @param object $payment The payment object containing details such as method, status, and vouchers.
+     * @param \WC_Order $order The WooCommerce order object to which the note will be added.
+     *
+     * @return void
+     */
+    public function addPaymentDetailsOrderNote($payment, \WC_Order $order): void
+    {
+        $details = $payment->_embedded->payments[0]->details ?? $payment->details ?? null;
+        if ($payment->method !== Constants::VOUCHER || $payment->status !== 'paid' || ! is_object($details)) {
+            return;
+        }
+        $applied = '';
+        $remainder = '';
+        foreach ($details->vouchers as $voucher) {
+            if (!isset($voucher->amount) || !isset($voucher->issuer)) {
+                continue;
+            }
+            $applied .= sprintf(
+                __('%1$s: %2$s %3$s<br/>', 'mollie-payments-for-woocommerce'),
+                $voucher->issuer,
+                $voucher->amount->value,
+                $voucher->amount->currency
+            );
+        }
+        if (isset($details->remainderAmount)) {
+            $remainder = sprintf(
+                __('%1$s: %2$s %3$s<br/>', 'mollie-payments-for-woocommerce'),
+                $details->remainderMethod,
+                $details->remainderAmount->value,
+                $details->remainderAmount->currency
+            );
+        }
+        $order->add_order_note(
+            sprintf(
+                __('<p><strong>Voucher(s) applied:</strong><br />%1$s</p><p><strong>Remainder:</strong><br />%2$s</p>', 'mollie-payments-for-woocommerce'),
+                $applied,
+                $remainder
+            )
+        );
     }
 
     public function initializeTranslations(): void

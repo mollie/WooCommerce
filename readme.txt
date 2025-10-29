@@ -218,6 +218,11 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= 8.1.1 - 29-10-2025 =
+
+* Fixed - Notice on order received page
+* Fixed - Cancel Klarna payments done with payments API
+
 = 8.1.0 - 27-10-2025 =
 * Improvement - Refactor of Mollie payment methods in block checkout
 * Fixed - Payment methods not loading in block checkout

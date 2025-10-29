@@ -222,6 +222,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 * Fixed - Notice on order received page
 * Fixed - Cancel Klarna payments done with payments API
+* Fixed - Status Pending for orders with subscription product in Payments API
 
 = 8.1.0 - 27-10-2025 =
 * Improvement - Refactor of Mollie payment methods in block checkout

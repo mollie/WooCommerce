@@ -3,7 +3,7 @@ Contributors: daanvm, danielhuesken, davdebcom, dinamiko, syde, l.vangunst, ndij
 Tags: mollie, woocommerce, payments, ecommerce, credit card
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 8.0.6
+Stable tag: 8.1.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -218,8 +218,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 8.1.1 - 29-10-2025 =
-
+= 8.1.1 - 03-11-2025 =
 * Fixed - Notice on order received page
 * Fixed - Cancel Klarna payments done with payments API
 

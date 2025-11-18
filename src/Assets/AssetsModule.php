@@ -503,10 +503,17 @@ class AssetsModule implements ExecutableModule
 
                 /** @var array */
                 $gatewayInstances = $container->get('__deprecated.gateway_helpers');
-                self::registerBlockScripts($pluginUrl, $pluginPath, $container);
-                add_action('wp_enqueue_scripts', function () use ($dataService, $gatewayInstances, $container) {
-                    $this->enqueueBlockCheckoutScripts($dataService, $gatewayInstances, $container);
+                // admin_enqueue_scripts is too late to register the block scripts
+                add_action('admin_init', function () use ($container, $pluginUrl, $pluginPath) {
+                    $this->registerBlockScripts($pluginUrl, $pluginPath, $container);
                 });
+                add_action(
+                    'wp_enqueue_scripts',
+                    function () use ($dataService, $gatewayInstances, $container, $pluginUrl, $pluginPath) {
+                        $this->registerBlockScripts($pluginUrl, $pluginPath, $container);
+                        $this->enqueueBlockCheckoutScripts($dataService, $gatewayInstances, $container);
+                    }
+                );
                 $this->registerButtonsBlockScripts($pluginUrl, $pluginPath);
             }
         );

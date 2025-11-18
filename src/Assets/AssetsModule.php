@@ -500,15 +500,14 @@ class AssetsModule implements ExecutableModule
                     $dependencies[] = 'mollie_block_index';
                     return $dependencies;
                 });
-                if ($hasBlocksEnabled) {
-                    /** @var array */
-                    $gatewayInstances = $container->get('__deprecated.gateway_helpers');
-                    self::registerBlockScripts($pluginUrl, $pluginPath, $container);
-                    add_action('wp_enqueue_scripts', function () use ($dataService, $gatewayInstances, $container) {
-                        $this->enqueueBlockCheckoutScripts($dataService, $gatewayInstances, $container);
-                    });
-                    $this->registerButtonsBlockScripts($pluginUrl, $pluginPath);
-                }
+
+                /** @var array */
+                $gatewayInstances = $container->get('__deprecated.gateway_helpers');
+                self::registerBlockScripts($pluginUrl, $pluginPath, $container);
+                add_action('wp_enqueue_scripts', function () use ($dataService, $gatewayInstances, $container) {
+                    $this->enqueueBlockCheckoutScripts($dataService, $gatewayInstances, $container);
+                });
+                $this->registerButtonsBlockScripts($pluginUrl, $pluginPath);
             }
         );
         add_action(

@@ -112,13 +112,13 @@ const test = base.extend< TestBaseExtend >( {
 		await context.close();
 		
 		// Attach video to report after context is closed
-		if ( video ) {
-			const videoPath = await video.path();
-			await testInfo.attach( 'video', {
-				path: videoPath,
-				contentType: 'video/webm',
-			} );
-		}
+		//if ( video ) {
+		//	const videoPath = await video.path();
+		//	await testInfo.attach( 'video', {
+		//		path: videoPath,
+		//		contentType: 'video/webm',
+		//	} );
+		//}
 	},
 	visitorRequest: async ( { visitorPage }, use ) => {
 		const request = visitorPage.request;

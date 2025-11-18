@@ -489,6 +489,20 @@ const voucher: MollieGateway = {
 		mealvoucher_category_default: 'no_category',
 	},
 };
+const bizum: MollieGateway = {
+	country: 'spain', // Spain and Andorra
+	currency: 'EUR',
+	minAmount: '0.01',
+	maxAmount: '1000.00',
+	slug: 'bizum',
+	name: 'Bizum',
+	availableForApiMethods: [ 'payment' ],
+	settings: {
+		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_bizum',
+		title: 'Bizum',
+	},
+};
 
 export const gateways: {
 	[ key: string ]: MollieGateway;
@@ -502,6 +516,7 @@ export const gateways: {
 	belfius,
 	billie, // >100.00
 	blik, // currency: PLN
+	bizum,
 	creditcard,
 	directdebit,
 	eps,

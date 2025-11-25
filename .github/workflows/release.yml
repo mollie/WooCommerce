@@ -5,12 +5,13 @@ on:
       PACKAGE_VERSION:
         description: 'Package Version'
         required: true
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   create_archive:
-    uses: inpsyde/reusable-workflows/.github/workflows/build-plugin-archive.yml@main
+    uses: inpsyde/reusable-workflows/.github/workflows/build-and-distribute.yml@main
     with:
-      PLUGIN_VERSION: ${{ inputs.PACKAGE_VERSION }}
+      PACKAGE_VERSION: ${{ inputs.PACKAGE_VERSION }}
       PHP_VERSION: 7.4
-      PLUGIN_MAIN_FILE: mollie-payments-for-woocommerce.php
-      ARCHIVE_NAME: mollie-payments-for-woocommerce-${{ inputs.PACKAGE_VERSION }}
-      PLUGIN_FOLDER_NAME: mollie-payments-for-woocommerce
+      PACKAGE_NAME: mollie-payments-for-woocommerce-${{ inputs.PACKAGE_VERSION }}

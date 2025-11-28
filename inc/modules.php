@@ -6,6 +6,7 @@ use Inpsyde\Modularity\Module\Module;
 use Inpsyde\PaymentGateway\PaymentGatewayModule;
 use Mollie\WooCommerce\Activation\ActivationModule;
 use Mollie\WooCommerce\Assets\AssetsModule;
+use Mollie\WooCommerce\Components\ComponentsModule;
 use Mollie\WooCommerce\Gateway\GatewayModule;
 use Mollie\WooCommerce\Gateway\Voucher\VoucherModule;
 use Mollie\WooCommerce\Log\LogModule;
@@ -36,6 +37,7 @@ return /**
             new PaymentModule(),
             new SubscriptionModule(),
             new MerchantCaptureModule(),
+            new ComponentsModule(),
             new UninstallModule(),
         ];
     };

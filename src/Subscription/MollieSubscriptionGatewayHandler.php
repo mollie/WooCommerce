@@ -312,7 +312,6 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
             try {
                 if ($validMandate) {
                     $payment = $this->apiHelper->getApiClient($apiKey)->payments->create($data);
-                    $renewal_order->set_transaction_id($payment->id);
                     //check the payment method is the one in the order, if not we want this payment method in the order MOL-596
                     $paymentMethodUsed = 'mollie_wc_gateway_' . $payment->method;
                     if ($paymentMethodUsed !== $renewalOrderMethod) {

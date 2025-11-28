@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
+use Mollie\WooCommerce\Shared\FieldConstants;
 use stdClass;
 use WC_Order;
 
@@ -201,26 +202,59 @@ class AddressMiddleware implements RequestMiddlewareInterface
                 $order->get_shipping_country(),
                 self::MAXIMAL_LENGTH_REGION
             );
+        $shippingPhone = $this->isPhoneValid($order->get_shipping_phone()) ? $order->get_shipping_phone() : '';
         $shippingAddress->phone = (ctype_space($order->get_shipping_phone()))
             ? null
-            : $this->getFormatedPhoneNumber($order->get_shipping_phone(), $shippingAddress->country);
+            : $this->getFormatedPhoneNumber($shippingPhone, $shippingAddress->country);
         return $shippingAddress;
     }
 
     /**
-     * Get the phone number from the order.
+     * Get the phone number from the order or the posted field.
      *
      * @param WC_Order $order The WooCommerce order object.
-     * @return string|null The phone number.
+     * @return string The phone number.
      */
-    protected function getPhoneNumber($order): ?string
+    protected function getPhoneNumber($order): string
     {
-        $phone = !empty($order->get_billing_phone()) ? $order->get_billing_phone() : $order->get_shipping_phone();
-        if (empty($phone)) {
-            //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $phone = wc_clean(wp_unslash($_POST['billing_phone'] ?? ''));
+        $phoneSources = [
+            $order->get_billing_phone(),
+            $order->get_shipping_phone(),
+            $this->getPostedPhoneNumber($order),
+        ];
+
+        foreach ($phoneSources as $phone) {
+            if (!empty($phone) && $this->isPhoneValid($phone)) {
+                return $phone;
+            }
         }
-        return $phone;
+
+        return '';
+    }
+
+    /**
+     * Get the phone number from POST data.
+     *
+     * @param WC_Order $order The WooCommerce order object.
+     * @return string The posted phone number.
+     */
+    private function getPostedPhoneNumber(WC_Order $order): string
+    {
+        $postedField = $this->getPhonePostedFieldName($order);
+
+        //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $phoneFromSpecificField = wc_clean(wp_unslash($_POST[$postedField] ?? ''));
+
+        if (!empty($phoneFromSpecificField)) {
+            return $phoneFromSpecificField;
+        }
+
+        if ($postedField !== 'billing_phone') {
+            //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            return wc_clean(wp_unslash($_POST['billing_phone'] ?? ''));
+        }
+
+        return '';
     }
 
     /**
@@ -253,6 +287,11 @@ class AddressMiddleware implements RequestMiddlewareInterface
         return null;
     }
 
+    private function isPhoneValid($billing_phone)
+    {
+        return preg_match('/^\+[1-9]\d{10,13}$|^[1-9]\d{9,13}$|^06\d{9,13}$/', $billing_phone);
+    }
+
     /**
      * Get the billing company field.
      *
@@ -262,7 +301,7 @@ class AddressMiddleware implements RequestMiddlewareInterface
     public function billingCompanyField($order): ?string
     {
         if (!trim($order->get_billing_company())) {
-            return $this->checkBillieCompanyField($order);
+            return $this->getPaymentMethodCompanyField($order);
         }
         return $this->maximalFieldLengths(
             $order->get_billing_company(),
@@ -271,25 +310,27 @@ class AddressMiddleware implements RequestMiddlewareInterface
     }
 
     /**
-     * Check the Billie company field.
+     * Check the company field.
      *
      * @param WC_Order $order The WooCommerce order object.
-     * @return string|null The Billie company field.
+     * @return string|null The company field.
      */
-    private function checkBillieCompanyField($order): ?string
+    private function getPaymentMethodCompanyField($order): ?string
     {
-        $gateway = wc_get_payment_gateway_by_order($order);
-        if (!$gateway || !$gateway->id) {
-            return null;
+        $method = $order->get_payment_method();
+        $cleanMethod = str_replace('mollie_wc_gateway_', '', $method);
+        $constantName = strtoupper($cleanMethod) . '_COMPANY';
+        $companyField = false;
+        if (defined(FieldConstants::class . '::' . $constantName)) {
+            $companyField = constant(FieldConstants::class . '::' . $constantName);
         }
-        $isBillieMethodId = $gateway->id === 'mollie_wc_gateway_billie';
-        if ($isBillieMethodId) {
+        if ($companyField) {
             //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $fieldPosted = wc_clean(wp_unslash($_POST["billing_company_billie"] ?? ''));
+            $fieldPosted = wc_clean(wp_unslash($_POST[$companyField] ?? ''));
             $company = $fieldPosted ?: $order->get_billing_company() ?: $order->get_shipping_company();
-            return $company ? $this->maximalFieldLengths($company, self::MAXIMAL_LENGTH_ADDRESS) : null;
+            return $company ? $this->maximalFieldLengths($company, self::MAXIMAL_LENGTH_ADDRESS) : '';
         }
-        return null;
+        return '';
     }
 
     /**
@@ -563,5 +604,24 @@ class AddressMiddleware implements RequestMiddlewareInterface
             'ZW' => '263',
         ];
         return $phoneCodes[$countryCode] ?? null;
+    }
+
+    /**
+     * Each payment method has a different phone number field name or uses the default.
+     *
+     * @param WC_Order $order
+     * @return string The phone posted field name for the given order.
+     */
+    private function getPhonePostedFieldName(WC_Order $order): string
+    {
+        $method = $order->get_payment_method();
+        $cleanMethod = str_replace('mollie_wc_gateway_', '', $method);
+        $constantName = strtoupper($cleanMethod) . '_PHONE';
+
+        if (defined(FieldConstants::class . '::' . $constantName)) {
+            return constant(FieldConstants::class . '::' . $constantName);
+        }
+
+        return 'billing_phone';
     }
 }

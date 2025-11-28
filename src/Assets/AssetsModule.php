@@ -9,10 +9,12 @@ namespace Mollie\WooCommerce\Assets;
 use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Buttons\ApplePayButton\DataToAppleButtonScripts;
 use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPal;
 use Mollie\WooCommerce\Components\AcceptedLocaleValuesDictionary;
+use Mollie\WooCommerce\Components\ComponentDataService;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Psr\Container\ContainerInterface;
@@ -184,14 +186,6 @@ class AssetsModule implements ExecutableModule
     protected function registerFrontendScripts(string $pluginUrl, string $pluginPath)
     {
         wp_register_script(
-            'babel-polyfill',
-            $this->getPluginUrl($pluginUrl, '/public/js/babel-polyfill.min.js'),
-            [],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/js/babel-polyfill.min.js')),
-            true
-        );
-
-        wp_register_script(
             'mollie_wc_gateway_applepay',
             $this->getPluginUrl($pluginUrl, '/public/js/applepay.min.js'),
             [],
@@ -251,18 +245,10 @@ class AssetsModule implements ExecutableModule
         wp_register_script(
             'mollie-components',
             $this->getPluginUrl($pluginUrl, '/public/js/mollie-components.min.js'),
-            ['underscore', 'jquery', 'mollie', 'babel-polyfill'],
+            ['underscore', 'jquery', 'mollie'],
             (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollie-components.min.js')),
             true
         );
-        wp_register_script(
-            'mollie-components-blocks',
-            $this->getPluginUrl($pluginUrl, '/public/js/mollie-components-blocks.min.js'),
-            ['underscore', 'jquery', 'mollie', 'babel-polyfill'],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollie-components-blocks.min.js')),
-            true
-        );
-
         wp_register_style(
             'unabledButton',
             $this->getPluginUrl($pluginUrl, '/public/css/unabledButton.min.css'),
@@ -286,16 +272,24 @@ class AssetsModule implements ExecutableModule
         );
     }
 
-    public function registerBlockScripts(string $pluginUrl, string $pluginPath): void
+    public function registerBlockScripts(string $pluginUrl, string $pluginPath, ContainerInterface $container): void
     {
-
         wp_register_script(
             'mollie_block_index',
             $this->getPluginUrl($pluginUrl, '/public/js/mollieBlockIndex.min.js'),
-            ['wc-blocks-registry', 'underscore', 'jquery'],
+            ['wc-blocks-registry', 'underscore', 'jquery', 'mollie'],
             (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollieBlockIndex.min.js')),
             true
         );
+
+        /**
+         * Ensure localized data via static method call
+         * TODO rework the static method call
+         */
+        $dataService = $container->get('settings.data_helper');
+        $gatewayInstances = $container->get('__deprecated.gateway_helpers');
+        MollieCheckoutBlocksSupport::localizeWCBlocksData($dataService, $gatewayInstances, $container);
+
         wp_register_style(
             'mollie-block-custom-field',
             $this->getPluginUrl($pluginUrl, '/public/css/mollie-block-custom-field.min.css'),
@@ -336,92 +330,25 @@ class AssetsModule implements ExecutableModule
     /**
      * Enqueue Mollie Component Assets
      */
-    public function enqueueComponentsAssets(Settings $settingsHelper): void
+    public function enqueueComponentsAssets(ComponentDataService $componentDataService): void
     {
-        if (
-            is_admin()
-            || (!mollieWooCommerceIsCheckoutContext()
-                && !has_block("woocommerce/checkout"))
-        ) {
-            return;
-        }
-
-        try {
-            $merchantProfileId = $settingsHelper->mollieWooCommerceMerchantProfileId();
-        } catch (ApiException $exception) {
-            return;
-        }
-
-        $mollieComponentsStylesGateways = mollieWooCommerceComponentsStylesForAvailableGateways();
-        $gatewayNames = array_keys($mollieComponentsStylesGateways);
-
-        if (!$merchantProfileId || !$mollieComponentsStylesGateways) {
-            return;
-        }
-
-        $locale = get_locale();
-        $locale = str_replace('_formal', '', $locale);
-        $allowedLocaleValues = AcceptedLocaleValuesDictionary::ALLOWED_LOCALES_KEYS_MAP;
-        if (!in_array($locale, $allowedLocaleValues, true)) {
-            $locale = AcceptedLocaleValuesDictionary::DEFAULT_LOCALE_VALUE;
-        }
-
         wp_enqueue_style('mollie-components');
-        $object_name = 'mollieComponentsSettings';
-        $data = [
-            'merchantProfileId' => $merchantProfileId,
-            'options' => [
-                'locale' => $locale,
-                'testmode' => $settingsHelper->isTestModeEnabled(),
-            ],
-            'enabledGateways' => $gatewayNames,
-            'componentsSettings' => $mollieComponentsStylesGateways,
-            'componentsAttributes' => [
-                [
-                    'name' => 'cardHolder',
-                    'label' => esc_html__('Name on card', 'mollie-payments-for-woocommerce'),
-                ],
-                [
-                    'name' => 'cardNumber',
-                    'label' => esc_html__('Card number', 'mollie-payments-for-woocommerce'),
-                ],
-                [
-                    'name' => 'expiryDate',
-                    'label' => esc_html__('Expiry date', 'mollie-payments-for-woocommerce'),
-                ],
-                [
-                    'name' => 'verificationCode',
-                    'label' => esc_html__(
-                        'CVC/CVV',
-                        'mollie-payments-for-woocommerce'
-                    ),
-                ],
-            ],
-            'messages' => [
-                'defaultErrorMessage' => esc_html__(
-                    'An unknown error occurred, please check the card fields.',
-                    'mollie-payments-for-woocommerce'
-                ),
-            ],
-            'isCheckout' => is_checkout(),
-            'isCheckoutPayPage' => is_checkout_pay_page(),
-        ];
-        if (has_block("woocommerce/checkout") && !is_wc_endpoint_url('order-pay')) {
-            wp_enqueue_script('mollie-components-blocks');
-            wp_localize_script(
-                'mollie-components-blocks',
-                $object_name,
-                $data
-            );
+        if (!$componentDataService->shouldLoadComponents()) {
             return;
         }
+
+        $componentData = $componentDataService->getComponentDataWithContext(
+            is_checkout(),
+            is_checkout_pay_page()
+        );
+
+        if ($componentData === null) {
+            return;
+        }
+        $object_name = 'mollieComponentsSettings';
 
         wp_enqueue_script('mollie-components');
-        wp_localize_script(
-            'mollie-components',
-            $object_name,
-            $data
-        );
+        wp_localize_script('mollie-components', $object_name, $componentData);
     }
 
     protected function getPluginUrl(string $pluginUrl, string $path = ''): string
@@ -546,44 +473,8 @@ class AssetsModule implements ExecutableModule
             );
         });
 
-        /** Add support to Mollie blocks for WooCommerce checkout blocks functionality */
-        //https://github.com/woocommerce/woocommerce-blocks/blob/trunk/docs/third-party-developers/extensibility/checkout-payment-methods/payment-method-integration.md#putting-it-all-together
         add_action(
-            'woocommerce_blocks_loaded',
-            function () use ($dataService, $gatewayInstances, $pluginUrl, $pluginPath, $hasBlocksEnabled, $container) {
-                if (
-                    $hasBlocksEnabled && is_admin() && class_exists(
-                        'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType'
-                    )
-                ) {
-                    add_action(
-                        'woocommerce_blocks_payment_method_type_registration',
-                        function (PaymentMethodRegistry $paymentMethodRegistry) use (
-                            $dataService,
-                            $gatewayInstances,
-                            $pluginUrl,
-                            $pluginPath,
-                            $container
-                        ) {
-                            $paymentMethodRegistry->register(
-                                new MollieCheckoutBlocksSupport(
-                                    $dataService,
-                                    $gatewayInstances,
-                                    $this->getPluginUrl($pluginUrl, '/public/js/mollieBlockIndex.min.js'),
-                                    (string)filemtime(
-                                        $this->getPluginPath($pluginPath, '/public/js/mollieBlockIndex.min.js')
-                                    ),
-                                    $container
-                                )
-                            );
-                        }
-                    );
-                }
-            }
-        );
-
-        add_action(
-            'init',
+            'woocommerce_init',
             function () use ($container, $hasBlocksEnabled, $settingsHelper, $pluginUrl, $pluginPath, $dataService) {
                 self::registerFrontendScripts($pluginUrl, $pluginPath);
 
@@ -591,19 +482,33 @@ class AssetsModule implements ExecutableModule
                 add_action('wp_enqueue_scripts', function () use ($container) {
                     $this->enqueueFrontendScripts($container);
                 });
-                add_action('wp_enqueue_scripts', function () use ($settingsHelper) {
-                    $this->enqueueComponentsAssets($settingsHelper);
+                add_action('wp_enqueue_scripts', function () use ($container) {
+                    if(!mollieWooCommerceIsCheckoutContext()) {
+                        return;
+                    }
+                    /** @var ComponentDataService */
+                    $componentDataService = $container->get('components.data_service');
+                    assert($componentDataService instanceof ComponentDataService);
+                    $this->enqueueComponentsAssets($componentDataService);
                 });
                 add_action('wp_enqueue_scripts', [$this, 'enqueueApplePayDirectScripts']);
                 add_action('wp_enqueue_scripts', function () use ($pluginUrl) {
                     $this->enqueuePayPalButtonScripts($pluginUrl);
                 });
-
+                //we need to hook into the payment library before it's loaded
+                add_filter('inpsyde_payment_gateway_blocks_dependencies', function($dependencies) {
+                    $dependencies[] = 'mollie_block_index';
+                    return $dependencies;
+                });
                 if ($hasBlocksEnabled) {
                     /** @var array */
                     $gatewayInstances = $container->get('__deprecated.gateway_helpers');
-                    self::registerBlockScripts($pluginUrl, $pluginPath);
-                    add_action('wp_enqueue_scripts', function () use ($dataService, $gatewayInstances, $container) {
+                    // admin_enqueue_scripts is too late to register the block scripts
+                    add_action('admin_init', function () use ($container,$pluginUrl, $pluginPath) {
+                        $this->registerBlockScripts($pluginUrl, $pluginPath, $container);
+                    });
+                    add_action('wp_enqueue_scripts', function () use ($dataService, $gatewayInstances, $container,$pluginUrl, $pluginPath) {
+                        $this->registerBlockScripts($pluginUrl, $pluginPath, $container);
                         $this->enqueueBlockCheckoutScripts($dataService, $gatewayInstances, $container);
                     });
                     $this->registerButtonsBlockScripts($pluginUrl, $pluginPath);

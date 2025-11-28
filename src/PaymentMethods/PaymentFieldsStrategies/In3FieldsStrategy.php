@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
 use Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
+use Mollie\WooCommerce\Shared\FieldConstants;
 
 class In3FieldsStrategy extends AbstractPaymentFieldsRenderer implements PaymentFieldsRendererInterface
 {
     use PaymentFieldsStrategiesTrait;
-
-    const FIELD_BIRTHDATE = "billing_birthdate_in3";
-    const FIELD_PHONE = "billing_phone_in3";
 
     public function renderFields(): string
     {
@@ -41,7 +39,7 @@ class In3FieldsStrategy extends AbstractPaymentFieldsRenderer implements Payment
         }
 
         if ($showBirthdateField) {
-            $html .= $this->dateOfBirth($birthValue);
+            $html .= $this->dateOfBirth($birthValue, FieldConstants::IN3_BIRTHDATE);
         }
         return $html;
     }
@@ -50,13 +48,15 @@ class In3FieldsStrategy extends AbstractPaymentFieldsRenderer implements Payment
     {
         $phoneValue = $phoneValue ?: '';
         $html = '<p class="form-row form-row-wide" id="billing_phone_field">';
-        $html .= '<label for="' . esc_attr(self::FIELD_PHONE) . '" class="">' . esc_html__(
+        $html .= '<label for="' . esc_attr(FieldConstants::IN3_PHONE) . '" class="">' . esc_html__(
             'Phone',
             'mollie-payments-for-woocommerce'
         ) . '</label>';
         $html .= '<span class="woocommerce-input-wrapper">';
-        $html .= '<input type="tel" class="input-text " name="' . esc_attr(self::FIELD_PHONE) . '" id="' . esc_attr(
-            self::FIELD_PHONE
+        $html .= '<input type="tel" class="input-text " name="' . esc_attr(
+            FieldConstants::IN3_PHONE
+        ) . '" id="' . esc_attr(
+            FieldConstants::IN3_PHONE
         ) . '" placeholder="+316xxxxxxxx" value="' . esc_attr($phoneValue) . '" autocomplete="phone">';
         $html .= '</span></p>';
         return $html;

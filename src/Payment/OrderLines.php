@@ -58,6 +58,7 @@ class OrderLines
      */
     public function order_lines($order)
     {
+        $this->order_lines = [];
         $this->order = $order;
         $this->currency = $this->dataHelper->getOrderCurrency($this->order);
         $this->process_items();
@@ -275,7 +276,7 @@ class OrderLines
                     $cart_fee_total = $cart_fee['total'];
                 }
 
-                if (empty(round($cart_fee_total, 2))) {
+                if (empty(round(floatval($cart_fee_total), 2))) {
                     continue;
                 }
 

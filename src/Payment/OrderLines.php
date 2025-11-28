@@ -521,7 +521,7 @@ class OrderLines
 
         return [
             'grossPrice' => $grossPrice,
-            'vatAmount' => $grossPrice * ($vatRate / (100 + $vatRate))
+            'vatAmount' => $grossPrice * ($vatRate / (100 + $vatRate)),
         ];
     }
 }

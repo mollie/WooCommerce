@@ -630,6 +630,9 @@ class MollieObject
             ) {
                 $order->update_meta_data('_mollie_mandate_id', $payment->mandateId);
                 $order->save();
+                $customerId = $this->getUserMollieCustomerId($order);
+                do_action($this->pluginId . '_after_mandate_created', $payment, $order, $customerId, $payment->mandateId);
+
                 $subscriptions = wcs_get_subscriptions_for_order($order);
                 if (!$subscriptions) {
                     $subscriptions = wcs_get_subscriptions_for_renewal_order($order);
@@ -650,6 +653,19 @@ class MollieObject
                 }
             }
         }
+    }
+
+    /**
+     * @param $order
+     * @param $test_mode
+     * @return null|string
+     */
+    protected function getUserMollieCustomerId($order)
+    {
+        $order_customer_id = $order->get_customer_id();
+        $apiKey = $this->settingsHelper->getApiKey();
+
+        return $this->dataHelper->getUserMollieCustomerId($order_customer_id, $apiKey);
     }
     /**
      * @param $order

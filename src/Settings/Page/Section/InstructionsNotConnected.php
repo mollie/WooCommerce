@@ -41,7 +41,7 @@ class InstructionsNotConnected extends AbstractSection
                         "Don’t have a Mollie account yet? <a href='%s' target='_blank'>Get started with Mollie today.</a>",
                         'mollie-payments-for-woocommerce'
                     ),
-                    apply_filters('mollie-payments-for-woocommerce_signup_url', 'https://my.mollie.com/dashboard/signup/')
+                    apply_filters('mollie-payments-for-woocommerce_signup_url', 'https://my.mollie.com/dashboard/signup?utm_campaign=GLO_Q4__Woo-Signup-tracker&utm_medium=referral&utm_source={woodashboard}&campaign_name=GLO_Q4__Woo-Signup-tracker')
                 ), [
                     'a' => [
                         'href' => [],

@@ -10,8 +10,10 @@ concurrency:
   cancel-in-progress: true
 jobs:
   create_archive:
-    uses: inpsyde/reusable-workflows/.github/workflows/build-and-distribute.yml@main
+    uses: inpsyde/reusable-workflows/.github/workflows/plugin-archive.yml@main
     with:
-      PACKAGE_VERSION: ${{ inputs.PACKAGE_VERSION }}
+      PLUGIN_VERSION: ${{ inputs.PACKAGE_VERSION }}
       PHP_VERSION: 7.4
-      PACKAGE_NAME: mollie-payments-for-woocommerce-${{ inputs.PACKAGE_VERSION }}
+      PLUGIN_MAIN_FILE: mollie-payments-for-woocommerce.php
+      ARCHIVE_NAME: mollie-payments-for-woocommerce-${{ inputs.PACKAGE_VERSION }}
+      PLUGIN_FOLDER_NAME: mollie-payments-for-woocommerce

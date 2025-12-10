@@ -5,9 +5,6 @@ on:
       PACKAGE_VERSION:
         description: 'Package Version'
         required: true
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 jobs:
   create_archive:
     uses: inpsyde/reusable-workflows/.github/workflows/build-plugin-archive.yml@main

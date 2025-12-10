@@ -132,7 +132,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
             }
             return __('Don’t have a Mollie account yet? Create one now. Limited time only! Pay ZERO processing fees for your first month. <a href="%s" target="_blank">Get started with Mollie today.</a> ', 'mollie-payments-for-woocommerce');
         }, 10, 3);
-        add_filter('mollie-payments-for-woocommerce_signup_url', static function ($url) {
+        /*add_filter('mollie-payments-for-woocommerce_signup_url', static function ($url) {
             $dateNow = new \DateTime();
             $endDateCampaign = new \DateTime('2026-01-01');
             if ($endDateCampaign < $dateNow) {
@@ -140,7 +140,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
             }
 
             return 'https://my.mollie.com/dashboard/signup?utm_campaign=GLO_Q4__Woo-Signup-tracker&utm_medium=referral&utm_source={woodashboard}&campaign_name=GLO_Q4__Woo-Signup-tracker';
-        });
+        });*/
         //init settings with advanced and components defaults if not exists
         $optionName = $container->get('settings.option_name');
         $defaultAdvancedOptions = $container->get('settings.advanced_default_options');

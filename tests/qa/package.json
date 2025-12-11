@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/inpsyde/playwright-tests#readme",
   "dependencies": {
-    "@inpsyde/playwright-utils": "^2.7.4",
+    "@inpsyde/playwright-utils": "^2.8.0",
     "dotenv": "^16.3.1",
     "dotenv-cli": "^7.3.0",
     "playwright": "^1.40.1",

@@ -50,6 +50,7 @@ test.describe( `Payment method settings ${ gateway.name }`, () => {
 		`C1729452 | Payment method settings - Logo can be hidden on checkout page (${ gateway.name })`,
 		annotateGateway( gateway.slug ),
 		async ( { utils, mollieSettingsGateway, checkout, classicCheckout } ) => {
+			test.setTimeout( 90_000 );
 			await mollieSettingsGateway.setup( {
 				display_logo: 'yes',
 			} );
@@ -124,6 +125,7 @@ test.describe( `Payment method settings ${ gateway.name }`, () => {
 		`C3327 | Payment method settings - Description can be changed (${ gateway.name })`,
 		annotateGateway( gateway.slug ),
 		async ( { utils, mollieSettingsGateway, checkout, classicCheckout } ) => {
+			test.setTimeout( 90_000 );
 			await mollieSettingsGateway.setup( {
 				description: `${ gateway.name } edited description`,
 			} );

@@ -450,26 +450,27 @@ export const payForOrderEur: MollieTestData.Transaction[] = [
 		gatewaySlug: 'riverty',
 		paymentStatus: 'expired',
 	},
-	{
-		testId: 'C3622433',
-		gatewaySlug: 'payconiq',
-		paymentStatus: 'paid',
-	},
-	{
-		testId: 'C3622434',
-		gatewaySlug: 'payconiq',
-		paymentStatus: 'failed',
-	},
-	{
-		testId: 'C3622435',
-		gatewaySlug: 'payconiq',
-		paymentStatus: 'canceled',
-	},
-	{
-		testId: 'C3622436',
-		gatewaySlug: 'payconiq',
-		paymentStatus: 'expired',
-	},
+	// Payconiq unset by client on 04/12/2025
+	// {
+	// 	testId: 'C3622433',
+	// 	gatewaySlug: 'payconiq',
+	// 	paymentStatus: 'paid',
+	// },
+	// {
+	// 	testId: 'C3622434',
+	// 	gatewaySlug: 'payconiq',
+	// 	paymentStatus: 'failed',
+	// },
+	// {
+	// 	testId: 'C3622435',
+	// 	gatewaySlug: 'payconiq',
+	// 	paymentStatus: 'canceled',
+	// },
+	// {
+	// 	testId: 'C3622436',
+	// 	gatewaySlug: 'payconiq',
+	// 	paymentStatus: 'expired',
+	// },
 	{
 		testId: 'C3757243',
 		gatewaySlug: 'satispay',

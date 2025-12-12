@@ -4,7 +4,7 @@
 import { test, expect, annotateVisitor } from '../../../utils';
 
 export const subscriptionRenewal = ( testId: string, order ) => {
-	test(
+	test.fixme(
 		`${ testId } | Manual renewal for order paid by ${ order.payment.gateway.name } with status ${ order.orderStatus }`,
 		annotateVisitor( order.customer ),
 		async ( {

@@ -3,6 +3,7 @@
  */
 import { cards, MollieTestData } from '../../../resources';
 
+// TODO: update test IDs when automation is approved by client (estimation sent in Nov 2025)
 export const classicCheckoutEur: MollieTestData.Transaction[] = [
 	// {
 	// 	testId: '',

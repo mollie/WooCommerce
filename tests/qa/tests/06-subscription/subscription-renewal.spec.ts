@@ -16,3 +16,5 @@ test.beforeAll( async ( { utils, wooCommerceUtils } ) => {
 	await utils.installActivateMollie();
 	await utils.cleanReconnectMollie();
 } );
+
+// TODO: implement when automation is approved by client (estimation sent in Nov 2025)

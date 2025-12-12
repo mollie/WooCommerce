@@ -37,7 +37,7 @@ test.describe.serial( () => {
 		wooCommerceSettings,
 		mollieApiMethod,
 	} ) => {
-		await wooCommerceSettings.visit( 'payments' );
+		await wooCommerceSettings.visit( 'checkout' );
 		for ( const key in gateways ) {
 			const gateway = gateways[ key ];
 
@@ -48,9 +48,9 @@ test.describe.serial( () => {
 				continue;
 			}
 
-			const mollieGatewayname = `Mollie - ${ gateway.name }`;
+			const mollieGatewayName = `Mollie - ${ gateway.name }`;
 			await expect
-				.soft( wooCommerceSettings.gatewayLink( mollieGatewayname ) )
+				.soft( wooCommerceSettings.page.getByText( mollieGatewayName ) )
 				.toBeVisible();
 		}
 	} );

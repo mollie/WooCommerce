@@ -6,7 +6,11 @@ import { countTotals } from '@inpsyde/playwright-utils/build';
  * Internal dependencies
  */
 import { test } from '../../../../utils';
-import { buildGatewayLabel, processMolliePaymentStatus, updateCurrencyIfNeeded } from './checkout-test-helpers';
+import {
+	buildGatewayLabel,
+	processMolliePaymentStatus,
+	updateCurrencyIfNeeded,
+} from './checkout-test-helpers';
 
 export const testPaymentStatusOnPayForOrder = ( testId: string, order ) => {
 	const { payment, orderStatus } = order;

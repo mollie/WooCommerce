@@ -17,7 +17,7 @@ const getExpectedOrderStatus = (
 	paymentStatus: MolliePaymentStatus
 ): WooCommerce.OrderStatus => {
 	const isPaymentApiMethod = testedApiMethod === 'payment';
-	
+
 	const statusConversion = {
 		paid: 'processing',
 		authorized: 'processing',
@@ -32,17 +32,16 @@ const getExpectedOrderStatus = (
 };
 
 export const createShopOrder = ( {
-		gatewaySlug,
-		paymentStatus,
-		orderStatus,
-		card,
-		mollieComponentsEnabled,
-		bankIssuer,
-		billingCompany,
-	}: MollieTestData.Transaction
-): WooCommerce.ShopOrder => {
+	gatewaySlug,
+	paymentStatus,
+	orderStatus,
+	card,
+	mollieComponentsEnabled,
+	bankIssuer,
+	billingCompany,
+}: MollieTestData.Transaction ): WooCommerce.ShopOrder => {
 	const gateway = gateways[ gatewaySlug ];
-	const {country, currency } = gateway;
+	const { country, currency } = gateway;
 	const order = {
 		...orders.default,
 		products: [ products.mollieSimple100 ],
@@ -53,8 +52,7 @@ export const createShopOrder = ( {
 					...gateway.settings,
 					// for tests with mollie components ('yes'/'no')
 					...( mollieComponentsEnabled && {
-						mollie_components_enabled:
-							mollieComponentsEnabled,
+						mollie_components_enabled: mollieComponentsEnabled,
 					} ),
 				},
 			},
@@ -63,7 +61,7 @@ export const createShopOrder = ( {
 			bankIssuer, // for kbc tests
 			status: paymentStatus,
 		},
-		orderStatus: orderStatus ?? getExpectedOrderStatus(paymentStatus),
+		orderStatus: orderStatus ?? getExpectedOrderStatus( paymentStatus ),
 		customer: guests[ country ],
 		currency,
 	};

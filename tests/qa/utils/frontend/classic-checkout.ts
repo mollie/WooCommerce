@@ -66,11 +66,11 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 	termsAndConditionsCheckbox = () => this.page.locator( '#legal' );
 
 	// Actions
-	
+
 	/**
 	 * Selects payment gateway and enters required data (if needed)
-	 * 
-	 * @param order 
+	 *
+	 * @param order
 	 */
 	processPaymentMethod = async ( order: WooCommerce.ShopOrder ) => {
 		const { payment, customer } = order;
@@ -135,7 +135,9 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 			await expect( this.cardHolderInput() ).toBeVisible();
 			await expect( this.cardExpiryDateInput() ).toBeVisible();
 			await expect( this.cardVerificationCodeInput() ).toBeVisible();
-			await expect.soft( this.page.getByText( 'Secure payments provided by' ) ).toBeVisible();
+			await expect
+				.soft( this.page.getByText( 'Secure payments provided by' ) )
+				.toBeVisible();
 
 			await this.cardNumberInput().fill( card.card_number );
 			await this.cardHolderInput().fill( card.card_holder );
@@ -157,7 +159,7 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 				}
 			}
 		}
-	}
+	};
 
 	/**
 	 * Makes order on Classic checkout:
@@ -188,8 +190,8 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 	 * @param order
 	 */
 	makeMultistepOrder = async ( order: WooCommerce.ShopOrder ) => {
-		const {  customer, coupons } = order;
-		if( customer.shipping.country !== 'IT' ) {
+		const { customer, coupons } = order;
+		if ( customer.shipping.country !== 'IT' ) {
 			// Clear state for countries where it is optional
 			// Causes problems: in multistep checkout can be text input instead of select
 			customer.shipping.state = '';

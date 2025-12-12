@@ -2,7 +2,12 @@
  * External dependencies
  */
 import fs from 'fs';
-import { APIRequestContext, Page, VideoMode, ViewportSize } from '@playwright/test';
+import {
+	APIRequestContext,
+	Page,
+	VideoMode,
+	ViewportSize,
+} from '@playwright/test';
 import {
 	test as base,
 	CustomerAccount,
@@ -34,7 +39,7 @@ type TestBaseExtend = {
 	recordVideoOptions: {
 		mode: VideoMode;
 		size?: ViewportSize;
-	}
+	};
 	// Dashboard fixtures
 	mollieApi: MollieApi;
 	mollieSettingsApiKeys: MollieSettingsApiKeys;
@@ -96,21 +101,21 @@ const test = base.extend< TestBaseExtend >( {
 			storageState: fs.existsSync( storageStatePath )
 				? storageStatePath
 				: undefined,
-			...( recordVideoOptions && { 
+			...( recordVideoOptions && {
 				recordVideo: {
 					...recordVideoOptions,
 					dir: testInfo.outputDir, // Override recordVideo to use correct output dir
-				}
+				},
 			} ),
 		} );
 		const page = await context.newPage();
 		await use( page );
-		
+
 		// Save video path BEFORE closing
 		const video = page.video();
 		await page.close();
 		await context.close();
-		
+
 		// Attach video to report after context is closed
 		if ( video ) {
 			const videoPath = await video.path();

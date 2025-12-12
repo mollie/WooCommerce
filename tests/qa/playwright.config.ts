@@ -68,7 +68,7 @@ export default defineConfig< TestBaseExtend >( {
 
 		viewport: { width: 1280, height: 850 },
 
-    	trace: 'retain-on-failure',//'on-first-retry',//'on',//
+		trace: 'retain-on-failure', //'on-first-retry',//'on',//
 
 		screenshot: {
 			mode: 'only-on-failure',

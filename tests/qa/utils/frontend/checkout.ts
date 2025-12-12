@@ -11,8 +11,8 @@ export class Checkout extends CheckoutBase {
 	// Locators
 	cardComponentsContainer = () =>
 		this.page.locator(
-				'#radio-control-wc-payment-method-options-mollie_wc_gateway_creditcard__content'
-			);
+			'#radio-control-wc-payment-method-options-mollie_wc_gateway_creditcard__content'
+		);
 	cardNumberInput = () =>
 		this.page
 			.frameLocator( '[title="cardNumber input"]' )
@@ -50,7 +50,7 @@ export class Checkout extends CheckoutBase {
 	paymentOptionLogo = ( name: string ): Locator =>
 		this.paymentOptionsContainer()
 			.locator( '.wc-block-components-radio-control__option', {
-				has: this.page.getByText( name, { exact: true } )
+				has: this.page.getByText( name, { exact: true } ),
 			} )
 			.locator( 'img' );
 
@@ -60,15 +60,14 @@ export class Checkout extends CheckoutBase {
 		this.page.getByRole( 'button', { name: 'Continue with Payment' } );
 	continueWithConfirmationButton = () =>
 		this.page.getByRole( 'button', { name: 'Continue with Confirmation' } );
-	termsAndConditionsCheckbox = () =>
-		this.page.locator( '#checkbox-legal' );
+	termsAndConditionsCheckbox = () => this.page.locator( '#checkbox-legal' );
 
 	// Actions
-	
+
 	/**
 	 * Selects payment gateway and enters required data (if needed)
-	 * 
-	 * @param order 
+	 *
+	 * @param order
 	 */
 	processPaymentMethod = async ( order: WooCommerce.ShopOrder ) => {
 		const { payment, customer } = order;
@@ -126,12 +125,14 @@ export class Checkout extends CheckoutBase {
 		) {
 			// the card fields seem to be only rendered when they are scrolled in otherwise they are not visible
 			await this.cardComponentsContainer().scrollIntoViewIfNeeded();
-			
+
 			await expect( this.cardNumberInput() ).toBeVisible();
 			await expect( this.cardHolderInput() ).toBeVisible();
 			await expect( this.cardExpiryDateInput() ).toBeVisible();
 			await expect( this.cardVerificationCodeInput() ).toBeVisible();
-			await expect.soft( this.page.getByText( 'Secure payments provided by' ) ).toBeVisible();
+			await expect
+				.soft( this.page.getByText( 'Secure payments provided by' ) )
+				.toBeVisible();
 
 			await this.cardNumberInput().fill( card.card_number );
 			await this.cardHolderInput().fill( card.card_holder );
@@ -153,7 +154,7 @@ export class Checkout extends CheckoutBase {
 				}
 			}
 		}
-	}
+	};
 
 	/**
 	 * Makes order on Checkout:
@@ -180,8 +181,8 @@ export class Checkout extends CheckoutBase {
 	 * @param order
 	 */
 	makeMultistepOrder = async ( order: WooCommerce.ShopOrder ) => {
-		const {  customer, coupons } = order;
-		if( customer.shipping.country !== 'IT' ) {
+		const { customer, coupons } = order;
+		if ( customer.shipping.country !== 'IT' ) {
 			// Clear state for countries where it is optional
 			// Causes problems: in multistep checkout can be text input instead of select
 			customer.shipping.state = '';

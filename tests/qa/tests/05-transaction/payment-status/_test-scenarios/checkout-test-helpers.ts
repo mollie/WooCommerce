@@ -1,7 +1,11 @@
 /**
  * External dependencies
  */
-import { OrderReceived, PayForOrder, WooCommerceApi } from '@inpsyde/playwright-utils/build';
+import {
+	OrderReceived,
+	PayForOrder,
+	WooCommerceApi,
+} from '@inpsyde/playwright-utils/build';
 /**
  * Internal dependencies
  */
@@ -10,14 +14,15 @@ import { MollieGateway } from '../../../../resources';
 
 export function buildGatewayLabel( gateway: MollieGateway ): string {
 	let label = gateway.name;
-	
-	if (gateway.slug === 'creditcard') {
-		const componentsEnabled = gateway.settings.mollie_components_enabled === 'yes';
-		label += componentsEnabled 
-			? ' - Mollie components enabled' 
+
+	if ( gateway.slug === 'creditcard' ) {
+		const componentsEnabled =
+			gateway.settings.mollie_components_enabled === 'yes';
+		label += componentsEnabled
+			? ' - Mollie components enabled'
 			: ' - Mollie components disabled';
 	}
-	
+
 	return label;
 }
 

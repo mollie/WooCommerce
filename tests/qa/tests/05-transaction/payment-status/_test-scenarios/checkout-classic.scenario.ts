@@ -6,7 +6,11 @@ import { countTotals } from '@inpsyde/playwright-utils/build';
  * Internal dependencies
  */
 import { test } from '../../../../utils';
-import { buildGatewayLabel, processMolliePaymentStatus, updateCurrencyIfNeeded } from './checkout-test-helpers';
+import {
+	buildGatewayLabel,
+	processMolliePaymentStatus,
+	updateCurrencyIfNeeded,
+} from './checkout-test-helpers';
 
 const isMultistepCheckout = process.env.IS_MULTISTEP_CHECKOUT === 'true';
 
@@ -32,10 +36,9 @@ export const testPaymentStatusOnClassicCheckout = ( testId: string, order ) => {
 
 		await utils.fillVisitorsCart( order.products );
 
-		await ( isMultistepCheckout 
-			? classicCheckout.makeMultistepOrder( order ) 
-			: classicCheckout.makeOrder( order )
-		);
+		await ( isMultistepCheckout
+			? classicCheckout.makeMultistepOrder( order )
+			: classicCheckout.makeOrder( order ) );
 
 		const orderId = await mollieHostedCheckout.pay( payment );
 

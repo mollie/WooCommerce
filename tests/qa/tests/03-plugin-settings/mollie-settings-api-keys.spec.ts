@@ -46,5 +46,7 @@ test( 'C3333 | Validate that the ecommerce admin have access to Documentation/Su
 		'https://docs.mollie.com/docs/woo-get-started'
 	);
 	await page.goto( pluginDocumentationHref );
-	await expect( page ).toHaveURL( 'https://docs.mollie.com/docs/woo-get-started' );
+	await expect( page ).toHaveURL(
+		'https://docs.mollie.com/docs/woo-get-started'
+	);
 } );

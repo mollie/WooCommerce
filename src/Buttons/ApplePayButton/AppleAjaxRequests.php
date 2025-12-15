@@ -437,7 +437,7 @@ class AppleAjaxRequests
             $shippingMethodsArray[] = [
                 "label" => $rate->get_label(),
                 "detail" => "",
-                "amount" => $rate->get_cost(),
+                "amount" => round((float)$rate->get_cost() + array_sum($rate->get_taxes()), 2),
                 "identifier" => $rate->get_id(),
             ];
             if (!$done) {
@@ -491,7 +491,7 @@ class AppleAjaxRequests
      * @param $shippingMethodsArray
      */
     protected function cartCalculationResults(
-        $cart,
+        WC_Cart $cart,
         $selectedShippingMethod,
         $shippingMethodsArray
     ): array {

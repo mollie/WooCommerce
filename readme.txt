@@ -218,6 +218,10 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= 8.1.2 - 15-12-2025 =
+* Fixed - Improve refresh method in settings
+* Added - New campaign signup Q4
+
 = 8.1.1 - 03-11-2025 =
 * Fixed - Notice on order received page
 * Fixed - Cancel Klarna payments done with payments API

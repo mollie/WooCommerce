@@ -36,6 +36,7 @@ $finders = [
                       '.idea',
                       'modules.local',
                       'tests',
+                      'node_modules',
                   ])
         ->in('.'),
 ];

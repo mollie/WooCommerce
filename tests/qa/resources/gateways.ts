@@ -514,7 +514,7 @@ export const gateways: {
 	multibanco,
 	mybank,
 	paybybank, // currency: GBP
-	payconiq,
+	// payconiq, // excluded by client on 04/12/2025
 	paypal,
 	paysafecard,
 	// pointofsale,

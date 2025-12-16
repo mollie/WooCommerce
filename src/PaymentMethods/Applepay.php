@@ -67,7 +67,7 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
             $notice = [];
         }
 
-        $paymentMethodFormFieds = [
+        $paymentMethodFormFields = [
             'mollie_apple_pay_button_enabled_cart' => [
                 'title' => __('Enable Apple Pay Button on Cart page', 'mollie-payments-for-woocommerce'),
                 'desc' => __(
@@ -93,6 +93,6 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
                 'default' => 'no',
             ],
         ];
-        return array_merge($notice, $generalFormFields, $paymentMethodFormFieds);
+        return array_merge($notice, $generalFormFields, $paymentMethodFormFields);
     }
 }

@@ -59,7 +59,7 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
     {
         unset($generalFormFields['activate_expiry_days_setting']);
         unset($generalFormFields['order_dueDate']);
-        $paymentMethodFormFieds = [
+        $paymentMethodFormFields = [
             'activate_expiry_days_setting' => [
                 'title' => __('Activate expiry time setting', 'mollie-payments-for-woocommerce'),
                 'label' => __('Enable expiry time for payments', 'mollie-payments-for-woocommerce'),
@@ -87,7 +87,7 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
                 'default' => 'no',
             ],
         ];
-        return array_merge($generalFormFields, $paymentMethodFormFieds);
+        return array_merge($generalFormFields, $paymentMethodFormFields);
     }
 
     public function filtersOnBuild()

@@ -107,7 +107,7 @@ test.skip('Validate the submission of an order with Credit Card as payment metho
 
 
 //TestId-C420278
-test.skip('Validate the submission of an order with Credit Card (no 3D secure) as payment method using Mollie Components  on block chcekout', async ({ page}) => {
+test.skip('Validate the submission of an order with Credit Card (no 3D secure) as payment method using Mollie Components  on block checkout', async ({ page}) => {
   // Your code here...
 });
 

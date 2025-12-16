@@ -38,7 +38,7 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
 
     public function getFormFields($generalFormFields): array
     {
-        $paymentMethodFormFieds =  [
+        $paymentMethodFormFields =  [
             'mollie_paypal_button_enabled_cart' => [
                 'type' => 'checkbox',
                 'title' => __(
@@ -90,7 +90,7 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
                 'desc_tip' => true,
             ],
         ];
-        return array_merge($generalFormFields, $paymentMethodFormFieds);
+        return array_merge($generalFormFields, $paymentMethodFormFields);
     }
 
     private function buttonOptions(): array

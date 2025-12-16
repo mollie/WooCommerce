@@ -63,7 +63,7 @@ class AssetsModule implements ExecutableModule
                     )
                 );
                 $dataToScripts = new DataToPayPal($pluginUrl);
-                wp_enqueue_style('unabledButton');
+                wp_enqueue_style('disabledButton');
                 wp_enqueue_script('mollie_paypalButtonBlock');
                 wp_localize_script(
                     'mollie_paypalButtonBlock',
@@ -154,7 +154,7 @@ class AssetsModule implements ExecutableModule
                 return;
             }
             $dataToScripts = new DataToPayPal($pluginUrl);
-            wp_enqueue_style('unabledButton');
+            wp_enqueue_style('disabledButton');
             wp_enqueue_script('mollie_paypalButton');
             wp_localize_script(
                 'mollie_paypalButton',
@@ -168,7 +168,7 @@ class AssetsModule implements ExecutableModule
                 return;
             }
             $dataToScripts = new DataToPayPal($pluginUrl);
-            wp_enqueue_style('unabledButton');
+            wp_enqueue_style('disabledButton');
             wp_enqueue_script('mollie_paypalButtonCart');
             wp_localize_script(
                 'mollie_paypalButtonCart',
@@ -250,10 +250,10 @@ class AssetsModule implements ExecutableModule
             true
         );
         wp_register_style(
-            'unabledButton',
-            $this->getPluginUrl($pluginUrl, '/public/css/unabledButton.min.css'),
+            'disabledButton',
+            $this->getPluginUrl($pluginUrl, '/public/css/disabledButton.min.css'),
             [],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/css/unabledButton.min.css')),
+            (string) filemtime($this->getPluginPath($pluginPath, '/public/css/disabledButton.min.css')),
             'screen'
         );
         wp_register_script(
@@ -323,7 +323,7 @@ class AssetsModule implements ExecutableModule
         if (!$applePayGatewayEnabled || !$isAppleEnabledAtMollie) {
             return;
         }
-        wp_enqueue_style('unabledButton');
+        wp_enqueue_style('disabledButton');
         wp_enqueue_script('mollie_wc_gateway_applepay');
     }
 

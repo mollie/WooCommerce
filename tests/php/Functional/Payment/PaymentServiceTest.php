@@ -175,7 +175,7 @@ class PaymentServiceTest extends TestCase
         $wcOrderId = 1;
         $wcOrderKey = 'wc_order_hxZniP1zDcnM8';
         $wcOrder = $this->wcOrder($wcOrderId, $wcOrderKey);
-        $cusomerId = 1;
+        $customerId = 1;
         $apiKey = 'test_test';
         $method = new \ReflectionMethod(PaymentProcessor::class, 'processAsMollieOrder');
         $method->setAccessible(true);
@@ -186,7 +186,7 @@ class PaymentServiceTest extends TestCase
             $testee,
             $this->helperMocks->mollieOrderMock(),
             $wcOrder,
-            $cusomerId,
+            $customerId,
             $apiKey
         );
     }

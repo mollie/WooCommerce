@@ -11,3 +11,4 @@ woocommerce-subscriptions.zip
 mollie-payments-for-woocommerce.zip
 .env*
 !.env.example
+!package-lock.json

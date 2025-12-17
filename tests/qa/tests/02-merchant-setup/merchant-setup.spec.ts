@@ -50,7 +50,10 @@ test.describe.serial( () => {
 
 			const mollieGatewayName = `Mollie - ${ gateway.name }`;
 			await expect
-				.soft( wooCommerceSettings.page.getByText( mollieGatewayName ) )
+				.soft(
+					wooCommerceSettings.gatewayNameCell( mollieGatewayName ),
+					`${ mollieGatewayName } is NOT displayed correctly`
+				 )
 				.toBeVisible();
 		}
 	} );

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Mollie\WooCommerce\Gateway\Refund\OrderItemsRefunder;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrder;
+use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\MolliePayment;
 use Mollie\WooCommerce\Payment\OrderLines;
 use Mollie\WooCommerce\Payment\PaymentFactory;
@@ -26,8 +27,10 @@ use Mollie\WooCommerce\Payment\Request\Strategies\OrderRequestStrategy;
 use Mollie\WooCommerce\Payment\Request\Strategies\PaymentRequestStrategy;
 use Mollie\WooCommerce\Payment\Request\RequestFactory;
 use Mollie\WooCommerce\Payment\Request\Strategies\RequestStrategyInterface;
+use Mollie\WooCommerce\Payment\Webhooks\RestApi;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Settings\Webhooks\WebhookTestService;
 use Mollie\WooCommerce\Shared\Data;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
@@ -191,10 +194,13 @@ return static function (): array {
                 $middlewareHandler
             );
         },
-        \Mollie\WooCommerce\Payment\Webhooks\RestApi::class => static function (ContainerInterface $container): \Mollie\WooCommerce\Payment\Webhooks\RestApi {
-            return new \Mollie\WooCommerce\Payment\Webhooks\RestApi(
-                $container->get(\Mollie\WooCommerce\Payment\MollieOrderService::class),
-                $container->get(Logger::class)
+        RestApi::class => static function (ContainerInterface $container): RestApi {
+            $webhookTestService = $container->get(WebhookTestService::class);
+            assert($webhookTestService instanceof WebhookTestService);
+            return new RestApi(
+                $container->get(MollieOrderService::class),
+                $container->get(Logger::class),
+                $webhookTestService
             );
         },
     ];

@@ -41,7 +41,8 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_Multibanco',
         'Mollie_WC_Gateway_Paybybank',
         'Mollie_WC_Gateway_Mbway',
-        'Mollie_WC_Gateway_Vippsmobilepay',
+        'Mollie_WC_Gateway_Vipps',
+        'Mollie_WC_Gateway_Mobilepay',
         'Mollie_WC_Gateway_Bizum',
     ];
 

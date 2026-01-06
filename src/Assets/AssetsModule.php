@@ -286,9 +286,9 @@ class AssetsModule implements ExecutableModule
          * Ensure localized data via static method call
          * TODO rework the static method call
          */
-        /*$dataService = $container->get('settings.data_helper');
+        $dataService = $container->get('settings.data_helper');
         $gatewayInstances = $container->get('__deprecated.gateway_helpers');
-        MollieCheckoutBlocksSupport::localizeWCBlocksData($dataService, $gatewayInstances, $container);*/
+        MollieCheckoutBlocksSupport::localizeWCBlocksData($dataService, $gatewayInstances, $container);
 
         wp_register_style(
             'mollie-block-custom-field',

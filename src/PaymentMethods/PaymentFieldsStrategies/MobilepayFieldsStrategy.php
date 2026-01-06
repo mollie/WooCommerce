@@ -42,7 +42,7 @@ class MobilepayFieldsStrategy extends AbstractPaymentFieldsRenderer implements P
                 'DK' => '+45xxxxxxxxx',
                 'FI' => '+358xxxxxxxx',
         ];
-        $placeholder = in_array($country, array_keys($countryCodes)) ? $countryCodes[$country] : $countryCodes['NL'];
+        $placeholder = in_array($country, array_keys($countryCodes)) ? $countryCodes[$country] : $countryCodes['DK'];
 
         $html = '<p class="form-row form-row-wide" id="billing_phone_field">';
         $html .= '<label for="' . esc_attr(FieldConstants::MOBILEPAY_PHONE) . '" class="">' . esc_html__('Phone', 'mollie-payments-for-woocommerce') . '</label>';

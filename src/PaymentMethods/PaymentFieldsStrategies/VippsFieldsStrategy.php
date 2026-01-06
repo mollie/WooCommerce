@@ -41,7 +41,7 @@ class VippsFieldsStrategy extends AbstractPaymentFieldsRenderer implements Payme
         $countryCodes = [
                 'NO' => '+47xxxxxxxxx',
         ];
-        $placeholder = in_array($country, array_keys($countryCodes)) ? $countryCodes[$country] : $countryCodes['NL'];
+        $placeholder = in_array($country, array_keys($countryCodes)) ? $countryCodes[$country] : $countryCodes['NO'];
 
         $html = '<p class="form-row form-row-wide" id="billing_phone_field">';
         $html .= '<label for="' . esc_attr(FieldConstants::VIPPS_PHONE) . '" class="">' . esc_html__('Phone', 'mollie-payments-for-woocommerce') . '</label>';

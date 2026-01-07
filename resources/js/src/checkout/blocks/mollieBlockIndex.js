@@ -70,6 +70,26 @@ import {initializeMollieComponentsWithStoreSubscription} from "./services/Mollie
             }
             // Add custom classes to payment method icons
             addCustomClassesToPaymentIcons();
+
+            const setupBackNavigationHandler = () => {
+                window.addEventListener('pageshow', (event) => {
+                    // Check if page was loaded from cache (back/forward navigation)
+                    if (event.persisted || performance.getEntriesByType('navigation')[0]?.type === 'back_forward') {
+                        try {
+                            const currentStatus = wp.data.select('wc/store/checkout').getCheckoutStatus();
+
+                            // Only reset if checkout is stuck in complete state
+                            if (currentStatus === 'complete') {
+                                window.location.reload();
+                            }
+                        } catch (error) {
+                            console.warn('Mollie: Could not reset checkout state on back navigation:', error);
+                        }
+                    }
+                });
+            };
+
+            setupBackNavigationHandler();
         };
 
         initializeStoreDependent();

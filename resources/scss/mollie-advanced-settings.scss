@@ -1,0 +1,41 @@
+.mollie-webhook-test-container {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.mollie-webhook-test-result {
+    width: 100%;
+    padding: 10px;
+    border-radius: 3px;
+    margin-top: 10px;
+}
+
+.mollie-webhook-test-result.success {
+    background-color: #ecf7ed;
+    border-left: 4px solid #46b450;
+    color: #2e4437;
+}
+
+.mollie-webhook-test-result.error {
+    background-color: #fcf2f2;
+    border-left: 4px solid #dc3232;
+    color: #5c2121;
+}
+
+.mollie-webhook-test-result.warning {
+    background-color: #fff8e5;
+    border-left: 4px solid #ffb900;
+    color: #694700;
+}
+
+.mollie-webhook-test-result.info {
+    background-color: #f0f6fc;
+    border-left: 4px solid #2271b1;
+    color: #1d2327;
+}
+
+#mollie-webhook-test-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

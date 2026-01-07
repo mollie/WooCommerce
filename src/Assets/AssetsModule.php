@@ -422,6 +422,22 @@ class AssetsModule implements ExecutableModule
             return;
         }
         wp_enqueue_script('mollie_wc_gateway_advanced_settings');
+        wp_localize_script(
+            'mollie_wc_gateway_advanced_settings',
+            'mollieWebhookTestData',
+            [
+                'ajaxUrl' => admin_url('admin-ajax.php'),
+                'messages' => [
+                    'waiting' => __('Initiating webhook test, waiting for response...', 'mollie-payments-for-woocommerce'),
+                    'takingLong' => __('This is taking longer than expected. Still waiting for webhook...', 'mollie-payments-for-woocommerce'),
+                    'timeout' => __('⚠ Test timed out. Webhook was not received within the expected timeframe. This may indicate a connectivity issue. Please check your server\'s firewall settings or contact your hosting provider.', 'mollie-payments-for-woocommerce'),
+                    'success' => __('✓ Webhook received successfully! Your site can receive webhooks from Mollie.', 'mollie-payments-for-woocommerce'),
+                    'noWebhook' => __('✗ Webhook was not received. Please check your firewall settings and ensure webhooks from Mollie are not blocked.', 'mollie-payments-for-woocommerce'),
+                    'error' => __('An error occurred during the webhook test. Please try again or check the error logs.', 'mollie-payments-for-woocommerce'),
+                ],
+            ]
+        );
+        wp_enqueue_style('mollie-advanced-settings');
     }
 
     /**
@@ -536,6 +552,13 @@ class AssetsModule implements ExecutableModule
                         ['underscore', 'jquery'],
                         $pluginVersion,
                         true
+                    );
+                    wp_register_style(
+                        'mollie-advanced-settings',
+                        $this->getPluginUrl($pluginUrl, '/public/css/mollie-advanced-settings.min.css'),
+                        [],
+                        $pluginVersion,
+                        'screen'
                     );
                     add_action('admin_enqueue_scripts', [$this, 'enqueueAdvancedSettingsJS'], 10, 1);
 

@@ -34,7 +34,6 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_Bancomatpay',
         'Mollie_WC_Gateway_Alma',
         'Mollie_WC_Gateway_Trustly',
-        'Mollie_WC_Gateway_Payconiq',
         'Mollie_WC_Gateway_Riverty',
         'Mollie_WC_Gateway_Satispay',
         'Mollie_WC_Gateway_Swish',

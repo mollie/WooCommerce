@@ -75,6 +75,9 @@ export const updatePhonePlaceholderByCountry =
 			AT: '+43xxxxxxxxx',
             ES: '+34xxxxxxxxx',
             AD: '+372xxxxxxxxx',
+            FI: '+358xxxxxxxxx',
+            NO: '+47xxxxxxxxx',
+            DK: '+45xxxxxxxxx',
 		};
 		const placeholder = countryCodes[ country ] || countryCodes.NL;
 		dispatch( setPhonePlaceholder( placeholder ) );

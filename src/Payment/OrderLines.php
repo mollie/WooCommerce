@@ -511,13 +511,7 @@ class OrderLines
      */
     private function getMolliePrice(float $wcPrice, float $vatRate): array
     {
-        if (wc_prices_include_tax()) {
-            // WC price already includes tax
-            $grossPrice = $wcPrice;
-        } else {
-            // WC price excludes tax - add tax for Mollie
-            $grossPrice = $wcPrice * (1 + ($vatRate / 100));
-        }
+        $grossPrice = wc_prices_include_tax() ? $wcPrice : $wcPrice * (1 + ($vatRate / 100));
 
         return [
             'grossPrice' => $grossPrice,

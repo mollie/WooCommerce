@@ -35,7 +35,7 @@ class CapturePayment extends AbstractPaymentCaptureAction
             $captureData = [
                 'amount' => [
                     'currency' => $this->order->get_currency(),
-                    'value' => $this->order->get_total(),
+                    'value' => mollieWooCommerceFormatCurrencyValue($this->order->get_total(), $this->order->get_currency())
                 ],
             ];
             $this->logger->debug(

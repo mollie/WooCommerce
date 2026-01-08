@@ -12,7 +12,7 @@
  * Domain Path: /languages
  * License: GPLv2 or later
  * WC requires at least: 3.9
- * WC tested up to: 10.0.5
+ * WC tested up to: 10.5
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
  */

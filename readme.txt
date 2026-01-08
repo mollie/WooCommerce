@@ -218,6 +218,19 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= 8.1.3 - 19-01-2026 =
+* Added - New payment methods - Vipps and Mobile pay. Enable Vipps feature flag
+* Added - Webhook test feature to verify webhook connectivity and status
+* Improvement - Performance of saveSubscriptionMandateData for first-time payments
+* Deleted - Payconiq payment method
+* Fixed - Fatal error occurring during automatic WooCommerce Subscription renewals
+* Fixed - Payment method not re-initializing after returning from Mollie redirect in WooCommerce Blocks Checkout
+* Fixed - Apple Pay token field name regression
+* Fixed - Klarna payments remaining in "Authorized" status instead of being automatically charged
+* Fixed - Header markup incorrectly rendered in page body on Cart page
+* Fixed - Billie B2B order failures due to VAT amount validation error (with @szepeviktor)
+* Fixed - Apple Pay Express Checkout displaying shipping costs excluding VAT
+
 = 8.1.2 - 15-12-2025 =
 * Fixed - Improve refresh method in settings
 * Added - New campaign signup Q4

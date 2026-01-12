@@ -239,13 +239,13 @@ const in3: MollieGateway = {
 	minAmount: '100.00',
 	maxAmount: '5000.00',
 	slug: 'in3',
-	name: 'iDEAL Pay in 3 instalments, 0% interest',
-	availableForApiMethods: [ 'order' ],
+	name: 'in3 - Pay in 3 installments, 0% interest',
+	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
 		id: 'mollie_wc_gateway_in3',
-		title: 'iDEAL Pay in 3 instalments, 0% interest',
-		description: 'iDEAL Pay in 3 instalments, 0% interest',
+		title: 'in3 - Pay in 3 installments, 0% interest',
+		description: 'in3 - Pay in 3 installments, 0% interest',
 	},
 };
 
@@ -291,6 +291,21 @@ const mbway: MollieGateway = {
 		...defaultGatewaySettings,
 		id: 'mollie_wc_gateway_mbway',
 		title: 'MB Way',
+	},
+};
+
+const mobilepay: MollieGateway = {
+	country: 'denmark', // Denmark and Finland
+	minAmount: '0.01',
+	maxAmount: '75000.00', // DKK: 75000.00, EUR: 10000.00
+	slug: 'mobilepay',
+	name: 'MobilePay',
+	currency: 'DKK', // DKK and EUR
+	availableForApiMethods: [ 'payment' ],
+	settings: {
+		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_mobilepay',
+		title: 'MobilePay',
 	},
 };
 
@@ -476,6 +491,21 @@ const twint: MollieGateway = {
 	},
 };
 
+const vipps: MollieGateway = {
+	country: 'norway',
+	minAmount: '1.00',
+	maxAmount: '115000.00',
+	slug: 'vipps',
+	name: 'Vipps',
+	currency: 'NOK',
+	availableForApiMethods: [ 'payment' ],
+	settings: {
+		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_vipps',
+		title: 'Vipps',
+	},
+};
+
 const voucher: MollieGateway = {
 	country: 'germany',
 	minAmount: '1.00',
@@ -511,6 +541,7 @@ export const gateways: {
 	kbc,
 	klarna,
 	mbway,
+	mobilepay, // currency: DKK, EUR
 	multibanco,
 	mybank,
 	paybybank, // currency: GBP
@@ -524,5 +555,6 @@ export const gateways: {
 	swish, // Sweden, currency: SEK
 	trustly,
 	twint, // currency: CHF
+	vipps, // currency: NOK
 	voucher,
 };

@@ -108,7 +108,7 @@ class MollieOrderService
             ]);
             if (! $orders) {
                 $this->logger->debug(__METHOD__ . ': No orders found in mollie meta for transaction ID: ' . $transactionID);
-                return;
+                $this->onWebhookActionFallback($order_id, $key, $transactionID);
             }
         }
 
@@ -135,6 +135,33 @@ class MollieOrderService
             $this->httpResponse->setHttpResponseCode(400);
         };
         // Status 200
+    }
+
+    /**
+     * Fallback webhook handler using the old implementation logic without lock mechanism
+     *
+     * @param string $order_id
+     * @param string $key
+     * @param string $payment_object_id
+     * @return void
+     */
+    public function onWebhookActionFallback(string $order_id, string $key, string $payment_object_id)
+    {
+        $order = wc_get_order($order_id);
+
+        if (!$order instanceof WC_Order) {
+            $this->httpResponse->setHttpResponseCode(404);
+            $this->logger->debug(__METHOD__ . ":  Could not find order {$order_id}.");
+            return;
+        }
+
+        if (!$order->key_is_valid($key)) {
+            $this->httpResponse->setHttpResponseCode(401);
+            $this->logger->debug(__METHOD__ . ":  Invalid key {$key} for order {$order_id}.");
+            return;
+        }
+
+        $this->doPaymentForOrder($order, $payment_object_id);
     }
 
     protected function getPaymentIdFromRequest(): ?string
@@ -168,7 +195,7 @@ class MollieOrderService
      * @param \WC_Order $order The order object for which the payment is being processed.
      * @return bool Returns true if the payment was successfully processed, false otherwise.
      */
-    public function doPaymentForOrder(\WC_Order $order): bool
+    public function doPaymentForOrder(\WC_Order $order, $payment_object_id = ''): bool
     {
         $gateway = wc_get_payment_gateway_by_order($order);
         if (!$gateway || !mollieWooCommerceIsMollieGateway($gateway->id)) {
@@ -177,7 +204,9 @@ class MollieOrderService
         $this->setGateway($gateway);
 
         $test_mode = $this->data->getActiveMolliePaymentMode($order->get_id()) === 'test';
-        $payment_object_id = $order->get_transaction_id();
+        if(empty($payment_object_id)) {
+            $payment_object_id = $order->get_transaction_id();
+        }
         if (!$payment_object_id) {
             $payment_object_id = $order->get_meta('_mollie_order_id');
         }
@@ -943,5 +972,55 @@ class MollieOrderService
     protected function isOrderButtonPayment(WC_Order $order): bool
     {
         return $order->get_meta('_mollie_payment_method_button') === 'PayPalButton';
+    }
+
+
+    public function getKeyFromRedirectUrl($redirectUrl):string
+    {
+        $parsedUrl = wp_parse_url($redirectUrl);
+
+        if (empty($parsedUrl['query'])) {
+            return '';
+        }
+
+        parse_str($parsedUrl['query'], $queryParams);
+
+        return isset($queryParams['key']) ? sanitize_text_field($queryParams['key']) : '';
+    }
+
+    public function getOrderIdFromRedirectUrl($redirectUrl):string
+    {
+        $parsedUrl = wp_parse_url($redirectUrl);
+
+        if (empty($parsedUrl['query'])) {
+            return '';
+        }
+
+        parse_str($parsedUrl['query'], $queryParams);
+
+        return isset($queryParams['order_id']) ? sanitize_text_field($queryParams['order_id']) : '';
+    }
+
+    public function getRedirectUrlFromPaymentObject($transactionID): string
+    {
+        try {
+            $payment_object = $this->paymentFactory->getPaymentObject(
+                $transactionID
+            );
+            if (!$payment_object) {
+                $this->logger->debug(__METHOD__ . ": payment object $transactionID not found.", [true]);
+                return '';
+            }
+        } catch (ApiException $exception) {
+            $this->logger->debug($exception->getMessage());
+            return '';
+        }
+
+        $payment = $payment_object->getPaymentObject($payment_object->data(), $test_mode, false);
+        if (!$payment) {
+            $this->logger->debug(__METHOD__ . ": payment $transactionID not found.", [true]);
+            return '';
+        }
+        return $payment->redirectUrl;
     }
 }

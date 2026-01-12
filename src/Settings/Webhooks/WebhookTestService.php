@@ -15,7 +15,7 @@ use WP_Error;
 class WebhookTestService
 {
     private const TRANSIENT_PREFIX = 'mollie_webhook_test_';
-    private const TRANSIENT_EXPIRATION = 60; // 60 seconds
+    private const TRANSIENT_EXPIRATION = 300; // 5 minutes to give user time to complete test payment
 
     /**
      * @var Api
@@ -87,30 +87,33 @@ class WebhookTestService
                 'initiated_at' => time(),
                 'webhook_received' => false,
                 'payment_id' => null,
+                'checkout_url' => null,
             ]);
 
             // Create test payment with Mollie
-            $paymentId = $this->createTestPayment($testId);
+            $paymentResult = $this->createTestPayment($testId);
 
-            if (is_wp_error($paymentId)) {
-                $this->logger->debug(__METHOD__ . ': Failed to create test payment - ' . $paymentId->get_error_message());
+            if (is_wp_error($paymentResult)) {
+                $this->logger->debug(__METHOD__ . ': Failed to create test payment - ' . $paymentResult->get_error_message());
                 wp_send_json_error([
                                        'message' => sprintf(
                                            __('Failed to create test payment: %s', 'mollie-payments-for-woocommerce'),
-                                           $paymentId->get_error_message()
+                                           $paymentResult->get_error_message()
                                        ),
                                    ], 500);
             }
 
             $this->updateTestState($testId, [
-                'payment_id' => $paymentId,
+                'payment_id' => $paymentResult['payment_id'],
+                'checkout_url' => $paymentResult['checkout_url'],
             ]);
 
-            $this->logger->debug(__METHOD__ . ": Webhook test initiated with ID: {$testId}, Payment ID: {$paymentId}");
+            $this->logger->debug(__METHOD__ . ": Webhook test initiated with ID: {$testId}, Payment ID: {$paymentResult['payment_id']}");
 
             wp_send_json_success([
                                      'test_id' => $testId,
-                                     'payment_id' => $paymentId,
+                                     'payment_id' => $paymentResult['payment_id'],
+                                     'checkout_url' => $paymentResult['checkout_url'],
                                  ]);
         } catch (\Exception $e) {
             $this->logger->debug(__METHOD__ . ': Exception during webhook test - ' . $e->getMessage());
@@ -190,7 +193,7 @@ class WebhookTestService
      * Create a test payment with Mollie
      *
      * @param string $testId Test identifier
-     * @return string|WP_Error Payment ID or error
+     * @return array|WP_Error Array with payment_id and checkout_url, or error
      */
     private function createTestPayment(string $testId)
     {
@@ -206,6 +209,7 @@ class WebhookTestService
             }
 
             $webhookUrl = $this->getWebhookUrl($testId);
+            $returnUrl = admin_url('admin.php?page=wc-settings&tab=mollie_settings&section=mollie_advanced');
 
             $paymentData = [
                 'amount' => [
@@ -216,7 +220,7 @@ class WebhookTestService
                     __('Webhook Test - %s', 'mollie-payments-for-woocommerce'),
                     $testId
                 ),
-                'redirectUrl' => admin_url('admin.php?page=wc-settings&tab=mollie_settings&section=mollie_advanced'),
+                'redirectUrl' => $returnUrl,
                 'webhookUrl' => $webhookUrl,
                 'metadata' => [
                     'webhook_test' => true,
@@ -227,8 +231,14 @@ class WebhookTestService
             $this->logger->debug(__METHOD__ . ': Creating test payment with data: ' . wp_json_encode($paymentData));
 
             $payment = $this->apiHelper->getApiClient($apiKey)->payments->create($paymentData);
+            $checkoutUrl = $payment->getCheckoutUrl();
 
-            return $payment->id;
+            $this->logger->debug(__METHOD__ . ": Test payment created - ID: {$payment->id}, Checkout URL: {$checkoutUrl}");
+
+            return [
+                'payment_id' => $payment->id,
+                'checkout_url' => $checkoutUrl,
+            ];
         } catch (\Exception $e) {
             $this->logger->debug(__METHOD__ . ': Failed to create test payment: ' . $e->getMessage());
 
@@ -247,7 +257,7 @@ class WebhookTestService
      */
     private function getWebhookUrl(string $testId): string
     {
-        // Use the REST API webhook endpoint, do we want to also test wc-api?
+        // Use the REST API webhook endpoint
         $webhookUrl = rest_url('mollie/v1/webhook');
         $webhookUrl = add_query_arg([
                                         'test_id' => $testId,
@@ -391,7 +401,7 @@ class WebhookTestService
 
         $elapsed = time() - ($testState['initiated_at'] ?? time());
 
-        if ($elapsed > 10) {
+        if ($elapsed > 30) {
             return __('⚠ Webhook not received. This might indicate a connection issue. Check your firewall settings or contact your hosting provider.', 'mollie-payments-for-woocommerce');
         }
 

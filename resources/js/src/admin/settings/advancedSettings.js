@@ -84,6 +84,8 @@
         button: null,
         spinner: null,
         result: null,
+        checkoutPanel: null,
+        currentTestId: null,
 
         /**
          * Initialize webhook test functionality
@@ -92,6 +94,7 @@
             this.cacheElements();
             if (this.button) {
                 this.bindEvents();
+                this.createCheckoutPanel();
             }
         },
 
@@ -104,6 +107,22 @@
                 this.spinner = this.button.parentElement.querySelector('.spinner');
                 this.result = document.getElementById('mollie-webhook-test-result');
             }
+        },
+
+        /**
+         * Create checkout panel for showing checkout URL
+         */
+        createCheckoutPanel: function () {
+            if (!this.result) {
+                return;
+            }
+
+            // Create container for checkout instructions
+            this.checkoutPanel = document.createElement('div');
+            this.checkoutPanel.id = 'mollie-webhook-checkout-panel';
+            this.checkoutPanel.className = 'mollie-webhook-checkout-panel';
+            this.checkoutPanel.style.display = 'none';
+            this.result.parentElement.insertBefore(this.checkoutPanel, this.result.nextSibling);
         },
 
         /**
@@ -133,13 +152,14 @@
             this.setButtonState(true);
             this.showSpinner(true);
             this.clearResult();
+            this.hideCheckoutPanel();
 
             const nonce = this.button.dataset.nonce;
 
-            // Show waiting message
+            // Show initial message
             this.showResult(
                 'info',
-                mollieWebhookTestData.messages.waiting
+                mollieWebhookTestData.messages.creating || 'Creating test payment...'
             );
 
             // Initiate webhook test
@@ -183,7 +203,99 @@
             }
 
             const testId = response.data.test_id;
-            this.pollWebhookResult(testId);
+            const checkoutUrl = response.data.checkout_url;
+            this.currentTestId = testId;
+
+            if (checkoutUrl) {
+                // Show checkout URL to user with instructions
+                this.showCheckoutInstructions(checkoutUrl, testId);
+            } else {
+                // Fallback to old behavior if no checkout URL
+                this.showResult('info', mollieWebhookTestData.messages.waiting);
+                this.pollWebhookResult(testId);
+            }
+        },
+
+        /**
+         * Show checkout instructions to user
+         *
+         * @param {string} checkoutUrl Mollie checkout URL
+         * @param {string} testId Test identifier
+         */
+        showCheckoutInstructions: function (checkoutUrl, testId) {
+            this.showSpinner(false);
+            this.setButtonState(true);
+
+            // Update result area with instructions
+            this.showResult(
+                'info',
+                mollieWebhookTestData.messages.checkoutRequired ||
+                'Please complete the test payment to trigger the webhook.'
+            );
+
+            // Build checkout panel content
+            const panelHtml = `
+                <div class="mollie-checkout-instructions">
+                    <p><strong>${mollieWebhookTestData.messages.step1 || 'Step 1:'}</strong> ${mollieWebhookTestData.messages.clickCheckout || 'Click the button below to open the Mollie test payment page in a new tab.'}</p>
+                    <p>
+                        <a href="${checkoutUrl}" target="_blank" class="button button-primary" id="mollie-open-checkout">
+                            ${mollieWebhookTestData.messages.openCheckout || 'Open Test Payment Page'}
+                        </a>
+                    </p>
+                    <p><strong>${mollieWebhookTestData.messages.step2 || 'Step 2:'}</strong> ${mollieWebhookTestData.messages.selectStatus || 'Select a payment status (e.g., "Paid" or "Failed") on the Mollie page.'}</p>
+                    <p><strong>${mollieWebhookTestData.messages.step3 || 'Step 3:'}</strong> ${mollieWebhookTestData.messages.clickVerify || 'Come back here and click the button below to verify the webhook was received.'}</p>
+                    <p>
+                        <button type="button" class="button button-secondary" id="mollie-verify-webhook">
+                            ${mollieWebhookTestData.messages.verifyWebhook || 'Verify Webhook'}
+                        </button>
+                        <button type="button" class="button" id="mollie-cancel-test">
+                            ${mollieWebhookTestData.messages.cancelTest || 'Cancel Test'}
+                        </button>
+                    </p>
+                </div>
+            `;
+
+            this.checkoutPanel.innerHTML = panelHtml;
+            this.checkoutPanel.style.display = 'block';
+
+            // Bind events for new buttons
+            const verifyBtn = document.getElementById('mollie-verify-webhook');
+            const cancelBtn = document.getElementById('mollie-cancel-test');
+
+            if (verifyBtn) {
+                verifyBtn.addEventListener('click', () => {
+                    this.showSpinner(true);
+                    this.showResult('info', mollieWebhookTestData.messages.waiting);
+                    this.pollWebhookResult(testId);
+                });
+            }
+
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', () => {
+                    this.cancelTest();
+                });
+            }
+        },
+
+        /**
+         * Hide checkout panel
+         */
+        hideCheckoutPanel: function () {
+            if (this.checkoutPanel) {
+                this.checkoutPanel.style.display = 'none';
+                this.checkoutPanel.innerHTML = '';
+            }
+        },
+
+        /**
+         * Cancel the current test
+         */
+        cancelTest: function () {
+            this.currentTestId = null;
+            this.hideCheckoutPanel();
+            this.clearResult();
+            this.setButtonState(false);
+            this.showSpinner(false);
         },
 
         /**
@@ -205,18 +317,19 @@
          * @param {number} attempt Current attempt number
          */
         pollWebhookResult: function (testId, attempt = 0) {
-            const maxAttempts = 20; // 20 attempts = ~10 seconds
+            const maxAttempts = 40; // 40 attempts = ~20 seconds
             const pollInterval = 500; // 500ms between attempts
 
             if (attempt >= maxAttempts) {
                 this.showResult('warning', mollieWebhookTestData.messages.timeout);
+                this.hideCheckoutPanel();
                 this.setButtonState(false);
                 this.showSpinner(false);
                 return;
             }
 
             // Update message based on attempt count
-            if (attempt === 10) {
+            if (attempt === 20) {
                 this.showResult('info', mollieWebhookTestData.messages.takingLong);
             }
 
@@ -261,8 +374,10 @@
             );
 
             this.showResult(resultType, message);
+            this.hideCheckoutPanel();
             this.setButtonState(false);
             this.showSpinner(false);
+            this.currentTestId = null;
         },
 
         /**

@@ -528,8 +528,8 @@ class AssetsModule implements ExecutableModule
                 if ($hasBlocksEnabled) {
                     /** @var array */
                     $gatewayInstances = $container->get('__deprecated.gateway_helpers');
-                    // admin_enqueue_scripts is too late to register the block scripts
-                    add_action('admin_init', function () use ($container,$pluginUrl, $pluginPath) {
+                    // admin_enqueue_scripts is too late to register the block scripts, admin_init was too soon
+                    add_action('current_screen', function () use ($container,$pluginUrl, $pluginPath) {
                         $this->registerBlockScripts($pluginUrl, $pluginPath, $container);
                     });
                     add_action('wp_enqueue_scripts', function () use ($dataService, $gatewayInstances, $container,$pluginUrl, $pluginPath) {

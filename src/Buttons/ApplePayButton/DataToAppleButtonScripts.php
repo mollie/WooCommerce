@@ -121,7 +121,7 @@ class DataToAppleButtonScripts
     ) {
 
         $cart = WC()->cart;
-        $nonce = wp_nonce_field('woocommerce-process_checkout', 'woocommerce-process-checkout-nonce');
+        $nonce = wp_nonce_field('woocommerce-process_checkout', 'woocommerce-process-checkout-nonce', true, false);
         $buttonMarkup =
             '<div id="mollie-applepayDirect-button">'
             . $nonce

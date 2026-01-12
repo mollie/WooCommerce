@@ -422,21 +422,30 @@ class AssetsModule implements ExecutableModule
             return;
         }
         wp_enqueue_script('mollie_wc_gateway_advanced_settings');
-        wp_localize_script(
-            'mollie_wc_gateway_advanced_settings',
-            'mollieWebhookTestData',
-            [
-                'ajaxUrl' => admin_url('admin-ajax.php'),
-                'messages' => [
-                    'waiting' => __('Initiating webhook test, waiting for response...', 'mollie-payments-for-woocommerce'),
-                    'takingLong' => __('This is taking longer than expected. Still waiting for webhook...', 'mollie-payments-for-woocommerce'),
-                    'timeout' => __('⚠ Test timed out. Webhook was not received within the expected timeframe. This may indicate a connectivity issue. Please check your server\'s firewall settings or contact your hosting provider.', 'mollie-payments-for-woocommerce'),
-                    'success' => __('✓ Webhook received successfully! Your site can receive webhooks from Mollie.', 'mollie-payments-for-woocommerce'),
-                    'noWebhook' => __('✗ Webhook was not received. Please check your firewall settings and ensure webhooks from Mollie are not blocked.', 'mollie-payments-for-woocommerce'),
-                    'error' => __('An error occurred during the webhook test. Please try again or check the error logs.', 'mollie-payments-for-woocommerce'),
-                ],
-            ]
-        );
+        wp_localize_script('mollie_wc_gateway_advanced_settings', 'mollieWebhookTestData', [
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'messages' => [
+                'waiting' => __('Waiting for webhook...', 'mollie-payments-for-woocommerce'),
+                'takingLong' => __('Still waiting... This is taking longer than expected.', 'mollie-payments-for-woocommerce'),
+                'timeout' => __('⚠ Webhook test timed out. Please check your firewall settings and try again.', 'mollie-payments-for-woocommerce'),
+                'success' => __('✓ Webhook received successfully!', 'mollie-payments-for-woocommerce'),
+                'noWebhook' => __('✗ Webhook not received. Please check your server configuration.', 'mollie-payments-for-woocommerce'),
+                'error' => __('An error occurred. Please try again.', 'mollie-payments-for-woocommerce'),
+
+                'creating' => __('Creating test payment...', 'mollie-payments-for-woocommerce'),
+                'checkoutRequired' => __('A test payment has been created. Please complete the steps below to trigger the webhook.', 'mollie-payments-for-woocommerce'),
+                'step1' => __('Step 1:', 'mollie-payments-for-woocommerce'),
+                'step2' => __('Step 2:', 'mollie-payments-for-woocommerce'),
+                'step3' => __('Step 3:', 'mollie-payments-for-woocommerce'),
+                'clickCheckout' => __('Click the button below to open the Mollie test payment page in a new tab.', 'mollie-payments-for-woocommerce'),
+                'openCheckout' => __('Open Test Payment Page', 'mollie-payments-for-woocommerce'),
+                'selectStatus' => __('Select a payment status "Paid" or "Expired" on the Mollie page.', 'mollie-payments-for-woocommerce'),
+                'clickVerify' => __('Close that tab. Return here and click the button below to verify the webhook was received.', 'mollie-payments-for-woocommerce'),
+                'verifyWebhook' => __('Verify Webhook', 'mollie-payments-for-woocommerce'),
+                'cancelTest' => __('Cancel Test', 'mollie-payments-for-woocommerce'),
+            ],
+        ]);
+
         wp_enqueue_style('mollie-advanced-settings');
     }
 

@@ -86,4 +86,46 @@ export const checkoutNonEur: MollieTestData.Transaction[] = [
 		gatewaySlug: 'swish',
 		paymentStatus: 'expired',
 	},
+	// Vipps
+	{
+		testId: 'C0000',
+		gatewaySlug: 'vipps',
+		paymentStatus: 'paid',
+	},
+	{
+		testId: 'C0000',
+		gatewaySlug: 'vipps',
+		paymentStatus: 'failed',
+	},
+	{
+		testId: 'C0000',
+		gatewaySlug: 'vipps',
+		paymentStatus: 'canceled',
+	},
+	{
+		testId: 'C0000',
+		gatewaySlug: 'vipps',
+		paymentStatus: 'expired',
+	},
+	// MobilePay
+	{
+		testId: 'C0000',
+		gatewaySlug: 'mobilepay',
+		paymentStatus: 'paid',
+	},
+	{
+		testId: 'C0000',
+		gatewaySlug: 'mobilepay',
+		paymentStatus: 'failed',
+	},
+	{
+		testId: 'C0000',
+		gatewaySlug: 'mobilepay',
+		paymentStatus: 'canceled',
+	},
+	{
+		testId: 'C00003',
+		gatewaySlug: 'mobilepay',
+		paymentStatus: 'expired',
+	},
 ];

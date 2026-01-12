@@ -8,6 +8,10 @@ import {
 
 export class PayForOrder extends PayForOrderBase {
 	// Locators
+	cardComponentsContainer = () =>
+		this.page.locator(
+			'.payment_method_mollie_wc_gateway_creditcard .mollie-components'
+		);
 	cardNumberInput = () =>
 		this.page
 			.frameLocator( '[title="cardNumber input"]' )
@@ -39,6 +43,8 @@ export class PayForOrder extends PayForOrderBase {
 	rivertyBirthDateInput = () =>
 		this.page.locator( '#billing_birthdate_riverty' );
 	rivertyPhoneInput = () => this.page.locator( '#billing_phone_riverty' );
+	vippsPhoneInput = () => this.page.locator( '#billing_phone_vipps' );
+	mobilepayPhoneInput = () => this.page.locator( '#billing_phone_mobilepay' );
 
 	// Actions
 
@@ -75,25 +81,22 @@ export class PayForOrder extends PayForOrderBase {
 
 		if ( gateway.slug === 'in3' ) {
 			const phoneInput = this.in3PhoneInput();
-			if ( await phoneInput.isVisible() ) {
-				await phoneInput.fill( customer.billing.phone );
-			}
+			await expect( phoneInput ).toBeVisible();
+			await phoneInput.fill( customer.billing.phone );
+
 			const birthDateInput = this.in3BirthDateInput();
-			if ( await birthDateInput.isVisible() ) {
-				await birthDateInput.click();
-				for ( const char of customer.birth_date ) {
-					await this.page.keyboard.type( char );
-					await this.page.waitForTimeout( 100 );
-				}
+			await expect( birthDateInput ).toBeVisible();
+			await birthDateInput.click();
+			for ( const char of customer.birth_date ) {
+				await this.page.keyboard.type( char );
+				await this.page.waitForTimeout( 100 );
 			}
 		}
 
-		if (
-			gateway.slug === 'billie' &&
-			( await this.billieBillingCompanyInput().isVisible() )
-		) {
+		if ( gateway.slug === 'billie' ) {
+			await expect( this.billieBillingCompanyInput() ).toBeVisible();
 			await this.billieBillingCompanyInput().fill(
-				payment.billingCompany
+				order.payment.billingCompany
 			);
 		}
 
@@ -109,14 +112,16 @@ export class PayForOrder extends PayForOrderBase {
 			gateway.slug === 'creditcard' &&
 			gateway.settings.mollie_components_enabled !== 'no'
 		) {
-			await expect
-				.soft( this.page.getByText( 'Secure payments provided by' ) )
-				.toBeVisible();
+			// the card fields seem to be only rendered when they are scrolled in otherwise they are not visible
+			await this.cardComponentsContainer().scrollIntoViewIfNeeded();
 
 			await expect( this.cardNumberInput() ).toBeVisible();
 			await expect( this.cardHolderInput() ).toBeVisible();
 			await expect( this.cardExpiryDateInput() ).toBeVisible();
 			await expect( this.cardVerificationCodeInput() ).toBeVisible();
+			await expect
+				.soft( this.page.getByText( 'Secure payments provided by' ) )
+				.toBeVisible();
 
 			await this.cardNumberInput().fill( card.card_number );
 			await this.cardHolderInput().fill( card.card_holder );
@@ -126,17 +131,28 @@ export class PayForOrder extends PayForOrderBase {
 
 		if ( gateway.slug === 'riverty' ) {
 			const phoneInput = this.rivertyPhoneInput();
-			if ( await phoneInput.isVisible() ) {
-				await phoneInput.fill( customer.billing.phone );
-			}
+			await expect( phoneInput ).toBeVisible();
+			await phoneInput.fill( customer.billing.phone );
+			
 			const birthDateInput = this.rivertyBirthDateInput();
-			if ( await birthDateInput.isVisible() ) {
-				await birthDateInput.click();
-				for ( const char of customer.birth_date ) {
-					await this.page.keyboard.type( char );
-					await this.page.waitForTimeout( 100 );
-				}
+			await expect( birthDateInput ).toBeVisible();
+			await birthDateInput.click();
+			for ( const char of customer.birth_date ) {
+				await this.page.keyboard.type( char );
+				await this.page.waitForTimeout( 100 );
 			}
+		}
+
+		if ( gateway.slug === 'vipps' ) {
+			const phoneInput = this.vippsPhoneInput();
+			await expect( phoneInput ).toBeVisible();
+			await phoneInput.fill( customer.billing.phone );
+		}
+
+		if ( gateway.slug === 'mobilepay' ) {
+			const phoneInput = this.mobilepayPhoneInput();
+			await expect( phoneInput ).toBeVisible();
+			await phoneInput.fill( customer.billing.phone );
 		}
 
 		await this.payForOrderButton().click();

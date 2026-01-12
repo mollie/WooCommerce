@@ -46,6 +46,8 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 	rivertyBirthDateInput = (): Locator =>
 		this.page.locator( '#billing_birthdate_riverty' );
 	rivertyPhoneInput = () => this.page.locator( '#billing_phone_riverty' );
+	vippsPhoneInput = () => this.page.locator( '#billing_phone_vipps' );
+	mobilepayPhoneInput = () => this.page.locator( '#billing_phone_mobilepay' );
 	paymentOptionListitems = (): Locator =>
 		this.paymentOptionsContainer().locator( 'li' );
 	paymentOptionFee = ( name: string ): Locator =>
@@ -79,7 +81,7 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 		await expect( this.paymentOption( gateway.name ) ).toBeVisible();
 		await this.paymentOption( gateway.name ).click();
 		// await this.page.waitForLoadState( 'networkidle' );
-		await this.page.waitForTimeout( 2500 );
+		await this.page.waitForTimeout( 2500 ); // couldn't overcome timeout issues with networkidle
 
 		if (
 			gateway.slug === 'kbc' &&
@@ -94,23 +96,20 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 
 		if ( gateway.slug === 'in3' ) {
 			const phoneInput = this.in3PhoneInput();
-			if ( await phoneInput.isVisible() ) {
-				await phoneInput.fill( customer.billing.phone );
-			}
+			await expect( phoneInput ).toBeVisible();
+			await phoneInput.fill( customer.billing.phone );
+
 			const birthDateInput = this.in3BirthDateInput();
-			if ( await birthDateInput.isVisible() ) {
-				await birthDateInput.click();
-				for ( const char of customer.birth_date ) {
-					await this.page.keyboard.type( char );
-					await this.page.waitForTimeout( 100 );
-				}
+			await expect( birthDateInput ).toBeVisible();
+			await birthDateInput.click();
+			for ( const char of customer.birth_date ) {
+				await this.page.keyboard.type( char );
+				await this.page.waitForTimeout( 100 );
 			}
 		}
 
-		if (
-			gateway.slug === 'billie' &&
-			( await this.billieBillingCompanyInput().isVisible() )
-		) {
+		if ( gateway.slug === 'billie' ) {
+			await expect( this.billieBillingCompanyInput() ).toBeVisible();
 			await this.billieBillingCompanyInput().fill(
 				order.payment.billingCompany
 			);
@@ -147,17 +146,28 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 
 		if ( gateway.slug === 'riverty' ) {
 			const phoneInput = this.rivertyPhoneInput();
-			if ( await phoneInput.isVisible() ) {
-				await phoneInput.fill( customer.billing.phone );
-			}
+			await expect( phoneInput ).toBeVisible();
+			await phoneInput.fill( customer.billing.phone );
+			
 			const birthDateInput = this.rivertyBirthDateInput();
-			if ( await birthDateInput.isVisible() ) {
-				await birthDateInput.click();
-				for ( const char of customer.birth_date ) {
-					await this.page.keyboard.type( char );
-					await this.page.waitForTimeout( 100 );
-				}
+			await expect( birthDateInput ).toBeVisible();
+			await birthDateInput.click();
+			for ( const char of customer.birth_date ) {
+				await this.page.keyboard.type( char );
+				await this.page.waitForTimeout( 100 );
 			}
+		}
+
+		if ( gateway.slug === 'vipps' ) {
+			const phoneInput = this.vippsPhoneInput();
+			await expect( phoneInput ).toBeVisible();
+			await phoneInput.fill( customer.billing.phone );
+		}
+
+		if ( gateway.slug === 'mobilepay' ) {
+			const phoneInput = this.mobilepayPhoneInput();
+			await expect( phoneInput ).toBeVisible();
+			await phoneInput.fill( customer.billing.phone );
 		}
 	};
 

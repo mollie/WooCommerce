@@ -40,13 +40,15 @@ export class Checkout extends CheckoutBase {
 	billieBillingCompanyInput = (): Locator =>
 		this.paymentOptionsContainer().locator( '#billing_company_billie' );
 	in3PhoneInput = (): Locator =>
-		this.paymentOptionsContainer().locator( '#billing-phone' );
+		this.paymentOptionsContainer().locator( '#billing-phone-mollie_wc_gateway_in3' );
 	in3BirthDateInput = (): Locator =>
 		this.paymentOptionsContainer().locator( '#billing-birthdate' );
 	rivertyBirthDateInput = (): Locator =>
 		this.page.locator( '#billing-birthdate' );
 	rivertyPhoneInput = (): Locator =>
-		this.page.locator( '#billing-phone-riverty' );
+		this.page.locator( '#billing-phone-mollie_wc_gateway_riverty' );
+	vippsPhoneInput = () => this.page.locator( '#billing-phone-mollie_wc_gateway_vipps' );
+	mobilepayPhoneInput = () => this.page.locator( '#billing-phone-mollie_wc_gateway_mobilepay' );
 	paymentOptionLogo = ( name: string ): Locator =>
 		this.paymentOptionsContainer()
 			.locator( '.wc-block-components-radio-control__option', {
@@ -89,23 +91,20 @@ export class Checkout extends CheckoutBase {
 
 		if ( gateway.slug === 'in3' ) {
 			const phoneInput = this.in3PhoneInput();
-			if ( await phoneInput.isVisible() ) {
-				await phoneInput.fill( customer.billing.phone );
-			}
+			await expect( phoneInput ).toBeVisible();
+			await phoneInput.fill( customer.billing.phone );
+
 			const birthDateInput = this.in3BirthDateInput();
-			if ( await birthDateInput.isVisible() ) {
-				await birthDateInput.click();
-				for ( const char of customer.birth_date ) {
-					await this.page.keyboard.type( char );
-					await this.page.waitForTimeout( 100 );
-				}
+			await expect( birthDateInput ).toBeVisible();
+			await birthDateInput.click();
+			for ( const char of customer.birth_date ) {
+				await this.page.keyboard.type( char );
+				await this.page.waitForTimeout( 100 );
 			}
 		}
 
-		if (
-			gateway.slug === 'billie' &&
-			( await this.billieBillingCompanyInput().isVisible() )
-		) {
+		if ( gateway.slug === 'billie' ) {
+			await expect( this.billieBillingCompanyInput() ).toBeVisible();
 			await this.billieBillingCompanyInput().fill(
 				order.payment.billingCompany
 			);
@@ -142,17 +141,28 @@ export class Checkout extends CheckoutBase {
 
 		if ( gateway.slug === 'riverty' ) {
 			const phoneInput = this.rivertyPhoneInput();
-			if ( await phoneInput.isVisible() ) {
-				await phoneInput.fill( customer.billing.phone );
-			}
+			await expect( phoneInput ).toBeVisible();
+			await phoneInput.fill( customer.billing.phone );
+			
 			const birthDateInput = this.rivertyBirthDateInput();
-			if ( await birthDateInput.isVisible() ) {
-				await birthDateInput.click();
-				for ( const char of customer.birth_date ) {
-					await this.page.keyboard.type( char );
-					await this.page.waitForTimeout( 100 );
-				}
+			await expect( birthDateInput ).toBeVisible();
+			await birthDateInput.click();
+			for ( const char of customer.birth_date ) {
+				await this.page.keyboard.type( char );
+				await this.page.waitForTimeout( 100 );
 			}
+		}
+
+		if ( gateway.slug === 'vipps' ) {
+			const phoneInput = this.vippsPhoneInput();
+			await expect( phoneInput ).toBeVisible();
+			await phoneInput.fill( customer.billing.phone );
+		}
+
+		if ( gateway.slug === 'mobilepay' ) {
+			const phoneInput = this.mobilepayPhoneInput();
+			await expect( phoneInput ).toBeVisible();
+			await phoneInput.fill( customer.billing.phone );
 		}
 	};
 

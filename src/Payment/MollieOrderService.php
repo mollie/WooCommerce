@@ -1015,8 +1015,7 @@ class MollieOrderService
             $this->logger->debug($exception->getMessage());
             return '';
         }
-
-        $payment = $payment_object->getPaymentObject($payment_object->data(), $test_mode, false);
+        $payment = $payment_object->getPaymentObject($payment_object->data());
         if (!$payment) {
             $this->logger->debug(__METHOD__ . ": payment $transactionID not found.", [true]);
             return '';

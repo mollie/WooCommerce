@@ -204,7 +204,7 @@ const eps: MollieGateway = {
 };
 
 const giftcard: MollieGateway = {
-	country: 'germany',
+	country: 'netherlands',
 	minAmount: '0.01',
 	slug: 'giftcard',
 	name: 'Gift cards',

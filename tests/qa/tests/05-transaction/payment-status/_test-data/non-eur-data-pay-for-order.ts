@@ -46,6 +46,11 @@ export const payForOrderNonEur: MollieTestData.Transaction[] = [
 	},
 	// recently added payment methods
 	{
+		testId: 'C0000',
+		gatewaySlug: 'paybybank',
+		paymentStatus: 'open',
+	},
+	{
 		testId: 'C4237615',
 		gatewaySlug: 'paybybank',
 		paymentStatus: 'paid',

@@ -17,7 +17,6 @@ patchwork.json
 *.sh
 *.config.*
 *.md
-gulpfile.js
 webpack.config.js
 readme.md
 changelog.txt

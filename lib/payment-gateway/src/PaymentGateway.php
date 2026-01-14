@@ -54,7 +54,6 @@ class PaymentGateway extends WC_Payment_Gateway
         string $id,
         ContainerInterface $serviceLocator
     ) {
-
         $this->id = $id;
         $this->serviceLocator = $serviceLocator;
         $this->serviceKeyGenerator = new ServiceKeyGenerator($id);
@@ -66,6 +65,7 @@ class PaymentGateway extends WC_Payment_Gateway
         unset($this->method_description);
         unset($this->icon);
         unset($this->form_fields);
+        unset($this->enabled);
 
         add_action(
             'woocommerce_update_options_payment_gateways_' . $this->id,
@@ -90,7 +90,7 @@ class PaymentGateway extends WC_Payment_Gateway
 
     public function get_title(): string
     {
-        if (!$this->title) {
+        if ( ! $this->title) {
             $this->title = $this->locate('title');
         }
 
@@ -99,7 +99,7 @@ class PaymentGateway extends WC_Payment_Gateway
 
     public function get_description(): string
     {
-        if (!$this->description) {
+        if ( ! $this->description) {
             $this->description = $this->locate('description');
         }
 
@@ -115,7 +115,7 @@ class PaymentGateway extends WC_Payment_Gateway
     {
         $isAvailable = parent::is_available();
 
-        if (!$isAvailable) {
+        if ( ! $isAvailable) {
             return false;
         }
 
@@ -136,7 +136,7 @@ class PaymentGateway extends WC_Payment_Gateway
          * But we need to be verbose here
          */
         try {
-            $order = $this->getOrder((string) $orderId);
+            $order = $this->getOrder((string)$orderId);
             $paymentRequestValidator = $this->locate(
                 'payment_request_validator'
             );
@@ -185,7 +185,7 @@ class PaymentGateway extends WC_Payment_Gateway
     {
         $order = wc_get_order($orderId);
 
-        if (!$order instanceof WC_Order) {
+        if ( ! $order instanceof WC_Order) {
             throw new RuntimeException(
                 sprintf(
                     'Failed to process order %1$d, it cannot be found.',
@@ -206,7 +206,7 @@ class PaymentGateway extends WC_Payment_Gateway
      */
     public function get_transaction_url($order): string
     {
-        $this->view_transaction_url = (string) $order->get_meta(
+        $this->view_transaction_url = (string)$order->get_meta(
             self::TRANSACTION_URL_TEMPLATE_FIELD_NAME,
             true
         );
@@ -222,7 +222,7 @@ class PaymentGateway extends WC_Payment_Gateway
     {
         $order = wc_get_order($orderId);
 
-        if (!$order instanceof WC_Order) {
+        if ( ! $order instanceof WC_Order) {
             return new WP_Error(
                 'refund_order_not_found',
                 $this->i18n->translate('refund_order_not_found', $this->id, [
@@ -335,7 +335,7 @@ class PaymentGateway extends WC_Payment_Gateway
      */
     public function get_custom_attribute_html($data)
     {
-        if (!isset($data['custom_attributes'])) {
+        if ( ! isset($data['custom_attributes'])) {
             $data['custom_attributes'] = [];
         }
 
@@ -437,12 +437,12 @@ class PaymentGateway extends WC_Payment_Gateway
     protected function getFieldConfig(string $key): array
     {
         $fields = $this->get_form_fields();
-        if (!isset($fields[$key])) {
+        if ( ! isset($fields[$key])) {
             throw new RangeException(sprintf('Field "%1$s" is not configured', $key));
         }
 
         $field = $fields[$key];
-        if (!is_array($field)) {
+        if ( ! is_array($field)) {
             throw new UnexpectedValueException(
                 sprintf('Invalid configuration for field "%1$s"', $key)
             );
@@ -537,7 +537,7 @@ class PaymentGateway extends WC_Payment_Gateway
         });
         $validKeys = array_keys($validFields);
         foreach ($settings as $key => $value) {
-            if (!in_array($key, $validKeys, true)) {
+            if ( ! in_array($key, $validKeys, true)) {
                 unset($settings[$key]);
             }
         }
@@ -578,7 +578,7 @@ class PaymentGateway extends WC_Payment_Gateway
     public function has_fields()
     {
         try {
-            return (bool) $this->locate('has_fields');
+            return (bool)$this->locate('has_fields');
         } catch (ContainerExceptionInterface $exception) {
             return parent::has_fields();
         }
@@ -586,6 +586,10 @@ class PaymentGateway extends WC_Payment_Gateway
 
     public function __get($name)
     {
+        if ($name === 'enabled') {
+            return $this->locate('is_enabled') ? 'yes' : 'no';
+        }
+
         if ($name === 'order_button_text') {
             return $this->locate($name);
         }
@@ -595,6 +599,10 @@ class PaymentGateway extends WC_Payment_Gateway
         }
 
         if ($name === 'method_description') {
+            return $this->locate($name);
+        }
+
+        if ($name === 'plugin_slug') {
             return $this->locate($name);
         }
 

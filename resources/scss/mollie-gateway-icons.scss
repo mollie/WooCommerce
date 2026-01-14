@@ -1,9 +1,11 @@
 .mollie-gateway-icon {
   vertical-align: bottom;
+  max-height: 24px !important;
 }
 label .mollie-gateway-icon{
   float:right;
   max-height: 24px !important;
+  margin-right: 5px;
 }
 .mollie-gateway-icon svg{
   float:right;
@@ -31,4 +33,8 @@ label .mollie-gateway-icon{
   .mol-responsive-table-3 > * {
     width:calc(100% / 3);
   }
+}
+
+#radio-control-wc-payment-method-options-mollie_wc_gateway_creditcard__label .wc-block-components-payment-method-icons{
+    margin:0 0 0 0;
 }

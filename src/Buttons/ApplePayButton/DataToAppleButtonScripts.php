@@ -28,7 +28,7 @@ class DataToAppleButtonScripts
                 $totalLabel
             );
         }
-        if (is_cart() || $isBlock) {
+        if (is_cart()) {
             return $this->dataForCartPage(
                 $shopCountryCode,
                 $currencyCode,
@@ -121,7 +121,7 @@ class DataToAppleButtonScripts
     ) {
 
         $cart = WC()->cart;
-        $nonce = wp_nonce_field('woocommerce-process_checkout', 'woocommerce-process-checkout-nonce');
+        $nonce = wp_nonce_field('woocommerce-process_checkout', 'woocommerce-process-checkout-nonce', true, false);
         $buttonMarkup =
             '<div id="mollie-applepayDirect-button">'
             . $nonce

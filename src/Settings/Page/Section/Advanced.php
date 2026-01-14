@@ -33,6 +33,16 @@ class Advanced extends AbstractSection
                 'default' => 'yes',
             ],
             [
+                'id' => $this->settings->getSettingId('webhook_test'),
+                'title' => __('Webhook Test', 'mollie-payments-for-woocommerce'),
+                'type' => 'mollie_custom_input',
+                'value' => $this->webhookTestButtonHtml(),
+                'desc' => __(
+                    'Test if Mollie webhooks can reach your site. This helps diagnose connection issues.',
+                    'mollie-payments-for-woocommerce'
+                ),
+            ],
+            [
                 'id' => $this->settings->getSettingId('order_status_cancelled_payments'),
                 'title' => __('Order status after cancelled payment', 'mollie-payments-for-woocommerce'),
                 'type' => 'select',
@@ -263,5 +273,38 @@ class Advanced extends AbstractSection
                 $paymentMethod->getSettings();
             }
         }
+    }
+
+    /**
+     * Generate HTML for webhook test button
+     *
+     * @return string HTML markup for the webhook test button
+     */
+    protected function webhookTestButtonHtml(): string
+    {
+        $nonce = wp_create_nonce('mollie_webhook_test_nonce');
+
+        ob_start();
+        ?>
+        <div class="mollie-webhook-test-container">
+            <button
+                type="button"
+                id="mollie-webhook-test-button"
+                class="button button-secondary"
+                data-nonce="<?php echo esc_attr($nonce); ?>"
+            >
+                <?php esc_html_e('Test Webhook Connection', 'mollie-payments-for-woocommerce'); ?>
+            </button>
+            <span class="spinner" style="float: none; margin: 0 0 0 8px; visibility: hidden;"></span>
+
+            <div
+                id="mollie-webhook-test-result"
+                class="mollie-webhook-test-result"
+                style="margin-top: 10px; display: none;"
+            ></div>
+        </div>
+        <?php
+
+        return ob_get_clean();
     }
 }

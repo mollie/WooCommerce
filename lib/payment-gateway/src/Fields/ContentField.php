@@ -31,11 +31,12 @@ class ContentField implements SettingsFieldRendererInterface
         ], $fieldConfig);
 
         $hasTitle = !empty($data['title']);
+        $renderDirectly = $data['render_directly'] ?? false;
 
         // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
         ob_start();
         ?>
-        <tr valign="top">
+        <tr valign="top" id="<?php echo $fieldKey; ?>">
             <?php if ($hasTitle) : ?>
             <th scope="row" class="titledesc">
                 <label for="<?php echo esc_attr($fieldKey); ?>">
@@ -46,7 +47,10 @@ class ContentField implements SettingsFieldRendererInterface
             <?php endif; ?>
             <td colspan="<?php echo $hasTitle ? '1' : '2'; ?>"
                 style="<?php echo $hasTitle ? '' : 'padding-left: 0;'; ?>">
-                <?php echo $gateway->get_description_html($data); ?>
+                <?php echo $renderDirectly ?
+                    wp_kses_post((string) $data['description']) :
+                    $gateway->get_description_html($data);
+                ?>
             </td>
         </tr>
         <?php

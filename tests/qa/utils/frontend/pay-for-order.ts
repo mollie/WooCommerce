@@ -8,6 +8,11 @@ import {
 
 export class PayForOrder extends PayForOrderBase {
 	// Locators
+	paymentOptionLabel = ( slug: string ) =>
+		this.paymentOptionsContainer()
+			.locator(
+				`label[for="payment_method_mollie_wc_gateway_${ slug }"]`
+			);
 	cardComponentsContainer = () =>
 		this.page.locator(
 			'.payment_method_mollie_wc_gateway_creditcard .mollie-components'
@@ -65,8 +70,8 @@ export class PayForOrder extends PayForOrderBase {
 		const { payment, customer } = order;
 		const { gateway, card } = payment;
 		await this.visit( orderId, orderKey );
-		await expect( this.paymentOption( gateway.name ) ).toBeVisible();
-		await this.paymentOption( gateway.name ).click();
+		await expect( this.paymentOptionLabel( gateway.slug ) ).toBeVisible();
+		await this.paymentOptionLabel( gateway.slug ).click();
 		await this.page.waitForLoadState( 'networkidle' );
 
 		if (

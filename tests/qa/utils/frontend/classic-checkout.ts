@@ -62,6 +62,11 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 				has: this.page.locator( `label:text-is("${ name }")` ),
 			} )
 			.locator( 'img.mollie-gateway-icon' );
+	paymentOptionLabel = ( slug: string ): Locator =>
+		this.paymentOptionsContainer()
+			.locator(
+				`label[for="payment_method_mollie_wc_gateway_${ slug }"]`
+			);
 
 	continueWithStep2Button = () => this.page.locator( '#next-step-address' );
 	continueWithStep3Button = () => this.page.locator( '#next-step-payment' );
@@ -78,8 +83,8 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 		const { payment, customer } = order;
 		const { gateway, card } = payment;
 
-		await expect( this.paymentOption( gateway.name ) ).toBeVisible();
-		await this.paymentOption( gateway.name ).click();
+		await expect( this.paymentOptionLabel( gateway.slug ) ).toBeVisible();
+		await this.paymentOptionLabel( gateway.slug ).click();
 		// await this.page.waitForLoadState( 'networkidle' );
 		await this.page.waitForTimeout( 2500 ); // couldn't overcome timeout issues with networkidle
 
@@ -234,4 +239,18 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 	};
 
 	// Assertions
+
+	assertPaymentOptionLabel = async (
+		slug: string,
+		name: string,
+		options: { isSoftAssertion?: boolean } = { isSoftAssertion: false }
+	) => {
+		const paymentOptionLabel = this.paymentOptionLabel( slug );
+		const expectFn = options.isSoftAssertion ? expect.soft : expect;
+		
+		await expectFn( paymentOptionLabel ).toBeVisible();
+		await expectFn( paymentOptionLabel ).toHaveText(
+			new RegExp( `^\\s*${ name }\\s*$` )
+		);
+	};
 }

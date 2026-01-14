@@ -45,8 +45,10 @@ test( `C3348 | Validate that only the correct payment methods (that supports a f
 		expectedGateways.length
 	);
 	for ( const gateway of expectedGateways ) {
-		await expect(
-			classicCheckout.paymentOption( gateway.name )
-		).toBeVisible();
+		await classicCheckout.assertPaymentOptionLabel(
+			gateway.slug,
+			gateway.name,
+			{ isSoftAssertion: true }
+		);
 	}
 } );

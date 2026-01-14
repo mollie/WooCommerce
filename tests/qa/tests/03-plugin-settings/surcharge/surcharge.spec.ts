@@ -93,9 +93,9 @@ for ( const surcharge of allTests ) {
 					flatRate.settings.title
 				);
 				await expect(
-					classicCheckout.paymentOption( gateway.name )
+					classicCheckout.paymentOptionLabel( gateway.slug )
 				).toBeVisible();
-				await classicCheckout.paymentOption( gateway.name ).click();
+				await classicCheckout.paymentOptionLabel( gateway.slug ).click();
 				await classicCheckout.page.waitForTimeout( 2000 ); // timeout for progress spinner (can't catch the element)
 				const feeNotice = classicCheckout.paymentOptionFee(
 					gateway.name

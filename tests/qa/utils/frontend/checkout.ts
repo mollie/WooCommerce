@@ -49,6 +49,12 @@ export class Checkout extends CheckoutBase {
 		this.page.locator( '#billing-phone-mollie_wc_gateway_riverty' );
 	vippsPhoneInput = () => this.page.locator( '#billing-phone-mollie_wc_gateway_vipps' );
 	mobilepayPhoneInput = () => this.page.locator( '#billing-phone-mollie_wc_gateway_mobilepay' );
+	paymentOptionLabel = ( slug ) =>
+		this.paymentOptionsContainer()
+			.locator(
+				`label[for="radio-control-wc-payment-method-options-mollie_wc_gateway_${ slug }"]`
+			);
+
 	paymentOptionLogo = ( name: string ): Locator =>
 		this.paymentOptionsContainer()
 			.locator( '.wc-block-components-radio-control__option', {
@@ -75,8 +81,8 @@ export class Checkout extends CheckoutBase {
 		const { payment, customer } = order;
 		const { gateway, card } = payment;
 
-		await expect( this.paymentOption( gateway.name ) ).toBeVisible();
-		await this.paymentOption( gateway.name ).click();
+		await expect( this.paymentOptionLabel( gateway.slug ) ).toBeVisible();
+		await this.paymentOptionLabel( gateway.slug ).click();
 		await this.page.waitForLoadState( 'networkidle' );
 
 		if (

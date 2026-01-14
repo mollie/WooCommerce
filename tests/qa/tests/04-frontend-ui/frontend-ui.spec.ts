@@ -52,9 +52,11 @@ test( 'C420154 | Validate correct gateways shown with Order API on Classic check
 		await classicCheckout.billingCountryOptionByCode( countryCode ).click();
 		await classicCheckout.page.waitForTimeout( 1000 );
 
-		await expect
-			.soft( await classicCheckout.paymentOption( gateway.name ) )
-			.toBeVisible();
+		await classicCheckout.assertPaymentOptionLabel(
+			gateway.slug,
+			gateway.name,
+			{ isSoftAssertion: true }
+		);
 	}
 } );
 

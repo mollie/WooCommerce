@@ -3,8 +3,9 @@
  */
 import { test } from '../../../utils';
 import { testPaymentStatusOnClassicCheckout } from './_test-scenarios';
-import { createShopOrder, classicCheckoutNonEur } from './_test-data';
+import { classicCheckoutNonEur } from './_test-data';
 import { MollieSettings, shopSettings } from '../../../resources';
+import { createShopOrder } from '../../../utils/data-conversion';
 
 const testedApiMethod =
 	( process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod ) || 'payment';

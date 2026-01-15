@@ -3,7 +3,8 @@
  */
 import { test } from '../../../utils';
 import { testPaymentStatusOnClassicCheckout } from './_test-scenarios';
-import { createShopOrder, classicCheckoutEur } from './_test-data';
+import { classicCheckoutEur } from './_test-data';
+import { createShopOrder } from '../../../utils/data-conversion';
 import { MollieSettings, shopSettings } from '../../../resources';
 
 const testedApiMethod =

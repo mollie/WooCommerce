@@ -6,7 +6,8 @@ import {
 	testPaymentStatusOnCheckout,
 	testPaymentStatusOnPayForOrder,
 } from './_test-scenarios';
-import { createShopOrder, checkoutEur, payForOrderEur } from './_test-data';
+import { checkoutEur, payForOrderEur } from './_test-data';
+import { createShopOrder } from '../../../utils/data-conversion';
 import { MollieSettings, shopSettings } from '../../../resources';
 
 const testedApiMethod =

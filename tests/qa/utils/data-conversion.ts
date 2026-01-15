@@ -8,7 +8,7 @@ import {
 	guests,
 	orders,
 	products,
-} from '../../../../resources';
+} from '../resources';
 
 const testedApiMethod =
 	( process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod ) || 'payment';

@@ -1,52 +1,50 @@
 /**
  * Internal dependencies
  */
-import { shopSettings, customers } from '.';
+import { shopSettings, customers, ShopConfig } from '.';
 
 const country = 'germany';
 
-export const shopConfigDefault = {
+export const shopConfigDefault: ShopConfig = {
 	enableClassicPages: false, // false = block cart and checkout (default), true = classic cart & checkout pages
-	wpDebugging: false, // WP Debugging plugin is deactivated
-	subscription: false, // WC Subscription plugin is deactivated
+	enableSubscriptionsPlugin: false, // WC Subscription plugin is deactivated
 	settings: shopSettings[ country ], // WC general settings
 	customer: customers[ country ], // registered customer
 };
 
-export const shopConfigClassic = {
+export const shopConfigClassic: ShopConfig = {
 	...shopConfigDefault,
 	enableClassicPages: true,
 };
 
-export const shopConfigGermany = {
+export const shopConfigGermany: ShopConfig = {
 	...shopConfigDefault,
 	customer: customers.germany,
 };
 
-export const shopConfigUsa = {
+export const shopConfigUsa: ShopConfig = {
 	...shopConfigDefault,
-	wpDebugging: true,
 	settings: shopSettings.usa,
 	customer: customers.usa,
 };
 
-export const shopConfigMexico = {
+export const shopConfigMexico: ShopConfig = {
 	...shopConfigDefault,
 	settings: shopSettings.mexico,
 	customer: customers.mexico,
 };
 
-const shopConfigSubscription = {
+const shopConfigSubscription: ShopConfig = {
 	// requireFinalConfirmation: false,
-	subscription: true,
+	enableSubscriptionsPlugin: true,
 };
 
-export const shopConfigSubscriptionGermany = {
+export const shopConfigSubscriptionGermany: ShopConfig = {
 	...shopConfigGermany,
 	...shopConfigSubscription,
 };
 
-export const shopConfigSubscriptionUsa = {
+export const shopConfigSubscriptionUsa: ShopConfig = {
 	...shopConfigUsa,
 	...shopConfigSubscription,
 };

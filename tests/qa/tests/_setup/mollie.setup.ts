@@ -6,13 +6,13 @@ import {
 	taxSettings,
 	mollieApiKeys,
 	MollieSettings,
-	StoreSettings,
+	ShopConfig,
 	shopSettings,
 } from '../../resources';
 
 type EnvConfig = {
 	title: string;
-	store?: StoreSettings;
+	store?: ShopConfig;
 	mollie?: {
 		cleanDb?: boolean;
 		apiKeys?: MollieSettings.ApiKeys;
@@ -33,7 +33,7 @@ const configureEnv = ( data: EnvConfig ) => {
 		const { cleanDb, apiKeys, apiMethod } = mollie;
 
 		setup( `${ title } Install/activate Mollie`, async ( { utils } ) => {
-			await utils.installActivateMollie();
+			await utils.installAndActivateMollie();
 		} );
 
 		if ( cleanDb ) {

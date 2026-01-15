@@ -13,7 +13,7 @@ test.beforeAll( async ( { utils, wooCommerceUtils } ) => {
 		enableSubscriptionsPlugin: true,
 	} );
 	await wooCommerceUtils.createProduct( products.mollieSubscription100 );
-	await utils.installActivateMollie();
+	await utils.installAndActivateMollie();
 	await utils.cleanReconnectMollie();
 } );
 

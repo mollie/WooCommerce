@@ -24,7 +24,7 @@ test.beforeAll( async ( { utils, mollieApi } ) => {
 			general: shopSettings.germany.general,
 		},
 	} );
-	await utils.installActivateMollie();
+	await utils.installAndActivateMollie();
 	await utils.cleanReconnectMollie();
 	await mollieApi.updateMollieGateway( 'creditcard', {
 		mollie_components_enabled: 'no',

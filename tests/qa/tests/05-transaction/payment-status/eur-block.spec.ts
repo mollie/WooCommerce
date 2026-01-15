@@ -23,7 +23,7 @@ test.beforeAll( async ( { utils }, testInfo ) => {
 		},
 		enableClassicPages: false,
 	} );
-	await utils.installActivateMollie();
+	await utils.installAndActivateMollie();
 	await utils.cleanReconnectMollie();
 } );
 

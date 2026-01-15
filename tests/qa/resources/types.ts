@@ -1,4 +1,4 @@
-export type StoreSettings = {
+export type ShopConfig = {
 	enableClassicPages?: boolean; // false = block cart and checkout (default), true = classic cart & checkout pages
 	settings?: WooCommerce.Settings; // WC settings
 	taxes?: {
@@ -7,6 +7,7 @@ export type StoreSettings = {
 	};
 	customer?: WooCommerce.CreateCustomer; // Add registered customer
 	enableSubscriptionsPlugin?: boolean; // WC Subscription plugin is deactivated
+	products?: WooCommerce.CreateProduct[]; // Products to be created if not existing
 };
 
 export namespace MollieSettings {

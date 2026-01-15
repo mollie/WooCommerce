@@ -49,7 +49,7 @@ test.beforeAll( async ( { utils }, testInfo ) => {
 			general: shopSettings.germany.general,
 		},
 	} );
-	await utils.installActivateMollie();
+	await utils.installAndActivateMollie();
 	await utils.cleanReconnectMollie();
 } );
 

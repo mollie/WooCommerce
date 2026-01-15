@@ -6,7 +6,7 @@ import { gateways } from '../../resources';
 
 test.describe.serial( () => {
 	test.beforeAll( async ( { utils } ) => {
-		await utils.installActivateMollie();
+		await utils.installAndActivateMollie();
 		await utils.cleanReconnectMollie();
 	} );
 

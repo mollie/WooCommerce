@@ -64,6 +64,7 @@ module.exports = (env = {}, argv = {}) => {
             'unabledButton.min': './resources/scss/unabledButton.scss',
             'mollie-applepaydirect.min': './resources/scss/mollie-applepaydirect.scss',
             'mollie-block-custom-field.min': './resources/scss/mollie-block-custom-field.scss',
+            'mollie-advanced-settings.min': './resources/scss/mollie-advanced-settings.scss',
         },
         output: {
             ...defaultConfig.output,

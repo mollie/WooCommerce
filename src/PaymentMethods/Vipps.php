@@ -4,21 +4,25 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
-class Payconiq extends AbstractPaymentMethod implements PaymentMethodI
+class Vipps extends AbstractPaymentMethod implements PaymentMethodI
 {
-    protected function getConfig(): array
+    public function getConfig(): array
     {
         return [
-            'id' => 'payconiq',
-            'defaultTitle' => 'payconiq',
+            'id' => 'vipps',
+            'defaultTitle' => 'Vipps',
             'settingsDescription' => '',
             'defaultDescription' => '',
-            'paymentFields' => false,
+            'paymentFields' => true,
+            'additionalFields' => ['phone'],
             'instructions' => false,
-            'supports' => ['products', 'refunds'],
+            'supports' => [
+                'products',
+                'refunds',
+            ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'docs' => '',
+            'docs' => 'https://www.mollie.com/gb/payments/vipps',
         ];
     }
 
@@ -27,7 +31,7 @@ class Payconiq extends AbstractPaymentMethod implements PaymentMethodI
         if ($this->translationsInitialized) {
             return;
         }
-        $this->config['defaultTitle'] = __('payconiq', 'mollie-payments-for-woocommerce');
+        $this->config['defaultTitle'] = __('Vipps', 'mollie-payments-for-woocommerce');
         $this->translationsInitialized = true;
     }
 

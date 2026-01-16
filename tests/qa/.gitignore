@@ -7,8 +7,8 @@ playwright/.cache
 storage-states
 test-results*
 playwright-wordpress-credentials.json
-woocommerce-subscriptions.zip
-mollie-payments-for-woocommerce.zip
+woocommerce-subscriptions*.zip
+mollie-payments-for-woocommerce*.zip
 .env*
 !.env.example
 !package-lock.json

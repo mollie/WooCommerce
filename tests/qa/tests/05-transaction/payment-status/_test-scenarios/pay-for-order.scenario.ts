@@ -5,17 +5,25 @@ import { countTotals } from '@inpsyde/playwright-utils/build';
 /**
  * Internal dependencies
  */
-import { test } from '../../../../utils';
 import {
-	buildGatewayLabel,
+	test,
+	buildMollieGatewayLabel,
 	processMolliePaymentStatus,
 	updateCurrencyIfNeeded,
-} from './checkout-test-helpers';
+	getOrderStatusFromMollieStatus,
+} from '../../../../utils';
+import { MollieTestData, guests } from 'resources';
 
-export const testPaymentStatusOnPayForOrder = ( testId: string, order ) => {
-	const { payment, orderStatus } = order;
+export const testPaymentStatusOnPayForOrder = ( testData: MollieTestData.ShopOrder ) => {
+	const { testId, payment } = testData;
 	const { gateway } = payment;
-	const gatewayLabel = buildGatewayLabel( gateway );
+
+	const orderStatus = getOrderStatusFromMollieStatus(payment.status);
+	const customer = guests[gateway.country];
+	const currency = gateway.currency;
+	const gatewayLabel = buildMollieGatewayLabel(gateway);
+
+	Object.assign(testData, { orderStatus, customer, currency });
 
 	test( `${ testId } | Transaction - Pay for order - ${ gatewayLabel } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
 		wooCommerceApi,
@@ -27,24 +35,24 @@ export const testPaymentStatusOnPayForOrder = ( testId: string, order ) => {
 	} ) => {
 		await updateCurrencyIfNeeded( wooCommerceApi, gateway.currency );
 
-		const orderTotals = await countTotals( order );
+		const orderTotals = await countTotals( testData );
 		payment.amount = orderTotals.order;
 
-		const apiOrder = await wooCommerceUtils.createApiOrder( order );
+		const apiOrder = await wooCommerceUtils.createApiOrder( testData );
 
-		await payForOrder.makeOrder( apiOrder.id, apiOrder.order_key, order );
+		await payForOrder.makeOrder( apiOrder.id, apiOrder.order_key, testData );
 
 		const orderId = await mollieHostedCheckout.pay( payment );
 
 		await processMolliePaymentStatus(
 			{ mollieHostedCheckout, orderReceived, payForOrder },
 			Number( orderId ),
-			order
+			testData
 		);
 
 		await wooCommerceOrderEdit.assertOrderDetails(
 			Number( orderId ),
-			order
+			testData
 		);
 	} );
 };

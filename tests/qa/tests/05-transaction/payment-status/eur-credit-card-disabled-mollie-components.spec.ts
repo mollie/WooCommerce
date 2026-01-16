@@ -8,7 +8,6 @@ import {
 	testPaymentStatusOnPayForOrder,
 } from './_test-scenarios';
 import {
-	createShopOrder,
 	creditCardDisabledMollieComponentsClassicCheckout,
 	creditCardDisabledMollieComponentsCheckout,
 	creditCardDisabledMollieComponentsPayForOrder,
@@ -24,7 +23,7 @@ test.beforeAll( async ( { utils, mollieApi } ) => {
 			general: shopSettings.germany.general,
 		},
 	} );
-	await utils.installActivateMollie();
+	await utils.installAndActivateMollie();
 	await utils.cleanReconnectMollie();
 	await mollieApi.updateMollieGateway( 'creditcard', {
 		mollie_components_enabled: 'no',
@@ -38,8 +37,7 @@ test.describe( () => {
 	} );
 
 	for ( const testData of creditCardDisabledMollieComponentsClassicCheckout ) {
-		const order = createShopOrder( testData );
-		testPaymentStatusOnClassicCheckout( testData.testId, order );
+		testPaymentStatusOnClassicCheckout( testData );
 	}
 } );
 
@@ -50,29 +48,25 @@ test.describe( () => {
 	} );
 
 	for ( const testData of creditCardDisabledMollieComponentsCheckout ) {
-		const order = createShopOrder( testData );
-
 		// exclude tests for payment methods if not available for tested API
 		const availableForApiMethods =
-			order.payment.gateway.availableForApiMethods;
+			testData.payment.gateway.availableForApiMethods;
 		if ( ! availableForApiMethods.includes( testedApiMethod ) ) {
 			continue;
 		}
 
-		testPaymentStatusOnCheckout( testData.testId, order );
+		testPaymentStatusOnCheckout( testData );
 	}
 
 	for ( const testData of creditCardDisabledMollieComponentsPayForOrder ) {
-		const order = createShopOrder( testData );
-
 		// exclude tests for payment methods if not available for tested API
 		const availableForApiMethods =
-			order.payment.gateway.availableForApiMethods;
+			testData.payment.gateway.availableForApiMethods;
 		if ( ! availableForApiMethods.includes( testedApiMethod ) ) {
 			continue;
 		}
 
-		testPaymentStatusOnPayForOrder( testData.testId, order );
+		testPaymentStatusOnPayForOrder( testData );
 	}
 } );
 

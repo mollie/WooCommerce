@@ -1,4 +1,10 @@
 /**
+ * External dependencies
+ */
+import {
+	WooCommerceApi,
+} from '@inpsyde/playwright-utils/build';
+/**
  * Sets annotation about tested customer
  * If tested customer is registered (has non-empty username),
  * then his billing.country will be added to annotation for example: customer-germany
@@ -19,6 +25,12 @@ export function annotateVisitor( customer: WooCommerce.CreateCustomer ) {
 	};
 }
 
+/**
+ * Sets annotation about tested gateway (used for mollieSettingsGateway fixture)
+ * 
+ * @param gatewaySlug 
+ * @returns 
+ */
 export function annotateGateway( gatewaySlug: string ) {
 	return {
 		annotation: {
@@ -44,6 +56,17 @@ export function getCustomerStorageStateName(
 	// for registered customers
 	const visitorCountry = codeToCountry( customer.billing.country );
 	return `customer-${ visitorCountry }`;
+}
+
+export async function updateCurrencyIfNeeded(
+	wooCommerceApi: WooCommerceApi,
+	currency: string | undefined
+) {
+	if ( currency && currency !== 'EUR' ) {
+		await wooCommerceApi.updateGeneralSettings( {
+			woocommerce_currency: currency,
+		} );
+	}
 }
 
 /**

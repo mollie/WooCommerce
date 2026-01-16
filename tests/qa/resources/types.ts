@@ -1,4 +1,4 @@
-export type StoreSettings = {
+export type ShopConfig = {
 	enableClassicPages?: boolean; // false = block cart and checkout (default), true = classic cart & checkout pages
 	settings?: WooCommerce.Settings; // WC settings
 	taxes?: {
@@ -7,6 +7,7 @@ export type StoreSettings = {
 	};
 	customer?: WooCommerce.CreateCustomer; // Add registered customer
 	enableSubscriptionsPlugin?: boolean; // WC Subscription plugin is deactivated
+	products?: WooCommerce.CreateProduct[]; // Products to be created if not existing
 };
 
 export namespace MollieSettings {
@@ -236,9 +237,8 @@ export type MolliePayment = {
 	gateway: MollieGateway;
 	status: MolliePaymentStatus;
 	bankIssuer?: BankIssuer;
+	billingCompany?: string;
 	card?: WooCommerce.CreditCard;
-	isVaulted?: boolean;
-	saveToAccount?: boolean;
 	amount?: number;
 };
 
@@ -259,14 +259,8 @@ export namespace MollieTestData {
 		tests: MollieTestData.SurchargeTest[];
 	};
 
-	export type Transaction = {
-		testId: string;
-		gatewaySlug: string;
-		paymentStatus: MolliePaymentStatus;
-		orderStatus?: WooCommerce.OrderStatus;
-		card?: WooCommerce.CreditCard;
-		mollieComponentsEnabled?: 'yes' | 'no';
-		bankIssuer?: string;
-		billingCompany?: string;
+	export type ShopOrder = WooCommerce.ShopOrder & {
+		testId?: string;
+		payment?: MolliePayment;
 	};
 }

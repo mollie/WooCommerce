@@ -3,7 +3,7 @@
  */
 import { test } from '../../../utils';
 import { testPaymentStatusOnClassicCheckout } from './_test-scenarios';
-import { createShopOrder, classicCheckoutEur } from './_test-data';
+import { classicCheckoutEur } from './_test-data';
 import { MollieSettings, shopSettings } from '../../../resources';
 
 const testedApiMethod =
@@ -20,18 +20,16 @@ test.beforeAll( async ( { utils }, testInfo ) => {
 		},
 		enableClassicPages: true,
 	} );
-	await utils.installActivateMollie();
+	await utils.installAndActivateMollie();
 	await utils.cleanReconnectMollie();
 } );
 
 for ( const testData of classicCheckoutEur ) {
-	const order = createShopOrder( testData );
-
 	// exclude tests for payment methods if not available for tested API
-	const availableForApiMethods = order.payment.gateway.availableForApiMethods;
+	const availableForApiMethods = testData.payment.gateway.availableForApiMethods;
 	if ( ! availableForApiMethods.includes( testedApiMethod ) ) {
 		continue;
 	}
 
-	testPaymentStatusOnClassicCheckout( testData.testId, order );
+	testPaymentStatusOnClassicCheckout( testData );
 }

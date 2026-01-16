@@ -5,7 +5,7 @@ import { annotateGateway, test, expect } from '../../utils';
 import { gateways, guests, products } from '../../resources';
 
 test.beforeAll( async ( { utils } ) => {
-	await utils.installActivateMollie();
+	await utils.installAndActivateMollie();
 	await utils.cleanReconnectMollie();
 } );
 

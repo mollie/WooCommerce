@@ -9,10 +9,35 @@ import {
 /**
  * Internal dependencies
  */
-import { expect, MollieHostedCheckout } from '../../../../utils';
-import { MollieGateway } from '../../../../resources';
+import { expect, MollieHostedCheckout } from '.';
+import {
+	MolliePaymentStatus,
+	MollieSettings,
+	MollieGateway,
+} from '../resources';
 
-export function buildGatewayLabel( gateway: MollieGateway ): string {
+const testedApiMethod =
+	( process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod ) || 'payment';
+
+export const getOrderStatusFromMollieStatus = (
+	paymentStatus: MolliePaymentStatus
+): WooCommerce.OrderStatus => {
+	const isPaymentApiMethod = testedApiMethod === 'payment';
+
+	const statusConversion = {
+		paid: 'processing',
+		authorized: 'processing',
+		canceled: 'pending',
+		expired: isPaymentApiMethod ? 'cancelled' : 'pending',
+		failed: isPaymentApiMethod ? 'failed' : 'pending',
+		open: 'pending',
+		pending: 'pending',
+	} as Record< MolliePaymentStatus, WooCommerce.OrderStatus >;
+
+	return statusConversion[ paymentStatus ];
+};
+
+export function buildMollieGatewayLabel( gateway: MollieGateway ): string {
 	let label = gateway.name;
 
 	if ( gateway.slug === 'creditcard' ) {
@@ -26,17 +51,12 @@ export function buildGatewayLabel( gateway: MollieGateway ): string {
 	return label;
 }
 
-export async function updateCurrencyIfNeeded(
-	wooCommerceApi: WooCommerceApi,
-	currency: string | undefined
-) {
-	if ( currency && currency !== 'EUR' ) {
-		await wooCommerceApi.updateGeneralSettings( {
-			woocommerce_currency: currency,
-		} );
-	}
-}
-
+/**
+ * Depending on payment status different WC pages are shown after payment
+ * @param param0 
+ * @param orderId 
+ * @param order 
+ */
 export const processMolliePaymentStatus = async (
 	{
 		mollieHostedCheckout,

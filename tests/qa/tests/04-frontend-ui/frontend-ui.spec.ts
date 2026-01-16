@@ -12,7 +12,7 @@ import {
 
 test.beforeAll( async ( { utils } ) => {
 	await utils.configureStore( { enableClassicPages: true } );
-	await utils.installActivateMollie();
+	await utils.installAndActivateMollie();
 	await utils.cleanReconnectMollie();
 } );
 

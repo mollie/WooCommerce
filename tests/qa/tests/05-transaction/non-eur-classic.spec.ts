@@ -1,10 +1,10 @@
 /**
  * Internal dependencies
  */
-import { test } from '../../../utils';
+import { test } from '../../utils';
 import { testPaymentStatusOnClassicCheckout } from './_test-scenarios';
 import { classicCheckoutNonEur } from './_test-data';
-import { MollieSettings, shopSettings } from '../../../resources';
+import { MollieSettings, shopSettings } from '../../resources';
 
 const testedApiMethod =
 	( process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod ) || 'payment';

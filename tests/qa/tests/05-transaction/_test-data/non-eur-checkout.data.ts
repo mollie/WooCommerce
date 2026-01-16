@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { MollieTestData, gateways } from '../../../../resources';
+import { MollieTestData, gateways } from '../../../resources';
 import { baseOrder } from './transaction-base-order.data';
 
 export const checkoutNonEur: MollieTestData.ShopOrder[] = [

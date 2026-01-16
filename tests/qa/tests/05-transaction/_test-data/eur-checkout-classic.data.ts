@@ -1,13 +1,13 @@
 /**
  * Internal dependencies
  */
-import { MollieTestData, gateways, cards } from '../../../../resources';
+import { MollieTestData, gateways, cards } from '../../../resources';
 import { baseOrder } from './transaction-base-order.data';
 
-export const checkoutEur: MollieTestData.ShopOrder[] = [
+export const classicCheckoutEur: MollieTestData.ShopOrder[] = [
 	{
 		...baseOrder,
-		testId: 'C4237595',
+		testId: 'C4237579',
 		payment: {
 			gateway: gateways.mbway,
 			status: 'paid',
@@ -15,7 +15,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C4237596',
+		testId: 'C4237580',
 		payment: {
 			gateway: gateways.mbway,
 			status: 'failed',
@@ -23,7 +23,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C4237597',
+		testId: 'C4237581',
 		payment: {
 			gateway: gateways.mbway,
 			status: 'canceled',
@@ -31,7 +31,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C4237598',
+		testId: 'C4237582',
 		payment: {
 			gateway: gateways.mbway,
 			status: 'expired',
@@ -39,7 +39,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C4237591',
+		testId: 'C4237575',
 		payment: {
 			gateway: gateways.multibanco,
 			status: 'paid',
@@ -47,7 +47,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C4237592',
+		testId: 'C4237576',
 		payment: {
 			gateway: gateways.multibanco,
 			status: 'failed',
@@ -55,7 +55,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C4237593',
+		testId: 'C4237577',
 		payment: {
 			gateway: gateways.multibanco,
 			status: 'canceled',
@@ -63,7 +63,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C4237594',
+		testId: 'C4237578',
 		payment: {
 			gateway: gateways.multibanco,
 			status: 'expired',
@@ -71,7 +71,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420219',
+		testId: 'C3731',
 		payment: {
 			gateway: gateways.in3,
 			status: 'paid',
@@ -79,7 +79,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420220',
+		testId: 'C3732',
 		payment: {
 			gateway: gateways.in3,
 			status: 'failed',
@@ -87,7 +87,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420221',
+		testId: 'C3733',
 		payment: {
 			gateway: gateways.in3,
 			status: 'canceled',
@@ -95,7 +95,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420222',
+		testId: 'C3734',
 		payment: {
 			gateway: gateways.in3,
 			status: 'expired',
@@ -103,7 +103,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420230',
+		testId: 'C3387',
 		payment: {
 			gateway: gateways.bancontact,
 			status: 'paid',
@@ -111,7 +111,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420231',
+		testId: 'C3388',
 		payment: {
 			gateway: gateways.bancontact,
 			status: 'open',
@@ -119,7 +119,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420232',
+		testId: 'C3389',
 		payment: {
 			gateway: gateways.bancontact,
 			status: 'failed',
@@ -127,7 +127,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420233',
+		testId: 'C3390',
 		payment: {
 			gateway: gateways.bancontact,
 			status: 'canceled',
@@ -135,7 +135,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420234',
+		testId: 'C3391',
 		payment: {
 			gateway: gateways.bancontact,
 			status: 'expired',
@@ -143,7 +143,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420235',
+		testId: 'C3424',
 		payment: {
 			gateway: gateways.przelewy24,
 			status: 'paid',
@@ -151,7 +151,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420236',
+		testId: 'C3425',
 		payment: {
 			gateway: gateways.przelewy24,
 			status: 'failed',
@@ -159,7 +159,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420237',
+		testId: 'C3426',
 		payment: {
 			gateway: gateways.przelewy24,
 			status: 'canceled',
@@ -167,7 +167,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420238',
+		testId: 'C3427',
 		payment: {
 			gateway: gateways.przelewy24,
 			status: 'expired',
@@ -175,7 +175,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420244',
+		testId: 'C3382',
 		payment: {
 			gateway: gateways.ideal,
 			status: 'paid',
@@ -184,7 +184,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420245',
+		testId: 'C3383',
 		payment: {
 			gateway: gateways.ideal,
 			status: 'open',
@@ -193,7 +193,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420246',
+		testId: 'C3384',
 		payment: {
 			gateway: gateways.ideal,
 			status: 'failed',
@@ -202,16 +202,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420248',
-		payment: {
-			gateway: gateways.ideal,
-			status: 'canceled',
-			bankIssuer: 'ING',
-		},
-	},
-	{
-		...baseOrder,
-		testId: 'C420247',
+		testId: 'C3385',
 		payment: {
 			gateway: gateways.ideal,
 			status: 'expired',
@@ -220,7 +211,16 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420253',
+		testId: 'C3386',
+		payment: {
+			gateway: gateways.ideal,
+			status: 'canceled',
+			bankIssuer: 'ING',
+		},
+	},
+	{
+		...baseOrder,
+		testId: 'C3392',
 		payment: {
 			gateway: gateways.paypal,
 			status: 'paid',
@@ -228,7 +228,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420254',
+		testId: 'C3393',
 		payment: {
 			gateway: gateways.paypal,
 			status: 'pending',
@@ -236,7 +236,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420255',
+		testId: 'C3394',
 		payment: {
 			gateway: gateways.paypal,
 			status: 'failed',
@@ -244,7 +244,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420256',
+		testId: 'C3395',
 		payment: {
 			gateway: gateways.paypal,
 			status: 'canceled',
@@ -252,7 +252,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420257',
+		testId: 'C3396',
 		payment: {
 			gateway: gateways.paypal,
 			status: 'expired',
@@ -260,7 +260,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420260',
+		testId: 'C3412',
 		payment: {
 			gateway: gateways.eps,
 			status: 'paid',
@@ -268,7 +268,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420261',
+		testId: 'C3413',
 		payment: {
 			gateway: gateways.eps,
 			status: 'failed',
@@ -276,7 +276,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420262',
+		testId: 'C3414',
 		payment: {
 			gateway: gateways.eps,
 			status: 'canceled',
@@ -284,7 +284,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420263',
+		testId: 'C3415',
 		payment: {
 			gateway: gateways.eps,
 			status: 'expired',
@@ -292,7 +292,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420267',
+		testId: 'C3419',
 		payment: {
 			gateway: gateways.kbc,
 			status: 'paid',
@@ -301,7 +301,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420264',
+		testId: 'C3416',
 		payment: {
 			gateway: gateways.kbc,
 			status: 'failed',
@@ -310,7 +310,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420265',
+		testId: 'C3417',
 		payment: {
 			gateway: gateways.kbc,
 			status: 'canceled',
@@ -319,7 +319,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420266',
+		testId: 'C3418',
 		payment: {
 			gateway: gateways.kbc,
 			status: 'expired',
@@ -328,34 +328,27 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420274',
+		testId: 'C3376',
+		payment: {
+			gateway: gateways.creditcard,
+			status: 'paid',
+			card: cards.visa,
+			mollieComponentsEnabled: 'yes',
+		},
+	},
+	{
+		...baseOrder,
+		testId: 'C3377',
 		payment: {
 			gateway: gateways.creditcard,
 			status: 'open',
 			card: cards.visa,
+			mollieComponentsEnabled: 'yes',
 		},
 	},
 	{
 		...baseOrder,
-		testId: 'C420273',
-		payment: {
-			gateway: gateways.creditcard,
-			status: 'paid',
-			card: cards.visa,
-		},
-	},
-	{
-		...baseOrder,
-		testId: 'C420275',
-		payment: {
-			gateway: gateways.creditcard,
-			status: 'failed',
-			card: cards.visa,
-		},
-	},
-	{
-		...baseOrder,
-		testId: 'C420276',
+		testId: 'C3379',
 		payment: {
 			gateway: gateways.creditcard,
 			status: 'expired',
@@ -364,7 +357,16 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420284',
+		testId: 'C3378',
+		payment: {
+			gateway: gateways.creditcard,
+			status: 'failed',
+			card: cards.visa,
+		},
+	},
+	{
+		...baseOrder,
+		testId: 'C3433',
 		payment: {
 			gateway: gateways.banktransfer,
 			status: 'paid',
@@ -372,7 +374,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420283',
+		testId: 'C3432',
 		payment: {
 			gateway: gateways.banktransfer,
 			status: 'open',
@@ -381,7 +383,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420285',
+		testId: 'C3434',
 		payment: {
 			gateway: gateways.banktransfer,
 			status: 'expired',
@@ -390,7 +392,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420286',
+		testId: 'C420294',
 		payment: {
 			gateway: gateways.mybank,
 			status: 'paid',
@@ -398,7 +400,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420287',
+		testId: 'C420295',
 		payment: {
 			gateway: gateways.mybank,
 			status: 'failed',
@@ -406,7 +408,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420288',
+		testId: 'C420296',
 		payment: {
 			gateway: gateways.mybank,
 			status: 'canceled',
@@ -414,7 +416,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420289',
+		testId: 'C420297',
 		payment: {
 			gateway: gateways.mybank,
 			status: 'expired',
@@ -422,7 +424,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420298',
+		testId: 'C3428',
 		payment: {
 			gateway: gateways.belfius,
 			status: 'paid',
@@ -430,7 +432,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420299',
+		testId: 'C3429',
 		payment: {
 			gateway: gateways.belfius,
 			status: 'failed',
@@ -438,7 +440,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420300',
+		testId: 'C3430',
 		payment: {
 			gateway: gateways.belfius,
 			status: 'canceled',
@@ -446,7 +448,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420301',
+		testId: 'C3431',
 		payment: {
 			gateway: gateways.belfius,
 			status: 'expired',
@@ -454,7 +456,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420302',
+		testId: 'C354674',
 		payment: {
 			gateway: gateways.billie,
 			status: 'authorized',
@@ -463,7 +465,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420303',
+		testId: 'C354675',
 		payment: {
 			gateway: gateways.billie,
 			status: 'failed',
@@ -472,7 +474,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420304',
+		testId: 'C354676',
 		payment: {
 			gateway: gateways.billie,
 			status: 'canceled',
@@ -481,7 +483,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420305',
+		testId: 'C354677',
 		payment: {
 			gateway: gateways.billie,
 			status: 'expired',
@@ -490,7 +492,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420306',
+		testId: 'C420141',
 		payment: {
 			gateway: gateways.paysafecard,
 			status: 'paid',
@@ -498,7 +500,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420307',
+		testId: 'C420142',
 		payment: {
 			gateway: gateways.paysafecard,
 			status: 'canceled',
@@ -506,7 +508,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C420308',
+		testId: 'C420143',
 		payment: {
 			gateway: gateways.paysafecard,
 			status: 'expired',
@@ -514,7 +516,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3007259',
+		testId: 'C3007255',
 		payment: {
 			gateway: gateways.klarna,
 			status: 'authorized',
@@ -522,7 +524,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3007260',
+		testId: 'C3007256',
 		payment: {
 			gateway: gateways.klarna,
 			status: 'failed',
@@ -530,7 +532,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3007261',
+		testId: 'C3007257',
 		payment: {
 			gateway: gateways.klarna,
 			status: 'canceled',
@@ -538,7 +540,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3007262',
+		testId: 'C3007258',
 		payment: {
 			gateway: gateways.klarna,
 			status: 'expired',
@@ -546,7 +548,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3007263',
+		testId: 'C3007267',
 		payment: {
 			gateway: gateways.bancomatpay,
 			status: 'paid',
@@ -554,7 +556,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3007264',
+		testId: 'C3007268',
 		payment: {
 			gateway: gateways.bancomatpay,
 			status: 'failed',
@@ -562,7 +564,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3007265',
+		testId: 'C3007269',
 		payment: {
 			gateway: gateways.bancomatpay,
 			status: 'canceled',
@@ -570,7 +572,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3007266',
+		testId: 'C3007270',
 		payment: {
 			gateway: gateways.bancomatpay,
 			status: 'expired',
@@ -578,7 +580,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3241643',
+		testId: 'C3241639',
 		payment: {
 			gateway: gateways.alma,
 			status: 'paid',
@@ -586,7 +588,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3241644',
+		testId: 'C3241640',
 		payment: {
 			gateway: gateways.alma,
 			status: 'failed',
@@ -594,7 +596,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3241645',
+		testId: 'C3241641',
 		payment: {
 			gateway: gateways.alma,
 			status: 'canceled',
@@ -602,7 +604,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3241646',
+		testId: 'C3241642',
 		payment: {
 			gateway: gateways.alma,
 			status: 'expired',
@@ -610,7 +612,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3437846',
+		testId: 'C3437842',
 		payment: {
 			gateway: gateways.trustly,
 			status: 'paid',
@@ -618,7 +620,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3437847',
+		testId: 'C3437843',
 		payment: {
 			gateway: gateways.trustly,
 			status: 'failed',
@@ -626,7 +628,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3437848',
+		testId: 'C3437844',
 		payment: {
 			gateway: gateways.trustly,
 			status: 'canceled',
@@ -634,7 +636,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3437849',
+		testId: 'C3437845',
 		payment: {
 			gateway: gateways.trustly,
 			status: 'expired',
@@ -642,7 +644,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3622417',
+		testId: 'C3622413',
 		payment: {
 			gateway: gateways.riverty,
 			status: 'authorized',
@@ -650,7 +652,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3622418',
+		testId: 'C3622414',
 		payment: {
 			gateway: gateways.riverty,
 			status: 'failed',
@@ -658,7 +660,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3622419',
+		testId: 'C3622415',
 		payment: {
 			gateway: gateways.riverty,
 			status: 'canceled',
@@ -666,7 +668,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3622420',
+		testId: 'C3622416',
 		payment: {
 			gateway: gateways.riverty,
 			status: 'expired',
@@ -674,7 +676,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3757247',
+		testId: 'C3757251',
 		payment: {
 			gateway: gateways.satispay,
 			status: 'paid',
@@ -682,7 +684,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3757248',
+		testId: 'C3757252',
 		payment: {
 			gateway: gateways.satispay,
 			status: 'failed',
@@ -690,7 +692,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3757249',
+		testId: 'C3757253',
 		payment: {
 			gateway: gateways.satispay,
 			status: 'canceled',
@@ -698,7 +700,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3757250',
+		testId: 'C3757254',
 		payment: {
 			gateway: gateways.satispay,
 			status: 'expired',

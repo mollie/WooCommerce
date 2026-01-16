@@ -11,7 +11,7 @@ import {
 	processMolliePaymentStatus,
 	updateCurrencyIfNeeded,
 	getOrderStatusFromMollieStatus,
-} from '../../../../utils';
+} from '../../../utils';
 import { MollieTestData, guests } from 'resources';
 
 const isMultistepCheckout = process.env.IS_MULTISTEP_CHECKOUT === 'true';

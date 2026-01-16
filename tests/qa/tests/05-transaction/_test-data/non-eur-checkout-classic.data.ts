@@ -1,13 +1,13 @@
 /**
  * Internal dependencies
  */
-import { MollieTestData, gateways } from '../../../../resources';
+import { MollieTestData, gateways } from '../../../resources';
 import { baseOrder } from './transaction-base-order.data';
 
-export const payForOrderNonEur: MollieTestData.ShopOrder[] = [
+export const classicCheckoutNonEur: MollieTestData.ShopOrder[] = [
 	{
 		...baseOrder,
-		testId: 'C3007279',
+		testId: 'C3007247',
 		payment: {
 			gateway: gateways.twint,
 			status: 'paid',
@@ -15,7 +15,7 @@ export const payForOrderNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3007280',
+		testId: 'C3007248',
 		payment: {
 			gateway: gateways.twint,
 			status: 'failed',
@@ -23,7 +23,7 @@ export const payForOrderNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3007281',
+		testId: 'C3007249',
 		payment: {
 			gateway: gateways.twint,
 			status: 'canceled',
@@ -31,7 +31,7 @@ export const payForOrderNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3007282',
+		testId: 'C3007250',
 		payment: {
 			gateway: gateways.twint,
 			status: 'expired',
@@ -39,7 +39,7 @@ export const payForOrderNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3007287',
+		testId: 'C3007251',
 		payment: {
 			gateway: gateways.blik,
 			status: 'paid',
@@ -47,7 +47,7 @@ export const payForOrderNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3007288',
+		testId: 'C3007252',
 		payment: {
 			gateway: gateways.blik,
 			status: 'failed',
@@ -55,7 +55,7 @@ export const payForOrderNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3007289',
+		testId: 'C3007253',
 		payment: {
 			gateway: gateways.blik,
 			status: 'canceled',
@@ -63,7 +63,7 @@ export const payForOrderNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3007290',
+		testId: 'C3007254',
 		payment: {
 			gateway: gateways.blik,
 			status: 'expired',
@@ -79,7 +79,7 @@ export const payForOrderNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C4237615',
+		testId: 'C4237583',
 		payment: {
 			gateway: gateways.paybybank,
 			status: 'paid',
@@ -87,7 +87,7 @@ export const payForOrderNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C4237616',
+		testId: 'C4237584',
 		payment: {
 			gateway: gateways.paybybank,
 			status: 'failed',
@@ -95,7 +95,7 @@ export const payForOrderNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C4237617',
+		testId: 'C4237585',
 		payment: {
 			gateway: gateways.paybybank,
 			status: 'canceled',
@@ -103,7 +103,7 @@ export const payForOrderNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C4237618',
+		testId: 'C4237586',
 		payment: {
 			gateway: gateways.paybybank,
 			status: 'expired',
@@ -111,7 +111,7 @@ export const payForOrderNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C4237619',
+		testId: 'C4237587',
 		payment: {
 			gateway: gateways.swish,
 			status: 'paid',
@@ -119,7 +119,7 @@ export const payForOrderNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C4237620',
+		testId: 'C4237588',
 		payment: {
 			gateway: gateways.swish,
 			status: 'failed',
@@ -127,7 +127,7 @@ export const payForOrderNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C4237621',
+		testId: 'C4237589',
 		payment: {
 			gateway: gateways.swish,
 			status: 'canceled',
@@ -135,7 +135,7 @@ export const payForOrderNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C4237622',
+		testId: 'C4237590',
 		payment: {
 			gateway: gateways.swish,
 			status: 'expired',
@@ -167,7 +167,7 @@ export const payForOrderNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C0000',
+		testId: 'C00001',
 		payment: {
 			gateway: gateways.vipps,
 			status: 'expired',
@@ -183,7 +183,7 @@ export const payForOrderNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C0000',
+		testId: 'C00002',
 		payment: {
 			gateway: gateways.mobilepay,
 			status: 'failed',

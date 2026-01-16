@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { test } from '../../../utils';
+import { test } from '../../utils';
 import {
 	testPaymentStatusOnClassicCheckout,
 	testPaymentStatusOnCheckout,
@@ -12,7 +12,7 @@ import {
 	creditCardDisabledMollieComponentsCheckout,
 	creditCardDisabledMollieComponentsPayForOrder,
 } from './_test-data';
-import { MollieSettings, shopSettings } from '../../../resources';
+import { MollieSettings, shopSettings } from '../../resources';
 
 const testedApiMethod =
 	( process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod ) || 'payment';

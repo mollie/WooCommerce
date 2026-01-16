@@ -11,10 +11,12 @@ import {
 	processMolliePaymentStatus,
 	updateCurrencyIfNeeded,
 	getOrderStatusFromMollieStatus,
-} from '../../../../utils';
+} from '../../../utils';
 import { MollieTestData, guests } from 'resources';
 
-export const testPaymentStatusOnPayForOrder = ( testData: MollieTestData.ShopOrder ) => {
+const isMultistepCheckout = process.env.IS_MULTISTEP_CHECKOUT === 'true';
+
+export const testPaymentStatusOnClassicCheckout = ( testData: MollieTestData.ShopOrder ) => {
 	const { testId, payment } = testData;
 	const { gateway } = payment;
 
@@ -22,25 +24,29 @@ export const testPaymentStatusOnPayForOrder = ( testData: MollieTestData.ShopOrd
 	const customer = guests[gateway.country];
 	const currency = gateway.currency;
 	const gatewayLabel = buildMollieGatewayLabel(gateway);
+	const multistepLabel = isMultistepCheckout ? ' - Multistep' : '';
 
 	Object.assign(testData, { orderStatus, customer, currency });
 
-	test( `${ testId } | Transaction - Pay for order - ${ gatewayLabel } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
+	test( `${ testId } | Transaction${ multistepLabel } - Classic checkout - ${ gatewayLabel } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
 		wooCommerceApi,
-		wooCommerceUtils,
+		utils,
+		classicCheckout,
 		mollieHostedCheckout,
 		orderReceived,
 		payForOrder,
 		wooCommerceOrderEdit,
 	} ) => {
-		await updateCurrencyIfNeeded( wooCommerceApi, gateway.currency );
+		await updateCurrencyIfNeeded( wooCommerceApi, currency );
 
 		const orderTotals = await countTotals( testData );
 		payment.amount = orderTotals.order;
 
-		const apiOrder = await wooCommerceUtils.createApiOrder( testData );
+		await utils.fillVisitorsCart( testData.products );
 
-		await payForOrder.makeOrder( apiOrder.id, apiOrder.order_key, testData );
+		await ( isMultistepCheckout
+			? classicCheckout.makeMultistepOrder( testData )
+			: classicCheckout.makeOrder( testData ) );
 
 		const orderId = await mollieHostedCheckout.pay( payment );
 

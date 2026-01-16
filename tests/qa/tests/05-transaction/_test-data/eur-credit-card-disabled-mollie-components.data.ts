@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { MollieTestData, gateways, cards, MollieGateway } from '../../../../resources';
+import { MollieTestData, gateways, cards, MollieGateway } from '../../../resources';
 import { baseOrder } from './transaction-base-order.data';
 
 const creditCardDisabledComponents: MollieGateway = {

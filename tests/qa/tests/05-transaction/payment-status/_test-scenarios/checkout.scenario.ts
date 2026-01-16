@@ -5,20 +5,28 @@ import { countTotals } from '@inpsyde/playwright-utils/build';
 /**
  * Internal dependencies
  */
-import { test } from '../../../../utils';
 import {
-	buildGatewayLabel,
+	test,
+	buildMollieGatewayLabel,
 	processMolliePaymentStatus,
 	updateCurrencyIfNeeded,
-} from './checkout-test-helpers';
+	getOrderStatusFromMollieStatus,
+} from '../../../../utils';
+import { MollieTestData, guests } from 'resources';
 
 const isMultistepCheckout = process.env.IS_MULTISTEP_CHECKOUT === 'true';
 
-export const testPaymentStatusOnCheckout = ( testId: string, order ) => {
-	const { payment, orderStatus } = order;
-	const { gateway } = payment;
-	const gatewayLabel = buildGatewayLabel( gateway );
-	const multistepLabel = isMultistepCheckout ? ' - Multistep' : '';
+export const testPaymentStatusOnCheckout = ( testData: MollieTestData.ShopOrder ) => {
+	const { testId, payment } = testData;
+		const { gateway } = payment;
+	
+		const orderStatus = getOrderStatusFromMollieStatus(payment.status);
+		const customer = guests[gateway.country];
+		const currency = gateway.currency;
+		const gatewayLabel = buildMollieGatewayLabel(gateway);
+		const multistepLabel = isMultistepCheckout ? ' - Multistep' : '';
+	
+		Object.assign(testData, { orderStatus, customer, currency });
 
 	test( `${ testId } | Transaction${ multistepLabel } - Checkout - ${ gatewayLabel } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
 		wooCommerceApi,
@@ -31,26 +39,26 @@ export const testPaymentStatusOnCheckout = ( testId: string, order ) => {
 	} ) => {
 		await updateCurrencyIfNeeded( wooCommerceApi, gateway.currency );
 
-		const orderTotals = await countTotals( order );
+		const orderTotals = await countTotals( testData );
 		payment.amount = orderTotals.order;
 
-		await utils.fillVisitorsCart( order.products );
+		await utils.fillVisitorsCart( testData.products );
 
 		await ( isMultistepCheckout
-			? checkout.makeMultistepOrder( order )
-			: checkout.makeOrder( order ) );
+			? checkout.makeMultistepOrder( testData )
+			: checkout.makeOrder( testData ) );
 
 		const orderId = await mollieHostedCheckout.pay( payment );
 
 		await processMolliePaymentStatus(
 			{ mollieHostedCheckout, orderReceived, payForOrder },
 			Number( orderId ),
-			order
+			testData
 		);
 
 		await wooCommerceOrderEdit.assertOrderDetails(
 			Number( orderId ),
-			order
+			testData
 		);
 	} );
 };

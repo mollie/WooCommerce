@@ -7,7 +7,6 @@ import {
 	testPaymentStatusOnPayForOrder,
 } from './_test-scenarios';
 import { checkoutEur, payForOrderEur } from './_test-data';
-import { createShopOrder } from '../../../utils/data-conversion';
 import { MollieSettings, shopSettings } from '../../../resources';
 
 const testedApiMethod =
@@ -30,30 +29,26 @@ test.beforeAll( async ( { utils }, testInfo ) => {
 
 test.describe( () => {
 	for ( const testData of checkoutEur ) {
-		const order = createShopOrder( testData );
-
 		// exclude tests for payment methods if not available for tested API
 		const availableForApiMethods =
-			order.payment.gateway.availableForApiMethods;
+			testData.payment.gateway.availableForApiMethods;
 		if ( ! availableForApiMethods.includes( testedApiMethod ) ) {
 			continue;
 		}
 
-		testPaymentStatusOnCheckout( testData.testId, order );
+		testPaymentStatusOnCheckout( testData );
 	}
 } );
 
 test.describe( () => {
 	for ( const testData of payForOrderEur ) {
-		const order = createShopOrder( testData );
-
 		// exclude tests for payment methods if not available for tested API
 		const availableForApiMethods =
-			order.payment.gateway.availableForApiMethods;
+			testData.payment.gateway.availableForApiMethods;
 		if ( ! availableForApiMethods.includes( testedApiMethod ) ) {
 			continue;
 		}
 
-		testPaymentStatusOnPayForOrder( testData.testId, order );
+		testPaymentStatusOnPayForOrder( testData );
 	}
 } );

@@ -237,9 +237,8 @@ export type MolliePayment = {
 	gateway: MollieGateway;
 	status: MolliePaymentStatus;
 	bankIssuer?: BankIssuer;
+	billingCompany?: string;
 	card?: WooCommerce.CreditCard;
-	isVaulted?: boolean;
-	saveToAccount?: boolean;
 	amount?: number;
 };
 
@@ -260,14 +259,8 @@ export namespace MollieTestData {
 		tests: MollieTestData.SurchargeTest[];
 	};
 
-	export type Transaction = {
-		testId: string;
-		gatewaySlug: string;
-		paymentStatus: MolliePaymentStatus;
-		orderStatus?: WooCommerce.OrderStatus;
-		card?: WooCommerce.CreditCard;
-		mollieComponentsEnabled?: 'yes' | 'no';
-		bankIssuer?: string;
-		billingCompany?: string;
+	export type ShopOrder = WooCommerce.ShopOrder & {
+		testId?: string;
+		payment?: MolliePayment;
 	};
 }

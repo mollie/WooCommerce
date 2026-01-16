@@ -13,7 +13,6 @@ import {
 	creditCardDisabledMollieComponentsPayForOrder,
 } from './_test-data';
 import { MollieSettings, shopSettings } from '../../../resources';
-import { createShopOrder } from '../../../utils/data-conversion';
 
 const testedApiMethod =
 	( process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod ) || 'payment';
@@ -38,8 +37,7 @@ test.describe( () => {
 	} );
 
 	for ( const testData of creditCardDisabledMollieComponentsClassicCheckout ) {
-		const order = createShopOrder( testData );
-		testPaymentStatusOnClassicCheckout( testData.testId, order );
+		testPaymentStatusOnClassicCheckout( testData );
 	}
 } );
 
@@ -50,29 +48,25 @@ test.describe( () => {
 	} );
 
 	for ( const testData of creditCardDisabledMollieComponentsCheckout ) {
-		const order = createShopOrder( testData );
-
 		// exclude tests for payment methods if not available for tested API
 		const availableForApiMethods =
-			order.payment.gateway.availableForApiMethods;
+			testData.payment.gateway.availableForApiMethods;
 		if ( ! availableForApiMethods.includes( testedApiMethod ) ) {
 			continue;
 		}
 
-		testPaymentStatusOnCheckout( testData.testId, order );
+		testPaymentStatusOnCheckout( testData );
 	}
 
 	for ( const testData of creditCardDisabledMollieComponentsPayForOrder ) {
-		const order = createShopOrder( testData );
-
 		// exclude tests for payment methods if not available for tested API
 		const availableForApiMethods =
-			order.payment.gateway.availableForApiMethods;
+			testData.payment.gateway.availableForApiMethods;
 		if ( ! availableForApiMethods.includes( testedApiMethod ) ) {
 			continue;
 		}
 
-		testPaymentStatusOnPayForOrder( testData.testId, order );
+		testPaymentStatusOnPayForOrder( testData );
 	}
 } );
 

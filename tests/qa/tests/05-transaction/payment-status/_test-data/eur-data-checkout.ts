@@ -1,494 +1,707 @@
 /**
  * Internal dependencies
  */
-import { cards, MollieTestData } from '../../../../resources';
+import { MollieTestData, gateways, cards } from '../../../../resources';
+import { baseOrder } from './transaction-base-order.data';
 
-export const checkoutEur: MollieTestData.Transaction[] = [
-	// {
-	// 	testId: '',
-	// 	gatewaySlug: 'applepay',
-	// 	paymentStatus: 'paid',
-	// 	orderStatus: 'processing',
-	// },
+export const checkoutEur: MollieTestData.ShopOrder[] = [
 	{
+		...baseOrder,
 		testId: 'C4237595',
-		gatewaySlug: 'mbway',
-		paymentStatus: 'paid',
+		payment: {
+			gateway: gateways.mbway,
+			status: 'paid',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C4237596',
-		gatewaySlug: 'mbway',
-		paymentStatus: 'failed',
+		payment: {
+			gateway: gateways.mbway,
+			status: 'failed',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C4237597',
-		gatewaySlug: 'mbway',
-		paymentStatus: 'canceled',
+		payment: {
+			gateway: gateways.mbway,
+			status: 'canceled',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C4237598',
-		gatewaySlug: 'mbway',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.mbway,
+			status: 'expired',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C4237591',
-		gatewaySlug: 'multibanco',
-		paymentStatus: 'paid',
+		payment: {
+			gateway: gateways.multibanco,
+			status: 'paid',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C4237592',
-		gatewaySlug: 'multibanco',
-		paymentStatus: 'failed',
+		payment: {
+			gateway: gateways.multibanco,
+			status: 'failed',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C4237593',
-		gatewaySlug: 'multibanco',
-		paymentStatus: 'canceled',
+		payment: {
+			gateway: gateways.multibanco,
+			status: 'canceled',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C4237594',
-		gatewaySlug: 'multibanco',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.multibanco,
+			status: 'expired',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420219',
-		gatewaySlug: 'in3',
-		paymentStatus: 'paid',
+		payment: {
+			gateway: gateways.in3,
+			status: 'paid',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420220',
-		gatewaySlug: 'in3',
-		paymentStatus: 'failed',
+		payment: {
+			gateway: gateways.in3,
+			status: 'failed',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420221',
-		gatewaySlug: 'in3',
-		paymentStatus: 'canceled',
+		payment: {
+			gateway: gateways.in3,
+			status: 'canceled',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420222',
-		gatewaySlug: 'in3',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.in3,
+			status: 'expired',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420230',
-		gatewaySlug: 'bancontact',
-		paymentStatus: 'paid',
+		payment: {
+			gateway: gateways.bancontact,
+			status: 'paid',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420231',
-		gatewaySlug: 'bancontact',
-		paymentStatus: 'open',
+		payment: {
+			gateway: gateways.bancontact,
+			status: 'open',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420232',
-		gatewaySlug: 'bancontact',
-		paymentStatus: 'failed',
+		payment: {
+			gateway: gateways.bancontact,
+			status: 'failed',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420233',
-		gatewaySlug: 'bancontact',
-		paymentStatus: 'canceled',
+		payment: {
+			gateway: gateways.bancontact,
+			status: 'canceled',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420234',
-		gatewaySlug: 'bancontact',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.bancontact,
+			status: 'expired',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420235',
-		gatewaySlug: 'przelewy24',
-		paymentStatus: 'paid',
+		payment: {
+			gateway: gateways.przelewy24,
+			status: 'paid',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420236',
-		gatewaySlug: 'przelewy24',
-		paymentStatus: 'failed',
+		payment: {
+			gateway: gateways.przelewy24,
+			status: 'failed',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420237',
-		gatewaySlug: 'przelewy24',
-		paymentStatus: 'canceled',
+		payment: {
+			gateway: gateways.przelewy24,
+			status: 'canceled',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420238',
-		gatewaySlug: 'przelewy24',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.przelewy24,
+			status: 'expired',
+		},
 	},
-	// {
-	// 	testId: '',
-	// 	gatewaySlug: 'voucher',
-	// 	paymentStatus: 'expired',
-	//
-	// },
 	{
+		...baseOrder,
 		testId: 'C420244',
-		gatewaySlug: 'ideal',
-		paymentStatus: 'paid',
-		bankIssuer: 'ING',
+		payment: {
+			gateway: gateways.ideal,
+			status: 'paid',
+			bankIssuer: 'ING',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420245',
-		gatewaySlug: 'ideal',
-		paymentStatus: 'open',
-		bankIssuer: 'ING',
+		payment: {
+			gateway: gateways.ideal,
+			status: 'open',
+			bankIssuer: 'ING',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420246',
-		gatewaySlug: 'ideal',
-		paymentStatus: 'failed',
-		bankIssuer: 'ING',
+		payment: {
+			gateway: gateways.ideal,
+			status: 'failed',
+			bankIssuer: 'ING',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420248',
-		gatewaySlug: 'ideal',
-		paymentStatus: 'canceled',
-		bankIssuer: 'ING',
+		payment: {
+			gateway: gateways.ideal,
+			status: 'canceled',
+			bankIssuer: 'ING',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420247',
-		gatewaySlug: 'ideal',
-		paymentStatus: 'expired',
-		bankIssuer: 'ING',
+		payment: {
+			gateway: gateways.ideal,
+			status: 'expired',
+			bankIssuer: 'ING',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420253',
-		gatewaySlug: 'paypal',
-		paymentStatus: 'paid',
+		payment: {
+			gateway: gateways.paypal,
+			status: 'paid',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420254',
-		gatewaySlug: 'paypal',
-		paymentStatus: 'pending',
+		payment: {
+			gateway: gateways.paypal,
+			status: 'pending',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420255',
-		gatewaySlug: 'paypal',
-		paymentStatus: 'failed',
+		payment: {
+			gateway: gateways.paypal,
+			status: 'failed',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420256',
-		gatewaySlug: 'paypal',
-		paymentStatus: 'canceled',
+		payment: {
+			gateway: gateways.paypal,
+			status: 'canceled',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420257',
-		gatewaySlug: 'paypal',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.paypal,
+			status: 'expired',
+		},
 	},
-	// {
-	// 	testId: '',
-	// 	gatewaySlug: 'giftcard',
-	// 	paymentStatus: 'expired',
-	//
-	// },
 	{
+		...baseOrder,
 		testId: 'C420260',
-		gatewaySlug: 'eps',
-		paymentStatus: 'paid',
+		payment: {
+			gateway: gateways.eps,
+			status: 'paid',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420261',
-		gatewaySlug: 'eps',
-		paymentStatus: 'failed',
+		payment: {
+			gateway: gateways.eps,
+			status: 'failed',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420262',
-		gatewaySlug: 'eps',
-		paymentStatus: 'canceled',
+		payment: {
+			gateway: gateways.eps,
+			status: 'canceled',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420263',
-		gatewaySlug: 'eps',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.eps,
+			status: 'expired',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420267',
-		gatewaySlug: 'kbc',
-		paymentStatus: 'paid',
-		bankIssuer: 'KBC',
+		payment: {
+			gateway: gateways.kbc,
+			status: 'paid',
+			bankIssuer: 'KBC',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420264',
-		gatewaySlug: 'kbc',
-		paymentStatus: 'failed',
-		bankIssuer: 'KBC',
+		payment: {
+			gateway: gateways.kbc,
+			status: 'failed',
+			bankIssuer: 'KBC',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420265',
-		gatewaySlug: 'kbc',
-		paymentStatus: 'canceled',
-		bankIssuer: 'KBC',
+		payment: {
+			gateway: gateways.kbc,
+			status: 'canceled',
+			bankIssuer: 'KBC',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420266',
-		gatewaySlug: 'kbc',
-		paymentStatus: 'expired',
-		bankIssuer: 'KBC',
+		payment: {
+			gateway: gateways.kbc,
+			status: 'expired',
+			bankIssuer: 'KBC',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420274',
-		gatewaySlug: 'creditcard',
-		paymentStatus: 'open',
-		card: cards.visa,
-		mollieComponentsEnabled: 'yes',
+		payment: {
+			gateway: gateways.creditcard,
+			status: 'open',
+			card: cards.visa,
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420273',
-		gatewaySlug: 'creditcard',
-		paymentStatus: 'paid',
-		card: cards.visa,
-		mollieComponentsEnabled: 'yes',
+		payment: {
+			gateway: gateways.creditcard,
+			status: 'paid',
+			card: cards.visa,
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420275',
-		gatewaySlug: 'creditcard',
-		paymentStatus: 'failed',
-		card: cards.visa,
-		mollieComponentsEnabled: 'yes',
+		payment: {
+			gateway: gateways.creditcard,
+			status: 'failed',
+			card: cards.visa,
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420276',
-		gatewaySlug: 'creditcard',
-		paymentStatus: 'expired',
-		card: cards.visa,
-		mollieComponentsEnabled: 'yes',
+		payment: {
+			gateway: gateways.creditcard,
+			status: 'expired',
+			card: cards.visa,
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420284',
-		gatewaySlug: 'banktransfer',
-		paymentStatus: 'paid',
+		payment: {
+			gateway: gateways.banktransfer,
+			status: 'paid',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420283',
-		gatewaySlug: 'banktransfer',
-		paymentStatus: 'open',
+		payment: {
+			gateway: gateways.banktransfer,
+			status: 'open',
+		},
 		orderStatus: 'on-hold',
 	},
 	{
+		...baseOrder,
 		testId: 'C420285',
-		gatewaySlug: 'banktransfer',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.banktransfer,
+			status: 'expired',
+		},
 		orderStatus: 'on-hold',
 	},
 	{
+		...baseOrder,
 		testId: 'C420286',
-		gatewaySlug: 'mybank',
-		paymentStatus: 'paid',
+		payment: {
+			gateway: gateways.mybank,
+			status: 'paid',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420287',
-		gatewaySlug: 'mybank',
-		paymentStatus: 'failed',
+		payment: {
+			gateway: gateways.mybank,
+			status: 'failed',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420288',
-		gatewaySlug: 'mybank',
-		paymentStatus: 'canceled',
+		payment: {
+			gateway: gateways.mybank,
+			status: 'canceled',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420289',
-		gatewaySlug: 'mybank',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.mybank,
+			status: 'expired',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420298',
-		gatewaySlug: 'belfius',
-		paymentStatus: 'paid',
+		payment: {
+			gateway: gateways.belfius,
+			status: 'paid',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420299',
-		gatewaySlug: 'belfius',
-		paymentStatus: 'failed',
+		payment: {
+			gateway: gateways.belfius,
+			status: 'failed',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420300',
-		gatewaySlug: 'belfius',
-		paymentStatus: 'canceled',
+		payment: {
+			gateway: gateways.belfius,
+			status: 'canceled',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420301',
-		gatewaySlug: 'belfius',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.belfius,
+			status: 'expired',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420302',
-		gatewaySlug: 'billie',
-		paymentStatus: 'authorized',
-		billingCompany: 'Syde',
+		payment: {
+			gateway: gateways.billie,
+			status: 'authorized',
+			billingCompany: 'Syde',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420303',
-		gatewaySlug: 'billie',
-		paymentStatus: 'failed',
-		billingCompany: 'Syde',
+		payment: {
+			gateway: gateways.billie,
+			status: 'failed',
+			billingCompany: 'Syde',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420304',
-		gatewaySlug: 'billie',
-		paymentStatus: 'canceled',
-		billingCompany: 'Syde',
+		payment: {
+			gateway: gateways.billie,
+			status: 'canceled',
+			billingCompany: 'Syde',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420305',
-		gatewaySlug: 'billie',
-		paymentStatus: 'expired',
-		billingCompany: 'Syde',
+		payment: {
+			gateway: gateways.billie,
+			status: 'expired',
+			billingCompany: 'Syde',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420306',
-		gatewaySlug: 'paysafecard',
-		paymentStatus: 'paid',
+		payment: {
+			gateway: gateways.paysafecard,
+			status: 'paid',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420307',
-		gatewaySlug: 'paysafecard',
-		paymentStatus: 'canceled',
+		payment: {
+			gateway: gateways.paysafecard,
+			status: 'canceled',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C420308',
-		gatewaySlug: 'paysafecard',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.paysafecard,
+			status: 'expired',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3007259',
-		gatewaySlug: 'klarna',
-		paymentStatus: 'authorized',
+		payment: {
+			gateway: gateways.klarna,
+			status: 'authorized',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3007260',
-		gatewaySlug: 'klarna',
-		paymentStatus: 'failed',
+		payment: {
+			gateway: gateways.klarna,
+			status: 'failed',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3007261',
-		gatewaySlug: 'klarna',
-		paymentStatus: 'canceled',
+		payment: {
+			gateway: gateways.klarna,
+			status: 'canceled',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3007262',
-		gatewaySlug: 'klarna',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.klarna,
+			status: 'expired',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3007263',
-		gatewaySlug: 'bancomatpay',
-		paymentStatus: 'paid',
+		payment: {
+			gateway: gateways.bancomatpay,
+			status: 'paid',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3007264',
-		gatewaySlug: 'bancomatpay',
-		paymentStatus: 'failed',
+		payment: {
+			gateway: gateways.bancomatpay,
+			status: 'failed',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3007265',
-		gatewaySlug: 'bancomatpay',
-		paymentStatus: 'canceled',
+		payment: {
+			gateway: gateways.bancomatpay,
+			status: 'canceled',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3007266',
-		gatewaySlug: 'bancomatpay',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.bancomatpay,
+			status: 'expired',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3241643',
-		gatewaySlug: 'alma',
-		paymentStatus: 'paid',
+		payment: {
+			gateway: gateways.alma,
+			status: 'paid',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3241644',
-		gatewaySlug: 'alma',
-		paymentStatus: 'failed',
+		payment: {
+			gateway: gateways.alma,
+			status: 'failed',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3241645',
-		gatewaySlug: 'alma',
-		paymentStatus: 'canceled',
+		payment: {
+			gateway: gateways.alma,
+			status: 'canceled',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3241646',
-		gatewaySlug: 'alma',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.alma,
+			status: 'expired',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3437846',
-		gatewaySlug: 'trustly',
-		paymentStatus: 'paid',
+		payment: {
+			gateway: gateways.trustly,
+			status: 'paid',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3437847',
-		gatewaySlug: 'trustly',
-		paymentStatus: 'failed',
+		payment: {
+			gateway: gateways.trustly,
+			status: 'failed',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3437848',
-		gatewaySlug: 'trustly',
-		paymentStatus: 'canceled',
+		payment: {
+			gateway: gateways.trustly,
+			status: 'canceled',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3437849',
-		gatewaySlug: 'trustly',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.trustly,
+			status: 'expired',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3622417',
-		gatewaySlug: 'riverty',
-		paymentStatus: 'authorized',
+		payment: {
+			gateway: gateways.riverty,
+			status: 'authorized',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3622418',
-		gatewaySlug: 'riverty',
-		paymentStatus: 'failed',
+		payment: {
+			gateway: gateways.riverty,
+			status: 'failed',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3622419',
-		gatewaySlug: 'riverty',
-		paymentStatus: 'canceled',
+		payment: {
+			gateway: gateways.riverty,
+			status: 'canceled',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3622420',
-		gatewaySlug: 'riverty',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.riverty,
+			status: 'expired',
+		},
 	},
-	// Payconiq unset by client on 04/12/2025
-	// {
-	// 	testId: 'C3622429',
-	// 	gatewaySlug: 'payconiq',
-	// 	paymentStatus: 'paid',
-	// },
-	// {
-	// 	testId: 'C3622430',
-	// 	gatewaySlug: 'payconiq',
-	// 	paymentStatus: 'failed',
-	// },
-	// {
-	// 	testId: 'C3622431',
-	// 	gatewaySlug: 'payconiq',
-	// 	paymentStatus: 'canceled',
-	// },
-	// {
-	// 	testId: 'C3622432',
-	// 	gatewaySlug: 'payconiq',
-	// 	paymentStatus: 'expired',
-	// },
 	{
+		...baseOrder,
 		testId: 'C3757247',
-		gatewaySlug: 'satispay',
-		paymentStatus: 'paid',
+		payment: {
+			gateway: gateways.satispay,
+			status: 'paid',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3757248',
-		gatewaySlug: 'satispay',
-		paymentStatus: 'failed',
+		payment: {
+			gateway: gateways.satispay,
+			status: 'failed',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3757249',
-		gatewaySlug: 'satispay',
-		paymentStatus: 'canceled',
+		payment: {
+			gateway: gateways.satispay,
+			status: 'canceled',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3757250',
-		gatewaySlug: 'satispay',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.satispay,
+			status: 'expired',
+		},
 	},
 ];

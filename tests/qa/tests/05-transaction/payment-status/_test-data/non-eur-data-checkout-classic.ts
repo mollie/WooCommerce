@@ -1,136 +1,208 @@
 /**
  * Internal dependencies
  */
-import { MollieTestData } from '../../../../resources';
+import { MollieTestData, gateways } from '../../../../resources';
+import { baseOrder } from './transaction-base-order.data';
 
-export const classicCheckoutNonEur: MollieTestData.Transaction[] = [
+export const classicCheckoutNonEur: MollieTestData.ShopOrder[] = [
 	{
+		...baseOrder,
 		testId: 'C3007247',
-		gatewaySlug: 'twint',
-		paymentStatus: 'paid',
+		payment: {
+			gateway: gateways.twint,
+			status: 'paid',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3007248',
-		gatewaySlug: 'twint',
-		paymentStatus: 'failed',
+		payment: {
+			gateway: gateways.twint,
+			status: 'failed',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3007249',
-		gatewaySlug: 'twint',
-		paymentStatus: 'canceled',
+		payment: {
+			gateway: gateways.twint,
+			status: 'canceled',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3007250',
-		gatewaySlug: 'twint',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.twint,
+			status: 'expired',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3007251',
-		gatewaySlug: 'blik',
-		paymentStatus: 'paid',
+		payment: {
+			gateway: gateways.blik,
+			status: 'paid',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3007252',
-		gatewaySlug: 'blik',
-		paymentStatus: 'failed',
+		payment: {
+			gateway: gateways.blik,
+			status: 'failed',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3007253',
-		gatewaySlug: 'blik',
-		paymentStatus: 'canceled',
+		payment: {
+			gateway: gateways.blik,
+			status: 'canceled',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C3007254',
-		gatewaySlug: 'blik',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.blik,
+			status: 'expired',
+		},
 	},
-	// recently added payment methods
 	{
+		...baseOrder,
 		testId: 'C0000',
-		gatewaySlug: 'paybybank',
-		paymentStatus: 'open',
+		payment: {
+			gateway: gateways.paybybank,
+			status: 'open',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C4237583',
-		gatewaySlug: 'paybybank',
-		paymentStatus: 'paid',
+		payment: {
+			gateway: gateways.paybybank,
+			status: 'paid',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C4237584',
-		gatewaySlug: 'paybybank',
-		paymentStatus: 'failed',
+		payment: {
+			gateway: gateways.paybybank,
+			status: 'failed',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C4237585',
-		gatewaySlug: 'paybybank',
-		paymentStatus: 'canceled',
+		payment: {
+			gateway: gateways.paybybank,
+			status: 'canceled',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C4237586',
-		gatewaySlug: 'paybybank',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.paybybank,
+			status: 'expired',
+		},
 	},
-	// Swish
 	{
+		...baseOrder,
 		testId: 'C4237587',
-		gatewaySlug: 'swish',
-		paymentStatus: 'paid',
+		payment: {
+			gateway: gateways.swish,
+			status: 'paid',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C4237588',
-		gatewaySlug: 'swish',
-		paymentStatus: 'failed',
+		payment: {
+			gateway: gateways.swish,
+			status: 'failed',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C4237589',
-		gatewaySlug: 'swish',
-		paymentStatus: 'canceled',
+		payment: {
+			gateway: gateways.swish,
+			status: 'canceled',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C4237590',
-		gatewaySlug: 'swish',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.swish,
+			status: 'expired',
+		},
 	},
-	// Vipps
 	{
+		...baseOrder,
 		testId: 'C0000',
-		gatewaySlug: 'vipps',
-		paymentStatus: 'paid',
+		payment: {
+			gateway: gateways.vipps,
+			status: 'paid',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C0000',
-		gatewaySlug: 'vipps',
-		paymentStatus: 'failed',
+		payment: {
+			gateway: gateways.vipps,
+			status: 'failed',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C0000',
-		gatewaySlug: 'vipps',
-		paymentStatus: 'canceled',
+		payment: {
+			gateway: gateways.vipps,
+			status: 'canceled',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C00001',
-		gatewaySlug: 'vipps',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.vipps,
+			status: 'expired',
+		},
 	},
-	// MobilePay
 	{
+		...baseOrder,
 		testId: 'C0000',
-		gatewaySlug: 'mobilepay',
-		paymentStatus: 'paid',
+		payment: {
+			gateway: gateways.mobilepay,
+			status: 'paid',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C00002',
-		gatewaySlug: 'mobilepay',
-		paymentStatus: 'failed',
+		payment: {
+			gateway: gateways.mobilepay,
+			status: 'failed',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C0000',
-		gatewaySlug: 'mobilepay',
-		paymentStatus: 'canceled',
+		payment: {
+			gateway: gateways.mobilepay,
+			status: 'canceled',
+		},
 	},
 	{
+		...baseOrder,
 		testId: 'C0000',
-		gatewaySlug: 'mobilepay',
-		paymentStatus: 'expired',
+		payment: {
+			gateway: gateways.mobilepay,
+			status: 'expired',
+		},
 	},
 ];

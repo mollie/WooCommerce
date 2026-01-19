@@ -82,6 +82,34 @@ export const createPaymentComponent = ( item, commonProps ) => {
                     } }
                 />
             );
+        case 'mollie_wc_gateway_vipps':
+            const VippsFieldsWithStore = withMollieStore(
+                PaymentFieldsComponent
+            );
+            return (
+                <VippsFieldsWithStore
+                    { ...commonProps }
+                    fieldConfig={ {
+                        hasCustomPhoneField: true,
+                        hasCustomBirthdateField: false,
+                        phoneLabel: item.phoneLabel || 'Phone',
+                    } }
+                />
+            );
+        case 'mollie_wc_gateway_mobilepay':
+            const MobilepayFieldsWithStore = withMollieStore(
+                PaymentFieldsComponent
+            );
+            return (
+                <MobilepayFieldsWithStore
+                    { ...commonProps }
+                    fieldConfig={ {
+                        hasCustomPhoneField: true,
+                        hasCustomBirthdateField: false,
+                        phoneLabel: item.phoneLabel || 'Phone',
+                    } }
+                />
+            );
 
 		default:
 			const DefaultWithStore = withMollieStore( DefaultComponent );

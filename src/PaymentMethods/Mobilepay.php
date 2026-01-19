@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
-class Vippsmobilepay extends AbstractPaymentMethod implements PaymentMethodI
+class Mobilepay extends AbstractPaymentMethod implements PaymentMethodI
 {
     public function getConfig(): array
     {
         return [
-            'id' => 'vippsmobilepay',
-            'defaultTitle' => 'Vipps Mobile Pay',
+            'id' => 'mobilepay',
+            'defaultTitle' => 'Mobilepay',
             'settingsDescription' => '',
             'defaultDescription' => '',
-            'paymentFields' => false,
+            'paymentFields' => true,
+            'additionalFields' => ['phone'],
             'instructions' => false,
             'supports' => [
                 'products',
@@ -21,7 +22,7 @@ class Vippsmobilepay extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'docs' => 'https://www.mollie.com/gb/payments/vippsmobilepay',
+            'docs' => 'https://www.mollie.com/gb/payments/mobilepay',
         ];
     }
 
@@ -30,7 +31,7 @@ class Vippsmobilepay extends AbstractPaymentMethod implements PaymentMethodI
         if ($this->translationsInitialized) {
             return;
         }
-        $this->config['defaultTitle'] = __('Vipps Mobile Pay', 'mollie-payments-for-woocommerce');
+        $this->config['defaultTitle'] = __('Mobilepay', 'mollie-payments-for-woocommerce');
         $this->translationsInitialized = true;
     }
 

@@ -422,6 +422,31 @@ class AssetsModule implements ExecutableModule
             return;
         }
         wp_enqueue_script('mollie_wc_gateway_advanced_settings');
+        wp_localize_script('mollie_wc_gateway_advanced_settings', 'mollieWebhookTestData', [
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'messages' => [
+                'waiting' => __('Waiting for webhook...', 'mollie-payments-for-woocommerce'),
+                'takingLong' => __('Still waiting... This is taking longer than expected.', 'mollie-payments-for-woocommerce'),
+                'timeout' => __('⚠ Webhook test timed out. Please check your firewall settings and try again.', 'mollie-payments-for-woocommerce'),
+                'success' => __('✓ Webhook received successfully!', 'mollie-payments-for-woocommerce'),
+                'noWebhook' => __('✗ Webhook not received. Please check your server configuration.', 'mollie-payments-for-woocommerce'),
+                'error' => __('An error occurred. Please try again.', 'mollie-payments-for-woocommerce'),
+
+                'creating' => __('Creating test payment...', 'mollie-payments-for-woocommerce'),
+                'checkoutRequired' => __('A test payment has been created. Please complete the steps below to trigger the webhook.', 'mollie-payments-for-woocommerce'),
+                'step1' => __('Step 1:', 'mollie-payments-for-woocommerce'),
+                'step2' => __('Step 2:', 'mollie-payments-for-woocommerce'),
+                'step3' => __('Step 3:', 'mollie-payments-for-woocommerce'),
+                'clickCheckout' => __('Click the button below to open the Mollie test payment page in a new tab.', 'mollie-payments-for-woocommerce'),
+                'openCheckout' => __('Open Test Payment Page', 'mollie-payments-for-woocommerce'),
+                'selectStatus' => __('Select a payment status "Paid" on the Mollie page. Then click on Continue.', 'mollie-payments-for-woocommerce'),
+                'clickVerify' => __('Return to this tab and click the button below to verify the webhook was received.', 'mollie-payments-for-woocommerce'),
+                'verifyWebhook' => __('Verify Webhook', 'mollie-payments-for-woocommerce'),
+                'cancelTest' => __('Cancel Test', 'mollie-payments-for-woocommerce'),
+            ],
+        ]);
+
+        wp_enqueue_style('mollie-advanced-settings');
     }
 
     /**
@@ -503,8 +528,8 @@ class AssetsModule implements ExecutableModule
                 if ($hasBlocksEnabled) {
                     /** @var array */
                     $gatewayInstances = $container->get('__deprecated.gateway_helpers');
-                    // admin_enqueue_scripts is too late to register the block scripts
-                    add_action('admin_init', function () use ($container,$pluginUrl, $pluginPath) {
+                    // admin_enqueue_scripts is too late to register the block scripts, admin_init was too soon
+                    add_action('current_screen', function () use ($container,$pluginUrl, $pluginPath) {
                         $this->registerBlockScripts($pluginUrl, $pluginPath, $container);
                     });
                     add_action('wp_enqueue_scripts', function () use ($dataService, $gatewayInstances, $container,$pluginUrl, $pluginPath) {
@@ -536,6 +561,13 @@ class AssetsModule implements ExecutableModule
                         ['underscore', 'jquery'],
                         $pluginVersion,
                         true
+                    );
+                    wp_register_style(
+                        'mollie-advanced-settings',
+                        $this->getPluginUrl($pluginUrl, '/public/css/mollie-advanced-settings.min.css'),
+                        [],
+                        $pluginVersion,
+                        'screen'
                     );
                     add_action('admin_enqueue_scripts', [$this, 'enqueueAdvancedSettingsJS'], 10, 1);
 

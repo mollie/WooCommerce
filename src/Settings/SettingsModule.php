@@ -9,6 +9,7 @@ namespace Mollie\WooCommerce\Settings;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\SDK\Api;
+use Mollie\WooCommerce\Settings\Webhooks\WebhookTestService;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\Status;
 use Mollie\WooCommerce\Uninstall\CleanDb;
@@ -100,6 +101,26 @@ class SettingsModule implements ServiceModule, ExecutableModule
             },
             'settings.option_name' => static function () {
                 return 'mollie-payments-for-woocommerce_';
+            },
+            /**
+             * Webhook Test Service
+             * Handles webhook connection testing functionality
+             */
+            WebhookTestService::class => static function (ContainerInterface $container): WebhookTestService {
+                $apiHelper = $container->get('SDK.api_helper');
+                assert($apiHelper instanceof Api);
+
+                $settingsHelper = $container->get('settings.settings_helper');
+                assert($settingsHelper instanceof Settings);
+
+                $logger = $container->get(Logger::class);
+                assert($logger instanceof Logger);
+
+                return new WebhookTestService(
+                    $apiHelper,
+                    $settingsHelper,
+                    $logger
+                );
             },
         ];
     }
@@ -228,6 +249,10 @@ class SettingsModule implements ServiceModule, ExecutableModule
             10,
             3
         );
+
+        $webhookTestService = $container->get(WebhookTestService::class);
+        assert($webhookTestService instanceof WebhookTestService);
+        $webhookTestService->registerAjaxHandlers();
 
         return true;
     }

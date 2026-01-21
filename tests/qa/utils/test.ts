@@ -2,6 +2,7 @@
  * External dependencies
  */
 import fs from 'fs';
+import { Client as MollieClientApi } from "mollie-api-typescript";
 import {
 	APIRequestContext,
 	Page,
@@ -12,6 +13,7 @@ import {
 	test as base,
 	CustomerAccount,
 	CustomerPaymentMethods,
+	CustomerSubscriptions,
 	expect,
 	OrderReceived,
 	WooCommerceApi,
@@ -42,6 +44,7 @@ type TestBaseExtend = {
 	};
 	// Dashboard fixtures
 	mollieApi: MollieApi;
+	mollieClientApi: MollieClientApi;
 	mollieSettingsApiKeys: MollieSettingsApiKeys;
 	mollieSettingsPaymentMethods: MollieSettingsPaymentMethods;
 	mollieSettingsAdvanced: MollieSettingsAdvanced;
@@ -68,6 +71,16 @@ const test = base.extend< TestBaseExtend >( {
 	// Dashboard pages operated by Admin
 	mollieApi: async ( { request, requestUtils }, use ) => {
 		await use( new MollieApi( { request, requestUtils } ) );
+	},
+	mollieClientApi: async ( {}, use ) => {
+		await use(
+			new MollieClientApi( {
+				testmode: true,
+				security: {
+					apiKey: process.env.MOLLIE_TEST_API_KEY,
+				},
+			} )
+		);
 	},
 	mollieSettingsApiKeys: async ( { page }, use ) => {
 		await use( new MollieSettingsApiKeys( { page } ) );
@@ -151,6 +164,9 @@ const test = base.extend< TestBaseExtend >( {
 	},
 	customerPaymentMethods: async ( { visitorPage }, use ) => {
 		await use( new CustomerPaymentMethods( { page: visitorPage } ) );
+	},
+	customerSubscriptions: async ( { visitorPage }, use ) => {
+		await use( new CustomerSubscriptions( { page: visitorPage } ) );
 	},
 	mollieHostedCheckout: async ( { visitorPage }, use ) => {
 		await use( new MollieHostedCheckout( { page: visitorPage } ) );

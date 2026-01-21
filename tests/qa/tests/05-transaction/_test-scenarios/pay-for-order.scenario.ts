@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { countTotals } from '@inpsyde/playwright-utils/build';
+import { countTotals, expect } from '@inpsyde/playwright-utils/build';
 /**
  * Internal dependencies
  */
@@ -18,10 +18,10 @@ export const testPaymentStatusOnPayForOrder = ( testData: MollieTestData.ShopOrd
 	const { testId, payment } = testData;
 	const { gateway } = payment;
 
-	const orderStatus = getOrderStatusFromMollieStatus(payment.status);
-	const customer = guests[gateway.country];
+	const orderStatus = getOrderStatusFromMollieStatus( payment.status );
+	const customer = guests[ gateway.country ];
 	const currency = gateway.currency;
-	const gatewayLabel = buildMollieGatewayLabel(gateway);
+	const gatewayLabel = buildMollieGatewayLabel( gateway );
 
 	Object.assign(testData, { orderStatus, customer, currency });
 
@@ -49,10 +49,31 @@ export const testPaymentStatusOnPayForOrder = ( testData: MollieTestData.ShopOrd
 			Number( orderId ),
 			testData
 		);
+		
+		const { transaction_id: transactionId } =
+			await wooCommerceApi.getOrder( orderId );
+		await expect( transactionId, `Transaction ID ${ transactionId }` ).toBeDefined();
 
+		await wooCommerceOrderEdit.visit( orderId );
 		await wooCommerceOrderEdit.assertOrderDetails(
-			Number( orderId ),
-			testData
+			testData,
+			transactionId,
 		);
+
+		// Assert order notes via WC API
+		const orderNotes = await wooCommerceApi.getOrderNotes(orderId);
+		const notes = orderNotes.map(n => n.note);
+
+		const expectedNotes = [
+			`${gateway.slug} payment started (${transactionId} - test mode).`,
+			`Payment via ${gateway.name} (${transactionId}).`,
+			`Order completed using Mollie - ${gateway.name} payment (${transactionId} - test mode).`,
+		];
+
+		for (const expected of expectedNotes) {
+			const matches = notes.filter(note => note.includes(expected));
+			expect(matches, `Note "${expected}" should appear exactly once`).toHaveLength(1);
+			expect(matches[0]).toContain(expected); // This gives the diff on mismatch
+		}
 	} );
 };

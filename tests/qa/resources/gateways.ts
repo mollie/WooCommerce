@@ -467,7 +467,7 @@ const trustly: MollieGateway = {
 	country: 'germany', // Europe
 	minAmount: '1.00',
 	slug: 'trustly',
-	name: 'Trustly',
+	name: 'Trustly', // known bug https://mollie.atlassian.net/browse/PIWOO-683 tolerated by client
 	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,

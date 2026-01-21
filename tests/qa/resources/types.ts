@@ -263,4 +263,11 @@ export namespace MollieTestData {
 		testId?: string;
 		payment?: MolliePayment;
 	};
+
+	export type ShopRefund = ShopOrder & {
+		isMollieClientApiRefund?: boolean; // true = refund via Mollie API, false = refund via WooCommerce admin
+		refundPercentage?: number; // how much of order price to refund 0.01...100.00%
+		refundOrderStatus?: WooCommerce.OrderStatus; // WooCommerce refunded order status
+		refundPaymentStatus?: string; // Payment status obtained from PayPal Payment
+	};
 }

@@ -58,11 +58,11 @@ export namespace MollieSettings {
 		debugLogEnabled?: boolean;
 		orderStatusCancelledPayments?: OrderStatusCancelledPayment;
 		paymentLocale?: PaymentLocale;
-		customerDetails?: boolean;
+		customerDetailsEnabled?: boolean;
 		apiMethod?: ApiMethod;
 		apiPaymentDescription?: ApiPaymentDescription;
 		gatewayFeeLabel?: string;
-		removeOptionsAndTransients?: boolean;
+		removeOptionsAndTransientsEnabled?: boolean;
 		placePaymentOnhold?: PaymentCapture;
 	};
 

@@ -71,9 +71,9 @@ export class MollieSettingsAdvanced extends MollieSettingsPage {
 			);
 		}
 
-		if ( data.customerDetails !== undefined ) {
+		if ( data.customerDetailsEnabled !== undefined ) {
 			await this.storeCustomerDetailsAtMollieCheckbox().setChecked(
-				data.customerDetails
+				data.customerDetailsEnabled
 			);
 		}
 
@@ -94,9 +94,9 @@ export class MollieSettingsAdvanced extends MollieSettingsPage {
 			);
 		}
 
-		if ( data.removeOptionsAndTransients !== undefined ) {
+		if ( data.removeOptionsAndTransientsEnabled !== undefined ) {
 			await this.removeMollieDataFromDatabaseOnUninstall().setChecked(
-				data.removeOptionsAndTransients
+				data.removeOptionsAndTransientsEnabled
 			);
 		}
 

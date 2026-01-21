@@ -81,7 +81,9 @@ export class Utils {
 		await this.mollieApi.setMollieApiKeys( mollieApiKeys.default );
 		await this.mollieApi.cleanMollieDb();
 		await this.mollieApi.setMollieApiKeys( mollieApiKeys.default );
-		await this.mollieApi.setApiMethod( this.mollieApiMethod );
+		await this.mollieApi.setAdvancedSettings( {
+			apiMethod: this.mollieApiMethod
+		} );
 	};
 
 	/**

@@ -11,11 +11,8 @@ export const testSubscriptionRenewal = ( testData: MollieTestData.ShopOrder ) =>
 	const { parentOrderStatus, renewalOrderStatus } = subscription;
 
 	test.describe( () => {
-		// Restore customer and his storage state to remove vaulted payment methods.
-		// Placed in beforeAll for each test to be able to use storate state in a test.
-		test.beforeAll( async ( { utils, wooCommerceApi } ) => {
-			await wooCommerceApi.deleteAllSubscriptions();
-			await wooCommerceApi.deleteAllOrders();
+		// Restore customer and his storage state
+		test.beforeAll( async ( { utils } ) => {
 			await utils.restoreCustomer( customer );
 		} );
 
@@ -34,6 +31,7 @@ export const testSubscriptionRenewal = ( testData: MollieTestData.ShopOrder ) =>
 				wooCommerceSubscriptionEdit,
 				customerSubscriptions,
 			} ) => {
+				test.setTimeout( 2 * 60_000 );
 				await updateCurrencyIfNeeded( wooCommerceApi, gateway.currency );
 				
 				const orderTotals = await countTotals( testData );
@@ -52,13 +50,17 @@ export const testSubscriptionRenewal = ( testData: MollieTestData.ShopOrder ) =>
 
 				const subscriptions =
 					await wooCommerceApi.getSubscriptionByParentId( orderId );
-				await expect( subscriptions.length ).toBe( 1 );
+				await expect(
+					subscriptions.length,
+					'Number of subscriptions created is not 1'
+				).toBe( 1 );
 				const subscription = subscriptions[ 0 ];
 
 				const relatedParentOrder = {
 					id: orderId,
 					relationship: 'Parent Order',
-					status: 'Processing',
+					status:
+						wooCommerceOrderEdit.getOrderStatusLabel( parentOrderStatus ),
 					total: orderTotals.order,
 				};
 
@@ -68,6 +70,8 @@ export const testSubscriptionRenewal = ( testData: MollieTestData.ShopOrder ) =>
 					status: 'Active',
 					total: orderTotals.order,
 				};
+
+				await wooCommerceOrderEdit.visit( orderId );
 				await wooCommerceOrderEdit.assertRelatedOrders(
 					[ relatedSubscription ],
 					currency
@@ -83,7 +87,7 @@ export const testSubscriptionRenewal = ( testData: MollieTestData.ShopOrder ) =>
 				);
 
 				// Subscription renewal
-				await mollieApi.triggerSubscriptionRenewal(
+				await wooCommerceSubscriptionEdit.triggerSubscriptionRenewal(
 					subscription.id
 				);
 
@@ -99,7 +103,8 @@ export const testSubscriptionRenewal = ( testData: MollieTestData.ShopOrder ) =>
 					relatedRenewalOrders.push( {
 						id: renewalOrderId,
 						relationship: 'Renewal Order',
-						status: 'Processing',
+						status:
+							wooCommerceOrderEdit.getOrderStatusLabel( renewalOrderStatus ),
 						total: orderTotals.order,
 					} );
 				}

@@ -11,13 +11,21 @@ const { WLOP_NAME } = process.env;
 
 export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 	// Locators
+	paymentVia = ( method ) =>
+		this.orderNumberContainer().getByText( `Payment via ${ method }` );
+	transactionIdLink = ( transactionId ) =>
+		this.orderNumberContainer().getByRole( 'link', {
+			name: transactionId,
+		} );
 	transactionIdText = ( transactionId ): Locator =>
 		this.orderNumberContainer().getByText( `(${ transactionId })` );
 	billingDataTransactionIdInput = (): Locator =>
 		this.billingDataContainer().getByLabel( 'Transaction ID' );
 
-	refundViaMollieButton = () =>
-		this.page.locator( '.do-api-refund', { hasText: WLOP_NAME } );
+	refundViaMollieButton = ( gatewayName: string ) =>
+		this.page.locator( '.do-api-refund', {
+			hasText: new RegExp( `Refund .* via ${ gatewayName }` )
+		} );
 
 	productsTable = () => this.page.locator( '#order_line_items' );
 	productRow = ( name ): Locator =>
@@ -45,26 +53,17 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 	totalWorldlineNetTotal = (): Locator =>
 		this.totalsTableRow( `${ WLOP_NAME } Net Total:` );
 
-	orderStatusLabels = {
-		pending: 'Pending payment',
-		processing: 'Processing',
-		'on-hold': 'On hold',
-		completed: 'Completed',
-		cancelled: 'Cancelled',
-		refunded: 'Refunded',
-		failed: 'Failed',
-		draft: 'Draft',
-	};
-
 	// Actions
+
 	/**
-	 * TODO: needs update
-	 * Performs Worldline refund
+	 * Performs Mollie refund
 	 *
+	 * @param gatewayName
 	 * @param amount
 	 */
-	makeRefund = async ( amount?: string ) => {
-		await this.refundButton().click();
+	makeRefund = async ( gatewayName: string, amount?: string ) => {
+		const refundViaMollieButton = this.refundViaMollieButton( gatewayName );
+		await expect( refundViaMollieButton ).toBeVisible();
 		if ( ! amount ) {
 			const totalAmount =
 				( await this.totalAvailableToRefund().textContent() ) || '';
@@ -73,9 +72,9 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 			).toFixed( 2 );
 		}
 		await this.firstRefundTotalInput().fill( amount );
-		await this.page.on( 'dialog', ( dialog ) => dialog.accept() );
-		// await this.page.on('dialog', dialog => dialog.accept());
-		await this.refundViaMollieButton().click();
+		await this.page.on( 'dialog', dialog => dialog.accept() );
+		await refundViaMollieButton.click();
+		await this.page.waitForLoadState( 'networkidle');
 	};
 
 	/**
@@ -85,17 +84,47 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 	 * @param productName
 	 * @param qty
 	 */
-	makeRefundForProduct = async ( productName: string, qty: number = 1 ) => {
+	makeRefundForProduct = async ( gatewayName: string, productName: string, qty: number = 1 ) => {
 		await this.refundButton().click();
 		await this.lineItemRefundQuantityInput( productName ).fill(
 			String( qty )
 		);
 		await this.page.on( 'dialog', ( dialog ) => dialog.accept() );
 		// await this.page.on('dialog', dialog => dialog.accept());
-		await this.refundViaMollieButton().click();
+		await this.refundViaMollieButton( gatewayName ).click();
 	};
 
 	// Assertions
+	
+	/**
+	 * Asserts order edit page including PayPal related fields
+	 *
+	 * @param orderId
+	 * @param orderData
+	 * @param transactionId
+	 */
+	assertOrderDetails = async (
+		orderData: WooCommerce.ShopOrder,
+		transactionId?: string,
+	) => {
+		await super.assertOrderDetails( orderData );
+
+		const { gateway } = orderData.payment;
+
+		// Payment via text
+		await expect(
+			this.paymentVia( gateway.name ),
+			'Payment via method'
+		).toBeVisible();
+
+		// Transaction ID
+		if ( transactionId ) {
+			await expect(
+				this.transactionIdLink( transactionId ),
+				'Transaction ID link'
+			).toBeVisible();
+		}
+	};
 
 	/**
 	 * TODO: needs update

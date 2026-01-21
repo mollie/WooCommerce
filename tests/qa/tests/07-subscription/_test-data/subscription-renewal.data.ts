@@ -11,6 +11,7 @@ export const subscriptionRenewal: MollieTestData.ShopOrder[] = [
 		payment: {
 			gateway: gateways.ideal,
 			status: 'paid',
+			bankIssuer: 'ING',
 		},
 	},
 	{
@@ -35,6 +36,7 @@ export const subscriptionRenewal: MollieTestData.ShopOrder[] = [
 		payment: {
 			gateway: gateways.kbc,
 			status: 'paid',
+			bankIssuer: 'KBC',
 		},
 	},
 	{

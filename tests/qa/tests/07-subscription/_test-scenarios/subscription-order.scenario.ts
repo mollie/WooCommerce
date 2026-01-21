@@ -17,11 +17,8 @@ export const testSubscriptionOrderOnClassicCheckout = ( testData: MollieTestData
 	const { parentOrderStatus } = subscription;
 
 	test.describe( () => {
-		// Restore customer and his storage state to remove vaulted payment methods.
-		// Placed in beforeAll for each test to be able to use storate state in a test.
-		test.beforeAll( async ( { utils, wooCommerceApi } ) => {
-			await wooCommerceApi.deleteAllSubscriptions();
-			await wooCommerceApi.deleteAllOrders();
+		// Restore customer and his storage state
+		test.beforeAll( async ( { utils } ) => {
 			await utils.restoreCustomer( customer );
 		} );
 
@@ -55,20 +52,29 @@ export const testSubscriptionOrderOnClassicCheckout = ( testData: MollieTestData
 					testData
 				);
 
+				const { transaction_id: transactionId } =
+					await wooCommerceApi.getOrder( orderId );
+				await expect( transactionId, `Transaction ID ${ transactionId }` ).toBeDefined();
+
 				const subscriptions =
 					await wooCommerceApi.getSubscriptionByParentId( orderId );
-				await expect( subscriptions.length ).toBe( 1 );
+				await expect(
+					subscriptions.length,
+					'Number of subscriptions created is not 1'
+				).toBe( 1 );
 				const subscription = subscriptions[ 0 ];
 
 				await customerSubscriptions.visit( subscription.id );
 				await customerSubscriptions.assertUrl( subscription.id );
 				await expect(
-					customerSubscriptions.paymentMethod()
+					customerSubscriptions.paymentMethod(),
+					'Payment method on subscription details page is incorrect'
 				).toHaveText( new RegExp( payment.gateway.name ) );
 
+				await wooCommerceOrderEdit.visit( orderId );
 				await wooCommerceOrderEdit.assertOrderDetails(
-					Number( orderId ),
-					testData
+					testData,
+					transactionId,
 				);
 
 				await wooCommerceSubscriptionEdit.visit( subscription.id );

@@ -4,7 +4,6 @@
 import {
 	OrderReceived,
 	PayForOrder,
-	WooCommerceApi,
 } from '@inpsyde/playwright-utils/build';
 /**
  * Internal dependencies

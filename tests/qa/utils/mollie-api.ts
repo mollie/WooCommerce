@@ -8,6 +8,9 @@ import { RequestUtils, WooCommerceApi } from '@inpsyde/playwright-utils/build';
 import { MollieSettings } from '../resources';
 import { urls, expect } from '.';
 
+/**
+ * Class for Mollie Plugin API
+ */
 export class MollieApi extends WooCommerceApi {
 	requestUtils: RequestUtils;
 
@@ -82,72 +85,5 @@ export class MollieApi extends WooCommerceApi {
 			{ settings: data }
 		);
 		return response;
-	};
-	
-	/**
-	 * Triggers Subscription Renewal
-	 *
-	 * @param subscriptionId
-	 */
-	triggerSubscriptionRenewal = async ( subscriptionId: number ) => {
-		const url = urls.wooCommerce.admin.subscriptions.edit + subscriptionId;
-		const wpnonce = await this.requestUtils.getPageNonce( url );
-		const formData = {
-			_wpnonce: wpnonce,
-			post_ID: subscriptionId,
-			action: 'edit_order',
-			wc_order_action: 'wcs_process_renewal',
-		};
-		const response = await this.requestUtils.submitPageForm(
-			url,
-			formData
-		);
-		return response.ok();
-	};
-
-	/**
-	 * Get's renewal order IDs
-	 * Utilizes the retry mechanism because after the renewal there appeared to be a delay
-	 *
-	 * @param subscriptionId
-	 */
-	getSubscriptionRenewalOrderIds = async (
-		subscriptionId: number
-	): Promise< number[] > => {
-		let subscription = await this.getSubscription( subscriptionId );
-
-		if ( ! subscription ) {
-			console.error( `Subscription #${ subscriptionId } was not found.` );
-			return [];
-		}
-
-		const MAX_RETRY_COUNT = 10;
-		const RETRY_INTERVAL_MS = 1000;
-
-		let retryCount = 0;
-		let subscriptionMeta;
-
-		do {
-			subscriptionMeta = subscription.meta_data.find(
-				( meta ) => meta.key === '_subscription_renewal_order_ids_cache'
-			);
-
-			if ( subscriptionMeta?.value?.length ) {
-				return subscriptionMeta.value;
-			}
-
-			// Add a delay before making the getSubscription call
-			await new Promise( ( resolve ) =>
-				setTimeout( resolve, RETRY_INTERVAL_MS )
-			);
-
-			subscription = await this.getSubscription( subscriptionId );
-			retryCount++;
-		} while ( retryCount < MAX_RETRY_COUNT );
-
-		console.error(
-			`_subscription_renewal_order_ids_cache was not found in ${ MAX_RETRY_COUNT } sec.`
-		);
-		return [];
 	};
 }

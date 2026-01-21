@@ -6,7 +6,8 @@ import { products, shopConfigGermany } from '../../resources';
 import { testSubscriptionRenewal } from './_test-scenarios';
 import { subscriptionRenewal } from './_test-data';
 
-test.beforeAll( async ( { utils } ) => {
+test.beforeAll( async ( { utils, wooCommerceApi } ) => {
+	test.setTimeout( 2 * 60_000 );
 	await utils.configureStore( {
 		...shopConfigGermany,
 		enableClassicPages: true,
@@ -15,10 +16,6 @@ test.beforeAll( async ( { utils } ) => {
 	} );
 	await utils.installAndActivateMollie();
 	await utils.cleanReconnectMollie();
-} );
-
-test.afterAll( async ( { wooCommerceApi } ) => {
-	await wooCommerceApi.deleteAllSubscriptions();
 	await wooCommerceApi.deleteAllOrders();
 } );
 

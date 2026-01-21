@@ -6,7 +6,7 @@ import { products, shopConfigGermany } from '../../resources';
 import { testSubscriptionOrderOnClassicCheckout } from './_test-scenarios';
 import { subscriptionOrderOnClassicCheckout } from './_test-data';
 
-test.beforeAll( async ( { utils } ) => {
+test.beforeAll( async ( { utils, wooCommerceApi } ) => {
 	test.setTimeout( 2 * 60_000 );
 	await utils.configureStore( {
 		...shopConfigGermany,
@@ -16,10 +16,6 @@ test.beforeAll( async ( { utils } ) => {
 	} );
 	await utils.installAndActivateMollie();
 	await utils.cleanReconnectMollie();
-} );
-
-test.afterAll( async ( { wooCommerceApi } ) => {
-	await wooCommerceApi.deleteAllSubscriptions();
 	await wooCommerceApi.deleteAllOrders();
 } );
 

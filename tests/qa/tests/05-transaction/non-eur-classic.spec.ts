@@ -25,7 +25,8 @@ test.beforeAll( async ( { utils }, testInfo ) => {
 
 for ( const testData of classicCheckoutNonEur ) {
 	// exclude tests for payment methods if not available for tested API
-	const availableForApiMethods = testData.payment.gateway.availableForApiMethods;
+	const availableForApiMethods =
+		testData.payment.gateway.availableForApiMethods;
 	if ( ! availableForApiMethods.includes( testedApiMethod ) ) {
 		continue;
 	}

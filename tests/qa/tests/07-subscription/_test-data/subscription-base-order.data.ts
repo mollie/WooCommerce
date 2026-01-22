@@ -1,7 +1,12 @@
 /**
  * Internal dependencies
  */
-import { orders, MollieTestData, customers, products } from '../../../resources';
+import {
+	orders,
+	MollieTestData,
+	customers,
+	products,
+} from '../../../resources';
 
 export const baseOrder: MollieTestData.ShopOrder = {
 	...orders.default,

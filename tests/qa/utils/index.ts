@@ -6,3 +6,4 @@ export * from './admin';
 export * from './frontend';
 export * from './mollie-api';
 export * from './mollie-helpers';
+export * from './order-notes-helpers';

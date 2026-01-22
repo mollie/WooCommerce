@@ -6,10 +6,7 @@ import {
 	testPaymentStatusOnCheckout,
 	testPaymentStatusOnPayForOrder,
 } from './_test-scenarios';
-import {
-	checkoutNonEur,
-	payForOrderNonEur,
-} from './_test-data';
+import { checkoutNonEur, payForOrderNonEur } from './_test-data';
 import { MollieSettings, shopSettings } from '../../resources';
 
 const testedApiMethod =

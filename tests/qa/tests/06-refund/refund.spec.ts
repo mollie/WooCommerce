@@ -2,13 +2,8 @@
  * Internal dependencies
  */
 import { test } from '../../utils';
-import {
-	testRefund,
-} from './_test-scenarios';
-import {
-	refundViaWooCommerce,
-	refundViaMollieDashboard,
-} from './_test-data';
+import { testRefund } from './_test-scenarios';
+import { refundViaWooCommerce, refundViaMollieDashboard } from './_test-data';
 import { MollieSettings, shopSettings } from '../../resources';
 
 const testedApiMethod =

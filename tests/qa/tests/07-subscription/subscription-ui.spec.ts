@@ -41,9 +41,10 @@ test( `C3348 | Validate that only the correct payment methods (that supports a f
 	await classicCheckout.visit();
 	await classicCheckout.fillCheckoutForm( guests.germany );
 	await classicCheckout.selectShippingMethod( flatRate.settings.title );
-	await expect( classicCheckout.paymentOptionListitems() ).toHaveCount(
-		expectedGateways.length
-	);
+	await expect(
+		classicCheckout.paymentOptionListitems(),
+		'Assert payment option list items count is correct'
+	).toHaveCount( expectedGateways.length );
 	for ( const gateway of expectedGateways ) {
 		await classicCheckout.assertPaymentOptionLabel(
 			gateway.slug,

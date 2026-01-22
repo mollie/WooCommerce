@@ -33,7 +33,10 @@ export class MollieApi extends WooCommerceApi {
 				_wpnonce: wpnonce,
 			},
 		} );
-		await expect( response ).toBeOK();
+		await expect(
+			response,
+			'Assert Mollie API keys are set successfully'
+		).toBeOK();
 		return response;
 	};
 
@@ -49,13 +52,14 @@ export class MollieApi extends WooCommerceApi {
 				nonce_mollie_cleanDb: nonce,
 			},
 		} );
-		await expect( response ).toBeOK();
+		await expect(
+			response,
+			'Assert Mollie DB is cleaned successfully'
+		).toBeOK();
 		return response;
 	};
 
-	setAdvancedSettings = async (
-		data: MollieSettings.Advanced,
-	) => {
+	setAdvancedSettings = async ( data: MollieSettings.Advanced ) => {
 		const {
 			debugLogEnabled,
 			orderStatusCancelledPayments,
@@ -94,7 +98,10 @@ export class MollieApi extends WooCommerceApi {
 				_wpnonce: wpnonce,
 			},
 		} );
-		await expect( response ).toBeOK();
+		await expect(
+			response,
+			'Assert Mollie advanced settings are updated successfully'
+		).toBeOK();
 		return response;
 	};
 

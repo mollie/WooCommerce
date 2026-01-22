@@ -24,7 +24,7 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 
 	refundViaMollieButton = ( gatewayName: string ) =>
 		this.page.locator( '.do-api-refund', {
-			hasText: new RegExp( `Refund .* via ${ gatewayName }` )
+			hasText: new RegExp( `Refund .* via ${ gatewayName }` ),
 		} );
 
 	productsTable = () => this.page.locator( '#order_line_items' );
@@ -63,7 +63,10 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 	 */
 	makeRefund = async ( gatewayName: string, amount?: string ) => {
 		const refundViaMollieButton = this.refundViaMollieButton( gatewayName );
-		await expect( refundViaMollieButton ).toBeVisible();
+		await expect(
+			refundViaMollieButton,
+			`Assert refund via ${ gatewayName } button is visible`
+		).toBeVisible();
 		if ( ! amount ) {
 			const totalAmount =
 				( await this.totalAvailableToRefund().textContent() ) || '';
@@ -72,19 +75,24 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 			).toFixed( 2 );
 		}
 		await this.firstRefundTotalInput().fill( amount );
-		await this.page.on( 'dialog', dialog => dialog.accept() );
+		await this.page.on( 'dialog', ( dialog ) => dialog.accept() );
 		await refundViaMollieButton.click();
-		await this.page.waitForLoadState( 'networkidle');
+		await this.page.waitForLoadState( 'networkidle' );
 	};
 
 	/**
 	 * TODO: needs update
 	 * Performs Mollie refund for specific product
 	 *
+	 * @param gatewayName
 	 * @param productName
 	 * @param qty
 	 */
-	makeRefundForProduct = async ( gatewayName: string, productName: string, qty: number = 1 ) => {
+	makeRefundForProduct = async (
+		gatewayName: string,
+		productName: string,
+		qty: number = 1
+	) => {
 		await this.refundButton().click();
 		await this.lineItemRefundQuantityInput( productName ).fill(
 			String( qty )
@@ -95,17 +103,16 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 	};
 
 	// Assertions
-	
+
 	/**
 	 * Asserts order edit page including PayPal related fields
 	 *
-	 * @param orderId
 	 * @param orderData
 	 * @param transactionId
 	 */
 	assertOrderDetails = async (
 		orderData: WooCommerce.ShopOrder,
-		transactionId?: string,
+		transactionId?: string
 	) => {
 		await super.assertOrderDetails( orderData );
 
@@ -114,66 +121,16 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 		// Payment via text
 		await expect(
 			this.paymentVia( gateway.name ),
-			'Payment via method'
+			'Assert payment via method'
 		).toBeVisible();
 
 		// Transaction ID
 		if ( transactionId ) {
 			await expect(
 				this.transactionIdLink( transactionId ),
-				'Transaction ID link'
+				'Assert transaction ID link'
 			).toBeVisible();
 		}
-	};
-
-	/**
-	 * TODO: needs update
-	 *
-	 * @param amount
-	 * @param currency
-	 */
-	assertRefundRequested = async ( amount: string, currency? ) => {
-		const orderNote = this.orderNoteWithText(
-			`${ WLOP_NAME }: Your refund request for ${ await formatMoney(
-				Number( amount ),
-				currency
-			) } has been submitted and is pending approval.`
-		);
-		await this.retryLocatorVisibility( orderNote );
-		await expect( orderNote ).toBeVisible();
-	};
-
-	/**
-	 * TODO: needs update
-	 * Asserts refund has been finished:
-	 * - Order note received
-	 * - Processed refund ID is present
-	 * - Order status is expected
-	 *
-	 * @param mollieRefundId
-	 * @param orderStatus
-	 * @param amount
-	 * @param currency
-	 */
-	assertRefundFinished = async (
-		mollieRefundId: string,
-		orderStatus: WooCommerce.OrderStatus,
-		amount: string,
-		currency?
-	) => {
-		const orderNote = this.orderNoteWithText(
-			`${ WLOP_NAME }: ${ await formatMoney(
-				Number( amount ),
-				currency
-			) } was refunded.`
-		);
-		const refundProcessedText = this.page.getByText(
-			`Refund processed. ${ WLOP_NAME } transaction ID: ${ mollieRefundId }`
-		);
-		await this.retryLocatorVisibility( orderNote );
-		await expect( orderNote ).toBeVisible();
-		await expect( refundProcessedText ).toBeVisible();
-		await this.assertOrderStatus( orderStatus );
 	};
 
 	retryLocatorVisibility = async ( locator, retries = 5 ) => {

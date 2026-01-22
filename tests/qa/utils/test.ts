@@ -2,7 +2,7 @@
  * External dependencies
  */
 import fs from 'fs';
-import { Client as MollieClientApi } from "mollie-api-typescript";
+import { Client as MollieClientApi } from 'mollie-api-typescript';
 import {
 	APIRequestContext,
 	Page,

@@ -93,20 +93,32 @@ for ( const surcharge of allTests ) {
 					flatRate.settings.title
 				);
 				await expect(
-					classicCheckout.paymentOptionLabel( gateway.slug )
+					classicCheckout.paymentOptionLabel( gateway.slug ),
+					`Assert ${ gateway.name } payment option is visible`
 				).toBeVisible();
-				await classicCheckout.paymentOptionLabel( gateway.slug ).click();
+				await classicCheckout
+					.paymentOptionLabel( gateway.slug )
+					.click();
 				await classicCheckout.page.waitForTimeout( 2000 ); // timeout for progress spinner (can't catch the element)
 				const feeNotice = classicCheckout.paymentOptionFee(
 					gateway.name
 				);
 				if ( expectedFeeText ) {
-					await expect( feeNotice ).toContainText( expectedFeeText );
+					await expect(
+						feeNotice,
+						`Assert fee notice is visible for ${ gateway.name }`
+					).toContainText( expectedFeeText );
 				} else {
-					await expect( feeNotice ).not.toBeVisible();
+					await expect(
+						feeNotice,
+						`Assert fee notice is not visible for ${ gateway.name }`
+					).not.toBeVisible();
 				}
 				const totalAmount = await classicCheckout.captureTotalAmount();
-				await expect( totalAmount ).toEqual( surcharge.expectedAmount );
+				await expect(
+					totalAmount,
+					`Assert total amount is correct for ${ gateway.name }`
+				).toEqual( surcharge.expectedAmount );
 			} );
 		}
 	} );

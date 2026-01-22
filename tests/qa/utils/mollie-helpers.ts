@@ -1,10 +1,7 @@
 /**
  * External dependencies
  */
-import {
-	OrderReceived,
-	PayForOrder,
-} from '@inpsyde/playwright-utils/build';
+import { OrderReceived, PayForOrder } from '@inpsyde/playwright-utils/build';
 /**
  * Internal dependencies
  */
@@ -52,9 +49,13 @@ export function buildMollieGatewayLabel( gateway: MollieGateway ): string {
 
 /**
  * Depending on payment status different WC pages are shown after payment
- * @param param0 
- * @param orderId 
- * @param order 
+ *
+ * @param param0
+ * @param param0.mollieHostedCheckout
+ * @param param0.orderReceived
+ * @param param0.payForOrder
+ * @param orderId
+ * @param order
  */
 export const processMolliePaymentStatus = async (
 	{
@@ -77,20 +78,30 @@ export const processMolliePaymentStatus = async (
 		case 'authorized':
 			await orderReceived.assertOrderDetails( order );
 			orderNumber = await orderReceived.getOrderNumber();
-			await expect( orderId ).toEqual( orderNumber );
+			await expect(
+				orderId,
+				'Assert order ID matches order number'
+			).toEqual( orderNumber );
 			break;
 
 		case 'failed':
 		case 'canceled':
-			await expect( payForOrder.heading() ).toBeVisible();
+			await expect(
+				payForOrder.heading(),
+				'Assert pay for order heading is visible'
+			).toBeVisible();
 			orderNumber = await payForOrder.getOrderNumberFromUrl();
-			await expect( orderId ).toEqual( orderNumber );
+			await expect(
+				orderId,
+				'Assert order ID matches order number'
+			).toEqual( orderNumber );
 			break;
 
 		case 'expired':
-			await expect( mollieHostedCheckout.page ).toHaveURL(
-				mollieHostedCheckout.expiredUrlRegex
-			);
+			await expect(
+				mollieHostedCheckout.page,
+				'Assert mollie hosted checkout page has URL for expired order'
+			).toHaveURL( mollieHostedCheckout.expiredUrlRegex );
 			break;
 	}
 };

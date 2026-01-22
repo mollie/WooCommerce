@@ -82,7 +82,7 @@ export class Utils {
 		await this.mollieApi.cleanMollieDb();
 		await this.mollieApi.setMollieApiKeys( mollieApiKeys.default );
 		await this.mollieApi.setAdvancedSettings( {
-			apiMethod: this.mollieApiMethod
+			apiMethod: this.mollieApiMethod,
 		} );
 	};
 
@@ -144,7 +144,9 @@ export class Utils {
 		}
 
 		if ( enableSubscriptionsPlugin === false ) {
-			await this.requestUtils.deactivatePlugin( subscriptionsPlugin.slug );
+			await this.requestUtils.deactivatePlugin(
+				subscriptionsPlugin.slug
+			);
 		}
 
 		if ( enableClassicPages === true ) {
@@ -158,9 +160,7 @@ export class Utils {
 		}
 
 		if ( settings?.general ) {
-			await this.wooCommerceApi.updateGeneralSettings(
-				settings.general
-			);
+			await this.wooCommerceApi.updateGeneralSettings( settings.general );
 		}
 
 		if ( taxes ) {

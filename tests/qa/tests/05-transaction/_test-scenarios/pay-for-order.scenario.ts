@@ -11,10 +11,13 @@ import {
 	processMolliePaymentStatus,
 	updateCurrencyIfNeeded,
 	getOrderStatusFromMollieStatus,
+	assertOrderNotes,
 } from '../../../utils';
-import { MollieTestData, guests } from 'resources';
+import { MollieTestData, guests } from '../../../resources';
 
-export const testPaymentStatusOnPayForOrder = ( testData: MollieTestData.ShopOrder ) => {
+export const testPaymentStatusOnPayForOrder = (
+	testData: MollieTestData.ShopOrder
+) => {
 	const { testId, payment } = testData;
 	const { gateway } = payment;
 
@@ -23,7 +26,7 @@ export const testPaymentStatusOnPayForOrder = ( testData: MollieTestData.ShopOrd
 	const currency = gateway.currency;
 	const gatewayLabel = buildMollieGatewayLabel( gateway );
 
-	Object.assign(testData, { orderStatus, customer, currency });
+	Object.assign( testData, { orderStatus, customer, currency } );
 
 	test( `${ testId } | Transaction - Pay for order - ${ gatewayLabel } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
 		wooCommerceApi,
@@ -40,40 +43,42 @@ export const testPaymentStatusOnPayForOrder = ( testData: MollieTestData.ShopOrd
 
 		const apiOrder = await wooCommerceUtils.createApiOrder( testData );
 
-		await payForOrder.makeOrder( apiOrder.id, apiOrder.order_key, testData );
+		await payForOrder.makeOrder(
+			apiOrder.id,
+			apiOrder.order_key,
+			testData
+		);
 
-		const orderId = await mollieHostedCheckout.pay( payment );
+		await mollieHostedCheckout.assertUrl();
+		const orderId = await mollieHostedCheckout.captureOrderNumber();
+		await mollieHostedCheckout.payForOrder( payment );
 
 		await processMolliePaymentStatus(
 			{ mollieHostedCheckout, orderReceived, payForOrder },
 			Number( orderId ),
 			testData
 		);
-		
-		const { transaction_id: transactionId } =
-			await wooCommerceApi.getOrder( orderId );
-		await expect( transactionId, `Transaction ID ${ transactionId }` ).toBeDefined();
+
+		const { transaction_id: transactionId } = await wooCommerceApi.getOrder(
+			orderId
+		);
+		await expect(
+			transactionId,
+			`Assert transaction ID ${ transactionId } is defined`
+		).toBeDefined();
 
 		await wooCommerceOrderEdit.visit( orderId );
 		await wooCommerceOrderEdit.assertOrderDetails(
 			testData,
-			transactionId,
+			transactionId
 		);
 
 		// Assert order notes via WC API
-		const orderNotes = await wooCommerceApi.getOrderNotes(orderId);
-		const notes = orderNotes.map(n => n.note);
-
 		const expectedNotes = [
-			`${gateway.slug} payment started (${transactionId} - test mode).`,
-			`Payment via ${gateway.name} (${transactionId}).`,
-			`Order completed using Mollie - ${gateway.name} payment (${transactionId} - test mode).`,
+			`${ gateway.slug } payment started (${ transactionId } - test mode).`,
+			`Payment via ${ gateway.name } (${ transactionId }).`,
+			`Order completed using Mollie - ${ gateway.name } payment (${ transactionId } - test mode).`,
 		];
-
-		for (const expected of expectedNotes) {
-			const matches = notes.filter(note => note.includes(expected));
-			expect(matches, `Note "${expected}" should appear exactly once`).toHaveLength(1);
-			expect(matches[0]).toContain(expected); // This gives the diff on mismatch
-		}
+		await assertOrderNotes( wooCommerceApi, orderId, expectedNotes );
 	} );
 };

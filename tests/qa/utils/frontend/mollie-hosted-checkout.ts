@@ -57,7 +57,7 @@ export class MollieHostedCheckout extends WpPage {
 		return parseFloat( amount.toFixed( 2 ) );
 	};
 
-	captureOrderNumber = async () => {
+	captureOrderNumber = async (): Promise< number > => {
 		const orderText = await this.orderNumberHeader().textContent();
 		const orderNumber = orderText.match( /\d+/ )?.[ 0 ];
 		return parseInt( orderNumber );
@@ -79,8 +79,7 @@ export class MollieHostedCheckout extends WpPage {
 		await this.page.waitForLoadState();
 	};
 
-	pay = async ( payment: MolliePayment ) => {
-		await this.page.waitForURL( this.mollieUrlRegex );
+	payForOrder = async ( payment: MolliePayment ) => {
 		await this.assertPaymentAmount( payment.amount );
 
 		if ( payment.gateway.slug === 'ideal' ) {
@@ -102,20 +101,24 @@ export class MollieHostedCheckout extends WpPage {
 		}
 
 		await this.page.waitForURL( this.testModeUrlRegex );
-		const orderNumber = this.captureOrderNumber();
 		await this.paymentStatusRadio( payment.status ).click();
 		await this.continueButton().click();
 		await this.page.waitForLoadState();
-		if ( payment.status ) return orderNumber;
 	};
 
 	// Assertions
 	assertUrl = async () => {
-		await expect( this.page.url() ).toContain( this.url );
+		await expect(
+			this.page,
+			'Assert redirected to Mollie hosted checkout page'
+		).toHaveURL( this.mollieUrlRegex );
 	};
 
 	assertPaymentAmount = async ( expectedTotalAmount: number ) => {
 		const totalAmount = await this.capturePaymentAmount();
-		await expect( totalAmount ).toEqual( expectedTotalAmount );
+		await expect(
+			totalAmount,
+			'Assert payment amount matches expected total amount'
+		).toEqual( expectedTotalAmount );
 	};
 }

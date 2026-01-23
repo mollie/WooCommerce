@@ -141,25 +141,27 @@ export const testSubscriptionRenewal = (
 					currency
 				);
 
-				// Trigger subscription renewal
-				await wooCommerceSubscriptionEdit.triggerSubscriptionRenewal(
-					subscription.id
-				);
+				const relatedRenewalOrders = [];
+				for ( let i = 0; i < 2; i++ ) {
+					const renewalCount = i + 1;
 
-				// Verify renewal order was created
-				const renewalOrderIds =
-					await mollieApi.getSubscriptionRenewalOrderIds(
+					// Trigger subscription renewal
+					await wooCommerceSubscriptionEdit.triggerSubscriptionRenewal(
 						subscription.id
 					);
-				await expect(
-					renewalOrderIds,
-					'Assert renewal order IDs array has length 1'
-				).toHaveLength( 1 );
+					// Verify renewal order was created
+					const renewalOrderIds =
+						await mollieApi.getSubscriptionRenewalOrderIds(
+							subscription.id
+						);
+					await expect(
+						renewalOrderIds,
+						`Assert renewal order IDs array has length ${ renewalCount }`
+					).toHaveLength( renewalCount );
+					renewalOrderIds.sort( ( a, b ) => a - b ); // sort array ascending
 
-				const relatedRenewalOrders = [];
-
-				// Assert renewal order details
-				for ( const renewalOrderId of renewalOrderIds ) {
+					// Assert renewal order details (latest renewal is at index i)
+					const renewalOrderId = renewalOrderIds[ i ];
 					const { transaction_id: renewalTransactionId } =
 						await wooCommerceApi.getOrder( renewalOrderId );
 					await expect(
@@ -167,6 +169,31 @@ export const testSubscriptionRenewal = (
 						`Assert Transaction ID ${ renewalTransactionId } is defined`
 					).toBeDefined();
 
+					// Assert current renewal order
+					await wooCommerceOrderEdit.visit( renewalOrderId );
+					await wooCommerceOrderEdit.assertRelatedOrders(
+						[
+							relatedSubscription,
+							relatedParentOrder,
+							...relatedRenewalOrders,
+						],
+						currency
+					);
+
+					// Assert renewal order notes via WC API
+					const expectedRenewalNotes = [
+						`MOLLIE TEST MODE: URL to change payment state for renewal payment:`,
+						`payment started (${ renewalTransactionId } - test mode).`, //`${gateway.slug} payment started (${renewalTransactionId} - test mode).`
+						`Payment via ${ gateway.name } (${ renewalTransactionId }).`,
+						`Order completed using Mollie - ${ gateway.name } payment (${ renewalTransactionId } - test mode).`,
+					];
+					await assertOrderNotes(
+						wooCommerceApi,
+						renewalOrderId,
+						expectedRenewalNotes
+					);
+
+					// Add current renewal order to the list
 					relatedRenewalOrders.push( {
 						id: renewalOrderId,
 						relationship: 'Renewal Order',
@@ -176,54 +203,47 @@ export const testSubscriptionRenewal = (
 						total: orderTotals.order,
 					} );
 
-					// Assert renewal order details
-					await wooCommerceOrderEdit.visit( renewalOrderId );
+					// Assert parent order has related renewal orders and subscription
+					await wooCommerceOrderEdit.visit( orderId );
 					await wooCommerceOrderEdit.assertRelatedOrders(
-						[ relatedSubscription, relatedParentOrder ],
+						[ relatedSubscription, ...relatedRenewalOrders ],
 						currency
 					);
 
-					// Assert renewal order notes via WC API
-					const expectedRenewalNotes = [
-						`MOLLIE TEST MODE: URL to change payment state for renewal payment:`,
-						`payment started (${ renewalTransactionId } - test mode).`,
-						`Payment via Card (${ renewalTransactionId }).`,
-						`Order completed using Mollie - Card payment (${ renewalTransactionId } - test mode).`,
+					// Assert subscription has related parent and renewal orders
+					await wooCommerceSubscriptionEdit.visit( subscription.id );
+					await wooCommerceSubscriptionEdit.assertRelatedOrders(
+						[ relatedParentOrder, ...relatedRenewalOrders ],
+						currency
+					);
+
+					// Assert renewed subscription order notes via WC API
+					// Count is based on renewalCount, plus initial subscription notes
+					const expectedRenewedSubscriptionNotes = [
+						{
+							note: `Process renewal order action requested by admin.`,
+							count: i + 1,
+						},
+						{
+							note: `Subscription renewal payment due: Status changed from Active to On hold.`,
+							count: i + 1,
+						},
+						`Order #${ renewalOrderId } created to record renewal.`,
+						{
+							note: `Payment status marked complete.`,
+							count: i + 2, // +1 for initial subscription
+						},
+						{
+							note: `Status changed from On hold to Active.`,
+							count: i + 1,
+						},
 					];
-					await assertOrderNotes(
+					await assertSubscriptionNotes(
 						wooCommerceApi,
-						renewalOrderId,
-						expectedRenewalNotes
+						subscription.id,
+						expectedRenewedSubscriptionNotes
 					);
 				}
-
-				// Assert parent order has related renewal orders and subscription
-				await wooCommerceOrderEdit.visit( orderId );
-				await wooCommerceOrderEdit.assertRelatedOrders(
-					[ relatedSubscription, ...relatedRenewalOrders ],
-					currency
-				);
-
-				// Assert subscription has related parent and renewal orders
-				await wooCommerceSubscriptionEdit.visit( subscription.id );
-				await wooCommerceSubscriptionEdit.assertRelatedOrders(
-					[ relatedParentOrder, ...relatedRenewalOrders ],
-					currency
-				);
-
-				// Assert renewed subscription order notes via WC API
-				const expectedRenewedSubscriptionNotes = [
-					`Process renewal order action requested by admin.`,
-					`Subscription renewal payment due: Status changed from Active to On hold.`,
-					`Order #${ renewalOrderIds[ 0 ] } created to record renewal.`,
-					`Payment status marked complete.`,
-					`Status changed from On hold to Active.`,
-				];
-				await assertSubscriptionNotes(
-					wooCommerceApi,
-					subscription.id,
-					expectedRenewedSubscriptionNotes
-				);
 
 				// Assert customer subscription has related parent and renewal orders
 				await customerSubscriptions.visit( subscription.id );

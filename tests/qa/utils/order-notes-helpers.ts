@@ -4,7 +4,21 @@
 import { expect, WooCommerceApi } from '@inpsyde/playwright-utils/build';
 
 type ExpectedNote = string | RegExp | { note: string | RegExp; count?: number };
-type AssertOptions = { isSoftAssertion?: boolean };
+type AssertOptions = {
+	clearHtmlTags?: boolean;
+	isSoftAssertion?: boolean;
+};
+
+/**
+ * Clears HTML tags from the string
+ *
+ * @param text
+ */
+const clearHtmlTags = ( text: string ): string =>
+	text
+		.replace( /<[^>]*>/g, '' )
+		.replace( /\s+/g, ' ' )
+		.trim();
 
 /**
  * Asserts that the actual notes match the expected notes.
@@ -16,8 +30,15 @@ type AssertOptions = { isSoftAssertion?: boolean };
 const assertNotes = async (
 	actualNotes: string[],
 	expectedNotes: ExpectedNote[],
-	options: AssertOptions = { isSoftAssertion: true }
+	options: AssertOptions = {
+		clearHtmlTags: true,
+		isSoftAssertion: true,
+	}
 ) => {
+	if ( options.clearHtmlTags ) {
+		actualNotes = actualNotes.map( clearHtmlTags );
+	}
+
 	for ( const expected of expectedNotes ) {
 		const note =
 			typeof expected === 'string' || expected instanceof RegExp

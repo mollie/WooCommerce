@@ -144,6 +144,7 @@ export const testSubscriptionRenewal = (
 				const relatedRenewalOrders = [];
 				for ( let i = 0; i < 2; i++ ) {
 					const renewalCount = i + 1;
+					const assertionPrefix = `Renewal #${ renewalCount }) `;
 
 					// Trigger subscription renewal
 					await wooCommerceSubscriptionEdit.triggerSubscriptionRenewal(
@@ -156,7 +157,7 @@ export const testSubscriptionRenewal = (
 						);
 					await expect(
 						renewalOrderIds,
-						`Assert renewal order IDs array has length ${ renewalCount }`
+						`${ assertionPrefix }Assert renewal order IDs array has length ${ renewalCount }`
 					).toHaveLength( renewalCount );
 					renewalOrderIds.sort( ( a, b ) => a - b ); // sort array ascending
 
@@ -166,7 +167,7 @@ export const testSubscriptionRenewal = (
 						await wooCommerceApi.getOrder( renewalOrderId );
 					await expect(
 						renewalTransactionId,
-						`Assert Transaction ID ${ renewalTransactionId } is defined`
+						`${ assertionPrefix }Assert Transaction ID ${ renewalTransactionId } is defined`
 					).toBeDefined();
 
 					// Assert current renewal order
@@ -190,7 +191,8 @@ export const testSubscriptionRenewal = (
 					await assertOrderNotes(
 						wooCommerceApi,
 						renewalOrderId,
-						expectedRenewalNotes
+						expectedRenewalNotes,
+						{ assertionPrefix },
 					);
 
 					// Add current renewal order to the list
@@ -241,7 +243,8 @@ export const testSubscriptionRenewal = (
 					await assertSubscriptionNotes(
 						wooCommerceApi,
 						subscription.id,
-						expectedRenewedSubscriptionNotes
+						expectedRenewedSubscriptionNotes,
+						{ assertionPrefix },
 					);
 				}
 

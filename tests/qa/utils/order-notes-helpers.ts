@@ -5,6 +5,7 @@ import { expect, WooCommerceApi } from '@inpsyde/playwright-utils/build';
 
 type ExpectedNote = string | RegExp | { note: string | RegExp; count?: number };
 type AssertOptions = {
+	assertionPrefix?: string;
 	clearHtmlTags?: boolean;
 	isSoftAssertion?: boolean;
 };
@@ -14,7 +15,7 @@ type AssertOptions = {
  *
  * @param text
  */
-const clearHtmlTags = ( text: string ): string =>
+const stripHtmlTags = ( text: string ): string =>
 	text
 		.replace( /<[^>]*>/g, '' )
 		.replace( /\s+/g, ' ' )
@@ -30,13 +31,16 @@ const clearHtmlTags = ( text: string ): string =>
 const assertNotes = async (
 	actualNotes: string[],
 	expectedNotes: ExpectedNote[],
-	options: AssertOptions = {
-		clearHtmlTags: true,
-		isSoftAssertion: true,
-	}
+	options: AssertOptions = {}, 
 ) => {
-	if ( options.clearHtmlTags ) {
-		actualNotes = actualNotes.map( clearHtmlTags );
+	const { 
+		assertionPrefix = '', 
+		clearHtmlTags = true, 
+		isSoftAssertion = true 
+	} = options;
+
+	if ( clearHtmlTags ) {
+		actualNotes = actualNotes.map( stripHtmlTags );
 	}
 
 	for ( const expected of expectedNotes ) {
@@ -53,10 +57,10 @@ const assertNotes = async (
 			note instanceof RegExp ? note.test( n ) : n.includes( note )
 		);
 
-		const expectFn = options.isSoftAssertion ? expect.soft : expect;
+		const expectFn = isSoftAssertion ? expect.soft : expect;
 		await expectFn(
 			matches,
-			`Assert note "${ note }" is displayed ${ count } time(s)`
+			`${ assertionPrefix }Assert note "${ note }" is displayed ${ count } time(s)`
 		).toHaveLength( count );
 	}
 };

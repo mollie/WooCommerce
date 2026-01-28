@@ -10,7 +10,7 @@ const testedApiMethod =
 	( process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod ) || 'payment';
 
 test.beforeAll( async ( { utils }, testInfo ) => {
-	if ( testInfo.project.name !== 'all' ) {
+	if ( testInfo.project.name !== 'refund' ) {
 		return;
 	}
 

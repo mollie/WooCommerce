@@ -22,7 +22,7 @@ const stripHtmlTags = ( text: string ): string =>
 		.trim();
 
 /**
- * Asserts that the actual notes match the expected notes.
+ * Asserts that the actual notes match the expected notes expected amount of times.
  *
  * @param actualNotes
  * @param expectedNotes
@@ -60,7 +60,7 @@ const assertNotes = async (
 		const expectFn = isSoftAssertion ? expect.soft : expect;
 		await expectFn(
 			matches,
-			`${ assertionPrefix }Assert note "${ note }" is displayed ${ count } time(s)`
+			`${ assertionPrefix }Assert note "${ note }" is present ${ count } time(s)`
 		).toHaveLength( count );
 	}
 };

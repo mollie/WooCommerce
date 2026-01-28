@@ -28,13 +28,12 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 		currency,
 		refundPercentage,
 		isMollieClientApiRefund,
+		refundOrderStatus: expectedRefundOrderStatus,
 	} = testData;
 	const { gateway } = payment;
-
 	const orderStatus = getOrderStatusFromMollieStatus( payment.status );
 	const customer = guests[ gateway.country ];
 	const gatewayLabel = buildMollieGatewayLabel( gateway );
-
 	Object.assign( testData, { orderStatus, customer, currency } );
 
 	const refundPart = refundPercentage === 100 ? 'Full' : 'Partial';
@@ -45,9 +44,7 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 
 	const testTitle = `${ testId } | Refund - ${ refundPart } - ${ gatewayLabel } - Via ${ refundVia }`;
 
-	test(
-		testTitle,
-		async ( {
+	test( testTitle, async ( {
 			wooCommerceApi,
 			utils,
 			classicCheckout,
@@ -57,7 +54,8 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 			payForOrder,
 			wooCommerceOrderEdit,
 		} ) => {
-			test.setTimeout( 1.5 * 60_000 );
+			test.setTimeout( 16 * 60_000 );
+			// Preconditions
 			await updateCurrencyIfNeeded( wooCommerceApi, currency );
 
 			const orderTotals = await countTotals( testData );
@@ -86,6 +84,10 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 				await wooCommerceApi.getOrder( orderId );
 
 			// Test
+			await expect(
+				transactionId,
+				`Assert transaction ID ${ transactionId } is defined`
+			).toBeDefined();
 
 			// Make refund via Mollie client API
 			if ( isMollieClientApiRefund ) {
@@ -117,12 +119,12 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 				await expect(
 					wooCommerceOrderEdit.totalAmountAlreadyRefunded(),
 					'Assert total amount already refunded is 0'
-				).toHaveText( `-${ formatMoney( 0, testData.currency ) }` );
+				).toHaveText( `-${ formatMoney( 0, currency ) }` );
 				await expect(
 					wooCommerceOrderEdit.totalAvailableToRefund(),
 					'Assert total available to refund is correct'
 				).toHaveText(
-					formatMoney( Number( refundAvailable ), testData.currency )
+					formatMoney( Number( refundAvailable ), currency )
 				);
 				await wooCommerceOrderEdit.makeRefund(
 					gateway.name,
@@ -134,65 +136,107 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 			await wooCommerceOrderEdit.assertUrl( orderId );
 
 			// Assert via API WooCommerce Order refund status and presence of refunds
-			const {
-				meta_data: metaData,
-				status,
-				refunds,
-				total,
-			} = await wooCommerceApi.getOrder( orderId );
+			let orderTotal: string;
+			let refunds = [];
+			let refundMeta: { key: string; value: any };
+			let statusAfterRefund: string;
+			
+			// Delayed webhooks cause following values to arrive in ~10 minutes after refund creation
+			await expect( async () => {
+				const order = await wooCommerceApi.getOrder( orderId );
+				orderTotal = order.total;
+				statusAfterRefund = order.status;
+				refunds = order.refunds;
+				refundMeta = order.meta_data.find(
+					meta => meta.key === '_mollie_processed_refund_ids'
+				);
+				await expect(
+					refunds,
+					`Assert refunds array has length 1`
+				).toHaveLength( 1 );
+				await expect( refundMeta, 'Assert refund meta is defined' ).toBeDefined();
+				await wooCommerceOrderEdit.page.reload();
+			} ).toPass( {
+				intervals: [ 60_000 ],
+				timeout: 14 * 60_000,
+			} );
+
+			const { total: refundTotal, id: refundId } = refunds[ 0 ];
+
+			await expect( refundMeta.value, 'Assert refund meta value has length 1' ).toHaveLength( 1 );
+			const refundTransactionId = refundMeta.value[ 0 ];
 
 			await expect(
-				transactionId,
-				`Assert transaction ID ${ transactionId } is defined`
-			).toBeDefined();
-			await expect(
-				status,
-				`Assert order status is ${ testData.refundOrderStatus }`
-			).toEqual( testData.refundOrderStatus );
-			await expect(
-				refunds,
-				`Assert refunds array has length 1`
-			).toHaveLength( 1 );
-			const { total: refundTotal, id: refundId } = refunds[ 0 ];
+				statusAfterRefund,
+				`Assert order status is ${ expectedRefundOrderStatus }`
+			).toEqual( expectedRefundOrderStatus );
+			
+			const expectedRefundTotal = `-${ Number( refundAmount ).toFixed( 2 ) }`;
 			await expect(
 				refundTotal,
-				`Assert refund total is ${ refundTotal }`
-			).toEqual( `-${ Number( refundAmount ).toFixed( 2 ) }` );
-
-			// Delayed webhooks cause following values to arrive in 9-11 minutes after refund creation
-			// const refundMeta = metaData.find(
-			// 	meta => meta.key === '_mollie_processed_refund_ids'
-			// );
-			// await expect( refundMeta ).toBeDefined();
-			// await expect( refundMeta.value ).toHaveLength( 1 );
-			// const refundTransactionId = refundMeta.value[ 0 ];
+				`Assert refund total is ${ expectedRefundTotal }`
+			).toEqual( expectedRefundTotal );
 
 			// Assert on OrderEdit page that WooCommerce and PayPal refund fields are displayed and have expected values
 			await wooCommerceOrderEdit.assertRefundData( {
-				currency: testData.currency,
-				orderStatus: capitalizeFirst( testData.refundOrderStatus ),
+				currency,
+				orderStatus: capitalizeFirst( expectedRefundOrderStatus ),
 				refundId,
 				refundAmount: Number( refundAmount ),
 				refundTotal: Number( refundAmount ),
-				netPayment: parseFloat( total ) - parseFloat( refundAmount ),
+				netPayment: parseFloat( orderTotal ) - parseFloat( refundAmount ),
 			} );
 
 			// Assert order notes via WC API
 			const formattedRefundAmount = parseFloat( refundAmount ).toString();
-			const expectedNotes = [
-				`Refunded ${ currency }${ formattedRefundAmount } - Payment: ${ transactionId }, Refund`, //: ${ refundTransactionId }`,
-				`${ gateway.slug } payment started (${ transactionId } - test mode).`,
-				`Payment via ${ gateway.name } (${ transactionId }).`,
-				`Order completed using Mollie - ${ gateway.name } payment (${ transactionId } - test mode).`,
-			];
+			let expectedNotes = [];
+			// Expected notes for Full via WooCommerce:
+			if(
+				! isMollieClientApiRefund &&
+				refundPercentage === 100
+			) {
+				expectedNotes = [
+					`Refunded ${ currency }${ formattedRefundAmount } - Payment: ${ transactionId }, Refund: ${ refundTransactionId }`,
+					`New refund ${ refundTransactionId } processed in Mollie Dashboard! Order note added, but order not updated.`,
+				];
+			}
+			// Expected notes for Full via Mollie:
+			else if(
+				isMollieClientApiRefund &&
+				refundPercentage === 100
+			) {
+				expectedNotes = [
+					`Mollie - ${ gateway.name } payment _order_status_refunded via Mollie (${ transactionId } - test mode). You will need to manually review the payment (and adjust product stocks if you use it). Order status changed from Processing to ${ capitalizeFirst( expectedRefundOrderStatus ) }.`,
+					`Order status set to refunded. To return funds to the customer you will need to issue a refund through your payment gateway.`,
+					`New refund ${ refundTransactionId } processed in Mollie Dashboard! Order note added, but order not updated.`,
+				];
+			}
+			// Expected notes for Partial via WooCommerce:
+			else if(
+				! isMollieClientApiRefund &&
+				refundPercentage < 100
+			) {
+				expectedNotes = [
+					`New refund ${ refundTransactionId } processed in Mollie Dashboard! Order note added, but order not updated.`,
+					`Refunded ${ currency }${ formattedRefundAmount } - Payment: ${ transactionId }, Refund: ${ refundTransactionId }`,
+				];
+			}
+			// Expected notes for Partial via Mollie:
+			else if(
+				isMollieClientApiRefund &&
+				refundPercentage < 100
+			) {
+				expectedNotes = [
+					`New refund ${ refundTransactionId } processed in Mollie Dashboard! Order note added, but order not updated.`,
+				];
+			}
 
 			if ( refundPercentage === 100 ) {
 				expectedNotes.unshift(
-					`Order status changed from Processing to Refunded.`
+					`Order status changed from Processing to ${ capitalizeFirst( expectedRefundOrderStatus ) }.`
 				);
 			}
 
 			await assertOrderNotes( wooCommerceApi, orderId, expectedNotes );
-		}
-	);
+	} );
 };

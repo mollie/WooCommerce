@@ -1,1 +1,1 @@
-export * from './refund-via-woocommerce.scenario';
+export * from './refund.scenario';

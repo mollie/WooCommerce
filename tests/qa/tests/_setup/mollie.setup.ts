@@ -51,7 +51,7 @@ const configureEnv = ( data: EnvConfig ) => {
 
 		if ( apiMethod ) {
 			setup( `${ title } Set API method`, async ( { mollieApi } ) => {
-				await mollieApi.setApiMethod( apiMethod );
+				await mollieApi.setAdvancedSettings( { apiMethod } );
 			} );
 		}
 	}

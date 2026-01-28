@@ -1,9 +1,7 @@
 /**
  * External dependencies
  */
-import {
-	WooCommerceApi,
-} from '@inpsyde/playwright-utils/build';
+import { WooCommerceApi } from '@inpsyde/playwright-utils/build';
 /**
  * Sets annotation about tested customer
  * If tested customer is registered (has non-empty username),
@@ -27,9 +25,8 @@ export function annotateVisitor( customer: WooCommerce.CreateCustomer ) {
 
 /**
  * Sets annotation about tested gateway (used for mollieSettingsGateway fixture)
- * 
- * @param gatewaySlug 
- * @returns 
+ *
+ * @param gatewaySlug
  */
 export function annotateGateway( gatewaySlug: string ) {
 	return {

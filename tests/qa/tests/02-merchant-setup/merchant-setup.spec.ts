@@ -18,7 +18,8 @@ test.describe.serial( () => {
 		await mollieSettingsAdvanced.cleanDb();
 		await mollieSettingsApiKeys.visit();
 		await expect(
-			mollieSettingsApiKeys.failedToConnectToMollieApiText()
+			mollieSettingsApiKeys.failedToConnectToMollieApiText(),
+			'Assert failed to connect to Mollie API text is visible'
 		).toBeVisible();
 	} );
 
@@ -29,7 +30,8 @@ test.describe.serial( () => {
 		await mollieSettingsApiKeys.setApiKeys();
 		await mollieSettingsApiKeys.saveChanges();
 		await expect(
-			mollieSettingsApiKeys.successfullyConnectedWithTestApiText()
+			mollieSettingsApiKeys.successfullyConnectedWithTestApiText(),
+			'Assert successfully connected with test API text is visible'
 		).toBeVisible();
 	} );
 
@@ -53,7 +55,7 @@ test.describe.serial( () => {
 				.soft(
 					wooCommerceSettings.gatewayNameCell( mollieGatewayName ),
 					`${ mollieGatewayName } is NOT displayed correctly`
-				 )
+				)
 				.toBeVisible();
 		}
 	} );

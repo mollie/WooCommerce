@@ -40,20 +40,23 @@ export class Checkout extends CheckoutBase {
 	billieBillingCompanyInput = (): Locator =>
 		this.paymentOptionsContainer().locator( '#billing_company_billie' );
 	in3PhoneInput = (): Locator =>
-		this.paymentOptionsContainer().locator( '#billing-phone-mollie_wc_gateway_in3' );
+		this.paymentOptionsContainer().locator(
+			'#billing-phone-mollie_wc_gateway_in3'
+		);
 	in3BirthDateInput = (): Locator =>
 		this.paymentOptionsContainer().locator( '#billing-birthdate' );
 	rivertyBirthDateInput = (): Locator =>
 		this.page.locator( '#billing-birthdate' );
 	rivertyPhoneInput = (): Locator =>
 		this.page.locator( '#billing-phone-mollie_wc_gateway_riverty' );
-	vippsPhoneInput = () => this.page.locator( '#billing-phone-mollie_wc_gateway_vipps' );
-	mobilepayPhoneInput = () => this.page.locator( '#billing-phone-mollie_wc_gateway_mobilepay' );
+	vippsPhoneInput = () =>
+		this.page.locator( '#billing-phone-mollie_wc_gateway_vipps' );
+	mobilepayPhoneInput = () =>
+		this.page.locator( '#billing-phone-mollie_wc_gateway_mobilepay' );
 	paymentOptionLabel = ( slug ) =>
-		this.paymentOptionsContainer()
-			.locator(
-				`label[for="radio-control-wc-payment-method-options-mollie_wc_gateway_${ slug }"]`
-			);
+		this.paymentOptionsContainer().locator(
+			`label[for="radio-control-wc-payment-method-options-mollie_wc_gateway_${ slug }"]`
+		);
 
 	paymentOptionLogo = ( name: string ): Locator =>
 		this.paymentOptionsContainer()
@@ -81,7 +84,10 @@ export class Checkout extends CheckoutBase {
 		const { payment, customer } = order;
 		const { gateway, card } = payment;
 
-		await expect( this.paymentOptionLabel( gateway.slug ) ).toBeVisible();
+		await expect(
+			this.paymentOptionLabel( gateway.slug ),
+			'Assert payment option label is visible'
+		).toBeVisible();
 		await this.paymentOptionLabel( gateway.slug ).click();
 		await this.page.waitForLoadState( 'networkidle' );
 
@@ -89,7 +95,10 @@ export class Checkout extends CheckoutBase {
 			gateway.slug === 'kbc' &&
 			gateway.settings.issuers_dropdown_shown === 'yes'
 		) {
-			await expect( this.kbcIssuerSelect() ).toBeVisible();
+			await expect(
+				this.kbcIssuerSelect(),
+				'Assert KBC issuer select is visible'
+			).toBeVisible();
 			await this.kbcIssuerSelect().selectOption(
 				order.payment.bankIssuer
 			);
@@ -97,11 +106,17 @@ export class Checkout extends CheckoutBase {
 
 		if ( gateway.slug === 'in3' ) {
 			const phoneInput = this.in3PhoneInput();
-			await expect( phoneInput ).toBeVisible();
+			await expect(
+				phoneInput,
+				'Assert in3 phone input is visible'
+			).toBeVisible();
 			await phoneInput.fill( customer.billing.phone );
 
 			const birthDateInput = this.in3BirthDateInput();
-			await expect( birthDateInput ).toBeVisible();
+			await expect(
+				birthDateInput,
+				'Assert in3 birth date input is visible'
+			).toBeVisible();
 			await birthDateInput.click();
 			for ( const char of customer.birth_date ) {
 				await this.page.keyboard.type( char );
@@ -110,7 +125,10 @@ export class Checkout extends CheckoutBase {
 		}
 
 		if ( gateway.slug === 'billie' ) {
-			await expect( this.billieBillingCompanyInput() ).toBeVisible();
+			await expect(
+				this.billieBillingCompanyInput(),
+				'Assert billie billing company input is visible'
+			).toBeVisible();
 			await this.billieBillingCompanyInput().fill(
 				order.payment.billingCompany
 			);
@@ -120,7 +138,10 @@ export class Checkout extends CheckoutBase {
 			gateway.slug === 'giftcard' &&
 			gateway.settings.issuers_dropdown_shown === 'yes'
 		) {
-			await expect( this.giftCardSelect() ).toBeVisible();
+			await expect(
+				this.giftCardSelect(),
+				'Assert gift card select is visible'
+			).toBeVisible();
 			await this.giftCardSelect().selectOption( 'fashioncheque' );
 		}
 
@@ -131,10 +152,22 @@ export class Checkout extends CheckoutBase {
 			// the card fields seem to be only rendered when they are scrolled in otherwise they are not visible
 			await this.cardComponentsContainer().scrollIntoViewIfNeeded();
 
-			await expect( this.cardNumberInput() ).toBeVisible();
-			await expect( this.cardHolderInput() ).toBeVisible();
-			await expect( this.cardExpiryDateInput() ).toBeVisible();
-			await expect( this.cardVerificationCodeInput() ).toBeVisible();
+			await expect(
+				this.cardNumberInput(),
+				'Assert card number input is visible'
+			).toBeVisible();
+			await expect(
+				this.cardHolderInput(),
+				'Assert card holder input is visible'
+			).toBeVisible();
+			await expect(
+				this.cardExpiryDateInput(),
+				'Assert card expiry date input is visible'
+			).toBeVisible();
+			await expect(
+				this.cardVerificationCodeInput(),
+				'Assert card verification code input is visible'
+			).toBeVisible();
 			await expect
 				.soft( this.page.getByText( 'Secure payments provided by' ) )
 				.toBeVisible();
@@ -147,11 +180,17 @@ export class Checkout extends CheckoutBase {
 
 		if ( gateway.slug === 'riverty' ) {
 			const phoneInput = this.rivertyPhoneInput();
-			await expect( phoneInput ).toBeVisible();
+			await expect(
+				phoneInput,
+				'Assert riverty phone input is visible'
+			).toBeVisible();
 			await phoneInput.fill( customer.billing.phone );
-			
+
 			const birthDateInput = this.rivertyBirthDateInput();
-			await expect( birthDateInput ).toBeVisible();
+			await expect(
+				birthDateInput,
+				'Assert riverty birth date input is visible'
+			).toBeVisible();
 			await birthDateInput.click();
 			for ( const char of customer.birth_date ) {
 				await this.page.keyboard.type( char );
@@ -161,13 +200,19 @@ export class Checkout extends CheckoutBase {
 
 		if ( gateway.slug === 'vipps' ) {
 			const phoneInput = this.vippsPhoneInput();
-			await expect( phoneInput ).toBeVisible();
+			await expect(
+				phoneInput,
+				'Assert vipps phone input is visible'
+			).toBeVisible();
 			await phoneInput.fill( customer.billing.phone );
 		}
 
 		if ( gateway.slug === 'mobilepay' ) {
 			const phoneInput = this.mobilepayPhoneInput();
-			await expect( phoneInput ).toBeVisible();
+			await expect(
+				phoneInput,
+				'Assert mobilepay phone input is visible'
+			).toBeVisible();
 			await phoneInput.fill( customer.billing.phone );
 		}
 	};
@@ -210,26 +255,35 @@ export class Checkout extends CheckoutBase {
 		await this.fillCheckoutForm( customer );
 		await this.page.waitForTimeout( 1000 );
 		await this.page.waitForLoadState( 'networkidle' );
-		await expect( this.continueWithShippingButton() ).toBeVisible();
+		await expect(
+			this.continueWithShippingButton(),
+			'Assert continue with shipping button is visible'
+		).toBeVisible();
 		await this.continueWithShippingButton().click();
 		await this.page.waitForLoadState();
 
 		await this.selectShippingMethod( order.shipping.settings.title );
 		await this.page.waitForTimeout( 1000 );
 		await this.page.waitForLoadState( 'networkidle' );
-		await expect( this.continueWithPaymentButton() ).toBeVisible();
+		await expect(
+			this.continueWithPaymentButton(),
+			'Assert continue with payment button is visible'
+		).toBeVisible();
 		await this.continueWithPaymentButton().click();
 		await this.page.waitForLoadState();
 
 		await this.processPaymentMethod( order );
 		await this.page.waitForTimeout( 1000 );
 		await this.page.waitForLoadState( 'networkidle' );
-		await expect( this.continueWithConfirmationButton() ).toBeVisible();
+		await expect(
+			this.continueWithConfirmationButton(),
+			'Assert continue with confirmation button is visible'
+		).toBeVisible();
 		await this.continueWithConfirmationButton().click();
 		await this.page.waitForLoadState();
 
 		// Terms and conditions checkbox was removed (found on 04.12.2025)
-		// await expect( this.termsAndConditionsCheckbox() ).toBeVisible();
+		// await expect( this.termsAndConditionsCheckbox(), 'Assert terms and conditions checkbox is visible' ).toBeVisible();
 		// await this.termsAndConditionsCheckbox().check();
 
 		await this.placeOrder();

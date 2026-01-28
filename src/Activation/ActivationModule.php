@@ -58,6 +58,7 @@ class ActivationModule implements ExecutableModule
                     post_id bigint NOT NULL,
                     expired_time int NOT NULL,
                     PRIMARY KEY id (id)
+                    COLLATE=utf8mb4_unicode_ci
                 );";
                 dbDelta($sql);
 

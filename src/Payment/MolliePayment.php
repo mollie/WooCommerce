@@ -155,6 +155,13 @@ class MolliePayment extends MollieObject
     public function onWebhookPaid(WC_Order $order, $payment, $paymentMethodTitle)
     {
         $orderId = $order->get_id();
+        if ($order->is_paid()) {
+            $this->logger->debug(
+                __METHOD__ .
+                " order {$orderId} is already paid."
+            );
+            return;
+        }
         if ($payment->isPaid()) {
             // Add messages to log
             $this->logger->debug(__METHOD__ . ' called for payment ' . $orderId);
@@ -220,6 +227,14 @@ class MolliePayment extends MollieObject
     {
         // Get order ID in the correct way depending on WooCommerce version
         $orderId = $order->get_id();
+
+        if ($order->get_meta('_mollie_authorized') === '1') {
+            $this->logger->debug(
+                __METHOD__ .
+                " order {$orderId} is already authorized."
+            );
+            return;
+        }
 
         if ($payment->isAuthorized()) {
             // Add messages to log

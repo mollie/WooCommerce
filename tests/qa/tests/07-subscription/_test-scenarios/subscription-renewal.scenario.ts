@@ -192,7 +192,7 @@ export const testSubscriptionRenewal = (
 						wooCommerceApi,
 						renewalOrderId,
 						expectedRenewalNotes,
-						{ assertionPrefix },
+						{ assertionPrefix }
 					);
 
 					// Add current renewal order to the list
@@ -244,7 +244,7 @@ export const testSubscriptionRenewal = (
 						wooCommerceApi,
 						subscription.id,
 						expectedRenewedSubscriptionNotes,
-						{ assertionPrefix },
+						{ assertionPrefix }
 					);
 				}
 

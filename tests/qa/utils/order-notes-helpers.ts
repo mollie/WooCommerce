@@ -31,12 +31,12 @@ const stripHtmlTags = ( text: string ): string =>
 const assertNotes = async (
 	actualNotes: string[],
 	expectedNotes: ExpectedNote[],
-	options: AssertOptions = {}, 
+	options: AssertOptions = {}
 ) => {
-	const { 
-		assertionPrefix = '', 
-		clearHtmlTags = true, 
-		isSoftAssertion = true 
+	const {
+		assertionPrefix = '',
+		clearHtmlTags = true,
+		isSoftAssertion = true,
 	} = options;
 
 	if ( clearHtmlTags ) {

@@ -1,0 +1,60 @@
+{
+  "name": "mollie-playwright-tests",
+  "version": "1.0.0",
+  "description": "Playwright e2e tests for Mollie",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inpsyde/playwright-tests.git"
+  },
+  "author": {
+    "name": "Inpsyde GmbH",
+    "email": "hello@inpsyde.com",
+    "url": "https://inpsyde.com/"
+  },
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/inpsyde/playwright-tests/issues"
+  },
+  "homepage": "https://github.com/inpsyde/playwright-tests#readme",
+  "dependencies": {
+    "@inpsyde/playwright-utils": "^3.0.0",
+    "dotenv": "^16.3.1",
+    "dotenv-cli": "^7.3.0",
+    "mollie-api-typescript": "^1.0.2",
+    "playwright": "^1.40.1",
+    "yarn": "^1.22.21"
+  },
+  "devDependencies": {
+    "@percy/cli": "^1.28.0",
+    "@percy/playwright": "^1.0.4",
+    "@playwright/test": "^1.50",
+    "@types/node": "^20.8.4",
+    "@wordpress/scripts": "^25.0.0"
+  },
+  "scripts": {
+    "setup:tests": "npm install && npx playwright install",
+    "setup:utils": "npm run setup:tests && cd ./playwright-utils && yarn devLocal",
+    "lint:md": "wp-scripts lint-md-docs ./**/*.md README.md",
+    "lint:md:fix": "wp-scripts lint-md-docs --fix ./**/*.md README.md",
+    "lint:js": "wp-scripts lint-js  --resolve-plugins-relative-to ./ **/*.{ts,tsx,mjs}",
+    "lint:js:fix": "wp-scripts lint-js --resolve-plugins-relative-to ./ --fix **/*.{ts,tsx,mjs}",
+    "setup:wc:default": "npx playwright test woocommerce.setup",
+    "setup:checkout:block": "npx playwright test --grep=\"setup:checkout:block;\"",
+    "setup:checkout:classic": "npx playwright test --grep=\"setup:checkout:classic;\"",
+    "setup:tax:inc": "npx playwright test --grep=\"setup:tax:inc;\"",
+    "setup:tax:exc": "npx playwright test --grep=\"setup:tax:exc;\"",
+    "setup:mollie:germany": "npx playwright test --grep \"setup:mollie:germany;\"",
+    "test:all": "npx playwright test --project=all --workers=1"
+  },
+  "eslintConfig": {
+    "extends": [
+      "plugin:@wordpress/eslint-plugin/recommended"
+    ],
+    "rules": {
+      "@wordpress/dependency-group": "error",
+      "@wordpress/no-unsafe-wp-apis": "off",
+      "no-console": "off"
+    }
+  }
+}

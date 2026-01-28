@@ -1,0 +1,12 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "ES2019",
+		"types": ["node"],
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"strict": false,
+		"baseUrl": ".",
+		"resolveJsonModule": true
+	}
+  }

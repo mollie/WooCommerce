@@ -50,7 +50,7 @@ class BillieFieldsStrategy extends AbstractPaymentFieldsRenderer implements Paym
             <abbr class="required" title="required">*</abbr>
         </label>
         <span class="woocommerce-input-wrapper">
-            <input type="tel" class="input-text" name="' . esc_attr(
+            <input type="text" class="input-text" name="' . esc_attr(
             FieldConstants::BILLIE_COMPANY
         ) . '" id="' . esc_attr(
             FieldConstants::BILLIE_COMPANY

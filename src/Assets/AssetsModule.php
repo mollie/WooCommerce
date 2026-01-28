@@ -503,6 +503,8 @@ class AssetsModule implements ExecutableModule
             function () use ($container, $hasBlocksEnabled, $settingsHelper, $pluginUrl, $pluginPath, $dataService) {
                 self::registerFrontendScripts($pluginUrl, $pluginPath);
 
+                $this->registerBlockScripts($pluginUrl, $pluginPath, $container);
+
                 // Enqueue Scripts
                 add_action('wp_enqueue_scripts', function () use ($container) {
                     $this->enqueueFrontendScripts($container);
@@ -520,24 +522,25 @@ class AssetsModule implements ExecutableModule
                 add_action('wp_enqueue_scripts', function () use ($pluginUrl) {
                     $this->enqueuePayPalButtonScripts($pluginUrl);
                 });
-                //we need to hook into the payment library before it's loaded
+
                 add_filter('inpsyde_payment_gateway_blocks_dependencies', function($dependencies) {
                     $dependencies[] = 'mollie_block_index';
                     return $dependencies;
                 });
-                if ($hasBlocksEnabled) {
-                    /** @var array */
-                    $gatewayInstances = $container->get('__deprecated.gateway_helpers');
-                    // admin_enqueue_scripts is too late to register the block scripts, admin_init was too soon
-                    add_action('current_screen', function () use ($container,$pluginUrl, $pluginPath) {
-                        $this->registerBlockScripts($pluginUrl, $pluginPath, $container);
-                    });
-                    add_action('wp_enqueue_scripts', function () use ($dataService, $gatewayInstances, $container,$pluginUrl, $pluginPath) {
-                        $this->registerBlockScripts($pluginUrl, $pluginPath, $container);
+
+                /** @var array */
+                $gatewayInstances = $container->get('__deprecated.gateway_helpers');
+
+                add_action(
+                    'wp_enqueue_scripts',
+                    function () use ($dataService, $gatewayInstances, $container, $pluginUrl, $pluginPath) {
+                        if (!wp_script_is('mollie_block_index', 'registered')) {
+                            $this->registerBlockScripts($pluginUrl, $pluginPath, $container);
+                        }
                         $this->enqueueBlockCheckoutScripts($dataService, $gatewayInstances, $container);
-                    });
-                    $this->registerButtonsBlockScripts($pluginUrl, $pluginPath);
-                }
+                    }
+                );
+                $this->registerButtonsBlockScripts($pluginUrl, $pluginPath);
             }
         );
         add_action(

@@ -109,9 +109,15 @@ export default defineConfig< TestBaseExtend >( {
 			testIgnore: /refund\.spec\.ts/,
 		},
 		{
-			name: 'refund',
+			name: 'setup-refund',
 			dependencies: [ 'setup-woocommerce' ],
+			testMatch: /refund\.setup\.ts/,
 			fullyParallel: false,
+		},
+		{
+			name: 'refund',
+			dependencies: [ 'setup-refund' ],
+			fullyParallel: true,
 			testMatch: /refund\.spec\.ts/,
 		},
 	],

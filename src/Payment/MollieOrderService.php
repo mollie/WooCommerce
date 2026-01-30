@@ -347,7 +347,7 @@ class MollieOrderService
         $orderId = $order->get_id();
 
         // Debug log ID (order id/payment id)
-        $logId = "order {$orderId} / payment{$payment->id}";
+        $logId = "order {$orderId} / payment {$payment->id}";
 
         // Add message to log
         $this->logger->debug(__METHOD__ . " called for {$logId}");

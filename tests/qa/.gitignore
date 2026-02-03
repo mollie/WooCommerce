@@ -1,0 +1,14 @@
+.idea
+.vscode
+node_modules
+playwright-utils
+playwright-report*
+playwright/.cache
+storage-states
+test-results*
+playwright-wordpress-credentials.json
+woocommerce-subscriptions*.zip
+mollie-payments-for-woocommerce*.zip
+.env*
+!.env.example
+!package-lock.json

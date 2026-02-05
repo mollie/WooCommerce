@@ -64,10 +64,16 @@ export const PaymentMethodContentRenderer = ( props ) => {
 				let token = cardToken;
                 const isComponentsEnabled = item.shouldLoadComponents || false;
                 const isMultistepsCheckout = item.isMultiStepsCheckout || false;
-                const canShowComponents = item.name === 'mollie_wc_gateway_creditcard'  &&  isComponentsEnabled && !isMultistepsCheckout
-				if (canShowComponents && ! token ) {
+                const canShowComponents = item.name === 'mollie_wc_gateway_creditcard'  &&  isComponentsEnabled
+                const isStepValidation = isMultistepsCheckout && !document.querySelector(
+                    '.wp-block-woocommerce-germanized-pro-multilevel-checkout-step-confirmation.step-active'
+                );
+                if (canShowComponents && ! token ) {
 					token = await mollieComponentsManager.createToken();
 				}
+                if ( isStepValidation && canShowComponents ) {
+                    return { type: responseTypes.SUCCESS, message: '', retry: false };
+                }
 
 				const base = getPaymentMethodData();
 				const paymentData = {

@@ -362,7 +362,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
         $icons = [];
         foreach ($iconUrlArray as $iconUrl) {
             $icons[] = new Icon(
-                $this->getIdFromConfig(),
+                'mollie-'. $this->getIdFromConfig(),
                 $iconUrl,
                 $alt
             );

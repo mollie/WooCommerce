@@ -22,7 +22,6 @@ class Bizum extends AbstractPaymentMethod implements PaymentMethodI
             ],
             'filtersOnBuild' => false,
             'confirmationDelayed' => false,
-            'paymentCaptureMode' => 'manual',
             'phonePlaceholder' => 'Please enter your phone here. +346xxxxxxxx', 'mollie-payments-for-woocommerce',
             'docs' => 'https://www.mollie.com/gb/payments/bizum',
         ];

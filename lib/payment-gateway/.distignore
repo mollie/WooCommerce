@@ -1,0 +1,8 @@
+.distignore
+.ddev
+.git*
+tests/
+vendor/**/test*
+*.lock
+package-lock.json
+*.xml.*

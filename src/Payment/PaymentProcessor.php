@@ -129,7 +129,6 @@ class PaymentProcessor implements PaymentProcessorInterface
                 $apiKey
             );
             $this->saveMollieInfo($order, $paymentObject);
-            $this->saveSubscriptionMandateData($orderId, $apiKey, $customerId, $paymentObject, $order);
             do_action($this->pluginId . '_payment_created', $paymentObject, $order);
             $this->updatePaymentStatusForDelayedMethods($paymentObject, $order, $initialOrderStatus);
             $this->reportPaymentSuccess($paymentObject, $orderId, $order, $paymentMethod);
@@ -674,39 +673,6 @@ class PaymentProcessor implements PaymentProcessorInterface
         add_action('before_woocommerce_pay_form', static function () use ($message) {
             wc_print_notice($message, 'error');
         });
-    }
-
-    /**
-     * @param $orderId
-     * @param $apiKey
-     * @param string|null $customerId
-     * @param $paymentObject
-     * @param $order
-     * @throws ApiException
-     */
-    protected function saveSubscriptionMandateData(
-        $orderId,
-        $apiKey,
-        ?string $customerId,
-        $paymentObject,
-        $order
-    ): void {
-
-        $dataHelper = $this->dataHelper;
-        if ($dataHelper->isSubscription($orderId)) {
-            $mandates = $this->apiHelper->getApiClient($apiKey)->customers->get($customerId)->mandates();
-            if (!isset($mandates[0])) {
-                return;
-            }
-            // madates are sorted by date, so the first one is the newest
-            $mandate = $mandates[0];
-            $customerId = $mandate->customerId;
-            $mandateId = $mandate->id;
-            $this->logger->debug(
-                "Mollie Subscription in the order: customer id {$customerId} and mandate id {$mandateId} "
-            );
-            do_action($this->pluginId . '_after_mandate_created', $paymentObject, $order, $customerId, $mandateId);
-        }
     }
 
     /**

@@ -1,13 +1,14 @@
-export type StoreSettings = {
-		enableClassicPages?: boolean; // false = block cart and checkout (default), true = classic cart & checkout pages
-		settings?: WooCommerce.Settings; // WC settings
-		taxes?: {
-			options: WooCommerce.Settings; // Tax settings in WC > Settings > General tab
-			rates: WooCommerce.CreateTax[]; // Tax rates to be active in WC > Settings > Taxes > Tax rates tab
-		};
-		customer?: WooCommerce.CreateCustomer; // Add registered customer
-		enableSubscriptionsPlugin?: boolean; // WC Subscription plugin is deactivated
+export type ShopConfig = {
+	enableClassicPages?: boolean; // false = block cart and checkout (default), true = classic cart & checkout pages
+	settings?: WooCommerce.Settings; // WC settings
+	taxes?: {
+		options: WooCommerce.Settings; // Tax settings in WC > Settings > General tab
+		rates: WooCommerce.CreateTax[]; // Tax rates to be active in WC > Settings > Taxes > Tax rates tab
 	};
+	customer?: WooCommerce.CreateCustomer; // Add registered customer
+	enableSubscriptionsPlugin?: boolean; // WC Subscription plugin is deactivated
+	products?: WooCommerce.CreateProduct[]; // Products to be created if not existing
+};
 
 export namespace MollieSettings {
 	export type ApiKeys = {
@@ -57,11 +58,11 @@ export namespace MollieSettings {
 		debugLogEnabled?: boolean;
 		orderStatusCancelledPayments?: OrderStatusCancelledPayment;
 		paymentLocale?: PaymentLocale;
-		customerDetails?: boolean;
+		customerDetailsEnabled?: boolean;
 		apiMethod?: ApiMethod;
 		apiPaymentDescription?: ApiPaymentDescription;
 		gatewayFeeLabel?: string;
-		removeOptionsAndTransients?: boolean;
+		removeOptionsAndTransientsEnabled?: boolean;
 		placePaymentOnhold?: PaymentCapture;
 	};
 
@@ -236,9 +237,8 @@ export type MolliePayment = {
 	gateway: MollieGateway;
 	status: MolliePaymentStatus;
 	bankIssuer?: BankIssuer;
+	billingCompany?: string;
 	card?: WooCommerce.CreditCard;
-	isVaulted?: boolean;
-	saveToAccount?: boolean;
 	amount?: number;
 };
 
@@ -259,14 +259,15 @@ export namespace MollieTestData {
 		tests: MollieTestData.SurchargeTest[];
 	};
 
-	export type Transaction = {
-		testId: string;
-		gatewaySlug: string;
-		paymentStatus: MolliePaymentStatus;
-		orderStatus?: WooCommerce.OrderStatus;
-		card?: WooCommerce.CreditCard;
-		mollieComponentsEnabled?: 'yes' | 'no';
-		bankIssuer?: string;
-		billingCompany?: string;
+	export type ShopOrder = WooCommerce.ShopOrder & {
+		testId?: string;
+		payment?: MolliePayment;
+	};
+
+	export type ShopRefund = ShopOrder & {
+		isMollieClientApiRefund?: boolean; // true = refund via Mollie API, false = refund via WooCommerce admin
+		refundPercentage?: number; // how much of order price to refund 0.01...100.00%
+		refundOrderStatus?: WooCommerce.OrderStatus; // WooCommerce refunded order status
+		refundPaymentStatus?: string; // Payment status obtained from PayPal Payment
 	};
 }

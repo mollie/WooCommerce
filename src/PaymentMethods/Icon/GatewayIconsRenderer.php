@@ -22,12 +22,17 @@ class GatewayIconsRenderer implements GatewayIconsRendererInterface
     public function renderIcons(): string
     {
         if ($this->paymentMethod->shouldDisplayIcon()) {
-            //we just have one
-            $icon = $this->iconProvider->provideIcons()[0];
-            return apply_filters(
-                $this->paymentMethod->id() . '_icon_url',
-                $icon->src()
-            );
+            $icons = $this->iconProvider->provideIcons();
+            $html = '';
+            foreach ($icons as $icon) {
+                $url = apply_filters(
+                    $this->paymentMethod->id() . '_icon_url',
+                    $icon->src()
+                );
+                $html .= "<img src='{$url}' alt='{$icon->alt()}' class='mollie-gateway-icon' />";
+            }
+
+            return $html;
         }
         return '';
     }

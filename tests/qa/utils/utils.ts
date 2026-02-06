@@ -22,7 +22,7 @@ import {
 	molliePlugin,
 	mollieApiKeys,
 	subscriptionsPlugin,
-	StoreSettings,
+	ShopConfig,
 } from '../resources';
 
 export class Utils {
@@ -60,7 +60,7 @@ export class Utils {
 
 	// Tested plugin preconditions
 
-	installActivateMollie = async () => {
+	installAndActivateMollie = async () => {
 		if (
 			! ( await this.requestUtils.isPluginInstalled( molliePlugin.slug ) )
 		) {
@@ -81,7 +81,9 @@ export class Utils {
 		await this.mollieApi.setMollieApiKeys( mollieApiKeys.default );
 		await this.mollieApi.cleanMollieDb();
 		await this.mollieApi.setMollieApiKeys( mollieApiKeys.default );
-		await this.mollieApi.setApiMethod( this.mollieApiMethod );
+		await this.mollieApi.setAdvancedSettings( {
+			apiMethod: this.mollieApiMethod,
+		} );
 	};
 
 	/**
@@ -97,6 +99,12 @@ export class Utils {
 		await this.visitorWooCommerceApi.addProductsToCart( cartProducts );
 	};
 
+	/**
+	 * (Re)creates registered customer and refreshes his storage state.
+	 * May be required for testing subscriptions/vaulting.
+	 *
+	 * @param customer
+	 */
 	restoreCustomer = async ( customer: WooCommerce.CreateCustomer ) => {
 		await this.wooCommerceUtils.deleteCustomer( customer );
 		await this.wooCommerceUtils.createCustomer( customer );
@@ -121,33 +129,70 @@ export class Utils {
 	 *
 	 * @param {Object} data see /resources/woocommerce-config.ts
 	 */
-	configureStore = async ( data: StoreSettings ) => {
-		if ( data.enableClassicPages === true ) {
+	configureStore = async ( data: ShopConfig ) => {
+		const {
+			enableSubscriptionsPlugin,
+			enableClassicPages,
+			settings,
+			taxes,
+			customer,
+			products,
+		}: ShopConfig = data;
+
+		if ( enableSubscriptionsPlugin === true ) {
+			await this.requestUtils.activatePlugin( subscriptionsPlugin.slug );
+		}
+
+		if ( enableSubscriptionsPlugin === false ) {
+			await this.requestUtils.deactivatePlugin(
+				subscriptionsPlugin.slug
+			);
+		}
+
+		if ( enableClassicPages === true ) {
 			await this.wooCommerceUtils.activateClassicCartPage();
 			await this.wooCommerceUtils.activateClassicCheckoutPage();
 		}
 
-		if ( data.enableClassicPages === false ) {
+		if ( enableClassicPages === false ) {
 			await this.wooCommerceUtils.activateBlockCartPage();
 			await this.wooCommerceUtils.activateBlockCheckoutPage();
 		}
 
-		if ( data.settings?.general ) {
-			await this.wooCommerceApi.updateGeneralSettings(
-				data.settings.general
+		if ( settings?.general ) {
+			await this.wooCommerceApi.updateGeneralSettings( settings.general );
+		}
+
+		if ( taxes ) {
+			await this.wooCommerceUtils.setTaxes( taxes );
+		}
+
+		if ( customer ) {
+			await this.restoreCustomer( customer );
+		}
+
+		if ( products ) {
+			// create test products
+			const cartItems = {};
+			await Promise.all(
+				products.map( async ( product ) => {
+					const createdProduct =
+						await this.wooCommerceUtils.createProduct( product );
+					// Create cart items { id: 123 }
+					cartItems[ product.slug ] = { id: createdProduct.id };
+				} )
 			);
-		}
 
-		if ( data.taxes ) {
-			await this.wooCommerceUtils.setTaxes( data.taxes );
-		}
+			// Parse existing PRODUCTS, if any
+			const existingProducts = process.env.PRODUCTS
+				? JSON.parse( process.env.PRODUCTS )
+				: {};
 
-		if ( data.customer ) {
-			await this.restoreCustomer( data.customer );
-		}
-
-		if ( data.enableSubscriptionsPlugin === true ) {
-			await this.requestUtils.activatePlugin( subscriptionsPlugin.slug );
+			// Merge created products with existing and store back as JSON string
+			process.env.PRODUCTS = JSON.stringify( {
+				...existingProducts,
+				...cartItems,
+			} );
 		}
 	};
 }

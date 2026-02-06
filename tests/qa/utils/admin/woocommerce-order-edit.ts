@@ -11,13 +11,21 @@ const { WLOP_NAME } = process.env;
 
 export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 	// Locators
+	paymentVia = ( method ) =>
+		this.orderNumberContainer().getByText( `Payment via ${ method }` );
+	transactionIdLink = ( transactionId ) =>
+		this.orderNumberContainer().getByRole( 'link', {
+			name: transactionId,
+		} );
 	transactionIdText = ( transactionId ): Locator =>
 		this.orderNumberContainer().getByText( `(${ transactionId })` );
 	billingDataTransactionIdInput = (): Locator =>
 		this.billingDataContainer().getByLabel( 'Transaction ID' );
 
-	refundViaMollieButton = () =>
-		this.page.locator( '.do-api-refund', { hasText: WLOP_NAME } );
+	refundViaMollieButton = ( gatewayName: string ) =>
+		this.page.locator( '.do-api-refund', {
+			hasText: new RegExp( `Refund .* via ${ gatewayName }` ),
+		} );
 
 	productsTable = () => this.page.locator( '#order_line_items' );
 	productRow = ( name ): Locator =>
@@ -45,26 +53,20 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 	totalWorldlineNetTotal = (): Locator =>
 		this.totalsTableRow( `${ WLOP_NAME } Net Total:` );
 
-	orderStatusLabels = {
-		pending: 'Pending payment',
-		processing: 'Processing',
-		'on-hold': 'On hold',
-		completed: 'Completed',
-		cancelled: 'Cancelled',
-		refunded: 'Refunded',
-		failed: 'Failed',
-		draft: 'Draft',
-	};
-
 	// Actions
+
 	/**
-	 * TODO: needs update
-	 * Performs Worldline refund
+	 * Performs Mollie refund
 	 *
+	 * @param gatewayName
 	 * @param amount
 	 */
-	makeRefund = async ( amount?: string ) => {
-		await this.refundButton().click();
+	makeRefund = async ( gatewayName: string, amount?: string ) => {
+		const refundViaMollieButton = this.refundViaMollieButton( gatewayName );
+		await expect(
+			refundViaMollieButton,
+			`Assert refund via ${ gatewayName } button is visible`
+		).toBeVisible();
 		if ( ! amount ) {
 			const totalAmount =
 				( await this.totalAvailableToRefund().textContent() ) || '';
@@ -74,77 +76,61 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 		}
 		await this.firstRefundTotalInput().fill( amount );
 		await this.page.on( 'dialog', ( dialog ) => dialog.accept() );
-		// await this.page.on('dialog', dialog => dialog.accept());
-		await this.refundViaMollieButton().click();
+		await refundViaMollieButton.click();
+		await this.page.waitForLoadState( 'networkidle' );
 	};
 
 	/**
 	 * TODO: needs update
 	 * Performs Mollie refund for specific product
 	 *
+	 * @param gatewayName
 	 * @param productName
 	 * @param qty
 	 */
-	makeRefundForProduct = async ( productName: string, qty: number = 1 ) => {
+	makeRefundForProduct = async (
+		gatewayName: string,
+		productName: string,
+		qty: number = 1
+	) => {
 		await this.refundButton().click();
 		await this.lineItemRefundQuantityInput( productName ).fill(
 			String( qty )
 		);
 		await this.page.on( 'dialog', ( dialog ) => dialog.accept() );
 		// await this.page.on('dialog', dialog => dialog.accept());
-		await this.refundViaMollieButton().click();
+		await this.refundViaMollieButton( gatewayName ).click();
 	};
 
 	// Assertions
 
 	/**
-	 * TODO: needs update
+	 * Asserts order edit page including PayPal related fields
 	 *
-	 * @param amount
-	 * @param currency
+	 * @param orderData
+	 * @param transactionId
 	 */
-	assertRefundRequested = async ( amount: string, currency? ) => {
-		const orderNote = this.orderNoteWithText(
-			`${ WLOP_NAME }: Your refund request for ${ await formatMoney(
-				Number( amount ),
-				currency
-			) } has been submitted and is pending approval.`
-		);
-		await this.retryLocatorVisibility( orderNote );
-		await expect( orderNote ).toBeVisible();
-	};
-
-	/**
-	 * TODO: needs update
-	 * Asserts refund has been finished:
-	 * - Order note received
-	 * - Processed refund ID is present
-	 * - Order status is expected
-	 *
-	 * @param mollieRefundId
-	 * @param orderStatus
-	 * @param amount
-	 * @param currency
-	 */
-	assertRefundFinished = async (
-		mollieRefundId: string,
-		orderStatus: WooCommerce.OrderStatus,
-		amount: string,
-		currency?
+	assertOrderDetails = async (
+		orderData: WooCommerce.ShopOrder,
+		transactionId?: string
 	) => {
-		const orderNote = this.orderNoteWithText(
-			`${ WLOP_NAME }: ${ await formatMoney(
-				Number( amount ),
-				currency
-			) } was refunded.`
-		);
-		const refundProcessedText = this.page.getByText(
-			`Refund processed. ${ WLOP_NAME } transaction ID: ${ mollieRefundId }`
-		);
-		await this.retryLocatorVisibility( orderNote );
-		await expect( orderNote ).toBeVisible();
-		await expect( refundProcessedText ).toBeVisible();
-		await this.assertOrderStatus( orderStatus );
+		await super.assertOrderDetails( orderData );
+
+		const { gateway } = orderData.payment;
+
+		// Payment via text
+		await expect(
+			this.paymentVia( gateway.name ),
+			'Assert payment via method'
+		).toBeVisible();
+
+		// Transaction ID
+		if ( transactionId ) {
+			await expect(
+				this.transactionIdLink( transactionId ),
+				'Assert transaction ID link'
+			).toBeVisible();
+		}
 	};
 
 	retryLocatorVisibility = async ( locator, retries = 5 ) => {

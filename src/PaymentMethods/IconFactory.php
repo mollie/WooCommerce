@@ -21,16 +21,11 @@ class IconFactory
     }
 
     /**
-     * @return string
+     * @return array
      */
-    public function getIconUrl($paymentMethodName): string
+    public function getIconUrl($paymentMethodName): array
     {
         return $this->iconFactory()->svgUrlForPaymentMethod($paymentMethodName);
-    }
-
-    public function getExternalIconHtml($svgIconUrl): string
-    {
-        return $this->iconFactory()->generateIconHtml($svgIconUrl);
     }
 
     /**

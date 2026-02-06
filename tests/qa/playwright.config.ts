@@ -68,7 +68,7 @@ export default defineConfig< TestBaseExtend >( {
 
 		viewport: { width: 1280, height: 850 },
 
-    	trace: 'retain-on-failure',//'on-first-retry',//'on',//
+		trace: 'retain-on-failure', //'on-first-retry',//'on',//
 
 		screenshot: {
 			mode: 'only-on-failure',
@@ -106,6 +106,19 @@ export default defineConfig< TestBaseExtend >( {
 			name: 'all',
 			dependencies: [ 'setup-woocommerce' ],
 			fullyParallel: false,
+			testIgnore: /refund\.spec\.ts/,
+		},
+		{
+			name: 'setup-refund',
+			dependencies: [ 'setup-woocommerce' ],
+			testMatch: /refund\.setup\.ts/,
+			fullyParallel: false,
+		},
+		{
+			name: 'refund',
+			dependencies: [ 'setup-refund' ],
+			fullyParallel: true,
+			testMatch: /refund\.spec\.ts/,
 		},
 	],
 } );

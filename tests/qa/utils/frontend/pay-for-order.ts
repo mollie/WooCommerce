@@ -8,6 +8,14 @@ import {
 
 export class PayForOrder extends PayForOrderBase {
 	// Locators
+	paymentOptionLabel = ( slug: string ) =>
+		this.paymentOptionsContainer().locator(
+			`label[for="payment_method_mollie_wc_gateway_${ slug }"]`
+		);
+	cardComponentsContainer = () =>
+		this.page.locator(
+			'.payment_method_mollie_wc_gateway_creditcard .mollie-components'
+		);
 	cardNumberInput = () =>
 		this.page
 			.frameLocator( '[title="cardNumber input"]' )
@@ -39,6 +47,8 @@ export class PayForOrder extends PayForOrderBase {
 	rivertyBirthDateInput = () =>
 		this.page.locator( '#billing_birthdate_riverty' );
 	rivertyPhoneInput = () => this.page.locator( '#billing_phone_riverty' );
+	vippsPhoneInput = () => this.page.locator( '#billing_phone_vipps' );
+	mobilepayPhoneInput = () => this.page.locator( '#billing_phone_mobilepay' );
 
 	// Actions
 
@@ -59,15 +69,21 @@ export class PayForOrder extends PayForOrderBase {
 		const { payment, customer } = order;
 		const { gateway, card } = payment;
 		await this.visit( orderId, orderKey );
-		await expect( this.paymentOption( gateway.name ) ).toBeVisible();
-		await this.paymentOption( gateway.name ).click();
+		await expect(
+			this.paymentOptionLabel( gateway.slug ),
+			'Assert payment option label is visible'
+		).toBeVisible();
+		await this.paymentOptionLabel( gateway.slug ).click();
 		await this.page.waitForLoadState( 'networkidle' );
 
 		if (
 			gateway.slug === 'kbc' &&
 			gateway.settings.issuers_dropdown_shown === 'yes'
 		) {
-			await expect( this.kbcIssuerSelect() ).toBeVisible();
+			await expect(
+				this.kbcIssuerSelect(),
+				'Assert KBC issuer select is visible'
+			).toBeVisible();
 			await this.kbcIssuerSelect().selectOption(
 				order.payment.bankIssuer
 			);
@@ -75,25 +91,31 @@ export class PayForOrder extends PayForOrderBase {
 
 		if ( gateway.slug === 'in3' ) {
 			const phoneInput = this.in3PhoneInput();
-			if ( await phoneInput.isVisible() ) {
-				await phoneInput.fill( customer.billing.phone );
-			}
+			await expect(
+				phoneInput,
+				'Assert in3 phone input is visible'
+			).toBeVisible();
+			await phoneInput.fill( customer.billing.phone );
+
 			const birthDateInput = this.in3BirthDateInput();
-			if ( await birthDateInput.isVisible() ) {
-				await birthDateInput.click();
-				for ( const char of customer.birth_date ) {
-					await this.page.keyboard.type( char );
-					await this.page.waitForTimeout( 100 );
-				}
+			await expect(
+				birthDateInput,
+				'Assert in3 birth date input is visible'
+			).toBeVisible();
+			await birthDateInput.click();
+			for ( const char of customer.birth_date ) {
+				await this.page.keyboard.type( char );
+				await this.page.waitForTimeout( 100 );
 			}
 		}
 
-		if (
-			gateway.slug === 'billie' &&
-			( await this.billieBillingCompanyInput().isVisible() )
-		) {
+		if ( gateway.slug === 'billie' ) {
+			await expect(
+				this.billieBillingCompanyInput(),
+				'Assert billie billing company input is visible'
+			).toBeVisible();
 			await this.billieBillingCompanyInput().fill(
-				payment.billingCompany
+				order.payment.billingCompany
 			);
 		}
 
@@ -101,7 +123,10 @@ export class PayForOrder extends PayForOrderBase {
 			gateway.slug === 'giftcard' &&
 			gateway.settings.issuers_dropdown_shown === 'yes'
 		) {
-			await expect( this.giftCardSelect() ).toBeVisible();
+			await expect(
+				this.giftCardSelect(),
+				'Assert gift card select is visible'
+			).toBeVisible();
 			await this.giftCardSelect().selectOption( 'fashioncheque' );
 		}
 
@@ -109,12 +134,28 @@ export class PayForOrder extends PayForOrderBase {
 			gateway.slug === 'creditcard' &&
 			gateway.settings.mollie_components_enabled !== 'no'
 		) {
-			await expect.soft( this.page.getByText( 'Secure payments provided by' ) ).toBeVisible();
+			// the card fields seem to be only rendered when they are scrolled in otherwise they are not visible
+			await this.cardComponentsContainer().scrollIntoViewIfNeeded();
 
-			await expect( this.cardNumberInput() ).toBeVisible();
-			await expect( this.cardHolderInput() ).toBeVisible();
-			await expect( this.cardExpiryDateInput() ).toBeVisible();
-			await expect( this.cardVerificationCodeInput() ).toBeVisible();
+			await expect(
+				this.cardNumberInput(),
+				'Assert card number input is visible'
+			).toBeVisible();
+			await expect(
+				this.cardHolderInput(),
+				'Assert card holder input is visible'
+			).toBeVisible();
+			await expect(
+				this.cardExpiryDateInput(),
+				'Assert card expiry date input is visible'
+			).toBeVisible();
+			await expect(
+				this.cardVerificationCodeInput(),
+				'Assert card verification code input is visible'
+			).toBeVisible();
+			await expect
+				.soft( this.page.getByText( 'Secure payments provided by' ) )
+				.toBeVisible();
 
 			await this.cardNumberInput().fill( card.card_number );
 			await this.cardHolderInput().fill( card.card_holder );
@@ -124,17 +165,40 @@ export class PayForOrder extends PayForOrderBase {
 
 		if ( gateway.slug === 'riverty' ) {
 			const phoneInput = this.rivertyPhoneInput();
-			if ( await phoneInput.isVisible() ) {
-				await phoneInput.fill( customer.billing.phone );
-			}
+			await expect(
+				phoneInput,
+				'Assert riverty phone input is visible'
+			).toBeVisible();
+			await phoneInput.fill( customer.billing.phone );
+
 			const birthDateInput = this.rivertyBirthDateInput();
-			if ( await birthDateInput.isVisible() ) {
-				await birthDateInput.click();
-				for ( const char of customer.birth_date ) {
-					await this.page.keyboard.type( char );
-					await this.page.waitForTimeout( 100 );
-				}
+			await expect(
+				birthDateInput,
+				'Assert riverty birth date input is visible'
+			).toBeVisible();
+			await birthDateInput.click();
+			for ( const char of customer.birth_date ) {
+				await this.page.keyboard.type( char );
+				await this.page.waitForTimeout( 100 );
 			}
+		}
+
+		if ( gateway.slug === 'vipps' ) {
+			const phoneInput = this.vippsPhoneInput();
+			await expect(
+				phoneInput,
+				'Assert vipps phone input is visible'
+			).toBeVisible();
+			await phoneInput.fill( customer.billing.phone );
+		}
+
+		if ( gateway.slug === 'mobilepay' ) {
+			const phoneInput = this.mobilepayPhoneInput();
+			await expect(
+				phoneInput,
+				'Assert mobilepay phone input is visible'
+			).toBeVisible();
+			await phoneInput.fill( customer.billing.phone );
 		}
 
 		await this.payForOrderButton().click();

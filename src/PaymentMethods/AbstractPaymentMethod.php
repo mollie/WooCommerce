@@ -72,11 +72,13 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
         return $config['id'];
     }
 
-    public function getUploadedImage()
+    public function getUploadedImage(): array
     {
         $settings = $this->getSettings();
+        $svgPath = $settings["iconFilePath"] ?? false;
+        $svgUrl = $settings["iconFileUrl"] ?? false;
 
-        return $settings["iconFileUrl"] ?? null;
+        return $svgPath && file_exists($svgPath) ? [$svgUrl] : [];
     }
 
     public function isCreditCardSelectorEnabled()
@@ -335,24 +337,28 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
     public function paymentMethodIconProvider(ContainerInterface $container): IconProviderInterface
     {
         $iconFactory = $container->get(IconFactory::class);
-        $url = $iconFactory->getIconUrl($this->getIdFromConfig());
-        if ($uploadedImageUrl = $this->getUploadedImage()) {
-            $url = $iconFactory->getExternalIconHtml($uploadedImageUrl);
+        $iconUrlArray = $iconFactory->getIconUrl($this->getIdFromConfig());
+        if ($this->getUploadedImage()) {
+            $iconUrlArray = $this->getUploadedImage();
         }
 
         $useAPIImage = apply_filters('mollie_wc_gateway_use_api_icon', $this->isUseApiTitleChecked(), $this->getIdFromConfig());
 
         if (isset($this->apiPaymentMethod["image"]) && property_exists($this->apiPaymentMethod["image"], "svg") && !$this->isCreditCardSelectorEnabled() && $useAPIImage) {
-            $url = $iconFactory->getExternalIconHtml($this->apiPaymentMethod["image"]->svg);
+            $iconUrlArray = $this->apiPaymentMethod["image"]->svg;
         }
 
         $alt = $this->getIdFromConfig() . ' icon';
-        $icon = new Icon(
-            $this->getIdFromConfig(),
-            $url,
-            $alt
-        );
-        return new StaticIconProvider($icon);
+        $icons = [];
+        foreach ($iconUrlArray as $iconUrl) {
+            $icons[] = new Icon(
+                $this->getIdFromConfig(),
+                $iconUrl,
+                $alt
+            );
+        }
+
+        return new StaticIconProvider(...$icons);
     }
 
     public function gatewayIconsRenderer(ContainerInterface $container): \Inpsyde\PaymentGateway\GatewayIconsRendererInterface
@@ -409,12 +415,6 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
     public function optionKey(ContainerInterface $container): string
     {
         return $this->id() . '_settings';
-    }
-
-    public function registerBlocks(ContainerInterface $container): bool
-    {
-        //we handle it outside for the moment
-        return false;
     }
 
     public function orderButtonText(ContainerInterface $container): string

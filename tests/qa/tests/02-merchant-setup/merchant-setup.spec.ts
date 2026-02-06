@@ -6,7 +6,7 @@ import { gateways } from '../../resources';
 
 test.describe.serial( () => {
 	test.beforeAll( async ( { utils } ) => {
-		await utils.installActivateMollie();
+		await utils.installAndActivateMollie();
 		await utils.cleanReconnectMollie();
 	} );
 
@@ -18,7 +18,8 @@ test.describe.serial( () => {
 		await mollieSettingsAdvanced.cleanDb();
 		await mollieSettingsApiKeys.visit();
 		await expect(
-			mollieSettingsApiKeys.failedToConnectToMollieApiText()
+			mollieSettingsApiKeys.failedToConnectToMollieApiText(),
+			'Assert failed to connect to Mollie API text is visible'
 		).toBeVisible();
 	} );
 
@@ -29,7 +30,8 @@ test.describe.serial( () => {
 		await mollieSettingsApiKeys.setApiKeys();
 		await mollieSettingsApiKeys.saveChanges();
 		await expect(
-			mollieSettingsApiKeys.successfullyConnectedWithTestApiText()
+			mollieSettingsApiKeys.successfullyConnectedWithTestApiText(),
+			'Assert successfully connected with test API text is visible'
 		).toBeVisible();
 	} );
 
@@ -37,7 +39,7 @@ test.describe.serial( () => {
 		wooCommerceSettings,
 		mollieApiMethod,
 	} ) => {
-		await wooCommerceSettings.visit( 'payments' );
+		await wooCommerceSettings.visit( 'checkout' );
 		for ( const key in gateways ) {
 			const gateway = gateways[ key ];
 
@@ -48,9 +50,12 @@ test.describe.serial( () => {
 				continue;
 			}
 
-			const mollieGatewayname = `Mollie - ${ gateway.name }`;
+			const mollieGatewayName = `Mollie - ${ gateway.name }`;
 			await expect
-				.soft( wooCommerceSettings.gatewayLink( mollieGatewayname ) )
+				.soft(
+					wooCommerceSettings.gatewayNameCell( mollieGatewayName ),
+					`${ mollieGatewayName } is NOT displayed correctly`
+				)
 				.toBeVisible();
 		}
 	} );

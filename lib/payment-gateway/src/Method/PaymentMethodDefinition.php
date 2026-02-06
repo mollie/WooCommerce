@@ -31,6 +31,8 @@ interface PaymentMethodDefinition
 {
     public function id(): string;
 
+    public function isEnabled(ContainerInterface $container): bool;
+
     public function paymentProcessor(ContainerInterface $container): PaymentProcessorInterface;
 
     public function paymentRequestValidator(ContainerInterface $container): PaymentRequestValidatorInterface;

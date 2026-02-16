@@ -62,8 +62,7 @@ import {initializeMollieComponentsWithStoreSubscription} from "./services/Mollie
 
             // Store-dependent features
             setUpMollieBlockCheckoutListeners( MOLLIE_STORE_KEY );
-            if ( mollieBlockData.gatewayData.componentData
-                && !mollieBlockData.gatewayData.componentData.isMultistepsCheckout ) {
+            if ( mollieBlockData.gatewayData.componentData ) {
                 initializeMollieComponentsWithStoreSubscription(
                     mollieBlockData.gatewayData.componentData
                 );

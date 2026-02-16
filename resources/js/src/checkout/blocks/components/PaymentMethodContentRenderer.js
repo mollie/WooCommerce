@@ -48,6 +48,15 @@ export const PaymentMethodContentRenderer = ( props ) => {
 			if ( ! activePaymentMethod.startsWith( 'mollie_wc_gateway_' ) ) {
 				return responseTypes.SUCCESS;
 			}
+            const isComponentsEnabled = item.shouldLoadComponents || false;
+            const isMultistepsCheckout = item.isMultiStepsCheckout || false;
+            const canShowComponents = item.name === 'mollie_wc_gateway_creditcard'  &&  isComponentsEnabled
+            const isStepValidation = isMultistepsCheckout && !document.querySelector(
+                '.wp-block-woocommerce-germanized-pro-multilevel-checkout-step-confirmation.step-active'
+            );
+            if ( isStepValidation && canShowComponents ) {
+                return responseTypes.SUCCESS;
+            }
 
 			try {
 				const sel = select( MOLLIE_STORE_KEY );
@@ -62,10 +71,8 @@ export const PaymentMethodContentRenderer = ( props ) => {
 				};
 
 				let token = cardToken;
-                const isComponentsEnabled = item.shouldLoadComponents || false;
-                const isMultistepsCheckout = item.isMultiStepsCheckout || false;
-                const canShowComponents = item.name === 'mollie_wc_gateway_creditcard'  &&  isComponentsEnabled && !isMultistepsCheckout
-				if (canShowComponents && ! token ) {
+
+                if (canShowComponents && ! token ) {
 					token = await mollieComponentsManager.createToken();
 				}
 

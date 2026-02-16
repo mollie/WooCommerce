@@ -106,7 +106,6 @@ class RestApi
                     $this->logger->debug($exception->getMessage());
                     return new \WP_REST_Response(null, 500);
                 }
-
             }
         }
 

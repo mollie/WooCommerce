@@ -204,7 +204,7 @@ class MollieOrderService
         $this->setGateway($gateway);
 
         $test_mode = $this->data->getActiveMolliePaymentMode($order->get_id()) === 'test';
-        if(empty($payment_object_id)) {
+        if (empty($payment_object_id)) {
             $payment_object_id = $order->get_transaction_id();
         }
         if (!$payment_object_id) {
@@ -974,8 +974,7 @@ class MollieOrderService
         return $order->get_meta('_mollie_payment_method_button') === 'PayPalButton';
     }
 
-
-    public function getKeyFromRedirectUrl($redirectUrl):string
+    public function getKeyFromRedirectUrl($redirectUrl): string
     {
         $parsedUrl = wp_parse_url($redirectUrl);
 
@@ -988,7 +987,7 @@ class MollieOrderService
         return isset($queryParams['key']) ? sanitize_text_field($queryParams['key']) : '';
     }
 
-    public function getOrderIdFromRedirectUrl($redirectUrl):string
+    public function getOrderIdFromRedirectUrl($redirectUrl): string
     {
         $parsedUrl = wp_parse_url($redirectUrl);
 

@@ -297,8 +297,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
                         $data['method'] = self::DIRECTDEBIT;
                     }
                     $validMandate = true;
-                }
-                elseif (!empty($mandateId)) {
+                } elseif (!empty($mandateId)) {
                     list($mandate, $data, $validMandate) = $this->usePreviousMandate(
                         $renewal_order_id,
                         $customer_id,

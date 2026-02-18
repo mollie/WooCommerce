@@ -103,6 +103,34 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 	};
 
 	// Assertions
+	
+	/**
+	 * Asserts the order status combobox value on the order edit page.
+	 * Retries every 5 sec during 1 min.
+	 * 
+	 * @param expectedStatus 
+	 */
+	assertOrderStatus = async (
+		expectedStatus: WooCommerce.OrderStatus = 'processing'
+	) => {
+		const orderStatus = this.getOrderStatusLabel( expectedStatus );
+		let isFirstAttempt = true;
+
+		await expect.soft( async () => {
+			if ( isFirstAttempt ) {
+				isFirstAttempt = false;
+			} else {
+				await this.page.reload();
+			}
+			await expect.soft(
+				this.statusCombobox(),
+				'Assert order status combobox'
+			).toHaveText( orderStatus );
+		} ).toPass( {
+			timeout: 60_000,
+			intervals: [ 5_000 ],
+		} );
+	};
 
 	/**
 	 * Asserts order edit page including PayPal related fields
@@ -119,14 +147,14 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 		const { gateway } = orderData.payment;
 
 		// Payment via text
-		await expect(
+		await expect.soft(
 			this.paymentVia( gateway.name ),
 			'Assert payment via method'
 		).toBeVisible();
 
 		// Transaction ID
 		if ( transactionId ) {
-			await expect(
+			await expect.soft(
 				this.transactionIdLink( transactionId ),
 				'Assert transaction ID link'
 			).toBeVisible();

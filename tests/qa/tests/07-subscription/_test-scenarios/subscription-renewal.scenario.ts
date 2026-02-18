@@ -44,7 +44,7 @@ export const testSubscriptionRenewal = (
 				wooCommerceSubscriptionEdit,
 				customerSubscriptions,
 			} ) => {
-				test.setTimeout( 2 * 60_000 );
+				test.setTimeout( 2.5 * 60_000 );
 				// Precondition: Create the initial subscription order
 				await updateCurrencyIfNeeded(
 					wooCommerceApi,

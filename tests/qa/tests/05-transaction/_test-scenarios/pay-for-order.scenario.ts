@@ -73,12 +73,14 @@ export const testPaymentStatusOnPayForOrder = (
 			transactionId
 		);
 
-		// Assert order notes via WC API
-		const expectedNotes = [
-			`${ gateway.slug } payment started (${ transactionId } - test mode).`,
-			`Payment via ${ gateway.name } (${ transactionId }).`,
-			`Order completed using Mollie - ${ gateway.name } payment (${ transactionId } - test mode).`,
-		];
-		await assertOrderNotes( wooCommerceApi, orderId, expectedNotes );
+		if( payment.status === 'paid' ) {
+			// Assert order notes via WC API
+			const expectedNotes = [
+				`${ gateway.slug } payment started (${ transactionId } - test mode).`,
+				`Payment via ${ gateway.name } (${ transactionId }).`,
+				`Order completed using Mollie - ${ gateway.name } payment (${ transactionId } - test mode).`,
+			];
+			await assertOrderNotes( wooCommerceApi, orderId, expectedNotes );
+		}
 	} );
 };

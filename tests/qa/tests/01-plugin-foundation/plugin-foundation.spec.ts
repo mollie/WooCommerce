@@ -12,7 +12,7 @@ import {
  */
 import { molliePlugin } from '../../resources';
 
-testPluginInstallationFromFile( 'C419986', molliePlugin );
+testPluginInstallationFromFile( 'C419986', molliePlugin, '@Critical' );
 
 testPluginReinstallationFromFile( 'C3322', molliePlugin );
 

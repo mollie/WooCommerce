@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/inpsyde/playwright-tests#readme",
   "dependencies": {
-    "@inpsyde/playwright-utils": "^3.0.0",
+    "@inpsyde/playwright-utils": "^4.0.0",
     "dotenv": "^16.3.1",
     "dotenv-cli": "^7.3.0",
     "mollie-api-typescript": "^1.0.2",
@@ -30,9 +30,17 @@
     "@percy/playwright": "^1.0.4",
     "@playwright/test": "^1.50",
     "@types/node": "^20.8.4",
-    "@wordpress/scripts": "^25.0.0"
+    "@wordpress/scripts": "^25.0.0",
+    "@wordpress/env": "^10.30.0"
   },
   "scripts": {
+    "setup:hosts": "echo '127.0.0.1 mywp.site' | sudo tee -a /etc/hosts",
+    "setup:env": "npm run setup:hosts && npm install && npx wp-env start --update",
+    "setup:all": "npm run setup:env && npm run setup:plugin && npm run setup:tests",
+    "setup:env-wc-sub": "npm install && npm run setup:wc-subscriptions && wp-env start --update",
+    "setup:wc-subscriptions": "cd ../inc/inpsyde && composer install && cd wp-content/plugins && zip -r ./woocommerce-subscriptions.zip ./woocommerce-subscriptions && cp woocommerce-subscriptions.zip ../../../../qa/resources/files",
+    "setup:reset": "npx wp-env stop && npx wp-env destroy",
+    "setup:plugin": "cd ../.. && npm run build && mv mollie-payments-for-woocommerce.zip tests/qa/resources/files",
     "setup:tests": "npm install && npx playwright install",
     "setup:utils": "npm run setup:tests && cd ./playwright-utils && yarn devLocal",
     "lint:md": "wp-scripts lint-md-docs ./**/*.md README.md",

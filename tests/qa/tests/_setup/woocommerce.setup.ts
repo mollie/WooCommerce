@@ -18,79 +18,81 @@ import {
 	disableWcSetupWizard,
 } from '../../resources';
 
-setup( 'Setup Permalinks', async ( { requestUtils } ) => {
-	await requestUtils.setPermalinks( '/%postname%/' );
-} );
+if( ! process.env.CI ) {
+	setup( 'Setup Permalinks', async ( { requestUtils } ) => {
+		await requestUtils.setPermalinks( '/%postname%/' );
+	} );
 
-setup(
-	'Setup Disable Nonce plugin (inactive)',
-	async ( { requestUtils, plugins } ) => {
-		if (
-			! ( await requestUtils.isPluginInstalled(
-				disableNoncePlugin.slug
-			) )
-		) {
-			await plugins.installPluginFromFile(
-				disableNoncePlugin.zipFilePath
-			);
+	setup(
+		'Setup Disable Nonce plugin (inactive)',
+		async ( { requestUtils, plugins } ) => {
+			if (
+				! ( await requestUtils.isPluginInstalled(
+					disableNoncePlugin.slug
+				) )
+			) {
+				await plugins.installPluginFromFile(
+					disableNoncePlugin.zipFilePath
+				);
+			}
+			await requestUtils.activatePlugin( disableNoncePlugin.slug );
 		}
-		await requestUtils.activatePlugin( disableNoncePlugin.slug );
-	}
-);
+	);
 
-setup(
-	'Setup Disable WooCommerce Setup Wizard Plugin (active)',
-	async ( { requestUtils, plugins } ) => {
-		if (
-			! ( await requestUtils.isPluginInstalled(
-				disableWcSetupWizard.slug
-			) )
-		) {
-			await plugins.installPluginFromFile(
-				disableWcSetupWizard.zipFilePath
-			);
+	setup(
+		'Setup Disable WooCommerce Setup Wizard Plugin (active)',
+		async ( { requestUtils, plugins } ) => {
+			if (
+				! ( await requestUtils.isPluginInstalled(
+					disableWcSetupWizard.slug
+				) )
+			) {
+				await plugins.installPluginFromFile(
+					disableWcSetupWizard.zipFilePath
+				);
+			}
+			await requestUtils.activatePlugin( disableWcSetupWizard.slug );
 		}
-		await requestUtils.activatePlugin( disableWcSetupWizard.slug );
-	}
-);
+	);
 
-setup( 'Setup WooCommerce plugin (active)', async ( { requestUtils } ) => {
-	if ( ! ( await requestUtils.isPluginInstalled( 'woocommerce' ) ) ) {
-		await requestUtils.installPlugin( 'woocommerce' );
-	}
-	await requestUtils.activatePlugin( 'woocommerce' );
-} );
-
-setup(
-	'Setup WC Subscriptions plugin (inactive)',
-	async ( { requestUtils, plugins } ) => {
-		if (
-			! ( await requestUtils.isPluginInstalled(
-				subscriptionsPlugin.slug
-			) )
-		) {
-			await plugins.installPluginFromFile(
-				subscriptionsPlugin.zipFilePath
-			);
+	setup( 'Setup WooCommerce plugin (active)', async ( { requestUtils } ) => {
+		if ( ! ( await requestUtils.isPluginInstalled( 'woocommerce' ) ) ) {
+			await requestUtils.installPlugin( 'woocommerce' );
 		}
-		await requestUtils.deactivatePlugin( subscriptionsPlugin.slug );
-	}
-);
+		await requestUtils.activatePlugin( 'woocommerce' );
+	} );
 
-setup( 'Setup theme', async ( { requestUtils } ) => {
-	const slug = 'storefront';
-	if ( ! ( await requestUtils.isThemeInstalled( slug ) ) ) {
-		await requestUtils.installTheme( slug );
-	}
-	await requestUtils.activateTheme( slug );
-} );
+	setup(
+		'Setup WC Subscriptions plugin (inactive)',
+		async ( { requestUtils, plugins } ) => {
+			if (
+				! ( await requestUtils.isPluginInstalled(
+					subscriptionsPlugin.slug
+				) )
+			) {
+				await plugins.installPluginFromFile(
+					subscriptionsPlugin.zipFilePath
+				);
+			}
+			await requestUtils.deactivatePlugin( subscriptionsPlugin.slug );
+		}
+	);
 
-setup(
-	'Setup WooCommerce Live site visibility',
-	async ( { wooCommerceUtils } ) => {
-		await wooCommerceUtils.setSiteVisibility();
-	}
-);
+	setup( 'Setup theme', async ( { requestUtils } ) => {
+		const slug = 'storefront';
+		if ( ! ( await requestUtils.isThemeInstalled( slug ) ) ) {
+			await requestUtils.installTheme( slug );
+		}
+		await requestUtils.activateTheme( slug );
+	} );
+
+	setup(
+		'Setup WooCommerce Live site visibility',
+		async ( { wooCommerceUtils } ) => {
+			await wooCommerceUtils.setSiteVisibility();
+		}
+	);
+}
 
 setup( 'Setup WooCommerce API keys', async ( { wooCommerceUtils } ) => {
 	if ( ! ( await wooCommerceUtils.apiKeysExist() ) ) {

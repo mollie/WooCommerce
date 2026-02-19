@@ -17,6 +17,7 @@ import {
 	expect,
 	OrderReceived,
 	WooCommerceApi,
+	BaseExtend,
 } from '@inpsyde/playwright-utils/build';
 /**
  * Internal dependencies
@@ -37,7 +38,7 @@ import {
 import { MollieApi, Utils } from '.';
 import { MollieSettings } from '../resources';
 
-type TestBaseExtend = {
+type TestBaseExtend = BaseExtend & {
 	recordVideoOptions: {
 		mode: VideoMode;
 		size?: ViewportSize;

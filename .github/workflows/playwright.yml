@@ -1,55 +1,68 @@
 name: E2E Tests
+
 on:
-  workflow_dispatch
+  workflow_dispatch:
+    inputs:
+      PACKAGE_VERSION:
+        description: 'Package Version'
+        required: true
+        default: 8.1.4
+      TEST_SUITE:
+        description: 'Test suite'
+        required: true
+        default: 'critical'
+        type: choice
+        options:
+          - critical
+          # - smoke
+          - all
+          - refund
+      PLAYWRIGHT_CLI_ARGS:
+        description: 'Arguments for `npx playwright test` (if set "Test suite" will be ignored)'
+        required: false
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test:
-    timeout-minutes: 60
-    runs-on: ubuntu-latest
+  build:
+    name: Build Mollie package
+    uses: inpsyde/reusable-workflows/.github/workflows/build-plugin-archive.yml@build-plugin-archive-dist-old-version
+    with:
+      PLUGIN_VERSION: ${{ inputs.PACKAGE_VERSION }}
+      NODE_VERSION: 22
+      PHP_VERSION: 7.4
+      PLUGIN_MAIN_FILE: ./mollie-payments-for-woocommerce.php
+      PLUGIN_FOLDER_NAME: mollie-payments-for-woocommerce
+      ARCHIVE_NAME: mollie-payments-for-woocommerce
+      COMPILE_ASSETS_ARGS: '-vv --env=root'
+
+  e2e-playwright:
+    name: Run Playwright E2E Tests for Mollie
+    needs: build
+    uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@fix/test-playwright
     strategy:
       matrix:
-        php-versions: [ '7.4' ]
-        wc-versions: [ '5.9.5' ]
-    
-    name: PHP ${{ matrix.php-versions }} WC ${{ matrix.wc-versions }}
-    steps:
-      - uses: satackey/action-docker-layer-caching@v0.0.11
-        continue-on-error: true
-
-      - uses: jonaseberle/github-action-setup-ddev@v1
-        with:
-          autostart: false
-
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '14.x'
-      - name: Configure DDEV
-        run: ddev config --php-version ${{ matrix.php-versions }} --web-environment-add="WC_VERSION=${{ matrix.wc-versions }}"
-
-      - name: Start DDEV
-        run: ddev start
-
-      - name: Orchestrate DDEV
-        run: ddev orchestrate
-      - name: Install Playwright
-        run: npx playwright install --with-deps
-      - name: Install Ngrok
-        run: curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list && sudo apt update && sudo apt install ngrok
-      - name: Add ngrok Authtoken
-        run: ngrok config add-authtoken ${{ secrets.NGROK_AUTHTOKEN1 }}_${{ secrets.NGROK_AUTHTOKEN2 }}
-      - name: Run Ngrok
-        run: bin/ddev-share --ci
-      - name: Run Playwright tests
-        run: npx playwright test TestCI.spec.js
-        env:
-          E2E_AUTH_USERNAME: ${{ secrets.E2E_AUTH_USERNAME }}
-          E2E_AUTH_PW: ${{ secrets.E2E_AUTH_PW }}
-          MOLLIE_LIVE_API_KEY: ${{ secrets.MOLLIE_LIVE_API_KEY }}
-          MOLLIE_TEST_API_KEY: ${{ secrets.MOLLIE_TEST_API_KEY }}
-          BASEURL: ${{ env.BASEURL }}
-      - uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: e2e-results
-          path: tests/e2e/Reports/
-          retention-days: 30
+        php: [ '8.2' ]
+    with:
+      WORK_DIR: 'tests/qa'
+      SCRIPT_NAME: ${{ inputs.PLAYWRIGHT_CLI_ARGS && '' || format('test:{0}', inputs.TEST_SUITE) }}
+      PLAYWRIGHT_CLI_ARGS: ${{ inputs.PLAYWRIGHT_CLI_ARGS || '' }}
+      ARTIFACT_PATH: |
+        tests/qa/artifacts/*
+        tests/qa/playwright-report/
+        tests/qa/test-results/
+      ARTIFACT_INCLUDE_HIDDEN_FILES: true
+      COMPOSER_DEPS_INSTALL: false
+      PHP_VERSION: ${{ matrix.php }}
+      NODE_VERSION: 22
+      PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
+      PRE_SCRIPT: |
+        gh run download ${{ github.run_id }} -n mollie-payments-for-woocommerce -D resources/files
+        (cd resources/files && zip -r mollie-payments-for-woocommerce.zip mollie-payments-for-woocommerce && rm -rf mollie-payments-for-woocommerce)
+        npm run setup:env
+    secrets:
+      ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}
+      NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_GITHUB_TOKEN_PACKAGES}}

@@ -5,8 +5,6 @@ on:
     inputs:
       PACKAGE_VERSION:
         description: 'Package Version'
-        required: true
-        default: 8.1.4
       TEST_SUITE:
         description: 'Test suite'
         required: true
@@ -29,15 +27,15 @@ concurrency:
 jobs:
   build:
     name: Build Mollie package
-    uses: inpsyde/reusable-workflows/.github/workflows/build-plugin-archive.yml@build-plugin-archive-dist-old-version
+    uses: inpsyde/reusable-workflows/.github/workflows/build-and-distribute.yml@main
+    secrets:
+      GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
+      GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
+      GITHUB_USER_SSH_KEY: ${{ secrets.DEPLOYBOT_SSH_PRIVATE_KEY }}
+      GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.DEPLOYBOT_SSH_PUBLIC_KEY }}
     with:
-      PLUGIN_VERSION: ${{ inputs.PACKAGE_VERSION }}
-      NODE_VERSION: 22
-      PHP_VERSION: 7.4
-      PLUGIN_MAIN_FILE: ./mollie-payments-for-woocommerce.php
-      PLUGIN_FOLDER_NAME: mollie-payments-for-woocommerce
-      ARCHIVE_NAME: mollie-payments-for-woocommerce
-      COMPILE_ASSETS_ARGS: '-vv --env=root'
+      PACKAGE_VERSION: ${{ inputs.PACKAGE_VERSION }}
+      PACKAGE_NAME: mollie-payments-for-woocommerce
 
   e2e-playwright:
     name: Run Playwright E2E Tests for Mollie
@@ -60,8 +58,12 @@ jobs:
       NODE_VERSION: 22
       PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
       PRE_SCRIPT: |
-        gh run download ${{ github.run_id }} -n mollie-payments-for-woocommerce -D resources/files
-        (cd resources/files && zip -r mollie-payments-for-woocommerce.zip mollie-payments-for-woocommerce && rm -rf mollie-payments-for-woocommerce)
+        gh run download ${{ github.run_id }} -p "mollie-payments-for-woocommerce-*" -D resources/files
+        cd resources/files
+        mv mollie-payments-for-woocommerce-*/mollie-payments-for-woocommerce .
+        zip -r mollie-payments-for-woocommerce.zip mollie-payments-for-woocommerce
+        rm -rf mollie-payments-for-woocommerce mollie-payments-for-woocommerce-*/
+        cd ${{ github.workspace }}/tests/qa
         npm run setup:env
     secrets:
       ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}

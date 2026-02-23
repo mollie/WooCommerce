@@ -18,17 +18,18 @@ import { MollieTestData, guests } from '../../../resources';
 export const testPaymentStatusOnPayForOrder = (
 	testData: MollieTestData.ShopOrder
 ) => {
-	const { testId, payment } = testData;
+	const { testId, testLabel, payment } = testData;
 	const { gateway } = payment;
 
 	const orderStatus = getOrderStatusFromMollieStatus( payment.status );
 	const customer = guests[ gateway.country ];
 	const currency = gateway.currency;
 	const gatewayLabel = buildMollieGatewayLabel( gateway );
+	const label = testLabel ? ` ${ testLabel }` : '';
 
 	Object.assign( testData, { orderStatus, customer, currency } );
 
-	test( `${ testId } | Transaction - Pay for order - ${ gatewayLabel } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
+	test( `${ testId } | Transaction - Pay for order - ${ gatewayLabel } - Payment status ${ payment.status } creates order with status ${ orderStatus }${ label }`, async ( {
 		wooCommerceApi,
 		wooCommerceUtils,
 		mollieHostedCheckout,

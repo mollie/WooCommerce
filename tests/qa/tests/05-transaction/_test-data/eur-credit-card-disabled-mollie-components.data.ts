@@ -22,6 +22,7 @@ export const creditCardDisabledMollieComponentsClassicCheckout: MollieTestData.S
 		{
 			...baseOrder,
 			testId: 'C3371',
+			testLabel: '@Critical',
 			payment: {
 				gateway: creditCardDisabledComponents,
 				status: 'paid',
@@ -71,6 +72,7 @@ export const creditCardDisabledMollieComponentsCheckout: MollieTestData.ShopOrde
 		{
 			...baseOrder,
 			testId: 'C420268',
+			testLabel: '@Critical',
 			payment: {
 				gateway: creditCardDisabledComponents,
 				status: 'paid',

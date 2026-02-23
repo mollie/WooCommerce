@@ -45,6 +45,7 @@ class WebhookHandler
         string $pluginId,
         Data $dataHelper
     ) {
+
         $this->logger = $logger;
         $this->settingsHelper = $settingsHelper;
         $this->pluginId = $pluginId;
@@ -63,6 +64,7 @@ class WebhookHandler
         string $paymentMethodTitle,
         MollieObject $mollieObject
     ): void {
+
         $orderId = $order->get_id();
         if ($order->is_paid()) {
             $this->logger->debug(
@@ -100,10 +102,10 @@ class WebhookHandler
 
         $order->add_order_note(sprintf(
                                /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-                                   __('Order completed using %1$s payment (%2$s).', 'mollie-payments-for-woocommerce'),
-                                   $paymentMethodTitle,
-                                   $this->formatPaymentId($payment)
-                               ));
+            __('Order completed using %1$s payment (%2$s).', 'mollie-payments-for-woocommerce'),
+            $paymentMethodTitle,
+            $this->formatPaymentId($payment)
+        ));
 
         $mollieObject->setOrderPaidAndProcessed($order);
         $mollieObject->unsetCancelledMolliePaymentId($orderId);
@@ -131,6 +133,7 @@ class WebhookHandler
         string $paymentMethodTitle,
         MollieObject $mollieObject
     ): void {
+
         $orderId = $order->get_id();
         if ($order->get_meta('_mollie_authorized') === '1') {
             $this->logger->debug(
@@ -158,17 +161,15 @@ class WebhookHandler
 
         $order->add_order_note(sprintf(
                                /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-                                   __(
-                                       'Order authorized using %1$s payment (%2$s). Set order to completed in WooCommerce when you have shipped the products, to capture the payment. Do this within 28 days, or the order will expire. To handle individual order lines, process the order via the Mollie Dashboard.',
-                                       'mollie-payments-for-woocommerce'
-                                   ),
-                                   $paymentMethodTitle,
-                                   $this->formatPaymentId($payment)
-                               ));
-
+            __(
+                'Order authorized using %1$s payment (%2$s). Set order to completed in WooCommerce when you have shipped the products, to capture the payment. Do this within 28 days, or the order will expire. To handle individual order lines, process the order via the Mollie Dashboard.',
+                'mollie-payments-for-woocommerce'
+            ),
+            $paymentMethodTitle,
+            $this->formatPaymentId($payment)
+        ));
 
         $order->update_meta_data('_mollie_authorized', '1');
-
 
         $mollieObject->setOrderPaidAndProcessed($order);
         $mollieObject->unsetCancelledMolliePaymentId($orderId);
@@ -194,6 +195,7 @@ class WebhookHandler
         string $paymentMethodTitle,
         MollieObject $mollieObject
     ): void {
+
         $orderId = $order->get_id();
 
         if (!$payment->isCompleted()) {
@@ -229,13 +231,13 @@ class WebhookHandler
 
         $order->add_order_note(sprintf(
                                /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-                                   __(
-                                       'Order completed at Mollie for %1$s order (%2$s). At least one order line completed. Remember: Completed status for an order at Mollie is not the same as Completed status in WooCommerce!',
-                                       'mollie-payments-for-woocommerce'
-                                   ),
-                                   $paymentMethodTitle,
-                                   $this->formatPaymentId($payment)
-                               ));
+            __(
+                'Order completed at Mollie for %1$s order (%2$s). At least one order line completed. Remember: Completed status for an order at Mollie is not the same as Completed status in WooCommerce!',
+                'mollie-payments-for-woocommerce'
+            ),
+            $paymentMethodTitle,
+            $this->formatPaymentId($payment)
+        ));
 
         $mollieObject->setOrderPaidAndProcessed($order);
         $mollieObject->unsetCancelledMolliePaymentId($orderId);
@@ -259,6 +261,7 @@ class WebhookHandler
         string $paymentMethodTitle,
         MollieObject $mollieObject
     ): void {
+
         $orderId = $order->get_id();
 
         $this->logger->debug(__METHOD__ . " called for order {$orderId}");
@@ -302,17 +305,17 @@ class WebhookHandler
         if ($mollieObject instanceof MollieOrder) {
             $order->add_order_note(sprintf(
                                    /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-                                       __('%1$s order (%2$s) cancelled .', 'mollie-payments-for-woocommerce'),
-                                       $paymentMethodTitle,
-                                       $this->formatPaymentId($payment)
-                                   ));
+                __('%1$s order (%2$s) cancelled .', 'mollie-payments-for-woocommerce'),
+                $paymentMethodTitle,
+                $this->formatPaymentId($payment)
+            ));
         } else {
             $order->add_order_note(sprintf(
                                    /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-                                       __('%1$s payment (%2$s) cancelled .', 'mollie-payments-for-woocommerce'),
-                                       $paymentMethodTitle,
-                                       $this->formatPaymentId($payment)
-                                   ));
+                __('%1$s payment (%2$s) cancelled .', 'mollie-payments-for-woocommerce'),
+                $paymentMethodTitle,
+                $this->formatPaymentId($payment)
+            ));
         }
 
         $mollieObject->deleteSubscriptionFromPending($order);
@@ -330,6 +333,7 @@ class WebhookHandler
         string $paymentMethodTitle,
         MollieObject $mollieObject
     ): void {
+
         $orderId = $order->get_id();
 
         $this->logger->debug(__METHOD__ . ' called for order ' . $orderId);
@@ -374,6 +378,7 @@ class WebhookHandler
         string $paymentMethodTitle,
         MollieObject $mollieObject
     ): void {
+
         $orderId = $order->get_id();
         $metaKey = $mollieObject instanceof MollieOrder ? '_mollie_order_id' : '_mollie_payment_id';
         $molliePaymentId = $order->get_meta($metaKey, true);
@@ -401,25 +406,25 @@ class WebhookHandler
             if ($mollieObject instanceof MollieOrder) {
                 $order->add_order_note(sprintf(
                                        /* translators: Placeholder 1: payment method title, placeholder 2: payment ID, placeholder 3: newer payment ID */
-                                           __(
-                                               '%1$s order expired (%2$s) but not cancelled because of another pending payment (%3$s).',
-                                               'mollie-payments-for-woocommerce'
-                                           ),
-                                           $paymentMethodTitle,
-                                           $formattedId,
-                                           $molliePaymentId
-                                       ));
+                    __(
+                        '%1$s order expired (%2$s) but not cancelled because of another pending payment (%3$s).',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                    $paymentMethodTitle,
+                    $formattedId,
+                    $molliePaymentId
+                ));
             } else {
                 $order->add_order_note(sprintf(
                                        /* translators: Placeholder 1: payment method title, placeholder 2: payment ID, placeholder 3: newer payment ID */
-                                           __(
-                                               '%1$s payment expired (%2$s) but not cancelled because of another pending payment (%3$s).',
-                                               'mollie-payments-for-woocommerce'
-                                           ),
-                                           $paymentMethodTitle,
-                                           $formattedId,
-                                           $molliePaymentId
-                                       ));
+                    __(
+                        '%1$s payment expired (%2$s) but not cancelled because of another pending payment (%3$s).',
+                        'mollie-payments-for-woocommerce'
+                    ),
+                    $paymentMethodTitle,
+                    $formattedId,
+                    $molliePaymentId
+                ));
             }
 
             return;
@@ -443,17 +448,17 @@ class WebhookHandler
         if ($mollieObject instanceof MollieOrder) {
             $order->add_order_note(sprintf(
                                    /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-                                       __('%1$s order (%2$s) expired .', 'mollie-payments-for-woocommerce'),
-                                       $paymentMethodTitle,
-                                       $this->formatPaymentId($payment)
-                                   ));
+                __('%1$s order (%2$s) expired .', 'mollie-payments-for-woocommerce'),
+                $paymentMethodTitle,
+                $this->formatPaymentId($payment)
+            ));
         } else {
             $order->add_order_note(sprintf(
                                    /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
-                                       __('%1$s payment expired (%2$s).', 'mollie-payments-for-woocommerce'),
-                                       $paymentMethodTitle,
-                                       $this->formatPaymentId($payment)
-                                   ));
+                __('%1$s payment expired (%2$s).', 'mollie-payments-for-woocommerce'),
+                $paymentMethodTitle,
+                $this->formatPaymentId($payment)
+            ));
         }
 
         $mollieObject->unsetCancelledMolliePaymentId($orderId);
@@ -496,6 +501,7 @@ class WebhookHandler
         MollieOrder $mollieObject,
         int $orderId
     ): void {
+
         $mollieObject->updatePaymentDataWithOrderData($payment, $orderId);
 
         $this->logger->debug(__METHOD__ . ' updated payment with webhook and metadata');
@@ -518,6 +524,7 @@ class WebhookHandler
         MolliePayment $mollieObject,
         int $orderId
     ): void {
+
         $mollieObject->addMandateIdMetaToFirstPaymentSubscriptionOrder($order, $payment);
 
         if (class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin')) {
@@ -543,6 +550,7 @@ class WebhookHandler
         string $newOrderStatus,
         MollieObject $mollieObject
     ): void {
+
         if ($this->isOrderPaymentStartedByOtherGateway($order) || !is_a($gateway, PaymentGateway::class)) {
             $this->informNotUpdatingStatus($gateway->id ?? '', $order);
             return;

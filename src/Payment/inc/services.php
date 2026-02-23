@@ -210,7 +210,7 @@ return static function (): array {
                 $c->get(Logger::class),
                 $c->get('settings.settings_helper'),
                 $c->get('shared.plugin_id'),
-                $c->get(Data::class)
+                $c->get('settings.data_helper')
             );
         },
     ];

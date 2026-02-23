@@ -41,6 +41,7 @@ class MollieOrderService
     protected $pluginId;
     private ContainerInterface $container;
     private string $currentLockValue;
+    private WebhookHandler $webhookHandler;
 
     /**
      * MollieOrderService constructor.
@@ -51,7 +52,8 @@ class MollieOrderService
         PaymentFactory $paymentFactory,
         Data $data,
         string $pluginId,
-        ContainerInterface $container
+        ContainerInterface $container,
+        WebhookHandler $webhookHandler
     ) {
 
         $this->httpResponse = $httpResponse;
@@ -60,6 +62,7 @@ class MollieOrderService
         $this->data = $data;
         $this->pluginId = $pluginId;
         $this->container = $container;
+        $this->webhookHandler = $webhookHandler;
     }
 
     public function setGateway($gateway)
@@ -248,7 +251,7 @@ class MollieOrderService
                 && $payment->isCompleted()
                 && method_exists($payment_object, 'onWebhookCompleted')
             ) {
-                $payment_object->onWebhookCompleted($order, $payment, $payment_method_title);
+                $this->webhookHandler->onWebhookCompleted($order, $payment, $payment_method_title, $payment_object);
             }
             return true;
         }
@@ -260,7 +263,7 @@ class MollieOrderService
 
         if (method_exists($payment_object, $method_name)) {
             do_action($this->pluginId . '_before_webhook_payment_action', $payment, $order);
-            $payment_object->{$method_name}($order, $payment, $payment_method_title);
+            $this->webhookHandler->{$method_name}($order, $payment, $payment_method_title, $payment_object);
         } else {
             $order->add_order_note(sprintf(
                /* translators: Placeholder 1: payment method title, placeholder 2: payment status, placeholder 3: payment ID */

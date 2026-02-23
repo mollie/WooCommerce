@@ -59,11 +59,7 @@ jobs:
       PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
       PRE_SCRIPT: |
         gh run download ${{ github.run_id }} -p "mollie-payments-for-woocommerce-*" -D resources/files
-        cd resources/files
-        mv mollie-payments-for-woocommerce-*/mollie-payments-for-woocommerce .
-        zip -r mollie-payments-for-woocommerce.zip mollie-payments-for-woocommerce
-        rm -rf mollie-payments-for-woocommerce mollie-payments-for-woocommerce-*/
-        cd ${{ github.workspace }}/tests/qa
+        (cd resources/files && mv mollie-payments-for-woocommerce-*/mollie-payments-for-woocommerce . && zip -r mollie-payments-for-woocommerce.zip mollie-payments-for-woocommerce && rm -rf mollie-payments-for-woocommerce mollie-payments-for-woocommerce-*/)
         npm run setup:env
     secrets:
       ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}

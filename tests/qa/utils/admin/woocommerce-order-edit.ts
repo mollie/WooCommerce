@@ -116,17 +116,20 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 		const orderStatus = this.getOrderStatusLabel( expectedStatus );
 		let isFirstAttempt = true;
 
-		await expect.soft( async () => {
-			if ( isFirstAttempt ) {
-				isFirstAttempt = false;
-			} else {
-				await this.page.reload();
-			}
-			await expect.soft(
-				this.statusCombobox(),
-				'Assert order status combobox'
-			).toHaveText( orderStatus );
-		} ).toPass( {
+		await expect.soft(
+			async () => {
+				if ( isFirstAttempt ) {
+					isFirstAttempt = false;
+				} else {
+					await this.page.reload();
+				}
+				await expect.soft(
+					this.statusCombobox(),
+					'Assert order status combobox'
+				).toHaveText( orderStatus );
+			},
+			'Assert order status combobox with retries',
+		).toPass( {
 			timeout: 60_000,
 			intervals: [ 5_000 ],
 		} );

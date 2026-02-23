@@ -9,11 +9,7 @@ import { MollieSettings, shopSettings } from '../../resources';
 const testedApiMethod =
 	( process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod ) || 'payment';
 
-test.beforeAll( async ( { utils }, testInfo ) => {
-	if ( testInfo.project.name !== 'all' ) {
-		return;
-	}
-
+test.beforeAll( async ( { utils } ) => {
 	await utils.configureStore( {
 		settings: {
 			general: shopSettings.germany.general,

@@ -66,13 +66,6 @@ class WebhookHandler
     ): void {
 
         $orderId = $order->get_id();
-        if ($order->is_paid()) {
-            $this->logger->debug(
-                __METHOD__ .
-                " order {$orderId} is already paid."
-            );
-            return;
-        }
         if (!$payment->isPaid()) {
             $this->logger->debug(
                 __METHOD__ . " payment at Mollie not paid, so no processing for order {$orderId}"

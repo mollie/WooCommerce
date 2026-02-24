@@ -245,7 +245,7 @@ class MollieOrderService
                 $order->get_status() === 'processing'
                 && method_exists($payment, 'isCompleted')
                 && $payment->isCompleted()
-                && method_exists($payment_object, 'onWebhookCompleted')
+                && method_exists($this->webhookHandler, 'onWebhookCompleted')
             ) {
                 $this->webhookHandler->onWebhookCompleted($order, $payment, $payment_method_title, $payment_object);
             }
@@ -257,7 +257,7 @@ class MollieOrderService
             $this->setBillingAddressAfterPayment($payment, $order);
         }
 
-        if (method_exists($payment_object, $method_name)) {
+        if (method_exists($this->webhookHandler, $method_name)) {
             do_action($this->pluginId . '_before_webhook_payment_action', $payment, $order);
             $this->webhookHandler->{$method_name}($order, $payment, $payment_method_title, $payment_object);
         } else {

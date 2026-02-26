@@ -29,4 +29,12 @@ export const urls = {
 		},
 		hostedCheckout: 'https://www.mollie.com/checkout',
 	},
+	germanized: {
+		admin: {
+			home: './wp-admin/admin.php?page=wc-settings&tab=germanized',
+			taxes: {
+				additionalCosts: './wp-admin/admin.php?page=wc-settings&tab=germanized-taxes&section=additional_costs'
+			}
+		},
+	},
 };

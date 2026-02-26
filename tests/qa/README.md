@@ -10,6 +10,7 @@ Mollie Playwright tests. Depends on [`@inpsyde/playwright-utils`](https://github
 - [Troubleshooting](#troubleshooting)
 - [Reporting to TestRail](#reporting-to-testrail)
 - [Run tests](#run-tests)
+- [Run Refund tests](#run-refund-tests)
 - [Run Multistep Checkout tests](#run-multistep-checkout-tests)
 - [Autotest Execution workflow](#autotest-execution-workflow)
 - [Automated environment setup scripts](#automated-environment-setup-scripts)
@@ -116,37 +117,36 @@ To execute all tests sequentially, in the terminal navigate to the `./tests/qa/`
 npm run test:all
 ```
 
+## Run Refund tests
+
+Refunds require long wait for the webhook arrival and therefore are executed in a separate project:
+
+```bash
+npm run test:refund
+npx playwright test --project=refund
+```
+
 ## Run Multistep Checkout tests
 
-_Multistep Checkout_ can be enabled by installation of both Germanized and Germanized Pro plugins.
+_Multistep Checkout_ requires installation of both Germanized and Germanized Pro plugins. **Currently not available in CI (because Germanized Pro is a paid plugin and can't be commited as a .zip).**
 
-Additional actions:
+Additional actions for local execution:
 
-1. Once plugins are installed - skip all steps in Germanized Pro setup.
+1. Add Germanized and Germanized Pro plugins .zip files in `/tests/qa/resources/files/` as `germanized-for-woocommerce.zip` and `germanized-for-woocommerce-pro.zip`.
 
-2. Navigate to the Dashboard -> WooCommerce -> Settings -> Germanized
+2. In `.env` set `IS_MULTISTEP_CHECKOUT='true'`
 
-	2.1 Enable Multistep checkout toggle
-	
-	2.2 Click Manage Settings icon for Taxes
-	
-	2.3 Select WooCommerce default in Tax calculation mode
-
-	2.4 Save changes
-
-3. In `.env` set `IS_MULTISTEP_CHECKOUT='true'`
-
-4. Multistep tests can be executed only for payment status tests on classic and block checkout:
+4. Multistep setup and tests can be executed only under `multistep` projects. Use one of the following commands:
 
 	```bash
-	# Run tests for both multistep block and classic checkouts
-	npx playwright test --grep "Transaction - Multistep"
+	# Setup multistep checkout:
+	npx playwright test --project=setup-multistep
 
-	# Run tests for multistep block checkout
-	npx playwright test --grep "Transaction - Multistep - Checkout"
+	# Run selected (smoke) tests for multistep checkout:
+	npx playwright test --project=multistep-smoke
 
-	# Run tests for multistep classic checkout
-	npx playwright test --grep "Transaction - Multistep - Classic checkout"
+	# Run all available tests for multistep checkout:
+	npx playwright test --project=multistep
 	```
 
 

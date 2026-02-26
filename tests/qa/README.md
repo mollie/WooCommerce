@@ -12,7 +12,7 @@ Mollie Playwright tests. Depends on [`@inpsyde/playwright-utils`](https://github
 - [Run tests](#run-tests)
 - [Run Refund tests](#run-refund-tests)
 - [Run Multistep Checkout tests](#run-multistep-checkout-tests)
-- [Autotest Execution workflow](#autotest-execution-workflow)
+- [Autotest Execution workflow](#autotest-execution-workflow-local)
 - [Automated environment setup scripts](#automated-environment-setup-scripts)
 - [Coding standards](#coding-standards)
 
@@ -191,13 +191,13 @@ Additional actions for local execution:
 	```
 
 
-## Autotest Execution workflow
+## Autotest Execution workflow (local)
 
 1. Create test plan with run(s) in TestRail, named after the tested plugin version, for example "Test Plan for Release 1.2.3".
 
-	> Note 1: For autotest run there's no need to manually add tests cases to the run - the executed test will be added automatically before automated execution.
+	> Note 1: For autotests create a test run with one test (e.g. `C419986`). There's no need to manually add tests cases to the run. The executed tests will be added automatically before automated execution.
 
-	> Note 2: There can be > 1 test runs (for example, when testing API methods: one for Order, another for Payment).
+	> Note 2: There can be > 1 test runs (for example, when testing API methods: one for Order, another for Payment and Multistep).
 
 2. Add link to TestRail Plan or Milestone to release ticket in Jira.
 
@@ -207,9 +207,11 @@ Additional actions for local execution:
 
 	3.2 In case of testing 2 API methods set the respective `TESTRAIL_RUN_ID` and `MOLLIE_API_METHOD` (`payment` (is applied by default) or `order`).
 
+	3.3 For multistep checkout follow stepd described in [this section](#run-multistep-checkout-tests).
+
 4. Download tested plugin `.zip` package (usually attached to release ticket) and add it to `/resources/files`. You may need to remove version number from the file name. Expected filename: `mollie-payments-for-woocommerce.zip`.
 
-5. Optional: delete previous version of tested plugin from the website if you don't execute __plugin foundation__ tests.
+5. Optional: restart test env or delete previous version of tested plugin from the website if you don't execute __plugin foundation__ tests.
 
 6. Start autotest execution from command line for the defined scope of tests (e.g. all, Critical, etc.). You should see `Test plan ID: 001, Test run ID: 002` in the terminal.
 
@@ -218,7 +220,7 @@ Additional actions for local execution:
 8. Analyze failed tests (if any). Restart execution for failed tests, possibly in debug mode (see section _Additional options to run tests from command line_):
 
 	```bash
-	npx playwright test --grep --% "C123^|C124^|C125" --debug
+	npx playwright test --grep "C123|C124|C125" --debug
 	```
 
 	> Note: command for restarting failed/skipped tests is posted to the terminal after the execution.

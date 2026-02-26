@@ -138,7 +138,7 @@ export default defineConfig< TestBaseExtend >( {
 			dependencies: [ 'setup-multistep' ],
 			fullyParallel: false,
 			testIgnore: /refund\.spec\.ts/,
-			grep: /Transaction - Multistep - Classic checkout - (iDEAL -|PayPal|Card|KBC)|Transaction - Multistep - Checkout - (iDEAL Pay in 3|Przelewy24|MyBank)/,
+			grep: /Transaction - Multistep - (Classic checkout|Checkout) - (iDEAL -|PayPal|Card|KBC)|Transaction - Multistep - Checkout - (iDEAL Pay in 3|Przelewy24|MyBank)/,
 		},
 	],
 } );

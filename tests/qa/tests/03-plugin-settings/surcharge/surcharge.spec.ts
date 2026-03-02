@@ -39,10 +39,7 @@ const allTests = [
 	surchargeFixedAndPercentageOverLimit,
 ];
 
-test.beforeAll( async ( { utils }, testInfo ) => {
-	if ( testInfo.project.name !== 'all' ) {
-		return;
-	}
+test.beforeAll( async ( { utils } ) => {
 	await utils.configureStore( {
 		enableClassicPages: true,
 		settings: {

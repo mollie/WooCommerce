@@ -224,12 +224,12 @@ const ideal: MollieGateway = {
 	minAmount: '1.00',
 	maxAmount: '50000.00',
 	slug: 'ideal',
-	name: 'iDEAL',
+	name: 'iDEAL | Wero',
 	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
 		id: 'mollie_wc_gateway_ideal',
-		title: 'iDEAL',
+		title: 'iDEAL | Wero',
 		initial_order_status: 'on-hold',
 	},
 };
@@ -467,12 +467,12 @@ const trustly: MollieGateway = {
 	country: 'germany', // Europe
 	minAmount: '1.00',
 	slug: 'trustly',
-	name: 'Trustly', // known bug https://mollie.atlassian.net/browse/PIWOO-683 tolerated by client
+	name: 'Pay By Bank',//'Trustly',// // known bug https://mollie.atlassian.net/browse/PIWOO-683 tolerated by client
 	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
 		id: 'mollie_wc_gateway_trustly',
-		title: 'Trustly',
+		title: 'Pay By Bank',//'Trustly',//
 		initial_order_status: 'on-hold',
 	},
 };

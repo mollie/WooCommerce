@@ -10,8 +10,9 @@ Mollie Playwright tests. Depends on [`@inpsyde/playwright-utils`](https://github
 - [Troubleshooting](#troubleshooting)
 - [Reporting to TestRail](#reporting-to-testrail)
 - [Run tests](#run-tests)
+- [Run Refund tests](#run-refund-tests)
 - [Run Multistep Checkout tests](#run-multistep-checkout-tests)
-- [Autotest Execution workflow](#autotest-execution-workflow)
+- [Autotest Execution workflow](#autotest-execution-workflow-local)
 - [Automated environment setup scripts](#automated-environment-setup-scripts)
 - [Coding standards](#coding-standards)
 
@@ -116,37 +117,36 @@ To execute all tests sequentially, in the terminal navigate to the `./tests/qa/`
 npm run test:all
 ```
 
+## Run Refund tests
+
+Refunds require long wait for the webhook arrival and therefore are executed in a separate project:
+
+```bash
+npm run test:refund
+npx playwright test --project=refund
+```
+
 ## Run Multistep Checkout tests
 
-_Multistep Checkout_ can be enabled by installation of both Germanized and Germanized Pro plugins.
+_Multistep Checkout_ requires installation of both Germanized and Germanized Pro plugins. **Currently not available in CI (because Germanized Pro is a paid plugin and can't be commited as a .zip).**
 
-Additional actions:
+Additional actions for local execution:
 
-1. Once plugins are installed - skip all steps in Germanized Pro setup.
+1. Add Germanized and Germanized Pro plugins .zip files in `/tests/qa/resources/files/` as `germanized-for-woocommerce.zip` and `germanized-for-woocommerce-pro.zip`.
 
-2. Navigate to the Dashboard -> WooCommerce -> Settings -> Germanized
+2. In `.env` set `IS_MULTISTEP_CHECKOUT='true'`
 
-	2.1 Enable Multistep checkout toggle
-	
-	2.2 Click Manage Settings icon for Taxes
-	
-	2.3 Select WooCommerce default in Tax calculation mode
-
-	2.4 Save changes
-
-3. In `.env` set `IS_MULTISTEP_CHECKOUT='true'`
-
-4. Multistep tests can be executed only for payment status tests on classic and block checkout:
+4. Multistep setup and tests can be executed only under `multistep` projects. Use one of the following commands:
 
 	```bash
-	# Run tests for both multistep block and classic checkouts
-	npx playwright test --grep "Transaction - Multistep"
+	# Setup multistep checkout:
+	npx playwright test --project=setup-multistep
 
-	# Run tests for multistep block checkout
-	npx playwright test --grep "Transaction - Multistep - Checkout"
+	# Run selected (smoke) tests for multistep checkout:
+	npx playwright test --project=multistep-smoke
 
-	# Run tests for multistep classic checkout
-	npx playwright test --grep "Transaction - Multistep - Classic checkout"
+	# Run all available tests for multistep checkout:
+	npx playwright test --project=multistep
 	```
 
 
@@ -191,13 +191,13 @@ Additional actions:
 	```
 
 
-## Autotest Execution workflow
+## Autotest Execution workflow (local)
 
 1. Create test plan with run(s) in TestRail, named after the tested plugin version, for example "Test Plan for Release 1.2.3".
 
-	> Note 1: For autotest run there's no need to manually add tests cases to the run - the executed test will be added automatically before automated execution.
+	> Note 1: For autotests create a test run with one test (e.g. `C419986`). There's no need to manually add tests cases to the run. The executed tests will be added automatically before automated execution.
 
-	> Note 2: There can be > 1 test runs (for example, when testing API methods: one for Order, another for Payment).
+	> Note 2: There can be > 1 test runs (for example, when testing API methods: one for Order, another for Payment and Multistep).
 
 2. Add link to TestRail Plan or Milestone to release ticket in Jira.
 
@@ -207,9 +207,11 @@ Additional actions:
 
 	3.2 In case of testing 2 API methods set the respective `TESTRAIL_RUN_ID` and `MOLLIE_API_METHOD` (`payment` (is applied by default) or `order`).
 
+	3.3 For multistep checkout follow stepd described in [this section](#run-multistep-checkout-tests).
+
 4. Download tested plugin `.zip` package (usually attached to release ticket) and add it to `/resources/files`. You may need to remove version number from the file name. Expected filename: `mollie-payments-for-woocommerce.zip`.
 
-5. Optional: delete previous version of tested plugin from the website if you don't execute __plugin foundation__ tests.
+5. Optional: restart test env or delete previous version of tested plugin from the website if you don't execute __plugin foundation__ tests.
 
 6. Start autotest execution from command line for the defined scope of tests (e.g. all, Critical, etc.). You should see `Test plan ID: 001, Test run ID: 002` in the terminal.
 
@@ -218,7 +220,7 @@ Additional actions:
 8. Analyze failed tests (if any). Restart execution for failed tests, possibly in debug mode (see section _Additional options to run tests from command line_):
 
 	```bash
-	npx playwright test --grep --% "C123^|C124^|C125" --debug
+	npx playwright test --grep "C123|C124|C125" --debug
 	```
 
 	> Note: command for restarting failed/skipped tests is posted to the terminal after the execution.

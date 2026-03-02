@@ -55,7 +55,8 @@
     "setup:mollie:germany": "npx playwright test --grep \"setup:mollie:germany;\"",
     "test:all": "npx playwright test --project=all --workers=1",
     "test:critical": "npx playwright test --project=all --workers=1 --grep \"@Critical\"",
-    "test:refund": "npx playwright test --project=refund --workers=4"
+    "test:refund": "npx playwright test --project=refund --workers=4",
+    "test:ngrok": "npx playwright test --project=all --workers=1 --grep \"@ngrok\""
   },
   "eslintConfig": {
     "extends": [

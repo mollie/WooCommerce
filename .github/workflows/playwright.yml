@@ -12,7 +12,7 @@ on:
         type: choice
         options:
           - critical
-          # - smoke
+          - ngrok
           - all
           - refund
       PLAYWRIGHT_CLI_ARGS:

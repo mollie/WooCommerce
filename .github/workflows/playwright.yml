@@ -71,7 +71,7 @@ jobs:
         sudo apt-get update && sudo apt-get install -y ngrok
 
         # 4. Configure ngrok auth (token is in .env via ENV_FILE_DATA)
-        ngrok config add-authtoken $(grep NGROK_AUTHTOKEN .env | cut -d'=' -f2)
+        ngrok config add-authtoken $(grep NGROK_AUTHTOKEN .env.ci | cut -d'=' -f2)
 
         # 5. Start ngrok tunnel in background (wp-env default port 8888)
         ngrok http 8888 --log=stdout --log-level=info > /tmp/ngrok.log 2>&1 &
@@ -86,7 +86,7 @@ jobs:
         npx wp-env run cli wp option update home "$NGROK_URL"
 
         # 8. Override WP_BASE_URL for Playwright
-        sed -i "s|WP_BASE_URL=.*|WP_BASE_URL=$NGROK_URL|" .env
+        sed -i "s|WP_BASE_URL=.*|WP_BASE_URL=$NGROK_URL|" .env.ci
     secrets:
       ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}
       NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_GITHUB_TOKEN_PACKAGES }}

@@ -71,6 +71,10 @@ export default defineConfig< TestBaseExtend >( {
 			password: process.env.WP_BASIC_AUTH_PASS,
 		},
 
+		extraHTTPHeaders: process.env.WP_BASE_URL.includes('ngrok')
+			? { 'ngrok-skip-browser-warning': '1' }
+			: {},
+
 		...devices[ 'Desktop Chrome' ],
 
 		viewport: { width: 1280, height: 850 },

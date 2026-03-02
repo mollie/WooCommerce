@@ -81,9 +81,9 @@ jobs:
         NGROK_URL=$(curl -s http://127.0.0.1:4040/api/tunnels | jq -r '.tunnels[] | select(.proto=="https") | .public_url')
         echo "Ngrok URL: $NGROK_URL"
 
-        # 7. Update WordPress site URLs to ngrok
-        npx wp-env run cli wp option update siteurl "$NGROK_URL"
-        npx wp-env run cli wp option update home "$NGROK_URL"
+        # 7. Update WordPress site URLs to ngrok (override wp-config.php constants)
+        npx wp-env run cli wp config set WP_SITEURL "$NGROK_URL"
+        npx wp-env run cli wp config set WP_HOME "$NGROK_URL"
 
         # 8. Override WP_BASE_URL for Playwright
         sed -i "s|WP_BASE_URL=.*|WP_BASE_URL=$NGROK_URL|" .env.ci

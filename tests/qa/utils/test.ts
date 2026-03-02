@@ -76,7 +76,6 @@ const test = base.extend< TestBaseExtend >( {
 	mollieClientApi: async ( {}, use ) => {
 		await use(
 			new MollieClientApi( {
-				testmode: true,
 				security: {
 					apiKey: process.env.MOLLIE_TEST_API_KEY,
 				},

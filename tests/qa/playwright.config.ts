@@ -19,9 +19,9 @@ dotenv.config( { path: dotenvPath } );
 export default defineConfig< TestBaseExtend >( {
 	testDir: 'tests',
 	expect: {
-		timeout: 10 * 1000,
+		timeout: 10_000,
 	},
-	timeout: 1 * 60 * 1000,
+	timeout: 1 * 60_000,
 	/* Run tests in files in parallel */
 	fullyParallel: true,
 	/* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -131,6 +131,26 @@ export default defineConfig< TestBaseExtend >( {
 			dependencies: [ 'setup-refund' ],
 			fullyParallel: true,
 			testMatch: /refund\.spec\.ts/,
+		},
+		{
+			name: 'setup-multistep',
+			dependencies: [ 'setup-woocommerce' ],
+			testMatch: /multistep\.setup\.ts/,
+			fullyParallel: false,
+		},
+		{
+			name: 'multistep',
+			dependencies: [ 'setup-multistep' ],
+			fullyParallel: false,
+			grep: /Transaction - Multistep/,
+			testIgnore: /refund\.spec\.ts/,
+		},
+		{
+			name: 'multistep-smoke',
+			dependencies: [ 'setup-multistep' ],
+			fullyParallel: false,
+			testIgnore: /refund\.spec\.ts/,
+			grep: /Transaction - Multistep - (Classic checkout|Checkout) - (iDEAL -|PayPal|Card|KBC)|Transaction - Multistep - Checkout - (iDEAL Pay in 3|Przelewy24|MyBank)/,
 		},
 	],
 } );

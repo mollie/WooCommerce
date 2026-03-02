@@ -270,7 +270,6 @@ class GatewaySurchargeHandler
         return $order;
     }
 
-
     protected function canProcessGateway()
     {
         // phpcs:ignore WordPress.Security.NonceVerification

@@ -252,6 +252,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
         $apiTitle = $apiMethod['description'] ?? null;
         return $apiTitle ?: $this->config['defaultTitle'];
     }
+
     private function getApiIcon(ContainerInterface $container): string
     {
         $apiMethod = $container->get('gateway.getPaymentMethodsAfterFeatureFlag')[$this->getIdFromConfig()];
@@ -362,7 +363,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
         $icons = [];
         foreach ($iconUrlArray as $iconUrl) {
             $icons[] = new Icon(
-                $this->getIdFromConfig(),
+                'mollie-' . $this->getIdFromConfig(),
                 $iconUrl,
                 $alt
             );

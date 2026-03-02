@@ -58,24 +58,35 @@ jobs:
       NODE_VERSION: 22
       PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
       PRE_SCRIPT: |
-        # Install ngrok
-        curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok-v3-stable-linux-amd64.tgz | tar xz -C /usr/local/bin
-        ngrok config add-authtoken $NGROK_AUTHTOKEN
+        # 1. Download and unzip the built plugin
+        gh run download ${{ github.run_id }} -p "mollie-payments-for-woocommerce-*" -D resources/files
+        (cd resources/files && mv mollie-payments-for-woocommerce-*/mollie-payments-for-woocommerce . && zip -r mollie-payments-for-woocommerce.zip mollie-payments-for-woocommerce && rm -rf mollie-payments-for-woocommerce mollie-payments-for-woocommerce-*/)
 
-        # Start tunnel in background
+        # 2. Setup wp-env
+        npm run setup:env
+
+        # 3. Install ngrok
+        curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
+        echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
+        sudo apt-get update && sudo apt-get install -y ngrok
+
+        # 4. Configure ngrok auth (token is in .env via ENV_FILE_DATA)
+        ngrok config add-authtoken $(grep NGROK_AUTHTOKEN .env | cut -d'=' -f2)
+
+        # 5. Start ngrok tunnel in background (wp-env default port 8888)
         ngrok http 8888 --log=stdout --log-level=info > /tmp/ngrok.log 2>&1 &
 
-        # Wait and grab the public URL
+        # 6. Wait for tunnel to be ready and grab the public URL
         sleep 3
         NGROK_URL=$(curl -s http://127.0.0.1:4040/api/tunnels | jq -r '.tunnels[] | select(.proto=="https") | .public_url')
         echo "Ngrok URL: $NGROK_URL"
 
-        # Update WordPress to use ngrok URL
+        # 7. Update WordPress site URLs to ngrok
         npx wp-env run cli wp option update siteurl "$NGROK_URL"
         npx wp-env run cli wp option update home "$NGROK_URL"
 
-        # Update Playwright base URL
+        # 8. Override WP_BASE_URL for Playwright
         sed -i "s|WP_BASE_URL=.*|WP_BASE_URL=$NGROK_URL|" .env
     secrets:
       ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}
-      NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_GITHUB_TOKEN_PACKAGES}}
+      NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_GITHUB_TOKEN_PACKAGES }}

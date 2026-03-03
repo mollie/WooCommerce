@@ -17,6 +17,10 @@ async function globalSetup( config: FullConfig ) {
 			// @ts-ignore
 			password: process.env.WP_PASSWORD,
 		},
+
+		extraHTTPHeaders: process.env.WP_BASE_URL.includes('ngrok')
+			? { 'ngrok-skip-browser-warning': '1' }
+			: {},
 	} );
 
 	await guestStorageState( {

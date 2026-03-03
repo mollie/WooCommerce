@@ -80,6 +80,7 @@ export const checkoutNonEur: MollieTestData.ShopOrder[] = [
 	{
 		...baseOrder,
 		testId: 'C4237599',
+		testLabel: '@Critical',
 		payment: {
 			gateway: gateways.paybybank,
 			status: 'paid',

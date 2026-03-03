@@ -9,7 +9,7 @@ test.beforeAll( async ( { utils } ) => {
 	await utils.cleanReconnectMollie();
 } );
 
-test( 'C420152 | Validate that Mollie Advanced section is displayed per UI design', async ( {
+test( 'C420152 | Validate that Mollie Advanced section is displayed per UI design @Critical', async ( {
 	mollieSettingsAdvanced,
 } ) => {
 	await mollieSettingsAdvanced.visit();

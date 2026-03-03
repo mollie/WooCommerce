@@ -85,12 +85,7 @@ jobs:
         npx wp-env run tests-cli wp config set WP_SITEURL "$NGROK_URL"
         npx wp-env run tests-cli wp config set WP_HOME "$NGROK_URL"
 
-        # 8. Make WordPress trust HTTPS behind ngrok reverse proxy (tests environment)
-        npx wp-env run tests-cli wp config set FORCE_SSL_ADMIN true --raw
-        npx wp-env run tests-cli bash -c "mkdir -p /var/www/html/wp-content/mu-plugins"
-        npx wp-env run tests-cli bash -c "echo '<?php if(isset(\$_SERVER[\"HTTP_X_FORWARDED_PROTO\"])&&\$_SERVER[\"HTTP_X_FORWARDED_PROTO\"]===\"https\"){\$_SERVER[\"HTTPS\"]=\"on\";}' > /var/www/html/wp-content/mu-plugins/ngrok-ssl.php"
-
-        # 9. Override WP_BASE_URL for Playwright
+        # 8. Override WP_BASE_URL for Playwright
         sed -i "s|WP_BASE_URL=.*|WP_BASE_URL=$NGROK_URL|" .env.ci
     secrets:
       ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}

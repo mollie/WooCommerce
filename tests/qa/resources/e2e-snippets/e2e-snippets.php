@@ -6,6 +6,13 @@
  */
 
 /**
+ * Trust HTTPS behind reverse proxy (ngrok).
+ */
+if ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https' ) {
+    $_SERVER['HTTPS'] = 'on';
+}
+
+/**
  * Disable the "Disable Welcome Messages" in the Gutenberg Editor.
  */
 add_filter(

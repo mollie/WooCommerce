@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use Mollie\WooCommerce\Payment\OrderLines;
 use Mollie\WooCommerce\Payment\PaymentLines;
 use WC_Order;
-
 /**
  * Class OrderLinesMiddleware
  *
@@ -15,18 +13,16 @@ use WC_Order;
  *
  * @package Mollie\WooCommerce\Payment\Request\Middleware
  */
-class OrderLinesMiddleware implements RequestMiddlewareInterface
+class OrderLinesMiddleware implements \Mollie\WooCommerce\Payment\Request\Middleware\RequestMiddlewareInterface
 {
     /**
      * @var OrderLines The order lines handler.
      */
     private OrderLines $orderLines;
-
     /**
      * @var PaymentLines The payment lines handler.
      */
     private PaymentLines $paymentLines;
-
     /**
      * OrderLinesMiddleware constructor.
      *
@@ -37,7 +33,6 @@ class OrderLinesMiddleware implements RequestMiddlewareInterface
         $this->orderLines = $orderLines;
         $this->paymentLines = $paymentLines;
     }
-
     /**
      * Invoke the middleware.
      *

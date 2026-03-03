@@ -35,8 +35,9 @@ import {
 	PayForOrder,
 	MollieHostedCheckout,
 } from './frontend';
-import { MollieApi, Utils } from '.';
+import { MollieApi, Utils,  } from '.';
 import { MollieSettings } from '../resources';
+import { WooCommerceUtils } from './woocommerce-utils';
 
 type TestBaseExtend = BaseExtend & {
 	recordVideoOptions: {
@@ -69,6 +70,18 @@ type TestBaseExtend = BaseExtend & {
 
 const test = base.extend< TestBaseExtend >( {
 	recordVideoOptions: [ null, { option: true } ],
+	wooCommerceUtils: async (
+		{ requestUtils, postEditor, wooCommerceApi },
+		use
+	) => {
+		await use(
+			new WooCommerceUtils( {
+				requestUtils,
+				postEditor,
+				wooCommerceApi,
+			} )
+		);
+	},
 	// Dashboard pages operated by Admin
 	mollieApi: async ( { request, requestUtils }, use ) => {
 		await use( new MollieApi( { request, requestUtils } ) );

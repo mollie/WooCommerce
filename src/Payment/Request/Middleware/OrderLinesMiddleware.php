@@ -49,12 +49,18 @@ class OrderLinesMiddleware implements RequestMiddlewareInterface
      */
     public function __invoke(array $requestData, WC_Order $order, $context, $next): array
     {
-        if ($context === 'payment') {
-            $orderLines = $this->paymentLines->order_lines($order);
-        } else {
-            $orderLines = $this->orderLines->order_lines($order);
+        $methodId = $requestData['method'] ?? '';
+        $optionName = 'mollie_wc_gateway_' . $methodId . '_settings';
+        $hideOrderLines = get_option($optionName, false)['hide_order_lines'] === 'yes';
+
+        if (!$hideOrderLines) {
+            if ($context === 'payment') {
+                $orderLines = $this->paymentLines->order_lines($order);
+            } else {
+                $orderLines = $this->orderLines->order_lines($order);
+            }
+            $requestData['lines'] = $orderLines['lines'];
         }
-        $requestData['lines'] = $orderLines['lines'];
         return $next($requestData, $order, $context);
     }
 }

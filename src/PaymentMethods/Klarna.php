@@ -40,6 +40,11 @@ class Klarna extends AbstractPaymentMethod implements PaymentMethodI
 
     public function getFormFields($generalFormFields): array
     {
+        // Remove hide_order_lines_settings as Klarna requires order lines
+        if (isset($generalFormFields['hide_order_lines'])) {
+            unset($generalFormFields['hide_order_lines']);
+        }
+
         return $generalFormFields;
     }
 }

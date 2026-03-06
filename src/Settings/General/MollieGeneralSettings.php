@@ -31,7 +31,7 @@ class MollieGeneralSettings
             'display' => [
                 'id' => $defaultTitle . '_' . 'title',
                 'title' => sprintf(
-                    /* translators: Placeholder 1: Gateway title */
+                /* translators: Placeholder 1: Gateway title */
                     __('%s display settings', 'mollie-payments-for-woocommerce'),
                     $defaultTitle
                 ),
@@ -279,6 +279,14 @@ class MollieGeneralSettings
                 ),
             ];
         }
+
+        $formFields['hide_order_lines'] = [
+            'title' => __('Hide order lines', 'mollie-payments-for-woocommerce'),
+            'label' => __('Do not send order lines to Mollie', 'mollie-payments-for-woocommerce'),
+            'description' => __('Enable this option to prevent order line details from being sent to Mollie. This may be useful for certain payment methods or compliance requirements.', 'mollie-payments-for-woocommerce'),
+            'type' => 'checkbox',
+            'default' => 'no',
+        ];
 
         $formFields['activate_expiry_days_setting'] = [
             'title' => __('Activate expiry time setting', 'mollie-payments-for-woocommerce'),

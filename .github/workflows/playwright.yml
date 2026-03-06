@@ -12,13 +12,8 @@ on:
         type: choice
         options:
           - critical
-          - ngrok
-          - all
           - refund
-      PLAYWRIGHT_CLI_ARGS:
-        description: 'Arguments for `npx playwright test` (if set "Test suite" will be ignored)'
-        required: false
-        type: string
+          - all
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -41,20 +36,16 @@ jobs:
     name: Run Playwright E2E Tests for Mollie
     needs: build
     uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@fix/test-playwright
-    strategy:
-      matrix:
-        php: [ '8.2' ]
     with:
       WORK_DIR: 'tests/qa'
-      SCRIPT_NAME: ${{ inputs.PLAYWRIGHT_CLI_ARGS && '' || format('test:{0}', inputs.TEST_SUITE) }}
-      PLAYWRIGHT_CLI_ARGS: ${{ inputs.PLAYWRIGHT_CLI_ARGS || '' }}
+      PLAYWRIGHT_SCRIPT: ${{ format('test:{0}', inputs.TEST_SUITE) }}
       ARTIFACT_PATH: |
         tests/qa/artifacts/*
         tests/qa/playwright-report/
         tests/qa/test-results/
       ARTIFACT_INCLUDE_HIDDEN_FILES: true
       COMPOSER_DEPS_INSTALL: false
-      PHP_VERSION: ${{ matrix.php }}
+      PHP_VERSION: '8.2'
       NODE_VERSION: 22
       PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
       PRE_SCRIPT: |

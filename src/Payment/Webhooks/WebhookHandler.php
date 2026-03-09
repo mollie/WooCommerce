@@ -471,6 +471,8 @@ class WebhookHandler
         if ($order->is_paid() || $order->get_status() === 'completed') {
             return;
         }
+        $order = apply_filters($this->pluginId . '_order_status_pending', $order);
+
         $order->add_order_note(
             sprintf(
                 __('%1$s payment pending (%2$s).', 'mollie-payments-for-woocommerce'),

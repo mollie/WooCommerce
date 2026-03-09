@@ -20,7 +20,7 @@ const isMultistepCheckout = process.env.IS_MULTISTEP_CHECKOUT === 'true';
 export const testPaymentStatusOnClassicCheckout = (
 	testData: MollieTestData.ShopOrder
 ) => {
-	const { testId, payment } = testData;
+	const { testId, testLabel, payment } = testData;
 	const { gateway } = payment;
 
 	const orderStatus = getOrderStatusFromMollieStatus( payment.status );
@@ -28,10 +28,11 @@ export const testPaymentStatusOnClassicCheckout = (
 	const currency = gateway.currency;
 	const gatewayLabel = buildMollieGatewayLabel( gateway );
 	const multistepLabel = isMultistepCheckout ? ' - Multistep' : '';
+	const label = testLabel ? ` ${ testLabel }` : '';
 
 	Object.assign( testData, { orderStatus, customer, currency } );
 
-	test( `${ testId } | Transaction${ multistepLabel } - Classic checkout - ${ gatewayLabel } - Payment status ${ payment.status } creates order with status ${ orderStatus }`, async ( {
+	test( `${ testId } | Transaction${ multistepLabel } - Classic checkout - ${ gatewayLabel } - Payment status ${ payment.status } creates order with status ${ orderStatus }${ label }`, async ( {
 		wooCommerceApi,
 		utils,
 		classicCheckout,

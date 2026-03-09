@@ -39,14 +39,6 @@
     "lint:js:fix": "wp-scripts lint-js resources/js/src/* --fix",
     "lint:style:fix": "wp-scripts lint-style resources/scss/*.scss --fix",
     "lint:php": "yarn phpcs && yarn psalm",
-    "lint:php-fix": "vendor/bin/phpcbf --parallel=8",
-    "e2e-activation": "npx playwright test --project=activation",
-    "e2e-simple": "npx playwright test --project=simple-classic",
-    "e2e-block": "npx playwright test --project=simple-block",
-    "e2e-cart-paypal": "npx playwright test --project=cart-paypal",
-    "e2e-product-paypal": "npx playwright test  --project=product-paypal",
-    "e2e-simple-settings": "npx playwright test --project=simple-settings",
-    "e2e-full-settings": "npx playwright test --project=full-settings",
-    "e2e-all": "npx playwright test"
+    "lint:php-fix": "vendor/bin/phpcbf --parallel=8"
   }
 }

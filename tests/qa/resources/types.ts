@@ -260,7 +260,8 @@ export namespace MollieTestData {
 	};
 
 	export type ShopOrder = WooCommerce.ShopOrder & {
-		testId?: string;
+		testId?: string; // test ID in TestRail, e.g. C1234
+		testLabel?: string; // custom string to be added to test summary to label tests: @Smoke, @Critical, etc.
 		payment?: MolliePayment;
 	};
 

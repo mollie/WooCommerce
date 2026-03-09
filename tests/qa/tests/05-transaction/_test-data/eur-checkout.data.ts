@@ -176,6 +176,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	{
 		...baseOrder,
 		testId: 'C420244',
+		testLabel: '@Critical',
 		payment: {
 			gateway: gateways.ideal,
 			status: 'paid',
@@ -338,6 +339,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	{
 		...baseOrder,
 		testId: 'C420273',
+		testLabel: '@Critical',
 		payment: {
 			gateway: gateways.creditcard,
 			status: 'paid',

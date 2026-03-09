@@ -20,7 +20,7 @@ test.describe( `Payment method settings ${ gateway.name }`, () => {
 	} );
 
 	test(
-		`C3325 | Payment method settings - Title can be changed (${ gateway.name })`,
+		`C3325 | Payment method settings - Title can be changed (${ gateway.name }) @Critical`,
 		annotateGateway( gateway.slug ),
 		async ( {
 			utils,
@@ -54,7 +54,7 @@ test.describe( `Payment method settings ${ gateway.name }`, () => {
 	);
 
 	test(
-		`C1729452 | Payment method settings - Logo can be hidden on checkout page (${ gateway.name })`,
+		`C1729452 | Payment method settings - Logo can be hidden on checkout page (${ gateway.name }) @Critical`,
 		annotateGateway( gateway.slug ),
 		async ( {
 			utils,
@@ -111,7 +111,7 @@ test.describe( `Payment method settings ${ gateway.name }`, () => {
 	);
 
 	test(
-		`C3326 | Payment method settings - Logo can be changed (${ gateway.name })`,
+		`C3326 | Payment method settings - Logo can be changed (${ gateway.name }) @Critical`,
 		annotateGateway( gateway.slug ),
 		async ( {
 			utils,
@@ -151,7 +151,7 @@ test.describe( `Payment method settings ${ gateway.name }`, () => {
 	);
 
 	test(
-		`C3327 | Payment method settings - Description can be changed (${ gateway.name })`,
+		`C3327 | Payment method settings - Description can be changed (${ gateway.name }) @Critical`,
 		annotateGateway( gateway.slug ),
 		async ( {
 			utils,
@@ -194,7 +194,7 @@ test.describe( `Payment method settings ${ gateway.name }`, () => {
 	);
 
 	test(
-		`C420329 | Payment method settings - Selling only to specific countries (${ gateway.name }, Spain)`,
+		`C420329 | Payment method settings - Selling only to specific countries (${ gateway.name }, Spain) @Critical`,
 		annotateGateway( gateway.slug ),
 		async ( {
 			utils,

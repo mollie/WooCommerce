@@ -2,12 +2,19 @@
  * External dependencies
  */
 import { defineConfig, devices } from '@playwright/test';
+import { WpCliEnvType } from '@inpsyde/playwright-utils/build/@types/wp-cli';
+import dotenv from 'dotenv';
+import path from 'path';
 /**
  * Internal dependencies
  */
 import { MollieSettings } from './resources';
 import { TestBaseExtend } from './utils';
-require( 'dotenv' ).config();
+
+const dotenvPath = process.env.CI
+    ? path.resolve( __dirname, '.env.ci' )
+    : undefined;
+dotenv.config( { path: dotenvPath } );
 
 export default defineConfig< TestBaseExtend >( {
 	testDir: 'tests',
@@ -20,14 +27,14 @@ export default defineConfig< TestBaseExtend >( {
 	/* Fail the build on CI if you accidentally left test.only in the source code. */
 	forbidOnly: !! process.env.CI,
 	/* Retry on CI only */
-	retries: process.env.CI ? 2 : 0,
+	retries: process.env.CI ? 1 : 0,
 	/* Opt out of parallel tests on CI. */
 	workers: process.env.CI ? 1 : 1,
 	/* Reporter to use. See https://playwright.dev/docs/test-reporters */
 	reporter: process.env.CI
 		? [
 				[ 'list' ],
-				// [ 'html', { outputFolder: 'playwright-report' } ],
+				[ 'html', { outputFolder: 'playwright-report' } ],
 				[
 					'@inpsyde/playwright-utils/build/integration/testrail/testrail-reporter.js',
 				],
@@ -64,6 +71,10 @@ export default defineConfig< TestBaseExtend >( {
 			password: process.env.WP_BASIC_AUTH_PASS,
 		},
 
+		extraHTTPHeaders: process.env.WP_BASE_URL.includes('ngrok')
+			? { 'ngrok-skip-browser-warning': '1' }
+			: {},
+
 		...devices[ 'Desktop Chrome' ],
 
 		viewport: { width: 1280, height: 850 },
@@ -88,6 +99,11 @@ export default defineConfig< TestBaseExtend >( {
 		mollieApiMethod:
 			( process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod ) ||
 			'payment',
+
+		cliConfig: {
+			envType: process.env.WPCLI_ENV_TYPE as WpCliEnvType,
+			path: process.env.WPCLI_PATH,
+		},
 	},
 
 	/* Configure projects for major browsers */

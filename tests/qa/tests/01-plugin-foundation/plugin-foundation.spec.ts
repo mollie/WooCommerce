@@ -12,10 +12,10 @@ import {
  */
 import { molliePlugin } from '../../resources';
 
-testPluginInstallationFromFile( 'C419986', molliePlugin );
+testPluginInstallationFromFile( 'C419986', molliePlugin, '@Critical' );
 
-testPluginReinstallationFromFile( 'C3322', molliePlugin );
+testPluginReinstallationFromFile( 'C3322', molliePlugin, '@Critical' );
 
-testPluginDeactivation( 'C3319', molliePlugin );
+testPluginDeactivation( 'C3319', molliePlugin, '@Critical' );
 
-testPluginRemoval( 'C3318', molliePlugin );
+testPluginRemoval( 'C3318', molliePlugin, '@Critical' );

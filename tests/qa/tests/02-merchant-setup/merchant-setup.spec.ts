@@ -10,7 +10,7 @@ test.describe.serial( () => {
 		await utils.cleanReconnectMollie();
 	} );
 
-	test( 'C3511 | Validate an error message is returned when the test key is not valid/empty', async ( {
+	test( 'C3511 | Validate an error message is returned when the test key is not valid/empty @Critical', async ( {
 		mollieSettingsApiKeys,
 		mollieSettingsAdvanced,
 	} ) => {

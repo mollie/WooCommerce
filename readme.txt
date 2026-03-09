@@ -218,6 +218,18 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= 8.1.4 - 09-03-2026 =
+* Added - Rebranding of iDEAL to iDEAL | Wero
+* Added - Webhook status Validation for Pending
+* Fixed - Duplicated notice when two Webhook arrive simultaneously when capturing authorized payments
+* Fixed - Multistep checkout - Card payments stuck on pending status, when order placed with Paid status
+* Fixed - Critical error "Could not derive plugin path" on Bitnami/symlinked environments after version 8.1.0 update
+* Fixed - Payment gateway deactivated in WooCommerce Blocks checkout
+* Fixed - Order status not changing webhook error
+* Fixed - Console warnings on Classic Checkout due to unmounting non-existent Mollie Components
+* Fixed - SEPA Direct Debit subscription renewals failing – “No valid mandate” error
+* Fixed - Use Mollie-hosted payment method icons
+
 = 8.1.3 - 19-01-2026 =
 * Added - New payment methods - Vipps and Mobile pay. Enable Vipps feature flag
 * Added - Webhook test feature to verify webhook connectivity and status

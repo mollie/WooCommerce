@@ -93,6 +93,11 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
         return array_merge($generalFormFields, $paymentMethodFormFieds);
     }
 
+    public function isExpressCheckoutEnabled(): bool
+    {
+        return $this->getProperty('mollie_paypal_button_enabled_cart') === 'yes';
+    }
+
     private function buttonOptions(): array
     {
         return [

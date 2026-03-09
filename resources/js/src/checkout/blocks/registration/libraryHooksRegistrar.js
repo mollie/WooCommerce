@@ -4,6 +4,9 @@ import {ApplePayUtils} from "../../../shared/utils/applePayUtils";
 import ApplePayButtonComponent from "../components/expressPayments/ApplePayButtonComponent";
 import ApplePayButtonEditorComponent from "../components/expressPayments/ApplePayButtonEditorComponent";
 import {isEditorContext} from "../../../shared/utils/paymentUtils";
+import PayPalButtonComponent from "../components/expressPayments/PayPalButtonComponent";
+import PayPalButtonEditorComponent from "../components/expressPayments/PayPalButtonEditorComponent";
+import {PayPalUtils} from "../../../shared/utils/paypalUtils";
 
 export const registerGatewayRegistrationHooks = (gatewayData) => {
     const applePayGateway = gatewayData.find((gateway) => {
@@ -71,6 +74,49 @@ export const registerExpressPaymentMethodHooks = (gatewayData) => {
             }
         );
     }
+
+    const paypalGateway = gatewayData.find((gateway) => {
+        return gateway.name === PayPalUtils.GATEWAY_NAME
+    });
+    if (paypalGateway && paypalGateway.isExpressEnabled) {
+        addFilter(
+            `${paypalGateway.name}_express_payment_method_args`,
+            'mollie/paypal-express-args',
+            (PaymentMethodArgs, settings) => {
+                return {
+                    name: 'mollie_wc_gateway_paypal_express',
+                    title: 'PayPal Express button',
+                    description: 'PayPal Express button',
+                    content: <PayPalButtonComponent/>,
+                    edit: <PayPalButtonEditorComponent/>,
+                    ariaLabel: 'PayPal',
+                    canMakePayment: () => {
+                        if (isEditorContext()) {
+                            return true;
+                        }
+                        return PayPalUtils.canRegisterPayPal();
+                    },
+                    paymentMethodId: 'mollie_wc_gateway_paypal',
+                    gatewayId: 'mollie_wc_gateway_paypal',
+                    supports: {
+                        features: ['products'],
+                        style: ['height', 'borderRadius']
+                    },
+                };
+            }
+        );
+        addFilter(
+            `${paypalGateway.name}_express_payment_methods`,
+            'mollie/paypal-express-registration',
+            (shouldRegister, PaymentMethodArgs, settings) => {
+                if (isEditorContext()) {
+                    return true;
+                }
+                return PayPalUtils.canRegisterPayPal();
+            }
+        );
+    }
+
 };
 export const registerAllContentHooks = (gatewayData, context) => {
 	if (typeof gatewayData !== 'undefined' && gatewayData.length > 0) {

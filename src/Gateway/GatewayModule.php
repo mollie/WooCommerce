@@ -16,6 +16,7 @@ use Inpsyde\PaymentGateway\PaymentMethodServiceProviderTrait;
 use Mollie\WooCommerce\BlockService\CheckoutBlockService;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDirectHandler;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalButtonHandler;
+use Mollie\WooCommerce\Buttons\PayPalButton\PayPalExpressButton;
 use Mollie\WooCommerce\Gateway\Voucher\MaybeDisableGateway;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
@@ -411,15 +412,9 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             }
         }
 
-        $paypalButtonHandler = $container->get(PayPalButtonHandler::class);
-        if ($paypalButtonHandler instanceof PayPalButtonHandler) {
-            $enabledInProduct = (mollieWooCommerceIsPayPalButtonEnabled('product'));
-            $enabledInCart = (mollieWooCommerceIsPayPalButtonEnabled('cart'));
-            $shouldBuildIt = $enabledInProduct || $enabledInCart;
-
-            if ($shouldBuildIt) {
-                $paypalButtonHandler->bootstrap($enabledInProduct, $enabledInCart);
-            }
+        $paypalButtonHandler = $container->get(PayPalExpressButton::class);
+        if ($paypalButtonHandler instanceof PayPalExpressButton) {
+            $paypalButtonHandler->bootstrap();
         }
     }
 

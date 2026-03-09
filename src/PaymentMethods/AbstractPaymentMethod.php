@@ -446,4 +446,9 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
     {
         return '';
     }
+
+    public function isExpressCheckoutEnabled(): bool
+    {
+        return false;
+    }
 }

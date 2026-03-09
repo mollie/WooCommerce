@@ -95,4 +95,9 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
         ];
         return array_merge($notice, $generalFormFields, $paymentMethodFormFieds);
     }
+
+    public function isExpressCheckoutEnabled(): bool
+    {
+        return $this->getProperty('mollie_apple_pay_button_enabled_express_checkout') === 'yes';
+    }
 }

@@ -21,7 +21,7 @@ import {
 	MollieSettings,
 	molliePlugin,
 	mollieApiKeys,
-	subscriptionsPlugin,
+	woocommerceSubscriptionsPlugin,
 	ShopConfig,
 } from '../resources';
 
@@ -139,12 +139,12 @@ export class Utils {
 		}: ShopConfig = data;
 
 		if ( enableSubscriptionsPlugin === true ) {
-			await this.requestUtils.activatePlugin( subscriptionsPlugin.slug );
+			await this.requestUtils.activatePlugin( woocommerceSubscriptionsPlugin.slug );
 		}
 
 		if ( enableSubscriptionsPlugin === false ) {
 			await this.requestUtils.deactivatePlugin(
-				subscriptionsPlugin.slug
+				woocommerceSubscriptionsPlugin.slug
 			);
 		}
 

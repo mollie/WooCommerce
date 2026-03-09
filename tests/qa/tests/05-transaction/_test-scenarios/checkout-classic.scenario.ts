@@ -62,9 +62,8 @@ export const testPaymentStatusOnClassicCheckout = (
 			testData
 		);
 
-		const { transaction_id: transactionId } = await wooCommerceApi.getOrder(
-			orderId
-		);
+		const { transaction_id: transactionId } =
+			await wooCommerceApi.getOrder( orderId );
 		await expect(
 			transactionId,
 			`Assert transaction ID ${ transactionId } is defined`
@@ -76,7 +75,7 @@ export const testPaymentStatusOnClassicCheckout = (
 			transactionId
 		);
 
-		if( payment.status === 'paid' ) {
+		if ( payment.status === 'paid' ) {
 			// Assert order notes via WC API
 			const expectedNotes = [
 				`${ gateway.slug } payment started (${ transactionId } - test mode).`,

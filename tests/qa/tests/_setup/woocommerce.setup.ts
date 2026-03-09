@@ -18,7 +18,7 @@ import {
 	disableWcSetupWizardPlugin,
 } from '../../resources';
 
-if( ! process.env.CI ) {
+if ( ! process.env.CI ) {
 	setup( 'Setup Permalinks', async ( { requestUtils } ) => {
 		await requestUtils.setPermalinks( '/%postname%/' );
 	} );
@@ -51,7 +51,9 @@ if( ! process.env.CI ) {
 					disableWcSetupWizardPlugin.zipFilePath
 				);
 			}
-			await requestUtils.activatePlugin( disableWcSetupWizardPlugin.slug );
+			await requestUtils.activatePlugin(
+				disableWcSetupWizardPlugin.slug
+			);
 		}
 	);
 
@@ -74,7 +76,9 @@ if( ! process.env.CI ) {
 					woocommerceSubscriptionsPlugin.zipFilePath
 				);
 			}
-			await requestUtils.deactivatePlugin( woocommerceSubscriptionsPlugin.slug );
+			await requestUtils.deactivatePlugin(
+				woocommerceSubscriptionsPlugin.slug
+			);
 		}
 	);
 
@@ -179,7 +183,7 @@ setup( 'Setup coupons', async ( { wooCommerceUtils } ) => {
 	const couponItems = {};
 	const couponEntries = Object.entries( coupons );
 	await Promise.all(
-		couponEntries.map( async ( [ key, coupon ] ) => {
+		couponEntries.map( async ( [ , coupon ] ) => {
 			const createdCoupon = await wooCommerceUtils.createCoupon( coupon );
 			couponItems[ coupon.code ] = { id: createdCoupon.id };
 		} )
@@ -193,12 +197,11 @@ setup( 'Setup products', async ( { wooCommerceUtils } ) => {
 	const cartItems = {};
 	const productEntries = Object.entries( products );
 	await Promise.all(
-		productEntries.map( async ( [ key, product ] ) => {
+		productEntries.map( async ( [ , product ] ) => {
 			// check if not subscription product - requires Supscriptions plugin
 			if ( ! product.slug.includes( 'subscription' ) ) {
-				const createdProduct = await wooCommerceUtils.createProduct(
-					product
-				);
+				const createdProduct =
+					await wooCommerceUtils.createProduct( product );
 				cartItems[ product.slug ] = { id: createdProduct.id };
 			}
 		} )

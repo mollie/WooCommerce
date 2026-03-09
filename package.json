@@ -48,7 +48,7 @@
     "lint:php": "yarn phpcs && yarn psalm",
     "lint:php-fix": "vendor/bin/phpcbf --parallel=8",
     "e2e:lint:md:fix": "wp-scripts lint-md-docs --fix ./tests/qa/**/*.md README.md",
-    "e2e:lint:js:fix": "wp-scripts lint-js --resolve-plugins-relative-to ./tests/qa --fix **/*.{ts,tsx,mjs}",
+    "e2e:lint:js:fix": "wp-scripts lint-js --resolve-plugins-relative-to ./tests/qa --fix --ext .ts,.tsx,.mjs ./tests/qa",
     "e2e:setup:hosts": "echo '127.0.0.1 mywp.site' | sudo tee -a /etc/hosts",
     "e2e:setup:env": "npm run setup:hosts && npm install && npx wp-env start --update",
     "e2e:setup:tests": "npm install && npx playwright install",

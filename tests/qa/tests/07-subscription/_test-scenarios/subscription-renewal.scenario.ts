@@ -1,10 +1,10 @@
 /**
- * Internal dependencies
- */
-/**
  * External dependencies
  */
 import { countTotals } from '@inpsyde/playwright-utils/build';
+/**
+ * Internal dependencies
+ */
 import { MollieTestData } from '../../../resources';
 import {
 	annotateVisitor,

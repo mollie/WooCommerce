@@ -92,9 +92,8 @@ export class Utils {
 	 * @param products
 	 */
 	fillVisitorsCart = async ( products: WooCommerce.CreateProduct[] ) => {
-		const cartProducts = await this.wooCommerceUtils.createCartProducts(
-			products
-		);
+		const cartProducts =
+			await this.wooCommerceUtils.createCartProducts( products );
 		await this.visitorWooCommerceApi.clearCart();
 		await this.visitorWooCommerceApi.addProductsToCart( cartProducts );
 	};

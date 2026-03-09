@@ -9,7 +9,7 @@
         "./tests/qa/resources/e2e-snippets"
     ],
     "mappings": {
-        "wp-cli.yml": "./wp-cli.yml",
+        "wp-cli.yml": "./tests/qa/wp-cli.yml",
         "wp-content/files": "./tests/qa/resources/files"
     },
     "lifecycleScripts": {

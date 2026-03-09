@@ -1193,10 +1193,10 @@
   resolved "https://registry.npmjs.org/@humanwhocodes/object-schema/-/object-schema-2.0.3.tgz"
   integrity sha512-93zYdMES/c1D69yZiKDBj0V24vqNzB/koF26KPaagAfd3P/4gUlh3Dys5ogAK+Exi9QyzlD8x/08Zt7wIKcDcA==
 
-"@inpsyde/playwright-utils@5.0.0-beta.5":
-  version "5.0.0-beta.5"
-  resolved "https://npm.pkg.github.com/download/@inpsyde/playwright-utils/5.0.0-beta.5/e2ad66bba9f3296def7a2dc8f83a7cbce5f0bb1f"
-  integrity sha512-FOcCl5ifrkxAIaakRCLoOb0ZW+7rKJ2IY5SQynwMg1FJfwr9dOnUKNzl32EbfsjbAuRjQOokg4AaKRRHLap/5g==
+"@inpsyde/playwright-utils@5.0.0":
+  version "5.0.0"
+  resolved "https://npm.pkg.github.com/download/@inpsyde/playwright-utils/5.0.0/e8b8ade96a5530fd9d271c288b5e8570e607be3c"
+  integrity sha512-3kNYbtmWCkMYpBdf8coTofEUwmqzLKt3zqC6//X1ZXd2xA23wXcCRXUmNYYM80PuSvgVuzmVInLPKy0bwAhHTg==
   dependencies:
     "@axe-core/playwright" "^4.10.1"
     "@percy/cli" "^1.30.6"

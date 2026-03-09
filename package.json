@@ -26,9 +26,16 @@
     "url": "git@github.com:mollie/WooCommerce.git"
   },
   "devDependencies": {
-    "@playwright/test": "^1.33.0",
+    "@playwright/test": "^1.50",
     "@wordpress/scripts": "^30.24.0",
-    "wp-pot": "^1.10.2"
+    "wp-pot": "^1.10.2",
+    "@inpsyde/playwright-utils": "5.0.0-beta.5",
+    "dotenv": "^16.3.1",
+    "mollie-api-typescript": "^1.0.2",
+    "playwright": "^1.40.1",
+    "yarn": "^1.22.21",
+    "@types/node": "^20.8.4",
+    "@wordpress/env": "^10.30.0"
   },
   "scripts": {
     "build": "wp-scripts build",
@@ -39,6 +46,31 @@
     "lint:js:fix": "wp-scripts lint-js resources/js/src/* --fix",
     "lint:style:fix": "wp-scripts lint-style resources/scss/*.scss --fix",
     "lint:php": "yarn phpcs && yarn psalm",
-    "lint:php-fix": "vendor/bin/phpcbf --parallel=8"
+    "lint:php-fix": "vendor/bin/phpcbf --parallel=8",
+    "e2e:lint:md:fix": "wp-scripts lint-md-docs --fix ./tests/qa/**/*.md README.md",
+    "e2e:lint:js:fix": "wp-scripts lint-js --resolve-plugins-relative-to ./tests/qa --fix **/*.{ts,tsx,mjs}",
+    "e2e:setup:hosts": "echo '127.0.0.1 mywp.site' | sudo tee -a /etc/hosts",
+    "e2e:setup:env": "npm run setup:hosts && npm install && npx wp-env start --update",
+    "e2e:setup:tests": "npm install && npx playwright install",
+    "e2e:watch:utils": "npm run setup:tests && cd .tests/qa/playwright-utils && yarn devLocal",
+    "e2e:setup:wc:default": "npx playwright test woocommerce.setup",
+    "e2e:setup:checkout:block": "npx playwright test --grep=\"setup:checkout:block;\"",
+    "e2e:setup:checkout:classic": "npx playwright test --grep=\"setup:checkout:classic;\"",
+    "e2e:setup:tax:inc": "npx playwright test --grep=\"setup:tax:inc;\"",
+    "e2e:setup:tax:exc": "npx playwright test --grep=\"setup:tax:exc;\"",
+    "e2e:setup:mollie:germany": "npx playwright test --grep \"setup:mollie:germany;\"",
+    "e2e:test:all": "npx playwright test --project=all --workers=1",
+    "e2e:test:critical": "npx playwright test --project=all --workers=1 --grep \"@Critical\"",
+    "e2e:test:refund": "npx playwright test --project=refund --workers=4"
+  },
+  "eslintConfig": {
+    "extends": [
+      "plugin:@wordpress/eslint-plugin/recommended"
+    ],
+    "rules": {
+      "@wordpress/dependency-group": "error",
+      "@wordpress/no-unsafe-wp-apis": "off",
+      "no-console": "off"
+    }
   }
 }

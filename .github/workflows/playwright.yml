@@ -39,7 +39,6 @@ jobs:
     needs: build
     uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@fix/test-playwright
     with:
-      WORK_DIR: 'tests/qa'
       PLAYWRIGHT_SCRIPT: ${{ format('e2e:test:{0}', inputs.TEST_SUITE) }}
       ARTIFACT_PATH: |
         tests/qa/artifacts/*

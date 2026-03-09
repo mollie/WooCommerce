@@ -164,6 +164,9 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                     }
 
                     if ($payment->isAuthorized()) {
+                        if ($order->get_meta(self::ORDER_PAYMENT_STATUS_META_KEY) === ManualCaptureStatus::STATUS_AUTHORIZED) {
+                            return;
+                        }
                         if (!$payment->getAmountCaptured() == 0.0) {
                             return;
                         }

@@ -1,0 +1,7 @@
+{
+  "name": "Disable WC Setup Wizard",
+  "slug": "disable-wc-setup-wizard",
+  "zipFile": "disable-wc-setup-wizard.zip",
+  "zipFilePath": "./resources/files/disable-wc-setup-wizard.zip",
+  "version": ""
+}

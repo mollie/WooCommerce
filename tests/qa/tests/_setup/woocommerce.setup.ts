@@ -13,9 +13,9 @@ import {
 	products,
 	coupons,
 	customers,
-	disableNoncePlugin,
-	subscriptionsPlugin,
-	disableWcSetupWizard,
+	disableNonceCheckPlugin,
+	woocommerceSubscriptionsPlugin,
+	disableWcSetupWizardPlugin,
 } from '../../resources';
 
 if( ! process.env.CI ) {
@@ -28,14 +28,14 @@ if( ! process.env.CI ) {
 		async ( { requestUtils, plugins } ) => {
 			if (
 				! ( await requestUtils.isPluginInstalled(
-					disableNoncePlugin.slug
+					disableNonceCheckPlugin.slug
 				) )
 			) {
 				await plugins.installPluginFromFile(
-					disableNoncePlugin.zipFilePath
+					disableNonceCheckPlugin.zipFilePath
 				);
 			}
-			await requestUtils.activatePlugin( disableNoncePlugin.slug );
+			await requestUtils.activatePlugin( disableNonceCheckPlugin.slug );
 		}
 	);
 
@@ -44,14 +44,14 @@ if( ! process.env.CI ) {
 		async ( { requestUtils, plugins } ) => {
 			if (
 				! ( await requestUtils.isPluginInstalled(
-					disableWcSetupWizard.slug
+					disableWcSetupWizardPlugin.slug
 				) )
 			) {
 				await plugins.installPluginFromFile(
-					disableWcSetupWizard.zipFilePath
+					disableWcSetupWizardPlugin.zipFilePath
 				);
 			}
-			await requestUtils.activatePlugin( disableWcSetupWizard.slug );
+			await requestUtils.activatePlugin( disableWcSetupWizardPlugin.slug );
 		}
 	);
 
@@ -67,14 +67,14 @@ if( ! process.env.CI ) {
 		async ( { requestUtils, plugins } ) => {
 			if (
 				! ( await requestUtils.isPluginInstalled(
-					subscriptionsPlugin.slug
+					woocommerceSubscriptionsPlugin.slug
 				) )
 			) {
 				await plugins.installPluginFromFile(
-					subscriptionsPlugin.zipFilePath
+					woocommerceSubscriptionsPlugin.zipFilePath
 				);
 			}
-			await requestUtils.deactivatePlugin( subscriptionsPlugin.slug );
+			await requestUtils.deactivatePlugin( woocommerceSubscriptionsPlugin.slug );
 		}
 	);
 

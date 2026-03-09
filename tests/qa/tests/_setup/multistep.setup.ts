@@ -2,26 +2,25 @@
  * Internal dependencies
  */
 import { test as setup, urls, expect } from '../../utils';
+import { germanizedPlugin, germanizedProPlugin } from '../../resources/e2e-plugins';
 
 const germanizedSlugs = [
-	'germanized-for-woocommerce',
-	'germanized-for-woocommerce-pro',
+	germanizedPlugin,
+	germanizedProPlugin,
 ];
 
-for( const pluginSlug of germanizedSlugs ) {
+for( const plugin of germanizedSlugs ) {
 	setup(
-		`Setup ${ pluginSlug } plugin (active)`,
+		`Setup ${ plugin.slug } plugin (active)`,
 		async ( { requestUtils, plugins } ) => {
 			if (
 				! ( await requestUtils.isPluginInstalled(
-					pluginSlug
+					plugin.slug
 				) )
 			) {
-				await plugins.installPluginFromFile(
-					`./resources/files/${ pluginSlug }.zip`
-				);
+				await plugins.installPluginFromFile( plugin.zipFilePath );
 			}
-			await requestUtils.activatePlugin( pluginSlug );
+			await requestUtils.activatePlugin( plugin.slug );
 			// additional visits to avoid Germanized welcome wizard page
 			await plugins.visit( urls.admin.plugins.home );
 			await plugins.visit( urls.admin.plugins.installed );

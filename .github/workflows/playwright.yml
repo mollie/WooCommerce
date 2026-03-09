@@ -41,9 +41,9 @@ jobs:
     with:
       PLAYWRIGHT_SCRIPT: ${{ format('e2e:test:{0}', inputs.TEST_SUITE) }}
       ARTIFACT_PATH: |
-        tests/qa/artifacts/*
-        tests/qa/playwright-report/
-        tests/qa/test-results/
+        artifacts/*
+        playwright-report/
+        test-results/
       ARTIFACT_INCLUDE_HIDDEN_FILES: true
       COMPOSER_DEPS_INSTALL: false
       PHP_VERSION: '8.2'

@@ -6,14 +6,14 @@
     },
     "phpVersion": "8.0",
     "plugins": [
-        "./resources/e2e-snippets"
+        "./tests/qa/resources/e2e-snippets"
     ],
     "mappings": {
         "wp-cli.yml": "./wp-cli.yml",
-        "wp-content/files": "./resources/files"
+        "wp-content/files": "./tests/qa/resources/files"
     },
     "lifecycleScripts": {
-        "afterStart": "node bin/test-env-setup.js",
-        "afterClean": "node bin/test-env-clean.js"
+        "afterStart": "node tests/qa/bin/test-env-setup.js",
+        "afterClean": "node tests/qa/bin/test-env-clean.js"
     }
 }

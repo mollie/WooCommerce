@@ -33,7 +33,13 @@ final class MollieCheckoutBlocksSupport
 
     public static function localizeWCBlocksData($dataService, $gatewayInstances, $container)
     {
-        wp_enqueue_style('mollie-applepaydirect');
+        if (
+            (mollieWooCommerceIsApplePayDirectEnabled('product') && is_product()) ||
+            (mollieWooCommerceIsApplePayDirectEnabled('cart') && is_cart())
+        ) {
+            wp_enqueue_style('mollie-applepaydirect');
+        }
+
         wp_localize_script(
             self::$scriptHandle,
             'mollieBlockData',

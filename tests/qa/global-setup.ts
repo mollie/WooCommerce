@@ -9,7 +9,8 @@ async function globalSetup( config: FullConfig ) {
 	const extraHTTPHeaders = process.env.WP_BASE_URL.includes( 'ngrok' )
 		? { 'ngrok-skip-browser-warning': '1' }
 		: {};
-
+	console.log('WP_BASE_URL:', process.env.WP_BASE_URL);
+	console.log('extraHTTPHeaders:', extraHTTPHeaders);
 	await restLogin( {
 		baseURL: projectUse.baseURL,
 		storageStatePath: String( projectUse.storageState ),

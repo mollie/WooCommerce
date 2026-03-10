@@ -50,6 +50,9 @@ jobs:
       NODE_VERSION: 22
       PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
       PRE_SCRIPT: |
+        echo "--- .env.ci contents ---"
+        cat .env.ci
+        echo "---"
         # 1. Download and unzip the built plugin
         gh run download ${{ github.run_id }} -p "mollie-payments-for-woocommerce-*" -D tests/qa/resources/files
         (cd tests/qa/resources/files && mv mollie-payments-for-woocommerce-*/mollie-payments-for-woocommerce . && zip -r mollie-payments-for-woocommerce.zip mollie-payments-for-woocommerce && rm -rf mollie-payments-for-woocommerce mollie-payments-for-woocommerce-*/)

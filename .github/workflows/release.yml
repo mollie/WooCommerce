@@ -15,4 +15,3 @@ jobs:
       GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.DEPLOYBOT_SSH_PUBLIC_KEY }}
     with:
       PACKAGE_VERSION: ${{ inputs.PACKAGE_VERSION }}
-      PHP_VERSION: 7.4

@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Buttons\PayPalButton;
 
-use Psr\Log\LoggerInterface as Logger;
-use Psr\Log\LogLevel;
-
+use Mollie\Psr\Log\LoggerInterface as Logger;
+use Mollie\Psr\Log\LogLevel;
 class PayPalDataObjectHttp
 {
     /**
@@ -33,7 +31,6 @@ class PayPalDataObjectHttp
      * @var Logger
      */
     protected $logger;
-
     /**
      * PayPalDataObjectHttp constructor.
      */
@@ -41,7 +38,6 @@ class PayPalDataObjectHttp
     {
         $this->logger = $logger;
     }
-
     /**
      * Resets the errors array
      */
@@ -49,7 +45,6 @@ class PayPalDataObjectHttp
     {
         $this->errors = [];
     }
-
     /**
      * Returns if the object has any errors
      * @return bool
@@ -58,7 +53,6 @@ class PayPalDataObjectHttp
     {
         return !empty($this->errors);
     }
-
     /**
      * Set the object with the data relevant to PayPal
      * Required data depends on callerPage
@@ -67,23 +61,15 @@ class PayPalDataObjectHttp
      */
     public function orderData($callerPage)
     {
-        $nonce = filter_input(INPUT_POST, 'nonce', FILTER_SANITIZE_SPECIAL_CHARS);
-        $isNonceValid = wp_verify_nonce(
-            $nonce,
-            'mollie_PayPal_button'
-        );
+        $nonce = filter_input(\INPUT_POST, 'nonce', \FILTER_SANITIZE_SPECIAL_CHARS);
+        $isNonceValid = wp_verify_nonce($nonce, 'mollie_PayPal_button');
         if (!$isNonceValid) {
             return;
         }
-        $data = filter_var_array($_POST, FILTER_SANITIZE_SPECIAL_CHARS);
-        $data[PropertiesDictionary::CALLER_PAGE] = $callerPage;
-        $this->updateRequiredData(
-            $data,
-            PropertiesDictionary::CREATE_ORDER_SINGLE_PROD_REQUIRED_FIELDS,
-            PropertiesDictionary::CREATE_ORDER_CART_REQUIRED_FIELDS
-        );
+        $data = filter_var_array($_POST, \FILTER_SANITIZE_SPECIAL_CHARS);
+        $data[\Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::CALLER_PAGE] = $callerPage;
+        $this->updateRequiredData($data, \Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::CREATE_ORDER_SINGLE_PROD_REQUIRED_FIELDS, \Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::CREATE_ORDER_CART_REQUIRED_FIELDS);
     }
-
     /**
      * Checks if the array contains all required fields and if those
      * are not empty.
@@ -97,43 +83,31 @@ class PayPalDataObjectHttp
     {
         foreach ($required as $requiredField) {
             if (!array_key_exists($requiredField, $data)) {
-                $this->logger->debug(
-                    sprintf('PayPal Data Error: Missing index %s', $requiredField)
-                );
-
+                $this->logger->debug(sprintf('PayPal Data Error: Missing index %s', $requiredField));
                 $this->errors[] = ['errorCode' => 'unknown'];
                 continue;
             }
             if (!$data[$requiredField]) {
-                $this->logger->debug(
-                    sprintf('PayPal Data Error: Missing value for %s', $requiredField)
-                );
+                $this->logger->debug(sprintf('PayPal Data Error: Missing value for %s', $requiredField));
                 $this->errors[] = ['errorCode' => 'unknown'];
                 continue;
             }
         }
         return !$this->hasErrors();
     }
-
     /**
      * Sets the value to the appropriate field in the object
      */
     protected function assignDataObjectValues(array $data)
     {
-        $allowedKeys = [
-            PropertiesDictionary::NONCE,
-            PropertiesDictionary::PRODUCT_QUANTITY,
-            PropertiesDictionary::PRODUCT_ID,
-            PropertiesDictionary::NEED_SHIPPING,
-        ];
+        $allowedKeys = [\Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::NONCE, \Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::PRODUCT_QUANTITY, \Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::PRODUCT_ID, \Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::NEED_SHIPPING];
         foreach ($data as $key => $value) {
             if (in_array($key, $allowedKeys)) {
                 $filterType = $this->filterType($key);
-                $this->$key = $filterType ? filter_var($value, $filterType) : sanitize_text_field(wp_unslash($value));
+                $this->{$key} = $filterType ? filter_var($value, $filterType) : sanitize_text_field(wp_unslash($value));
             }
         }
     }
-
     /**
      * Selector for the different filters to apply to each field
      * @param $value
@@ -142,21 +116,17 @@ class PayPalDataObjectHttp
      */
     protected function filterType($value)
     {
-        $filterInt = [
-            PropertiesDictionary::PRODUCT_QUANTITY,
-            PropertiesDictionary::PRODUCT_ID,
-        ];
-        $filterBoolean = [PropertiesDictionary::NEED_SHIPPING];
+        $filterInt = [\Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::PRODUCT_QUANTITY, \Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::PRODUCT_ID];
+        $filterBoolean = [\Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::NEED_SHIPPING];
         switch ($value) {
             case in_array($value, $filterInt):
-                return FILTER_SANITIZE_NUMBER_INT;
+                return \FILTER_SANITIZE_NUMBER_INT;
             case in_array($value, $filterBoolean):
-                return FILTER_VALIDATE_BOOLEAN;
+                return \FILTER_VALIDATE_BOOLEAN;
             default:
-                return false;
+                return \false;
         }
     }
-
     /**
      * @param       $requiredProductFields
      * @param       $requiredCartFields
@@ -166,33 +136,24 @@ class PayPalDataObjectHttp
     {
         $this->resetErrors();
         $requiredFields = $requiredProductFields;
-        if (
-            isset($data[PropertiesDictionary::CALLER_PAGE])
-            && $data[PropertiesDictionary::CALLER_PAGE] === 'cart'
-        ) {
+        if (isset($data[\Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::CALLER_PAGE]) && $data[\Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::CALLER_PAGE] === 'cart') {
             $requiredFields = $requiredCartFields;
         }
-        $hasRequiredFieldsValues = $this->hasRequiredFieldsValuesOrError(
-            $data,
-            $requiredFields
-        );
+        $hasRequiredFieldsValues = $this->hasRequiredFieldsValuesOrError($data, $requiredFields);
         if (!$hasRequiredFieldsValues) {
-            return false;
+            return \false;
         }
         $this->assignDataObjectValues($data);
-        return true;
+        return \true;
     }
-
     public function nonce()
     {
         return $this->nonce;
     }
-
     public function productId()
     {
         return $this->productId;
     }
-
     public function productQuantity()
     {
         return $this->productQuantity;

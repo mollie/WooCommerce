@@ -33,15 +33,19 @@ final class MollieCheckoutBlocksSupport
 
     public static function localizeWCBlocksData($dataService, $gatewayInstances, $container)
     {
-        wp_enqueue_style('mollie-applepaydirect');
-        wp_localize_script(
-            self::$scriptHandle,
-            'mollieBlockData',
-            [
-                'gatewayData' => self::gatewayDataForWCBlocks($dataService, $gatewayInstances, $container),
-                'mollieApplePayBlockDataCart' => $dataService->mollieApplePayBlockDataCart(),
-            ]
-        );
+        static $isScriptEnqueued = false;
+        if ($isScriptEnqueued) {
+            wp_enqueue_style('mollie-applepaydirect');
+            wp_localize_script(
+                self::$scriptHandle,
+                'mollieBlockData',
+                [
+                    'gatewayData' => self::gatewayDataForWCBlocks($dataService, $gatewayInstances, $container),
+                    'mollieApplePayBlockDataCart' => $dataService->mollieApplePayBlockDataCart(),
+                ]
+            );
+        }
+        $isScriptEnqueued = true;
     }
 
     public static function gatewayDataForWCBlocks(Data $dataService, array $deprecatedGatewayHelpers, ContainerInterface $container): array
@@ -52,7 +56,7 @@ final class MollieCheckoutBlocksSupport
         $componentDataService = $container->get('components.data_service');
         $componentData = $componentDataService->getComponentData();
         $isOrderPayPage = is_checkout_pay_page();
-        $isMultiStepsCheckout = get_option('woocommerce_gzdp_checkout_enable') === 'yes';
+        $isMultiStepsCheckout = class_exists( 'WooCommerce_Germanized_Pro', false ) && get_option('woocommerce_gzdp_checkout_enable') === 'yes';
 
         /** @var PaymentGateway $gateway */
         foreach ($paymentGateways as $gatewayKey => $gateway) {

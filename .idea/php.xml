@@ -145,6 +145,11 @@
       <path value="$PROJECT_DIR$/vendor/phpoption/phpoption" />
       <path value="$PROJECT_DIR$/vendor/graham-campbell/result-type" />
       <path value="$PROJECT_DIR$/vendor/vlucas/phpdotenv" />
+      <path value="$PROJECT_DIR$/.ddev/wordpress/wp-content/plugins/wordpress-importer/php-toolkit/vendor/composer" />
+      <path value="$PROJECT_DIR$/vendor/phpstan/phpstan" />
+      <path value="$PROJECT_DIR$/vendor/szepeviktor/phpstan-wordpress" />
+      <path value="$PROJECT_DIR$/vendor/phpstan/extension-installer" />
+      <path value="$PROJECT_DIR$/vendor/php-stubs/woocommerce-subscriptions-stubs" />
     </include_path>
   </component>
   <component name="PhpInterpreters">
@@ -260,6 +265,7 @@
   <component name="PhpStan">
     <PhpStan_settings>
       <phpstan_by_interpreter asDefaultInterpreter="true" interpreter_id="29a5ef5c-f9cb-48bf-aa11-97d89c5f9549" timeout="60000" />
+      <PhpStanConfiguration tool_path="$PROJECT_DIR$/vendor/bin/phpstan" />
     </PhpStan_settings>
   </component>
   <component name="PhpStanOptionsConfiguration">

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bf0d59b326756ec3f097a186388c2955",
+    "content-hash": "3637bd28f4ed564f8fb3a70fa8bdfaf3",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -2212,16 +2212,16 @@
         },
         {
             "name": "php-stubs/woocommerce-stubs",
-            "version": "v7.9.0",
+            "version": "v10.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-stubs/woocommerce-stubs.git",
-                "reference": "3a2f522e29451490c357af550227795d2b0fc55a"
+                "reference": "613d2b5107900c3ff33ce7827f55e2af0b2e28d8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/3a2f522e29451490c357af550227795d2b0fc55a",
-                "reference": "3a2f522e29451490c357af550227795d2b0fc55a",
+                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/613d2b5107900c3ff33ce7827f55e2af0b2e28d8",
+                "reference": "613d2b5107900c3ff33ce7827f55e2af0b2e28d8",
                 "shasum": ""
             },
             "require": {
@@ -2250,9 +2250,55 @@
             ],
             "support": {
                 "issues": "https://github.com/php-stubs/woocommerce-stubs/issues",
-                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v7.9.0"
+                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v10.6.0"
             },
-            "time": "2023-07-17T22:41:38+00:00"
+            "time": "2026-03-11T04:30:36+00:00"
+        },
+        {
+            "name": "php-stubs/woocommerce-subscriptions-stubs",
+            "version": "v8.4.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-stubs/woocommerce-subscriptions-stubs.git",
+                "reference": "6e225945956a40d711432a08a9f13d6cbad04922"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-stubs/woocommerce-subscriptions-stubs/zipball/6e225945956a40d711432a08a9f13d6cbad04922",
+                "reference": "6e225945956a40d711432a08a9f13d6cbad04922",
+                "shasum": ""
+            },
+            "require": {
+                "php-stubs/woocommerce-stubs": "^10.2",
+                "php-stubs/wordpress-stubs": "^5.3 || ^6.0"
+            },
+            "require-dev": {
+                "php": "~7.4 || ~8.1",
+                "php-stubs/generator": "^0.8.0"
+            },
+            "suggest": {
+                "symfony/polyfill-php74": "Symfony polyfill backporting some PHP 7.4+ features to lower PHP versions",
+                "szepeviktor/phpstan-wordpress": "WordPress extensions for PHPStan"
+            },
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "WooCommerce Subscriptions function and class declaration stubs for static analysis.",
+            "homepage": "https://github.com/php-stubs/woocommerce-subscriptions-stubs",
+            "keywords": [
+                "PHPStan",
+                "static analysis",
+                "subscription",
+                "woocommerce",
+                "wordpress"
+            ],
+            "support": {
+                "issues": "https://github.com/php-stubs/woocommerce-subscriptions-stubs/issues",
+                "source": "https://github.com/php-stubs/woocommerce-subscriptions-stubs/tree/v8.4.0"
+            },
+            "time": "2026-02-14T10:11:19+00:00"
         },
         {
             "name": "php-stubs/wordpress-stubs",
@@ -2614,6 +2660,54 @@
             "time": "2024-07-20T21:41:07+00:00"
         },
         {
+            "name": "phpstan/extension-installer",
+            "version": "1.4.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phpstan/extension-installer.git",
+                "reference": "85e90b3942d06b2326fba0403ec24fe912372936"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phpstan/extension-installer/zipball/85e90b3942d06b2326fba0403ec24fe912372936",
+                "reference": "85e90b3942d06b2326fba0403ec24fe912372936",
+                "shasum": ""
+            },
+            "require": {
+                "composer-plugin-api": "^2.0",
+                "php": "^7.2 || ^8.0",
+                "phpstan/phpstan": "^1.9.0 || ^2.0"
+            },
+            "require-dev": {
+                "composer/composer": "^2.0",
+                "php-parallel-lint/php-parallel-lint": "^1.2.0",
+                "phpstan/phpstan-strict-rules": "^0.11 || ^0.12 || ^1.0"
+            },
+            "type": "composer-plugin",
+            "extra": {
+                "class": "PHPStan\\ExtensionInstaller\\Plugin"
+            },
+            "autoload": {
+                "psr-4": {
+                    "PHPStan\\ExtensionInstaller\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Composer plugin for automatic installation of PHPStan extensions",
+            "keywords": [
+                "dev",
+                "static analysis"
+            ],
+            "support": {
+                "issues": "https://github.com/phpstan/extension-installer/issues",
+                "source": "https://github.com/phpstan/extension-installer/tree/1.4.3"
+            },
+            "time": "2024-09-04T20:21:43+00:00"
+        },
+        {
             "name": "phpstan/phpdoc-parser",
             "version": "2.2.0",
             "source": {
@@ -2659,6 +2753,59 @@
                 "source": "https://github.com/phpstan/phpdoc-parser/tree/2.2.0"
             },
             "time": "2025-07-13T07:04:09+00:00"
+        },
+        {
+            "name": "phpstan/phpstan",
+            "version": "1.12.33",
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/37982d6fc7cbb746dda7773530cda557cdf119e1",
+                "reference": "37982d6fc7cbb746dda7773530cda557cdf119e1",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.2|^8.0"
+            },
+            "conflict": {
+                "phpstan/phpstan-shim": "*"
+            },
+            "bin": [
+                "phpstan",
+                "phpstan.phar"
+            ],
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "PHPStan - PHP Static Analysis Tool",
+            "keywords": [
+                "dev",
+                "static analysis"
+            ],
+            "support": {
+                "docs": "https://phpstan.org/user-guide/getting-started",
+                "forum": "https://github.com/phpstan/phpstan/discussions",
+                "issues": "https://github.com/phpstan/phpstan/issues",
+                "security": "https://github.com/phpstan/phpstan/security/policy",
+                "source": "https://github.com/phpstan/phpstan-src"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/ondrejmirtes",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/phpstan",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-02-28T20:30:03+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -4802,6 +4949,69 @@
             "time": "2024-11-10T20:33:58+00:00"
         },
         {
+            "name": "szepeviktor/phpstan-wordpress",
+            "version": "v1.3.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/szepeviktor/phpstan-wordpress.git",
+                "reference": "7f8cfe992faa96b6a33bbd75c7bace98864161e7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/szepeviktor/phpstan-wordpress/zipball/7f8cfe992faa96b6a33bbd75c7bace98864161e7",
+                "reference": "7f8cfe992faa96b6a33bbd75c7bace98864161e7",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.2 || ^8.0",
+                "php-stubs/wordpress-stubs": "^4.7 || ^5.0 || ^6.0",
+                "phpstan/phpstan": "^1.10.31",
+                "symfony/polyfill-php73": "^1.12.0"
+            },
+            "require-dev": {
+                "composer/composer": "^2.1.14",
+                "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+                "php-parallel-lint/php-parallel-lint": "^1.1",
+                "phpstan/phpstan-strict-rules": "^1.2",
+                "phpunit/phpunit": "^8.0 || ^9.0",
+                "szepeviktor/phpcs-psr-12-neutron-hybrid-ruleset": "^1.0",
+                "wp-coding-standards/wpcs": "3.1.0 as 2.3.0"
+            },
+            "suggest": {
+                "swissspidy/phpstan-no-private": "Detect usage of internal core functions, classes and methods"
+            },
+            "type": "phpstan-extension",
+            "extra": {
+                "phpstan": {
+                    "includes": [
+                        "extension.neon"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "SzepeViktor\\PHPStan\\WordPress\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "WordPress extensions for PHPStan",
+            "keywords": [
+                "PHPStan",
+                "code analyse",
+                "code analysis",
+                "static analysis",
+                "wordpress"
+            ],
+            "support": {
+                "issues": "https://github.com/szepeviktor/phpstan-wordpress/issues",
+                "source": "https://github.com/szepeviktor/phpstan-wordpress/tree/v1.3.5"
+            },
+            "time": "2024-06-28T22:27:19+00:00"
+        },
+        {
             "name": "theseer/tokenizer",
             "version": "1.2.3",
             "source": {
@@ -5218,5 +5428,5 @@
         "ext-json": "*"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }

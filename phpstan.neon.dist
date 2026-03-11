@@ -1,0 +1,12 @@
+parameters:
+  level: 5
+  paths:
+    - mollie-payments-for-woocommerce.php
+    - lib/
+    - inc/
+    - src/
+  bootstrapFiles:
+    - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
+    - vendor/php-stubs/woocommerce-stubs/woocommerce-packages-stubs.php
+    - vendor/php-stubs/woocommerce-subscriptions-stubs/woocommerce-subscriptions-stubs.php
+

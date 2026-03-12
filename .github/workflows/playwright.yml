@@ -11,9 +11,9 @@ on:
         default: 'critical'
         type: choice
         options:
-          - critical
-          - refund
-          - all
+          - e2e:test:critical
+          - e2e:test:refund
+          - e2e:test:all
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build Mollie package
+    name: Build tested plugin package
     uses: inpsyde/reusable-workflows/.github/workflows/build-and-distribute.yml@main
     secrets:
       GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
@@ -35,19 +35,17 @@ jobs:
       NODE_VERSION: 22
 
   e2e-playwright:
-    name: Run Playwright E2E Tests for Mollie
+    name: Run Playwright E2E Tests
     needs: build
     uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@fix/test-playwright
     with:
-      PLAYWRIGHT_SCRIPT: ${{ format('e2e:test:{0}', inputs.TEST_SUITE) }}
+      PLAYWRIGHT_SCRIPT: ${{ inputs.TEST_SUITE }}
       ARTIFACT_PATH: |
         artifacts/*
         playwright-report/
         test-results/
       ARTIFACT_INCLUDE_HIDDEN_FILES: true
-      COMPOSER_DEPS_INSTALL: false
-      PHP_VERSION: '8.2'
-      NODE_VERSION: 22
+      NODE_VERSION: 24
       PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
       PRE_SCRIPT: |
         # 1. Download and unzip the built plugin

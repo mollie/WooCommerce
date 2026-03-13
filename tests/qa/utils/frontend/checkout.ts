@@ -1,6 +1,9 @@
 /**
  * External dependencies
  */
+/**
+ * External dependencies
+ */
 import { Locator } from '@playwright/test';
 import {
 	expect,
@@ -54,7 +57,7 @@ export class Checkout extends CheckoutBase {
 	mobilepayPhoneInput = () =>
 		this.page.locator( '#billing-phone-mollie_wc_gateway_mobilepay' );
 	bizumPhoneInput = () =>
-    this.page.locator( '#billing-phone-mollie_wc_gateway_bizum' );
+		this.page.locator( '#billing-phone-mollie_wc_gateway_bizum' );
 	paymentOptionLabel = ( slug ) =>
 		this.paymentOptionsContainer().locator(
 			`label[for="radio-control-wc-payment-method-options-mollie_wc_gateway_${ slug }"]`
@@ -218,13 +221,13 @@ export class Checkout extends CheckoutBase {
 			await phoneInput.fill( customer.billing.phone );
 		}
 		if ( gateway.slug === 'bizum' ) {
-    const phoneInput = this.bizumPhoneInput();
-    await expect(
-        phoneInput,
-        'Assert bizum phone input is visible'
-    ).toBeVisible();
-    await phoneInput.fill( '+34612345678' );
-}
+			const phoneInput = this.bizumPhoneInput();
+			await expect(
+				phoneInput,
+				'Assert bizum phone input is visible'
+			).toBeVisible();
+			await phoneInput.fill( '+34612345678' );
+		}
 	};
 
 	/**
@@ -293,7 +296,10 @@ export class Checkout extends CheckoutBase {
 		await this.page.waitForLoadState();
 
 		// Terms and conditions checkbox was removed (found on 04.12.2025)
-		await expect( this.termsAndConditionsCheckbox(), 'Assert terms and conditions checkbox is visible' ).toBeVisible();
+		await expect(
+			this.termsAndConditionsCheckbox(),
+			'Assert terms and conditions checkbox is visible'
+		).toBeVisible();
 		await this.termsAndConditionsCheckbox().check();
 
 		await this.placeOrder();

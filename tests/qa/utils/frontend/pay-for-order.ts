@@ -1,6 +1,9 @@
 /**
  * External dependencies
  */
+/**
+ * External dependencies
+ */
 import {
 	expect,
 	PayForOrder as PayForOrderBase,
@@ -202,13 +205,13 @@ export class PayForOrder extends PayForOrderBase {
 			await phoneInput.fill( customer.billing.phone );
 		}
 		if ( gateway.slug === 'bizum' ) {
-    const phoneInput = this.bizumPhoneInput();
-    await expect(
-        phoneInput,
-        'Assert bizum phone input is visible'
-    ).toBeVisible();
-    await phoneInput.fill( '+34612345678' );
-}
+			const phoneInput = this.bizumPhoneInput();
+			await expect(
+				phoneInput,
+				'Assert bizum phone input is visible'
+			).toBeVisible();
+			await phoneInput.fill( '+34612345678' );
+		}
 
 		await this.payForOrderButton().click();
 	};

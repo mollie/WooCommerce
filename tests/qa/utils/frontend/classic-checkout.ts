@@ -1,6 +1,9 @@
 /**
  * External dependencies
  */
+/**
+ * External dependencies
+ */
 import { Locator } from '@playwright/test';
 import {
 	expect,
@@ -217,13 +220,13 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 			await phoneInput.fill( customer.billing.phone );
 		}
 		if ( gateway.slug === 'bizum' ) {
-    const phoneInput = this.bizumPhoneInput();
-    await expect(
-        phoneInput,
-        'Assert bizum phone input is visible'
-    ).toBeVisible();
-    await phoneInput.fill( '+34612345678' );
-}
+			const phoneInput = this.bizumPhoneInput();
+			await expect(
+				phoneInput,
+				'Assert bizum phone input is visible'
+			).toBeVisible();
+			await phoneInput.fill( '+34612345678' );
+		}
 	};
 
 	/**

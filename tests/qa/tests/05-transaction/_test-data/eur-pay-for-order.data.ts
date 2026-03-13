@@ -706,4 +706,36 @@ export const payForOrderEur: MollieTestData.ShopOrder[] = [
 			status: 'expired',
 		},
 	},
+	{
+                ...baseOrder,
+                testId: 'C4257963',
+                payment: {
+                        gateway: gateways.bizum,
+                        status: 'paid',
+                },
+        },
+        {
+                ...baseOrder,
+                testId: 'C4257964',
+                payment: {
+                        gateway: gateways.bizum,
+                        status: 'failed',
+                },
+        },
+        {
+                ...baseOrder,
+                testId: 'C4257965',
+                payment: {
+                        gateway: gateways.bizum,
+                        status: 'canceled',
+                },
+        },
+        {
+                ...baseOrder,
+                testId: 'C4257966',
+                payment: {
+                        gateway: gateways.bizum,
+                        status: 'expired',
+                },
+        },
 ];

@@ -48,6 +48,7 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 	rivertyPhoneInput = () => this.page.locator( '#billing_phone_riverty' );
 	vippsPhoneInput = () => this.page.locator( '#billing_phone_vipps' );
 	mobilepayPhoneInput = () => this.page.locator( '#billing_phone_mobilepay' );
+	bizumPhoneInput = () => this.page.locator( '#billing_phone_bizum' );
 	paymentOptionListitems = (): Locator =>
 		this.paymentOptionsContainer().locator( 'li' );
 	paymentOptionFee = ( name: string ): Locator =>
@@ -215,6 +216,14 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 			).toBeVisible();
 			await phoneInput.fill( customer.billing.phone );
 		}
+		if ( gateway.slug === 'bizum' ) {
+    const phoneInput = this.bizumPhoneInput();
+    await expect(
+        phoneInput,
+        'Assert bizum phone input is visible'
+    ).toBeVisible();
+    await phoneInput.fill( '+34612345678' );
+}
 	};
 
 	/**

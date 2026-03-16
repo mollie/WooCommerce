@@ -1,9 +1,6 @@
 /**
  * External dependencies
  */
-/**
- * External dependencies
- */
 import {
 	expect,
 	PayForOrder as PayForOrderBase,

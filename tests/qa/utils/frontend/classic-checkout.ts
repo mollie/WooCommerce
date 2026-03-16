@@ -1,9 +1,6 @@
 /**
  * External dependencies
  */
-/**
- * External dependencies
- */
 import { Locator } from '@playwright/test';
 import {
 	expect,

@@ -45,6 +45,7 @@ export class MollieHostedCheckout extends WpPage {
 			.locator( '#verificationCode' );
 	payButton = () => this.page.locator( '#submit-button' );
 	continueButton = () => this.page.locator( 'button[name="submit"]' );
+	
 
 	// Actions
 
@@ -78,6 +79,7 @@ export class MollieHostedCheckout extends WpPage {
 		await this.payButton().click();
 		await this.page.waitForLoadState();
 	};
+	
 
 	payForOrder = async ( payment: MolliePayment ) => {
 		await this.assertPaymentAmount( payment.amount );
@@ -99,6 +101,7 @@ export class MollieHostedCheckout extends WpPage {
 		) {
 			await this.payWithCard( payment.card );
 		}
+		
 
 		await this.page.waitForURL( this.testModeUrlRegex );
 		await this.paymentStatusRadio( payment.status ).click();

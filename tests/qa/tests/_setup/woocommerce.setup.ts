@@ -24,7 +24,7 @@ if ( ! process.env.CI ) {
 	} );
 
 	setup(
-		'Setup Disable Nonce plugin (inactive)',
+		'Setup Disable Nonce plugin (active)',
 		async ( { requestUtils, plugins } ) => {
 			if (
 				! ( await requestUtils.isPluginInstalled(

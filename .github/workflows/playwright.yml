@@ -3,8 +3,6 @@ name: E2E Tests
 on:
   workflow_dispatch:
     inputs:
-      PACKAGE_VERSION:
-        description: 'Package Version'
       TEST_SUITE:
         description: 'Test suite'
         required: true
@@ -30,7 +28,6 @@ jobs:
       GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.DEPLOYBOT_SSH_PUBLIC_KEY }}
       NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_GITHUB_TOKEN_PACKAGES }}
     with:
-      PACKAGE_VERSION: ${{ inputs.PACKAGE_VERSION }}
       PACKAGE_NAME: mollie-payments-for-woocommerce
       NODE_VERSION: 22
 
@@ -47,10 +44,14 @@ jobs:
       ARTIFACT_INCLUDE_HIDDEN_FILES: true
       NODE_VERSION: 24
       PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
+      
       PRE_SCRIPT: |
         # 1. Download and unzip the built plugin
-        gh run download ${{ github.run_id }} -p "mollie-payments-for-woocommerce-*" -D tests/qa/resources/files
-        (cd tests/qa/resources/files && mv mollie-payments-for-woocommerce-*/mollie-payments-for-woocommerce . && zip -r mollie-payments-for-woocommerce.zip mollie-payments-for-woocommerce && rm -rf mollie-payments-for-woocommerce mollie-payments-for-woocommerce-*/)
+        gh run download ${{ github.run_id }} -p "woocommerce-paypal-payments-*" -D tests/qa/resources/files
+        cd tests/qa/resources/files
+        mv woocommerce-paypal-payments-*/woocommerce-paypal-payments .
+        zip -r woocommerce-paypal-payments.zip woocommerce-paypal-payments
+        rm -rf woocommerce-paypal-payments woocommerce-paypal-payments-*/
 
         # 2. Setup wp-env
         npm run e2e:setup:env

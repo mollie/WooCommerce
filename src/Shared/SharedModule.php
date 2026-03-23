@@ -32,9 +32,9 @@ class SharedModule implements ServiceModule
                 return $container->get('properties')->get('Title');
             },
             'shared.plugin_file' => static function (ContainerInterface $container): string {
-                $pluginDir    = wp_normalize_path( WP_PLUGIN_DIR );
-                $pluginMainFile= $container->get('properties')->pluginMainFile();
-                return str_replace($pluginDir . '/', '', $pluginMainFile );
+                $pluginDir = wp_normalize_path(WP_PLUGIN_DIR);
+                $pluginMainFile = $container->get('properties')->pluginMainFile();
+                return str_replace($pluginDir . '/', '', $pluginMainFile);
             },
             'shared.plugin_url' => static function (ContainerInterface $container): string {
                 return $container->get('properties')->baseUrl();

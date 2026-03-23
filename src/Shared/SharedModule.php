@@ -14,7 +14,6 @@ use Mollie\Psr\Log\LoggerInterface as Logger;
 class SharedModule implements ServiceModule
 {
     use ModuleClassNameIdTrait;
-    public const PLUGIN_ID = 'mollie-payments-for-woocommerce';
     public function services(): array
     {
         return ['shared.plugin_id' => static function (ContainerInterface $container): string {
@@ -24,8 +23,10 @@ class SharedModule implements ServiceModule
             return $container->get('properties')->get('version');
         }, 'shared.plugin_title' => static function (ContainerInterface $container): string {
             return $container->get('properties')->get('Title');
-        }, 'shared.plugin_file' => static function (): string {
-            return plugin_basename(self::PLUGIN_ID . '/' . self::PLUGIN_ID . '.php');
+        }, 'shared.plugin_file' => static function (ContainerInterface $container): string {
+            $pluginDir = wp_normalize_path(\WP_PLUGIN_DIR);
+            $pluginMainFile = $container->get('properties')->pluginMainFile();
+            return str_replace($pluginDir . '/', '', $pluginMainFile);
         }, 'shared.plugin_url' => static function (ContainerInterface $container): string {
             return $container->get('properties')->baseUrl();
         }, 'shared.plugin_path' => static function (ContainerInterface $container): string {

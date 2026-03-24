@@ -43,17 +43,25 @@ class OrderLinesMiddleware implements RequestMiddlewareInterface
      */
     public function __invoke(array $requestData, WC_Order $order, $context, $next): array
     {
-        $methodId = $requestData['method'] ?? '';
-        $optionName = 'mollie_wc_gateway_' . $methodId . '_settings';
-        $hideOrderLines = get_option($optionName, false)['hide_order_lines'] === 'yes';
-
-        if (!$hideOrderLines) {
-            if ($context === 'payment') {
-                $requestData['lines'] = $this->paymentLines->order_lines($order);
-            } else {
-                $requestData['lines'] = $this->orderLines->order_lines($order);
+        if ($context === 'payment') {
+            $methodId = $requestData['method'] ?? '';
+            $optionName = 'mollie_wc_gateway_' . $methodId . '_settings';
+            $hideOrderLines = get_option($optionName, false)['hide_order_lines'] === 'yes';
+            if ($hideOrderLines) {
+                /**
+                 * Merchant has configured to hide order lines via payment method settings.
+                 */
+                return $next($requestData, $order, $context);
             }
+            $requestData['lines'] = $this->paymentLines->order_lines($order);
+            return $next($requestData, $order, $context);
         }
+
+        /**
+         * lines are required when Orders API is in use.
+         * @see https://docs.mollie.com/reference/create-order
+         */
+        $requestData['lines'] = $this->orderLines->order_lines($order);
         return $next($requestData, $order, $context);
     }
 }

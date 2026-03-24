@@ -208,7 +208,6 @@ class AddressMiddleware implements RequestMiddlewareInterface
         return $shippingAddress;
     }
 
-
     /**
      * Check if minimal billing address should be added.
      *

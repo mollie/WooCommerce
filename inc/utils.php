@@ -139,7 +139,6 @@ function mollieWooCommerceIsDropdownEnabled($gatewaySettingsName)
     return $optionValue == 'yes';
 }
 
-
 /**
  * Check if is a Mollie gateway
  * @param $gateway string

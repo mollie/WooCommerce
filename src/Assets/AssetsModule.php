@@ -6,17 +6,12 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Assets;
 
-use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
-use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Buttons\ApplePayButton\DataToAppleButtonScripts;
 use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPal;
-use Mollie\WooCommerce\Components\AcceptedLocaleValuesDictionary;
 use Mollie\WooCommerce\Components\ComponentDataService;
-use Mollie\WooCommerce\Settings\Settings;
-use Mollie\WooCommerce\Shared\Data;
 use Psr\Container\ContainerInterface;
 
 class AssetsModule implements ExecutableModule, ServiceModule
@@ -425,9 +420,6 @@ class AssetsModule implements ExecutableModule, ServiceModule
      */
     protected function setupModuleActions(ContainerInterface $container): void
     {
-        /** @var Data */
-        $dataService = $container->get('settings.data_helper');
-        $hasBlocksEnabled = $dataService->isBlockPluginActive();
         /** @var string */
         $pluginVersion = $container->get('shared.plugin_version');
         /** @var string */
@@ -448,7 +440,7 @@ class AssetsModule implements ExecutableModule, ServiceModule
 
         add_action(
             'woocommerce_init',
-            function () use ($container, $hasBlocksEnabled, $settingsHelper, $pluginUrl, $pluginPath, $dataService) {
+            function () use ($container, $pluginUrl, $pluginPath) {
                 self::registerFrontendScripts($pluginUrl, $pluginPath);
 
                 $this->registerBlockScripts($pluginUrl, $pluginPath, $container);
@@ -461,7 +453,6 @@ class AssetsModule implements ExecutableModule, ServiceModule
                     if(!mollieWooCommerceIsCheckoutContext()) {
                         return;
                     }
-                    /** @var ComponentDataService */
                     $componentDataService = $container->get('components.data_service');
                     assert($componentDataService instanceof ComponentDataService);
                     $this->enqueueComponentsAssets($componentDataService);
@@ -476,12 +467,9 @@ class AssetsModule implements ExecutableModule, ServiceModule
                     return $dependencies;
                 });
 
-                /** @var array */
-                $gatewayInstances = $container->get('__deprecated.gateway_helpers');
-
                 add_action(
                     'wp_enqueue_scripts',
-                    function () use ($dataService, $gatewayInstances, $container, $pluginUrl, $pluginPath) {
+                    function () use ($container, $pluginUrl, $pluginPath) {
                         if (!wp_script_is('mollie_block_index', 'registered')) {
                             $this->registerBlockScripts($pluginUrl, $pluginPath, $container);
                         }
@@ -491,7 +479,7 @@ class AssetsModule implements ExecutableModule, ServiceModule
         );
         add_action(
             'admin_init',
-            function () use ($container, $hasBlocksEnabled, $pluginVersion, $dataService, $pluginUrl) {
+            function () use ($container, $pluginVersion, $pluginUrl) {
                 if (is_admin()) {
                     global $current_section;
                     wp_register_script(

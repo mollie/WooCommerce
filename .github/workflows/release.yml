@@ -5,6 +5,26 @@ on:
       PACKAGE_VERSION:
         description: 'Package Version'
         required: false
+  push:
+    branches: [ 'dev/**' ]
+    paths:
+      - 'inc/**'
+      - 'lib/**'
+      - 'src/**'
+      - 'pluginEnvironmentChecker/**'
+      - 'public/**'
+      - 'resources/**'
+      - '.distignore'
+      - 'composer.*'
+      - 'package*'
+      - 'readme.txt'
+      - 'webpack.config.js'
+      - '*.php'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   create_archive:
     uses: inpsyde/reusable-workflows/.github/workflows/build-and-distribute.yml@main

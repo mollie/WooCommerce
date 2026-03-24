@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
-use Mollie\WooCommerce\Payment\OrderLines;
-use Mollie\WooCommerce\Payment\PaymentLines;
+use Mollie\WooCommerce\Payment\LineItems\LineItemProvider;
 use WC_Order;
 
 /**
@@ -18,21 +17,16 @@ use WC_Order;
 class OrderLinesMiddleware implements RequestMiddlewareInterface
 {
     /**
-     * @var OrderLines The order lines handler.
+     * @var LineItemProvider The order lines handler (Orders API context).
      */
-    private OrderLines $orderLines;
+    private LineItemProvider $orderLines;
 
     /**
-     * @var PaymentLines The payment lines handler.
+     * @var LineItemProvider The payment lines handler (Payments API context).
      */
-    private PaymentLines $paymentLines;
+    private LineItemProvider $paymentLines;
 
-    /**
-     * OrderLinesMiddleware constructor.
-     *
-     * @param OrderLines $orderLines The order lines handler.
-     */
-    public function __construct(OrderLines $orderLines, PaymentLines $paymentLines)
+    public function __construct(LineItemProvider $orderLines, LineItemProvider $paymentLines)
     {
         $this->orderLines = $orderLines;
         $this->paymentLines = $paymentLines;
@@ -55,11 +49,10 @@ class OrderLinesMiddleware implements RequestMiddlewareInterface
 
         if (!$hideOrderLines) {
             if ($context === 'payment') {
-                $orderLines = $this->paymentLines->order_lines($order);
+                $requestData['lines'] = $this->paymentLines->order_lines($order);
             } else {
-                $orderLines = $this->orderLines->order_lines($order);
+                $requestData['lines'] = $this->orderLines->order_lines($order);
             }
-            $requestData['lines'] = $orderLines['lines'];
         }
         return $next($requestData, $order, $context);
     }

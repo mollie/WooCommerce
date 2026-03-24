@@ -2,17 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Mollie\WooCommerce\Payment;
+namespace Mollie\WooCommerce\Payment\LineItems;
 
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\Shared\Data;
 use WC_Order;
 use WC_Order_Item;
-use WC_Order_Item_Fee;
 use WC_Tax;
 
-class PaymentLines
+class OrderLines implements LineItemProvider
 {
     /**
      * Formatted order lines.
@@ -57,7 +56,7 @@ class PaymentLines
      *
      * @return array
      */
-    public function order_lines($order)
+    public function order_lines(WC_Order $order): array
     {
         $this->order_lines = [];
         $this->order = $order;
@@ -68,9 +67,7 @@ class PaymentLines
         $this->process_gift_cards();
         $this->process_mismatch();
 
-        return  [
-            'lines' => $this->get_order_lines(),
-        ];
+        return $this->get_order_lines();
     }
 
     private function process_mismatch()
@@ -87,7 +84,7 @@ class PaymentLines
         }
         $mismatch =  [
             'type' => $orderTotalDiff > 0 ? 'surcharge' : 'discount',
-            'description' => __('Rounding difference', 'mollie-payments-for-woocommerce'),
+            'name' => __('Rounding difference', 'mollie-payments-for-woocommerce'),
             'quantity' => 1,
             'vatRate' => 0,
             'unitPrice' =>  [
@@ -102,7 +99,11 @@ class PaymentLines
                 'currency' => $this->currency,
                 'value' => $this->dataHelper->formatCurrencyValue(0, $this->currency),
             ],
+            'metadata' =>  [
+                'order_item_id' => 'rounding_diff',
+            ],
         ];
+
         $this->order_lines[] = $mismatch;
     }
 
@@ -135,35 +136,41 @@ class PaymentLines
                 }
 
                 $this->currency = $this->dataHelper->getOrderCurrency($this->order);
+                $vatRate = round($this->get_item_vatRate($cart_item, $product), 2);
+                $wcTotalValue = $this->get_item_total_amount($cart_item);
+                $wcUnitPrice = $this->get_item_price($cart_item);
 
-                $vatRate = 0;
-                if ($cart_item['line_tax'] > 0 && $cart_item['line_total'] > 0) {
-                    $vatRate = round($cart_item['line_tax'] / $cart_item['line_total'], 4) * 100;
-                }
+                // Calculate Mollie prices, they expect price including VAT
+                $mollieTotal = $this->getMolliePrice($wcTotalValue, $vatRate);
+                $mollieUnit = $this->getMolliePrice($wcUnitPrice, $vatRate);
 
                 $mollie_order_item =  [
                     'sku' => $this->get_item_reference($product),
                     'type' => ($product instanceof \WC_Product && $product->is_virtual()) ? 'digital' : 'physical',
-                    'description' => $this->get_item_name($cart_item),
+                    'name' => $this->get_item_name($cart_item),
                     'quantity' => $this->get_item_quantity($cart_item),
                     'vatRate' => $vatRate,
                     'unitPrice' =>  [
                         'currency' => $this->currency,
-                        'value' => $this->dataHelper->formatCurrencyValue($this->get_item_price($cart_item), $this->currency),
+                        'value' => $this->dataHelper->formatCurrencyValue($mollieUnit['grossPrice'], $this->currency),
                     ],
                     'totalAmount' =>  [
                         'currency' => $this->currency,
-                        'value' => $this->dataHelper->formatCurrencyValue($this->get_item_total_amount($cart_item), $this->currency),
+                        'value' => $this->dataHelper->formatCurrencyValue($mollieTotal['grossPrice'], $this->currency),
                     ],
                     'vatAmount' =>
                          [
                             'currency' => $this->currency,
-                            'value' => $this->dataHelper->formatCurrencyValue($this->get_item_tax_amount($cart_item), $this->currency),
+                            'value' => $this->dataHelper->formatCurrencyValue($mollieTotal['vatAmount'], $this->currency),
                         ],
                     'discountAmount' =>
                          [
                             'currency' => $this->currency,
                             'value' => $this->dataHelper->formatCurrencyValue($this->get_item_discount_amount($cart_item), $this->currency),
+                        ],
+                    'metadata' =>
+                        [
+                            'order_item_id' => $cart_item->get_id(),
                         ],
                     'productUrl' => ($product instanceof \WC_Product) ? $product->get_permalink() : null,
                 ];
@@ -185,7 +192,7 @@ class PaymentLines
                 if ($paymentMethod === 'mollie_wc_gateway_' . Constants::VOUCHER && $product instanceof \WC_Product) {
                     $categories = Voucher::getCategoriesForProduct($product);
                     if ($categories) {
-                        $mollie_order_item['categories'] = $categories;
+                        $mollie_order_item['category'] = array_shift($categories);
                     }
                 }
                 $this->order_lines[] = $mollie_order_item;
@@ -211,7 +218,7 @@ class PaymentLines
                 }
                 $shipping = [
                     'type' => 'shipping_fee',
-                    'description' => $shipping_method->get_name() ?: __('Shipping', 'mollie-payments-for-woocommerce'),
+                    'name' => $shipping_method->get_name() ?: __('Shipping', 'mollie-payments-for-woocommerce'),
                     'quantity' => 1,
                     'vatRate' => $vatRate,
                     'unitPrice' =>  [
@@ -225,6 +232,9 @@ class PaymentLines
                     'vatAmount' =>  [
                         'currency' => $this->currency,
                         'value' => $this->dataHelper->formatCurrencyValue($shipping_method->get_total_tax(), $this->currency),
+                    ],
+                    'metadata' => [
+                        'order_item_id' => $shipping_method->get_id(),
                     ],
                 ];
 
@@ -242,7 +252,6 @@ class PaymentLines
     {
         if (! empty($this->order->get_items('fee'))) {
             foreach ($this->order->get_items('fee') as $cart_fee) {
-                assert($cart_fee instanceof WC_Order_Item_Fee);
                 if ($cart_fee['tax_status'] === 'taxable') {
                     // Calculate tax rate.
                     $tmp_rates = WC_Tax::get_rates($cart_fee['tax_class']);
@@ -271,7 +280,7 @@ class PaymentLines
 
                 $fee =  [
                     'type' => $cart_fee_total > 0 ? 'surcharge' : 'discount',
-                    'description' => $cart_fee['name'],
+                    'name' => $cart_fee['name'],
                     'quantity' => 1,
                     'vatRate' => $this->dataHelper->formatCurrencyValue($cart_fee_vat_rate, $this->currency),
                     'unitPrice' =>  [
@@ -285,6 +294,9 @@ class PaymentLines
                     'vatAmount' =>  [
                         'currency' => $this->currency,
                         'value' => $this->dataHelper->formatCurrencyValue($cart_fee_tax_amount, $this->currency),
+                    ],
+                    'metadata' =>  [
+                        'order_item_id' => $cart_fee->get_id(),
                     ],
                 ];
 
@@ -304,7 +316,7 @@ class PaymentLines
             foreach ($this->order->get_items('gift_card') as $cart_gift_card) {
                 $gift_card = [
                     'type' => 'gift_card',
-                    'description' => $cart_gift_card->get_name(),
+                    'name' => $cart_gift_card->get_name(),
                     'unitPrice' => [
                         'currency' => $this->currency,
                         'value' =>  $this->dataHelper->formatCurrencyValue(-$cart_gift_card->get_amount(), $this->currency),
@@ -357,6 +369,41 @@ class PaymentLines
     private function get_item_tax_amount($cart_item)
     {
         return $cart_item['line_tax'];
+    }
+
+    /**
+     * Calculate item tax percentage.
+     *
+     * @since  1.0
+     * @access private
+     *
+     * @param  WC_Order_Item  $cart_item Cart item.
+     * @param  null|false|\WC_Product $product   Product object.
+     *
+     * @return integer $item_vatRate Item tax percentage formatted for Mollie Orders API.
+     */
+    private function get_item_vatRate($cart_item, $product)
+    {
+        if ($product && $product->is_taxable() && $cart_item['line_subtotal_tax'] > 0) {
+            // Calculate tax rate.
+            $_tax = new WC_Tax();
+            $tmp_rates = $_tax->get_rates($product->get_tax_class());
+            $item_vatRate = 0;
+            foreach ($tmp_rates as $rate) {
+                if (isset($rate['rate'])) {
+                    if ($rate['compound'] === "yes") {
+                        $compoundRate = round($item_vatRate * ($rate['rate'] / 100)) + $rate['rate'];
+                        $item_vatRate += $compoundRate;
+                        continue;
+                    }
+                    $item_vatRate += $rate['rate'];
+                }
+            }
+        } else {
+            $item_vatRate = 0;
+        }
+
+        return $item_vatRate;
     }
 
     /**
@@ -451,5 +498,22 @@ class PaymentLines
     private function get_item_total_amount($cart_item)
     {
         return $cart_item['line_total'] + $cart_item['line_tax'];
+    }
+
+    /**
+     * Build price data for Mollie API.
+     *
+     * @param float $wcPrice
+     * @param float $vatRate
+     * @return float[]
+     */
+    private function getMolliePrice(float $wcPrice, float $vatRate): array
+    {
+        $grossPrice = wc_prices_include_tax() ? $wcPrice : $wcPrice * (1 + ($vatRate / 100));
+
+        return [
+            'grossPrice' => $grossPrice,
+            'vatAmount' => $grossPrice * ($vatRate / (100 + $vatRate)),
+        ];
     }
 }

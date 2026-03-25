@@ -47,11 +47,11 @@ jobs:
       
       PRE_SCRIPT: |
         # 1. Download and unzip the built plugin
-        gh run download ${{ github.run_id }} -p "woocommerce-paypal-payments-*" -D tests/qa/resources/files
+        gh run download ${{ github.run_id }} -p "mollie-payments-for-woocommerce-*" -D tests/qa/resources/files
         cd tests/qa/resources/files
-        mv woocommerce-paypal-payments-*/woocommerce-paypal-payments .
-        zip -r woocommerce-paypal-payments.zip woocommerce-paypal-payments
-        rm -rf woocommerce-paypal-payments woocommerce-paypal-payments-*/
+        mv mollie-payments-for-woocommerce-*/mollie-payments-for-woocommerce .
+        zip -r mollie-payments-for-woocommerce.zip mollie-payments-for-woocommerce
+        rm -rf mollie-payments-for-woocommerce mollie-payments-for-woocommerce-*/
 
         # 2. Setup wp-env
         npm run e2e:setup:env
@@ -81,3 +81,4 @@ jobs:
     secrets:
       ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}
       NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_GITHUB_TOKEN_PACKAGES }}
+      

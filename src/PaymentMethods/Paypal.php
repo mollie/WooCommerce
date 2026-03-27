@@ -72,7 +72,7 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
                     'Mollie PayPal Button Settings',
                     'mollie-payments-for-woocommerce'
                 ),
-                'default' => 'buy-gold',
+                'default' => 'en-buy-pill-golden',
                 'options' => $this->buttonOptions(),
             ],
             'mollie_paypal_button_minimum_amount' => [

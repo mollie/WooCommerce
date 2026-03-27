@@ -10,6 +10,7 @@ use Mollie\Inpsyde\Modularity\Module\ExecutableModule;
 use Mollie\Inpsyde\Modularity\Module\ExtendingModule;
 use Mollie\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Mollie\Inpsyde\Modularity\Module\ServiceModule;
+use Mollie\Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\Inpsyde\PaymentGateway\PaymentMethodServiceProviderTrait;
 use Mollie\WooCommerce\BlockService\CheckoutBlockService;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDirectHandler;
@@ -64,14 +65,15 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             $maybeEnablegatewayHelper = new MaybeDisableGateway();
             return $maybeEnablegatewayHelper->maybeDisableMealVoucherGateway($gateways);
         });
-        add_filter('woocommerce_payment_gateways', static function ($gateways) use ($container) {
+        add_action('woocommerce_init', static function () use ($container) {
+            $gateways = WC()->payment_gateways()->payment_gateways();
             $deprecatedGatewayHelpers = $container->get('__deprecated.gateway_helpers');
             foreach ($gateways as $gateway) {
                 $isMolliegateway = is_string($gateway) && strpos($gateway, 'mollie_wc_gateway_') !== \false || is_object($gateway) && strpos($gateway->id, 'mollie_wc_gateway_') !== \false;
                 if (!$isMolliegateway) {
                     continue;
                 }
-                assert($gateway instanceof \Mollie\Inpsyde\PaymentGateway\PaymentGateway);
+                assert($gateway instanceof PaymentGateway);
                 // Add subscription filters after payment gateways are loaded
                 $isSubscriptiongateway = $gateway->supports('subscriptions');
                 if ($isSubscriptiongateway && method_exists($deprecatedGatewayHelpers[$gateway->id], 'addSubscriptionFilters')) {
@@ -89,8 +91,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
                 $isSubscriptionPaymentService = $container->get('gateway.hooks.isSubscriptionPayment');
                 $isSubscriptionPaymentService($gateway);
             }
-            return $gateways;
-        }, 30);
+        });
         // Disable SEPA as payment option in WooCommerce checkout
         add_filter('woocommerce_available_payment_gateways', [$this, 'disableSEPAInCheckout'], 11, 1);
         // Disable Mollie methods on some pages

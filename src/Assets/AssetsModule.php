@@ -232,6 +232,7 @@ class AssetsModule implements ExecutableModule, ServiceModule
 
         /**
          * Ensure localized data
+         * @var MollieCheckoutBlocksSupport
          */
         $blockData = $container->get(MollieCheckoutBlocksSupport::class);
         $blockData->localizeWCBlocksData($container);

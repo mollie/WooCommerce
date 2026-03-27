@@ -33,7 +33,6 @@ module.exports = (env = {}, argv = {}) => {
             'gatewaySurcharge.min': './resources/js/src/features/surcharge/gatewaySurcharge.js',
             'mollie-components.min': './resources/js/src/checkout/legacy/components/mollie-components.js',
             'mollieBlockIndex.min': './resources/js/src/checkout/blocks/mollieBlockIndex.js',
-            'applepayButtonBlock.min': './resources/js/src/checkout/blocks/applepayButtonBlock.js',
             'rivertyCountryPlaceholder.min':
                 './resources/js/src/features/regional/rivertyCountryPlaceholder.js',
             'mollie-settings-2024.min':

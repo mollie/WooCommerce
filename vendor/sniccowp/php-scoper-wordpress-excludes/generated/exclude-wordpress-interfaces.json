@@ -1,0 +1,15 @@
+[
+    "PHPMailer\\PHPMailer\\OAuthTokenProvider",
+    "SimplePie\\Cache\\Base",
+    "SimplePie\\Cache\\DataCache",
+    "SimplePie\\Cache\\NameFilter",
+    "SimplePie\\HTTP\\Client",
+    "SimplePie\\HTTP\\Response",
+    "SimplePie\\RegistryAware",
+    "SimplePie_Cache_Base",
+    "WpOrg\\Requests\\Auth",
+    "WpOrg\\Requests\\Capability",
+    "WpOrg\\Requests\\HookManager",
+    "WpOrg\\Requests\\Proxy",
+    "WpOrg\\Requests\\Transport"
+]

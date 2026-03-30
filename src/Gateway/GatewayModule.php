@@ -81,39 +81,40 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             return $maybeEnablegatewayHelper->maybeDisableMealVoucherGateway($gateways);
         });
 
-        add_filter(
-            'woocommerce_payment_gateways',
-            static function ($gateways) use ($container) {
-                $deprecatedGatewayHelpers = $container->get('__deprecated.gateway_helpers');
-                foreach ($gateways as $gateway) {
-                    $isMolliegateway = is_string($gateway) && strpos($gateway, 'mollie_wc_gateway_') !== false
+        add_action('woocommerce_init', static function () use ($container) {
+            $gateways = WC()->payment_gateways()->payment_gateways();
+            $deprecatedGatewayHelpers = $container->get('__deprecated.gateway_helpers');
+            foreach ($gateways as $gateway) {
+                $isMolliegateway = is_string($gateway) && strpos($gateway, 'mollie_wc_gateway_') !== false
                     || is_object($gateway) && strpos($gateway->id, 'mollie_wc_gateway_') !== false;
-                    if (!$isMolliegateway) {
-                        continue;
-                    }
-                    assert($gateway instanceof \Inpsyde\PaymentGateway\PaymentGateway);
-                    // Add subscription filters after payment gateways are loaded
-                    $isSubscriptiongateway = $gateway->supports('subscriptions');
-                    if ($isSubscriptiongateway && method_exists($deprecatedGatewayHelpers[$gateway->id], 'addSubscriptionFilters')) {
-                        $deprecatedGatewayHelpers[$gateway->id]->addSubscriptionFilters($gateway);
-                    }
-
-                    // Add payment instructions
-                    $displayInstructionsService = $container->get('gateway.hooks.displayInstructions');
-                    $displayInstructionsService($gateway);
-                    // Add thankyou page actions for gateway
-                    $thankyouPageService = $container->get('gateway.hooks.thankyouPage');
-                    if (!has_action('woocommerce_thankyou_' . $gateway->id)) {
-                        $thankyouPageService($gateway);
-                    }
-                    // Add subscription payment hooks
-                    $isSubscriptionPaymentService = $container->get('gateway.hooks.isSubscriptionPayment');
-                    $isSubscriptionPaymentService($gateway);
+                if (!$isMolliegateway) {
+                    continue;
                 }
-                return $gateways;
-            },
-            30
-        );
+                assert($gateway instanceof PaymentGateway);
+                // Add subscription filters after payment gateways are loaded
+                $isSubscriptiongateway = $gateway->supports('subscriptions');
+                if (
+                    $isSubscriptiongateway && method_exists(
+                        $deprecatedGatewayHelpers[$gateway->id],
+                        'addSubscriptionFilters'
+                    )
+                ) {
+                    $deprecatedGatewayHelpers[$gateway->id]->addSubscriptionFilters($gateway);
+                }
+
+                // Add payment instructions
+                $displayInstructionsService = $container->get('gateway.hooks.displayInstructions');
+                $displayInstructionsService($gateway);
+                // Add thankyou page actions for gateway
+                $thankyouPageService = $container->get('gateway.hooks.thankyouPage');
+                if (!has_action('woocommerce_thankyou_' . $gateway->id)) {
+                    $thankyouPageService($gateway);
+                }
+                // Add subscription payment hooks
+                $isSubscriptionPaymentService = $container->get('gateway.hooks.isSubscriptionPayment');
+                $isSubscriptionPaymentService($gateway);
+            }
+        });
 
         // Disable SEPA as payment option in WooCommerce checkout
         add_filter(

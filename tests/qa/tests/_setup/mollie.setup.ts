@@ -8,6 +8,7 @@ import {
 	MollieSettings,
 	ShopConfig,
 	shopSettings,
+	enableBizumPlugin,
 } from '../../resources';
 
 type EnvConfig = {
@@ -84,4 +85,7 @@ configureEnv( {
 		cleanDb: true,
 		apiKeys: mollieApiKeys.default,
 	},
+} );
+setup( 'setup:bizum; Activate Bizum feature flag', async ( { utils } ) => {
+    await utils.installAndActivateBizum();
 } );

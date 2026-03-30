@@ -46,7 +46,9 @@ export const surchargeFixed: MollieTestData.SurchargeTestsGroup = {
 		{
 			testId: 'C4237551',
 			gateway: 'swish',
+			
 			expectedFeeText: '+ kr 10 fee might apply (excl. VAT)',
 		},
+		{ testId: 'C4257946', gateway: 'bizum' },
 	],
 };

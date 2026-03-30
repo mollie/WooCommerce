@@ -48,5 +48,6 @@ export const surchargeFixedAndPercentage: MollieTestData.SurchargeTestsGroup = {
 			gateway: 'swish',
 			expectedFeeText: '+ kr 10 + 10% fee might apply (excl. VAT)',
 		},
+		{ testId: 'C4257952', gateway: 'bizum' },
 	],
 };

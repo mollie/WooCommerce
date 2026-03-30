@@ -8,6 +8,16 @@ use Mollie\WooCommerce\Buttons\AbstractExpressButton;
 
 class ApplePayExpressButton extends AbstractExpressButton
 {
+    /**
+     * @var AppleAjaxRequests
+     */
+    protected $ajaxRequests;
+
+    public function __construct(AppleAjaxRequests $ajaxRequests)
+    {
+        $this->ajaxRequests = $ajaxRequests;
+    }
+
     public function getId(): string
     {
         return 'applepay';
@@ -22,6 +32,11 @@ class ApplePayExpressButton extends AbstractExpressButton
     {
         return !empty($_SERVER['HTTPS']) &&
             $this->isEnabledInSettings();
+    }
+
+    public function getAjaxHandlers(): array
+    {
+        return $this->ajaxRequests->getHandlers();
     }
 
     public function getScriptData(): array

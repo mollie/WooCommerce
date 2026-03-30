@@ -93,6 +93,10 @@ const selectors = {
 	} ),
     getComponentContainer: ( state, gateway ) =>
         state.componentContainers[ gateway ] || null,
+
+    // Server-hydrated config selectors
+    getIsOrderPayPage: (state) => state.isOrderPayPage,
+    getComponentConfig: (state) => state.componentConfig,
 };
 
 export default selectors;

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
+use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPal;
+use Psr\Container\ContainerInterface;
+
 class Paypal extends AbstractPaymentMethod implements PaymentMethodI
 {
     protected function getConfig(): array
@@ -96,6 +99,11 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
     public function isExpressCheckoutEnabled(): bool
     {
         return $this->getProperty('mollie_paypal_button_enabled_cart') === 'yes';
+    }
+
+    protected function blocksExpressData(ContainerInterface $container): ?array
+    {
+        return $container->get(DataToPayPal::class)->paypalbuttonScriptData(true);
     }
 
     private function buttonOptions(): array

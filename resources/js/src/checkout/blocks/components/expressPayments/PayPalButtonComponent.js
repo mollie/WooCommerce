@@ -1,24 +1,16 @@
+import {useState} from '@wordpress/element';
+import {select} from '@wordpress/data';
 
-import { useState } from '@wordpress/element';
-import { select } from '@wordpress/data';
-
-export const PayPalButtonComponent = ({ buttonAttributes = {} }) => {
+export const PayPalButtonComponent = ({buttonData, buttonAttributes = {}}) => {
 
     const [isProcessing, setIsProcessing] = useState(false);
 
-    let paypalData = window.molliePayPalBlockData ||
-        window.mollieBlockData?.molliePayPalBlockDataCart;
-
-    if (!paypalData || paypalData.length === 0) {
-        paypalData = window.mollieBlockData?.gatewayData?.paypalButtonData;
-    }
-
-    if (!paypalData) {
+    if (!buttonData) {
         console.warn('Mollie PayPal: No button data available');
         return null;
     }
 
-    const { ajaxUrl, buttonImageUrl, minFee = 0 } = paypalData;
+    const {ajaxUrl, buttonImageUrl, minFee = 0, nonce: dataNonce} = buttonData;
 
     const cartStore = select('wc/store/cart');
     const cartTotal = cartStore?.getCartTotals()?.total_price /
@@ -38,7 +30,7 @@ export const PayPalButtonComponent = ({ buttonAttributes = {} }) => {
         nonce = wooNonceElement.value;
     }
     if (!nonce) {
-        nonce = paypalData.nonce;
+        nonce = dataNonce;
     }
 
     const handlePayPalClick = async (event) => {

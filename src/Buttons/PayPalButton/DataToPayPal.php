@@ -41,7 +41,6 @@ class DataToPayPal
             return $this->dataForCartPage($minAmount);
         }
 
-
         return [];
     }
 

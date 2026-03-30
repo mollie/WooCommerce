@@ -34,6 +34,7 @@ class PayPalExpressButton extends AbstractExpressButton
         bool $enabledInProduct,
         bool $enabledInCart
     ) {
+
         $this->ajaxRequests = $ajaxRequests;
         $this->dataPaypal = $dataPaypal;
         $this->enabledInProduct = $enabledInProduct;
@@ -110,7 +111,8 @@ class PayPalExpressButton extends AbstractExpressButton
             $product = wc_get_product(get_the_id());
 
             // Don't show for subscriptions
-            if (!$product ||
+            if (
+                !$product ||
                 $product->is_type('subscription') ||
                 $product instanceof \WC_Product_Variable_Subscription
             ) {
@@ -143,7 +145,8 @@ class PayPalExpressButton extends AbstractExpressButton
 
             // Don't show for subscriptions
             foreach ($cart->get_cart_contents() as $product) {
-                if ($product['data']->is_type('subscription') ||
+                if (
+                    $product['data']->is_type('subscription') ||
                     $product['data'] instanceof \WC_Product_Subscription_Variation
                 ) {
                     return;

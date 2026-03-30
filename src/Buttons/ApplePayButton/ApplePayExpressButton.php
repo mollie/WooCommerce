@@ -44,7 +44,7 @@ class ApplePayExpressButton extends AbstractExpressButton
         return [
             'shop' => ['countryCode' => $this->getCountryCode()],
             'ajaxUrl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('mollie_applepay')
+            'nonce' => wp_create_nonce('mollie_applepay'),
         ];
     }
 }

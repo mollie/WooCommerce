@@ -639,9 +639,4 @@ class Data
         }
         return $result;
     }
-    public function mollieApplePayBlockDataCart()
-    {
-        $dataToScripts = new DataToAppleButtonScripts();
-        return $dataToScripts->applePayScriptData(\true);
-    }
 }

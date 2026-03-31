@@ -3,8 +3,9 @@
 declare (strict_types=1);
 namespace Mollie\WooCommerce\PaymentMethods;
 
-use Mollie\WooCommerce\Activation\ActivationModule;
+use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
+use Mollie\Psr\Container\ContainerInterface;
 class Creditcard extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod implements \Mollie\WooCommerce\PaymentMethods\PaymentMethodI
 {
     protected function getConfig(): array
@@ -23,6 +24,18 @@ class Creditcard extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMetho
     {
         $componentFields = $this->includeMollieComponentsFields($generalFormFields);
         return $this->includeCreditCardIconSelector($componentFields);
+    }
+    public function blocksData(ContainerInterface $container): array
+    {
+        $data = parent::blocksData($container);
+        /** @var Data $dataHelper */
+        $dataHelper = $container->get('settings.data_helper');
+        $lockIcon = file_get_contents($dataHelper->pluginPath() . '/public/images/lock-icon.svg');
+        $mollieLogo = file_get_contents($dataHelper->pluginPath() . '/public/images/mollie-logo.svg');
+        $description = __('Secure payments provided by', 'mollie-payments-for-woocommerce');
+        $data['issuers'] = \false;
+        $data['componentsDescription'] = "{$lockIcon} {$description} {$mollieLogo}";
+        return $data;
     }
     public function hasPaymentFields(): bool
     {

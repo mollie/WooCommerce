@@ -40,12 +40,19 @@ class PayPalAjaxRequests
      */
     public function bootstrapAjaxRequest()
     {
-        add_action('wp_ajax_' . \Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::CREATE_ORDER, [$this, 'createWcOrder']);
-        add_action('wp_ajax_nopriv_' . \Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::CREATE_ORDER, [$this, 'createWcOrder']);
-        add_action('wp_ajax_' . \Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::CREATE_ORDER_CART, [$this, 'createWcOrderFromCart']);
-        add_action('wp_ajax_nopriv_' . \Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::CREATE_ORDER_CART, [$this, 'createWcOrderFromCart']);
-        add_action('wp_ajax_' . \Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::UPDATE_AMOUNT, [$this, 'updateAmount']);
-        add_action('wp_ajax_nopriv_' . \Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::UPDATE_AMOUNT, [$this, 'updateAmount']);
+        foreach ($this->getHandlers() as $action => $handler) {
+            add_action('wp_ajax_' . $action, $handler);
+            add_action('wp_ajax_nopriv_' . $action, $handler);
+        }
+    }
+    /**
+     * Get the array of AJAX action handlers
+     *
+     * @return array
+     */
+    public function getHandlers(): array
+    {
+        return [\Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::CREATE_ORDER => [$this, 'createWcOrder'], \Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::CREATE_ORDER_CART => [$this, 'createWcOrderFromCart'], \Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::UPDATE_AMOUNT => [$this, 'updateAmount']];
     }
     /**
      * Creates the order from the product detail page and process the payment

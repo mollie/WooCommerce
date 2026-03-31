@@ -4,7 +4,6 @@ declare (strict_types=1);
 namespace Mollie\WooCommerce\Buttons\ApplePayButton;
 
 use Mollie\Psr\Log\LoggerInterface as Logger;
-use Mollie\Psr\Log\LogLevel;
 class ApplePayDataObjectHttp
 {
     /**

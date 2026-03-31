@@ -9,6 +9,8 @@ parameters:
     - lib/
     - inc/
     - src/
+  excludePaths:
+    - '*/node_modules/*'
   bootstrapFiles:
     - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
     - vendor/php-stubs/woocommerce-stubs/woocommerce-packages-stubs.php
@@ -16,8 +18,6 @@ parameters:
   ignoreErrors:
     # apply_filters is variadic in WordPress but the stubs only declare 2 required params
     - '#^Function apply_filters invoked with [0-9]+ parameters, [0-9]+ required\.$#'
-    # Unused private methods in a third-party vendor file
-    - '#^Static method Flatted::(asString|wrap)\(\) is unused\.$#'
     # CustomOrdersTableController is an internal WooCommerce class not in stubs
     - '#^(Class Automattic\\WooCommerce\\Internal\\DataStores\\Orders\\CustomOrdersTableController not found|Call to method custom_orders_table_usage_is_enabled\(\) on an unknown class)#'
     # Vendored PSR container uses a namespaced path

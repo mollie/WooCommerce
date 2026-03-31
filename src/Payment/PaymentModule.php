@@ -114,7 +114,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
                 $this->handleExpiryDateCancelation($paymentMethods);
             },
             10,
-            2
+            0
         );
         add_action(
             OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS,
@@ -165,7 +165,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
                 continue;
             }
 
-            $heldDuration = isset($gatewaySettings) && isset($gatewaySettings['order_dueDate']) ? $gatewaySettings['order_dueDate'] : 0;
+            $heldDuration = isset($gatewaySettings['order_dueDate']) ? $gatewaySettings['order_dueDate'] : 0;
 
             if ($heldDuration < 1) {
                 continue;
@@ -530,7 +530,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
                 'mollie_woocommerce_cancel_unpaid_orders',
                 [$this, 'cancelOrderOnExpiryDate'],
                 11,
-                2
+                0
             );
         }
     }

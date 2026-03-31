@@ -7,11 +7,9 @@ namespace Mollie\WooCommerce\Shared;
 use Exception;
 use InvalidArgumentException;
 use Mollie\Api\Resources\Method;
-use Mollie\WooCommerce\Buttons\ApplePayButton\DataToAppleButtonScripts;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Psr\Log\LoggerInterface as Logger;
-use Psr\Log\LogLevel;
 use WC_Customer;
 use WC_Order;
 
@@ -111,11 +109,11 @@ class Data
     }
 
     /**
-     * @param bool $overrideTestMode
+     * @param bool|null $overrideTestMode Pass null to use the current test mode setting.
      *
      * @return false|string
      */
-    public function getApiKey($overrideTestMode = 2)
+    public function getApiKey(?bool $overrideTestMode = null)
     {
         return $this->settingsHelper->getApiKey($overrideTestMode);
     }
@@ -160,7 +158,16 @@ class Data
         $max_option_name_length = 191;
 
         if ($option_name_length > $max_option_name_length) {
-            trigger_error(sprintf('Transient id %s is to long. Option name %s (%s) will be to long for database column wp_options.option_name which is varchar(%s).', esc_html($transient_id), esc_html($option_name), esc_html($option_name_length), esc_html($max_option_name_length)), E_USER_WARNING);
+            trigger_error(
+                sprintf(
+                    'Transient id %s is to long. Option name %s (%s) will be to long for database column wp_options.option_name which is varchar(%s).',
+                    esc_html($transient_id),
+                    esc_html($option_name),
+                    esc_html((string)$option_name_length),
+                    esc_html((string)$max_option_name_length)
+                ),
+                E_USER_WARNING
+            );
         }
 
         return $transient_id;
@@ -212,9 +219,13 @@ class Data
     {
 
         $cart = WC()->cart;
+        // phpstan:ignore [wc-stub] WC()->cart is WC_Cart|null at runtime; WooCommerce stubs declare it non-nullable
+        // @phpstan-ignore-next-line
         $cartTotal = $cart ? $cart->get_total('edit') : 0;
 
         $currency = get_woocommerce_currency();
+        // phpstan:ignore [wc-stub] WC()->customer is WC_Customer|null at runtime; WooCommerce stubs declare it non-nullable
+        // @phpstan-ignore-next-line
         $customerExistsAndHasCountry = WC()->customer && !empty(WC()->customer->get_billing_country());
         $fallbackToShopCountry = wc_get_base_location()['country'];
         $billingCountry = $customerExistsAndHasCountry ? WC()->customer->get_billing_country() : $fallbackToShopCountry;
@@ -324,7 +335,7 @@ class Data
         $methods = $this->getAllAvailablePaymentMethods($useCache);
         // We cannot access allActive for all methods so we filter them out here
         $filtered_methods = array_filter($methods, static function ($method) use ($testMode) {
-            if ($testMode === "live") {
+            if (!$testMode) {
                 return $method['status'] === "activated";
             } else {
                 return in_array($method['status'], ["activated", "pending-review"]);
@@ -409,7 +420,6 @@ class Data
     }
 
     /**
-     * @param bool $testMode
      * @param      $method
      *
      * @return mixed|\Mollie\Api\Resources\Method|null
@@ -550,8 +560,8 @@ class Data
     }
 
     /**
-     * @param int  $userId
-     * @param bool $testMode
+     * @param int $userId
+     * @param string $apiKey
      * @return null|string
      */
     public function getUserMollieCustomerId($userId, $apiKey)
@@ -601,7 +611,7 @@ class Data
                 // Get the best name for use as Mollie Customer name
                 $user_full_name = $userdata->first_name . ' ' . $userdata->last_name;
 
-                if (strlen(trim($user_full_name)) === null) {
+                if (strlen(trim($user_full_name)) === 0) {
                     $user_full_name = $userdata->display_name;
                 }
 

@@ -18,6 +18,8 @@ abstract class AbstractExpressButton implements ExpressButtonInterface
         $this->enqueueScripts();
     }
 
+    abstract protected function enqueueScripts(): void;
+
     protected function registerAjaxHandlers()
     {
         foreach ($this->getAjaxHandlers() as $action => $callback) {

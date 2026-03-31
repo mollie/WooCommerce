@@ -37,7 +37,7 @@ jobs:
         run: ./vendor/bin/phpunit
 
       - name: Run Psalm
-        run: ./vendor/bin/psalm --show-info=false --threads=2
+        run: ./vendor/bin/phpstan analyze
 
       - name: Run PhpCS
         run: ./vendor/bin/phpcs -n --parallel=2 --runtime-set ignore_warnings_on_exit 1

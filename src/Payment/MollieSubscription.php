@@ -30,8 +30,7 @@ class MollieSubscription extends MollieObject
         Logger $logger,
         PaymentMethodI $paymentMethod,
         $middlewareHandler
-    )
-    {
+    ) {
 
         $this->pluginId = $pluginId;
         $this->apiHelper = $apiHelper;

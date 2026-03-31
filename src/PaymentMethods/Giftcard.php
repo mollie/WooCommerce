@@ -18,8 +18,7 @@ class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
     public function debugGiftcardDetails(
         $payment,
         \WC_Order $order
-    ): void
-    {
+    ): void {
 
         $details = $payment->details;
         if (!$details) {

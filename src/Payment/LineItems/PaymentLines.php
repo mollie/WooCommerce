@@ -206,9 +206,9 @@ class PaymentLines implements LineItemProvider
                 $vatRate = 0;
                 if ($shipping_method->get_total_tax() > 0 && $shipping_method->get_total() > 0) {
                     $vatRate = round(
-                            (float)$shipping_method->get_total_tax() / (float)$shipping_method->get_total(),
-                            4
-                        ) * 100;
+                        (float)$shipping_method->get_total_tax() / (float)$shipping_method->get_total(),
+                        4
+                    ) * 100;
                 }
                 $shipping = [
                     'type' => 'shipping_fee',

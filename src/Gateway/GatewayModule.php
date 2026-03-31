@@ -178,7 +178,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
                 update_option('mollie_wc_is_phone_required_flag', true);
             }
             return $fields;
-        },         10, 1);
+        }, 10, 1);
 
         add_action('init', static function () use ($container) {
             $paymentMethods = $container->get('gateway.paymentMethods');

@@ -199,17 +199,10 @@ class PaymentLines implements \Mollie\WooCommerce\Payment\LineItems\LineItemProv
     {
         if (!empty($this->order->get_items('gift_card'))) {
             foreach ($this->order->get_items('gift_card') as $cart_gift_card) {
-                $gift_card = ['type' => 'gift_card', 'description' => $cart_gift_card->get_name(), 'unitPrice' => [
-                    'currency' => $this->currency,
-                    // phpstan:ignore [wc-stub] WC gift card item's get_amount() return type is not declared in stubs
-                    // @phpstan-ignore-next-line
-                    'value' => $this->dataHelper->formatCurrencyValue(-$cart_gift_card->get_amount(), $this->currency),
-                ], 'vatRate' => 0, 'quantity' => 1, 'totalAmount' => [
-                    'currency' => $this->currency,
-                    // phpstan:ignore [wc-stub] WC gift card item's get_amount() return type is not declared in stubs
-                    // @phpstan-ignore-next-line
-                    'value' => $this->dataHelper->formatCurrencyValue(-$cart_gift_card->get_amount(), $this->currency),
-                ], 'vatAmount' => ['currency' => $this->currency, 'value' => $this->dataHelper->formatCurrencyValue(0, $this->currency)]];
+                // phpstan:ignore [wc-stub] WC gift card item's get_amount() is not declared in stubs
+                // @phpstan-ignore-next-line
+                $giftCardAmount = $cart_gift_card->get_amount();
+                $gift_card = ['type' => 'gift_card', 'description' => $cart_gift_card->get_name(), 'unitPrice' => ['currency' => $this->currency, 'value' => $this->dataHelper->formatCurrencyValue(-$giftCardAmount, $this->currency)], 'vatRate' => 0, 'quantity' => 1, 'totalAmount' => ['currency' => $this->currency, 'value' => $this->dataHelper->formatCurrencyValue(-$giftCardAmount, $this->currency)], 'vatAmount' => ['currency' => $this->currency, 'value' => $this->dataHelper->formatCurrencyValue(0, $this->currency)]];
                 $this->order_lines[] = $gift_card;
             }
         }

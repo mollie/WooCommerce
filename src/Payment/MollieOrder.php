@@ -166,6 +166,7 @@ class MollieOrder extends \Mollie\WooCommerce\Payment\MollieObject
             // process and warn the merchant.
             $totals = 0;
             foreach ($items as $itemId => $itemData) {
+                // @phpstan-ignore-next-line
                 $totals += (float) $itemData->get_total() + (float) $itemData->get_total_tax();
             }
             $totals = number_format(abs($totals), 2);

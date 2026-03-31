@@ -1,31 +1,19 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Log;
 
 use InvalidArgumentException;
-use Psr\Log\AbstractLogger;
-use Psr\Log\LoggerTrait;
-use Psr\Log\LogLevel;
-
+use Mollie\Psr\Log\AbstractLogger;
+use Mollie\Psr\Log\LoggerTrait;
+use Mollie\Psr\Log\LogLevel;
 class WcPsrLoggerAdapter extends AbstractLogger
 {
     use LoggerTrait;
-
     /**
      * @var array
      */
-    private $psrWcLoggingLevels = [
-        LogLevel::EMERGENCY => \WC_Log_Levels::EMERGENCY,
-        LogLevel::ALERT => \WC_Log_Levels::ALERT,
-        LogLevel::CRITICAL => \WC_Log_Levels::CRITICAL,
-        LogLevel::ERROR => \WC_Log_Levels::ERROR,
-        LogLevel::WARNING => \WC_Log_Levels::WARNING,
-        LogLevel::NOTICE => \WC_Log_Levels::NOTICE,
-        LogLevel::INFO => \WC_Log_Levels::INFO,
-        LogLevel::DEBUG => \WC_Log_Levels::DEBUG,
-    ];
+    private $psrWcLoggingLevels = [LogLevel::EMERGENCY => \WC_Log_Levels::EMERGENCY, LogLevel::ALERT => \WC_Log_Levels::ALERT, LogLevel::CRITICAL => \WC_Log_Levels::CRITICAL, LogLevel::ERROR => \WC_Log_Levels::ERROR, LogLevel::WARNING => \WC_Log_Levels::WARNING, LogLevel::NOTICE => \WC_Log_Levels::NOTICE, LogLevel::INFO => \WC_Log_Levels::INFO, LogLevel::DEBUG => \WC_Log_Levels::DEBUG];
     /**
      * @var string
      */
@@ -34,35 +22,27 @@ class WcPsrLoggerAdapter extends AbstractLogger
      * @var \WC_Logger_Interface
      */
     private $wcLogger;
-
     /**
      * @var string
      */
     private $className = '';
-
     /**
      * @var string
      */
     private $loggingLevel;
-
     /**
      * WcPsrLoggerAdapter constructor.
      *
      * @param \WC_Logger_Interface $wcLogger
      * @param string               $loggingLevel
      */
-    public function __construct(
-        \WC_Logger_Interface $wcLogger,
-        $loggerSource,
-        string $loggingLevel = \WC_Log_Levels::DEBUG
-    ) {
-
+    public function __construct(\WC_Logger_Interface $wcLogger, $loggerSource, string $loggingLevel = \WC_Log_Levels::DEBUG)
+    {
         $this->wcLogger = $wcLogger;
-        \assert(in_array($loggingLevel, $this->psrWcLoggingLevels, true));
+        \assert(in_array($loggingLevel, $this->psrWcLoggingLevels, \true));
         $this->loggingLevel = $loggingLevel;
         $this->loggerSource = $loggerSource;
     }
-
     /**
      * Logs with an arbitrary level.
      *
@@ -82,27 +62,22 @@ class WcPsrLoggerAdapter extends AbstractLogger
             $message = sprintf("Unknown log level %s", $wcLevel);
             throw new InvalidArgumentException(esc_html($message));
         }
-
-        if (isset($context['source']) && $context['source'] !== $this-> loggerSource) {
+        if (isset($context['source']) && $context['source'] !== $this->loggerSource) {
             $context['originalSource'] = $context['source'];
         }
         if ($this->className && !isset($context['originalSource'])) {
             $context['originalSource'] = $this->className;
         }
         $context['source'] = $this->loggerSource;
-
-        $interpolatedMessage = $this->interpolate((string)$message, $this->getReplacements($context));
-
+        $interpolatedMessage = $this->interpolate((string) $message, $this->getReplacements($context));
         $this->wcLogger->log($level, $interpolatedMessage, $context);
     }
-
     /**
      * @param string $className
      */
     public function setName(string $className)
     {
         \assert(\class_exists($className));
-
         $this->className = $className;
     }
     /**
@@ -114,7 +89,6 @@ class WcPsrLoggerAdapter extends AbstractLogger
     {
         return strtr($message, $replace);
     }
-
     /**
      * Builds replacements list (for interpolate()) from the context values.
      * based on

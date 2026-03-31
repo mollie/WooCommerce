@@ -2,25 +2,20 @@
 
 namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
-use Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
+use Mollie\Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
 use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Shared\Data;
-
 class AbstractPaymentFieldsRenderer implements PaymentFieldsRendererInterface
 {
     protected MolliePaymentGatewayHandler $deprecatedHelperGateway;
-
     protected string $gatewayDescription;
     protected Data $dataHelper;
-
     public function __construct($deprecatedHelperGateway, $gateway, $dataHelper)
     {
-
         $this->deprecatedHelperGateway = $deprecatedHelperGateway;
         $this->gatewayDescription = $gateway;
         $this->dataHelper = $dataHelper;
     }
-
     /**
      * @inheritDoc
      */
@@ -28,7 +23,6 @@ class AbstractPaymentFieldsRenderer implements PaymentFieldsRendererInterface
     {
         return '';
     }
-
     public function getFieldMarkup($gateway, $dataHelper)
     {
         return '';

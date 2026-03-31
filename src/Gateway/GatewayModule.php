@@ -7,23 +7,24 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Gateway;
 
 use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
-use Automattic\WooCommerce\StoreApi\Exceptions\RouteException;
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ExtendingModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
+use Inpsyde\PaymentGateway\PaymentGateway;
 use Inpsyde\PaymentGateway\PaymentMethodServiceProviderTrait;
 use Mollie\WooCommerce\BlockService\CheckoutBlockService;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDirectHandler;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalButtonHandler;
+use Mollie\WooCommerce\Buttons\PayPalButton\PayPalExpressButton;
 use Mollie\WooCommerce\Gateway\Voucher\MaybeDisableGateway;
 use Mollie\WooCommerce\Payment\MollieOrderService;
+use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
-use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Container\ContainerInterface;
 
@@ -80,39 +81,40 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             return $maybeEnablegatewayHelper->maybeDisableMealVoucherGateway($gateways);
         });
 
-        add_filter(
-            'woocommerce_payment_gateways',
-            static function ($gateways) use ($container) {
-                $deprecatedGatewayHelpers = $container->get('__deprecated.gateway_helpers');
-                foreach ($gateways as $gateway) {
-                    $isMolliegateway = is_string($gateway) && strpos($gateway, 'mollie_wc_gateway_') !== false
+        add_action('woocommerce_init', static function () use ($container) {
+            $gateways = WC()->payment_gateways()->payment_gateways();
+            $deprecatedGatewayHelpers = $container->get('__deprecated.gateway_helpers');
+            foreach ($gateways as $gateway) {
+                $isMolliegateway = is_string($gateway) && strpos($gateway, 'mollie_wc_gateway_') !== false
                     || is_object($gateway) && strpos($gateway->id, 'mollie_wc_gateway_') !== false;
-                    if (!$isMolliegateway) {
-                        continue;
-                    }
-                    assert($gateway instanceof \Inpsyde\PaymentGateway\PaymentGateway);
-                    // Add subscription filters after payment gateways are loaded
-                    $isSubscriptiongateway = $gateway->supports('subscriptions');
-                    if ($isSubscriptiongateway && method_exists($deprecatedGatewayHelpers[$gateway->id], 'addSubscriptionFilters')) {
-                        $deprecatedGatewayHelpers[$gateway->id]->addSubscriptionFilters($gateway);
-                    }
-
-                    // Add payment instructions
-                    $displayInstructionsService = $container->get('gateway.hooks.displayInstructions');
-                    $displayInstructionsService($gateway);
-                    // Add thankyou page actions for gateway
-                    $thankyouPageService = $container->get('gateway.hooks.thankyouPage');
-                    if (!has_action('woocommerce_thankyou_' . $gateway->id)) {
-                        $thankyouPageService($gateway);
-                    }
-                    // Add subscription payment hooks
-                    $isSubscriptionPaymentService = $container->get('gateway.hooks.isSubscriptionPayment');
-                    $isSubscriptionPaymentService($gateway);
+                if (!$isMolliegateway) {
+                    continue;
                 }
-                return $gateways;
-            },
-            30
-        );
+                assert($gateway instanceof PaymentGateway);
+                // Add subscription filters after payment gateways are loaded
+                $isSubscriptiongateway = $gateway->supports('subscriptions');
+                if (
+                    $isSubscriptiongateway && method_exists(
+                        $deprecatedGatewayHelpers[$gateway->id],
+                        'addSubscriptionFilters'
+                    )
+                ) {
+                    $deprecatedGatewayHelpers[$gateway->id]->addSubscriptionFilters($gateway);
+                }
+
+                // Add payment instructions
+                $displayInstructionsService = $container->get('gateway.hooks.displayInstructions');
+                $displayInstructionsService($gateway);
+                // Add thankyou page actions for gateway
+                $thankyouPageService = $container->get('gateway.hooks.thankyouPage');
+                if (!has_action('woocommerce_thankyou_' . $gateway->id)) {
+                    $thankyouPageService($gateway);
+                }
+                // Add subscription payment hooks
+                $isSubscriptionPaymentService = $container->get('gateway.hooks.isSubscriptionPayment');
+                $isSubscriptionPaymentService($gateway);
+            }
+        });
 
         // Disable SEPA as payment option in WooCommerce checkout
         add_filter(
@@ -279,6 +281,34 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             3
         );
 
+        add_filter(
+            'inpsyde_payment_gateway_blocks_data',
+            static function (array $data, string $gatewayId, PaymentGateway $gateway) use ($container): array {
+                if (strpos($gatewayId, 'mollie_wc_gateway_') !== 0) {
+                    return $data;
+                }
+
+                /** @var array<string, MolliePaymentGatewayHandler> $gatewayInstances */
+                $gatewayInstances = $container->get('__deprecated.gateway_helpers');
+
+                if (!isset($gatewayInstances[$gatewayId]) || $gateway->enabled !== 'yes') {
+                    return $data;
+                }
+
+                $method = $gatewayInstances[$gatewayId]->paymentMethod();
+
+                if ($method->getProperty('id') === 'directdebit' && !is_admin()) {
+                    return $data;
+                }
+
+                return array_merge($data, $method->blocksData($container), [
+                    'isMultiStepsCheckout' => get_option('woocommerce_gzdp_checkout_enable') === 'yes',
+                ]);
+            },
+            10,
+            3
+        );
+
         return true;
     }
 
@@ -411,15 +441,9 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             }
         }
 
-        $paypalButtonHandler = $container->get(PayPalButtonHandler::class);
-        if ($paypalButtonHandler instanceof PayPalButtonHandler) {
-            $enabledInProduct = (mollieWooCommerceIsPayPalButtonEnabled('product'));
-            $enabledInCart = (mollieWooCommerceIsPayPalButtonEnabled('cart'));
-            $shouldBuildIt = $enabledInProduct || $enabledInCart;
-
-            if ($shouldBuildIt) {
-                $paypalButtonHandler->bootstrap($enabledInProduct, $enabledInCart);
-            }
+        $paypalButtonHandler = $container->get(PayPalExpressButton::class);
+        if ($paypalButtonHandler instanceof PayPalExpressButton) {
+            $paypalButtonHandler->bootstrap();
         }
     }
 

@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.33.0",
+    "@woocommerce/dependency-extraction-webpack-plugin": "3.0.1",
     "@wordpress/scripts": "^30.24.0",
     "wp-pot": "^1.10.2"
   },

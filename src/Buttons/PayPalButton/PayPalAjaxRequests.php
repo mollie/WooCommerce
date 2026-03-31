@@ -44,30 +44,24 @@ class PayPalAjaxRequests
      */
     public function bootstrapAjaxRequest()
     {
-        add_action(
-            'wp_ajax_' . PropertiesDictionary::CREATE_ORDER,
-            [$this, 'createWcOrder']
-        );
-        add_action(
-            'wp_ajax_nopriv_' . PropertiesDictionary::CREATE_ORDER,
-            [$this, 'createWcOrder']
-        );
-        add_action(
-            'wp_ajax_' . PropertiesDictionary::CREATE_ORDER_CART,
-            [$this, 'createWcOrderFromCart']
-        );
-        add_action(
-            'wp_ajax_nopriv_' . PropertiesDictionary::CREATE_ORDER_CART,
-            [$this, 'createWcOrderFromCart']
-        );
-        add_action(
-            'wp_ajax_' . PropertiesDictionary::UPDATE_AMOUNT,
-            [$this, 'updateAmount']
-        );
-        add_action(
-            'wp_ajax_nopriv_' . PropertiesDictionary::UPDATE_AMOUNT,
-            [$this, 'updateAmount']
-        );
+        foreach ($this->getHandlers() as $action => $handler) {
+            add_action('wp_ajax_' . $action, $handler);
+            add_action('wp_ajax_nopriv_' . $action, $handler);
+        }
+    }
+
+    /**
+     * Get the array of AJAX action handlers
+     *
+     * @return array
+     */
+    public function getHandlers(): array
+    {
+        return [
+            PropertiesDictionary::CREATE_ORDER => [$this, 'createWcOrder'],
+            PropertiesDictionary::CREATE_ORDER_CART => [$this, 'createWcOrderFromCart'],
+            PropertiesDictionary::UPDATE_AMOUNT => [$this, 'updateAmount'],
+        ];
     }
 
     /**

@@ -24,6 +24,7 @@ web_environment:
     - ADMIN_EMAIL=admin@example.com
     - WC_VERSION=dev
     - WP_ENVIRONMENT_TYPE=local
+    - WP_DISABLE_FATAL_ERROR_HANDLER=true
 nodejs_version: "23"
 corepack_enable: false
 

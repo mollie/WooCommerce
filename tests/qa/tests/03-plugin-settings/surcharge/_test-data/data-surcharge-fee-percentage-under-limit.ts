@@ -42,5 +42,6 @@ export const surchargePercentageUnderLimit: MollieTestData.SurchargeTestsGroup =
 			{ testId: 'C4237527', gateway: 'mbway' },
 			{ testId: 'C4237518', gateway: 'multibanco' },
 			{ testId: 'C4237547', gateway: 'swish' },
+			{ testId: 'C4257950', gateway: 'bizum' },
 		],
 	};

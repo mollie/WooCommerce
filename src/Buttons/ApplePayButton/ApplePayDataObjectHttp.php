@@ -6,6 +6,9 @@ namespace Mollie\WooCommerce\Buttons\ApplePayButton;
 
 use Psr\Log\LoggerInterface as Logger;
 
+/**
+ * @phpcs:disable Inpsyde.CodeQuality.PropertyPerClassLimit.TooManyProperties
+ */
 class ApplePayDataObjectHttp
 {
     /**
@@ -77,6 +80,7 @@ class ApplePayDataObjectHttp
     {
         return !empty($this->errors);
     }
+
     /**
      * Returns errors
      * @return array
@@ -179,7 +183,7 @@ class ApplePayDataObjectHttp
             !array_key_exists('emailAddress', $data[PropertiesDictionary::SHIPPING_CONTACT])
             || !$data[PropertiesDictionary::SHIPPING_CONTACT]['emailAddress']
         ) {
-            $this->errors[] =  [
+            $this->errors[] = [
                 'errorCode' => PropertiesDictionary::SHIPPING_CONTACT_INVALID,
                 'contactField' => 'emailAddress',
             ];
@@ -279,8 +283,8 @@ class ApplePayDataObjectHttp
      * are not empty.
      * If not it adds a contactField error to the object's error list
      *
-     * @param array  $post      The address to check
-     * @param array  $required  The required fields for the given address
+     * @param array $post The address to check
+     * @param array $required The required fields for the given address
      * @param string $errorCode Either shipping or billing kind
      *
      * @return bool
@@ -304,8 +308,7 @@ class ApplePayDataObjectHttp
                 $this->logger->debug(
                     sprintf('ApplePay Data Error: Missing value for %s', $requiredField)
                 );
-                $this->errors[]
-                    = [
+                $this->errors[] = [
                     'errorCode' => $errorCode,
                     'contactField' => $errorValue,
                 ];
@@ -318,7 +321,7 @@ class ApplePayDataObjectHttp
     /**
      * Returns the address details for after authorization steps
      *
-     * @param array  $data
+     * @param array $data
      *
      * @param string $errorCode differentiates between billing and shipping information
      *

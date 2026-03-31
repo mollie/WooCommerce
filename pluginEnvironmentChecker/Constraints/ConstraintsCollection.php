@@ -1,6 +1,6 @@
 <?php
 
-namespace Inpsyde\EnvironmentChecker\Constraints;
+namespace Mollie\Inpsyde\EnvironmentChecker\Constraints;
 
 class ConstraintsCollection
 {
@@ -8,12 +8,10 @@ class ConstraintsCollection
      * @var AbstractVersionConstraint[]
      */
     protected $constraints;
-
     public function __construct(AbstractVersionConstraint ...$constraints)
     {
         $this->constraints = $constraints;
     }
-
     /**
      * Returns the array of set constraints
      *

@@ -326,15 +326,16 @@ class OrderLines implements LineItemProvider
     {
         if (!empty($this->order->get_items('gift_card'))) {
             foreach ($this->order->get_items('gift_card') as $cart_gift_card) {
+                // phpstan:ignore [wc-stub] WC gift card item's get_amount() is not declared in stubs
+                // @phpstan-ignore-next-line
+                $giftCardAmount = $cart_gift_card->get_amount();
                 $gift_card = [
                     'type' => 'gift_card',
                     'name' => $cart_gift_card->get_name(),
                     'unitPrice' => [
                         'currency' => $this->currency,
-                        // phpstan:ignore [wc-stub] WC gift card item's get_amount() return type is not declared in stubs
-                        // @phpstan-ignore-next-line
                         'value' => $this->dataHelper->formatCurrencyValue(
-                            -$cart_gift_card->get_amount(),
+                            -$giftCardAmount,
                             $this->currency
                         ),
                     ],
@@ -342,10 +343,8 @@ class OrderLines implements LineItemProvider
                     'quantity' => 1,
                     'totalAmount' => [
                         'currency' => $this->currency,
-                        // phpstan:ignore [wc-stub] WC gift card item's get_amount() return type is not declared in stubs
-                        // @phpstan-ignore-next-line
                         'value' => $this->dataHelper->formatCurrencyValue(
-                            -$cart_gift_card->get_amount(),
+                            -$giftCardAmount,
                             $this->currency
                         ),
                     ],

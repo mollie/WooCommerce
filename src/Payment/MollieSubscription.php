@@ -32,6 +32,7 @@ class MollieSubscription extends MollieObject
         $middlewareHandler
     )
     {
+
         $this->pluginId = $pluginId;
         $this->apiHelper = $apiHelper;
         $this->settingsHelper = $settingsHelper;

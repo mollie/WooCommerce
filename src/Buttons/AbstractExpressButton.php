@@ -18,7 +18,9 @@ abstract class AbstractExpressButton implements ExpressButtonInterface
         $this->enqueueScripts();
     }
 
-    abstract protected function enqueueScripts(): void;
+    protected function enqueueScripts(): void
+    {
+    }
 
     protected function registerAjaxHandlers()
     {

@@ -222,6 +222,7 @@ class MollieOrder extends MollieObject
             $totals = 0;
 
             foreach ($items as $itemId => $itemData) {
+                // @phpstan-ignore-next-line
                 $totals += (float)$itemData->get_total() + (float)$itemData->get_total_tax();
             }
 

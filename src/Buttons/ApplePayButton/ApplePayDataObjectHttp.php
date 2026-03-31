@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Buttons\ApplePayButton;
 
 use Psr\Log\LoggerInterface as Logger;
-use Psr\Log\LogLevel;
 
 class ApplePayDataObjectHttp
 {
@@ -305,7 +304,8 @@ class ApplePayDataObjectHttp
                 $this->logger->debug(
                     sprintf('ApplePay Data Error: Missing value for %s', $requiredField)
                 );
-                $this->errors[] = [
+                $this->errors[]
+                    = [
                     'errorCode' => $errorCode,
                     'contactField' => $errorValue,
                 ];

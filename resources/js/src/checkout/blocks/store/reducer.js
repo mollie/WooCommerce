@@ -1,4 +1,4 @@
-import { ACTIONS } from './constants';
+import {ACTIONS} from './constants';
 
 const initialState = {
 	// Form fields
@@ -47,6 +47,10 @@ const initialState = {
 	gatewayComponents: {}, // { gateway: Array<string> }
 
     componentContainers: {},
+
+    // Server-hydrated config (read once at store init)
+    isOrderPayPage: window.mollieServerData?.isOrderPayPage ?? false,
+    componentConfig: window.mollieServerData?.componentData ?? null,
 };
 
 const reducer = ( state = initialState, action ) => {

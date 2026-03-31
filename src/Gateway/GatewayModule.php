@@ -7,7 +7,6 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Gateway;
 
 use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
-use Automattic\WooCommerce\StoreApi\Exceptions\RouteException;
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ExtendingModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
@@ -17,14 +16,15 @@ use Inpsyde\PaymentGateway\PaymentMethodServiceProviderTrait;
 use Mollie\WooCommerce\BlockService\CheckoutBlockService;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDirectHandler;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalButtonHandler;
+use Mollie\WooCommerce\Buttons\PayPalButton\PayPalExpressButton;
 use Mollie\WooCommerce\Gateway\Voucher\MaybeDisableGateway;
 use Mollie\WooCommerce\Payment\MollieOrderService;
+use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
-use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Container\ContainerInterface;
 
@@ -281,6 +281,34 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             3
         );
 
+        add_filter(
+            'inpsyde_payment_gateway_blocks_data',
+            static function (array $data, string $gatewayId, PaymentGateway $gateway) use ($container): array {
+                if (strpos($gatewayId, 'mollie_wc_gateway_') !== 0) {
+                    return $data;
+                }
+
+                /** @var array<string, MolliePaymentGatewayHandler> $gatewayInstances */
+                $gatewayInstances = $container->get('__deprecated.gateway_helpers');
+
+                if (!isset($gatewayInstances[$gatewayId]) || $gateway->enabled !== 'yes') {
+                    return $data;
+                }
+
+                $method = $gatewayInstances[$gatewayId]->paymentMethod();
+
+                if ($method->getProperty('id') === 'directdebit' && !is_admin()) {
+                    return $data;
+                }
+
+                return array_merge($data, $method->blocksData($container), [
+                    'isMultiStepsCheckout' => get_option('woocommerce_gzdp_checkout_enable') === 'yes',
+                ]);
+            },
+            10,
+            3
+        );
+
         return true;
     }
 
@@ -413,15 +441,9 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             }
         }
 
-        $paypalButtonHandler = $container->get(PayPalButtonHandler::class);
-        if ($paypalButtonHandler instanceof PayPalButtonHandler) {
-            $enabledInProduct = (mollieWooCommerceIsPayPalButtonEnabled('product'));
-            $enabledInCart = (mollieWooCommerceIsPayPalButtonEnabled('cart'));
-            $shouldBuildIt = $enabledInProduct || $enabledInCart;
-
-            if ($shouldBuildIt) {
-                $paypalButtonHandler->bootstrap($enabledInProduct, $enabledInCart);
-            }
+        $paypalButtonHandler = $container->get(PayPalExpressButton::class);
+        if ($paypalButtonHandler instanceof PayPalExpressButton) {
+            $paypalButtonHandler->bootstrap();
         }
     }
 

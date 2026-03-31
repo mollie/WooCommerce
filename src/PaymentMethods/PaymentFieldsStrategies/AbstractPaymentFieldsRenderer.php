@@ -3,9 +3,7 @@
 namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
 use Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
-use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
-use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\Shared\Data;
 
 class AbstractPaymentFieldsRenderer implements PaymentFieldsRendererInterface
@@ -30,6 +28,11 @@ class AbstractPaymentFieldsRenderer implements PaymentFieldsRendererInterface
      * @inheritDoc
      */
     public function renderFields(): string
+    {
+        return '';
+    }
+
+    public function getFieldMarkup($gateway, $dataHelper)
     {
         return '';
     }

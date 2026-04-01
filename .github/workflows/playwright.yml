@@ -53,8 +53,8 @@ jobs:
         zip -r mollie-payments-for-woocommerce.zip mollie-payments-for-woocommerce
         rm -rf mollie-payments-for-woocommerce mollie-payments-for-woocommerce-*/
 
-        # 2. Setup wp-env
-        npm run e2e:setup:env
+        # 2. Setup wp-env default hosts
+        npm run e2e:setup:hosts
 
         # 3. Install ngrok
         curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null

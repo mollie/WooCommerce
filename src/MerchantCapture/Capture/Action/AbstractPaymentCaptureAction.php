@@ -8,11 +8,17 @@ use Mollie\WooCommerce\Settings\Settings;
 use Mollie\Psr\Log\LoggerInterface;
 class AbstractPaymentCaptureAction
 {
+    /** @var Api */
     protected $apiHelper;
+    /** @var Settings */
     protected $settingsHelper;
+    /** @var string */
     protected $apiKey;
+    /** @var \WC_Order|false */
     protected $order;
+    /** @var LoggerInterface */
     protected $logger;
+    /** @var string */
     protected $pluginId;
     public function __construct(int $orderId, Api $apiHelper, Settings $settingsHelper, LoggerInterface $logger, string $pluginId)
     {
@@ -23,7 +29,7 @@ class AbstractPaymentCaptureAction
         $this->pluginId = $pluginId;
         $this->setApiKey();
     }
-    protected function setApiKey()
+    protected function setApiKey(): void
     {
         $this->apiKey = $this->settingsHelper->getApiKey();
     }

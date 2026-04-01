@@ -207,7 +207,7 @@ class AssetsModule implements ExecutableModule, ServiceModule
     }
     /**
      * Enqueue inline JavaScript for Advanced Settings admin page
-     * @param array $ar Can be ignored
+     * @param array<mixed> $ar Can be ignored
      * @return void
      */
     public function enqueueAdvancedSettingsJS($ar)
@@ -294,7 +294,7 @@ class AssetsModule implements ExecutableModule, ServiceModule
             }
         });
     }
-    protected function enqueueMollieSettings()
+    protected function enqueueMollieSettings(): void
     {
         $uri = isset($_SERVER['REQUEST_URI']) ? wc_clean(
             // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized

@@ -16,7 +16,7 @@ class ComponentDataService
     /**
      * Get component data for Mollie credit card components
      *
-     * @return array|null Returns component data array or null if requirements not met
+     * @return array<mixed>|null Returns component data array or null if requirements not met
      */
     public function getComponentData(): ?array
     {
@@ -38,7 +38,7 @@ class ComponentDataService
      *
      * @param bool $isCheckout
      * @param bool $isCheckoutPayPage
-     * @return array|null
+     * @return array<mixed>|null
      */
     public function getComponentDataWithContext(bool $isCheckout = \false, bool $isCheckoutPayPage = \false): ?array
     {
@@ -78,10 +78,16 @@ class ComponentDataService
         }
         return $locale;
     }
+    /**
+     * @return array<mixed>
+     */
     private function getComponentAttributes(): array
     {
         return [['name' => 'cardHolder', 'label' => esc_html__('Name on card', 'mollie-payments-for-woocommerce')], ['name' => 'cardNumber', 'label' => esc_html__('Card number', 'mollie-payments-for-woocommerce')], ['name' => 'expiryDate', 'label' => esc_html__('Expiry date', 'mollie-payments-for-woocommerce')], ['name' => 'verificationCode', 'label' => esc_html__('CVC/CVV', 'mollie-payments-for-woocommerce')]];
     }
+    /**
+     * @return array<mixed>
+     */
     private function getComponentMessages(): array
     {
         return ['defaultErrorMessage' => esc_html__('An unknown error occurred, please check the card fields.', 'mollie-payments-for-woocommerce')];

@@ -6,6 +6,9 @@ namespace Mollie\WooCommerce\PaymentMethods;
 use Mollie\Psr\Container\ContainerInterface;
 class Applepay extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod implements \Mollie\WooCommerce\PaymentMethods\PaymentMethodI
 {
+    /**
+     * @return array<mixed>
+     */
     protected function getConfig(): array
     {
         return ['id' => 'applepay', 'defaultTitle' => 'Apple Pay', 'settingsDescription' => 'To accept payments via Apple Pay', 'defaultDescription' => '', 'paymentFields' => \false, 'instructions' => \true, 'supports' => ['products', 'refunds', 'subscriptions'], 'filtersOnBuild' => \false, 'confirmationDelayed' => \false, 'Subscription' => \true, 'docs' => 'https://www.mollie.com/gb/payments/apple-pay'];
@@ -20,6 +23,10 @@ class Applepay extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod 
         $this->config['settingsDescription'] = __('To accept payments via Apple Pay', 'mollie-payments-for-woocommerce');
         $this->translationsInitialized = \true;
     }
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
     public function getFormFields(array $generalFormFields): array
     {
         $checkout_page_id = wc_get_page_id('checkout');
@@ -40,6 +47,9 @@ class Applepay extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod 
     {
         return $this->getProperty('mollie_apple_pay_button_enabled_express_checkout') === 'yes';
     }
+    /**
+     * @return array<mixed>|null
+     */
     protected function blocksExpressData(ContainerInterface $container): ?array
     {
         $baseLocation = wc_get_base_location();

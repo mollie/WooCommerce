@@ -6,6 +6,9 @@ namespace Mollie\WooCommerce\PaymentMethods;
 class Ideal extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod implements \Mollie\WooCommerce\PaymentMethods\PaymentMethodI
 {
     protected const DEFAULT_ISSUERS_DROPDOWN = 'yes';
+    /**
+     * @return array<mixed>
+     */
     public function getConfig(): array
     {
         return ['id' => 'ideal', 'defaultTitle' => 'iDEAL', 'settingsDescription' => '', 'defaultDescription' => '', 'paymentFields' => \false, 'instructions' => \true, 'supports' => ['products', 'refunds'], 'filtersOnBuild' => \false, 'confirmationDelayed' => \true, 'SEPA' => \true, 'docs' => 'https://www.mollie.com/gb/payments/ideal-2-0'];
@@ -18,6 +21,10 @@ class Ideal extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod imp
         $this->config['defaultTitle'] = __('iDEAL', 'mollie-payments-for-woocommerce');
         $this->translationsInitialized = \true;
     }
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
     public function getFormFields(array $generalFormFields): array
     {
         $notice = ['notice' => ['title' => sprintf(

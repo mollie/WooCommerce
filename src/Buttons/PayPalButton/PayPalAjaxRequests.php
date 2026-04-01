@@ -158,7 +158,7 @@ class PayPalAjaxRequests
      */
     protected function updateOrderPostMeta(int $orderId, \WC_Order $order): void
     {
-        $order->update_meta_data('_customer_user', get_current_user_id());
+        $order->update_meta_data('_customer_user', (string) get_current_user_id());
         $order->update_meta_data('_payment_method', 'mollie_wc_gateway_paypal');
         $order->update_meta_data('_payment_method_title', 'PayPal');
         $order->update_meta_data('_mollie_payment_method_button', 'PayPalButton');

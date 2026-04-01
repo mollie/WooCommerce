@@ -41,12 +41,18 @@ interface PaymentMethodDefinition
      * @return callable(WC_Payment_Gateway): bool
      */
     public function availabilityCallback(ContainerInterface $container): callable;
+    /**
+     * @return array<mixed>
+     */
     public function supports(ContainerInterface $container): array;
     public function refundProcessor(ContainerInterface $container): RefundProcessorInterface;
     public function paymentMethodIconProvider(ContainerInterface $container): IconProviderInterface;
     public function gatewayIconsRenderer(ContainerInterface $container): GatewayIconsRendererInterface;
     public function paymentFieldsRenderer(ContainerInterface $container): PaymentFieldsRendererInterface;
     public function hasFields(ContainerInterface $container): bool;
+    /**
+     * @return array<mixed>
+     */
     public function formFields(ContainerInterface $container): array;
     public function optionKey(ContainerInterface $container): string;
     public function registerBlocks(ContainerInterface $container): bool;

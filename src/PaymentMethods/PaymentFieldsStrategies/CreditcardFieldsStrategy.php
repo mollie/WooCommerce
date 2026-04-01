@@ -58,7 +58,7 @@ class CreditcardFieldsStrategy extends \Mollie\WooCommerce\PaymentMethods\Paymen
         return file_get_contents($dataHelper->pluginPath() . '/' . 'public/images/mollie-logo.svg');
     }
     /**
-     * @return array
+     * @return array<mixed>
      */
     protected function svgAllowedHtml(): array
     {

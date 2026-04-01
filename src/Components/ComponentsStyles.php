@@ -30,7 +30,7 @@ class ComponentsStyles
      *
      * Gateways are enabled along with mollie components
      *
-     * @return array
+     * @return array<mixed>
      */
     public function forAvailableGateways()
     {
@@ -44,7 +44,8 @@ class ComponentsStyles
     /**
      * Retrieve the WooCommerce Gateways Which have the Mollie Components enabled
      *
-     * @return array
+     * @param array<mixed> $gateways
+     * @return array<mixed>
      */
     protected function gatewaysWithMollieComponentsEnabled(array $gateways)
     {
@@ -74,7 +75,9 @@ class ComponentsStyles
     /**
      * Retrieve the mollie components styles associated to the given gateways
      *
-     * @return array
+     * @param array<mixed> $mollieComponentStyles
+     * @param array<mixed> $gateways
+     * @return array<mixed>
      */
     protected function mollieComponentsStylesPerGateway(array $mollieComponentStyles, array $gateways)
     {
@@ -85,7 +88,8 @@ class ComponentsStyles
     /**
      * Extract the name of the gateways from the given gateways instances
      *
-     * @return array
+     * @param array<mixed> $gateways
+     * @return array<mixed>
      */
     protected function gatewayNames(array $gateways)
     {

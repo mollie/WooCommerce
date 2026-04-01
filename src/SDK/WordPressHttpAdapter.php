@@ -19,8 +19,8 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
     /**
      * @param string $httpMethod
      * @param string $url
-     * @param array $headers
-     * @param $httpBody
+     * @param array<string, string> $headers
+     * @param mixed $httpBody
      *
      * @throws ApiException
      */
@@ -44,7 +44,8 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
         return 'WordPress/' . $wp_version;
     }
     /**
-     * @param $response
+     * @param mixed $response
+     * @return mixed
      * @throws ApiException
      */
     protected function parseResponse($response)

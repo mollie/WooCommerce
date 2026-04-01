@@ -19,11 +19,17 @@ class PaymentCheckoutRedirectService
     protected $dataHelper;
     /**
      * PaymentCheckoutRedirectService constructor.
+     *
+     * @param mixed $dataHelper
      */
     public function __construct($dataHelper)
     {
         $this->dataHelper = $dataHelper;
     }
+    /**
+     * @param mixed $paymentMethod
+     * @return void
+     */
     public function setStrategy($paymentMethod)
     {
         if (!$paymentMethod->getProperty('customRedirect')) {
@@ -34,6 +40,11 @@ class PaymentCheckoutRedirectService
         $this->strategy = class_exists($className) ? new $className() : new DefaultRedirectStrategy();
     }
     /**
+     * @param mixed $paymentMethod
+     * @param mixed $order
+     * @param mixed $paymentObject
+     * @param mixed $redirectUrl
+     * @return mixed
      * @throws \Exception
      */
     public function executeStrategy($paymentMethod, $order, $paymentObject, $redirectUrl)

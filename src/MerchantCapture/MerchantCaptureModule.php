@@ -80,7 +80,7 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                 /** @var Logger $logger */
                 $logger = $container->get(Logger::class);
                 $pluginId = $container->get('shared.plugin_id');
-                return (new CapturePayment($orderId, $api, $settings, $logger, $pluginId))();
+                (new CapturePayment($orderId, $api, $settings, $logger, $pluginId))();
             };
         }, VoidPayment::class => static function ($container) {
             return static function (int $orderId) use ($container) {
@@ -91,7 +91,7 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                 /** @var Logger $logger */
                 $logger = $container->get(Logger::class);
                 $pluginId = $container->get('shared.plugin_id');
-                return (new VoidPayment($orderId, $api, $settings, $logger, $pluginId))();
+                (new VoidPayment($orderId, $api, $settings, $logger, $pluginId))();
             };
         }];
     }

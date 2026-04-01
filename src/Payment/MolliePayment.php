@@ -42,10 +42,10 @@ class MolliePayment extends \Mollie\WooCommerce\Payment\MollieObject
         return null;
     }
     /**
-     * @param $order
-     * @param $customerId
+     * @param mixed $order
+     * @param mixed $customerId
      *
-     * @return array
+     * @return array<mixed>
      */
     public function getPaymentRequestData($order, $customerId)
     {
@@ -69,6 +69,10 @@ class MolliePayment extends \Mollie\WooCommerce\Payment\MollieObject
         }
         return null;
     }
+    /**
+     * @param mixed $payment
+     * @return string|null
+     */
     public function getMollieCustomerIdFromPaymentObject($payment = null)
     {
         if ($payment === null) {
@@ -80,6 +84,10 @@ class MolliePayment extends \Mollie\WooCommerce\Payment\MollieObject
         }
         return null;
     }
+    /**
+     * @param mixed $payment
+     * @return string|null
+     */
     public function getSequenceTypeFromPaymentObject($payment = null)
     {
         if ($payment === null) {
@@ -92,8 +100,8 @@ class MolliePayment extends \Mollie\WooCommerce\Payment\MollieObject
         return null;
     }
     /**
-     * @param Payment $payment
-     *
+     * @param mixed $payment
+     * @return array<string, mixed>
      */
     public function getMollieCustomerIbanDetailsFromPaymentObject($payment = null)
     {
@@ -141,7 +149,7 @@ class MolliePayment extends \Mollie\WooCommerce\Payment\MollieObject
             do_action($this->pluginId . '_create_refund', $paymentObject, $order);
             $apiKey = $this->settingsHelper->getApiKey();
             // Send refund to Mollie
-            $refund = $this->apiHelper->getApiClient($apiKey)->payments->refund($paymentObject, ['amount' => ['currency' => $this->dataHelper->getOrderCurrency($order), 'value' => $this->dataHelper->formatCurrencyValue($amount, $this->dataHelper->getOrderCurrency($order))], 'description' => $reason]);
+            $refund = $this->apiHelper->getApiClient($apiKey)->payments->refund($paymentObject, ['amount' => ['currency' => $this->dataHelper->getOrderCurrency($order), 'value' => $this->dataHelper->formatCurrencyValue((float) $amount, $this->dataHelper->getOrderCurrency($order))], 'description' => $reason]);
             $this->logger->debug(__METHOD__ . ' - Refund created - refund: ' . $refund->id . ', payment: ' . $paymentObject->id . ', order: ' . $orderId . ', amount: ' . $this->dataHelper->getOrderCurrency($order) . $amount . (!empty($reason) ? ', reason: ' . $reason : ''));
             /**
              * After Payment Refund has been created
@@ -165,6 +173,10 @@ class MolliePayment extends \Mollie\WooCommerce\Payment\MollieObject
             return new WP_Error(1, $e->getMessage());
         }
     }
+    /**
+     * @param mixed $data
+     * @return void
+     */
     public function setPayment($data)
     {
         $this->data = $data;

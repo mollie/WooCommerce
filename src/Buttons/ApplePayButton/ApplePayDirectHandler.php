@@ -31,8 +31,9 @@ class ApplePayDirectHandler
      *
      * @param bool $buttonEnabledProduct
      * @param bool $buttonEnabledCart
+     * @return void
      */
-    public function bootstrap($buttonEnabledProduct, $buttonEnabledCart)
+    public function bootstrap($buttonEnabledProduct, $buttonEnabledCart): void
     {
         if (!$this->isApplePayCompatible()) {
             /* Defer translation until admin_notices (after init) */
@@ -99,8 +100,9 @@ class ApplePayDirectHandler
     }
     /**
      * ApplePay button markup
+     * @return void
      */
-    protected function applePayDirectButton()
+    protected function applePayDirectButton(): void
     {
         ?>
         <div id="mollie-applepayDirect-button">

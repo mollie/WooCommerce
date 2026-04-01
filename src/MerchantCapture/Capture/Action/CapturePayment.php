@@ -8,7 +8,7 @@ use Mollie\WooCommerce\MerchantCapture\ManualCaptureStatus;
 use Mollie\WooCommerce\MerchantCapture\MerchantCaptureModule;
 class CapturePayment extends \Mollie\WooCommerce\MerchantCapture\Capture\Action\AbstractPaymentCaptureAction
 {
-    public function __invoke()
+    public function __invoke(): void
     {
         try {
             $payment = $this->order->get_payment_method();

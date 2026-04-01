@@ -5,6 +5,9 @@ namespace Mollie\WooCommerce\PaymentMethods;
 
 class In3 extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod implements \Mollie\WooCommerce\PaymentMethods\PaymentMethodI
 {
+    /**
+     * @return array<mixed>
+     */
     public function getConfig(): array
     {
         return ['id' => 'in3', 'defaultTitle' => 'in3', 'settingsDescription' => '', 'defaultDescription' => 'Pay in 3 instalments, 0% interest', 'paymentFields' => \true, 'additionalFields' => ['birthdate', 'phone'], 'instructions' => \false, 'supports' => ['products', 'refunds'], 'filtersOnBuild' => \false, 'confirmationDelayed' => \false, 'errorMessage' => 'Required field is empty or invalid. Phone (+316xxxxxxxx) and birthdate fields are required.', 'phonePlaceholder' => 'Please enter your phone here. +316xxxxxxxx', 'birthdatePlaceholder' => 'Please enter your birthdate here.', 'docs' => 'https://www.mollie.com/gb/payments/ideal-in3'];
@@ -21,6 +24,10 @@ class In3 extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod imple
         $this->config['birthdatePlaceholder'] = __('Please enter your birthdate here.', 'mollie-payments-for-woocommerce');
         $this->translationsInitialized = \true;
     }
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
     public function getFormFields(array $generalFormFields): array
     {
         /**

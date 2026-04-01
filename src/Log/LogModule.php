@@ -13,11 +13,13 @@ use Mollie\Psr\Log\NullLogger;
 class LogModule implements ServiceModule
 {
     use ModuleClassNameIdTrait;
+    /** @var string */
     private $loggerSource;
     /**
      * LogModule constructor.
+     * @param string $loggerSource
      */
-    public function __construct($loggerSource)
+    public function __construct(string $loggerSource)
     {
         $this->loggerSource = $loggerSource;
     }

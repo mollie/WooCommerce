@@ -22,6 +22,9 @@ class Banktransfer extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMet
      * @var string
      */
     public const EXPIRY_DAYS_OPTION = 'order_dueDate';
+    /**
+     * @return array<mixed>
+     */
     protected function getConfig(): array
     {
         return ['id' => 'banktransfer', 'defaultTitle' => 'Bank Transfer', 'settingsDescription' => '', 'defaultDescription' => '', 'paymentFields' => \false, 'instructions' => \true, 'supports' => ['products', 'refunds'], 'filtersOnBuild' => \true, 'confirmationDelayed' => \true, 'customRedirect' => \true, 'docs' => 'https://www.mollie.com/gb/payments/bank-transfer'];
@@ -35,6 +38,10 @@ class Banktransfer extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMet
         $this->config['defaultTitle'] = __('Bank Transfer', 'mollie-payments-for-woocommerce');
         $this->translationsInitialized = \true;
     }
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
     public function getFormFields(array $generalFormFields): array
     {
         unset($generalFormFields['activate_expiry_days_setting']);

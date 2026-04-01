@@ -361,6 +361,7 @@ class Data
     /**
      * Get issuers for payment method (e.g. for iDEAL, KBC/CBC payment button, gift cards)
      *
+     * @param string      $apiKey
      * @param bool        $testMode (default: false)
      * @param string|null $methodId
      *

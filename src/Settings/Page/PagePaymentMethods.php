@@ -22,6 +22,9 @@ class PagePaymentMethods extends \Mollie\WooCommerce\Settings\Page\AbstractPage
     {
         return 'mollie_payment_methods';
     }
+    /**
+     * @return array<mixed>
+     */
     public function sections(): array
     {
         return [Header::class, Notices::class, Tabs::class, ConnectionStatusFields::class, PaymentMethods::class];

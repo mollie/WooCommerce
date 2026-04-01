@@ -23,6 +23,9 @@ class PageApiKeys extends \Mollie\WooCommerce\Settings\Page\AbstractPage
     {
         return __('API keys', 'mollie-payments-for-woocommerce');
     }
+    /**
+     * @return array<mixed>
+     */
     public function sections(): array
     {
         return [Header::class, Notices::class, Tabs::class, InstructionsConnected::class, ConnectionFields::class];

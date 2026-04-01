@@ -43,7 +43,7 @@ class RestApi
     /**
      * Handles the callback request from Mollie and processes the payment.
      *
-     * @param WP_REST_Request $request The REST request object containing callback parameters.
+     * @param WP_REST_Request<array<string, mixed>> $request The REST request object containing callback parameters.
      *
      * @return \WP_REST_Response A response object with the corresponding status code.
      * - 200: When the request is successfully handled, whether for testing, no results, or successful processing.
@@ -96,7 +96,7 @@ class RestApi
     /**
      * Handle webhook test request
      *
-     * @param WP_REST_Request $request Request object
+     * @param WP_REST_Request<array<string, mixed>> $request Request object
      * @param string $testId Test identifier
      * @return \WP_REST_Response Response object
      */

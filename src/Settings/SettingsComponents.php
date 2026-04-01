@@ -21,6 +21,9 @@ class SettingsComponents
     {
         $this->pluginPath = $pluginPath;
     }
+    /**
+     * @return array<mixed>
+     */
     public function styles()
     {
         $defaults = $this->defaultSettings();
@@ -29,6 +32,11 @@ class SettingsComponents
         $settings[StylesPropertiesDictionary::INVALID_STYLE_KEY] = $this->optionsFor(StylesPropertiesDictionary::INVALID_STYLES_OPTIONS_KEYS_MAP, $defaults);
         return $settings;
     }
+    /**
+     * @param mixed $group
+     * @param mixed $defaults
+     * @return array<mixed>
+     */
     protected function optionsFor($group, $defaults)
     {
         $settings = [];
@@ -39,6 +47,9 @@ class SettingsComponents
         }
         return $settings;
     }
+    /**
+     * @return array<mixed>
+     */
     protected function defaultSettings()
     {
         $mollieComponentsFilePath = $this->pluginPath . '/inc/settings/mollie_components.php';
@@ -48,6 +59,11 @@ class SettingsComponents
         $componentsFields = include $mollieComponentsFilePath;
         return (array) $componentsFields;
     }
+    /**
+     * @param mixed $options
+     * @param mixed $key
+     * @return mixed
+     */
     protected function defaultOptionFor($options, $key)
     {
         return isset($options[$key]['default']) ? $options[$key]['default'] : null;

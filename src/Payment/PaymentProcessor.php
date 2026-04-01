@@ -57,9 +57,12 @@ class PaymentProcessor implements PaymentProcessorInterface
      */
     protected $paymentCheckoutRedirectService;
     private PaymentGateway $gateway;
+    /** @var array<mixed> */
     private array $deprecatedGatewayInstances;
     /**
      * PaymentProcessor constructor.
+     *
+     * @param array<mixed> $deprecatedGatewayInstances
      */
     public function __construct(NoticeInterface $notice, Logger $logger, \Mollie\WooCommerce\Payment\PaymentFactory $paymentFactory, Data $dataHelper, Api $apiHelper, Settings $settingsHelper, string $pluginId, \Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService $paymentCheckoutRedirectService, array $deprecatedGatewayInstances)
     {
@@ -140,6 +143,10 @@ class PaymentProcessor implements PaymentProcessorInterface
         $apiKey = $this->settingsHelper->getApiKey();
         return $this->dataHelper->getUserMollieCustomerId($order_customer_id, $apiKey);
     }
+    /**
+     * @param mixed $paymentMethod
+     * @return string
+     */
     protected function paymentTypeBasedOnGateway($paymentMethod)
     {
         $optionName = $this->pluginId . '_' . 'api_switch';
@@ -188,7 +195,7 @@ class PaymentProcessor implements PaymentProcessorInterface
      * @param string|null $customer_id
      * @param string|false $apiKey
      *
-     * @return array
+     * @return array<mixed>
      * @throws ApiException
      */
     protected function processAsMollieOrder(\Mollie\WooCommerce\Payment\MollieOrder $paymentObject, \WC_Order $order, $customer_id, $apiKey): array
@@ -273,6 +280,7 @@ class PaymentProcessor implements PaymentProcessorInterface
     /**
      * @param mixed $molliePaymentType
      * @param int $orderId
+     * @param mixed $paymentObject
      * @param \WC_Order $order
      * @param string|null $customer_id
      * @param string|false $apiKey
@@ -307,6 +315,7 @@ class PaymentProcessor implements PaymentProcessorInterface
     }
     /**
      * @param \WC_Order $order
+     * @param mixed $payment
      */
     protected function saveMollieInfo(\WC_Order $order, $payment): void
     {
@@ -358,6 +367,9 @@ class PaymentProcessor implements PaymentProcessorInterface
         $this->notice->addNotice('error', __('Subscription switch failed, no valid mandate found. Place a completely new order to change your subscription.', 'mollie-payments-for-woocommerce'));
         throw new ApiException(esc_html__('Failed switching subscriptions, no valid mandate.', 'mollie-payments-for-woocommerce'));
     }
+    /**
+     * @return array<mixed>
+     */
     protected function subsSwitchCompleted(WC_Order $order): array
     {
         $order->payment_complete();
@@ -431,6 +443,7 @@ class PaymentProcessor implements PaymentProcessorInterface
         });
     }
     /**
+     * @param mixed $paymentObject
      * @param \WC_Order $order
      * @param mixed $initialOrderStatus
      */
@@ -450,8 +463,10 @@ class PaymentProcessor implements PaymentProcessorInterface
         }
     }
     /**
+     * @param mixed $paymentObject
      * @param int $orderId
      * @param \WC_Order $order
+     * @param mixed $paymentMethod
      */
     protected function reportPaymentSuccess($paymentObject, int $orderId, \WC_Order $order, $paymentMethod): void
     {
@@ -472,7 +487,7 @@ class PaymentProcessor implements PaymentProcessorInterface
      */
     protected function needsSubscriptionSwitch(\WC_Order $order, int $orderId): bool
     {
-        return '0.00' === $order->get_total() && $this->dataHelper->isWcSubscription($orderId) === \true && 0 !== $order->get_user_id() && wcs_order_contains_switch($order);
+        return 0.0 === (float) $order->get_total() && $this->dataHelper->isWcSubscription($orderId) === \true && 0 !== $order->get_user_id() && wcs_order_contains_switch($order);
     }
     /**
      * @param ApiException $exception

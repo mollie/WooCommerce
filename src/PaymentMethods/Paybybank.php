@@ -21,6 +21,9 @@ class Paybybank extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod
      * @var string
      */
     public const EXPIRY_DAYS_OPTION = 'order_dueDate';
+    /**
+     * @return array<mixed>
+     */
     protected function getConfig(): array
     {
         return ['id' => 'paybybank', 'defaultTitle' => 'Pay by Bank', 'settingsDescription' => '', 'defaultDescription' => '', 'paymentFields' => \false, 'instructions' => \true, 'supports' => ['products', 'refunds'], 'filtersOnBuild' => \true, 'confirmationDelayed' => \true, 'SEPA' => \true, 'customRedirect' => \true, 'docs' => 'https://www.mollie.com/gb/payments/pay-by-bank'];
@@ -33,6 +36,10 @@ class Paybybank extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod
         $this->config['defaultTitle'] = __('Pay by Bank', 'mollie-payments-for-woocommerce');
         $this->translationsInitialized = \true;
     }
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
     public function getFormFields(array $generalFormFields): array
     {
         unset($generalFormFields['activate_expiry_days_setting']);
@@ -54,10 +61,9 @@ class Paybybank extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod
         }, 10, 2);
     }
     /**
-     * @param array $args
+     * @param array<mixed> $args
      * @param \WC_Order $order
-     *
-     * @return array
+     * @return array<mixed>
      */
     public function addPaymentArguments(array $args, \WC_Order $order): array
     {

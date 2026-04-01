@@ -48,7 +48,7 @@ class GiftcardFieldsStrategy extends \Mollie\WooCommerce\PaymentMethods\PaymentF
         return $markup;
     }
     /**
-     * @param $issuers
+     * @param mixed $issuers
      */
     protected function checkSvgIssuers($issuers): string
     {

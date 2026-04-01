@@ -29,11 +29,11 @@ class PaymentDescriptionMiddleware implements \Mollie\WooCommerce\Payment\Reques
     /**
      * Invoke the middleware.
      *
-     * @param array $requestData The request data.
+     * @param array<mixed> $requestData The request data.
      * @param WC_Order $order The WooCommerce order object.
      * @param string $context The context of the request.
      * @param callable $next The next middleware to call.
-     * @return array The modified request data.
+     * @return array<mixed> The modified request data.
      */
     public function __invoke(array $requestData, WC_Order $order, string $context, $next): array
     {

@@ -5,6 +5,9 @@ namespace Mollie\WooCommerce\PaymentMethods;
 
 class Directdebit extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod implements \Mollie\WooCommerce\PaymentMethods\PaymentMethodI
 {
+    /**
+     * @return array<mixed>
+     */
     protected function getConfig(): array
     {
         return ['id' => 'directdebit', 'defaultTitle' => 'SEPA Direct Debit', 'settingsDescription' => "SEPA Direct Debit is used for recurring payments with WooCommerce Subscriptions, and will not be shown in the WooCommerce checkout for regular payments! You also need to enable iDEAL and/or other 'first' payment methods if you want to use SEPA Direct Debit.", 'defaultDescription' => '', 'paymentFields' => \false, 'instructions' => \true, 'supports' => ['products', 'refunds'], 'filtersOnBuild' => \false, 'confirmationDelayed' => \true, 'docs' => 'https://www.mollie.com/gb/payments/direct-debit'];
@@ -18,6 +21,10 @@ class Directdebit extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMeth
         $this->config['settingsDescription'] = __("SEPA Direct Debit is used for recurring payments with WooCommerce Subscriptions, and will not be shown in the WooCommerce checkout for regular payments! You also need to enable iDEAL and/or other 'first' payment methods if you want to use SEPA Direct Debit.", 'mollie-payments-for-woocommerce');
         $this->translationsInitialized = \true;
     }
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
     public function getFormFields(array $generalFormFields): array
     {
         unset($generalFormFields['display_logo']);

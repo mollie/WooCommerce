@@ -22,6 +22,9 @@ class PageAdvancedSettings extends \Mollie\WooCommerce\Settings\Page\AbstractPag
     {
         return 'mollie_advanced';
     }
+    /**
+     * @return array<mixed>
+     */
     public function sections(): array
     {
         return [Header::class, Notices::class, Tabs::class, Advanced::class];

@@ -8,6 +8,9 @@ use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Mollie\Psr\Container\ContainerInterface;
 class Creditcard extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod implements \Mollie\WooCommerce\PaymentMethods\PaymentMethodI
 {
+    /**
+     * @return array<mixed>
+     */
     protected function getConfig(): array
     {
         return ['id' => 'creditcard', 'defaultTitle' => 'Credit card', 'settingsDescription' => '', 'defaultDescription' => '', 'paymentFields' => $this->hasPaymentFields(), 'instructions' => \true, 'supports' => ['products', 'refunds', 'subscriptions'], 'filtersOnBuild' => \false, 'confirmationDelayed' => \false, 'Subscription' => \true, 'docs' => 'https://www.mollie.com/gb/payments/credit-card'];
@@ -20,11 +23,18 @@ class Creditcard extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMetho
         $this->config['defaultTitle'] = __('Credit card', 'mollie-payments-for-woocommerce');
         $this->translationsInitialized = \true;
     }
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
     public function getFormFields(array $generalFormFields): array
     {
         $componentFields = $this->includeMollieComponentsFields($generalFormFields);
         return $this->includeCreditCardIconSelector($componentFields);
     }
+    /**
+     * @return array<mixed>
+     */
     public function blocksData(ContainerInterface $container): array
     {
         $data = parent::blocksData($container);
@@ -83,6 +93,9 @@ class Creditcard extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMetho
         $fields && $componentFields = array_merge($componentFields, $fields);
         return $componentFields;
     }
+    /**
+     * @return array<mixed>
+     */
     private function creditcardIconsSelectorFields(): array
     {
         return [['title' => __('Customize Icons', 'mollie-payments-for-woocommerce'), 'type' => 'title', 'desc' => '', 'id' => 'customize_icons'], 'mollie_creditcard_icons_enabler' => ['type' => 'checkbox', 'title' => __('Enable Icons Selector', 'mollie-payments-for-woocommerce'), 'description' => __('Show customized creditcard icons on checkout page', 'mollie-payments-for-woocommerce'), 'checkboxgroup' => 'start', 'default' => 'no'], 'mollie_creditcard_icons_amex' => ['label' => __('Show American Express Icon', 'mollie-payments-for-woocommerce'), 'type' => 'checkbox', 'default' => 'no'], 'mollie_creditcard_icons_cartasi' => ['label' => __('Show Carta Si Icon', 'mollie-payments-for-woocommerce'), 'type' => 'checkbox', 'default' => 'no'], 'mollie_creditcard_icons_cartebancaire' => ['label' => __('Show Carte Bancaire Icon', 'mollie-payments-for-woocommerce'), 'type' => 'checkbox', 'default' => 'no'], 'mollie_creditcard_icons_maestro' => ['label' => __('Show Maestro Icon', 'mollie-payments-for-woocommerce'), 'type' => 'checkbox', 'default' => 'no'], 'mollie_creditcard_icons_mastercard' => ['label' => __('Show Mastercard Icon', 'mollie-payments-for-woocommerce'), 'type' => 'checkbox', 'default' => 'no'], 'mollie_creditcard_icons_visa' => ['label' => __('Show Visa Icon', 'mollie-payments-for-woocommerce'), 'type' => 'checkbox', 'default' => 'no'], 'mollie_creditcard_icons_vpay' => ['label' => __('Show VPay Icon', 'mollie-payments-for-woocommerce'), 'type' => 'checkbox', 'checkboxgroup' => 'end', 'default' => 'no']];

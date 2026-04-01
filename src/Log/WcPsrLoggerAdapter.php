@@ -11,7 +11,7 @@ class WcPsrLoggerAdapter extends AbstractLogger
 {
     use LoggerTrait;
     /**
-     * @var array
+     * @var array<string, string>
      */
     private $psrWcLoggingLevels = [LogLevel::EMERGENCY => \WC_Log_Levels::EMERGENCY, LogLevel::ALERT => \WC_Log_Levels::ALERT, LogLevel::CRITICAL => \WC_Log_Levels::CRITICAL, LogLevel::ERROR => \WC_Log_Levels::ERROR, LogLevel::WARNING => \WC_Log_Levels::WARNING, LogLevel::NOTICE => \WC_Log_Levels::NOTICE, LogLevel::INFO => \WC_Log_Levels::INFO, LogLevel::DEBUG => \WC_Log_Levels::DEBUG];
     /**
@@ -34,9 +34,10 @@ class WcPsrLoggerAdapter extends AbstractLogger
      * WcPsrLoggerAdapter constructor.
      *
      * @param \WC_Logger_Interface $wcLogger
-     * @param string               $loggingLevel
+     * @param string $loggerSource
+     * @param string $loggingLevel
      */
-    public function __construct(\WC_Logger_Interface $wcLogger, $loggerSource, string $loggingLevel = \WC_Log_Levels::DEBUG)
+    public function __construct(\WC_Logger_Interface $wcLogger, string $loggerSource, string $loggingLevel = \WC_Log_Levels::DEBUG)
     {
         $this->wcLogger = $wcLogger;
         \assert(in_array($loggingLevel, $this->psrWcLoggingLevels, \true));
@@ -48,7 +49,7 @@ class WcPsrLoggerAdapter extends AbstractLogger
      *
      * @param mixed $level
      * @param string $message
-     * @param array $context
+     * @param array<mixed> $context
      *
      * @return void
      */
@@ -75,7 +76,7 @@ class WcPsrLoggerAdapter extends AbstractLogger
     /**
      * @param string $className
      */
-    public function setName(string $className)
+    public function setName(string $className): void
     {
         \assert(\class_exists($className));
         $this->className = $className;
@@ -85,6 +86,9 @@ class WcPsrLoggerAdapter extends AbstractLogger
      * based on
      * {@link https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-3-logger-interface.md#12-message}
      */
+    /**
+     * @param array<mixed> $replace
+     */
     protected function interpolate(string $message, array $replace): string
     {
         return strtr($message, $replace);
@@ -93,8 +97,8 @@ class WcPsrLoggerAdapter extends AbstractLogger
      * Builds replacements list (for interpolate()) from the context values.
      * based on
      * {@link https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-3-logger-interface.md#12-message}
-     * @param array $context
-     * @return array
+     * @param array<mixed> $context
+     * @return array<mixed>
      */
     protected function getReplacements(array $context = []): array
     {

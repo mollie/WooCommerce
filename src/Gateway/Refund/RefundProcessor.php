@@ -8,8 +8,9 @@ use Mollie\Api\Exceptions\ApiException;
 use WC_Order;
 class RefundProcessor implements RefundProcessorInterface
 {
+    /** @var \Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler */
     private $deprecatedGatewayHelper;
-    public function __construct($deprecatedGatewayHelper)
+    public function __construct(\Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler $deprecatedGatewayHelper)
     {
         $this->deprecatedGatewayHelper = $deprecatedGatewayHelper;
     }
@@ -40,7 +41,7 @@ class RefundProcessor implements RefundProcessorInterface
             throw new Exception($error_message);
         }
         try {
-            $payment_object = $this->deprecatedGatewayHelper->getPaymentFactory()->getPaymentObject($payment_object_id, $this->deprecatedGatewayHelper->paymentMethod());
+            $payment_object = $this->deprecatedGatewayHelper->getPaymentFactory()->getPaymentObject($payment_object_id);
         } catch (ApiException $exception) {
             $exceptionMessage = $exception->getMessage();
             $this->deprecatedGatewayHelper->getLogger()->debug($exceptionMessage);

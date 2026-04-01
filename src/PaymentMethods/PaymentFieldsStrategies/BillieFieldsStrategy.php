@@ -33,7 +33,10 @@ class BillieFieldsStrategy extends \Mollie\WooCommerce\PaymentMethods\PaymentFie
         $orderId = absint($wp->query_vars['order-pay']);
         return wc_get_order($orderId);
     }
-    protected function company()
+    /**
+     * @return string
+     */
+    protected function company(): string
     {
         return '
     <p class="form-row form-row-wide" id="billing_company_field">

@@ -8,7 +8,7 @@ use Mollie\WooCommerce\MerchantCapture\ManualCaptureStatus;
 use Mollie\WooCommerce\MerchantCapture\MerchantCaptureModule;
 class VoidPayment extends \Mollie\WooCommerce\MerchantCapture\Capture\Action\AbstractPaymentCaptureAction
 {
-    public function __invoke()
+    public function __invoke(): void
     {
         $paymentId = $this->order->get_meta('_mollie_payment_id');
         $paymentCapturesApi = $this->apiHelper->getApiClient($this->apiKey)->payments;

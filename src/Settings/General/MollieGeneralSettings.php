@@ -6,6 +6,13 @@ use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 class MollieGeneralSettings
 {
+    /**
+     * @param string $defaultTitle
+     * @param string $defaultDescription
+     * @param string|bool $paymentConfirmation
+     * @param bool $isOrderApi
+     * @return array<mixed>
+     */
     public function gatewayFormFields($defaultTitle, $defaultDescription, $paymentConfirmation, bool $isOrderApi = \false)
     {
         $formFields = ['enabled' => ['title' => __('Enable/Disable', 'mollie-payments-for-woocommerce'), 'type' => 'checkbox', 'label' => sprintf(

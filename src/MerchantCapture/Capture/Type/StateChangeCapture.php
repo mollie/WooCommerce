@@ -25,7 +25,7 @@ class StateChangeCapture
             remove_action('woocommerce_order_status_changed', [$this, "orderStatusChange"]);
         });
     }
-    public function orderStatusChange(int $orderId, string $oldStatus, string $newStatus)
+    public function orderStatusChange(int $orderId, string $oldStatus, string $newStatus): void
     {
         $stateChangeCaptureEnabled = $this->container->get('merchant.manual_capture.on_status_change_enabled');
         if (empty($stateChangeCaptureEnabled) || $stateChangeCaptureEnabled === 'no') {
@@ -42,11 +42,11 @@ class StateChangeCapture
             $this->voidPayment($orderId);
         }
     }
-    protected function capturePayment(int $orderId)
+    protected function capturePayment(int $orderId): void
     {
         $this->container->get(CapturePayment::class)($orderId);
     }
-    protected function voidPayment(int $orderId)
+    protected function voidPayment(int $orderId): void
     {
         $this->container->get(VoidPayment::class)($orderId);
     }

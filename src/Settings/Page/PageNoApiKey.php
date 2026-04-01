@@ -17,6 +17,9 @@ class PageNoApiKey extends \Mollie\WooCommerce\Settings\Page\AbstractPage
     {
         return 'mollie_no_api_key';
     }
+    /**
+     * @return array<mixed>
+     */
     public function sections(): array
     {
         return [Header::class, Notices::class, InstructionsNotConnected::class, ConnectionFields::class];

@@ -291,6 +291,11 @@ class WebhookHandler
             $mollieObject->deleteSubscriptionFromPending($order);
         }
     }
+    /**
+     * @param mixed $payment
+     * @param mixed $paymentMethodTitle
+     * @return void
+     */
     public function onWebhookPending(WC_Order $order, $payment, $paymentMethodTitle)
     {
         $orderId = $order->get_id();

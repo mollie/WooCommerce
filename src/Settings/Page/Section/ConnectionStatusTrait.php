@@ -6,6 +6,9 @@ namespace Mollie\WooCommerce\Settings\Page\Section;
 use Mollie\WooCommerce\Settings\Settings;
 trait ConnectionStatusTrait
 {
+    /**
+     * @return array<mixed>
+     */
     protected function connectionStatusField(Settings $settings, bool $connectionStatus): array
     {
         return ['id' => $settings->getSettingId('connection_status'), 'title' => __('Mollie Connection Status', 'mollie-payments-for-woocommerce'), 'value' => $this->connectionStatus($settings, $connectionStatus), 'type' => 'mollie_custom_input'];

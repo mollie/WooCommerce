@@ -256,14 +256,17 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             printf('<p style="border-bottom:solid 1px #eee;padding-bottom:13px;">%s</p>', wp_kses($meta, $allowedTags));
         }, $screen, 'side', 'high');
     }
-    public function gatewaySurchargeHandling(\Mollie\WooCommerce\Gateway\Surcharge $surcharge)
+    public function gatewaySurchargeHandling(\Mollie\WooCommerce\Gateway\Surcharge $surcharge): void
     {
         new GatewaySurchargeHandler($surcharge);
     }
     /**
      * Don't show SEPA Direct Debit in WooCommerce Checkout
+     *
+     * @param array<string, mixed> $available_gateways
+     * @return array<string, mixed>
      */
-    public function disableSEPAInCheckout($available_gateways)
+    public function disableSEPAInCheckout(array $available_gateways): array
     {
         if (is_checkout()) {
             unset($available_gateways['mollie_wc_gateway_directdebit']);
@@ -272,8 +275,11 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
     }
     /**
      * Don't show Mollie Payment Methods in WooCommerce Account > Subscriptions
+     *
+     * @param array<string, mixed> $available_gateways
+     * @return array<string, mixed>
      */
-    public function disableMollieOnPaymentMethodChange($available_gateways)
+    public function disableMollieOnPaymentMethodChange(array $available_gateways): array
     {
         // Can't use $wp->request or is_wc_endpoint_url()
         // to check if this code only runs on /subscriptions and /view-subscriptions,
@@ -298,7 +304,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
      * placed with Mollie, set a flag, so status updates (like expired) aren't processed by
      * Mollie Payments for WooCommerce.
      */
-    public function setOrderPaidByOtherGateway($order_id)
+    public function setOrderPaidByOtherGateway(int $order_id): void
     {
         $order = wc_get_order($order_id);
         $mollie_payment_id = $order->get_meta('_mollie_payment_id', \true);
@@ -307,7 +313,6 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             $order->update_meta_data('_mollie_paid_by_other_gateway', '1');
             $order->save();
         }
-        return \true;
     }
     /**
      * @param ContainerInterface $container
@@ -334,7 +339,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
      * This instantiates all payment methods that we have implemented
      * disregards if they are available at Mollie or not
      *
-     * @return array
+     * @return array<string, mixed>
      */
     public function instantiatePaymentMethods(): array
     {
@@ -354,7 +359,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
     }
     /**
      * @param string $id
-     * @return PaymentMethodI | array
+     * @return PaymentMethodI|array<mixed>
      */
     public function buildPaymentMethod(string $id)
     {

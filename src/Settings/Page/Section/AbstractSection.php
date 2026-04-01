@@ -13,9 +13,13 @@ abstract class AbstractSection
     protected string $currentSection;
     protected bool $connectionStatus;
     protected bool $testModeEnabled;
+    /** @var array<mixed> */
     protected array $pages;
     protected Data $dataHelper;
     protected ContainerInterface $container;
+    /**
+     * @param array<mixed> $pages
+     */
     public function __construct(Settings $settings, string $pluginUrl, array $pages, string $currentSection, bool $connectionStatus, bool $testModeEnabled, Data $dataHelper, ContainerInterface $container)
     {
         $this->settings = $settings;
@@ -27,6 +31,9 @@ abstract class AbstractSection
         $this->dataHelper = $dataHelper;
         $this->container = $container;
     }
+    /**
+     * @return array<mixed>
+     */
     abstract public function config(): array;
     public function styles(): string
     {

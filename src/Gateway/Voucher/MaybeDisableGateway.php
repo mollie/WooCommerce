@@ -11,9 +11,9 @@ class MaybeDisableGateway
      * in the cart
      * Disable if Payments API is selected in advanced settings
      *
-     * @param array $gateways
+     * @param array<string, mixed> $gateways
      *
-     * @return array
+     * @return array<string, mixed>
      */
     public function maybeDisableMealVoucherGateway(array $gateways): array
     {

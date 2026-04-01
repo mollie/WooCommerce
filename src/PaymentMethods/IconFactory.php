@@ -21,7 +21,8 @@ class IconFactory
         $this->pluginPath = $pluginPath;
     }
     /**
-     * @return array
+     * @param mixed $paymentMethodName
+     * @return array<mixed>
      */
     public function getIconUrl($paymentMethodName): array
     {

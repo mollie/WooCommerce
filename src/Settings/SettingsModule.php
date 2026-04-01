@@ -196,8 +196,8 @@ class SettingsModule implements ServiceModule, ExecutableModule
     }
     /**
      * Add plugin action links
-     * @param array $links
-     * @return array
+     * @param array<mixed> $links
+     * @return array<mixed>
      */
     public function addPluginActionLinks(array $links): array
     {
@@ -231,8 +231,9 @@ class SettingsModule implements ServiceModule, ExecutableModule
     }
     /**
      * Save default settings if not found
-     * @param $optionName
-     * @param $defaultOptions
+     * @param mixed $optionName
+     * @param mixed $testOption
+     * @param mixed $defaultOptions
      * @return void
      */
     public function maybeSaveDefaultSettings($optionName, $testOption, $defaultOptions): void

@@ -46,7 +46,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
         }
         return \true;
     }
-    public function voucherEnabledHooks()
+    public function voucherEnabledHooks(): void
     {
         add_filter('woocommerce_product_data_tabs', static function ($tabs) {
             $tabs['MollieSettingsPage'] = ['label' => __('Mollie Settings', 'mollie-payments-for-woocommerce'), 'target' => 'mollie_options', 'class' => ['show_if_simple', 'show_if_variable']];
@@ -66,7 +66,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
     /**
      * Show voucher selector on product edit bulk action
      */
-    public function voucherBulkEditInput()
+    public function voucherBulkEditInput(): void
     {
         ?>
         <div class="inline-edit-group">
@@ -110,7 +110,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
      *
      * @param \WC_Product $product
      */
-    public function voucherBulkEditSave($product)
+    public function voucherBulkEditSave(\WC_Product $product): void
     {
         $post_id = $product->get_id();
         $optionName = Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION;
@@ -130,7 +130,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
     /**
      * Show voucher selector on create product category page.
      */
-    public function voucherTaxonomyFieldOnCreatePage()
+    public function voucherTaxonomyFieldOnCreatePage(): void
     {
         ?>
         <div class="form-field">
@@ -171,7 +171,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
     /**
      * Show voucher selector on edit product category page.
      */
-    public function voucherTaxonomyFieldOnEditPage($term)
+    public function voucherTaxonomyFieldOnEditPage(\WP_Term $term): void
     {
         $term_id = $term->term_id;
         $savedCategory = get_term_meta($term_id, '_mollie_voucher_category', \true);
@@ -240,7 +240,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
      *
      * @param int $term_id
      */
-    public function voucherTaxonomyCustomMetaSave($term_id)
+    public function voucherTaxonomyCustomMetaSave(int $term_id): void
     {
         $metaOption = filter_input(\INPUT_POST, '_mollie_voucher_category', \FILTER_SANITIZE_SPECIAL_CHARS);
         if (!$metaOption) {
@@ -256,7 +256,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
     /**
      * Contents of the Mollie options product tab.
      */
-    public function mollieOptionsProductTabContent()
+    public function mollieOptionsProductTabContent(): void
     {
         //get values manually for old settings conversion
         $product = wc_get_product();
@@ -301,7 +301,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
      *
      * @param int $post_id
      */
-    public function saveProductVoucherOptionFields($post_id)
+    public function saveProductVoucherOptionFields(int $post_id): void
     {
         //phpcs:ignore WordPress.Security.NonceVerification.Missing
         $option = filter_input(\INPUT_POST, Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION, \FILTER_SANITIZE_STRING, \FILTER_FORCE_ARRAY);
@@ -327,11 +327,11 @@ class VoucherModule implements ExecutableModule, ServiceModule
     /**
      * Add dedicated voucher category field for variations.
      * Default is the same as the general voucher category
-     * @param $loop
-     * @param $variation_data
-     * @param $variation
+     * @param int $loop
+     * @param array<mixed> $variation_data
+     * @param \WP_Post $variation
      */
-    public function voucherFieldInVariations($loop, $variation_data, $variation)
+    public function voucherFieldInVariations(int $loop, array $variation_data, \WP_Post $variation): void
     {
         //get values manually for old settings conversion
         $product = wc_get_product($variation->ID);
@@ -355,7 +355,7 @@ class VoucherModule implements ExecutableModule, ServiceModule
      * @param int $variation_id
      * @param int $i
      */
-    public function saveVoucherFieldVariations($variation_id, $i)
+    public function saveVoucherFieldVariations(int $variation_id, int $i): void
     {
         //phpcs:ignore WordPress.Security.NonceVerification.Missing
         $voucher = filter_input(\INPUT_POST, 'voucher', \FILTER_SANITIZE_STRING, \FILTER_FORCE_ARRAY);

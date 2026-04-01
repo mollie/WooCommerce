@@ -10,7 +10,7 @@ use WC_Order;
 class CustomerBirthdateMiddleware implements \Mollie\WooCommerce\Payment\Request\Middleware\RequestMiddlewareInterface
 {
     /**
-     * @var array The payment methods.
+     * @var array<mixed> The payment methods.
      */
     // phpstan:ignore [dead-code] injected via constructor but never read; likely needed once birthdate validation checks which methods require it
     // @phpstan-ignore-next-line
@@ -18,7 +18,7 @@ class CustomerBirthdateMiddleware implements \Mollie\WooCommerce\Payment\Request
     /**
      * Constructor.
      *
-     * @param array $paymentMethods The payment methods.
+     * @param array<mixed> $paymentMethods The payment methods.
      */
     public function __construct(array $paymentMethods)
     {
@@ -27,11 +27,11 @@ class CustomerBirthdateMiddleware implements \Mollie\WooCommerce\Payment\Request
     /**
      * Invoke the middleware.
      *
-     * @param array $requestData The request data.
+     * @param array<mixed> $requestData The request data.
      * @param WC_Order $order The WooCommerce order object.
      * @param string $context The context of the request.
      * @param callable $next The next middleware to call.
-     * @return array The modified request data.
+     * @return array<mixed> The modified request data.
      */
     public function __invoke(array $requestData, WC_Order $order, $context, $next): array
     {

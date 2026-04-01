@@ -5,6 +5,9 @@ namespace Mollie\WooCommerce\PaymentMethods;
 
 class Blik extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod implements \Mollie\WooCommerce\PaymentMethods\PaymentMethodI
 {
+    /**
+     * @return array<mixed>
+     */
     protected function getConfig(): array
     {
         return ['id' => 'blik', 'defaultTitle' => 'BLIK', 'settingsDescription' => '', 'defaultDescription' => '', 'paymentFields' => \false, 'instructions' => \false, 'supports' => ['products', 'refunds'], 'filtersOnBuild' => \false, 'confirmationDelayed' => \false, 'docs' => 'https://www.mollie.com/gb/payments/blik'];
@@ -18,6 +21,10 @@ class Blik extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod impl
         $this->config['defaultTitle'] = __('BLIK', 'mollie-payments-for-woocommerce');
         $this->translationsInitialized = \true;
     }
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
     public function getFormFields(array $generalFormFields): array
     {
         return $generalFormFields;

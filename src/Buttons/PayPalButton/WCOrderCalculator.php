@@ -111,6 +111,9 @@ class WCOrderCalculator extends WC_Order
         $this->set_shipping_tax((string) array_sum($shipping_taxes));
         $this->set_cart_tax((string) array_sum($cart_taxes));
     }
+    /**
+     * @param array<mixed> $args
+     */
     public function add_product($product, $qty = 1, $args = [])
     {
         // phpstan:ignore [wc-stub] parent WC_Order::add_product() declares $product as WC_Product; override loosens the type to allow null/false
@@ -142,7 +145,13 @@ class WCOrderCalculator extends WC_Order
         delete_transient('wc_order_' . $this->get_id() . '_needs_processing');
         return $item->get_id();
     }
-    protected function round($val, $precision = 0, $mode = \PHP_ROUND_HALF_UP)
+    /**
+     * @param mixed $val
+     * @param mixed $precision
+     * @param mixed $mode
+     * @return float
+     */
+    protected function round($val, $precision = 0, $mode = \PHP_ROUND_HALF_UP): float
     {
         if (!is_numeric($val)) {
             $val = floatval($val);

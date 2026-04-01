@@ -28,6 +28,11 @@ class ManualCapture
      * @psalm-suppress PossiblyNullArgument
      * @psalm-suppress MissingParamType
      */
+    /**
+     * @param array<mixed>|null $actions
+     * @param mixed $order
+     * @return array<mixed>
+     */
     public function enableOrderCaptureButton($actions, $order)
     {
         if (!is_array($actions)) {
@@ -42,6 +47,10 @@ class ManualCapture
         $actions[self::MOLLIE_MANUAL_CAPTURE_ACTION] = __('Capture authorized Mollie payment', 'mollie-payments-for-woocommerce');
         return $actions;
     }
+    /**
+     * @param array<mixed> $paymentData
+     * @return array<mixed>
+     */
     public function sendManualCaptureMode(array $paymentData): array
     {
         if ($this->container->get('merchant.manual_capture.enabled') && $this->container->get('merchant.manual_capture.cart_can_be_captured')) {

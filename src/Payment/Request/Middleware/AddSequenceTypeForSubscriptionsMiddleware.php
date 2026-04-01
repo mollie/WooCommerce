@@ -34,11 +34,11 @@ class AddSequenceTypeForSubscriptionsMiddleware implements \Mollie\WooCommerce\P
     /**
      * Invoke the middleware.
      *
-     * @param array $requestData The request data.
+     * @param array<mixed> $requestData The request data.
      * @param WC_Order $order The WooCommerce order object.
      * @param string $context The context of the request.
      * @param callable $next The next middleware to call.
-     * @return array The modified request data.
+     * @return array<mixed> The modified request data.
      */
     public function __invoke(array $requestData, WC_Order $order, $context, callable $next): array
     {
@@ -53,9 +53,9 @@ class AddSequenceTypeForSubscriptionsMiddleware implements \Mollie\WooCommerce\P
      *
      * @param int $orderId The order ID.
      * @param WC_Payment_Gateway $gateway The payment gateway.
-     * @param array $requestData The request data.
+     * @param array<mixed> $requestData The request data.
      * @param string $context The context of the request.
-     * @return array The modified request data.
+     * @return array<mixed> The modified request data.
      */
     private function addSequenceTypeForSubscriptionsFirstPayments($orderId, $gateway, $requestData, $context): array
     {
@@ -71,9 +71,9 @@ class AddSequenceTypeForSubscriptionsMiddleware implements \Mollie\WooCommerce\P
     /**
      * Add the sequence type 'first' to the request data.
      *
-     * @param array $requestData The request data.
+     * @param array<mixed> $requestData The request data.
      * @param string $context The context of the request.
-     * @return array The modified request data.
+     * @return array<mixed> The modified request data.
      */
     private function addSequenceTypeFirst($requestData, $context)
     {

@@ -109,17 +109,17 @@ class MollieSepaRecurringGatewayHandler extends \Mollie\WooCommerce\Subscription
      * @param $order
      * @param $payment
      */
-    public function handlePaidOrderWebhook(\WC_Order $order, Payment $payment): void
+    /**
+     * @param \WC_Order $order
+     * @param Payment $payment
+     */
+    public function handlePaidOrderWebhook($order, $payment): void
     {
         $orderId = $order->get_id();
         // Duplicate webhook call
         if ($this->dataService->isWcSubscription($orderId) && isset($payment->sequenceType) && $payment->sequenceType === SequenceType::SEQUENCETYPE_RECURRING) {
             $payment_method_title = $this->getPaymentMethodTitle($payment);
-            // phpstan:ignore [mollie-stub] Mollie Payment object exposes mode and id as dynamic stdClass properties not covered by type definitions
-            // @phpstan-ignore-next-line
             $isTestMode = $payment->mode === 'test';
-            // phpstan:ignore [mollie-stub] see above — $payment->id is also a dynamic property on the same object
-            // @phpstan-ignore-next-line
             $paymentMessage = $payment->id . ($isTestMode ? ' - ' . __('test mode', 'mollie-payments-for-woocommerce') : '');
             $order->add_order_note(sprintf(
                 /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */

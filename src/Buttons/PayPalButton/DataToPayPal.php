@@ -19,6 +19,7 @@ class DataToPayPal
     /**
      * Sets the appropriate data to send to PayPal script
      * Data differs between product page and cart page
+     * @return array<mixed>
      */
     public function paypalbuttonScriptData(bool $isBlock = \false): array
     {

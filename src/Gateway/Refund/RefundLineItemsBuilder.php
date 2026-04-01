@@ -29,11 +29,13 @@ class RefundLineItemsBuilder
      * @param string $currency
      * @param string $refundReason
      *
-     * @return array
+     * @param array<mixed> $toRefundRemoteItems
+     * @param array<mixed> $toRefundItems
+     * @return array<string, mixed>
      * @throws PartialRefundException
      * @throws UnexpectedValueException
      */
-    public function buildLineItems(array $toRefundRemoteItems, array $toRefundItems, $currency, $refundReason)
+    public function buildLineItems(array $toRefundRemoteItems, array $toRefundItems, $currency, $refundReason): array
     {
         $toCancel = ['lines' => []];
         $toRefund = ['description' => $refundReason, 'lines' => []];
@@ -63,10 +65,10 @@ class RefundLineItemsBuilder
      * @param WC_Order_Item $toRefundItem
      * @param string $currency
      *
-     * @return array
+     * @return array<mixed>
      * @throws PartialRefundException
      */
-    private function buildLineItem(WC_Order_Item $toRefundItem, stdClass $toRefundRemoteItem, $currency)
+    private function buildLineItem(WC_Order_Item $toRefundItem, stdClass $toRefundRemoteItem, $currency): array
     {
         $toRefundItemQuantity = abs((int) $toRefundItem->get_quantity());
         // @phpstan-ignore-next-line
@@ -86,7 +88,7 @@ class RefundLineItemsBuilder
         }
         $remoteClientData = ['id' => $toRefundRemoteItem->id, 'quantity' => $toRefundItemQuantity];
         if (!empty($toRefundRemoteItem->discountAmount)) {
-            $remoteClientData['amount'] = ['value' => $this->dataHelper->formatCurrencyValue($toRefundItemAmount, $currency), 'currency' => $currency];
+            $remoteClientData['amount'] = ['value' => $this->dataHelper->formatCurrencyValue((float) $toRefundItemAmount, $currency), 'currency' => $currency];
         }
         return $remoteClientData;
     }

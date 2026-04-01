@@ -7,7 +7,7 @@ use Mollie\WooCommerce\MerchantCapture\ManualCaptureStatus;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 class StatusRenderer
 {
-    public function __invoke(string $molliePaymentStatus)
+    public function __invoke(string $molliePaymentStatus): void
     {
         if ($molliePaymentStatus === ManualCaptureStatus::STATUS_AUTHORIZED) {
             (new \Mollie\WooCommerce\MerchantCapture\UI\StatusButton())(__('Payment authorized', 'mollie-payments-for-woocommerce'), SharedDataDictionary::STATUS_ON_HOLD);

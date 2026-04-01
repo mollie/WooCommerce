@@ -9,7 +9,7 @@ class I18n
 {
     protected ContainerInterface $serviceLocator;
     /**
-     * @var array<string, array<string, string|callable(array):string>>
+     * @var array<string, array<string, string|callable(array<mixed>):string>>
      */
     protected array $messagesGatewayMap = [];
     public function __construct(ContainerInterface $serviceLocator)
@@ -17,6 +17,10 @@ class I18n
         $this->serviceLocator = $serviceLocator;
     }
     /**
+     * @throws Exception
+     */
+    /**
+     * @param array<mixed> $params
      * @throws Exception
      */
     public function translate(string $messageKey, string $gatewayId, array $params = []): string
@@ -31,6 +35,9 @@ class I18n
         }
         return (string) $message;
     }
+    /**
+     * @return array<mixed>
+     */
     protected function messageMap(string $gatewayId): array
     {
         if (!isset($this->messagesGatewayMap[$gatewayId])) {

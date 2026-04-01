@@ -7,6 +7,9 @@ use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Mollie\WooCommerce\Payment\PaymentProcessor;
 class Advanced extends \Mollie\WooCommerce\Settings\Page\Section\AbstractSection
 {
+    /**
+     * @return array<mixed>
+     */
     public function config(): array
     {
         $this->cleanDbIfRequested();
@@ -52,6 +55,9 @@ class Advanced extends \Mollie\WooCommerce\Settings\Page\Section\AbstractSection
         ))], ['id' => $this->settings->getSettingId('gatewayFeeLabel'), 'title' => __('Surcharge gateway fee label', 'mollie-payments-for-woocommerce'), 'type' => 'text', 'custom_attributes' => ['maxlength' => '30'], 'default' => __('Gateway Fee', 'mollie-payments-for-woocommerce'), 'desc' => __('This is the label will appear in frontend when the surcharge applies', 'mollie-payments-for-woocommerce')], ['id' => $this->settings->getSettingId('removeOptionsAndTransients'), 'title' => __('Remove Mollie data from Database on uninstall', 'mollie-payments-for-woocommerce'), 'type' => 'checkbox', 'default' => 'no', 'desc' => __("Remove options and scheduled actions from database when uninstalling the plugin.", "mollie-payments-for-woocommerce") . ' (<a href="' . esc_url($this->cleanDbUrl()) . '">' . strtolower(__('Clear now', 'mollie-payments-for-woocommerce')) . '</a>)'], ['id' => $this->settings->getSettingId('sectionend'), 'type' => 'sectionend']];
         return apply_filters('inpsyde.mollie-advanced-settings', $config, $this->settings->getPluginId());
     }
+    /**
+     * @return array<mixed>
+     */
     protected function paymentDescriptionLabels(): array
     {
         return ['{orderNumber}' => _x('Order number', 'Label {orderNumber} description for payment description options', 'mollie-payments-for-woocommerce'), '{storeName}' => _x('Site Title', 'Label {storeName} description for payment description options', 'mollie-payments-for-woocommerce'), '{customer.firstname}' => _x('Customer\'s first name', 'Label {customer.firstname} description for payment description options', 'mollie-payments-for-woocommerce'), '{customer.lastname}' => _x('Customer\'s last name', 'Label {customer.lastname} description for payment description options', 'mollie-payments-for-woocommerce'), '{customer.company}' => _x('Customer\'s company name', 'Label {customer.company} description for payment description options', 'mollie-payments-for-woocommerce')];
@@ -67,6 +73,9 @@ class Advanced extends \Mollie\WooCommerce\Settings\Page\Section\AbstractSection
         <?php 
         return ob_get_clean();
     }
+    /**
+     * @return void
+     */
     protected function cleanDbIfRequested()
     {
         if (isset($_GET['cleanDB-mollie']) && wp_verify_nonce(filter_input(\INPUT_GET, 'nonce_mollie_cleanDb', \FILTER_SANITIZE_SPECIAL_CHARS), 'nonce_mollie_cleanDb')) {

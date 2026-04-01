@@ -29,6 +29,9 @@ class Voucher extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod i
      * @var string
      */
     public const MOLLIE_VOUCHER_CATEGORY_OPTION = '_mollie_voucher_category';
+    /**
+     * @return array<mixed>
+     */
     protected function getConfig(): array
     {
         return ['id' => 'voucher', 'defaultTitle' => 'Voucher', 'settingsDescription' => '', 'defaultDescription' => '', 'paymentFields' => \false, 'instructions' => \false, 'supports' => ['products'], 'filtersOnBuild' => \true, 'confirmationDelayed' => \false, 'docs' => 'https://www.mollie.com/gb/payments/meal-eco-gift-vouchers'];
@@ -82,6 +85,10 @@ class Voucher extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod i
         $this->config['defaultTitle'] = __('Voucher', 'mollie-payments-for-woocommerce');
         $this->translationsInitialized = \true;
     }
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
     public function getFormFields(array $generalFormFields): array
     {
         $paymentMethodFormFieds = ['mealvoucher_category_default' => [
@@ -113,7 +120,7 @@ class Voucher extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod i
      *
      * @param \WC_Product $product The WooCommerce product for which to retrieve voucher categories.
      *
-     * @return array An array of category identifiers (or names) associated with the product.
+     * @return array<mixed> An array of category identifiers (or names) associated with the product.
      *               Returns an empty array if no categories are found.
      */
     public static function getCategoriesForProduct(\WC_Product $product): array
@@ -164,9 +171,9 @@ class Voucher extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod i
      * Filters a list of categories to include only the predefined valid categories.
      * This ensures the resulting array contains only categories recognized by the system.
      *
-     * @param array $categories The array of categories to be cleaned.
+     * @param array<mixed> $categories The array of categories to be cleaned.
      *
-     * @return array An array containing only valid category identifiers.
+     * @return array<mixed> An array containing only valid category identifiers.
      *               Returns an empty array if no valid categories are found.
      */
     public static function cleanCategories(array $categories): array
@@ -178,7 +185,7 @@ class Voucher extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod i
     /**
      * Retrieve the default categories saved in the db option
      *
-     * @return array
+     * @return array<mixed>
      */
     public static function voucherDefaultCategories(): array
     {

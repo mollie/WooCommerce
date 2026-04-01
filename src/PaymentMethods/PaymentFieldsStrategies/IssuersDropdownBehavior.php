@@ -25,7 +25,8 @@ trait IssuersDropdownBehavior
         return $dataHelper->getMethodIssuers($apiKey, $testMode, $gateway->paymentMethod()->getProperty('id'));
     }
     /**
-     * @return string|NULL
+     * @param mixed $gateway
+     * @return string|null
      */
     public function getSelectedIssuer($gateway): ?string
     {

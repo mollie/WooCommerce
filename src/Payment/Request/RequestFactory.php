@@ -33,7 +33,7 @@ class RequestFactory
      * @param string $type The type of request ('order' or 'payment').
      * @param WC_Order $order The WooCommerce order object.
      * @param string|null $customerId The customer ID for the request.
-     * @return array The generated request data.
+     * @return array<mixed> The generated request data.
      * @throws \InvalidArgumentException If the strategy for the given type is invalid.
      */
     public function createRequest(string $type, WC_Order $order, $customerId): array

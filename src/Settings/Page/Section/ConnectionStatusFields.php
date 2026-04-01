@@ -6,10 +6,16 @@ namespace Mollie\WooCommerce\Settings\Page\Section;
 class ConnectionStatusFields extends \Mollie\WooCommerce\Settings\Page\Section\AbstractSection
 {
     use \Mollie\WooCommerce\Settings\Page\Section\ConnectionStatusTrait;
+    /**
+     * @return array<mixed>
+     */
     public function config(): array
     {
         return [['id' => $this->settings->getSettingId('title'), 'title' => '', 'type' => 'title'], $this->connectionStatusField($this->settings, $this->connectionStatus), $this->refreshStatusField(), ['id' => $this->settings->getSettingId('sectionend'), 'type' => 'sectionend']];
     }
+    /**
+     * @return array<mixed>
+     */
     public function refreshStatusField(): array
     {
         $refreshNonce = wp_create_nonce('nonce_mollie_refresh_methods');

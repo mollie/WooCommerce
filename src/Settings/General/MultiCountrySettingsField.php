@@ -10,6 +10,9 @@ class MultiCountrySettingsField implements SettingsFieldRendererInterface
      * @var mixed
      */
     private $paymentMethod;
+    /**
+     * @param mixed $paymentMethod
+     */
     public function __construct($paymentMethod)
     {
         $this->paymentMethod = $paymentMethod;
@@ -18,6 +21,10 @@ class MultiCountrySettingsField implements SettingsFieldRendererInterface
     {
         return $this->multiSelectCountry($this->paymentMethod);
     }
+    /**
+     * @param mixed $paymentMethod
+     * @return mixed
+     */
     public function multiSelectCountry($paymentMethod)
     {
         $selections = (array) $paymentMethod->getProperty('allowed_countries', []);

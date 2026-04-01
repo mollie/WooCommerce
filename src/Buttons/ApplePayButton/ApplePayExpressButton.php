@@ -26,10 +26,16 @@ class ApplePayExpressButton extends AbstractExpressButton
     {
         return !empty($_SERVER['HTTPS']) && $this->isEnabledInSettings();
     }
+    /**
+     * @return array<mixed>
+     */
     public function getAjaxHandlers(): array
     {
         return $this->ajaxRequests->getHandlers();
     }
+    /**
+     * @return array<mixed>
+     */
     public function getScriptData(): array
     {
         return [

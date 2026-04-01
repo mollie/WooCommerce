@@ -16,6 +16,9 @@ class Notices extends \Mollie\WooCommerce\Settings\Page\Section\AbstractSection
      * @var mixed
      */
     private $paymentMethods;
+    /**
+     * @return array<mixed>
+     */
     public function config(): array
     {
         return [['id' => $this->settings->getSettingId('notices'), 'type' => 'mollie_content', 'value' => $this->content()]];
@@ -100,6 +103,9 @@ class Notices extends \Mollie\WooCommerce\Settings\Page\Section\AbstractSection
         }
         return $isKlarnaEnabled;
     }
+    /**
+     * @return string|false
+     */
     protected function notice(string $message)
     {
         //notice-warning is-dismissible

@@ -5,6 +5,9 @@ namespace Mollie\WooCommerce\Settings\Page\Section;
 
 class Header extends \Mollie\WooCommerce\Settings\Page\Section\AbstractSection
 {
+    /**
+     * @return array<mixed>
+     */
     public function config(): array
     {
         return [['id' => $this->settings->getSettingId('header'), 'type' => 'mollie_content', 'value' => $this->content()]];

@@ -14,13 +14,13 @@ use WC_Order;
 class MiddlewareHandler
 {
     /**
-     * @var array The list of middleware.
+     * @var array<mixed> The list of middleware.
      */
     private array $middlewares;
     /**
      * MiddlewareHandler constructor.
      *
-     * @param array $middlewares The list of middleware.
+     * @param array<mixed> $middlewares The list of middleware.
      */
     public function __construct(array $middlewares)
     {
@@ -29,10 +29,10 @@ class MiddlewareHandler
     /**
      * Handle the request data through the middleware chain.
      *
-     * @param array $requestData The request data.
+     * @param array<mixed> $requestData The request data.
      * @param WC_Order $order The WooCommerce order object.
      * @param string $context The context of the request.
-     * @return array The modified request data.
+     * @return array<mixed> The modified request data.
      */
     public function handle(array $requestData, WC_Order $order, $context): array
     {
@@ -42,7 +42,7 @@ class MiddlewareHandler
     /**
      * Create a chain of middleware.
      *
-     * @param array $middlewares The list of middleware.
+     * @param array<mixed> $middlewares The list of middleware.
      * @return callable The middleware chain.
      */
     private function createMiddlewareChain(array $middlewares): callable

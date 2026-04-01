@@ -33,7 +33,7 @@ abstract class AbstractPaymentMethod implements \Mollie\WooCommerce\PaymentMetho
      */
     protected $config = [];
     /**
-     * @var array
+     * @var array<mixed>
      */
     protected $settings = [];
     /** @var Surcharge */
@@ -42,11 +42,21 @@ abstract class AbstractPaymentMethod implements \Mollie\WooCommerce\PaymentMetho
      * @var bool
      */
     protected bool $translationsInitialized = \false;
+    /**
+     * @return array<mixed>
+     */
     abstract protected function getConfig(): array;
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
     abstract public function getFormFields(array $generalFormFields): array;
     public function filtersOnBuild(): void
     {
     }
+    /**
+     * @param mixed $payment
+     */
     public function debugGiftcardDetails($payment, \WC_Order $order): void
     {
     }
@@ -75,6 +85,9 @@ abstract class AbstractPaymentMethod implements \Mollie\WooCommerce\PaymentMetho
         $config = $this->getConfig();
         return $config['id'];
     }
+    /**
+     * @return array<mixed>
+     */
     public function getUploadedImage(): array
     {
         $settings = $this->getSettings();
@@ -142,7 +155,7 @@ abstract class AbstractPaymentMethod implements \Mollie\WooCommerce\PaymentMetho
     /**
      * Retrieve the user's payment method settings or the default values
      * if there are no settings saved for this payment method it will save the defaults
-     * @return array
+     * @return array<mixed>
      */
     public function getSettings(): array
     {
@@ -155,7 +168,7 @@ abstract class AbstractPaymentMethod implements \Mollie\WooCommerce\PaymentMetho
     }
     /**
      * Update the payment method's settings with defaults if not exist
-     * @return array
+     * @return array<mixed>
      */
     public function updateSettingsWithDefaults(ContainerInterface $container): array
     {
@@ -181,7 +194,7 @@ abstract class AbstractPaymentMethod implements \Mollie\WooCommerce\PaymentMetho
     /**
      * Retrieve the payment method's property from config or settings
      * @param string $propertyName
-     * @return false|mixed
+     * @return mixed
      */
     public function getProperty(string $propertyName)
     {
@@ -200,7 +213,7 @@ abstract class AbstractPaymentMethod implements \Mollie\WooCommerce\PaymentMetho
     }
     /**
      * Merge settings with config properties
-     * @return array
+     * @return array<mixed>
      */
     public function getMergedProperties(): array
     {
@@ -209,7 +222,7 @@ abstract class AbstractPaymentMethod implements \Mollie\WooCommerce\PaymentMetho
     /**
      * Default values for the initial settings saved
      *
-     * @return array
+     * @return array<mixed>
      */
     public function defaultSettings(ContainerInterface $container): array
     {
@@ -391,6 +404,9 @@ abstract class AbstractPaymentMethod implements \Mollie\WooCommerce\PaymentMetho
     {
         return \false;
     }
+    /**
+     * @return array<mixed>
+     */
     public function blocksData(ContainerInterface $container): array
     {
         $title = $this->title($container);
@@ -407,6 +423,9 @@ abstract class AbstractPaymentMethod implements \Mollie\WooCommerce\PaymentMetho
         }
         return $data;
     }
+    /**
+     * @return array<mixed>|null
+     */
     protected function blocksExpressData(ContainerInterface $container): ?array
     {
         return null;

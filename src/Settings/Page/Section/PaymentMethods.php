@@ -7,6 +7,9 @@ use Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 class PaymentMethods extends \Mollie\WooCommerce\Settings\Page\Section\AbstractSection
 {
+    /**
+     * @return array<mixed>
+     */
     public function config(): array
     {
         return [['id' => $this->settings->getSettingId('notices'), 'type' => 'mollie_content', 'value' => $this->content()]];
@@ -153,6 +156,9 @@ class PaymentMethods extends \Mollie\WooCommerce\Settings\Page\Section\AbstractS
         <?php 
         return ob_get_clean();
     }
+    /**
+     * @param mixed $enabledInMollie
+     */
     protected function paymentGatewayButton(AbstractPaymentMethod $paymentMethod, $enabledInMollie): string
     {
         $documentationLink = $paymentMethod->getProperty('docs');

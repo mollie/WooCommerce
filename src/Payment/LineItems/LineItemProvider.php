@@ -6,5 +6,8 @@ namespace Mollie\WooCommerce\Payment\LineItems;
 use WC_Order;
 interface LineItemProvider
 {
+    /**
+     * @return array<mixed>
+     */
     public function order_lines(WC_Order $order): array;
 }

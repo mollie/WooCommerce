@@ -468,12 +468,14 @@ class MollieObject
      */
     public function getMolliePaymentIdFromPaymentObject()
     {
+        return null;
     }
     /**
      * @return string|null
      */
     public function getMollieCustomerIdFromPaymentObject()
     {
+        return null;
     }
     /**
      * Process a payment object refund

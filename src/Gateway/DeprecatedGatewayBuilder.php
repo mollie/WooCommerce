@@ -19,6 +19,9 @@ use Mollie\Psr\Container\ContainerInterface;
 use Mollie\Psr\Log\LoggerInterface as Logger;
 class DeprecatedGatewayBuilder
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function instantiatePaymentMethodGateways(ContainerInterface $container): array
     {
         $logger = $container->get(Logger::class);

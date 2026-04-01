@@ -45,7 +45,7 @@ class ConstraintsChecker
      *
      * @return bool
      */
-    public function handleActivation()
+    public function handleActivation(): bool
     {
         try {
             $this->checker->check();
@@ -64,7 +64,12 @@ class ConstraintsChecker
             return \false;
         }
     }
-    public function maybeShowWarning($constraint, $warning)
+    /**
+     * @param mixed $constraint
+     * @param mixed $warning
+     * @return bool
+     */
+    public function maybeShowWarning($constraint, $warning): bool
     {
         $collectionFactory = new ConstraintsCollectionFactory();
         $constraintsCollection = $collectionFactory->create($constraint);
@@ -81,7 +86,10 @@ class ConstraintsChecker
             return \false;
         }
     }
-    protected function showNotice(array $errors)
+    /**
+     * @param array<mixed> $errors
+     */
+    protected function showNotice(array $errors): void
     {
         $message = sprintf(
             /* translators: Placeholder 1: opening tags Placeholder 2: closing tags */

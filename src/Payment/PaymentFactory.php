@@ -10,7 +10,9 @@ use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 class PaymentFactory
 {
+    /** @var mixed */
     private $mollieOrderFactory;
+    /** @var mixed */
     private $molliePaymentFactory;
     /**
      * PaymentFactory constructor.
@@ -21,7 +23,7 @@ class PaymentFactory
         $this->molliePaymentFactory = $molliePaymentFactory;
     }
     /**
-     * @param $data
+     * @param mixed $data
      * @return bool|MollieOrder|MolliePayment
      * @throws ApiException
      */

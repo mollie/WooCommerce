@@ -46,6 +46,10 @@ class ApplePayDataObjectHttp
      */
     protected $shippingAddress = [];
     /**
+     * @var mixed
+     */
+    public $callerPage;
+    /**
      * @var array<mixed>
      */
     protected $errors = [];
@@ -157,8 +161,7 @@ class ApplePayDataObjectHttp
         if (!$this->isNonceValid()) {
             return;
         }
-        // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        $data = filter_var_array($_POST, \FILTER_SANITIZE_SPECIAL_CHARS);
+        $data = $this->getFilteredRequestData();
         if (!is_array($data)) {
             return;
         }
@@ -304,6 +307,9 @@ class ApplePayDataObjectHttp
         $simplifiedContactInfo = array_map('sanitize_text_field', $data);
         $this->simplifiedContact = $this->simplifiedAddress($simplifiedContactInfo);
     }
+    /**
+     * @param array<mixed> $data
+     */
     protected function updateShippingMethod(array $data): void
     {
         if (array_key_exists(\Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::SHIPPING_METHOD, $data)) {
@@ -317,17 +323,26 @@ class ApplePayDataObjectHttp
             }
         }
     }
+    /**
+     * @return array<mixed>
+     */
     public function billingAddress(): array
     {
         return $this->billingAddress;
     }
+    /**
+     * @return array<mixed>
+     */
     public function shippingAddress(): array
     {
         return $this->shippingAddress;
     }
+    /**
+     * @return array<mixed>
+     */
     public function shippingMethod(): array
     {
-        return $this->shippingMethod ?? [];
+        return $this->shippingMethod;
     }
     public function needShipping(): bool
     {
@@ -377,7 +392,7 @@ class ApplePayDataObjectHttp
         return (bool) wp_verify_nonce($nonce, 'woocommerce-process_checkout') || (bool) wp_verify_nonce($nonce, 'mollie_apple_pay_blocks');
     }
     /**
-     * @return array|false|null
+     * @return array<mixed>|false|null
      */
     public function getFilteredRequestData()
     {

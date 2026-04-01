@@ -10,9 +10,8 @@ class Giftcard extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod 
     /**
      * Method to print the giftcard payment details on debug and order note
      *
-     * @param           $payment
-     * @param \WC_Order  $order
-     *
+     * @param mixed $payment
+     * @param \WC_Order $order
      */
     public function debugGiftcardDetails($payment, \WC_Order $order): void
     {
@@ -41,6 +40,9 @@ class Giftcard extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod 
         }
         $order->add_order_note($orderNoteLine);
     }
+    /**
+     * @return array<mixed>
+     */
     protected function getConfig(): array
     {
         return ['id' => 'giftcard', 'defaultTitle' => 'Gift cards', 'settingsDescription' => '', 'defaultDescription' => 'Select your gift card', 'paymentFields' => \true, 'instructions' => \false, 'supports' => ['products'], 'filtersOnBuild' => \false, 'confirmationDelayed' => \false, 'docs' => 'https://www.mollie.com/gb/payments/gift-cards'];
@@ -54,6 +56,10 @@ class Giftcard extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod 
         $this->config['defaultDescription'] = __('Select your gift card', 'mollie-payments-for-woocommerce');
         $this->translationsInitialized = \true;
     }
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
     public function getFormFields(array $generalFormFields): array
     {
         $searchKey = 'advanced';

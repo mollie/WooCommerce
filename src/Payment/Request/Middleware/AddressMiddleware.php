@@ -170,6 +170,7 @@ class AddressMiddleware implements \Mollie\WooCommerce\Payment\Request\Middlewar
      * Format the phone number in E.164.
      *
      * @param string $phone The phone number.
+     * @param mixed $countryCode The country code.
      * @return string|null The formatted phone number.
      */
     protected function getFormatedPhoneNumber(string $phone, $countryCode): ?string
@@ -193,6 +194,10 @@ class AddressMiddleware implements \Mollie\WooCommerce\Payment\Request\Middlewar
         }
         return null;
     }
+    /**
+     * @param mixed $billing_phone
+     * @return int|false
+     */
     private function isPhoneValid($billing_phone)
     {
         return preg_match('/^\+[1-9]\d{10,13}$|^[1-9]\d{9,13}$|^06\d{9,13}$/', $billing_phone);

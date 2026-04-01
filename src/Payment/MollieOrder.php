@@ -103,6 +103,7 @@ class MollieOrder extends \Mollie\WooCommerce\Payment\MollieObject
         if (isset($payment->_embedded->payments[0]->id)) {
             return $payment->_embedded->payments[0]->id;
         }
+        return null;
     }
     /**
      * @param mixed $payment
@@ -117,6 +118,7 @@ class MollieOrder extends \Mollie\WooCommerce\Payment\MollieObject
         if (isset($payment->_embedded->payments[0]->customerId)) {
             return $payment->_embedded->payments[0]->customerId;
         }
+        return null;
     }
     /**
      * @param mixed $payment
@@ -131,6 +133,7 @@ class MollieOrder extends \Mollie\WooCommerce\Payment\MollieObject
         if (isset($payment->_embedded->payments[0]->sequenceType)) {
             return $payment->_embedded->payments[0]->sequenceType;
         }
+        return null;
     }
     /**
      * @param mixed $payment

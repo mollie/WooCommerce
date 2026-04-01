@@ -32,11 +32,11 @@ class Surcharge
         return __('Gateway Fee', 'mollie-payments-for-woocommerce');
     }
     /**
-     * @param $description
+     * @param string $description
      * @param PaymentMethodI $paymentMethod
      * @return mixed|string
      */
-    public function buildDescriptionWithSurcharge($description, PaymentMethodI $paymentMethod)
+    public function buildDescriptionWithSurcharge(string $description, PaymentMethodI $paymentMethod)
     {
         $surchargeType = $paymentMethod->getProperty('payment_surcharge');
         if (!$surchargeType || $surchargeType === self::NO_FEE) {
@@ -67,7 +67,7 @@ class Surcharge
     }
     /**
      * @param float $totalAmount
-     * @param array $gatewaySettings
+     * @param array<string, mixed> $gatewaySettings
      * @return bool
      */
     public function aboveMaxLimit(float $totalAmount, array $gatewaySettings): bool
@@ -83,7 +83,7 @@ class Surcharge
     }
     /**
      * @param WC_Cart $cart
-     * @param array $gatewaySettings
+     * @param array<string, mixed> $gatewaySettings
      * @return float
      */
     public function calculateFeeAmount(WC_Cart $cart, array $gatewaySettings): float
@@ -100,7 +100,7 @@ class Surcharge
     }
     /**
      * @param WC_Order $order
-     * @param array $gatewaySettings
+     * @param array<string, mixed> $gatewaySettings
      * @return float|int|mixed
      */
     public function calculateFeeAmountOrder(WC_Order $order, array $gatewaySettings)
@@ -122,7 +122,7 @@ class Surcharge
     }
     /**
      * @param WC_Cart $cart
-     * @param array $gatewaySettings
+     * @param array<string, mixed> $gatewaySettings
      * @return float
      */
     protected function calculate_no_fee(WC_Cart $cart, array $gatewaySettings): float
@@ -131,7 +131,7 @@ class Surcharge
     }
     /**
      * @param WC_Cart|WC_Order $cart
-     * @param array $gatewaySettings
+     * @param array<string, mixed> $gatewaySettings
      * @return float|int
      */
     protected function calculate_fixed_fee($cart, array $gatewaySettings)
@@ -140,7 +140,7 @@ class Surcharge
     }
     /**
      * @param WC_Cart $cart
-     * @param array $gatewaySettings
+     * @param array<string, mixed> $gatewaySettings
      * @return int|mixed
      */
     protected function calculate_percentage(WC_Cart $cart, array $gatewaySettings)
@@ -157,7 +157,7 @@ class Surcharge
     }
     /**
      * @param WC_Order $order
-     * @param array $gatewaySettings
+     * @param array<string, mixed> $gatewaySettings
      * @return float|mixed
      */
     protected function calculate_percentage_order(WC_Order $order, array $gatewaySettings)
@@ -172,7 +172,7 @@ class Surcharge
     }
     /**
      * @param WC_Cart $cart
-     * @param array $gatewaySettings
+     * @param array<string, mixed> $gatewaySettings
      * @return mixed
      */
     protected function calculate_fixed_fee_percentage(WC_Cart $cart, array $gatewaySettings)
@@ -184,7 +184,7 @@ class Surcharge
     }
     /**
      * @param WC_Order $order
-     * @param array $gatewaySettings
+     * @param array<string, mixed> $gatewaySettings
      *
      * @return mixed
      */
@@ -197,7 +197,7 @@ class Surcharge
     }
     /**
      * @param float $fee
-     * @param array $gatewaySettings
+     * @param array<string, mixed> $gatewaySettings
      * @return float
      */
     protected function addMaxLimit(float $fee, array $gatewaySettings): float
@@ -212,10 +212,10 @@ class Surcharge
         return $fee;
     }
     /**
-     * @param $paymentMethod
+     * @param PaymentMethodI $paymentMethod
      * @return false|string
      */
-    protected function name_fixed_fee($paymentMethod)
+    protected function name_fixed_fee(PaymentMethodI $paymentMethod)
     {
         if (!$paymentMethod->getProperty(self::FIXED_FEE) || $paymentMethod->getProperty(self::FIXED_FEE) <= 0) {
             return \false;
@@ -226,10 +226,10 @@ class Surcharge
         return sprintf(__(' + %1$s %2$s fee might apply', 'mollie-payments-for-woocommerce'), $currency, $amountFee);
     }
     /**
-     * @param $paymentMethod
+     * @param PaymentMethodI $paymentMethod
      * @return false|string
      */
-    protected function name_percentage($paymentMethod)
+    protected function name_percentage(PaymentMethodI $paymentMethod)
     {
         if (!$paymentMethod->getProperty(self::PERCENTAGE) || $paymentMethod->getProperty(self::PERCENTAGE) <= 0) {
             return \false;
@@ -239,10 +239,10 @@ class Surcharge
         return sprintf(__(' + %1$s%% fee might apply', 'mollie-payments-for-woocommerce'), $amountFee);
     }
     /**
-     * @param $paymentMethod
+     * @param PaymentMethodI $paymentMethod
      * @return false|string
      */
-    protected function name_fixed_fee_percentage($paymentMethod)
+    protected function name_fixed_fee_percentage(PaymentMethodI $paymentMethod)
     {
         if (!$paymentMethod->getProperty(self::FIXED_FEE) || !$paymentMethod->getProperty(self::PERCENTAGE) || $paymentMethod->getProperty(self::PERCENTAGE) <= 0 || $paymentMethod->getProperty(self::FIXED_FEE) <= 0) {
             return \false;
@@ -259,11 +259,11 @@ class Surcharge
         );
     }
     /**
-     * @param $surchargeType
+     * @param string $surchargeType
      * @param PaymentMethodI $paymentMethod
      * @return false|string
      */
-    protected function feeTextByType($surchargeType, PaymentMethodI $paymentMethod)
+    protected function feeTextByType(string $surchargeType, PaymentMethodI $paymentMethod)
     {
         switch ($surchargeType) {
             case 'fixed_fee':

@@ -5,6 +5,9 @@ namespace Mollie\WooCommerce\PaymentMethods;
 
 class Mybank extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod implements \Mollie\WooCommerce\PaymentMethods\PaymentMethodI
 {
+    /**
+     * @return array<mixed>
+     */
     protected function getConfig(): array
     {
         return ['id' => 'mybank', 'defaultTitle' => 'MyBank', 'settingsDescription' => 'To accept payments via MyBank', 'defaultDescription' => '', 'paymentFields' => \false, 'instructions' => \true, 'supports' => ['products', 'refunds'], 'filtersOnBuild' => \false, 'confirmationDelayed' => \false, 'docs' => ''];
@@ -18,6 +21,10 @@ class Mybank extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod im
         $this->config['settingsDescription'] = __('To accept payments via MyBank', 'mollie-payments-for-woocommerce');
         $this->translationsInitialized = \true;
     }
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
     public function getFormFields(array $generalFormFields): array
     {
         return $generalFormFields;

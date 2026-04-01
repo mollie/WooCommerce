@@ -12,6 +12,14 @@ on:
           - e2e:test:critical
           - e2e:test:refund
           - e2e:test:all
+  pull_request:
+    branches: [dev/develop]
+    paths:
+      - 'src/**'
+      - 'lib/**'
+      - 'public/**'
+      - 'package.json'
+      - 'composer.json'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -36,7 +44,7 @@ jobs:
     needs: build
     uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@fix/test-playwright
     with:
-      PLAYWRIGHT_SCRIPT: ${{ inputs.TEST_SUITE }}
+      PLAYWRIGHT_SCRIPT: ${{ inputs.TEST_SUITE || 'e2e:test:critical' }}
       ARTIFACT_PATH: |
         artifacts/*
         playwright-report/

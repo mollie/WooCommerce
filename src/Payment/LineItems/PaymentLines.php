@@ -1,7 +1,7 @@
 <?php
 
 declare (strict_types=1);
-namespace Mollie\WooCommerce\Payment;
+namespace Mollie\WooCommerce\Payment\LineItems;
 
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
@@ -10,7 +10,7 @@ use WC_Order;
 use WC_Order_Item;
 use WC_Order_Item_Fee;
 use WC_Tax;
-class PaymentLines
+class PaymentLines implements \Mollie\WooCommerce\Payment\LineItems\LineItemProvider
 {
     /**
      * Formatted order lines.
@@ -51,7 +51,7 @@ class PaymentLines
      *
      * @return array
      */
-    public function order_lines($order)
+    public function order_lines(WC_Order $order): array
     {
         $this->order_lines = [];
         $this->order = $order;
@@ -61,7 +61,7 @@ class PaymentLines
         $this->process_fees();
         $this->process_gift_cards();
         $this->process_mismatch();
-        return ['lines' => $this->get_order_lines()];
+        return $this->get_order_lines();
     }
     private function process_mismatch()
     {

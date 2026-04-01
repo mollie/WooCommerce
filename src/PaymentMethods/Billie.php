@@ -50,6 +50,15 @@ class Billie extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod im
     {
         unset($generalFormFields[1]);
         unset($generalFormFields['allowed_countries']);
+        /**
+         * This payment method requires line items to be sent
+         *
+         * @see https://docs.mollie.com/reference/create-payment
+         * @see https://docs.mollie.com/reference/create-order
+         */
+        if (isset($generalFormFields['hide_order_lines'])) {
+            unset($generalFormFields['hide_order_lines']);
+        }
         return $generalFormFields;
     }
     /**

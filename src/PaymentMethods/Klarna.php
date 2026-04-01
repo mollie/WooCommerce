@@ -20,6 +20,15 @@ class Klarna extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod im
     }
     public function getFormFields($generalFormFields): array
     {
+        /**
+         * This payment method requires line items to be sent
+         *
+         * @see https://docs.mollie.com/reference/create-payment
+         * @see https://docs.mollie.com/reference/create-order
+         */
+        if (isset($generalFormFields['hide_order_lines'])) {
+            unset($generalFormFields['hide_order_lines']);
+        }
         return $generalFormFields;
     }
 }

@@ -20,8 +20,23 @@ class ManualCapture
         add_action('woocommerce_order_action_' . self::MOLLIE_MANUAL_CAPTURE_ACTION, [$this, 'manualCapture']);
         add_filter('woocommerce_mollie_wc_gateway_creditcard_args', [$this, 'sendManualCaptureMode']);
     }
-    public function enableOrderCaptureButton(array $actions, \WC_Order $order): array
+    /**
+     * @param ?array $actions
+     * @param ?\WC_Order $order
+     * @return array|mixed
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     * @psalm-suppress PossiblyNullArgument
+     * @psalm-suppress MissingParamType
+     */
+    public function enableOrderCaptureButton($actions, $order)
     {
+        if (!is_array($actions)) {
+            return [];
+        }
+        if (!$order instanceof \WC_Order) {
+            return $actions;
+        }
         if (!$this->container->get('merchant.manual_capture.can_capture_the_order')($order)) {
             return $actions;
         }

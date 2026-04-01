@@ -8,9 +8,10 @@ use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrder;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\MolliePayment;
-use Mollie\WooCommerce\Payment\OrderLines;
+use Mollie\WooCommerce\Payment\LineItems\LineItemProvider;
+use Mollie\WooCommerce\Payment\LineItems\OrderLines;
+use Mollie\WooCommerce\Payment\LineItems\PaymentLines;
 use Mollie\WooCommerce\Payment\PaymentFactory;
-use Mollie\WooCommerce\Payment\PaymentLines;
 use Mollie\WooCommerce\Payment\Request\Middleware\AddCustomRequestFieldsMiddleware;
 use Mollie\WooCommerce\Payment\Request\Middleware\AddressMiddleware;
 use Mollie\WooCommerce\Payment\Request\Middleware\AddSequenceTypeForSubscriptionsMiddleware;
@@ -51,11 +52,11 @@ return static function (): array {
         \assert($settingsHelper instanceof Settings);
         $requestFactory = $container->get(RequestFactory::class);
         return new MollieObject($data, $logger, $paymentFactory, $apiHelper, $settingsHelper, $pluginId, $requestFactory);
-    }, OrderLines::class => static function (ContainerInterface $container): OrderLines {
+    }, OrderLines::class => static function (ContainerInterface $container): LineItemProvider {
         $data = $container->get('settings.data_helper');
         $pluginId = $container->get('shared.plugin_id');
         return new OrderLines($data, $pluginId);
-    }, PaymentLines::class => static function (ContainerInterface $container): PaymentLines {
+    }, PaymentLines::class => static function (ContainerInterface $container): LineItemProvider {
         $data = $container->get('settings.data_helper');
         $pluginId = $container->get('shared.plugin_id');
         return new PaymentLines($data, $pluginId);

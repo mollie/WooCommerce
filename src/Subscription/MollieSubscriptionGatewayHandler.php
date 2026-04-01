@@ -198,6 +198,22 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
             do_action($this->pluginId . '_create_payment', $data, $renewal_order);
             $apiKey = $this->dataService->getApiKey();
             $mollieApiClient = $this->apiHelper->getApiClient($apiKey);
+            // Guard against duplicate payment creation when two Action Scheduler jobs
+            // (a regular renewal and a WCS retry) fire for the same renewal order in the
+            // same cron batch. If a payment was already created for this renewal order and
+            // is still open or pending at Mollie, do not submit a second charge.
+            $existingPaymentId = $renewal_order->get_meta('_mollie_payment_id', \true);
+            if ($existingPaymentId) {
+                try {
+                    $existingPayment = $mollieApiClient->payments->get($existingPaymentId);
+                    if (in_array($existingPayment->status, ['open', 'pending'], \true)) {
+                        $this->logger->debug($gateway->id . ': Renewal order ' . $renewal_order_id . ' already has an in-flight payment ' . $existingPaymentId . ' (status: ' . $existingPayment->status . ').' . ' Skipping duplicate payment creation.');
+                        return ['result' => 'success'];
+                    }
+                } catch (ApiException $e) {
+                    $this->logger->debug($gateway->id . ': Could not verify existing payment ' . $existingPaymentId . ' for renewal order ' . $renewal_order_id . ': ' . $e->getMessage() . '. Proceeding with new payment creation.');
+                }
+            }
             $validMandate = \false;
             $renewalOrderMethod = $renewal_order->get_payment_method();
             $isRenewalMethodDirectDebit = in_array($renewalOrderMethod, self::METHODS_NEEDING_UPDATE, \true);

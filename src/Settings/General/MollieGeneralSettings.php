@@ -2,12 +2,11 @@
 
 namespace Mollie\WooCommerce\Settings\General;
 
-use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 class MollieGeneralSettings
 {
-    public function gatewayFormFields($defaultTitle, $defaultDescription, $paymentConfirmation)
+    public function gatewayFormFields($defaultTitle, $defaultDescription, $paymentConfirmation, bool $isOrderApi = \false)
     {
         $formFields = ['enabled' => ['title' => __('Enable/Disable', 'mollie-payments-for-woocommerce'), 'type' => 'checkbox', 'label' => sprintf(
             /* translators: Placeholder 1: Gateway title */
@@ -56,6 +55,7 @@ class MollieGeneralSettings
                 '<a href="' . admin_url('admin.php?page=wc-settings&tab=products&section=inventory') . '" target="_blank">' . __('Hold Stock (minutes)', 'woocommerce') . '</a>'
             )];
         }
+        $formFields['hide_order_lines'] = ['title' => __('Hide order lines', 'mollie-payments-for-woocommerce'), 'label' => __('Do not send order lines to Mollie', 'mollie-payments-for-woocommerce'), 'description' => $isOrderApi ? __('Not available when using the Orders API. Order lines are always sent for Orders API payments.', 'mollie-payments-for-woocommerce') : __('Enable this option to prevent order line details from being sent to Mollie. This may be useful for certain payment methods or compliance requirements.', 'mollie-payments-for-woocommerce'), 'type' => 'checkbox', 'default' => 'no', 'custom_attributes' => $isOrderApi ? ['disabled' => 'disabled'] : []];
         $formFields['activate_expiry_days_setting'] = ['title' => __('Activate expiry time setting', 'mollie-payments-for-woocommerce'), 'label' => __('Enable expiry time for payments', 'mollie-payments-for-woocommerce'), 'description' => __('Enable this option if you want to be able to set the time after which the order will expire.', 'mollie-payments-for-woocommerce'), 'type' => 'checkbox', 'default' => 'no'];
         $formFields['order_dueDate'] = ['title' => __('Expiry time', 'mollie-payments-for-woocommerce'), 'type' => 'number', 'custom_attributes' => ['step' => '1', 'min' => '10', 'max' => '526000'], 'description' => __('Number of MINUTES after the order will expire and will be canceled at Mollie and WooCommerce.', 'mollie-payments-for-woocommerce'), 'default' => '10', 'desc_tip' => \false];
         return $formFields;

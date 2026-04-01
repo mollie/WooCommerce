@@ -11,6 +11,7 @@ use Mollie\WooCommerce\Buttons\ApplePayButton\ResponsesToApple;
 use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPal;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalAjaxRequests;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalButtonHandler;
+use Mollie\WooCommerce\Buttons\PayPalButton\PayPalExpressButton;
 use Mollie\WooCommerce\Gateway\DeprecatedGatewayBuilder;
 use Mollie\WooCommerce\Gateway\Refund\OrderItemsRefunder;
 use Mollie\WooCommerce\Gateway\Refund\RefundLineItemsBuilder;
@@ -180,7 +181,7 @@ return static function (): array {
         $responseTemplates = new ResponsesToApple($logger, $appleGateway);
         $ajaxRequests = new AppleAjaxRequests($responseTemplates, $notice, $logger, $apiHelper, $settingsHelper);
         return new ApplePayDirectHandler($notice, $ajaxRequests);
-    }, PayPalButtonHandler::class => static function (ContainerInterface $container) {
+    }, PayPalExpressButton::class => static function (ContainerInterface $container): PayPalExpressButton {
         $notice = $container->get(AdminNotice::class);
         \assert($notice instanceof AdminNotice);
         $logger = $container->get(Logger::class);
@@ -193,7 +194,9 @@ return static function (): array {
         $pluginUrl = $container->get('shared.plugin_url');
         $ajaxRequests = new PayPalAjaxRequests($paypalGateway, $notice, $logger);
         $data = new DataToPayPal($pluginUrl);
-        return new PayPalButtonHandler($ajaxRequests, $data);
+        $enabledInProduct = mollieWooCommerceIsPayPalButtonEnabled('product');
+        $enabledInCart = mollieWooCommerceIsPayPalButtonEnabled('cart');
+        return new PayPalExpressButton($ajaxRequests, $data, $enabledInProduct, $enabledInCart);
     }, 'payment_gateway.getRefundProcessor' => static function (ContainerInterface $container): callable {
         return static function (string $gatewayId) use ($container): RefundProcessorInterface {
             $oldGatewayInstances = $container->get('__deprecated.gateway_helpers');

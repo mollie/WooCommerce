@@ -6,13 +6,11 @@ namespace Mollie\WooCommerce\Settings;
 use DateInterval;
 use DateTime;
 use Mollie\Api\Exceptions\ApiException;
-use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\Settings\General\MollieGeneralSettings;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
-use WC_Payment_Gateway;
 class Settings
 {
     protected $pluginId;
@@ -46,7 +44,7 @@ class Settings
     public function generalFormFields($defaultTitle, $defaultDescription, $paymentConfirmation): array
     {
         $generalSettings = new MollieGeneralSettings();
-        return $generalSettings->gatewayFormFields($defaultTitle, $defaultDescription, $paymentConfirmation);
+        return $generalSettings->gatewayFormFields($defaultTitle, $defaultDescription, $paymentConfirmation, $this->isOrderApiSetting());
     }
     public function processSettings(string $gatewayId)
     {
@@ -123,7 +121,7 @@ class Settings
      */
     public function isOrderApiSetting()
     {
-        $orderApiSetting = get_option($this->getSettingId('api_switch'));
+        $orderApiSetting = get_option($this->getSettingId('api_switch'), PaymentProcessor::PAYMENT_METHOD_TYPE_PAYMENT);
         return !$orderApiSetting || is_string($orderApiSetting) && trim($orderApiSetting) === PaymentProcessor::PAYMENT_METHOD_TYPE_ORDER;
     }
     /**

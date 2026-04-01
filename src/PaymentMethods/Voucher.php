@@ -88,6 +88,15 @@ class Voucher extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod i
             /* translators: Placeholder 1: Default order status, placeholder 2: Link to 'Hold Stock' setting */
             'description' => __('In order to process it, all products in the order must have a category. This selector will assign the default categories for the shop products. If orders API is active only the first category will be used!', 'mollie-payments-for-woocommerce'),
         ]];
+        /**
+         * This payment method requires line items to be sent
+         *
+         * @see https://docs.mollie.com/reference/create-payment
+         * @see https://docs.mollie.com/reference/create-order
+         */
+        if (isset($generalFormFields['hide_order_lines'])) {
+            unset($generalFormFields['hide_order_lines']);
+        }
         return array_merge($generalFormFields, $paymentMethodFormFieds);
     }
     /**

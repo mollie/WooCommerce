@@ -3,6 +3,7 @@
 declare (strict_types=1);
 namespace Mollie\WooCommerce\PaymentMethods;
 
+use Mollie\Psr\Container\ContainerInterface;
 class Applepay extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod implements \Mollie\WooCommerce\PaymentMethods\PaymentMethodI
 {
     protected function getConfig(): array
@@ -34,5 +35,14 @@ class Applepay extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod 
         }
         $paymentMethodFormFieds = ['mollie_apple_pay_button_enabled_cart' => ['title' => __('Enable Apple Pay Button on Cart page', 'mollie-payments-for-woocommerce'), 'desc' => __('Enable the Apple Pay direct buy button on the Cart page', 'mollie-payments-for-woocommerce'), 'type' => 'checkbox', 'default' => 'no'], 'mollie_apple_pay_button_enabled_product' => ['title' => __('Enable Apple Pay Button on Product page', 'mollie-payments-for-woocommerce'), 'desc' => __('Enable the Apple Pay direct buy button on the Product page', 'mollie-payments-for-woocommerce'), 'type' => 'checkbox', 'default' => 'no'], 'mollie_apple_pay_button_enabled_express_checkout' => ['title' => __('Enable Apple Pay Express Button on Checkout page', 'mollie-payments-for-woocommerce'), 'desc' => __('Enable the Apple Pay direct buy button on the Express Buttons section of the Checkout page', 'mollie-payments-for-woocommerce'), 'type' => 'checkbox', 'default' => 'no']];
         return array_merge($notice, $generalFormFields, $paymentMethodFormFieds);
+    }
+    public function isExpressCheckoutEnabled(): bool
+    {
+        return $this->getProperty('mollie_apple_pay_button_enabled_express_checkout') === 'yes';
+    }
+    protected function blocksExpressData(ContainerInterface $container): ?array
+    {
+        $baseLocation = wc_get_base_location();
+        return ['shop' => ['countryCode' => $baseLocation['country'], 'totalLabel' => get_bloginfo('name')], 'nonce' => wp_create_nonce('mollie_apple_pay_blocks'), 'ajaxUrl' => admin_url('admin-ajax.php')];
     }
 }

@@ -15,6 +15,9 @@ use Inpsyde\PaymentGateway\SettingsFieldRendererInterface;
  */
 class ContentField implements SettingsFieldRendererInterface
 {
+    /**
+     * @param array<mixed> $fieldConfig
+     */
     public function render(string $fieldId, array $fieldConfig, PaymentGateway $gateway): string
     {
         $fieldKey = $gateway->get_field_key($fieldId);

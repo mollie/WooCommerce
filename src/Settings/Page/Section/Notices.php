@@ -19,6 +19,9 @@ class Notices extends AbstractSection
      */
     private $paymentMethods;
 
+    /**
+     * @return array<mixed>
+     */
     public function config(): array
     {
         return [
@@ -140,6 +143,9 @@ class Notices extends AbstractSection
         return $isKlarnaEnabled;
     }
 
+    /**
+     * @return string|false
+     */
     protected function notice(string $message)
     {
         //notice-warning is-dismissible

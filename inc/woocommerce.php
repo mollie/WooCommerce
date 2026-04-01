@@ -43,7 +43,7 @@ if (!function_exists('untrailingslashit')) {
     }
 }
 
-function mollieWooCommerceSession(): ?\WC_Session
+function mollieWooCommerceSession(): \WC_Session
 {
     return WC()->session;
 }

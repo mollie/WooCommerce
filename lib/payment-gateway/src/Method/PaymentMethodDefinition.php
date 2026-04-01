@@ -52,6 +52,9 @@ interface PaymentMethodDefinition
      */
     public function availabilityCallback(ContainerInterface $container): callable;
 
+    /**
+     * @return array<mixed>
+     */
     public function supports(ContainerInterface $container): array;
 
     public function refundProcessor(ContainerInterface $container): RefundProcessorInterface;
@@ -64,6 +67,9 @@ interface PaymentMethodDefinition
 
     public function hasFields(ContainerInterface $container): bool;
 
+    /**
+     * @return array<mixed>
+     */
     public function formFields(ContainerInterface $container): array;
 
     public function optionKey(ContainerInterface $container): string;

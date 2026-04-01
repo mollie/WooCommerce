@@ -126,6 +126,8 @@ class MollieOrder extends MollieObject
         if (isset($payment->_embedded->payments[0]->id)) {
             return $payment->_embedded->payments[0]->id;
         }
+
+        return null;
     }
 
     /**
@@ -143,6 +145,8 @@ class MollieOrder extends MollieObject
         if (isset($payment->_embedded->payments[0]->customerId)) {
             return $payment->_embedded->payments[0]->customerId;
         }
+
+        return null;
     }
 
     /**
@@ -160,6 +164,8 @@ class MollieOrder extends MollieObject
         if (isset($payment->_embedded->payments[0]->sequenceType)) {
             return $payment->_embedded->payments[0]->sequenceType;
         }
+
+        return null;
     }
 
     /**

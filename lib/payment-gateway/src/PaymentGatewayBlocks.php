@@ -38,7 +38,7 @@ class PaymentGatewayBlocks extends AbstractPaymentMethodType
         $this->serviceKeyGenerator = new ServiceKeyGenerator($gatewayId);
     }
 
-    public function initialize()
+    public function initialize(): void
     {
         // TODO: Implement initialize() method.
     }
@@ -52,7 +52,7 @@ class PaymentGatewayBlocks extends AbstractPaymentMethodType
     /**
      * Returns an array of scripts/handles to be registered for this payment method.
      *
-     * @return array
+     * @return array<mixed>
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
@@ -96,6 +96,9 @@ class PaymentGatewayBlocks extends AbstractPaymentMethodType
         return [$scriptId];
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function get_payment_method_data()
     {
         $gateway = $this->gateway();

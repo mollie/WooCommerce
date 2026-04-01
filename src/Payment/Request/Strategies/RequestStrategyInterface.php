@@ -18,7 +18,7 @@ interface RequestStrategyInterface
      *
      * @param WC_Order $order The WooCommerce order object.
      * @param string $customerId The customer ID.
-     * @return array The payment request data.
+     * @return array<mixed> The payment request data.
      */
     public function createRequest(WC_Order $order, string $customerId): array;
 }

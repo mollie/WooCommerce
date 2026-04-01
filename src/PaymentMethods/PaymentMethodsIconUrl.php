@@ -74,6 +74,9 @@ class PaymentMethodsIconUrl
         return [$svgUrl];
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function getCreditcardIcon(): array
     {
         if (
@@ -120,7 +123,7 @@ class PaymentMethodsIconUrl
         return file_exists($svgPath);
     }
     /**
-     * @return array Array containing the credit cards names enabled in settings
+     * @return array<mixed> Array containing the credit cards names enabled in settings
      *               to make customization of checkout icons
      */
     protected function enabledCreditcards(): array
@@ -150,8 +153,7 @@ class PaymentMethodsIconUrl
         return $enabledCreditcards;
     }
     /**
-     *
-     * @return array Newly composed svg string
+     * @return array<mixed> Newly composed svg string
      */
     public function buildSvgComposed(): array
     {

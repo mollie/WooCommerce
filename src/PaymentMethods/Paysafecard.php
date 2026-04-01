@@ -6,6 +6,9 @@ namespace Mollie\WooCommerce\PaymentMethods;
 
 class Paysafecard extends AbstractPaymentMethod implements PaymentMethodI
 {
+    /**
+     * @return array<mixed>
+     */
     protected function getConfig(): array
     {
         return [
@@ -31,6 +34,10 @@ class Paysafecard extends AbstractPaymentMethod implements PaymentMethodI
         $this->translationsInitialized = true;
     }
 
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
     public function getFormFields(array $generalFormFields): array
     {
         return $generalFormFields;

@@ -45,9 +45,10 @@ class MollieSubscription extends MollieObject
         $this->middleware = $middlewareHandler;
     }
     /**
-     * @param $order
-     * @param $customerId
-     * @return array
+     * @param mixed $order
+     * @param mixed $customerId
+     * @param mixed $initialPaymentUsedOrderAPI
+     * @return array<mixed>
      */
     public function getRecurringPaymentRequestData($order, $customerId, $initialPaymentUsedOrderAPI)
     {
@@ -84,6 +85,12 @@ class MollieSubscription extends MollieObject
         return $this->middleware->handle($requestData, $order, $context);
     }
 
+    /**
+     * @param mixed $order
+     * @param mixed $option
+     * @param mixed $initialPaymentUsedOrderAPI
+     * @return string
+     */
     protected function getRecurringPaymentDescription($order, $option, $initialPaymentUsedOrderAPI)
     {
         $description = !$option ? '' : trim($option);
@@ -115,6 +122,8 @@ class MollieSubscription extends MollieObject
      *
      * @param bool $status
      * @param MollieSubscriptionGatewayHandler $deprecatedSubscriptionHelper
+     * @param mixed $orderTotal
+     * @param mixed $gateway
      * @return bool
      */
     public function isAvailableForSubscriptions(bool $status, MollieSubscriptionGatewayHandler $deprecatedSubscriptionHelper, $orderTotal, $gateway): bool
@@ -166,11 +175,11 @@ class MollieSubscription extends MollieObject
 
     /**
      * @param string $currency
-     * @param $recurring_total
+     * @param mixed $recurring_total
      * @param string $billingCountry
      * @param string $sequenceType
      * @param string $paymentLocale
-     * @return array
+     * @return array<mixed>
      */
     protected function buildFilters(
         string $currency,

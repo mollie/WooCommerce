@@ -16,7 +16,7 @@ class OrderLines implements LineItemProvider
     /**
      * Formatted order lines.
      *
-     * @var array
+     * @var array<mixed>
      */
     private $order_lines =  [];
 
@@ -30,12 +30,16 @@ class OrderLines implements LineItemProvider
     /**
      * WooCommerce currency.
      *
+     * @var string
      */
     private $currency;
     /**
      * @var Data
      */
     protected $dataHelper;
+    /**
+     * @var string
+     */
     protected $pluginId;
 
     /**
@@ -54,7 +58,7 @@ class OrderLines implements LineItemProvider
      *
      * @param WC_Order $order WooCommerce Order
      *
-     * @return array
+     * @return array<mixed>
      */
     public function order_lines(WC_Order $order): array
     {
@@ -70,7 +74,7 @@ class OrderLines implements LineItemProvider
         return $this->get_order_lines();
     }
 
-    private function process_mismatch()
+    private function process_mismatch(): void
     {
         $orderTotal = (float) $this->order->get_total();
         $orderTotalRounded = round($orderTotal, 2);
@@ -123,7 +127,7 @@ class OrderLines implements LineItemProvider
      *
      * @access private
      */
-    private function process_items()
+    private function process_items(): void
     {
         foreach ($this->order->get_items() as $cart_item) {
             if ($cart_item['quantity']) {
@@ -207,7 +211,7 @@ class OrderLines implements LineItemProvider
      *
      * @access private
      */
-    private function process_shipping()
+    private function process_shipping(): void
     {
         $shipping_methods = $this->order->get_shipping_methods();
         if ($shipping_methods) {
@@ -260,7 +264,7 @@ class OrderLines implements LineItemProvider
      *
      * @access private
      */
-    private function process_fees()
+    private function process_fees(): void
     {
         if (! empty($this->order->get_items('fee'))) {
             foreach ($this->order->get_items('fee') as $cart_fee) {
@@ -322,7 +326,7 @@ class OrderLines implements LineItemProvider
      *
      * @access private
     */
-    private function process_gift_cards()
+    private function process_gift_cards(): void
     {
         if (!empty($this->order->get_items('gift_card'))) {
             foreach ($this->order->get_items('gift_card') as $cart_gift_card) {

@@ -59,10 +59,10 @@ class MolliePayment extends MollieObject
     }
 
     /**
-     * @param $order
-     * @param $customerId
+     * @param mixed $order
+     * @param mixed $customerId
      *
-     * @return array
+     * @return array<mixed>
      */
     public function getPaymentRequestData($order, $customerId)
     {
@@ -91,6 +91,10 @@ class MolliePayment extends MollieObject
         return null;
     }
 
+    /**
+     * @param mixed $payment
+     * @return string|null
+     */
     public function getMollieCustomerIdFromPaymentObject($payment = null)
     {
         if ($payment === null) {
@@ -106,6 +110,10 @@ class MolliePayment extends MollieObject
         return null;
     }
 
+    /**
+     * @param mixed $payment
+     * @return string|null
+     */
     public function getSequenceTypeFromPaymentObject($payment = null)
     {
         if ($payment === null) {
@@ -121,8 +129,8 @@ class MolliePayment extends MollieObject
         return null;
     }
     /**
-     * @param Payment $payment
-     *
+     * @param mixed $payment
+     * @return array<string, mixed>
      */
     public function getMollieCustomerIbanDetailsFromPaymentObject($payment = null)
     {
@@ -187,7 +195,7 @@ class MolliePayment extends MollieObject
             $refund = $this->apiHelper->getApiClient($apiKey)->payments->refund($paymentObject, [
                 'amount' =>  [
                     'currency' => $this->dataHelper->getOrderCurrency($order),
-                    'value' => $this->dataHelper->formatCurrencyValue($amount, $this->dataHelper->getOrderCurrency($order)),
+                    'value' => $this->dataHelper->formatCurrencyValue((float) $amount, $this->dataHelper->getOrderCurrency($order)),
                 ],
                 'description' => $reason,
             ]);
@@ -225,6 +233,10 @@ class MolliePayment extends MollieObject
         }
     }
 
+    /**
+     * @param mixed $data
+     * @return void
+     */
     public function setPayment($data)
     {
         $this->data = $data;

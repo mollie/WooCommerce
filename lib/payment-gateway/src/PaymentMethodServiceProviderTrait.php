@@ -27,7 +27,7 @@ trait PaymentMethodServiceProviderTrait
      *
      * @param PaymentMethodDefinition ...$paymentMethods
      *      The payment method definitions to generate services for.
-     * @return array
+     * @return array<mixed>
      *      An associative array where each key is a unique service identifier
      *      and each value is a closure representing the service implementation.
      */

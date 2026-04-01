@@ -110,9 +110,9 @@ class ResponsesToApple
 
     /**
      * Reorders the shipping methods to have the selected shipping method on top so we see it as selected
-     * @param array $methods
-     * @param array $selectedShippingMethod
-     * @return array
+     * @param array<mixed> $methods
+     * @param array<mixed> $selectedShippingMethod
+     * @return array<mixed>
      */
     private function reorderShippingMethods(array $methods, array $selectedShippingMethod): array
     {

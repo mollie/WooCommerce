@@ -78,7 +78,7 @@ class CreditcardFieldsStrategy extends AbstractPaymentFieldsRenderer implements 
     }
 
     /**
-     * @return array
+     * @return array<mixed>
      */
     protected function svgAllowedHtml(): array
     {

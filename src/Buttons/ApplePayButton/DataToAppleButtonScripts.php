@@ -10,7 +10,7 @@ class DataToAppleButtonScripts
      * Sets the appropriate data to send to ApplePay script
      * Data differs between product page and cart page
      *
-     * @return array
+     * @return array<mixed>
      */
     public function applePayScriptData(bool $isBlock = false): array
     {

@@ -406,8 +406,6 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
             // Log successful creation of payment
             $this->logger->debug($gateway->id . ': Renewal payment ' . $payment->id . ' (' . $payment->mode . ') created for order ' . $renewal_order_id . ' payment json response: ' . wp_json_encode($payment));
 
-            // phpstan:ignore [mollie-stub] Mollie Payment object exposes _links and mode as dynamic stdClass properties not covered by type definitions
-            // @phpstan-ignore-next-line
             if (isset($payment->_links->changePaymentState->href) && $payment->mode === 'test') {
                 $renewal_order->add_order_note('MOLLIE TEST MODE: URL to change payment state for renewal payment: <a href="' . $payment->_links->changePaymentState->href . '" target="_blank">' . $payment->_links->changePaymentState->href . '</a>');
             }
@@ -617,8 +615,8 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
     }
 
     /**
-     * @param $payment_method_id
-     * @param $payment_meta
+     * @param string $payment_method_id
+     * @param array<mixed> $payment_meta
      * @throws Exception
      */
     public function validate_subscription_payment_meta(string $payment_method_id, array $payment_meta, \WC_Payment_Gateway $gateway): void
@@ -748,7 +746,10 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
      *
      * @return bool
      */
-    public function is_available(\WC_Payment_Gateway $gateway): bool
+    /**
+     * @param \WC_Payment_Gateway $gateway
+     */
+    public function is_available($gateway): bool
     {
         if (!$this->checkEnabledNorDirectDebit($gateway)) {
             return false;

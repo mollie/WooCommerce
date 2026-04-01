@@ -57,7 +57,7 @@ class GiftcardFieldsStrategy extends AbstractPaymentFieldsRenderer implements Pa
     }
 
     /**
-     * @param $issuers
+     * @param mixed $issuers
      */
     protected function checkSvgIssuers($issuers): string
     {

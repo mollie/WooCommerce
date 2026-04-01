@@ -9,7 +9,7 @@ use Mollie\WooCommerce\Shared\SharedDataDictionary;
 
 class StatusRenderer
 {
-    public function __invoke(string $molliePaymentStatus)
+    public function __invoke(string $molliePaymentStatus): void
     {
         if ($molliePaymentStatus === ManualCaptureStatus::STATUS_AUTHORIZED) {
             (new StatusButton())(

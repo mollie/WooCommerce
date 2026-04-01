@@ -8,6 +8,9 @@ use Psr\Container\ContainerInterface;
 
 class Applepay extends AbstractPaymentMethod implements PaymentMethodI
 {
+    /**
+     * @return array<mixed>
+     */
     protected function getConfig(): array
     {
         return [
@@ -43,6 +46,10 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
         $this->translationsInitialized = true;
     }
 
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
     public function getFormFields(array $generalFormFields): array
     {
 
@@ -103,6 +110,9 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
         return $this->getProperty('mollie_apple_pay_button_enabled_express_checkout') === 'yes';
     }
 
+    /**
+     * @return array<mixed>|null
+     */
     protected function blocksExpressData(ContainerInterface $container): ?array
     {
         $baseLocation = wc_get_base_location();

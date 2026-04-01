@@ -47,7 +47,7 @@ class GatewaySurchargeHandler
     {
         $nonce = wp_create_nonce('mollie_surcharge_' . $order->get_id());
         ?>
-        <input type="hidden" name="mollie-woocommerce-orderId" value="<?php echo esc_attr($order->get_id()) ?>">
+        <input type="hidden" name="mollie-woocommerce-orderId" value="<?php echo esc_attr((string) $order->get_id()) ?>">
         <input type="hidden" name="mollie-surcharge-nonce" value="<?php echo esc_attr($nonce) ?>">
         <?php
     }
@@ -249,8 +249,8 @@ class GatewaySurchargeHandler
     {
         $item_fee = new WC_Order_Item_Fee();
         $item_fee->set_name($surchargeName);
-        $item_fee->set_amount($amount);
-        $item_fee->set_total($amount);
+        $item_fee->set_amount((string) $amount);
+        $item_fee->set_total((string) $amount);
         $item_fee->set_tax_status('taxable');
         $order->add_item($item_fee);
         $order->calculate_totals();

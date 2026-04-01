@@ -25,6 +25,9 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
      */
     public const EXPIRY_DAYS_OPTION = 'order_dueDate';
 
+    /**
+     * @return array<mixed>
+     */
     protected function getConfig(): array
     {
         return [
@@ -55,6 +58,10 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
         $this->translationsInitialized = true;
     }
 
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
     public function getFormFields(array $generalFormFields): array
     {
         unset($generalFormFields['activate_expiry_days_setting']);

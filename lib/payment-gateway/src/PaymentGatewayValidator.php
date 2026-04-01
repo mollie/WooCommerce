@@ -13,6 +13,9 @@ class PaymentGatewayValidator
 
     private ContainerInterface $container;
 
+    /**
+     * @param array<string> $requiredServices
+     */
     public function __construct(ContainerInterface $container, array $requiredServices)
     {
         $this->container = $container;

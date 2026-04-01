@@ -8,6 +8,9 @@ class ConnectionStatusFields extends AbstractSection
 {
     use ConnectionStatusTrait;
 
+    /**
+     * @return array<mixed>
+     */
     public function config(): array
     {
         return [
@@ -25,6 +28,9 @@ class ConnectionStatusFields extends AbstractSection
         ];
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function refreshStatusField(): array
     {
         $refreshNonce = wp_create_nonce('nonce_mollie_refresh_methods');

@@ -560,6 +560,7 @@ class MollieObject
      */
     public function getMolliePaymentIdFromPaymentObject()
     {
+        return null;
     }
 
     /**
@@ -567,6 +568,7 @@ class MollieObject
      */
     public function getMollieCustomerIdFromPaymentObject()
     {
+        return null;
     }
 
     /**

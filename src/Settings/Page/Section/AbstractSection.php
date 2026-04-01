@@ -15,10 +15,14 @@ abstract class AbstractSection
     protected string $currentSection;
     protected bool $connectionStatus;
     protected bool $testModeEnabled;
+    /** @var array<mixed> */
     protected array $pages;
     protected Data $dataHelper;
     protected ContainerInterface $container;
 
+    /**
+     * @param array<mixed> $pages
+     */
     public function __construct(
         Settings $settings,
         string $pluginUrl,
@@ -40,6 +44,9 @@ abstract class AbstractSection
         $this->container = $container;
     }
 
+    /**
+     * @return array<mixed>
+     */
     abstract public function config(): array;
 
     public function styles(): string

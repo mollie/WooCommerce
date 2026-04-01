@@ -6,6 +6,9 @@ namespace Mollie\WooCommerce\PaymentMethods;
 
 class Twint extends AbstractPaymentMethod implements PaymentMethodI
 {
+    /**
+     * @return array<mixed>
+     */
     protected function getConfig(): array
     {
         return [
@@ -34,6 +37,10 @@ class Twint extends AbstractPaymentMethod implements PaymentMethodI
         $this->translationsInitialized = true;
     }
 
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
     public function getFormFields(array $generalFormFields): array
     {
         return $generalFormFields;

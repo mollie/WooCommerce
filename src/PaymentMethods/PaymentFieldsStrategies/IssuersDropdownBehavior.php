@@ -33,7 +33,8 @@ trait IssuersDropdownBehavior
     }
 
     /**
-     * @return string|NULL
+     * @param mixed $gateway
+     * @return string|null
      */
     public function getSelectedIssuer($gateway): ?string
     {

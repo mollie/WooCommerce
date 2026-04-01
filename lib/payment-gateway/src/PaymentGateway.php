@@ -83,7 +83,7 @@ class PaymentGateway extends WC_Payment_Gateway
         );
     }
 
-    public function init_settings()
+    public function init_settings(): void
     {
         parent::init_settings();
 
@@ -129,6 +129,7 @@ class PaymentGateway extends WC_Payment_Gateway
 
     /**
      * @inheritDoc
+     * @return array<mixed>
      */
     public function process_payment($orderId): array
     {
@@ -278,8 +279,8 @@ class PaymentGateway extends WC_Payment_Gateway
      * It first tries to find a dedicated service and falls back to the original implementation
      * if none is found.
      *
-     * @param $formFields
-     * @param $echo
+     * @param array<mixed> $formFields
+     * @param bool $echo
      *
      * @return string|void
      */
@@ -334,6 +335,7 @@ class PaymentGateway extends WC_Payment_Gateway
      * @inheritDoc
      *
      * Adds support for groups.
+     * @param array<mixed> $data
      */
     public function get_custom_attribute_html($data)
     {
@@ -366,6 +368,8 @@ class PaymentGateway extends WC_Payment_Gateway
 
     /**
      * @inheritDoc
+     * @param array<mixed> $field
+     * @param array<mixed> $postData
      *
      * Makes sanitization container-aware.
      * If a  'inpsyde_payment_gateway.settings_field_sanitizer.' . $type service is found
@@ -431,7 +435,7 @@ class PaymentGateway extends WC_Payment_Gateway
      *
      * @param string $key The key of the field.
      *
-     * @return array The field configuration.
+     * @return array<mixed> The field configuration.
      *
      * @throws RangeException If field not configured.
      * @throws RuntimeException If problem retrieving.
@@ -524,9 +528,9 @@ class PaymentGateway extends WC_Payment_Gateway
      * Such fields can be used for safely transferring API credentials or
      * other use-cases that require processing user input without storing it as-is
      *
-     * @param array $settings
+     * @param array<mixed> $settings
      *
-     * @return array
+     * @return array<mixed>
      */
     public function filterVirtualFields(array $settings): array
     {
@@ -568,6 +572,10 @@ class PaymentGateway extends WC_Payment_Gateway
         }
     }
 
+    /**
+     * @param mixed $fallback
+     * @return mixed
+     */
     private function locateWithFallback(string $key, $fallback)
     {
         try {
@@ -586,6 +594,10 @@ class PaymentGateway extends WC_Payment_Gateway
         }
     }
 
+    /**
+     * @param string $name
+     * @return mixed
+     */
     public function __get($name)
     {
         if ($name === 'enabled') {

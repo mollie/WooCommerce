@@ -9,6 +9,9 @@ use Mollie\WooCommerce\PaymentMethods\Constants;
 
 class PaymentMethods extends AbstractSection
 {
+    /**
+     * @return array<mixed>
+     */
     public function config(): array
     {
         return [
@@ -181,6 +184,9 @@ class PaymentMethods extends AbstractSection
         return ob_get_clean();
     }
 
+    /**
+     * @param mixed $enabledInMollie
+     */
     protected function paymentGatewayButton(AbstractPaymentMethod $paymentMethod, $enabledInMollie): string
     {
         $documentationLink = $paymentMethod->getProperty('docs');

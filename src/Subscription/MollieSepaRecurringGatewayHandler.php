@@ -167,7 +167,11 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
      * @param $order
      * @param $payment
      */
-    public function handlePaidOrderWebhook(\WC_Order $order, Payment $payment): void
+    /**
+     * @param \WC_Order $order
+     * @param Payment $payment
+     */
+    public function handlePaidOrderWebhook($order, $payment): void
     {
         $orderId = $order->get_id();
 
@@ -179,11 +183,7 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
         ) {
             $payment_method_title = $this->getPaymentMethodTitle($payment);
 
-            // phpstan:ignore [mollie-stub] Mollie Payment object exposes mode and id as dynamic stdClass properties not covered by type definitions
-            // @phpstan-ignore-next-line
             $isTestMode = $payment->mode === 'test';
-            // phpstan:ignore [mollie-stub] see above — $payment->id is also a dynamic property on the same object
-            // @phpstan-ignore-next-line
             $paymentMessage = $payment->id . (
                 $isTestMode
                     ? (' - ' . __('test mode', 'mollie-payments-for-woocommerce'))

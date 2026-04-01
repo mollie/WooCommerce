@@ -20,7 +20,7 @@ class ComponentDataService
     /**
      * Get component data for Mollie credit card components
      *
-     * @return array|null Returns component data array or null if requirements not met
+     * @return array<mixed>|null Returns component data array or null if requirements not met
      */
     public function getComponentData(): ?array
     {
@@ -57,7 +57,7 @@ class ComponentDataService
      *
      * @param bool $isCheckout
      * @param bool $isCheckoutPayPage
-     * @return array|null
+     * @return array<mixed>|null
      */
     public function getComponentDataWithContext(bool $isCheckout = false, bool $isCheckoutPayPage = false): ?array
     {
@@ -107,6 +107,9 @@ class ComponentDataService
         return $locale;
     }
 
+    /**
+     * @return array<mixed>
+     */
     private function getComponentAttributes(): array
     {
         return [
@@ -132,6 +135,9 @@ class ComponentDataService
         ];
     }
 
+    /**
+     * @return array<mixed>
+     */
     private function getComponentMessages(): array
     {
         return [

@@ -60,10 +60,13 @@ class PaymentProcessor implements PaymentProcessorInterface
      */
     protected $paymentCheckoutRedirectService;
     private PaymentGateway $gateway;
+    /** @var array<mixed> */
     private array $deprecatedGatewayInstances;
 
     /**
      * PaymentProcessor constructor.
+     *
+     * @param array<mixed> $deprecatedGatewayInstances
      */
     public function __construct(
         NoticeInterface $notice,
@@ -192,6 +195,10 @@ class PaymentProcessor implements PaymentProcessorInterface
         return $this->dataHelper->getUserMollieCustomerId($order_customer_id, $apiKey);
     }
 
+    /**
+     * @param mixed $paymentMethod
+     * @return string
+     */
     protected function paymentTypeBasedOnGateway($paymentMethod)
     {
         $optionName = $this->pluginId . '_' . 'api_switch';
@@ -257,7 +264,7 @@ class PaymentProcessor implements PaymentProcessorInterface
      * @param string|null $customer_id
      * @param string|false $apiKey
      *
-     * @return array
+     * @return array<mixed>
      * @throws ApiException
      */
     protected function processAsMollieOrder(
@@ -443,6 +450,7 @@ class PaymentProcessor implements PaymentProcessorInterface
     /**
      * @param mixed $molliePaymentType
      * @param int $orderId
+     * @param mixed $paymentObject
      * @param \WC_Order $order
      * @param string|null $customer_id
      * @param string|false $apiKey
@@ -512,6 +520,7 @@ class PaymentProcessor implements PaymentProcessorInterface
 
     /**
      * @param \WC_Order $order
+     * @param mixed $payment
      */
     protected function saveMollieInfo(\WC_Order $order, $payment): void
     {
@@ -584,6 +593,9 @@ class PaymentProcessor implements PaymentProcessorInterface
         );
     }
 
+    /**
+     * @return array<mixed>
+     */
     protected function subsSwitchCompleted(WC_Order $order): array
     {
         $order->payment_complete();
@@ -684,6 +696,7 @@ class PaymentProcessor implements PaymentProcessorInterface
     }
 
     /**
+     * @param mixed $paymentObject
      * @param \WC_Order $order
      * @param mixed $initialOrderStatus
      */
@@ -710,8 +723,10 @@ class PaymentProcessor implements PaymentProcessorInterface
     }
 
     /**
+     * @param mixed $paymentObject
      * @param int $orderId
      * @param \WC_Order $order
+     * @param mixed $paymentMethod
      */
     protected function reportPaymentSuccess($paymentObject, int $orderId, \WC_Order $order, $paymentMethod): void
     {
@@ -743,7 +758,7 @@ class PaymentProcessor implements PaymentProcessorInterface
      */
     protected function needsSubscriptionSwitch(\WC_Order $order, int $orderId): bool
     {
-        return ('0.00' === $order->get_total())
+        return (0.0 === (float) $order->get_total())
             && ($this->dataHelper->isWcSubscription($orderId) === true)
             && 0 !== $order->get_user_id()
             && (wcs_order_contains_switch($order));

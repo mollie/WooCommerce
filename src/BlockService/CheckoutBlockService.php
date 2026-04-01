@@ -14,6 +14,7 @@ use Mollie\WooCommerce\Shared\Data;
  */
 class CheckoutBlockService
 {
+    /** @var Data */
     protected $dataService;
     /**
      * @var MaybeDisableGateway
@@ -32,7 +33,7 @@ class CheckoutBlockService
     /**
      * Adds all the Ajax actions to perform the whole workflow
      */
-    public function bootstrapAjaxRequest()
+    public function bootstrapAjaxRequest(): void
     {
         $actionName = 'mollie_checkout_blocks_canmakepayment';
         add_action(
@@ -50,7 +51,7 @@ class CheckoutBlockService
      * We need to check again the list of available gateways accordingly
      * And return the result with a key based on the evaluated filters for the script to cache
      */
-    public function availableGateways()
+    public function availableGateways(): void
     {
         $currency = filter_input(INPUT_POST, 'currency', FILTER_SANITIZE_SPECIAL_CHARS);
         $cartTotal = filter_input(INPUT_POST, 'cartTotal', FILTER_SANITIZE_NUMBER_INT);
@@ -85,8 +86,8 @@ class CheckoutBlockService
      * Remove the voucher gateway from the available ones
      * if the products in the cart don't fit the requirements
      *
-     * @param array $availableGateways
-     * @return array
+     * @param array<string, mixed> $availableGateways
+     * @return array<string, mixed>
      */
     protected function maybeRemoveVoucher(array $availableGateways): array
     {
@@ -105,8 +106,8 @@ class CheckoutBlockService
      * Remove the non Mollie gateways from the available ones
      * so we don't deal with them in our block logic
      *
-     * @param array $availableGateways
-     * @return array
+     * @param array<string, mixed> $availableGateways
+     * @return array<string, mixed>
      */
     protected function removeNonMollieGateway(array $availableGateways): array
     {

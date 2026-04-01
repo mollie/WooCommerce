@@ -10,6 +10,9 @@ use Psr\Container\ContainerInterface;
 
 class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
 {
+    /**
+     * @return array<mixed>
+     */
     protected function getConfig(): array
     {
         return [
@@ -40,12 +43,19 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
         $this->translationsInitialized = true;
     }
 
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
     public function getFormFields(array $generalFormFields): array
     {
         $componentFields = $this->includeMollieComponentsFields($generalFormFields);
         return $this->includeCreditCardIconSelector($componentFields);
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function blocksData(ContainerInterface $container): array
     {
         $data = parent::blocksData($container);
@@ -123,6 +133,9 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
         return $componentFields;
     }
 
+    /**
+     * @return array<mixed>
+     */
     private function creditcardIconsSelectorFields(): array
     {
         return [

@@ -16,14 +16,15 @@ use WC_Order;
  */
 class AddCustomRequestFieldsMiddleware implements RequestMiddlewareInterface
 {
+    /** @var array<mixed> */
     private array $paymentMethods;
     private ContainerInterface $container;
 
     /**
      * AddCustomRequestFieldsMiddleware constructor.
      *
-     * @param array $paymentMethods An array of available payment methods.
-     * @param ContainerInterface $container A container for dependency injection.
+     * @param array<mixed> $paymentMethods An array of available payment methods.
+     * @param mixed $container A container for dependency injection.
      */
     public function __construct($paymentMethods, $container)
     {
@@ -34,11 +35,11 @@ class AddCustomRequestFieldsMiddleware implements RequestMiddlewareInterface
     /**
      * Invoke the middleware.
      *
-     * @param array $requestData The request data to be modified.
+     * @param array<mixed> $requestData The request data to be modified.
      * @param WC_Order $order The WooCommerce order object.
      * @param mixed $context Additional context for the middleware.
      * @param callable $next The next middleware to be called.
-     * @return array The modified request data.
+     * @return array<mixed> The modified request data.
      */
     public function __invoke(array $requestData, WC_Order $order, $context, $next): array
     {

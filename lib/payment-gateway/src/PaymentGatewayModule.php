@@ -245,7 +245,7 @@ class PaymentGatewayModule implements ServiceModule, ExecutableModule
         PaymentMethodRegistry $registry
     ): void {
         /**
-         * @var array $supportedMethods
+         * @var array<mixed> $supportedMethods
          */
         $supportedMethods = $container->get('payment_gateways.methods_supporting_blocks');
         if (!in_array($gatewayId, $supportedMethods, true)) {

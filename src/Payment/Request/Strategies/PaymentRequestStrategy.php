@@ -51,7 +51,7 @@ class PaymentRequestStrategy implements RequestStrategyInterface
      *
      * @param WC_Order $order The order to create a request for.
      * @param string $customerId The customer ID.
-     * @return array The request data.
+     * @return array<mixed> The request data.
      */
     public function createRequest(WC_Order $order, $customerId): array
     {

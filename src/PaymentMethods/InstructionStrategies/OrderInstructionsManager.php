@@ -10,7 +10,9 @@ class OrderInstructionsManager
 {
     /** @var InstructionStrategyI */
     protected $strategy;
+    /** @var bool */
     protected static $alreadyDisplayedAdminInstructions = false;
+    /** @var bool */
     protected static $alreadyDisplayedCustomerInstructions = false;
 
     /**

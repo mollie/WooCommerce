@@ -42,7 +42,10 @@ class BillieFieldsStrategy extends AbstractPaymentFieldsRenderer implements Paym
         return wc_get_order($orderId);
     }
 
-    protected function company()
+    /**
+     * @return string
+     */
+    protected function company(): string
     {
         return '
     <p class="form-row form-row-wide" id="billing_company_field">

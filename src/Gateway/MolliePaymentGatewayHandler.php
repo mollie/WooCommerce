@@ -114,6 +114,7 @@ class MolliePaymentGatewayHandler
         // Use gateway class name as gateway id
         $this->gatewayId();
 
+        // @phpstan-ignore-next-line
         $this->mollieOrderService->setGateway($this);
 
         add_action(
@@ -307,6 +308,7 @@ class MolliePaymentGatewayHandler
             return $order->get_checkout_payment_url(false);
         }
 
+        // @phpstan-ignore-next-line
         $this->mollieOrderService->setGateway($this);
         if ($this->mollieOrderService->orderNeedsPayment($order)) {
             $hasCancelledMolliePayment = $this->paymentObject()
@@ -430,8 +432,6 @@ class MolliePaymentGatewayHandler
      */
     public function onOrderReceivedTitle(string $title, $id = null): string
     {
-        // phpstan:ignore [wc-stub] get_the_ID() returns int|false; comparison with nullable $id triggers a false-positive
-        // @phpstan-ignore-next-line
         if (is_order_received_page() && get_the_ID() === $id) {
             $order = false;
             $orderReceived = get_query_var('order-received');

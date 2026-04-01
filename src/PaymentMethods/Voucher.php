@@ -33,6 +33,9 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
      */
     public const MOLLIE_VOUCHER_CATEGORY_OPTION = '_mollie_voucher_category';
 
+    /**
+     * @return array<mixed>
+     */
     protected function getConfig(): array
     {
         return [
@@ -114,6 +117,10 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
         $this->translationsInitialized = true;
     }
 
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
     public function getFormFields(array $generalFormFields): array
     {
         $paymentMethodFormFieds = [
@@ -155,7 +162,7 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
      *
      * @param \WC_Product $product The WooCommerce product for which to retrieve voucher categories.
      *
-     * @return array An array of category identifiers (or names) associated with the product.
+     * @return array<mixed> An array of category identifiers (or names) associated with the product.
      *               Returns an empty array if no categories are found.
      */
     public static function getCategoriesForProduct(\WC_Product $product): array
@@ -212,9 +219,9 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
      * Filters a list of categories to include only the predefined valid categories.
      * This ensures the resulting array contains only categories recognized by the system.
      *
-     * @param array $categories The array of categories to be cleaned.
+     * @param array<mixed> $categories The array of categories to be cleaned.
      *
-     * @return array An array containing only valid category identifiers.
+     * @return array<mixed> An array containing only valid category identifiers.
      *               Returns an empty array if no valid categories are found.
      */
     public static function cleanCategories(array $categories): array
@@ -226,7 +233,7 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
     /**
      * Retrieve the default categories saved in the db option
      *
-     * @return array
+     * @return array<mixed>
      */
     public static function voucherDefaultCategories(): array
     {

@@ -32,6 +32,11 @@ class ManualCapture
      * @psalm-suppress PossiblyNullArgument
      * @psalm-suppress MissingParamType
      */
+    /**
+     * @param array<mixed>|null $actions
+     * @param mixed $order
+     * @return array<mixed>
+     */
     public function enableOrderCaptureButton($actions, $order)
     {
         if (!is_array($actions)) {
@@ -53,6 +58,10 @@ class ManualCapture
         return $actions;
     }
 
+    /**
+     * @param array<mixed> $paymentData
+     * @return array<mixed>
+     */
     public function sendManualCaptureMode(array $paymentData): array
     {
         if (

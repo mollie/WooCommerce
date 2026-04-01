@@ -8,6 +8,9 @@ use Mollie\WooCommerce\Settings\Settings;
 
 trait ConnectionStatusTrait
 {
+    /**
+     * @return array<mixed>
+     */
     protected function connectionStatusField(Settings $settings, bool $connectionStatus): array
     {
 

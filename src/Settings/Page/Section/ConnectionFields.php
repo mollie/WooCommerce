@@ -8,6 +8,9 @@ class ConnectionFields extends AbstractSection
 {
     use ConnectionStatusTrait;
 
+    /**
+     * @return array<mixed>
+     */
     public function config(): array
     {
         return [

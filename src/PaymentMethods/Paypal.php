@@ -9,6 +9,9 @@ use Psr\Container\ContainerInterface;
 
 class Paypal extends AbstractPaymentMethod implements PaymentMethodI
 {
+    /**
+     * @return array<mixed>
+     */
     protected function getConfig(): array
     {
         return [
@@ -39,6 +42,10 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
         $this->translationsInitialized = true;
     }
 
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
     public function getFormFields(array $generalFormFields): array
     {
         $paymentMethodFormFieds =  [
@@ -101,11 +108,17 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
         return $this->getProperty('mollie_paypal_button_enabled_cart') === 'yes';
     }
 
+    /**
+     * @return array<mixed>|null
+     */
     protected function blocksExpressData(ContainerInterface $container): ?array
     {
         return $container->get(DataToPayPal::class)->paypalbuttonScriptData(true);
     }
 
+    /**
+     * @return array<mixed>
+     */
     private function buttonOptions(): array
     {
         return [

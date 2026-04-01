@@ -109,7 +109,7 @@ function mollieWooCommerceCheckIfNeedShipping(\WC_Product $product): bool
         return false;
     }
     //variations might be virtual
-    if ($product->is_type('variable')) {
+    if ($product->is_type('variable') && $product instanceof \WC_Product_Variable) {
         $variations = $product->get_available_variations();
         foreach ($variations as $variation) {
             if ($variation["is_virtual"]) {

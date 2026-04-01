@@ -48,6 +48,10 @@ class ApplePayDataObjectHttp
      */
     protected $shippingAddress = [];
     /**
+     * @var mixed
+     */
+    public $callerPage;
+    /**
      * @var array<mixed>
      */
     protected $errors = [];
@@ -184,8 +188,7 @@ class ApplePayDataObjectHttp
         if (!$this->isNonceValid()) {
             return;
         }
-        // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        $data = filter_var_array($_POST, FILTER_SANITIZE_SPECIAL_CHARS);
+        $data = $this->getFilteredRequestData();
         if (!is_array($data)) {
             return;
         }
@@ -422,6 +425,9 @@ class ApplePayDataObjectHttp
         );
     }
 
+    /**
+     * @param array<mixed> $data
+     */
     protected function updateShippingMethod(array $data): void
     {
         if (
@@ -444,19 +450,28 @@ class ApplePayDataObjectHttp
         }
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function billingAddress(): array
     {
         return $this->billingAddress;
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function shippingAddress(): array
     {
         return $this->shippingAddress;
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function shippingMethod(): array
     {
-        return $this->shippingMethod ?? [];
+        return $this->shippingMethod;
     }
 
     public function needShipping(): bool
@@ -518,7 +533,7 @@ class ApplePayDataObjectHttp
     }
 
     /**
-     * @return array|false|null
+     * @return array<mixed>|false|null
      */
     public function getFilteredRequestData()
     {

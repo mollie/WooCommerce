@@ -14,7 +14,7 @@ class Billie extends AbstractPaymentMethod implements PaymentMethodI
     /**
      * Get the configuration for the Billie payment method.
      *
-     * @return array
+     * @return array<mixed>
      */
     protected function getConfig(): array
     {
@@ -83,8 +83,8 @@ class Billie extends AbstractPaymentMethod implements PaymentMethodI
     /**
      * Modify the general form fields for the Billie payment method.
      *
-     * @param array $generalFormFields
-     * @return array
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
      */
     public function getFormFields(array $generalFormFields): array
     {
@@ -122,8 +122,8 @@ class Billie extends AbstractPaymentMethod implements PaymentMethodI
     /**
      * Switch fields for the Billie payment method.
      *
-     * @param array $data
-     * @return array
+     * @param array<mixed> $data
+     * @return array<mixed>
      */
     public function switchFields(array $data): array
     {

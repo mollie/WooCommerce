@@ -58,7 +58,7 @@ jobs:
         gh run download ${{ github.run_id }} -p "mollie-payments-for-woocommerce-*" -D tests/qa/resources/files
         cd tests/qa/resources/files
         mv mollie-payments-for-woocommerce-*/mollie-payments-for-woocommerce .
-        zip -r mollie-payments-for-woocommerce.zip mollie-payments-for-woocommerce
+        zip -rq mollie-payments-for-woocommerce.zip mollie-payments-for-woocommerce
         rm -rf mollie-payments-for-woocommerce mollie-payments-for-woocommerce-*/
 
         # 2. Setup wp-env default hosts
@@ -81,8 +81,8 @@ jobs:
         echo "Ngrok URL: $NGROK_URL"
 
         # 7. Update WordPress site URLs to ngrok (tests environment)
-        npx wp-env run tests-cli wp config set WP_SITEURL "$NGROK_URL"
-        npx wp-env run tests-cli wp config set WP_HOME "$NGROK_URL"
+        wp-env run tests-cli wp config set WP_SITEURL "$NGROK_URL"
+        wp-env run tests-cli wp config set WP_HOME "$NGROK_URL"
 
         # 8. Override WP_BASE_URL for Playwright
         sed -i "s|WP_BASE_URL=.*|WP_BASE_URL=$NGROK_URL|" .env.ci

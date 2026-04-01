@@ -81,8 +81,8 @@ jobs:
         echo "Ngrok URL: $NGROK_URL"
 
         # 7. Update WordPress site URLs to ngrok (tests environment)
-        wp-env run tests-cli wp config set WP_SITEURL "$NGROK_URL"
-        wp-env run tests-cli wp config set WP_HOME "$NGROK_URL"
+        wp-env run cli wp config set WP_SITEURL "$NGROK_URL"
+        wp-env run cli wp config set WP_HOME "$NGROK_URL"
 
         # 8. Override WP_BASE_URL for Playwright
         sed -i "s|WP_BASE_URL=.*|WP_BASE_URL=$NGROK_URL|" .env.ci

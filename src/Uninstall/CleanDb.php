@@ -1,18 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Uninstall;
 
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
-
 class CleanDb
 {
     /**
      * @var array<string>
      */
     protected array $gatewayClassnames;
-
     /**
      * CleanDb constructor.
      */
@@ -23,15 +20,12 @@ class CleanDb
     {
         $this->gatewayClassnames = $gatewayClassnames;
     }
-
     public function cleanAll(): void
     {
-
         $options = $this->allMollieOptionNames();
         $this->deleteSiteOptions($options);
         $this->cleanScheduledJobs();
     }
-
     /**
      * @param array<string> $options
      */
@@ -41,12 +35,10 @@ class CleanDb
             delete_option($option);
         }
     }
-
     protected function cleanScheduledJobs(): void
     {
         as_unschedule_action('mollie_woocommerce_cancel_unpaid_orders');
     }
-
     /**
      * @return array<string>
      */
@@ -57,7 +49,6 @@ class CleanDb
             $option = strtolower($gateway) . "_settings";
             $names[] = $option;
         }
-
         return $names;
     }
 }

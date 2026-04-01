@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\PaymentMethods\PaymentRedirectStrategies;
 
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
-
-class DefaultRedirectStrategy implements PaymentRedirectStrategyI
+class DefaultRedirectStrategy implements \Mollie\WooCommerce\PaymentMethods\PaymentRedirectStrategies\PaymentRedirectStrategyI
 {
     /**
      * Redirect location after successfully completing process_payment

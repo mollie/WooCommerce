@@ -1,20 +1,19 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\PaymentMethods;
 
-use Inpsyde\PaymentGateway\Icon;
-use Inpsyde\PaymentGateway\IconProviderInterface;
-use Inpsyde\PaymentGateway\Method\CustomSettingsFields;
-use Inpsyde\PaymentGateway\Method\CustomSettingsFieldsDefinition;
-use Inpsyde\PaymentGateway\Method\DefaultPaymentMethodDefinitionTrait;
-use Inpsyde\PaymentGateway\Method\PaymentMethodDefinition;
-use Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
-use Inpsyde\PaymentGateway\PaymentProcessorInterface;
-use Inpsyde\PaymentGateway\PaymentRequestValidatorInterface;
-use Inpsyde\PaymentGateway\RefundProcessorInterface;
-use Inpsyde\PaymentGateway\StaticIconProvider;
+use Mollie\Inpsyde\PaymentGateway\Icon;
+use Mollie\Inpsyde\PaymentGateway\IconProviderInterface;
+use Mollie\Inpsyde\PaymentGateway\Method\CustomSettingsFields;
+use Mollie\Inpsyde\PaymentGateway\Method\CustomSettingsFieldsDefinition;
+use Mollie\Inpsyde\PaymentGateway\Method\DefaultPaymentMethodDefinitionTrait;
+use Mollie\Inpsyde\PaymentGateway\Method\PaymentMethodDefinition;
+use Mollie\Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
+use Mollie\Inpsyde\PaymentGateway\PaymentProcessorInterface;
+use Mollie\Inpsyde\PaymentGateway\PaymentRequestValidatorInterface;
+use Mollie\Inpsyde\PaymentGateway\RefundProcessorInterface;
+use Mollie\Inpsyde\PaymentGateway\StaticIconProvider;
 use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Payment\PaymentProcessor;
@@ -24,23 +23,11 @@ use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\DefaultFieldsStrat
 use Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\NoopPaymentFieldsRenderer;
 use Mollie\WooCommerce\Settings\General\MultiCountrySettingsField;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
-use Psr\Container\ContainerInterface;
-
-abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDefinition
+use Mollie\Psr\Container\ContainerInterface;
+abstract class AbstractPaymentMethod implements \Mollie\WooCommerce\PaymentMethods\PaymentMethodI, PaymentMethodDefinition
 {
     use DefaultPaymentMethodDefinitionTrait;
-
-    private const PHONE_PLACEHOLDERS = [
-        'BE' => '+32xxxxxxxxx',
-        'NL' => '+316xxxxxxxx',
-        'DE' => '+49xxxxxxxxx',
-        'AT' => '+43xxxxxxxxx',
-        'ES' => '+34xxxxxxxxx',
-        'NO' => '+47xxxxxxxxx',
-        'DK' => '+45xxxxxxxxx',
-        'FI' => '+358xxxxxxxx',
-    ];
-
+    private const PHONE_PLACEHOLDERS = ['BE' => '+32xxxxxxxxx', 'NL' => '+316xxxxxxxx', 'DE' => '+49xxxxxxxxx', 'AT' => '+43xxxxxxxxx', 'ES' => '+34xxxxxxxxx', 'NO' => '+47xxxxxxxxx', 'DK' => '+45xxxxxxxxx', 'FI' => '+358xxxxxxxx'];
     /**
      * @var string[]
      */
@@ -49,45 +36,36 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
      * @var array
      */
     protected $settings = [];
-
     /** @var Surcharge */
     protected $surcharge;
-
     /**
      * @var bool
      */
-    protected bool $translationsInitialized = false;
-
+    protected bool $translationsInitialized = \false;
     abstract protected function getConfig(): array;
-
     abstract public function getFormFields(array $generalFormFields): array;
-
     public function filtersOnBuild(): void
     {
     }
-
     public function debugGiftcardDetails($payment, \WC_Order $order): void
     {
     }
-
     public function __construct()
     {
         $this->config = $this->getConfig();
         $this->settings = $this->getSettings();
         $this->surcharge = new Surcharge();
     }
-
     public function title(ContainerInterface $container): string
     {
         $useApiTitle = apply_filters('mollie_wc_gateway_use_api_title', $this->isUseApiTitleChecked(), $this->getIdFromConfig());
         $title = $this->getProperty('title');
         //new installations should use the api title
-        if ($useApiTitle || $title === false) {
+        if ($useApiTitle || $title === \false) {
             return $this->getApiTitle($container);
         }
-         return $title;
+        return $title;
     }
-
     /**
      * Payment method id accessor
      * @return string
@@ -97,25 +75,21 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
         $config = $this->getConfig();
         return $config['id'];
     }
-
     public function getUploadedImage(): array
     {
         $settings = $this->getSettings();
-        $svgPath = $settings["iconFilePath"] ?? false;
-        $svgUrl = $settings["iconFileUrl"] ?? false;
-
+        $svgPath = $settings["iconFilePath"] ?? \false;
+        $svgUrl = $settings["iconFileUrl"] ?? \false;
         return $svgPath && file_exists($svgPath) ? [$svgUrl] : [];
     }
-
     /**
      * @return bool|null
      */
     public function isCreditCardSelectorEnabled()
     {
         $settings = $this->getSettings();
-        return isset($settings[PaymentMethodsIconUrl::MOLLIE_CREDITCARD_ICONS_ENABLER]) ? $settings[PaymentMethodsIconUrl::MOLLIE_CREDITCARD_ICONS_ENABLER] === "yes" :  null;
+        return isset($settings[\Mollie\WooCommerce\PaymentMethods\PaymentMethodsIconUrl::MOLLIE_CREDITCARD_ICONS_ENABLER]) ? $settings[\Mollie\WooCommerce\PaymentMethods\PaymentMethodsIconUrl::MOLLIE_CREDITCARD_ICONS_ENABLER] === "yes" : null;
     }
-
     /**
      * Access the payment method surcharge applied
      */
@@ -123,48 +97,40 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
     {
         return $this->surcharge;
     }
-
     /**
      * Check if the payment method has surcharge applied
      * @return bool
      */
     public function hasSurcharge(): bool
     {
-        return $this->getProperty('payment_surcharge')
-            && $this->getProperty('payment_surcharge') !== Surcharge::NO_FEE;
+        return $this->getProperty('payment_surcharge') && $this->getProperty('payment_surcharge') !== Surcharge::NO_FEE;
     }
-
     /**
      * Check if payment method should show payment fields, like issuers or components
      * @return bool
      */
     public function hasPaymentFields(): bool
     {
-        return (bool)$this->getProperty('paymentFields');
+        return (bool) $this->getProperty('paymentFields');
     }
-
     /**
      * Check if payment method should show any icon
      * @return bool
      */
     public function shouldDisplayIcon(): bool
     {
-        $defaultIconSetting = true;
+        $defaultIconSetting = \true;
         return $this->hasProperty('display_logo') ? $this->getProperty('display_logo') === 'yes' : $defaultIconSetting;
     }
-
     /**
      * Access the payment method processed description, surcharge included
      * @return mixed
      */
     public function getProcessedDescription()
     {
-        $description = $this->getProperty('description') === false ? $this->getProperty(
-            'defaultDescription'
-        ) : $this->getProperty('description');
+        $description = $this->getProperty('description') === \false ? $this->getProperty('defaultDescription') : $this->getProperty('description');
         return $this->surcharge->buildDescriptionWithSurcharge($description, $this);
     }
-
     /**
      * Access the payment method description for the checkout blocks
      * @return string
@@ -173,7 +139,6 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
     {
         return $this->surcharge->buildDescriptionWithSurchargeForBlock($this);
     }
-
     /**
      * Retrieve the user's payment method settings or the default values
      * if there are no settings saved for this payment method it will save the defaults
@@ -182,13 +147,12 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
     public function getSettings(): array
     {
         $optionName = 'mollie_wc_gateway_' . $this->getIdFromConfig() . '_settings';
-        $settings = get_option($optionName, false);
+        $settings = get_option($optionName, \false);
         if (!$settings) {
             $settings = [];
         }
         return $settings;
     }
-
     /**
      * Update the payment method's settings with defaults if not exist
      * @return array
@@ -196,14 +160,13 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
     public function updateSettingsWithDefaults(ContainerInterface $container): array
     {
         $optionName = 'mollie_wc_gateway_' . $this->getIdFromConfig() . '_settings';
-        $settings = get_option($optionName, false);
+        $settings = get_option($optionName, \false);
         if (!$settings) {
             $settings = $this->defaultSettings($container);
-            update_option($optionName, $settings, true);
+            update_option($optionName, $settings, \true);
         }
         return $settings;
     }
-
     /**
      * Order status after transaction
      * @return string
@@ -211,13 +174,10 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
     public function getInitialOrderStatus(): string
     {
         if ($this->getProperty('confirmationDelayed')) {
-            return (string)($this->getProperty('initial_order_status')
-                ?: SharedDataDictionary::STATUS_ON_HOLD);
+            return (string) ($this->getProperty('initial_order_status') ?: SharedDataDictionary::STATUS_ON_HOLD);
         }
-
         return SharedDataDictionary::STATUS_PENDING;
     }
-
     /**
      * Retrieve the payment method's property from config or settings
      * @param string $propertyName
@@ -226,9 +186,8 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
     public function getProperty(string $propertyName)
     {
         $properties = $this->getMergedProperties();
-        return $properties[$propertyName] ?? false;
+        return $properties[$propertyName] ?? \false;
     }
-
     /**
      * Check if a certain property exists for this payment method
      * @param string $propertyName
@@ -239,7 +198,6 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
         $properties = $this->getMergedProperties();
         return isset($properties[$propertyName]);
     }
-
     /**
      * Merge settings with config properties
      * @return array
@@ -248,7 +206,6 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
     {
         return array_merge($this->config, $this->getSettings());
     }
-
     /**
      * Default values for the initial settings saved
      *
@@ -258,29 +215,23 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
     {
         $defaultTitle = $this->getApiTitle($container);
         $settingsHelper = $container->get('settings.settings_helper');
-        $generalFormFields = $settingsHelper->generalFormFields(
-            $defaultTitle,
-            $this->config['defaultDescription'],
-            $this->config['confirmationDelayed']
-        );
+        $generalFormFields = $settingsHelper->generalFormFields($defaultTitle, $this->config['defaultDescription'], $this->config['confirmationDelayed']);
         $fields = $this->getFormFields($generalFormFields);
         //remove setting title fields
         $fields = array_filter($fields, static function ($field) {
-                return isset($field['type']) && $field['type'] !== 'title';
+            return isset($field['type']) && $field['type'] !== 'title';
         });
         //we don't save the default description or title, in case the language changes
         unset($fields['description']);
         unset($fields['title']);
         return array_combine(array_keys($fields), array_column($fields, 'default')) ?: [];
     }
-
     private function getApiTitle(ContainerInterface $container): string
     {
         $apiMethod = $container->get('gateway.getPaymentMethodsAfterFeatureFlag')[$this->getIdFromConfig()];
         $apiTitle = $apiMethod['description'] ?? null;
         return $apiTitle ?: $this->config['defaultTitle'];
     }
-
     private function getApiIcon(ContainerInterface $container): string
     {
         $apiMethod = $container->get('gateway.getPaymentMethodsAfterFeatureFlag')[$this->getIdFromConfig()];
@@ -288,56 +239,45 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
         if (isset($apiMethod["image"]) && property_exists($apiMethod["image"], "svg")) {
             $apiIcon = $apiMethod["image"]->svg;
         }
-
-        return (string)$apiIcon;
+        return (string) $apiIcon;
     }
-
     private function isUseApiTitleChecked(): bool
     {
         return $this->getProperty(SharedDataDictionary::USE_API_TITLE_AND_IMAGE) === 'yes';
     }
-
     protected function titleIsDefault(): bool
     {
         $savedTitle = $this->getProperty('title');
         if (!$savedTitle) {
-            return false;
+            return \false;
         }
-
         return $savedTitle === $this->config['defaultTitle'];
     }
-
     public function id(): string
     {
         return 'mollie_wc_gateway_' . $this->getIdFromConfig();
     }
-
     public function paymentProcessor(ContainerInterface $container): PaymentProcessorInterface
     {
         return $container->get(PaymentProcessor::class);
     }
-
     public function paymentRequestValidator(ContainerInterface $container): PaymentRequestValidatorInterface
     {
         return $container->get('payment_gateways.noop_payment_request_validator');
     }
-
     public function methodTitle(ContainerInterface $container): string
     {
         return 'Mollie - ' . $this->title($container);
     }
-
     public function description(ContainerInterface $container): string
     {
         $description = $this->getProcessedDescription();
-        return empty($description) ? '' : (string)$description;
+        return empty($description) ? '' : (string) $description;
     }
-
     public function methodDescription(ContainerInterface $container): string
     {
-        return (string)$this->getProperty('settingsDescription');
+        return (string) $this->getProperty('settingsDescription');
     }
-
     /**
      * @inheritDoc
      */
@@ -349,62 +289,49 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
             return $gatewayInstances[$gatewayId]->is_available($gateway);
         };
     }
-
     public function supports(ContainerInterface $container): array
     {
-        $supports = (array)$this->getProperty('supports');
+        $supports = (array) $this->getProperty('supports');
         $paymentMethodsEnabledAtMollie = $container->get('gateway.paymentMethodsEnabledAtMollie');
-        $isSepa = $this->getProperty('SEPA') === true && in_array(Constants::DIRECTDEBIT, $paymentMethodsEnabledAtMollie, true);
-        $isSubscription = $this->getProperty('Subscription') === true;
+        $isSepa = $this->getProperty('SEPA') === \true && in_array(\Mollie\WooCommerce\PaymentMethods\Constants::DIRECTDEBIT, $paymentMethodsEnabledAtMollie, \true);
+        $isSubscription = $this->getProperty('Subscription') === \true;
         $subscriptionHooks = $container->get('gateway.subscriptionsSupports');
         if ($isSepa || $isSubscription) {
             $supports = array_merge($supports, $subscriptionHooks);
         }
         return $supports;
     }
-
     public function refundProcessor(ContainerInterface $container): RefundProcessorInterface
     {
         $supports = $this->getProperty('supports');
-        $supportsRefunds = $supports && in_array('refunds', $supports, true);
+        $supportsRefunds = $supports && in_array('refunds', $supports, \true);
         if ($supportsRefunds) {
             return $container->get('payment_gateway.getRefundProcessor')($this->getIdFromConfig());
         }
         return $container->get('payment_gateways.noop_refund_processor');
     }
-
     public function paymentMethodIconProvider(ContainerInterface $container): IconProviderInterface
     {
-        $iconFactory = $container->get(IconFactory::class);
+        $iconFactory = $container->get(\Mollie\WooCommerce\PaymentMethods\IconFactory::class);
         $iconUrlArray = $iconFactory->getIconUrl($this->getIdFromConfig());
         if ($this->getUploadedImage()) {
             $iconUrlArray = $this->getUploadedImage();
         }
-
         $useAPIImage = apply_filters('mollie_wc_gateway_use_api_icon', $this->isUseApiTitleChecked(), $this->getIdFromConfig());
-
         if (!$this->isCreditCardSelectorEnabled() && $useAPIImage) {
             $iconUrlArray = [$this->getApiIcon($container)];
         }
-
         $alt = $this->getIdFromConfig() . ' icon';
         $icons = [];
         foreach ($iconUrlArray as $iconUrl) {
-            $icons[] = new Icon(
-                'mollie-' . $this->getIdFromConfig(),
-                $iconUrl,
-                $alt
-            );
+            $icons[] = new Icon('mollie-' . $this->getIdFromConfig(), $iconUrl, $alt);
         }
-
         return new StaticIconProvider(...$icons);
     }
-
-    public function gatewayIconsRenderer(ContainerInterface $container): \Inpsyde\PaymentGateway\GatewayIconsRendererInterface
+    public function gatewayIconsRenderer(ContainerInterface $container): \Mollie\Inpsyde\PaymentGateway\GatewayIconsRendererInterface
     {
         return new GatewayIconsRenderer($this, $this->paymentMethodIconProvider($container));
     }
-
     public function paymentFieldsRenderer(ContainerInterface $container): PaymentFieldsRendererInterface
     {
         $oldGatewayInstances = $container->get('__deprecated.gateway_helpers');
@@ -418,152 +345,88 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
         if (!$this->getProperty('paymentFields')) {
             return new DefaultFieldsStrategy($deprecatedGatewayHelper, $gatewayDescription, $dataHelper);
         } else {
-            $className = 'Mollie\\WooCommerce\\PaymentMethods\\PaymentFieldsStrategies\\' . ucfirst($this->getIdFromConfig()) . 'FieldsStrategy';
+            $className = 'Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\\' . ucfirst($this->getIdFromConfig()) . 'FieldsStrategy';
             return class_exists($className) ? new $className($deprecatedGatewayHelper, $gatewayDescription, $dataHelper) : new DefaultFieldsStrategy($deprecatedGatewayHelper, $gatewayDescription, $dataHelper);
         }
     }
-
     public function hasFields(ContainerInterface $container): bool
     {
         $hasFields = $this->hasPaymentFields();
         if ($hasFields) {
-            return true;
+            return \true;
         }
-
         /* Override show issuers dropdown? */
         $dropdownEnabled = $this->getProperty('issuers_dropdown_shown') === 'yes';
         if ($dropdownEnabled) {
-            return true;
+            return \true;
         }
-        return false;
+        return \false;
     }
-
     public function formFields(ContainerInterface $container): array
     {
         $defaultTitle = $this->getApiTitle($container);
         $settingsHelper = $container->get('settings.settings_helper');
-        $generalFormFields = $settingsHelper->generalFormFields(
-            $defaultTitle,
-            $this->config['defaultDescription'],
-            $this->config['confirmationDelayed']
-        );
-
+        $generalFormFields = $settingsHelper->generalFormFields($defaultTitle, $this->config['defaultDescription'], $this->config['confirmationDelayed']);
         return $this->getFormFields($generalFormFields);
     }
-
     public function optionKey(ContainerInterface $container): string
     {
         return $this->id() . '_settings';
     }
-
     public function orderButtonText(ContainerInterface $container): string
     {
         return '';
     }
-
     public function customSettings(): CustomSettingsFieldsDefinition
     {
-        return new CustomSettingsFields([
-            'multi_select_countries' => function () {
-                return new MultiCountrySettingsField($this);
-            },
-        ], []);
+        return new CustomSettingsFields(['multi_select_countries' => function () {
+            return new MultiCountrySettingsField($this);
+        }], []);
     }
-
     public function icon(ContainerInterface $container): string
     {
         return '';
     }
-
     public function isExpressCheckoutEnabled(): bool
     {
-        return false;
+        return \false;
     }
-
     public function blocksData(ContainerInterface $container): array
     {
         $title = $this->title($container);
         $iconProvider = $this->paymentMethodIconProvider($container);
-        $icons = $this->shouldDisplayIcon()
-            ? array_map(static fn(Icon $icon) => [
-                'id' => $icon->id(),
-                'src' => $icon->src(),
-                'alt' => $icon->alt(),
-            ], $iconProvider->provideIcons())
-            : [];
-
+        $icons = $this->shouldDisplayIcon() ? array_map(static fn(Icon $icon) => ['id' => $icon->id(), 'src' => $icon->src(), 'alt' => $icon->alt()], $iconProvider->provideIcons()) : [];
         // phpstan:ignore [wc-stub] WC()->customer is WC_Customer|null at runtime; WooCommerce stubs declare it non-nullable
         // @phpstan-ignore-next-line
         $billingCountry = WC()->customer ? WC()->customer->get_billing_country() : '';
         $allowedCountries = $this->getProperty('allowed_countries');
-
-        $data = [
-            'name' => $this->id(),
-            'paymentMethodId' => $this->id(),
-            'content' => $this->getProcessedDescriptionForBlock(),
-            'edit' => $this->getProcessedDescriptionForBlock(),
-            'hasSurcharge' => $this->hasSurcharge(),
-            'contentFallback' => __(
-                'Please choose a billing country to see the available payment methods',
-                'mollie-payments-for-woocommerce'
-            ),
-            'allowedCountries' => is_array($allowedCountries) ? $allowedCountries : [],
-            'ariaLabel' => $this->getProperty('defaultDescription'),
-            'errorMessage' => $this->getProperty('errorMessage'),
-            'companyPlaceholder' => $this->getProperty('companyPlaceholder'),
-            'phoneLabel' => $this->getProperty('phoneLabel'),
-            'phonePlaceholder' => self::PHONE_PLACEHOLDERS[$billingCountry] ?? self::PHONE_PLACEHOLDERS['NL'],
-            'birthdatePlaceholder' => $this->getProperty('birthdatePlaceholder'),
-            'isExpressEnabled' => $this->isExpressCheckoutEnabled(),
-            'hideCompanyField' => (bool)apply_filters('mollie_wc_hide_company_field', false),
-            'shouldLoadComponents' => $this->getProperty('mollie_components_enabled') === 'yes',
-            'componentsDescription' => '',
-            'issuers' => $this->blocksIssuers($container),
-            'label' => [
-                'title' => $title,
-                'iconsArray' => $icons,
-            ],
-        ];
-
+        $data = ['name' => $this->id(), 'paymentMethodId' => $this->id(), 'content' => $this->getProcessedDescriptionForBlock(), 'edit' => $this->getProcessedDescriptionForBlock(), 'hasSurcharge' => $this->hasSurcharge(), 'contentFallback' => __('Please choose a billing country to see the available payment methods', 'mollie-payments-for-woocommerce'), 'allowedCountries' => is_array($allowedCountries) ? $allowedCountries : [], 'ariaLabel' => $this->getProperty('defaultDescription'), 'errorMessage' => $this->getProperty('errorMessage'), 'companyPlaceholder' => $this->getProperty('companyPlaceholder'), 'phoneLabel' => $this->getProperty('phoneLabel'), 'phonePlaceholder' => self::PHONE_PLACEHOLDERS[$billingCountry] ?? self::PHONE_PLACEHOLDERS['NL'], 'birthdatePlaceholder' => $this->getProperty('birthdatePlaceholder'), 'isExpressEnabled' => $this->isExpressCheckoutEnabled(), 'hideCompanyField' => (bool) apply_filters('mollie_wc_hide_company_field', \false), 'shouldLoadComponents' => $this->getProperty('mollie_components_enabled') === 'yes', 'componentsDescription' => '', 'issuers' => $this->blocksIssuers($container), 'label' => ['title' => $title, 'iconsArray' => $icons]];
         $expressData = $this->blocksExpressData($container);
         if ($expressData !== null) {
             $data['expressButtonData'] = $expressData;
         }
-
         return $data;
     }
-
     protected function blocksExpressData(ContainerInterface $container): ?array
     {
         return null;
     }
-
     private function blocksIssuers(ContainerInterface $container): ?string
     {
-        if ($this->getProperty('paymentFields') !== true) {
+        if ($this->getProperty('paymentFields') !== \true) {
             return null;
         }
-
         /** @var array<string, MolliePaymentGatewayHandler> $oldGatewayInstances */
         $oldGatewayInstances = $container->get('__deprecated.gateway_helpers');
         if (!isset($oldGatewayInstances[$this->id()])) {
             return null;
         }
-
         $deprecatedGateway = $oldGatewayInstances[$this->id()];
         $description = $container->get('payment_gateway.' . $this->id() . '.description');
         $dataHelper = $container->get('settings.data_helper');
-
-        $strategyClass = sprintf(
-            'Mollie\\WooCommerce\\PaymentMethods\\PaymentFieldsStrategies\\%sFieldsStrategy',
-            ucfirst($this->getIdFromConfig())
-        );
-
+        $strategyClass = sprintf('Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies\%sFieldsStrategy', ucfirst($this->getIdFromConfig()));
         /** @var AbstractPaymentFieldsRenderer $strategy */
-        $strategy = class_exists($strategyClass)
-            ? new $strategyClass($deprecatedGateway, $description, $dataHelper)
-            : new DefaultFieldsStrategy($deprecatedGateway, $description, $dataHelper);
-
+        $strategy = class_exists($strategyClass) ? new $strategyClass($deprecatedGateway, $description, $dataHelper) : new DefaultFieldsStrategy($deprecatedGateway, $description, $dataHelper);
         return $strategy->getFieldMarkup($deprecatedGateway, $dataHelper);
     }
 }

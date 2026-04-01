@@ -1,10 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\PaymentMethods\InstructionStrategies;
 
-class MybankInstructionStrategy implements InstructionStrategyI
+class MybankInstructionStrategy implements \Mollie\WooCommerce\PaymentMethods\InstructionStrategies\InstructionStrategyI
 {
     /**
      * @param mixed $gateway
@@ -13,26 +12,17 @@ class MybankInstructionStrategy implements InstructionStrategyI
      * @param bool  $admin_instructions
      * @return mixed
      */
-    public function execute(
-        $gateway,
-        $payment,
-        $order = null,
-        $admin_instructions = false
-    ) {
-
+    public function execute($gateway, $payment, $order = null, $admin_instructions = \false)
+    {
         if ($payment->isPaid() && $payment->details) {
             return sprintf(
-            /* translators: Placeholder 1: Mollie_WC_Gateway_MyBank consumer name, placeholder 2: Consumer Account number */
-                __(
-                    'Payment completed by <strong>%1$s</strong> - %2$s',
-                    'mollie-payments-for-woocommerce'
-                ),
+                /* translators: Placeholder 1: Mollie_WC_Gateway_MyBank consumer name, placeholder 2: Consumer Account number */
+                __('Payment completed by <strong>%1$s</strong> - %2$s', 'mollie-payments-for-woocommerce'),
                 $payment->details->consumerName,
                 $payment->details->consumerAccount
             );
         }
-
-        $defaultStrategy = new DefaultInstructionStrategy();
+        $defaultStrategy = new \Mollie\WooCommerce\PaymentMethods\InstructionStrategies\DefaultInstructionStrategy();
         return $defaultStrategy->execute($gateway, $payment, $admin_instructions);
     }
 }
